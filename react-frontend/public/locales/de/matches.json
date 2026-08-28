@@ -39,7 +39,9 @@
     "paused_desc": "Sie erhalten keine neuen Übereinstimmungsvorschläge oder Benachrichtigungen, bis Sie die Zuordnung in Ihren Einstellungen wieder aufnehmen.",
     "mutual_title": "Gegenseitige Übereinstimmungen werden angezeigt",
     "mutual_desc": "Diese Übereinstimmungen gelten in beide Richtungen: Sie passen zu ihnen und sie zu Ihnen.",
-    "show_all": "Alle Übereinstimmungen anzeigen"
+    "show_all": "Alle Übereinstimmungen anzeigen",
+    "safeguarding_unavailable_title": "Einige Übereinstimmungen sind ausgeblendet",
+    "safeguarding_unavailable_desc": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet."
   },
   "card": {
     "mutual": "Gegenseitige Übereinstimmung",
@@ -89,7 +91,9 @@
     "no_listings_title": "Passende Werke aus Ihren Angeboten",
     "no_listings_description": "Erstellen Sie einen Eintrag, um Personen, Gruppen und Möglichkeiten zu finden, die Ihrem Angebot oder Bedarf entsprechen.",
     "create_listing_cta": "Erstellen Sie einen Eintrag",
-    "adjust_preferences_cta": "Matching-Einstellungen anpassen"
+    "adjust_preferences_cta": "Matching-Einstellungen anpassen",
+    "safeguarding_unavailable_title": "Einige Übereinstimmungen können noch nicht angezeigt werden",
+    "safeguarding_unavailable_description": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet. Schauen Sie wieder vorbei, sobald Ihr Community-Team die Einrichtung abgeschlossen hat."
   },
   "preferences": {
     "subtitle": "Steuern Sie, wie Smart Matching Verbindungen findet und Sie darüber benachrichtigt.",

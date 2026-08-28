@@ -1,245 +1,246 @@
 {
-    "admin_analytics_reports": {
-        "members_marked_notified": ":count lid/leden gemarkeerd als geïnformeerd"
-    },
-    "admin_cron": {
-        "log_not_found": "Logboek niet gevonden",
-        "deleted_log_entries": ":count logboekitems verwijderd"
-    },
-    "admin_enterprise": {
-        "breach_reported": "Inbreuk succesvol gerapporteerd",
-        "gdpr_request_created": "AVG-verzoek succesvol aangemaakt",
-        "gdpr_request_create_failed": "AVG-verzoek aanmaken mislukt",
-        "data_export_generated": "Gegevensexport succesvol gegenereerd",
-        "data_export_failed": "Gegevensexport genereren mislukt",
-        "dpa_notification_recorded": "DPA-melding succesvol vastgelegd",
-        "dpa_notification_failed": "DPA-melding vastleggen mislukt",
-        "log_file_cleared": "Logbestand succesvol geleegd",
-        "log_file_only_allowed": "Alleen .log-bestanden zijn toegestaan",
-        "log_file_not_found": "Logbestand niet gevonden",
-        "log_file_clear_failed": "Logbestand leegmaken mislukt",
-        "secret_rotation_requires_ssh": "Geheimrotatie vereist servertoegang. Gebruik SSH om geheimen in het .env-bestand te roteren.",
-        "secret_deletion_requires_ssh": "Geheimverwijdering vereist servertoegang. Gebruik SSH om geheimen uit het .env-bestand te verwijderen.",
-        "config_reset_failed": "Configuratie opnieuw instellen mislukt",
-        "gdpr_request_not_found": "AVG-verzoek niet gevonden",
-        "gdpr_request_fetch_failed": "AVG-verzoek ophalen mislukt",
-        "user_id_required": "Gebruikers-ID is vereist",
-        "assigned_to_required": "assigned_to (gebruikers-ID) is vereist",
-        "gdpr_request_assign_failed": "AVG-verzoek toewijzen mislukt",
-        "note_text_required": "Notitietekst is vereist",
-        "gdpr_request_note_failed": "Notitie toevoegen aan AVG-verzoek mislukt",
-        "slug_and_name_required": "Slug en naam zijn vereist",
-        "consent_type_create_failed": "Toestemmingstype aanmaken mislukt",
-        "no_fields_to_update": "Geen velden om bij te werken",
-        "consent_type_not_found": "Toestemmingstype niet gevonden",
-        "consent_type_update_failed": "Toestemmingstype bijwerken mislukt",
-        "consent_type_delete_failed": "Toestemmingstype verwijderen mislukt",
-        "breach_record_not_found": "Inbreukrecord niet gevonden",
-        "breach_record_fetch_failed": "Inbreukrecord ophalen mislukt",
-        "breach_record_update_failed": "Inbreukrecord bijwerken mislukt",
-        "invalid_request_type": "Ongeldig verzoektype. Moet een van de volgende zijn: :types",
-        "invalid_log_filename": "Ongeldige bestandsnaam",
-        "log_file_read_failed": "Logbestand lezen mislukt",
-        "feature_key_required": "Sleutel is vereist",
-        "feature_type_invalid": "Type moet \"feature\" of \"module\" zijn",
-        "feature_flag_update_failed": "Feature-vlag bijwerken mislukt"
-    },
-    "admin_federation": {
-        "partnership_request_failed": "Partnerschapsverzoek versturen mislukt",
-        "partnership_detail_failed": "Partnerdetails laden mislukt",
-        "counter_propose_failed": "Tegenbod mislukt",
-        "counter_proposal_send_failed": "Tegenbod versturen mislukt",
-        "permissions_update_failed": "Machtigingen bijwerken mislukt",
-        "partnership_permissions_update_failed": "Partnerschapsmachtigingen bijwerken mislukt",
-        "api_key_name_required": "Naam is vereist",
-        "api_keys_table_not_configured": "Federatie API-sleuteltabel niet geconfigureerd",
-        "api_key_create_failed": "API-sleutel aanmaken mislukt",
-        "api_key_invalid_scope": "Onbekende federatie-scope(s): :scopes",
-        "api_key_privileged_scope_forbidden": "Alleen een platform-superbeheerder mag federatiesleutels met schrijf- of beheerscopes uitgeven.",
-        "api_key_not_found": "API-sleutel niet gevonden",
-        "api_key_already_revoked": "API-sleutel is al ingetrokken",
-        "api_key_revoke_failed": "API-sleutel intrekken mislukt",
-        "max_topics_exceeded": "Maximum van 10 onderwerpen toegestaan.",
-        "invalid_export_type": "Ongeldig exporttype. Toegestaan: :types",
-        "federation_user_settings_not_found": "Federatiegebruikersinstellingentabel niet gevonden",
-        "federation_partnerships_not_found": "Federatiepartnerschappentabel niet gevonden",
-        "federation_transactions_not_found": "Federatietransactiestabel niet gevonden",
-        "federation_audit_log_not_found": "Federatieauditlogtabel niet gevonden",
-        "export_failed": "Exporteren van gegevens mislukt",
-        "api_key_shown_once_warning": "Deze sleutel wordt EENMAAL weergegeven. Sla hem veilig op — hij kan niet opnieuw worden opgehaald."
-    },
-    "admin_feed": {
-        "item_hidden": "Item verborgen",
-        "item_deleted": "Item verwijderd"
-    },
-    "admin_gamification": {
-        "badge_recheck_completed": "Badge-hercontrole voltooid voor :count gebruikers"
-    },
-    "admin_groups": {
-        "rule_not_found": "Regel niet gevonden",
-        "group_archived": "Groep gearchiveerd",
-        "group_unarchived": "Groep gedearchiveerd",
-        "ownership_transferred": "Eigendom overgedragen",
-        "groups_merged": "Groepen succesvol samengevoegd",
-        "group_cloned": "Groep gekloond",
-        "tag_deleted": "Tag verwijderd",
-        "collection_updated": "Bijgewerkt",
-        "collection_deleted": "Verwijderd",
-        "collection_groups_set": "Groepen ingesteld",
-        "rule_deleted": "Regel verwijderd"
-    },
-    "admin_impact_report": {
-        "config_updated": "Configuratie bijgewerkt"
-    },
-    "admin_marketplace": {
-        "feature_not_enabled": "Marktplaatsfunctie is niet ingeschakeld voor deze tenant.",
-        "listing_approved": "Advertentie goedgekeurd.",
-        "listing_rejected": "Advertentie afgewezen.",
-        "listing_removed": "Advertentie verwijderd.",
-        "only_business_sellers_verified": "Alleen zakelijke verkopers kunnen worden geverifieerd.",
-        "seller_verified": "Verkoper geverifieerd.",
-        "seller_suspended": "Verkoper gesuspendeerd en alle advertenties gedeactiveerd.",
-        "report_acknowledged": "Rapport erkend.",
-        "report_resolved": "Rapport opgelost.",
-        "report_appeal_resolved": "Beroep tegen rapport opgelost.",
-        "dispute_resolved": "Geschil opgelost."
-    },
-    "admin_newsletter": {
-        "newsletter_queued": "Nieuwsbrief in de wachtrij gezet voor :count ontvangers",
-        "test_email_sent": "Test-e-mail verzonden naar :email"
-    },
-    "admin_onboarding": {
-        "settings_updated": "Onboardinginstellingen bijgewerkt",
-        "preset_applied": "Preset :preset toegepast"
-    },
-    "admin_reports": {
-        "report_resolved": "Rapport opgelost",
-        "report_dismissed": "Rapport gesloten"
-    },
-    "admin_reviews": {
-        "review_flagged": "Beoordeling gemarkeerd voor aandacht",
-        "review_hidden": "Beoordeling verborgen",
-        "review_deleted": "Beoordeling verwijderd"
-    },
-    "admin_safeguarding": {
-        "guardian_assigned_notification": "U bent aangesteld als voogd voor de beveiliging van :name",
-        "ward_assigned_notification": ":guardian is aangesteld als uw beveiligingsondersteuningscontact. U kunt toestemming geven of intrekken in uw instellingen.",
-        "a_member": "een lid",
-        "a_coordinator": "Een communitycoördinator"
-    },
-    "admin_safeguarding_options": {
-        "option_updated": "Optie bijgewerkt",
-        "option_deactivated": "Optie gedeactiveerd",
-        "options_reordered": "Opties opnieuw geordend"
-    },
-    "admin_super": {
-        "tenant_created": "Tenant ':name' succesvol aangemaakt",
-        "lockdown_activated": "Noodvergrendeling geactiveerd",
-        "lockdown_lifted": "Noodvergrendeling opgeheven"
-    },
-    "admin_tools": {
-        "connection_failed": "Verbinding mislukt",
-        "conversion_queued": "Conversie in de wachtrij gezet",
-        "seed_generation_queued": "Seed-generatie in de wachtrij gezet",
-        "blog_backup_restore_queued": "Blog-back-upherstel in de wachtrij gezet"
-    },
-    "admin_volunteer": {
-        "application_approved": "Aanvraag goedgekeurd",
-        "application_declined": "Aanvraag afgewezen",
-        "org_status_updated": "Organisatiestatus bijgewerkt naar :status",
-        "amount_cannot_be_zero": "Bedrag mag niet nul zijn",
-        "reason_required": "Reden is vereist",
-        "status_must_be_active_or_suspended": "Status moet actief of gesuspendeerd zijn",
-        "status_invalid": "De status moet actief, goedgekeurd, geschorst of afgewezen zijn",
-        "organization_not_found": "Organisatie niet gevonden",
-        "org_status_update_failed": "Organisatiestatus bijwerken mislukt"
-    },
-    "admin_wallet_grant": {
-        "credits_granted": "Kredieten succesvol toegekend"
-    },
-    "ai_chat": {
-        "not_available": "AI-chat is momenteel niet beschikbaar. Probeer het later opnieuw.",
-        "connection_test_failed": "Verbindingstest mislukt"
-    },
-    "app": {
-        "log_recorded": "Log vastgelegd"
-    },
-    "auth": {
-        "two_factor_required": "Tweefactorauthenticatie vereist",
-        "two_factor_setup_required": "Tweefactorauthenticatie is vereist voor beheerdersaccounts. Stel 2FA in om door te gaan.",
-        "logged_out": "Succesvol uitgelogd",
-        "session_refreshed": "Sessie vernieuwd",
-        "session_restored": "Sessie hersteld vanuit token",
-        "session_deprecated": "Dit eindpunt is verouderd. Mobiele apps moeten Bearer-tokens rechtstreeks gebruiken zonder sessiesynchronisatie.",
-        "tokens_revoked": "Alle vernieuwingstokens zijn ingetrokken. U moet op alle apparaten opnieuw inloggen."
-    },
-    "block_user": {
-        "user_blocked": "Gebruiker geblokkeerd",
-        "user_unblocked": "Gebruiker gedeblokkeerd",
-        "user_not_blocked": "Gebruiker was niet geblokkeerd"
-    },
-    "cookie_consent": {
-        "preferences_updated": "Toestemmingsvoorkeuren succesvol bijgewerkt",
-        "consent_withdrawn": "Toestemming succesvol ingetrokken"
-    },
-    "email_verification": {
-        "already_verified": "E-mailadres is al geverifieerd",
-        "verified_successfully": "E-mailadres succesvol geverifieerd",
-        "verification_sent": "Verificatie-e-mail verzonden",
-        "generic_resend": "Als er een account met dat e-mailadres bestaat en het niet geverifieerd is, is een nieuwe verificatie-e-mail verzonden."
-    },
-    "endorsement": {
-        "endorsement_added": "Aanbeveling toegevoegd",
-        "endorsement_removed": "Aanbeveling verwijderd"
-    },
-    "federation": {
-        "already_opted_in": "Al aangemeld voor federatie.",
-        "enabled_successfully": "Federatie succesvol ingeschakeld.",
-        "disabled_successfully": "Federatie succesvol uitgeschakeld.",
-        "signature_verified": "Handtekening succesvol geverifieerd",
-        "settings_updated": "Instellingen succesvol bijgewerkt.",
-        "webhook_service_unavailable": "Service tijdelijk niet beschikbaar"
-    },
-    "federation_v2": {
-        "receiver_id_required": "receiver_id is vereist.",
-        "receiver_tenant_id_required": "receiver_tenant_id is vereist.",
-        "message_body_required": "Berichttekst is vereist.",
-        "subject_max_length": "Onderwerp mag niet meer dan 255 tekens bevatten.",
-        "body_max_length": "Berichttekst mag niet meer dan 10.000 tekens bevatten."
-    },
-    "feed_social": {
-        "post_unshared": "Post niet meer gedeeld"
-    },
-    "gamification": {
-        "invalid_leaderboard_type": "Ongeldig ranglijsttype",
-        "showcase_updated": "Showcase bijgewerkt",
-        "score_recalculation_initiated": "Scoreherberekening gestart"
-    },
-    "gdpr": {
-        "request_submitted": "Uw verzoek is ingediend en wordt binnen 30 dagen verwerkt.",
-        "account_deletion_submitted": "Uw accountverwijderingsverzoek is ingediend. U ontvangt een bevestiging via e-mail."
-    },
-    "group_challenge": {
-        "challenge_deleted": "Uitdaging verwijderd",
-        "challenge_cancelled": "Uitdaging geannuleerd",
-        "challenge_immutable": "Voltooide of beloonde uitdagingen kunnen niet worden geannuleerd"
-    },
-    "group_chatroom": {
-        "default_name": "Algemeen",
-        "default_description": "Standaard groepschat"
-    },
-    "group_exchange": {
-        "exchange_cancelled": "Uitwisseling geannuleerd",
-        "exchange_completed": "Uitwisseling succesvol voltooid"
-    },
-    "group_files": {
-        "file_deleted": "Bestand verwijderd"
-    },
-    "group_invite": {
-        "invite_revoked": "Uitnodiging ingetrokken"
-    },
-    "contact_form": {
-        "sent_successfully": "Bericht succesvol verzonden.",
-        "received_fallback": "Bericht ontvangen. We nemen binnenkort contact met u op."
-    }
+  "admin_analytics_reports": {
+    "members_marked_notified": ":count lid/leden gemarkeerd als geïnformeerd"
+  },
+  "admin_cron": {
+    "log_not_found": "Logboek niet gevonden",
+    "deleted_log_entries": ":count logboekitems verwijderd"
+  },
+  "admin_enterprise": {
+    "breach_reported": "Inbreuk succesvol gerapporteerd",
+    "gdpr_request_created": "AVG-verzoek succesvol aangemaakt",
+    "gdpr_request_create_failed": "AVG-verzoek aanmaken mislukt",
+    "data_export_generated": "Gegevensexport succesvol gegenereerd",
+    "data_export_failed": "Gegevensexport genereren mislukt",
+    "dpa_notification_recorded": "DPA-melding succesvol vastgelegd",
+    "dpa_notification_failed": "DPA-melding vastleggen mislukt",
+    "log_file_cleared": "Logbestand succesvol geleegd",
+    "log_file_only_allowed": "Alleen .log-bestanden zijn toegestaan",
+    "log_file_not_found": "Logbestand niet gevonden",
+    "log_file_clear_failed": "Logbestand leegmaken mislukt",
+    "secret_rotation_requires_ssh": "Geheimrotatie vereist servertoegang. Gebruik SSH om geheimen in het .env-bestand te roteren.",
+    "secret_deletion_requires_ssh": "Geheimverwijdering vereist servertoegang. Gebruik SSH om geheimen uit het .env-bestand te verwijderen.",
+    "config_reset_failed": "Configuratie opnieuw instellen mislukt",
+    "gdpr_request_not_found": "AVG-verzoek niet gevonden",
+    "gdpr_request_fetch_failed": "AVG-verzoek ophalen mislukt",
+    "user_id_required": "Gebruikers-ID is vereist",
+    "assigned_to_required": "assigned_to (gebruikers-ID) is vereist",
+    "gdpr_request_assign_failed": "AVG-verzoek toewijzen mislukt",
+    "note_text_required": "Notitietekst is vereist",
+    "gdpr_request_note_failed": "Notitie toevoegen aan AVG-verzoek mislukt",
+    "slug_and_name_required": "Slug en naam zijn vereist",
+    "consent_type_create_failed": "Toestemmingstype aanmaken mislukt",
+    "no_fields_to_update": "Geen velden om bij te werken",
+    "consent_type_not_found": "Toestemmingstype niet gevonden",
+    "consent_type_update_failed": "Toestemmingstype bijwerken mislukt",
+    "consent_type_delete_failed": "Toestemmingstype verwijderen mislukt",
+    "breach_record_not_found": "Inbreukrecord niet gevonden",
+    "breach_record_fetch_failed": "Inbreukrecord ophalen mislukt",
+    "breach_record_update_failed": "Inbreukrecord bijwerken mislukt",
+    "invalid_request_type": "Ongeldig verzoektype. Moet een van de volgende zijn: :types",
+    "invalid_log_filename": "Ongeldige bestandsnaam",
+    "log_file_read_failed": "Logbestand lezen mislukt",
+    "feature_key_required": "Sleutel is vereist",
+    "feature_type_invalid": "Type moet \"feature\" of \"module\" zijn",
+    "feature_flag_update_failed": "Feature-vlag bijwerken mislukt"
+  },
+  "admin_federation": {
+    "partnership_request_failed": "Partnerschapsverzoek versturen mislukt",
+    "partnership_detail_failed": "Partnerdetails laden mislukt",
+    "counter_propose_failed": "Tegenbod mislukt",
+    "counter_proposal_send_failed": "Tegenbod versturen mislukt",
+    "permissions_update_failed": "Machtigingen bijwerken mislukt",
+    "partnership_permissions_update_failed": "Partnerschapsmachtigingen bijwerken mislukt",
+    "api_key_name_required": "Naam is vereist",
+    "api_keys_table_not_configured": "Federatie API-sleuteltabel niet geconfigureerd",
+    "api_key_create_failed": "API-sleutel aanmaken mislukt",
+    "api_key_invalid_scope": "Onbekende federatie-scope(s): :scopes",
+    "api_key_privileged_scope_forbidden": "Alleen een platform-superbeheerder mag federatiesleutels met schrijf- of beheerscopes uitgeven.",
+    "api_key_not_found": "API-sleutel niet gevonden",
+    "api_key_already_revoked": "API-sleutel is al ingetrokken",
+    "api_key_revoke_failed": "API-sleutel intrekken mislukt",
+    "max_topics_exceeded": "Maximum van 10 onderwerpen toegestaan.",
+    "invalid_export_type": "Ongeldig exporttype. Toegestaan: :types",
+    "federation_user_settings_not_found": "Federatiegebruikersinstellingentabel niet gevonden",
+    "federation_partnerships_not_found": "Federatiepartnerschappentabel niet gevonden",
+    "federation_transactions_not_found": "Federatietransactiestabel niet gevonden",
+    "federation_audit_log_not_found": "Federatieauditlogtabel niet gevonden",
+    "export_failed": "Exporteren van gegevens mislukt",
+    "api_key_shown_once_warning": "Deze sleutel wordt EENMAAL weergegeven. Sla hem veilig op — hij kan niet opnieuw worden opgehaald."
+  },
+  "admin_feed": {
+    "item_hidden": "Item verborgen",
+    "item_deleted": "Item verwijderd"
+  },
+  "admin_gamification": {
+    "badge_recheck_completed": "Badge-hercontrole voltooid voor :count gebruikers"
+  },
+  "admin_groups": {
+    "rule_not_found": "Regel niet gevonden",
+    "group_archived": "Groep gearchiveerd",
+    "group_unarchived": "Groep gedearchiveerd",
+    "ownership_transferred": "Eigendom overgedragen",
+    "groups_merged": "Groepen succesvol samengevoegd",
+    "group_cloned": "Groep gekloond",
+    "tag_deleted": "Tag verwijderd",
+    "collection_updated": "Bijgewerkt",
+    "collection_deleted": "Verwijderd",
+    "collection_groups_set": "Groepen ingesteld",
+    "rule_deleted": "Regel verwijderd"
+  },
+  "admin_impact_report": {
+    "config_updated": "Configuratie bijgewerkt"
+  },
+  "admin_marketplace": {
+    "feature_not_enabled": "Marktplaatsfunctie is niet ingeschakeld voor deze tenant.",
+    "listing_approved": "Advertentie goedgekeurd.",
+    "listing_rejected": "Advertentie afgewezen.",
+    "listing_removed": "Advertentie verwijderd.",
+    "only_business_sellers_verified": "Alleen zakelijke verkopers kunnen worden geverifieerd.",
+    "seller_verified": "Verkoper geverifieerd.",
+    "seller_suspended": "Verkoper gesuspendeerd en alle advertenties gedeactiveerd.",
+    "report_acknowledged": "Rapport erkend.",
+    "report_resolved": "Rapport opgelost.",
+    "report_appeal_resolved": "Beroep tegen rapport opgelost.",
+    "dispute_resolved": "Geschil opgelost."
+  },
+  "admin_newsletter": {
+    "newsletter_queued": "Nieuwsbrief in de wachtrij gezet voor :count ontvangers",
+    "test_email_sent": "Test-e-mail verzonden naar :email"
+  },
+  "admin_onboarding": {
+    "settings_updated": "Onboardinginstellingen bijgewerkt",
+    "preset_applied": "Preset :preset toegepast",
+    "preset_jurisdiction_mismatch": "De voorinstelling :preset is toegepast, maar het veiligheidsrechtsgebied van deze community is ingesteld op :jurisdiction. Opties die screening vereisen, kunnen pas worden vervuld wanneer beide overeenkomen."
+  },
+  "admin_reports": {
+    "report_resolved": "Rapport opgelost",
+    "report_dismissed": "Rapport gesloten"
+  },
+  "admin_reviews": {
+    "review_flagged": "Beoordeling gemarkeerd voor aandacht",
+    "review_hidden": "Beoordeling verborgen",
+    "review_deleted": "Beoordeling verwijderd"
+  },
+  "admin_safeguarding": {
+    "guardian_assigned_notification": "U bent aangesteld als voogd voor de beveiliging van :name",
+    "ward_assigned_notification": ":guardian is aangesteld als uw beveiligingsondersteuningscontact. U kunt toestemming geven of intrekken in uw instellingen.",
+    "a_member": "een lid",
+    "a_coordinator": "Een communitycoördinator"
+  },
+  "admin_safeguarding_options": {
+    "option_updated": "Optie bijgewerkt",
+    "option_deactivated": "Optie gedeactiveerd",
+    "options_reordered": "Opties opnieuw geordend"
+  },
+  "admin_super": {
+    "tenant_created": "Tenant ':name' succesvol aangemaakt",
+    "lockdown_activated": "Noodvergrendeling geactiveerd",
+    "lockdown_lifted": "Noodvergrendeling opgeheven"
+  },
+  "admin_tools": {
+    "connection_failed": "Verbinding mislukt",
+    "conversion_queued": "Conversie in de wachtrij gezet",
+    "seed_generation_queued": "Seed-generatie in de wachtrij gezet",
+    "blog_backup_restore_queued": "Blog-back-upherstel in de wachtrij gezet"
+  },
+  "admin_volunteer": {
+    "application_approved": "Aanvraag goedgekeurd",
+    "application_declined": "Aanvraag afgewezen",
+    "org_status_updated": "Organisatiestatus bijgewerkt naar :status",
+    "amount_cannot_be_zero": "Bedrag mag niet nul zijn",
+    "reason_required": "Reden is vereist",
+    "status_must_be_active_or_suspended": "Status moet actief of gesuspendeerd zijn",
+    "status_invalid": "De status moet actief, goedgekeurd, geschorst of afgewezen zijn",
+    "organization_not_found": "Organisatie niet gevonden",
+    "org_status_update_failed": "Organisatiestatus bijwerken mislukt"
+  },
+  "admin_wallet_grant": {
+    "credits_granted": "Kredieten succesvol toegekend"
+  },
+  "ai_chat": {
+    "not_available": "AI-chat is momenteel niet beschikbaar. Probeer het later opnieuw.",
+    "connection_test_failed": "Verbindingstest mislukt"
+  },
+  "app": {
+    "log_recorded": "Log vastgelegd"
+  },
+  "auth": {
+    "two_factor_required": "Tweefactorauthenticatie vereist",
+    "two_factor_setup_required": "Tweefactorauthenticatie is vereist voor beheerdersaccounts. Stel 2FA in om door te gaan.",
+    "logged_out": "Succesvol uitgelogd",
+    "session_refreshed": "Sessie vernieuwd",
+    "session_restored": "Sessie hersteld vanuit token",
+    "session_deprecated": "Dit eindpunt is verouderd. Mobiele apps moeten Bearer-tokens rechtstreeks gebruiken zonder sessiesynchronisatie.",
+    "tokens_revoked": "Alle vernieuwingstokens zijn ingetrokken. U moet op alle apparaten opnieuw inloggen."
+  },
+  "block_user": {
+    "user_blocked": "Gebruiker geblokkeerd",
+    "user_unblocked": "Gebruiker gedeblokkeerd",
+    "user_not_blocked": "Gebruiker was niet geblokkeerd"
+  },
+  "cookie_consent": {
+    "preferences_updated": "Toestemmingsvoorkeuren succesvol bijgewerkt",
+    "consent_withdrawn": "Toestemming succesvol ingetrokken"
+  },
+  "email_verification": {
+    "already_verified": "E-mailadres is al geverifieerd",
+    "verified_successfully": "E-mailadres succesvol geverifieerd",
+    "verification_sent": "Verificatie-e-mail verzonden",
+    "generic_resend": "Als er een account met dat e-mailadres bestaat en het niet geverifieerd is, is een nieuwe verificatie-e-mail verzonden."
+  },
+  "endorsement": {
+    "endorsement_added": "Aanbeveling toegevoegd",
+    "endorsement_removed": "Aanbeveling verwijderd"
+  },
+  "federation": {
+    "already_opted_in": "Al aangemeld voor federatie.",
+    "enabled_successfully": "Federatie succesvol ingeschakeld.",
+    "disabled_successfully": "Federatie succesvol uitgeschakeld.",
+    "signature_verified": "Handtekening succesvol geverifieerd",
+    "settings_updated": "Instellingen succesvol bijgewerkt.",
+    "webhook_service_unavailable": "Service tijdelijk niet beschikbaar"
+  },
+  "federation_v2": {
+    "receiver_id_required": "receiver_id is vereist.",
+    "receiver_tenant_id_required": "receiver_tenant_id is vereist.",
+    "message_body_required": "Berichttekst is vereist.",
+    "subject_max_length": "Onderwerp mag niet meer dan 255 tekens bevatten.",
+    "body_max_length": "Berichttekst mag niet meer dan 10.000 tekens bevatten."
+  },
+  "feed_social": {
+    "post_unshared": "Post niet meer gedeeld"
+  },
+  "gamification": {
+    "invalid_leaderboard_type": "Ongeldig ranglijsttype",
+    "showcase_updated": "Showcase bijgewerkt",
+    "score_recalculation_initiated": "Scoreherberekening gestart"
+  },
+  "gdpr": {
+    "request_submitted": "Uw verzoek is ingediend en wordt binnen 30 dagen verwerkt.",
+    "account_deletion_submitted": "Uw accountverwijderingsverzoek is ingediend. U ontvangt een bevestiging via e-mail."
+  },
+  "group_challenge": {
+    "challenge_deleted": "Uitdaging verwijderd",
+    "challenge_cancelled": "Uitdaging geannuleerd",
+    "challenge_immutable": "Voltooide of beloonde uitdagingen kunnen niet worden geannuleerd"
+  },
+  "group_chatroom": {
+    "default_name": "Algemeen",
+    "default_description": "Standaard groepschat"
+  },
+  "group_exchange": {
+    "exchange_cancelled": "Uitwisseling geannuleerd",
+    "exchange_completed": "Uitwisseling succesvol voltooid"
+  },
+  "group_files": {
+    "file_deleted": "Bestand verwijderd"
+  },
+  "group_invite": {
+    "invite_revoked": "Uitnodiging ingetrokken"
+  },
+  "contact_form": {
+    "sent_successfully": "Bericht succesvol verzonden.",
+    "received_fallback": "Bericht ontvangen. We nemen binnenkort contact met u op."
+  }
 }

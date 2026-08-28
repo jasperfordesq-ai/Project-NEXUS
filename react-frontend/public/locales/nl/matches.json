@@ -42,7 +42,9 @@
     "paused_desc": "U ontvangt geen nieuwe matchsuggesties of -meldingen totdat u het matchen in uw voorkeuren hervat.",
     "mutual_title": "Het tonen van onderlinge matches",
     "mutual_desc": "Deze matches gaan beide kanten op: jij past goed bij hen, en zij passen goed bij jou.",
-    "show_all": "Toon alle matches"
+    "show_all": "Toon alle matches",
+    "safeguarding_unavailable_title": "Sommige matches zijn verborgen",
+    "safeguarding_unavailable_desc": "De veiligheidsinstellingen van uw community zijn nog niet voltooid. Matches met beschermde leden worden voor ieders veiligheid verborgen."
   },
   "card": {
     "distance_km": "{{value}} km",
@@ -92,7 +94,9 @@
     "no_listings_title": "Overeenkomende werken uit uw aanbiedingen",
     "no_listings_description": "Maak een vermelding om mensen, groepen en mogelijkheden te vinden die overeenkomen met wat u aanbiedt of nodig heeft.",
     "create_listing_cta": "Maak een vermelding",
-    "adjust_preferences_cta": "Matchvoorkeuren aanpassen"
+    "adjust_preferences_cta": "Matchvoorkeuren aanpassen",
+    "safeguarding_unavailable_title": "Sommige matches kunnen nog niet worden getoond",
+    "safeguarding_unavailable_description": "De veiligheidsinstellingen van uw community zijn nog niet voltooid. Matches met beschermde leden worden voor ieders veiligheid verborgen. Kom terug zodra uw communityteam dit heeft afgerond."
   },
   "preferences": {
     "page_title": "Matchvoorkeuren",

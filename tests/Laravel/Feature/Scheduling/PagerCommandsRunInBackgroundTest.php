@@ -44,6 +44,7 @@ class PagerCommandsRunInBackgroundTest extends TestCase
             'stripe:check-stuck-webhooks',
             'gdpr:check-overdue-requests',
             'backup:verify',
+            'safeguarding:check-policy-health',
         ];
 
         foreach ($monitors as $command) {

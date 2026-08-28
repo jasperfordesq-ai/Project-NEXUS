@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
 use App\Services\OnboardingConfigService;
+use App\Services\SafeguardingJurisdictionService;
 use App\Services\SafeguardingPreferenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -212,10 +213,47 @@ class AdminOnboardingConfigController extends BaseApiController
             [$tenantId, $presetKey, $adminId]
         );
 
+        // Keep the safeguarding jurisdiction in step with the preset. These
+        // were two independent "country" settings: the vetting-policy screen
+        // guards option/jurisdiction agreement, but this endpoint installed
+        // vetted-interaction options with no jurisdiction check — so a tenant
+        // could look configured (country_preset set) while the contact gate
+        // stayed permanently UNAVAILABLE and silently emptied matches
+        // (Sentry 134069538). Preset keys are jurisdiction codes, so when the
+        // matching jurisdiction can carry a contact policy and none is
+        // configured yet, configure it here; when a DIFFERENT one is already
+        // configured, leave it alone and tell the admin about the mismatch.
+        $jurisdictionConfigured = false;
+        $jurisdictionWarning = null;
+        $jurisdictions = app(SafeguardingJurisdictionService::class);
+        $policy = $jurisdictions->getPolicyUncached($tenantId);
+        $presetJurisdictions = $jurisdictions->availableJurisdictions();
+        $presetJurisdiction = null;
+        foreach ($presetJurisdictions as $candidate) {
+            if (($candidate['code'] ?? null) === $presetKey) {
+                $presetJurisdiction = $candidate;
+                break;
+            }
+        }
+
+        if ($presetJurisdiction !== null && ! empty($presetJurisdiction['contact_policy_available'])) {
+            if (! $policy['configured']) {
+                $jurisdictions->configure($tenantId, $presetKey, $adminId);
+                $jurisdictionConfigured = true;
+            } elseif ($policy['jurisdiction'] !== $presetKey) {
+                $jurisdictionWarning = __('api_controllers_1.admin_onboarding.preset_jurisdiction_mismatch', [
+                    'preset' => $presetKey,
+                    'jurisdiction' => $policy['jurisdiction'],
+                ]);
+            }
+        }
+
         return $this->respondWithData([
             'message' => __('api_controllers_1.admin_onboarding.preset_applied', ['preset' => $presetKey]),
             'options_created' => $created,
             'options_skipped_existing' => count($created) === 0 ? 'All options already exist — no changes made' : null,
+            'jurisdiction_configured' => $jurisdictionConfigured,
+            'jurisdiction_warning' => $jurisdictionWarning,
         ]);
     }
 }

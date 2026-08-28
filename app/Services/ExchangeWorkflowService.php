@@ -849,11 +849,7 @@ class ExchangeWorkflowService
 
             if (!empty($riskTag->dbs_required)) {
                 $policy = app(SafeguardingJurisdictionService::class)->getPolicy($tenantId);
-                if (! $policy['configured']
-                    || ! $policy['contact_policy_available']
-                    || $policy['scheme_code'] === null
-                    || $policy['attestation_code'] === null
-                    || $policy['policy_version'] === null) {
+                if (! SafeguardingJurisdictionService::isContactGateUsable($policy)) {
                     $violations[] = __('safeguarding.errors.compliance_policy_unavailable');
                 } else {
                     $hasVetting = app(MemberVettingAttestationService::class)->hasConfirmedAttestation(

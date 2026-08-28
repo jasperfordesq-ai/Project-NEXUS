@@ -39,7 +39,9 @@
     "paused_desc": "Non riceverai nuovi suggerimenti o notifiche di abbinamento finché non riprenderai l'abbinamento nelle tue preferenze.",
     "mutual_title": "Mostra corrispondenze reciproche",
     "mutual_desc": "Queste corrispondenze funzionano in entrambe le direzioni: tu sei adatto a loro e loro sono adatti a te.",
-    "show_all": "Mostra tutte le corrispondenze"
+    "show_all": "Mostra tutte le corrispondenze",
+    "safeguarding_unavailable_title": "Alcune corrispondenze sono nascoste",
+    "safeguarding_unavailable_desc": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti."
   },
   "card": {
     "mutual": "Corrispondenza reciproca",
@@ -89,7 +91,9 @@
     "no_listings_title": "La corrispondenza funziona dalle tue inserzioni",
     "no_listings_description": "Crea un elenco per iniziare a trovare persone, gruppi e opportunità che corrispondono a ciò che offri o di cui hai bisogno.",
     "create_listing_cta": "Crea un elenco",
-    "adjust_preferences_cta": "Modifica le preferenze di corrispondenza"
+    "adjust_preferences_cta": "Modifica le preferenze di corrispondenza",
+    "safeguarding_unavailable_title": "Alcune corrispondenze non possono ancora essere mostrate",
+    "safeguarding_unavailable_description": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti. Riprova quando il team della tua comunità l’avrà completata."
   },
   "preferences": {
     "subtitle": "Controlla il modo in cui Smart Matching trova e ti avvisa sulle connessioni.",

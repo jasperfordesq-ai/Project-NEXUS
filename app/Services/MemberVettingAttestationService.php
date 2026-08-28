@@ -388,7 +388,7 @@ class MemberVettingAttestationService
     public function getMemberStatus(int $tenantId, int $memberId): ?array
     {
         $policy = $this->jurisdictions->getPolicy($tenantId);
-        if (! $policy['configured'] || ! $policy['contact_policy_available'] || $policy['attestation_code'] === null) {
+        if (! SafeguardingJurisdictionService::isContactGateUsable($policy)) {
             return [
                 'policy' => $policy,
                 'decision' => 'not_confirmed',
@@ -720,10 +720,7 @@ class MemberVettingAttestationService
         if (! $policy['configured']) {
             throw new SafeguardingPolicyException('SAFEGUARDING_JURISDICTION_REQUIRED');
         }
-        if (! $policy['contact_policy_available']) {
-            throw new SafeguardingPolicyException('SAFEGUARDING_POLICY_UNAVAILABLE');
-        }
-        if ($policy['scheme_code'] === null || $policy['attestation_code'] === null || $policy['policy_version'] === null) {
+        if (! SafeguardingJurisdictionService::isContactGateUsable($policy)) {
             throw new SafeguardingPolicyException('SAFEGUARDING_POLICY_UNAVAILABLE');
         }
 

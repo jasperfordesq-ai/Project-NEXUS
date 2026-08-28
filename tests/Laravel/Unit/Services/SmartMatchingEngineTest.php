@@ -754,6 +754,59 @@ class SmartMatchingEngineTest extends TestCase
         $this->assertSame([], $result);
     }
 
+    /**
+     * An UNAVAILABLE drop is the gate failing closed, not protecting anyone —
+     * the run must be marked degraded so the API can tell the member why the
+     * list is short instead of showing a bare empty state (Sentry 134069538).
+     */
+    public function test_unavailable_drop_marks_the_run_degraded_for_the_member(): void
+    {
+        $this->bindSafeguardingDecisions([10 => SafeguardingInteractionDecision::UNAVAILABLE]);
+        $this->engine->filterCandidatesByVettingRequirements([['id' => 1, 'user_id' => 10]], 42);
+
+        $meta = ['degraded' => false, 'degraded_reason' => null];
+        $this->applyVettingMeta($meta);
+
+        $this->assertTrue($meta['degraded']);
+        $this->assertSame('safeguarding_policy_unavailable', $meta['degraded_reason']);
+    }
+
+    /**
+     * A DENY drop is the feature working as designed and must NOT surface as
+     * degradation — advertising who is safeguarded would defeat the point.
+     */
+    public function test_deny_drop_does_not_mark_the_run_degraded(): void
+    {
+        $this->bindSafeguardingDecisions([10 => SafeguardingInteractionDecision::DENY]);
+        $this->engine->filterCandidatesByVettingRequirements([['id' => 1, 'user_id' => 10]], 42);
+
+        $meta = ['degraded' => false, 'degraded_reason' => null];
+        $this->applyVettingMeta($meta);
+
+        $this->assertFalse($meta['degraded']);
+        $this->assertNull($meta['degraded_reason']);
+    }
+
+    public function test_existing_degraded_reason_keeps_precedence_over_vetting_unavailability(): void
+    {
+        $this->bindSafeguardingDecisions([10 => SafeguardingInteractionDecision::UNAVAILABLE]);
+        $this->engine->filterCandidatesByVettingRequirements([['id' => 1, 'user_id' => 10]], 42);
+
+        $meta = ['degraded' => true, 'degraded_reason' => 'no_coordinates'];
+        $this->applyVettingMeta($meta);
+
+        $this->assertSame('no_coordinates', $meta['degraded_reason']);
+    }
+
+    /** @param array<string, mixed> $meta */
+    private function applyVettingMeta(array &$meta): void
+    {
+        $method = new \ReflectionMethod($this->engine, 'applyVettingUnavailabilityToMeta');
+        $method->setAccessible(true);
+        $args = [&$meta];
+        $method->invokeArgs($this->engine, $args);
+    }
+
     public function test_filter_mixed_candidates_drops_only_flagged_without_vetting(): void
     {
         $candidates = [

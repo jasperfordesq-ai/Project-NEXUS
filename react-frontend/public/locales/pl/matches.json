@@ -42,7 +42,9 @@
     "paused_desc": "Nie będziesz otrzymywać nowych sugestii ani powiadomień dotyczących dopasowań, dopóki nie wznowisz dopasowywania w swoich preferencjach.",
     "mutual_title": "Wyświetlanie wspólnych dopasowań",
     "mutual_desc": "Te dopasowania działają w obie strony — świetnie do nich pasujesz, a one świetnie dopasowują się do Ciebie.",
-    "show_all": "Pokaż wszystkie dopasowania"
+    "show_all": "Pokaż wszystkie dopasowania",
+    "safeguarding_unavailable_title": "Niektóre dopasowania są ukryte",
+    "safeguarding_unavailable_desc": "Konfiguracja ochrony w Twojej społeczności nie została ukończona, dlatego dopasowania z udziałem chronionych członków są ukryte dla bezpieczeństwa wszystkich."
   },
   "card": {
     "distance_km": "{{value}} km",
@@ -92,7 +94,9 @@
     "no_listings_title": "Pasujące prace z Twoich ofert",
     "no_listings_description": "Utwórz listę, aby rozpocząć wyszukiwanie osób, grup i możliwości pasujących do Twojej oferty lub potrzeb.",
     "create_listing_cta": "Utwórz listę",
-    "adjust_preferences_cta": "Dostosuj preferencje dopasowania"
+    "adjust_preferences_cta": "Dostosuj preferencje dopasowania",
+    "safeguarding_unavailable_title": "Niektórych dopasowań nie można jeszcze pokazać",
+    "safeguarding_unavailable_description": "Konfiguracja ochrony w Twojej społeczności nie została ukończona, dlatego dopasowania z udziałem chronionych członków są ukryte dla bezpieczeństwa wszystkich. Wróć, gdy zespół Twojej społeczności ją ukończy."
   },
   "preferences": {
     "page_title": "Preferencje dopasowania",

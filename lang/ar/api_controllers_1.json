@@ -1,245 +1,246 @@
 {
-    "admin_analytics_reports": {
-        "members_marked_notified": "تم تحديد :count عضو/أعضاء كمُبلَّغين"
-    },
-    "admin_cron": {
-        "log_not_found": "السجل غير موجود",
-        "deleted_log_entries": "تم حذف :count إدخال/إدخالات من السجل"
-    },
-    "admin_enterprise": {
-        "breach_reported": "تم الإبلاغ عن الاختراق بنجاح",
-        "gdpr_request_created": "تم إنشاء طلب اللائحة العامة لحماية البيانات بنجاح",
-        "gdpr_request_create_failed": "فشل إنشاء طلب اللائحة العامة لحماية البيانات",
-        "data_export_generated": "تم إنشاء تصدير البيانات بنجاح",
-        "data_export_failed": "فشل إنشاء تصدير البيانات",
-        "dpa_notification_recorded": "تم تسجيل إشعار هيئة حماية البيانات بنجاح",
-        "dpa_notification_failed": "فشل تسجيل إشعار هيئة حماية البيانات",
-        "log_file_cleared": "تم مسح ملف السجل بنجاح",
-        "log_file_only_allowed": "يُسمح بملفات .log فقط",
-        "log_file_not_found": "ملف السجل غير موجود",
-        "log_file_clear_failed": "فشل مسح ملف السجل",
-        "secret_rotation_requires_ssh": "تدوير الأسرار يتطلب وصولاً إلى الخادم. استخدم SSH لتدوير الأسرار في ملف .env.",
-        "secret_deletion_requires_ssh": "حذف الأسرار يتطلب وصولاً إلى الخادم. استخدم SSH لحذف الأسرار من ملف .env.",
-        "config_reset_failed": "فشل إعادة تعيين الإعدادات",
-        "gdpr_request_not_found": "طلب اللائحة العامة لحماية البيانات غير موجود",
-        "gdpr_request_fetch_failed": "فشل جلب طلب اللائحة العامة لحماية البيانات",
-        "user_id_required": "معرّف المستخدم مطلوب",
-        "assigned_to_required": "assigned_to (معرّف المستخدم) مطلوب",
-        "gdpr_request_assign_failed": "فشل تعيين طلب اللائحة العامة لحماية البيانات",
-        "note_text_required": "نص الملاحظة مطلوب",
-        "gdpr_request_note_failed": "فشل إضافة ملاحظة إلى طلب اللائحة العامة لحماية البيانات",
-        "slug_and_name_required": "المعرّف المختصر والاسم مطلوبان",
-        "consent_type_create_failed": "فشل إنشاء نوع الموافقة",
-        "no_fields_to_update": "لا توجد حقول للتحديث",
-        "consent_type_not_found": "نوع الموافقة غير موجود",
-        "consent_type_update_failed": "فشل تحديث نوع الموافقة",
-        "consent_type_delete_failed": "فشل حذف نوع الموافقة",
-        "breach_record_not_found": "سجل الاختراق غير موجود",
-        "breach_record_fetch_failed": "فشل جلب سجل الاختراق",
-        "breach_record_update_failed": "فشل تحديث سجل الاختراق",
-        "invalid_request_type": "نوع الطلب غير صالح. يجب أن يكون أحد: :types",
-        "invalid_log_filename": "اسم الملف غير صالح",
-        "log_file_read_failed": "فشل قراءة ملف السجل",
-        "feature_key_required": "المفتاح مطلوب",
-        "feature_type_invalid": "يجب أن يكون النوع \"feature\" أو \"module\"",
-        "feature_flag_update_failed": "فشل تحديث علامة الميزة"
-    },
-    "admin_federation": {
-        "partnership_request_failed": "فشل إرسال طلب الشراكة",
-        "partnership_detail_failed": "فشل تحميل تفاصيل الشراكة",
-        "counter_propose_failed": "فشل العرض المضاد",
-        "counter_proposal_send_failed": "فشل إرسال العرض المضاد",
-        "permissions_update_failed": "فشل تحديث الأذونات",
-        "partnership_permissions_update_failed": "فشل تحديث أذونات الشراكة",
-        "api_key_name_required": "الاسم مطلوب",
-        "api_keys_table_not_configured": "جدول مفاتيح API للاتحاد غير مُهيَّأ",
-        "api_key_create_failed": "فشل إنشاء مفتاح API",
-        "api_key_invalid_scope": "نطاق(ات) اتحاد غير معروف: :scopes",
-        "api_key_privileged_scope_forbidden": "يمكن فقط لمسؤول المنصة الأعلى إصدار مفاتيح اتحاد ذات صلاحيات الكتابة أو الإدارة.",
-        "api_key_not_found": "مفتاح API غير موجود",
-        "api_key_already_revoked": "مفتاح API تم إلغاؤه بالفعل",
-        "api_key_revoke_failed": "فشل إلغاء مفتاح API",
-        "max_topics_exceeded": "الحد الأقصى المسموح به 10 مواضيع.",
-        "invalid_export_type": "نوع التصدير غير صالح. المسموح به: :types",
-        "federation_user_settings_not_found": "جدول إعدادات مستخدم الاتحاد غير موجود",
-        "federation_partnerships_not_found": "جدول شراكات الاتحاد غير موجود",
-        "federation_transactions_not_found": "جدول معاملات الاتحاد غير موجود",
-        "federation_audit_log_not_found": "جدول سجل تدقيق الاتحاد غير موجود",
-        "export_failed": "فشل تصدير البيانات",
-        "api_key_shown_once_warning": "سيُعرض هذا المفتاح مرة واحدة فقط. احفظه في مكان آمن — لن يمكن استرجاعه مجدداً."
-    },
-    "admin_feed": {
-        "item_hidden": "تم إخفاء العنصر",
-        "item_deleted": "تم حذف العنصر"
-    },
-    "admin_gamification": {
-        "badge_recheck_completed": "اكتملت إعادة فحص الشارة لـ :count مستخدم/مستخدمين"
-    },
-    "admin_groups": {
-        "rule_not_found": "القاعدة غير موجودة",
-        "group_archived": "تم أرشفة المجموعة",
-        "group_unarchived": "تم إلغاء أرشفة المجموعة",
-        "ownership_transferred": "تم نقل الملكية",
-        "groups_merged": "تم دمج المجموعات بنجاح",
-        "group_cloned": "تم استنساخ المجموعة",
-        "tag_deleted": "تم حذف العلامة",
-        "collection_updated": "تم التحديث",
-        "collection_deleted": "تم الحذف",
-        "collection_groups_set": "تم تعيين المجموعات",
-        "rule_deleted": "تم حذف القاعدة"
-    },
-    "admin_impact_report": {
-        "config_updated": "تم تحديث الإعدادات"
-    },
-    "admin_marketplace": {
-        "feature_not_enabled": "ميزة السوق غير مفعّلة لهذا المستأجر.",
-        "listing_approved": "تمت الموافقة على الإعلان.",
-        "listing_rejected": "تم رفض الإعلان.",
-        "listing_removed": "تم إزالة الإعلان.",
-        "only_business_sellers_verified": "يمكن التحقق من البائعين التجاريين فقط.",
-        "seller_verified": "تم التحقق من البائع.",
-        "seller_suspended": "تم تعليق البائع وتعطيل جميع الإعلانات.",
-        "report_acknowledged": "تم الإقرار بالتقرير.",
-        "report_resolved": "تم حل التقرير.",
-        "report_appeal_resolved": "تم حل استئناف التقرير.",
-        "dispute_resolved": "تم حل النزاع."
-    },
-    "admin_newsletter": {
-        "newsletter_queued": "تمت إضافة النشرة الإخبارية إلى قائمة الانتظار لـ :count مستلم/مستلمين",
-        "test_email_sent": "تم إرسال البريد الإلكتروني التجريبي إلى :email"
-    },
-    "admin_onboarding": {
-        "settings_updated": "تم تحديث إعدادات التأهيل",
-        "preset_applied": "تم تطبيق الإعداد المسبق :preset"
-    },
-    "admin_reports": {
-        "report_resolved": "تم حل التقرير",
-        "report_dismissed": "تم رفض التقرير"
-    },
-    "admin_reviews": {
-        "review_flagged": "تم وضع علامة على التقييم للانتباه",
-        "review_hidden": "تم إخفاء التقييم",
-        "review_deleted": "تم حذف التقييم"
-    },
-    "admin_safeguarding": {
-        "guardian_assigned_notification": "لقد تم تعيينك وصياً لحماية :name",
-        "ward_assigned_notification": "تم تعيين :guardian كجهة اتصال دعم الحماية الخاصة بك. يمكنك منح الإذن أو سحبه في الإعدادات.",
-        "a_member": "عضو",
-        "a_coordinator": "منسق مجتمع"
-    },
-    "admin_safeguarding_options": {
-        "option_updated": "تم تحديث الخيار",
-        "option_deactivated": "تم تعطيل الخيار",
-        "options_reordered": "تمت إعادة ترتيب الخيارات"
-    },
-    "admin_super": {
-        "tenant_created": "تم إنشاء المستأجر ':name' بنجاح",
-        "lockdown_activated": "تم تفعيل الإغلاق الطارئ",
-        "lockdown_lifted": "تم رفع الإغلاق الطارئ"
-    },
-    "admin_tools": {
-        "connection_failed": "فشل الاتصال",
-        "conversion_queued": "تمت إضافة التحويل إلى قائمة الانتظار",
-        "seed_generation_queued": "تمت إضافة توليد البيانات التجريبية إلى قائمة الانتظار",
-        "blog_backup_restore_queued": "تمت إضافة استعادة النسخة الاحتياطية للمدونة إلى قائمة الانتظار"
-    },
-    "admin_volunteer": {
-        "application_approved": "تمت الموافقة على الطلب",
-        "application_declined": "تم رفض الطلب",
-        "org_status_updated": "تم تحديث حالة المنظمة إلى :status",
-        "amount_cannot_be_zero": "لا يمكن أن يكون المبلغ صفراً",
-        "reason_required": "السبب مطلوب",
-        "status_must_be_active_or_suspended": "يجب أن تكون الحالة نشطة أو معلّقة",
-        "status_invalid": "يجب أن تكون الحالة نشطة أو معتمدة أو معلّقة أو مرفوضة",
-        "organization_not_found": "المنظمة غير موجودة",
-        "org_status_update_failed": "فشل تحديث حالة المنظمة"
-    },
-    "admin_wallet_grant": {
-        "credits_granted": "تم منح الاعتمادات بنجاح"
-    },
-    "ai_chat": {
-        "not_available": "دردشة الذكاء الاصطناعي غير متاحة حالياً. يرجى المحاولة مرة أخرى لاحقاً.",
-        "connection_test_failed": "فشل اختبار الاتصال"
-    },
-    "app": {
-        "log_recorded": "تم تسجيل السجل"
-    },
-    "auth": {
-        "two_factor_required": "المصادقة الثنائية مطلوبة",
-        "two_factor_setup_required": "المصادقة الثنائية مطلوبة لحسابات المسؤولين. يرجى إعداد 2FA للمتابعة.",
-        "logged_out": "تم تسجيل الخروج بنجاح",
-        "session_refreshed": "تم تحديث الجلسة",
-        "session_restored": "تم استعادة الجلسة من الرمز المميز",
-        "session_deprecated": "هذه النقطة الطرفية مهملة. يجب على تطبيقات الجوال استخدام رموز Bearer مباشرةً دون مزامنة الجلسة.",
-        "tokens_revoked": "تم إلغاء جميع رموز التحديث. يجب عليك تسجيل الدخول مرة أخرى على جميع الأجهزة."
-    },
-    "block_user": {
-        "user_blocked": "تم حظر المستخدم",
-        "user_unblocked": "تم إلغاء حظر المستخدم",
-        "user_not_blocked": "لم يكن المستخدم محظوراً"
-    },
-    "cookie_consent": {
-        "preferences_updated": "تم تحديث تفضيلات الموافقة بنجاح",
-        "consent_withdrawn": "تم سحب الموافقة بنجاح"
-    },
-    "email_verification": {
-        "already_verified": "عنوان البريد الإلكتروني محقق بالفعل",
-        "verified_successfully": "تم التحقق من عنوان البريد الإلكتروني بنجاح",
-        "verification_sent": "تم إرسال بريد التحقق",
-        "generic_resend": "إذا كان هناك حساب بهذا البريد الإلكتروني وغير محقق، فقد تم إرسال بريد تحقق جديد."
-    },
-    "endorsement": {
-        "endorsement_added": "تمت إضافة التوصية",
-        "endorsement_removed": "تمت إزالة التوصية"
-    },
-    "federation": {
-        "already_opted_in": "تم الانضمام إلى الاتحاد بالفعل.",
-        "enabled_successfully": "تم تفعيل الاتحاد بنجاح.",
-        "disabled_successfully": "تم تعطيل الاتحاد بنجاح.",
-        "signature_verified": "تم التحقق من التوقيع بنجاح",
-        "settings_updated": "تم تحديث الإعدادات بنجاح.",
-        "webhook_service_unavailable": "الخدمة غير متاحة مؤقتاً"
-    },
-    "federation_v2": {
-        "receiver_id_required": "receiver_id مطلوب.",
-        "receiver_tenant_id_required": "receiver_tenant_id مطلوب.",
-        "message_body_required": "نص الرسالة مطلوب.",
-        "subject_max_length": "يجب ألا يتجاوز الموضوع 255 حرفاً.",
-        "body_max_length": "يجب ألا يتجاوز نص الرسالة 10,000 حرف."
-    },
-    "feed_social": {
-        "post_unshared": "تم إلغاء مشاركة المنشور"
-    },
-    "gamification": {
-        "invalid_leaderboard_type": "نوع لوحة الصدارة غير صالح",
-        "showcase_updated": "تم تحديث العرض التقديمي",
-        "score_recalculation_initiated": "تم بدء إعادة حساب النتائج"
-    },
-    "gdpr": {
-        "request_submitted": "تم تقديم طلبك وسيتم معالجته خلال 30 يوماً.",
-        "account_deletion_submitted": "تم تقديم طلب حذف حسابك. ستصلك رسالة تأكيد عبر البريد الإلكتروني."
-    },
-    "group_challenge": {
-        "challenge_deleted": "تم حذف التحدي",
-        "challenge_cancelled": "تم إلغاء التحدي",
-        "challenge_immutable": "لا يمكن إلغاء التحديات المكتملة أو التي تم منح مكافآتها"
-    },
-    "group_chatroom": {
-        "default_name": "عام",
-        "default_description": "غرفة الدردشة الافتراضية للمجموعة"
-    },
-    "group_exchange": {
-        "exchange_cancelled": "تم إلغاء التبادل",
-        "exchange_completed": "اكتمل التبادل بنجاح"
-    },
-    "group_files": {
-        "file_deleted": "تم حذف الملف"
-    },
-    "group_invite": {
-        "invite_revoked": "تم إلغاء الدعوة"
-    },
-    "contact_form": {
-        "sent_successfully": "تم إرسال الرسالة بنجاح.",
-        "received_fallback": "تم استلام الرسالة. سنتواصل معك قريباً."
-    }
+  "admin_analytics_reports": {
+    "members_marked_notified": "تم تحديد :count عضو/أعضاء كمُبلَّغين"
+  },
+  "admin_cron": {
+    "log_not_found": "السجل غير موجود",
+    "deleted_log_entries": "تم حذف :count إدخال/إدخالات من السجل"
+  },
+  "admin_enterprise": {
+    "breach_reported": "تم الإبلاغ عن الاختراق بنجاح",
+    "gdpr_request_created": "تم إنشاء طلب اللائحة العامة لحماية البيانات بنجاح",
+    "gdpr_request_create_failed": "فشل إنشاء طلب اللائحة العامة لحماية البيانات",
+    "data_export_generated": "تم إنشاء تصدير البيانات بنجاح",
+    "data_export_failed": "فشل إنشاء تصدير البيانات",
+    "dpa_notification_recorded": "تم تسجيل إشعار هيئة حماية البيانات بنجاح",
+    "dpa_notification_failed": "فشل تسجيل إشعار هيئة حماية البيانات",
+    "log_file_cleared": "تم مسح ملف السجل بنجاح",
+    "log_file_only_allowed": "يُسمح بملفات .log فقط",
+    "log_file_not_found": "ملف السجل غير موجود",
+    "log_file_clear_failed": "فشل مسح ملف السجل",
+    "secret_rotation_requires_ssh": "تدوير الأسرار يتطلب وصولاً إلى الخادم. استخدم SSH لتدوير الأسرار في ملف .env.",
+    "secret_deletion_requires_ssh": "حذف الأسرار يتطلب وصولاً إلى الخادم. استخدم SSH لحذف الأسرار من ملف .env.",
+    "config_reset_failed": "فشل إعادة تعيين الإعدادات",
+    "gdpr_request_not_found": "طلب اللائحة العامة لحماية البيانات غير موجود",
+    "gdpr_request_fetch_failed": "فشل جلب طلب اللائحة العامة لحماية البيانات",
+    "user_id_required": "معرّف المستخدم مطلوب",
+    "assigned_to_required": "assigned_to (معرّف المستخدم) مطلوب",
+    "gdpr_request_assign_failed": "فشل تعيين طلب اللائحة العامة لحماية البيانات",
+    "note_text_required": "نص الملاحظة مطلوب",
+    "gdpr_request_note_failed": "فشل إضافة ملاحظة إلى طلب اللائحة العامة لحماية البيانات",
+    "slug_and_name_required": "المعرّف المختصر والاسم مطلوبان",
+    "consent_type_create_failed": "فشل إنشاء نوع الموافقة",
+    "no_fields_to_update": "لا توجد حقول للتحديث",
+    "consent_type_not_found": "نوع الموافقة غير موجود",
+    "consent_type_update_failed": "فشل تحديث نوع الموافقة",
+    "consent_type_delete_failed": "فشل حذف نوع الموافقة",
+    "breach_record_not_found": "سجل الاختراق غير موجود",
+    "breach_record_fetch_failed": "فشل جلب سجل الاختراق",
+    "breach_record_update_failed": "فشل تحديث سجل الاختراق",
+    "invalid_request_type": "نوع الطلب غير صالح. يجب أن يكون أحد: :types",
+    "invalid_log_filename": "اسم الملف غير صالح",
+    "log_file_read_failed": "فشل قراءة ملف السجل",
+    "feature_key_required": "المفتاح مطلوب",
+    "feature_type_invalid": "يجب أن يكون النوع \"feature\" أو \"module\"",
+    "feature_flag_update_failed": "فشل تحديث علامة الميزة"
+  },
+  "admin_federation": {
+    "partnership_request_failed": "فشل إرسال طلب الشراكة",
+    "partnership_detail_failed": "فشل تحميل تفاصيل الشراكة",
+    "counter_propose_failed": "فشل العرض المضاد",
+    "counter_proposal_send_failed": "فشل إرسال العرض المضاد",
+    "permissions_update_failed": "فشل تحديث الأذونات",
+    "partnership_permissions_update_failed": "فشل تحديث أذونات الشراكة",
+    "api_key_name_required": "الاسم مطلوب",
+    "api_keys_table_not_configured": "جدول مفاتيح API للاتحاد غير مُهيَّأ",
+    "api_key_create_failed": "فشل إنشاء مفتاح API",
+    "api_key_invalid_scope": "نطاق(ات) اتحاد غير معروف: :scopes",
+    "api_key_privileged_scope_forbidden": "يمكن فقط لمسؤول المنصة الأعلى إصدار مفاتيح اتحاد ذات صلاحيات الكتابة أو الإدارة.",
+    "api_key_not_found": "مفتاح API غير موجود",
+    "api_key_already_revoked": "مفتاح API تم إلغاؤه بالفعل",
+    "api_key_revoke_failed": "فشل إلغاء مفتاح API",
+    "max_topics_exceeded": "الحد الأقصى المسموح به 10 مواضيع.",
+    "invalid_export_type": "نوع التصدير غير صالح. المسموح به: :types",
+    "federation_user_settings_not_found": "جدول إعدادات مستخدم الاتحاد غير موجود",
+    "federation_partnerships_not_found": "جدول شراكات الاتحاد غير موجود",
+    "federation_transactions_not_found": "جدول معاملات الاتحاد غير موجود",
+    "federation_audit_log_not_found": "جدول سجل تدقيق الاتحاد غير موجود",
+    "export_failed": "فشل تصدير البيانات",
+    "api_key_shown_once_warning": "سيُعرض هذا المفتاح مرة واحدة فقط. احفظه في مكان آمن — لن يمكن استرجاعه مجدداً."
+  },
+  "admin_feed": {
+    "item_hidden": "تم إخفاء العنصر",
+    "item_deleted": "تم حذف العنصر"
+  },
+  "admin_gamification": {
+    "badge_recheck_completed": "اكتملت إعادة فحص الشارة لـ :count مستخدم/مستخدمين"
+  },
+  "admin_groups": {
+    "rule_not_found": "القاعدة غير موجودة",
+    "group_archived": "تم أرشفة المجموعة",
+    "group_unarchived": "تم إلغاء أرشفة المجموعة",
+    "ownership_transferred": "تم نقل الملكية",
+    "groups_merged": "تم دمج المجموعات بنجاح",
+    "group_cloned": "تم استنساخ المجموعة",
+    "tag_deleted": "تم حذف العلامة",
+    "collection_updated": "تم التحديث",
+    "collection_deleted": "تم الحذف",
+    "collection_groups_set": "تم تعيين المجموعات",
+    "rule_deleted": "تم حذف القاعدة"
+  },
+  "admin_impact_report": {
+    "config_updated": "تم تحديث الإعدادات"
+  },
+  "admin_marketplace": {
+    "feature_not_enabled": "ميزة السوق غير مفعّلة لهذا المستأجر.",
+    "listing_approved": "تمت الموافقة على الإعلان.",
+    "listing_rejected": "تم رفض الإعلان.",
+    "listing_removed": "تم إزالة الإعلان.",
+    "only_business_sellers_verified": "يمكن التحقق من البائعين التجاريين فقط.",
+    "seller_verified": "تم التحقق من البائع.",
+    "seller_suspended": "تم تعليق البائع وتعطيل جميع الإعلانات.",
+    "report_acknowledged": "تم الإقرار بالتقرير.",
+    "report_resolved": "تم حل التقرير.",
+    "report_appeal_resolved": "تم حل استئناف التقرير.",
+    "dispute_resolved": "تم حل النزاع."
+  },
+  "admin_newsletter": {
+    "newsletter_queued": "تمت إضافة النشرة الإخبارية إلى قائمة الانتظار لـ :count مستلم/مستلمين",
+    "test_email_sent": "تم إرسال البريد الإلكتروني التجريبي إلى :email"
+  },
+  "admin_onboarding": {
+    "settings_updated": "تم تحديث إعدادات التأهيل",
+    "preset_applied": "تم تطبيق الإعداد المسبق :preset",
+    "preset_jurisdiction_mismatch": "تم تطبيق الإعداد المسبق :preset، لكن نطاق الحماية لهذا المجتمع مضبوط على :jurisdiction. لا يمكن استيفاء الخيارات التي تتطلب تدقيقًا حتى يتطابق الاثنان."
+  },
+  "admin_reports": {
+    "report_resolved": "تم حل التقرير",
+    "report_dismissed": "تم رفض التقرير"
+  },
+  "admin_reviews": {
+    "review_flagged": "تم وضع علامة على التقييم للانتباه",
+    "review_hidden": "تم إخفاء التقييم",
+    "review_deleted": "تم حذف التقييم"
+  },
+  "admin_safeguarding": {
+    "guardian_assigned_notification": "لقد تم تعيينك وصياً لحماية :name",
+    "ward_assigned_notification": "تم تعيين :guardian كجهة اتصال دعم الحماية الخاصة بك. يمكنك منح الإذن أو سحبه في الإعدادات.",
+    "a_member": "عضو",
+    "a_coordinator": "منسق مجتمع"
+  },
+  "admin_safeguarding_options": {
+    "option_updated": "تم تحديث الخيار",
+    "option_deactivated": "تم تعطيل الخيار",
+    "options_reordered": "تمت إعادة ترتيب الخيارات"
+  },
+  "admin_super": {
+    "tenant_created": "تم إنشاء المستأجر ':name' بنجاح",
+    "lockdown_activated": "تم تفعيل الإغلاق الطارئ",
+    "lockdown_lifted": "تم رفع الإغلاق الطارئ"
+  },
+  "admin_tools": {
+    "connection_failed": "فشل الاتصال",
+    "conversion_queued": "تمت إضافة التحويل إلى قائمة الانتظار",
+    "seed_generation_queued": "تمت إضافة توليد البيانات التجريبية إلى قائمة الانتظار",
+    "blog_backup_restore_queued": "تمت إضافة استعادة النسخة الاحتياطية للمدونة إلى قائمة الانتظار"
+  },
+  "admin_volunteer": {
+    "application_approved": "تمت الموافقة على الطلب",
+    "application_declined": "تم رفض الطلب",
+    "org_status_updated": "تم تحديث حالة المنظمة إلى :status",
+    "amount_cannot_be_zero": "لا يمكن أن يكون المبلغ صفراً",
+    "reason_required": "السبب مطلوب",
+    "status_must_be_active_or_suspended": "يجب أن تكون الحالة نشطة أو معلّقة",
+    "status_invalid": "يجب أن تكون الحالة نشطة أو معتمدة أو معلّقة أو مرفوضة",
+    "organization_not_found": "المنظمة غير موجودة",
+    "org_status_update_failed": "فشل تحديث حالة المنظمة"
+  },
+  "admin_wallet_grant": {
+    "credits_granted": "تم منح الاعتمادات بنجاح"
+  },
+  "ai_chat": {
+    "not_available": "دردشة الذكاء الاصطناعي غير متاحة حالياً. يرجى المحاولة مرة أخرى لاحقاً.",
+    "connection_test_failed": "فشل اختبار الاتصال"
+  },
+  "app": {
+    "log_recorded": "تم تسجيل السجل"
+  },
+  "auth": {
+    "two_factor_required": "المصادقة الثنائية مطلوبة",
+    "two_factor_setup_required": "المصادقة الثنائية مطلوبة لحسابات المسؤولين. يرجى إعداد 2FA للمتابعة.",
+    "logged_out": "تم تسجيل الخروج بنجاح",
+    "session_refreshed": "تم تحديث الجلسة",
+    "session_restored": "تم استعادة الجلسة من الرمز المميز",
+    "session_deprecated": "هذه النقطة الطرفية مهملة. يجب على تطبيقات الجوال استخدام رموز Bearer مباشرةً دون مزامنة الجلسة.",
+    "tokens_revoked": "تم إلغاء جميع رموز التحديث. يجب عليك تسجيل الدخول مرة أخرى على جميع الأجهزة."
+  },
+  "block_user": {
+    "user_blocked": "تم حظر المستخدم",
+    "user_unblocked": "تم إلغاء حظر المستخدم",
+    "user_not_blocked": "لم يكن المستخدم محظوراً"
+  },
+  "cookie_consent": {
+    "preferences_updated": "تم تحديث تفضيلات الموافقة بنجاح",
+    "consent_withdrawn": "تم سحب الموافقة بنجاح"
+  },
+  "email_verification": {
+    "already_verified": "عنوان البريد الإلكتروني محقق بالفعل",
+    "verified_successfully": "تم التحقق من عنوان البريد الإلكتروني بنجاح",
+    "verification_sent": "تم إرسال بريد التحقق",
+    "generic_resend": "إذا كان هناك حساب بهذا البريد الإلكتروني وغير محقق، فقد تم إرسال بريد تحقق جديد."
+  },
+  "endorsement": {
+    "endorsement_added": "تمت إضافة التوصية",
+    "endorsement_removed": "تمت إزالة التوصية"
+  },
+  "federation": {
+    "already_opted_in": "تم الانضمام إلى الاتحاد بالفعل.",
+    "enabled_successfully": "تم تفعيل الاتحاد بنجاح.",
+    "disabled_successfully": "تم تعطيل الاتحاد بنجاح.",
+    "signature_verified": "تم التحقق من التوقيع بنجاح",
+    "settings_updated": "تم تحديث الإعدادات بنجاح.",
+    "webhook_service_unavailable": "الخدمة غير متاحة مؤقتاً"
+  },
+  "federation_v2": {
+    "receiver_id_required": "receiver_id مطلوب.",
+    "receiver_tenant_id_required": "receiver_tenant_id مطلوب.",
+    "message_body_required": "نص الرسالة مطلوب.",
+    "subject_max_length": "يجب ألا يتجاوز الموضوع 255 حرفاً.",
+    "body_max_length": "يجب ألا يتجاوز نص الرسالة 10,000 حرف."
+  },
+  "feed_social": {
+    "post_unshared": "تم إلغاء مشاركة المنشور"
+  },
+  "gamification": {
+    "invalid_leaderboard_type": "نوع لوحة الصدارة غير صالح",
+    "showcase_updated": "تم تحديث العرض التقديمي",
+    "score_recalculation_initiated": "تم بدء إعادة حساب النتائج"
+  },
+  "gdpr": {
+    "request_submitted": "تم تقديم طلبك وسيتم معالجته خلال 30 يوماً.",
+    "account_deletion_submitted": "تم تقديم طلب حذف حسابك. ستصلك رسالة تأكيد عبر البريد الإلكتروني."
+  },
+  "group_challenge": {
+    "challenge_deleted": "تم حذف التحدي",
+    "challenge_cancelled": "تم إلغاء التحدي",
+    "challenge_immutable": "لا يمكن إلغاء التحديات المكتملة أو التي تم منح مكافآتها"
+  },
+  "group_chatroom": {
+    "default_name": "عام",
+    "default_description": "غرفة الدردشة الافتراضية للمجموعة"
+  },
+  "group_exchange": {
+    "exchange_cancelled": "تم إلغاء التبادل",
+    "exchange_completed": "اكتمل التبادل بنجاح"
+  },
+  "group_files": {
+    "file_deleted": "تم حذف الملف"
+  },
+  "group_invite": {
+    "invite_revoked": "تم إلغاء الدعوة"
+  },
+  "contact_form": {
+    "sent_successfully": "تم إرسال الرسالة بنجاح.",
+    "received_fallback": "تم استلام الرسالة. سنتواصل معك قريباً."
+  }
 }

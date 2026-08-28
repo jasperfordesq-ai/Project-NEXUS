@@ -8,11 +8,12 @@ import { useTranslation } from 'react-i18next';
 import Sparkles from 'lucide-react/icons/sparkles';
 import MapPin from 'lucide-react/icons/map-pin';
 import ListChecks from 'lucide-react/icons/list-checks';
+import ShieldAlert from 'lucide-react/icons/shield-alert';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/feedback';
 import { useTenant } from '@/contexts';
 
-export type MatchesEmptyVariant = 'no_coordinates' | 'no_listings' | 'none';
+export type MatchesEmptyVariant = 'no_coordinates' | 'no_listings' | 'safeguarding_unavailable' | 'none';
 
 export interface MatchesEmptyStateProps {
   variant: MatchesEmptyVariant;
@@ -38,6 +39,18 @@ export function MatchesEmptyState({ variant }: MatchesEmptyStateProps) {
             {t('empty.set_location_cta')}
           </Button>
         }
+      />
+    );
+  }
+
+  if (variant === 'safeguarding_unavailable') {
+    // The member cannot fix this themselves — the community team has to
+    // finish safeguarding setup — so there is deliberately no CTA button.
+    return (
+      <EmptyState
+        icon={<ShieldAlert className="w-12 h-12" />}
+        title={t('empty.safeguarding_unavailable_title')}
+        description={t('empty.safeguarding_unavailable_description')}
       />
     );
   }

@@ -39,7 +39,9 @@
     "paused_desc": "No recibirás nuevas sugerencias ni notificaciones de coincidencias hasta que reanudes las coincidencias en tus preferencias.",
     "mutual_title": "Mostrando coincidencias mutuas",
     "mutual_desc": "Estas coincidencias son en ambos sentidos: tú encajas perfectamente con ellos y ellos encajan perfectamente contigo.",
-    "show_all": "Mostrar todas las coincidencias"
+    "show_all": "Mostrar todas las coincidencias",
+    "safeguarding_unavailable_title": "Algunas coincidencias están ocultas",
+    "safeguarding_unavailable_desc": "La configuración de salvaguardia de su comunidad no está terminada, por lo que las coincidencias con miembros protegidos se ocultan por la seguridad de todos."
   },
   "card": {
     "mutual": "Coincidencia mutua",
@@ -89,7 +91,9 @@
     "no_listings_title": "Trabajos coincidentes de tus listados",
     "no_listings_description": "Crea una lista para comenzar a encontrar personas, grupos y oportunidades que coincidan con lo que ofreces o necesitas.",
     "create_listing_cta": "Crear un listado",
-    "adjust_preferences_cta": "Ajustar las preferencias de coincidencia"
+    "adjust_preferences_cta": "Ajustar las preferencias de coincidencia",
+    "safeguarding_unavailable_title": "Algunas coincidencias aún no se pueden mostrar",
+    "safeguarding_unavailable_description": "La configuración de salvaguardia de su comunidad no está terminada, por lo que las coincidencias con miembros protegidos se ocultan por la seguridad de todos. Vuelva cuando el equipo de su comunidad la haya completado."
   },
   "preferences": {
     "subtitle": "Controle cómo Smart Matching encuentra conexiones y le notifica sobre ellas.",

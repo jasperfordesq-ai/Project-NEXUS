@@ -104,15 +104,27 @@ class SafeguardingJurisdictionService
                 'authority_expiry_required' => false,
             ]],
         ],
+        // Enabled 2026-08-28 (owner decision): Garda Vetting gating was
+        // switched off, which left every Irish tenant permanently unable to
+        // satisfy the contact gate — members who chose "only vetted people
+        // may contact me" silently emptied their own matches lists
+        // (Sentry 134069538). Garda vetting disclosures carry no printed
+        // expiry date, so authority_expiry_required is false; brokers may
+        // still record a voluntary review date.
         'ireland' => [
             'scheme_code' => 'garda_vetting',
             'attestation_code' => 'garda_vetting',
             'policy_version' => 'safeguarded-contact-v1',
-            'contact_policy_available' => false,
+            'contact_policy_available' => true,
             'label_key' => 'safeguarding.jurisdictions.ireland',
             'attestation_label_key' => 'safeguarding.attestations.garda_vetting',
             'preset' => 'ireland',
-            'certification_options' => [],
+            'certification_options' => [[
+                'code' => 'garda_vetting',
+                'jurisdiction' => 'ireland',
+                'label_key' => 'safeguarding.vetting_types.garda_vetting',
+                'authority_expiry_required' => false,
+            ]],
         ],
         'custom' => [
             'scheme_code' => null,
@@ -356,6 +368,26 @@ class SafeguardingJurisdictionService
     public function forget(int $tenantId): void
     {
         Cache::forget(self::CACHE_PREFIX . $tenantId);
+    }
+
+    /**
+     * Whether a policy array (from getPolicy/getPolicyUncached/
+     * lockPolicyForUpdate) can actually operate the vetted-contact gate.
+     * This is THE definition of "usable" — it was previously copied inline
+     * in four services, which is how they drift apart. Field-by-field: the
+     * tenant chose a jurisdiction, that jurisdiction supports contact
+     * gating, and the scheme/attestation/version triple the attestation
+     * queries key on is complete.
+     *
+     * @param array<string, mixed> $policy
+     */
+    public static function isContactGateUsable(array $policy): bool
+    {
+        return ! empty($policy['configured'])
+            && ! empty($policy['contact_policy_available'])
+            && ($policy['scheme_code'] ?? null) !== null
+            && ($policy['attestation_code'] ?? null) !== null
+            && ($policy['policy_version'] ?? null) !== null;
     }
 
     public static function isSupportedAttestationCode(string $code): bool

@@ -36,6 +36,18 @@ describe('MatchesEmptyState', () => {
     expect(screen.getByText('Create a listing')).toBeInTheDocument();
   });
 
+  it('renders the safeguarding-unavailable variant with no CTA — the member cannot fix it', () => {
+    render(<MatchesEmptyState variant="safeguarding_unavailable" />);
+    expect(screen.getByText("Some matches can't be shown yet")).toBeInTheDocument();
+    expect(
+      screen.getByText(/safeguarding setup isn't finished/i),
+    ).toBeInTheDocument();
+    // No call to action: only the community team can complete safeguarding
+    // setup, so a button would send the member somewhere useless.
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
   it('renders the default "none" variant with browse and preferences CTAs', () => {
     render(<MatchesEmptyState variant="none" />);
     expect(screen.getByText('No matches yet')).toBeInTheDocument();

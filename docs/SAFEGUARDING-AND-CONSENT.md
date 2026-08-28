@@ -1,6 +1,6 @@
 # Safeguarding & Consent
 
-Last reviewed: 2026-08-04
+Last reviewed: 2026-08-28
 
 This page maps the safeguarding, guardian and consent subsystems as they exist in
 code. It was written by reading the services, controllers, routes and the ~30
@@ -336,6 +336,48 @@ codebase and worth imitating:
 Contrast with member suspension and ban, which accept a free-text reason that has
 no column to live in and survives only inside an audit blob; and with member
 registration, which has no rejection path at all.
+
+---
+
+## The contact gate: jurisdiction and interaction policy
+
+The enforcement engine that acts on a member's "only vetted people may contact
+me" choice. It was undocumented here until 2026-08-28, which let a
+misconfiguration run silently in production for weeks (Sentry 134069538).
+
+Three layers:
+
+- **`SafeguardingJurisdictionService`** holds a hardcoded per-jurisdiction
+  policy table (`POLICIES`): scheme code, attestation code, policy version base
+  and whether contact gating is available. The tenant's chosen jurisdiction
+  lives in **`tenant_safeguarding_settings`** (one row per tenant; no row =
+  unconfigured). Configured via `PUT /v2/admin/vetting/policy`; the only UI is
+  the **broker panel** (`/{slug}/broker/vetting`), not the admin panel.
+  `isContactGateUsable()` is the single definition of "this policy can operate
+  the gate" — use it, never re-inline the five-field check.
+- **`SafeguardingInteractionPolicy`** evaluates sender→recipient contact. It
+  returns ALLOW, DENY (`VETTING_REQUIRED` — the feature working), or
+  **UNAVAILABLE** (`SAFEGUARDING_POLICY_UNAVAILABLE` — the gate cannot run,
+  fails closed). UNAVAILABLE happens when a member has a live
+  vetted-interaction preference but the tenant's jurisdiction is unconfigured
+  or unusable. Matching silently drops such candidates; since 2026-08-28 the
+  matches API reports `meta.degraded_reason = safeguarding_policy_unavailable`
+  so the member is told, and steady-state unavailability logs once per request
+  at WARNING (transient lookup failures stay at ERROR).
+- **Alignment guards.** Applying a country onboarding preset also configures
+  the matching jurisdiction when none is set (and warns on a mismatch instead
+  of overwriting an explicit choice), and the daily
+  `safeguarding:check-policy-health` pager raises one fingerprinted alert
+  naming any tenant with live vetted-interaction selections whose policy
+  cannot operate the gate. The fix for that alert is an admin action —
+  configure the jurisdiction in the broker panel — not code.
+
+History note: `ireland` had `contact_policy_available => false` until
+2026-08-28, meaning an Irish tenant had **no** valid configuration and the
+gate was permanently UNAVAILABLE for its protected members. Garda Vetting
+gating is now enabled (owner decision); the policy table is pinned by
+`SafeguardingJurisdictionServiceTest`, and changing any row of it is a
+product/legal decision, not a refactor.
 
 ---
 

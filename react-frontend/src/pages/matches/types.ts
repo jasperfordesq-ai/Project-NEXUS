@@ -94,7 +94,7 @@ export interface MatchesMeta {
   min_score: number;
   needs_location: boolean;
   degraded: boolean;
-  degraded_reason: 'no_coordinates' | null;
+  degraded_reason: 'no_coordinates' | 'safeguarding_policy_unavailable' | null;
   has_active_listings: boolean | null;
   paused: boolean;
 }

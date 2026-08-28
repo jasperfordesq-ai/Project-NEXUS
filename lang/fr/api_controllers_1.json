@@ -1,245 +1,246 @@
 {
-    "admin_analytics_reports": {
-        "members_marked_notified": ":count membre(s) marqué(s) comme notifié(s)"
-    },
-    "admin_cron": {
-        "log_not_found": "Journal introuvable",
-        "deleted_log_entries": ":count entrée(s) de journal supprimée(s)"
-    },
-    "admin_enterprise": {
-        "breach_reported": "Violation signalée avec succès",
-        "gdpr_request_created": "Demande RGPD créée avec succès",
-        "gdpr_request_create_failed": "Échec de la création de la demande RGPD",
-        "data_export_generated": "Export de données généré avec succès",
-        "data_export_failed": "Échec de la génération de l'export de données",
-        "dpa_notification_recorded": "Notification APD enregistrée avec succès",
-        "dpa_notification_failed": "Échec de l'enregistrement de la notification APD",
-        "log_file_cleared": "Fichier journal vidé avec succès",
-        "log_file_only_allowed": "Seuls les fichiers .log sont autorisés",
-        "log_file_not_found": "Fichier journal introuvable",
-        "log_file_clear_failed": "Échec du vidage du fichier journal",
-        "secret_rotation_requires_ssh": "La rotation des secrets nécessite un accès serveur. Utilisez SSH pour faire pivoter les secrets dans le fichier .env.",
-        "secret_deletion_requires_ssh": "La suppression des secrets nécessite un accès serveur. Utilisez SSH pour supprimer les secrets du fichier .env.",
-        "config_reset_failed": "Échec de la réinitialisation de la configuration",
-        "gdpr_request_not_found": "Demande RGPD introuvable",
-        "gdpr_request_fetch_failed": "Échec de la récupération de la demande RGPD",
-        "user_id_required": "L'ID utilisateur est requis",
-        "assigned_to_required": "assigned_to (ID utilisateur) est requis",
-        "gdpr_request_assign_failed": "Échec de l'attribution de la demande RGPD",
-        "note_text_required": "Le texte de la note est requis",
-        "gdpr_request_note_failed": "Échec de l'ajout d'une note à la demande RGPD",
-        "slug_and_name_required": "Le slug et le nom sont requis",
-        "consent_type_create_failed": "Échec de la création du type de consentement",
-        "no_fields_to_update": "Aucun champ à mettre à jour",
-        "consent_type_not_found": "Type de consentement introuvable",
-        "consent_type_update_failed": "Échec de la mise à jour du type de consentement",
-        "consent_type_delete_failed": "Échec de la suppression du type de consentement",
-        "breach_record_not_found": "Enregistrement de violation introuvable",
-        "breach_record_fetch_failed": "Échec de la récupération de l'enregistrement de violation",
-        "breach_record_update_failed": "Échec de la mise à jour de l'enregistrement de violation",
-        "invalid_request_type": "Type de demande invalide. Doit être l'un des suivants : :types",
-        "invalid_log_filename": "Nom de fichier invalide",
-        "log_file_read_failed": "Échec de la lecture du fichier journal",
-        "feature_key_required": "La clé est requise",
-        "feature_type_invalid": "Le type doit être \"feature\" ou \"module\"",
-        "feature_flag_update_failed": "Échec de la mise à jour du drapeau de fonctionnalité"
-    },
-    "admin_federation": {
-        "partnership_request_failed": "Échec de l'envoi de la demande de partenariat",
-        "partnership_detail_failed": "Échec du chargement des détails du partenariat",
-        "counter_propose_failed": "Échec de la contre-proposition",
-        "counter_proposal_send_failed": "Échec de l'envoi de la contre-proposition",
-        "permissions_update_failed": "Échec de la mise à jour des permissions",
-        "partnership_permissions_update_failed": "Échec de la mise à jour des permissions du partenariat",
-        "api_key_name_required": "Le nom est requis",
-        "api_keys_table_not_configured": "Table des clés API de fédération non configurée",
-        "api_key_create_failed": "Échec de la création de la clé API",
-        "api_key_invalid_scope": "Portée(s) de fédération inconnue(s) : :scopes",
-        "api_key_privileged_scope_forbidden": "Seul un super-administrateur de la plateforme peut émettre des clés de fédération avec des portées d'écriture ou d'administration.",
-        "api_key_not_found": "Clé API introuvable",
-        "api_key_already_revoked": "La clé API est déjà révoquée",
-        "api_key_revoke_failed": "Échec de la révocation de la clé API",
-        "max_topics_exceeded": "Maximum 10 sujets autorisés.",
-        "invalid_export_type": "Type d'export invalide. Autorisé : :types",
-        "federation_user_settings_not_found": "Table des paramètres utilisateurs de fédération introuvable",
-        "federation_partnerships_not_found": "Table des partenariats de fédération introuvable",
-        "federation_transactions_not_found": "Table des transactions de fédération introuvable",
-        "federation_audit_log_not_found": "Table du journal d'audit de fédération introuvable",
-        "export_failed": "Échec de l'export des données",
-        "api_key_shown_once_warning": "Cette clé n'est affichée qu'UNE FOIS. Conservez-la en sécurité — elle ne peut pas être récupérée à nouveau."
-    },
-    "admin_feed": {
-        "item_hidden": "Élément masqué",
-        "item_deleted": "Élément supprimé"
-    },
-    "admin_gamification": {
-        "badge_recheck_completed": "Vérification des badges terminée pour :count utilisateur(s)"
-    },
-    "admin_groups": {
-        "rule_not_found": "Règle introuvable",
-        "group_archived": "Groupe archivé",
-        "group_unarchived": "Groupe désarchivé",
-        "ownership_transferred": "Propriété transférée",
-        "groups_merged": "Groupes fusionnés avec succès",
-        "group_cloned": "Groupe cloné",
-        "tag_deleted": "Tag supprimé",
-        "collection_updated": "Mis à jour",
-        "collection_deleted": "Supprimé",
-        "collection_groups_set": "Groupes définis",
-        "rule_deleted": "Règle supprimée"
-    },
-    "admin_impact_report": {
-        "config_updated": "Configuration mise à jour"
-    },
-    "admin_marketplace": {
-        "feature_not_enabled": "La fonctionnalité marketplace n'est pas activée pour ce locataire.",
-        "listing_approved": "Annonce approuvée.",
-        "listing_rejected": "Annonce refusée.",
-        "listing_removed": "Annonce supprimée.",
-        "only_business_sellers_verified": "Seuls les vendeurs professionnels peuvent être vérifiés.",
-        "seller_verified": "Vendeur vérifié.",
-        "seller_suspended": "Vendeur suspendu et toutes les annonces désactivées.",
-        "report_acknowledged": "Signalement pris en compte.",
-        "report_resolved": "Signalement résolu.",
-        "report_appeal_resolved": "Appel du signalement résolu.",
-        "dispute_resolved": "Litige résolu."
-    },
-    "admin_newsletter": {
-        "newsletter_queued": "Newsletter mise en file d'attente pour :count destinataire(s)",
-        "test_email_sent": "E-mail de test envoyé à :email"
-    },
-    "admin_onboarding": {
-        "settings_updated": "Paramètres d'intégration mis à jour",
-        "preset_applied": "Préréglage :preset appliqué"
-    },
-    "admin_reports": {
-        "report_resolved": "Signalement résolu",
-        "report_dismissed": "Signalement ignoré"
-    },
-    "admin_reviews": {
-        "review_flagged": "Avis signalé pour attention",
-        "review_hidden": "Avis masqué",
-        "review_deleted": "Avis supprimé"
-    },
-    "admin_safeguarding": {
-        "guardian_assigned_notification": "Vous avez été désigné comme tuteur de protection pour :name",
-        "ward_assigned_notification": ":guardian a été désigné comme votre contact de soutien à la protection. Vous pouvez donner ou révoquer votre consentement dans vos paramètres.",
-        "a_member": "un membre",
-        "a_coordinator": "Un coordinateur communautaire"
-    },
-    "admin_safeguarding_options": {
-        "option_updated": "Option mise à jour",
-        "option_deactivated": "Option désactivée",
-        "options_reordered": "Options réorganisées"
-    },
-    "admin_super": {
-        "tenant_created": "Locataire ':name' créé avec succès",
-        "lockdown_activated": "Confinement d'urgence activé",
-        "lockdown_lifted": "Confinement d'urgence levé"
-    },
-    "admin_tools": {
-        "connection_failed": "Connexion échouée",
-        "conversion_queued": "Conversion mise en file d'attente",
-        "seed_generation_queued": "Génération de données de départ mise en file d'attente",
-        "blog_backup_restore_queued": "Restauration de sauvegarde du blog mise en file d'attente"
-    },
-    "admin_volunteer": {
-        "application_approved": "Candidature approuvée",
-        "application_declined": "Candidature refusée",
-        "org_status_updated": "Statut de l'organisation mis à jour vers :status",
-        "amount_cannot_be_zero": "Le montant ne peut pas être nul",
-        "reason_required": "La raison est requise",
-        "status_must_be_active_or_suspended": "Le statut doit être actif ou suspendu",
-        "status_invalid": "Le statut doit être actif, validé, suspendu ou refusé",
-        "organization_not_found": "Organisation introuvable",
-        "org_status_update_failed": "Échec de la mise à jour du statut de l'organisation"
-    },
-    "admin_wallet_grant": {
-        "credits_granted": "Crédits accordés avec succès"
-    },
-    "ai_chat": {
-        "not_available": "Le chat IA n'est actuellement pas disponible. Veuillez réessayer plus tard.",
-        "connection_test_failed": "Test de connexion échoué"
-    },
-    "app": {
-        "log_recorded": "Journal enregistré"
-    },
-    "auth": {
-        "two_factor_required": "Authentification à deux facteurs requise",
-        "two_factor_setup_required": "L'authentification à deux facteurs est requise pour les comptes administrateurs. Veuillez configurer la 2FA pour continuer.",
-        "logged_out": "Déconnexion réussie",
-        "session_refreshed": "Session actualisée",
-        "session_restored": "Session restaurée depuis le jeton",
-        "session_deprecated": "Ce point de terminaison est obsolète. Les applications mobiles doivent utiliser les jetons Bearer directement sans synchronisation de session.",
-        "tokens_revoked": "Tous les jetons d'actualisation ont été révoqués. Vous devrez vous reconnecter sur tous vos appareils."
-    },
-    "block_user": {
-        "user_blocked": "Utilisateur bloqué",
-        "user_unblocked": "Utilisateur débloqué",
-        "user_not_blocked": "L'utilisateur n'était pas bloqué"
-    },
-    "cookie_consent": {
-        "preferences_updated": "Préférences de consentement mises à jour avec succès",
-        "consent_withdrawn": "Consentement retiré avec succès"
-    },
-    "email_verification": {
-        "already_verified": "L'adresse e-mail est déjà vérifiée",
-        "verified_successfully": "Adresse e-mail vérifiée avec succès",
-        "verification_sent": "E-mail de vérification envoyé",
-        "generic_resend": "Si un compte avec cet e-mail existe et n'est pas vérifié, un nouvel e-mail de vérification a été envoyé."
-    },
-    "endorsement": {
-        "endorsement_added": "Recommandation ajoutée",
-        "endorsement_removed": "Recommandation supprimée"
-    },
-    "federation": {
-        "already_opted_in": "Déjà inscrit à la fédération.",
-        "enabled_successfully": "Fédération activée avec succès.",
-        "disabled_successfully": "Fédération désactivée avec succès.",
-        "signature_verified": "Signature vérifiée avec succès",
-        "settings_updated": "Paramètres mis à jour avec succès.",
-        "webhook_service_unavailable": "Service temporairement indisponible"
-    },
-    "federation_v2": {
-        "receiver_id_required": "receiver_id est requis.",
-        "receiver_tenant_id_required": "receiver_tenant_id est requis.",
-        "message_body_required": "Le corps du message est requis.",
-        "subject_max_length": "L'objet ne doit pas dépasser 255 caractères.",
-        "body_max_length": "Le corps du message ne doit pas dépasser 10 000 caractères."
-    },
-    "feed_social": {
-        "post_unshared": "Publication non partagée"
-    },
-    "gamification": {
-        "invalid_leaderboard_type": "Type de classement invalide",
-        "showcase_updated": "Vitrine mise à jour",
-        "score_recalculation_initiated": "Recalcul du score lancé"
-    },
-    "gdpr": {
-        "request_submitted": "Votre demande a été soumise et sera traitée dans les 30 jours.",
-        "account_deletion_submitted": "Votre demande de suppression de compte a été soumise. Vous recevrez une confirmation par e-mail."
-    },
-    "group_challenge": {
-        "challenge_deleted": "Défi supprimé",
-        "challenge_cancelled": "Défi annulé",
-        "challenge_immutable": "Les défis terminés ou récompensés ne peuvent pas être annulés"
-    },
-    "group_chatroom": {
-        "default_name": "Général",
-        "default_description": "Salon de discussion par défaut du groupe"
-    },
-    "group_exchange": {
-        "exchange_cancelled": "Échange annulé",
-        "exchange_completed": "Échange complété avec succès"
-    },
-    "group_files": {
-        "file_deleted": "Fichier supprimé"
-    },
-    "group_invite": {
-        "invite_revoked": "Invitation révoquée"
-    },
-    "contact_form": {
-        "sent_successfully": "Message envoyé avec succès.",
-        "received_fallback": "Message reçu. Nous vous répondrons bientôt."
-    }
+  "admin_analytics_reports": {
+    "members_marked_notified": ":count membre(s) marqué(s) comme notifié(s)"
+  },
+  "admin_cron": {
+    "log_not_found": "Journal introuvable",
+    "deleted_log_entries": ":count entrée(s) de journal supprimée(s)"
+  },
+  "admin_enterprise": {
+    "breach_reported": "Violation signalée avec succès",
+    "gdpr_request_created": "Demande RGPD créée avec succès",
+    "gdpr_request_create_failed": "Échec de la création de la demande RGPD",
+    "data_export_generated": "Export de données généré avec succès",
+    "data_export_failed": "Échec de la génération de l'export de données",
+    "dpa_notification_recorded": "Notification APD enregistrée avec succès",
+    "dpa_notification_failed": "Échec de l'enregistrement de la notification APD",
+    "log_file_cleared": "Fichier journal vidé avec succès",
+    "log_file_only_allowed": "Seuls les fichiers .log sont autorisés",
+    "log_file_not_found": "Fichier journal introuvable",
+    "log_file_clear_failed": "Échec du vidage du fichier journal",
+    "secret_rotation_requires_ssh": "La rotation des secrets nécessite un accès serveur. Utilisez SSH pour faire pivoter les secrets dans le fichier .env.",
+    "secret_deletion_requires_ssh": "La suppression des secrets nécessite un accès serveur. Utilisez SSH pour supprimer les secrets du fichier .env.",
+    "config_reset_failed": "Échec de la réinitialisation de la configuration",
+    "gdpr_request_not_found": "Demande RGPD introuvable",
+    "gdpr_request_fetch_failed": "Échec de la récupération de la demande RGPD",
+    "user_id_required": "L'ID utilisateur est requis",
+    "assigned_to_required": "assigned_to (ID utilisateur) est requis",
+    "gdpr_request_assign_failed": "Échec de l'attribution de la demande RGPD",
+    "note_text_required": "Le texte de la note est requis",
+    "gdpr_request_note_failed": "Échec de l'ajout d'une note à la demande RGPD",
+    "slug_and_name_required": "Le slug et le nom sont requis",
+    "consent_type_create_failed": "Échec de la création du type de consentement",
+    "no_fields_to_update": "Aucun champ à mettre à jour",
+    "consent_type_not_found": "Type de consentement introuvable",
+    "consent_type_update_failed": "Échec de la mise à jour du type de consentement",
+    "consent_type_delete_failed": "Échec de la suppression du type de consentement",
+    "breach_record_not_found": "Enregistrement de violation introuvable",
+    "breach_record_fetch_failed": "Échec de la récupération de l'enregistrement de violation",
+    "breach_record_update_failed": "Échec de la mise à jour de l'enregistrement de violation",
+    "invalid_request_type": "Type de demande invalide. Doit être l'un des suivants : :types",
+    "invalid_log_filename": "Nom de fichier invalide",
+    "log_file_read_failed": "Échec de la lecture du fichier journal",
+    "feature_key_required": "La clé est requise",
+    "feature_type_invalid": "Le type doit être \"feature\" ou \"module\"",
+    "feature_flag_update_failed": "Échec de la mise à jour du drapeau de fonctionnalité"
+  },
+  "admin_federation": {
+    "partnership_request_failed": "Échec de l'envoi de la demande de partenariat",
+    "partnership_detail_failed": "Échec du chargement des détails du partenariat",
+    "counter_propose_failed": "Échec de la contre-proposition",
+    "counter_proposal_send_failed": "Échec de l'envoi de la contre-proposition",
+    "permissions_update_failed": "Échec de la mise à jour des permissions",
+    "partnership_permissions_update_failed": "Échec de la mise à jour des permissions du partenariat",
+    "api_key_name_required": "Le nom est requis",
+    "api_keys_table_not_configured": "Table des clés API de fédération non configurée",
+    "api_key_create_failed": "Échec de la création de la clé API",
+    "api_key_invalid_scope": "Portée(s) de fédération inconnue(s) : :scopes",
+    "api_key_privileged_scope_forbidden": "Seul un super-administrateur de la plateforme peut émettre des clés de fédération avec des portées d'écriture ou d'administration.",
+    "api_key_not_found": "Clé API introuvable",
+    "api_key_already_revoked": "La clé API est déjà révoquée",
+    "api_key_revoke_failed": "Échec de la révocation de la clé API",
+    "max_topics_exceeded": "Maximum 10 sujets autorisés.",
+    "invalid_export_type": "Type d'export invalide. Autorisé : :types",
+    "federation_user_settings_not_found": "Table des paramètres utilisateurs de fédération introuvable",
+    "federation_partnerships_not_found": "Table des partenariats de fédération introuvable",
+    "federation_transactions_not_found": "Table des transactions de fédération introuvable",
+    "federation_audit_log_not_found": "Table du journal d'audit de fédération introuvable",
+    "export_failed": "Échec de l'export des données",
+    "api_key_shown_once_warning": "Cette clé n'est affichée qu'UNE FOIS. Conservez-la en sécurité — elle ne peut pas être récupérée à nouveau."
+  },
+  "admin_feed": {
+    "item_hidden": "Élément masqué",
+    "item_deleted": "Élément supprimé"
+  },
+  "admin_gamification": {
+    "badge_recheck_completed": "Vérification des badges terminée pour :count utilisateur(s)"
+  },
+  "admin_groups": {
+    "rule_not_found": "Règle introuvable",
+    "group_archived": "Groupe archivé",
+    "group_unarchived": "Groupe désarchivé",
+    "ownership_transferred": "Propriété transférée",
+    "groups_merged": "Groupes fusionnés avec succès",
+    "group_cloned": "Groupe cloné",
+    "tag_deleted": "Tag supprimé",
+    "collection_updated": "Mis à jour",
+    "collection_deleted": "Supprimé",
+    "collection_groups_set": "Groupes définis",
+    "rule_deleted": "Règle supprimée"
+  },
+  "admin_impact_report": {
+    "config_updated": "Configuration mise à jour"
+  },
+  "admin_marketplace": {
+    "feature_not_enabled": "La fonctionnalité marketplace n'est pas activée pour ce locataire.",
+    "listing_approved": "Annonce approuvée.",
+    "listing_rejected": "Annonce refusée.",
+    "listing_removed": "Annonce supprimée.",
+    "only_business_sellers_verified": "Seuls les vendeurs professionnels peuvent être vérifiés.",
+    "seller_verified": "Vendeur vérifié.",
+    "seller_suspended": "Vendeur suspendu et toutes les annonces désactivées.",
+    "report_acknowledged": "Signalement pris en compte.",
+    "report_resolved": "Signalement résolu.",
+    "report_appeal_resolved": "Appel du signalement résolu.",
+    "dispute_resolved": "Litige résolu."
+  },
+  "admin_newsletter": {
+    "newsletter_queued": "Newsletter mise en file d'attente pour :count destinataire(s)",
+    "test_email_sent": "E-mail de test envoyé à :email"
+  },
+  "admin_onboarding": {
+    "settings_updated": "Paramètres d'intégration mis à jour",
+    "preset_applied": "Préréglage :preset appliqué",
+    "preset_jurisdiction_mismatch": "Le préréglage :preset a été appliqué, mais la juridiction de protection de cette communauté est définie sur :jurisdiction. Les options nécessitant un contrôle ne pourront pas être satisfaites tant que les deux ne correspondent pas."
+  },
+  "admin_reports": {
+    "report_resolved": "Signalement résolu",
+    "report_dismissed": "Signalement ignoré"
+  },
+  "admin_reviews": {
+    "review_flagged": "Avis signalé pour attention",
+    "review_hidden": "Avis masqué",
+    "review_deleted": "Avis supprimé"
+  },
+  "admin_safeguarding": {
+    "guardian_assigned_notification": "Vous avez été désigné comme tuteur de protection pour :name",
+    "ward_assigned_notification": ":guardian a été désigné comme votre contact de soutien à la protection. Vous pouvez donner ou révoquer votre consentement dans vos paramètres.",
+    "a_member": "un membre",
+    "a_coordinator": "Un coordinateur communautaire"
+  },
+  "admin_safeguarding_options": {
+    "option_updated": "Option mise à jour",
+    "option_deactivated": "Option désactivée",
+    "options_reordered": "Options réorganisées"
+  },
+  "admin_super": {
+    "tenant_created": "Locataire ':name' créé avec succès",
+    "lockdown_activated": "Confinement d'urgence activé",
+    "lockdown_lifted": "Confinement d'urgence levé"
+  },
+  "admin_tools": {
+    "connection_failed": "Connexion échouée",
+    "conversion_queued": "Conversion mise en file d'attente",
+    "seed_generation_queued": "Génération de données de départ mise en file d'attente",
+    "blog_backup_restore_queued": "Restauration de sauvegarde du blog mise en file d'attente"
+  },
+  "admin_volunteer": {
+    "application_approved": "Candidature approuvée",
+    "application_declined": "Candidature refusée",
+    "org_status_updated": "Statut de l'organisation mis à jour vers :status",
+    "amount_cannot_be_zero": "Le montant ne peut pas être nul",
+    "reason_required": "La raison est requise",
+    "status_must_be_active_or_suspended": "Le statut doit être actif ou suspendu",
+    "status_invalid": "Le statut doit être actif, validé, suspendu ou refusé",
+    "organization_not_found": "Organisation introuvable",
+    "org_status_update_failed": "Échec de la mise à jour du statut de l'organisation"
+  },
+  "admin_wallet_grant": {
+    "credits_granted": "Crédits accordés avec succès"
+  },
+  "ai_chat": {
+    "not_available": "Le chat IA n'est actuellement pas disponible. Veuillez réessayer plus tard.",
+    "connection_test_failed": "Test de connexion échoué"
+  },
+  "app": {
+    "log_recorded": "Journal enregistré"
+  },
+  "auth": {
+    "two_factor_required": "Authentification à deux facteurs requise",
+    "two_factor_setup_required": "L'authentification à deux facteurs est requise pour les comptes administrateurs. Veuillez configurer la 2FA pour continuer.",
+    "logged_out": "Déconnexion réussie",
+    "session_refreshed": "Session actualisée",
+    "session_restored": "Session restaurée depuis le jeton",
+    "session_deprecated": "Ce point de terminaison est obsolète. Les applications mobiles doivent utiliser les jetons Bearer directement sans synchronisation de session.",
+    "tokens_revoked": "Tous les jetons d'actualisation ont été révoqués. Vous devrez vous reconnecter sur tous vos appareils."
+  },
+  "block_user": {
+    "user_blocked": "Utilisateur bloqué",
+    "user_unblocked": "Utilisateur débloqué",
+    "user_not_blocked": "L'utilisateur n'était pas bloqué"
+  },
+  "cookie_consent": {
+    "preferences_updated": "Préférences de consentement mises à jour avec succès",
+    "consent_withdrawn": "Consentement retiré avec succès"
+  },
+  "email_verification": {
+    "already_verified": "L'adresse e-mail est déjà vérifiée",
+    "verified_successfully": "Adresse e-mail vérifiée avec succès",
+    "verification_sent": "E-mail de vérification envoyé",
+    "generic_resend": "Si un compte avec cet e-mail existe et n'est pas vérifié, un nouvel e-mail de vérification a été envoyé."
+  },
+  "endorsement": {
+    "endorsement_added": "Recommandation ajoutée",
+    "endorsement_removed": "Recommandation supprimée"
+  },
+  "federation": {
+    "already_opted_in": "Déjà inscrit à la fédération.",
+    "enabled_successfully": "Fédération activée avec succès.",
+    "disabled_successfully": "Fédération désactivée avec succès.",
+    "signature_verified": "Signature vérifiée avec succès",
+    "settings_updated": "Paramètres mis à jour avec succès.",
+    "webhook_service_unavailable": "Service temporairement indisponible"
+  },
+  "federation_v2": {
+    "receiver_id_required": "receiver_id est requis.",
+    "receiver_tenant_id_required": "receiver_tenant_id est requis.",
+    "message_body_required": "Le corps du message est requis.",
+    "subject_max_length": "L'objet ne doit pas dépasser 255 caractères.",
+    "body_max_length": "Le corps du message ne doit pas dépasser 10 000 caractères."
+  },
+  "feed_social": {
+    "post_unshared": "Publication non partagée"
+  },
+  "gamification": {
+    "invalid_leaderboard_type": "Type de classement invalide",
+    "showcase_updated": "Vitrine mise à jour",
+    "score_recalculation_initiated": "Recalcul du score lancé"
+  },
+  "gdpr": {
+    "request_submitted": "Votre demande a été soumise et sera traitée dans les 30 jours.",
+    "account_deletion_submitted": "Votre demande de suppression de compte a été soumise. Vous recevrez une confirmation par e-mail."
+  },
+  "group_challenge": {
+    "challenge_deleted": "Défi supprimé",
+    "challenge_cancelled": "Défi annulé",
+    "challenge_immutable": "Les défis terminés ou récompensés ne peuvent pas être annulés"
+  },
+  "group_chatroom": {
+    "default_name": "Général",
+    "default_description": "Salon de discussion par défaut du groupe"
+  },
+  "group_exchange": {
+    "exchange_cancelled": "Échange annulé",
+    "exchange_completed": "Échange complété avec succès"
+  },
+  "group_files": {
+    "file_deleted": "Fichier supprimé"
+  },
+  "group_invite": {
+    "invite_revoked": "Invitation révoquée"
+  },
+  "contact_form": {
+    "sent_successfully": "Message envoyé avec succès.",
+    "received_fallback": "Message reçu. Nous vous répondrons bientôt."
+  }
 }

@@ -1,245 +1,246 @@
 {
-    "admin_analytics_reports": {
-        "members_marked_notified": ":count membro/i contrassegnato/i come notificato/i"
-    },
-    "admin_cron": {
-        "log_not_found": "Registro non trovato",
-        "deleted_log_entries": ":count voce/voci di registro eliminate"
-    },
-    "admin_enterprise": {
-        "breach_reported": "Violazione segnalata con successo",
-        "gdpr_request_created": "Richiesta GDPR creata con successo",
-        "gdpr_request_create_failed": "Creazione della richiesta GDPR non riuscita",
-        "data_export_generated": "Esportazione dati generata con successo",
-        "data_export_failed": "Generazione dell'esportazione dati non riuscita",
-        "dpa_notification_recorded": "Notifica all'autorità di protezione dei dati registrata con successo",
-        "dpa_notification_failed": "Registrazione della notifica all'autorità di protezione dei dati non riuscita",
-        "log_file_cleared": "File di registro svuotato con successo",
-        "log_file_only_allowed": "Sono consentiti solo i file .log",
-        "log_file_not_found": "File di registro non trovato",
-        "log_file_clear_failed": "Svuotamento del file di registro non riuscito",
-        "secret_rotation_requires_ssh": "La rotazione dei segreti richiede l'accesso al server. Usare SSH per ruotare i segreti nel file .env.",
-        "secret_deletion_requires_ssh": "L'eliminazione dei segreti richiede l'accesso al server. Usare SSH per rimuovere i segreti dal file .env.",
-        "config_reset_failed": "Reimpostazione della configurazione non riuscita",
-        "gdpr_request_not_found": "Richiesta GDPR non trovata",
-        "gdpr_request_fetch_failed": "Recupero della richiesta GDPR non riuscito",
-        "user_id_required": "L'ID utente è obbligatorio",
-        "assigned_to_required": "assigned_to (ID utente) è obbligatorio",
-        "gdpr_request_assign_failed": "Assegnazione della richiesta GDPR non riuscita",
-        "note_text_required": "Il testo della nota è obbligatorio",
-        "gdpr_request_note_failed": "Aggiunta della nota alla richiesta GDPR non riuscita",
-        "slug_and_name_required": "Slug e nome sono obbligatori",
-        "consent_type_create_failed": "Creazione del tipo di consenso non riuscita",
-        "no_fields_to_update": "Nessun campo da aggiornare",
-        "consent_type_not_found": "Tipo di consenso non trovato",
-        "consent_type_update_failed": "Aggiornamento del tipo di consenso non riuscito",
-        "consent_type_delete_failed": "Eliminazione del tipo di consenso non riuscita",
-        "breach_record_not_found": "Registro della violazione non trovato",
-        "breach_record_fetch_failed": "Recupero del registro della violazione non riuscito",
-        "breach_record_update_failed": "Aggiornamento del registro della violazione non riuscito",
-        "invalid_request_type": "Tipo di richiesta non valido. Deve essere uno di: :types",
-        "invalid_log_filename": "Nome file non valido",
-        "log_file_read_failed": "Lettura del file di registro non riuscita",
-        "feature_key_required": "La chiave è obbligatoria",
-        "feature_type_invalid": "Il tipo deve essere \"feature\" o \"module\"",
-        "feature_flag_update_failed": "Aggiornamento del flag di funzionalità non riuscito"
-    },
-    "admin_federation": {
-        "partnership_request_failed": "Invio della richiesta di partnership non riuscito",
-        "partnership_detail_failed": "Caricamento dei dettagli della partnership non riuscito",
-        "counter_propose_failed": "Controproposta non riuscita",
-        "counter_proposal_send_failed": "Invio della controproposta non riuscito",
-        "permissions_update_failed": "Aggiornamento dei permessi non riuscito",
-        "partnership_permissions_update_failed": "Aggiornamento dei permessi della partnership non riuscito",
-        "api_key_name_required": "Il nome è obbligatorio",
-        "api_keys_table_not_configured": "Tabella delle chiavi API della federazione non configurata",
-        "api_key_create_failed": "Creazione della chiave API non riuscita",
-        "api_key_invalid_scope": "Ambito/i di federazione sconosciuto/i: :scopes",
-        "api_key_privileged_scope_forbidden": "Solo un super-amministratore della piattaforma può emettere chiavi di federazione con ambiti di scrittura o amministrazione.",
-        "api_key_not_found": "Chiave API non trovata",
-        "api_key_already_revoked": "La chiave API è già stata revocata",
-        "api_key_revoke_failed": "Revoca della chiave API non riuscita",
-        "max_topics_exceeded": "Massimo 10 argomenti consentiti.",
-        "invalid_export_type": "Tipo di esportazione non valido. Consentiti: :types",
-        "federation_user_settings_not_found": "Tabella delle impostazioni utente della federazione non trovata",
-        "federation_partnerships_not_found": "Tabella delle partnership della federazione non trovata",
-        "federation_transactions_not_found": "Tabella delle transazioni della federazione non trovata",
-        "federation_audit_log_not_found": "Tabella del registro di controllo della federazione non trovata",
-        "export_failed": "Esportazione dati non riuscita",
-        "api_key_shown_once_warning": "Questa chiave viene mostrata UNA SOLA VOLTA. Conservarla in modo sicuro — non può essere recuperata di nuovo."
-    },
-    "admin_feed": {
-        "item_hidden": "Elemento nascosto",
-        "item_deleted": "Elemento eliminato"
-    },
-    "admin_gamification": {
-        "badge_recheck_completed": "Verifica dei badge completata per :count utente/i"
-    },
-    "admin_groups": {
-        "rule_not_found": "Regola non trovata",
-        "group_archived": "Gruppo archiviato",
-        "group_unarchived": "Gruppo ripristinato dall'archivio",
-        "ownership_transferred": "Proprietà trasferita",
-        "groups_merged": "Gruppi uniti con successo",
-        "group_cloned": "Gruppo clonato",
-        "tag_deleted": "Tag eliminato",
-        "collection_updated": "Aggiornato",
-        "collection_deleted": "Eliminato",
-        "collection_groups_set": "Gruppi impostati",
-        "rule_deleted": "Regola eliminata"
-    },
-    "admin_impact_report": {
-        "config_updated": "Configurazione aggiornata"
-    },
-    "admin_marketplace": {
-        "feature_not_enabled": "La funzionalità marketplace non è abilitata per questo tenant.",
-        "listing_approved": "Annuncio approvato.",
-        "listing_rejected": "Annuncio rifiutato.",
-        "listing_removed": "Annuncio rimosso.",
-        "only_business_sellers_verified": "Solo i venditori aziendali possono essere verificati.",
-        "seller_verified": "Venditore verificato.",
-        "seller_suspended": "Venditore sospeso e tutti gli annunci disattivati.",
-        "report_acknowledged": "Segnalazione presa in carico.",
-        "report_resolved": "Segnalazione risolta.",
-        "report_appeal_resolved": "Ricorso della segnalazione risolto.",
-        "dispute_resolved": "Controversia risolta."
-    },
-    "admin_newsletter": {
-        "newsletter_queued": "Newsletter messa in coda per :count destinatario/i",
-        "test_email_sent": "E-mail di test inviata a :email"
-    },
-    "admin_onboarding": {
-        "settings_updated": "Impostazioni di onboarding aggiornate",
-        "preset_applied": "Preimpostazione :preset applicata"
-    },
-    "admin_reports": {
-        "report_resolved": "Segnalazione risolta",
-        "report_dismissed": "Segnalazione ignorata"
-    },
-    "admin_reviews": {
-        "review_flagged": "Recensione contrassegnata per attenzione",
-        "review_hidden": "Recensione nascosta",
-        "review_deleted": "Recensione eliminata"
-    },
-    "admin_safeguarding": {
-        "guardian_assigned_notification": "È stato designato come tutore di protezione per :name",
-        "ward_assigned_notification": ":guardian è stato designato come suo contatto di supporto alla protezione. Può concedere o revocare il consenso nelle impostazioni.",
-        "a_member": "un membro",
-        "a_coordinator": "Un coordinatore della comunità"
-    },
-    "admin_safeguarding_options": {
-        "option_updated": "Opzione aggiornata",
-        "option_deactivated": "Opzione disattivata",
-        "options_reordered": "Opzioni riordinate"
-    },
-    "admin_super": {
-        "tenant_created": "Tenant ':name' creato con successo",
-        "lockdown_activated": "Blocco di emergenza attivato",
-        "lockdown_lifted": "Blocco di emergenza revocato"
-    },
-    "admin_tools": {
-        "connection_failed": "Connessione non riuscita",
-        "conversion_queued": "Conversione messa in coda",
-        "seed_generation_queued": "Generazione dati iniziali messa in coda",
-        "blog_backup_restore_queued": "Ripristino backup blog messo in coda"
-    },
-    "admin_volunteer": {
-        "application_approved": "Candidatura approvata",
-        "application_declined": "Candidatura rifiutata",
-        "org_status_updated": "Stato dell'organizzazione aggiornato a :status",
-        "amount_cannot_be_zero": "L'importo non può essere zero",
-        "reason_required": "Il motivo è obbligatorio",
-        "status_must_be_active_or_suspended": "Lo stato deve essere attivo o sospeso",
-        "status_invalid": "Lo stato deve essere attivo, approvato, sospeso o rifiutato",
-        "organization_not_found": "Organizzazione non trovata",
-        "org_status_update_failed": "Aggiornamento dello stato dell'organizzazione non riuscito"
-    },
-    "admin_wallet_grant": {
-        "credits_granted": "Crediti concessi con successo"
-    },
-    "ai_chat": {
-        "not_available": "La chat IA non è attualmente disponibile. Riprovare più tardi.",
-        "connection_test_failed": "Test di connessione non riuscito"
-    },
-    "app": {
-        "log_recorded": "Registro registrato"
-    },
-    "auth": {
-        "two_factor_required": "Autenticazione a due fattori richiesta",
-        "two_factor_setup_required": "L'autenticazione a due fattori è obbligatoria per gli account amministratori. Configurare la 2FA per continuare.",
-        "logged_out": "Disconnessione avvenuta con successo",
-        "session_refreshed": "Sessione aggiornata",
-        "session_restored": "Sessione ripristinata dal token",
-        "session_deprecated": "Questo endpoint è obsoleto. Le app mobile dovrebbero usare i token Bearer direttamente senza sincronizzazione della sessione.",
-        "tokens_revoked": "Tutti i token di aggiornamento sono stati revocati. Sarà necessario accedere nuovamente su tutti i dispositivi."
-    },
-    "block_user": {
-        "user_blocked": "Utente bloccato",
-        "user_unblocked": "Utente sbloccato",
-        "user_not_blocked": "L'utente non era bloccato"
-    },
-    "cookie_consent": {
-        "preferences_updated": "Preferenze di consenso aggiornate con successo",
-        "consent_withdrawn": "Consenso ritirato con successo"
-    },
-    "email_verification": {
-        "already_verified": "L'indirizzo e-mail è già verificato",
-        "verified_successfully": "Indirizzo e-mail verificato con successo",
-        "verification_sent": "E-mail di verifica inviata",
-        "generic_resend": "Se esiste un account con quell'e-mail e non è verificato, è stata inviata una nuova e-mail di verifica."
-    },
-    "endorsement": {
-        "endorsement_added": "Raccomandazione aggiunta",
-        "endorsement_removed": "Raccomandazione rimossa"
-    },
-    "federation": {
-        "already_opted_in": "Già aderito alla federazione.",
-        "enabled_successfully": "Federazione abilitata con successo.",
-        "disabled_successfully": "Federazione disabilitata con successo.",
-        "signature_verified": "Firma verificata con successo",
-        "settings_updated": "Impostazioni aggiornate con successo.",
-        "webhook_service_unavailable": "Servizio temporaneamente non disponibile"
-    },
-    "federation_v2": {
-        "receiver_id_required": "receiver_id è obbligatorio.",
-        "receiver_tenant_id_required": "receiver_tenant_id è obbligatorio.",
-        "message_body_required": "Il corpo del messaggio è obbligatorio.",
-        "subject_max_length": "L'oggetto non deve superare i 255 caratteri.",
-        "body_max_length": "Il corpo del messaggio non deve superare i 10.000 caratteri."
-    },
-    "feed_social": {
-        "post_unshared": "Post non più condiviso"
-    },
-    "gamification": {
-        "invalid_leaderboard_type": "Tipo di classifica non valido",
-        "showcase_updated": "Vetrina aggiornata",
-        "score_recalculation_initiated": "Ricalcolo del punteggio avviato"
-    },
-    "gdpr": {
-        "request_submitted": "La sua richiesta è stata inviata e sarà elaborata entro 30 giorni.",
-        "account_deletion_submitted": "La sua richiesta di eliminazione dell'account è stata inviata. Riceverà una conferma via e-mail."
-    },
-    "group_challenge": {
-        "challenge_deleted": "Sfida eliminata",
-        "challenge_cancelled": "Sfida annullata",
-        "challenge_immutable": "Le sfide completate o premiate non possono essere annullate"
-    },
-    "group_chatroom": {
-        "default_name": "Generale",
-        "default_description": "Chat di gruppo predefinita"
-    },
-    "group_exchange": {
-        "exchange_cancelled": "Scambio annullato",
-        "exchange_completed": "Scambio completato con successo"
-    },
-    "group_files": {
-        "file_deleted": "File eliminato"
-    },
-    "group_invite": {
-        "invite_revoked": "Invito revocato"
-    },
-    "contact_form": {
-        "sent_successfully": "Messaggio inviato con successo.",
-        "received_fallback": "Messaggio ricevuto. La risponderemo presto."
-    }
+  "admin_analytics_reports": {
+    "members_marked_notified": ":count membro/i contrassegnato/i come notificato/i"
+  },
+  "admin_cron": {
+    "log_not_found": "Registro non trovato",
+    "deleted_log_entries": ":count voce/voci di registro eliminate"
+  },
+  "admin_enterprise": {
+    "breach_reported": "Violazione segnalata con successo",
+    "gdpr_request_created": "Richiesta GDPR creata con successo",
+    "gdpr_request_create_failed": "Creazione della richiesta GDPR non riuscita",
+    "data_export_generated": "Esportazione dati generata con successo",
+    "data_export_failed": "Generazione dell'esportazione dati non riuscita",
+    "dpa_notification_recorded": "Notifica all'autorità di protezione dei dati registrata con successo",
+    "dpa_notification_failed": "Registrazione della notifica all'autorità di protezione dei dati non riuscita",
+    "log_file_cleared": "File di registro svuotato con successo",
+    "log_file_only_allowed": "Sono consentiti solo i file .log",
+    "log_file_not_found": "File di registro non trovato",
+    "log_file_clear_failed": "Svuotamento del file di registro non riuscito",
+    "secret_rotation_requires_ssh": "La rotazione dei segreti richiede l'accesso al server. Usare SSH per ruotare i segreti nel file .env.",
+    "secret_deletion_requires_ssh": "L'eliminazione dei segreti richiede l'accesso al server. Usare SSH per rimuovere i segreti dal file .env.",
+    "config_reset_failed": "Reimpostazione della configurazione non riuscita",
+    "gdpr_request_not_found": "Richiesta GDPR non trovata",
+    "gdpr_request_fetch_failed": "Recupero della richiesta GDPR non riuscito",
+    "user_id_required": "L'ID utente è obbligatorio",
+    "assigned_to_required": "assigned_to (ID utente) è obbligatorio",
+    "gdpr_request_assign_failed": "Assegnazione della richiesta GDPR non riuscita",
+    "note_text_required": "Il testo della nota è obbligatorio",
+    "gdpr_request_note_failed": "Aggiunta della nota alla richiesta GDPR non riuscita",
+    "slug_and_name_required": "Slug e nome sono obbligatori",
+    "consent_type_create_failed": "Creazione del tipo di consenso non riuscita",
+    "no_fields_to_update": "Nessun campo da aggiornare",
+    "consent_type_not_found": "Tipo di consenso non trovato",
+    "consent_type_update_failed": "Aggiornamento del tipo di consenso non riuscito",
+    "consent_type_delete_failed": "Eliminazione del tipo di consenso non riuscita",
+    "breach_record_not_found": "Registro della violazione non trovato",
+    "breach_record_fetch_failed": "Recupero del registro della violazione non riuscito",
+    "breach_record_update_failed": "Aggiornamento del registro della violazione non riuscito",
+    "invalid_request_type": "Tipo di richiesta non valido. Deve essere uno di: :types",
+    "invalid_log_filename": "Nome file non valido",
+    "log_file_read_failed": "Lettura del file di registro non riuscita",
+    "feature_key_required": "La chiave è obbligatoria",
+    "feature_type_invalid": "Il tipo deve essere \"feature\" o \"module\"",
+    "feature_flag_update_failed": "Aggiornamento del flag di funzionalità non riuscito"
+  },
+  "admin_federation": {
+    "partnership_request_failed": "Invio della richiesta di partnership non riuscito",
+    "partnership_detail_failed": "Caricamento dei dettagli della partnership non riuscito",
+    "counter_propose_failed": "Controproposta non riuscita",
+    "counter_proposal_send_failed": "Invio della controproposta non riuscito",
+    "permissions_update_failed": "Aggiornamento dei permessi non riuscito",
+    "partnership_permissions_update_failed": "Aggiornamento dei permessi della partnership non riuscito",
+    "api_key_name_required": "Il nome è obbligatorio",
+    "api_keys_table_not_configured": "Tabella delle chiavi API della federazione non configurata",
+    "api_key_create_failed": "Creazione della chiave API non riuscita",
+    "api_key_invalid_scope": "Ambito/i di federazione sconosciuto/i: :scopes",
+    "api_key_privileged_scope_forbidden": "Solo un super-amministratore della piattaforma può emettere chiavi di federazione con ambiti di scrittura o amministrazione.",
+    "api_key_not_found": "Chiave API non trovata",
+    "api_key_already_revoked": "La chiave API è già stata revocata",
+    "api_key_revoke_failed": "Revoca della chiave API non riuscita",
+    "max_topics_exceeded": "Massimo 10 argomenti consentiti.",
+    "invalid_export_type": "Tipo di esportazione non valido. Consentiti: :types",
+    "federation_user_settings_not_found": "Tabella delle impostazioni utente della federazione non trovata",
+    "federation_partnerships_not_found": "Tabella delle partnership della federazione non trovata",
+    "federation_transactions_not_found": "Tabella delle transazioni della federazione non trovata",
+    "federation_audit_log_not_found": "Tabella del registro di controllo della federazione non trovata",
+    "export_failed": "Esportazione dati non riuscita",
+    "api_key_shown_once_warning": "Questa chiave viene mostrata UNA SOLA VOLTA. Conservarla in modo sicuro — non può essere recuperata di nuovo."
+  },
+  "admin_feed": {
+    "item_hidden": "Elemento nascosto",
+    "item_deleted": "Elemento eliminato"
+  },
+  "admin_gamification": {
+    "badge_recheck_completed": "Verifica dei badge completata per :count utente/i"
+  },
+  "admin_groups": {
+    "rule_not_found": "Regola non trovata",
+    "group_archived": "Gruppo archiviato",
+    "group_unarchived": "Gruppo ripristinato dall'archivio",
+    "ownership_transferred": "Proprietà trasferita",
+    "groups_merged": "Gruppi uniti con successo",
+    "group_cloned": "Gruppo clonato",
+    "tag_deleted": "Tag eliminato",
+    "collection_updated": "Aggiornato",
+    "collection_deleted": "Eliminato",
+    "collection_groups_set": "Gruppi impostati",
+    "rule_deleted": "Regola eliminata"
+  },
+  "admin_impact_report": {
+    "config_updated": "Configurazione aggiornata"
+  },
+  "admin_marketplace": {
+    "feature_not_enabled": "La funzionalità marketplace non è abilitata per questo tenant.",
+    "listing_approved": "Annuncio approvato.",
+    "listing_rejected": "Annuncio rifiutato.",
+    "listing_removed": "Annuncio rimosso.",
+    "only_business_sellers_verified": "Solo i venditori aziendali possono essere verificati.",
+    "seller_verified": "Venditore verificato.",
+    "seller_suspended": "Venditore sospeso e tutti gli annunci disattivati.",
+    "report_acknowledged": "Segnalazione presa in carico.",
+    "report_resolved": "Segnalazione risolta.",
+    "report_appeal_resolved": "Ricorso della segnalazione risolto.",
+    "dispute_resolved": "Controversia risolta."
+  },
+  "admin_newsletter": {
+    "newsletter_queued": "Newsletter messa in coda per :count destinatario/i",
+    "test_email_sent": "E-mail di test inviata a :email"
+  },
+  "admin_onboarding": {
+    "settings_updated": "Impostazioni di onboarding aggiornate",
+    "preset_applied": "Preimpostazione :preset applicata",
+    "preset_jurisdiction_mismatch": "Il preset :preset è stato applicato, ma la giurisdizione di tutela di questa comunità è impostata su :jurisdiction. Le opzioni che richiedono una verifica non possono essere soddisfatte finché le due non coincidono."
+  },
+  "admin_reports": {
+    "report_resolved": "Segnalazione risolta",
+    "report_dismissed": "Segnalazione ignorata"
+  },
+  "admin_reviews": {
+    "review_flagged": "Recensione contrassegnata per attenzione",
+    "review_hidden": "Recensione nascosta",
+    "review_deleted": "Recensione eliminata"
+  },
+  "admin_safeguarding": {
+    "guardian_assigned_notification": "È stato designato come tutore di protezione per :name",
+    "ward_assigned_notification": ":guardian è stato designato come suo contatto di supporto alla protezione. Può concedere o revocare il consenso nelle impostazioni.",
+    "a_member": "un membro",
+    "a_coordinator": "Un coordinatore della comunità"
+  },
+  "admin_safeguarding_options": {
+    "option_updated": "Opzione aggiornata",
+    "option_deactivated": "Opzione disattivata",
+    "options_reordered": "Opzioni riordinate"
+  },
+  "admin_super": {
+    "tenant_created": "Tenant ':name' creato con successo",
+    "lockdown_activated": "Blocco di emergenza attivato",
+    "lockdown_lifted": "Blocco di emergenza revocato"
+  },
+  "admin_tools": {
+    "connection_failed": "Connessione non riuscita",
+    "conversion_queued": "Conversione messa in coda",
+    "seed_generation_queued": "Generazione dati iniziali messa in coda",
+    "blog_backup_restore_queued": "Ripristino backup blog messo in coda"
+  },
+  "admin_volunteer": {
+    "application_approved": "Candidatura approvata",
+    "application_declined": "Candidatura rifiutata",
+    "org_status_updated": "Stato dell'organizzazione aggiornato a :status",
+    "amount_cannot_be_zero": "L'importo non può essere zero",
+    "reason_required": "Il motivo è obbligatorio",
+    "status_must_be_active_or_suspended": "Lo stato deve essere attivo o sospeso",
+    "status_invalid": "Lo stato deve essere attivo, approvato, sospeso o rifiutato",
+    "organization_not_found": "Organizzazione non trovata",
+    "org_status_update_failed": "Aggiornamento dello stato dell'organizzazione non riuscito"
+  },
+  "admin_wallet_grant": {
+    "credits_granted": "Crediti concessi con successo"
+  },
+  "ai_chat": {
+    "not_available": "La chat IA non è attualmente disponibile. Riprovare più tardi.",
+    "connection_test_failed": "Test di connessione non riuscito"
+  },
+  "app": {
+    "log_recorded": "Registro registrato"
+  },
+  "auth": {
+    "two_factor_required": "Autenticazione a due fattori richiesta",
+    "two_factor_setup_required": "L'autenticazione a due fattori è obbligatoria per gli account amministratori. Configurare la 2FA per continuare.",
+    "logged_out": "Disconnessione avvenuta con successo",
+    "session_refreshed": "Sessione aggiornata",
+    "session_restored": "Sessione ripristinata dal token",
+    "session_deprecated": "Questo endpoint è obsoleto. Le app mobile dovrebbero usare i token Bearer direttamente senza sincronizzazione della sessione.",
+    "tokens_revoked": "Tutti i token di aggiornamento sono stati revocati. Sarà necessario accedere nuovamente su tutti i dispositivi."
+  },
+  "block_user": {
+    "user_blocked": "Utente bloccato",
+    "user_unblocked": "Utente sbloccato",
+    "user_not_blocked": "L'utente non era bloccato"
+  },
+  "cookie_consent": {
+    "preferences_updated": "Preferenze di consenso aggiornate con successo",
+    "consent_withdrawn": "Consenso ritirato con successo"
+  },
+  "email_verification": {
+    "already_verified": "L'indirizzo e-mail è già verificato",
+    "verified_successfully": "Indirizzo e-mail verificato con successo",
+    "verification_sent": "E-mail di verifica inviata",
+    "generic_resend": "Se esiste un account con quell'e-mail e non è verificato, è stata inviata una nuova e-mail di verifica."
+  },
+  "endorsement": {
+    "endorsement_added": "Raccomandazione aggiunta",
+    "endorsement_removed": "Raccomandazione rimossa"
+  },
+  "federation": {
+    "already_opted_in": "Già aderito alla federazione.",
+    "enabled_successfully": "Federazione abilitata con successo.",
+    "disabled_successfully": "Federazione disabilitata con successo.",
+    "signature_verified": "Firma verificata con successo",
+    "settings_updated": "Impostazioni aggiornate con successo.",
+    "webhook_service_unavailable": "Servizio temporaneamente non disponibile"
+  },
+  "federation_v2": {
+    "receiver_id_required": "receiver_id è obbligatorio.",
+    "receiver_tenant_id_required": "receiver_tenant_id è obbligatorio.",
+    "message_body_required": "Il corpo del messaggio è obbligatorio.",
+    "subject_max_length": "L'oggetto non deve superare i 255 caratteri.",
+    "body_max_length": "Il corpo del messaggio non deve superare i 10.000 caratteri."
+  },
+  "feed_social": {
+    "post_unshared": "Post non più condiviso"
+  },
+  "gamification": {
+    "invalid_leaderboard_type": "Tipo di classifica non valido",
+    "showcase_updated": "Vetrina aggiornata",
+    "score_recalculation_initiated": "Ricalcolo del punteggio avviato"
+  },
+  "gdpr": {
+    "request_submitted": "La sua richiesta è stata inviata e sarà elaborata entro 30 giorni.",
+    "account_deletion_submitted": "La sua richiesta di eliminazione dell'account è stata inviata. Riceverà una conferma via e-mail."
+  },
+  "group_challenge": {
+    "challenge_deleted": "Sfida eliminata",
+    "challenge_cancelled": "Sfida annullata",
+    "challenge_immutable": "Le sfide completate o premiate non possono essere annullate"
+  },
+  "group_chatroom": {
+    "default_name": "Generale",
+    "default_description": "Chat di gruppo predefinita"
+  },
+  "group_exchange": {
+    "exchange_cancelled": "Scambio annullato",
+    "exchange_completed": "Scambio completato con successo"
+  },
+  "group_files": {
+    "file_deleted": "File eliminato"
+  },
+  "group_invite": {
+    "invite_revoked": "Invito revocato"
+  },
+  "contact_form": {
+    "sent_successfully": "Messaggio inviato con successo.",
+    "received_fallback": "Messaggio ricevuto. La risponderemo presto."
+  }
 }

@@ -792,11 +792,16 @@ class MemberVettingAttestationWorkflowTest extends TestCase
         ]);
 
         Sanctum::actingAs($admin);
+        // Ireland became an AVAILABLE jurisdiction on 2026-08-28 (Garda
+        // Vetting gating enabled). What this test protects is unchanged: the
+        // live dbs_enhanced option is now a requirement/policy MISMATCH under
+        // the Irish policy, so the member's protection must be preserved and
+        // contact must still fail closed — not silently become contactable.
         $this->apiPut('/v2/admin/vetting/policy', [
             'jurisdiction' => 'ireland',
         ])->assertStatus(200)
             ->assertJsonPath('data.policy.jurisdiction', 'ireland')
-            ->assertJsonPath('data.policy.contact_policy_available', false)
+            ->assertJsonPath('data.policy.contact_policy_available', true)
             ->assertJsonPath('data.preference_transition.preserved.0', $optionKey);
 
         $this->assertSame(1, (int) DB::table('tenant_safeguarding_options')

@@ -42,7 +42,9 @@
     "paused_desc": "You won't receive new match suggestions or notifications until you resume matching in your preferences.",
     "mutual_title": "Showing mutual matches",
     "mutual_desc": "These matches go both ways — you're a great fit for them, and they're a great fit for you.",
-    "show_all": "Show all matches"
+    "show_all": "Show all matches",
+    "safeguarding_unavailable_title": "Some matches are hidden",
+    "safeguarding_unavailable_desc": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe."
   },
   "card": {
     "distance_km": "{{value}} km",
@@ -92,7 +94,9 @@
     "no_listings_title": "Matching works from your listings",
     "no_listings_description": "Create a listing to start finding people, groups, and opportunities that match what you offer or need.",
     "create_listing_cta": "Create a listing",
-    "adjust_preferences_cta": "Adjust match preferences"
+    "adjust_preferences_cta": "Adjust match preferences",
+    "safeguarding_unavailable_title": "Some matches can't be shown yet",
+    "safeguarding_unavailable_description": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe. Please check back once your community team has completed it."
   },
   "preferences": {
     "page_title": "Match Preferences",

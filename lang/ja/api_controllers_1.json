@@ -1,245 +1,246 @@
 {
-    "admin_analytics_reports": {
-        "members_marked_notified": ":count 名のメンバーを通知済みとしてマークしました"
-    },
-    "admin_cron": {
-        "log_not_found": "ログが見つかりません",
-        "deleted_log_entries": ":count 件のログエントリを削除しました"
-    },
-    "admin_enterprise": {
-        "breach_reported": "侵害が正常に報告されました",
-        "gdpr_request_created": "GDPRリクエストが正常に作成されました",
-        "gdpr_request_create_failed": "GDPRリクエストの作成に失敗しました",
-        "data_export_generated": "データエクスポートが正常に生成されました",
-        "data_export_failed": "データエクスポートの生成に失敗しました",
-        "dpa_notification_recorded": "DPA通知が正常に記録されました",
-        "dpa_notification_failed": "DPA通知の記録に失敗しました",
-        "log_file_cleared": "ログファイルが正常にクリアされました",
-        "log_file_only_allowed": ".logファイルのみ許可されています",
-        "log_file_not_found": "ログファイルが見つかりません",
-        "log_file_clear_failed": "ログファイルのクリアに失敗しました",
-        "secret_rotation_requires_ssh": "シークレットのローテーションにはサーバーアクセスが必要です。SSHを使用して.envファイルのシークレットをローテーションしてください。",
-        "secret_deletion_requires_ssh": "シークレットの削除にはサーバーアクセスが必要です。SSHを使用して.envファイルからシークレットを削除してください。",
-        "config_reset_failed": "設定のリセットに失敗しました",
-        "gdpr_request_not_found": "GDPRリクエストが見つかりません",
-        "gdpr_request_fetch_failed": "GDPRリクエストの取得に失敗しました",
-        "user_id_required": "ユーザーIDが必要です",
-        "assigned_to_required": "assigned_to（ユーザーID）が必要です",
-        "gdpr_request_assign_failed": "GDPRリクエストの割り当てに失敗しました",
-        "note_text_required": "メモのテキストが必要です",
-        "gdpr_request_note_failed": "GDPRリクエストへのメモの追加に失敗しました",
-        "slug_and_name_required": "スラッグと名前が必要です",
-        "consent_type_create_failed": "同意タイプの作成に失敗しました",
-        "no_fields_to_update": "更新するフィールドがありません",
-        "consent_type_not_found": "同意タイプが見つかりません",
-        "consent_type_update_failed": "同意タイプの更新に失敗しました",
-        "consent_type_delete_failed": "同意タイプの削除に失敗しました",
-        "breach_record_not_found": "侵害レコードが見つかりません",
-        "breach_record_fetch_failed": "侵害レコードの取得に失敗しました",
-        "breach_record_update_failed": "侵害レコードの更新に失敗しました",
-        "invalid_request_type": "無効なリクエストタイプです。次のいずれかである必要があります: :types",
-        "invalid_log_filename": "無効なファイル名です",
-        "log_file_read_failed": "ログファイルの読み取りに失敗しました",
-        "feature_key_required": "キーが必要です",
-        "feature_type_invalid": "タイプは \"feature\" または \"module\" である必要があります",
-        "feature_flag_update_failed": "機能フラグの更新に失敗しました"
-    },
-    "admin_federation": {
-        "partnership_request_failed": "パートナーシップリクエストの送信に失敗しました",
-        "partnership_detail_failed": "パートナーシップ詳細の読み込みに失敗しました",
-        "counter_propose_failed": "カウンター提案に失敗しました",
-        "counter_proposal_send_failed": "カウンター提案の送信に失敗しました",
-        "permissions_update_failed": "権限の更新に失敗しました",
-        "partnership_permissions_update_failed": "パートナーシップ権限の更新に失敗しました",
-        "api_key_name_required": "名前が必要です",
-        "api_keys_table_not_configured": "フェデレーションAPIキーテーブルが設定されていません",
-        "api_key_create_failed": "APIキーの作成に失敗しました",
-        "api_key_invalid_scope": "不明なフェデレーションスコープ: :scopes",
-        "api_key_privileged_scope_forbidden": "プラットフォームのスーパー管理者のみが、書き込みまたは管理スコープを持つフェデレーションキーを発行できます。",
-        "api_key_not_found": "APIキーが見つかりません",
-        "api_key_already_revoked": "APIキーはすでに失効されています",
-        "api_key_revoke_failed": "APIキーの失効に失敗しました",
-        "max_topics_exceeded": "最大10トピックまで許可されています。",
-        "invalid_export_type": "無効なエクスポートタイプです。許可されているもの: :types",
-        "federation_user_settings_not_found": "フェデレーションユーザー設定テーブルが見つかりません",
-        "federation_partnerships_not_found": "フェデレーションパートナーシップテーブルが見つかりません",
-        "federation_transactions_not_found": "フェデレーショントランザクションテーブルが見つかりません",
-        "federation_audit_log_not_found": "フェデレーション監査ログテーブルが見つかりません",
-        "export_failed": "データのエクスポートに失敗しました",
-        "api_key_shown_once_warning": "このキーは一度だけ表示されます。安全に保存してください — 再取得することはできません。"
-    },
-    "admin_feed": {
-        "item_hidden": "アイテムを非表示にしました",
-        "item_deleted": "アイテムを削除しました"
-    },
-    "admin_gamification": {
-        "badge_recheck_completed": ":count 名のユーザーのバッジ再確認が完了しました"
-    },
-    "admin_groups": {
-        "rule_not_found": "ルールが見つかりません",
-        "group_archived": "グループをアーカイブしました",
-        "group_unarchived": "グループのアーカイブを解除しました",
-        "ownership_transferred": "所有権を移転しました",
-        "groups_merged": "グループを正常に統合しました",
-        "group_cloned": "グループをクローンしました",
-        "tag_deleted": "タグを削除しました",
-        "collection_updated": "更新しました",
-        "collection_deleted": "削除しました",
-        "collection_groups_set": "グループを設定しました",
-        "rule_deleted": "ルールを削除しました"
-    },
-    "admin_impact_report": {
-        "config_updated": "設定を更新しました"
-    },
-    "admin_marketplace": {
-        "feature_not_enabled": "このテナントではマーケットプレイス機能が有効になっていません。",
-        "listing_approved": "出品を承認しました。",
-        "listing_rejected": "出品を拒否しました。",
-        "listing_removed": "出品を削除しました。",
-        "only_business_sellers_verified": "ビジネス販売者のみ認証できます。",
-        "seller_verified": "販売者を認証しました。",
-        "seller_suspended": "販売者を停止し、すべての出品を無効化しました。",
-        "report_acknowledged": "レポートを確認しました。",
-        "report_resolved": "レポートを解決しました。",
-        "report_appeal_resolved": "報告への異議申し立てを解決しました。",
-        "dispute_resolved": "紛争を解決しました。"
-    },
-    "admin_newsletter": {
-        "newsletter_queued": ":count 名の受信者向けにニュースレターをキューに追加しました",
-        "test_email_sent": ":email にテストメールを送信しました"
-    },
-    "admin_onboarding": {
-        "settings_updated": "オンボーディング設定を更新しました",
-        "preset_applied": "プリセット :preset を適用しました"
-    },
-    "admin_reports": {
-        "report_resolved": "レポートを解決しました",
-        "report_dismissed": "レポートを却下しました"
-    },
-    "admin_reviews": {
-        "review_flagged": "レビューを注意フラグ付きにしました",
-        "review_hidden": "レビューを非表示にしました",
-        "review_deleted": "レビューを削除しました"
-    },
-    "admin_safeguarding": {
-        "guardian_assigned_notification": ":name のセーフガーディング保護者として割り当てられました",
-        "ward_assigned_notification": ":guardian があなたのセーフガーディングサポート連絡先として割り当てられました。設定で同意の付与または取り消しができます。",
-        "a_member": "メンバー",
-        "a_coordinator": "コミュニティコーディネーター"
-    },
-    "admin_safeguarding_options": {
-        "option_updated": "オプションを更新しました",
-        "option_deactivated": "オプションを無効化しました",
-        "options_reordered": "オプションを並び替えました"
-    },
-    "admin_super": {
-        "tenant_created": "テナント ':name' を正常に作成しました",
-        "lockdown_activated": "緊急ロックダウンを有効化しました",
-        "lockdown_lifted": "緊急ロックダウンを解除しました"
-    },
-    "admin_tools": {
-        "connection_failed": "接続に失敗しました",
-        "conversion_queued": "変換をキューに追加しました",
-        "seed_generation_queued": "シード生成をキューに追加しました",
-        "blog_backup_restore_queued": "ブログバックアップの復元をキューに追加しました"
-    },
-    "admin_volunteer": {
-        "application_approved": "申請を承認しました",
-        "application_declined": "申請を却下しました",
-        "org_status_updated": "組織のステータスを :status に更新しました",
-        "amount_cannot_be_zero": "金額をゼロにすることはできません",
-        "reason_required": "理由が必要です",
-        "status_must_be_active_or_suspended": "ステータスはアクティブまたは停止中である必要があります",
-        "status_invalid": "ステータスは有効、承認済み、停止中、却下のいずれかである必要があります",
-        "organization_not_found": "組織が見つかりません",
-        "org_status_update_failed": "組織のステータスの更新に失敗しました"
-    },
-    "admin_wallet_grant": {
-        "credits_granted": "クレジットを正常に付与しました"
-    },
-    "ai_chat": {
-        "not_available": "AIチャットは現在利用できません。後でもう一度お試しください。",
-        "connection_test_failed": "接続テストに失敗しました"
-    },
-    "app": {
-        "log_recorded": "ログを記録しました"
-    },
-    "auth": {
-        "two_factor_required": "二要素認証が必要です",
-        "two_factor_setup_required": "管理者アカウントには二要素認証が必要です。続行するには2FAを設定してください。",
-        "logged_out": "正常にログアウトしました",
-        "session_refreshed": "セッションを更新しました",
-        "session_restored": "トークンからセッションを復元しました",
-        "session_deprecated": "このエンドポイントは廃止されています。モバイルアプリはセッション同期なしでBearerトークンを直接使用してください。",
-        "tokens_revoked": "すべての更新トークンが失効されました。すべてのデバイスで再度ログインしてください。"
-    },
-    "block_user": {
-        "user_blocked": "ユーザーをブロックしました",
-        "user_unblocked": "ユーザーのブロックを解除しました",
-        "user_not_blocked": "ユーザーはブロックされていませんでした"
-    },
-    "cookie_consent": {
-        "preferences_updated": "同意設定を正常に更新しました",
-        "consent_withdrawn": "同意を正常に撤回しました"
-    },
-    "email_verification": {
-        "already_verified": "メールアドレスはすでに確認済みです",
-        "verified_successfully": "メールアドレスを正常に確認しました",
-        "verification_sent": "確認メールを送信しました",
-        "generic_resend": "そのメールアドレスのアカウントが存在し、確認されていない場合は、新しい確認メールが送信されました。"
-    },
-    "endorsement": {
-        "endorsement_added": "推薦を追加しました",
-        "endorsement_removed": "推薦を削除しました"
-    },
-    "federation": {
-        "already_opted_in": "すでにフェデレーションに参加しています。",
-        "enabled_successfully": "フェデレーションを正常に有効化しました。",
-        "disabled_successfully": "フェデレーションを正常に無効化しました。",
-        "signature_verified": "署名を正常に検証しました",
-        "settings_updated": "設定を正常に更新しました。",
-        "webhook_service_unavailable": "サービスが一時的に利用できません"
-    },
-    "federation_v2": {
-        "receiver_id_required": "receiver_idが必要です。",
-        "receiver_tenant_id_required": "receiver_tenant_idが必要です。",
-        "message_body_required": "メッセージ本文が必要です。",
-        "subject_max_length": "件名は255文字以内にしてください。",
-        "body_max_length": "メッセージ本文は10,000文字以内にしてください。"
-    },
-    "feed_social": {
-        "post_unshared": "投稿の共有を解除しました"
-    },
-    "gamification": {
-        "invalid_leaderboard_type": "無効なリーダーボードタイプです",
-        "showcase_updated": "ショーケースを更新しました",
-        "score_recalculation_initiated": "スコアの再計算を開始しました"
-    },
-    "gdpr": {
-        "request_submitted": "リクエストが提出されました。30日以内に処理されます。",
-        "account_deletion_submitted": "アカウント削除リクエストが提出されました。メールで確認が届きます。"
-    },
-    "group_challenge": {
-        "challenge_deleted": "チャレンジを削除しました",
-        "challenge_cancelled": "チャレンジをキャンセルしました",
-        "challenge_immutable": "完了済みまたは報酬付与済みのチャレンジはキャンセルできません"
-    },
-    "group_chatroom": {
-        "default_name": "一般",
-        "default_description": "デフォルトのグループチャットルーム"
-    },
-    "group_exchange": {
-        "exchange_cancelled": "交換をキャンセルしました",
-        "exchange_completed": "交換を正常に完了しました"
-    },
-    "group_files": {
-        "file_deleted": "ファイルを削除しました"
-    },
-    "group_invite": {
-        "invite_revoked": "招待を取り消しました"
-    },
-    "contact_form": {
-        "sent_successfully": "メッセージを正常に送信しました。",
-        "received_fallback": "メッセージを受信しました。まもなくご連絡いたします。"
-    }
+  "admin_analytics_reports": {
+    "members_marked_notified": ":count 名のメンバーを通知済みとしてマークしました"
+  },
+  "admin_cron": {
+    "log_not_found": "ログが見つかりません",
+    "deleted_log_entries": ":count 件のログエントリを削除しました"
+  },
+  "admin_enterprise": {
+    "breach_reported": "侵害が正常に報告されました",
+    "gdpr_request_created": "GDPRリクエストが正常に作成されました",
+    "gdpr_request_create_failed": "GDPRリクエストの作成に失敗しました",
+    "data_export_generated": "データエクスポートが正常に生成されました",
+    "data_export_failed": "データエクスポートの生成に失敗しました",
+    "dpa_notification_recorded": "DPA通知が正常に記録されました",
+    "dpa_notification_failed": "DPA通知の記録に失敗しました",
+    "log_file_cleared": "ログファイルが正常にクリアされました",
+    "log_file_only_allowed": ".logファイルのみ許可されています",
+    "log_file_not_found": "ログファイルが見つかりません",
+    "log_file_clear_failed": "ログファイルのクリアに失敗しました",
+    "secret_rotation_requires_ssh": "シークレットのローテーションにはサーバーアクセスが必要です。SSHを使用して.envファイルのシークレットをローテーションしてください。",
+    "secret_deletion_requires_ssh": "シークレットの削除にはサーバーアクセスが必要です。SSHを使用して.envファイルからシークレットを削除してください。",
+    "config_reset_failed": "設定のリセットに失敗しました",
+    "gdpr_request_not_found": "GDPRリクエストが見つかりません",
+    "gdpr_request_fetch_failed": "GDPRリクエストの取得に失敗しました",
+    "user_id_required": "ユーザーIDが必要です",
+    "assigned_to_required": "assigned_to（ユーザーID）が必要です",
+    "gdpr_request_assign_failed": "GDPRリクエストの割り当てに失敗しました",
+    "note_text_required": "メモのテキストが必要です",
+    "gdpr_request_note_failed": "GDPRリクエストへのメモの追加に失敗しました",
+    "slug_and_name_required": "スラッグと名前が必要です",
+    "consent_type_create_failed": "同意タイプの作成に失敗しました",
+    "no_fields_to_update": "更新するフィールドがありません",
+    "consent_type_not_found": "同意タイプが見つかりません",
+    "consent_type_update_failed": "同意タイプの更新に失敗しました",
+    "consent_type_delete_failed": "同意タイプの削除に失敗しました",
+    "breach_record_not_found": "侵害レコードが見つかりません",
+    "breach_record_fetch_failed": "侵害レコードの取得に失敗しました",
+    "breach_record_update_failed": "侵害レコードの更新に失敗しました",
+    "invalid_request_type": "無効なリクエストタイプです。次のいずれかである必要があります: :types",
+    "invalid_log_filename": "無効なファイル名です",
+    "log_file_read_failed": "ログファイルの読み取りに失敗しました",
+    "feature_key_required": "キーが必要です",
+    "feature_type_invalid": "タイプは \"feature\" または \"module\" である必要があります",
+    "feature_flag_update_failed": "機能フラグの更新に失敗しました"
+  },
+  "admin_federation": {
+    "partnership_request_failed": "パートナーシップリクエストの送信に失敗しました",
+    "partnership_detail_failed": "パートナーシップ詳細の読み込みに失敗しました",
+    "counter_propose_failed": "カウンター提案に失敗しました",
+    "counter_proposal_send_failed": "カウンター提案の送信に失敗しました",
+    "permissions_update_failed": "権限の更新に失敗しました",
+    "partnership_permissions_update_failed": "パートナーシップ権限の更新に失敗しました",
+    "api_key_name_required": "名前が必要です",
+    "api_keys_table_not_configured": "フェデレーションAPIキーテーブルが設定されていません",
+    "api_key_create_failed": "APIキーの作成に失敗しました",
+    "api_key_invalid_scope": "不明なフェデレーションスコープ: :scopes",
+    "api_key_privileged_scope_forbidden": "プラットフォームのスーパー管理者のみが、書き込みまたは管理スコープを持つフェデレーションキーを発行できます。",
+    "api_key_not_found": "APIキーが見つかりません",
+    "api_key_already_revoked": "APIキーはすでに失効されています",
+    "api_key_revoke_failed": "APIキーの失効に失敗しました",
+    "max_topics_exceeded": "最大10トピックまで許可されています。",
+    "invalid_export_type": "無効なエクスポートタイプです。許可されているもの: :types",
+    "federation_user_settings_not_found": "フェデレーションユーザー設定テーブルが見つかりません",
+    "federation_partnerships_not_found": "フェデレーションパートナーシップテーブルが見つかりません",
+    "federation_transactions_not_found": "フェデレーショントランザクションテーブルが見つかりません",
+    "federation_audit_log_not_found": "フェデレーション監査ログテーブルが見つかりません",
+    "export_failed": "データのエクスポートに失敗しました",
+    "api_key_shown_once_warning": "このキーは一度だけ表示されます。安全に保存してください — 再取得することはできません。"
+  },
+  "admin_feed": {
+    "item_hidden": "アイテムを非表示にしました",
+    "item_deleted": "アイテムを削除しました"
+  },
+  "admin_gamification": {
+    "badge_recheck_completed": ":count 名のユーザーのバッジ再確認が完了しました"
+  },
+  "admin_groups": {
+    "rule_not_found": "ルールが見つかりません",
+    "group_archived": "グループをアーカイブしました",
+    "group_unarchived": "グループのアーカイブを解除しました",
+    "ownership_transferred": "所有権を移転しました",
+    "groups_merged": "グループを正常に統合しました",
+    "group_cloned": "グループをクローンしました",
+    "tag_deleted": "タグを削除しました",
+    "collection_updated": "更新しました",
+    "collection_deleted": "削除しました",
+    "collection_groups_set": "グループを設定しました",
+    "rule_deleted": "ルールを削除しました"
+  },
+  "admin_impact_report": {
+    "config_updated": "設定を更新しました"
+  },
+  "admin_marketplace": {
+    "feature_not_enabled": "このテナントではマーケットプレイス機能が有効になっていません。",
+    "listing_approved": "出品を承認しました。",
+    "listing_rejected": "出品を拒否しました。",
+    "listing_removed": "出品を削除しました。",
+    "only_business_sellers_verified": "ビジネス販売者のみ認証できます。",
+    "seller_verified": "販売者を認証しました。",
+    "seller_suspended": "販売者を停止し、すべての出品を無効化しました。",
+    "report_acknowledged": "レポートを確認しました。",
+    "report_resolved": "レポートを解決しました。",
+    "report_appeal_resolved": "報告への異議申し立てを解決しました。",
+    "dispute_resolved": "紛争を解決しました。"
+  },
+  "admin_newsletter": {
+    "newsletter_queued": ":count 名の受信者向けにニュースレターをキューに追加しました",
+    "test_email_sent": ":email にテストメールを送信しました"
+  },
+  "admin_onboarding": {
+    "settings_updated": "オンボーディング設定を更新しました",
+    "preset_applied": "プリセット :preset を適用しました",
+    "preset_jurisdiction_mismatch": "プリセット「:preset」を適用しましたが、このコミュニティの保護管轄は「:jurisdiction」に設定されています。両者が一致するまで、審査が必要なオプションは満たせません。"
+  },
+  "admin_reports": {
+    "report_resolved": "レポートを解決しました",
+    "report_dismissed": "レポートを却下しました"
+  },
+  "admin_reviews": {
+    "review_flagged": "レビューを注意フラグ付きにしました",
+    "review_hidden": "レビューを非表示にしました",
+    "review_deleted": "レビューを削除しました"
+  },
+  "admin_safeguarding": {
+    "guardian_assigned_notification": ":name のセーフガーディング保護者として割り当てられました",
+    "ward_assigned_notification": ":guardian があなたのセーフガーディングサポート連絡先として割り当てられました。設定で同意の付与または取り消しができます。",
+    "a_member": "メンバー",
+    "a_coordinator": "コミュニティコーディネーター"
+  },
+  "admin_safeguarding_options": {
+    "option_updated": "オプションを更新しました",
+    "option_deactivated": "オプションを無効化しました",
+    "options_reordered": "オプションを並び替えました"
+  },
+  "admin_super": {
+    "tenant_created": "テナント ':name' を正常に作成しました",
+    "lockdown_activated": "緊急ロックダウンを有効化しました",
+    "lockdown_lifted": "緊急ロックダウンを解除しました"
+  },
+  "admin_tools": {
+    "connection_failed": "接続に失敗しました",
+    "conversion_queued": "変換をキューに追加しました",
+    "seed_generation_queued": "シード生成をキューに追加しました",
+    "blog_backup_restore_queued": "ブログバックアップの復元をキューに追加しました"
+  },
+  "admin_volunteer": {
+    "application_approved": "申請を承認しました",
+    "application_declined": "申請を却下しました",
+    "org_status_updated": "組織のステータスを :status に更新しました",
+    "amount_cannot_be_zero": "金額をゼロにすることはできません",
+    "reason_required": "理由が必要です",
+    "status_must_be_active_or_suspended": "ステータスはアクティブまたは停止中である必要があります",
+    "status_invalid": "ステータスは有効、承認済み、停止中、却下のいずれかである必要があります",
+    "organization_not_found": "組織が見つかりません",
+    "org_status_update_failed": "組織のステータスの更新に失敗しました"
+  },
+  "admin_wallet_grant": {
+    "credits_granted": "クレジットを正常に付与しました"
+  },
+  "ai_chat": {
+    "not_available": "AIチャットは現在利用できません。後でもう一度お試しください。",
+    "connection_test_failed": "接続テストに失敗しました"
+  },
+  "app": {
+    "log_recorded": "ログを記録しました"
+  },
+  "auth": {
+    "two_factor_required": "二要素認証が必要です",
+    "two_factor_setup_required": "管理者アカウントには二要素認証が必要です。続行するには2FAを設定してください。",
+    "logged_out": "正常にログアウトしました",
+    "session_refreshed": "セッションを更新しました",
+    "session_restored": "トークンからセッションを復元しました",
+    "session_deprecated": "このエンドポイントは廃止されています。モバイルアプリはセッション同期なしでBearerトークンを直接使用してください。",
+    "tokens_revoked": "すべての更新トークンが失効されました。すべてのデバイスで再度ログインしてください。"
+  },
+  "block_user": {
+    "user_blocked": "ユーザーをブロックしました",
+    "user_unblocked": "ユーザーのブロックを解除しました",
+    "user_not_blocked": "ユーザーはブロックされていませんでした"
+  },
+  "cookie_consent": {
+    "preferences_updated": "同意設定を正常に更新しました",
+    "consent_withdrawn": "同意を正常に撤回しました"
+  },
+  "email_verification": {
+    "already_verified": "メールアドレスはすでに確認済みです",
+    "verified_successfully": "メールアドレスを正常に確認しました",
+    "verification_sent": "確認メールを送信しました",
+    "generic_resend": "そのメールアドレスのアカウントが存在し、確認されていない場合は、新しい確認メールが送信されました。"
+  },
+  "endorsement": {
+    "endorsement_added": "推薦を追加しました",
+    "endorsement_removed": "推薦を削除しました"
+  },
+  "federation": {
+    "already_opted_in": "すでにフェデレーションに参加しています。",
+    "enabled_successfully": "フェデレーションを正常に有効化しました。",
+    "disabled_successfully": "フェデレーションを正常に無効化しました。",
+    "signature_verified": "署名を正常に検証しました",
+    "settings_updated": "設定を正常に更新しました。",
+    "webhook_service_unavailable": "サービスが一時的に利用できません"
+  },
+  "federation_v2": {
+    "receiver_id_required": "receiver_idが必要です。",
+    "receiver_tenant_id_required": "receiver_tenant_idが必要です。",
+    "message_body_required": "メッセージ本文が必要です。",
+    "subject_max_length": "件名は255文字以内にしてください。",
+    "body_max_length": "メッセージ本文は10,000文字以内にしてください。"
+  },
+  "feed_social": {
+    "post_unshared": "投稿の共有を解除しました"
+  },
+  "gamification": {
+    "invalid_leaderboard_type": "無効なリーダーボードタイプです",
+    "showcase_updated": "ショーケースを更新しました",
+    "score_recalculation_initiated": "スコアの再計算を開始しました"
+  },
+  "gdpr": {
+    "request_submitted": "リクエストが提出されました。30日以内に処理されます。",
+    "account_deletion_submitted": "アカウント削除リクエストが提出されました。メールで確認が届きます。"
+  },
+  "group_challenge": {
+    "challenge_deleted": "チャレンジを削除しました",
+    "challenge_cancelled": "チャレンジをキャンセルしました",
+    "challenge_immutable": "完了済みまたは報酬付与済みのチャレンジはキャンセルできません"
+  },
+  "group_chatroom": {
+    "default_name": "一般",
+    "default_description": "デフォルトのグループチャットルーム"
+  },
+  "group_exchange": {
+    "exchange_cancelled": "交換をキャンセルしました",
+    "exchange_completed": "交換を正常に完了しました"
+  },
+  "group_files": {
+    "file_deleted": "ファイルを削除しました"
+  },
+  "group_invite": {
+    "invite_revoked": "招待を取り消しました"
+  },
+  "contact_form": {
+    "sent_successfully": "メッセージを正常に送信しました。",
+    "received_fallback": "メッセージを受信しました。まもなくご連絡いたします。"
+  }
 }

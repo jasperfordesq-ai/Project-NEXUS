@@ -39,7 +39,9 @@
     "paused_desc": "Você não receberá sugestões ou notificações de novas partidas até retomar a correspondência em suas preferências.",
     "mutual_title": "Mostrando correspondências mútuas",
     "mutual_desc": "Essas combinações acontecem nos dois sentidos – você é uma ótima opção para eles e eles são uma ótima opção para você.",
-    "show_all": "Mostrar todas as partidas"
+    "show_all": "Mostrar todas as partidas",
+    "safeguarding_unavailable_title": "Algumas correspondências estão ocultas",
+    "safeguarding_unavailable_desc": "A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos."
   },
   "card": {
     "mutual": "Correspondência mútua",
@@ -89,7 +91,9 @@
     "no_listings_title": "Trabalhos correspondentes de suas listagens",
     "no_listings_description": "Crie uma listagem para começar a encontrar pessoas, grupos e oportunidades que correspondam ao que você oferece ou precisa.",
     "create_listing_cta": "Crie uma listagem",
-    "adjust_preferences_cta": "Ajustar preferências de correspondência"
+    "adjust_preferences_cta": "Ajustar preferências de correspondência",
+    "safeguarding_unavailable_title": "Algumas correspondências ainda não podem ser mostradas",
+    "safeguarding_unavailable_description": "A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos. Volte quando a equipa da sua comunidade a tiver concluído."
   },
   "preferences": {
     "subtitle": "Controle como o Smart Matching encontra e notifica você sobre conexões.",

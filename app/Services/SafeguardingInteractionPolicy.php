@@ -20,6 +20,14 @@ use Illuminate\Support\Facades\Log;
  */
 class SafeguardingInteractionPolicy
 {
+    /**
+     * Steady-state "policy unavailable" reasons already logged by this
+     * instance, keyed "tenantId|reason". See logUnavailable().
+     *
+     * @var array<string, true>
+     */
+    private array $loggedSteadyStateReasons = [];
+
     public function __construct(
         private readonly MemberVettingAttestationService $attestations,
         private readonly SafeguardingJurisdictionService $jurisdictions,
@@ -290,12 +298,7 @@ class SafeguardingInteractionPolicy
             return $this->unavailable($recipientTenantId, 'SAFEGUARDING_POLICY_UNAVAILABLE');
         }
 
-        if ($policy === null
-            || ! $policy['configured']
-            || ! $policy['contact_policy_available']
-            || $policy['scheme_code'] === null
-            || $policy['attestation_code'] === null
-            || $policy['policy_version'] === null) {
+        if ($policy === null || ! SafeguardingJurisdictionService::isContactGateUsable($policy)) {
             $this->logUnavailable($recipientTenantId, $recipientId, $channel, 'jurisdiction_unconfigured_or_unsupported');
 
             return $this->unavailable($recipientTenantId, 'SAFEGUARDING_POLICY_UNAVAILABLE', $requiredCodes);
@@ -440,12 +443,44 @@ class SafeguardingInteractionPolicy
         string $reason,
         ?\Throwable $exception = null,
     ): void {
-        Log::error('Safeguarding interaction policy unavailable', array_filter([
+        // Steady-state configuration facts are identical on every evaluation
+        // until an admin acts, so they log at WARNING (kept in daily/stderr,
+        // below the sentry channel's ERROR threshold). Genuine lookup
+        // failures stay at ERROR. Before 2026-08-28 everything here was
+        // ERROR, and one matches page load in an unconfigured tenant emitted
+        // it once per protected candidate per direction (Sentry 134069538).
+        $steadyState = in_array($reason, [
+            'jurisdiction_unconfigured_or_unsupported',
+            'requirement_policy_mismatch',
+            'missing_attestation_requirement',
+        ], true);
+
+        // The matching engines reuse one policy instance across hundreds of
+        // candidates in a single request; repeating an identical steady-state
+        // line for each adds volume, not information. Transient failures are
+        // not deduplicated — each may carry a different exception.
+        if ($steadyState) {
+            $memoKey = $tenantId . '|' . $reason;
+            if (isset($this->loggedSteadyStateReasons[$memoKey])) {
+                return;
+            }
+            $this->loggedSteadyStateReasons[$memoKey] = true;
+        }
+
+        $context = array_filter([
             'tenant_id' => $tenantId,
             'recipient_id' => $recipientId,
             'channel' => $channel,
             'reason_code' => $reason,
             'exception_class' => $exception !== null ? $exception::class : null,
-        ], static fn (mixed $value): bool => $value !== null));
+        ], static fn (mixed $value): bool => $value !== null);
+
+        if ($steadyState) {
+            Log::warning('Safeguarding interaction policy unavailable', $context);
+
+            return;
+        }
+
+        Log::error('Safeguarding interaction policy unavailable', $context);
     }
 }

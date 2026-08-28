@@ -70,6 +70,13 @@ class SmartMatchingEngine
     private ?array $configCache = null;
     private array $categoryCache = [];
 
+    // Set when the safeguarding filter dropped a candidate because the
+    // contact gate was UNAVAILABLE (unconfigured/unsupported jurisdiction),
+    // as opposed to DENY, which is deliberate protection. Surfaced to the
+    // API as meta.degraded_reason so the member is told why the list is
+    // short instead of seeing a bare empty state (Sentry 134069538).
+    private bool $vettingPolicyUnavailable = false;
+
     public function __construct(
         private readonly EmbeddingService $embeddingService,
         private readonly CandidateRetriever $candidateRetriever,
@@ -420,7 +427,9 @@ class SmartMatchingEngine
         $userListings = $this->getUserListings($userId);
         if (empty($userListings)) {
             $meta['has_active_listings'] = false;
-            return $this->getColdStartMatches($userId, $userData, $maxDistance, $limit);
+            $coldStart = $this->getColdStartMatches($userId, $userData, $maxDistance, $limit);
+            $this->applyVettingUnavailabilityToMeta($meta);
+            return $coldStart;
         }
 
         $matches = [];
@@ -658,6 +667,8 @@ class SmartMatchingEngine
             $perOwner[$owner] = ($perOwner[$owner] ?? 0) + 1;
             $capped[] = $match;
         }
+
+        $this->applyVettingUnavailabilityToMeta($meta);
 
         return array_slice($capped, 0, $limit);
     }
@@ -1324,6 +1335,24 @@ class SmartMatchingEngine
      * @param int $searcherId The user ID performing the discovery/match request
      * @return array<int, array>
      */
+    /**
+     * When the safeguarding filter dropped candidates because the policy was
+     * UNAVAILABLE, mark the run degraded so the member is told why. An
+     * existing reason (no_coordinates) keeps precedence — it already renders
+     * its own banner and call to action.
+     */
+    private function applyVettingUnavailabilityToMeta(?array &$meta): void
+    {
+        if (! $this->vettingPolicyUnavailable || ! is_array($meta)) {
+            return;
+        }
+
+        if (($meta['degraded_reason'] ?? null) === null) {
+            $meta['degraded'] = true;
+            $meta['degraded_reason'] = 'safeguarding_policy_unavailable';
+        }
+    }
+
     public function filterCandidatesByVettingRequirements(array $candidates, int $searcherId): array
     {
         if (empty($candidates) || $searcherId <= 0) {
@@ -1356,6 +1385,14 @@ class SmartMatchingEngine
                 );
                 if ($searcherToOwner->isAllowed() && $ownerToSearcher->isAllowed()) {
                     $filtered[] = $candidate;
+                } elseif ($searcherToOwner->isUnavailable() || $ownerToSearcher->isUnavailable()) {
+                    // UNAVAILABLE is the gate failing closed (unconfigured or
+                    // unsupported jurisdiction), not the gate protecting
+                    // someone. Remember it so the API can tell the member why
+                    // their list is shorter instead of showing a bare empty
+                    // state. A DENY drop is the feature working and is
+                    // deliberately NOT surfaced.
+                    $this->vettingPolicyUnavailable = true;
                 }
             }
 

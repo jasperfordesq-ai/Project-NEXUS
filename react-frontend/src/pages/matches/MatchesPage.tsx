@@ -24,6 +24,7 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import Target from 'lucide-react/icons/target';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import MapPin from 'lucide-react/icons/map-pin';
+import ShieldAlert from 'lucide-react/icons/shield-alert';
 import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import { Alert } from '@/components/ui/Alert';
 import { AlgorithmLabel } from '@/components/ui/AlgorithmLabel';
@@ -180,9 +181,11 @@ export function MatchesPage() {
   // ─── Empty state variant ───
   const emptyVariant = meta.degraded_reason === 'no_coordinates'
     ? 'no_coordinates'
-    : meta.has_active_listings === false && (tab === 'all' || tab === 'listings')
-      ? 'no_listings'
-      : 'none';
+    : meta.degraded_reason === 'safeguarding_policy_unavailable'
+      ? 'safeguarding_unavailable'
+      : meta.has_active_listings === false && (tab === 'all' || tab === 'listings')
+        ? 'no_listings'
+        : 'none';
 
   // ─── Render ───
   return (
@@ -239,6 +242,18 @@ export function MatchesPage() {
               {t('empty.set_location_cta')}
             </Button>
           }
+        />
+      )}
+
+      {/* Safeguarding-degraded banner: the community's safeguarding setup is
+          unfinished, so protected members' matches are hidden. Only shown when
+          some matches still render — the empty state carries its own copy. */}
+      {meta.degraded_reason === 'safeguarding_policy_unavailable' && filteredMatches.length > 0 && (
+        <Alert
+          color="warning"
+          icon={<ShieldAlert className="w-5 h-5" aria-hidden="true" />}
+          title={t('banner.safeguarding_unavailable_title')}
+          description={t('banner.safeguarding_unavailable_desc')}
         />
       )}
 

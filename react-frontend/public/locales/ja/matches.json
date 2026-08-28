@@ -39,7 +39,9 @@
     "paused_desc": "設定でマッチングを再開するまで、新しいマッチングの提案や通知は受信されません。",
     "mutual_title": "相互一致を表示する",
     "mutual_desc": "これらのマッチングは双方向で行われます。あなたは彼らにぴったりであり、彼らもあなたにぴったりです。",
-    "show_all": "すべての一致を表示"
+    "show_all": "すべての一致を表示",
+    "safeguarding_unavailable_title": "一部のマッチは非表示です",
+    "safeguarding_unavailable_desc": "コミュニティのセーフガーディング（保護）設定が完了していないため、保護対象メンバーに関わるマッチは安全のため非表示になっています。"
   },
   "card": {
     "mutual": "相互マッチ",
@@ -89,7 +91,9 @@
     "no_listings_title": "あなたのリストから一致する作品",
     "no_listings_description": "リストを作成して、提供するものやニーズに一致する人、グループ、機会を探し始めます。",
     "create_listing_cta": "リストを作成する",
-    "adjust_preferences_cta": "一致設定を調整する"
+    "adjust_preferences_cta": "一致設定を調整する",
+    "safeguarding_unavailable_title": "一部のマッチはまだ表示できません",
+    "safeguarding_unavailable_description": "コミュニティのセーフガーディング（保護）設定が完了していないため、保護対象メンバーに関わるマッチは安全のため非表示になっています。コミュニティ運営チームが設定を完了した後に再度ご確認ください。"
   },
   "preferences": {
     "subtitle": "スマート マッチングが接続を検索して通知する方法を制御します。",

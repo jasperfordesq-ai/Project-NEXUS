@@ -102,6 +102,20 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->runInBackground()
             ->name('gdpr-check-overdue-requests');
 
+        // Safeguarding policy-health pager: a tenant where members chose
+        // "only vetted people may contact me" but the safeguarding
+        // jurisdiction is unconfigured/unusable leaves the contact gate
+        // permanently UNAVAILABLE — members silently vanish from matches and
+        // nobody is told (Sentry 134069538 ran for weeks this way). One
+        // fingerprinted daily alert naming the tenants; the fix is an admin
+        // action in the broker panel, not code.
+        $schedule->command('safeguarding:check-policy-health')
+            ->dailyAt('08:05')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->name('safeguarding-check-policy-health');
+
         // Alarm delivery heartbeat (watcher-of-the-watcher): the three breach
         // alarms above only fire when something is wrong, so a silently-broken
         // Sentry/Slack delivery path would go unnoticed. This fires a benign

@@ -39,7 +39,9 @@
     "paused_desc": "Vous ne recevrez pas de nouvelles suggestions ou notifications de correspondance tant que vous n'aurez pas repris la correspondance dans vos préférences.",
     "mutual_title": "Afficher les correspondances mutuelles",
     "mutual_desc": "Ces correspondances fonctionnent dans les deux sens : vous leur correspondez et ils vous correspondent.",
-    "show_all": "Afficher toutes les correspondances"
+    "show_all": "Afficher toutes les correspondances",
+    "safeguarding_unavailable_title": "Certaines correspondances sont masquées",
+    "safeguarding_unavailable_desc": "La configuration de la protection de votre communauté n'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous."
   },
   "card": {
     "mutual": "Correspondance mutuelle",
@@ -89,7 +91,9 @@
     "no_listings_title": "Œuvres correspondantes à vos annonces",
     "no_listings_description": "Créez une liste pour commencer à trouver des personnes, des groupes et des opportunités qui correspondent à ce que vous proposez ou avez besoin.",
     "create_listing_cta": "Créer une annonce",
-    "adjust_preferences_cta": "Ajuster les préférences de correspondance"
+    "adjust_preferences_cta": "Ajuster les préférences de correspondance",
+    "safeguarding_unavailable_title": "Certaines correspondances ne peuvent pas encore être affichées",
+    "safeguarding_unavailable_description": "La configuration de la protection de votre communauté n'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous. Revenez lorsque l'équipe de votre communauté l'aura terminée."
   },
   "preferences": {
     "subtitle": "Contrôlez la façon dont Smart Matching recherche et vous informe des connexions.",

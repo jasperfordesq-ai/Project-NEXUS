@@ -39,7 +39,9 @@
     "paused_desc": "Ní bhfaighidh tú moltaí nó fógraí meaitseála nua go dtí go dtosóidh tú ag meaitseáil i do shainroghanna.",
     "mutual_title": "Meaitseálacha cómhalartacha á dtaispeáint",
     "mutual_desc": "Oibríonn na meaitseálacha seo sa dá threo — oireann tusa go mór dóibh agus oireann siadsan go mór duitse.",
-    "show_all": "Taispeáin gach meaitseáil"
+    "show_all": "Taispeáin gach meaitseáil",
+    "safeguarding_unavailable_title": "Tá roinnt meaitseálacha folaithe",
+    "safeguarding_unavailable_desc": "Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán."
   },
   "card": {
     "mutual": "Meaitseáil chómhalartach",
@@ -89,7 +91,9 @@
     "no_listings_title": "Braitheann meaitseáil ar do liostuithe",
     "no_listings_description": "Cruthaigh liostú chun daoine, grúpaí agus deiseanna a aimsiú a oireann don mhéid a thairgeann tú nó a theastaíonn uait.",
     "create_listing_cta": "Cruthaigh liostú",
-    "adjust_preferences_cta": "Coigeartaigh sainroghanna meaitseála"
+    "adjust_preferences_cta": "Coigeartaigh sainroghanna meaitseála",
+    "safeguarding_unavailable_title": "Ní féidir roinnt meaitseálacha a thaispeáint go fóill",
+    "safeguarding_unavailable_description": "Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán. Féach ar ais nuair a bheidh sé críochnaithe ag foireann do phobail."
   },
   "preferences": {
     "subtitle": "Rialaigh conas a aimsíonn Meaitseáil Chliste naisc duit agus conas a chuireann sí ar an eolas thú fúthu.",
