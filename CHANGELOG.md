@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-08-28
+
 ### Added
 
 - **Registering a volunteering organisation now tells somebody — at both ends.**
@@ -281,6 +283,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the web address itself, where it would be written into server logs.
 
 ### Fixed
+
+- **Posts written on the website no longer show their formatting code, and short
+  posts no longer get a "Read more" they do not need.** A member reported her own
+  post opening in the phone app as
+  `<p class="mb-1 leading-relaxed text-[var(--text-primary)]"><span>So I had…`.
+  The feed card was fixed for the phone on 2026-08-24; this completes the same
+  fault everywhere else it reached. On the website, the small card shown when
+  someone *quotes* another post rendered the stored HTML as literal text — the one
+  place on the web that shows post content without going through
+  `FeedContentRenderer`. It now shows the words, using a new shared
+  `htmlToPlainText` helper that keeps the paragraph and line breaks
+  `stripHtmlToText` collapses, and decodes the entities it leaves encoded. On the
+  server, the feed preview counted raw characters towards its 500-character
+  budget, markup included: six short paragraphs from the web composer carry about
+  450 characters of tag before a single word is counted, so a three-sentence post
+  was flagged as truncated and given a "Read more". The preview is now measured on
+  the visible text, cut on a word boundary, never cut inside a tag, and closes
+  whatever tags the cut left open — a half-written `<p class="mb-1 lead` has no
+  closing bracket, so no tag-stripper can match it and the fragment reached the
+  screen. The appended ellipsis now sits inside the final paragraph instead of
+  after it. Separately, the phone's feed card spent one of its four preview lines
+  on the blank line between two paragraphs, and React Native drew its own
+  "there is more" ellipsis onto that empty line — the stray "..." floating under a
+  card, which looked like left-over markup and was not. The preview closes those
+  gaps; the post's own page keeps its paragraph breaks. Every new test was checked
+  against the unfixed code first: four earlier drafts passed with the fix reverted,
+  because a substring match still matches when the tag soup is on screen.
 
 - **The three feed pages that had no automated safety net now have one.** The
   tests for the hashtag feed, the hashtag discovery page and the single-post page
@@ -6142,7 +6171,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.2...HEAD
+[1.6.2]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.5.9...v1.6.0
 [1.5.9]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.5.8...v1.5.9

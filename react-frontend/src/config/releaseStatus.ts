@@ -12,7 +12,7 @@
  */
 export const RELEASE_STATUS = {
   stageKey: 'ga' as const,
-  stageLabel: 'Generally Available (v1.6.1)',
+  stageLabel: 'Generally Available (v1.6.2)',
   stageSummary: 'Live and supported.',
   readMorePath: '/features',
 } as const;

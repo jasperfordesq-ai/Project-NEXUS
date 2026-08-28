@@ -2442,7 +2442,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Dul chun cinn leibhéal {{level}}: {{percentage}}%",
   "user_fallback": "Úsáideoir",
-  "release_stage": "Ar Fáil go Ginearálta (v1.6.1)",
+  "release_stage": "Ar Fáil go Ginearálta (v1.6.2)",
   "theme_picker": {
     "title": "Cuma",
     "subtitle": "Roghnaigh scéim dathanna, dath béime agus dlús.",

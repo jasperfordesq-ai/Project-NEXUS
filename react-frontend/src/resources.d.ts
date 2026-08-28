@@ -38310,7 +38310,7 @@ export default interface Resources {
         "title": "Regional points are not enabled here"
       }
     },
-    "release_stage": "Generally Available (v1.6.1)",
+    "release_stage": "Generally Available (v1.6.2)",
     "release_status": {
       "changelog_link": "Changelog",
       "docs_link": "Documentation",
@@ -53637,7 +53637,7 @@ export default interface Resources {
       "security_body_before": "Found a security issue? Please report it privately to ",
       "security_email": "jasper@hour-timebank.ie",
       "security_title": "Security disclosure",
-      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.6.1 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
+      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.6.2 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
       "tech_stack": {
         "accessible_label": "Accessible frontend",
         "accessible_value": "GOV.UK Frontend 6.4 + Express + Nunjucks, HTML-first and works without JavaScript",
@@ -53865,7 +53865,7 @@ export default interface Resources {
         "title": "Maintenance"
       }
     },
-    "release_stage": "Generally Available (v1.6.1)",
+    "release_stage": "Generally Available (v1.6.2)",
     "unknown_error": "Unknown error"
   },
   "reviews": {

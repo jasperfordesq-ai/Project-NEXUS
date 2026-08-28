@@ -9,7 +9,7 @@
     "meta_title": "Fonctionnalités - Project NEXUS v1.6",
     "meta_description": "Tous les modules livrés dans Project NEXUS v1.6, avec des indications honnêtes sur leur maturité pour la fédération, la banque de temps, la place de marché, les outils communautaires, la sécurité, l'analyse et l'infrastructure open source.",
     "heading": "Ce que Project NEXUS fait",
-    "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v1.6.1. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
+    "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v1.6.2. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
     "maturity_key_title": "Comment nous indiquons la maturité",
     "maturity_ga": "Disponibilité générale - stable, prise en charge, utilisée en production chez les locataires pilotes.",
     "maturity_beta": "Déjà en production, mais la surface publique ou le protocole filaire est encore en cours de renforcement.",
@@ -1120,7 +1120,7 @@
     "help_secondary_cta": "Visitez le centre d'aide"
   },
   "unknown_error": "Erreur inconnue",
-  "release_stage": "Généralement disponible (v1.6.1)",
+  "release_stage": "Généralement disponible (v1.6.2)",
   "community_chooser": {
     "title": "Choisissez votre communauté",
     "subtitle": "Vous êtes arrivé sur la page principale de Project NEXUS. Choisissez votre communauté ci-dessous pour continuer.",
