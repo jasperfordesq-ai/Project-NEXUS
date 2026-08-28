@@ -385,6 +385,14 @@ async function request<T>(
 
   clearTimeout(timeoutId);
 
+  // Capture-only network trace: the unsigned iOS screenshot build enables this
+  // flag so CI diagnostics can identify a failing route without recording request
+  // bodies, headers, tokens or response data. Normal development and release
+  // builds leave it disabled.
+  if (process.env.EXPO_PUBLIC_IOS_SCREENSHOT_DIAGNOSTICS === '1') {
+    console.warn(`[iOS screenshot network] ${method} ${endpoint} -> ${response.status}`);
+  }
+
   // Handle 401: try silent token refresh, then retry once
   if (response.status === 401 && endpoint !== '/api/auth/login') {
     const refresh = await attemptTokenRefresh();

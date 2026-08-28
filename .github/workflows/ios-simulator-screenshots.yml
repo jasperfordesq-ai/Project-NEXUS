@@ -34,6 +34,7 @@ env:
   # unchanged; this prevents a failed SecureStore read from sending protected
   # demo credentials to another community during automation.
   EXPO_PUBLIC_DEFAULT_TENANT: "partner-demo"
+  EXPO_PUBLIC_IOS_SCREENSHOT_DIAGNOSTICS: "1"
   SENTRY_DISABLE_AUTO_UPLOAD: "true"
   EXPO_NO_TELEMETRY: "1"
   MAESTRO_CLI_NO_ANALYTICS: "1"
