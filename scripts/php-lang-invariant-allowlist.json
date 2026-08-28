@@ -42,6 +42,7 @@
     "application.created, shift.completed, hours.logged",
     "km",
     "mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback",
+    ":action",
     ":candidate: :from -> :to",
     ":challenge",
     ":code",

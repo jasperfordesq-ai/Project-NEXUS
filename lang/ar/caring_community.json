@@ -1,25 +1,25 @@
 {
   "loyalty": {
     "errors": {
-      "credits_must_be_positive": "Credits to use must be greater than 0.",
-      "invalid_order_total": "Order total must be greater than 0.",
-      "credits_decimal_precision": "Credits must have at most 2 decimal places.",
-      "credits_exceed_max": "Credits to use exceed the per-redemption maximum.",
-      "self_redemption_forbidden": "You cannot redeem credits at your own listing.",
-      "programme_unavailable": "The loyalty programme is not available on this community.",
-      "merchant_disabled": "This merchant is no longer accepting time credits.",
-      "merchant_misconfigured": "This merchant's loyalty configuration is invalid.",
-      "exceeds_max_discount": "Discount exceeds the maximum allowed for this order.",
-      "member_not_found": "Member account not found.",
-      "zero_balance": "You have no time credits to redeem.",
-      "insufficient_credits": "Not enough time credits in your wallet.",
-      "redemption_not_found": "Redemption not found.",
-      "redemption_not_reversible": "Only applied redemptions can be reversed.",
-      "reversal_reason_too_long": "Reversal reason must be 500 characters or fewer.",
+      "credits_must_be_positive": "يجب أن يكون عدد الأرصدة المستخدمة أكبر من 0.",
+      "invalid_order_total": "يجب أن يكون إجمالي الطلب أكبر من 0.",
+      "credits_decimal_precision": "يجب ألا تتجاوز الأرصدة منزلتين عشريتين.",
+      "credits_exceed_max": "تتجاوز الأرصدة المستخدمة الحد الأقصى لكل عملية استبدال.",
+      "self_redemption_forbidden": "لا يمكنك استبدال الأرصدة في إعلانك الخاص.",
+      "programme_unavailable": "برنامج الولاء غير متاح في هذا المجتمع.",
+      "merchant_disabled": "لم يعد هذا التاجر يقبل أرصدة الوقت.",
+      "merchant_misconfigured": "إعدادات برنامج الولاء لهذا التاجر غير صالحة.",
+      "exceeds_max_discount": "يتجاوز الخصم الحد الأقصى المسموح به لهذا الطلب.",
+      "member_not_found": "لم يُعثر على حساب العضو.",
+      "zero_balance": "ليس لديك أرصدة وقت لاستبدالها.",
+      "insufficient_credits": "لا توجد أرصدة وقت كافية في محفظتك.",
+      "redemption_not_found": "لم يُعثر على عملية الاستبدال.",
+      "redemption_not_reversible": "لا يمكن عكس سوى عمليات الاستبدال المطبقة.",
+      "reversal_reason_too_long": "يجب ألا يتجاوز سبب العكس 500 حرف.",
       "invalid_listing": "القائمة لا تنتمي إلى هذا التاجر.",
       "listing_unavailable": "هذه القائمة غير متاحة لاسترداد الولاء.",
-      "invalid_exchange_rate": "CHF per hour must be between 0 and 9999.",
-      "invalid_max_discount_pct": "Max discount percent must be between 0 and 100.",
+      "invalid_exchange_rate": "يجب أن تتراوح قيمة الفرنك السويسري لكل ساعة بين 0 و9999.",
+      "invalid_max_discount_pct": "يجب أن تتراوح النسبة القصوى للخصم بين 0 و100.",
       "redemption_unavailable": "لم يعد استرداد برنامج الولاء هذا متاحًا.",
       "redemption_mismatch": "لا يتطابق استرداد برنامج الولاء هذا مع طلب السوق المحدد."
     }
@@ -35,29 +35,29 @@
   },
   "forecast": {
     "sub_region_demand": {
-      "title": "Sub-region coverage",
-      "description": "Hours requested vs. fulfilled per sub-region. Coverage below 50% is flagged.",
-      "coverage_ratio": "Coverage ratio",
-      "requested": "Requested",
-      "fulfilled": "Fulfilled",
-      "under_supplied": "Under-supplied"
+      "title": "التغطية حسب المنطقة الفرعية",
+      "description": "الساعات المطلوبة مقارنة بالساعات المنجزة في كل منطقة فرعية. تُعلَّم التغطية التي تقل عن 50٪.",
+      "coverage_ratio": "نسبة التغطية",
+      "requested": "المطلوبة",
+      "fulfilled": "المنجزة",
+      "under_supplied": "نقص في العرض"
     },
     "helper_churn": {
-      "title": "Helper churn",
+      "title": "توقف المساعدين",
       "description": "Share of previously active helpers who haven't logged hours in the last 30 days.",
-      "overall": "Overall churn rate",
-      "by_category": "By category",
-      "lapsed": "Lapsed helpers",
-      "prior_active": "Previously active"
+      "overall": "معدل التوقف الإجمالي",
+      "by_category": "حسب الفئة",
+      "lapsed": "المساعدون غير النشطين",
+      "prior_active": "كانوا نشطين سابقًا"
     },
     "coefficient_drift": {
-      "title": "Category coefficient drift",
-      "description": "Observed average hours per session compared to the admin-set baseline. Drift above 15% is flagged.",
-      "baseline": "Baseline",
-      "expected": "Expected",
-      "observed": "Observed",
-      "drift": "Drift",
-      "flagged": "Flagged"
+      "title": "انحراف معامل الفئة",
+      "description": "متوسط الساعات المرصودة لكل جلسة مقارنة بالقيمة المرجعية التي حددتها الإدارة. تُعلَّم الانحرافات التي تتجاوز 15٪.",
+      "baseline": "القيمة المرجعية",
+      "expected": "المتوقع",
+      "observed": "المرصود",
+      "drift": "الانحراف",
+      "flagged": "مُعلَّم"
     }
   },
   "nudges": {
