@@ -741,6 +741,15 @@ that follow:
   Windows Security → App & browser control) or Authenticode-signing local
   builds, which this repo has no infrastructure for.
 
+✅ **RESOLVED on the current dev machine, 2026-08-28 evening: the owner switched
+Smart App Control OFF** (`VerifiedAndReputablePolicyState` 1 → 0, verified from
+the registry; the exact `Nexus.Messaging.Tests.dll` refused 40 minutes earlier
+immediately ran 38/38). Local ASP.NET test execution is fully unblocked there.
+Keep using `scripts/test-backend-full.ps1` regardless — zero-test greens have
+other causes ("No test matches the given testcase filter", skipped projects),
+and the guard costs nothing. On any OTHER Windows machine with SAC on, all of
+the above applies again.
+
 ### The ASP.NET suite is not in `ci.yml`, and a sibling's push can skip it
 
 The ASP.NET jobs live in **`platform-contracts.yml`**, not `ci.yml` — a green
