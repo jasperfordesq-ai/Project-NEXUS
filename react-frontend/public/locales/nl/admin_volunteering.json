@@ -783,7 +783,11 @@
     "trends_title": "Trends",
     "week_period": "{{year}}, week {{week}}",
     "action_taken_placeholder": "Beschrijf de genomen actie...",
-    "col_label": "Label"
+    "col_label": "Label",
+    "decline_org_title": "Organisatie afwijzen",
+    "decline_org_confirm": "De registratie van {{name}} afwijzen? De persoon krijgt bericht en de organisatie wordt niet zichtbaar voor de gemeenschap.",
+    "decline_reason_label": "Reden (optioneel)",
+    "decline_reason_placeholder": "Dit wordt opgenomen in de e-mail die de persoon ontvangt."
   },
   "donation_refunds": {
     "page_title": "Donatieterugbetalingen",

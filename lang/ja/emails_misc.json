@@ -279,7 +279,15 @@
     "new_user_pending_preview": "{{community}} に参加した方がいます。承認するまでアカウントを利用できません",
     "new_user_pending_bell": "新しいメンバーが承認をお待ちです",
     "new_user_pending_body": "<strong>{{community}}</strong> に新しいメンバーが参加しました。<strong>承認するまでアカウントを利用できません</strong>。プライバシー保護のため、この通知に個人情報は含まれていません。承認待ちの一覧を開いてご確認ください。",
-    "new_user_pending_cta": "承認待ちを確認する"
+    "new_user_pending_cta": "承認待ちを確認する",
+    "new_vol_org_subject": "ボランティア団体が承認を待っています — {{community}}",
+    "new_vol_org_title": "承認待ちの団体",
+    "new_vol_org_preview": "{{community}} でボランティア団体が登録されました",
+    "new_vol_org_bell": "承認待ちの新しい団体: {{name}}",
+    "new_vol_org_body": "<strong>{{community}}</strong> でボランティア団体が登録されました。",
+    "new_vol_org_by_label": "登録者",
+    "new_vol_org_waiting": "管理者が承認するまでコミュニティには表示されません。登録した方は返答を待っています。",
+    "new_vol_org_cta": "団体を確認する"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "コメント",
     "type_listing": "出品",
     "type_content": "コンテンツ"
+  },
+  "vol_org_decision": {
+    "reason_label": "理由",
+    "approved_subject": "{{name}} が承認されました",
+    "approved_title": "団体が承認されました",
+    "approved_preview": "{{name}} が公開されました",
+    "approved_bell": "{{name}} が承認され、公開されました",
+    "approved_body": "朗報です。<strong>{{name}}</strong> が {{community}} で承認されました。コミュニティに公開され、ボランティアの募集を掲載できるようになりました。",
+    "approved_cta": "団体ページを見る",
+    "declined_subject": "団体の登録についてのお知らせ",
+    "declined_title": "団体は承認されませんでした",
+    "declined_preview": "{{name}} の登録は承認されませんでした",
+    "declined_bell": "{{name}} の登録は承認されませんでした",
+    "declined_body": "{{community}} における <strong>{{name}}</strong> の登録は承認されませんでした。誤りだと思われる場合、または詳細を追加して再度お試しになりたい場合は、コミュニティ運営チームまでご連絡ください。",
+    "declined_cta": "ボランティアへ移動",
+    "suspended_subject": "{{name}} は停止されました",
+    "suspended_title": "団体が停止されました",
+    "suspended_preview": "{{name}} はコミュニティに表示されなくなりました",
+    "suspended_bell": "{{name}} は停止されました",
+    "suspended_body": "<strong>{{name}}</strong> は {{community}} で停止され、コミュニティには表示されなくなりました。ご相談をご希望の場合は、コミュニティ運営チームまでご連絡ください。",
+    "suspended_cta": "ボランティアへ移動",
+    "reinstated_subject": "{{name}} が再び公開されました",
+    "reinstated_title": "団体が復元されました",
+    "reinstated_preview": "{{name}} が再びコミュニティに表示されます",
+    "reinstated_bell": "{{name}} が再び公開されました",
+    "reinstated_body": "<strong>{{name}}</strong> は {{community}} で再び公開され、コミュニティに表示されるようになりました。",
+    "reinstated_cta": "団体ページを見る"
   }
 }

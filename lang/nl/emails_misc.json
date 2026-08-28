@@ -279,7 +279,15 @@
     "new_user_pending_preview": "Iemand heeft zich aangemeld bij {{community}} en kan het account pas gebruiken nadat u het goedkeurt",
     "new_user_pending_bell": "Een nieuw lid wacht op uw goedkeuring",
     "new_user_pending_body": "Iemand heeft zich zojuist aangemeld bij <strong>{{community}}</strong> en <strong>kan het account pas gebruiken nadat u het goedkeurt</strong>. Om de privacy te beschermen bevat deze melding geen persoonlijke gegevens. Open de lijst met openstaande goedkeuringen om deze te beoordelen.",
-    "new_user_pending_cta": "Openstaande goedkeuringen beoordelen"
+    "new_user_pending_cta": "Openstaande goedkeuringen beoordelen",
+    "new_vol_org_subject": "Een vrijwilligersorganisatie wacht op goedkeuring — {{community}}",
+    "new_vol_org_title": "Organisatie wacht op goedkeuring",
+    "new_vol_org_preview": "Iemand heeft een vrijwilligersorganisatie geregistreerd op {{community}}",
+    "new_vol_org_bell": "Nieuwe organisatie wacht op goedkeuring: {{name}}",
+    "new_vol_org_body": "Iemand heeft een vrijwilligersorganisatie geregistreerd op <strong>{{community}}</strong>.",
+    "new_vol_org_by_label": "Geregistreerd door",
+    "new_vol_org_waiting": "De organisatie blijft verborgen voor de gemeenschap totdat een beheerder haar goedkeurt, en degene die haar heeft geregistreerd wacht op een reactie.",
+    "new_vol_org_cta": "Organisatie beoordelen"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "reactie",
     "type_listing": "advertentie",
     "type_content": "inhoud"
+  },
+  "vol_org_decision": {
+    "reason_label": "Reden",
+    "approved_subject": "{{name}} is goedgekeurd",
+    "approved_title": "Organisatie goedgekeurd",
+    "approved_preview": "{{name}} staat nu online",
+    "approved_bell": "{{name}} is goedgekeurd en staat nu online",
+    "approved_body": "Goed nieuws — <strong>{{name}}</strong> is goedgekeurd op {{community}}. De organisatie is nu zichtbaar voor de gemeenschap en je kunt vrijwilligerskansen plaatsen.",
+    "approved_cta": "Bekijk je organisatie",
+    "declined_subject": "Over de registratie van je organisatie",
+    "declined_title": "Organisatie niet goedgekeurd",
+    "declined_preview": "Je registratie van {{name}} is niet goedgekeurd",
+    "declined_bell": "Je registratie van {{name}} is niet goedgekeurd",
+    "declined_body": "Je registratie van <strong>{{name}}</strong> op {{community}} is niet goedgekeurd. Als je denkt dat dit een vergissing is, of het opnieuw wilt proberen met meer details, neem dan contact op met het team van de gemeenschap.",
+    "declined_cta": "Ga naar vrijwilligerswerk",
+    "suspended_subject": "{{name}} is geschorst",
+    "suspended_title": "Organisatie geschorst",
+    "suspended_preview": "{{name}} is niet langer zichtbaar voor de gemeenschap",
+    "suspended_bell": "{{name}} is geschorst",
+    "suspended_body": "<strong>{{name}}</strong> is geschorst op {{community}} en is niet langer zichtbaar voor de gemeenschap. Neem contact op met het team van de gemeenschap als je hierover wilt praten.",
+    "suspended_cta": "Ga naar vrijwilligerswerk",
+    "reinstated_subject": "{{name}} staat weer online",
+    "reinstated_title": "Organisatie hersteld",
+    "reinstated_preview": "{{name}} is weer zichtbaar voor de gemeenschap",
+    "reinstated_bell": "{{name}} staat weer online",
+    "reinstated_body": "<strong>{{name}}</strong> staat weer online op {{community}} en is opnieuw zichtbaar voor de gemeenschap.",
+    "reinstated_cta": "Bekijk je organisatie"
   }
 }

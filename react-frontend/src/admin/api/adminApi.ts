@@ -1630,8 +1630,18 @@ export const adminVolunteering = {
   getOrgTransactions: (orgId: number, cursor?: string) =>
     api.get(`/v2/admin/volunteering/organizations/${orgId}/wallet/transactions?per_page=20${cursor ? `&cursor=${cursor}` : ''}`),
 
-  updateOrgStatus: (orgId: number, status: 'active' | 'suspended') =>
-    api.put(`/v2/admin/volunteering/organizations/${orgId}/status`, { status }),
+  // `declined` was added on 2026-08-28 so a pending organisation can actually
+  // be refused; `reason` is passed on to the registrant, so a refusal does not
+  // arrive unexplained.
+  updateOrgStatus: (
+    orgId: number,
+    status: 'active' | 'suspended' | 'declined',
+    reason?: string,
+  ) =>
+    api.put(`/v2/admin/volunteering/organizations/${orgId}/status`, {
+      status,
+      ...(reason ? { reason } : {}),
+    }),
 
   // Hours management
   listHours: (params?: { status?: string; cursor?: string }) => {

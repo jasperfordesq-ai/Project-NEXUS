@@ -279,7 +279,15 @@
     "new_user_pending_preview": "Ktoś dołączył do {{community}} i nie może korzystać z konta, dopóki go nie zatwierdzisz",
     "new_user_pending_bell": "Nowy członek czeka na Twoje zatwierdzenie",
     "new_user_pending_body": "Ktoś właśnie dołączył do <strong>{{community}}</strong> i <strong>nie może korzystać z konta, dopóki go nie zatwierdzisz</strong>. Aby chronić prywatność, to powiadomienie nie zawiera danych osobowych. Otwórz listę oczekujących zatwierdzeń, aby je sprawdzić.",
-    "new_user_pending_cta": "Sprawdź oczekujące zatwierdzenia"
+    "new_user_pending_cta": "Sprawdź oczekujące zatwierdzenia",
+    "new_vol_org_subject": "Organizacja wolontariacka czeka na zatwierdzenie — {{community}}",
+    "new_vol_org_title": "Organizacja oczekuje na zatwierdzenie",
+    "new_vol_org_preview": "Ktoś zarejestrował organizację wolontariacką w {{community}}",
+    "new_vol_org_bell": "Nowa organizacja oczekuje na zatwierdzenie: {{name}}",
+    "new_vol_org_body": "Ktoś zarejestrował organizację wolontariacką w <strong>{{community}}</strong>.",
+    "new_vol_org_by_label": "Zarejestrowana przez",
+    "new_vol_org_waiting": "Pozostaje ukryta przed społecznością, dopóki administrator jej nie zatwierdzi, a osoba, która ją zarejestrowała, czeka na odpowiedź.",
+    "new_vol_org_cta": "Sprawdź organizację"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "komentarz",
     "type_listing": "ogłoszenie",
     "type_content": "treść"
+  },
+  "vol_org_decision": {
+    "reason_label": "Powód",
+    "approved_subject": "Organizacja {{name}} została zatwierdzona",
+    "approved_title": "Organizacja zatwierdzona",
+    "approved_preview": "Organizacja {{name}} jest już widoczna",
+    "approved_bell": "Organizacja {{name}} została zatwierdzona i jest już widoczna",
+    "approved_body": "Dobra wiadomość — organizacja <strong>{{name}}</strong> została zatwierdzona w {{community}}. Jest już widoczna dla społeczności i możesz publikować oferty wolontariatu.",
+    "approved_cta": "Zobacz swoją organizację",
+    "declined_subject": "W sprawie rejestracji Twojej organizacji",
+    "declined_title": "Organizacja niezatwierdzona",
+    "declined_preview": "Twoja rejestracja organizacji {{name}} nie została zatwierdzona",
+    "declined_bell": "Twoja rejestracja organizacji {{name}} nie została zatwierdzona",
+    "declined_body": "Twoja rejestracja organizacji <strong>{{name}}</strong> w {{community}} nie została zatwierdzona. Jeśli uważasz, że to pomyłka, lub chcesz spróbować ponownie z pełniejszymi informacjami, skontaktuj się z zespołem społeczności.",
+    "declined_cta": "Przejdź do wolontariatu",
+    "suspended_subject": "Organizacja {{name}} została zawieszona",
+    "suspended_title": "Organizacja zawieszona",
+    "suspended_preview": "Organizacja {{name}} nie jest już widoczna dla społeczności",
+    "suspended_bell": "Organizacja {{name}} została zawieszona",
+    "suspended_body": "Organizacja <strong>{{name}}</strong> została zawieszona w {{community}} i nie jest już widoczna dla społeczności. Skontaktuj się z zespołem społeczności, jeśli chcesz to omówić.",
+    "suspended_cta": "Przejdź do wolontariatu",
+    "reinstated_subject": "Organizacja {{name}} jest znów widoczna",
+    "reinstated_title": "Organizacja przywrócona",
+    "reinstated_preview": "Organizacja {{name}} jest ponownie widoczna dla społeczności",
+    "reinstated_bell": "Organizacja {{name}} jest znów widoczna",
+    "reinstated_body": "Organizacja <strong>{{name}}</strong> jest znów aktywna w {{community}} i ponownie widoczna dla społeczności.",
+    "reinstated_cta": "Zobacz swoją organizację"
   }
 }

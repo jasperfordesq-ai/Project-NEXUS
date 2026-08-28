@@ -800,7 +800,11 @@
     "webhook_logs_title": "Logs de envio do webhook",
     "reminder_job_sent_other": "Tarefa de lembrete enviada {{count}} notificação",
     "action_taken_placeholder": "Descreva a ação realizada...",
-    "col_label": "Rótulo"
+    "col_label": "Rótulo",
+    "decline_org_title": "Recusar organização",
+    "decline_org_confirm": "Recusar o registo de {{name}}? A pessoa será informada e a organização não ficará visível para a comunidade.",
+    "decline_reason_label": "Motivo (opcional)",
+    "decline_reason_placeholder": "Será incluído no e-mail que a pessoa receber."
   },
   "donation_refunds": {
     "page_title": "Reembolsos de doações",

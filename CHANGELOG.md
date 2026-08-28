@@ -29,6 +29,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Registering a volunteering organisation now tells somebody — at both ends.**
+  Registering one used to notify nobody at all: no email and no in-app notice to
+  the admins who alone can approve it, and nothing to the person who registered
+  when a decision was finally made. Two organisations sat waiting unseen, one for
+  seven weeks. Admins are now emailed and notified when an organisation is
+  registered, and the registrant is emailed and notified when it is approved,
+  declined, suspended or reinstated. Admins can now actually decline one — the
+  endpoint previously accepted only active and suspended, so there was no way to
+  say no — and a decline or suspension can carry a reason, which is passed on in
+  the message the member receives. The admin dashboard gained a
+  "pending organisations" alert so a queue cannot build up unnoticed again; that
+  gap was a known parity gap recorded in the dashboard's own notes. The admin
+  audience deliberately excludes brokers and coordinators, who are refused the
+  approval endpoint, and is selected by admin flag as well as role so that
+  flag-only admins are not skipped. All new member-facing copy is translated into
+  all eleven languages.
+
 - **The native iOS release path now has an evidence-backed App Store submission pack.**
   Apple store copy, privacy and age-rating worksheets, reviewer notes, screenshot rules,
   owner/legal decisions and a release-candidate freeze record now sit alongside automated

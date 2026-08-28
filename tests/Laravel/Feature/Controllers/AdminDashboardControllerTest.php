@@ -49,6 +49,44 @@ class AdminDashboardControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    /**
+     * The dashboard could not surface this until 2026-08-28 — the endpoint
+     * simply did not return the number, which is recorded as a known parity gap
+     * in AdminDashboard.tsx's own notes. Without it a queue of volunteering
+     * organisations awaiting approval built up entirely unseen, because
+     * registering one notified nobody either.
+     */
+    public function test_stats_counts_volunteering_organisations_awaiting_approval(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $before = (int) ($this->apiGet('/v2/admin/dashboard/stats')->json('data.pending_organisations') ?? 0);
+
+        \Illuminate\Support\Facades\DB::table('vol_organizations')->insert([
+            'tenant_id'   => $this->testTenantId,
+            'user_id'     => $admin->id,
+            'name'        => 'Pending Org For Dashboard Test',
+            'slug'        => 'pending-org-for-dashboard-test-' . uniqid(),
+            'description' => 'Awaiting a decision.',
+            'status'      => 'pending',
+            'created_at'  => now(),
+        ]);
+        \Illuminate\Support\Facades\DB::table('vol_organizations')->insert([
+            'tenant_id'   => $this->testTenantId,
+            'user_id'     => $admin->id,
+            'name'        => 'Already Approved Org For Dashboard Test',
+            'slug'        => 'approved-org-for-dashboard-test-' . uniqid(),
+            'description' => 'Already decided.',
+            'status'      => 'active',
+            'created_at'  => now(),
+        ]);
+
+        $after = (int) $this->apiGet('/v2/admin/dashboard/stats')->json('data.pending_organisations');
+
+        self::assertSame($before + 1, $after, 'only the PENDING organisation should be counted');
+    }
+
     public function test_stats_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();

@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Services\UserInsightsService;
 use App\Support\UserDisplayName;
 
@@ -65,6 +66,24 @@ class AdminDashboardController extends BaseApiController
             [$tenantId]
         )->cnt;
 
+        // Volunteering organisations awaiting a decision. Registration used to
+        // notify nobody, so this queue could build up entirely unseen -- two of
+        // them sat pending for seven weeks and one day before anyone noticed.
+        // Guarded because the volunteering module is optional per tenant and the
+        // table is absent in some environments.
+        $pendingOrganisations = 0;
+        try {
+            if (Schema::hasTable('vol_organizations')) {
+                $pendingOrganisations = (int) DB::selectOne(
+                    "SELECT COUNT(*) as cnt FROM vol_organizations WHERE tenant_id = ? AND status = 'pending'",
+                    [$tenantId]
+                )->cnt;
+            }
+        } catch (\Throwable $e) {
+            // A dashboard tile must never take the whole dashboard down.
+            $pendingOrganisations = 0;
+        }
+
         $totalTransactions = 0;
         $totalHoursExchanged = 0;
         try {
@@ -95,6 +114,7 @@ class AdminDashboardController extends BaseApiController
             'total_listings' => $totalListings,
             'active_listings' => $activeListings,
             'pending_listings' => $pendingListings,
+            'pending_organisations' => $pendingOrganisations,
             'total_transactions' => $totalTransactions,
             'total_hours_exchanged' => round($totalHoursExchanged, 1),
             'new_users_this_month' => $newUsersThisMonth,

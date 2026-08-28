@@ -851,7 +851,11 @@
     "webhook_logs_title": "سجلات إرسال الويب هوك",
     "reminder_job_sent_other": "تم إرسال مهمة التذكير {{count}} إشعار",
     "action_taken_placeholder": "وصف الإجراء المتخذ...",
-    "col_label": "تسمية"
+    "col_label": "تسمية",
+    "decline_org_title": "رفض المنظمة",
+    "decline_org_confirm": "هل تريد رفض تسجيل {{name}}؟ سيتم إبلاغ صاحب الطلب، ولن تكون المنظمة ظاهرة للمجتمع.",
+    "decline_reason_label": "السبب (اختياري)",
+    "decline_reason_placeholder": "سيُدرَج هذا في البريد الإلكتروني الذي سيصله."
   },
   "donation_refunds": {
     "page_title": "استرداد التبرعات",

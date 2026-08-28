@@ -800,7 +800,11 @@
     "col_reporter": "Reporter",
     "org_type_club": "Club",
     "action_taken_placeholder": "Descrivi l'azione intrapresa...",
-    "col_label": "Etichetta"
+    "col_label": "Etichetta",
+    "decline_org_title": "Rifiuta organizzazione",
+    "decline_org_confirm": "Rifiutare la registrazione di {{name}}? La persona verrà avvisata e l'organizzazione non sarà visibile alla comunità.",
+    "decline_reason_label": "Motivo (facoltativo)",
+    "decline_reason_placeholder": "Sarà incluso nell'email che riceverà."
   },
   "donation_refunds": {
     "page_title": "Rimborsi donazioni",

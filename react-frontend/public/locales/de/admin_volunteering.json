@@ -783,7 +783,11 @@
     "trends_title": "Trends",
     "org_type_organisation": "Organisation",
     "action_taken_placeholder": "Beschreiben Sie die durchgeführte Aktion...",
-    "col_label": "Bezeichnung"
+    "col_label": "Bezeichnung",
+    "decline_org_title": "Organisation ablehnen",
+    "decline_org_confirm": "Die Registrierung für {{name}} ablehnen? Die Person wird benachrichtigt, und die Organisation bleibt für die Gemeinschaft unsichtbar.",
+    "decline_reason_label": "Grund (optional)",
+    "decline_reason_placeholder": "Dies wird in die E-Mail aufgenommen, die die Person erhält."
   },
   "donation_refunds": {
     "page_title": "Spenden-Rückerstattungen",

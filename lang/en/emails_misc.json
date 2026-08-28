@@ -279,7 +279,15 @@
     "gdpr_consent_preview": "A member changed a consent setting on {{community}}",
     "gdpr_consent_bell": "{{name}} {{state}} consent: {{type}}",
     "gdpr_consent_body": "<strong>{{name}}</strong> has {{state}} their consent for <strong>{{type}}</strong> on <strong>{{community}}</strong>. This notice is for your records — no action is required.",
-    "gdpr_consent_cta": "Open GDPR dashboard"
+    "gdpr_consent_cta": "Open GDPR dashboard",
+    "new_vol_org_subject": "A volunteering organisation is waiting for approval — {{community}}",
+    "new_vol_org_title": "Organisation Awaiting Approval",
+    "new_vol_org_preview": "Someone has registered a volunteering organisation on {{community}}",
+    "new_vol_org_bell": "New organisation awaiting approval: {{name}}",
+    "new_vol_org_body": "Someone has registered a volunteering organisation on <strong>{{community}}</strong>.",
+    "new_vol_org_by_label": "Registered by",
+    "new_vol_org_waiting": "It stays hidden from the community until an admin approves it, and the person who registered it is waiting to hear back.",
+    "new_vol_org_cta": "Review Organisation"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "comment",
     "type_listing": "listing",
     "type_content": "content"
+  },
+  "vol_org_decision": {
+    "reason_label": "Reason",
+    "approved_subject": "{{name}} has been approved",
+    "approved_title": "Organisation Approved",
+    "approved_preview": "{{name}} is now live",
+    "approved_bell": "{{name}} has been approved and is now live",
+    "approved_body": "Good news — <strong>{{name}}</strong> has been approved on {{community}}. It is now visible to the community, and you can start posting volunteering opportunities.",
+    "approved_cta": "View Your Organisation",
+    "declined_subject": "About your organisation registration",
+    "declined_title": "Organisation Not Approved",
+    "declined_preview": "Your registration for {{name}} was not approved",
+    "declined_bell": "Your registration for {{name}} was not approved",
+    "declined_body": "Your registration for <strong>{{name}}</strong> on {{community}} has not been approved. If you think this is a mistake, or you would like to try again with more detail, please get in touch with the community team.",
+    "declined_cta": "Go to Volunteering",
+    "suspended_subject": "{{name}} has been suspended",
+    "suspended_title": "Organisation Suspended",
+    "suspended_preview": "{{name}} is no longer visible to the community",
+    "suspended_bell": "{{name}} has been suspended",
+    "suspended_body": "<strong>{{name}}</strong> has been suspended on {{community}} and is no longer visible to the community. Please contact the community team if you would like to discuss this.",
+    "suspended_cta": "Go to Volunteering",
+    "reinstated_subject": "{{name}} is live again",
+    "reinstated_title": "Organisation Reinstated",
+    "reinstated_preview": "{{name}} is visible to the community again",
+    "reinstated_bell": "{{name}} is live again",
+    "reinstated_body": "<strong>{{name}}</strong> is live again on {{community}} and is visible to the community once more.",
+    "reinstated_cta": "View Your Organisation"
   }
 }

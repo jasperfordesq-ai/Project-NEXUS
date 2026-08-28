@@ -279,7 +279,15 @@
     "new_user_pending_preview": "Qualcuno si è unito a {{community}} e non può usare il proprio account finché non lo approvi",
     "new_user_pending_bell": "Un nuovo membro attende la tua approvazione",
     "new_user_pending_body": "Qualcuno si è appena unito a <strong>{{community}}</strong> e <strong>non può usare il proprio account finché non lo approvi</strong>. Per tutelare la privacy, questa notifica non contiene dati personali. Apri l'elenco delle approvazioni in sospeso per esaminarlo.",
-    "new_user_pending_cta": "Esamina le approvazioni in sospeso"
+    "new_user_pending_cta": "Esamina le approvazioni in sospeso",
+    "new_vol_org_subject": "Un'organizzazione di volontariato attende l'approvazione — {{community}}",
+    "new_vol_org_title": "Organizzazione in attesa di approvazione",
+    "new_vol_org_preview": "Qualcuno ha registrato un'organizzazione di volontariato su {{community}}",
+    "new_vol_org_bell": "Nuova organizzazione in attesa di approvazione: {{name}}",
+    "new_vol_org_body": "Qualcuno ha registrato un'organizzazione di volontariato su <strong>{{community}}</strong>.",
+    "new_vol_org_by_label": "Registrata da",
+    "new_vol_org_waiting": "Resta nascosta alla comunità finché un amministratore non la approva, e la persona che l'ha registrata è in attesa di una risposta.",
+    "new_vol_org_cta": "Esamina l'organizzazione"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "commento",
     "type_listing": "annuncio",
     "type_content": "contenuto"
+  },
+  "vol_org_decision": {
+    "reason_label": "Motivo",
+    "approved_subject": "{{name}} è stata approvata",
+    "approved_title": "Organizzazione approvata",
+    "approved_preview": "{{name}} è ora online",
+    "approved_bell": "{{name}} è stata approvata ed è ora online",
+    "approved_body": "Buone notizie: <strong>{{name}}</strong> è stata approvata su {{community}}. Ora è visibile alla comunità e puoi iniziare a pubblicare opportunità di volontariato.",
+    "approved_cta": "Vedi la tua organizzazione",
+    "declined_subject": "Informazioni sulla registrazione della tua organizzazione",
+    "declined_title": "Organizzazione non approvata",
+    "declined_preview": "La tua registrazione per {{name}} non è stata approvata",
+    "declined_bell": "La tua registrazione per {{name}} non è stata approvata",
+    "declined_body": "La tua registrazione per <strong>{{name}}</strong> su {{community}} non è stata approvata. Se ritieni che si tratti di un errore, o vuoi riprovare fornendo maggiori dettagli, contatta il team della comunità.",
+    "declined_cta": "Vai al volontariato",
+    "suspended_subject": "{{name}} è stata sospesa",
+    "suspended_title": "Organizzazione sospesa",
+    "suspended_preview": "{{name}} non è più visibile alla comunità",
+    "suspended_bell": "{{name}} è stata sospesa",
+    "suspended_body": "<strong>{{name}}</strong> è stata sospesa su {{community}} e non è più visibile alla comunità. Contatta il team della comunità se desideri parlarne.",
+    "suspended_cta": "Vai al volontariato",
+    "reinstated_subject": "{{name}} è di nuovo online",
+    "reinstated_title": "Organizzazione ripristinata",
+    "reinstated_preview": "{{name}} è di nuovo visibile alla comunità",
+    "reinstated_bell": "{{name}} è di nuovo online",
+    "reinstated_body": "<strong>{{name}}</strong> è di nuovo online su {{community}} ed è nuovamente visibile alla comunità.",
+    "reinstated_cta": "Vedi la tua organizzazione"
   }
 }

@@ -783,7 +783,11 @@
     "bulk_approve_confirm_one": "Approve {{count}} selected applications? Applicants will be notified.",
     "bulk_approve_confirm_other": "Approve {{count}} selected applications? Applicants will be notified.",
     "bulk_decline_confirm_one": "Decline {{count}} selected applications? Applicants will be notified.",
-    "bulk_decline_confirm_other": "Decline {{count}} selected applications? Applicants will be notified."
+    "bulk_decline_confirm_other": "Decline {{count}} selected applications? Applicants will be notified.",
+    "decline_org_title": "Decline organisation",
+    "decline_org_confirm": "Decline the registration for {{name}}? They will be told, and the organisation will not be visible to the community.",
+    "decline_reason_label": "Reason (optional)",
+    "decline_reason_placeholder": "This is included in the email they receive."
   },
   "donation_refunds": {
     "page_title": "Donation Refunds",

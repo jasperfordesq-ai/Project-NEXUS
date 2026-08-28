@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Events\VolLogStatusChanged;
+use App\Events\VolunteerOrganisationStatusChanged;
 use App\Services\VolunteerService;
 use App\Services\VolunteerReminderService;
 use Illuminate\Http\JsonResponse;
@@ -759,12 +760,15 @@ class AdminVolunteerController extends BaseApiController
             return $this->respondWithError('FEATURE_DISABLED', __('api.service_unavailable'), null, 403);
         }
 
+        // notifyAdmins: false -- an admin creating an organisation here approves
+        // it on the next statement, so an "awaiting approval" email to every
+        // admin would be noise about their own action.
         $orgId = $this->volunteerService->createOrganization($this->getUserId(), [
             'name' => trim((string) $this->input('name', '')),
             'description' => trim((string) $this->input('description', '')),
             'contact_email' => trim((string) $this->input('contact_email', '')),
             'website' => trim((string) $this->input('website', '')),
-        ]);
+        ], false);
 
         if ($orgId === null) {
             return $this->respondWithErrors($this->volunteerService->getErrors(), 422);
@@ -1179,9 +1183,23 @@ class AdminVolunteerController extends BaseApiController
         }
         $tenantId = TenantContext::getId();
 
+        // 'declined' joined the accepted set on 2026-08-28 so a pending
+        // organisation can actually be REFUSED. Until then the only options were
+        // active/suspended, which left an admin with no way to say no -- and the
+        // registrant with no way to find out. 'approved' is accepted as a synonym
+        // of 'active' because both count as publicly visible
+        // (VolunteerService::PUBLIC_ORGANIZATION_STATUSES) and the two spellings
+        // are already mixed in the data.
         $status = $this->input('status');
-        if (!$status || !in_array($status, ['active', 'suspended'], true)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_volunteer.status_must_be_active_or_suspended'), 'status', 400);
+        if (!$status || !in_array($status, ['active', 'approved', 'suspended', 'declined'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_volunteer.status_invalid'), 'status', 400);
+        }
+
+        // Optional, and only meaningful for a refusal or a suspension: it is
+        // passed to the registrant so "no" does not arrive unexplained.
+        $reason = trim((string) ($this->input('reason') ?? ''));
+        if ($reason !== '' && mb_strlen($reason) > 500) {
+            $reason = mb_substr($reason, 0, 500);
         }
 
         if (!$this->tableExists('vol_organizations')) {
@@ -1198,6 +1216,8 @@ class AdminVolunteerController extends BaseApiController
                 return $this->respondWithError('NOT_FOUND', __('api_controllers_1.admin_volunteer.organization_not_found'), null, 404);
             }
 
+            $previousStatus = (string) ($org->status ?? '');
+
             DB::update(
                 "UPDATE vol_organizations SET status = ?, updated_at = NOW() WHERE id = ? AND tenant_id = ?",
                 [$status, $id, $tenantId]
@@ -1205,9 +1225,34 @@ class AdminVolunteerController extends BaseApiController
             app(\App\Services\PrerenderContentInvalidator::class)
                 ->refreshVolunteerOrganisation((int) $tenantId, (int) $id);
 
+            // Tell the person who registered it what was decided. This was
+            // silent before 2026-08-28: the status flipped and the member who
+            // had been waiting was never told, in either direction.
+            if ($previousStatus !== $status) {
+                try {
+                    VolunteerOrganisationStatusChanged::dispatch(
+                        (int) $id,
+                        (int) $tenantId,
+                        $previousStatus,
+                        (string) $status,
+                        $this->getUserId(),
+                        $reason !== '' ? $reason : null,
+                    );
+                } catch (\Throwable $e) {
+                    // The decision itself is already saved; failing to announce
+                    // it must not fail the admin's request.
+                    Log::warning('Failed to dispatch VolunteerOrganisationStatusChanged', [
+                        'organisation_id' => $id,
+                        'tenant_id'       => $tenantId,
+                        'error'           => $e->getMessage(),
+                    ]);
+                }
+            }
+
             return $this->respondWithData([
                 'id' => $id,
                 'status' => $status,
+                'previous_status' => $previousStatus,
                 'message' => __('api_controllers_1.admin_volunteer.org_status_updated', ['status' => $status]),
             ]);
         } catch (\Exception $e) {

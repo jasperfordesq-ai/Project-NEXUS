@@ -40,6 +40,8 @@ use App\Events\UserRegistered;
 use App\Events\VolLogStatusChanged;
 use App\Events\VolunteerOpportunityCreated;
 use App\Events\VolunteerOpportunityUpdated;
+use App\Events\VolunteerOrganisationRegistered;
+use App\Events\VolunteerOrganisationStatusChanged;
 use App\Listeners\AwardXpOnVolLogApproved;
 use App\Listeners\CopyMessageForBrokerReview;
 use App\Listeners\HandleFederatedCommunityEventReceived;
@@ -58,6 +60,8 @@ use App\Listeners\PushGroupRetractionToFederatedPartners;
 use App\Listeners\NotifyAdminOfNewListing;
 use App\Listeners\NotifyAdminOfNewRegistration;
 use App\Listeners\NotifyAdminOfNewVolunteerOpportunity;
+use App\Listeners\NotifyAdminOfNewVolunteerOrganisation;
+use App\Listeners\NotifyOwnerOfVolunteerOrganisationDecision;
 use App\Listeners\NotifyAdminOfGdprAction;
 use App\Listeners\NotifyConnectionAccepted;
 use App\Listeners\NotifyConnectionRequest;
@@ -203,6 +207,17 @@ class EventServiceProvider extends ServiceProvider
 
         VolunteerOpportunityUpdated::class => [
             PushVolunteerOpportunityToFederatedPartners::class,
+        ],
+
+        // Registering a volunteering organisation notified nobody until
+        // 2026-08-28 -- not the admins who must approve it, and not the member
+        // waiting for that decision. Both halves of the workflow live here.
+        VolunteerOrganisationRegistered::class => [
+            NotifyAdminOfNewVolunteerOrganisation::class,
+        ],
+
+        VolunteerOrganisationStatusChanged::class => [
+            NotifyOwnerOfVolunteerOrganisationDecision::class,
         ],
 
         MemberProfileUpdated::class => [

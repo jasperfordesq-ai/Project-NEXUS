@@ -783,7 +783,11 @@
     "webhook_logs_title": "Webhook送信ログ",
     "reminder_job_sent_other": "リマインダージョブが {{count}} 通知を送信しました",
     "action_taken_placeholder": "実行された動作を説明してください...",
-    "col_label": "ラベル"
+    "col_label": "ラベル",
+    "decline_org_title": "団体を却下する",
+    "decline_org_confirm": "{{name}} の登録を却下しますか？登録者に通知され、この団体はコミュニティに表示されません。",
+    "decline_reason_label": "理由（任意）",
+    "decline_reason_placeholder": "登録者に送信されるメールに記載されます。"
   },
   "donation_refunds": {
     "page_title": "寄付の返金",

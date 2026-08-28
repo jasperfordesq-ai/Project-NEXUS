@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Users from 'lucide-react/icons/users';
 import ListChecks from 'lucide-react/icons/list-checks';
+import Building2 from 'lucide-react/icons/building-2';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import Clock from 'lucide-react/icons/clock';
 import UserCheck from 'lucide-react/icons/user-check';
@@ -46,7 +47,6 @@ import type { AdminDashboardStats, ActivityLogEntry, MonthlyTrend } from '../../
  *
  * NOT yet implemented (parity gaps):
  * - Users Online / Active Sessions (LIVE stats) -- backend has no API for this
- * - Pending Organizations alert -- backend stats endpoint does not return pending_orgs
  * - Platform Modules grid (15 module cards) -- low priority, sidebar already provides navigation
  * - System Status panel (Database/Cache/Cron/Email) -- available at /admin/enterprise/monitoring
  * - Enterprise Suite sidebar links -- available at /admin/enterprise
@@ -231,8 +231,10 @@ export function AdminDashboard() {
         />
       </div>
 
-      {/* Actionable Alerts: Pending Users + Pending Listings */}
-      {((stats?.pending_users ?? 0) > 0 || (stats?.pending_listings ?? 0) > 0) && (
+      {/* Actionable Alerts: Pending Users + Listings + Volunteering Organisations */}
+      {((stats?.pending_users ?? 0) > 0
+        || (stats?.pending_listings ?? 0) > 0
+        || (stats?.pending_organisations ?? 0) > 0) && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {stats?.pending_users !== undefined && stats.pending_users > 0 && (
             <Card className="border border-warning/20 bg-surface shadow-sm shadow-warning/10">
@@ -269,6 +271,30 @@ export function AdminDashboard() {
                 <Button
                   as={Link}
                   to={tenantPath('/admin/listings?status=pending')}
+                  size="sm"
+                  variant="secondary"
+                >
+                  {t('alerts.review')}
+                </Button>
+              </CardBody>
+            </Card>
+          )}
+
+          {stats?.pending_organisations !== undefined && stats.pending_organisations > 0 && (
+            <Card className="border border-warning/20 bg-surface shadow-sm shadow-warning/10">
+              <CardBody className="flex flex-row items-center gap-4 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+                  <Building2 size={20} className="text-warning" />
+                </div>
+                <div className="flex-1">
+                  {/* Reuses the existing, already-translated alerts key rather
+                      than introducing a twelfth-locale duplicate of the same phrase. */}
+                  <p className="text-sm text-muted">{t('alerts.orgs_pending_text')}</p>
+                  <p className="text-lg font-bold">{stats.pending_organisations}</p>
+                </div>
+                <Button
+                  as={Link}
+                  to={tenantPath('/admin/volunteering/organizations')}
                   size="sm"
                   variant="secondary"
                 >

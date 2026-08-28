@@ -800,7 +800,11 @@
     "preview_option_three": "Option 3",
     "org_type_club": "Club",
     "action_taken_placeholder": "Décrivez l'action entreprise...",
-    "col_label": "Étiquette"
+    "col_label": "Étiquette",
+    "decline_org_title": "Refuser l'organisation",
+    "decline_org_confirm": "Refuser l'enregistrement de {{name}} ? La personne sera prévenue et l'organisation ne sera pas visible par la communauté.",
+    "decline_reason_label": "Motif (facultatif)",
+    "decline_reason_placeholder": "Ce motif figurera dans l'e-mail qu'elle recevra."
   },
   "donation_refunds": {
     "page_title": "Remboursements de dons",

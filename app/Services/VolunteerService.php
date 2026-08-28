@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Events\VolLogStatusChanged;
 use App\Events\VolunteerOpportunityCreated;
+use App\Events\VolunteerOrganisationRegistered;
 use App\Events\VolunteerOpportunityUpdated;
 use App\I18n\LocaleContext;
 use App\Models\VolApplication;
@@ -2311,7 +2312,7 @@ class VolunteerService
     /**
      * Register a new volunteer organisation (status='pending').
      */
-    public static function createOrganization(int $userId, array $data): ?int
+    public static function createOrganization(int $userId, array $data, bool $notifyAdmins = true): ?int
     {
         self::$errors = [];
         $tenantId = self::getTenantId();
@@ -2405,6 +2406,29 @@ class VolunteerService
                 });
 
                 self::refreshPrerenderForOrganization($tenantId, $orgId);
+
+                // Tell the admins who can approve it that something is waiting.
+                // Nothing was fired here until 2026-08-28, so registrations were
+                // completely silent and queues built up unseen for weeks.
+                //
+                // $notifyAdmins is false for the admin create endpoint, which
+                // approves immediately afterwards -- and the listener re-reads
+                // the status as a second guard, because this is the shared sink
+                // for the React form, both accessible-frontend register paths
+                // and that admin endpoint.
+                if ($notifyAdmins) {
+                    try {
+                        VolunteerOrganisationRegistered::dispatch((int) $orgId, (int) $tenantId, $userId);
+                    } catch (\Throwable $e) {
+                        // A notification must never cost the member their
+                        // registration -- the row is already committed.
+                        Log::warning('Failed to dispatch VolunteerOrganisationRegistered', [
+                            'organisation_id' => $orgId,
+                            'tenant_id'       => $tenantId,
+                            'error'           => $e->getMessage(),
+                        ]);
+                    }
+                }
 
                 return $orgId;
             } catch (\Illuminate\Database\QueryException $e) {

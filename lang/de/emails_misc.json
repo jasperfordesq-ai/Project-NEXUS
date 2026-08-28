@@ -279,7 +279,15 @@
     "new_user_pending_preview": "Jemand ist {{community}} beigetreten und kann das Konto erst nutzen, wenn Sie es genehmigen",
     "new_user_pending_bell": "Ein neues Mitglied wartet auf Ihre Genehmigung",
     "new_user_pending_body": "Jemand ist soeben <strong>{{community}}</strong> beigetreten und <strong>kann das Konto erst nutzen, wenn Sie es genehmigen</strong>. Zum Schutz der Privatsphäre enthält diese Benachrichtigung keine persönlichen Daten. Öffnen Sie die Liste der ausstehenden Genehmigungen, um die Person zu prüfen.",
-    "new_user_pending_cta": "Ausstehende Genehmigungen prüfen"
+    "new_user_pending_cta": "Ausstehende Genehmigungen prüfen",
+    "new_vol_org_subject": "Eine Freiwilligenorganisation wartet auf Freigabe — {{community}}",
+    "new_vol_org_title": "Organisation wartet auf Freigabe",
+    "new_vol_org_preview": "Jemand hat auf {{community}} eine Freiwilligenorganisation registriert",
+    "new_vol_org_bell": "Neue Organisation wartet auf Freigabe: {{name}}",
+    "new_vol_org_body": "Jemand hat auf <strong>{{community}}</strong> eine Freiwilligenorganisation registriert.",
+    "new_vol_org_by_label": "Registriert von",
+    "new_vol_org_waiting": "Sie bleibt für die Gemeinschaft unsichtbar, bis eine Administratorin oder ein Administrator sie freigibt, und die Person, die sie registriert hat, wartet auf eine Rückmeldung.",
+    "new_vol_org_cta": "Organisation prüfen"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "Kommentar",
     "type_listing": "Inserat",
     "type_content": "Inhalt"
+  },
+  "vol_org_decision": {
+    "reason_label": "Grund",
+    "approved_subject": "{{name}} wurde freigegeben",
+    "approved_title": "Organisation freigegeben",
+    "approved_preview": "{{name}} ist jetzt online",
+    "approved_bell": "{{name}} wurde freigegeben und ist jetzt online",
+    "approved_body": "Gute Nachrichten — <strong>{{name}}</strong> wurde auf {{community}} freigegeben. Die Organisation ist jetzt für die Gemeinschaft sichtbar, und Sie können Freiwilligenangebote veröffentlichen.",
+    "approved_cta": "Ihre Organisation ansehen",
+    "declined_subject": "Zu Ihrer Registrierung einer Organisation",
+    "declined_title": "Organisation nicht freigegeben",
+    "declined_preview": "Ihre Registrierung für {{name}} wurde nicht freigegeben",
+    "declined_bell": "Ihre Registrierung für {{name}} wurde nicht freigegeben",
+    "declined_body": "Ihre Registrierung für <strong>{{name}}</strong> auf {{community}} wurde nicht freigegeben. Wenn Sie glauben, dass dies ein Fehler ist, oder es mit mehr Angaben erneut versuchen möchten, wenden Sie sich bitte an das Team der Gemeinschaft.",
+    "declined_cta": "Zum Freiwilligenbereich",
+    "suspended_subject": "{{name}} wurde gesperrt",
+    "suspended_title": "Organisation gesperrt",
+    "suspended_preview": "{{name}} ist für die Gemeinschaft nicht mehr sichtbar",
+    "suspended_bell": "{{name}} wurde gesperrt",
+    "suspended_body": "<strong>{{name}}</strong> wurde auf {{community}} gesperrt und ist für die Gemeinschaft nicht mehr sichtbar. Bitte wenden Sie sich an das Team der Gemeinschaft, wenn Sie darüber sprechen möchten.",
+    "suspended_cta": "Zum Freiwilligenbereich",
+    "reinstated_subject": "{{name}} ist wieder online",
+    "reinstated_title": "Organisation wiederhergestellt",
+    "reinstated_preview": "{{name}} ist wieder für die Gemeinschaft sichtbar",
+    "reinstated_bell": "{{name}} ist wieder online",
+    "reinstated_body": "<strong>{{name}}</strong> ist auf {{community}} wieder online und für die Gemeinschaft wieder sichtbar.",
+    "reinstated_cta": "Ihre Organisation ansehen"
   }
 }

@@ -279,7 +279,15 @@
     "new_user_pending_preview": "Chuaigh duine isteach in {{community}} agus ní féidir leo a gcuntas a úsáid go dtí go gceadaíonn tú é",
     "new_user_pending_bell": "Tá ball nua ag fanacht le do cheadú",
     "new_user_pending_body": "Tá duine díreach tar éis dul isteach in <strong>{{community}}</strong> agus <strong>ní féidir leo a gcuntas a úsáid go dtí go gceadaíonn tú é</strong>. Chun a bpríobháideachas a chosaint, níl sonraí pearsanta san fhógra seo. Oscail an liosta ceaduithe ar feitheamh chun athbhreithniú a dhéanamh orthu.",
-    "new_user_pending_cta": "Athbhreithnigh ceaduithe ar feitheamh"
+    "new_user_pending_cta": "Athbhreithnigh ceaduithe ar feitheamh",
+    "new_vol_org_subject": "Tá eagraíocht oibre deonaí ag fanacht le ceadú — {{community}}",
+    "new_vol_org_title": "Eagraíocht ag fanacht le ceadú",
+    "new_vol_org_preview": "Chláraigh duine éigin eagraíocht oibre deonaí ar {{community}}",
+    "new_vol_org_bell": "Eagraíocht nua ag fanacht le ceadú: {{name}}",
+    "new_vol_org_body": "Chláraigh duine éigin eagraíocht oibre deonaí ar <strong>{{community}}</strong>.",
+    "new_vol_org_by_label": "Cláraithe ag",
+    "new_vol_org_waiting": "Fanann sí i bhfolach ón bpobal go dtí go gceadaíonn riarthóir í, agus tá an duine a chláraigh í ag fanacht le freagra.",
+    "new_vol_org_cta": "Déan athbhreithniú ar an eagraíocht"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "trácht",
     "type_listing": "liostú",
     "type_content": "ábhar"
+  },
+  "vol_org_decision": {
+    "reason_label": "Cúis",
+    "approved_subject": "Ceadaíodh {{name}}",
+    "approved_title": "Eagraíocht ceadaithe",
+    "approved_preview": "Tá {{name}} beo anois",
+    "approved_bell": "Ceadaíodh {{name}} agus tá sí beo anois",
+    "approved_body": "Dea-scéala — ceadaíodh <strong>{{name}}</strong> ar {{community}}. Tá sí le feiceáil ag an bpobal anois, agus is féidir leat deiseanna oibre deonaí a fhoilsiú.",
+    "approved_cta": "Féach ar d'eagraíocht",
+    "declined_subject": "Maidir le clárú d'eagraíochta",
+    "declined_title": "Eagraíocht gan cheadú",
+    "declined_preview": "Níor ceadaíodh do chlárú do {{name}}",
+    "declined_bell": "Níor ceadaíodh do chlárú do {{name}}",
+    "declined_body": "Níor ceadaíodh do chlárú do <strong>{{name}}</strong> ar {{community}}. Má cheapann tú gur botún é seo, nó más mian leat iarracht eile a dhéanamh le tuilleadh sonraí, déan teagmháil le foireann an phobail le do thoil.",
+    "declined_cta": "Chuig an obair dheonach",
+    "suspended_subject": "Cuireadh {{name}} ar fionraí",
+    "suspended_title": "Eagraíocht ar fionraí",
+    "suspended_preview": "Níl {{name}} le feiceáil ag an bpobal a thuilleadh",
+    "suspended_bell": "Cuireadh {{name}} ar fionraí",
+    "suspended_body": "Cuireadh <strong>{{name}}</strong> ar fionraí ar {{community}} agus níl sí le feiceáil ag an bpobal a thuilleadh. Déan teagmháil le foireann an phobail más mian leat é seo a phlé.",
+    "suspended_cta": "Chuig an obair dheonach",
+    "reinstated_subject": "Tá {{name}} beo arís",
+    "reinstated_title": "Eagraíocht athbhunaithe",
+    "reinstated_preview": "Tá {{name}} le feiceáil ag an bpobal arís",
+    "reinstated_bell": "Tá {{name}} beo arís",
+    "reinstated_body": "Tá <strong>{{name}}</strong> beo arís ar {{community}} agus tá sí le feiceáil ag an bpobal athuair.",
+    "reinstated_cta": "Féach ar d'eagraíocht"
   }
 }

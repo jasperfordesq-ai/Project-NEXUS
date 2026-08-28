@@ -132,6 +132,8 @@ export interface AdminDashboardStats {
   total_listings: number;
   active_listings: number;
   pending_listings?: number;
+  /** Volunteering organisations awaiting an approve/decline decision. */
+  pending_organisations?: number;
   total_transactions: number;
   total_hours_exchanged: number;
   new_users_this_month: number;

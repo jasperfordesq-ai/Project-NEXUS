@@ -139,6 +139,10 @@ export function VolunteerOrganizations() {
 
   // Status toggle (suspend requires confirmation; activate is direct)
   const [suspendTarget, setSuspendTarget] = useState<VolOrg | null>(null);
+  // A pending organisation needs a real decision, not just an on/off toggle:
+  // before 2026-08-28 an admin had no way to refuse one at all.
+  const [declineTarget, setDeclineTarget] = useState<VolOrg | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
   const [statusToggleId, setStatusToggleId] = useState<number | null>(null);
 
   const loadData = useCallback(async () => {
@@ -279,15 +283,20 @@ export function VolunteerOrganizations() {
 
 
   // --- Status Toggle ---
-  const handleStatusToggle = useCallback(async (org: VolOrg) => {
+  const applyStatus = useCallback(async (
+    org: VolOrg,
+    newStatus: 'active' | 'suspended' | 'declined',
+    reason?: string,
+  ) => {
     if (statusToggleId !== null) return;
-    const newStatus = org.status === 'active' ? 'suspended' : 'active';
     setStatusToggleId(org.id);
     try {
-      const res = await adminVolunteering.updateOrgStatus(org.id, newStatus);
+      const res = await adminVolunteering.updateOrgStatus(org.id, newStatus, reason);
       if (res.success) {
         toast.success(t('volunteering.status_updated', { status: t(`volunteering.status_${newStatus}`) }));
         setSuspendTarget(null);
+        setDeclineTarget(null);
+        setDeclineReason('');
         loadData();
       } else {
         // admin-i18n-ignore: localized server message — a failed ApiResponse
@@ -508,24 +517,48 @@ export function VolunteerOrganizations() {
               </Button>
             </>
           )}
-          <Button
-            size="sm"
-            variant={item.status === 'active' ? 'danger' : 'secondary'}
-            startContent={item.status === 'active' ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
-            onPress={() => {
-              if (item.status === 'active') {
-                setSuspendTarget(item);
-              } else {
-                handleStatusToggle(item);
-              }
-            }}
-            isLoading={statusToggleId === item.id}
-            isDisabled={statusToggleId !== null && statusToggleId !== item.id}
-          >
-            {item.status === 'active'
-              ? t('volunteering.suspend')
-              : t('volunteering.activate')}
-          </Button>
+          {item.status === 'pending' ? (
+            <>
+              <Button
+                size="sm"
+                variant="primary"
+                startContent={<ShieldCheck size={14} />}
+                onPress={() => applyStatus(item, 'active')}
+                isLoading={statusToggleId === item.id}
+                isDisabled={statusToggleId !== null && statusToggleId !== item.id}
+              >
+                {t('volunteering.approve')}
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                startContent={<ShieldOff size={14} />}
+                onPress={() => { setDeclineReason(''); setDeclineTarget(item); }}
+                isDisabled={statusToggleId !== null}
+              >
+                {t('volunteering.decline')}
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              variant={item.status === 'active' ? 'danger' : 'secondary'}
+              startContent={item.status === 'active' ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
+              onPress={() => {
+                if (item.status === 'active') {
+                  setSuspendTarget(item);
+                } else {
+                  applyStatus(item, 'active');
+                }
+              }}
+              isLoading={statusToggleId === item.id}
+              isDisabled={statusToggleId !== null && statusToggleId !== item.id}
+            >
+              {item.status === 'active'
+                ? t('volunteering.suspend')
+                : t('volunteering.activate')}
+            </Button>
+          )}
         </div>
       ),
     },
@@ -899,11 +932,53 @@ export function VolunteerOrganizations() {
         </ModalContent>
       </Modal>
 
+      {/* Decline a pending registration. A reason is optional but is passed to
+          the registrant, so a refusal does not arrive unexplained. */}
+      <Modal isOpen={declineTarget !== null} onOpenChange={(open) => { if (!open && statusToggleId === null) setDeclineTarget(null); }} size="md">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>
+                {t('volunteering.decline_org_title')}
+                {declineTarget && (
+                  <span className="mt-1 block text-sm font-normal text-muted">{declineTarget.org_name}</span>
+                )}
+              </ModalHeader>
+              <ModalBody className="flex flex-col gap-3">
+                <p className="text-sm text-muted">
+                  {t('volunteering.decline_org_confirm', { name: declineTarget?.org_name ?? '' })}
+                </p>
+                <Textarea
+                  label={t('volunteering.decline_reason_label')}
+                  placeholder={t('volunteering.decline_reason_placeholder')}
+                  value={declineReason}
+                  onValueChange={setDeclineReason}
+                  variant="secondary"
+                  minRows={3}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="tertiary" onPress={onClose} isDisabled={statusToggleId !== null}>
+                  {t('volunteering.cancel')}
+                </Button>
+                <Button
+                  variant="danger"
+                  onPress={() => { if (declineTarget) applyStatus(declineTarget, 'declined', declineReason.trim() || undefined); }}
+                  isLoading={statusToggleId !== null}
+                >
+                  {t('volunteering.decline')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
       {/* Suspend Confirmation */}
       <ConfirmModal
         isOpen={suspendTarget !== null}
         onClose={() => { if (statusToggleId === null) setSuspendTarget(null); }}
-        onConfirm={() => { if (suspendTarget) handleStatusToggle(suspendTarget); }}
+        onConfirm={() => { if (suspendTarget) applyStatus(suspendTarget, 'suspended'); }}
         title={t('volunteering.suspend_org_title')}
         message={t('volunteering.suspend_org_confirm', { name: suspendTarget?.org_name ?? '' })}
         confirmLabel={t('volunteering.suspend')}

@@ -279,7 +279,15 @@
     "new_user_pending_preview": "انضم شخص إلى {{community}} ولا يمكنه استخدام حسابه حتى توافق عليه",
     "new_user_pending_bell": "عضو جديد بانتظار موافقتك",
     "new_user_pending_body": "انضم شخص للتو إلى <strong>{{community}}</strong> و<strong>لا يمكنه استخدام حسابه حتى توافق عليه</strong>. حمايةً للخصوصية، لا تتضمن هذه الرسالة أي بيانات شخصية. افتح قائمة الموافقات المعلّقة لمراجعته.",
-    "new_user_pending_cta": "مراجعة الموافقات المعلّقة"
+    "new_user_pending_cta": "مراجعة الموافقات المعلّقة",
+    "new_vol_org_subject": "منظمة تطوعية بانتظار الموافقة — {{community}}",
+    "new_vol_org_title": "منظمة بانتظار الموافقة",
+    "new_vol_org_preview": "سجّل أحدهم منظمة تطوعية في {{community}}",
+    "new_vol_org_bell": "منظمة جديدة بانتظار الموافقة: {{name}}",
+    "new_vol_org_body": "سجّل أحدهم منظمة تطوعية في <strong>{{community}}</strong>.",
+    "new_vol_org_by_label": "سجّلها",
+    "new_vol_org_waiting": "تبقى مخفية عن المجتمع إلى أن يوافق عليها أحد المشرفين، والشخص الذي سجّلها ينتظر ردًا.",
+    "new_vol_org_cta": "مراجعة المنظمة"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "تعليق",
     "type_listing": "إعلان",
     "type_content": "محتوى"
+  },
+  "vol_org_decision": {
+    "reason_label": "السبب",
+    "approved_subject": "تمت الموافقة على {{name}}",
+    "approved_title": "تمت الموافقة على المنظمة",
+    "approved_preview": "{{name}} متاحة الآن",
+    "approved_bell": "تمت الموافقة على {{name}} وأصبحت متاحة الآن",
+    "approved_body": "خبر سار — تمت الموافقة على <strong>{{name}}</strong> في {{community}}. أصبحت الآن ظاهرة للمجتمع، ويمكنك البدء بنشر فرص التطوع.",
+    "approved_cta": "عرض منظمتك",
+    "declined_subject": "بخصوص تسجيل منظمتك",
+    "declined_title": "لم تتم الموافقة على المنظمة",
+    "declined_preview": "لم تتم الموافقة على تسجيلك لـ {{name}}",
+    "declined_bell": "لم تتم الموافقة على تسجيلك لـ {{name}}",
+    "declined_body": "لم تتم الموافقة على تسجيلك لـ <strong>{{name}}</strong> في {{community}}. إذا كنت ترى أن هذا خطأ، أو كنت ترغب في المحاولة مرة أخرى بتفاصيل أوفى، يُرجى التواصل مع فريق المجتمع.",
+    "declined_cta": "الانتقال إلى التطوع",
+    "suspended_subject": "تم تعليق {{name}}",
+    "suspended_title": "تم تعليق المنظمة",
+    "suspended_preview": "لم تعد {{name}} ظاهرة للمجتمع",
+    "suspended_bell": "تم تعليق {{name}}",
+    "suspended_body": "تم تعليق <strong>{{name}}</strong> في {{community}} ولم تعد ظاهرة للمجتمع. يُرجى التواصل مع فريق المجتمع إذا رغبت في مناقشة ذلك.",
+    "suspended_cta": "الانتقال إلى التطوع",
+    "reinstated_subject": "{{name}} متاحة من جديد",
+    "reinstated_title": "تمت إعادة تفعيل المنظمة",
+    "reinstated_preview": "{{name}} ظاهرة للمجتمع من جديد",
+    "reinstated_bell": "{{name}} متاحة من جديد",
+    "reinstated_body": "<strong>{{name}}</strong> متاحة من جديد في {{community}} وأصبحت ظاهرة للمجتمع مرة أخرى.",
+    "reinstated_cta": "عرض منظمتك"
   }
 }

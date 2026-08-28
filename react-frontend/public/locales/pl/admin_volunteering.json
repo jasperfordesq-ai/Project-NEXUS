@@ -817,7 +817,11 @@
     "reminder_job_sent_other": "Zadanie przypomnienia wysłało powiadomienie {{count}}",
     "col_reporter": "Dziennikarz",
     "action_taken_placeholder": "Opisz podjęte działanie...",
-    "col_label": "Etykieta"
+    "col_label": "Etykieta",
+    "decline_org_title": "Odrzuć organizację",
+    "decline_org_confirm": "Odrzucić rejestrację organizacji {{name}}? Osoba zgłaszająca zostanie powiadomiona, a organizacja nie będzie widoczna dla społeczności.",
+    "decline_reason_label": "Powód (opcjonalnie)",
+    "decline_reason_placeholder": "Zostanie dołączony do wiadomości e-mail, którą otrzyma."
   },
   "donation_refunds": {
     "page_title": "Zwroty darowizn",

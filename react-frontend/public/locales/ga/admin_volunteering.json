@@ -834,7 +834,11 @@
     "applies_to_shift": "Athrú",
     "org_type_club": "Club",
     "action_taken_placeholder": "Déan cur síos ar an ngníomh a glacadh...",
-    "col_label": "Lipéad"
+    "col_label": "Lipéad",
+    "decline_org_title": "Diúltaigh don eagraíocht",
+    "decline_org_confirm": "An bhfuil tú cinnte gur mian leat diúltú don chlárú do {{name}}? Cuirfear in iúl dóibh, agus ní bheidh an eagraíocht le feiceáil ag an bpobal.",
+    "decline_reason_label": "Cúis (roghnach)",
+    "decline_reason_placeholder": "Cuirtear é seo san áireamh sa ríomhphost a gheobhaidh siad."
   },
   "donation_refunds": {
     "page_title": "Aisíocaíochtaí Síntiús",

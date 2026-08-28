@@ -279,7 +279,15 @@
     "new_user_pending_preview": "Quelqu'un a rejoint {{community}} et ne peut pas utiliser son compte tant que vous ne l'avez pas approuvé",
     "new_user_pending_bell": "Un nouveau membre attend votre approbation",
     "new_user_pending_body": "Quelqu'un vient de rejoindre <strong>{{community}}</strong> et <strong>ne peut pas utiliser son compte tant que vous ne l'avez pas approuvé</strong>. Pour protéger sa vie privée, aucune donnée personnelle n'est incluse dans cette notification. Ouvrez la liste des approbations en attente pour l'examiner.",
-    "new_user_pending_cta": "Examiner les approbations en attente"
+    "new_user_pending_cta": "Examiner les approbations en attente",
+    "new_vol_org_subject": "Une organisation de bénévolat attend une validation — {{community}}",
+    "new_vol_org_title": "Organisation en attente de validation",
+    "new_vol_org_preview": "Quelqu'un a enregistré une organisation de bénévolat sur {{community}}",
+    "new_vol_org_bell": "Nouvelle organisation en attente de validation : {{name}}",
+    "new_vol_org_body": "Quelqu'un a enregistré une organisation de bénévolat sur <strong>{{community}}</strong>.",
+    "new_vol_org_by_label": "Enregistrée par",
+    "new_vol_org_waiting": "Elle reste invisible pour la communauté jusqu'à ce qu'un administrateur la valide, et la personne qui l'a enregistrée attend une réponse.",
+    "new_vol_org_cta": "Examiner l'organisation"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
@@ -805,5 +813,32 @@
     "type_comment": "commentaire",
     "type_listing": "annonce",
     "type_content": "contenu"
+  },
+  "vol_org_decision": {
+    "reason_label": "Motif",
+    "approved_subject": "{{name}} a été validée",
+    "approved_title": "Organisation validée",
+    "approved_preview": "{{name}} est maintenant en ligne",
+    "approved_bell": "{{name}} a été validée et est maintenant en ligne",
+    "approved_body": "Bonne nouvelle — <strong>{{name}}</strong> a été validée sur {{community}}. Elle est désormais visible par la communauté et vous pouvez publier des missions de bénévolat.",
+    "approved_cta": "Voir votre organisation",
+    "declined_subject": "À propos de votre enregistrement d'organisation",
+    "declined_title": "Organisation non validée",
+    "declined_preview": "Votre enregistrement pour {{name}} n'a pas été validé",
+    "declined_bell": "Votre enregistrement pour {{name}} n'a pas été validé",
+    "declined_body": "Votre enregistrement pour <strong>{{name}}</strong> sur {{community}} n'a pas été validé. Si vous pensez qu'il s'agit d'une erreur, ou si vous souhaitez réessayer avec davantage de précisions, veuillez contacter l'équipe de la communauté.",
+    "declined_cta": "Aller au bénévolat",
+    "suspended_subject": "{{name}} a été suspendue",
+    "suspended_title": "Organisation suspendue",
+    "suspended_preview": "{{name}} n'est plus visible par la communauté",
+    "suspended_bell": "{{name}} a été suspendue",
+    "suspended_body": "<strong>{{name}}</strong> a été suspendue sur {{community}} et n'est plus visible par la communauté. Veuillez contacter l'équipe de la communauté si vous souhaitez en discuter.",
+    "suspended_cta": "Aller au bénévolat",
+    "reinstated_subject": "{{name}} est de nouveau en ligne",
+    "reinstated_title": "Organisation rétablie",
+    "reinstated_preview": "{{name}} est de nouveau visible par la communauté",
+    "reinstated_bell": "{{name}} est de nouveau en ligne",
+    "reinstated_body": "<strong>{{name}}</strong> est de nouveau en ligne sur {{community}} et redevient visible par la communauté.",
+    "reinstated_cta": "Voir votre organisation"
   }
 }
