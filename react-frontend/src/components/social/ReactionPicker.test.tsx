@@ -167,7 +167,7 @@ describe('ReactionPicker', () => {
     await waitFor(() => {
       const menu = screen.queryByRole('menu');
       if (menu) {
-        const items = screen.getAllByRole('menuitem');
+        const items = screen.getAllByRole('menuitemradio');
         expect(items).toHaveLength(REACTION_CONFIGS.length);
       }
     });
@@ -234,7 +234,7 @@ describe('ReactionPicker', () => {
     await waitFor(async () => {
       const menu = screen.queryByRole('menu');
       if (menu) {
-        const items = screen.getAllByRole('menuitem');
+        const items = screen.getAllByRole('menuitemradio');
         if (items.length > 0) {
           fireEvent.click(items[0]);
           await waitFor(() => {

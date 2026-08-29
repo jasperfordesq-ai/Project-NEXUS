@@ -162,7 +162,7 @@ describe('ReactionPicker', () => {
     await settleLazyMenu();
 
     // Picker should now be open — reaction buttons should be visible
-    expect(screen.getAllByRole('menuitem')).toHaveLength(8);
+    expect(screen.getAllByRole('menuitemradio')).toHaveLength(8);
   });
 
   it('does not open picker on hover when not authenticated', () => {
@@ -189,7 +189,7 @@ describe('ReactionPicker', () => {
     await settleLazyMenu();
 
     // Verify picker is open (more than 1 button)
-    expect(screen.getAllByRole('menuitem')).toHaveLength(8);
+    expect(screen.getAllByRole('menuitemradio')).toHaveLength(8);
 
     // Mouse leave triggers close timeout — the AnimatePresence exit animation
     // may keep DOM nodes briefly. Just verify mouse leave does not throw.
@@ -212,7 +212,7 @@ describe('ReactionPicker', () => {
     await settleLazyMenu();
 
     // Click the "love" reaction button
-    const loveButton = screen.getByRole('menuitem', { name: 'reaction.love' });
+    const loveButton = screen.getByRole('menuitemradio', { name: 'reaction.love' });
     fireEvent.click(loveButton);
 
     expect(onReact).toHaveBeenCalledWith('love');
