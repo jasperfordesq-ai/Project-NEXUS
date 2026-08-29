@@ -67,39 +67,12 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 02-listings
 
-# Use the app's tested native deep links for the remaining public screens. The
-# profile hub is deliberately long and module-dependent; asking XCUITest for its
-# full hierarchy while scrolling made Maestro query the absent SafariViewService
-# and kill its own UI-test host in run 33268251338. Direct links exercise the same
-# authenticated routes without coupling screenshot capture to that menu geometry.
-- openLink: "nexus://messages"
-# On this fixed simulator size Apple's confirmation button is centred at this
-# point. A text lookup makes XCTest serialize the SpringBoard hierarchy and can
-# take long enough to kill Maestro (run 33278642889). The coordinate is also a
-# harmless body tap if iOS has already delivered the link directly.
+# Stay inside the app for every remaining screen. Apple's custom-URL confirmation
+# belongs to SpringBoard, outside Maestro's app-scoped driver: run 33279028208
+# proved that even a geometrically correct tap cannot dismiss it. Messages is the
+# fourth stable tab on this fixed five-tab layout.
 - tapOn:
-    point: "67%,54%"
-# Let the sheet dismissal and route transition finish before sampling whether
-# Listings is still present. Without this pause run 33278248859 entered the
-# fallback from a stale Listings hierarchy, then could not find its tab because
-# the app had already completed the move to Messages.
-- waitForAnimationToEnd:
-    timeout: 8000
-# iOS 26 can acknowledge the foreground open request without presenting its
-# confirmation sheet and without delivering the URL to the already-active app.
-# The Messages tab is visible on Listings, so use it as a proven in-app fallback
-# and make the destination part of the retry contract.
-- runFlow:
-    when:
-      visible: "Listings"
-    commands:
-      - retry:
-          maxRetries: 3
-          commands:
-            - tapOn: "Messages"
-            - extendedWaitUntil:
-                visible: "Messages"
-                timeout: 15000
+    point: "70%,95%"
 - extendedWaitUntil:
     visible: "Messages"
     timeout: 15000
@@ -107,13 +80,15 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 04-messages
 
-# Foreground custom URLs are unreliable on iOS 26, while cold-start delivery is
-# covered by the app's pending-deep-link path. Stop only the app; the one Maestro
-# process/XCTest session remains alive for the whole public tour.
-- stopApp
-- openLink: "nexus://events"
+# Events is a hidden auxiliary tab reached from the visible More hub. It is the
+# fifth row in the first Discover card for the protected Partner Demo tenant, so
+# it is already on screen and needs no hierarchy-heavy scrolling.
 - tapOn:
-    point: "67%,54%"
+    point: "90%,95%"
+- extendedWaitUntil:
+    visible: "Events"
+    timeout: 15000
+- tapOn: "Events"
 - extendedWaitUntil:
     visible: "Events"
     timeout: 30000

@@ -66,7 +66,7 @@ jobs:
         run: |
           source_hash=$(
             git ls-files -s mobile \
-              | grep -Ev '^100[0-9]{3} [0-9a-f]+ [0-9]+[[:space:]]+mobile/(\.maestro|docs|store-listing)/' \
+              | grep -Ev '^100[0-9]{3} [0-9a-f]+ [0-9]+[[:space:]]+mobile/(\.maestro|docs|scripts|store-listing)/' \
               | shasum -a 256 \
               | cut -d ' ' -f 1
           )
@@ -78,6 +78,20 @@ jobs:
         with:
           path: mobile/.ios-simulator-cache/TimebankGlobal.app
           key: ios-simulator-app-partner-demo-${{ runner.os }}-${{ runner.arch }}-${{ steps.app-source.outputs.hash }}
+          # One-time migration from run 33279028208. This cache is the exact app
+          # source in this commit; only screenshot automation/tests changed.
+          restore-keys: |
+            ios-simulator-app-partner-demo-macOS-ARM64-83f652cd57586179bee9e0518529627285202b9b2f6b0d6f3bd4187b9bed75c5
+
+      - name: Confirm whether a reusable Simulator app was restored
+        id: restored-simulator-app
+        shell: bash
+        run: |
+          if [[ -d mobile/.ios-simulator-cache/TimebankGlobal.app ]]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Confirm the protected demo credentials are configured
         env:
@@ -214,7 +228,7 @@ jobs:
           echo "IOS_SIMULATOR_RUNTIME=$runtime_id" >> "$GITHUB_ENV"
 
       - name: Generate the native iOS project and install CocoaPods
-        if: steps.simulator-app-cache.outputs.cache-hit != 'true'
+        if: steps.restored-simulator-app.outputs.found != 'true'
         working-directory: mobile
         run: |
           mkdir -p "$HOME/.expo"
@@ -223,7 +237,7 @@ jobs:
           pod install
 
       - name: Compile the unsigned iOS Release build
-        if: steps.simulator-app-cache.outputs.cache-hit != 'true'
+        if: steps.restored-simulator-app.outputs.found != 'true'
         working-directory: mobile
         run: |
           # Build specifically for the Simulator SDK. Expo CLI's device resolver

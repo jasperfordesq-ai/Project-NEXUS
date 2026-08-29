@@ -28,7 +28,7 @@ describe('iOS screenshot workflow', () => {
     expect(captureStep).not.toContain('apple-store-open-');
   });
 
-  it('captures the accepted set and handles both iOS deep-link confirmations', () => {
+  it('captures the accepted set through app-owned navigation only', () => {
     expect(tour).toContain('pressKey: Enter');
     expect(tour).not.toContain('id: "login-submit"');
     expect(tour.match(/takeScreenshot:/g)).toHaveLength(4);
@@ -36,7 +36,11 @@ describe('iOS screenshot workflow', () => {
     expect(tour).toContain('takeScreenshot: 02-listings');
     expect(tour).toContain('takeScreenshot: 04-messages');
     expect(tour).toContain('takeScreenshot: 05-events');
-    expect(tour.match(/point: "67%,54%"/g)).toHaveLength(2);
+    expect(tour).not.toContain('openLink:');
+    expect(tour).not.toContain('stopApp');
+    expect(tour).toContain('point: "70%,95%"');
+    expect(tour).toContain('point: "90%,95%"');
+    expect(tour).toContain('tapOn: "Events"');
   });
 
   it('runs page-content OCR over every prepared screenshot', () => {
