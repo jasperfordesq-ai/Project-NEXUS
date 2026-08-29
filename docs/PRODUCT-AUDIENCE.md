@@ -1,6 +1,6 @@
 # Who Project NEXUS Is For
 
-Last reviewed: 2026-08-25
+Last reviewed: 2026-08-28
 
 **Project NEXUS is a platform for adults. Signing up requires confirming you are 18 years
 of age or older.** That is a product decision taken on 2026-08-25, and this document
@@ -98,6 +98,35 @@ The Play Console asks for a target audience and applies its Families policy to a
 targeting children. **The answer is adults only, 18 and over.** The Families policy does
 not apply. This is consistent with what all three sign-up forms now say, which is the point
 of the gate above: a declaration to a store has to match what the product tells its users.
+
+Google's current Target audience guidance also exposes **Restrict minor access** when
+18 and over is the only selected age group. That restriction must be enabled for both the
+product decision and the Play-account distribution boundary to agree. It blocks accounts
+Google determines are minors from finding, downloading or purchasing the app. Recheck it
+in the next editable Console window; do not change declarations during an active review.
+
+The native “Matches” feature is service and skill matching for timebank exchanges, not
+dating or romantic matchmaking. That distinction must remain explicit in store copy and
+review notes because Google has a separate age-restricted policy for dating/matchmaking.
+
+Primary Google references checked 2026-08-28:
+
+- <https://support.google.com/googleplay/android-developer/answer/9867159>
+- <https://support.google.com/googleplay/android-developer/answer/9893335>
+- <https://support.google.com/googleplay/android-developer/answer/9876937>
+
+## Apple App Store
+
+The native product must not be marked **Made for Kids**. Its live questionnaire answers
+must disclose user-generated content, social media and messaging. Because the membership
+terms require a higher minimum age than Apple's capability-based calculation may produce,
+select **Override to Higher Age Rating: 18+**. A self-declaration checkbox is not Apple's
+Declared Age Range API and must not be described as verified age assurance.
+
+Apple's UGC rule still requires filtering, reporting, blocking and published contact
+information for an adults-only social app. The full native decision record, guardian
+boundary, Care in Community exclusion and current primary-source list are maintained in
+[`../mobile/docs/STORE_AUDIENCE_POLICY.md`](../mobile/docs/STORE_AUDIENCE_POLICY.md).
 
 Store-readiness state for the native app — what is still missing before submission is
 possible — is in [../mobile/docs/DISTRIBUTION.md](../mobile/docs/DISTRIBUTION.md).

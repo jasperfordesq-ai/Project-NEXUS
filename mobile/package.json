@@ -53,6 +53,7 @@
     "themes:check": "node scripts/generate-tenant-themes.mjs --check",
     "check:cert-pins": "node scripts/check-cert-pins.mjs",
     "check:untranslated": "node scripts/check-untranslated.mjs",
+    "check:store-audience": "node scripts/check-store-audience-policy.mjs",
     "update:website": "node scripts/publish-update.mjs website",
     "rollback:staging": "node scripts/rollback-update.mjs staging",
     "rollback:website": "node scripts/rollback-update.mjs website",

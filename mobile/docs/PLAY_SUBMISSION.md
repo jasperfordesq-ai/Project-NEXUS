@@ -1,6 +1,6 @@
 # Google Play submission — everything prepared, and the parts only the owner can do
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-08-28
 
 The developer identity is verified and Timebank Global is publicly installable from Google
 Play as of 2026-08-26. This page is now the evidence source for the next Android release:
@@ -10,6 +10,9 @@ be repeated before another build is uploaded.
 Nothing here is a claim that the *next working-tree state* is ready to upload. Read
 [the store-readiness row in CURRENT_MOBILE_PRODUCTION_STATUS.md](CURRENT_MOBILE_PRODUCTION_STATUS.md)
 for the score, and the checklist at the end of this page for what is genuinely outstanding.
+The permanent adults-only declaration, guardian boundary and Care in Community exclusion
+are in [STORE_AUDIENCE_POLICY.md](STORE_AUDIENCE_POLICY.md) and are enforced by
+`npm run check:store-audience`.
 
 ---
 
@@ -422,12 +425,17 @@ The certifications are supported by shipped behaviour and policy:
 ## Content rating questionnaire (IARC) — ready-to-enter answers
 
 - App or game: **App**. Target audience: **18 and over**. Ads: **No**.
+- Select **18 and over as the only target age group**, then enable **Restrict minor
+  access**. Recheck this in the next editable Console window; do not change declarations
+  while a release is under review.
 - Violence, sexual content, profanity, drugs, gambling: **No** to all.
 - **Users can interact:** Yes — messages, comments, posts, groups.
 - **Users can share their location with other users:** Yes (approximate, and only if they
   choose to).
 - **Users can share personal information:** Yes — a profile, and free-text messages.
 - **User-generated content is present:** Yes, with reporting and blocking available.
+- **Dating or romantic matchmaking:** No. “Matches” compares offers, requests, skills,
+  availability and distance for timebank exchanges; it is service and skill matching.
 - **Does the app contain purchases?** Yes — buying second-hand goods from other members in
   the marketplace, which is a physical-goods purchase between two people. There is no digital
   purchase and no identity-verification fee in the app (see the payments section above), and

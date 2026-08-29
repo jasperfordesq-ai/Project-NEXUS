@@ -1,6 +1,6 @@
 # Apple age-rating worksheet
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-28
 
 This worksheet maps the current native app to Apple's July 2026 age-rating
 questionnaire. Enter these answers manually in App Store Connect; EAS Metadata's beta
@@ -25,6 +25,10 @@ Timebank Global registration and store copy say members must be 18 or over, so s
 **Override to Higher Age Rating: 18+** for a consistent public presentation. This is a
 developer override, not a claim that the app contains Apple's mature-content descriptors.
 Do not select Made for Kids.
+
+Guardian-consent records elsewhere in the platform are not parental controls or a child
+membership path and do not change any answer above. Care in Community is excluded from
+both native apps. See `../../docs/STORE_AUDIENCE_POLICY.md` for the enforced boundary.
 
 ## Content descriptions
 

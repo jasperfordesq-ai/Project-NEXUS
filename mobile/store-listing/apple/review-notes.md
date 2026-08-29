@@ -1,6 +1,6 @@
 # Apple review notes draft
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-28
 
 Timebank Global is a multi-tenant community timebanking app. Select **Partner Demo** on the
 community picker and sign in with the review account supplied privately in App Store
@@ -51,4 +51,6 @@ Age-rating answers declare user-generated content, social media, messaging/chat 
 frequent contests because challenges and leaderboards are recurring features. The product
 requires members to declare that they are 18 or over, so the release uses an 18+ developer
 override even if Apple's capability-based calculation is lower. The app is not in the Kids
-category.
+category. “Matches” means matching offers, requests and skills for timebank exchanges; it
+is not dating or romantic matchmaking. Guardian-consent and Care in Community workflows
+are not part of either native app.

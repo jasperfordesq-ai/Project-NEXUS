@@ -1,6 +1,6 @@
 # Apple App Store submission handoff
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-28
 
 This is the maintained source of truth for preparing the Expo/React Native app for
 TestFlight and the Apple App Store. It records evidence and gates; it is not authority
@@ -159,6 +159,12 @@ Checked against Apple's current App Review Guidelines on 2026-08-27:
 
 These are source-and-policy findings, not an Apple decision. Recheck the live guidelines
 before submission because store rules can change.
+
+The non-negotiable 18+ audience, guardian-consent exclusion, Care in Community exclusion
+and cross-store declarations are maintained in
+[STORE_AUDIENCE_POLICY.md](STORE_AUDIENCE_POLICY.md). The release check must run
+`npm run check:store-audience`; the app is not Made for Kids, and no guardian capability
+may be presented as a way for a child to join either native app.
 
 ## Store record still to prepare
 
