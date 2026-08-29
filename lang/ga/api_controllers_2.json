@@ -228,10 +228,10 @@
   "podcasts.support_show": "Tacaigh leis an seó seo",
   "podcasts.report_reason_required": "Roghnaigh cúis leis an tuairisc seo.",
   "podcasts.invalid_report_status": "Stádas tuairisce neamhbhailí.",
-  "merchant_coupon.code_required": "Coupon code is required.",
-  "merchant_coupon.code_in_use": "Coupon code already in use for this tenant.",
-  "push.device_unregistered": "Device unregistered",
-  "push.device_not_found": "Device not found",
+  "merchant_coupon.code_required": "Tá cód cúpóin riachtanach.",
+  "merchant_coupon.code_in_use": "Tá an cód cúpóin in úsáid cheana don tionónta seo.",
+  "push.device_unregistered": "Díchláraíodh an gléas",
+  "push.device_not_found": "Níor aimsíodh an gléas",
   "merchant_coupon": {
     "not_found": "Cupón gan aimsiú."
   },

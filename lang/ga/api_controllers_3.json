@@ -84,7 +84,7 @@
     "grant_received": "Fuair tú {{amount}} {{unit}} ó chomhordaitheoir do bhanc ama",
     "balance_adjusted_added": "Coigeartaíodh d'iarmhéid: +{{amount}} {{unit}} curtha leis ag comhordaitheoir",
     "balance_adjusted_removed": "Coigeartaíodh d'iarmhéid: -{{amount}} {{unit}} bainte ag comhordaitheoir",
-    "hours_unit": "{1} hour|[2,*] hours"
+    "hours_unit": "{1} uair|[2,*] uair an chloig"
   },
   "comments": {
     "reaction": "D'fhreagair {{name}} do thrácht"
@@ -150,7 +150,7 @@
     "monitoring_lifted": "Tógadh srianta do chuid teachtaireachtaí.",
     "account_suspended": "Cuireadh do chuntas ar fionraí. Déan teagmháil le tacaíocht má cheapann tú gur earráid é seo.",
     "account_banned": "Cosc curtha ar do chuntas. Déan teagmháil le tacaíocht má cheapann tú gur earráid é seo.",
-    "account_reactivated": "Your account has been reactivated. Welcome back to {{community}}!",
+    "account_reactivated": "Athghníomhachtaíodh do chuntas. Fáilte ar ais chuig {{community}}!",
     "super_admin_granted": "Tugadh pribhléidí Riarthóir Sárfheidearáil Tionóntachta duit.",
     "super_admin_revoked": "Baineadh do phribhléidí Riarthóir Sárfheidearáil Tionóntachta."
   }

@@ -1,25 +1,25 @@
 {
   "loyalty": {
     "errors": {
-      "credits_must_be_positive": "Credits to use must be greater than 0.",
-      "invalid_order_total": "Order total must be greater than 0.",
-      "credits_decimal_precision": "Credits must have at most 2 decimal places.",
-      "credits_exceed_max": "Credits to use exceed the per-redemption maximum.",
-      "self_redemption_forbidden": "You cannot redeem credits at your own listing.",
-      "programme_unavailable": "The loyalty programme is not available on this community.",
-      "merchant_disabled": "This merchant is no longer accepting time credits.",
-      "merchant_misconfigured": "This merchant's loyalty configuration is invalid.",
-      "exceeds_max_discount": "Discount exceeds the maximum allowed for this order.",
-      "member_not_found": "Member account not found.",
-      "zero_balance": "You have no time credits to redeem.",
-      "insufficient_credits": "Not enough time credits in your wallet.",
-      "redemption_not_found": "Redemption not found.",
-      "redemption_not_reversible": "Only applied redemptions can be reversed.",
-      "reversal_reason_too_long": "Reversal reason must be 500 characters or fewer.",
+      "credits_must_be_positive": "Caithfidh líon na gcreidmheasanna le húsáid a bheith níos mó ná 0.",
+      "invalid_order_total": "Caithfidh iomlán an ordaithe a bheith níos mó ná 0.",
+      "credits_decimal_precision": "Ní cheadaítear níos mó ná 2 ionad dheachúlacha do chreidmheasanna.",
+      "credits_exceed_max": "Sáraíonn líon na gcreidmheasanna an t-uasmhéid in aghaidh na fuascailte.",
+      "self_redemption_forbidden": "Ní féidir leat creidmheasanna a fhuascailt ar do liostú féin.",
+      "programme_unavailable": "Níl an clár dílseachta ar fáil sa phobal seo.",
+      "merchant_disabled": "Ní ghlacann an ceannaí seo le creidmheasanna ama a thuilleadh.",
+      "merchant_misconfigured": "Tá cumraíocht dílseachta an cheannaí seo neamhbhailí.",
+      "exceeds_max_discount": "Sáraíonn an lascaine an t-uasmhéid a cheadaítear don ordú seo.",
+      "member_not_found": "Níor aimsíodh cuntas an bhaill.",
+      "zero_balance": "Níl aon chreidmheas ama agat le fuascailt.",
+      "insufficient_credits": "Níl go leor creidmheasanna ama i do thiachóg.",
+      "redemption_not_found": "Níor aimsíodh an fhuascailt.",
+      "redemption_not_reversible": "Ní féidir ach fuascailtí curtha i bhfeidhm a aisiompú.",
+      "reversal_reason_too_long": "Caithfidh cúis an aisiompaithe a bheith 500 carachtar nó níos lú.",
       "invalid_listing": "Ní leis an díoltóir seo an liostú.",
       "listing_unavailable": "Níl an liostú seo ar fáil le haghaidh fuascailte dílseachta.",
-      "invalid_exchange_rate": "CHF per hour must be between 0 and 9999.",
-      "invalid_max_discount_pct": "Max discount percent must be between 0 and 100.",
+      "invalid_exchange_rate": "Caithfidh CHF in aghaidh na huaire a bheith idir 0 agus 9999.",
+      "invalid_max_discount_pct": "Caithfidh uaschéatadán na lascaine a bheith idir 0 agus 100.",
       "redemption_unavailable": "Níl an fhuascailt dílseachta seo ar fáil a thuilleadh.",
       "redemption_mismatch": "Ní mheaitseálann an fhuascailt dílseachta seo an t-ordú margaidh roghnaithe."
     }
@@ -35,29 +35,29 @@
   },
   "forecast": {
     "sub_region_demand": {
-      "title": "Sub-region coverage",
-      "description": "Hours requested vs. fulfilled per sub-region. Coverage below 50% is flagged.",
-      "coverage_ratio": "Coverage ratio",
-      "requested": "Requested",
-      "fulfilled": "Fulfilled",
-      "under_supplied": "Under-supplied"
+      "title": "Clúdach fo-réigiúin",
+      "description": "Uaireanta a iarradh i gcomparáid leo siúd a comhlíonadh i ngach fo-réigiún. Cuirtear bratach le clúdach faoi bhun 50%.",
+      "coverage_ratio": "Cóimheas clúdaigh",
+      "requested": "Iarrtha",
+      "fulfilled": "Comhlíonta",
+      "under_supplied": "Easpa soláthair"
     },
     "helper_churn": {
-      "title": "Helper churn",
+      "title": "Imeacht cúntóirí",
       "description": "Share of previously active helpers who haven't logged hours in the last 30 days.",
-      "overall": "Overall churn rate",
-      "by_category": "By category",
-      "lapsed": "Lapsed helpers",
-      "prior_active": "Previously active"
+      "overall": "Ráta imeachta foriomlán",
+      "by_category": "De réir catagóire",
+      "lapsed": "Cúntóirí neamhghníomhacha",
+      "prior_active": "Gníomhach roimhe seo"
     },
     "coefficient_drift": {
-      "title": "Category coefficient drift",
-      "description": "Observed average hours per session compared to the admin-set baseline. Drift above 15% is flagged.",
-      "baseline": "Baseline",
-      "expected": "Expected",
-      "observed": "Observed",
-      "drift": "Drift",
-      "flagged": "Flagged"
+      "title": "Athrú i gcomhéifeacht na catagóire",
+      "description": "Meánuaireanta breathnaithe in aghaidh an tseisiúin i gcomparáid leis an mbunlíne a shocraigh an riarthóir. Cuirtear bratach le hathrú os cionn 15%.",
+      "baseline": "Bunlíne",
+      "expected": "Ionchasach",
+      "observed": "Breathnaithe",
+      "drift": "Athrú",
+      "flagged": "Faoi Bhratach"
     }
   },
   "nudges": {
