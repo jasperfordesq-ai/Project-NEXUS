@@ -44,7 +44,9 @@ describe('iOS screenshot workflow', () => {
     expect(tour).not.toContain('stopApp');
     expect(tour).toContain('point: "70%,95%"');
     expect(tour).toContain('point: "90%,95%"');
-    expect(tour).toContain('tapOn: "Events"');
+    expect(tour).toContain('start: "50%,80%"');
+    expect(tour).toContain('end: "50%,35%"');
+    expect(tour).toContain('tapOn: "^Events$"');
   });
 
   it('runs page-content OCR over every prepared screenshot', () => {

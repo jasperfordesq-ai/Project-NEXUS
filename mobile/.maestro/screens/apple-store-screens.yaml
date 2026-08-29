@@ -81,14 +81,23 @@ appId: ie.project.nexus
 - takeScreenshot: 04-messages
 
 # Events is a hidden auxiliary tab reached from the visible More hub. It is the
-# fifth row in the first Discover card for the protected Partner Demo tenant, so
-# it is already on screen and needs no hierarchy-heavy scrolling.
+# fifth row in the first Discover card for the protected Partner Demo tenant.
+# Its initial frame extends beneath the fixed tab bar: run 33280917178 showed
+# XCTest resolving the row at y=877, where the centre Create tab intercepted the
+# touch. Move the list once so the exact row is physically above the tab bar.
 - tapOn:
     point: "90%,95%"
 - extendedWaitUntil:
     visible: "Events"
     timeout: 15000
-- tapOn: "Events"
+- swipe:
+    start: "50%,80%"
+    end: "50%,35%"
+    duration: 500
+- extendedWaitUntil:
+    visible: "^Events$"
+    timeout: 15000
+- tapOn: "^Events$"
 - extendedWaitUntil:
     visible: "Events"
     timeout: 30000
