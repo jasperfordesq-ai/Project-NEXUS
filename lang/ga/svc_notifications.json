@@ -1,6 +1,6 @@
 {
-  "vetting_status_updated": "Your community safeguarding vetting confirmation has been updated.",
-  "vetting_review_requested": "A member has requested a safeguarding vetting review.",
+  "vetting_status_updated": "Nuashonraíodh deimhniú grinnfhiosrúcháin cosanta do phobail.",
+  "vetting_review_requested": "D’iarr ball athbhreithniú ar ghrinnfhiosrúchán cosanta.",
   "badge_collection": {
     "collection_complete": "Bailiúchán Críochnaithe! Chríochnaigh tú '{{name}}' agus thuill tú {{xp}} XP bónais! {{icon}}"
   },
@@ -162,7 +162,7 @@
     "payout_sent_bell": "Scaoileadh d'íocaíocht {{amount}} don ordú #{{order}} chugat."
   },
   "shift_waitlist": {
-    "spot_available": "A spot opened up on a shift you're waitlisted for — claim it before it expires"
+    "spot_available": "Tá áit ar fáil anois ar sheal a bhfuil tú ar a liosta feithimh — éiligh í sula dtéann sí in éag"
   },
   "podcast": {
     "new_episode": "Clár nua ó {{show}}: {{title}}"

@@ -9,10 +9,7 @@
     "strings) belong in scripts/php-lang-invariant-allowlist.json, shared with",
     "the .php gate."
   ],
-  "generatedAt": "2026-08-29T02:25:23.307Z",
-  "totalUntranslated": 95,
-  "files": {
-    "ga/svc_notifications.json": 3,
-    "ga/svc_notifications_2.json": 92
-  }
+  "generatedAt": "2026-08-29T02:27:01.951Z",
+  "totalUntranslated": 0,
+  "files": {}
 }
