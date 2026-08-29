@@ -25,28 +25,28 @@
     "cta": "Logáil Do Chuid Uaireanta"
   },
   "lapsed_volunteer": {
-    "subject": "We miss seeing you volunteer",
-    "title": "Ready for another volunteer shift?",
-    "preview": "There are new volunteering opportunities waiting for you",
-    "body": "It has been a while since your last recorded volunteer shift. If you are available again, your community would be glad to have your help.",
-    "cta": "Browse Opportunities"
+    "subject": "Airímid uainn thú mar oibrí deonach",
+    "title": "An bhfuil tú réidh do sheal eile obair dheonach?",
+    "preview": "Tá deiseanna nua obair dheonach ag fanacht leat",
+    "body": "Tá tamall ann ó taifeadadh do sheal deireanach obair dheonach. Má tá tú ar fáil arís, bheadh fáilte mhór ag do phobal roimh do chabhair.",
+    "cta": "Brabhsáil Deiseanna"
   },
   "credential_expiry": {
-    "subject": "Your volunteer credential expires soon",
-    "title": "Credential Expiring Soon",
-    "preview": "A verified volunteer credential is nearing its expiry date",
-    "body": "One of your verified volunteer credentials is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Credential",
-    "label_expires": "Expires",
-    "cta": "Review Credentials"
+    "subject": "Rachaidh do dhintiúr obair dheonach in éag go luath",
+    "title": "Dintiúr ag Dul in Éag go Luath",
+    "preview": "Tá dintiúr fíoraithe obair dheonach ag druidim lena dháta éaga",
+    "body": "Tá ceann de do dhintiúir fhíoraithe obair dheonach ag druidim lena dháta éaga. Nuashonraigh é ionas gur féidir le heagraithe leanúint de dheiseanna oiriúnacha a shannadh duit.",
+    "label_type": "Dintiúr",
+    "label_expires": "Dáta Éaga",
+    "cta": "Athbhreithnigh Dintiúir"
   },
   "training_expiry": {
-    "subject": "Your volunteer training expires soon",
-    "title": "Training Expiring Soon",
-    "preview": "A verified volunteer training record is nearing its expiry date",
-    "body": "One of your verified volunteer training records is nearing its expiry date. Please update it so organisers can continue assigning you to suitable opportunities.",
-    "label_type": "Training",
-    "label_expires": "Expires",
-    "cta": "Review Training"
+    "subject": "Rachaidh d’oiliúint obair dheonach in éag go luath",
+    "title": "Oiliúint ag Dul in Éag go Luath",
+    "preview": "Tá taifead fíoraithe oiliúna obair dheonach ag druidim lena dháta éaga",
+    "body": "Tá ceann de do thaifid fhíoraithe oiliúna obair dheonach ag druidim lena dháta éaga. Nuashonraigh é ionas gur féidir le heagraithe leanúint de dheiseanna oiriúnacha a shannadh duit.",
+    "label_type": "Oiliúint",
+    "label_expires": "Dáta Éaga",
+    "cta": "Athbhreithnigh Oiliúint"
   }
 }
