@@ -78,6 +78,12 @@ appId: ie.project.nexus
       visible: "Open"
     commands:
       - tapOn: "Open"
+# Let the sheet dismissal and route transition finish before sampling whether
+# Listings is still present. Without this pause run 33278248859 entered the
+# fallback from a stale Listings hierarchy, then could not find its tab because
+# the app had already completed the move to Messages.
+- waitForAnimationToEnd:
+    timeout: 8000
 # iOS 26 can acknowledge the foreground open request without presenting its
 # confirmation sheet and without delivering the URL to the already-active app.
 # The Messages tab is visible on Listings, so use it as a proven in-app fallback
