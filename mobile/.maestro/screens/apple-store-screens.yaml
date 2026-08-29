@@ -38,6 +38,11 @@ appId: ie.project.nexus
 - pasteText
 - tapOn:
     id: "login-submit"
+    # Login succeeded and feed requests completed in run 33267129079, but the
+    # XCUITest accessibility host died while Maestro waited for the route-swap
+    # hierarchy to settle (kAXErrorServerNotFound). Let the explicit feed wait
+    # below own that transition instead.
+    waitToSettleTimeoutMs: 0
 # Do not relaunch while login is still in flight. AuthContext persists the token
 # and cached user before routing, so reaching the feed proves both have completed.
 - extendedWaitUntil:
