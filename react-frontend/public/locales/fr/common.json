@@ -2412,7 +2412,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Progression du niveau {{level}} : {{percentage}} %",
   "user_fallback": "User",
-  "release_stage": "Généralement disponible (v1.6.2)",
+  "release_stage": "Généralement disponible (v1.7.0)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "Ajustez la palette de couleurs, l’accent et la densité.",

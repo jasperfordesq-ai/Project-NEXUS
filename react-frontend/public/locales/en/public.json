@@ -9,7 +9,7 @@
     "meta_title": "Features - Project NEXUS v1.6",
     "meta_description": "Every module shipped in Project NEXUS v1.6, with honest maturity labels for timebanking, federation, learning, marketplace, community care, safety, analytics, and open-source infrastructure.",
     "heading": "What Project NEXUS does",
-    "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.6.2 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
+    "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.7.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
     "maturity_key_title": "How we label maturity",
     "maturity_ga": "Generally Available - stable, supported, used in production across pilot tenants.",
     "maturity_beta": "Working in production today, but the public surface or wire protocol is still being hardened.",
@@ -1120,7 +1120,7 @@
     "help_secondary_cta": "Visit the help centre"
   },
   "unknown_error": "Unknown error",
-  "release_stage": "Generally Available (v1.6.2)",
+  "release_stage": "Generally Available (v1.7.0)",
   "community_chooser": {
     "title": "Choose your community",
     "subtitle": "You've reached the main Project NEXUS page. Choose your community below to continue.",

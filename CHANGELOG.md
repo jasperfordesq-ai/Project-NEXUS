@@ -5,27 +5,11 @@ All notable changes to Project NEXUS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- **The complete member-facing Irish Matches catalogue has been semantically reviewed.** Every accidental `cluiche` (game) and `meaitseanna` form is replaced with consistent `meaitseáil/meaitseálacha`; mutuality, match quality, location thresholds, notification summaries and first-person dismissal now retain their intended meaning, with only distance and percentage displays unchanged.
-
-- **The complete member-facing Irish Messages catalogue has been semantically reviewed.** Read and sent receipts, archiving, per-user and everyone deletion, voice and automatic translation, group conversations, restrictions and coordinator-mediated contact now preserve their UI states. Safeguarding copy now says precisely that community confirmation is missing and explicitly prohibits sending DBS certificates or criminal-record information through NEXUS; a whole-catalogue gate leaves only the character counter unchanged.
-
-- **The complete member-facing Irish Exchanges catalogue has been semantically reviewed.** Requests, provider responses, broker approval, completion, hour confirmation, cancellation and time-credit displays now use consistent workflow language and Irish `u` hour abbreviations; a whole-catalogue gate leaves only the numeric preparation-time placeholder unchanged.
-
-- **The complete 830-source-value member-facing Irish Settings catalogue has now been semantically reviewed.** Identity verification, notifications, passwords, 2FA, passkeys, insurance metadata, safeguarding consent, GDPR rights, linked-account capabilities, accessibility, blocked users and supported-message audit controls are covered; a whole-catalogue gate limits English-identical values to two product names and three functional input examples.
-
-- **Irish Settings now preserves member control throughout linked-account support.** Member-approved capabilities are clearly separated from staff-recorded guardian arrangements; pending support remains inaccessible until approval, message viewing requires the member's own consent and stays auditable and withdrawable, and prepared listings or transfers remain fail-closed until the supported member agrees.
-
-- **Irish Settings account-rights and destructive-action wording now matches the live controls.** GDPR access, portability, restriction and permanent account deletion are distinguished accurately; password feedback now states the real 12-character minimum instead of eight, and profile, privacy, 2FA, marketing and data-request status messages restore complete accented Irish and actionable failure guidance.
-
-- **Irish Settings now distinguishes passkeys from passwords throughout device setup.** Windows, Mac, iPhone, iPad, Android and Linux instructions consistently use `pas-eochair`, retain the real Authy product name, and clarify relying-party domains, credential limits and successful registration; focused tests prevent this security-critical terminology from regressing.
-
-- **The complete member-facing Irish Stories catalogue has been semantically reviewed.** Story creation, camera and recording controls, reactions, viewer states and highlight management now preserve their actual product actions; a whole-catalogue gate protects the five reviewed typography and seconds-format invariants.
-
-- **The complete member-facing Irish Dashboard catalogue has been semantically reviewed.** Dashboard, listing, matching, activity, endorsement, exchange, review, like and comment wording now reads naturally and preserves the intended product meaning; a whole-catalogue test limits English-identical values to the five percentage, distance and XP display formats.
-
 ---
 
 ## [Unreleased]
+
+## [1.7.0] - 2026-08-29
 
 - **Mobile store preparation now has a reproducible, isolated device gate and current Android artwork.** Every Maestro journey establishes its own clean tenant and login state instead of depending on discovery order, CI pins the intended emulator and keeps its lock screen awake, and the Windows runner can select an explicit Android serial when several emulators are attached. A tenth device journey proves the newly completed Courses, Podcasts, Clubs and Partner venues catalogues are reachable through ordinary in-app navigation; the feature-gated entries now appear in More instead of existing only as deep-linkable screens. The production-configured release APK was rebuilt with debug-only E2E mode forced off, installed on a separate phone emulator and verified against the live API; the device journeys ran against the isolated local fixture. Google Play artwork was recaptured from the fictional Partner Demo tenant in controlled light and dark phone modes and both tablet sizes; all 24 current PNGs pass the opaque 9:16/16:9 asset gate. The Android startup bundle remains within its measured ceiling with 1.49 MB spare. Apple signing, APNs, Universal Links and App Store Connect submission remain deliberately blocked until enrollment supplies the Team ID and numeric app ID.
 
@@ -2409,6 +2393,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Laravel is now explicitly documented as the continuing production authority, with ASP.NET retained as an optional future alternative rather than an assumed scale-driven replacement.** The architecture decision records, public architecture and portability guides, repository overview, monorepo boundaries, and agent instructions now state that growth in users or traffic does not automatically justify a backend cutover. Any future ASP.NET production proposal must first prove unchanged-client contract identity, security and tenant equivalence, representative Project NEXUS performance and endurance results against an optimized Laravel baseline, operational and total-cost benefit, and a safe migration and rollback plan, followed by a separate explicit owner decision.
 
 ### Fixed
+
+- **The complete member-facing Irish Matches catalogue has been semantically reviewed.** Every accidental `cluiche` (game) and `meaitseanna` form is replaced with consistent `meaitseáil/meaitseálacha`; mutuality, match quality, location thresholds, notification summaries and first-person dismissal now retain their intended meaning, with only distance and percentage displays unchanged.
+
+- **The complete member-facing Irish Messages catalogue has been semantically reviewed.** Read and sent receipts, archiving, per-user and everyone deletion, voice and automatic translation, group conversations, restrictions and coordinator-mediated contact now preserve their UI states. Safeguarding copy now says precisely that community confirmation is missing and explicitly prohibits sending DBS certificates or criminal-record information through NEXUS; a whole-catalogue gate leaves only the character counter unchanged.
+
+- **The complete member-facing Irish Exchanges catalogue has been semantically reviewed.** Requests, provider responses, broker approval, completion, hour confirmation, cancellation and time-credit displays now use consistent workflow language and Irish `u` hour abbreviations; a whole-catalogue gate leaves only the numeric preparation-time placeholder unchanged.
+
+- **The complete 830-source-value member-facing Irish Settings catalogue has now been semantically reviewed.** Identity verification, notifications, passwords, 2FA, passkeys, insurance metadata, safeguarding consent, GDPR rights, linked-account capabilities, accessibility, blocked users and supported-message audit controls are covered; a whole-catalogue gate limits English-identical values to two product names and three functional input examples.
+
+- **Irish Settings now preserves member control throughout linked-account support.** Member-approved capabilities are clearly separated from staff-recorded guardian arrangements; pending support remains inaccessible until approval, message viewing requires the member's own consent and stays auditable and withdrawable, and prepared listings or transfers remain fail-closed until the supported member agrees.
+
+- **Irish Settings account-rights and destructive-action wording now matches the live controls.** GDPR access, portability, restriction and permanent account deletion are distinguished accurately; password feedback now states the real 12-character minimum instead of eight, and profile, privacy, 2FA, marketing and data-request status messages restore complete accented Irish and actionable failure guidance.
+
+- **Irish Settings now distinguishes passkeys from passwords throughout device setup.** Windows, Mac, iPhone, iPad, Android and Linux instructions consistently use `pas-eochair`, retain the real Authy product name, and clarify relying-party domains, credential limits and successful registration; focused tests prevent this security-critical terminology from regressing.
+
+- **The complete member-facing Irish Stories catalogue has been semantically reviewed.** Story creation, camera and recording controls, reactions, viewer states and highlight management now preserve their actual product actions; a whole-catalogue gate protects the five reviewed typography and seconds-format invariants.
+
+- **The complete member-facing Irish Dashboard catalogue has been semantically reviewed.** Dashboard, listing, matching, activity, endorsement, exchange, review, like and comment wording now reads naturally and preserves the intended product meaning; a whole-catalogue test limits English-identical values to the five percentage, distance and XP display formats.
 
 - **Five more lists on the experimental ASP.NET backend were shaped so the app would have shown them as empty.** Development-only backend, not the live site. Each of these five — a member's own job applications, their membership dues, their volunteering donations, their volunteering training record, and the discount-coupon list — handed back a plain list where the real backend wraps it in a container with the list inside. An app reading the real backend looks inside that container, so against these five it would have found nothing and shown an empty page rather than an error. The wrapper is **not** one shared shape, which is the part worth recording: the applications and training lists carry a "where to continue from" marker and a "is there more" flag, dues carries a total count, donations carries a differently-named continuation marker, and coupons carries nothing but the list. Which one applies cannot be worked out from the response, so each of the five was read off the running real backend rather than inferred — deliberately, because over-generalising one such shape across endpoints is what caused an earlier round of 22 wrong endpoints.
 
@@ -6382,7 +6384,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.2...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.2...v1.7.0
 [1.6.2]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.5.9...v1.6.0

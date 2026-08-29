@@ -9,7 +9,7 @@
     "meta_title": "Functies - Project NEXUS v1.6",
     "meta_description": "Alle modules in Project NEXUS v1.6, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
     "heading": "Wat Project NEXUS doet",
-    "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v1.6.2 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
+    "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v1.7.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
     "maturity_key_title": "Hoe we volwassenheid labelen",
     "maturity_ga": "Algemeen beschikbaar - stabiel, ondersteund, in productie bij pilot-tenants.",
     "maturity_beta": "Vandaag in productie, maar het publieke oppervlak of het wire-protocol wordt nog verhard.",
@@ -1120,7 +1120,7 @@
     "help_secondary_cta": "Bezoek het helpcentrum"
   },
   "unknown_error": "Onbekende fout",
-  "release_stage": "Algemeen beschikbaar (v1.6.2)",
+  "release_stage": "Algemeen beschikbaar (v1.7.0)",
   "community_chooser": {
     "title": "Kies je gemeenschap",
     "subtitle": "Je bent op de hoofdpagina van Project NEXUS beland. Kies hieronder je gemeenschap om verder te gaan.",

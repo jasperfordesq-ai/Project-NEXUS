@@ -4,7 +4,7 @@
 [![Security scan](https://img.shields.io/github/actions/workflow/status/jasperfordesq-ai/Project-NEXUS/security-scan.yml?branch=main&label=security%20scan&logo=github)](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/workflows/security-scan.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13344/badge)](https://www.bestpractices.dev/projects/13344)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.6.2-success.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.7.0-success.svg)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/docs-online-4051B5.svg?logo=materialformkdocs&logoColor=white)](https://docs.project-nexus.ie/)
 
 **Backend** &nbsp;
@@ -40,7 +40,7 @@
 
 > 🌐 **Live demo** — see the platform running in production: the [React frontend](https://app.project-nexus.ie) (primary UI) and the [accessible HTML-first frontend](https://accessible.project-nexus.ie). The PHP API is served from `https://api.project-nexus.ie`.
 
-> **Version 1.6.2 — Generally Available** — Project NEXUS V1.6.2 is generally available and in active production use. Production runs a Laravel 12 + PHP 8.2+ API behind three clients: the React 19 web app, a GOV.UK-styled accessible site on Node 22 / Express, and an Expo / React Native mobile app. It is currently in use by communities in **Ireland** and being evaluated by communities in the **United Kingdom**, **Spain**, **Switzerland**, and the **United States**. Newer modules may still ship with their own per-module maturity label (Beta / Preview). Contributions and feedback are welcome.
+> **Version 1.7.0 — Generally Available** — Project NEXUS V1.7.0 is generally available and in active production use. Production runs a Laravel 12 + PHP 8.2+ API behind three clients: the React 19 web app, a GOV.UK-styled accessible site on Node 22 / Express, and an Expo / React Native mobile app. It is currently in use by communities in **Ireland** and being evaluated by communities in the **United Kingdom**, **Spain**, **Switzerland**, and the **United States**. Newer modules may still ship with their own per-module maturity label (Beta / Preview). Contributions and feedback are welcome.
 
 A multi-tenant community time banking platform, and a genuinely full stack: a
 Laravel 12 + PHP 8.2+ API on MariaDB, Redis and Meilisearch; a React 19 +
@@ -400,7 +400,7 @@ The full current schema dump is committed at [database/schema/mysql-schema.sql](
 
 ## Project Status
 
-This is **version 1.6.2 — generally available**, in active production use. Per-module maturity (GA / Beta / Preview) is published on the in-app `/features` page and the public Changelog:
+This is **version 1.7.0 — generally available**, in active production use. Per-module maturity (GA / Beta / Preview) is published on the in-app `/features` page and the public Changelog:
 
 - The **React frontend** (`react-frontend/`) is the primary UI for user-facing pages and current admin workflows
 - The **accessible site** (`web-uk/`, Node 22 + Express + Nunjucks + GOV.UK Frontend) is an approved HTML-first UI track and is the sole accessible frontend. It serves `accessible.project-nexus.ie`, both community accessible domains, and `/{tenantSlug}/accessible/...` for every community. The Laravel Blade implementation it replaced was deleted on 2026-08-14.
