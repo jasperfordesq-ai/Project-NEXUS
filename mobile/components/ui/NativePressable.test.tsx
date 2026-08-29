@@ -88,6 +88,19 @@ describe('NativePressable', () => {
     expect(Haptics.impactAsync).not.toHaveBeenCalled();
     expect(onPress).not.toHaveBeenCalled();
   });
+
+  it('uses the plain native press responder when feedback is disabled', () => {
+    const onPress = jest.fn();
+    const { getByLabelText, queryByTestId } = render(
+      <NativePressable accessibilityLabel="Choose community" feedback="none" onPress={onPress}>
+        <Text>Choose community</Text>
+      </NativePressable>,
+    );
+
+    expect(queryByTestId('native-pressable-scale')).toBeNull();
+    fireEvent.press(getByLabelText('Choose community'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
   /**
    * 🔴 A row that represents a CHOICE has to be able to say it is the chosen one.
    * Added on 2026-08-20 when select-tenant.tsx moved off HeroButton (which collapsed the

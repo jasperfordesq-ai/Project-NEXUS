@@ -187,11 +187,14 @@ export default function SelectTenantScreen() {
            *
            * Same shape as the SafeAreaView finding in components/safeAreaFlex.test.ts: a
            * `flex-1` child collapses to nothing when its parent has no definite size.
-           * NativePressable is a plain Pressable, so it takes the width it is given.
+           * `feedback="none"` deliberately selects NativePressable's plain React
+           * Native Pressable path. The HeroUI feedback wrapper was visible and enabled
+           * to XCTest on iOS but did not deliver an accessibility-driven tap, leaving a
+           * fresh installation stuck on this required screen.
            */
           return (
             <NativePressable
-              feedback="scale"
+              feedback="none"
               className="w-full"
               testID={`tenant-option-${item.slug}`}
               onPress={() => void handleSelect(item)}

@@ -65,7 +65,12 @@ export default function NativePressable({
   const useScale = feedback !== 'none';
   const FeedbackRoot = PressableFeedback;
 
-  if (!FeedbackRoot) {
+  // `feedback="none"` is also the escape hatch for controls that need React
+  // Native's own press responder without HeroUI's animated wrapper. This is
+  // important for automation and accessibility-driven activation on iOS: the
+  // tenant picker was exposed to XCTest as enabled and Maestro tapped its exact
+  // bounds, but PressableFeedback never delivered the press callback.
+  if (!FeedbackRoot || feedback === 'none') {
     return (
       <Pressable
         accessibilityLabel={accessibilityLabel}
