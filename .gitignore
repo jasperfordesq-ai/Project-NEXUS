@@ -90,6 +90,7 @@ CLAUDE.md
 !/scripts/check-semver-policy.mjs
 !/scripts/release.mjs
 !/scripts/backfill-release-tags.mjs
+!/scripts/unreleased-summary.mjs
 !/scripts/check-doc-scores.mjs
 !/scripts/list-accessible-domains.sh
 !/scripts/check-docs-site-build.sh

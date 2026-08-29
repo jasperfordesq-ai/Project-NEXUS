@@ -28,8 +28,13 @@
  *
  * Usage:
  *   node scripts/release.mjs --dry-run          # show the plan, write nothing
- *   node scripts/release.mjs --minor            # cut it
+ *   node scripts/release.mjs --auto             # take the bump the changelog justifies
+ *   node scripts/release.mjs --minor            # state the bump yourself
  *   node scripts/release.mjs --patch --no-tag   # cut without tagging
+ *
+ * --auto takes the MINIMUM justified bump and never more. Choosing to go higher
+ * — calling something 2.0.0 because it feels like a milestone — is a claim about
+ * significance that only a person can make.
  *
  * Exit codes: 0 done, 1 refused, 2 could not run.
  */
@@ -63,7 +68,13 @@ const NO_COMMIT = has('--no-commit');
 const ALLOW_DIRTY = has('--allow-dirty');
 const DATE = flagValue('--date') ?? new Date().toISOString().slice(0, 10);
 
-const requested = ['major', 'minor', 'patch'].find((l) => has(`--${l}`)) ?? null;
+const AUTO = has('--auto');
+const explicit = ['major', 'minor', 'patch'].find((l) => has(`--${l}`)) ?? null;
+
+if (AUTO && explicit) {
+  console.error(`release: --auto and --${explicit} contradict each other. Pass one or the other.`);
+  process.exit(1);
+}
 
 const die = (msg, code = 1) => {
   console.error(`release: ${msg}`);
@@ -188,6 +199,22 @@ function requiredBump(body) {
 
 const required = requiredBump(unreleasedBody);
 
+// --auto takes exactly the bump the changelog justifies. It is deliberately the
+// MINIMUM and never more: going higher is a claim about significance that only a
+// person can make, so automation must not make it on their behalf.
+const requested = AUTO ? required.level : explicit;
+
+if (AUTO) {
+  console.log(`--auto: the changelog justifies a ${required.level.toUpperCase()} bump (${required.because}).`);
+  if (required.level === 'major') {
+    console.log('');
+    console.log('🔴 This is a MAJOR bump, because an entry is marked **BREAKING:**.');
+    console.log('   It tells every consumer that something they depend on has changed.');
+    console.log('   If that is not what you meant, stop now and fix the entry.');
+    console.log('');
+  }
+}
+
 if (!requested) {
   console.log(`Current version: ${currentVersion}`);
   console.log(`[Unreleased] holds ${unreleasedEntries.length} entr${unreleasedEntries.length === 1 ? 'y' : 'ies'}.`);
@@ -197,6 +224,9 @@ if (!requested) {
   console.log('');
   console.log('Re-run with the bump you intend, so the choice is deliberate:');
   console.log(`  node scripts/release.mjs --${required.level}`);
+  console.log('');
+  console.log('Or take the derived bump without confirming:');
+  console.log('  node scripts/release.mjs --auto');
   console.log('');
   console.log('Rules: docs/VERSIONING.md');
   process.exit(1);

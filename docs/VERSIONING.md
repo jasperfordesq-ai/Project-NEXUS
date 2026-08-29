@@ -183,9 +183,18 @@ doing that by hand is how entries get stranded and how a partial bump ships.
 # See what would happen — no files are written.
 node scripts/release.mjs --dry-run
 
-# Cut it. The bump type is derived from the changelog and must be confirmed.
+# Cut it, taking the bump the changelog justifies.
+node scripts/release.mjs --auto
+
+# Or state the bump yourself, if you want a larger one than the content requires.
 node scripts/release.mjs --minor
 ```
+
+`--auto` takes the **minimum** justified bump and never more. Going higher —
+calling something `2.0.0` because it feels like a milestone — is a claim about
+significance that only a person can make, so automation does not make it for you.
+`--auto` and an explicit `--major`/`--minor`/`--patch` contradict each other and
+are refused together.
 
 The tool will:
 
@@ -200,6 +209,37 @@ The tool will:
 
 It does **not** push and does **not** deploy. Both remain deliberate, separate
 actions — see the deployment rules in [AGENTS.md](../AGENTS.md).
+
+### Knowing when to cut one
+
+Nothing forces a release, and nothing should — see "A deploy is not a release"
+below. So that the pile does not grow unwatched, `bash scripts/deploy.sh` prints
+a one-line summary of what is sitting under `[Unreleased]` before it does
+anything: how many entries, what kind, and how long since the last release.
+
+It is **informational and never blocks a deploy** — `scripts/deploy.sh` calls it
+with `|| true`, which must stay. Deploying with a full `[Unreleased]` section is
+how the platform normally ships; a deploy that failed because a changelog note
+could not be printed would be a self-inflicted outage.
+
+```bash
+node scripts/unreleased-summary.mjs           # always prints
+node scripts/unreleased-summary.mjs --quiet   # prints only once the pile passes 10
+```
+
+### A deploy is not a release
+
+A **deploy** puts code on the server. It is identified by its commit, stamped on
+every API response as the `X-Build` header, and that is what Sentry keys its
+releases on. The deploy scripts never read `VERSION` at all.
+
+A **release** is a batch of work given a number so people can talk about it.
+
+You deploy many times per release, and most deploys contain nothing worth
+announcing — a CI fix, a dependency bump, a documentation change. Bumping the
+version on every deploy would return the number to counting deploys rather than
+describing changes, which is exactly the odometer this policy replaced. The
+separation is deliberate.
 
 ### Tags
 

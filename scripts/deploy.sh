@@ -36,6 +36,17 @@ if [ -n "$(git status --porcelain)" ]; then
     echo "[deploy]   Commit + (the script will push) first if you want them included."
 fi
 
+# --- how much has piled up under [Unreleased]? -------------------------------
+# Deploying and cutting a version are deliberately separate (docs/VERSIONING.md),
+# and deploying with a full [Unreleased] section is normal and fine. The cost of
+# that separation is that nothing ever prompts a release, so the pile grows
+# unwatched — it reached 47 entries, including two member-facing features, while
+# the app still advertised the previous version.
+#
+# 🔴 INFORMATIONAL ONLY. `|| true` is deliberate and must stay: a deploy must
+# never fail because a changelog note could not be printed.
+node scripts/unreleased-summary.mjs --quiet 2>/dev/null || true
+
 # ---------------------------------------------------------------------------
 # [0/5] Argument handling — FIRST, before anything with a side effect.
 #
