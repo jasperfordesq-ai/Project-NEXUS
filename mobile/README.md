@@ -199,6 +199,7 @@ Full detail and the traps in [docs/TESTING.md](docs/TESTING.md).
 | [Apple screenshot plan](store-listing/apple/screenshots.md) | Genuine iPhone capture storyboard and prohibited substitutions. |
 | [Apple release-candidate freeze](store-listing/apple/release-candidate-freeze.md) | Immutable commit, build, artifact and approval record for the exact submitted candidate. |
 | [PLAY_SUBMISSION.md](docs/PLAY_SUBMISSION.md) | 🔴 Read before any Play work. Current signing, public-listing, policy, Data Safety, reviewer-access, screenshot and next-release evidence, including the live description's physical-marketplace payment wording correction. |
+| [STORE_AUDIENCE_POLICY.md](docs/STORE_AUDIENCE_POLICY.md) | 🔴 The adults-only (18+) native audience decision for both stores, the guardian / linked-child / Care in Community exclusions it depends on, and the primary Google and Apple sources it was taken from. Enforced by `npm run check:store-audience`. |
 | [SECURITY.md](docs/SECURITY.md) | Token handling, Android certificate pins, OTA policy, and native hardening. |
 | [NATIVE_UI_CONTRACT.md](docs/NATIVE_UI_CONTRACT.md) | Supported native UI contract and parity boundaries. |
 | [WRAPPER_POLICY.md](docs/WRAPPER_POLICY.md) | HeroUI Native wrapper-versus-primitive rules and locale guidance. |
