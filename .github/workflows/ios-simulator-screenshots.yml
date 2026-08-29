@@ -327,6 +327,10 @@ jobs:
           let request = VNRecognizeTextRequest()
           request.recognitionLevel = .accurate
           request.usesLanguageCorrection = true
+          // Exclude the bottom navigation bar. Run 33271244590 proved that a
+          // tab label such as "Listings" can otherwise satisfy OCR while an
+          // iOS deep-link confirmation is still covering the real page.
+          request.regionOfInterest = CGRect(x: 0, y: 0.12, width: 1, height: 0.88)
           try VNImageRequestHandler(cgImage: cgImage).perform([request])
           let text = (request.results ?? [])
             .compactMap { $0.topCandidates(1).first?.string }
@@ -347,11 +351,17 @@ jobs:
           }
 
           capture 01-feed.png 'Community Feed'
-          xcrun simctl openurl "$SIMULATOR_UDID" 'nexus://listings'
+          maestro --device "$SIMULATOR_UDID" test \
+            --test-output-dir="$RUNNER_TEMP/maestro-output" \
+            .maestro/screens/apple-store-open-listings.yaml
           capture 02-listings.png 'Listings'
-          xcrun simctl openurl "$SIMULATOR_UDID" 'nexus://messages'
+          maestro --device "$SIMULATOR_UDID" test \
+            --test-output-dir="$RUNNER_TEMP/maestro-output" \
+            .maestro/screens/apple-store-open-messages.yaml
           capture 04-messages.png 'Messages'
-          xcrun simctl openurl "$SIMULATOR_UDID" 'nexus://events'
+          maestro --device "$SIMULATOR_UDID" test \
+            --test-output-dir="$RUNNER_TEMP/maestro-output" \
+            .maestro/screens/apple-store-open-events.yaml
           capture 05-events.png 'Events'
 
       - name: Prepare opaque App Store PNGs and evidence manifest

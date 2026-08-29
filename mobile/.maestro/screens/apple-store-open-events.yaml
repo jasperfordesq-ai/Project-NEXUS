@@ -1,0 +1,18 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Narrow post-login navigation for Apple's Simulator screenshot workflow. The
+# iOS runtime asks for confirmation when SpringBoard opens a custom scheme, so
+# accept that explicit system sheet before requiring the destination page.
+
+appId: ie.project.nexus
+---
+- openLink: "nexus://events"
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible: "Events"
+    timeout: 30000
