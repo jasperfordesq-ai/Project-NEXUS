@@ -279,7 +279,7 @@ jobs:
             --wifiBars 3 \
             --cellularBars 4 || echo "::warning::status-bar override was unavailable"
 
-        - name: Run the four-screen public App Store tour
+      - name: Run the four-screen public App Store tour
         env:
           TEST_EMAIL: ${{ secrets.IOS_SCREENSHOT_TEST_EMAIL }}
           TEST_PASSWORD: ${{ secrets.IOS_SCREENSHOT_TEST_PASSWORD }}
