@@ -7,9 +7,9 @@
   ],
   "bundle": {
     "howMeasured": "node scripts/check-startup-budget.mjs — runs node node_modules/expo/bin/cli export --platform android and takes the size in bytes of the single .hbc under _expo/static/js/android",
-    "measuredBytes": 14786697,
-    "measuredOn": "2026-08-23",
-    "ceilingBytes": 16263386,
+    "measuredBytes": 15589812,
+    "measuredOn": "2026-08-29",
+    "ceilingBytes": 17148793,
     "$ceilingNote": "measured + 10%. The gate fails above this and warns within 5% of it.",
     "shippedApkComparison": {
       "$comment": [

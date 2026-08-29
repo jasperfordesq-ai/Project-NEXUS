@@ -26,7 +26,7 @@
  * Guarded by `components/ui/iconAccessibility.test.ts`.
  */
 
-import { Ionicons as ExpoIonicons } from '@expo/vector-icons';
+import ExpoIonicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 
 type IoniconsProps = ComponentProps<typeof ExpoIonicons>;

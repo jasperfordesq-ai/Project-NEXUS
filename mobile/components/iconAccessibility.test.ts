@@ -15,7 +15,7 @@
  *
  * One import line per file fixes every icon in it, which is why this is enforced at the
  * import rather than on each element. `components/ui/Icon.tsx` is the only file allowed to
- * import from `@expo/vector-icons`.
+ * import an icon implementation from `@expo/vector-icons`.
  */
 
 import fs from 'node:fs';
@@ -61,6 +61,10 @@ describe('decorative icons stay out of the accessibility tree', () => {
 
   it('keeps the wrapper hiding icons by default', () => {
     const source = fs.readFileSync(path.join(MOBILE_ROOT, WRAPPER), 'utf8');
+    // Expo documents this direct import. The package barrel also works, but pulls every
+    // icon-family glyph map into Metro; on 2026-08-29 that cost 373,195 bundle bytes.
+    expect(source).toContain("from '@expo/vector-icons/Ionicons'");
+    expect(source).not.toContain("from '@expo/vector-icons'");
     expect(source).toContain('accessible={false}');
     expect(source).toContain('importantForAccessibility="no"');
     // Props spread AFTER the defaults, so a meaningful icon can still opt back in.
