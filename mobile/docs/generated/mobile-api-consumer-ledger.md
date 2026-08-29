@@ -14,10 +14,10 @@ Every Laravel endpoint the Expo client calls, and whether the API still exposes 
 The Jest suite mocks the HTTP client, so it cannot detect a renamed or deleted route.
 This ledger is the compensating control.
 
-Verified against: `docs/generated/laravel-api-route-inventory.json (2232 distinct API paths)`
+Verified against: `docs/generated/laravel-api-route-inventory.json (2238 distinct API paths)`
 
-> Not verified against `openapi.json`. That file documents 862 paths of the 2,232 the
-> application actually registers, so using it produced 179 false drift findings out of 404.
+> Not verified against `openapi.json`. That file documents only a subset of the
+> application routes and has produced false drift findings for working endpoints.
 
 | Measure | Count |
 | --- | --- |

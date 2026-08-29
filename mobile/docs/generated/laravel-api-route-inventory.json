@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2721,
-  "api_route_rows": 2686,
-  "distinct_api_paths": 2232,
+  "total_registered_routes": 2727,
+  "api_route_rows": 2692,
+  "distinct_api_paths": 2238,
   "route_source_fingerprint": {
-    "digest": "2f6bf67efde6eb78c4e9f6d92fd6116020317ba501df354ab75e0e275cc37ebb",
+    "digest": "61dd67ded3fd8a53e28c37ef31afbe7eb7a623a56d51953bef99d3060d652c96",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "5a64999c954dd8069a5a59032bc1ab017f1e0ab25794597c287612566d2233d1"
+        "sha256": "4313a27f302a536747a1b0c894295f226730834b13d164257b74f6e4fb7b9247"
       },
       {
         "file": "routes/channels.php",
@@ -724,6 +724,15 @@
       "GET"
     ],
     "/api/v2/admin/caring-community/assisted-onboarding": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/caregiver-links": [
+      "GET"
+    ],
+    "/api/v2/admin/caring-community/caregiver-links/{id}/approve": [
+      "POST"
+    ],
+    "/api/v2/admin/caring-community/caregiver-links/{id}/reject": [
       "POST"
     ],
     "/api/v2/admin/caring-community/category-coefficients": [
@@ -3559,6 +3568,15 @@
     ],
     "/api/v2/caring-community/caregiver/cover-requests/{id}/candidates": [
       "GET"
+    ],
+    "/api/v2/caring-community/caregiver/incoming-links": [
+      "GET"
+    ],
+    "/api/v2/caring-community/caregiver/incoming-links/{id}/confirm": [
+      "POST"
+    ],
+    "/api/v2/caring-community/caregiver/incoming-links/{id}/reject": [
+      "POST"
     ],
     "/api/v2/caring-community/caregiver/links": [
       "GET",

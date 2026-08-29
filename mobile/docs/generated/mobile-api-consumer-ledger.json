@@ -1,6 +1,6 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2232 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2238 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {

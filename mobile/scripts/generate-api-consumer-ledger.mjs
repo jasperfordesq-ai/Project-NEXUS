@@ -20,12 +20,11 @@
  * diffed against the routes Laravel actually registers.
  *
  * 🔴 It verifies against `docs/generated/laravel-api-route-inventory.json`, NOT
- * against `openapi.json`. That choice is load-bearing and was measured: Laravel
- * registers 2,686 API route rows (2,232 distinct paths) while openapi.json
- * documents 862 — so openapi.json marks working endpoints like
- * `POST /api/auth/login` as absent. Verifying against it produced 179 false
- * "drift" findings out of 404. A checker that cries wolf is a checker everyone
- * learns to ignore, so the partial contract is not an acceptable source here.
+ * against `openapi.json`. That choice is load-bearing and was measured:
+ * openapi.json documents only a subset of Laravel's registered API paths, so
+ * it marks working endpoints like `POST /api/auth/login` as absent. A checker
+ * that cries wolf is a checker everyone learns to ignore, so the partial
+ * contract is not an acceptable source here.
  *
  * Scope, and honesty about it:
  *  - It reads `lib/api/*.ts` only. A `fetch()` written inline in a screen is
@@ -337,8 +336,8 @@ function renderMarkdown(r) {
   L.push('');
   L.push(`Verified against: \`${r.verified_against || 'nothing — inventory ' + r.route_inventory_state}\``);
   L.push('');
-  L.push('> Not verified against `openapi.json`. That file documents 862 paths of the 2,232 the');
-  L.push('> application actually registers, so using it produced 179 false drift findings out of 404.');
+  L.push('> Not verified against `openapi.json`. That file documents only a subset of the');
+  L.push('> application routes and has produced false drift findings for working endpoints.');
   L.push('');
   L.push('| Measure | Count |');
   L.push('| --- | --- |');
