@@ -120,13 +120,49 @@ function isAllowlisted(allowlist, locale, value) {
  * units, placeholder-only strings and language endonyms, where one locale having
  * translated an occurrence is a bug in that locale rather than evidence against
  * the invariant.
+ *
+ * 🔴 TWO NARROWINGS, both added 2026-08-29 after this rule deadlocked CI.
+ *
+ * 1. An entry that suppresses NOTHING in the .php catalogue is not this gate's
+ *    to police. The allowlist is SHARED with check-php-lang-json-untranslated.mjs
+ *    (the .json catalogue is the live one — `__()` reads it first), and 15 of the
+ *    31 entries this rule was failing on had zero byte-identical occurrences in
+ *    any lang/**\/*.php file: they exist for lang/<locale>/<ns>.json alone. The
+ *    failure was therefore unfixable as written — removing the entry to satisfy
+ *    the message here made the sibling gate fail instead, because its per-file
+ *    ceilings are 0. Verified empirically in both directions before changing this.
+ *
+ * 2. A counter-example that CONTAINS the term is a context qualifier, not a rival
+ *    translation. German rendering "Name" as "Ihr Name" on a contact form, or
+ *    French rendering "Date" as "Date de la visite", says nothing about whether a
+ *    bare "Name" / "Date" column heading should read differently — the translator
+ *    added context, they did not translate the word away. Treating those as
+ *    counter-examples produced 9 more false failures on values that are genuinely
+ *    identical in the target language.
+ *
+ * Neither narrowing suppresses a single value: the untranslated count and the
+ * ceiling are untouched by both. They only change which allowlist ENTRIES get
+ * audited. The rule's real finds — 7 locales rendering the same English value two
+ * genuinely different ways (de Status/Stand, fr Description/Descriptif, and five
+ * more) — were fixed in the lang files rather than exempted here.
  */
+/**
+ * Narrowing 2: is `rendering` the same term with context added, rather than a
+ * different word? "Ihr Name" for "Name", "Date de la visite" for "Date",
+ * "Online evenement" for "Online". Compared case-insensitively so "NO" for "No"
+ * counts as the same word too.
+ */
+function isContextQualifier(value, rendering) {
+  return rendering.toLowerCase().includes(value.toLowerCase());
+}
+
 function findAllowlistContradictions(tree, allowlist) {
   const contradictions = [];
 
   for (const [locale, values] of Object.entries(allowlist.byLocale)) {
     for (const value of values) {
       const rendered = new Set();
+      let suppressesHere = false;
 
       for (const localeFile of Object.keys(tree)) {
         const separator = localeFile.indexOf('/');
@@ -138,11 +174,17 @@ function findAllowlistContradictions(tree, allowlist) {
         for (const [key, englishValue] of Object.entries(tree[localeFile])) {
           if (englishValue !== value) continue;
           const localeValue = translated[key];
-          if (typeof localeValue === 'string' && localeValue !== value) {
+          if (typeof localeValue !== 'string') continue;
+          if (localeValue === value) {
+            suppressesHere = true;
+          } else if (!isContextQualifier(value, localeValue)) {
             rendered.add(localeValue);
           }
         }
       }
+
+      // Narrowing 1: entries this catalogue does not use belong to the JSON gate.
+      if (!suppressesHere) continue;
 
       if (rendered.size > 0) {
         contradictions.push({ locale, value, rendered: [...rendered].slice(0, 3) });
