@@ -1,6 +1,6 @@
 # Apple screenshot capture plan
 
-Last reviewed: 2026-08-28
+Last reviewed: 2026-08-29
 
 The first release is iPhone-only. The manually dispatched
 [`iOS Simulator Screenshots`](../../../.github/workflows/ios-simulator-screenshots.yml)
@@ -76,6 +76,31 @@ contain no secrets or real-member personal data.
 
 The Simulator workflow creates the first version of this record automatically. Its manifest
 labels the unsigned evidence boundary explicitly so it cannot be mistaken for TestFlight.
+
+## 2026-08-29 Simulator capture
+
+Workflow run [33246391310](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33246391310)
+completed against source commit `ad2029ba7fc1473cc8c7816a3c9344650a851597`. The
+unsigned Release build ran on an iPhone 16 Pro Max Simulator with iOS 26.2 and produced
+eight opaque 1320 x 2868 PNGs. The downloaded files matched every SHA-256 value in the
+artifact manifest.
+
+Visual inspection, not workflow success alone, determines the public selection:
+
+- `01-feed.png`, `02-listings.png`, `04-messages.png` and `05-events.png` form the
+  accepted four-image draft set. Apple permits one to ten screenshots, so four is a valid
+  submission count.
+- `03-members.png`, `06-wallet.png`, `07-volunteering.png` and `08-settings.png` are
+  quarantined from the public set. Their modal presentation leaves a large black top
+  backdrop; Volunteering also clips the third tab label and wraps “Opportunities” badly
+  inside its narrow statistic card.
+- The quarantined images are byte-identical to run 33216232144 where comparable, proving
+  these are pre-existing modal/capture-layout issues and not regressions from the bundle
+  optimisation in `ad2029ba7`.
+
+This is a genuine iOS Simulator draft set, not signed TestFlight or physical-device
+evidence. Recheck the selected images against the signed candidate before upload and
+replace any whose signed runtime differs.
 
 ## When the owner does not have an iPhone
 

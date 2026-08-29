@@ -1,6 +1,6 @@
 # iOS build evidence
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-29
 
 This record captures the first successful macOS cloud compile of the checked Expo iOS
 configuration. It is compile and artifact-inspection evidence only; it does not certify a
@@ -26,6 +26,17 @@ The downloaded `TimebankGlobal.app` archive was 51,653,257 bytes (49.26 MB), wit
 SHA-256 `1b59165021b0b65c879fb9e23368bd2e89dcd52c9b609e64ef3f9a8b0aa229a6`.
 It is held only in a local temporary directory and is not a distributable App Store
 artifact.
+
+## Simulator runtime evidence
+
+GitHub Actions run [33246391310](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33246391310)
+compiled source commit `ad2029ba7fc1473cc8c7816a3c9344650a851597` as an unsigned
+iOS Release build, installed it on an iPhone 16 Pro Max Simulator running iOS 26.2, and
+completed the protected Partner Demo login and eight-screen Maestro tour. Its artifact
+contains eight opaque 1320 x 2868 PNGs plus a manifest whose source SHA and SHA-256 image
+checksums were independently verified after download. Four clean primary-tab images are
+selected as the draft App Store set; four modal captures are quarantined for the visual
+reasons recorded in [`screenshots.md`](screenshots.md).
 
 ## Final app inspection
 
@@ -61,5 +72,5 @@ conservative App Privacy worksheet.
 - push delivery, camera/photos, microphone, location, Face ID and payment redirects on
   actual Apple hardware;
 - accessibility, dark mode, offline/error handling and all member journeys on iOS;
-- App Store Connect record, TestFlight processing, screenshots, reviewer access, App
-  Review acceptance and public release.
+- App Store Connect record, TestFlight processing, owner-approved final screenshot upload,
+  reviewer access, App Review acceptance and public release.
