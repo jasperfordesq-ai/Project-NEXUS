@@ -54,6 +54,7 @@ const knownSections = new Set([
   'notifications',
   'chat',
   'search',
+  'settings',
 ]);
 
 /**
@@ -132,6 +133,9 @@ export function navigateToLink(link: string | null): void {
       break;
     case 'messages':
       navigateMessages(segments, params);
+      break;
+    case 'settings':
+      pushWithOptionalParams('/(modals)/settings', params);
       break;
     case 'blog':
     case 'blog-post':
@@ -280,7 +284,15 @@ function parseLink(link: string): { section: string; segments: string[]; params:
   const isTrustedAppLink = url.protocol === 'nexus:';
   if (!isTrustedWebLink && !isTrustedAppLink) return null;
 
-  const pathSegments = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+  // In the canonical custom-scheme form (`nexus://messages`) URL treats the
+  // section as the HOST, not as pathname text. The cold-start native-intent
+  // mapper already handles that form, but this foreground replay parser used to
+  // see an empty path and silently discard every such link while the app was
+  // running. Preserve slash-form links too (`nexus:///messages`).
+  const pathSegments = [
+    ...(isTrustedAppLink && url.hostname ? [decodeURIComponent(url.hostname)] : []),
+    ...url.pathname.split('/').filter(Boolean).map(decodeURIComponent),
+  ];
   if (pathSegments.length === 0) return null;
 
   let [section, ...segments] = pathSegments;

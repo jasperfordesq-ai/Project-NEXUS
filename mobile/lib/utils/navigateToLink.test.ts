@@ -98,6 +98,19 @@ describe('navigateToLink', () => {
     });
   });
 
+  it('uses the host as the section for foreground custom-scheme links', () => {
+    navigateToLink('nexus://messages');
+    navigateToLink('nexus://events');
+    navigateToLink('nexus://settings?tab=notifications');
+
+    expect(mockPush).toHaveBeenNthCalledWith(1, '/(tabs)/messages');
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/events');
+    expect(mockPush).toHaveBeenNthCalledWith(2, {
+      pathname: '/(modals)/settings',
+      params: { tab: 'notifications' },
+    });
+  });
+
   it('keeps existing message thread links on the thread route', () => {
     navigateToLink('/messages/5?context_type=event&context_id=12');
 
