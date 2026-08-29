@@ -25,10 +25,16 @@ appId: ie.project.nexus
             - tapOn:
                 id: "tenant-option-partner-demo"
                 retryTapIfNoChange: true
+            # A successful XCTest tap is not the same thing as a successful app
+            # transition. Keep the destination proof inside the retry so an
+            # intermittent dropped iOS press gets another complete attempt.
+            - extendedWaitUntil:
+                visible: "Welcome back"
+                timeout: 15000
 
 - extendedWaitUntil:
     visible: "Welcome back"
-    timeout: 60000
+    timeout: 15000
 - tapOn:
     id: "email-input"
 - inputText: "${TEST_EMAIL}"
