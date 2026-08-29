@@ -84,6 +84,8 @@ export function Segments() {
         // A refused delete has a reason (segment in use by a scheduled send,
         // permissions, …). "An unexpected error occurred" is both wrong — the
         // server answered — and useless to the admin.
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (AdminNewsletterController: all 107 error returns use __()).
         showError(res.error || t('common.an_unexpected_error'));
       }
     } catch {

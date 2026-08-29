@@ -83,6 +83,8 @@ export function WarmthPassAdminPage() {
         // refusal, …) instead of a blanket "No data available for this member",
         // which tells the admin nothing about why the lookup failed. Same
         // `res.error || t(fallback)` pattern as the other admin call sites.
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (WarmthPassController: all 4 error returns use __()).
         setErrorMsg(res.error || t('admin.warmth_pass.errors.no_data'));
       }
     } catch {

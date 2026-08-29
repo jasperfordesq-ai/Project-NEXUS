@@ -155,6 +155,8 @@ export function GroupList() {
         // told WHY the delete was refused, instead of a blanket failure they
         // cannot act on. `res.error || t(fallback)` is the pattern the other
         // admin call sites use.
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (AdminGroupsController: all 78 error returns use __()).
         toast.error(res?.error || t('groups.failed_to_delete_group'));
       }
     } catch {
@@ -174,6 +176,8 @@ export function GroupList() {
       } else {
         // A refused transition always has a reason — the group is in a state
         // that does not allow it, a policy blocks it, permissions. Show it.
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (AdminGroupsController: all 78 error returns use __()).
         toast.error(res?.error || t('groups.failed_to_update_group_status'));
       }
     } catch {
@@ -196,6 +200,8 @@ export function GroupList() {
         setSelectedIds(new Set());
         loadItems();
       } else {
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (AdminGroupsController: all 78 error returns use __()).
         toast.error(res?.error || t('groups.failed_to_archive_groups'));
       }
     } catch { toast.error(t('groups.failed_to_archive_groups')); }

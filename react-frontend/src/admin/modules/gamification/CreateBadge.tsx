@@ -119,12 +119,14 @@ export function CreateBadge() {
       toast.success(t('gamification.badge_created'));
       navigate(tenantPath('/admin/custom-badges'));
     } else {
+      // admin-i18n-ignore: localized server message — the API renders this refusal
+      // through __() in the caller's locale (AdminGamificationController::createBadge:
+      // both error returns use __()).
       // Show the server's own reason — "Slug already taken", a field validation
       // message — instead of a blanket "Failed to create badge" that leaves the
       // admin editing blind. Falls back through `error` → first `errors[]`
       // message → the generic string.
-      const errorMsg =
-        res.error
+      const errorMsg = res.error
         || res.errors?.find(detail => detail.message)?.message
         || t('gamification.failed_to_create_badge');
       toast.error(errorMsg);

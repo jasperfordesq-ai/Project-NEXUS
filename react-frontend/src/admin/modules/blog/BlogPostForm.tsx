@@ -181,6 +181,8 @@ export function BlogPostForm() {
         // "Not found", "Forbidden", a validation reason — instead of a blanket
         // failure they cannot act on. Matches the many other admin call sites
         // that use `res.error || t(fallback)`.
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (AdminBlogController: all 9 error returns use __()).
         setLoadError(res.error || t('blog.failed_to_load_blog_posts'));
       }
     } catch {

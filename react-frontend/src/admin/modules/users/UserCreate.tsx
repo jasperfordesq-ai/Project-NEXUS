@@ -102,6 +102,8 @@ export function UserCreate() {
         // Show the server's own reason — "Email already taken", a validation
         // message — so the admin knows what to change. A blanket "Failed to
         // create user" leaves them retrying the same form.
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (AdminUsersController: all 78 error returns use __()).
         toast.error(res.error || t('users.create_failed'));
       }
     } catch {

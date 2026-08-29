@@ -92,6 +92,8 @@ export function FederationAnalytics() {
         setData(null);
         // Show the server's own reason (federation disabled, no partner, a
         // permission refusal) rather than a blanket load failure.
+        // admin-i18n-ignore: localized server message — the API renders this refusal
+        // through __() in the caller's locale (AdminFederationAnalyticsController returns no error of its own; refusals come from the admin/module gates, which use __()).
         toast.error(res.error || t('federation.failed_to_load_analytics'));
       }
     } catch {
