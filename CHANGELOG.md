@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- **The iOS Simulator screenshot tour no longer asks Maestro to settle the accessibility hierarchy during the successful login route swap.** Cloud run `33267129079` proved the Release app authenticated and loaded its feed APIs, but Maestro's XCUITest host then lost the main accessibility window (`kAXErrorServerNotFound`) while waiting after the submit tap and terminated the tour. The explicit `Community Feed` wait now owns that transition, using Maestro's supported zero settle timeout on the tap.
+- **The cloud device tours no longer depend on unstable menu geometry or hierarchy settling.** iOS run `33267129079` proved the Release app authenticated and loaded its feed APIs, but Maestro's XCUITest host lost the main accessibility window during the login route swap; the submit tap now uses a supported zero settle timeout and the explicit feed wait owns that transition. Retry `33268251338` captured Feed and Listings before XCUITest queried the absent Safari web-view service while scrolling the long, module-dependent profile hub and killed its own test host. The tour now captures exactly the four visually accepted public screens required by its preparation gate, using tested native deep links for Messages and Events rather than traversing that menu; rejected modal captures remain excluded instead of spending runner time recreating known-bad artwork. Android run `33267127839` passed nine of ten independent flows; its sole failure stopped one viewport above the sign-out button after recent modules lengthened the profile hub, so the logout journey now scrolls through the full current menu before tapping the stable control.
 
 ## [1.7.0] - 2026-08-29
 

@@ -43,6 +43,12 @@ appId: ie.project.nexus
 - swipe:
     direction: UP
     duration: 450
+- swipe:
+    direction: UP
+    duration: 450
+- swipe:
+    direction: UP
+    duration: 450
 - waitForAnimationToEnd:
     timeout: 500
 

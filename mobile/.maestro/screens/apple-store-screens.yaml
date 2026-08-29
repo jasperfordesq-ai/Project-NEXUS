@@ -1,9 +1,9 @@
 # Copyright © 2024–2026 Jasper Ford
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Draft Apple App Store capture tour. It runs only on an iPhone Simulator in the
-# manually-dispatched GitHub Actions workflow. Each screen starts from a known
-# state so one navigation failure cannot silently corrupt the rest of the set.
+# Draft Apple App Store public capture tour. It runs only on an iPhone Simulator
+# in the manually-dispatched GitHub Actions workflow and captures exactly the four
+# screens accepted by the preparation gate after visual review.
 
 appId: ie.project.nexus
 ---
@@ -63,34 +63,12 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 02-listings
 
-- tapOn:
-    point: "10%,95%"
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 30000
-- tapOn:
-    point: "90%,95%"
-- waitForAnimationToEnd:
-    timeout: 6000
-- scrollUntilVisible:
-    element: "Browse Members"
-    direction: DOWN
-    timeout: 20000
-- tapOn: "Browse Members"
-- waitForAnimationToEnd:
-    timeout: 12000
-- takeScreenshot: 03-members
-
-- tapOn:
-    point: "15%,12%"
-    retryTapIfNoChange: true
-- tapOn:
-    point: "10%,95%"
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 30000
-- tapOn:
-    point: "70%,95%"
+# Use the app's tested native deep links for the remaining public screens. The
+# profile hub is deliberately long and module-dependent; asking XCUITest for its
+# full hierarchy while scrolling made Maestro query the absent SafariViewService
+# and kill its own UI-test host in run 33268251338. Direct links exercise the same
+# authenticated routes without coupling screenshot capture to that menu geometry.
+- openLink: "nexus://messages"
 - extendedWaitUntil:
     visible: "Messages"
     timeout: 15000
@@ -98,83 +76,10 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 04-messages
 
-- tapOn:
-    point: "10%,95%"
+- openLink: "nexus://events"
 - extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 30000
-- tapOn:
-    point: "90%,95%"
-- waitForAnimationToEnd:
-    timeout: 6000
-- scrollUntilVisible:
-    element: "Events"
-    direction: DOWN
+    visible: "Events"
     timeout: 20000
-- tapOn: "Events"
 - waitForAnimationToEnd:
     timeout: 12000
 - takeScreenshot: 05-events
-
-- tapOn:
-    point: "10%,95%"
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 30000
-- tapOn:
-    point: "90%,95%"
-- waitForAnimationToEnd:
-    timeout: 6000
-- scrollUntilVisible:
-    element:
-      id: "profile-view-wallet"
-    direction: UP
-    timeout: 20000
-- tapOn:
-    id: "profile-view-wallet"
-- extendedWaitUntil:
-    visible: "Time credit wallet"
-    timeout: 20000
-- takeScreenshot: 06-wallet
-
-- tapOn:
-    point: "15%,12%"
-    retryTapIfNoChange: true
-- tapOn:
-    point: "10%,95%"
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 30000
-- tapOn:
-    point: "90%,95%"
-- waitForAnimationToEnd:
-    timeout: 6000
-- scrollUntilVisible:
-    element: "Volunteering"
-    direction: DOWN
-    timeout: 20000
-- tapOn: "Volunteering"
-- waitForAnimationToEnd:
-    timeout: 12000
-- takeScreenshot: 07-volunteering
-
-- tapOn:
-    point: "15%,12%"
-    retryTapIfNoChange: true
-- tapOn:
-    point: "10%,95%"
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 30000
-- tapOn:
-    point: "90%,95%"
-- waitForAnimationToEnd:
-    timeout: 6000
-- scrollUntilVisible:
-    element: "Settings"
-    direction: DOWN
-    timeout: 20000
-- tapOn: "Settings"
-- waitForAnimationToEnd:
-    timeout: 12000
-- takeScreenshot: 08-settings
