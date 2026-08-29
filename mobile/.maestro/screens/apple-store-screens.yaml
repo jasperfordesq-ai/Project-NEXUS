@@ -78,13 +78,32 @@ appId: ie.project.nexus
       visible: "Open"
     commands:
       - tapOn: "Open"
+# iOS 26 can acknowledge the foreground open request without presenting its
+# confirmation sheet and without delivering the URL to the already-active app.
+# The Messages tab is visible on Listings, so use it as a proven in-app fallback
+# and make the destination part of the retry contract.
+- runFlow:
+    when:
+      visible: "Listings"
+    commands:
+      - retry:
+          maxRetries: 3
+          commands:
+            - tapOn: "Messages"
+            - extendedWaitUntil:
+                visible: "Messages"
+                timeout: 15000
 - extendedWaitUntil:
     visible: "Messages"
-    timeout: 30000
+    timeout: 15000
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: 04-messages
 
+# Foreground custom URLs are unreliable on iOS 26, while cold-start delivery is
+# covered by the app's pending-deep-link path. Stop only the app; the one Maestro
+# process/XCTest session remains alive for the whole public tour.
+- stopApp
 - openLink: "nexus://events"
 - runFlow:
     when:
