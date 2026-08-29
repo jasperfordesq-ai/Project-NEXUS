@@ -973,6 +973,59 @@ After refreshing, **commit the updated `database/schema/mysql-schema.sql` to git
 
 New schema changes go in `database/migrations/` using standard Laravel migrations (`php artisan make:migration`). Use `Schema::hasTable()` / `Schema::hasColumn()` guards for idempotency.
 
+### 🔴 Changing an existing column: append, and prove it is instant
+
+Blue/green shares **one database**. A migration runs while the other colour is
+still serving live traffic, so a column change that rebuilds a table locks the
+site that is currently up. `scripts/deploy/phases/check-migration-safety.sh`
+blocks the deploy for exactly this reason, and it is BLOCKING.
+
+Two rules make such a change safe, and they only work together:
+
+1. **Add new values at the END of an enum/set, never in the middle.** Appending
+   is a metadata-only edit. Inserting renumbers every value after it, which
+   forces a full table rebuild.
+2. **Spell out `ALGORITHM=INSTANT, LOCK=NONE`.** This is the part that turns a
+   claim into a guarantee: MariaDB *refuses* the statement if it cannot honour
+   it, so the migration can never silently degrade into a locking rebuild.
+
+```php
+// Safe: appended, and the server enforces the promise.
+DB::statement(
+    "ALTER TABLE `achievement_campaigns` MODIFY `status`
+     ENUM('draft','scheduled','running','completed','cancelled','paused')
+     NOT NULL DEFAULT 'draft', ALGORITHM=INSTANT, LOCK=NONE"
+);
+```
+
+Measured on MariaDB 10.11.18 (this platform's version), 2026-08-29:
+
+| Statement | Result |
+|---|---|
+| value appended at the end, `ALGORITHM=INSTANT` | accepted — instant, no rebuild |
+| value inserted mid-list, `ALGORITHM=INSTANT` | `ERROR 1846` *Cannot change column type. Try ALGORITHM=COPY* |
+
+A statement written this way passes the safety gate without an override. Any
+raw `ALTER … MODIFY/CHANGE/DROP/RENAME` **without** the clause is still
+blocked, and so is `->change()` — Laravel's schema builder gives you no way to
+demand `INSTANT`, so it can prove nothing. Both directions are pinned by
+`bash scripts/test/test-migration-safety-gate.sh`; run it after touching the gate.
+
+🔴 **If the gate does block you, do not reach for the override reflexively.**
+`DEPLOY_ALLOW_DESTRUCTIVE_MIGRATION=1` is correct only when you have checked
+the real cost on production — start with the table's **row count**, because on
+an empty or tiny table a rebuild is free and maintenance mode would be a
+self-inflicted outage. Record what you checked. 🔴 `scripts/deploy.sh` does not
+pass that variable through its ssh line, so an override has to be run as the
+server command directly — which also **skips deploy.sh step 5, the 30-minute
+post-deploy error watch**. Run `node scripts/postdeploy-watch.mjs` by hand
+afterwards, or the deploy goes unwatched.
+
+🔴 **Never edit a migration that has already run in production.** Laravel will
+not re-run it, so production does not change — but a fresh database built from
+the migrations then gets a different schema from the live one. Fix it forward
+with a new migration, or leave it alone.
+
 ### Legacy SQL Migrations
 
 Located in `/migrations/` with timestamp naming. **Do not add new legacy SQL migrations** — use Laravel migrations instead.

@@ -69,6 +69,41 @@ NON_NULL_WITHOUT_DEFAULT='->(string|char|text|mediumText|longText|integer|tinyIn
 PRETEND_DESTRUCTIVE_SQL='alter[[:space:]]+table.*[[:space:]](drop|rename|change|modify)[[:space:]]|drop[[:space:]]+table|truncate[[:space:]]+table|rename[[:space:]]+table'
 PRETEND_NON_NULL_ADD='alter[[:space:]]+table.*[[:space:]]add(?!.*\bdefault\b).*[[:space:]]not[[:space:]]+null'
 
+# 🔴 The one form of raw column change that CANNOT lock the colour still serving.
+#
+# `ALGORITHM=INSTANT` is not a promise in a comment — the server enforces it.
+# If the change cannot be made as a metadata-only edit, MariaDB REFUSES the
+# whole statement rather than quietly falling back to a rebuild:
+#
+#   ALTER TABLE t MODIFY status ENUM(...,'paused') ..., ALGORITHM=INSTANT;
+#     -> value appended at the END of the enum: accepted, instant, no rebuild
+#     -> value inserted in the MIDDLE: ERROR 1846 (0A000) ALGORITHM=INSTANT is
+#        not supported. Reason: Cannot change column type. Try ALGORITHM=COPY
+#
+# Both verified on MariaDB 10.11.18 — this platform's version — on 2026-08-29.
+# A statement carrying the clause is therefore self-proving: it either does no
+# rebuild, or it does not run at all. Exempting it is not a hole in the gate.
+#
+# WHY THIS EXISTS. Before it, the gate's only possible outcome for ANY column
+# change was DEPLOY_ALLOW_DESTRUCTIVE_MIGRATION=1: it matched the word MODIFY
+# and never looked at what the statement did, so an enum gaining one value was
+# indistinguishable from a table rewrite. A gate whose only exit is the
+# override teaches everyone to reach for the override, which is how a genuinely
+# dangerous one eventually gets waved through. Real case, 2026-08-29:
+# add_paused_to_achievement_campaign_status blocked a deploy over a 0-row table.
+#
+# 🔴 Keep this narrow if you edit it. It exempts ONLY raw SQL that spells the
+# clause out. `->change()` stays in DANGEROUS_PHP_PATTERNS and stays blocked:
+# Laravel's schema builder gives you no way to demand INSTANT, so a ->change()
+# carries no proof of anything.
+#
+# Pinned in BOTH directions by scripts/test/test-migration-safety-gate.sh
+# (7 contracts, no Docker needed). Its control is the one that matters: the
+# same ALTER with the clause removed must block again, which is what proves a
+# pass comes from the exemption rather than from the gate having gone blind.
+# Run it after ANY edit here.
+INSTANT_SAFE_DDL='ALGORITHM[[:space:]]*=[[:space:]]*INSTANT'
+
 # 🔴 Collapse each PHP statement onto ONE line, prefixed with the line it started on.
 #
 # WHY. `NON_NULL_WITHOUT_DEFAULT` decides a column is dangerous using negative
@@ -167,7 +202,6 @@ for f in "${pending_files[@]}"; do
         { sub(/\/\/.*/, ""); print }
     ' "$f" | strip_down_methods)"
     alter_body="$(printf '%s\n' "$body" | strip_schema_create_blocks)"
-    one_line_body="$(printf '%s\n' "$body" | tr '\n' ' ')"
 
     matches="$(printf '%s\n' "$body" | grep -niE -- "$DANGEROUS_PHP_PATTERNS" || true)"
     if [ -n "$matches" ]; then
@@ -176,7 +210,18 @@ for f in "${pending_files[@]}"; do
         violations=$((violations + 1))
     fi
 
-    raw_matches="$(printf '%s\n' "$one_line_body" | grep -oiE -- "$RAW_DESTRUCTIVE_SQL_PATTERNS" || true)"
+    # Judged per STATEMENT, not on the whole file collapsed onto one line. Two
+    # reasons. `grep -o` reported a fragment ending at the DDL keyword, so the
+    # ALGORITHM clause that follows it was never inside the matched text and
+    # could not be tested for. And a file mixing one proven-instant statement
+    # with one unqualified statement must still fail on the second.
+    # join_statements splits on `;`, so each DB::statement(...) is weighed on
+    # its own and keeps its source line number. A stray `;` inside the SQL
+    # splits the clause away from its ALTER, which LOSES the exemption rather
+    # than granting it — the failure mode is a false block, never a false pass.
+    raw_matches="$(printf '%s\n' "$body" | join_statements \
+        | grep -iE -- "$RAW_DESTRUCTIVE_SQL_PATTERNS" \
+        | grep -viE -- "$INSTANT_SAFE_DDL" || true)"
     if [ -n "$raw_matches" ]; then
         log_err "Raw destructive SQL in $(basename "$f"):"
         echo "$raw_matches" | sed 's/^/    /'
@@ -196,7 +241,12 @@ done
 
 pretend_raw="$(docker_exec_app_user "$APP_CONTAINER" php /var/www/html/artisan migrate --pretend --force 2>/dev/null || true)"
 if [ -n "$pretend_raw" ]; then
-    pretend_destructive="$(printf '%s\n' "$pretend_raw" | grep -niE -- "$PRETEND_DESTRUCTIVE_SQL" || true)"
+    # The same exemption on the SQL Laravel actually emits. The source lint
+    # above and this one must agree, or a proven-instant migration passes one
+    # and is blocked by the other.
+    pretend_destructive="$(printf '%s\n' "$pretend_raw" \
+        | grep -niE -- "$PRETEND_DESTRUCTIVE_SQL" \
+        | grep -viE -- "$INSTANT_SAFE_DDL" || true)"
     if [ -n "$pretend_destructive" ]; then
         log_err "Destructive SQL detected in migrate --pretend output:"
         echo "$pretend_destructive" | sed 's/^/    /'
