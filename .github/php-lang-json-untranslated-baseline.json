@@ -9,8 +9,8 @@
     "strings) belong in scripts/php-lang-invariant-allowlist.json, shared with",
     "the .php gate."
   ],
-  "generatedAt": "2026-08-29T00:17:42.974Z",
-  "totalUntranslated": 14642,
+  "generatedAt": "2026-08-29T00:21:11.733Z",
+  "totalUntranslated": 14187,
   "files": {
     "ga/admin.json": 3893,
     "ga/admin_nav.json": 3,
@@ -24,7 +24,6 @@
     "ga/svc_notifications_2.json": 92,
     "ja/admin.json": 3354,
     "nl/admin.json": 3333,
-    "pl/admin.json": 3395,
-    "pt/admin.json": 455
+    "pl/admin.json": 3395
   }
 }
