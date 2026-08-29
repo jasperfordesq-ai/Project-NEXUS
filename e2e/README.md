@@ -49,12 +49,17 @@ npm run test:e2e:report
 ```text
 e2e/
 ├── tests/             # Playwright specs
+├── journeys/          # Opt-in multi-actor journeys, held outside the default suite
 ├── helpers/           # Login, fixtures, and shared utilities
 ├── fixtures/          # Auth state and seeded-test artifacts
 ├── page-objects/      # Page object helpers where useful
 ├── global.setup.ts    # Auth/session setup
 └── docs/              # Route reference notes (see REACT_ROUTES_REFERENCE.md)
 ```
+
+`journeys/` holds opt-in journeys that must not be swept into the default projects,
+because those point at the production-derived local database. Each carries its own
+config and setup notes: [journeys/caring/README.md](journeys/caring/README.md).
 
 ## Current Status
 
