@@ -29,6 +29,8 @@ describe('iOS screenshot workflow', () => {
   });
 
   it('captures the accepted set and handles both iOS deep-link confirmations', () => {
+    expect(tour).toContain('pressKey: Enter');
+    expect(tour).not.toContain('id: "login-submit"');
     expect(tour.match(/takeScreenshot:/g)).toHaveLength(4);
     expect(tour).toContain('takeScreenshot: 01-feed');
     expect(tour).toContain('takeScreenshot: 02-listings');

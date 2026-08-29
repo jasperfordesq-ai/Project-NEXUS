@@ -36,13 +36,11 @@ appId: ie.project.nexus
     id: "password-input"
 - setClipboard: ${TEST_PASSWORD_HEX.match(/../g).map(pair => String.fromCharCode(parseInt(pair, 16))).join('')}
 - pasteText
-- tapOn:
-    id: "login-submit"
-    # Login succeeded and feed requests completed in run 33267129079, but the
-    # XCUITest accessibility host died while Maestro waited for the route-swap
-    # hierarchy to settle (kAXErrorServerNotFound). Let the explicit feed wait
-    # below own that transition instead.
-    waitToSettleTimeoutMs: 0
+# The password input's `onSubmitEditing` owns this native Done/Enter action.
+# A hierarchy-based tap on login-submit still queried the route transition for
+# 76 seconds despite a zero settle timeout, then killed XCTest in run 33275173679.
+# A key event submits the same form without asking for that unstable hierarchy.
+- pressKey: Enter
 # Do not relaunch while login is still in flight. AuthContext persists the token
 # and cached user before routing, so reaching the feed proves both have completed.
 - extendedWaitUntil:
