@@ -28,7 +28,7 @@ class EnsureIsAdmin
         if (!$user) {
             return response()->json([
                 'errors' => [
-                    ['code' => 'auth_required', 'message' => 'Authentication required'],
+                    ['code' => 'auth_required', 'message' => __('api.auth_required')],
                 ],
                 'success' => false,
             ], 401, [
@@ -45,7 +45,7 @@ class EnsureIsAdmin
 
             return response()->json([
                 'errors' => [
-                    ['code' => 'forbidden', 'message' => 'Admin access required'],
+                    ['code' => 'forbidden', 'message' => __('api.admin_access_required')],
                 ],
                 'success' => false,
             ], 403, [
