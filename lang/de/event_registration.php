@@ -262,7 +262,7 @@ return [
         'title' => 'Datenschutz-Aufbewahrungslauf',
         'description' => 'Sehen Sie sich Datensätze an, die zu einem bestimmten UTC-Datum zur Anonymisierung anstehen, bevor Sie denselben eingefrorenen Lauf anwenden.',
         'as_of' => 'Vorschau ab',
-        'status' => 'Bearbeitungsstand',
+        'status' => 'Status',
         'submissions' => 'Einsendungen',
         'guests' => 'Gäste',
         'eligible' => 'Zulässige Datensätze',

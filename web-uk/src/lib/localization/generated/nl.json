@@ -2624,7 +2624,7 @@
                     "member": "Lid"
                 },
                 "contact_email": "E-mailadres voor contact",
-                "website": "Webadres",
+                "website": "Website",
                 "approved_hours": "Goedgekeurde uren",
                 "pending_hours": "Uren in behandeling",
                 "declined_hours": "Geweigerde uren",
@@ -3951,7 +3951,7 @@
                 "search_hint": "Zoek op naam.",
                 "members_count": "{0} Geen leden|{1} 1 lid|[2,*] :count leden",
                 "contact_label": "Contact",
-                "website_label": "Webadres",
+                "website_label": "Website",
                 "schedule_label": "Bijeenkomsten",
                 "visit_website": "Website bezoeken"
             },

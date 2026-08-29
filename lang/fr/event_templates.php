@@ -47,7 +47,7 @@ return [
     'copied_title' => 'Configuration copiée dans le modèle',
     'fields' => [
         'title' => 'Titre de l\'événement',
-        'description' => 'Descriptif',
+        'description' => 'Description',
         'category_id' => 'Catégorie',
         'group_id' => 'Groupe lié',
         'location' => 'Emplacement',

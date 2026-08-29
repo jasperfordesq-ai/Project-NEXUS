@@ -26,7 +26,7 @@ return [
     ],
     'groups' => [
         'title' => 'Conversations de groupe',
-        'caption' => 'Messages',
+        'caption' => 'Messagerie',
         'description' => 'Parlez avec plusieurs membres à la fois dans une conversation partagée.',
         'untitled' => 'Conversation de groupe',
         'new_button' => 'Démarrer une conversation de groupe',

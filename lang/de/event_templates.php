@@ -33,7 +33,7 @@ return [
         'archived' => 'Archiviert',
     ],
     'source' => 'Quellereignis',
-    'version' => 'Version',
+    'version' => 'Fassung',
     'used' => 'Nutzung',
     'use_count' => 'Verwendung: :count',
     'use_template' => 'Vorlage verwenden',
