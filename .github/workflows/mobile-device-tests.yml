@@ -361,6 +361,14 @@ jobs:
             adb emu power ac on
             adb shell settings put global stay_on_while_plugged_in 7
             adb shell settings put secure screensaver_enabled 0
+            # API 36's headless System UI can raise its own ANR dialog over a
+            # perfectly rendered app. Run 33268853140 showed that same system
+            # process overlay in all ten independent failure screenshots while
+            # Metro kept bundling the app normally. Suppress platform crash/ANR
+            # dialogs on this disposable emulator so they cannot intercept the
+            # app journey; app crashes still fail through Maestro and logs.
+            adb shell settings put global hide_error_dialogs 1
+            adb shell settings put global show_first_crash_dialog 0
             adb shell locksettings set-disabled true
             adb shell input keyevent KEYCODE_WAKEUP
             adb shell wm dismiss-keyguard

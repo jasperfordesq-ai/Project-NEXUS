@@ -25,6 +25,13 @@ appId: ie.project.nexus
             - tapOn:
                 id: "tenant-option-partner-demo"
                 retryTapIfNoChange: true
+            # A transient hierarchy change is not proof that the React Native
+            # press handler completed. Keep retrying until navigation itself is
+            # visible; run 33270768040 otherwise remained on the picker after a
+            # tap that Maestro had incorrectly marked as successful.
+            - extendedWaitUntil:
+                visible: "Welcome back"
+                timeout: 15000
 
 - extendedWaitUntil:
     visible: "Welcome back"

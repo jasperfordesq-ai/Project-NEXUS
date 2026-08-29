@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Cloud store-image workflows now distinguish operating-system automation faults from app failures and retry the completed navigation outcome.** Android run `33268853140` rendered the tenant picker in all ten independent jobs while the API 36 emulator's own “System UI isn't responding” dialog intercepted every journey, so the disposable headless device now suppresses platform crash/ANR dialogs while preserving Maestro and log-based app-crash failures. iOS run `33270768040` proved Apple's native screenshot path works, but Maestro treated a momentary hierarchy change as a successful Partner Demo selection even though the app remained on the picker; the login flow now retries until the destination login screen is actually visible.
+
 - **The 1.7.0 release notes said the platform had shipped twenty-two security fixes when it had shipped three.** Fourteen entries about date formatting, Podcasts, Courses, mobile parity and an admin audit-log crash had accumulated under `### Security`, which a reader scanning for security work has to be able to trust. All forty-seven entries in that release are now filed under the subsection that describes them — fifteen Added, six Changed, one Removed, twenty-two Fixed, three Security. Entry text is untouched; the change was verified as pure movement by comparing every content line before and after. This also made the version honest: forty-four of the forty-seven entries were floating above every heading, so the release derived as a patch bump despite containing fifteen new features, and the gate flagged it on its first run.
 
 
