@@ -657,3 +657,18 @@ export function signUpForShift(id: number): Promise<{ data: { shift_id: number; 
 export function cancelShiftSignup(id: number): Promise<void> {
   return api.delete<void>(`${API_V2}/volunteering/shifts/${id}/signup`);
 }
+
+export interface VolunteerCheckInResult {
+  status?: string;
+  user?: { id: number; name: string };
+  checked_in_at?: string;
+}
+
+export async function verifyVolunteerCheckIn(token: string): Promise<VolunteerCheckInResult> {
+  const response = await api.post<{ data: VolunteerCheckInResult } | VolunteerCheckInResult>(`${API_V2}/volunteering/checkin/verify/${encodeURIComponent(token)}`, {});
+  return response && typeof response === 'object' && 'data' in response ? response.data : response;
+}
+
+export async function checkOutVolunteer(token: string): Promise<void> {
+  await api.post(`${API_V2}/volunteering/checkin/checkout/${encodeURIComponent(token)}`, {});
+}

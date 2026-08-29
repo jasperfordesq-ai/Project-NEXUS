@@ -109,6 +109,17 @@ export default function IdeationScreen() {
               </HeroCard.Body>
             </HeroCard>
 
+            <View className="mx-4 flex-row gap-2">
+              <HeroButton className="flex-1" variant="secondary" onPress={() => router.push('/(modals)/ideation-campaigns' as Href)}>
+                <Ionicons name="layers-outline" size={17} color={primary} />
+                <HeroButton.Label>{t('ideation:campaigns.title')}</HeroButton.Label>
+              </HeroButton>
+              <HeroButton className="flex-1" variant="secondary" onPress={() => router.push('/(modals)/ideation-outcomes' as Href)}>
+                <Ionicons name="analytics-outline" size={17} color={primary} />
+                <HeroButton.Label>{t('ideation:outcomes.dashboard')}</HeroButton.Label>
+              </HeroButton>
+            </View>
+
             <Surface
               variant="default"
               className="mx-4 gap-3 overflow-hidden rounded-panel p-3.5"

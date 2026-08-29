@@ -11,6 +11,7 @@ const mockPush = jest.fn();
 const mockBack = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => ({}),
   router: {
     push: (...args: unknown[]) => mockPush(...args),
     replace: (...args: unknown[]) => mockPush(...args),
@@ -79,6 +80,8 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 
 jest.mock('@/lib/api/ideation', () => ({
   createIdeationChallenge: (...args: unknown[]) => mockCreateIdeationChallenge(...args),
+  getIdeationChallenge: jest.fn(),
+  updateIdeationChallenge: jest.fn(),
 }));
 
 jest.mock('@/lib/haptics', () => ({

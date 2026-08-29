@@ -78,9 +78,11 @@ jest.mock('react-i18next', () => ({
         'matches.empty.locationAction': 'Add my area',
         'matches.empty.pausedTitle': 'Matching is paused',
         'matches.empty.pausedBody': 'Your settings have matching turned off.',
+        'matches.empty.pausedAction': 'Adjust match preferences',
         'matches.empty.listingsTitle': 'Post something to start matching',
         'matches.empty.listingsBody': 'Matches are built around what you offer.',
         'matches.empty.listingsAction': 'Post an offer or request',
+        'matchPreferences.heading': 'Match preferences',
       };
       return map[key] ?? key;
     },
@@ -150,6 +152,13 @@ describe('MatchesScreen', () => {
     });
   }
 
+  it('keeps preferences reachable even when matching is active and results exist', () => {
+    const { getByLabelText } = render(<MatchesScreen />);
+
+    fireEvent.press(getByLabelText('Match preferences'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/match-preferences');
+  });
+
   it('says a missing area is why there are no matches, and offers to fix it', () => {
     emptyWith({ needsLocation: true, degraded: true, degradedReason: 'no_coordinates' });
 
@@ -161,15 +170,15 @@ describe('MatchesScreen', () => {
     expect(mockPush).toHaveBeenCalledWith('/(modals)/edit-profile');
   });
 
-  it('says matching is paused when the member turned it off, and offers no action', () => {
+  it('says matching is paused and opens the native preferences screen', () => {
     emptyWith({ paused: true });
 
-    const { getByText, queryByText, getByTestId } = render(<MatchesScreen />);
+    const { getByText, getByTestId } = render(<MatchesScreen />);
 
     expect(getByTestId('matches-empty-paused')).toBeTruthy();
     expect(getByText('Matching is paused')).toBeTruthy();
-    // There is no matching-preferences screen in this app, so promising one would be a lie.
-    expect(queryByText('Add my area')).toBeNull();
+    fireEvent.press(getByText('Adjust match preferences'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/match-preferences');
   });
 
   it('asks for a first listing when the member has none', () => {

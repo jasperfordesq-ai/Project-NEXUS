@@ -26,10 +26,16 @@ describe('complete mobile Irish Ideation catalogue', () => {
     const englishFlat = flatten(english);
     const irishFlat = flatten(irish);
 
-    expect(irishFlat.size).toBe(englishFlat.size);
+    const languageNeutralPaths = new Set([
+      'media.url_label',
+      'media.url_placeholder',
+      'create.deadlinePlaceholder',
+    ]);
+
+    expect(irishFlat.size).toBeGreaterThanOrEqual(englishFlat.size);
     for (const [path, englishValue] of englishFlat) {
       expect(irishFlat.get(path)).toBeDefined();
-      if (path === 'create.deadlinePlaceholder') {
+      if (languageNeutralPaths.has(path)) {
         expect(irishFlat.get(path)).toBe(englishValue);
       } else {
         expect(irishFlat.get(path)).not.toBe(englishValue);

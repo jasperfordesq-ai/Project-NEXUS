@@ -1,0 +1,24 @@
+{
+  "title": "Clubanna agus Cumainn",
+  "meta": {
+    "title": "Clubanna agus Cumainn",
+    "description": "Aimsigh clubanna agus cumainn áitiúla i do phobal"
+  },
+  "subtitle": "Aimsigh clubanna, cumainn agus grúpaí áitiúla a thugann daoine i do phobal le chéile.",
+  "search_placeholder": "Cuardaigh clubanna...",
+  "member_count": "{{count}} ball",
+  "meeting_schedule": "Tagann le chéile: {{schedule}}",
+  "view": "Féach ar an gClub",
+  "empty": {
+    "title": "Níl aon chlub ann fós",
+    "body": "Níor liostaíodh aon chlub ná cumann fós."
+  },
+  "errors": {
+    "load_failed": "Níorbh fhéidir clubanna a lódáil. Bain triail eile as."
+  },
+  "member_count_one": "{{count}} ball",
+  "member_count_other": "{{count}} ball",
+  "member_count_few": "{{count}} ball",
+  "member_count_many": "{{count}} ball",
+  "member_count_two": "{{count}} ball"
+}

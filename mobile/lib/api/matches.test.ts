@@ -4,12 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
-import { dismissMatch, getMatches } from './matches';
+import { dismissMatch, getMatchPreferences, getMatches, updateMatchPreferences } from './matches';
 
 jest.mock('@/lib/api/client', () => ({
   api: {
     get: jest.fn(),
     post: jest.fn(),
+    put: jest.fn(),
   },
 }));
 
@@ -174,5 +175,44 @@ describe('matches API', () => {
     await dismissMatch(10);
 
     expect(api.post).toHaveBeenCalledWith('/api/v2/matches/10/dismiss', { reason: 'not_relevant' });
+  });
+
+  it('loads match preferences with safe defaults for fields omitted by the server', async () => {
+    (api.get as jest.Mock).mockResolvedValue({
+      data: {
+        max_distance_km: 40,
+        categories: [3, 7],
+        matching_paused: true,
+      },
+    });
+
+    await expect(getMatchPreferences()).resolves.toEqual({
+      max_distance_km: 40,
+      min_match_score: 50,
+      notification_frequency: 'monthly',
+      notify_hot_matches: true,
+      notify_mutual_matches: true,
+      matching_paused: true,
+      categories: [3, 7],
+      availability: [],
+    });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/users/me/match-preferences');
+  });
+
+  it('persists the complete match-preferences payload and returns the saved state', async () => {
+    const preferences = {
+      max_distance_km: 15,
+      min_match_score: 65,
+      notification_frequency: 'fortnightly' as const,
+      notify_hot_matches: false,
+      notify_mutual_matches: true,
+      matching_paused: false,
+      categories: [4],
+      availability: [],
+    };
+    (api.put as jest.Mock).mockResolvedValue({ data: preferences });
+
+    await expect(updateMatchPreferences(preferences)).resolves.toEqual(preferences);
+    expect(api.put).toHaveBeenCalledWith('/api/v2/users/me/match-preferences', preferences);
   });
 });

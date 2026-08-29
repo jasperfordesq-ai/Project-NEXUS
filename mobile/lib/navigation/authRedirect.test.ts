@@ -41,9 +41,47 @@ describe('signed in', () => {
   const signedIn = {
     isLoading: false,
     isAuthenticated: true,
+    onboardingCompleted: true,
     hasSelectedTenant: true,
     pendingDeepLink: null,
   };
+
+  it.each(['/', '/home', '/members', '/login'])(
+    'sends an incomplete adult member on %s to mandatory onboarding',
+    (pathname) => {
+      expect(decideAuthRedirect({
+        ...signedIn,
+        onboardingCompleted: false,
+        pathname,
+      })).toEqual({
+        action: 'replace',
+        href: '/(modals)/onboarding',
+      });
+    },
+  );
+
+  it('leaves an incomplete member on onboarding without a redirect loop', () => {
+    expect(decideAuthRedirect({
+      ...signedIn,
+      onboardingCompleted: false,
+      pathname: '/onboarding',
+    })).toEqual({
+      action: 'none',
+      reason: 'member is completing onboarding',
+    });
+  });
+
+  it('defers an authenticated deep link until mandatory onboarding is complete', () => {
+    expect(decideAuthRedirect({
+      ...signedIn,
+      onboardingCompleted: false,
+      pathname: '/',
+      pendingDeepLink: 'nexus://messages/3',
+    })).toEqual({
+      action: 'replace',
+      href: '/(modals)/onboarding',
+    });
+  });
 
   it('follows a queued deep link INSTEAD of going home', () => {
     // 🔴 The ordering is the whole point. The deep link used to be checked after the
@@ -110,6 +148,7 @@ describe('signed out', () => {
   const signedOut = {
     isLoading: false,
     isAuthenticated: false,
+    onboardingCompleted: null,
     hasSelectedTenant: true,
     pendingDeepLink: null,
   };
@@ -151,6 +190,7 @@ describe('first installation with no selected community', () => {
   const freshInstall = {
     isLoading: false,
     isAuthenticated: false,
+    onboardingCompleted: null,
     hasSelectedTenant: false,
     pendingDeepLink: null,
   };

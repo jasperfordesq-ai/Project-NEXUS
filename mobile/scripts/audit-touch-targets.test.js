@@ -6,6 +6,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const {
+  auditExitCode,
+  isKeyguardShowing,
+  summariseResults,
+} = require('./audit-touch-targets-lib.cjs');
+
 const source = fs.readFileSync(path.join(__dirname, 'audit-touch-targets.mjs'), 'utf8');
 
 describe('touch-target audit route isolation', () => {
@@ -34,5 +40,47 @@ describe('touch-target audit route isolation', () => {
     expect(source).toContain('function isClippedAtScrollableEdge(node, nodes)');
     expect(source).toContain('viewportClipped: clipped.length');
     expect(source).toContain('not counted as target-size failures');
+  });
+});
+
+describe('touch-target audit result integrity', () => {
+  it('recognises both window-policy keyguard states used by Android emulators', () => {
+    expect(isKeyguardShowing('showing=true\n    mIsShowing=true')).toBe(true);
+    expect(isKeyguardShowing('showing=false\n    mIsShowing=false')).toBe(false);
+  });
+
+  it('does not report a successful audit when no requested screen was verified', () => {
+    const summary = summariseResults([
+      { route: 'home', status: 'unverified' },
+      { route: 'wallet', status: 'unreadable' },
+    ]);
+
+    expect(summary).toEqual({
+      requested: 2,
+      verified: 0,
+      unverified: 1,
+      unreadable: 1,
+      unsettled: 0,
+    });
+    expect(auditExitCode({ summary, belowAA: 0 })).toBe(2);
+  });
+
+  it('fails an incomplete audit even when some screens passed', () => {
+    const summary = summariseResults([
+      { route: 'settings', status: 'verified' },
+      { route: 'support', status: 'unverified' },
+    ]);
+
+    expect(auditExitCode({ summary, belowAA: 0 })).toBe(2);
+  });
+
+  it('uses the accessibility failure exit code only for a complete audit', () => {
+    const summary = summariseResults([
+      { route: 'settings', status: 'verified' },
+      { route: 'support', status: 'verified' },
+    ]);
+
+    expect(auditExitCode({ summary, belowAA: 1 })).toBe(1);
+    expect(auditExitCode({ summary, belowAA: 0 })).toBe(0);
   });
 });

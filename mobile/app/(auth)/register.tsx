@@ -172,7 +172,9 @@ export default function RegisterScreen() {
       ]);
 
       setSession(token, result.user);
-      router.replace('/(tabs)/home');
+      router.replace(result.user.onboarding_completed === false
+        ? '/(modals)/onboarding'
+        : '/(tabs)/home');
       void registerForPushNotifications();
     } catch (err) {
       /**

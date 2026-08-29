@@ -50,6 +50,7 @@
       "locationAction": "Add my area",
       "pausedTitle": "Matching is paused",
       "pausedBody": "Your settings have matching turned off, so nothing is being suggested to you at the moment.",
+      "pausedAction": "Adjust match preferences",
       "listingsTitle": "Post something to start matching",
       "listingsBody": "Matches are built around what you offer and what you need. Post your first offer or request and suggestions will start arriving.",
       "listingsAction": "Post an offer or request"
@@ -364,6 +365,18 @@
     "federationEvents": "Discover events from connected communities.",
     "federationSettings": "Review federation visibility and sharing preferences.",
     "settings": "Security, notifications, preferences, and account controls."
+  },
+  "matchPreferences": {
+    "heading": "Match Preferences",
+    "subtitle": "Control how Smart Matching finds and notifies you about connections.",
+    "load_failed": "Failed to load your match preferences",
+    "save": "Save preferences",
+    "save_success": "Match preferences saved",
+    "save_failed": "Failed to save match preferences",
+    "pause": { "title": "Pause matching" },
+    "thresholds": { "title": "Distance & quality", "distance_label": "Maximum distance", "distance_value": "{{value}} km", "quality_label": "Minimum match quality", "quality_value": "{{value}}%" },
+    "categories": { "title": "Category interests", "description": "Choose the categories you'd like to be matched on. Leave everything unchecked to match on all categories.", "empty": "No categories are available yet." },
+    "notifications": { "title": "Notifications", "frequency_label": "Match digest frequency", "daily": "Daily", "fortnightly": "Fortnightly", "monthly": "Monthly", "never": "Never", "hot_matches": "Hot match alerts", "mutual_matches": "Mutual match alerts" }
   },
   "sessionUnavailableTitle": "Your session is unavailable",
   "sessionUnavailableSubtitle": "We could not load your profile. Please sign in again."

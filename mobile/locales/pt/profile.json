@@ -50,6 +50,7 @@
       "locationAction": "Indicar a minha zona",
       "pausedTitle": "As correspondências estão em pausa",
       "pausedBody": "Nas suas definições as correspondências estão desligadas, por isso neste momento nada lhe é sugerido.",
+      "pausedAction": "Ajustar preferências de correspondência",
       "listingsTitle": "Publique algo para começar",
       "listingsBody": "As correspondências são criadas a partir do que oferece e do que precisa. Publique a sua primeira oferta ou pedido e as sugestões começarão a aparecer.",
       "listingsAction": "Publicar uma oferta ou pedido"
@@ -364,6 +365,18 @@
     "federationEvents": "Descubra eventos de comunidades conectadas.",
     "federationSettings": "Revise a visibilidade da federação e preferências de compartilhamento.",
     "settings": "Segurança, notificações, preferências e controles de conta."
+  },
+  "matchPreferences": {
+    "heading": "Preferências de correspondência",
+    "subtitle": "Controle como o Smart Matching encontra e notifica você sobre conexões.",
+    "load_failed": "Falha ao carregar suas preferências de partida",
+    "save": "Salvar preferências",
+    "save_success": "Preferências de correspondência salvas",
+    "save_failed": "Falha ao salvar preferências de partida",
+    "pause": { "title": "Pausar correspondência" },
+    "thresholds": { "title": "Distância e qualidade", "distance_label": "Distância máxima", "distance_value": "{{value}} km", "quality_label": "Qualidade mínima de correspondência", "quality_value": "{{value}}%" },
+    "categories": { "title": "Interesses da categoria", "description": "Escolha as categorias nas quais você gostaria de ser correspondido. Deixe tudo desmarcado para corresponder a todas as categorias.", "empty": "Nenhuma categoria está disponível ainda." },
+    "notifications": { "title": "Notificações", "frequency_label": "Frequência do resumo da correspondência", "daily": "Diariamente", "fortnightly": "A cada duas semanas", "monthly": "Mensalmente", "never": "Nunca", "hot_matches": "Alertas de partidas quentes", "mutual_matches": "Alertas de correspondência mútua" }
   },
   "sessionUnavailableTitle": "A sua sessão não está disponível",
   "sessionUnavailableSubtitle": "Não foi possível carregar o seu perfil. Inicie sessão novamente."

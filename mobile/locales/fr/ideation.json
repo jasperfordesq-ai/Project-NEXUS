@@ -1,6 +1,448 @@
 {
+  "page_title": "Defis d'ideation",
   "title": "Ideas",
   "subtitle": "Parcourez les défis, proposez des idées et votez pour les propositions.",
+  "page_description": "Parcourez les défis de la communauté, soumettez des idées et votez pour des solutions. Aidez à façonner l'avenir de votre communauté.",
+  "loading": "Chargement...",
+  "tabs_filter_aria": "Filtrer les défis",
+  "actions": {
+    "retry": "Reessayer"
+  },
+  "tabs": {
+    "all": "Tout",
+    "open": "Ouvert",
+    "voting": "Vote",
+    "evaluating": "Evaluation",
+    "closed": "Ferme",
+    "archived": "Archive",
+    "favorites": "Mes favoris"
+  },
+  "status": {
+    "draft": "Draft",
+    "open": "Open",
+    "voting": "Voting",
+    "evaluating": "Evaluating",
+    "closed": "Closed",
+    "archived": "Archived"
+  },
+  "idea_status": {
+    "draft": "Brouillon",
+    "submitted": "Soumise",
+    "shortlisted": "Preselectionnee",
+    "winner": "Gagnante",
+    "withdrawn": "Retiree"
+  },
+  "challenge": {
+    "ideas_count": "{{count}} idees",
+    "ideas_count_one": "{{count}} idee",
+    "submission_deadline": "Date limite de soumission {{date}}",
+    "voting_deadline": "Vote se termine le {{date}}",
+    "prize": "Prix",
+    "category": "Categorie",
+    "max_ideas": "Max. {{count}} idees par personne",
+    "created_by": "Cree par {{name}}",
+    "no_deadline": "Pas de date limite",
+    "evaluation_criteria": "Criteres d'evaluation",
+    "outcome": "Resultat",
+    "team_links": "Equipes de projet",
+    "ideas_count_many": "{{count}} idees",
+    "ideas_count_other": "{{count}} idees",
+    "max_ideas_many": "Max. {{count}} idees par personne",
+    "max_ideas_one": "Max. {{count}} idees par personne",
+    "max_ideas_other": "Max. {{count}} idees par personne"
+  },
+  "challenges": {
+    "title": "Defis",
+    "empty_title": "Aucun defi pour le moment",
+    "empty_description": "Il n'y a pas de defis d'ideation pour le moment. Revenez bientot !",
+    "empty_filtered": "Aucun defi ne correspond au filtre selectionne.",
+    "create": "Creer un defi",
+    "load_error": "Impossible de charger les defis",
+    "load_more": "Charger plus",
+    "loading": "Chargement du défi..."
+  },
+  "ideas": {
+    "title": "Idees",
+    "empty_title": "Aucune idee pour le moment",
+    "empty_description": "Soyez le premier a partager votre idee pour ce defi !",
+    "submit": "Soumettre une idee",
+    "submit_title": "Soumettez votre idee",
+    "sort_votes": "Les plus votees",
+    "sort_newest": "Les plus recentes",
+    "vote": "Voter",
+    "unvote": "Retirer le vote",
+    "votes": "{{count}} votes",
+    "votes_one": "{{count}} voter",
+    "comments": "{{count}} commentaires",
+    "comments_one": "{{count}} commentaire",
+    "load_more": "Charger plus d'idees",
+    "back_to_challenge": "Retour au defi",
+    "your_ideas": "Vos idees : {{count}}/{{max}}",
+    "edit": "Modifier l'idee",
+    "delete": "Supprimer l'idee",
+    "delete_confirm": "Etes-vous sur de vouloir supprimer cette idee ? Cette action est irreversible.",
+    "load_error": "Impossible de charger les idees",
+    "save_draft": "Enregistrer le brouillon",
+    "publish_draft": "Publier l'idee",
+    "draft_saved": "Brouillon enregistre",
+    "draft": "Brouillon",
+    "your_drafts": "Vos brouillons",
+    "untitled_draft": "Brouillon sans titre",
+    "draft_updated": "Mis a jour le {{date}}",
+    "draft_created": "Cree le {{date}}",
+    "new_idea": "Nouvelle idee",
+    "sort_label": "Trier les idées",
+    "loading": "Chargement des idées...",
+    "your_ideas_many": "Vos idees : {{count}}/{{max}}",
+    "your_ideas_one": "Vos idees : {{count}}/{{max}}",
+    "your_ideas_other": "Vos idees : {{count}}/{{max}}",
+    "comments_many": "{{count}} commentaires",
+    "comments_other": "{{count}} commentaires"
+  },
+  "idea_detail": {
+    "page_title": "Details de l'idee",
+    "back_to_challenge": "Retour au defi",
+    "submitted_by": "Soumise par {{name}}",
+    "submitted_on": "Soumise le {{date}}",
+    "actions": "Actions de l idee"
+  },
+  "comments": {
+    "title": "Commentaires",
+    "empty_title": "Aucun commentaire pour le moment",
+    "empty_description": "Soyez le premier a partager vos reflexions sur cette idee.",
+    "add_label": "Ajouter un commentaire",
+    "add_placeholder": "Partagez vos reflexions...",
+    "add_button": "Publier le commentaire",
+    "delete": "Supprimer",
+    "delete_confirm": "Etes-vous sur de vouloir supprimer ce commentaire ?",
+    "load_more": "Charger plus de commentaires",
+    "load_error": "Impossible de charger les commentaires",
+    "loading": "Chargement des commentaires..."
+  },
+  "form": {
+    "title_label": "Titre",
+    "title_placeholder": "Entrez un titre clair et descriptif",
+    "description_label": "Description",
+    "description_placeholder": "Decrivez le defi ou votre idee en detail",
+    "description_helper": "Decrivez clairement le probleme, y compris qui est concerne, pourquoi c'est important et a quoi ressemble une solution reussie",
+    "category_label": "Categorie",
+    "category_placeholder": "Selectionnez une categorie",
+    "category_free_label": "Categorie (texte libre)",
+    "category_free_placeholder": "ex. Environnement, Technologie, Communaute",
+    "prize_label": "Description du prix",
+    "prize_placeholder": "Decrivez ce que le gagnant recoit (optionnel)",
+    "prize_helper": "Les incitations stimulent la participation — pensez aux credits-temps, a la reconnaissance ou au soutien a la mise en oeuvre",
+    "submission_deadline_label": "Date limite de soumission",
+    "voting_deadline_label": "Date limite de vote",
+    "max_ideas_label": "Nombre max. d'idees par utilisateur",
+    "max_ideas_placeholder": "Laisser vide pour illimite",
+    "max_ideas_helper": "Limiter le nombre d'idees par personne encourage des soumissions de meilleure qualite",
+    "status_label": "Statut initial",
+    "evaluation_criteria_label": "Criteres d'evaluation",
+    "evaluation_criteria_placeholder": "Ajouter un critere (appuyez sur Entree)",
+    "evaluation_criteria_helper": "Definissez comment les idees seront evaluees",
+    "template_label": "Partir d'un modele",
+    "template_placeholder": "Selectionnez un modele (optionnel)",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "create": "Creer le defi",
+    "creating": "Creation...",
+    "update": "Mettre a jour le defi",
+    "updating": "Mise a jour...",
+    "cancel": "Annuler"
+  },
+  "create_page": {
+    "page_title": "Creer un defi",
+    "title": "Creer un defi d'ideation",
+    "subtitle": "Publiez un probleme a resoudre pour votre communaute"
+  },
+  "edit_page": {
+    "page_title": "Modifier le defi",
+    "title": "Modifier le defi d'ideation"
+  },
+  "admin": {
+    "change_status": "Changer le statut",
+    "set_open": "Ouvrir aux soumissions",
+    "set_voting": "Passer au vote",
+    "set_evaluating": "Passer a l'evaluation",
+    "set_closed": "Fermer le defi",
+    "set_archived": "Archiver le defi",
+    "reopen": "Rouvrir le defi",
+    "unarchive": "Desarchiver le defi",
+    "set_shortlisted": "Marquer comme preselectionne",
+    "set_winner": "Marquer comme gagnant",
+    "remove_status": "Reinitialiser a Soumis",
+    "edit_challenge": "Modifier le defi",
+    "delete_challenge": "Supprimer le defi",
+    "delete_confirm": "Etes-vous sur de vouloir supprimer ce defi ? Toutes les idees, votes et commentaires seront definitivement supprimes.",
+    "edit_campaign": "Modifier la campagne",
+    "delete_campaign": "Supprimer la campagne",
+    "delete_campaign_confirm": "Voulez-vous vraiment supprimer cette campagne ? Les defis lies resteront disponibles.",
+    "status_updated": "Statut du defi mis a jour",
+    "idea_status_updated": "Statut de l'idee mis a jour"
+  },
+  "toast": {
+    "challenge_created": "Defi cree avec succes",
+    "challenge_updated": "Defi mis a jour avec succes",
+    "challenge_deleted": "Defi supprime avec succes",
+    "idea_submitted": "Idee soumise avec succes",
+    "idea_updated": "Idee mise a jour avec succes",
+    "idea_deleted": "Idee supprimee avec succes",
+    "vote_added": "Vote enregistre",
+    "vote_removed": "Vote retire",
+    "comment_added": "Commentaire publie",
+    "comment_deleted": "Commentaire supprime",
+    "media_added": "Media ajoute",
+    "media_deleted": "Media supprime",
+    "category_created": "Categorie creee",
+    "category_updated": "Categorie mise a jour",
+    "category_deleted": "Categorie supprimee",
+    "tag_created": "Tag cree",
+    "tag_deleted": "Tag supprime",
+    "campaign_created": "Campagne creee",
+    "campaign_updated": "Campagne mise a jour",
+    "campaign_deleted": "Campagne supprimee",
+    "template_created": "Modele cree",
+    "template_updated": "Modele mis a jour",
+    "template_deleted": "Modele supprime",
+    "outcome_saved": "Resultat enregistre",
+    "task_created": "Tache creee",
+    "task_updated": "Tache mise a jour",
+    "task_deleted": "Tache supprimee",
+    "document_uploaded": "Document televerse",
+    "document_deleted": "Document supprime",
+    "chatroom_created": "Canal cree",
+    "chatroom_deleted": "Canal supprime",
+    "message_posted": "Message publie",
+    "template_applied": "Modele applique avec succes",
+    "error_generic": "Une erreur s'est produite. Veuillez reessayer."
+  },
+  "favorites": {
+    "add": "Ajouter aux favoris",
+    "remove": "Retirer des favoris",
+    "my_favorites": "Mes favoris",
+    "empty_title": "Aucun favori pour le moment",
+    "empty_description": "Cliquez sur le coeur d'un defi pour l'ajouter a vos favoris."
+  },
+  "views": "vues",
+  "featured": "En vedette",
+  "search": {
+    "label": "Rechercher des defis",
+    "placeholder": "Rechercher des defis par titre ou description...",
+    "clear_tags": "Effacer les tags",
+    "no_results": "Aucun defi ne correspond a votre recherche",
+    "clear": "Effacer la recherche"
+  },
+  "tags": {
+    "label": "Étiquettes",
+    "placeholder": "Ajouter des tags (appuyez sur Entree)",
+    "helper": "Ajoutez des competences ou sujets pertinents pour ce defi",
+    "interests": "Centres d'interet",
+    "skills": "Competences requises",
+    "general": "Tags generaux"
+  },
+  "cover_image": {
+    "label": "URL de l'image de couverture",
+    "placeholder": "https://example.com/image.jpg",
+    "helper": "Image de banniere pour le defi (recommande 600x400)"
+  },
+  "guidance": {
+    "title": "Conseils pour rediger un excellent defi",
+    "intro": "Un defi bien formule inspire de meilleures idees. Voici quelques conseils pour creer un enonce de probleme efficace.",
+    "tips": {
+      "clear_problem": {
+        "title": "🎯 Definissez un probleme clair",
+        "description": "Enoncez le probleme specifique que vous souhaitez que la communaute traite. Evitez les declarations vagues ou trop generales."
+      },
+      "scope": {
+        "title": "📏 Definissez un cadre realiste",
+        "description": "Definissez des limites et contraintes claires pour que les idees restent focalisees et realisables."
+      },
+      "criteria": {
+        "title": "⚖️ Expliquez les criteres d'evaluation",
+        "description": "Indiquez aux participants comment les idees seront jugees — faisabilite, creativite, impact ou rapport cout-efficacite."
+      },
+      "engagement": {
+        "title": "💡 Encouragez la participation",
+        "description": "Utilisez un langage accueillant. Ajoutez un prix ou une reconnaissance pour motiver les soumissions."
+      }
+    },
+    "examples_toggle": "Voir des exemples de bons vs. mauvais defis ▸",
+    "example_good": {
+      "label": "✅ Defi solide :",
+      "text": "Comment pourrions-nous reduire le gaspillage alimentaire dans notre communaute de 25 % au cours de la prochaine annee ? Nous recherchons des idees pratiques et peu couteuses que les entreprises locales et les residents peuvent mettre en oeuvre ensemble."
+    },
+    "example_weak": {
+      "label": "❌ Defi faible :",
+      "text": "Nous avons besoin d'idees sur l'environnement.",
+      "why": "Trop vague — pas de probleme specifique, pas de contraintes, pas de criteres de succes."
+    }
+  },
+  "duplicate": {
+    "button": "Dupliquer le defi",
+    "success": "Defi duplique avec succes",
+    "error": "Echec de la duplication du defi"
+  },
+  "idea_image": "Image de l'idee",
+  "media": {
+    "title": "Pieces jointes",
+    "add": "Ajouter une piece jointe",
+    "add_image": "Ajouter une image",
+    "add_link": "Ajouter un lien",
+    "url_label": "URL",
+    "url_placeholder": "https://...",
+    "caption_label": "Legende",
+    "caption_placeholder": "Breve description (optionnel)",
+    "type_label": "Taper",
+    "type_image": "Image",
+    "type_video": "Vidéo",
+    "type_document": "Document",
+    "type_link": "Lien",
+    "delete_confirm": "Supprimer cette piece jointe ?",
+    "empty": "Aucune piece jointe"
+  },
+  "convert_to_group": {
+    "button": "Creer une equipe",
+    "title": "Creer une equipe de projet a partir de l'idee",
+    "description": "Transformez cette idee gagnante en une equipe de projet ou les membres peuvent collaborer, gerer des taches, partager des documents et discuter.",
+    "name_label": "Nom de l'equipe",
+    "description_label": "Description de l'equipe",
+    "visibility_label": "Visibilite",
+    "visibility_public": "Publique",
+    "visibility_private": "Privee",
+    "confirm": "Creer l'equipe",
+    "creating": "Creation...",
+    "success": "Equipe de projet creee avec succes ! Redirection...",
+    "error": "Echec de la creation de l'equipe",
+    "already_converted": "Cette idee a deja ete convertie en equipe"
+  },
+  "campaigns": {
+    "title": "Campagnes",
+    "page_title": "Campagnes",
+    "empty_title": "Aucune campagne pour le moment",
+    "empty_description": "Creez une campagne pour regrouper des defis connexes.",
+    "create": "Creer une campagne",
+    "challenges_count": "{{count}} defis",
+    "challenges_count_one": "{{count}} defi",
+    "link_challenge": "Lier un defi",
+    "unlink_challenge": "Delier un defi",
+    "confirm_unlink": "Confirmer",
+    "confirm_unlink_label": "Confirmer le retrait du lien",
+    "fallback_title": "Campagne",
+    "feature_not_available": "Idéation non disponible",
+    "feature_not_available_desc": "La fonctionnalité d'idéation n'est pas activée pour cette communauté. Contactez votre administrateur de banque de temps pour en savoir plus.",
+    "retry": "Réessayer",
+    "challenges_count_many": "{{count}} defis",
+    "challenges_count_other": "{{count}} defis"
+  },
+  "templates": {
+    "title": "Modeles de defis",
+    "page_title": "Modeles de defis",
+    "empty_title": "Aucun modele pour le moment",
+    "empty_description": "Creez des modeles reutilisables pour simplifier la creation de defis.",
+    "create": "Creer un modele",
+    "use_template": "Utiliser ce modele",
+    "start_from_template": "Partir d'un modele"
+  },
+  "outcomes": {
+    "title": "Suivi de l'impact",
+    "page_title": "Tableau de bord de l'impact",
+    "empty_title": "Aucun resultat pour le moment",
+    "status_label": "Statut",
+    "implementation_status_label": "Statut de mise en oeuvre",
+    "status_not_started": "Non commence",
+    "status_in_progress": "En cours",
+    "status_implemented": "Mis en oeuvre",
+    "status_abandoned": "Abandonne",
+    "winning_idea": "Idee gagnante",
+    "impact_description": "Description de l'impact",
+    "impact_placeholder": "Decrivez l'impact et les resultats...",
+    "save": "Enregistrer le resultat",
+    "saving": "Enregistrement...",
+    "dashboard": "Tableau de bord de l'impact",
+    "total_challenges": "Total suivi",
+    "implemented_count": "Mis en oeuvre",
+    "in_progress_count": "En cours",
+    "edit": "Modifier les résultats"
+  },
+  "tasks": {
+    "title": "Taches",
+    "status_label": "Statut",
+    "priority_label": "Priorite",
+    "create": "Ajouter une tache",
+    "empty_title": "Aucune tache pour le moment",
+    "empty_description": "Creez des taches pour organiser le travail de votre equipe.",
+    "status_todo": "A faire",
+    "status_in_progress": "En cours",
+    "status_done": "Termine",
+    "priority_low": "Basse",
+    "priority_medium": "Moyenne",
+    "priority_high": "Haute",
+    "priority_urgent": "Urgente",
+    "assigned_to": "Assigne a",
+    "unassigned": "Non assigne",
+    "due_date": "Date d'echeance",
+    "overdue": "En retard",
+    "stats": "Statistiques des taches"
+  },
+  "documents": {
+    "title": "Documents",
+    "upload": "Televerser un document",
+    "empty_title": "Aucun document pour le moment",
+    "empty_description": "Telechargez des fichiers a partager avec votre equipe.",
+    "delete_confirm": "Supprimer ce document ?",
+    "max_size": "Taille max. du fichier : 10 Mo",
+    "download": "Télécharger"
+  },
+  "chatrooms": {
+    "title": "Canaux",
+    "create": "Creer un canal",
+    "general": "Général",
+    "empty_title": "Aucun message pour le moment",
+    "empty_description": "Lancez la conversation !",
+    "message_placeholder": "Ecrivez un message...",
+    "send": "Envoyer",
+    "delete_channel": "Supprimer le canal",
+    "delete_channel_confirm": "Supprimer ce canal et tous ses messages ?"
+  },
+  "categories": {
+    "title": "Catégories",
+    "manage": "Gerer les categories",
+    "all": "Toutes les categories",
+    "create": "Ajouter une categorie",
+    "name_label": "Nom de la categorie",
+    "name_placeholder": "ex. Environnement",
+    "icon_label": "Icone",
+    "icon_placeholder": "Nom de l'icone Lucide (ex. Leaf)",
+    "color_label": "Couleur",
+    "delete_confirm": "Supprimer cette categorie ?"
+  },
+  "validation": {
+    "title_required": "Le titre est requis",
+    "description_required": "La description est requise",
+    "comment_required": "Le commentaire ne peut pas etre vide",
+    "url_required": "L'URL est requise",
+    "name_required": "Le nom est requis",
+    "file_required": "Le fichier est requis"
+  },
+  "page_meta": {
+    "outcomes": {
+      "title": "Tableau de bord des résultats"
+    },
+    "create_challenge": {
+      "title": "Créer un défi"
+    },
+    "campaigns": {
+      "title": "Campagnes"
+    }
+  },
+  "challenge_detail": {
+    "actions": "Actions du défi"
+  },
+  "confirm": {
+    "delete_task": "Supprimer cette tâche ? Cela ne peut pas être annulé.",
+    "delete_message": "Supprimer ce message ? Cela ne peut pas être annulé."
+  },
   "challengeTitle": "Challenge",
   "disabledTitle": "Les idées ne sont pas activées",
   "disabledSubtitle": "Cet espace communautaire n’a pas activé les défis d’idées.",
@@ -36,14 +478,6 @@
     "voting": "Voting",
     "evaluating": "Evaluating",
     "closed": "Closed"
-  },
-  "status": {
-    "draft": "Draft",
-    "open": "Open",
-    "voting": "Voting",
-    "evaluating": "Evaluating",
-    "closed": "Closed",
-    "archived": "Archived"
   },
   "ideaStatus": {
     "draft": "Draft",

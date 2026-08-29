@@ -10,6 +10,11 @@ const mockUseApi = jest.fn();
 const mockUseAuth = jest.fn();
 const mockCreateReview = jest.fn();
 const mockDeleteReview = jest.fn();
+const mockSearchParams: { tab?: string; transaction_id?: string } = {};
+
+jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => mockSearchParams,
+}));
 
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
@@ -108,6 +113,8 @@ describe('ReviewsScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    delete mockSearchParams.tab;
+    delete mockSearchParams.transaction_id;
     useApiCall = 0;
     mockUseAuth.mockReturnValue({ user: { id: 7 } });
     mockCreateReview.mockResolvedValue({ success: true });
@@ -186,6 +193,16 @@ describe('ReviewsScreen', () => {
       transaction_id: 99,
     }));
     expect(refreshPending).toHaveBeenCalled();
+  });
+
+  it('opens the matching pending composer from a review-request deep link', async () => {
+    mockSearchParams.tab = 'pending';
+    mockSearchParams.transaction_id = '99';
+
+    const { findByTestId, getAllByText } = render(<ReviewsScreen />);
+
+    expect(await findByTestId('review-form-sheet')).toBeTruthy();
+    expect(getAllByText('For Garden help').length).toBeGreaterThan(0);
   });
 
   it('deletes a given review', async () => {

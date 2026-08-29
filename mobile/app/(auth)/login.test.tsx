@@ -60,6 +60,8 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Error: 'error' },
 }));
 
+jest.mock('@/components/ui/Icon', () => ({ Ionicons: () => null }));
+
 // --- Tests ---
 
 import LoginScreen from './login';
@@ -163,9 +165,9 @@ describe('LoginScreen', () => {
   });
 
   it('opens the native forgot-password route', () => {
-    const { getByText } = render(<LoginScreen />);
+    const { getByLabelText } = render(<LoginScreen />);
 
-    fireEvent.press(getByText('Forgot password?'));
+    fireEvent.press(getByLabelText('Forgot password?'));
 
     expect(mockRouterPush).toHaveBeenCalledWith('/forgot-password');
   });

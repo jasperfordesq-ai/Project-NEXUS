@@ -382,5 +382,22 @@
     "saveFailedTitle": "Gruppe nicht gespeichert",
     "saveFailedDescription": "Die Gruppe konnte nicht gespeichert werden. Versuche es erneut.",
     "failedDescription": "Die Gruppe konnte nicht erstellt werden. Versuche es erneut."
+  },
+  "invite_accept": {
+    "title": "Gruppeneinladung",
+    "description": "Prüfe und akzeptiere deine Einladung zu dieser Gruppe.",
+    "checking": "Einladung wird geprüft...",
+    "accept": "Einladung annehmen",
+    "accepting": "Beitritt läuft...",
+    "success_title": "Einladung angenommen",
+    "success_description": "Du bist jetzt Mitglied dieser Gruppe.",
+    "error_invalid": "Dieser Einladungslink ist ungültig oder nicht mehr verfügbar.",
+    "error_expired": "Diese Einladung ist abgelaufen.",
+    "error_revoked": "Diese Einladung wurde widerrufen.",
+    "error_email_mismatch": "Diese E-Mail-Einladung gehört zu einem anderen Konto.",
+    "error_capacity": "Diese Gruppe hat ihr Mitgliederlimit erreicht.",
+    "error_limit": "Du hast die maximale Anzahl an Gruppen erreicht, denen du beitreten kannst.",
+    "error_group_unavailable": "Diese Gruppe nimmt derzeit keine Mitglieder auf.",
+    "go_to_group": "Zur Gruppe"
   }
 }

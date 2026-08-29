@@ -1,0 +1,22 @@
+{
+  "title": "Clubs et associations",
+  "meta": {
+    "title": "Clubs et associations",
+    "description": "Découvrez les clubs et associations locaux de votre communauté"
+  },
+  "subtitle": "Trouvez clubs, associations et groupes locaux qui rassemblent votre communauté.",
+  "search_placeholder": "Rechercher des clubs...",
+  "member_count": "{{count}} membres",
+  "meeting_schedule": "Se réunit : {{schedule}}",
+  "view": "Voir le club",
+  "empty": {
+    "title": "Aucun club pour l'instant",
+    "body": "Aucun club ou association n'a encore été référencé."
+  },
+  "errors": {
+    "load_failed": "Impossible de charger les clubs. Veuillez réessayer."
+  },
+  "member_count_one": "{{count}} membres",
+  "member_count_other": "{{count}} membres",
+  "member_count_many": "{{count}} membres"
+}

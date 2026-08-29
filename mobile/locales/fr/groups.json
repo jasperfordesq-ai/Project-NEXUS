@@ -382,5 +382,22 @@
     "saveFailedTitle": "Groupe non enregistré",
     "saveFailedDescription": "Impossible d’enregistrer le groupe. Réessayez.",
     "failedDescription": "Impossible de créer le groupe. Réessayez."
+  },
+  "invite_accept": {
+    "title": "Invitation au groupe",
+    "description": "Vérifiez et acceptez votre invitation à rejoindre ce groupe.",
+    "checking": "Vérification de l’invitation...",
+    "accept": "Accepter l’invitation",
+    "accepting": "Adhésion en cours...",
+    "success_title": "Invitation acceptée",
+    "success_description": "Vous êtes maintenant membre de ce groupe.",
+    "error_invalid": "Ce lien d’invitation est invalide ou n’est plus disponible.",
+    "error_expired": "Cette invitation a expiré.",
+    "error_revoked": "Cette invitation a été révoquée.",
+    "error_email_mismatch": "Cette invitation par e-mail appartient à un autre compte.",
+    "error_capacity": "Ce groupe a atteint sa limite de membres.",
+    "error_limit": "Vous avez atteint le nombre maximal de groupes que vous pouvez rejoindre.",
+    "error_group_unavailable": "Ce groupe n’accepte pas de nouveaux membres actuellement.",
+    "go_to_group": "Accéder au groupe"
   }
 }

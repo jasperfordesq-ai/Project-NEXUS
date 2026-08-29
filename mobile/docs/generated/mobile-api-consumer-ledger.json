@@ -1,13 +1,13 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2233 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2232 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 49,
-    "call_sites": 511,
-    "distinct_endpoints": 422,
-    "verified": 422,
+    "api_modules": 55,
+    "call_sites": 551,
+    "distinct_endpoints": 462,
+    "verified": 462,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -432,7 +432,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:163"
+        "auth.ts:164"
       ]
     },
     {
@@ -441,7 +441,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:140"
+        "auth.ts:141"
       ]
     },
     {
@@ -450,7 +450,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:178"
+        "auth.ts:179"
       ]
     },
     {
@@ -459,7 +459,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:188"
+        "auth.ts:189"
       ]
     },
     {
@@ -468,7 +468,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:168"
+        "auth.ts:169"
       ]
     },
     {
@@ -477,7 +477,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:173"
+        "auth.ts:174"
       ]
     },
     {
@@ -495,7 +495,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:152"
+        "auth.ts:153"
       ]
     },
     {
@@ -532,6 +532,15 @@
       "matched_via": "exact",
       "sites": [
         "exchanges.ts:187"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/clubs",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "clubs.ts:31"
       ]
     },
     {
@@ -673,6 +682,60 @@
     },
     {
       "http": "GET",
+      "endpoint": "/api/v2/courses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:109"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/courses/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:121"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/enroll",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:133"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/lessons/{param}/complete",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:137"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/courses/{param}/progress",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:129"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/donations/{param}/receipt",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "donations.ts:23"
+      ]
+    },
+    {
+      "http": "GET",
       "endpoint": "/api/v2/events/{param}/analytics",
       "status": "verified",
       "matched_via": "exact",
@@ -731,7 +794,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:510",
+        "client.ts:574",
         "exchanges.ts:212"
       ]
     },
@@ -1822,11 +1885,47 @@
     },
     {
       "http": "GET",
+      "endpoint": "/api/v2/groups/invite/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:785"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/groups/invite/{param}/accept",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "groups.ts:790"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-campaigns",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:238"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-campaigns/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:242"
+      ]
+    },
+    {
+      "http": "GET",
       "endpoint": "/api/v2/ideation-categories",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:118"
+        "ideation.ts:169"
       ]
     },
     {
@@ -1835,7 +1934,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:113"
+        "ideation.ts:164"
       ]
     },
     {
@@ -1844,7 +1943,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:131"
+        "ideation.ts:182"
       ]
     },
     {
@@ -1853,7 +1952,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:123"
+        "ideation.ts:174"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/ideation-challenges/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:190"
       ]
     },
     {
@@ -1862,7 +1970,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:139"
+        "ideation.ts:194"
       ]
     },
     {
@@ -1871,7 +1979,43 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:147"
+        "ideation.ts:202"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-ideas/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:218"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/ideation-ideas/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:222"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-ideas/{param}/comments",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:228"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/ideation-ideas/{param}/comments",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:232"
       ]
     },
     {
@@ -1880,7 +2024,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:155"
+        "ideation.ts:210"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/ideation-outcomes/dashboard",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:246"
       ]
     },
     {
@@ -3052,7 +3205,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:181"
+        "matches.ts:237"
       ]
     },
     {
@@ -3061,7 +3214,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:163"
+        "matches.ts:219"
       ]
     },
     {
@@ -3089,6 +3242,15 @@
       "matched_via": "exact",
       "sites": [
         "savedCollections.ts:67"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/me/courses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:125"
       ]
     },
     {
@@ -3337,6 +3499,168 @@
     },
     {
       "http": "GET",
+      "endpoint": "/api/v2/onboarding/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "onboarding.ts:101"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/onboarding/complete",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "onboarding.ts:116"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/onboarding/config",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "onboarding.ts:97"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/onboarding/safeguarding",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "onboarding.ts:109"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/onboarding/safeguarding-options",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "onboarding.ts:105"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/onboarding/status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "onboarding.ts:93"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/partner-venues",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "venues.ts:55"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/partner-venues/my-visits",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "venues.ts:68"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/partner-venues/pass",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "venues.ts:60"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/partner-venues/pass/rotate",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "venues.ts:64"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/partner-venues/visits/verify/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "venues.ts:73"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/podcasts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:73"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/podcasts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:80"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/podcasts/{param}/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:84"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/subscribe",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:92"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/episodes/{param}/listen",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:88"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/episodes/{param}/reaction",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:96"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/episodes/{param}/report",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:100"
+      ]
+    },
+    {
+      "http": "GET",
       "endpoint": "/api/v2/polls",
       "status": "verified",
       "matched_via": "exact",
@@ -3540,7 +3864,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "tenant.ts:43"
+        "tenant.ts:51"
       ]
     },
     {
@@ -3549,7 +3873,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "tenant.ts:55"
+        "tenant.ts:63"
       ]
     },
     {
@@ -3558,7 +3882,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:509",
+        "client.ts:573",
         "members.ts:76"
       ]
     },
@@ -3640,7 +3964,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:183"
+        "auth.ts:184"
       ]
     },
     {
@@ -3668,6 +3992,24 @@
       "matched_via": "exact",
       "sites": [
         "profile.ts:94"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/users/me/match-preferences",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "matches.ts:241"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/users/me/match-preferences",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "matches.ts:248"
       ]
     },
     {
@@ -3840,6 +4182,24 @@
       "matched_via": "exact",
       "sites": [
         "volunteering.ts:573"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/checkin/checkout/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:673"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/checkin/verify/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteering.ts:668"
       ]
     },
     {

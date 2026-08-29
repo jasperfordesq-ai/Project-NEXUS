@@ -1,7 +1,8 @@
 {
   "global": {
     "common.json:appName": "Registered product name",
-    "exchanges.json:radiusKm": "International kilometre unit"
+    "exchanges.json:radiusKm": "International kilometre unit",
+    "profile.json:matchPreferences.thresholds.distance_value": "International kilometre unit template"
   },
   "byLocale": {
     "de": {
@@ -24,7 +25,8 @@
       "groups.json:detail.analytics.participants": "Participant is the same word in French",
       "groups.json:detail.analytics.participants_one": "Participant is the same word in French",
       "groups.json:detail.analytics.participants_other": "Participants is the same word in French",
-      "groups.json:detail.analytics.breakdown.discussions": "Discussions is the same word in French"
+      "groups.json:detail.analytics.breakdown.discussions": "Discussions is the same word in French",
+      "ideation.json:ideas.votes": "Votes is the same word in French"
     },
     "it": {
       "resources.json:downloads_one": "Download is established Italian product terminology"
@@ -36,6 +38,15 @@
       "gamification.json:journeys.xpReward": "Product XP unit",
       "gamification.json:shop.xpCost": "Product XP unit",
       "marketplace.json:map.radiusOption": "International kilometre unit"
+    },
+    "es": {
+      "ideation.json:challenge.ideas_count": "Ideas is the same word in Spanish",
+      "ideation.json:challenge.ideas_count_one": "Idea is the same word in Spanish",
+      "ideation.json:challenge.ideas_count_other": "Ideas is the same word in Spanish",
+      "volunteering.json:donations.receipt_ref": "Ref is the standard receipt-reference abbreviation in Spanish"
+    },
+    "pt": {
+      "volunteering.json:donations.receipt_ref": "Ref is the standard receipt-reference abbreviation in Portuguese"
     }
   }
 }

@@ -30,6 +30,10 @@ describe('mobile Irish volunteering expenses and donations', () => {
     );
     const languageNeutralPaths = new Set([
       'expenses.currencyPlaceholder',
+      'donations.payment_methods.paypal',
+      'donations.currencies.EUR',
+      'donations.currencies.GBP',
+      'donations.currencies.USD',
       'donations.progress',
     ]);
 

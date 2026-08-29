@@ -3,9 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,11 @@ export default function ReviewsScreen() {
   const { user } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const params = useLocalSearchParams<{
+    tab?: string | string[];
+    transaction_id?: string | string[];
+  }>();
+  const lastOpenedDeepLink = useRef<string | null>(null);
   const userId = Number(user?.id ?? 0);
   const [activeTab, setActiveTab] = useState<ReviewTab>('received');
   const [activePending, setActivePending] = useState<PendingReview | null>(null);
@@ -80,6 +86,30 @@ export default function ReviewsScreen() {
     : 0;
   const isLoading = activeTab === 'pending' ? pendingLoading : reviewsLoading;
   const error = activeTab === 'pending' ? pendingError : reviewsError;
+
+  useEffect(() => {
+    const requestedTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
+    const rawTransactionId = Array.isArray(params.transaction_id)
+      ? params.transaction_id[0]
+      : params.transaction_id;
+    const transactionId = Number(rawTransactionId);
+
+    if (requestedTab === 'pending' || Number.isInteger(transactionId)) {
+      setActiveTab('pending');
+    }
+
+    if (!Number.isInteger(transactionId) || lastOpenedDeepLink.current === rawTransactionId) {
+      return;
+    }
+
+    const requestedReview = pending.find((item) => item.transaction_id === transactionId);
+    if (!requestedReview) return;
+
+    lastOpenedDeepLink.current = rawTransactionId ?? null;
+    setActivePending(requestedReview);
+    setRating(0);
+    setComment('');
+  }, [params.tab, params.transaction_id, pending]);
 
   function resetForm() {
     setActivePending(null);

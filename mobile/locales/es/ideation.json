@@ -1,6 +1,448 @@
 {
+  "page_title": "Retos de Ideación",
   "title": "Ideas",
   "subtitle": "Explora retos, presenta ideas y vota propuestas.",
+  "page_description": "Explora los desafíos de la comunidad, envía ideas y vota por soluciones. Ayuda a dar forma al futuro de tu comunidad.",
+  "loading": "Cargando...",
+  "tabs_filter_aria": "Filtrar desafíos",
+  "actions": {
+    "retry": "Reintentar"
+  },
+  "tabs": {
+    "all": "Todos",
+    "open": "Abiertos",
+    "voting": "Votación",
+    "evaluating": "Evaluación",
+    "closed": "Cerrados",
+    "archived": "Archivados",
+    "favorites": "Mis Favoritos"
+  },
+  "status": {
+    "draft": "Draft",
+    "open": "Open",
+    "voting": "Voting",
+    "evaluating": "Evaluating",
+    "closed": "Closed",
+    "archived": "Archived"
+  },
+  "idea_status": {
+    "draft": "Borrador",
+    "submitted": "Enviado",
+    "shortlisted": "Preseleccionado",
+    "winner": "Ganador",
+    "withdrawn": "Retirado"
+  },
+  "challenge": {
+    "ideas_count": "{{count}} ideas",
+    "ideas_count_one": "{{count}} idea",
+    "submission_deadline": "Envíos hasta {{date}}",
+    "voting_deadline": "Votación termina {{date}}",
+    "prize": "Premio",
+    "category": "Categoría",
+    "max_ideas": "Máx {{count}} ideas por persona",
+    "created_by": "Creado por {{name}}",
+    "no_deadline": "Sin fecha límite",
+    "evaluation_criteria": "Criterios de Evaluación",
+    "outcome": "Resultado",
+    "team_links": "Equipos de Proyecto",
+    "ideas_count_many": "{{count}} ideas",
+    "ideas_count_other": "{{count}} ideas",
+    "max_ideas_many": "Máx {{count}} ideas por persona",
+    "max_ideas_one": "Máx {{count}} ideas por persona",
+    "max_ideas_other": "Máx {{count}} ideas por persona"
+  },
+  "challenges": {
+    "title": "Retos",
+    "empty_title": "Aún No Hay Retos",
+    "empty_description": "No hay retos de ideación en este momento. ¡Vuelve pronto!",
+    "empty_filtered": "Ningún reto coincide con el filtro seleccionado.",
+    "create": "Crear Reto",
+    "load_error": "No se pudieron cargar los retos",
+    "load_more": "Cargar Más",
+    "loading": "Cargando desafío..."
+  },
+  "ideas": {
+    "title": "Ideas",
+    "empty_title": "Aún No Hay Ideas",
+    "empty_description": "¡Sé el primero en compartir tu idea para este reto!",
+    "submit": "Enviar Idea",
+    "submit_title": "Enviar Tu Idea",
+    "sort_votes": "Más Votadas",
+    "sort_newest": "Más Recientes",
+    "vote": "Votar",
+    "unvote": "Quitar Voto",
+    "votes": "{{count}} votos",
+    "votes_one": "{{count}} voto",
+    "comments": "{{count}} comentarios",
+    "comments_one": "{{count}} comentario",
+    "load_more": "Cargar Más Ideas",
+    "back_to_challenge": "Volver al Reto",
+    "your_ideas": "Tus ideas: {{count}}/{{max}}",
+    "edit": "Editar Idea",
+    "delete": "Eliminar Idea",
+    "delete_confirm": "¿Estás seguro de que quieres eliminar esta idea? Esta acción no se puede deshacer.",
+    "load_error": "No se pudieron cargar las ideas",
+    "save_draft": "Guardar Borrador",
+    "publish_draft": "Publicar Idea",
+    "draft_saved": "Borrador guardado",
+    "draft": "Borrador",
+    "your_drafts": "Tus Borradores",
+    "untitled_draft": "Borrador sin título",
+    "draft_updated": "Actualizado {{date}}",
+    "draft_created": "Creado {{date}}",
+    "new_idea": "Nueva Idea",
+    "sort_label": "Ordenar ideas",
+    "loading": "Cargando ideas...",
+    "your_ideas_many": "Tus ideas: {{count}}/{{max}}",
+    "your_ideas_one": "Tus ideas: {{count}}/{{max}}",
+    "your_ideas_other": "Tus ideas: {{count}}/{{max}}",
+    "comments_many": "{{count}} comentarios",
+    "comments_other": "{{count}} comentarios"
+  },
+  "idea_detail": {
+    "page_title": "Detalles de la Idea",
+    "back_to_challenge": "Volver al Reto",
+    "submitted_by": "Enviado por {{name}}",
+    "submitted_on": "Enviado el {{date}}",
+    "actions": "Acciones de idea"
+  },
+  "comments": {
+    "title": "Comentarios",
+    "empty_title": "Aún No Hay Comentarios",
+    "empty_description": "Sé el primero en compartir tus pensamientos sobre esta idea.",
+    "add_label": "Añadir un comentario",
+    "add_placeholder": "Comparte tus pensamientos...",
+    "add_button": "Publicar Comentario",
+    "delete": "Eliminar",
+    "delete_confirm": "¿Estás seguro de que quieres eliminar este comentario?",
+    "load_more": "Cargar Más Comentarios",
+    "load_error": "No se pudieron cargar los comentarios",
+    "loading": "Cargando comentarios..."
+  },
+  "form": {
+    "title_label": "Título",
+    "title_placeholder": "Introduce un título claro y descriptivo",
+    "description_label": "Descripción",
+    "description_placeholder": "Describe el reto o tu idea en detalle",
+    "description_helper": "Describe el problema claramente, incluyendo quién se ve afectado, por qué es importante y cómo sería una solución exitosa",
+    "category_label": "Categoría",
+    "category_placeholder": "Selecciona una categoría",
+    "category_free_label": "Categoría (texto libre)",
+    "category_free_placeholder": "ej. Medio Ambiente, Tecnología, Comunidad",
+    "prize_label": "Descripción del Premio",
+    "prize_placeholder": "Describe lo que recibe el ganador (opcional)",
+    "prize_helper": "Los incentivos aumentan la participación — considera créditos de tiempo, reconocimiento o apoyo de implementación",
+    "submission_deadline_label": "Fecha Límite de Envío",
+    "voting_deadline_label": "Fecha Límite de Votación",
+    "max_ideas_label": "Máx Ideas por Usuario",
+    "max_ideas_placeholder": "Dejar vacío para ilimitado",
+    "max_ideas_helper": "Limitar ideas por persona fomenta envíos de mayor calidad",
+    "status_label": "Estado Inicial",
+    "evaluation_criteria_label": "Criterios de Evaluación",
+    "evaluation_criteria_placeholder": "Añade un criterio (pulsa Enter)",
+    "evaluation_criteria_helper": "Define cómo se juzgarán las ideas",
+    "template_label": "Empezar desde Plantilla",
+    "template_placeholder": "Selecciona una plantilla (opcional)",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "create": "Crear Reto",
+    "creating": "Creando...",
+    "update": "Actualizar Reto",
+    "updating": "Actualizando...",
+    "cancel": "Cancelar"
+  },
+  "create_page": {
+    "page_title": "Crear Reto",
+    "title": "Crear Reto de Ideación",
+    "subtitle": "Publica un planteamiento de problema para que tu comunidad lo resuelva"
+  },
+  "edit_page": {
+    "page_title": "Editar Reto",
+    "title": "Editar Reto de Ideación"
+  },
+  "admin": {
+    "change_status": "Cambiar Estado",
+    "set_open": "Abrir para Envíos",
+    "set_voting": "Pasar a Votación",
+    "set_evaluating": "Pasar a Evaluación",
+    "set_closed": "Cerrar Reto",
+    "set_archived": "Archivar Reto",
+    "reopen": "Reabrir Reto",
+    "unarchive": "Desarchivar Reto",
+    "set_shortlisted": "Marcar como Preseleccionado",
+    "set_winner": "Marcar como Ganador",
+    "remove_status": "Restablecer a Enviado",
+    "edit_challenge": "Editar Reto",
+    "delete_challenge": "Eliminar Reto",
+    "delete_confirm": "¿Estás seguro de que quieres eliminar este reto? Todas las ideas, votos y comentarios serán eliminados permanentemente.",
+    "edit_campaign": "Editar Campaña",
+    "delete_campaign": "Eliminar Campaña",
+    "delete_campaign_confirm": "¿Seguro que quieres eliminar esta campaña? Los retos vinculados seguirán disponibles.",
+    "status_updated": "Estado del reto actualizado",
+    "idea_status_updated": "Estado de la idea actualizado"
+  },
+  "toast": {
+    "challenge_created": "Reto creado exitosamente",
+    "challenge_updated": "Reto actualizado exitosamente",
+    "challenge_deleted": "Reto eliminado exitosamente",
+    "idea_submitted": "Idea enviada exitosamente",
+    "idea_updated": "Idea actualizada exitosamente",
+    "idea_deleted": "Idea eliminada exitosamente",
+    "vote_added": "Voto registrado",
+    "vote_removed": "Voto eliminado",
+    "comment_added": "Comentario publicado",
+    "comment_deleted": "Comentario eliminado",
+    "media_added": "Contenido multimedia añadido",
+    "media_deleted": "Contenido multimedia eliminado",
+    "category_created": "Categoría creada",
+    "category_updated": "Categoría actualizada",
+    "category_deleted": "Categoría eliminada",
+    "tag_created": "Etiqueta creada",
+    "tag_deleted": "Etiqueta eliminada",
+    "campaign_created": "Campaña creada",
+    "campaign_updated": "Campaña actualizada",
+    "campaign_deleted": "Campaña eliminada",
+    "template_created": "Plantilla creada",
+    "template_updated": "Plantilla actualizada",
+    "template_deleted": "Plantilla eliminada",
+    "outcome_saved": "Resultado guardado",
+    "task_created": "Tarea creada",
+    "task_updated": "Tarea actualizada",
+    "task_deleted": "Tarea eliminada",
+    "document_uploaded": "Documento subido",
+    "document_deleted": "Documento eliminado",
+    "chatroom_created": "Canal creado",
+    "chatroom_deleted": "Canal eliminado",
+    "message_posted": "Mensaje publicado",
+    "template_applied": "Plantilla aplicada exitosamente",
+    "error_generic": "Algo salió mal. Por favor intenta de nuevo."
+  },
+  "favorites": {
+    "add": "Añadir a favoritos",
+    "remove": "Eliminar de favoritos",
+    "my_favorites": "Mis Favoritos",
+    "empty_title": "Aún No Hay Favoritos",
+    "empty_description": "Dale corazón a un reto para añadirlo a tus favoritos."
+  },
+  "views": "vistas",
+  "featured": "Destacado",
+  "search": {
+    "label": "Buscar retos",
+    "placeholder": "Buscar retos por título o descripción...",
+    "clear_tags": "Limpiar etiquetas",
+    "no_results": "Ningún reto coincide con tu búsqueda",
+    "clear": "Borrar búsqueda"
+  },
+  "tags": {
+    "label": "Etiquetas",
+    "placeholder": "Añadir etiquetas (pulsa Enter)",
+    "helper": "Añade habilidades o temas relevantes para este reto",
+    "interests": "Áreas de Interés",
+    "skills": "Habilidades Necesarias",
+    "general": "Etiquetas Generales"
+  },
+  "cover_image": {
+    "label": "URL de Imagen de Portada",
+    "placeholder": "https://ejemplo.com/imagen.jpg",
+    "helper": "Imagen de banner para el reto (recomendado 600x400)"
+  },
+  "guidance": {
+    "title": "Consejos para Escribir un Gran Reto",
+    "intro": "Un reto bien planteado inspira mejores ideas. Aquí tienes algunos consejos para crear un planteamiento de problema efectivo.",
+    "tips": {
+      "clear_problem": {
+        "title": "🎯 Define un Problema Claro",
+        "description": "Establece el problema específico que quieres que la comunidad aborde. Evita declaraciones vagas o demasiado amplias."
+      },
+      "scope": {
+        "title": "📏 Establece un Alcance Realista",
+        "description": "Define límites y restricciones claros para que las ideas se mantengan enfocadas y ejecutables."
+      },
+      "criteria": {
+        "title": "⚖️ Explica los Criterios de Evaluación",
+        "description": "Dile a los participantes cómo se juzgarán las ideas — viabilidad, creatividad, impacto o rentabilidad."
+      },
+      "engagement": {
+        "title": "💡 Fomenta la Participación",
+        "description": "Usa un lenguaje invitador. Añade un premio o reconocimiento para motivar los envíos."
+      }
+    },
+    "examples_toggle": "Mostrar ejemplos de retos buenos vs. débiles ▸",
+    "example_good": {
+      "label": "✅ Reto sólido:",
+      "text": "¿Cómo podríamos reducir el desperdicio de alimentos en nuestra comunidad en un 25% durante el próximo año? Buscamos ideas prácticas y de bajo costo que empresas locales y residentes puedan implementar juntos."
+    },
+    "example_weak": {
+      "label": "❌ Reto débil:",
+      "text": "Necesitamos ideas sobre el medio ambiente.",
+      "why": "Demasiado vago — sin problema específico, sin restricciones, sin criterios de éxito."
+    }
+  },
+  "duplicate": {
+    "button": "Duplicar Reto",
+    "success": "Reto duplicado exitosamente",
+    "error": "Error al duplicar el reto"
+  },
+  "idea_image": "Imagen de la idea",
+  "media": {
+    "title": "Adjuntos",
+    "add": "Añadir Adjunto",
+    "add_image": "Añadir Imagen",
+    "add_link": "Añadir Enlace",
+    "url_label": "URL",
+    "url_placeholder": "https://...",
+    "caption_label": "Descripción",
+    "caption_placeholder": "Breve descripción (opcional)",
+    "type_label": "Tipo",
+    "type_image": "Imagen",
+    "type_video": "Vídeo",
+    "type_document": "Documento",
+    "type_link": "Enlace",
+    "delete_confirm": "¿Eliminar este adjunto?",
+    "empty": "Sin adjuntos"
+  },
+  "convert_to_group": {
+    "button": "Crear Equipo",
+    "title": "Crear Equipo de Proyecto a partir de Idea",
+    "description": "Convierte esta idea ganadora en un equipo de proyecto donde los miembros pueden colaborar, gestionar tareas, compartir documentos y chatear.",
+    "name_label": "Nombre del Equipo",
+    "description_label": "Descripción del Equipo",
+    "visibility_label": "Visibilidad",
+    "visibility_public": "Público",
+    "visibility_private": "Privado",
+    "confirm": "Crear Equipo",
+    "creating": "Creando...",
+    "success": "¡Equipo de proyecto creado exitosamente! Redirigiendo...",
+    "error": "Error al crear el equipo",
+    "already_converted": "Esta idea ya ha sido convertida en un equipo"
+  },
+  "campaigns": {
+    "title": "Campañas",
+    "page_title": "Campañas",
+    "empty_title": "Aún No Hay Campañas",
+    "empty_description": "Crea una campaña para agrupar retos relacionados.",
+    "create": "Crear Campaña",
+    "challenges_count": "{{count}} retos",
+    "challenges_count_one": "{{count}} reto",
+    "link_challenge": "Vincular Reto",
+    "unlink_challenge": "Desvincular Reto",
+    "confirm_unlink": "Confirmar",
+    "confirm_unlink_label": "Confirmar desvinculación",
+    "fallback_title": "Campaña",
+    "feature_not_available": "Ideación no disponible",
+    "feature_not_available_desc": "La función de ideación no está habilitada para esta comunidad. Contacta con tu administrador del banco de tiempo para obtener más información.",
+    "retry": "Reintentar",
+    "challenges_count_many": "{{count}} retos",
+    "challenges_count_other": "{{count}} retos"
+  },
+  "templates": {
+    "title": "Plantillas de Reto",
+    "page_title": "Plantillas de Reto",
+    "empty_title": "Aún No Hay Plantillas",
+    "empty_description": "Crea plantillas reutilizables para agilizar la creación de retos.",
+    "create": "Crear Plantilla",
+    "use_template": "Usar Esta Plantilla",
+    "start_from_template": "Empezar desde Plantilla"
+  },
+  "outcomes": {
+    "title": "Seguimiento de Impacto",
+    "page_title": "Panel de Impacto",
+    "empty_title": "Aún no hay resultados",
+    "status_label": "Estado",
+    "implementation_status_label": "Estado de Implementación",
+    "status_not_started": "No Iniciado",
+    "status_in_progress": "En Progreso",
+    "status_implemented": "Implementado",
+    "status_abandoned": "Abandonado",
+    "winning_idea": "Idea Ganadora",
+    "impact_description": "Descripción del Impacto",
+    "impact_placeholder": "Describe el impacto y los resultados...",
+    "save": "Guardar Resultado",
+    "saving": "Guardando...",
+    "dashboard": "Panel de Impacto",
+    "total_challenges": "Total Rastreados",
+    "implemented_count": "Implementados",
+    "in_progress_count": "En Progreso",
+    "edit": "Editar resultados"
+  },
+  "tasks": {
+    "title": "Tareas",
+    "status_label": "Estado",
+    "priority_label": "Prioridad",
+    "create": "Añadir Tarea",
+    "empty_title": "Aún No Hay Tareas",
+    "empty_description": "Crea tareas para organizar el trabajo de tu equipo.",
+    "status_todo": "Pendiente",
+    "status_in_progress": "En Progreso",
+    "status_done": "Hecho",
+    "priority_low": "Baja",
+    "priority_medium": "Media",
+    "priority_high": "Alta",
+    "priority_urgent": "Urgente",
+    "assigned_to": "Asignado a",
+    "unassigned": "Sin asignar",
+    "due_date": "Fecha límite",
+    "overdue": "Vencida",
+    "stats": "Estadísticas de Tareas"
+  },
+  "documents": {
+    "title": "Documentos",
+    "upload": "Subir Documento",
+    "empty_title": "Aún No Hay Documentos",
+    "empty_description": "Sube archivos para compartir con tu equipo.",
+    "delete_confirm": "¿Eliminar este documento?",
+    "max_size": "Tamaño máximo: 10 MB",
+    "download": "Descargar"
+  },
+  "chatrooms": {
+    "title": "Canales",
+    "create": "Crear Canal",
+    "general": "General",
+    "empty_title": "Aún No Hay Mensajes",
+    "empty_description": "¡Inicia la conversación!",
+    "message_placeholder": "Escribe un mensaje...",
+    "send": "Enviar",
+    "delete_channel": "Eliminar Canal",
+    "delete_channel_confirm": "¿Eliminar este canal y todos sus mensajes?"
+  },
+  "categories": {
+    "title": "Categorías",
+    "manage": "Gestionar Categorías",
+    "all": "Todas las Categorías",
+    "create": "Añadir Categoría",
+    "name_label": "Nombre de Categoría",
+    "name_placeholder": "ej. Medio Ambiente",
+    "icon_label": "Icono",
+    "icon_placeholder": "Nombre de icono Lucide (ej. Leaf)",
+    "color_label": "Color",
+    "delete_confirm": "¿Eliminar esta categoría?"
+  },
+  "validation": {
+    "title_required": "El título es obligatorio",
+    "description_required": "La descripción es obligatoria",
+    "comment_required": "El comentario no puede estar vacío",
+    "url_required": "La URL es obligatoria",
+    "name_required": "El nombre es obligatorio",
+    "file_required": "El archivo es obligatorio"
+  },
+  "page_meta": {
+    "outcomes": {
+      "title": "Tablero de Resultados"
+    },
+    "create_challenge": {
+      "title": "Crear Desafío"
+    },
+    "campaigns": {
+      "title": "Campañas"
+    }
+  },
+  "challenge_detail": {
+    "actions": "Acciones del desafío"
+  },
+  "confirm": {
+    "delete_task": "¿Eliminar esta tarea? Esto no se puede deshacer.",
+    "delete_message": "¿Eliminar este mensaje? Esto no se puede deshacer."
+  },
   "challengeTitle": "Challenge",
   "disabledTitle": "Las ideas no están activadas",
   "disabledSubtitle": "Este espacio comunitario no ha activado los retos de ideas.",
@@ -36,14 +478,6 @@
     "voting": "Voting",
     "evaluating": "Evaluating",
     "closed": "Closed"
-  },
-  "status": {
-    "draft": "Draft",
-    "open": "Open",
-    "voting": "Voting",
-    "evaluating": "Evaluating",
-    "closed": "Closed",
-    "archived": "Archived"
   },
   "ideaStatus": {
     "draft": "Draft",

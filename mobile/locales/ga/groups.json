@@ -382,5 +382,22 @@
     "featured": "Faoi thrácht",
     "members": "Baill",
     "joined": "Ball de"
+  },
+  "invite_accept": {
+    "title": "Cuireadh grúpa",
+    "description": "Athbhreithnigh agus glac le do chuireadh chun dul isteach sa ghrúpa seo.",
+    "checking": "An cuireadh á sheiceáil...",
+    "accept": "Glac leis an gcuireadh",
+    "accepting": "Ag dul isteach...",
+    "success_title": "Glacadh leis an gcuireadh",
+    "success_description": "Tá tú i do bhall den ghrúpa seo anois.",
+    "error_invalid": "Tá an nasc cuiridh seo neamhbhailí nó níl sé ar fáil a thuilleadh.",
+    "error_expired": "Tá an cuireadh seo imithe in éag.",
+    "error_revoked": "Cúlghaireadh an cuireadh seo.",
+    "error_email_mismatch": "Baineann an cuireadh ríomhphoist seo le cuntas eile.",
+    "error_capacity": "Tá teorainn na mball bainte amach ag an ngrúpa seo.",
+    "error_limit": "Tá an líon uasta grúpaí ar féidir leat dul isteach iontu bainte amach agat.",
+    "error_group_unavailable": "Níl an grúpa seo ag glacadh le baill faoi láthair.",
+    "go_to_group": "Téigh chuig an ngrúpa"
   }
 }

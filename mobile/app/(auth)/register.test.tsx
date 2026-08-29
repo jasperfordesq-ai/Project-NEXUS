@@ -258,7 +258,7 @@ describe('RegisterScreen', () => {
       terms_accepted: true,
       form_started_at: expect.any(Number),
     }));
-    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/(tabs)/home'));
+    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/(modals)/onboarding'));
   });
 
   it('submits backend-required registration fields and shows pending verification when no token is issued', async () => {

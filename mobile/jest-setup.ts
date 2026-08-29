@@ -38,16 +38,22 @@ import { Uniwind } from 'uniwind';
 // variable store. Seed the HeroUI Native tokens exercised by shared controls so
 // useThemeColor returns real colours instead of the library's `invalid` sentinel.
 const heroUiTestTheme = {
+  '--color-foreground': '#111827',
   '--color-accent': '#6366f1',
   '--color-accent-foreground': '#ffffff',
+  '--color-accent-soft-foreground': '#312e81',
   '--color-accent-hover': '#4f46e5',
   '--color-default-hover': '#e5e7eb',
   '--color-default-foreground': '#111827',
+  '--color-default-soft-foreground': '#374151',
   '--color-danger': '#dc2626',
   '--color-danger-hover': '#b91c1c',
   '--color-danger-soft-hover': '#fee2e2',
+  '--color-danger-soft-foreground': '#991b1b',
   '--color-success': '#16a34a',
+  '--color-success-soft-foreground': '#166534',
   '--color-warning': '#d97706',
+  '--color-warning-soft-foreground': '#92400e',
 };
 
 Uniwind.updateCSSVariables('light', heroUiTestTheme);
@@ -56,6 +62,7 @@ Uniwind.updateCSSVariables('dark', heroUiTestTheme);
 i18n.use(initReactI18next).init({
   // Suppress the i18next "made possible by Locize" promo log in tests
   debug: false,
+  showSupportNotice: false,
   resources: {
     en: {
       common: enCommon,

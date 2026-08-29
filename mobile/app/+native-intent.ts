@@ -48,6 +48,7 @@ const KNOWN_SECTIONS = new Set([
   'register',
   'verify-email',
   'verify-identity',
+  'verify-identity-optional',
   'marketplace',
   'coupons',
   'jobs',
@@ -74,6 +75,12 @@ const KNOWN_SECTIONS = new Set([
   'leaderboard',
   'nexus-score',
   'linked-accounts',
+  'courses',
+  'podcasts',
+  'onboarding',
+  'clubs',
+  'venues',
+  'donations',
 ]);
 
 /**
@@ -112,6 +119,11 @@ export function isBrowserOnlyPath(rawPath: string | null): boolean {
   const segments = pathname.split('/').filter(Boolean).map(decodeURIComponent);
   if (segments.length === 0) return false;
   if (BROWSER_ONLY_PATHS.has(segments.join('/'))) return true;
+  // `join/:code` is the Care in Community invite redemption route, which is
+  // deliberately absent from both adults-only native apps. Support-action tokens
+  // are public, side-effecting linked-account confirmations and must finish on web.
+  if (segments[0] === 'join' && segments.length === 2) return true;
+  if (segments[0] === 'support-actions' && segments[1] === 'confirm' && segments.length === 3) return true;
   return BROWSER_ONLY_SECTIONS.has(segments[0]!);
 }
 
@@ -153,9 +165,17 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     case 'events':
       if (isCreateAlias(id)) return appendParams('/(modals)/new-event', params);
+      if (id && detail === 'manage') {
+        return appendParams('/(modals)/event-manage', {
+          ...params,
+          id,
+          ...(segments[2] ? { section: segments[2] } : {}),
+        });
+      }
       return id ? appendParams('/(modals)/event-detail', { ...params, id }) : '/(tabs)/events';
 
     case 'groups':
+      if (id === 'invite' && detail) return appendParams('/(modals)/group-invite', { ...params, token: detail });
       if (isCreateAlias(id)) return appendParams('/(modals)/new-group', params);
       return id ? appendParams('/(modals)/group-detail', { ...params, id }) : '/(modals)/groups';
 
@@ -182,7 +202,19 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     case 'ideation':
     case 'challenges':
+      if (section === 'ideation' && id === 'campaigns') {
+        return detail
+          ? appendParams('/(modals)/ideation-campaign-detail', { ...params, id: detail })
+          : appendParams('/(modals)/ideation-campaigns', params);
+      }
+      if (section === 'ideation' && id === 'outcomes') return appendParams('/(modals)/ideation-outcomes', params);
       if (isCreateAlias(id)) return appendParams('/(modals)/new-challenge', params);
+      if (section === 'ideation' && id && detail === 'edit') {
+        return appendParams('/(modals)/new-challenge', { ...params, id, mode: 'edit' });
+      }
+      if (section === 'ideation' && id && detail === 'ideas' && segments[2]) {
+        return appendParams('/(modals)/ideation-idea', { ...params, challengeId: id, id: segments[2] });
+      }
       return id ? appendParams('/(modals)/ideation-detail', { ...params, id }) : '/(modals)/ideation';
 
     case 'explore':
@@ -238,6 +270,11 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       // first, because the Stripe handshake must finish in the browser that began it.
       return appendParams('/(modals)/verify-identity', params);
 
+    case 'verify-identity-optional':
+      // The optional web prompt is the same status journey. The native screen keeps
+      // paid verification actions disabled under the Play policy gate.
+      return appendParams('/(modals)/verify-identity', params);
+
     // -- Marketplace ---------------------------------------------------------
     case 'marketplace':
       return mapMarketplacePath(segments, params);
@@ -249,8 +286,12 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     // -- Jobs ----------------------------------------------------------------
     case 'jobs':
+      if (id === 'employers' && detail) return appendParams('/(modals)/member-profile', { ...params, id: detail });
       if (isCreateAlias(id)) return appendParams('/(modals)/new-job', params);
       if (id === 'alerts') return appendParams('/(modals)/jobs', { ...params, view: 'alerts' });
+      if (id === 'my-applications') {
+        return appendParams('/(modals)/jobs', { ...params, view: 'my-applications' });
+      }
       if (id && detail === 'analytics') return appendParams('/(modals)/job-analytics', { ...params, id });
       if (id && detail === 'edit') return appendParams('/(modals)/edit-job', { ...params, id });
       if (id && detail === 'kanban') return appendParams('/(modals)/job-pipeline', { ...params, id });
@@ -262,7 +303,14 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     // -- Volunteering --------------------------------------------------------
     case 'volunteering':
+      if (id === 'checkin' && detail) return appendParams('/(modals)/volunteer-checkin', { ...params, token: detail });
       if (isCreateAlias(id)) return appendParams('/(modals)/new-volunteering', params);
+      if (id === 'my-applications') {
+        return appendParams('/(modals)/volunteering', { ...params, tab: 'applications' });
+      }
+      if (id === 'my-organisations') {
+        return appendParams('/(modals)/volunteering', { ...params, tab: 'organisations' });
+      }
       if (id === 'opportunities' && detail) {
         return appendParams('/(modals)/volunteering-detail', { ...params, id: detail });
       }
@@ -343,10 +391,52 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       return appendParams('/(modals)/connections', params);
 
     case 'matches':
+      if (id === 'preferences') {
+        return appendParams('/(modals)/match-preferences', params);
+      }
       return appendParams('/(modals)/matches', params);
 
     case 'reviews':
+      if (id === 'create') {
+        return appendParams('/(modals)/reviews', { ...params, tab: 'pending' });
+      }
       return appendParams('/(modals)/reviews', params);
+
+    case 'courses':
+      if (id === 'my-learning') {
+        return appendParams('/(modals)/courses', { ...params, tab: 'learning' });
+      }
+      if (id && detail === 'learn') {
+        return appendParams('/(modals)/course-player', { ...params, id });
+      }
+      return id
+        ? appendParams('/(modals)/course-detail', { ...params, id })
+        : appendParams('/(modals)/courses', params);
+
+    case 'podcasts':
+      if (id && detail) {
+        return appendParams('/(modals)/podcast-episode', { ...params, showSlug: id, episodeSlug: detail });
+      }
+      return id
+        ? appendParams('/(modals)/podcast-show', { ...params, slug: id })
+        : appendParams('/(modals)/podcasts', params);
+
+    case 'onboarding':
+      return appendParams('/(modals)/onboarding', params);
+
+    case 'clubs':
+      return appendParams('/(modals)/clubs', params);
+
+    case 'venues':
+      if (id === 'checkin' && detail) return appendParams('/(modals)/venue-checkin', { ...params, token: detail });
+      return id === 'pass'
+        ? appendParams('/(modals)/venue-pass', params)
+        : appendParams('/(modals)/venues', params);
+
+    case 'donations':
+      return id && detail === 'receipt'
+        ? appendParams('/(modals)/donation-receipt', { ...params, id })
+        : null;
 
     case 'saved':
       return appendParams('/(modals)/profile-collections', { ...params, scope: 'saved' });

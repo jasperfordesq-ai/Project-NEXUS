@@ -1,6 +1,443 @@
 {
+  "page_title": "Ideenwettbewerbe",
   "title": "Ideas",
   "subtitle": "Entdecke Herausforderungen, reiche Ideen ein und stimme über Vorschläge ab.",
+  "page_description": "Durchstöbere die Herausforderungen der Gemeinschaft, reiche Ideen ein und stimme über Lösungen ab. Hilf mit, die Zukunft deiner Gemeinschaft zu gestalten.",
+  "loading": "Wird geladen...",
+  "tabs_filter_aria": "Herausforderungen filtern",
+  "actions": {
+    "retry": "Erneut versuchen"
+  },
+  "tabs": {
+    "all": "Alle",
+    "open": "Offen",
+    "voting": "Abstimmung",
+    "evaluating": "Bewertung",
+    "closed": "Geschlossen",
+    "archived": "Archiviert",
+    "favorites": "Meine Favoriten"
+  },
+  "status": {
+    "draft": "Draft",
+    "open": "Open",
+    "voting": "Voting",
+    "evaluating": "Evaluating",
+    "closed": "Closed",
+    "archived": "Archived"
+  },
+  "idea_status": {
+    "draft": "Entwurf",
+    "submitted": "Eingereicht",
+    "shortlisted": "In der engeren Auswahl",
+    "winner": "Gewinner",
+    "withdrawn": "Zurückgezogen"
+  },
+  "challenge": {
+    "ideas_count": "{{count}} Ideen",
+    "ideas_count_one": "{{count}} Idee",
+    "submission_deadline": "Einreichungsfrist {{date}}",
+    "voting_deadline": "Abstimmung endet {{date}}",
+    "prize": "Preis",
+    "category": "Kategorie",
+    "max_ideas": "Max. {{count}} Ideen pro Person",
+    "created_by": "Erstellt von {{name}}",
+    "no_deadline": "Keine Frist",
+    "evaluation_criteria": "Bewertungskriterien",
+    "outcome": "Ergebnis",
+    "team_links": "Projektteams",
+    "ideas_count_other": "{{count}} Ideen",
+    "max_ideas_one": "Max. {{count}} Ideen pro Person",
+    "max_ideas_other": "Max. {{count}} Ideen pro Person"
+  },
+  "challenges": {
+    "title": "Wettbewerbe",
+    "empty_title": "Noch keine Wettbewerbe",
+    "empty_description": "Es gibt derzeit keine Ideenwettbewerbe. Schauen Sie bald wieder vorbei!",
+    "empty_filtered": "Keine Wettbewerbe entsprechen dem ausgewählten Filter.",
+    "create": "Wettbewerb erstellen",
+    "load_error": "Wettbewerbe konnten nicht geladen werden",
+    "load_more": "Mehr laden",
+    "loading": "Herausforderung wird geladen..."
+  },
+  "ideas": {
+    "title": "Ideen",
+    "empty_title": "Noch keine Ideen",
+    "empty_description": "Seien Sie der Erste, der eine Idee für diesen Wettbewerb teilt!",
+    "submit": "Idee einreichen",
+    "submit_title": "Ihre Idee einreichen",
+    "sort_votes": "Meiste Stimmen",
+    "sort_newest": "Neueste",
+    "vote": "Abstimmen",
+    "unvote": "Stimme zurücknehmen",
+    "votes": "{{count}} Stimmen",
+    "votes_one": "{{count}} Stimme",
+    "comments": "{{count}} Kommentare",
+    "comments_one": "{{count}} Kommentar",
+    "load_more": "Mehr Ideen laden",
+    "back_to_challenge": "Zurück zum Wettbewerb",
+    "your_ideas": "Ihre Ideen: {{count}}/{{max}}",
+    "edit": "Idee bearbeiten",
+    "delete": "Idee löschen",
+    "delete_confirm": "Möchten Sie diese Idee wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "load_error": "Ideen konnten nicht geladen werden",
+    "save_draft": "Entwurf speichern",
+    "publish_draft": "Idee veröffentlichen",
+    "draft_saved": "Entwurf gespeichert",
+    "draft": "Entwurf",
+    "your_drafts": "Ihre Entwürfe",
+    "untitled_draft": "Unbenannter Entwurf",
+    "draft_updated": "Aktualisiert {{date}}",
+    "draft_created": "Erstellt {{date}}",
+    "new_idea": "Neue Idee",
+    "sort_label": "Ideen sortieren",
+    "loading": "Ideen werden geladen...",
+    "your_ideas_one": "Ihre Ideen: {{count}}/{{max}}",
+    "your_ideas_other": "Ihre Ideen: {{count}}/{{max}}",
+    "comments_other": "{{count}} Kommentare"
+  },
+  "idea_detail": {
+    "page_title": "Ideendetails",
+    "back_to_challenge": "Zurück zum Wettbewerb",
+    "submitted_by": "Eingereicht von {{name}}",
+    "submitted_on": "Eingereicht am {{date}}",
+    "actions": "Ideenaktionen"
+  },
+  "comments": {
+    "title": "Kommentare",
+    "empty_title": "Noch keine Kommentare",
+    "empty_description": "Seien Sie der Erste, der seine Gedanken zu dieser Idee teilt.",
+    "add_label": "Fügen Sie einen Kommentar hinzu",
+    "add_placeholder": "Teilen Sie Ihre Gedanken...",
+    "add_button": "Kommentar posten",
+    "delete": "Löschen",
+    "delete_confirm": "Möchten Sie diesen Kommentar wirklich löschen?",
+    "load_more": "Mehr Kommentare laden",
+    "load_error": "Kommentare konnten nicht geladen werden",
+    "loading": "Kommentare werden geladen..."
+  },
+  "form": {
+    "title_label": "Titel",
+    "title_placeholder": "Geben Sie einen klaren, beschreibenden Titel ein",
+    "description_label": "Beschreibung",
+    "description_placeholder": "Beschreiben Sie den Wettbewerb oder Ihre Idee im Detail",
+    "description_helper": "Beschreiben Sie das Problem klar, einschliesslich wer betroffen ist, warum es wichtig ist und wie eine erfolgreiche Lösung aussieht",
+    "category_label": "Kategorie",
+    "category_placeholder": "Kategorie auswählen",
+    "category_free_label": "Kategorie (Freitext)",
+    "category_free_placeholder": "z.B. Umwelt, Technologie, Gemeinschaft",
+    "prize_label": "Preisbeschreibung",
+    "prize_placeholder": "Beschreiben Sie, was der Gewinner erhält (optional)",
+    "prize_helper": "Anreize steigern die Beteiligung — denken Sie an Zeitguthaben, Anerkennung oder Umsetzungsunterstützung",
+    "submission_deadline_label": "Einreichungsfrist",
+    "voting_deadline_label": "Abstimmungsfrist",
+    "max_ideas_label": "Max. Ideen pro Benutzer",
+    "max_ideas_placeholder": "Leer lassen für unbegrenzt",
+    "max_ideas_helper": "Die Begrenzung der Ideen pro Person fördert qualitativ hochwertigere Einreichungen",
+    "status_label": "Anfangsstatus",
+    "evaluation_criteria_label": "Bewertungskriterien",
+    "evaluation_criteria_placeholder": "Kriterium hinzufügen (Enter drücken)",
+    "evaluation_criteria_helper": "Definieren Sie, wie Ideen bewertet werden",
+    "template_label": "Von Vorlage starten",
+    "template_placeholder": "Vorlage auswählen (optional)",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "create": "Wettbewerb erstellen",
+    "creating": "Wird erstellt...",
+    "update": "Wettbewerb aktualisieren",
+    "updating": "Wird aktualisiert...",
+    "cancel": "Abbrechen"
+  },
+  "create_page": {
+    "page_title": "Wettbewerb erstellen",
+    "title": "Ideenwettbewerb erstellen",
+    "subtitle": "Stellen Sie eine Problemstellung für Ihre Gemeinschaft zur Lösung bereit"
+  },
+  "edit_page": {
+    "page_title": "Wettbewerb bearbeiten",
+    "title": "Ideenwettbewerb bearbeiten"
+  },
+  "admin": {
+    "change_status": "Status ändern",
+    "set_open": "Für Einreichungen öffnen",
+    "set_voting": "Zur Abstimmung verschieben",
+    "set_evaluating": "Zur Bewertung verschieben",
+    "set_closed": "Wettbewerb schliessen",
+    "set_archived": "Wettbewerb archivieren",
+    "reopen": "Wettbewerb wiedereröffnen",
+    "unarchive": "Archivierung aufheben",
+    "set_shortlisted": "In engere Auswahl nehmen",
+    "set_winner": "Als Gewinner markieren",
+    "remove_status": "Auf Eingereicht zurücksetzen",
+    "edit_challenge": "Wettbewerb bearbeiten",
+    "delete_challenge": "Wettbewerb löschen",
+    "delete_confirm": "Möchten Sie diesen Wettbewerb wirklich löschen? Alle Ideen, Stimmen und Kommentare werden dauerhaft entfernt.",
+    "edit_campaign": "Kampagne bearbeiten",
+    "delete_campaign": "Kampagne löschen",
+    "delete_campaign_confirm": "Sind Sie sicher, dass Sie diese Kampagne löschen möchten? Verknüpfte Wettbewerbe bleiben verfügbar.",
+    "status_updated": "Wettbewerbsstatus aktualisiert",
+    "idea_status_updated": "Ideenstatus aktualisiert"
+  },
+  "toast": {
+    "challenge_created": "Wettbewerb erfolgreich erstellt",
+    "challenge_updated": "Wettbewerb erfolgreich aktualisiert",
+    "challenge_deleted": "Wettbewerb erfolgreich gelöscht",
+    "idea_submitted": "Idee erfolgreich eingereicht",
+    "idea_updated": "Idee erfolgreich aktualisiert",
+    "idea_deleted": "Idee erfolgreich gelöscht",
+    "vote_added": "Stimme registriert",
+    "vote_removed": "Stimme entfernt",
+    "comment_added": "Kommentar gepostet",
+    "comment_deleted": "Kommentar gelöscht",
+    "media_added": "Medien hinzugefügt",
+    "media_deleted": "Medien entfernt",
+    "category_created": "Kategorie erstellt",
+    "category_updated": "Kategorie aktualisiert",
+    "category_deleted": "Kategorie gelöscht",
+    "tag_created": "Schlagwort erstellt",
+    "tag_deleted": "Schlagwort gelöscht",
+    "campaign_created": "Kampagne erstellt",
+    "campaign_updated": "Kampagne aktualisiert",
+    "campaign_deleted": "Kampagne gelöscht",
+    "template_created": "Vorlage erstellt",
+    "template_updated": "Vorlage aktualisiert",
+    "template_deleted": "Vorlage gelöscht",
+    "outcome_saved": "Ergebnis gespeichert",
+    "task_created": "Aufgabe erstellt",
+    "task_updated": "Aufgabe aktualisiert",
+    "task_deleted": "Aufgabe gelöscht",
+    "document_uploaded": "Dokument hochgeladen",
+    "document_deleted": "Dokument gelöscht",
+    "chatroom_created": "Kanal erstellt",
+    "chatroom_deleted": "Kanal gelöscht",
+    "message_posted": "Nachricht gepostet",
+    "template_applied": "Vorlage erfolgreich angewendet",
+    "error_generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  },
+  "favorites": {
+    "add": "Zu Favoriten hinzufügen",
+    "remove": "Aus Favoriten entfernen",
+    "my_favorites": "Meine Favoriten",
+    "empty_title": "Noch keine Favoriten",
+    "empty_description": "Markieren Sie einen Wettbewerb mit einem Herz, um ihn zu Ihren Favoriten hinzuzufügen."
+  },
+  "views": "Aufrufe",
+  "featured": "Hervorgehoben",
+  "search": {
+    "label": "Wettbewerbe durchsuchen",
+    "placeholder": "Wettbewerbe nach Titel oder Beschreibung durchsuchen...",
+    "clear_tags": "Schlagwörter löschen",
+    "no_results": "Keine Wettbewerbe entsprechen Ihrer Suche",
+    "clear": "Suche löschen"
+  },
+  "tags": {
+    "label": "Schlagwörter",
+    "placeholder": "Schlagwörter hinzufügen (Enter drücken)",
+    "helper": "Fügen Sie Fähigkeiten oder Themen hinzu, die für diesen Wettbewerb relevant sind",
+    "interests": "Interessengebiete",
+    "skills": "Benötigte Fähigkeiten",
+    "general": "Allgemeine Schlagwörter"
+  },
+  "cover_image": {
+    "label": "Titelbild-URL",
+    "placeholder": "https://example.com/bild.jpg",
+    "helper": "Bannerbild für den Wettbewerb (empfohlen 600x400)"
+  },
+  "guidance": {
+    "title": "Tipps für einen grossartigen Wettbewerb",
+    "intro": "Ein gut formulierter Wettbewerb inspiriert bessere Ideen. Hier sind einige Tipps, die Ihnen helfen, eine effektive Problemstellung zu erstellen.",
+    "tips": {
+      "clear_problem": {
+        "title": "🎯 Definieren Sie ein klares Problem",
+        "description": "Benennen Sie das spezifische Problem, das die Gemeinschaft angehen soll. Vermeiden Sie vage oder zu breit gefasste Aussagen."
+      },
+      "scope": {
+        "title": "📏 Setzen Sie einen realistischen Rahmen",
+        "description": "Definieren Sie klare Grenzen und Einschränkungen, damit Ideen fokussiert und umsetzbar bleiben."
+      },
+      "criteria": {
+        "title": "⚖️ Erklären Sie die Bewertungskriterien",
+        "description": "Teilen Sie den Teilnehmern mit, wie Ideen bewertet werden — Machbarkeit, Kreativität, Wirkung oder Wirtschaftlichkeit."
+      },
+      "engagement": {
+        "title": "💡 Fördern Sie die Teilnahme",
+        "description": "Verwenden Sie einladende Sprache. Fügen Sie einen Preis oder eine Anerkennung hinzu, um Einreichungen zu motivieren."
+      }
+    },
+    "examples_toggle": "Beispiele für starke vs. schwache Wettbewerbe anzeigen ▸",
+    "example_good": {
+      "label": "✅ Starker Wettbewerb:",
+      "text": "Wie können wir die Lebensmittelverschwendung in unserer Gemeinschaft im nächsten Jahr um 25% reduzieren? Wir suchen nach praktischen, kostengünstigen Ideen, die lokale Unternehmen und Bewohner gemeinsam umsetzen können."
+    },
+    "example_weak": {
+      "label": "❌ Schwacher Wettbewerb:",
+      "text": "Wir brauchen Ideen zum Thema Umwelt.",
+      "why": "Zu vage — kein spezifisches Problem, keine Einschränkungen, keine Erfolgskriterien."
+    }
+  },
+  "duplicate": {
+    "button": "Wettbewerb duplizieren",
+    "success": "Wettbewerb erfolgreich dupliziert",
+    "error": "Wettbewerb konnte nicht dupliziert werden"
+  },
+  "idea_image": "Ideenbild",
+  "media": {
+    "title": "Anhänge",
+    "add": "Anhang hinzufügen",
+    "add_image": "Bild hinzufügen",
+    "add_link": "Link hinzufügen",
+    "url_label": "URL",
+    "url_placeholder": "https://...",
+    "caption_label": "Bildunterschrift",
+    "caption_placeholder": "Kurze Beschreibung (optional)",
+    "type_label": "Typ",
+    "type_image": "Bild",
+    "type_video": "Video",
+    "type_document": "Dokument",
+    "type_link": "Link",
+    "delete_confirm": "Diesen Anhang entfernen?",
+    "empty": "Keine Anhänge"
+  },
+  "convert_to_group": {
+    "button": "Team erstellen",
+    "title": "Projektteam aus Idee erstellen",
+    "description": "Verwandeln Sie diese Gewinner-Idee in ein Projektteam, in dem Mitglieder zusammenarbeiten, Aufgaben verwalten, Dokumente teilen und chatten können.",
+    "name_label": "Teamname",
+    "description_label": "Teambeschreibung",
+    "visibility_label": "Sichtbarkeit",
+    "visibility_public": "Öffentlich",
+    "visibility_private": "Privat",
+    "confirm": "Team erstellen",
+    "creating": "Wird erstellt...",
+    "success": "Projektteam erfolgreich erstellt! Weiterleitung...",
+    "error": "Team konnte nicht erstellt werden",
+    "already_converted": "Diese Idee wurde bereits in ein Team umgewandelt"
+  },
+  "campaigns": {
+    "title": "Kampagnen",
+    "page_title": "Kampagnen",
+    "empty_title": "Noch keine Kampagnen",
+    "empty_description": "Erstellen Sie eine Kampagne, um verwandte Wettbewerbe zu gruppieren.",
+    "create": "Kampagne erstellen",
+    "challenges_count": "{{count}} Wettbewerbe",
+    "challenges_count_one": "{{count}} Wettbewerb",
+    "link_challenge": "Wettbewerb verknüpfen",
+    "unlink_challenge": "Wettbewerb trennen",
+    "confirm_unlink": "Bestätigen",
+    "confirm_unlink_label": "Trennung bestätigen",
+    "fallback_title": "Kampagne",
+    "feature_not_available": "Ideensammlung nicht verfügbar",
+    "feature_not_available_desc": "Die Ideensammlungsfunktion ist für diese Community nicht aktiviert. Wende dich an deinen Zeitbank-Administrator, um mehr zu erfahren.",
+    "retry": "Erneut versuchen",
+    "challenges_count_other": "{{count}} Wettbewerbe"
+  },
+  "templates": {
+    "title": "Wettbewerbsvorlagen",
+    "page_title": "Wettbewerbsvorlagen",
+    "empty_title": "Noch keine Vorlagen",
+    "empty_description": "Erstellen Sie wiederverwendbare Vorlagen, um die Erstellung von Wettbewerben zu vereinfachen.",
+    "create": "Vorlage erstellen",
+    "use_template": "Diese Vorlage verwenden",
+    "start_from_template": "Von Vorlage starten"
+  },
+  "outcomes": {
+    "title": "Wirkungsverfolgung",
+    "page_title": "Wirkungs-Dashboard",
+    "empty_title": "Noch keine Ergebnisse",
+    "status_label": "Status",
+    "implementation_status_label": "Umsetzungsstatus",
+    "status_not_started": "Nicht begonnen",
+    "status_in_progress": "In Bearbeitung",
+    "status_implemented": "Umgesetzt",
+    "status_abandoned": "Aufgegeben",
+    "winning_idea": "Gewinneridee",
+    "impact_description": "Wirkungsbeschreibung",
+    "impact_placeholder": "Beschreiben Sie die Wirkung und Ergebnisse...",
+    "save": "Ergebnis speichern",
+    "saving": "Wird gespeichert...",
+    "dashboard": "Wirkungs-Dashboard",
+    "total_challenges": "Gesamt verfolgt",
+    "implemented_count": "Umgesetzt",
+    "in_progress_count": "In Bearbeitung",
+    "edit": "Ergebnisse bearbeiten"
+  },
+  "tasks": {
+    "title": "Aufgaben",
+    "status_label": "Status",
+    "priority_label": "Priorität",
+    "create": "Aufgabe hinzufügen",
+    "empty_title": "Noch keine Aufgaben",
+    "empty_description": "Erstellen Sie Aufgaben, um die Arbeit Ihres Teams zu organisieren.",
+    "status_todo": "Zu erledigen",
+    "status_in_progress": "In Bearbeitung",
+    "status_done": "Erledigt",
+    "priority_low": "Niedrig",
+    "priority_medium": "Mittel",
+    "priority_high": "Hoch",
+    "priority_urgent": "Dringend",
+    "assigned_to": "Zugewiesen an",
+    "unassigned": "Nicht zugewiesen",
+    "due_date": "Fälligkeitsdatum",
+    "overdue": "Überfällig",
+    "stats": "Aufgabenstatistik"
+  },
+  "documents": {
+    "title": "Dokumente",
+    "upload": "Dokument hochladen",
+    "empty_title": "Noch keine Dokumente",
+    "empty_description": "Laden Sie Dateien hoch, um sie mit Ihrem Team zu teilen.",
+    "delete_confirm": "Dieses Dokument löschen?",
+    "max_size": "Maximale Dateigrösse: 10 MB",
+    "download": "Herunterladen"
+  },
+  "chatrooms": {
+    "title": "Kanäle",
+    "create": "Kanal erstellen",
+    "general": "Allgemein",
+    "empty_title": "Noch keine Nachrichten",
+    "empty_description": "Starten Sie die Unterhaltung!",
+    "message_placeholder": "Nachricht eingeben...",
+    "send": "Senden",
+    "delete_channel": "Kanal löschen",
+    "delete_channel_confirm": "Diesen Kanal und alle Nachrichten löschen?"
+  },
+  "categories": {
+    "title": "Kategorien",
+    "manage": "Kategorien verwalten",
+    "all": "Alle Kategorien",
+    "create": "Kategorie hinzufügen",
+    "name_label": "Kategoriename",
+    "name_placeholder": "z.B. Umwelt",
+    "icon_label": "Symbol",
+    "icon_placeholder": "Lucide-Symbolname (z.B. Leaf)",
+    "color_label": "Farbe",
+    "delete_confirm": "Diese Kategorie löschen?"
+  },
+  "validation": {
+    "title_required": "Titel ist erforderlich",
+    "description_required": "Beschreibung ist erforderlich",
+    "comment_required": "Kommentar darf nicht leer sein",
+    "url_required": "URL ist erforderlich",
+    "name_required": "Name ist erforderlich",
+    "file_required": "Datei ist erforderlich"
+  },
+  "page_meta": {
+    "outcomes": {
+      "title": "Ergebnisse-Dashboard"
+    },
+    "create_challenge": {
+      "title": "Herausforderung erstellen"
+    },
+    "campaigns": {
+      "title": "Kampagnen"
+    }
+  },
+  "challenge_detail": {
+    "actions": "Challenge-Aktionen"
+  },
+  "confirm": {
+    "delete_task": "Diese Aufgabe löschen? Dies kann nicht rückgängig gemacht werden.",
+    "delete_message": "Diese Nachricht löschen? Dies kann nicht rückgängig gemacht werden."
+  },
   "challengeTitle": "Challenge",
   "disabledTitle": "Ideen sind nicht aktiviert",
   "disabledSubtitle": "In diesem Gemeinschaftsbereich sind Ideen-Herausforderungen nicht aktiviert.",
@@ -36,14 +473,6 @@
     "voting": "Voting",
     "evaluating": "Evaluating",
     "closed": "Closed"
-  },
-  "status": {
-    "draft": "Draft",
-    "open": "Open",
-    "voting": "Voting",
-    "evaluating": "Evaluating",
-    "closed": "Closed",
-    "archived": "Archived"
   },
   "ideaStatus": {
     "draft": "Draft",

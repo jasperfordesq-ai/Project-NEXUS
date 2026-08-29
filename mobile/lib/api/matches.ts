@@ -109,6 +109,62 @@ export interface MatchesResponse {
   meta: MatchesMeta;
 }
 
+export type MatchNotificationFrequency = 'daily' | 'fortnightly' | 'monthly' | 'never';
+
+export interface MatchPreferences {
+  max_distance_km: number;
+  min_match_score: number;
+  notification_frequency: MatchNotificationFrequency;
+  notify_hot_matches: boolean;
+  notify_mutual_matches: boolean;
+  matching_paused: boolean;
+  categories: number[];
+  availability: string[];
+}
+
+const DEFAULT_MATCH_PREFERENCES: MatchPreferences = {
+  max_distance_km: 25,
+  min_match_score: 50,
+  notification_frequency: 'monthly',
+  notify_hot_matches: true,
+  notify_mutual_matches: true,
+  matching_paused: false,
+  categories: [],
+  availability: [],
+};
+
+type MatchPreferencesEnvelope = Partial<MatchPreferences> | {
+  data?: Partial<MatchPreferences>;
+};
+
+function normalizeMatchPreferences(
+  response: MatchPreferencesEnvelope,
+): MatchPreferences {
+  const payload: Partial<MatchPreferences> = 'data' in response
+    ? response.data ?? {}
+    : response as Partial<MatchPreferences>;
+  const frequency = payload.notification_frequency;
+  const validFrequency: MatchNotificationFrequency =
+    frequency === 'daily'
+    || frequency === 'fortnightly'
+    || frequency === 'monthly'
+    || frequency === 'never'
+      ? frequency
+      : DEFAULT_MATCH_PREFERENCES.notification_frequency;
+
+  return {
+    ...DEFAULT_MATCH_PREFERENCES,
+    ...payload,
+    notification_frequency: validFrequency,
+    categories: Array.isArray(payload.categories)
+      ? payload.categories.filter((id: number): id is number => Number.isInteger(id))
+      : [],
+    availability: Array.isArray(payload.availability)
+      ? payload.availability.filter((slot: string): slot is string => typeof slot === 'string')
+      : [],
+  };
+}
+
 const SOURCE_TYPES: readonly MatchSourceType[] = ['listing', 'job', 'volunteering', 'group', 'event'];
 
 function sourceTypeOf(raw: RawMatch): MatchSourceType {
@@ -179,4 +235,19 @@ export async function getMatches(): Promise<MatchesResponse> {
 
 export function dismissMatch(listingId: number): Promise<unknown> {
   return api.post(`${API_V2}/matches/${listingId}/dismiss`, { reason: 'not_relevant' });
+}
+
+export async function getMatchPreferences(): Promise<MatchPreferences> {
+  const response = await api.get<MatchPreferencesEnvelope>(`${API_V2}/users/me/match-preferences`);
+  return normalizeMatchPreferences(response);
+}
+
+export async function updateMatchPreferences(
+  preferences: MatchPreferences,
+): Promise<MatchPreferences> {
+  const response = await api.put<MatchPreferencesEnvelope>(
+    `${API_V2}/users/me/match-preferences`,
+    preferences,
+  );
+  return normalizeMatchPreferences(response);
 }

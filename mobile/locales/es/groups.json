@@ -382,5 +382,22 @@
     "saveFailedTitle": "Grupo no guardado",
     "saveFailedDescription": "No se pudo guardar el grupo. Inténtalo de nuevo.",
     "failedDescription": "No se pudo crear el grupo. Inténtalo de nuevo."
+  },
+  "invite_accept": {
+    "title": "Invitación al grupo",
+    "description": "Revisa y acepta tu invitación para unirte a este grupo.",
+    "checking": "Comprobando la invitación...",
+    "accept": "Aceptar invitación",
+    "accepting": "Uniéndote...",
+    "success_title": "Invitación aceptada",
+    "success_description": "Ahora eres miembro de este grupo.",
+    "error_invalid": "Este enlace de invitación no es válido o ya no está disponible.",
+    "error_expired": "Esta invitación ha caducado.",
+    "error_revoked": "Esta invitación ha sido revocada.",
+    "error_email_mismatch": "Esta invitación por correo pertenece a otra cuenta.",
+    "error_capacity": "Este grupo ha alcanzado su límite de miembros.",
+    "error_limit": "Has alcanzado el número máximo de grupos a los que puedes unirte.",
+    "error_group_unavailable": "Este grupo no acepta miembros en este momento.",
+    "go_to_group": "Ir al grupo"
   }
 }

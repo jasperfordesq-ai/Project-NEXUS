@@ -27,6 +27,7 @@ export interface User {
   role: string;
   tenant_id: number;
   created_at: string | null;
+  onboarding_completed?: boolean;
 }
 
 /**

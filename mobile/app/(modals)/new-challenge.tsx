@@ -3,10 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -16,8 +16,9 @@ import { useAppToast } from '@/components/ui/AppToast';
 import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import { createIdeationChallenge, type IdeationStatus } from '@/lib/api/ideation';
+import { createIdeationChallenge, getIdeationChallenge, updateIdeationChallenge, type IdeationStatus } from '@/lib/api/ideation';
 import * as Haptics from '@/lib/haptics';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -52,6 +53,9 @@ function NewChallengeScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { id, mode } = useLocalSearchParams<{ id?: string; mode?: string }>();
+  const challengeId = Number(id ?? 0);
+  const isEdit = mode === 'edit' && challengeId > 0;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -61,6 +65,29 @@ function NewChallengeScreen() {
   const [maxIdeasPerUser, setMaxIdeasPerUser] = useState('');
   const [status, setStatus] = useState<ChallengeCreateStatus>('open');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEdit);
+
+  useEffect(() => {
+    if (!isEdit) return;
+    let active = true;
+    setIsLoading(true);
+    void getIdeationChallenge(challengeId)
+      .then((challenge) => {
+        if (!active) return;
+        setTitle(challenge.title ?? '');
+        setDescription(challenge.description ?? '');
+        setCategory(challenge.category ?? '');
+        setPrizeDescription(challenge.prize_description ?? '');
+        setSubmissionDeadline(challenge.submission_deadline?.slice(0, 16).replace('T', ' ') ?? '');
+        setVotingDeadline(challenge.voting_deadline?.slice(0, 16).replace('T', ' ') ?? '');
+        setMaxIdeasPerUser(challenge.max_ideas_per_user == null ? '' : String(challenge.max_ideas_per_user));
+      })
+      .catch((error) => {
+        if (active) showToast({ title: t('ideation:challenges.load_error'), description: error instanceof Error ? error.message : t('ideation:toast.error_generic'), variant: 'danger' });
+      })
+      .finally(() => { if (active) setIsLoading(false); });
+    return () => { active = false; };
+  }, [challengeId, isEdit, showToast, t]);
 
   if (!hasFeature('ideation_challenges')) {
     return (
@@ -97,16 +124,18 @@ function NewChallengeScreen() {
     setIsSubmitting(true);
     let successDestination: Parameters<typeof router.push>[0] | null = null;
     try {
-      const challenge = await createIdeationChallenge({
+      const payload = {
         title: trimmedTitle,
         description: trimmedDescription,
-        status,
         category: category.trim() || null,
         submission_deadline: submissionDate,
         voting_deadline: votingDate,
         prize_description: prizeDescription.trim() || null,
         max_ideas_per_user: maxIdeas,
-      });
+      };
+      const challenge = isEdit
+        ? await updateIdeationChallenge(challengeId, payload)
+        : await createIdeationChallenge({ ...payload, status });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (challenge.id) {
         successDestination = { pathname: '/(modals)/ideation-detail', params: { id: String(challenge.id) } };
@@ -129,7 +158,8 @@ function NewChallengeScreen() {
 
   return (
     <SafeAreaView testID="new-challenge-screen" className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
-      <AppTopBar title={t('ideation:create.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/ideation' as Href} />
+      <AppTopBar title={isEdit ? t('ideation:edit_page.title') : t('ideation:create.title')} backLabel={t('common:back')} fallbackHref={isEdit ? ({ pathname: '/(modals)/ideation-detail', params: { id: String(challengeId) } } as unknown as Href) : ('/(modals)/ideation' as Href)} />
+      {isLoading ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : (
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: theme.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -149,10 +179,10 @@ function NewChallengeScreen() {
                 </View>
                 <View className="min-w-0 flex-1 gap-1">
                   <Text className="text-xs font-semibold uppercase text-muted-foreground">
-                    {t('ideation:create.eyebrow')}
+                    {isEdit ? t('ideation:edit_page.page_title') : t('ideation:create.eyebrow')}
                   </Text>
                   <Text className="text-2xl font-bold leading-8" style={{ color: theme.text }}>
-                    {t('ideation:create.title')}
+                    {isEdit ? t('ideation:edit_page.title') : t('ideation:create.title')}
                   </Text>
                   <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
                     {t('ideation:create.subtitle')}
@@ -184,7 +214,7 @@ function NewChallengeScreen() {
                 onChangeText={setCategory}
                 placeholder={t('ideation:create.categoryPlaceholder')}
               />
-              <View className="gap-2">
+              {!isEdit ? <View className="gap-2">
                 <Text className="text-sm font-semibold" style={{ color: theme.text }}>
                   {t('ideation:create.statusLabel')}
                 </Text>
@@ -206,7 +236,7 @@ function NewChallengeScreen() {
                     </HeroButton>
                   ))}
                 </View>
-              </View>
+              </View> : null}
               <Input
                 label={t('ideation:create.submissionDeadlineLabel')}
                 value={submissionDeadline}
@@ -262,7 +292,7 @@ function NewChallengeScreen() {
         <FormActionFooter
           title={t('ideation:create.footerTitle')}
           subtitle={t('ideation:create.footerSubtitle')}
-          submitLabel={isSubmitting ? t('ideation:create.saving') : t('ideation:create.submit')}
+          submitLabel={isSubmitting ? (isEdit ? t('ideation:form.updating') : t('ideation:create.saving')) : (isEdit ? t('ideation:form.update') : t('ideation:create.submit'))}
           secondaryLabel={t('common:buttons.cancel')}
           icon="checkmark-outline"
           primary={primary}
@@ -271,6 +301,7 @@ function NewChallengeScreen() {
           onSecondary={() => router.back()}
         />
       </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 }

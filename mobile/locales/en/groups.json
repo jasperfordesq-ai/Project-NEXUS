@@ -382,5 +382,22 @@
     "saveFailedTitle": "Group not saved",
     "saveFailedDescription": "We could not save the group. Please try again.",
     "failedDescription": "We could not create the group. Please try again."
+  },
+  "invite_accept": {
+    "title": "Group Invitation",
+    "description": "Review and accept your invitation to join this group.",
+    "checking": "Checking invitation...",
+    "accept": "Accept Invitation",
+    "accepting": "Joining...",
+    "success_title": "Invitation Accepted",
+    "success_description": "You are now a member of this group.",
+    "error_invalid": "This invitation link is invalid or no longer available.",
+    "error_expired": "This invitation has expired.",
+    "error_revoked": "This invitation has been revoked.",
+    "error_email_mismatch": "This email invitation belongs to a different account.",
+    "error_capacity": "This group has reached its member limit.",
+    "error_limit": "You have reached the maximum number of groups you can join.",
+    "error_group_unavailable": "This group is not currently accepting members.",
+    "go_to_group": "Go to Group"
   }
 }

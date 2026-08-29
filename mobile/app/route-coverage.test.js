@@ -10,6 +10,8 @@ const appDir = __dirname;
 const projectDir = path.resolve(appDir, '..');
 
 const groupedRouteCoverage = {
+  'app/(modals)/clubs.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/donation-receipt.tsx': 'app/(modals)/member-module-routes.test.tsx',
   'app/(modals)/achievements.tsx': 'app/(modals)/gamification.test.tsx',
   'app/(modals)/edit-event.tsx': 'app/(modals)/new-event.test.tsx',
   'app/(modals)/edit-group.tsx': 'app/(modals)/new-group.test.tsx',
@@ -21,6 +23,11 @@ const groupedRouteCoverage = {
   'app/(modals)/federation-member.tsx': 'app/(modals)/member-profile.test.tsx',
   'app/(modals)/federation-partners.tsx': 'app/(modals)/federation-groups-events.test.tsx',
   'app/(modals)/groups.tsx': 'app/(tabs)/groups.test.tsx',
+  'app/(modals)/group-invite.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/ideation-campaign-detail.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/ideation-campaigns.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/ideation-idea.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/ideation-outcomes.tsx': 'app/(modals)/member-module-routes.test.tsx',
   'app/(modals)/leaderboard.tsx': 'app/(modals)/gamification.test.tsx',
   'app/(modals)/marketplace-become-partner.tsx': 'app/(modals)/marketplace-tool-routes.test.tsx',
   'app/(modals)/marketplace-coupon-detail.tsx': 'app/(modals)/marketplace-public-routes.test.tsx',
@@ -34,6 +41,10 @@ const groupedRouteCoverage = {
   'app/(modals)/marketplace-seller-onboarding.tsx': 'app/(modals)/marketplace-tool-routes.test.tsx',
   'app/(modals)/nexus-score.tsx': 'app/(modals)/gamification.test.tsx',
   'app/(modals)/search.tsx': 'app/(tabs)/search.test.tsx',
+  'app/(modals)/venue-checkin.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/venue-pass.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/venues.tsx': 'app/(modals)/member-module-routes.test.tsx',
+  'app/(modals)/volunteer-checkin.tsx': 'app/(modals)/member-module-routes.test.tsx',
 };
 
 function toProjectPath(filePath) {

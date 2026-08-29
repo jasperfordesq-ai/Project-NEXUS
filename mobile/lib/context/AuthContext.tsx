@@ -211,7 +211,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(bearerToken);
     setUser(response.user);
 
-    router.replace('/(tabs)/home');
+    router.replace(response.user.onboarding_completed === false
+      ? '/(modals)/onboarding'
+      : '/(tabs)/home');
 
     // Register device for push notifications (non-blocking, best-effort)
     registerPushBestEffort();

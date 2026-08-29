@@ -169,6 +169,15 @@ export default function MatchesScreen() {
                       </Text>
                     </View>
                   </View>
+                  <HeroButton
+                    size="sm"
+                    variant="secondary"
+                    accessibilityLabel={t('matchPreferences.heading')}
+                    onPress={() => router.push('/(modals)/match-preferences' as Href)}
+                  >
+                    <Ionicons name="options-outline" size={17} color={primary} />
+                    <HeroButton.Label>{t('matchPreferences.heading')}</HeroButton.Label>
+                  </HeroButton>
                 </HeroCard.Body>
               </HeroCard>
 
@@ -233,6 +242,8 @@ export default function MatchesScreen() {
                       ? t('common:buttons.retry')
                       : emptyReason === 'location'
                         ? t('matches.empty.locationAction')
+                        : emptyReason === 'paused'
+                          ? t('matches.empty.pausedAction')
                         : emptyReason === 'listings'
                           ? t('matches.empty.listingsAction')
                           : undefined
@@ -242,6 +253,8 @@ export default function MatchesScreen() {
                       ? () => void refresh()
                       : emptyReason === 'location'
                         ? () => router.push('/(modals)/edit-profile' as Href)
+                        : emptyReason === 'paused'
+                          ? () => router.push('/(modals)/match-preferences' as Href)
                         : emptyReason === 'listings'
                           ? () => router.push('/(modals)/new-exchange' as Href)
                           : undefined

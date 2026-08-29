@@ -40,6 +40,9 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
+import certPinHelpers from './check-cert-pins-lib.cjs';
+
+const { opensslCandidates } = certPinHelpers;
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const MOBILE_ROOT = path.resolve(HERE, '..');
@@ -54,6 +57,19 @@ const flag = (name, fallback) => {
 const host = flag('host', 'api.project-nexus.ie');
 const port = flag('port', '443');
 
+function resolveOpenSSL() {
+  const failures = [];
+  for (const candidate of opensslCandidates()) {
+    try {
+      execFileSync(candidate, ['version'], { stdio: 'ignore', timeout: 5_000 });
+      return candidate;
+    } catch (error) {
+      failures.push(`${candidate}: ${error.code ?? error.message}`);
+    }
+  }
+  throw new Error(`OpenSSL was not found (${failures.join('; ')})`);
+}
+
 /** Pins declared in the Android config. */
 function declaredPins() {
   const text = fs.readFileSync(CONFIG, 'utf8');
@@ -62,8 +78,9 @@ function declaredPins() {
 
 /** SHA-256 SPKI pins of every certificate the server actually serves, leaf first. */
 function livePins() {
+  const openssl = resolveOpenSSL();
   const chain = execFileSync(
-    'openssl',
+    openssl,
     ['s_client', '-servername', host, '-connect', `${host}:${port}`, '-showcerts'],
     { input: '', encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], timeout: 20_000 }
   );
@@ -73,13 +90,13 @@ function livePins() {
   if (certs.length === 0) throw new Error(`no certificates served by ${host}:${port}`);
 
   return certs.map((pem) => {
-    const der = execFileSync('openssl', ['x509', '-pubkey', '-noout'], { input: pem, encoding: 'utf8' });
+    const der = execFileSync(openssl, ['x509', '-pubkey', '-noout'], { input: pem, encoding: 'utf8' });
     // No `encoding` — execFileSync returns a Buffer, which is what DER and a raw
     // digest are. Passing encoding:'buffer' is not a thing and throws
     // "Unknown encoding: buffer"; passing 'utf8' would corrupt the bytes.
-    const spki = execFileSync('openssl', ['pkey', '-pubin', '-outform', 'DER'], { input: der });
-    const digest = execFileSync('openssl', ['dgst', '-sha256', '-binary'], { input: spki });
-    const subject = execFileSync('openssl', ['x509', '-noout', '-subject'], {
+    const spki = execFileSync(openssl, ['pkey', '-pubin', '-outform', 'DER'], { input: der });
+    const digest = execFileSync(openssl, ['dgst', '-sha256', '-binary'], { input: spki });
+    const subject = execFileSync(openssl, ['x509', '-noout', '-subject'], {
       input: pem,
       encoding: 'utf8',
     }).replace(/^subject=/, '').trim();

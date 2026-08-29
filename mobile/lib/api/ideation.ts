@@ -46,6 +46,7 @@ export interface IdeationCategory {
 export interface IdeationIdea {
   id: number;
   challenge_id: number;
+  user_id?: number;
   title: string;
   description: string;
   votes_count?: number;
@@ -59,6 +60,56 @@ export interface IdeationIdea {
     name: string;
     avatar_url?: string | null;
   } | null;
+}
+
+export interface IdeationComment {
+  id: number;
+  idea_id: number;
+  user_id: number;
+  body: string;
+  created_at?: string;
+  author?: {
+    id: number;
+    name: string;
+    avatar_url?: string | null;
+  } | null;
+}
+
+export interface IdeationCampaignChallenge extends IdeationChallenge {
+  views_count?: number;
+  favorites_count?: number;
+  is_featured?: boolean;
+}
+
+export interface IdeationCampaign {
+  id: number;
+  title: string;
+  description: string | null;
+  cover_image?: string | null;
+  challenges_count: number;
+  status?: string;
+  created_at?: string;
+  challenges?: IdeationCampaignChallenge[];
+}
+
+export type IdeationOutcomeStatus = 'not_started' | 'in_progress' | 'implemented' | 'abandoned';
+
+export interface IdeationOutcomeEntry {
+  challenge_id: number;
+  challenge_title: string;
+  winning_idea_title: string | null;
+  implementation_status: IdeationOutcomeStatus;
+  impact_description: string | null;
+  updated_at: string | null;
+}
+
+export interface IdeationOutcomeDashboard {
+  total: number;
+  implemented: number;
+  in_progress: number;
+  not_started: number;
+  abandoned: number;
+  outcomes: IdeationOutcomeEntry[];
 }
 
 export interface IdeationVoteResult {
@@ -135,6 +186,10 @@ export async function createIdeationChallenge(payload: CreateIdeationChallengePa
   return response as IdeationChallenge;
 }
 
+export async function updateIdeationChallenge(id: number, payload: Omit<CreateIdeationChallengePayload, 'status'>): Promise<IdeationChallenge> {
+  return unwrapData(await api.put<{ data?: IdeationChallenge } | IdeationChallenge>(`${API_V2}/ideation-challenges/${id}`, payload));
+}
+
 export async function getIdeationIdeas(challengeId: number, sort: IdeationSort = 'votes'): Promise<CursorPage<IdeationIdea>> {
   const response = await api.get<CollectionEnvelope<IdeationIdea>>(`${API_V2}/ideation-challenges/${challengeId}/ideas`, {
     per_page: '20',
@@ -159,6 +214,38 @@ export async function voteIdeationIdea(ideaId: number): Promise<IdeationVoteResu
   return response as IdeationVoteResult;
 }
 
+export async function getIdeationIdea(ideaId: number): Promise<IdeationIdea> {
+  return unwrapData(await api.get<{ data?: IdeationIdea } | IdeationIdea>(`${API_V2}/ideation-ideas/${ideaId}`));
+}
+
+export async function updateIdeationIdea(ideaId: number, payload: { title: string; description: string }): Promise<IdeationIdea> {
+  return unwrapData(await api.put<{ data?: IdeationIdea } | IdeationIdea>(`${API_V2}/ideation-ideas/${ideaId}`, payload));
+}
+
+export async function getIdeationComments(ideaId: number, cursor?: string | null): Promise<CursorPage<IdeationComment>> {
+  const params: Record<string, string> = { per_page: '20' };
+  if (cursor) params.cursor = cursor;
+  return normalizeCollection(await api.get<CollectionEnvelope<IdeationComment>>(`${API_V2}/ideation-ideas/${ideaId}/comments`, params));
+}
+
+export async function addIdeationComment(ideaId: number, body: string): Promise<IdeationComment> {
+  return unwrapData(await api.post<{ data?: IdeationComment } | IdeationComment>(`${API_V2}/ideation-ideas/${ideaId}/comments`, { body }));
+}
+
+export async function getIdeationCampaigns(cursor?: string | null): Promise<CursorPage<IdeationCampaign>> {
+  const params: Record<string, string> = { per_page: '20' };
+  if (cursor) params.cursor = cursor;
+  return normalizeCollection(await api.get<CollectionEnvelope<IdeationCampaign>>(`${API_V2}/ideation-campaigns`, params));
+}
+
+export async function getIdeationCampaign(id: number): Promise<IdeationCampaign> {
+  return unwrapData(await api.get<{ data?: IdeationCampaign } | IdeationCampaign>(`${API_V2}/ideation-campaigns/${id}`));
+}
+
+export async function getIdeationOutcomes(): Promise<IdeationOutcomeDashboard> {
+  return unwrapData(await api.get<{ data?: IdeationOutcomeDashboard } | IdeationOutcomeDashboard>(`${API_V2}/ideation-outcomes/dashboard`));
+}
+
 function normalizeCollection<T>(response: CollectionEnvelope<T>): CursorPage<T> {
   const payload = response.data;
   const dataObject = !Array.isArray(payload) && payload ? payload : response;
@@ -177,4 +264,9 @@ function normalizeArray<T>(response: ArrayEnvelope<T>): T[] {
 
 function isObjectWithData<T>(response: { data?: T } | T): response is { data?: T } {
   return typeof response === 'object' && response !== null && 'data' in response;
+}
+
+function unwrapData<T>(response: { data?: T } | T): T {
+  if (isObjectWithData(response) && response.data !== undefined) return response.data;
+  return response as T;
 }

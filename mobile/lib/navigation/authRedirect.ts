@@ -64,6 +64,8 @@ export type AuthRedirect =
 export interface AuthRedirectInput {
   isLoading: boolean;
   isAuthenticated: boolean;
+  /** Explicitly false only for an authenticated adult member who still owes onboarding. */
+  onboardingCompleted?: boolean | null;
   /** False only when this installation has never chosen a community. */
   hasSelectedTenant: boolean;
   pathname: string;
@@ -88,13 +90,31 @@ export interface AuthRedirectInput {
  *  5. A signed-out member is sent to login unless already on a public auth screen.
  */
 export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
-  const { isLoading, isAuthenticated, hasSelectedTenant, pathname, pendingDeepLink } = input;
+  const {
+    isLoading,
+    isAuthenticated,
+    onboardingCompleted,
+    hasSelectedTenant,
+    pathname,
+    pendingDeepLink,
+  } = input;
 
   if (isLoading) {
     return { action: 'none', reason: 'auth is still resolving' };
   }
 
   if (isAuthenticated) {
+    // Mandatory onboarding beats queued deep links. Letting an incomplete account
+    // deep-link around this gate creates the exact partial-profile state the server
+    // refuses on member actions. Only an explicit `false` gates: older cached user
+    // objects without this field remain usable until the background /users/me refresh.
+    if (onboardingCompleted === false) {
+      if (matchesPath(pathname, '/onboarding')) {
+        return { action: 'none', reason: 'member is completing onboarding' };
+      }
+      return { action: 'replace', href: '/(modals)/onboarding' };
+    }
+
     if (pendingDeepLink) {
       return { action: 'deep-link', url: pendingDeepLink };
     }

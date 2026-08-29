@@ -197,10 +197,12 @@ export default function LoginScreen() {
                 </View>
 
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
+                  fullWidth
                   onPress={() => router.push('/forgot-password' as never)}
-                  className="self-center mt-3.5"
+                  accessibilityLabel={t('login.forgotPassword')}
+                  className="mt-3.5"
                 >
                   {t('login.forgotPassword')}
                 </Button>
@@ -228,7 +230,7 @@ export default function LoginScreen() {
                     {t('wrongTimebank')}
                   </Text>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     fullWidth
                     onPress={() => router.push('/select-tenant')}
                     accessibilityLabel={t('switchCommunity')}

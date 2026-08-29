@@ -18,6 +18,10 @@ jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7, role: 'member' } }),
+}));
+
 jest.mock('@/lib/api/ideation', () => ({
   getIdeationChallenge: jest.fn(),
   getIdeationIdeas: jest.fn(),

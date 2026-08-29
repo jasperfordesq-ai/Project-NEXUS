@@ -27,6 +27,10 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import auditHelpers from './audit-touch-targets-lib.cjs';
+
+const { auditExitCode, isKeyguardShowing, summariseResults } = auditHelpers;
+
 const args = process.argv.slice(2);
 const argValue = (name, fallback) => {
   const index = args.indexOf(name);
@@ -133,6 +137,18 @@ function forceStopApp() {
   adb(['shell', 'am', 'force-stop', PACKAGE]);
 }
 
+function prepareDeviceForAudit() {
+  adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP']);
+  adb(['shell', 'wm', 'dismiss-keyguard']);
+  const windowPolicy = adb(['shell', 'dumpsys', 'window', 'policy']);
+  if (isKeyguardShowing(windowPolicy)) {
+    throw new Error(
+      `Device ${SERIAL} is locked. Unlock it before running the touch-target audit; `
+      + 'the harness will not enter a device PIN or fingerprint.',
+    );
+  }
+}
+
 function dumpTree() {
   return adb(['exec-out', 'uiautomator', 'dump', '/dev/tty']);
 }
@@ -228,6 +244,7 @@ async function settledTree(previousSignature) {
 }
 
 async function main() {
+  prepareDeviceForAudit();
   const dpi = deviceDensity();
   const pxPerDp = dpi / 160;
   const aaMinPx = Math.round(AA_MIN_DP * pxPerDp);
@@ -247,11 +264,13 @@ async function main() {
     const { xml, signature, settled } = await settledTree(previousSignature);
     if (!xml) {
       console.log(`${route.padEnd(18)} UNREADABLE — the screen never arrived`);
+      perScreen.push({ route, status: 'unreadable' });
       continue;
     }
     if (!settled) {
       // Reported, never silently folded into the totals as if it had been measured.
       console.log(`${route.padEnd(18)} UNSETTLED — still changing after 20s, skipped`);
+      perScreen.push({ route, status: 'unsettled' });
       previousSignature = signature;
       continue;
     }
@@ -260,6 +279,7 @@ async function main() {
     const fingerprint = SCREEN_FINGERPRINT[route];
     if (fingerprint && !fingerprint.test(xml)) {
       console.log(`${route.padEnd(18)} UNVERIFIED — the screen on the device is not this one`);
+      perScreen.push({ route, status: 'unverified' });
       continue;
     }
 
@@ -274,6 +294,7 @@ async function main() {
     );
     perScreen.push({
       route,
+      status: 'verified',
       targets: targets.length,
       belowAA: small.length,
       belowGuidance: shortOfGuidance.length,
@@ -299,10 +320,17 @@ async function main() {
 
   console.log(`\n${viewportClipped.length} undersized visible fragment(s) clipped at a scroll viewport edge (not counted as target-size failures).`);
 
+  const summary = summariseResults(perScreen);
+  console.log(
+    `\nAudit coverage: ${summary.verified}/${summary.requested} requested screens verified; `
+    + `${summary.unverified} wrong screen, ${summary.unreadable} unreadable, `
+    + `${summary.unsettled} unsettled.`,
+  );
+
   if (JSON_OUT) {
     fs.writeFileSync(
       path.resolve(JSON_OUT),
-      `${JSON.stringify({ dpi, aaMinPx, guidancePx, perScreen, belowAA, belowGuidance, viewportClipped }, null, 2)}\n`,
+      `${JSON.stringify({ dpi, aaMinPx, guidancePx, summary, perScreen, belowAA, belowGuidance, viewportClipped }, null, 2)}\n`,
       'utf8',
     );
     console.log(`\nWritten to ${JSON_OUT}`);
@@ -311,7 +339,7 @@ async function main() {
   // Below the AA floor is a failure; below Android's guidance is reported, not enforced —
   // the 40dp group is a known, recorded state and blocking on it would stop the audit being
   // run at all.
-  process.exit(belowAA.length > 0 ? 1 : 0);
+  process.exit(auditExitCode({ summary, belowAA: belowAA.length }));
 }
 
 main().catch((error) => {

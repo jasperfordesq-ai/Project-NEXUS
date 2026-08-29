@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile Route Parity Matrix
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-29
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run parity:matrix` from `mobile/`.
@@ -18,91 +18,14 @@ when a React member route exists that nobody has classified for mobile.
 | Measure | Count |
 | --- | --- |
 | React member routes | 256 |
-| Mobile routes (Expo Router screens) | 142 |
-| Covered natively | 125 |
-| Deliberately out of scope | 67 |
-| **Known gaps** | **33** |
-| Awaiting review (shrink-only, budget 31) | 31 |
+| Mobile routes (Expo Router screens) | 162 |
+| Covered natively | 153 |
+| Deliberately out of scope | 103 |
+| **Known gaps** | **0** |
+| Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
 | Mobile routes not claimed by a React route | 28 |
 | Broken declarations | 0 |
-
-## Awaiting review
-
-Declared in the first pass but not yet judged. Shrink-only: this list may empty,
-never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
-
-| React route | Note |
-| --- | --- |
-| `caring-community/caregiver` | Caring Community member surfaces — feature gate is off by default and the module has no guide yet. |
-| `caring-community/caregiver/cover` | Caring Community member surface. |
-| `caring-community/caregiver/link` | Caring Community member surface. |
-| `caring-community/civic-digest` | Caring Community member surface. |
-| `caring-community/feedback` | Caring Community member surface. |
-| `caring-community/future-care-fund` | Caring Community member surface. |
-| `caring-community/hour-gift` | Caring Community member surface. |
-| `caring-community/hour-transfer` | Caring Community member surface. |
-| `caring-community/loyalty/history` | Caring Community member surface. |
-| `caring-community/markt` | Caring Community member surface. |
-| `caring-community/my-data-export` | Caring Community member surface. |
-| `caring-community/my-relationships` | Caring Community member surface. |
-| `caring-community/my-trust-tier` | Caring Community member surface. |
-| `caring-community/offer-favour` | Caring Community member surface. |
-| `caring-community/projects` | Caring Community member surface. |
-| `caring-community/projects/:id` | Caring Community member surface. |
-| `caring-community/providers` | Caring Community member surface. |
-| `caring-community/request-help` | Caring Community member surface. |
-| `caring-community/safeguarding/my-reports` | Safeguarding surface — needs a deliberate decision, not a default. |
-| `caring-community/safeguarding/report` | Safeguarding surface — needs a deliberate decision, not a default. |
-| `caring-community/success-stories` | Caring Community member surface. |
-| `caring-community/surveys` | Caring Community member surface. |
-| `caring-community/surveys/:id` | Caring Community member surface. |
-| `caring-community/warmth-pass` | Caring Community member surface. |
-| `groups/invite/:token` | Group invite token link. Same deep-link decision as join/:code. |
-| `jobs/employers/:userId` | Employer public profile; unclear whether it is a member journey. |
-| `join/:code` | Invite-code join. Decide whether +native-intent should handle it or it stays web. |
-| `linked-accounts/:childId/messages/:partnerId` | Carer proxy message thread. can_view_messages is NOT enforced server-side; do not wire natively before that. |
-| `support-actions/confirm/:token` | Support-action confirmation token link; needs a deep-link decision. |
-| `venues/checkin/:token` | Venue check-in token link; needs a deep-link decision. |
-| `volunteering/checkin/:token` | Volunteering check-in token link; needs a deep-link decision. |
-
-## Known gaps (member-facing, wanted, not built)
-
-| React route | Note |
-| --- | --- |
-| `clubs` | Clubs have no native route. |
-| `courses` | Courses have no native route. Parity audit records this as partial by design. |
-| `courses/:id/learn` | Course player has no native route. |
-| `courses/:idOrSlug` | Courses have no native route. |
-| `courses/my-learning` | Course enrolment list has no native route. |
-| `donations/:id/receipt` | Donation receipts have no native route. |
-| `events/:id/guardian-consent` | Guardian consent flow has no native route; safeguarding-sensitive. |
-| `events/:id/manage/:section?` | Event organiser management console has no single native equivalent. |
-| `ideation/:challengeId/ideas/:id` | Individual idea detail has no native route. |
-| `ideation/:id/edit` | Ideation editing has no native route. |
-| `ideation/campaigns` | Ideation campaigns have no native route. |
-| `ideation/campaigns/:id` | Ideation campaigns have no native route. |
-| `ideation/outcomes` | Ideation outcomes have no native route. |
-| `jobs/my-applications` | No native "my applications" list; applications are reachable only per job. |
-| `matches/preferences` | Match preferences cannot be edited natively. |
-| `me/verein-dues` | Club dues have no native route. |
-| `me/verein-invitations` | Club invitations have no native route. |
-| `onboarding` | No native member onboarding flow; new members land on the tabs. |
-| `podcasts` | Podcasts have no native route. Parity audit records this as partial by design. |
-| `podcasts/:showSlug` | Podcasts have no native route. |
-| `podcasts/:showSlug/:episodeSlug` | Podcast episode player has no native route. |
-| `premium` | Donations and support (member_premium) has no native surface. |
-| `premium/manage` | Premium management has no native surface. |
-| `premium/return` | Premium payment return page has no native surface. |
-| `reviews/create` | No native review composer; reviews are read-only on mobile. |
-| `venues` | Venues have no native route. |
-| `venues/pass` | Venue pass has no native route. |
-| `verify-identity-optional` | Optional identity-verification prompt has no native route. |
-| `volunteering/my-applications` | No native volunteering applications list. |
-| `volunteering/my-organisations` | No native list of the organisations a member belongs to. |
-| `wallet/regional-points` | Regional points wallet view has no native route. |
-| `whats-on` | Public What's On listing has no native route. |
-| `whats-on/:id` | Public What's On detail has no native route. |
 
 ## Full matrix
 
@@ -123,35 +46,35 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `blog` | native | `blog` | — |
 | `blog/:slug` | native | `blog-post` | — |
 | `broker/*` | out-of-scope | — | Broker workspace — an operational role with its own React application. |
-| `caring-community/caregiver` | needs-review | — | Caring Community member surfaces — feature gate is off by default and the module has no guide yet. |
-| `caring-community/caregiver/cover` | needs-review | — | Caring Community member surface. |
-| `caring-community/caregiver/link` | needs-review | — | Caring Community member surface. |
-| `caring-community/civic-digest` | needs-review | — | Caring Community member surface. |
-| `caring-community/feedback` | needs-review | — | Caring Community member surface. |
-| `caring-community/future-care-fund` | needs-review | — | Caring Community member surface. |
-| `caring-community/hour-gift` | needs-review | — | Caring Community member surface. |
-| `caring-community/hour-transfer` | needs-review | — | Caring Community member surface. |
-| `caring-community/loyalty/history` | needs-review | — | Caring Community member surface. |
-| `caring-community/markt` | needs-review | — | Caring Community member surface. |
-| `caring-community/my-data-export` | needs-review | — | Caring Community member surface. |
-| `caring-community/my-relationships` | needs-review | — | Caring Community member surface. |
-| `caring-community/my-trust-tier` | needs-review | — | Caring Community member surface. |
-| `caring-community/offer-favour` | needs-review | — | Caring Community member surface. |
-| `caring-community/projects` | needs-review | — | Caring Community member surface. |
-| `caring-community/projects/:id` | needs-review | — | Caring Community member surface. |
-| `caring-community/providers` | needs-review | — | Caring Community member surface. |
-| `caring-community/request-help` | needs-review | — | Caring Community member surface. |
-| `caring-community/safeguarding/my-reports` | needs-review | — | Safeguarding surface — needs a deliberate decision, not a default. |
-| `caring-community/safeguarding/report` | needs-review | — | Safeguarding surface — needs a deliberate decision, not a default. |
-| `caring-community/success-stories` | needs-review | — | Caring Community member surface. |
-| `caring-community/surveys` | needs-review | — | Caring Community member surface. |
-| `caring-community/surveys/:id` | needs-review | — | Caring Community member surface. |
-| `caring-community/warmth-pass` | needs-review | — | Caring Community member surface. |
+| `caring-community/caregiver` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/caregiver/cover` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/caregiver/link` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/civic-digest` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/feedback` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/future-care-fund` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/hour-gift` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/hour-transfer` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/loyalty/history` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/markt` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/my-data-export` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/my-relationships` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/my-trust-tier` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/offer-favour` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/projects` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/projects/:id` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/providers` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/request-help` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/safeguarding/my-reports` | out-of-scope | — | Owner decision 2026-08-28: Care in Community, including its safeguarding workspace, is not part of either native application. |
+| `caring-community/safeguarding/report` | out-of-scope | — | Owner decision 2026-08-28: Care in Community, including its safeguarding workspace, is not part of either native application. |
+| `caring-community/success-stories` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/surveys` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/surveys/:id` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
+| `caring-community/warmth-pass` | out-of-scope | — | Owner decision 2026-08-28: Care in Community is not part of either native application. |
 | `caring/*` | out-of-scope | — | Caring Community staff workspace. |
 | `changelog` | out-of-scope | — | Marketing/release page. |
 | `chat` | native | `chat` | — |
 | `child-safety` | out-of-scope | — | Google Play child-safety standards disclosure; web-first published policy. In-app reporting is native on each reportable surface. |
-| `clubs` | gap | — | Clubs have no native route. |
+| `clubs` | native | `clubs` | — |
 | `clubs/:id/admin/dues` | out-of-scope | — | Club administration. |
 | `clubs/:id/admin/import` | out-of-scope | — | Club administration. |
 | `community-guidelines` | out-of-scope | — | Legal document; mobile uses legal-document. |
@@ -162,27 +85,27 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `cookies/versions` | out-of-scope | — | Legal version history; web-first. |
 | `coupons` | native | `marketplace-coupons` | — |
 | `coupons/:id` | native | `marketplace-coupon-detail` | — |
-| `courses` | gap | — | Courses have no native route. Parity audit records this as partial by design. |
-| `courses/:id/learn` | gap | — | Course player has no native route. |
-| `courses/:idOrSlug` | gap | — | Courses have no native route. |
+| `courses` | native | `courses` | — |
+| `courses/:id/learn` | native | `course-player` | — |
+| `courses/:idOrSlug` | native | `course-detail` | — |
 | `courses/instructor` | out-of-scope | — | Course authoring workspace. |
 | `courses/instructor/:id/analytics` | out-of-scope | — | Course authoring workspace. |
 | `courses/instructor/:id/edit` | out-of-scope | — | Course authoring workspace. |
 | `courses/instructor/:id/grading` | out-of-scope | — | Course authoring workspace. |
 | `courses/instructor/new` | out-of-scope | — | Course authoring workspace. |
-| `courses/my-learning` | gap | — | Course enrolment list has no native route. |
+| `courses/my-learning` | native | `courses` | — |
 | `dashboard` | native | `home` | — |
 | `developers` | out-of-scope | — | Developer API documentation; a web reference, not a member journey. |
 | `developers/auth` | out-of-scope | — | Developer API documentation. |
 | `developers/endpoints` | out-of-scope | — | Developer API documentation. |
 | `developers/webhooks` | out-of-scope | — | Developer API documentation. |
 | `development-status` | out-of-scope | — | Marketing/release page. |
-| `donations/:id/receipt` | gap | — | Donation receipts have no native route. |
+| `donations/:id/receipt` | native | `donation-receipt` | — |
 | `events` | native | `events` | — |
 | `events/:id` | native | `event-detail` | — |
 | `events/:id/edit` | native | `edit-event` | — |
-| `events/:id/guardian-consent` | gap | — | Guardian consent flow has no native route; safeguarding-sensitive. |
-| `events/:id/manage/:section?` | gap | — | Event organiser management console has no single native equivalent. |
+| `events/:id/guardian-consent` | out-of-scope | — | Both native apps are adults-only. Guardian consent remains an exceptional staffed web/operator workflow and must not become a native child-access journey. |
+| `events/:id/manage/:section?` | native | `event-manage` | Permission-aware native operations hub routes organisers to the implemented event people, check-in, agenda, analytics, registration, ticket, communications, template, recurrence, and lifecycle workspaces. |
 | `events/create` | native | `new-event` | — |
 | `events/edit/:id` | native | `edit-event` | — |
 | `exchanges` | native | `exchanges` | — |
@@ -216,16 +139,16 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `groups/:id` | native | `group-detail` | — |
 | `groups/create` | native | `new-group` | — |
 | `groups/edit/:id` | native | `edit-group` | — |
-| `groups/invite/:token` | needs-review | — | Group invite token link. Same deep-link decision as join/:code. |
+| `groups/invite/:token` | native | `group-invite` | Authenticated adults can preview and explicitly accept an ordinary group invitation in the native app. |
 | `help` | native | `support` | — |
 | `ideation` | native | `ideation` | — |
-| `ideation/:challengeId/ideas/:id` | gap | — | Individual idea detail has no native route. |
+| `ideation/:challengeId/ideas/:id` | native | `ideation-idea` | — |
 | `ideation/:id` | native | `ideation-detail` | — |
-| `ideation/:id/edit` | gap | — | Ideation editing has no native route. |
-| `ideation/campaigns` | gap | — | Ideation campaigns have no native route. |
-| `ideation/campaigns/:id` | gap | — | Ideation campaigns have no native route. |
+| `ideation/:id/edit` | native | `new-challenge` | The challenge form supports a permission-enforced edit mode backed by the existing update contract. |
+| `ideation/campaigns` | native | `ideation-campaigns` | — |
+| `ideation/campaigns/:id` | native | `ideation-campaign-detail` | — |
 | `ideation/create` | native | `new-challenge` | — |
-| `ideation/outcomes` | gap | — | Ideation outcomes have no native route. |
+| `ideation/outcomes` | native | `ideation-outcomes` | — |
 | `impact-report` | out-of-scope | — | Marketing/organisational page. |
 | `impact-summary` | out-of-scope | — | Marketing/organisational page. |
 | `install-app` | out-of-scope | — | Exists to send web visitors to the app stores. |
@@ -238,10 +161,10 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `jobs/bias-audit` | out-of-scope | — | Employer administration depth; web-first per the parity audit. |
 | `jobs/create` | native | `new-job` | — |
 | `jobs/employer-onboarding` | out-of-scope | — | Employer administration depth; web-first per the parity audit. |
-| `jobs/employers/:userId` | needs-review | — | Employer public profile; unclear whether it is a member journey. |
-| `jobs/my-applications` | gap | — | No native "my applications" list; applications are reachable only per job. |
+| `jobs/employers/:userId` | native | `member-profile` | The employer public identity is the same member profile already rendered natively. |
+| `jobs/my-applications` | native | `jobs` | — |
 | `jobs/talent-search` | out-of-scope | — | Employer administration depth; web-first per the parity audit. |
-| `join/:code` | needs-review | — | Invite-code join. Decide whether +native-intent should handle it or it stays web. |
+| `join/:code` | out-of-scope | — | Care in Community invite redemption is deliberately excluded from both adults-only native applications and remains browser-only. |
 | `kb` | native | `resources` | — |
 | `kb/:id` | native | `kb-article` | — |
 | `leaderboard` | native | `leaderboard` | — |
@@ -249,7 +172,7 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `legal/:slug` | native | `legal-document` | — |
 | `legal/:slug/versions` | out-of-scope | — | Legal version history; web-first. |
 | `linked-accounts/:childId/messages` | native | `settings-linked-accounts` | — |
-| `linked-accounts/:childId/messages/:partnerId` | needs-review | — | Carer proxy message thread. can_view_messages is NOT enforced server-side; do not wire natively before that. |
+| `linked-accounts/:childId/messages/:partnerId` | out-of-scope | — | Guardian/carer proxy messaging is excluded from the adults-only native apps, and can_view_messages is not yet enforced server-side. |
 | `listings` | native | `exchanges` | — |
 | `listings/:id` | native | `exchange-detail` | — |
 | `listings/:id/request-exchange` | native | `exchange-detail` | — |
@@ -283,11 +206,11 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `marketplace/seller/pickup-slots` | native | `marketplace-pickup-slots` | — |
 | `marketplace/seller/shipping-options` | native | `marketplace-shipping-options` | — |
 | `matches` | native | `matches` | — |
-| `matches/preferences` | gap | — | Match preferences cannot be edited natively. |
+| `matches/preferences` | native | `match-preferences` | — |
 | `me/collections` | native | `profile-collections` | — |
 | `me/collections/:id` | native | `profile-collections` | — |
-| `me/verein-dues` | gap | — | Club dues have no native route. |
-| `me/verein-invitations` | gap | — | Club invitations have no native route. |
+| `me/verein-dues` | out-of-scope | — | The API is guarded by the caring_community feature. Care in Community is intentionally excluded from both native apps. |
+| `me/verein-invitations` | out-of-scope | — | Cross-Verein invitations are guarded by the caring_community feature. Care in Community is intentionally excluded from both native apps. |
 | `members` | native | `members` | — |
 | `messages` | native | `messages` | — |
 | `messages/:id` | native | `thread` | — |
@@ -296,7 +219,7 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `newsletter/unsubscribe` | out-of-scope | — | Reached from an email link; must work without the app installed. |
 | `nexus-score` | native | `nexus-score` | — |
 | `notifications` | native | `notifications` | — |
-| `onboarding` | gap | — | No native member onboarding flow; new members land on the tabs. |
+| `onboarding` | native | `onboarding` | — |
 | `organisations` | native | `organisations` | — |
 | `organisations/:id` | native | `organisation-detail` | — |
 | `organisations/register` | native | `new-organisation` | — |
@@ -312,14 +235,14 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `platform/disclaimer` | out-of-scope | — | Platform legal document; web-first. |
 | `platform/privacy` | out-of-scope | — | Platform legal document; web-first. |
 | `platform/terms` | out-of-scope | — | Platform legal document; web-first. |
-| `podcasts` | gap | — | Podcasts have no native route. Parity audit records this as partial by design. |
-| `podcasts/:showSlug` | gap | — | Podcasts have no native route. |
-| `podcasts/:showSlug/:episodeSlug` | gap | — | Podcast episode player has no native route. |
+| `podcasts` | native | `podcasts` | — |
+| `podcasts/:showSlug` | native | `podcast-show` | — |
+| `podcasts/:showSlug/:episodeSlug` | native | `podcast-episode` | — |
 | `podcasts/studio` | out-of-scope | — | Podcast authoring workspace. |
 | `polls` | native | `polls` | — |
-| `premium` | gap | — | Donations and support (member_premium) has no native surface. |
-| `premium/manage` | gap | — | Premium management has no native surface. |
-| `premium/return` | gap | — | Premium payment return page has no native surface. |
+| `premium` | out-of-scope | — | Policy-blocked: native fundraising requires a documented Apple-approved nonprofit and Apple Pay design; do not add an external payment shortcut. |
+| `premium/manage` | out-of-scope | — | Policy-blocked with the member_premium payment design; management cannot ship before the native entitlement and refund lifecycle is approved. |
+| `premium/return` | out-of-scope | — | Policy-blocked: no native payment-return route is valid until the approved Apple Pay/fundraising flow exists. |
 | `pricing` | out-of-scope | — | Marketing page. |
 | `privacy` | out-of-scope | — | Legal document; mobile uses legal-document. |
 | `privacy/versions` | out-of-scope | — | Legal version history; web-first. |
@@ -329,7 +252,7 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `register` | native | `register` | — |
 | `resources` | native | `resources` | — |
 | `reviews` | native | `reviews` | — |
-| `reviews/create` | gap | — | No native review composer; reviews are read-only on mobile. |
+| `reviews/create` | native | `reviews` | — |
 | `saved` | native | `profile-collections` | — |
 | `search` | native | `search` | — |
 | `settings` | native | `settings` | — |
@@ -339,31 +262,31 @@ never grow. Each entry needs to become `native`, `gap` or `out-of-scope`.
 | `social-prescribing` | out-of-scope | — | Long-form editorial page; web-first. |
 | `strategic-plan` | out-of-scope | — | Marketing/organisational page. |
 | `super-admin/*` | out-of-scope | — | Platform super-admin workspace. |
-| `support-actions/confirm/:token` | needs-review | — | Support-action confirmation token link; needs a deep-link decision. |
+| `support-actions/confirm/:token` | out-of-scope | — | Public side-effecting linked-account support confirmations remain browser-only; they are not an adults-only native member journey. |
 | `terms` | out-of-scope | — | Legal document; mobile reads legal documents through legal-document. |
 | `terms/versions` | out-of-scope | — | Legal version history; web-first. |
 | `timebanking-guide` | out-of-scope | — | Long-form editorial guide; web-first. |
 | `trust-and-safety` | out-of-scope | — | Long-form editorial page; web-first. |
 | `users/:userId/appreciations` | native | `appreciations` | — |
 | `users/:userId/collections` | native | `profile-collections` | — |
-| `venues` | gap | — | Venues have no native route. |
-| `venues/checkin/:token` | needs-review | — | Venue check-in token link; needs a deep-link decision. |
-| `venues/pass` | gap | — | Venue pass has no native route. |
+| `venues` | native | `venues` | — |
+| `venues/checkin/:token` | native | `venue-checkin` | Venue staff get a confirmation screen; scanning alone never records a visit. |
+| `venues/pass` | native | `venue-pass` | — |
 | `verify-email` | native | `verify-email` | — |
 | `verify-identity` | native | `verify-identity` | — |
-| `verify-identity-optional` | gap | — | Optional identity-verification prompt has no native route. |
+| `verify-identity-optional` | native | `verify-identity` | — |
 | `verify-identity/callback` | out-of-scope | — | Stripe Identity browser redirect target. |
 | `volunteering` | native | `volunteering` | — |
-| `volunteering/checkin/:token` | needs-review | — | Volunteering check-in token link; needs a deep-link decision. |
+| `volunteering/checkin/:token` | native | `volunteer-checkin` | Authorised coordinators explicitly confirm check-in and check-out; opening the link causes no mutation. |
 | `volunteering/create` | native | `new-volunteering` | — |
-| `volunteering/my-applications` | gap | — | No native volunteering applications list. |
-| `volunteering/my-organisations` | gap | — | No native list of the organisations a member belongs to. |
+| `volunteering/my-applications` | native | `volunteering` | — |
+| `volunteering/my-organisations` | native | `volunteering` | — |
 | `volunteering/opportunities/:id` | native | `volunteering-detail` | — |
 | `volunteering/org/:orgId/dashboard` | native | `volunteering-org-dashboard` | — |
 | `wallet` | native | `wallet` | — |
-| `wallet/regional-points` | gap | — | Regional points wallet view has no native route. |
-| `whats-on` | gap | — | Public What's On listing has no native route. |
-| `whats-on/:id` | gap | — | Public What's On detail has no native route. |
+| `wallet/regional-points` | out-of-scope | — | Regional points are implemented by the Care in Community feature and are excluded from both native apps by the product-owner decision of 2026-08-28. |
+| `whats-on` | out-of-scope | — | What's On is the anonymous public advertising twin of Events; the adults-only native clients are authenticated member products and keep anonymous public discovery on the web. |
+| `whats-on/:id` | out-of-scope | — | What's On is the anonymous public advertising twin of Events; signed-in members use the native Events detail while anonymous public discovery remains on the web. |
 
 ## Mobile routes not claimed by any React route
 

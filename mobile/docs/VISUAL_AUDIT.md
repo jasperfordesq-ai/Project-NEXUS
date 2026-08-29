@@ -275,22 +275,25 @@ another reason.
 
 ---
 
-## 5. OPEN — signed-out links do not look like links
+## 5. FIXED — signed-out links did not look actionable
 
 On the login screen, "Forgot password?" and "Switch community" are bold, near-black
 text with no colour, underline or button shape. "Forgot password?" in particular
 reads as a heading. "Create account" at least has an outline.
 
-Lower priority than the above, and arguably a design preference rather than a
-defect — recorded so it is a decision rather than an oversight.
+Both actions now use the same visible outline treatment as the existing Create account
+action, fill the card width, and carry explicit accessibility labels. They no longer depend
+on colour or typography alone to communicate that they can be pressed. This is source- and
+test-verified; the next physical-phone build still needs the visual confirmation.
 
 ---
 
-## 6. OPEN — a feed card states the same fact three times
+## 6. SUPERSEDED — gamification milestones no longer appear as feed cards
 
-The level-up card renders "E2E UserA reached 3", then "Level 3", then "Reached
-Level 3!" — the same information three times in one card, and the first phrasing is
-missing the word "Level". A copy fix, in the gamification feed card.
+The level-up card previously repeated the same fact three times. The later product decision
+to remove `level_up` and `badge_earned` milestones from feed content removed that card
+entirely, so there is no remaining member-facing copy to repair. `FeedItem` now excludes
+those types exhaustively and its tests guard the decision.
 
 ---
 

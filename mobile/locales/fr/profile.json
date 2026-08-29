@@ -50,6 +50,7 @@
       "locationAction": "Indiquer mon secteur",
       "pausedTitle": "Les correspondances sont en pause",
       "pausedBody": "Les correspondances sont désactivées dans vos réglages : rien ne vous est proposé pour le moment.",
+      "pausedAction": "Ajuster les préférences de correspondance",
       "listingsTitle": "Publiez quelque chose pour lancer les correspondances",
       "listingsBody": "Les correspondances se construisent à partir de ce que vous proposez et de ce dont vous avez besoin. Publiez votre première offre ou demande et les suggestions commenceront.",
       "listingsAction": "Publier une offre ou une demande"
@@ -364,6 +365,18 @@
     "federationEvents": "Découvrez les événements des communautés connectées.",
     "federationSettings": "Vérifiez la visibilité de la fédération et les préférences de partage.",
     "settings": "Sécurité, notifications, préférences et contrôles de compte."
+  },
+  "matchPreferences": {
+    "heading": "Préférences de mise en relation",
+    "subtitle": "Contrôlez la façon dont Smart Matching recherche et vous informe des connexions.",
+    "load_failed": "Échec du chargement de vos préférences de correspondance",
+    "save": "Enregistrer les préférences",
+    "save_success": "Préférences de correspondance enregistrées",
+    "save_failed": "Échec de l'enregistrement des préférences de correspondance",
+    "pause": { "title": "Suspendre la correspondance" },
+    "thresholds": { "title": "Distance et qualité", "distance_label": "Distance maximale", "distance_value": "{{value}} km", "quality_label": "Qualité de correspondance minimale", "quality_value": "{{value}}%" },
+    "categories": { "title": "Intérêts de la catégorie", "description": "Choisissez les catégories sur lesquelles vous souhaitez être mis en correspondance. Laissez tout décoché pour correspondre à toutes les catégories.", "empty": "Aucune catégorie n'est encore disponible." },
+    "notifications": { "title": "Notifications", "frequency_label": "Fréquence de résumé des correspondances", "daily": "Chaque jour", "fortnightly": "Toutes les deux semaines", "monthly": "Chaque mois", "never": "Jamais", "hot_matches": "Alertes de correspondances prioritaires", "mutual_matches": "Alertes de correspondances mutuelles" }
   },
   "sessionUnavailableTitle": "Votre session est indisponible",
   "sessionUnavailableSubtitle": "Nous n'avons pas pu charger votre profil. Veuillez vous reconnecter."

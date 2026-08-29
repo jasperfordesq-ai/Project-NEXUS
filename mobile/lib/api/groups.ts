@@ -768,3 +768,25 @@ export function joinGroup(id: number): Promise<{ message: string }> {
 export function leaveGroup(id: number): Promise<void> {
   return api.delete<void>(`${API_V2}/groups/${id}/membership`);
 }
+
+export interface GroupInvitePreview {
+  group: { id: number; name: string; image_url?: string | null; visibility: 'public' | 'private'; member_count: number };
+  membership: { status: string };
+  invite: { id: number; type: string; status: string; expires_at?: string | null; email_bound?: boolean };
+}
+
+export interface GroupInviteAcceptance {
+  action: 'joined' | 'already_member';
+  group: { id: number; name: string };
+  membership: { status: 'active'; role: 'member' };
+}
+
+export async function getGroupInvitePreview(token: string): Promise<GroupInvitePreview> {
+  const response = await api.get<{ data: GroupInvitePreview } | GroupInvitePreview>(`${API_V2}/groups/invite/${encodeURIComponent(token)}`);
+  return response && typeof response === 'object' && 'data' in response ? response.data : response;
+}
+
+export async function acceptGroupInvite(token: string): Promise<GroupInviteAcceptance> {
+  const response = await api.post<{ data: GroupInviteAcceptance } | GroupInviteAcceptance>(`${API_V2}/groups/invite/${encodeURIComponent(token)}/accept`, {});
+  return response && typeof response === 'object' && 'data' in response ? response.data : response;
+}

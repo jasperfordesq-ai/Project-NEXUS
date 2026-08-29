@@ -253,6 +253,7 @@ function RootNavigator() {
   const { t } = useTranslation([
     'blog',
     'chat',
+    'clubs',
     'common',
     'endorsements',
     'events',
@@ -273,15 +274,17 @@ function RootNavigator() {
     'members',
     'messages',
     'notifications',
+    'onboarding',
     'organisations',
     'profile',
     'resources',
     'search',
     'settings',
     'volunteering',
+    'venues',
     'wallet',
   ]);
-  const { isLoading, isAuthenticated } = useAuthContext();
+  const { isLoading, isAuthenticated, user } = useAuthContext();
   const {
     isLoading: isTenantLoading,
     hasSelectedTenant,
@@ -360,6 +363,7 @@ function RootNavigator() {
     const decision = decideAuthRedirect({
       isLoading: isLoading || isTenantLoading,
       isAuthenticated,
+      onboardingCompleted: user?.onboarding_completed,
       hasSelectedTenant,
       pathname,
       pendingDeepLink,
@@ -375,7 +379,7 @@ function RootNavigator() {
     if (decision.action === 'replace') {
       router.replace(decision.href);
     }
-  }, [isLoading, isTenantLoading, isAuthenticated, hasSelectedTenant, pathname, pendingDeepLink]);
+  }, [isLoading, isTenantLoading, isAuthenticated, user?.onboarding_completed, hasSelectedTenant, pathname, pendingDeepLink]);
 
   // Shared options for regular modal screens: slide up from bottom, swipe-to-dismiss
   const modalOptions = {
@@ -489,6 +493,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('events:detailTitle') }}
       />
       <Stack.Screen
+        name="(modals)/event-manage"
+        options={{ ...modalOptions, headerShown: false, title: t('events:manage.title') }}
+      />
+      <Stack.Screen
         name="(modals)/event-attendance"
         options={{ ...modalOptions, headerShown: false, title: t('events:attendance.title') }}
       />
@@ -532,6 +540,16 @@ function RootNavigator() {
           gestureEnabled: false,
           contentStyle: { backgroundColor: theme.bg },
           title: t('legal:acceptance.title'),
+        }}
+      />
+      <Stack.Screen
+        name="(modals)/onboarding"
+        options={{
+          presentation: 'fullScreenModal',
+          headerShown: false,
+          gestureEnabled: false,
+          contentStyle: { backgroundColor: theme.bg },
+          title: t('onboarding:page_title'),
         }}
       />
       <Stack.Screen
@@ -603,9 +621,44 @@ function RootNavigator() {
         name="(modals)/new-challenge"
         options={{ ...modalOptions, headerShown: false, title: t('ideation:create.title') }}
       />
+        <Stack.Screen
+          name="(modals)/ideation-detail"
+          options={{ ...modalOptions, headerShown: false, title: t('ideation:challengeTitle') }}
+        />
+        <Stack.Screen name="(modals)/ideation-idea" options={{ ...modalOptions, headerShown: false, title: t('ideation:idea_detail.page_title') }} />
+        <Stack.Screen name="(modals)/ideation-campaigns" options={{ ...modalOptions, headerShown: false, title: t('ideation:campaigns.title') }} />
+        <Stack.Screen name="(modals)/ideation-campaign-detail" options={{ ...modalOptions, headerShown: false, title: t('ideation:campaigns.fallback_title') }} />
+        <Stack.Screen name="(modals)/ideation-outcomes" options={{ ...modalOptions, headerShown: false, title: t('ideation:outcomes.dashboard') }} />
+        <Stack.Screen name="(modals)/group-invite" options={{ ...modalOptions, headerShown: false, title: t('groups:invite_accept.title') }} />
+        <Stack.Screen name="(modals)/venue-checkin" options={{ ...modalOptions, headerShown: false, title: t('venues:verify.title') }} />
+        <Stack.Screen name="(modals)/volunteer-checkin" options={{ ...modalOptions, headerShown: false, title: t('volunteering:check_in.verify_title') }} />
+      <Stack.Screen name="(modals)/clubs" options={{ ...modalOptions, headerShown: false, title: t('clubs:title') }} />
+      <Stack.Screen name="(modals)/venues" options={{ ...modalOptions, headerShown: false, title: t('venues:directory.title') }} />
+      <Stack.Screen name="(modals)/venue-pass" options={{ ...modalOptions, headerShown: false, title: t('venues:pass.title') }} />
+      <Stack.Screen name="(modals)/donation-receipt" options={{ ...modalOptions, headerShown: false, title: t('volunteering:donations.receipt_title') }} />
       <Stack.Screen
-        name="(modals)/ideation-detail"
-        options={{ ...modalOptions, headerShown: false, title: t('ideation:challengeTitle') }}
+        name="(modals)/courses"
+        options={{ ...modalOptions, headerShown: false, title: t('courses:title') }}
+      />
+      <Stack.Screen
+        name="(modals)/course-detail"
+        options={{ ...modalOptions, headerShown: false, title: t('courses:title') }}
+      />
+      <Stack.Screen
+        name="(modals)/course-player"
+        options={{ ...modalOptions, headerShown: false, title: t('courses:player.course_progress') }}
+      />
+      <Stack.Screen
+        name="(modals)/podcasts"
+        options={{ ...modalOptions, headerShown: false, title: t('podcasts:title') }}
+      />
+      <Stack.Screen
+        name="(modals)/podcast-show"
+        options={{ ...modalOptions, headerShown: false, title: t('podcasts:title') }}
+      />
+      <Stack.Screen
+        name="(modals)/podcast-episode"
+        options={{ ...modalOptions, headerShown: false, title: t('podcasts:episode.title') }}
       />
       <Stack.Screen
         name="(modals)/activity"
@@ -614,6 +667,10 @@ function RootNavigator() {
       <Stack.Screen
         name="(modals)/matches"
         options={{ ...modalOptions, headerShown: false, title: t('profile:matches.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/match-preferences"
+        options={{ ...modalOptions, headerShown: false, title: t('profile:matchPreferences.heading') }}
       />
       <Stack.Screen
         name="(modals)/reviews"

@@ -1,0 +1,21 @@
+{
+  "title": "Vereine",
+  "meta": {
+    "title": "Vereine",
+    "description": "Lokale Vereine in deiner Gemeinschaft entdecken"
+  },
+  "subtitle": "Finde lokale Vereine und Gruppen, die deine Gemeinschaft zusammenbringen.",
+  "search_placeholder": "Vereine suchen...",
+  "member_count": "{{count}} Mitglieder",
+  "meeting_schedule": "Treffen: {{schedule}}",
+  "view": "Verein ansehen",
+  "empty": {
+    "title": "Noch keine Vereine",
+    "body": "Es wurden noch keine Vereine eingetragen."
+  },
+  "errors": {
+    "load_failed": "Vereine konnten nicht geladen werden. Bitte versuche es erneut."
+  },
+  "member_count_one": "{{count}} Mitglieder",
+  "member_count_other": "{{count}} Mitglieder"
+}

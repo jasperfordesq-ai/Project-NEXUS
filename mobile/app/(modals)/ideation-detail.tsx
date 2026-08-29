@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { type Href, useLocalSearchParams } from 'expo-router';
+import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +25,7 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useApi } from '@/lib/hooks/useApi';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -32,6 +33,7 @@ import { withAlpha } from '@/lib/utils/color';
 export default function IdeationDetailScreen() {
   const { t } = useTranslation(['ideation', 'common']);
   const { hasFeature } = useTenant();
+  const { user } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const params = useLocalSearchParams<{ id?: string }>();
@@ -90,6 +92,7 @@ export default function IdeationDetailScreen() {
 
   const challenge = challengeState.data;
   const ideas = ideasState.data?.items ?? [];
+  const isAdmin = Boolean(user?.role && ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin'].includes(user.role));
   /**
    * 🔴 Only the FIRST load gets the full-page spinner.
    *
@@ -162,6 +165,7 @@ export default function IdeationDetailScreen() {
                   <Text className="text-base leading-7" style={{ color: theme.textSecondary }}>
                     {stripHtml(challenge.description)}
                   </Text>
+                  {isAdmin ? <HeroButton variant="secondary" onPress={() => router.push({ pathname: '/(modals)/new-challenge', params: { id: String(challenge.id), mode: 'edit' } } as unknown as Href)}><HeroButton.Label>{t('ideation:admin.edit_challenge')}</HeroButton.Label></HeroButton> : null}
                 </HeroCard.Body>
               </HeroCard>
 
@@ -196,7 +200,7 @@ export default function IdeationDetailScreen() {
               </Surface>
 
               {ideas.length > 0 ? (
-                ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} onVote={vote} />)
+                ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} challengeId={challengeId} onVote={vote} />)
               ) : (
                 <EmptyState icon="chatbubble-ellipses-outline" title={t('ideation:noIdeasTitle')} subtitle={t('ideation:noIdeasSubtitle')} />
               )}
@@ -209,7 +213,7 @@ export default function IdeationDetailScreen() {
   );
 }
 
-function IdeaCard({ idea, onVote }: { idea: IdeationIdea; onVote: (idea: IdeationIdea) => void }) {
+function IdeaCard({ idea, challengeId, onVote }: { idea: IdeationIdea; challengeId: number; onVote: (idea: IdeationIdea) => void }) {
   const { t } = useTranslation(['ideation']);
   const theme = useTheme();
   return (
@@ -239,6 +243,9 @@ function IdeaCard({ idea, onVote }: { idea: IdeationIdea; onVote: (idea: Ideatio
         <HeroButton variant={idea.has_voted ? 'primary' : 'secondary'} onPress={() => void onVote(idea)}>
           <Ionicons name="arrow-up-circle-outline" size={16} color={theme.info} />
           <HeroButton.Label>{idea.has_voted ? t('ideation:voted') : t('ideation:vote')}</HeroButton.Label>
+        </HeroButton>
+        <HeroButton variant="secondary" onPress={() => router.push({ pathname: '/(modals)/ideation-idea', params: { id: String(idea.id), challengeId: String(challengeId) } } as unknown as Href)}>
+          <HeroButton.Label>{t('ideation:idea_detail.page_title')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>
     </HeroCard>

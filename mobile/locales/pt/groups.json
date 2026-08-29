@@ -382,5 +382,22 @@
     "saveFailedTitle": "Grupo não guardado",
     "saveFailedDescription": "Não foi possível guardar o grupo. Tente novamente.",
     "failedDescription": "Não foi possível criar o grupo. Tente novamente."
+  },
+  "invite_accept": {
+    "title": "Convite para o grupo",
+    "description": "Reveja e aceite o convite para aderir a este grupo.",
+    "checking": "A verificar o convite...",
+    "accept": "Aceitar convite",
+    "accepting": "A aderir...",
+    "success_title": "Convite aceite",
+    "success_description": "Agora é membro deste grupo.",
+    "error_invalid": "Este link de convite é inválido ou já não está disponível.",
+    "error_expired": "Este convite expirou.",
+    "error_revoked": "Este convite foi revogado.",
+    "error_email_mismatch": "Este convite por e-mail pertence a outra conta.",
+    "error_capacity": "Este grupo atingiu o limite de membros.",
+    "error_limit": "Atingiu o número máximo de grupos a que pode aderir.",
+    "error_group_unavailable": "Este grupo não está a aceitar membros neste momento.",
+    "go_to_group": "Ir para o grupo"
   }
 }

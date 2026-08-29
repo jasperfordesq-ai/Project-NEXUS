@@ -176,6 +176,99 @@ describe('the routes this outage actually broke', () => {
       .toBe('/(modals)/job-pipeline?id=7');
   });
 
+  it('opens the existing applications and organisations tabs for their web routes', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/jobs/my-applications'))
+      .toBe('/(modals)/jobs?view=my-applications');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/volunteering/my-applications'))
+      .toBe('/(modals)/volunteering?tab=applications');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/volunteering/my-organisations'))
+      .toBe('/(modals)/volunteering?tab=organisations');
+  });
+
+  it('opens a review-request link on the pending composer route', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/reviews/create?transaction_id=99'))
+      .toBe('/(modals)/reviews?transaction_id=99&tab=pending');
+  });
+
+  it('opens match preferences instead of dropping the final path segment', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/matches/preferences'))
+      .toBe('/(modals)/match-preferences');
+  });
+
+  it('maps every member-facing course route to its native screen', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/courses'))
+      .toBe('/(modals)/courses');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/courses/my-learning'))
+      .toBe('/(modals)/courses?tab=learning');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/courses/timebanking-basics'))
+      .toBe('/(modals)/course-detail?id=timebanking-basics');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/courses/7/learn'))
+      .toBe('/(modals)/course-player?id=7');
+  });
+
+  it('maps podcast catalogues, shows and episodes without dropping their slugs', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/podcasts'))
+      .toBe('/(modals)/podcasts');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/podcasts/time-stories'))
+      .toBe('/(modals)/podcast-show?slug=time-stories');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/podcasts/time-stories/first-hour'))
+      .toBe('/(modals)/podcast-episode?showSlug=time-stories&episodeSlug=first-hour');
+  });
+
+  it('keeps member onboarding distinct from federation onboarding', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/onboarding'))
+      .toBe('/(modals)/onboarding');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/federation/onboarding'))
+      .toBe('/(modals)/federation-onboarding');
+  });
+
+  it('maps clubs, partner venues, the member pass, and donation receipts', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/clubs')).toBe('/(modals)/clubs');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/venues')).toBe('/(modals)/venues');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/venues/pass')).toBe('/(modals)/venue-pass');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/donations/42/receipt'))
+      .toBe('/(modals)/donation-receipt?id=42');
+  });
+
+  it('preserves event management sections and the event id', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/events/42/manage'))
+      .toBe('/(modals)/event-manage?id=42');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/events/42/manage/check-in'))
+      .toBe('/(modals)/event-manage?id=42&section=check-in');
+  });
+
+  it('maps all member-facing ideation workspaces without confusing fixed paths for ids', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/ideation/3/ideas/7'))
+      .toBe('/(modals)/ideation-idea?challengeId=3&id=7');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/ideation/3/edit'))
+      .toBe('/(modals)/new-challenge?id=3&mode=edit');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/ideation/campaigns'))
+      .toBe('/(modals)/ideation-campaigns');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/ideation/campaigns/4'))
+      .toBe('/(modals)/ideation-campaign-detail?id=4');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/ideation/outcomes'))
+      .toBe('/(modals)/ideation-outcomes');
+  });
+
+  it('maps safe adult entry links and keeps Care and linked-account confirmations on web', () => {
+    const token = 'a'.repeat(40);
+    expect(mapSystemPathToNativeRoute(`https://app.project-nexus.ie/groups/invite/${token}`))
+      .toBe(`/(modals)/group-invite?token=${token}`);
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/jobs/employers/42'))
+      .toBe('/(modals)/member-profile?id=42');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/venues/checkin/venue-token'))
+      .toBe('/(modals)/venue-checkin?token=venue-token');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/volunteering/checkin/shift-token'))
+      .toBe('/(modals)/volunteer-checkin?token=shift-token');
+    expect(isBrowserOnlyPath('https://app.project-nexus.ie/join/care-code')).toBe(true);
+    expect(isBrowserOnlyPath('https://app.project-nexus.ie/support-actions/confirm/public-token')).toBe(true);
+  });
+
+  it('opens the existing policy-safe identity status screen for the optional prompt', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/verify-identity-optional'))
+      .toBe('/(modals)/verify-identity');
+  });
+
   /**
    * 🔴 The VALUE is a slug; the PARAMETER is named `id`. Both halves matter.
    *

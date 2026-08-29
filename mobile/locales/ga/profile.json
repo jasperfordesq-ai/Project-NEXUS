@@ -50,6 +50,7 @@
       "locationAction": "Cuir mo cheantar leis",
       "pausedTitle": "Tá an mheaitseáil ar sos",
       "pausedBody": "Tá an mheaitseáil múchta i do shocruithe, mar sin níl aon rud á mholadh duit faoi láthair.",
+      "pausedAction": "Coigeartaigh sainroghanna meaitseála",
       "listingsTitle": "Postáil rud éigin chun tosú ag meaitseáil",
       "listingsBody": "Tógtar cluichí timpeall ar an rud a thugann tú agus an rud a theastaíonn uait. Postáil do chéad tairiscint nó iarratas agus tosóidh moltaí ag teacht.",
       "listingsAction": "Postáil tairiscint nó iarratas"
@@ -364,6 +365,18 @@
     "federationEvents": "Faigh imeachtaí ó phobail nasctha.",
     "federationSettings": "Déan athbhreithniú ar infheictheacht an chónaidhm agus ar roghanna comhroinnte.",
     "settings": "Slándáil, fógraí, sainroghanna agus rialuithe cuntais."
+  },
+  "matchPreferences": {
+    "heading": "Sainroghanna meaitseála",
+    "subtitle": "Rialaigh conas a aimsíonn Meaitseáil Chliste naisc duit agus conas a chuireann sí ar an eolas thú fúthu.",
+    "load_failed": "Theip ar do shainroghanna meaitseála a lódáil",
+    "save": "Sábháil sainroghanna",
+    "save_success": "Sábháladh na sainroghanna meaitseála",
+    "save_failed": "Theip ar shábháil roghanna meaitseála",
+    "pause": { "title": "Cuir meaitseáil ar sos" },
+    "thresholds": { "title": "Fad agus cáilíocht", "distance_label": "Fad uasta", "distance_value": "{{value}} km", "quality_label": "Íoschaighdeán meaitseála", "quality_value": "{{value}} %" },
+    "categories": { "title": "Spéiseanna catagóirí", "description": "Roghnaigh na catagóirí ar mhaith leat meaitseálacha a fháil iontu. Fág gach ceann gan tic chun meaitseálacha a fháil i ngach catagóir.", "empty": "Níl aon chatagóir ar fáil go fóill." },
+    "notifications": { "title": "Fógraí", "frequency_label": "Minicíocht achoimre na meaitseálacha", "daily": "Gach lá", "fortnightly": "Gach coicís", "monthly": "Gach mí", "never": "Riamh", "hot_matches": "Foláirimh meaitseálacha láidre", "mutual_matches": "Foláirimh meaitseálacha cómhalartacha" }
   },
   "sessionUnavailableTitle": "Níl do sheisiún ar fáil",
   "sessionUnavailableSubtitle": "Níorbh fhéidir linn do phróifíl a lódáil. Sínigh isteach arís."

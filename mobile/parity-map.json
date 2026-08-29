@@ -533,260 +533,266 @@
       "mobile": "wallet"
     },
     "clubs": {
-      "status": "gap",
-      "reason": "Clubs have no native route."
+      "status": "native",
+      "mobile": "clubs"
     },
     "courses": {
-      "status": "gap",
-      "reason": "Courses have no native route. Parity audit records this as partial by design."
+      "status": "native",
+      "mobile": "courses"
     },
     "courses/:id/learn": {
-      "status": "gap",
-      "reason": "Course player has no native route."
+      "status": "native",
+      "mobile": "course-player"
     },
     "courses/:idOrSlug": {
-      "status": "gap",
-      "reason": "Courses have no native route."
+      "status": "native",
+      "mobile": "course-detail"
     },
     "courses/my-learning": {
-      "status": "gap",
-      "reason": "Course enrolment list has no native route."
+      "status": "native",
+      "mobile": "courses"
     },
     "donations/:id/receipt": {
-      "status": "gap",
-      "reason": "Donation receipts have no native route."
+      "status": "native",
+      "mobile": "donation-receipt"
     },
     "events/:id/guardian-consent": {
-      "status": "gap",
-      "reason": "Guardian consent flow has no native route; safeguarding-sensitive."
+      "status": "out-of-scope",
+      "reason": "Both native apps are adults-only. Guardian consent remains an exceptional staffed web/operator workflow and must not become a native child-access journey."
     },
     "events/:id/manage/:section?": {
-      "status": "gap",
-      "reason": "Event organiser management console has no single native equivalent."
+      "status": "native",
+      "mobile": "event-manage",
+      "reason": "Permission-aware native operations hub routes organisers to the implemented event people, check-in, agenda, analytics, registration, ticket, communications, template, recurrence, and lifecycle workspaces."
     },
     "ideation/:challengeId/ideas/:id": {
-      "status": "gap",
-      "reason": "Individual idea detail has no native route."
+      "status": "native",
+      "mobile": "ideation-idea"
     },
     "ideation/:id/edit": {
-      "status": "gap",
-      "reason": "Ideation editing has no native route."
+      "status": "native",
+      "mobile": "new-challenge",
+      "reason": "The challenge form supports a permission-enforced edit mode backed by the existing update contract."
     },
     "ideation/campaigns": {
-      "status": "gap",
-      "reason": "Ideation campaigns have no native route."
+      "status": "native",
+      "mobile": "ideation-campaigns"
     },
     "ideation/campaigns/:id": {
-      "status": "gap",
-      "reason": "Ideation campaigns have no native route."
+      "status": "native",
+      "mobile": "ideation-campaign-detail"
     },
     "ideation/outcomes": {
-      "status": "gap",
-      "reason": "Ideation outcomes have no native route."
+      "status": "native",
+      "mobile": "ideation-outcomes"
     },
     "jobs/my-applications": {
-      "status": "gap",
-      "reason": "No native \"my applications\" list; applications are reachable only per job."
+      "status": "native",
+      "mobile": "jobs"
     },
     "matches/preferences": {
-      "status": "gap",
-      "reason": "Match preferences cannot be edited natively."
+      "status": "native",
+      "mobile": "match-preferences"
     },
     "me/verein-dues": {
-      "status": "gap",
-      "reason": "Club dues have no native route."
+      "status": "out-of-scope",
+      "reason": "The API is guarded by the caring_community feature. Care in Community is intentionally excluded from both native apps."
     },
     "me/verein-invitations": {
-      "status": "gap",
-      "reason": "Club invitations have no native route."
+      "status": "out-of-scope",
+      "reason": "Cross-Verein invitations are guarded by the caring_community feature. Care in Community is intentionally excluded from both native apps."
     },
     "onboarding": {
-      "status": "gap",
-      "reason": "No native member onboarding flow; new members land on the tabs."
+      "status": "native",
+      "mobile": "onboarding"
     },
     "podcasts": {
-      "status": "gap",
-      "reason": "Podcasts have no native route. Parity audit records this as partial by design."
+      "status": "native",
+      "mobile": "podcasts"
     },
     "podcasts/:showSlug": {
-      "status": "gap",
-      "reason": "Podcasts have no native route."
+      "status": "native",
+      "mobile": "podcast-show"
     },
     "podcasts/:showSlug/:episodeSlug": {
-      "status": "gap",
-      "reason": "Podcast episode player has no native route."
+      "status": "native",
+      "mobile": "podcast-episode"
     },
     "premium": {
-      "status": "gap",
-      "reason": "Donations and support (member_premium) has no native surface."
+      "status": "out-of-scope",
+      "reason": "Policy-blocked: native fundraising requires a documented Apple-approved nonprofit and Apple Pay design; do not add an external payment shortcut."
     },
     "premium/manage": {
-      "status": "gap",
-      "reason": "Premium management has no native surface."
+      "status": "out-of-scope",
+      "reason": "Policy-blocked with the member_premium payment design; management cannot ship before the native entitlement and refund lifecycle is approved."
     },
     "premium/return": {
-      "status": "gap",
-      "reason": "Premium payment return page has no native surface."
+      "status": "out-of-scope",
+      "reason": "Policy-blocked: no native payment-return route is valid until the approved Apple Pay/fundraising flow exists."
     },
     "reviews/create": {
-      "status": "gap",
-      "reason": "No native review composer; reviews are read-only on mobile."
+      "status": "native",
+      "mobile": "reviews"
     },
     "venues": {
-      "status": "gap",
-      "reason": "Venues have no native route."
+      "status": "native",
+      "mobile": "venues"
     },
     "venues/pass": {
-      "status": "gap",
-      "reason": "Venue pass has no native route."
+      "status": "native",
+      "mobile": "venue-pass"
     },
     "verify-identity-optional": {
-      "status": "gap",
-      "reason": "Optional identity-verification prompt has no native route."
+      "status": "native",
+      "mobile": "verify-identity"
     },
     "volunteering/my-applications": {
-      "status": "gap",
-      "reason": "No native volunteering applications list."
+      "status": "native",
+      "mobile": "volunteering"
     },
     "volunteering/my-organisations": {
-      "status": "gap",
-      "reason": "No native list of the organisations a member belongs to."
+      "status": "native",
+      "mobile": "volunteering"
     },
     "wallet/regional-points": {
-      "status": "gap",
-      "reason": "Regional points wallet view has no native route."
+      "status": "out-of-scope",
+      "reason": "Regional points are implemented by the Care in Community feature and are excluded from both native apps by the product-owner decision of 2026-08-28."
     },
     "whats-on": {
-      "status": "gap",
-      "reason": "Public What's On listing has no native route."
+      "status": "out-of-scope",
+      "reason": "What's On is the anonymous public advertising twin of Events; the adults-only native clients are authenticated member products and keep anonymous public discovery on the web."
     },
     "whats-on/:id": {
-      "status": "gap",
-      "reason": "Public What's On detail has no native route."
+      "status": "out-of-scope",
+      "reason": "What's On is the anonymous public advertising twin of Events; signed-in members use the native Events detail while anonymous public discovery remains on the web."
     },
     "caring-community/caregiver": {
-      "status": "needs-review",
-      "reason": "Caring Community member surfaces — feature gate is off by default and the module has no guide yet."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/caregiver/cover": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/caregiver/link": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/civic-digest": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/feedback": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/future-care-fund": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/hour-gift": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/hour-transfer": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/loyalty/history": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/markt": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/my-data-export": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/my-relationships": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/my-trust-tier": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/offer-favour": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/projects": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/projects/:id": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/providers": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/request-help": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/safeguarding/my-reports": {
-      "status": "needs-review",
-      "reason": "Safeguarding surface — needs a deliberate decision, not a default."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community, including its safeguarding workspace, is not part of either native application."
     },
     "caring-community/safeguarding/report": {
-      "status": "needs-review",
-      "reason": "Safeguarding surface — needs a deliberate decision, not a default."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community, including its safeguarding workspace, is not part of either native application."
     },
     "caring-community/success-stories": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/surveys": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/surveys/:id": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "caring-community/warmth-pass": {
-      "status": "needs-review",
-      "reason": "Caring Community member surface."
+      "status": "out-of-scope",
+      "reason": "Owner decision 2026-08-28: Care in Community is not part of either native application."
     },
     "groups/invite/:token": {
-      "status": "needs-review",
-      "reason": "Group invite token link. Same deep-link decision as join/:code."
+      "status": "native",
+      "mobile": "group-invite",
+      "reason": "Authenticated adults can preview and explicitly accept an ordinary group invitation in the native app."
     },
     "jobs/employers/:userId": {
-      "status": "needs-review",
-      "reason": "Employer public profile; unclear whether it is a member journey."
+      "status": "native",
+      "mobile": "member-profile",
+      "reason": "The employer public identity is the same member profile already rendered natively."
     },
     "join/:code": {
-      "status": "needs-review",
-      "reason": "Invite-code join. Decide whether +native-intent should handle it or it stays web."
+      "status": "out-of-scope",
+      "reason": "Care in Community invite redemption is deliberately excluded from both adults-only native applications and remains browser-only."
     },
     "linked-accounts/:childId/messages/:partnerId": {
-      "status": "needs-review",
-      "reason": "Carer proxy message thread. can_view_messages is NOT enforced server-side; do not wire natively before that."
+      "status": "out-of-scope",
+      "reason": "Guardian/carer proxy messaging is excluded from the adults-only native apps, and can_view_messages is not yet enforced server-side."
     },
     "support-actions/confirm/:token": {
-      "status": "needs-review",
-      "reason": "Support-action confirmation token link; needs a deep-link decision."
+      "status": "out-of-scope",
+      "reason": "Public side-effecting linked-account support confirmations remain browser-only; they are not an adults-only native member journey."
     },
     "venues/checkin/:token": {
-      "status": "needs-review",
-      "reason": "Venue check-in token link; needs a deep-link decision."
+      "status": "native",
+      "mobile": "venue-checkin",
+      "reason": "Venue staff get a confirmation screen; scanning alone never records a visit."
     },
     "volunteering/checkin/:token": {
-      "status": "needs-review",
-      "reason": "Volunteering check-in token link; needs a deep-link decision."
+      "status": "native",
+      "mobile": "volunteer-checkin",
+      "reason": "Authorised coordinators explicitly confirm check-in and check-out; opening the link causes no mutation."
     },
     "about": {
       "status": "out-of-scope",
