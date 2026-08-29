@@ -1,6 +1,6 @@
 # iOS release-candidate freeze record
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-30
 
 This record has two stages. The source-candidate fields are frozen as soon as the repository
 work has settled. The signed-build fields are filled only after Apple enrolment is active and
@@ -27,6 +27,9 @@ screenshots and App Review notes from referring to a different build than the on
   failures: the real Team ID/AASA association and numeric App Store Connect Apple ID.
 - [x] Backend notification tests and the paid-promotion consent tests pass at the same
   backend commit used by production.
+- [x] The unsigned iPhone 16 Pro Max Simulator tour produces the four accepted public
+  screenshots and passes checksum, opacity, dimensions, page-content OCR and visual review
+  at source commit `fc496aedddd6793835f49d80a6c7abc4ffbf7771` (run `33281688048`).
 - [ ] A signed EAS production build processes successfully in App Store Connect/TestFlight.
 - [ ] A real-iPhone journey pass covers login, tenant selection, permissions, push receipt
   and tap from background/terminated state, deep links, camera/photos/microphone/location,

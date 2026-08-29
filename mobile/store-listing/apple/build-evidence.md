@@ -2,8 +2,8 @@
 
 Last reviewed: 2026-08-29
 
-This record captures the first successful macOS cloud compile of the checked Expo iOS
-configuration. It is compile and artifact-inspection evidence only; it does not certify a
+This record captures the checked macOS cloud compile and current Simulator runtime evidence
+for the Expo iOS configuration. It does not certify a
 signed device build, TestFlight, App Review or any runtime journey on an iPhone.
 
 ## EAS build
@@ -29,14 +29,21 @@ artifact.
 
 ## Simulator runtime evidence
 
-GitHub Actions run [33246391310](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33246391310)
-compiled source commit `ad2029ba7fc1473cc8c7816a3c9344650a851597` as an unsigned
-iOS Release build, installed it on an iPhone 16 Pro Max Simulator running iOS 26.2, and
-completed the protected Partner Demo login and eight-screen Maestro tour. Its artifact
-contains eight opaque 1320 x 2868 PNGs plus a manifest whose source SHA and SHA-256 image
-checksums were independently verified after download. Four clean primary-tab images are
-selected as the draft App Store set; four modal captures are quarantined for the visual
-reasons recorded in [`screenshots.md`](screenshots.md).
+GitHub Actions run [33281688048](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33281688048)
+restored the exact-source unsigned Release app for commit
+`fc496aedddd6793835f49d80a6c7abc4ffbf7771`, installed it on an iPhone 16 Pro Max
+Simulator running iOS 26.2, authenticated to the protected Partner Demo tenant and completed
+the four-screen public tour. The workflow's preparation and Apple Vision OCR gates passed.
+The downloaded artifact was then independently inspected: all four files are opaque native
+1320 x 2868 PNGs showing the intended Feed, Listings, Messages and Events pages with no
+system sheet, credential, keyboard or debug overlay.
+
+| Screenshot | SHA-256 |
+| --- | --- |
+| `01-feed.png` | `5abe170fd5b63aca08f9d934bb1178b5f6509289dd25c0f8860473892d26fd27` |
+| `02-listings.png` | `93389c0fcd7f0d89e4062de3aa07b376828c3092d745f4a47a56d24aa11bb770` |
+| `04-messages.png` | `7ed293436302dcee66c85cd0fbdba33f44b545cb7338b2718f308d34cc8709c1` |
+| `05-events.png` | `8533a97ab120c72251a33cb86ec8e8a320f1b7bcfcc21064665975fc40f815df` |
 
 ## Final app inspection
 

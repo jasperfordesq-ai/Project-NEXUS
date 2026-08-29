@@ -1,6 +1,6 @@
 # Apple App Store submission handoff
 
-Last reviewed: 2026-08-28
+Last reviewed: 2026-08-30
 
 This is the maintained source of truth for preparing the Expo/React Native app for
 TestFlight and the Apple App Store. It records evidence and gates; it is not authority
@@ -26,7 +26,7 @@ and the exact signed candidate will be recorded in
 | Apple Team ID | Not yet recorded; required for the AASA app identifier |
 | Apple signing and APNs credentials | Not configured or verified |
 | iOS cloud build | Unsigned simulator build succeeded and was inspected; signed device build not run |
-| Partner Demo review account | Live login re-verified on 2026-08-27; credentials remain outside Git |
+| Partner Demo review account | Live login and protected startup endpoints re-verified in run `33281688048`; credentials remain outside Git |
 | Planned signed candidate | Version `1.2.0`, iOS build `3`; EAS remote counter was read as `2` before build |
 | Real-iPhone journey walk | Never run |
 | TestFlight upload | Not performed |
@@ -54,12 +54,13 @@ cannot run on this Windows PC or replace a signed real-iPhone/TestFlight walk.
 The manual `iOS Simulator Screenshots` GitHub Actions workflow closes part of that runtime
 gap without a Mac rental: a standard hosted macOS runner compiles the selected Git commit in
 unsigned Expo Release mode, boots Apple's iPhone 16 Pro Max Simulator, runs the protected
-Partner Demo Maestro tour and uploads eight draft screenshots plus checksums. It deliberately
+Partner Demo Maestro tour and uploads four accepted draft screenshots plus checksums. It deliberately
 does not run on pushes or pull requests, never receives credentials as workflow inputs and
 does not claim signing, APNs, TestFlight or physical-device proof. See
 [`store-listing/apple/screenshots.md`](../store-listing/apple/screenshots.md).
 
-That compile has now succeeded. The checked evidence, artifact hash, native metadata and
+That compile and the current four-page Simulator tour have now succeeded. The checked
+evidence, artifact hashes, native metadata and
 remaining limitations are recorded in
 [`store-listing/apple/build-evidence.md`](../store-listing/apple/build-evidence.md).
 

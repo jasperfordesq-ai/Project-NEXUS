@@ -84,24 +84,20 @@ labels the unsigned evidence boundary explicitly so it cannot be mistaken for Te
 
 ## 2026-08-29 Simulator capture
 
-Workflow run [33246391310](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33246391310)
-completed against source commit `ad2029ba7fc1473cc8c7816a3c9344650a851597`. The
+Workflow run [33281688048](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33281688048)
+completed against source commit `fc496aedddd6793835f49d80a6c7abc4ffbf7771`. The
 unsigned Release build ran on an iPhone 16 Pro Max Simulator with iOS 26.2 and produced
-eight opaque 1320 x 2868 PNGs. The downloaded files matched every SHA-256 value in the
-artifact manifest.
+four opaque 1320 x 2868 PNGs. The downloaded files matched every SHA-256 value in the
+artifact manifest, and Apple Vision OCR verified the intended page content in each image.
 
 Visual inspection, not workflow success alone, determines the public selection:
 
 - `01-feed.png`, `02-listings.png`, `04-messages.png` and `05-events.png` form the
   accepted four-image draft set. Apple permits one to ten screenshots, so four is a valid
-  submission count.
-- `03-members.png`, `06-wallet.png`, `07-volunteering.png` and `08-settings.png` are
-  quarantined from the public set. Their modal presentation leaves a large black top
-  backdrop; Volunteering also clips the third tab label and wraps “Opportunities” badly
-  inside its narrow statistic card.
-- The quarantined images are byte-identical to run 33216232144 where comparable, proving
-  these are pre-existing modal/capture-layout issues and not regressions from the bundle
-  optimisation in `ad2029ba7`.
+  submission count. Independent visual inspection found the intended current pages with no
+  system sheet, credential, keyboard or debug overlay.
+- The public workflow now captures only that accepted set. The earlier modal images remain
+  excluded because their sheet presentation was unsuitable for the public listing.
 
 This is a genuine iOS Simulator draft set, not signed TestFlight or physical-device
 evidence. Recheck the selected images against the signed candidate before upload and
@@ -111,7 +107,7 @@ replace any whose signed runtime differs.
 
 Do not make the public release the first device test. Use this release ladder:
 
-1. Run and visually inspect the eight Simulator captures and diagnostic evidence.
+1. Run and visually inspect the four accepted Simulator captures and diagnostic evidence.
 2. After enrollment, build and submit the signed candidate to TestFlight from Windows with
    EAS. Simulator success does not replace this signing gate.
 3. Invite at least one trusted external TestFlight volunteer who owns a supported iPhone.
