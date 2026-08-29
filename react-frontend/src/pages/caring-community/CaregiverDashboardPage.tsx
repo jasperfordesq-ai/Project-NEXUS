@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { getFormattingLocale } from '@/lib/helpers';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import AlertTriangle from 'lucide-react/icons/alert-triangle';
@@ -25,6 +25,7 @@ import { PageMeta } from '@/components/seo';
 import { useTenant } from '@/contexts';
 import { useApi } from '@/hooks/useApi';
 import { usePageTitle } from '@/hooks';
+import { api } from '@/lib/api';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +40,19 @@ interface CaregiverLink {
   notes: string | null;
   cared_for_name: string;
   cared_for_avatar_url: string | null;
+  status: 'pending' | 'active' | 'rejected' | 'inactive';
+  recipient_confirmed_at: string | null;
+  rejection_reason: string | null;
+}
+
+interface IncomingCaregiverLink {
+  id: number;
+  caregiver_id: number;
+  caregiver_name: string;
+  caregiver_avatar_url: string | null;
+  relationship_type: CaregiverLink['relationship_type'];
+  status: CaregiverLink['status'];
+  recipient_confirmed_at: string | null;
 }
 
 interface BurnoutCheck {
@@ -231,6 +245,11 @@ interface LinkCardProps {
 }
 
 function LinkCard({ link, t, tenantPath }: LinkCardProps) {
+  const isActive = link.status === 'active';
+  const statusKey = link.status === 'pending'
+    ? (link.recipient_confirmed_at ? 'pending_staff' : 'pending_recipient')
+    : link.status;
+
   return (
     <GlassCard className="p-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -246,9 +265,20 @@ function LinkCard({ link, t, tenantPath }: LinkCardProps) {
             <Chip size="sm" variant="flat" color="secondary" className="mt-1">
               {t(`caregiver.relationship_${link.relationship_type}`)}
             </Chip>
+            <Chip
+              size="sm"
+              variant="flat"
+              color={isActive ? 'success' : link.status === 'rejected' ? 'danger' : 'warning'}
+              className="ml-2 mt-1"
+            >
+              {t(`caregiver.status_${statusKey}`)}
+            </Chip>
+            {link.status === 'rejected' && link.rejection_reason && (
+              <p className="mt-2 text-sm text-danger">{link.rejection_reason}</p>
+            )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        {isActive && <div className="flex flex-wrap gap-2">
           <Accordion className="w-full sm:w-auto" variant="light">
             <AccordionItem
               key="schedule" id="schedule"
@@ -282,7 +312,7 @@ function LinkCard({ link, t, tenantPath }: LinkCardProps) {
           >
             {t('cover.title')}
           </Button>
-        </div>
+        </div>}
       </div>
     </GlassCard>
   );
@@ -296,6 +326,7 @@ export function CaregiverDashboardPage() {
   const { t } = useTranslation('caring_community');
   const { hasFeature, tenantPath } = useTenant();
   const navigate = useNavigate();
+  const [decidingIncomingId, setDecidingIncomingId] = useState<number | null>(null);
 
   usePageTitle(t('caregiver.dashboard_title'));
 
@@ -303,6 +334,12 @@ export function CaregiverDashboardPage() {
     '/v2/caring-community/caregiver/links',
     { immediate: true },
   );
+
+  const {
+    data: incomingLinks,
+    isLoading: incomingLoading,
+    refetch: refetchIncoming,
+  } = useApi<IncomingCaregiverLink[]>('/v2/caring-community/caregiver/incoming-links', { immediate: true });
 
   const { data: burnout, isLoading: burnoutLoading } = useApi<BurnoutCheck>(
     '/v2/caring-community/caregiver/burnout-check',
@@ -317,6 +354,17 @@ export function CaregiverDashboardPage() {
   }, [hasFeature, navigate, tenantPath]);
 
   const isLoading = linksLoading || burnoutLoading;
+
+  const decideIncoming = async (linkId: number, action: 'confirm' | 'reject') => {
+    setDecidingIncomingId(linkId);
+    try {
+      const body = action === 'reject' ? { reason: t('caregiver.recipient_rejection_reason') } : undefined;
+      await api.post(`/v2/caring-community/caregiver/incoming-links/${linkId}/${action}`, body);
+      await refetchIncoming();
+    } finally {
+      setDecidingIncomingId(null);
+    }
+  };
 
   return (
     <>
@@ -370,6 +418,46 @@ export function CaregiverDashboardPage() {
         )}
 
         {/* My care receivers */}
+        {!incomingLoading && incomingLinks?.some((link) => link.status === 'pending' && !link.recipient_confirmed_at) && (
+          <section aria-labelledby="incoming-caregiver-links" className="space-y-4">
+            <h2 id="incoming-caregiver-links" className="text-lg font-semibold text-theme-primary">
+              {t('caregiver.incoming_requests')}
+            </h2>
+            {incomingLinks
+              .filter((link) => link.status === 'pending' && !link.recipient_confirmed_at)
+              .map((link) => (
+                <GlassCard key={link.id} className="p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={link.caregiver_avatar_url ?? undefined} name={link.caregiver_name} size="md" />
+                      <div>
+                        <p className="font-semibold text-theme-primary">{link.caregiver_name}</p>
+                        <p className="text-sm text-theme-muted">{t('caregiver.incoming_explanation')}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        color="primary"
+                        isLoading={decidingIncomingId === link.id}
+                        onPress={() => void decideIncoming(link.id, 'confirm')}
+                      >
+                        {t('caregiver.confirm_relationship')}
+                      </Button>
+                      <Button
+                        color="danger"
+                        variant="bordered"
+                        isDisabled={decidingIncomingId === link.id}
+                        onPress={() => void decideIncoming(link.id, 'reject')}
+                      >
+                        {t('caregiver.reject_relationship')}
+                      </Button>
+                    </div>
+                  </div>
+                </GlassCard>
+              ))}
+          </section>
+        )}
+
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-theme-primary">
             {t('caregiver.my_care_receivers')}

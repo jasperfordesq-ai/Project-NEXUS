@@ -83,7 +83,7 @@ const GROUPS: GroupDef[] = [
     id: 'give_help',
     icon: HelpingHand,
     actions: [
-      { key: 'become_caregiver', href: '/volunteering', icon: UserRoundPlus, feature: 'caring_community' },
+      { key: 'become_caregiver', href: '/caring-community/caregiver/link', icon: UserRoundPlus, feature: 'caring_community' },
       { key: 'offer_favour', href: '/caring-community/offer-favour', icon: HeartHandshake, feature: 'caring_community' },
       { key: 'offer_time', href: '/listings/create?type=offer', icon: Heart, module: 'listings' },
       { key: 'log_hours', href: '/volunteering?tab=hours', icon: Wallet, feature: 'volunteering' },

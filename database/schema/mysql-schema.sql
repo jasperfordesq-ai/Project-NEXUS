@@ -1194,15 +1194,25 @@ CREATE TABLE `caring_caregiver_links` (
   `is_primary` tinyint(1) NOT NULL DEFAULT 0,
   `start_date` date NOT NULL,
   `notes` text DEFAULT NULL,
-  `status` enum('pending','active','inactive') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','active','inactive','rejected') NOT NULL DEFAULT 'pending',
   `approved_by` int(10) unsigned DEFAULT NULL,
+  `recipient_confirmed_at` timestamp NULL DEFAULT NULL,
+  `recipient_confirmed_by` int(10) unsigned DEFAULT NULL,
+  `consent_verified_at` timestamp NULL DEFAULT NULL,
+  `consent_verified_by` int(10) unsigned DEFAULT NULL,
+  `consent_evidence` text DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `rejected_at` timestamp NULL DEFAULT NULL,
+  `rejected_by` int(10) unsigned DEFAULT NULL,
+  `rejection_reason` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ccl_tenant_caregiver_recipient_status_unique` (`tenant_id`,`caregiver_id`,`cared_for_id`,`status`),
   KEY `caring_caregiver_links_tenant_id_caregiver_id_index` (`tenant_id`,`caregiver_id`),
   KEY `caring_caregiver_links_tenant_id_cared_for_id_index` (`tenant_id`,`cared_for_id`),
-  KEY `caring_caregiver_links_tenant_id_index` (`tenant_id`)
+  KEY `caring_caregiver_links_tenant_id_index` (`tenant_id`),
+  KEY `ccl_tenant_status_index` (`tenant_id`,`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `caring_cover_requests`;
@@ -12553,7 +12563,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=418 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=419 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12952,7 +12962,7 @@ CREATE TABLE `login_attempts` (
   PRIMARY KEY (`id`),
   KEY `idx_identifier_type` (`identifier`,`type`),
   KEY `idx_attempted_at` (`attempted_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=193786 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=193926 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `marketplace_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15661,7 +15671,7 @@ CREATE TABLE `performance_request_hourly` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_perf_hourly_bucket` (`tenant_id`,`bucket_hour`),
   KEY `idx_perf_hourly_prune` (`bucket_hour`)
-) ENGINE=InnoDB AUTO_INCREMENT=49676 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=50257 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `performance_request_samples`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15685,7 +15695,7 @@ CREATE TABLE `performance_request_samples` (
   KEY `idx_perf_req_slowest` (`tenant_id`,`duration_ms`),
   KEY `idx_perf_req_memory` (`tenant_id`,`peak_memory_mb`),
   KEY `idx_perf_req_prune` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=31191 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31751 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `permission_audit_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16508,7 +16518,7 @@ CREATE TABLE `refresh_token_sessions` (
   KEY `idx_refresh_sessions_family_expiry` (`family_expires_at`),
   CONSTRAINT `fk_refresh_sessions_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_refresh_sessions_user_tenant` FOREIGN KEY (`user_id`, `tenant_id`) REFERENCES `users` (`id`, `tenant_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=930 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `regional_analytics_access_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16763,7 +16773,7 @@ CREATE TABLE `revoked_tokens` (
   KEY `idx_user_id` (`user_id`),
   KEY `idx_expires_at` (`expires_at`),
   CONSTRAINT `revoked_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=265 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=269 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `role_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -21095,7 +21105,8 @@ INSERT INTO `laravel_migrations` VALUES
 (414,'2026_08_11_120000_add_hours_available_to_listings',120),
 (415,'2026_08_24_090000_add_transcript_to_course_lessons',121),
 (416,'2026_08_27_090000_backfill_users_display_name',122),
-(417,'2026_08_28_120000_add_paused_to_achievement_campaign_status',123);
+(417,'2026_08_28_120000_add_paused_to_achievement_campaign_status',123),
+(418,'2026_08_29_000001_complete_caring_caregiver_link_lifecycle',124);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

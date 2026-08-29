@@ -1,0 +1,138 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Staff review queue — verify consent, then approve or refuse.
+
+    🔴 When the care recipient has NOT agreed, the approval form is not rendered
+    at all. It is not a disabled button.
+
+    A disabled control is a courtesy that a hand-edited form post walks straight
+    past, and it also reads to a screen-reader user as "there is an approve
+    action here, you just cannot reach it" — which is the wrong message when the
+    truth is that approving is not a legitimate action yet. Withholding the form
+    and stating the reason in its place is both safer and clearer. Laravel
+    refuses the same approval with a 422 regardless; this is the second layer.
+
+    🔴 A decided request stays on screen, visibly marked. Vanishing on decision
+    leaves the reviewer unable to confirm what they just did.
+#}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% import "caring/_status.njk" as caring %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/caring') }}">{{ t("govuk_alpha_caring.shared.back_to_caring") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {{ caring.caringErrors(errors, "review", t) }}
+      {{ caring.caringStatus(statusKey, statusIsSuccess, statusIsError, t) }}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_caring.review.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_caring.review.title") }}</h1>
+      <p class="govuk-body">{{ t("govuk_alpha_caring.review.intro") }}</p>
+
+      {% if not requests.length %}
+        <p class="govuk-inset-text">{{ t("govuk_alpha_caring.review.none") }}</p>
+      {% else %}
+        {% for item in requests %}
+          {% set caregiverName = item.caregiver_name or t("govuk_alpha_caring.shared.unknown_member") %}
+          {% set caredForName = item.cared_for_name or t("govuk_alpha_caring.shared.unknown_member") %}
+          <div class="govuk-summary-card" data-caring-review="{{ item.id }}" data-recipient-agreed="{{ 'yes' if item.recipientAgreed else 'no' }}">
+            <div class="govuk-summary-card__title-wrapper">
+              <h2 class="govuk-summary-card__title" id="caring-review-{{ item.id }}">{{ caregiverName }}</h2>
+            </div>
+            <div class="govuk-summary-card__content">
+              <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t("govuk_alpha_caring.review.requested_for") }}</dt>
+                  <dd class="govuk-summary-list__value">{{ caredForName }}</dd>
+                </div>
+                {% if item.requestedOnLabel %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t("govuk_alpha_caring.review.requested_on") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ item.requestedOnLabel }}</dd>
+                  </div>
+                {% endif %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t("govuk_alpha_caring.caregiver.status_heading") }}</dt>
+                  <dd class="govuk-summary-list__value">
+                    {% if item.recipientAgreed %}
+                      {{ govukTag({ text: t("govuk_alpha_caring.review.recipient_agreed"), classes: "govuk-tag--green" }) }}
+                    {% else %}
+                      {{ govukTag({ text: t("govuk_alpha_caring.review.recipient_not_agreed"), classes: "govuk-tag--yellow" }) }}
+                    {% endif %}
+                  </dd>
+                </div>
+              </dl>
+
+              {% if item.canApprove %}
+                <form method="post" action="{{ urlFor('/caring/reviews/' + (item.id | string) + '/decide') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="action" value="approve">
+
+                  <div class="govuk-form-group">
+                    <label class="govuk-label govuk-label--s" for="consent_evidence_{{ item.id }}">
+                      {{ t("govuk_alpha_caring.review.evidence_label") }}
+                    </label>
+                    <div id="consent_evidence_hint_{{ item.id }}" class="govuk-hint">{{ t("govuk_alpha_caring.review.evidence_hint") }}</div>
+                    <textarea class="govuk-textarea" id="consent_evidence_{{ item.id }}" name="consent_evidence" rows="3"
+                              aria-describedby="consent_evidence_hint_{{ item.id }}">{% if errorLinkId === item.id and submitted %}{{ submitted.evidence }}{% endif %}</textarea>
+                  </div>
+
+                  {# The attestation is a real checkbox with a real label, not a
+                     styled div: it is a legal statement by a named person and
+                     must be operable by keyboard and announced as a checkbox. #}
+                  <div class="govuk-form-group">
+                    <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                      <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="consent_verified_{{ item.id }}"
+                               name="consent_verified" type="checkbox" value="yes">
+                        <label class="govuk-label govuk-checkboxes__label" for="consent_verified_{{ item.id }}">
+                          {{ t("govuk_alpha_caring.review.attestation_label") }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button class="govuk-button" data-module="govuk-button" type="submit">
+                    {{ t("govuk_alpha_caring.review.approve_button") }}
+                  </button>
+                </form>
+              {% else %}
+                <div class="govuk-inset-text">{{ t("govuk_alpha_caring.review.blocked_until_agreed") }}</div>
+              {% endif %}
+
+              {# Refusing is available whether or not the recipient has answered:
+                 a request can be wrong on its face, and a reviewer must not have
+                 to wait for an agreement in order to stop it. #}
+              <form method="post" action="{{ urlFor('/caring/reviews/' + (item.id | string) + '/decide') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="action" value="reject">
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="reason_{{ item.id }}">
+                    {{ t("govuk_alpha_caring.review.reject_label") }}
+                  </label>
+                  <div id="reason_hint_{{ item.id }}" class="govuk-hint">{{ t("govuk_alpha_caring.review.reject_hint") }}</div>
+                  <textarea class="govuk-textarea" id="reason_{{ item.id }}" name="reason" rows="2"
+                            aria-describedby="reason_hint_{{ item.id }}">{% if errorLinkId === item.id and submitted %}{{ submitted.reason }}{% endif %}</textarea>
+                </div>
+                <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
+                  {{ t("govuk_alpha_caring.review.reject_button") }}
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

@@ -303,7 +303,11 @@ describe('accessible shell tenant gating', () => {
       t
     });
 
-    expect(links).toHaveLength(19);
+    // 19 → 20 on 2026-08-29 when Caring Community gained an Explore card. This
+    // fixture switches EVERY feature on, so a genuinely new gated card must
+    // appear here; the point of the count is to catch a card that silently
+    // stops being rendered, not to freeze the list.
+    expect(links).toHaveLength(20);
     for (const item of links) {
       expect(item.title).toBe(t(item.titleKey));
       expect(item.description).toBe(t(item.descriptionKey));

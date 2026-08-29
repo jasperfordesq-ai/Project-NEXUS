@@ -34,6 +34,15 @@ public class CaringCommunityCaregiverControllerUnitTests
             .GetMethod(nameof(CaringCommunityCaregiverController.AddLink))
             ?.GetCustomAttribute<HttpPostAttribute>()?.Template.Should().Be("links");
         typeof(CaringCommunityCaregiverController)
+            .GetMethod(nameof(CaringCommunityCaregiverController.IncomingLinks))
+            ?.GetCustomAttribute<HttpGetAttribute>()?.Template.Should().Be("incoming-links");
+        typeof(CaringCommunityCaregiverController)
+            .GetMethod(nameof(CaringCommunityCaregiverController.ConfirmIncomingLink))
+            ?.GetCustomAttribute<HttpPostAttribute>()?.Template.Should().Be("incoming-links/{id:int}/confirm");
+        typeof(CaringCommunityCaregiverController)
+            .GetMethod(nameof(CaringCommunityCaregiverController.RejectIncomingLink))
+            ?.GetCustomAttribute<HttpPostAttribute>()?.Template.Should().Be("incoming-links/{id:int}/reject");
+        typeof(CaringCommunityCaregiverController)
             .GetMethod(nameof(CaringCommunityCaregiverController.RemoveLink))
             ?.GetCustomAttribute<HttpDeleteAttribute>()?.Template.Should().Be("links/{id:int}");
         typeof(CaringCommunityCaregiverController)
@@ -57,10 +66,20 @@ public class CaringCommunityCaregiverControllerUnitTests
         typeof(CaringCommunityCaregiverController)
             .GetMethod("AssignCoverCandidate")
             ?.GetCustomAttribute<HttpPostAttribute>()?.Template.Should().Be("cover-requests/{id:int}/assign");
+
+        typeof(AdminCaringCommunityCaregiverLinksController)
+            .GetCustomAttribute<RouteAttribute>()?.Template
+            .Should().Be("api/admin/caring-community/caregiver-links");
+        typeof(AdminCaringCommunityCaregiverLinksController).GetMethod("Index")
+            ?.GetCustomAttribute<HttpGetAttribute>().Should().NotBeNull();
+        typeof(AdminCaringCommunityCaregiverLinksController).GetMethod("Approve")
+            ?.GetCustomAttribute<HttpPostAttribute>()?.Template.Should().Be("{id:int}/approve");
+        typeof(AdminCaringCommunityCaregiverLinksController).GetMethod("Reject")
+            ?.GetCustomAttribute<HttpPostAttribute>()?.Template.Should().Be("{id:int}/reject");
     }
 
     [Fact]
-    public async Task MyLinks_ReturnsActiveCurrentTenantLinksForAuthenticatedCaregiver()
+    public async Task MyLinks_ReturnsPendingAndDecidedCurrentTenantLinksForAuthenticatedCaregiver()
     {
         var tenant = CreateTenantContext(42);
         await using var db = CreateDbContext(tenant);
@@ -83,12 +102,87 @@ public class CaringCommunityCaregiverControllerUnitTests
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
         using var document = JsonDocument.Parse(JsonSerializer.Serialize(ok.Value));
         var rows = document.RootElement.GetProperty("data").EnumerateArray().ToArray();
-        rows.Should().HaveCount(2);
+        rows.Should().HaveCount(3);
         rows[0].GetProperty("cared_for_id").GetInt32().Should().Be(2002);
         rows[0].GetProperty("is_primary").GetBoolean().Should().BeTrue();
         rows[0].GetProperty("cared_for_name").GetString().Should().Be("Robin Recipient");
         rows[0].GetProperty("cared_for_avatar_url").GetString().Should().Be("/avatars/robin.png");
         rows[1].GetProperty("cared_for_id").GetInt32().Should().Be(2001);
+        rows.Select(row => row.GetProperty("status").GetString())
+            .Should().BeEquivalentTo("active", "active", "inactive");
+    }
+
+    [Fact]
+    public async Task IncomingLink_RecipientCanConfirmButUnrelatedMemberCannotReject()
+    {
+        var tenant = CreateTenantContext(42);
+        await using var db = CreateDbContext(tenant);
+        SeedFeature(db, 42, true);
+        db.Users.AddRange(
+            User(1001, 42, "Cara", "Giver"),
+            User(2001, 42, "Pat", "Recipient"),
+            User(2002, 42, "Other", "Member"));
+        db.CaringCaregiverLinks.Add(Link(42, 1001, 2001, "friend", status: "pending"));
+        await db.SaveChangesAsync();
+        var linkId = await db.CaringCaregiverLinks.IgnoreQueryFilters().Select(link => link.Id).SingleAsync();
+
+        var unrelated = CreateController(db, tenant, userId: 2002);
+        var refused = await unrelated.RejectIncomingLink(linkId,
+            new Dictionary<string, object?> { ["reason"] = "Not mine" }, CancellationToken.None);
+        refused.Should().BeOfType<NotFoundObjectResult>();
+
+        var recipient = CreateController(db, tenant, userId: 2001);
+        var confirmed = await recipient.ConfirmIncomingLink(linkId, CancellationToken.None);
+        confirmed.Should().BeOfType<OkObjectResult>();
+        var stored = await db.CaringCaregiverLinks.IgnoreQueryFilters().SingleAsync();
+        stored.Status.Should().Be("pending");
+        stored.RecipientConfirmedBy.Should().Be(2001);
+        stored.RecipientConfirmedAt.Should().NotBeNull();
+        (await db.Notifications.IgnoreQueryFilters().CountAsync(notification => notification.UserId == 1001))
+            .Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Approval_RequiresBilateralSafeguardingAndRecordsConsentAuditAndNotifications()
+    {
+        var tenant = CreateTenantContext(42);
+        await using var db = CreateDbContext(tenant);
+        db.Users.AddRange(
+            User(1001, 42, "Cara", "Giver"),
+            User(2001, 42, "Pat", "Recipient"),
+            User(9001, 42, "Staff", "Reviewer"));
+        db.CaringCaregiverLinks.Add(Link(42, 1001, 2001, "family", status: "pending"));
+        await db.SaveChangesAsync();
+        var linkId = await db.CaringCaregiverLinks.IgnoreQueryFilters().Select(link => link.Id).SingleAsync();
+        var service = new CaregiverSupportService(db, tenant);
+        var allowed = Decision(SafeguardingInteractionDecision.Allow);
+        var denied = Decision(SafeguardingInteractionDecision.Deny);
+
+        var unconfirmed = await service.ApproveLinkAsync(
+            42, 9001, linkId, "Recorded telephone consent", allowed, allowed, CancellationToken.None);
+        unconfirmed.ErrorCode.Should().Be("CONSENT_REQUIRED");
+
+        var pending = await db.CaringCaregiverLinks.IgnoreQueryFilters().SingleAsync();
+        pending.RecipientConfirmedAt = DateTime.UtcNow;
+        pending.RecipientConfirmedBy = 2001;
+        await db.SaveChangesAsync();
+
+        var refused = await service.ApproveLinkAsync(
+            42, 9001, linkId, "Recorded telephone consent", allowed, denied, CancellationToken.None);
+        refused.ErrorCode.Should().Be("SAFEGUARDING_CONTACT_RESTRICTED");
+        (await db.CaringCaregiverLinks.IgnoreQueryFilters().SingleAsync()).Status.Should().Be("pending");
+
+        var approved = await service.ApproveLinkAsync(
+            42, 9001, linkId, "Recorded telephone consent", allowed, allowed, CancellationToken.None);
+        approved.ErrorCode.Should().BeNull();
+        var stored = await db.CaringCaregiverLinks.IgnoreQueryFilters().SingleAsync();
+        stored.Status.Should().Be("active");
+        stored.ApprovedBy.Should().Be(9001);
+        stored.ConsentVerifiedBy.Should().Be(9001);
+        stored.ConsentEvidence.Should().Be("Recorded telephone consent");
+        (await db.Notifications.IgnoreQueryFilters().CountAsync()).Should().Be(2);
+        (await db.MemberActivityLogs.IgnoreQueryFilters().CountAsync(log => log.ActivityType == "caring_caregiver_approved"))
+            .Should().Be(1);
     }
 
     [Fact]
@@ -861,6 +955,61 @@ public class CaringCommunityCaregiverControllerUnitTests
         other.Status.Should().Be("active");
     }
 
+    /// <summary>
+    /// 🔴 REGRESSION GUARD — ending a caring relationship for the SECOND time.
+    ///
+    /// `ccl_tenant_caregiver_recipient_status_unique` covers
+    /// (TenantId, CaregiverId, CaredForId, Status), so a caregiver who has ever
+    /// ended a relationship with a member already has an `inactive` row for that
+    /// pair. Moving a second one to `inactive` collided with it, and
+    /// `RemoveLinkAsync` had no handling: Npgsql raised 23505, the API answered
+    /// 500, and — the part that matters — THE LINK STAYED ACTIVE. The caregiver
+    /// believed they had ended the relationship while the authority it confers
+    /// remained in force.
+    ///
+    /// Found by running the journey against Laravel and ASP.NET in the same
+    /// execution: Laravel answered 204 for the identical call, because
+    /// `CaregiverService::removeLink()` deletes the superseded inactive rows
+    /// inside a transaction first. Neither engine's tests covered a second
+    /// removal, so both suites were green while the two behaved differently.
+    /// </summary>
+    [Fact]
+    public async Task RemoveLink_WhenAnInactiveLinkForThePairAlreadyExists_StillDeactivates()
+    {
+        var tenant = CreateTenantContext(42);
+        await using var db = CreateDbContext(tenant);
+        SeedFeature(db, 42, true);
+        db.Users.AddRange(
+            User(1001, 42, "Cara", "Giver"),
+            User(2001, 42, "Pat", "Recipient"));
+        db.CaringCaregiverLinks.AddRange(
+            // A relationship this caregiver ended previously …
+            Link(42, 1001, 2001, "family", status: "inactive"),
+            // … and a current one with the SAME member.
+            Link(42, 1001, 2001, "friend", status: "active"));
+        await db.SaveChangesAsync();
+
+        var activeId = await db.CaringCaregiverLinks.IgnoreQueryFilters()
+            .Where(link => link.TenantId == 42 && link.Status == "active")
+            .Select(link => link.Id)
+            .SingleAsync();
+        var controller = CreateController(db, tenant, userId: 1001);
+
+        var removed = await controller.RemoveLink(activeId, CancellationToken.None);
+
+        removed.Should().BeOfType<NoContentResult>();
+
+        var remaining = await db.CaringCaregiverLinks.IgnoreQueryFilters()
+            .Where(link => link.TenantId == 42 && link.CaregiverId == 1001 && link.CaredForId == 2001)
+            .ToListAsync();
+
+        // The superseded row is cleared and the relationship really did end —
+        // exactly what Laravel does, and what the unique index requires.
+        remaining.Should().ContainSingle();
+        remaining[0].Id.Should().Be(activeId);
+        remaining[0].Status.Should().Be("inactive");
+    }
+
     [Fact]
     public async Task MyLinks_WhenFeatureDisabled_ReturnsLaravelForbiddenError()
     {
@@ -1102,5 +1251,16 @@ public class CaringCommunityCaregiverControllerUnitTests
                 ], "Test"))
             }
         };
+    }
+
+    private static SafeguardingInteractionDecision Decision(string status)
+    {
+        return new SafeguardingInteractionDecision(
+            status,
+            status == SafeguardingInteractionDecision.Allow ? "SAFEGUARDING_ALLOWED" : "SAFEGUARDING_CONTACT_RESTRICTED",
+            42,
+            SafeguardingVettingCatalog.PurposeSafeguardedMemberContact,
+            SafeguardingVettingCatalog.TenantScope,
+            string.Empty);
     }
 }

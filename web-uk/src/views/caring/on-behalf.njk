@@ -1,0 +1,97 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Ask for help on behalf of the member you care for.
+
+    🔴 Reachable ONLY for an active relationship. The route refuses to render
+    this page otherwise, so a pending or refused relationship has no path here
+    at all — and Laravel refuses the request again on its own.
+
+    🔴 The member the request is for is FIXED and shown, taken from the route
+    and re-checked against the caller's own active links. It is not a field the
+    person filling this in can change, because "who is this request for" is the
+    authority question, not an input.
+#}
+
+{% extends "layouts/base.njk" %}
+{% import "caring/_status.njk" as caring %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/caring/caregiver') }}">{{ t("govuk_alpha_caring.shared.back_to_caregiver") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {{ caring.caringErrors(errors, "on_behalf", t) }}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_caring.caregiver.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_caring.on_behalf.title") }}</h1>
+      <p class="govuk-body">{{ t("govuk_alpha_caring.on_behalf.intro") }}</p>
+
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_caring.on_behalf.for_member") }}</dt>
+          <dd class="govuk-summary-list__value">{{ link.cared_for_name or t("govuk_alpha_caring.shared.unknown_member") }}</dd>
+        </div>
+      </dl>
+
+      <form method="post" action="{{ urlFor('/caring/caregiver/on-behalf/' + (link.cared_for_id | string)) }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="on_behalf_title">
+            {{ t("govuk_alpha_caring.on_behalf.title_label") }}
+          </label>
+          <div id="on_behalf_title_hint" class="govuk-hint">{{ t("govuk_alpha_caring.on_behalf.title_hint") }}</div>
+          <input class="govuk-input" id="on_behalf_title" name="title" type="text"
+                 aria-describedby="on_behalf_title_hint" value="{{ submitted.title if submitted else '' }}">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="on_behalf_description">
+            {{ t("govuk_alpha_caring.on_behalf.description_label") }} {{ t("govuk_alpha_caring.shared.optional") }}
+          </label>
+          <textarea class="govuk-textarea" id="on_behalf_description" name="description" rows="3">{{ submitted.description if submitted else '' }}</textarea>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="on_behalf_when">
+            {{ t("govuk_alpha_caring.on_behalf.when_label") }} {{ t("govuk_alpha_caring.shared.optional") }}
+          </label>
+          <input class="govuk-input" id="on_behalf_when" name="when_needed" type="text"
+                 value="{{ submitted.whenNeeded if submitted else '' }}">
+        </div>
+
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+              {{ t("govuk_alpha_caring.on_behalf.contact_label") }}
+            </legend>
+            <div class="govuk-radios" data-module="govuk-radios">
+              {% for option in contactPreferences %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="contact_{{ option }}" name="contact_preference"
+                         type="radio" value="{{ option }}"
+                         {% if (submitted and submitted.contactPreference === option) or (not submitted and option === 'either') %}checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="contact_{{ option }}">
+                    {{ t("govuk_alpha_caring.on_behalf.contact_" + option) }}
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        <button class="govuk-button" data-module="govuk-button" type="submit">
+          {{ t("govuk_alpha_caring.on_behalf.submit_button") }}
+        </button>
+      </form>
+
+    </div>
+  </div>
+{% endblock %}

@@ -1425,6 +1425,9 @@ namespace Nexus.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int?>("ApprovedBy")
                         .HasColumnType("integer");
 
@@ -1434,6 +1437,15 @@ namespace Nexus.Api.Migrations
                     b.Property<int>("CaregiverId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ConsentEvidence")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ConsentVerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ConsentVerifiedBy")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1441,6 +1453,21 @@ namespace Nexus.Api.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RecipientConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("RecipientConfirmedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RejectedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("RejectedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RejectionReason")
                         .HasColumnType("text");
 
                     b.Property<string>("RelationshipType")
@@ -1475,6 +1502,8 @@ namespace Nexus.Api.Migrations
                     b.HasIndex("TenantId", "CaredForId");
 
                     b.HasIndex("TenantId", "CaregiverId");
+
+                    b.HasIndex("TenantId", "Status");
 
                     b.HasIndex("TenantId", "CaregiverId", "CaredForId", "Status")
                         .IsUnique()

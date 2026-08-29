@@ -400,6 +400,11 @@ return [
     'appreciation_someone'            => 'Someone',
     'appreciation_received'           => ':name sent you a thank-you note',
 
+    'caring_caregiver_link_requested' => ':name asked to be linked as your caregiver. Review the request before any caregiver access is granted.',
+    'caring_caregiver_link_confirmed' => 'The care recipient confirmed the caregiver-link request. It is waiting for staff safeguarding review.',
+    'caring_caregiver_link_approved'  => 'The caregiver relationship was approved. Caregiver tools are now available for this relationship.',
+    'caring_caregiver_link_rejected'  => 'The caregiver relationship was not approved. Reason: :reason',
+
     'marketplace' => [
         'low_stock' => 'Low stock for ":title" (:count remaining).',
         'restocked' => '":title" is back in stock.',

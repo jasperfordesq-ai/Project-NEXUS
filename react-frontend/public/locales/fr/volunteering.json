@@ -1069,7 +1069,7 @@
     "relationship_parent": "Parent",
     "relationship_guardian": "Tuteur",
     "relationship_legal_guardian": "Tuteur légal",
-    "relationship_carer": "Aidant",
+    "relationship_carer": "Aidant du jeune bénévole",
     "send_request": "Envoyer la demande d'approbation",
     "sending": "Envoi…",
     "request_sent_title": "Demande envoyée",

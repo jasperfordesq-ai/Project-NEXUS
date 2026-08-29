@@ -333,6 +333,11 @@ return [
     'ideation_status_implemented' => 'mis en œuvre',
     'appreciation_someone' => 'Quelqu\'un',
     'appreciation_received' => ':name vous a envoyé un mot de remerciement',
+    'caring_caregiver_link_requested' => ':name a demandé à être lié comme votre aidant. Examinez la demande avant tout accès d’aidant.',
+    'caring_caregiver_link_confirmed' => 'La personne accompagnée a confirmé la demande. Elle attend l’examen de protection de l’équipe.',
+    'caring_caregiver_link_approved'  => 'La relation d’aide a été approuvée. Les outils d’aidant sont maintenant disponibles.',
+    'caring_caregiver_link_rejected'  => 'La relation d’aide n’a pas été approuvée. Motif : :reason',
+
     'marketplace' => [
         'low_stock' => 'Stock faible pour « :title » (:count restants).',
         'restocked' => '« :title » est de nouveau en stock.',

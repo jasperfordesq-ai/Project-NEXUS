@@ -333,6 +333,11 @@ return [
     'ideation_status_implemented' => 'wdrożony',
     'appreciation_someone' => 'Ktoś',
     'appreciation_received' => ':name wysłał(a) Ci podziękowanie',
+    'caring_caregiver_link_requested' => ':name poprosił(a) o powiązanie jako Twój opiekun. Sprawdź wniosek przed przyznaniem uprawnień.',
+    'caring_caregiver_link_confirmed' => 'Osoba objęta opieką potwierdziła wniosek. Oczekuje on na przegląd bezpieczeństwa przez personel.',
+    'caring_caregiver_link_approved'  => 'Relacja opiekuńcza została zatwierdzona. Narzędzia opiekuna są teraz dostępne.',
+    'caring_caregiver_link_rejected'  => 'Relacja opiekuńcza nie została zatwierdzona. Powód: :reason',
+
     'marketplace' => [
         'low_stock' => 'Niski stan magazynowy ":title" (pozostało :count).',
         'restocked' => '":title" jest znów dostępny.',

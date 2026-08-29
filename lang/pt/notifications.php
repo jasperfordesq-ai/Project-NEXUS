@@ -333,6 +333,11 @@ return [
     'ideation_status_implemented' => 'implementada',
     'appreciation_someone' => 'Alguém',
     'appreciation_received' => ':name enviou-lhe uma nota de agradecimento',
+    'caring_caregiver_link_requested' => ':name pediu para ser associado como seu cuidador. Reveja o pedido antes de conceder acesso.',
+    'caring_caregiver_link_confirmed' => 'A pessoa cuidada confirmou o pedido. Aguarda a revisão de salvaguarda pela equipa.',
+    'caring_caregiver_link_approved'  => 'A relação de cuidado foi aprovada. As ferramentas de cuidador estão agora disponíveis.',
+    'caring_caregiver_link_rejected'  => 'A relação de cuidado não foi aprovada. Motivo: :reason',
+
     'marketplace' => [
         'low_stock' => 'Stock baixo de ":title" (restam :count).',
         'restocked' => '":title" está novamente em stock.',

@@ -389,7 +389,7 @@ product/legal decision, not a refactor.
 | `event_guardian_consents` | minor, or an event manager | external guardian, via token | **Yes**, within events |
 | `vol_guardian_consents` | the minor | external guardian, via token | Gates the minor; no proxy action |
 | `account_relationships` | any member | the dependent | **Yes** — listings and transfers (attributed + audited); messages not offered |
-| `caring_caregiver_links` | any member (`pending`) | — (no activation endpoint) | Blocked in practice |
+| `caring_caregiver_links` | the proposed caregiver (`pending`) | the care recipient confirms, then authorised staff verifies consent | **Yes**, after activation — Caring requests, schedule and cover care only |
 | Paper onboarding intake | admin | the member, offline on paper | **Yes** — creates the account |
 | Event staff roles | event manager | — | **Yes**, capability-scoped, fully enforced |
 
@@ -400,9 +400,13 @@ the subsystem, and closing it needs a product decision first: does the broker ac
 *as* the member, or record activity *attributed to* the member? The two have
 different consent and audit consequences.
 
-`caring_help_requests` does support on-behalf creation (`is_on_behalf`,
-`requested_by_id`) via an active caregiver link — but no endpoint can move a link
-to `active`, so the path is unreachable today.
+`caring_help_requests` supports on-behalf creation (`is_on_behalf`,
+`requested_by_id`) via an active caregiver link. A proposed caregiver link now
+stays visibly pending while the care recipient confirms it and authorised staff
+records consent evidence, re-runs same-tenant and bilateral safeguarding checks,
+and approves or rejects it. Only an `active` link enables on-behalf requests,
+schedule access or cover care; the volunteering guardian-consent label `carer`
+does not create, approve or influence this relationship.
 
 ---
 

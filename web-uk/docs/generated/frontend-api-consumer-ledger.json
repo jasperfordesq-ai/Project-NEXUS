@@ -1,33 +1,33 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-24T14:54:30.418Z",
+  "generatedAt": "2026-08-29T15:45:51.471Z",
   "provenance": {
-    "generatedAt": "2026-08-24T14:54:30.418Z",
+    "generatedAt": "2026-08-29T15:45:51.471Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "4a1d90af325dfef89a80dfd3d05300ea33afc833",
+    "laravelCommitSha": "e415eb066c548a5a718a7d757215dd572cf8f59c",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "4a1d90af325dfef89a80dfd3d05300ea33afc833",
+    "webUkRepositoryCommitSha": "e415eb066c548a5a718a7d757215dd572cf8f59c",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "sources": {
     "api": "src/lib/api.js",
-    "apiSha256": "580df7838b55963d9c1d60d1dc1cf4491ad303c23455047d74a7f45f52b23b9e",
+    "apiSha256": "5cd3fc6ea59b94da8f7ff31901c92970c15812be2ce33c65eb4b1142c0449517",
     "laravelOpenApi": "C:\\platforms\\htdocs\\staging\\openapi.json",
     "laravelOpenApiSha256": "f452d2ee220e8deff05412bf9d2c625ab63b829d73322eed28e21d8f271af5bb",
     "laravelApiRoutes": "C:\\platforms\\htdocs\\staging\\routes\\api.php",
-    "laravelApiRoutesSha256": "de145589b0659f10f21acfdecd7bcb040ebf22ae61a9871440fe496167ee469c"
+    "laravelApiRoutesSha256": "4313a27f302a536747a1b0c894295f226730834b13d164257b74f6e4fb7b9247"
   },
   "summary": {
-    "contracts": 701,
+    "contracts": 710,
     "matchedOpenApi": 470,
-    "missingOpenApi": 231,
-    "routeDeclaredOpenApiOmissions": 231,
+    "missingOpenApi": 240,
+    "routeDeclaredOpenApiOmissions": 240,
     "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
-    "stateChanging": 383,
+    "stateChanging": 389,
     "withoutTests": 0,
     "withoutDirectApiHelperAssertions": 0,
     "uniqueHelpersWithoutDirectApiAssertions": 0,
@@ -286,6 +286,7 @@
         "tests/routes.test.js",
         "tests/runtime/availability-mutation.spec.js",
         "tests/runtime/blog-mutation.spec.js",
+        "tests/runtime/caring-mutation.spec.js",
         "tests/runtime/courses-mutation.spec.js",
         "tests/runtime/events-mutation.spec.js",
         "tests/runtime/goals-mutation.spec.js",
@@ -584,7 +585,7 @@
       "method": "POST",
       "path": "/api/social/likers",
       "apiHelper": "getSocialLikers",
-      "source": "src/lib/api.js:3421",
+      "source": "src/lib/api.js:3548",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -643,6 +644,102 @@
         "tests/auth-tenant-authority.test.js",
         "tests/registration-contract.test.js",
         "tests/shared-accessible-shell.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/admin/caring-community/caregiver-links?status={param} [getCaregiverLinksForReview]",
+      "method": "GET",
+      "path": "/api/v2/admin/caring-community/caregiver-links?status={param}",
+      "apiHelper": "getCaregiverLinksForReview",
+      "source": "src/lib/api.js:3111",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/admin/caring-community/caregiver-links",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/admin/caring-community/caregiver-links/{param}/approve [approveCaregiverLink]",
+      "method": "POST",
+      "path": "/api/v2/admin/caring-community/caregiver-links/{param}/approve",
+      "apiHelper": "approveCaregiverLink",
+      "source": "src/lib/api.js:3123",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: consent_verified, consent_evidence",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/admin/caring-community/caregiver-links/{id}/approve",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/admin/caring-community/caregiver-links/{param}/reject [rejectCaregiverLink]",
+      "method": "POST",
+      "path": "/api/v2/admin/caring-community/caregiver-links/{param}/reject",
+      "apiHelper": "rejectCaregiverLink",
+      "source": "src/lib/api.js:3131",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON caller payload; validate against Laravel operation",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/admin/caring-community/caregiver-links/{id}/reject",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -1379,6 +1476,198 @@
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
     },
     {
+      "id": "GET /api/v2/caring-community/caregiver/incoming-links [getIncomingCaregiverLinks]",
+      "method": "GET",
+      "path": "/api/v2/caring-community/caregiver/incoming-links",
+      "apiHelper": "getIncomingCaregiverLinks",
+      "source": "src/lib/api.js:3070",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/caring-community/caregiver/incoming-links",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/caring-community/caregiver/incoming-links/{param}/confirm [confirmIncomingCaregiverLink]",
+      "method": "POST",
+      "path": "/api/v2/caring-community/caregiver/incoming-links/{param}/confirm",
+      "apiHelper": "confirmIncomingCaregiverLink",
+      "source": "src/lib/api.js:3094",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON caller payload; validate against Laravel operation",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/caring-community/caregiver/incoming-links/{id}/confirm",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/caring-community/caregiver/incoming-links/{param}/reject [rejectIncomingCaregiverLink]",
+      "method": "POST",
+      "path": "/api/v2/caring-community/caregiver/incoming-links/{param}/reject",
+      "apiHelper": "rejectIncomingCaregiverLink",
+      "source": "src/lib/api.js:3102",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: reason",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/caring-community/caregiver/incoming-links/{id}/reject",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/caring-community/caregiver/links [getMyCaregiverLinks]",
+      "method": "GET",
+      "path": "/api/v2/caring-community/caregiver/links",
+      "apiHelper": "getMyCaregiverLinks",
+      "source": "src/lib/api.js:3063",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/caring-community/caregiver/links",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/caring-community/caregiver/links [createCaregiverLink]",
+      "method": "POST",
+      "path": "/api/v2/caring-community/caregiver/links",
+      "apiHelper": "createCaregiverLink",
+      "source": "src/lib/api.js:3080",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: cared_for_id, relationship_type, start_date, notes",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/caring-community/caregiver/links",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/caring-community/caregiver/request-on-behalf [createCaregiverRequestOnBehalf]",
+      "method": "POST",
+      "path": "/api/v2/caring-community/caregiver/request-on-behalf",
+      "apiHelper": "createCaregiverRequestOnBehalf",
+      "source": "src/lib/api.js:3140",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: cared_for_id, title, description, when_needed, contact_preference",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/caring.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/caring-community/caregiver/request-on-behalf",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/caring.js"
+      ],
+      "tests": [
+        "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
       "id": "GET /api/v2/categories?type=event [getEventCategories]",
       "method": "GET",
       "path": "/api/v2/categories?type=event",
@@ -1532,7 +1821,7 @@
       "method": "POST",
       "path": "/api/v2/comments",
       "apiHelper": "createComment",
-      "source": "src/lib/api.js:3677",
+      "source": "src/lib/api.js:3804",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -1608,6 +1897,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/resource-like-toggle-state.test.js",
         "tests/runtime/blog-mutation.spec.js",
@@ -1622,7 +1912,7 @@
       "method": "DELETE",
       "path": "/api/v2/comments/{param}",
       "apiHelper": "deleteComment",
-      "source": "src/lib/api.js:3693",
+      "source": "src/lib/api.js:3820",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -1665,7 +1955,7 @@
       "method": "PUT",
       "path": "/api/v2/comments/{param}",
       "apiHelper": "updateComment",
-      "source": "src/lib/api.js:3685",
+      "source": "src/lib/api.js:3812",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -3467,7 +3757,7 @@
       "method": "POST",
       "path": "/api/v2/events",
       "apiHelper": "createEvent",
-      "source": "src/lib/api.js:3152",
+      "source": "src/lib/api.js:3279",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -3557,7 +3847,7 @@
       "method": "DELETE",
       "path": "/api/v2/events/{param}",
       "apiHelper": "deleteEvent",
-      "source": "src/lib/api.js:3181",
+      "source": "src/lib/api.js:3308",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -3777,7 +4067,7 @@
       "method": "PUT",
       "path": "/api/v2/events/{param}",
       "apiHelper": "updateEvent",
-      "source": "src/lib/api.js:3160",
+      "source": "src/lib/api.js:3287",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -4264,7 +4554,7 @@
       "method": "GET",
       "path": "/api/v2/events/{param}/attendees?{query}",
       "apiHelper": "getEventRsvps",
-      "source": "src/lib/api.js:3202",
+      "source": "src/lib/api.js:3329",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -4529,7 +4819,7 @@
       "method": "POST",
       "path": "/api/v2/events/{param}/cancel",
       "apiHelper": "cancelEvent",
-      "source": "src/lib/api.js:3169",
+      "source": "src/lib/api.js:3296",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -6367,7 +6657,7 @@
       "method": "POST",
       "path": "/api/v2/events/{param}/rsvp",
       "apiHelper": "rsvpToEvent",
-      "source": "src/lib/api.js:3208",
+      "source": "src/lib/api.js:3335",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -8616,7 +8906,7 @@
       "method": "GET",
       "path": "/api/v2/feed?{query}",
       "apiHelper": "getFeedPosts",
-      "source": "src/lib/api.js:3238",
+      "source": "src/lib/api.js:3365",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8644,6 +8934,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8655,7 +8946,7 @@
       "method": "GET",
       "path": "/api/v2/feed/hashtags/{param}?{query}",
       "apiHelper": "getFeedHashtagPosts",
-      "source": "src/lib/api.js:3278",
+      "source": "src/lib/api.js:3405",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable with optional bearer; Laravel policy remains authoritative",
       "requestShape": "path:tag",
@@ -8681,6 +8972,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8693,7 +8985,7 @@
       "method": "GET",
       "path": "/api/v2/feed/hashtags/search?{query}",
       "apiHelper": "getFeedHashtags",
-      "source": "src/lib/api.js:3265",
+      "source": "src/lib/api.js:3392",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable with optional bearer; Laravel policy remains authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8719,6 +9011,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8730,7 +9023,7 @@
       "method": "GET",
       "path": "/api/v2/feed/hashtags/trending?{query}",
       "apiHelper": "getFeedHashtags",
-      "source": "src/lib/api.js:3267",
+      "source": "src/lib/api.js:3394",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable with optional bearer; Laravel policy remains authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8756,6 +9049,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8767,7 +9061,7 @@
       "method": "GET",
       "path": "/api/v2/feed/items/{param}/{param}",
       "apiHelper": "getFeedItemV2",
-      "source": "src/lib/api.js:3250",
+      "source": "src/lib/api.js:3377",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable with optional bearer; Laravel policy remains authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8791,6 +9085,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8802,7 +9097,7 @@
       "method": "POST",
       "path": "/api/v2/feed/items/{param}/{param}/report",
       "apiHelper": "reportFeedItem",
-      "source": "src/lib/api.js:3349",
+      "source": "src/lib/api.js:3476",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -8834,7 +9129,7 @@
       "method": "POST",
       "path": "/api/v2/feed/like",
       "apiHelper": "toggleFeedLike",
-      "source": "src/lib/api.js:3325",
+      "source": "src/lib/api.js:3452",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -8874,7 +9169,7 @@
       "method": "POST",
       "path": "/api/v2/feed/polls/{param}/vote",
       "apiHelper": "voteFeedPoll",
-      "source": "src/lib/api.js:3372",
+      "source": "src/lib/api.js:3499",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -8910,7 +9205,7 @@
       "method": "POST",
       "path": "/api/v2/feed/posts",
       "apiHelper": "createFeedPostV2",
-      "source": "src/lib/api.js:3295",
+      "source": "src/lib/api.js:3422",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "multipart/form-data; see helper fields and Laravel operation",
@@ -8949,7 +9244,7 @@
       "method": "DELETE",
       "path": "/api/v2/feed/posts/{param}",
       "apiHelper": "deleteFeedPostV2",
-      "source": "src/lib/api.js:3318",
+      "source": "src/lib/api.js:3445",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -8982,7 +9277,7 @@
       "method": "GET",
       "path": "/api/v2/feed/posts/{param}",
       "apiHelper": "getFeedPostV2",
-      "source": "src/lib/api.js:3245",
+      "source": "src/lib/api.js:3372",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable with optional bearer; Laravel policy remains authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -9004,6 +9299,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -9016,7 +9312,7 @@
       "method": "PUT",
       "path": "/api/v2/feed/posts/{param}",
       "apiHelper": "updateFeedPostV2",
-      "source": "src/lib/api.js:3310",
+      "source": "src/lib/api.js:3437",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -9049,7 +9345,7 @@
       "method": "POST",
       "path": "/api/v2/feed/posts/{param}/hide",
       "apiHelper": "hideFeedItem",
-      "source": "src/lib/api.js:3341",
+      "source": "src/lib/api.js:3468",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -9085,7 +9381,7 @@
       "method": "POST",
       "path": "/api/v2/feed/posts/{param}/not-interested",
       "apiHelper": "markFeedItemNotInterested",
-      "source": "src/lib/api.js:3333",
+      "source": "src/lib/api.js:3460",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -9117,7 +9413,7 @@
       "method": "POST",
       "path": "/api/v2/feed/users/{param}/mute",
       "apiHelper": "muteFeedUser",
-      "source": "src/lib/api.js:3357",
+      "source": "src/lib/api.js:3484",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -9191,7 +9487,7 @@
       "method": "GET",
       "path": "/api/v2/gamification/badges?{query}",
       "apiHelper": "getAllBadges",
-      "source": "src/lib/api.js:3439",
+      "source": "src/lib/api.js:3566",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -9304,7 +9600,7 @@
       "method": "POST",
       "path": "/api/v2/gamification/challenges/{param}/claim",
       "apiHelper": "claimGamificationChallenge",
-      "source": "src/lib/api.js:3500",
+      "source": "src/lib/api.js:3627",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -9451,7 +9747,7 @@
       "method": "POST",
       "path": "/api/v2/gamification/daily-reward",
       "apiHelper": "claimDailyReward",
-      "source": "src/lib/api.js:3493",
+      "source": "src/lib/api.js:3620",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -9700,7 +9996,7 @@
       "method": "GET",
       "path": "/api/v2/gamification/profile?user_id={param}",
       "apiHelper": "getGamificationProfile",
-      "source": "src/lib/api.js:3415",
+      "source": "src/lib/api.js:3542",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -9851,7 +10147,7 @@
       "method": "POST",
       "path": "/api/v2/gamification/shop/purchase",
       "apiHelper": "purchaseGamificationShopItem",
-      "source": "src/lib/api.js:3507",
+      "source": "src/lib/api.js:3634",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON object: item_id",
@@ -9888,7 +10184,7 @@
       "method": "PUT",
       "path": "/api/v2/gamification/showcase",
       "apiHelper": "updateGamificationShowcase",
-      "source": "src/lib/api.js:3515",
+      "source": "src/lib/api.js:3642",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON object: badge_keys",
@@ -9925,7 +10221,7 @@
       "method": "POST",
       "path": "/api/v2/goals",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:737",
+      "source": "src/routes/goals.js:770",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -9952,6 +10248,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -9990,6 +10287,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10001,7 +10299,7 @@
       "method": "DELETE",
       "path": "/api/v2/goals/{param}",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1126",
+      "source": "src/routes/goals.js:1166",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10028,6 +10326,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10066,6 +10365,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10076,7 +10376,7 @@
       "method": "PUT",
       "path": "/api/v2/goals/{param}",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1112",
+      "source": "src/routes/goals.js:1152",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10103,6 +10403,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10114,7 +10415,7 @@
       "method": "POST",
       "path": "/api/v2/goals/{param}/buddy",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1140",
+      "source": "src/routes/goals.js:1180",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10142,6 +10443,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/gds-component-conformance.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
@@ -10154,7 +10456,7 @@
       "method": "POST",
       "path": "/api/v2/goals/{param}/buddy/nudge",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1154",
+      "source": "src/routes/goals.js:1194",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -10177,6 +10479,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10188,7 +10491,7 @@
       "method": "POST",
       "path": "/api/v2/goals/{param}/checkins",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1211",
+      "source": "src/routes/goals.js:1251",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10215,6 +10518,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10226,7 +10530,7 @@
       "method": "GET",
       "path": "/api/v2/goals/{param}/checkins?limit=20",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:899",
+      "source": "src/routes/goals.js:939",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10253,6 +10557,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10264,7 +10569,7 @@
       "method": "POST",
       "path": "/api/v2/goals/{param}/complete",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1187",
+      "source": "src/routes/goals.js:1227",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10291,6 +10596,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10302,7 +10608,7 @@
       "method": "GET",
       "path": "/api/v2/goals/{param}/history?{query}",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1013",
+      "source": "src/routes/goals.js:1053",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10329,6 +10635,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10340,7 +10647,7 @@
       "method": "GET",
       "path": "/api/v2/goals/{param}/insights",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:983",
+      "source": "src/routes/goals.js:1023",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -10363,6 +10670,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10374,7 +10682,7 @@
       "method": "POST",
       "path": "/api/v2/goals/{param}/progress",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1173",
+      "source": "src/routes/goals.js:1213",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10401,6 +10709,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10412,7 +10721,7 @@
       "method": "DELETE",
       "path": "/api/v2/goals/{param}/reminder",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1244",
+      "source": "src/routes/goals.js:1284",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10440,6 +10749,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/gds-component-conformance.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10451,7 +10761,7 @@
       "method": "GET",
       "path": "/api/v2/goals/{param}/reminder",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:931",
+      "source": "src/routes/goals.js:971",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10479,6 +10789,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/gds-component-conformance.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10490,7 +10801,7 @@
       "method": "PUT",
       "path": "/api/v2/goals/{param}/reminder",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:1230",
+      "source": "src/routes/goals.js:1270",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -10518,6 +10829,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/gds-component-conformance.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10529,7 +10841,7 @@
       "method": "GET",
       "path": "/api/v2/goals/discover?{query}",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:826",
+      "source": "src/routes/goals.js:866",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -10557,6 +10869,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/gds-component-conformance.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
@@ -10569,7 +10882,7 @@
       "method": "POST",
       "path": "/api/v2/goals/from-template/{param}",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:762",
+      "source": "src/routes/goals.js:800",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:templateId",
@@ -10596,6 +10909,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10607,7 +10921,7 @@
       "method": "GET",
       "path": "/api/v2/goals/mentoring?{query}",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:822",
+      "source": "src/routes/goals.js:862",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -10634,6 +10948,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -10645,7 +10960,7 @@
       "method": "GET",
       "path": "/api/v2/goals/templates?{query}",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:789",
+      "source": "src/routes/goals.js:827",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -10674,6 +10989,7 @@
         "tests/empty-state-heading-contract.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/gds-component-conformance.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
@@ -10686,7 +11002,7 @@
       "method": "GET",
       "path": "/api/v2/goals/templates/categories",
       "apiHelper": "callGoalApi",
-      "source": "src/routes/goals.js:785",
+      "source": "src/routes/goals.js:823",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -10713,6 +11029,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/runtime/goals-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -18105,7 +18422,7 @@
       "method": "GET",
       "path": "/api/v2/members/nearby?{query}",
       "apiHelper": "getMembersNearby",
-      "source": "src/lib/api.js:3617",
+      "source": "src/lib/api.js:3744",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -18826,6 +19143,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -18863,6 +19181,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -18900,6 +19219,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -18936,6 +19256,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -18973,6 +19294,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19012,6 +19334,7 @@
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
         "tests/localization.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19045,6 +19368,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19078,6 +19402,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19115,6 +19440,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
+        "tests/notifications-announce-outcome.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19269,6 +19595,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19301,6 +19628,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19334,6 +19662,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/laravel-runtime-smoke.test.js",
+        "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19403,6 +19732,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19449,7 +19779,7 @@
       "method": "GET",
       "path": "/api/v2/partner-venues",
       "apiHelper": "getPartnerVenues",
-      "source": "src/lib/api.js:3114",
+      "source": "src/lib/api.js:3241",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -19490,7 +19820,7 @@
       "method": "GET",
       "path": "/api/v2/partner-venues/my-visits",
       "apiHelper": "getMyVenueVisits",
-      "source": "src/lib/api.js:3133",
+      "source": "src/lib/api.js:3260",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -19531,7 +19861,7 @@
       "method": "GET",
       "path": "/api/v2/partner-venues/pass",
       "apiHelper": "getVenuePass",
-      "source": "src/lib/api.js:3120",
+      "source": "src/lib/api.js:3247",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -19572,7 +19902,7 @@
       "method": "POST",
       "path": "/api/v2/partner-venues/pass/rotate",
       "apiHelper": "rotateVenuePass",
-      "source": "src/lib/api.js:3126",
+      "source": "src/lib/api.js:3253",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -19613,7 +19943,7 @@
       "method": "POST",
       "path": "/api/v2/partner-venues/visits/verify/{param}",
       "apiHelper": "recordVenueVisit",
-      "source": "src/lib/api.js:3144",
+      "source": "src/lib/api.js:3271",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:token; application/json object",
@@ -20680,7 +21010,7 @@
       "method": "POST",
       "path": "/api/v2/reactions",
       "apiHelper": "toggleReaction",
-      "source": "src/lib/api.js:3700",
+      "source": "src/lib/api.js:3827",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -21052,7 +21382,7 @@
       "method": "POST",
       "path": "/api/v2/reviews",
       "apiHelper": "createReview",
-      "source": "src/lib/api.js:3669",
+      "source": "src/lib/api.js:3796",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -21090,7 +21420,7 @@
       "method": "DELETE",
       "path": "/api/v2/reviews/{param}",
       "apiHelper": "deleteReview",
-      "source": "src/lib/api.js:3648",
+      "source": "src/lib/api.js:3775",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -21237,7 +21567,7 @@
       "method": "GET",
       "path": "/api/v2/reviews/user/{param}?{query}",
       "apiHelper": "getUserReviews",
-      "source": "src/lib/api.js:3628",
+      "source": "src/lib/api.js:3755",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:userId",
@@ -21354,7 +21684,7 @@
       "method": "POST",
       "path": "/api/v2/safeguarding/guardian-permissions",
       "apiHelper": "updateGuardianPermissions",
-      "source": "src/lib/api.js:3102",
+      "source": "src/lib/api.js:3229",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -21386,7 +21716,7 @@
       "method": "GET",
       "path": "/api/v2/safeguarding/my-guardians",
       "apiHelper": "getMyGuardians",
-      "source": "src/lib/api.js:3027",
+      "source": "src/lib/api.js:3154",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -21500,7 +21830,7 @@
       "method": "GET",
       "path": "/api/v2/safeguarding/my-wards",
       "apiHelper": "getMyWards",
-      "source": "src/lib/api.js:3033",
+      "source": "src/lib/api.js:3160",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -21614,7 +21944,7 @@
       "method": "GET",
       "path": "/api/v2/search?{query}",
       "apiHelper": "searchV2",
-      "source": "src/lib/api.js:3541",
+      "source": "src/lib/api.js:3668",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -21651,7 +21981,7 @@
       "method": "GET",
       "path": "/api/v2/search/saved",
       "apiHelper": "getSavedSearches",
-      "source": "src/lib/api.js:3548",
+      "source": "src/lib/api.js:3675",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -21689,7 +22019,7 @@
       "method": "POST",
       "path": "/api/v2/search/saved",
       "apiHelper": "saveSavedSearch",
-      "source": "src/lib/api.js:3555",
+      "source": "src/lib/api.js:3682",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -21727,7 +22057,7 @@
       "method": "DELETE",
       "path": "/api/v2/search/saved/{param}",
       "apiHelper": "deleteSavedSearch",
-      "source": "src/lib/api.js:3563",
+      "source": "src/lib/api.js:3690",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -21765,7 +22095,7 @@
       "method": "POST",
       "path": "/api/v2/search/saved/{param}/run",
       "apiHelper": "runSavedSearch",
-      "source": "src/lib/api.js:3570",
+      "source": "src/lib/api.js:3697",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -21801,7 +22131,7 @@
       "method": "POST",
       "path": "/api/v2/shares",
       "apiHelper": "shareFeedItem",
-      "source": "src/lib/api.js:3364",
+      "source": "src/lib/api.js:3491",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -21937,7 +22267,7 @@
       "method": "POST",
       "path": "/api/v2/support/reports",
       "apiHelper": "submitSupportReport",
-      "source": "src/lib/api.js:3389",
+      "source": "src/lib/api.js:3516",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -22002,6 +22332,7 @@
         "tests/auth-tenant-authority.test.js",
         "tests/authenticated-no-store-cache.test.js",
         "tests/backend-contract.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/gds-conventions.test.js",
         "tests/laravel-runtime-smoke.test.js",
@@ -22097,7 +22428,7 @@
       "method": "GET",
       "path": "/api/v2/users?{query}",
       "apiHelper": "getMembersV2",
-      "source": "src/lib/api.js:3602",
+      "source": "src/lib/api.js:3729",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -22123,6 +22454,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js",
         "tests/jobs-owner-lookup.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -22160,6 +22492,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js",
         "tests/jobs-owner-lookup.test.js",
         "tests/runtime/member-block-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
@@ -22199,6 +22532,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js",
         "tests/jobs-owner-lookup.test.js",
         "tests/messages-unread-freshness-and-group-self-add.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -22639,7 +22973,8 @@
         "tests/runtime/groups-mutation.spec.js",
         "tests/runtime/profile-skills-mutation.spec.js",
         "tests/settings-contract-parity.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/supported-message-viewer.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -22678,11 +23013,13 @@
         "tests/auth-localization.test.js",
         "tests/authenticated-no-store-cache.test.js",
         "tests/error-title-prefix-invalid-status.test.js",
+        "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/form-field-error-targeting.test.js",
         "tests/form-input-preserved-batch.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/form-input-preserved-volunteering.test.js",
+        "tests/goal-deadline-not-silently-dropped.test.js",
         "tests/i18n-fixes-locale.test.js",
         "tests/jobs-status-localization.test.js",
         "tests/jobs-title-localization.test.js",
@@ -22690,6 +23027,7 @@
         "tests/localization.test.js",
         "tests/marketplace-title-localization.test.js",
         "tests/messages-unread-freshness-and-group-self-add.test.js",
+        "tests/onboarding-completion-failure.test.js",
         "tests/profile-account-deletion-contract.test.js",
         "tests/profile-status-localization.test.js",
         "tests/profile-tenant-locales.test.js",
@@ -22702,6 +23040,7 @@
         "tests/session-touch.test.js",
         "tests/settings-contract-parity.test.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/supported-message-viewer.test.js",
         "tests/volunteering-hours-approval-refusals.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -22751,7 +23090,8 @@
         "tests/runtime/groups-mutation.spec.js",
         "tests/runtime/profile-skills-mutation.spec.js",
         "tests/settings-contract-parity.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/supported-message-viewer.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -22787,8 +23127,10 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/onboarding-completion-failure.test.js",
         "tests/settings-contract-parity.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/supported-message-viewer.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -22843,7 +23185,7 @@
       "method": "GET",
       "path": "/api/v2/users/me/availability",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:576",
+      "source": "src/routes/settings.js:620",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -22892,7 +23234,7 @@
       "method": "PUT",
       "path": "/api/v2/users/me/availability",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:614",
+      "source": "src/routes/settings.js:658",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -22968,6 +23310,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/onboarding-completion-failure.test.js",
         "tests/profile-settings-save-contract.test.js",
         "tests/settings-contract-parity.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -23128,7 +23471,7 @@
       "method": "GET",
       "path": "/api/v2/users/me/insurance",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:682",
+      "source": "src/routes/settings.js:726",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -23461,7 +23804,7 @@
       "method": "GET",
       "path": "/api/v2/users/me/parent-accounts",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:452",
+      "source": "src/routes/settings.js:491",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -23532,6 +23875,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/linked-account-message-access.test.js",
         "tests/settings-support-parity.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -23832,7 +24176,7 @@
       "method": "GET",
       "path": "/api/v2/users/me/sub-accounts",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:445",
+      "source": "src/routes/settings.js:484",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -23871,7 +24215,8 @@
         "tests/runtime/groups-mutation.spec.js",
         "tests/runtime/profile-skills-mutation.spec.js",
         "tests/settings-contract-parity.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/supported-message-viewer.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -23908,8 +24253,10 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/linked-account-message-access.test.js",
         "tests/settings-support-parity.test.js",
-        "tests/settings-supported-messages-parity.test.js"
+        "tests/settings-supported-messages-parity.test.js",
+        "tests/supported-message-viewer.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -23919,7 +24266,7 @@
       "method": "POST",
       "path": "/api/v2/users/me/sub-accounts",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:736",
+      "source": "src/routes/settings.js:780",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -23958,7 +24305,8 @@
         "tests/runtime/groups-mutation.spec.js",
         "tests/runtime/profile-skills-mutation.spec.js",
         "tests/settings-contract-parity.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/supported-message-viewer.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -23968,7 +24316,7 @@
       "method": "DELETE",
       "path": "/api/v2/users/me/sub-accounts/{param}",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:798",
+      "source": "src/routes/settings.js:842",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -24007,7 +24355,8 @@
         "tests/runtime/groups-mutation.spec.js",
         "tests/runtime/profile-skills-mutation.spec.js",
         "tests/settings-contract-parity.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/supported-message-viewer.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -24053,7 +24402,7 @@
       "method": "PUT",
       "path": "/api/v2/users/me/sub-accounts/{param}/approve",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:756",
+      "source": "src/routes/settings.js:800",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -24102,7 +24451,7 @@
       "method": "GET",
       "path": "/api/v2/users/me/sub-accounts/{param}/messages?{query}",
       "apiHelper": "getSupportedConversations",
-      "source": "src/lib/api.js:3000",
+      "source": "src/lib/api.js:3020",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -24134,7 +24483,7 @@
       "method": "GET",
       "path": "/api/v2/users/me/sub-accounts/{param}/messages/{param}?{query}",
       "apiHelper": "getSupportedThread",
-      "source": "src/lib/api.js:3011",
+      "source": "src/lib/api.js:3031",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -24166,7 +24515,7 @@
       "method": "PUT",
       "path": "/api/v2/users/me/sub-accounts/{param}/permissions",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:777",
+      "source": "src/routes/settings.js:821",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -24379,7 +24728,7 @@
       "method": "PUT",
       "path": "/api/v2/users/me/theme",
       "apiHelper": "callUserSettingsApi",
-      "source": "src/routes/settings.js:560",
+      "source": "src/routes/settings.js:604",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -24435,7 +24784,7 @@
       "responseShape": "JSON/text response via ApiError-aware request",
       "statusCodes": [],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/routes/group-exchanges.js, src/routes/messages.js",
+      "redirects": "consumer-controlled: src/routes/caring.js, src/routes/group-exchanges.js, src/routes/messages.js",
       "sideEffects": "read-only by HTTP method",
       "cleanup": "not applicable",
       "laravel": {
@@ -24446,11 +24795,13 @@
         "tags": []
       },
       "frontendConsumers": [
+        "src/routes/caring.js",
         "src/routes/group-exchanges.js",
         "src/routes/messages.js"
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/caring-caregiver-consent.test.js",
         "tests/messages-unread-freshness-and-group-self-add.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -24785,7 +25136,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/community-projects?public=true&limit=12",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1143",
+      "source": "src/server.js:1144",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -27041,7 +27392,8 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27085,7 +27437,8 @@
         "tests/form-field-error-targeting-more.test.js",
         "tests/routes.test.js",
         "tests/session-touch.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27095,7 +27448,7 @@
       "method": "GET",
       "path": "/api/v2/wallet/community-fund",
       "apiHelper": "callWalletApi",
-      "source": "src/routes/wallet.js:297",
+      "source": "src/routes/wallet.js:308",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -27122,7 +27475,8 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27159,7 +27513,8 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27169,7 +27524,7 @@
       "method": "GET",
       "path": "/api/v2/wallet/statement",
       "apiHelper": "callWalletDownload",
-      "source": "src/routes/wallet.js:338",
+      "source": "src/routes/wallet.js:349",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -27196,7 +27551,8 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27236,7 +27592,8 @@
         "tests/batch1-route-behaviour.test.js",
         "tests/routes.test.js",
         "tests/session-touch.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27275,7 +27632,8 @@
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
         "tests/routes.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27285,7 +27643,7 @@
       "method": "GET",
       "path": "/api/v2/wallet/user-search?{query}",
       "apiHelper": "callWalletApi",
-      "source": "src/routes/wallet.js:298",
+      "source": "src/routes/wallet.js:309",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -27312,7 +27670,8 @@
       "tests": [
         "tests/api.test.js",
         "tests/batch1-route-behaviour.test.js",
-        "tests/shared-accessible-shell.test.js"
+        "tests/shared-accessible-shell.test.js",
+        "tests/wallet-recipient-identity.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"

@@ -1,0 +1,59 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Shared banners for the Caring caregiver pages.
+
+    Two deliberate details, both required by this repository's error-summary
+    contract and by the GOV.UK pattern:
+
+      - `tabindex="-1"` so the summary can be given focus programmatically. A
+        summary that cannot receive focus strands a screen-reader user at the
+        top of the page with no idea what went wrong.
+      - a SINGLE `role="alert"` on the inner element. One on each of two nested
+        elements announces the same message twice.
+
+    `errorList` carries a link per message, pointing at the field it is about,
+    so the summary is navigable rather than merely informative.
+#}
+
+{% macro caringStatus(statusKey, isSuccess, isError, t) %}
+  {% if statusKey and isSuccess %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="caring-status-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="caring-status-title">{{ t("govuk_alpha_caring.shared.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_caring.status." + statusKey) }}</p>
+      </div>
+    </div>
+  {% elif statusKey and isError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_caring.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">{{ t("govuk_alpha_caring.status." + statusKey) }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro caringErrors(errors, namespace, t) %}
+  {% if errors and errors.length %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_caring.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for error in errors %}
+              <li><a href="{{ error.href }}">{{ t("govuk_alpha_caring." + namespace + "." + error.key) }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}

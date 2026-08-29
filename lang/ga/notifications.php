@@ -333,6 +333,11 @@ return [
     'ideation_status_implemented' => 'curtha i bhfeidhm',
     'appreciation_someone' => 'Duine éigin',
     'appreciation_received' => 'Sheol :name nóta buíochais chugat',
+    'caring_caregiver_link_requested' => 'D\'iarr :name go nascfar iad mar do chúramóir. Déan athbhreithniú ar an iarratas sula dtugtar aon rochtain chúramóra.',
+    'caring_caregiver_link_confirmed' => 'Dheimhnigh an faighteoir cúraim an t-iarratas. Tá sé ag fanacht le hathbhreithniú cosanta ón bhfoireann.',
+    'caring_caregiver_link_approved'  => 'Ceadaíodh an caidreamh cúraim. Tá na huirlisí cúramóra ar fáil anois.',
+    'caring_caregiver_link_rejected'  => 'Níor ceadaíodh an caidreamh cúraim. Cúis: :reason',
+
     'marketplace' => [
         'low_stock' => 'Stoc íseal do ":title" (:count fágtha).',
         'restocked' => 'Tá ":title" ar fáil arís.',

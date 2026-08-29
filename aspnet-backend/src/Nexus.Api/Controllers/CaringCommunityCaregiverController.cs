@@ -77,6 +77,47 @@ public sealed class CaringCommunityCaregiverController : ControllerBase
         return StatusCode(StatusCodes.Status202Accepted, new { data = result.Row });
     }
 
+    [HttpGet("incoming-links")]
+    public async Task<IActionResult> IncomingLinks(CancellationToken ct)
+    {
+        var guard = await GuardAsync(ct);
+        if (guard is not null) return guard;
+        var userId = User.GetUserId();
+        if (userId is null) return Unauthorized(LaravelError("AUTH_REQUIRED", "Authentication required."));
+
+        var data = await _caregivers.GetIncomingLinksAsync(_tenant.GetTenantIdOrThrow(), userId.Value, ct);
+        return Ok(new { data });
+    }
+
+    [HttpPost("incoming-links/{id:int}/confirm")]
+    public async Task<IActionResult> ConfirmIncomingLink(int id, CancellationToken ct)
+    {
+        var guard = await GuardAsync(ct);
+        if (guard is not null) return guard;
+        var userId = User.GetUserId();
+        if (userId is null) return Unauthorized(LaravelError("AUTH_REQUIRED", "Authentication required."));
+
+        var result = await _caregivers.ConfirmIncomingLinkAsync(_tenant.GetTenantIdOrThrow(), userId.Value, id, ct);
+        return LinkMutationResult(result);
+    }
+
+    [HttpPost("incoming-links/{id:int}/reject")]
+    public async Task<IActionResult> RejectIncomingLink(
+        int id,
+        [FromBody] Dictionary<string, object?>? request,
+        CancellationToken ct)
+    {
+        var guard = await GuardAsync(ct);
+        if (guard is not null) return guard;
+        var userId = User.GetUserId();
+        if (userId is null) return Unauthorized(LaravelError("AUTH_REQUIRED", "Authentication required."));
+
+        var reason = RequestString(request, "reason");
+        var result = await _caregivers.RejectIncomingLinkAsync(
+            _tenant.GetTenantIdOrThrow(), userId.Value, id, reason, staff: false, ct);
+        return LinkMutationResult(result);
+    }
+
     [HttpDelete("links/{id:int}")]
     public async Task<IActionResult> RemoveLink(int id, CancellationToken ct)
     {
@@ -360,6 +401,24 @@ public sealed class CaringCommunityCaregiverController : ControllerBase
         }
 
         return null;
+    }
+
+    private IActionResult LinkMutationResult(CaregiverLinkMutationResult result)
+    {
+        return result.ErrorCode switch
+        {
+            "VALIDATION_ERROR" => UnprocessableEntity(LaravelError(result.ErrorCode, result.ErrorMessage ?? "Validation failed.", result.ErrorField)),
+            "NOT_FOUND" => NotFound(LaravelError(result.ErrorCode, result.ErrorMessage ?? "Caregiver link not found.")),
+            _ => Ok(new { data = result.Row })
+        };
+    }
+
+    private static string RequestString(IReadOnlyDictionary<string, object?>? request, string key)
+    {
+        if (request is null || !request.TryGetValue(key, out var value) || value is null) return string.Empty;
+        return value is System.Text.Json.JsonElement json
+            ? json.ValueKind == System.Text.Json.JsonValueKind.String ? json.GetString()?.Trim() ?? string.Empty : json.ToString().Trim()
+            : Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)?.Trim() ?? string.Empty;
     }
 
     private static object LaravelError(string code, string message, string? field = null)

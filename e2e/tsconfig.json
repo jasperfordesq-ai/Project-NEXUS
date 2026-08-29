@@ -11,6 +11,6 @@
     "resolveJsonModule": true,
     "types": ["node", "@playwright/test"]
   },
-  "include": ["tests/**/*", "helpers/**/*"],
+  "include": ["tests/**/*", "helpers/**/*", "journeys/**/*"],
   "exclude": ["node_modules"]
 }

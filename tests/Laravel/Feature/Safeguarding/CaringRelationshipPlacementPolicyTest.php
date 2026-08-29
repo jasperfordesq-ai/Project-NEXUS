@@ -122,6 +122,46 @@ class CaringRelationshipPlacementPolicyTest extends TestCase
         $this->assertNull($request?->matched_at);
     }
 
+    public function test_caregiver_link_approval_checks_both_directions_and_remains_pending_on_denial(): void
+    {
+        $this->requireTable('caring_caregiver_links');
+
+        $caregiver = $this->member();
+        $recipient = $this->member();
+        $admin = $this->member(['role' => 'admin']);
+        $linkId = (int) DB::table('caring_caregiver_links')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'caregiver_id' => $caregiver->id,
+            'cared_for_id' => $recipient->id,
+            'relationship_type' => 'friend',
+            'start_date' => now()->toDateString(),
+            'status' => 'pending',
+            'recipient_confirmed_at' => now(),
+            'recipient_confirmed_by' => $recipient->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->denyReverseDirection($caregiver->id, $recipient->id, 'caring_caregiver_link_approval');
+
+        try {
+            app(CaregiverService::class)->approveLink(
+                $linkId,
+                $this->testTenantId,
+                $admin->id,
+                'Recipient confirmed consent in person.',
+            );
+            $this->fail('A safeguarding denial must stop caregiver-link activation.');
+        } catch (SafeguardingPolicyException $e) {
+            $this->assertSame('VETTING_REQUIRED', $e->reasonCode);
+        }
+
+        $this->assertDatabaseHas('caring_caregiver_links', [
+            'id' => $linkId,
+            'status' => 'pending',
+            'approved_by' => null,
+        ]);
+    }
+
     public function test_agent_edit_approval_denial_leaves_proposal_and_relationship_untouched(): void
     {
         $this->requireAgentTables();

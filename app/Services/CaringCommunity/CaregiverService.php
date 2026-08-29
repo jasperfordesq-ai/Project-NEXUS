@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace App\Services\CaringCommunity;
 
+use App\I18n\LocaleContext;
+use App\Services\NotificationDispatcher;
 use App\Services\SafeguardingInteractionPolicy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -42,11 +44,12 @@ class CaregiverService
     // -------------------------------------------------------------------------
 
     /**
-     * Return all active caregiver links for a given caregiver, with cared-for user details.
+     * Return caregiver links for a given caregiver, with cared-for user details.
+     * Pass null to include every member-visible lifecycle state.
      *
      * @return array<int,array<string,mixed>>
      */
-    public function getLinksForCaregiver(int $caregiverId, int $tenantId, string $status = 'active'): array
+    public function getLinksForCaregiver(int $caregiverId, int $tenantId, ?string $status = 'active'): array
     {
         return DB::table('caring_caregiver_links as cl')
             ->join('users as u', function ($join): void {
@@ -55,7 +58,7 @@ class CaregiverService
             })
             ->where('cl.caregiver_id', $caregiverId)
             ->where('cl.tenant_id', $tenantId)
-            ->where('cl.status', $status)
+            ->when($status !== null, fn ($query) => $query->where('cl.status', $status))
             ->select([
                 'cl.id',
                 'cl.cared_for_id',
@@ -63,6 +66,12 @@ class CaregiverService
                 'cl.is_primary',
                 'cl.start_date',
                 'cl.notes',
+                'cl.status',
+                'cl.recipient_confirmed_at',
+                'cl.consent_verified_at',
+                'cl.approved_at',
+                'cl.rejected_at',
+                'cl.rejection_reason',
                 'cl.created_at',
                 'u.name as cared_for_name',
                 'u.avatar_url as cared_for_avatar_url',
@@ -72,6 +81,219 @@ class CaregiverService
             ->get()
             ->map(fn ($row) => (array) $row)
             ->all();
+    }
+
+    /**
+     * Return caregiver-link requests addressed to a care recipient.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public function getIncomingLinks(int $caredForId, int $tenantId): array
+    {
+        return DB::table('caring_caregiver_links as cl')
+            ->join('users as u', function ($join): void {
+                $join->on('u.id', '=', 'cl.caregiver_id')
+                    ->on('u.tenant_id', '=', 'cl.tenant_id');
+            })
+            ->where('cl.cared_for_id', $caredForId)
+            ->where('cl.tenant_id', $tenantId)
+            ->whereIn('cl.status', ['pending', 'active', 'rejected'])
+            ->select([
+                'cl.id',
+                'cl.caregiver_id',
+                'cl.relationship_type',
+                'cl.status',
+                'cl.start_date',
+                'cl.notes',
+                'cl.recipient_confirmed_at',
+                'cl.approved_at',
+                'cl.rejected_at',
+                'cl.rejection_reason',
+                'cl.created_at',
+                'u.name as caregiver_name',
+                'u.avatar_url as caregiver_avatar_url',
+            ])
+            ->orderByRaw("CASE cl.status WHEN 'pending' THEN 0 WHEN 'active' THEN 1 ELSE 2 END")
+            ->orderByDesc('cl.created_at')
+            ->get()
+            ->map(fn ($row) => (array) $row)
+            ->all();
+    }
+
+    /**
+     * Return the tenant-scoped staff review queue.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public function getLinksForReview(int $tenantId, string $status = 'pending'): array
+    {
+        $allowed = ['pending', 'active', 'rejected', 'inactive', 'all'];
+        if (! in_array($status, $allowed, true)) {
+            throw new InvalidArgumentException(__('api.caring_caregiver_status_invalid'));
+        }
+
+        return DB::table('caring_caregiver_links as cl')
+            ->join('users as caregiver', function ($join): void {
+                $join->on('caregiver.id', '=', 'cl.caregiver_id')
+                    ->on('caregiver.tenant_id', '=', 'cl.tenant_id');
+            })
+            ->join('users as cared_for', function ($join): void {
+                $join->on('cared_for.id', '=', 'cl.cared_for_id')
+                    ->on('cared_for.tenant_id', '=', 'cl.tenant_id');
+            })
+            ->where('cl.tenant_id', $tenantId)
+            ->when($status !== 'all', fn ($query) => $query->where('cl.status', $status))
+            ->select([
+                'cl.*',
+                'caregiver.name as caregiver_name',
+                'caregiver.avatar_url as caregiver_avatar_url',
+                'cared_for.name as cared_for_name',
+                'cared_for.avatar_url as cared_for_avatar_url',
+            ])
+            ->orderByRaw("CASE cl.status WHEN 'pending' THEN 0 WHEN 'active' THEN 1 WHEN 'rejected' THEN 2 ELSE 3 END")
+            ->orderBy('cl.created_at')
+            ->get()
+            ->map(fn ($row) => (array) $row)
+            ->all();
+    }
+
+    /**
+     * Record the care recipient's explicit confirmation without activating the link.
+     * Staff still make the safeguarding/consent activation decision.
+     *
+     * @return array<string,mixed>
+     */
+    public function confirmLinkByRecipient(int $linkId, int $caredForId, int $tenantId): array
+    {
+        $link = DB::transaction(function () use ($linkId, $caredForId, $tenantId): array {
+            $link = DB::table('caring_caregiver_links')
+                ->where('id', $linkId)
+                ->where('cared_for_id', $caredForId)
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'pending')
+                ->lockForUpdate()
+                ->first();
+
+            if ($link === null) {
+                throw new \RuntimeException(__('api.caring_caregiver_link_not_found'));
+            }
+
+            DB::table('caring_caregiver_links')->where('id', $linkId)->update([
+                'recipient_confirmed_at' => now(),
+                'recipient_confirmed_by' => $caredForId,
+                'updated_at' => now(),
+            ]);
+
+            return (array) DB::table('caring_caregiver_links')->where('id', $linkId)->first();
+        });
+
+        $this->notifyParticipant((int) $link['caregiver_id'], 'caring_caregiver_link_confirmed', 'notifications.caring_caregiver_link_confirmed', [], $caredForId);
+
+        return $link;
+    }
+
+    /**
+     * Activate a pending link after explicit consent verification and a fresh
+     * bilateral safeguarding-policy check.
+     *
+     * @return array<string,mixed>
+     */
+    public function approveLink(int $linkId, int $tenantId, int $approverId, string $consentEvidence): array
+    {
+        $evidence = trim($consentEvidence);
+        if ($evidence === '') {
+            throw new InvalidArgumentException(__('api.caring_caregiver_consent_evidence_required'));
+        }
+
+        $link = DB::transaction(function () use ($linkId, $tenantId, $approverId, $evidence): array {
+            $link = DB::table('caring_caregiver_links')
+                ->where('id', $linkId)
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'pending')
+                ->lockForUpdate()
+                ->first();
+
+            if ($link === null) {
+                throw new \RuntimeException(__('api.caring_caregiver_pending_link_not_found'));
+            }
+            if ($link->recipient_confirmed_at === null) {
+                throw new \DomainException(__('api.caring_caregiver_consent_required'));
+            }
+            if (
+                ! $this->userBelongsToTenant((int) $link->caregiver_id, $tenantId)
+                || ! $this->userBelongsToTenant((int) $link->cared_for_id, $tenantId)
+                || ! $this->userBelongsToTenant($approverId, $tenantId)
+            ) {
+                throw new \RuntimeException(__('api.user_not_found_in_tenant'));
+            }
+
+            $policy = app(SafeguardingInteractionPolicy::class);
+            $policy->assertLocalContactAllowed((int) $link->caregiver_id, (int) $link->cared_for_id, $tenantId, 'caring_caregiver_link_approval');
+            $policy->assertLocalContactAllowed((int) $link->cared_for_id, (int) $link->caregiver_id, $tenantId, 'caring_caregiver_link_approval');
+
+            $now = now();
+            DB::table('caring_caregiver_links')->where('id', $linkId)->update([
+                'status' => 'active',
+                'approved_by' => $approverId,
+                'approved_at' => $now,
+                'consent_verified_at' => $now,
+                'consent_verified_by' => $approverId,
+                'consent_evidence' => $evidence,
+                'rejected_at' => null,
+                'rejected_by' => null,
+                'rejection_reason' => null,
+                'updated_at' => $now,
+            ]);
+
+            return (array) DB::table('caring_caregiver_links')->where('id', $linkId)->first();
+        });
+
+        foreach ([(int) $link['caregiver_id'], (int) $link['cared_for_id']] as $participantId) {
+            $this->notifyParticipant($participantId, 'caring_caregiver_link_approved', 'notifications.caring_caregiver_link_approved', [], $approverId);
+        }
+
+        return $link;
+    }
+
+    /** @return array<string,mixed> */
+    public function rejectLink(int $linkId, int $tenantId, int $actorId, string $reason, bool $staffDecision): array
+    {
+        $reason = trim($reason);
+        if ($reason === '') {
+            throw new InvalidArgumentException(__('api.caring_caregiver_rejection_reason_required'));
+        }
+
+        $link = DB::transaction(function () use ($linkId, $tenantId, $actorId, $reason, $staffDecision): array {
+            $query = DB::table('caring_caregiver_links')
+                ->where('id', $linkId)
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'pending');
+            if (! $staffDecision) {
+                $query->where('cared_for_id', $actorId);
+            }
+            $link = $query->lockForUpdate()->first();
+            if ($link === null) {
+                throw new \RuntimeException(__('api.caring_caregiver_pending_link_not_found'));
+            }
+
+            DB::table('caring_caregiver_links')->where('id', $linkId)->update([
+                'status' => 'rejected',
+                'rejected_at' => now(),
+                'rejected_by' => $actorId,
+                'rejection_reason' => $reason,
+                'updated_at' => now(),
+            ]);
+
+            return (array) DB::table('caring_caregiver_links')->where('id', $linkId)->first();
+        });
+
+        foreach (array_unique([(int) $link['caregiver_id'], (int) $link['cared_for_id']]) as $participantId) {
+            if ($participantId !== $actorId) {
+                $this->notifyParticipant($participantId, 'caring_caregiver_link_rejected', 'notifications.caring_caregiver_link_rejected', ['reason' => $reason], $actorId);
+            }
+        }
+
+        return $link;
     }
 
     /**
@@ -134,7 +356,7 @@ class CaregiverService
             throw new \RuntimeException(__('api.user_not_found_in_tenant'));
         }
 
-        return DB::transaction(function () use ($caregiverId, $caredForId, $relationshipType, $tenantId, $options): array {
+        $link = DB::transaction(function () use ($caregiverId, $caredForId, $relationshipType, $tenantId, $options): array {
             $existing = DB::table('caring_caregiver_links')
                 ->where('caregiver_id', $caregiverId)
                 ->where('cared_for_id', $caredForId)
@@ -147,7 +369,6 @@ class CaregiverService
                 throw new \RuntimeException(__('api.caring_caregiver_duplicate_link'));
             }
 
-            $approvedBy = (int) ($options['approved_by'] ?? 0);
             $id = DB::table('caring_caregiver_links')->insertGetId([
                 'tenant_id'         => $tenantId,
                 'caregiver_id'      => $caregiverId,
@@ -156,8 +377,8 @@ class CaregiverService
                 'is_primary'        => (bool) ($options['is_primary'] ?? false),
                 'start_date'        => $options['start_date'] ?? now()->toDateString(),
                 'notes'             => $options['notes'] ?? null,
-                'status'            => $approvedBy > 0 ? 'active' : 'pending',
-                'approved_by'       => $approvedBy > 0 ? $approvedBy : null,
+                'status'            => 'pending',
+                'approved_by'       => null,
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ]);
@@ -167,6 +388,11 @@ class CaregiverService
 
             return $row;
         });
+
+        $caregiverName = (string) DB::table('users')->where('id', $caregiverId)->where('tenant_id', $tenantId)->value('name');
+        $this->notifyParticipant($caredForId, 'caring_caregiver_link_requested', 'notifications.caring_caregiver_link_requested', ['name' => $caregiverName], $caregiverId);
+
+        return $link;
     }
 
     /**
@@ -727,6 +953,31 @@ class CaregiverService
 
         $value = trim((string) $value);
         return $value === '' ? null : $value;
+    }
+
+    /** @param array<string,string> $params */
+    private function notifyParticipant(int $userId, string $type, string $translationKey, array $params, int $actorId): void
+    {
+        $locale = DB::table('users')->where('id', $userId)->value('preferred_language');
+        LocaleContext::withLocale($locale, function () use ($userId, $type, $translationKey, $params, $actorId): void {
+            NotificationDispatcher::dispatch(
+                $userId,
+                'global',
+                null,
+                $type,
+                __($translationKey, $params),
+                '/caring-community/caregiver',
+                null,
+                false,
+                $actorId,
+                [
+                    'frequency' => 'instant',
+                    'in_app_enabled' => true,
+                    'email_enabled' => true,
+                    'push_enabled' => true,
+                ],
+            );
+        });
     }
 
     private function userBelongsToTenant(int $userId, int $tenantId): bool

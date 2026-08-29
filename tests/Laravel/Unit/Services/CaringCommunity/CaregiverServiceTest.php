@@ -130,7 +130,7 @@ class CaregiverServiceTest extends TestCase
         $this->assertNull($result['approved_by']);
     }
 
-    public function test_create_link_creates_active_link_when_approved_by_set(): void
+    public function test_create_link_cannot_bypass_pending_review_with_approved_by_option(): void
     {
         $caregiver = $this->insertUser();
         $caredFor  = $this->insertUser();
@@ -144,8 +144,8 @@ class CaregiverServiceTest extends TestCase
             ['approved_by' => $admin],
         );
 
-        $this->assertSame('active', $result['status']);
-        $this->assertSame($admin, (int) $result['approved_by']);
+        $this->assertSame('pending', $result['status']);
+        $this->assertNull($result['approved_by']);
     }
 
     public function test_create_link_throws_on_self_link(): void

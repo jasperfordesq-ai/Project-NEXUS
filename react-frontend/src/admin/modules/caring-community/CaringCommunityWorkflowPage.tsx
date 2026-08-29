@@ -49,6 +49,7 @@ import { formatPercentRatio, resolveAvatarUrl, getFormattingLocale } from '@/lib
 import { MemberSearchPicker, type MemberSearchMember } from '../../components/MemberSearchPicker';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
+import CaregiverLinkReviewPanel from './CaregiverLinkReviewPanel';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -1591,6 +1592,8 @@ export default function CaringCommunityWorkflowPage() {
           </div>
         }
       />
+
+      <CaregiverLinkReviewPanel />
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
         <StatCard label={t('caring_workflow.stats.pending_reviews')} value={(stats?.pending_count ?? 0).toLocaleString(getFormattingLocale())} icon={ClipboardCheck} color="warning" />

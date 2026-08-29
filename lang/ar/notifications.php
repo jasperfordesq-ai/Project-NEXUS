@@ -333,6 +333,11 @@ return [
     'ideation_status_implemented' => 'تم التنفيذ',
     'appreciation_someone' => 'شخص ما',
     'appreciation_received' => 'أرسل لك :name رسالة شكر',
+    'caring_caregiver_link_requested' => 'طلب :name الارتباط بصفته مقدم رعايتك. راجع الطلب قبل منح أي صلاحيات.',
+    'caring_caregiver_link_confirmed' => 'أكد متلقي الرعاية الطلب. وهو بانتظار مراجعة الحماية من الموظفين.',
+    'caring_caregiver_link_approved'  => 'تم اعتماد علاقة الرعاية. أصبحت أدوات مقدم الرعاية متاحة الآن.',
+    'caring_caregiver_link_rejected'  => 'لم يتم اعتماد علاقة الرعاية. السبب: :reason',
+
     'marketplace' => [
         'low_stock' => 'مخزون منخفض لـ ":title" (المتبقي :count).',
         'restocked' => '":title" متوفر في المخزون من جديد.',

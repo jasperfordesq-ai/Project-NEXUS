@@ -119,6 +119,15 @@ public class CaringCaregiverLink : ITenantEntity
     public string? Notes { get; set; }
     public string Status { get; set; } = "pending";
     public int? ApprovedBy { get; set; }
+    public DateTime? RecipientConfirmedAt { get; set; }
+    public int? RecipientConfirmedBy { get; set; }
+    public DateTime? ConsentVerifiedAt { get; set; }
+    public int? ConsentVerifiedBy { get; set; }
+    public string? ConsentEvidence { get; set; }
+    public DateTime? ApprovedAt { get; set; }
+    public DateTime? RejectedAt { get; set; }
+    public int? RejectedBy { get; set; }
+    public string? RejectionReason { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

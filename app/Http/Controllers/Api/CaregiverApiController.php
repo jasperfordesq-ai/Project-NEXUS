@@ -51,7 +51,7 @@ class CaregiverApiController extends BaseApiController
 
     /**
      * GET /v2/caring-community/caregiver/links
-     * Returns all active caregiver links for the authenticated user.
+     * Returns all caregiver-link lifecycle states for the authenticated user.
      */
     public function myLinks(): JsonResponse
     {
@@ -62,7 +62,7 @@ class CaregiverApiController extends BaseApiController
             return $guard;
         }
 
-        return $this->respondWithData($this->service->getLinksForCaregiver($userId, $tenantId));
+        return $this->respondWithData($this->service->getLinksForCaregiver($userId, $tenantId, null));
     }
 
     /**
@@ -116,6 +116,49 @@ class CaregiverApiController extends BaseApiController
         }
 
         return $this->respondWithData($link, null, 202);
+    }
+
+    public function incomingLinks(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+        if ($guard = $this->guardFeature()) return $guard;
+
+        return $this->respondWithData($this->service->getIncomingLinks($userId, $tenantId));
+    }
+
+    public function confirmIncomingLink(int $id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+        if ($guard = $this->guardFeature()) return $guard;
+
+        try {
+            return $this->respondWithData($this->service->confirmLinkByRecipient($id, $userId, $tenantId));
+        } catch (\RuntimeException $e) {
+            return $this->respondNotFound($e->getMessage());
+        }
+    }
+
+    public function rejectIncomingLink(int $id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+        if ($guard = $this->guardFeature()) return $guard;
+
+        try {
+            return $this->respondWithData($this->service->rejectLink(
+                $id,
+                $tenantId,
+                $userId,
+                (string) ($this->input('reason') ?? ''),
+                false,
+            ));
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), 'reason', 422);
+        } catch (\RuntimeException $e) {
+            return $this->respondNotFound($e->getMessage());
+        }
     }
 
     /**

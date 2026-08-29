@@ -164,7 +164,17 @@ describe('Caring Community member flows', () => {
         notes: undefined,
       });
     });
-    expect(mocks.showToast).toHaveBeenCalledWith('Care receiver linked successfully', 'success');
+    // 🔴 The confirmation must NOT say the relationship is established.
+    //
+    // It used to read "Care receiver linked successfully", which was untrue and
+    // actively misleading: creation only ever produces a PENDING link, and no
+    // caregiver authority exists until the care recipient consents AND staff
+    // verify that consent. Telling someone the link succeeded invites them to
+    // believe they may already act for that person.
+    expect(mocks.showToast).toHaveBeenCalledWith(
+      'Caregiver request sent. It remains pending until consent and safeguarding checks are complete.',
+      'success',
+    );
   });
 
   it('passes provider type filters to the provider directory API', async () => {

@@ -3043,6 +3043,113 @@ async function getSupportedThread(token, childUserId, partnerUserId, purpose, pa
 // Blade drives all three ward answers through one service entry point; the HTTP
 // contract splits them into three endpoints, so the caller maps the single form
 // action onto the right one. The form stays a single no-JavaScript POST.
+// ---------------------------------------------------------------------------
+// Caring Community — caregiver links
+// ---------------------------------------------------------------------------
+//
+// 🔴 A caregiver link is CONSENT-GATED AUTHORITY, not a directory entry, and
+// this frontend must never invent any part of that workflow. Every function
+// below is a thin call onto the Laravel endpoints the React frontend already
+// uses, so both frontends read and write the SAME records and one lifecycle.
+//
+// The lifecycle has three gates and all three live in Laravel:
+//   1. creation is always `pending` — nothing here may ask for `active`;
+//   2. the CARE RECIPIENT must confirm before staff may approve;
+//   3. staff approval additionally needs recorded consent evidence and an
+//      explicit attestation.
+// Only an `active` link unlocks schedules, cover care and on-behalf requests.
+
+async function getMyCaregiverLinks(token) {
+  return request('/api/v2/caring-community/caregiver/links', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/** Requests where the SIGNED-IN member is the person being cared for. */
+async function getIncomingCaregiverLinks(token) {
+  return request('/api/v2/caring-community/caregiver/incoming-links', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/**
+ * Propose a caregiver relationship. The response is 202 and the record is
+ * `pending`; there is deliberately no way to ask for anything else.
+ */
+async function createCaregiverLink(token, payload) {
+  return request('/api/v2/caring-community/caregiver/links', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      cared_for_id: payload.caredForId,
+      relationship_type: payload.relationshipType,
+      start_date: payload.startDate,
+      notes: payload.notes || undefined
+    })
+  });
+}
+
+/** The care recipient's own decision. Confirming does NOT grant authority. */
+async function confirmIncomingCaregiverLink(token, linkId) {
+  return request(`/api/v2/caring-community/caregiver/incoming-links/${linkId}/confirm`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({})
+  });
+}
+
+async function rejectIncomingCaregiverLink(token, linkId, reason) {
+  return request(`/api/v2/caring-community/caregiver/incoming-links/${linkId}/reject`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ reason: reason || '' })
+  });
+}
+
+/** Staff review queue, tenant-scoped by Laravel. */
+async function getCaregiverLinksForReview(token, status = 'pending') {
+  return request(`/api/v2/admin/caring-community/caregiver-links?status=${encodeURIComponent(status)}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/**
+ * 🔴 `consent_verified` is sent as the staff member's explicit attestation and
+ * is never defaulted to true here. Laravel refuses the approval without it, and
+ * refuses again if the care recipient has not confirmed — this frontend relies
+ * on those refusals rather than reimplementing them.
+ */
+async function approveCaregiverLink(token, linkId, evidence) {
+  return request(`/api/v2/admin/caring-community/caregiver-links/${linkId}/approve`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ consent_verified: true, consent_evidence: evidence })
+  });
+}
+
+async function rejectCaregiverLink(token, linkId, reason) {
+  return request(`/api/v2/admin/caring-community/caregiver-links/${linkId}/reject`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ reason })
+  });
+}
+
+/** Only an ACTIVE link may raise one of these; Laravel enforces that. */
+async function createCaregiverRequestOnBehalf(token, payload) {
+  return request('/api/v2/caring-community/caregiver/request-on-behalf', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      cared_for_id: payload.caredForId,
+      title: payload.title,
+      description: payload.description || undefined,
+      when_needed: payload.whenNeeded || undefined,
+      contact_preference: payload.contactPreference || undefined
+    })
+  });
+}
+
 async function getMyGuardians(token) {
   return request('/api/v2/safeguarding/my-guardians', {
     headers: { Authorization: `Bearer ${token}` }
@@ -4214,6 +4321,16 @@ module.exports = {
   getSupportedConversations,
   getSupportedThread,
   // Guardian arrangements
+  // Caring Community — caregiver links
+  getMyCaregiverLinks,
+  getIncomingCaregiverLinks,
+  createCaregiverLink,
+  confirmIncomingCaregiverLink,
+  rejectIncomingCaregiverLink,
+  getCaregiverLinksForReview,
+  approveCaregiverLink,
+  rejectCaregiverLink,
+  createCaregiverRequestOnBehalf,
   getMyGuardians,
   getMyWards,
   respondToGuardian,

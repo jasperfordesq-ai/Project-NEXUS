@@ -75,7 +75,9 @@ class CaregiverApiControllerTest extends TestCase
 
         $links = $this->apiGet('/v2/caring-community/caregiver/links');
         $links->assertStatus(200);
-        $links->assertJsonPath('data', []);
+        $links->assertJsonPath('data.0.id', $link->json('data.id'));
+        $links->assertJsonPath('data.0.status', 'pending');
+        $links->assertJsonPath('data.0.cared_for_name', 'Mira Receiver');
 
         $pendingRequest = $this->apiPost('/v2/caring-community/caregiver/request-on-behalf', [
             'cared_for_id' => $careReceiver->id,
@@ -209,5 +211,185 @@ class CaregiverApiControllerTest extends TestCase
 
         $response->assertStatus(403);
         $response->assertJsonPath('errors.0.code', 'FEATURE_DISABLED');
+    }
+
+    public function test_staff_can_review_and_activate_a_pending_link_only_after_recording_consent(): void
+    {
+        $this->requireCaregiverTables();
+        $this->setCaringCommunityFeature(true);
+
+        $caregiver = User::factory()->forTenant($this->testTenantId)->create();
+        $careReceiver = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Pat',
+            'last_name' => 'Receiver',
+        ]);
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+
+        Sanctum::actingAs($caregiver);
+        $created = $this->apiPost('/v2/caring-community/caregiver/links', [
+            'cared_for_id' => $careReceiver->id,
+            'relationship_type' => 'friend',
+            'start_date' => now()->toDateString(),
+        ]);
+        $created->assertStatus(202);
+        $linkId = (int) $created->json('data.id');
+
+        Sanctum::actingAs($admin);
+        $queue = $this->apiGet('/v2/admin/caring-community/caregiver-links?status=pending');
+        $queue->assertStatus(200);
+        $queue->assertJsonPath('data.0.id', $linkId);
+        $queue->assertJsonPath('data.0.caregiver_id', $caregiver->id);
+        $queue->assertJsonPath('data.0.cared_for_id', $careReceiver->id);
+
+        $withoutConsent = $this->apiPost("/v2/admin/caring-community/caregiver-links/{$linkId}/approve", [
+            'consent_verified' => false,
+        ]);
+        $withoutConsent->assertStatus(422);
+        $withoutConsent->assertJsonPath('errors.0.code', 'CONSENT_REQUIRED');
+
+        $withoutRecipientConfirmation = $this->apiPost("/v2/admin/caring-community/caregiver-links/{$linkId}/approve", [
+            'consent_verified' => true,
+            'consent_evidence' => 'Staff note before recipient action.',
+        ]);
+        $withoutRecipientConfirmation->assertStatus(422);
+        $withoutRecipientConfirmation->assertJsonPath('errors.0.code', 'CONSENT_REQUIRED');
+
+        Sanctum::actingAs($careReceiver);
+        $this->apiPost("/v2/caring-community/caregiver/incoming-links/{$linkId}/confirm")
+            ->assertStatus(200);
+
+        Sanctum::actingAs($admin);
+        $approved = $this->apiPost("/v2/admin/caring-community/caregiver-links/{$linkId}/approve", [
+            'consent_verified' => true,
+            'consent_evidence' => 'Care recipient confirmed by telephone.',
+        ]);
+        $approved->assertStatus(200);
+        $approved->assertJsonPath('data.status', 'active');
+        $approved->assertJsonPath('data.approved_by', $admin->id);
+
+        $this->assertDatabaseHas('caring_caregiver_links', [
+            'id' => $linkId,
+            'tenant_id' => $this->testTenantId,
+            'status' => 'active',
+            'approved_by' => $admin->id,
+            'consent_verified_by' => $admin->id,
+        ]);
+
+        Sanctum::actingAs($caregiver);
+        $links = $this->apiGet('/v2/caring-community/caregiver/links');
+        $links->assertJsonPath('data.0.status', 'active');
+
+        $request = $this->apiPost('/v2/caring-community/caregiver/request-on-behalf', [
+            'cared_for_id' => $careReceiver->id,
+            'title' => 'Prescription collection',
+            'description' => 'Please collect this afternoon.',
+        ]);
+        $request->assertStatus(201);
+        $request->assertJsonPath('data.is_on_behalf', 1);
+
+        $this->assertDatabaseHas('notifications', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $caregiver->id,
+            'type' => 'caring_caregiver_link_approved',
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $careReceiver->id,
+            'type' => 'caring_caregiver_link_approved',
+        ]);
+    }
+
+    public function test_care_recipient_can_confirm_or_reject_only_their_own_pending_request(): void
+    {
+        $this->requireCaregiverTables();
+        $this->setCaringCommunityFeature(true);
+
+        $caregiver = User::factory()->forTenant($this->testTenantId)->create();
+        $careReceiver = User::factory()->forTenant($this->testTenantId)->create();
+        $otherMember = User::factory()->forTenant($this->testTenantId)->create();
+
+        Sanctum::actingAs($caregiver);
+        $first = $this->apiPost('/v2/caring-community/caregiver/links', [
+            'cared_for_id' => $careReceiver->id,
+            'relationship_type' => 'neighbour',
+            'start_date' => now()->toDateString(),
+        ]);
+        $first->assertStatus(202);
+        $firstId = (int) $first->json('data.id');
+
+        $this->assertDatabaseHas('notifications', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $careReceiver->id,
+            'type' => 'caring_caregiver_link_requested',
+        ]);
+
+        Sanctum::actingAs($otherMember);
+        $this->apiPost("/v2/caring-community/caregiver/incoming-links/{$firstId}/confirm")
+            ->assertStatus(404);
+
+        Sanctum::actingAs($careReceiver);
+        $incoming = $this->apiGet('/v2/caring-community/caregiver/incoming-links');
+        $incoming->assertStatus(200);
+        $incoming->assertJsonPath('data.0.id', $firstId);
+        $incoming->assertJsonPath('data.0.recipient_confirmed_at', null);
+
+        $confirmed = $this->apiPost("/v2/caring-community/caregiver/incoming-links/{$firstId}/confirm");
+        $confirmed->assertStatus(200);
+        $confirmed->assertJsonPath('data.status', 'pending');
+        $this->assertNotNull($confirmed->json('data.recipient_confirmed_at'));
+
+        Sanctum::actingAs($caregiver);
+        $second = $this->apiPost('/v2/caring-community/caregiver/links', [
+            'cared_for_id' => $otherMember->id,
+            'relationship_type' => 'friend',
+            'start_date' => now()->toDateString(),
+        ]);
+        $secondId = (int) $second->json('data.id');
+
+        Sanctum::actingAs($otherMember);
+        $rejected = $this->apiPost("/v2/caring-community/caregiver/incoming-links/{$secondId}/reject", [
+            'reason' => 'I did not request this relationship.',
+        ]);
+        $rejected->assertStatus(200);
+        $rejected->assertJsonPath('data.status', 'rejected');
+
+        Sanctum::actingAs($caregiver);
+        $links = $this->apiGet('/v2/caring-community/caregiver/links');
+        $links->assertStatus(200);
+        $this->assertContains('rejected', array_column($links->json('data'), 'status'));
+        $this->assertDatabaseHas('notifications', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $caregiver->id,
+            'type' => 'caring_caregiver_link_rejected',
+        ]);
+    }
+
+    public function test_member_cannot_use_staff_queue_and_staff_queue_is_tenant_scoped(): void
+    {
+        $this->requireCaregiverTables();
+        $this->setCaringCommunityFeature(true);
+
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($member);
+        $this->apiGet('/v2/admin/caring-community/caregiver-links')->assertStatus(403);
+
+        $otherTenantCaregiver = User::factory()->forTenant(999)->create();
+        $otherTenantReceiver = User::factory()->forTenant(999)->create();
+        DB::table('caring_caregiver_links')->insert([
+            'tenant_id' => 999,
+            'caregiver_id' => $otherTenantCaregiver->id,
+            'cared_for_id' => $otherTenantReceiver->id,
+            'relationship_type' => 'family',
+            'start_date' => now()->toDateString(),
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $queue = $this->apiGet('/v2/admin/caring-community/caregiver-links?status=pending');
+        $queue->assertStatus(200);
+        $this->assertNotContains($otherTenantCaregiver->id, array_column($queue->json('data'), 'caregiver_id'));
     }
 }

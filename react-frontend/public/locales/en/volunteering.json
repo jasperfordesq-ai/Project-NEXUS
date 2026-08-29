@@ -1056,7 +1056,7 @@
     "relationship_parent": "Parent",
     "relationship_guardian": "Guardian",
     "relationship_legal_guardian": "Legal guardian",
-    "relationship_carer": "Carer",
+    "relationship_carer": "Carer of the young volunteer",
     "send_request": "Send approval request",
     "sending": "Sending…",
     "request_sent_title": "Request sent",

@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-24T14:54:29.665Z
-Laravel commit SHA: `4a1d90af325dfef89a80dfd3d05300ea33afc833`
-Web UK repository commit SHA: `4a1d90af325dfef89a80dfd3d05300ea33afc833`
+Generated: 2026-08-29T15:45:50.793Z
+Laravel commit SHA: `e415eb066c548a5a718a7d757215dd572cf8f59c`
+Web UK repository commit SHA: `e415eb066c548a5a718a7d757215dd572cf8f59c`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 728 |
+| web-uk routes | 737 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 18 |
+| Extra web-uk routes | 27 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -29,6 +29,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | activity | 2 | 0 | 0 | 0 |
 | appreciations | 1 | 0 | 0 | 0 |
 | blog | 12 | 0 | 0 | 0 |
+| caring | 0 | 0 | 9 | 0 |
 | chat | 2 | 0 | 0 | 0 |
 | clubs | 1 | 0 | 0 | 0 |
 | connections | 5 | 0 | 0 | 0 |
@@ -109,6 +110,15 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 
 | Method | Path | Family | Web UK view | Web UK file |
 | --- | --- | --- | --- | --- |
+| GET | `/caring` | caring | caring/hub | web-uk/src/routes/caring.js |
+| GET | `/caring/caregiver` | caring | caring/caregiver | web-uk/src/routes/caring.js |
+| GET | `/caring/caregiver/link` | caring | caring/link | web-uk/src/routes/caring.js |
+| GET | `/caring/caregiver/on-behalf/{param}` | caring | caring/on-behalf | web-uk/src/routes/caring.js |
+| GET | `/caring/reviews` | caring | caring/reviews | web-uk/src/routes/caring.js |
+| POST | `/caring/caregiver/incoming/respond` | caring |  | web-uk/src/routes/caring.js |
+| POST | `/caring/caregiver/link` | caring | caring/link | web-uk/src/routes/caring.js |
+| POST | `/caring/caregiver/on-behalf/{param}` | caring | caring/on-behalf | web-uk/src/routes/caring.js |
+| POST | `/caring/reviews/{param}/decide` | caring | caring/reviews | web-uk/src/routes/caring.js |
 | POST | `/cookie-consent/hide` | cookie-consent |  | web-uk/src/server.js |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |

@@ -43,6 +43,7 @@ const coursesRoutes = require('./routes/courses');
 const eventsRoutes = require('./routes/events');
 const whatsOnRoutes = require('./routes/whats-on');
 const venuesRoutes = require('./routes/venues');
+const caringRoutes = require('./routes/caring');
 const settingsGuardiansRoutes = require('./routes/settings-guardians');
 const settingsSupportActionRoutes = require('./routes/settings-support-actions');
 const linkedAccountActivityRoutes = require('./routes/settings-linked-account-activity');
@@ -2248,6 +2249,19 @@ app.use('/notifications', doubleCsrfProtection, notificationsRoutes);
 // here rather than falling through to the settings hub's catch-alls. The member
 // is the subject of a guardian arrangement, so the whole router needs a signed-in
 // user: requireAuth redirects to /login?status=auth-required, matching Blade.
+// Caring Community — caregiver links.
+//
+// 🔴 requireAuth on the WHOLE router, member pages and staff queue alike. Every
+// page here is about a named person's care, so none of it has an anonymous
+// view; an unauthenticated request redirects to /login rather than rendering an
+// empty shell that looks like "you have no relationships".
+//
+// The staff queue is mounted under the same /caring prefix on purpose, so the
+// tenant feature gate covers it too — a community with caring_community off
+// cannot reach a caregiver-consent decision screen. Who may actually decide is
+// Laravel's call (EnsureIsAdmin, scoped to the caller's own community); this
+// frontend never second-guesses it.
+app.use('/caring', requireAuth, doubleCsrfProtection, postOnly(formLimiter), caringRoutes);
 app.use('/settings/guardians', requireAuth, doubleCsrfProtection, postOnly(formLimiter), settingsGuardiansRoutes);
 app.use('/settings/support-actions', requireAuth, doubleCsrfProtection, postOnly(formLimiter), settingsSupportActionRoutes);
 // Mounted at the DEEPER paths on purpose: mounting at /settings/linked-accounts

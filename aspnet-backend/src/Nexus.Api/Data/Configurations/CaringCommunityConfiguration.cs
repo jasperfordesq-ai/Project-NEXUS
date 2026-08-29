@@ -117,8 +117,11 @@ public class CaringCommunityConfiguration : TenantScopedConfiguration
             entity.Property(e => e.StartDate).HasColumnType("date").IsRequired();
             entity.Property(e => e.Notes).HasColumnType("text");
             entity.Property(e => e.Status).HasMaxLength(20).HasDefaultValue("pending").IsRequired();
+            entity.Property(e => e.ConsentEvidence).HasColumnType("text");
+            entity.Property(e => e.RejectionReason).HasColumnType("text");
             entity.HasIndex(e => new { e.TenantId, e.CaregiverId });
             entity.HasIndex(e => new { e.TenantId, e.CaredForId });
+            entity.HasIndex(e => new { e.TenantId, e.Status });
             entity.HasIndex(e => new { e.TenantId, e.CaregiverId, e.CaredForId, e.Status })
                 .IsUnique()
                 .HasDatabaseName("ccl_tenant_caregiver_recipient_status_unique");

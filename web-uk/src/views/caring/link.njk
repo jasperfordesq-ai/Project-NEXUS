@@ -1,0 +1,147 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Ask to care for someone.
+
+    🔴 The member search is a GET form, not a live dropdown.
+
+    The React equivalent uses a type-ahead that fetches on every keystroke, and
+    it rendered a permanent "No matching members found" because the endpoint
+    answers `{ items: [...] }` while the component expected an array. A plain
+    form submit has no such failure mode, works with JavaScript switched off,
+    and gives a real linkable page state for the results — which is also what
+    lets a screen-reader user review the list at their own pace rather than
+    chasing a list that changes underneath them.
+
+    🔴 The warning about consent is shown BEFORE the form, not after submitting.
+    Someone naming another person in a care relationship needs to know, before
+    they do it, that the person will be asked and that staff will check.
+#}
+
+{% extends "layouts/base.njk" %}
+{% import "caring/_status.njk" as caring %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/caring/caregiver') }}">{{ t("govuk_alpha_caring.shared.back_to_caregiver") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {{ caring.caringErrors(errors, "link", t) }}
+      {{ caring.caringStatus(statusKey, statusIsSuccess, statusIsError, t) }}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_caring.link.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_caring.link.title") }}</h1>
+      <p class="govuk-body">{{ t("govuk_alpha_caring.link.intro") }}</p>
+
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("govuk_alpha_caring.shared.error_title") }}</span>
+          {{ t("govuk_alpha_caring.link.consent_warning") }}
+        </strong>
+      </div>
+
+      {# ---- Step 1: find the member (its own GET form) ---- #}
+      <form method="get" action="{{ urlFor('/caring/caregiver/link') }}" class="govuk-!-margin-bottom-6">
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="caring-search">
+            {{ t("govuk_alpha_caring.link.search_label") }}
+          </label>
+          <div id="caring-search-hint" class="govuk-hint">{{ t("govuk_alpha_caring.link.search_hint") }}</div>
+          <input class="govuk-input" id="caring-search" name="q" type="search"
+                 value="{{ query or '' }}" aria-describedby="caring-search-hint" autocomplete="off">
+        </div>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+          {{ t("govuk_alpha_caring.link.search_button") }}
+        </button>
+      </form>
+
+      {% if searched %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_caring.link.results_title") }}</h2>
+        {% if not results.length %}
+          <p class="govuk-inset-text">{{ t("govuk_alpha_caring.link.results_none") }}</p>
+        {% else %}
+          <dl class="govuk-summary-list">
+            {% for member in results %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ member.name }}</dt>
+                <dd class="govuk-summary-list__actions">
+                  <a class="govuk-link" href="{{ urlFor('/caring/caregiver/link') }}?member={{ member.id }}&amp;member_name={{ member.name | urlencode }}">
+                    {{ t("govuk_alpha_caring.link.choose_button") }}<span class="govuk-visually-hidden"> {{ member.name }}</span>
+                  </a>
+                </dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% endif %}
+      {% endif %}
+
+      {# ---- Step 2: the request itself, only once a member is chosen ---- #}
+      {% if chosen %}
+        <form method="post" action="{{ urlFor('/caring/caregiver/link') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="cared_for_id" value="{{ chosen.id }}">
+          <input type="hidden" name="cared_for_name" value="{{ chosen.name }}">
+
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_caring.link.chosen_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ chosen.name }}</dd>
+              <dd class="govuk-summary-list__actions">
+                <a class="govuk-link" href="{{ urlFor('/caring/caregiver/link') }}">
+                  {{ t("govuk_alpha_caring.link.change_button") }}<span class="govuk-visually-hidden"> {{ chosen.name }}</span>
+                </a>
+              </dd>
+            </div>
+          </dl>
+
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--s" for="relationship_type">
+              {{ t("govuk_alpha_caring.link.relationship_label") }}
+            </label>
+            <select class="govuk-select" id="relationship_type" name="relationship_type">
+              {% for option in relationshipTypes %}
+                <option value="{{ option }}"{% if submitted and submitted.relationshipType === option %} selected{% endif %}>
+                  {{ t("govuk_alpha_caring.caregiver.relationship_" + option) }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          {# The maintained three-field date pattern. Its Day/Month/Year labels come
+             from the shared `web_uk.date_input.*` keys, so they are translated in all
+             eleven locales — hand-writing them here left three English words in an
+             otherwise localised form, which the template-localization audit caught. #}
+          {{ nexusDateInput({
+            name: "start_date",
+            legend: t("govuk_alpha_caring.link.start_date_label"),
+            hint: t("govuk_alpha_caring.link.start_date_hint"),
+            value: submitted.dateParts if submitted else null,
+            errorMessage: dateErrorMessage,
+            errorFields: dateErrorFields
+          }, t) }}
+
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--s" for="notes">
+              {{ t("govuk_alpha_caring.link.notes_label") }} {{ t("govuk_alpha_caring.shared.optional") }}
+            </label>
+            <div id="notes-hint" class="govuk-hint">{{ t("govuk_alpha_caring.link.notes_hint") }}</div>
+            <textarea class="govuk-textarea" id="notes" name="notes" rows="3" aria-describedby="notes-hint">{{ submitted.notes if submitted else '' }}</textarea>
+          </div>
+
+          <button class="govuk-button" data-module="govuk-button" type="submit">
+            {{ t("govuk_alpha_caring.link.submit_button") }}
+          </button>
+        </form>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

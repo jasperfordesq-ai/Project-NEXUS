@@ -1,0 +1,58 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Caring Community entry point, accessible frontend.
+
+    Deliberately the caregiver SLICE only, not the whole React hub. This is the
+    reachable member entry the accessible frontend previously had nothing of —
+    Caring was gated off entirely here, so a member using this frontend could
+    not arrange or answer a caring relationship at all.
+
+    🔴 "Become a caregiver" enters the CARING caregiver-link journey. It must
+    never point at volunteering: a volunteering record confers no caring
+    authority, does not satisfy consent, and does not create a link.
+#}
+
+{% extends "layouts/base.njk" %}
+{% import "caring/_status.njk" as caring %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {{ caring.caringStatus(statusKey, statusIsSuccess, statusIsError, t) }}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_caring.hub.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_caring.hub.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_caring.hub.intro") }}</p>
+
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title">{{ t("govuk_alpha_caring.hub.caregiver_card_title") }}</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <p class="govuk-body">{{ t("govuk_alpha_caring.hub.caregiver_card_description") }}</p>
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/caring/caregiver') }}">
+            {{ t("govuk_alpha_caring.caregiver.title") }}
+          </a>
+        </div>
+      </div>
+
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title">{{ t("govuk_alpha_caring.hub.become_title") }}</h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <p class="govuk-body">{{ t("govuk_alpha_caring.hub.become_description") }}</p>
+          <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/caring/caregiver/link') }}">
+            {{ t("govuk_alpha_caring.caregiver.become_button") }}
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}

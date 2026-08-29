@@ -333,6 +333,11 @@ return [
     'ideation_status_implemented' => 'implementata',
     'appreciation_someone' => 'Qualcuno',
     'appreciation_received' => ':name le ha inviato un biglietto di ringraziamento',
+    'caring_caregiver_link_requested' => ':name ha chiesto di essere collegato come tuo assistente. Esamina la richiesta prima di concedere l’accesso.',
+    'caring_caregiver_link_confirmed' => 'La persona assistita ha confermato la richiesta. È in attesa della verifica di tutela dello staff.',
+    'caring_caregiver_link_approved'  => 'La relazione di assistenza è stata approvata. Gli strumenti per l’assistente sono ora disponibili.',
+    'caring_caregiver_link_rejected'  => 'La relazione di assistenza non è stata approvata. Motivo: :reason',
+
     'marketplace' => [
         'low_stock' => 'Scorte in esaurimento per ":title" (:count rimanenti).',
         'restocked' => '":title" è di nuovo disponibile.',

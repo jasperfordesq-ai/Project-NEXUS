@@ -2174,6 +2174,12 @@ Route::get('/v2/caring-community/caregiver/links', [\App\Http\Controllers\Api\Ca
     ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
 Route::post('/v2/caring-community/caregiver/links', [\App\Http\Controllers\Api\CaregiverApiController::class, 'addLink'])
     ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
+Route::get('/v2/caring-community/caregiver/incoming-links', [\App\Http\Controllers\Api\CaregiverApiController::class, 'incomingLinks'])
+    ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
+Route::post('/v2/caring-community/caregiver/incoming-links/{id}/confirm', [\App\Http\Controllers\Api\CaregiverApiController::class, 'confirmIncomingLink'])
+    ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
+Route::post('/v2/caring-community/caregiver/incoming-links/{id}/reject', [\App\Http\Controllers\Api\CaregiverApiController::class, 'rejectIncomingLink'])
+    ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
 Route::delete('/v2/caring-community/caregiver/links/{id}', [\App\Http\Controllers\Api\CaregiverApiController::class, 'removeLink'])
     ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
 Route::get('/v2/caring-community/caregiver/schedule/{caredForId}', [\App\Http\Controllers\Api\CaregiverApiController::class, 'caregiverSchedule'])
@@ -2190,6 +2196,9 @@ Route::get('/v2/caring-community/caregiver/cover-requests/{id}/candidates', [\Ap
     ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
 Route::post('/v2/caring-community/caregiver/cover-requests/{id}/assign', [\App\Http\Controllers\Api\CaregiverApiController::class, 'assignCoverCandidate'])
     ->withoutMiddleware(\App\Http\Middleware\EnsureIsAdmin::class);
+Route::get('/v2/admin/caring-community/caregiver-links', [\App\Http\Controllers\Api\AdminCaringCommunityController::class, 'caregiverLinks']);
+Route::post('/v2/admin/caring-community/caregiver-links/{id}/approve', [\App\Http\Controllers\Api\AdminCaringCommunityController::class, 'approveCaregiverLink']);
+Route::post('/v2/admin/caring-community/caregiver-links/{id}/reject', [\App\Http\Controllers\Api\AdminCaringCommunityController::class, 'rejectCaregiverLink']);
 
 // AG66 — KPI Baseline
 Route::get('/v2/admin/caring-community/kpi-baselines', [\App\Http\Controllers\Api\AdminCaringCommunityController::class, 'listKpiBaselines']);

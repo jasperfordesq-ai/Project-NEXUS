@@ -29,6 +29,13 @@ const FEATURE_ROUTE_GATES = [
   { prefix: '/leaderboard', featureKey: 'gamification' },
   { prefix: '/nexus-score', featureKey: 'gamification' },
   { prefix: '/blog', featureKey: 'blog' },
+  // 🔴 `caring_community` defaults to FALSE in both Laravel
+  // (TenantFeatureConfig::FEATURE_DEFAULTS) and featureDefaults above, so a
+  // community that has not opted in must not reach any of these pages. The gate
+  // covers the STAFF review queue as well as the member journey: /caring/reviews
+  // sits under this prefix on purpose, so a community with Caring switched off
+  // cannot reach a caregiver-consent decision screen either.
+  { prefix: '/caring', featureKey: 'caring_community' },
   { prefix: '/chat', featureKey: 'ai_chat' },
   { prefix: '/federation', featureKey: 'federation' },
   { prefix: '/goals', featureKey: 'goals' },

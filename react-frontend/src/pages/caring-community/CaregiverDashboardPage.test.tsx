@@ -4,12 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ── Stable mock for hasFeature that can be overridden per-test ────────────────
 const mockHasFeature = vi.fn(() => true);
 const mockNavigate = vi.fn();
+const { mockApiPost, mockIncomingRefetch } = vi.hoisted(() => ({
+  mockApiPost: vi.fn(),
+  mockIncomingRefetch: vi.fn(),
+}));
+
+vi.mock('@/lib/api', () => ({ api: { post: mockApiPost } }));
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -56,16 +62,26 @@ const CAREGIVER_LINKS = [
     notes: null,
     cared_for_name: 'Grandma Ethel',
     cared_for_avatar_url: null,
+    status: 'active' as const,
+    recipient_confirmed_at: '2026-01-02T00:00:00Z',
+    rejection_reason: null,
   },
 ];
 
 const BURNOUT_SAFE = { data: { weekly_hours: 5, threshold: 40, at_risk: false, risk_level: 'none' }, isLoading: false, error: null };
 const BURNOUT_AT_RISK = { data: { weekly_hours: 50, threshold: 40, at_risk: true, risk_level: 'high' }, isLoading: false, error: null };
 
-function setupUseApi(linksResult = EMPTY_LINKS_RESULT, burnoutResult = BURNOUT_SAFE) {
+function setupUseApi(
+  linksResult = EMPTY_LINKS_RESULT,
+  burnoutResult = BURNOUT_SAFE,
+  incomingResult: unknown[] = [],
+) {
   mockUseApi.mockImplementation((endpoint: string) => {
     if (endpoint.includes('burnout-check')) return burnoutResult;
-    if (endpoint.includes('links')) return linksResult;
+    if (endpoint.includes('incoming-links')) {
+      return { data: incomingResult, isLoading: false, error: null, refetch: mockIncomingRefetch };
+    }
+    if (endpoint.includes('links')) return { ...linksResult, refetch: vi.fn() };
     // SchedulePanel calls — return safe empty
     return { data: null, isLoading: false, error: null };
   });
@@ -123,6 +139,53 @@ describe('CaregiverDashboardPage', () => {
     render(<CaregiverDashboardPage />);
     await waitFor(() => {
       expect(screen.getByText('Grandma Ethel')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('link', { name: /Request help on their behalf/i })).toHaveAttribute(
+      'href',
+      '/test/caring-community/request-help?on_behalf_of=10',
+    );
+  });
+
+  it('keeps pending links visible without exposing active caregiver actions', async () => {
+    setupUseApi({
+      data: [{
+        ...CAREGIVER_LINKS[0],
+        status: 'pending' as const,
+        recipient_confirmed_at: null,
+      }],
+      isLoading: false,
+      error: null,
+    }, BURNOUT_SAFE);
+    render(<CaregiverDashboardPage />);
+
+    expect(await screen.findByText('Grandma Ethel')).toBeInTheDocument();
+    expect(screen.getByText(/Waiting for the care recipient/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Request help on their behalf/i })).not.toBeInTheDocument();
+  });
+
+  it('lets the care recipient explicitly confirm an incoming caregiver request', async () => {
+    mockApiPost.mockResolvedValue({ success: true });
+    mockIncomingRefetch.mockResolvedValue(undefined);
+    setupUseApi(EMPTY_LINKS_RESULT, BURNOUT_SAFE, [{
+      id: 77,
+      caregiver_id: 22,
+      caregiver_name: 'Cara Helper',
+      caregiver_avatar_url: null,
+      relationship_type: 'friend',
+      status: 'pending',
+      recipient_confirmed_at: null,
+    }]);
+
+    render(<CaregiverDashboardPage />);
+    expect(await screen.findByText('Cara Helper')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Confirm relationship/i }));
+
+    await waitFor(() => {
+      expect(mockApiPost).toHaveBeenCalledWith(
+        '/v2/caring-community/caregiver/incoming-links/77/confirm',
+        undefined,
+      );
+      expect(mockIncomingRefetch).toHaveBeenCalled();
     });
   });
 

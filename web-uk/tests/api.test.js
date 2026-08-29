@@ -8002,6 +8002,152 @@ describe('API Request Functions', () => {
     });
   });
 
+
+  describe('Caring Community caregiver-link helpers', () => {
+    // 🔴 Direct helper assertions: these pin the PATH, METHOD and BODY each
+    // helper sends. The route tests mock this whole module, so without these the
+    // nine caregiver helpers would have no test asserting what they actually
+    // put on the wire — the api-consumer ledger counts exactly that, and it went
+    // from 0 to 9 helpers without direct assertions when they were added.
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('lists the caregiver links belonging to the caller', async () => {
+      jsonOnce({ data: [] });
+      await api.getMyCaregiverLinks('test-token');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/caring-community/caregiver/links',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('lists requests where the caller is the person being cared for', async () => {
+      jsonOnce({ data: [] });
+      await api.getIncomingCaregiverLinks('test-token');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/caring-community/caregiver/incoming-links',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('proposes a caregiver link without ever asking for a status', async () => {
+      jsonOnce({ data: { id: 9 } });
+      await api.createCaregiverLink('test-token', {
+        caredForId: 200, relationshipType: 'neighbour', startDate: '2026-08-29', notes: 'Weekly shopping'
+      });
+
+      const [, init] = mockFetch.mock.calls[0];
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/caring-community/caregiver/links',
+        expect.objectContaining({ method: 'POST' })
+      );
+      // 🔴 Creation is always `pending`, decided by Laravel. This frontend must
+      // not be able to request a status at all.
+      expect(JSON.parse(init.body)).toEqual({
+        cared_for_id: 200,
+        relationship_type: 'neighbour',
+        start_date: '2026-08-29',
+        notes: 'Weekly shopping'
+      });
+      expect(init.body).not.toContain('status');
+    });
+
+    it('omits empty notes rather than sending a blank string', async () => {
+      jsonOnce({ data: { id: 9 } });
+      await api.createCaregiverLink('test-token', {
+        caredForId: 200, relationshipType: 'family', startDate: '2026-08-29', notes: ''
+      });
+      expect(JSON.parse(mockFetch.mock.calls[0][1].body)).not.toHaveProperty('notes');
+    });
+
+    it('confirms an incoming caregiver link', async () => {
+      jsonOnce({ data: { id: 9 } });
+      await api.confirmIncomingCaregiverLink('test-token', 9);
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/caring-community/caregiver/incoming-links/9/confirm',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    it('rejects an incoming caregiver link with the reason given', async () => {
+      jsonOnce({ data: { id: 9 } });
+      await api.rejectIncomingCaregiverLink('test-token', 9, 'I do not agree');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/caring-community/caregiver/incoming-links/9/reject',
+        expect.objectContaining({ method: 'POST', body: JSON.stringify({ reason: 'I do not agree' }) })
+      );
+    });
+
+    it('reads the staff review queue for a given status', async () => {
+      jsonOnce({ data: [] });
+      await api.getCaregiverLinksForReview('test-token', 'pending');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/admin/caring-community/caregiver-links?status=pending',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('sends the attestation and the evidence when approving', async () => {
+      jsonOnce({ data: { id: 9, status: 'active' } });
+      await api.approveCaregiverLink('test-token', 9, 'Telephone call on 29 August');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/admin/caring-community/caregiver-links/9/approve',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ consent_verified: true, consent_evidence: 'Telephone call on 29 August' })
+        })
+      );
+    });
+
+    it('sends the reason when refusing', async () => {
+      jsonOnce({ data: { id: 9, status: 'rejected' } });
+      await api.rejectCaregiverLink('test-token', 9, 'Could not reach the member');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/admin/caring-community/caregiver-links/9/reject',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ reason: 'Could not reach the member' })
+        })
+      );
+    });
+
+    it('raises an on-behalf request against the caregiver endpoint, not the member one', async () => {
+      jsonOnce({ data: { id: 5 } });
+      await api.createCaregiverRequestOnBehalf('test-token', {
+        caredForId: 200, title: 'Lift to hospital', description: 'Tuesday morning',
+        whenNeeded: 'This week', contactPreference: 'message'
+      });
+
+      // 🔴 /v2/caring-community/request-help is the member's OWN request and
+      // hard-codes user_id to the caller. Only this endpoint records the
+      // cared-for member as the owner and the caregiver as the actor.
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/caring-community/caregiver/request-on-behalf',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            cared_for_id: 200,
+            title: 'Lift to hospital',
+            description: 'Tuesday morning',
+            when_needed: 'This week',
+            contact_preference: 'message'
+          })
+        })
+      );
+    });
+  });
+
   describe('Laravel guardian arrangement helpers', () => {
     function jsonOnce(body) {
       mockFetch.mockResolvedValueOnce({

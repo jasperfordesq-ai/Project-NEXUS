@@ -54,10 +54,33 @@ export function LinkCareReceiverPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Member search
-  const { data: searchResults, isLoading: searching, error: searchError } = useApi<UserSearchResult[]>(
+  //
+  // 🔴 `/v2/users/search` answers `{ data: { items: [...] } }`, NOT a bare array.
+  // `api.get()` unwraps exactly one level, so what reaches this component is
+  // `{ items: [...] }` — an object. Reading `.length` on it yields `undefined`,
+  // `undefined > 0` is false, and the dropdown fell straight through to "No
+  // matching members found" for EVERY query, including ones the API had just
+  // answered with a match.
+  //
+  // That made the caregiver-link form impossible to complete: no member could
+  // be selected, so no caregiver relationship could be proposed through the UI
+  // at all. It went unnoticed because this page's component test mocks
+  // `data: [ ... ]` — a shape the real endpoint never returns — so the test
+  // passed against a fiction. Found by walking the journey in a browser.
+  //
+  // Both shapes are accepted rather than only the real one: the array form is
+  // what the existing tests supply, and normalising here keeps the component
+  // honest regardless of which the caller hands it.
+  const { data: searchPayload, isLoading: searching, error: searchError } = useApi<
+    UserSearchResult[] | { items?: UserSearchResult[] }
+  >(
     searchQuery.length >= 2 ? `/v2/users/search?q=${encodeURIComponent(searchQuery)}` : null,
     { immediate: true },
   );
+
+  const searchResults: UserSearchResult[] = Array.isArray(searchPayload)
+    ? searchPayload
+    : (searchPayload?.items ?? []);
 
   const handleSelectUser = useCallback((user: UserSearchResult) => {
     setSelectedUser(user);

@@ -55,8 +55,7 @@ public sealed class CaregiverSupportService
             .AsNoTracking()
             .Where(link =>
                 link.TenantId == tenantId
-                && link.CaregiverId == caregiverId
-                && link.Status == "active")
+                && link.CaregiverId == caregiverId)
             .Join(
                 _db.Users.IgnoreQueryFilters().AsNoTracking().Where(user => user.TenantId == tenantId),
                 link => link.CaredForId,
@@ -67,6 +66,183 @@ public sealed class CaregiverSupportService
             .ToListAsync(ct);
 
         return rows.Select(row => Map(row.link, row.user)).ToArray();
+    }
+
+    public async Task<IReadOnlyList<IncomingCaregiverLinkRow>> GetIncomingLinksAsync(
+        int tenantId,
+        int caredForId,
+        CancellationToken ct)
+    {
+        var rows = await _db.CaringCaregiverLinks.IgnoreQueryFilters().AsNoTracking()
+            .Where(link => link.TenantId == tenantId && link.CaredForId == caredForId)
+            .Join(
+                _db.Users.IgnoreQueryFilters().AsNoTracking().Where(user => user.TenantId == tenantId),
+                link => link.CaregiverId,
+                user => user.Id,
+                (link, user) => new { link, user })
+            .OrderByDescending(row => row.link.CreatedAt)
+            .ToListAsync(ct);
+
+        return rows.Select(row => new IncomingCaregiverLinkRow(
+            row.link.Id,
+            row.link.CaregiverId,
+            FullName(row.user),
+            row.user.AvatarUrl,
+            row.link.RelationshipType,
+            row.link.Status,
+            row.link.RecipientConfirmedAt,
+            row.link.RejectionReason,
+            row.link.CreatedAt)).ToArray();
+    }
+
+    public async Task<CaregiverLinkMutationResult> ConfirmIncomingLinkAsync(
+        int tenantId,
+        int caredForId,
+        int linkId,
+        CancellationToken ct)
+    {
+        var link = await _db.CaringCaregiverLinks.IgnoreQueryFilters()
+            .SingleOrDefaultAsync(row => row.Id == linkId
+                && row.TenantId == tenantId
+                && row.CaredForId == caredForId
+                && row.Status == "pending"
+                && row.RecipientConfirmedAt == null, ct);
+        if (link is null)
+        {
+            return new CaregiverLinkMutationResult(ErrorCode: "NOT_FOUND", ErrorMessage: "Pending caregiver link not found.");
+        }
+        var now = DateTime.UtcNow;
+        link.RecipientConfirmedAt = now;
+        link.RecipientConfirmedBy = caredForId;
+        link.UpdatedAt = now;
+        AddNotification(tenantId, link.CaregiverId, "caring_caregiver_link_confirmed",
+            "Caregiver request confirmed", "The care recipient confirmed your request. Staff safeguarding review is still required.", link.Id, now);
+        await _db.SaveChangesAsync(ct);
+        return new CaregiverLinkMutationResult(Row: Map(link, null));
+    }
+
+    public async Task<CaregiverLinkMutationResult> RejectIncomingLinkAsync(
+        int tenantId,
+        int actorId,
+        int linkId,
+        string reason,
+        bool staff,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return new CaregiverLinkMutationResult(ErrorCode: "VALIDATION_ERROR", ErrorMessage: "Rejection reason is required.", ErrorField: "reason");
+        }
+
+        var link = await _db.CaringCaregiverLinks.IgnoreQueryFilters()
+            .SingleOrDefaultAsync(row => row.Id == linkId
+                && row.TenantId == tenantId
+                && row.Status == "pending"
+                && (staff || row.CaredForId == actorId), ct);
+        if (link is null)
+        {
+            return new CaregiverLinkMutationResult(ErrorCode: "NOT_FOUND", ErrorMessage: "Pending caregiver link not found.");
+        }
+
+        var now = DateTime.UtcNow;
+        link.Status = "rejected";
+        link.RejectedAt = now;
+        link.RejectedBy = actorId;
+        link.RejectionReason = reason.Trim();
+        link.UpdatedAt = now;
+        AddNotification(tenantId, link.CaregiverId, "caring_caregiver_link_rejected",
+            "Caregiver request not approved", $"Reason: {link.RejectionReason}", link.Id, now);
+        if (staff)
+        {
+            AddNotification(tenantId, link.CaredForId, "caring_caregiver_link_rejected",
+                "Caregiver request not approved", $"Reason: {link.RejectionReason}", link.Id, now);
+        }
+        AddReviewAudit(tenantId, actorId, link.Id, "caring_caregiver_rejected", link.RejectionReason, now);
+        await _db.SaveChangesAsync(ct);
+        return new CaregiverLinkMutationResult(Row: Map(link, null));
+    }
+
+    public async Task<IReadOnlyList<CaregiverLinkReviewRow>> GetLinksForReviewAsync(
+        int tenantId,
+        string status,
+        CancellationToken ct)
+    {
+        var links = await _db.CaringCaregiverLinks.IgnoreQueryFilters().AsNoTracking()
+            .Where(link => link.TenantId == tenantId && link.Status == status)
+            .OrderBy(link => link.CreatedAt)
+            .ToListAsync(ct);
+        var ids = links.SelectMany(link => new[] { link.CaregiverId, link.CaredForId }).Distinct().ToArray();
+        var users = await _db.Users.IgnoreQueryFilters().AsNoTracking()
+            .Where(user => user.TenantId == tenantId && ids.Contains(user.Id))
+            .ToDictionaryAsync(user => user.Id, ct);
+
+        return links.Select(link => new CaregiverLinkReviewRow(
+            link.Id,
+            link.CaregiverId,
+            users.TryGetValue(link.CaregiverId, out var caregiver) ? FullName(caregiver) : string.Empty,
+            link.CaredForId,
+            users.TryGetValue(link.CaredForId, out var recipient) ? FullName(recipient) : string.Empty,
+            link.RelationshipType,
+            link.Status,
+            link.RecipientConfirmedAt,
+            link.ConsentEvidence,
+            link.RejectionReason,
+            link.CreatedAt)).ToArray();
+    }
+
+    public async Task<CaregiverLinkMutationResult> ApproveLinkAsync(
+        int tenantId,
+        int approverId,
+        int linkId,
+        string consentEvidence,
+        SafeguardingInteractionDecision caregiverToRecipient,
+        SafeguardingInteractionDecision recipientToCaregiver,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(consentEvidence))
+        {
+            return new CaregiverLinkMutationResult(ErrorCode: "VALIDATION_ERROR", ErrorMessage: "Consent evidence is required.", ErrorField: "consent_evidence");
+        }
+        if (!caregiverToRecipient.IsAllowed || !recipientToCaregiver.IsAllowed)
+        {
+            return new CaregiverLinkMutationResult(ErrorCode: "SAFEGUARDING_CONTACT_RESTRICTED", ErrorMessage: "Safeguarding policy does not permit this caregiver relationship.");
+        }
+
+        var link = await _db.CaringCaregiverLinks.IgnoreQueryFilters()
+            .SingleOrDefaultAsync(row => row.Id == linkId && row.TenantId == tenantId && row.Status == "pending", ct);
+        if (link is null)
+        {
+            return new CaregiverLinkMutationResult(ErrorCode: "NOT_FOUND", ErrorMessage: "Pending caregiver link not found.");
+        }
+        if (link.RecipientConfirmedAt is null)
+        {
+            return new CaregiverLinkMutationResult(
+                ErrorCode: "CONSENT_REQUIRED",
+                ErrorMessage: "The care recipient must confirm this relationship before staff can approve it.",
+                ErrorField: "recipient_confirmed_at");
+        }
+        if (!await UserBelongsToTenantAsync(link.CaregiverId, tenantId, ct)
+            || !await UserBelongsToTenantAsync(link.CaredForId, tenantId, ct)
+            || !await UserBelongsToTenantAsync(approverId, tenantId, ct))
+        {
+            return new CaregiverLinkMutationResult(ErrorCode: "CONFLICT", ErrorMessage: "User was not found in this tenant.");
+        }
+
+        var now = DateTime.UtcNow;
+        link.Status = "active";
+        link.ApprovedBy = approverId;
+        link.ApprovedAt = now;
+        link.ConsentVerifiedBy = approverId;
+        link.ConsentVerifiedAt = now;
+        link.ConsentEvidence = consentEvidence.Trim();
+        link.UpdatedAt = now;
+        AddNotification(tenantId, link.CaregiverId, "caring_caregiver_link_approved",
+            "Caregiver relationship approved", "Caregiver tools are now available for this relationship.", link.Id, now);
+        AddNotification(tenantId, link.CaredForId, "caring_caregiver_link_approved",
+            "Caregiver relationship approved", "The caregiver relationship is now active.", link.Id, now);
+        AddReviewAudit(tenantId, approverId, link.Id, "caring_caregiver_approved", link.ConsentEvidence, now);
+        await _db.SaveChangesAsync(ct);
+        return new CaregiverLinkMutationResult(Row: Map(link, null));
     }
 
     public async Task<CaregiverLinkMutationResult> CreateLinkAsync(
@@ -148,6 +324,9 @@ public sealed class CaregiverSupportService
 
         _db.CaringCaregiverLinks.Add(link);
         await _db.SaveChangesAsync(ct);
+        AddNotification(tenantId, caredForId, "caring_caregiver_link_requested",
+            "Caregiver relationship request", "A member asked to support you as a caregiver. Confirm only if you understand and agree.", link.Id, now);
+        await _db.SaveChangesAsync(ct);
         return new CaregiverLinkMutationResult(Row: Map(link, null));
     }
 
@@ -169,9 +348,56 @@ public sealed class CaregiverSupportService
             return new CaregiverLinkDeleteResult(NotFound: true);
         }
 
+        // 🔴 Clear any OTHER inactive row for this pair first, or this update
+        // violates the unique index and the caller gets a 500.
+        //
+        // `ccl_tenant_caregiver_recipient_status_unique` covers
+        // (TenantId, CaregiverId, CaredForId, Status) — the SAME index Laravel
+        // carries. So a caregiver who has ever ended a relationship with this
+        // member already has an `inactive` row for the pair, and moving a second
+        // one to `inactive` collides with it.
+        //
+        // Found by a paired run against Laravel: Laravel answered 204 and the
+        // relationship ended; ASP.NET answered 500 (Npgsql 23505) and the link
+        // stayed ACTIVE. That is not a cosmetic difference — the caregiver
+        // believed they had ended the relationship while the authority it
+        // confers remained in force.
+        //
+        // This mirrors `CaregiverService::removeLink()`, which deletes the
+        // superseded inactive rows inside a transaction before deactivating.
+        // Conforming to Laravel is the required direction of travel; the index
+        // itself is correct and is deliberately left alone in both engines.
+        // 🔴 Conditional, following `CaringHourEstateService`: the unit-test
+        // suite runs on EF's in-memory provider, which does NOT support
+        // transactions and throws `TransactionIgnoredWarning` rather than
+        // ignoring the call. An unconditional `BeginTransactionAsync` here broke
+        // the existing RemoveLink test as well as the new one.
+        await using var transaction = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(ct)
+            : null;
+
+        var superseded = await _db.CaringCaregiverLinks
+            .IgnoreQueryFilters()
+            .Where(row => row.TenantId == tenantId
+                && row.CaregiverId == caregiverId
+                && row.CaredForId == link.CaredForId
+                && row.Status == "inactive"
+                && row.Id != linkId)
+            .ToListAsync(ct);
+
+        if (superseded.Count > 0)
+        {
+            _db.CaringCaregiverLinks.RemoveRange(superseded);
+            await _db.SaveChangesAsync(ct);
+        }
+
         link.Status = "inactive";
         link.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(ct);
+        }
         return new CaregiverLinkDeleteResult(Ok: true);
     }
 
@@ -913,10 +1139,56 @@ public sealed class CaregiverSupportService
             Notes: link.Notes,
             Status: link.Status,
             ApprovedBy: link.ApprovedBy,
+            RecipientConfirmedAt: link.RecipientConfirmedAt,
+            ConsentVerifiedAt: link.ConsentVerifiedAt,
+            ApprovedAt: link.ApprovedAt,
+            RejectedAt: link.RejectedAt,
+            RejectedBy: link.RejectedBy,
+            RejectionReason: link.RejectionReason,
             CreatedAt: link.CreatedAt,
             UpdatedAt: link.UpdatedAt,
             CaredForName: caredFor is null ? null : FullName(caredFor),
             CaredForAvatarUrl: caredFor?.AvatarUrl);
+    }
+
+    private void AddNotification(
+        int tenantId,
+        int userId,
+        string type,
+        string title,
+        string body,
+        int linkId,
+        DateTime now)
+    {
+        _db.Notifications.Add(new Notification
+        {
+            TenantId = tenantId,
+            UserId = userId,
+            Type = type,
+            Title = title,
+            Body = body,
+            Link = "/caring-community/caregiver",
+            Data = JsonSerializer.Serialize(new { caregiver_link_id = linkId }),
+            CreatedAt = now
+        });
+    }
+
+    private void AddReviewAudit(
+        int tenantId,
+        int actorId,
+        int linkId,
+        string activityType,
+        string? evidence,
+        DateTime now)
+    {
+        _db.MemberActivityLogs.Add(new MemberActivityLog
+        {
+            TenantId = tenantId,
+            UserId = actorId,
+            ActivityType = activityType,
+            Details = JsonSerializer.Serialize(new { caregiver_link_id = linkId, evidence }),
+            OccurredAt = now
+        });
     }
 
     private static bool IsAllowedRelationship(string? value)
@@ -967,10 +1239,40 @@ public sealed record CaregiverLinkRow(
     [property: JsonPropertyName("notes")] string? Notes,
     [property: JsonPropertyName("status")] string Status,
     [property: JsonPropertyName("approved_by")] int? ApprovedBy,
+    [property: JsonPropertyName("recipient_confirmed_at")] DateTime? RecipientConfirmedAt,
+    [property: JsonPropertyName("consent_verified_at")] DateTime? ConsentVerifiedAt,
+    [property: JsonPropertyName("approved_at")] DateTime? ApprovedAt,
+    [property: JsonPropertyName("rejected_at")] DateTime? RejectedAt,
+    [property: JsonPropertyName("rejected_by")] int? RejectedBy,
+    [property: JsonPropertyName("rejection_reason")] string? RejectionReason,
     [property: JsonPropertyName("created_at")] DateTime CreatedAt,
     [property: JsonPropertyName("updated_at")] DateTime? UpdatedAt,
     [property: JsonPropertyName("cared_for_name")] string? CaredForName,
     [property: JsonPropertyName("cared_for_avatar_url")] string? CaredForAvatarUrl);
+
+public sealed record IncomingCaregiverLinkRow(
+    [property: JsonPropertyName("id")] int Id,
+    [property: JsonPropertyName("caregiver_id")] int CaregiverId,
+    [property: JsonPropertyName("caregiver_name")] string CaregiverName,
+    [property: JsonPropertyName("caregiver_avatar_url")] string? CaregiverAvatarUrl,
+    [property: JsonPropertyName("relationship_type")] string RelationshipType,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("recipient_confirmed_at")] DateTime? RecipientConfirmedAt,
+    [property: JsonPropertyName("rejection_reason")] string? RejectionReason,
+    [property: JsonPropertyName("created_at")] DateTime CreatedAt);
+
+public sealed record CaregiverLinkReviewRow(
+    [property: JsonPropertyName("id")] int Id,
+    [property: JsonPropertyName("caregiver_id")] int CaregiverId,
+    [property: JsonPropertyName("caregiver_name")] string CaregiverName,
+    [property: JsonPropertyName("cared_for_id")] int CaredForId,
+    [property: JsonPropertyName("cared_for_name")] string CaredForName,
+    [property: JsonPropertyName("relationship_type")] string RelationshipType,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("recipient_confirmed_at")] DateTime? RecipientConfirmedAt,
+    [property: JsonPropertyName("consent_evidence")] string? ConsentEvidence,
+    [property: JsonPropertyName("rejection_reason")] string? RejectionReason,
+    [property: JsonPropertyName("created_at")] DateTime CreatedAt);
 
 public sealed record CaregiverLinkMutationResult(
     CaregiverLinkRow? Row = null,

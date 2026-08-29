@@ -19,6 +19,7 @@ use App\Services\CaringCommunity\CaringCommunityForecastService;
 use App\Services\CaringCommunity\CaringHourTransferService;
 use App\Services\CaringCommunity\CaringNudgeService;
 use App\Services\CaringCommunity\CaringRegionalPointService;
+use App\Services\CaringCommunity\CaregiverService;
 use App\Services\CaringCommunity\KpiBaselineService;
 use App\Services\CaringCommunity\OperatingPolicyService;
 use App\Services\CaringCommunity\PaperOnboardingIntakeService;
@@ -71,6 +72,7 @@ class AdminCaringCommunityController extends BaseApiController
         private readonly OperatingPolicyService $operatingPolicyService,
         private readonly PilotDisclosurePackService $disclosurePackService,
         private readonly PilotLaunchReadinessService $pilotLaunchReadinessService,
+        private readonly CaregiverService $caregiverService,
     ) {
     }
 
@@ -388,6 +390,76 @@ class AdminCaringCommunityController extends BaseApiController
         if ($disabled) return $disabled;
 
         return $this->respondWithData($this->workflowService->summary(TenantContext::getId()));
+    }
+
+    public function caregiverLinks(): JsonResponse
+    {
+        $disabled = $this->guardCaringCommunity();
+        if ($disabled) return $disabled;
+
+        try {
+            return $this->respondWithData($this->caregiverService->getLinksForReview(
+                TenantContext::getId(),
+                (string) $this->query('status', 'pending'),
+            ));
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), 'status', 422);
+        }
+    }
+
+    public function approveCaregiverLink(int $id): JsonResponse
+    {
+        $disabled = $this->guardCaringCommunity();
+        if ($disabled) return $disabled;
+
+        if (! $this->inputBool('consent_verified')) {
+            return $this->respondWithError('CONSENT_REQUIRED', __('api.caring_caregiver_consent_required'), 'consent_verified', 422);
+        }
+
+        try {
+            $link = $this->caregiverService->approveLink(
+                $id,
+                TenantContext::getId(),
+                (int) auth()->id(),
+                (string) ($this->input('consent_evidence') ?? ''),
+            );
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        } catch (\DomainException $e) {
+            return $this->respondWithError('CONSENT_REQUIRED', $e->getMessage(), 'recipient_confirmed_at', 422);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), 'consent_evidence', 422);
+        } catch (\RuntimeException $e) {
+            return $this->respondWithError('NOT_FOUND', $e->getMessage(), null, 404);
+        }
+
+        ActivityLog::log((int) auth()->id(), 'caring_caregiver_link_approved', "Caregiver link {$id} approved after consent verification");
+
+        return $this->respondWithData($link);
+    }
+
+    public function rejectCaregiverLink(int $id): JsonResponse
+    {
+        $disabled = $this->guardCaringCommunity();
+        if ($disabled) return $disabled;
+
+        try {
+            $link = $this->caregiverService->rejectLink(
+                $id,
+                TenantContext::getId(),
+                (int) auth()->id(),
+                (string) ($this->input('reason') ?? ''),
+                true,
+            );
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), 'reason', 422);
+        } catch (\RuntimeException $e) {
+            return $this->respondWithError('NOT_FOUND', $e->getMessage(), null, 404);
+        }
+
+        ActivityLog::log((int) auth()->id(), 'caring_caregiver_link_rejected', "Caregiver link {$id} rejected");
+
+        return $this->respondWithData($link);
     }
 
     public function rolePresets(): JsonResponse

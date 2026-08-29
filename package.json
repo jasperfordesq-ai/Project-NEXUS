@@ -55,6 +55,7 @@
     "test:e2e:performance": "npx playwright test e2e/tests/performance/loading-budget.spec.ts --project=chromium-modern",
     "test:e2e:editor-isolation": "npx playwright test e2e/tests/performance/editor-isolation.spec.ts --project=chromium-modern",
     "test:e2e:pwa": "npx playwright test e2e/tests/pwa/offline-install.spec.ts --project=pwa",
+    "test:e2e:caring": "npx playwright test --config=e2e/playwright.caring.config.ts",
     "audit:performance:routes": "node scripts/audit-performance-routes.mjs",
     "audit:performance:cache": "node scripts/audit-cache-headers.mjs",
     "test:e2e:report": "npx playwright show-report e2e/reports/html",

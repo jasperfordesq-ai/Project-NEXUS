@@ -1095,7 +1095,7 @@
     "relationship_parent": "Tuismitheoir",
     "relationship_guardian": "Caomhnóir",
     "relationship_legal_guardian": "Caomhnóir dlíthiúil",
-    "relationship_carer": "Cúramóir",
+    "relationship_carer": "Cúramóir an oibrí dheonaigh óig",
     "send_request": "Seol iarratas ceadaithe",
     "sending": "Á sheoladh…",
     "request_sent_title": "Iarratas seolta",

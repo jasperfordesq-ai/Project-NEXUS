@@ -131,6 +131,7 @@ CLAUDE.md
 # Provisions the disposable local web-uk journey database. Contains no credentials
 # beyond the local Docker development ones already in compose.yml.
 !/scripts/webuk-e2e-env.sh
+!/scripts/caring-e2e-provision.sh
 !/scripts/check-i18n.sh
 !/scripts/check-i18n-literals.mjs
 !/scripts/check-i18n-json-integrity.mjs

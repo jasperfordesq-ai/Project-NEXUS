@@ -222,6 +222,20 @@ const exploreLinks = [
     href: '/blog',
     featureKey: 'blog'
   },
+  // 🔴 The accessible frontend's only reachable entry into Caring.
+  //
+  // Without a link here the caregiver journey exists but cannot be FOUND, which
+  // for this audience is the same as not existing: the members these care
+  // relationships are about are the ones most likely to be using this frontend.
+  // Gated on `caring_community`, which defaults to FALSE, so a community that
+  // has not opted in never sees it — matching the feature-route gate on
+  // /caring and Laravel's own default.
+  {
+    titleKey: 'govuk_alpha_caring.hub.title',
+    descriptionKey: 'govuk_alpha_caring.hub.caregiver_card_description',
+    href: '/caring',
+    featureKey: 'caring_community'
+  },
   {
     titleKey: 'resources.title',
     descriptionKey: 'resources.description',

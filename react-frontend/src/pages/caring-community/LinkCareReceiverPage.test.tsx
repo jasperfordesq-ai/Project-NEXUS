@@ -93,6 +93,36 @@ describe('LinkCareReceiverPage', () => {
     expect(screen.getByText('Bob Jones')).toBeInTheDocument();
   });
 
+  // 🔴 REGRESSION GUARD — the shape the real endpoint actually returns.
+  //
+  // `/v2/users/search` answers `{ data: { items: [...] } }`. `api.get()` unwraps
+  // one level, so the component receives `{ items: [...] }`, an OBJECT. The page
+  // read `.length` on it, got `undefined`, and rendered "No matching members
+  // found" for every query — making the caregiver-link form impossible to
+  // complete, because no care recipient could be selected.
+  //
+  // Every other test in this file mocks `data: [ ... ]`, a bare array the real
+  // endpoint never returns, so the whole suite passed while the page was broken
+  // in the browser. This case pins the real shape so that cannot recur.
+  it('shows search results for the paginated { items } shape the API really returns', async () => {
+    mockedApi.get.mockImplementation((url: string) => {
+      if (url.includes('/v2/users/search')) {
+        return Promise.resolve({
+          success: true,
+          data: { items: [{ id: 900027, name: 'E2E UserB', avatar_url: null }] },
+        });
+      }
+      return Promise.resolve({ success: true, data: [] });
+    });
+
+    render(<LinkCareReceiverPage />);
+    fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'UserB' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('E2E UserB')).toBeInTheDocument();
+    });
+  });
+
   it('does NOT show search results when query is fewer than 2 chars', async () => {
     render(<LinkCareReceiverPage />);
     const searchInputs = screen.getAllByRole('textbox');

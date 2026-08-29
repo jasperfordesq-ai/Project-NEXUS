@@ -1056,7 +1056,7 @@
     "relationship_parent": "Elternteil",
     "relationship_guardian": "Erziehungsberechtigter",
     "relationship_legal_guardian": "Gesetzlicher Vormund",
-    "relationship_carer": "Betreuungsperson",
+    "relationship_carer": "Betreuungsperson des jungen Freiwilligen",
     "send_request": "Zustimmungsanfrage senden",
     "sending": "Wird gesendet…",
     "request_sent_title": "Anfrage gesendet",

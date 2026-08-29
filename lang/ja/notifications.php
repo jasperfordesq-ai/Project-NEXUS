@@ -333,6 +333,11 @@ return [
     'ideation_status_implemented' => '実装済み',
     'appreciation_someone' => '誰か',
     'appreciation_received' => ':name さんからお礼のメッセージが届きました',
+    'caring_caregiver_link_requested' => ':name さんがあなたの介護者としてのリンクを申請しました。権限を付与する前に確認してください。',
+    'caring_caregiver_link_confirmed' => '被介護者が申請を確認しました。スタッフの安全確認を待っています。',
+    'caring_caregiver_link_approved'  => '介護関係が承認されました。介護者ツールを利用できます。',
+    'caring_caregiver_link_rejected'  => '介護関係は承認されませんでした。理由: :reason',
+
     'marketplace' => [
         'low_stock' => '":title" の在庫が残りわずかです(残り :count)。',
         'restocked' => '":title" が再入荷しました。',
