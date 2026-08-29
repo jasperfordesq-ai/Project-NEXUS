@@ -87,6 +87,7 @@ nav:
       - Roles & permissions: ROLES-AND-PERMISSIONS.md
       - Who the platform is for: PRODUCT-AUDIENCE.md
       - Safeguarding & consent: SAFEGUARDING-AND-CONSENT.md
+      - Versioning policy: VERSIONING.md
       - CI & quality gates: CI.md
       - Testing: TESTING.md
       - Safari & macOS testing: REAL-SAFARI-TESTING.md

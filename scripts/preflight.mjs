@@ -142,11 +142,20 @@ function record(name, status, note = '') {
   console.log(`  ${icon} ${status.padEnd(11)} ${name}${note ? ` — ${note}` : ''}`);
 }
 
-function sh(name, command, { cwd = ROOT, timeout = CHECK_TIMEOUT_MS } = {}) {
+// `unavailableExit` names an exit code the command uses for "I could not run"
+// as distinct from "the check failed". Preflight's whole contract is that
+// UNAVAILABLE is never reported as a pass AND never as a failure, so a check
+// that can distinguish the two must be allowed to say so.
+function sh(name, command, { cwd = ROOT, timeout = CHECK_TIMEOUT_MS, unavailableExit = null } = {}) {
   console.log(`  ▸ running: ${name}`);
   const r = spawnSync(command, { cwd, shell: true, encoding: 'utf8', timeout });
   if (r.error && r.error.code === 'ETIMEDOUT') {
     record(name, 'UNAVAILABLE', `timed out after ${timeout / 1000}s`);
+    return false;
+  }
+  if (unavailableExit !== null && r.status === unavailableExit) {
+    const why = `${r.stderr || r.stdout || ''}`.trim().split('\n')[0] || `exit ${r.status}`;
+    record(name, 'UNAVAILABLE', why);
     return false;
   }
   if (r.status === 0) { record(name, 'PASS'); return true; }
@@ -183,6 +192,10 @@ if (LIST_ONLY) {
 if (areas.docsMeta.length) {
   sh('docs hygiene', 'node scripts/check-docs-hygiene.mjs');
   sh('version consistency', 'node scripts/check-version-consistency.mjs');
+  // Exit 2 means the `semver` package is missing (no `npm ci`), not that the
+  // policy was violated — that must not read as a pass or as a failure.
+  sh('semver policy', 'node scripts/check-semver-policy.mjs', { unavailableExit: 2 });
+  sh('semver gate contract tests', 'node scripts/test/test-semver-policy-gate.mjs');
 } else {
   record('docs hygiene', 'SKIP', 'no docs/meta changes');
 }

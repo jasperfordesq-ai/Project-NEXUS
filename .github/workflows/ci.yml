@@ -1148,6 +1148,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # The semver policy gate uses the `semver` package (npm's reference
+      # implementation) rather than string comparison, so this job needs its
+      # dependencies. Every other check here is dependency-free.
+      - name: Install root dependencies
+        run: npm ci
+
       - name: "BLOCKING: Keep docs/ curated and public-safe"
         run: npm run check:docs
 
@@ -1159,6 +1165,18 @@ jobs:
 
       - name: "BLOCKING: Keep platform version references unified"
         run: npm run check:version
+
+      # Enforces docs/VERSIONING.md: the version must be valid semver, releases
+      # strictly ordered, and the bump must match what the changelog says shipped.
+      # Without this, "adheres to Semantic Versioning" in CHANGELOG.md was a claim
+      # nothing checked -- and for 1.6.1 and 1.6.2 it was not true.
+      - name: "BLOCKING: Enforce the semantic versioning policy"
+        run: npm run check:semver
+
+      # The gate above is only worth having if it can be shown to fail. These
+      # exercise every rule in both directions against fixtures.
+      - name: "BLOCKING: Prove the semver gate still catches violations"
+        run: npm run test:semver-gate
 
       - name: "BLOCKING: Require changelog for release-relevant changes"
         shell: bash

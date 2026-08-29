@@ -87,6 +87,9 @@ CLAUDE.md
 !/scripts/check-american-date-formats.mjs
 !/scripts/check-openapi-route-contract.mjs
 !/scripts/check-version-consistency.mjs
+!/scripts/check-semver-policy.mjs
+!/scripts/release.mjs
+!/scripts/backfill-release-tags.mjs
 !/scripts/check-doc-scores.mjs
 !/scripts/list-accessible-domains.sh
 !/scripts/check-docs-site-build.sh

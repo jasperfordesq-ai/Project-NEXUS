@@ -110,6 +110,26 @@ npm --prefix react-frontend run copy-changelog
 
 If a change genuinely needs no release note, state that explicitly in the final response. Do not silently skip the changelog.
 
+#### 🔴 Versioning is Semantic Versioning, and it is now enforced
+
+Full policy: [docs/VERSIONING.md](docs/VERSIONING.md). The short version:
+
+- **MAJOR** = something a consumer depends on broke. **MINOR** = new functionality, nothing broken. **PATCH** = fixes only.
+- 🔴 **These are numbers, not digits. There is no carry at nine.** `1.6.9` is followed by `1.6.10`. The history before `1.7.0` rolled over instead — `1.5.9` → `1.6.0` — which is why the number carried no information.
+- 🔴 **Put entries under the right `### ` subsection** (`Added` / `Changed` / `Deprecated` / `Removed` / `Fixed` / `Security`). This is not cosmetic: `npm run check:semver` derives the minimum required bump from those headings, so an `### Added` entry filed under `### Fixed` will let a MINOR release ship as a PATCH.
+- 🔴 **A breaking change must be declared** with a literal `**BREAKING:**` marker at the start of its entry. Nothing else can detect one — a `### Removed` entry may be dead internal code or may be a field a client reads.
+- 🔴 **Never write entries above the `## [Unreleased]` heading.** Entries placed between the preamble and the `---` separator are outside every section, and a release cut skips them. Nine such entries survived two consecutive releases before being found. `scripts/release.mjs` now refuses to run when any exist.
+
+Cut releases with the tool, never by hand — it touches thirty-six files and creates the tag:
+
+```bash
+node scripts/release.mjs --dry-run   # show the plan
+node scripts/release.mjs --minor     # cut it (bump type must be explicit)
+npm run check:semver                 # BLOCKING gate; also runs in CI and preflight
+```
+
+It does not push and does not deploy.
+
 ---
 
 ## Local Development (Docker-First)
