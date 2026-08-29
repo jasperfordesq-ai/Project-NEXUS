@@ -78,10 +78,6 @@ jobs:
         with:
           path: mobile/.ios-simulator-cache/TimebankGlobal.app
           key: ios-simulator-app-partner-demo-${{ runner.os }}-${{ runner.arch }}-${{ steps.app-source.outputs.hash }}
-          # One-time migration from run 33279028208. This cache is the exact app
-          # source in this commit; only screenshot automation/tests changed.
-          restore-keys: |
-            ios-simulator-app-partner-demo-macOS-ARM64-83f652cd57586179bee9e0518529627285202b9b2f6b0d6f3bd4187b9bed75c5
 
       - name: Confirm whether a reusable Simulator app was restored
         id: restored-simulator-app
@@ -301,20 +297,51 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/maestro-output"
           mkdir -p "$RUNNER_TEMP/failure-evidence"
-          xcrun simctl terminate "$SIMULATOR_UDID" ie.project.nexus || true
-          xcrun simctl launch --console "$SIMULATOR_UDID" ie.project.nexus \
-            > "$RUNNER_TEMP/failure-evidence/app-console.log" 2>&1 &
-          app_console_pid=$!
-          trap 'kill "$app_console_pid" 2>/dev/null || true' EXIT
           password_hex=$(printf '%s' "$TEST_PASSWORD" | od -An -tx1 | tr -d ' \n')
           # Keep one XCUITest session for the whole tour. Starting a new Maestro
           # process for every tab made each process rediscover the foreground app
           # and left the second navigation on Listings in run 33271690460.
-          maestro --device "$SIMULATOR_UDID" test \
-            --env TEST_EMAIL="$TEST_EMAIL" \
-            --env TEST_PASSWORD_HEX="$password_hex" \
-            --test-output-dir="$RUNNER_TEMP/maestro-output" \
-            .maestro/screens/apple-store-screens.yaml
+          # Maestro 2.9.0 can also ask XCTest for the absent SafariViewService
+          # hierarchy during an ordinary native tap. Run 33280416707 showed that
+          # this kills the XCTest runner while the NEXUS app remains healthy. A
+          # retry must therefore replace the app data and the whole driver session,
+          # not resume a partially completed tour. Every accepted attempt still
+          # has to complete all four pages and pass the later PNG and OCR gates.
+          tour_passed=false
+          for attempt in 1 2 3; do
+            echo "Starting clean iOS screenshot tour attempt $attempt of 3"
+            rm -rf "$RUNNER_TEMP/maestro-output"
+            mkdir -p "$RUNNER_TEMP/maestro-output"
+            xcrun simctl terminate "$SIMULATOR_UDID" ie.project.nexus || true
+            xcrun simctl uninstall "$SIMULATOR_UDID" ie.project.nexus || true
+            xcrun simctl install "$SIMULATOR_UDID" .ios-simulator-cache/TimebankGlobal.app
+            xcrun simctl launch --console "$SIMULATOR_UDID" ie.project.nexus \
+              > "$RUNNER_TEMP/failure-evidence/app-console-attempt-$attempt.log" 2>&1 &
+            app_console_pid=$!
+
+            if maestro --device "$SIMULATOR_UDID" test \
+              --env TEST_EMAIL="$TEST_EMAIL" \
+              --env TEST_PASSWORD_HEX="$password_hex" \
+              --test-output-dir="$RUNNER_TEMP/maestro-output" \
+              .maestro/screens/apple-store-screens.yaml; then
+              kill "$app_console_pid" 2>/dev/null || true
+              tour_passed=true
+              break
+            else
+              maestro_exit=$?
+            fi
+
+            kill "$app_console_pid" 2>/dev/null || true
+            mkdir -p "$RUNNER_TEMP/failure-evidence/maestro-attempt-$attempt"
+            ditto "$RUNNER_TEMP/maestro-output" \
+              "$RUNNER_TEMP/failure-evidence/maestro-attempt-$attempt"
+            echo "::warning::iOS screenshot tour attempt $attempt failed with Maestro exit $maestro_exit; replacing the app and XCTest session"
+          done
+
+          if [[ "$tour_passed" != true ]]; then
+            echo "::error::All three clean iOS screenshot tour attempts failed"
+            exit 1
+          fi
 
       - name: Prepare opaque App Store PNGs and evidence manifest
         working-directory: mobile

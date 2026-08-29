@@ -26,6 +26,10 @@ describe('iOS screenshot workflow', () => {
     expect(captureStep.match(/maestro --device/g)).toHaveLength(1);
     expect(captureStep).toContain('.maestro/screens/apple-store-screens.yaml');
     expect(captureStep).not.toContain('apple-store-open-');
+    expect(captureStep).toContain('for attempt in 1 2 3');
+    expect(captureStep).toContain('simctl uninstall');
+    expect(captureStep).toContain('All three clean iOS screenshot tour attempts failed');
+    expect(workflow).not.toContain('83f652cd57586179bee9e0518529627285202b9b2f6b0d6f3bd4187b9bed75c5');
   });
 
   it('captures the accepted set through app-owned navigation only', () => {
