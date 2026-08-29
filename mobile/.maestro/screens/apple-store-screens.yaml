@@ -69,17 +69,27 @@ appId: ie.project.nexus
 # and kill its own UI-test host in run 33268251338. Direct links exercise the same
 # authenticated routes without coupling screenshot capture to that menu geometry.
 - openLink: "nexus://messages"
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
 - extendedWaitUntil:
     visible: "Messages"
-    timeout: 15000
+    timeout: 30000
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: 04-messages
 
 - openLink: "nexus://events"
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
 - extendedWaitUntil:
     visible: "Events"
-    timeout: 20000
+    timeout: 30000
 - waitForAnimationToEnd:
     timeout: 12000
 - takeScreenshot: 05-events

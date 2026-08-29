@@ -279,7 +279,7 @@ jobs:
             --wifiBars 3 \
             --cellularBars 4 || echo "::warning::status-bar override was unavailable"
 
-      - name: Authenticate and capture the four public App Store screens
+      - name: Run the four-screen public App Store tour
         env:
           TEST_EMAIL: ${{ secrets.IOS_SCREENSHOT_TEST_EMAIL }}
           TEST_PASSWORD: ${{ secrets.IOS_SCREENSHOT_TEST_PASSWORD }}
@@ -293,25 +293,24 @@ jobs:
           app_console_pid=$!
           trap 'kill "$app_console_pid" 2>/dev/null || true' EXIT
           password_hex=$(printf '%s' "$TEST_PASSWORD" | od -An -tx1 | tr -d ' \n')
-          # Maestro remains useful for the secure text-entry interaction, but its
-          # iOS 26 XCUITest screenshot/hierarchy server has terminated itself in
-          # three independent runs after the app was already authenticated. Do not
-          # let that third-party driver prevent Apple's own Simulator tools from
-          # proving the visible result.
-          set +e
+          # Keep one XCUITest session for the whole tour. Starting a new Maestro
+          # process for every tab made each process rediscover the foreground app
+          # and left the second navigation on Listings in run 33271690460.
           maestro --device "$SIMULATOR_UDID" test \
             --env TEST_EMAIL="$TEST_EMAIL" \
             --env TEST_PASSWORD_HEX="$password_hex" \
             --test-output-dir="$RUNNER_TEMP/maestro-output" \
-            .maestro/screens/apple-store-login.yaml
-          maestro_status=$?
-          set -e
-          if [[ "$maestro_status" -ne 0 ]]; then
-            echo "::warning::Maestro's XCUITest bridge ended after login; validating the app state through native screenshots."
-          fi
+            .maestro/screens/apple-store-screens.yaml
 
-          capture_dir="$RUNNER_TEMP/maestro-output/simulator-captures"
-          mkdir -p "$capture_dir"
+      - name: Prepare opaque App Store PNGs and evidence manifest
+        working-directory: mobile
+        run: |
+          node scripts/prepare-apple-simulator-screenshots.cjs \
+            --source "$RUNNER_TEMP/maestro-output" \
+            --destination "$RUNNER_TEMP/apple-screenshots"
+
+      - name: Verify each prepared screenshot contains its intended page
+        run: |
           cat > "$RUNNER_TEMP/verify-screenshot.swift" <<'SWIFT'
           import AppKit
           import Vision
@@ -341,35 +340,10 @@ jobs:
           }
           print("\(path): OCR verified '\(expected)'")
           SWIFT
-
-          capture() {
-            local name="$1"
-            local expected="$2"
-            sleep 8
-            xcrun simctl io "$SIMULATOR_UDID" screenshot "$capture_dir/$name"
-            swift "$RUNNER_TEMP/verify-screenshot.swift" "$capture_dir/$name" "$expected"
-          }
-
-          capture 01-feed.png 'Community Feed'
-          maestro --device "$SIMULATOR_UDID" test \
-            --test-output-dir="$RUNNER_TEMP/maestro-output" \
-            .maestro/screens/apple-store-open-listings.yaml
-          capture 02-listings.png 'Listings'
-          maestro --device "$SIMULATOR_UDID" test \
-            --test-output-dir="$RUNNER_TEMP/maestro-output" \
-            .maestro/screens/apple-store-open-messages.yaml
-          capture 04-messages.png 'Messages'
-          maestro --device "$SIMULATOR_UDID" test \
-            --test-output-dir="$RUNNER_TEMP/maestro-output" \
-            .maestro/screens/apple-store-open-events.yaml
-          capture 05-events.png 'Events'
-
-      - name: Prepare opaque App Store PNGs and evidence manifest
-        working-directory: mobile
-        run: |
-          node scripts/prepare-apple-simulator-screenshots.cjs \
-            --source "$RUNNER_TEMP/maestro-output" \
-            --destination "$RUNNER_TEMP/apple-screenshots"
+          swift "$RUNNER_TEMP/verify-screenshot.swift" "$RUNNER_TEMP/apple-screenshots/01-feed.png" 'Community Feed'
+          swift "$RUNNER_TEMP/verify-screenshot.swift" "$RUNNER_TEMP/apple-screenshots/02-listings.png" 'Listings'
+          swift "$RUNNER_TEMP/verify-screenshot.swift" "$RUNNER_TEMP/apple-screenshots/04-messages.png" 'Messages'
+          swift "$RUNNER_TEMP/verify-screenshot.swift" "$RUNNER_TEMP/apple-screenshots/05-events.png" 'Events'
 
       - name: Add the capture summary
         run: |
