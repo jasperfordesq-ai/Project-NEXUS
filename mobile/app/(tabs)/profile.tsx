@@ -59,6 +59,10 @@ const DISCOVER: MenuItem[] = [
   { labelKey: 'groupExchanges', descriptionKey: 'navDescriptions.groupExchanges', icon: 'swap-horizontal-outline', route: '/(modals)/group-exchanges' as Href, tone: '#6366f1', featureGate: 'group_exchanges' },
   { labelKey: 'polls', descriptionKey: 'navDescriptions.polls', icon: 'stats-chart-outline', route: '/(modals)/polls' as Href, tone: '#7c3aed', featureGate: 'polls' },
   { labelKey: 'ideation', descriptionKey: 'navDescriptions.ideation', icon: 'bulb-outline', route: '/(modals)/ideation' as Href, tone: '#f59e0b', featureGate: 'ideation_challenges' },
+  { labelKey: 'courses:title', descriptionKey: 'courses:subtitle', icon: 'school-outline', route: '/(modals)/courses' as Href, tone: '#2563eb', featureGate: 'courses' },
+  { labelKey: 'podcasts:title', descriptionKey: 'podcasts:subtitle', icon: 'mic-outline', route: '/(modals)/podcasts' as Href, tone: '#7c3aed', featureGate: 'podcasts' },
+  { labelKey: 'clubs:title', descriptionKey: 'clubs:subtitle', icon: 'people-circle-outline', route: '/(modals)/clubs' as Href, tone: '#0f766e' },
+  { labelKey: 'venues:directory.title', descriptionKey: 'venues:directory.intro', icon: 'location-outline', route: '/(modals)/venues' as Href, tone: '#ea580c', featureGate: 'partner_venues' },
   { labelKey: 'browseMembers', descriptionKey: 'navDescriptions.browseMembers', icon: 'people-outline', route: '/(modals)/members', tone: '#14b8a6', featureGate: 'connections' },
   { labelKey: 'connections', descriptionKey: 'navDescriptions.connections', icon: 'person-add-outline', route: '/(modals)/connections' as Href, tone: '#6366f1', featureGate: 'connections' },
   { labelKey: 'volunteering', descriptionKey: 'navDescriptions.volunteering', icon: 'heart-outline', route: '/(modals)/volunteering', tone: '#e11d48', featureGate: 'volunteering' },
@@ -86,7 +90,7 @@ const ACCOUNT: MenuItem[] = [
 ];
 
 export default function MoreScreen() {
-  const { t } = useTranslation(['profile', 'common', 'auth']);
+  const { t } = useTranslation(['profile', 'common', 'auth', 'courses', 'podcasts', 'clubs', 'venues']);
   const { user, displayName, logout, isLoading } = useAuth();
   const { hasFeature, hasModule } = useTenant();
   const primary = usePrimaryColor();

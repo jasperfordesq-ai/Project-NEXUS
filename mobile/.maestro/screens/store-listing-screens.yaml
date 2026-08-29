@@ -1,20 +1,33 @@
 # Copyright © 2024–2026 Jasper Ford
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Focused Google Play store capture tour. It deliberately uses the same local,
-# disposable E2E tenant as the broad visual sweep, but visits only the eight
-# screens that explain the product clearly in a store listing.
+# Focused Google Play store capture tour. It uses the fictional Partner Demo
+# review tenant and visits only the eight screens that explain the product
+# clearly in a store listing.
 
 appId: ie.project.nexus
 ---
 - launchApp:
     clearState: true
 
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back"
+    timeout: 60000
+
 - runFlow:
     when:
       visible: "Select your timebank"
     commands:
-      - tapOn: "hour-timebank"
+      - retry:
+          maxRetries: 3
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tenant-option-partner-demo"
+                timeout: 15000
+            - tapOn:
+                id: "tenant-option-partner-demo"
+                retryTapIfNoChange: true
 
 - extendedWaitUntil:
     visible: "Welcome back"

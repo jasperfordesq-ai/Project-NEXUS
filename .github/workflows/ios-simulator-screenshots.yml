@@ -314,7 +314,7 @@ jobs:
             echo "- Source commit: \`$GITHUB_SHA\`"
             echo "- Device: $IOS_SIMULATOR_MODEL"
             echo "- Runtime: \`$IOS_SIMULATOR_RUNTIME\`"
-            echo '- Result: eight opaque, native-resolution PNGs prepared'
+            echo '- Result: four visually accepted, opaque, native-resolution public PNGs prepared'
             echo '- Evidence boundary: unsigned Simulator build; not TestFlight or physical-device proof'
           } >> "$GITHUB_STEP_SUMMARY"
 

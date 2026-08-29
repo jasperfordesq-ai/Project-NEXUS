@@ -128,11 +128,13 @@ describe('SelectTenantScreen', () => {
   });
 
   it('renders communities and the selected state', () => {
-    const { getByText } = render(<SelectTenantScreen />);
+    const { getByTestId, getByText } = render(<SelectTenantScreen />);
 
     expect(getByText('Select your timebank')).toBeTruthy();
     expect(getByText('hOUR Timebank')).toBeTruthy();
     expect(getByText('West Cork Timebank')).toBeTruthy();
+    expect(getByTestId('tenant-option-hour-timebank')).toBeTruthy();
+    expect(getByTestId('tenant-option-west-cork')).toBeTruthy();
     expect(getByText('Current community: hOUR Timebank')).toBeTruthy();
     expect(getByText('Selected community')).toBeTruthy();
   });

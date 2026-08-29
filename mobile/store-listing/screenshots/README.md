@@ -1,8 +1,8 @@
 # Play Store screenshots
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-08-29
 
-Captured 2026-08-25 at 1080×2400 from a locally built release APK, running on an emulator
+Recaptured 2026-08-29 at 1080×2400 from the current locally built release APK, running on an emulator
 against the **live Partner Demo community**, not mockups. The original captures were too tall
 for Google's 2:1 maximum screenshot ratio and retained an alpha channel. On 2026-08-26 they
 were prepared as opaque 24-bit 1080×1920 PNGs: the complete screen is proportionally reduced
@@ -13,10 +13,9 @@ Two complete sets. **Light usually reads better as a small thumbnail in the stor
 dark is the more striking image if the listing is being viewed full size. Pick one and stay
 with it — a listing that mixes themes looks like two different apps.
 
-The `tablet-7/` and `tablet-10/` folders contain a separate curated set captured from genuine
-Nexus 7 and Pixel Tablet Android emulators on 2026-08-26. They show Listings, Wallet and
-Volunteering, plus an Events screen added from both genuine emulators on 2026-08-28 to meet
-Google's current four-image minimum for tablet listings. The
+The `tablet-7/` and `tablet-10/` folders contain a separate curated set recaptured from genuine
+Nexus 7 and Pixel Tablet Android emulators on 2026-08-29. They show Listings, Wallet,
+Events and Volunteering, meeting Google's current four-image minimum for tablet listings. The
 complete native tablet frame is retained: 7-inch captures are proportionally contained in
 1080×1920, while the naturally landscape Pixel Tablet captures are contained in
 2560×1440. Nothing is cropped or stretched.
@@ -25,15 +24,14 @@ complete native tablet frame is retained: 7-inch captures are proportionally con
 | --- | --- |
 | `01-feed` | the community feed |
 | `02-listings` | browsing offers and requests |
-| `03-listing-detail` | one listing, with the time cost and the request button |
+| `03-messages` | private conversations and the new-message action |
 | `04-wallet` | the time-credit balance, giving and spending |
-| `05-messages` | conversations |
-| `06-events` | what's on |
+| `05-events` | what's on |
+| `06-groups` | groups and community spaces |
 | `07-members` | the member directory |
-| `08-groups` | groups |
+| `08-volunteering` | opportunities, applications and verified hours |
 
-The tablet folders use `05-events` for the fourth image; their numbering follows the
-capture tour rather than the phone story above.
+The tablet folders retain the same capture-tour numbering as the phone sets.
 
 ## Why these are safe to publish
 

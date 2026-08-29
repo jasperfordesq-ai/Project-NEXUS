@@ -23,7 +23,7 @@
 
 appId: ie.project.nexus
 ---
-# 🔴 KNOWN FLAKE — DIAGNOSED, NOT FIXED. Roughly 1 run in 4 (2026-08-18).
+# 🔴 HISTORICAL FLAKE — guarded at both causes.
 #
 # Symptom: "No visible element found: id: register-password", after
 # scrollUntilVisible hunts for 20 seconds.
@@ -47,29 +47,14 @@ appId: ie.project.nexus
 #      form scrolls, so the title legitimately leaves the screen and the guard fires
 #      on every run.
 #
-# A real fix needs a way to ask Android whether the keyboard is up, which Maestro
-# does not expose, or a testID on an element that stays visible at every scroll
-# position to guard against. Until then this flow is known-flaky: re-run it before
-# concluding the app is broken.
+# Stable field testIDs and bounded retries now cover both the keyboard/scroll boundary
+# and Maestro 2.8's occasional Android hierarchy failure (`Illegal character (U+0)`).
+# Retries surround taps only, so text cannot be duplicated by a partial retry.
 
-# 1. Launch fresh - clearState ensures no residual session
-- launchApp:
-    clearState: true
+# 1. Reset and reach the login form through the tenant picker if needed
+- runFlow: subflows/open-login.yaml
 
-# 2. Handle tenant selection if shown on a clean install
-- runFlow:
-    when:
-      visible: "Select your timebank"
-    commands:
-      - extendedWaitUntil:
-          visible: "Select your timebank"
-          timeout: 5000
-      - tapOn: "hour-timebank"
-
-# 3. Assert we are on the login screen
-- extendedWaitUntil:
-    visible: "Welcome back"
-    timeout: 60000
+# 2. Assert we are on the login screen
 - assertVisible: "Welcome back"
 
 # 4. Tap "Create account" link to navigate to the registration screen
@@ -84,30 +69,45 @@ appId: ie.project.nexus
 - assertVisible: "Create account"
 
 # 7. Fill in the First name field
-- tapOn:
-    id: "register-first-name"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-first-name"
 - inputText: "Test"
 
 # 8. Fill in the Last name field
-- tapOn:
-    id: "register-last-name"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-last-name"
 - inputText: "User"
 
 # 9. Fill in the Phone field
-- tapOn:
-    id: "register-phone"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-phone"
 - inputText: "+15551234567"
 - back
 
 # 10. Fill in the Location field
-- tapOn:
-    id: "register-location"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-location"
 - inputText: "City, country"
 - back
 
 # 11. Fill in the Email field
-- tapOn:
-    id: "register-email"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-email"
 - inputText: "testuser.ci@example.com"
 - back
 
@@ -116,14 +116,20 @@ appId: ie.project.nexus
     element:
       id: "register-password"
     direction: DOWN
-- tapOn:
-    id: "register-password"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-password"
 - inputText: "TestPassword123!"
 - back
 
 # 13. Fill in the Confirm password field
-- tapOn:
-    id: "register-confirm-password"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-confirm-password"
 - inputText: "TestPassword123!"
 - back
 - waitForAnimationToEnd:
@@ -134,8 +140,11 @@ appId: ie.project.nexus
     element:
       id: "register-terms"
     direction: DOWN
-- tapOn:
-    id: "register-terms"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "register-terms"
 
 # 15. Screenshot the completed registration form before submit
 - takeScreenshot: registration-form
@@ -146,7 +155,9 @@ appId: ie.project.nexus
 - assertVisible: "Email"
 - assertVisible: "Password"
 - assertVisible: "Confirm password"
-- assertVisible: "I agree to the platform terms and privacy notice."
+- assertVisible:
+    id: "register-terms"
+- assertVisible: "I agree to the platform terms and privacy notice, and I am 18 years of age or older."
 
 # NOTE: The submit button ("Create account") is intentionally NOT tapped here.
 # To test the full registration flow end-to-end, uncomment the lines below and

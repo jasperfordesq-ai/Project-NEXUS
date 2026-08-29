@@ -1,0 +1,42 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Reset the app and reach the login form deterministically. A clean installation
+# first shows the asynchronous tenant picker, so wait for either valid screen
+# before deciding whether the picker needs handling.
+
+appId: ie.project.nexus
+---
+# A debug client occasionally leaves only the native root view visible while
+# Metro is still attaching after many consecutive cold starts. Retry the whole
+# cold launch once, but never proceed until a genuine first screen is visible.
+- retry:
+    maxRetries: 2
+    commands:
+      - launchApp:
+          clearState: true
+      - extendedWaitUntil:
+          visible: "Select your timebank|Welcome back"
+          timeout: 60000
+
+- runFlow:
+    when:
+      visible: "Select your timebank"
+    commands:
+      # The tenant list replaces its loading state asynchronously. Retry only
+      # this narrow interaction so a tree refresh between the wait and tap does
+      # not make the whole journey flaky.
+      - retry:
+          maxRetries: 3
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tenant-option-hour-timebank"
+                timeout: 15000
+            - tapOn:
+                id: "tenant-option-hour-timebank"
+                retryTapIfNoChange: true
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 60000

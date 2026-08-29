@@ -342,13 +342,14 @@ that happens, no iOS runtime claim is verified — see
 
 ## Maestro end-to-end flows
 
-Nine flows in `.maestro/` drive the real app on a real device or emulator: login,
+Ten flows in `.maestro/` drive the real app on a real device or emulator: login,
 logout, browse listings, browse groups, view events, messages, profile/explore,
-search, registration. Flows `03`–`08` re-authenticate inline, so any of them can
-run alone.
+search, registration, and the expanded Courses, Podcasts, Clubs and Partner venues
+entry points. Every root journey invokes a shared isolated setup, so any flow can
+run first, last or alone.
 
 ```bash
-npm run e2e                                    # checks preconditions, then runs all nine
+npm run e2e                                    # checks preconditions, then runs all ten
 node scripts/e2e.mjs --flow .maestro/01-auth-login.yaml
 ```
 
@@ -357,14 +358,23 @@ because every one of them fails silently and each cost an afternoon to find. If 
 precondition is unmet it exits 2 and says plainly that nothing was tested — that is
 not a test failure.
 
-### The four preconditions, and why each matters
+### The blocking preconditions, and why each matters
 
 | Precondition | What happens without it |
 | --- | --- |
 | **A DEBUG build** | `lib/constants.ts` refuses a loopback API URL when `__DEV__` is false and uses **production** instead. Every flow then fails on "Invalid credentials", because the seeded accounts do not exist there. |
 | **Cleartext permitted** | The app reaches neither the API on `:8090` nor Metro on `:8081`. See the network-security section above. |
-| **Metro running** | A debug build fetches its JS at runtime; without it you get a blank screen. |
+| **Metro running and reachable from the device** | A debug build fetches its JS at runtime; without it you get a blank screen. The runner restores `adb reverse tcp:8081 tcp:8081`, which is lost after an emulator reboot. |
 | **Animations ON** | With scales at 0, Android reports reduced motion → Reanimated warns → LogBox draws a banner across the **bottom**, over the tab bar. Taps on "More" hit the banner, and five flows fail on a "View wallet" they never navigated to. |
+| **Device awake / keyguard disabled** | Maestro tests Android's lock or PIN screen instead of the app and every visible assertion fails. The local runner and CI both keep the emulator awake and dismiss the keyguard. |
+| **Seeded API fixture reachable** | The app opens normally, but authentication and every data-backed journey fail for unrelated reasons. |
+| **Maestro and a debuggable app installed** | There is no executable device test target; source tests cannot substitute for this boundary. |
+
+If Maestro reports Android hierarchy errors containing `Illegal character (U+0)`,
+inspect the emulator before changing app assertions. Android's own **System UI isn't
+responding** dialog produced that exact error during the release run; choose **Wait**
+or restart the emulator, then restore the Metro reverse mapping. It is an emulator
+failure overlaying the app, not evidence that the tested screen crashed.
 
 🔴 That last one is a trap the screenshot tooling sets itself: `screenshot:capture`
 disables animations for determinism. It now restores them afterwards, and
@@ -400,20 +410,22 @@ to parse that** — `Failed to parse file: config.yaml / List is empty`. So
 `maestro test .maestro/`, the documented way to run the whole suite and the way any
 CI job would run it, had **never worked**. Running one flow by path skips
 config.yaml entirely, so the suite could look healthy one flow at a time while the
-directory run was broken. That is the likeliest reason nine perfectly good flows
+directory run was broken. That is the likeliest reason the original nine flows
 sat unrun for months. The file now carries a real `flows:` key; keep it.
 
 ### Running them automatically
 
-`.github/workflows/mobile-device-tests.yml` runs all nine flows on a real emulator
+`.github/workflows/mobile-device-tests.yml` runs all ten flows on a real emulator
 against a real Laravel API. **Nightly at 04:40 UTC**, plus `workflow_dispatch` —
 deliberately not on every push, because it stands up MariaDB, Redis, Laravel, an
 emulator, a native build and Metro, and a ~35-minute job on every commit gets
 ignored within a week.
 
-🔴 **It has never executed on a GitHub runner.** Every step was exercised by hand
-here, and two were corrected as a result (see below), but the YAML itself is
-unverified. Treat the first run as a test of the workflow, not of the app.
+The workflow has executed on GitHub-hosted Android runners. Run `33249852302`
+exposed the earlier shared-session and emulator-lock assumptions; the current
+isolation, stable tenant selectors and wake/keyguard setup are the direct fixes.
+Do not treat that older failed run as evidence for the revised workflow—the
+post-fix dispatch must be green before freezing the release candidate.
 
 Two things it does NOT do, on purpose:
 

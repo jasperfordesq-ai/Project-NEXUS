@@ -70,6 +70,9 @@ EXPO_PUBLIC_API_URL=${API_URL}
 EXPO_PUBLIC_APP_URL=${APP_URL}
 EXPO_PUBLIC_DEFAULT_TENANT=${TENANT}
 EXPO_PUBLIC_SENTRY_DSN=${SENTRY_DSN}
+# Never inherit the debug-only Maestro/LogBox setting from .env.local into a
+# production-bundled APK used for release screenshots.
+EXPO_PUBLIC_E2E=0
 EOF
 
 if [ -n "$SENTRY_DSN" ]; then

@@ -75,6 +75,14 @@ jest.mock('react-i18next', () => ({
         'organisations': 'Organisations',
         'blog': 'Blog',
         'skills': 'Skills & Endorsements',
+        'courses:title': 'Courses',
+        'courses:subtitle': 'Learn new skills with your community',
+        'podcasts:title': 'Podcasts',
+        'podcasts:subtitle': 'Community audio from members.',
+        'clubs:title': 'Clubs & Associations',
+        'clubs:subtitle': 'Find local clubs and associations.',
+        'venues:directory.title': 'Partner venues',
+        'venues:directory.intro': 'Local places that welcome members.',
         'federation': 'Federation',
         'federationSection': 'Partner communities',
         'federationHub': 'Federation hub',
@@ -364,6 +372,25 @@ describe('MoreScreen (More tab)', () => {
     expect(getByText('Settings')).toBeTruthy();
   });
 
+  it('makes the newly completed member modules reachable from ordinary navigation', () => {
+    const { getByLabelText, getByText } = render(<MoreScreen />);
+
+    expect(getByText('Courses')).toBeTruthy();
+    expect(getByText('Podcasts')).toBeTruthy();
+    expect(getByText('Clubs & Associations')).toBeTruthy();
+    expect(getByText('Partner venues')).toBeTruthy();
+
+    fireEvent.press(getByLabelText('Courses'));
+    fireEvent.press(getByLabelText('Podcasts'));
+    fireEvent.press(getByLabelText('Clubs & Associations'));
+    fireEvent.press(getByLabelText('Partner venues'));
+
+    expect(router.push).toHaveBeenNthCalledWith(1, '/(modals)/courses');
+    expect(router.push).toHaveBeenNthCalledWith(2, '/(modals)/podcasts');
+    expect(router.push).toHaveBeenNthCalledWith(3, '/(modals)/clubs');
+    expect(router.push).toHaveBeenNthCalledWith(4, '/(modals)/venues');
+  });
+
   it('hides More menu buttons when their backend module is disabled', () => {
     mockHasModule.mockImplementation((module: string) => !['wallet', 'messages', 'notifications', 'listings', 'settings'].includes(module));
 
@@ -378,7 +405,7 @@ describe('MoreScreen (More tab)', () => {
   });
 
   it('hides More menu buttons when their backend feature is disabled', () => {
-    mockHasFeature.mockImplementation((feature: string) => !['marketplace', 'events', 'groups', 'volunteering', 'blog', 'ai_chat', 'federation'].includes(feature));
+    mockHasFeature.mockImplementation((feature: string) => !['marketplace', 'events', 'groups', 'volunteering', 'blog', 'ai_chat', 'federation', 'courses', 'podcasts', 'partner_venues'].includes(feature));
 
     const { getByLabelText, queryByText } = render(<MoreScreen />);
 
@@ -389,6 +416,10 @@ describe('MoreScreen (More tab)', () => {
     expect(queryByText('Blog')).toBeNull();
     expect(queryByText('AI Assistant')).toBeNull();
     expect(queryByText('Federation')).toBeNull();
+    expect(queryByText('Courses')).toBeNull();
+    expect(queryByText('Podcasts')).toBeNull();
+    expect(queryByText('Partner venues')).toBeNull();
+    expect(queryByText('Clubs & Associations')).toBeTruthy();
     fireEvent.press(getByLabelText('My Space'));
     expect(queryByText('Wallet')).toBeTruthy();
   });

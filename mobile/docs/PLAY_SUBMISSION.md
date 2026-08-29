@@ -1,6 +1,6 @@
 # Google Play submission — everything prepared, and the parts only the owner can do
 
-Last reviewed: 2026-08-28
+Last reviewed: 2026-08-29
 
 The developer identity is verified and Timebank Global is publicly installable from Google
 Play as of 2026-08-26. This page is now the evidence source for the next Android release:
@@ -306,8 +306,8 @@ file; it is the same address already published on the live contact page and was 
 | App icon | 512×512 PNG, 32-bit | ✅ `store-listing/play-icon-512.png`. 🔴 `assets/icon.png` is 1024², which Play rejects — that is why this exists |
 | Feature graphic | 1024×500, no transparency | ✅ `store-listing/play-feature-graphic-1024x500.png`, drafted and verified to have zero transparent pixels |
 | Phone screenshots | 2–8, 320–3840 px, maximum 2:1 ratio, JPEG or opaque 24-bit PNG | ✅ **Two full sets of 8**, prepared as opaque 1080×1920 PNGs in `store-listing/screenshots/{light,dark}/` |
-| 7-inch tablet screenshots | 2–8, 320–3840 px, 16:9 or 9:16 | ✅ **3 genuine emulator captures**, prepared as opaque 1080×1920 PNGs in `store-listing/screenshots/tablet-7/` |
-| 10-inch tablet screenshots | 2–8, 1080–7680 px, 16:9 or 9:16 | ✅ **3 genuine emulator captures**, prepared as opaque 2560×1440 PNGs in `store-listing/screenshots/tablet-10/` |
+| 7-inch tablet screenshots | 2–8, 320–3840 px, 16:9 or 9:16 | ✅ **4 current genuine emulator captures**, prepared as opaque 1080×1920 PNGs in `store-listing/screenshots/tablet-7/` |
+| 10-inch tablet screenshots | 2–8, 1080–7680 px, 16:9 or 9:16 | ✅ **4 current genuine emulator captures**, prepared as opaque 2560×1440 PNGs in `store-listing/screenshots/tablet-10/` |
 
 Both graphics are generated, so they can be changed by anyone:
 
@@ -499,4 +499,7 @@ risk acceptance, not a claim that `npm audit` is clean.
   all six workflows are green. This banks source/test evidence, not a new Play artefact.
 - Nothing on crash reporting. Project, DSN, cloud build variables, source-map upload and
   the nightly sweep are all in place and verified.
-- iOS: entirely out of scope. No Apple developer account, no build, no walk.
+- iOS is now a separate active release track. An unsigned EAS Simulator build and a
+  GitHub-hosted iOS Simulator screenshot tour exist; Apple enrollment still blocks signing,
+  APNs credentials, the App Store Connect record, TestFlight and a real-iPhone walk. See
+  `store-listing/apple/readiness-audit.md` for the authoritative ordered gate.

@@ -25,7 +25,7 @@ On Windows, use WSL2 with the Linux install above, or download the Maestro JAR m
 All flows target bundle ID `ie.project.nexus` (iOS) / package `ie.project.nexus` (Android).
 
 ```bash
-# Run all flows in numbered order
+# Run all isolated flows (Maestro may discover them in any order)
 maestro test .maestro/
 
 # Run a single flow
@@ -36,6 +36,9 @@ maestro test \
   --env TEST_EMAIL=user@example.com \
   --env TEST_PASSWORD=secret \
   .maestro/
+
+# When more than one Android emulator is attached, select one explicitly
+node scripts/e2e.mjs --serial emulator-5554
 
 # Upload flows to Maestro Cloud (device farm)
 maestro cloud --apiKey $MAESTRO_API_KEY .maestro/
@@ -59,32 +62,36 @@ Credentials are injected via `--env` and referenced in flows as `${TEST_EMAIL}` 
 | File | Description | Requires session? |
 |------|-------------|-------------------|
 | `01-auth-login.yaml` | Login with valid credentials, assert Feed tab | No (clearState) |
-| `02-auth-logout.yaml` | Navigate to Profile, Sign out, assert login screen | Yes (from 01) |
-| `03-browse-listings.yaml` | Listings tab: search "garden", clear, scroll | Re-auths if needed |
-| `04-browse-groups.yaml` | Profile > Groups: filter pills, search "community" | Re-auths if needed |
-| `05-view-events.yaml` | Feed tab: scroll through event cards | Re-auths if needed |
-| `06-messages-flow.yaml` | Messages tab: load, scroll, no crash | Re-auths if needed |
-| `07-profile-explore.yaml` | Profile Explore: Achievements + AI Assistant | Re-auths if needed |
-| `08-search-flow.yaml` | Profile > Search: type query, assert filter pills | Re-auths if needed |
+| `02-auth-logout.yaml` | Navigate to Profile, Sign out, assert login screen | No (isolated login) |
+| `03-browse-listings.yaml` | Listings tab: search "garden", clear, scroll | No (isolated login) |
+| `04-browse-groups.yaml` | Profile > Groups: filter pills, search "community" | No (isolated login) |
+| `05-view-events.yaml` | Feed tab: scroll through event cards | No (isolated login) |
+| `06-messages-flow.yaml` | Messages tab: load, scroll, no crash | No (isolated login) |
+| `07-profile-explore.yaml` | Profile Explore: Achievements + AI Assistant | No (isolated login) |
+| `08-search-flow.yaml` | Profile > Search: type query, assert filter pills | No (isolated login) |
 | `09-registration-flow.yaml` | Registration form renders correctly (no submit) | No (clearState) |
 
-Flows `03`–`08` include an inline re-authentication block that handles expired sessions, so they can be run independently or as part of the full suite.
+Every root journey starts from a clean state. Authenticated journeys use
+`subflows/login.yaml`; registration uses `subflows/open-login.yaml`. This keeps the
+suite valid when Maestro discovers flows in a different order.
 
 ---
 
 ## Tenant selection screen
 
-On a completely fresh install (`clearState: true`) the app may show a **"Select your timebank"** screen before the login form. Flows `01` and `09` handle this with a conditional `runFlow` block that taps the `hour-timebank` entry if the screen appears. If the tenant is already stored, the block is skipped automatically.
+On a completely fresh install (`clearState: true`) the app may show a **"Select your timebank"** screen before the login form. The shared setup waits for either valid screen before evaluating its conditional tenant-selection block, avoiding a race with asynchronous tenant loading.
 
 ---
 
 ## CI status
 
-Maestro is currently an operator-run device test, not a GitHub Actions gate. The main CI workflow (`mobile-release` in `.github/workflows/ci.yml`) runs the blocking Android release-policy check, typecheck, Jest suite, Expo Doctor, route-parity and API-contract drift checks, the coverage ratchet, and generated-native-policy inspection; it does not launch an emulator or submit an EAS build.
+Maestro runs in the scheduled and manually dispatched `Mobile Device Tests`
+GitHub Actions workflow. The main CI workflow (`mobile-release` in
+`.github/workflows/ci.yml`) still runs the faster source-level gates and does not
+launch an emulator or submit an EAS build.
 
-🔴 So nothing automated proves the app launches on a device. That is the largest
-hole in mobile verification after visual testing — see
-[`../docs/CURRENT_MOBILE_PRODUCTION_STATUS.md`](../docs/CURRENT_MOBILE_PRODUCTION_STATUS.md) §8. EAS build and submission commands remain deliberate operator actions documented in [`../docs/DISTRIBUTION.md`](../docs/DISTRIBUTION.md).
+EAS build and submission commands remain deliberate operator actions documented
+in [`../docs/DISTRIBUTION.md`](../docs/DISTRIBUTION.md).
 
 If a device-farm gate is added later, start from a preview APK and pass credentials only through repository secrets. For example:
 

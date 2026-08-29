@@ -193,6 +193,7 @@ export default function SelectTenantScreen() {
             <NativePressable
               feedback="scale"
               className="w-full"
+              testID={`tenant-option-${item.slug}`}
               onPress={() => void handleSelect(item)}
               accessibilityLabel={item.name}
               accessibilityState={{ selected: isActive }}

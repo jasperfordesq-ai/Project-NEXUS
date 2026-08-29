@@ -12,13 +12,8 @@
 
 appId: ie.project.nexus
 ---
-# 1. Launch the app without clearing state
-- launchApp
-
-# 2. Wait for the main screen to be ready
-- extendedWaitUntil:
-    visible: "Welcome back|Community Feed|Home|Listings|Messages|More|View wallet"
-    timeout: 60000
+# 1. Establish this flow's own authenticated session
+- runFlow: subflows/login.yaml
 
 # 3. Tap the More tab in the bottom tab bar
 - tapOn: "More"

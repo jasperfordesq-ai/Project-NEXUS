@@ -44,15 +44,25 @@ appId: ie.project.nexus
 - launchApp:
     clearState: true
 
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back"
+    timeout: 60000
+
 - runFlow:
     when:
       visible: "Select your timebank"
     commands:
-      - extendedWaitUntil:
-          visible: "Select your timebank"
-          timeout: 8000
-      - takeScreenshot: sweep-00-tenant-select
-      - tapOn: "hour-timebank"
+      - retry:
+          maxRetries: 3
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tenant-option-hour-timebank"
+                timeout: 15000
+            - takeScreenshot: sweep-00-tenant-select
+            - tapOn:
+                id: "tenant-option-hour-timebank"
+                retryTapIfNoChange: true
 
 - extendedWaitUntil:
     visible: "Welcome back"
@@ -476,7 +486,16 @@ appId: ie.project.nexus
     when:
       visible: "Select your timebank"
     commands:
-      - tapOn: "hour-timebank"
+      - retry:
+          maxRetries: 3
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tenant-option-hour-timebank"
+                timeout: 15000
+            - tapOn:
+                id: "tenant-option-hour-timebank"
+                retryTapIfNoChange: true
 
 - extendedWaitUntil:
     visible: "Welcome back"

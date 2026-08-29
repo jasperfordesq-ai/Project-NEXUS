@@ -6,7 +6,7 @@
 /**
  * Run the Maestro end-to-end flows against the LOCAL API.
  *
- * This exists because getting these nine flows to run at all took an afternoon of
+ * This exists because getting these device flows to run at all took an afternoon of
  * dead ends, and every one of them is a precondition that fails silently. The
  * script checks each precondition up front and says which one is wrong, instead of
  * letting Maestro report a missing button eight times.
@@ -34,6 +34,7 @@
  * Usage (from mobile/):
  *   npm run e2e
  *   node scripts/e2e.mjs --flow .maestro/01-auth-login.yaml
+ *   node scripts/e2e.mjs --serial emulator-5554
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -48,6 +49,7 @@ const APP_ID = 'ie.project.nexus';
 
 const args = process.argv.slice(2);
 const flowTarget = argValue('--flow', '.maestro/');
+const requestedSerial = argValue('--serial', process.env.ANDROID_SERIAL || '');
 const email = argValue('--email', process.env.E2E_TEST_EMAIL || 'e2e.user.a@project-nexus.local');
 const password = argValue('--password', process.env.E2E_TEST_PASSWORD || 'TestPassword123!');
 
@@ -72,9 +74,19 @@ const MAESTRO = process.platform === 'win32'
   ? path.join(os.homedir(), '.maestro', 'bin', 'maestro.bat')
   : path.join(os.homedir(), '.maestro', 'bin', 'maestro');
 
-function adb(a) {
-  return execFileSync(ADB, a, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+function adb(a, { host = false } = {}) {
+  const serialArgs = !host && selectedSerial ? ['-s', selectedSerial] : [];
+  return execFileSync(ADB, [...serialArgs, ...a], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
 }
+
+const attachedDevices = adb(['devices'], { host: true })
+  .split('\n')
+  .slice(1)
+  .filter((line) => line.trim().endsWith('device'))
+  .map((line) => line.trim().split(/\s+/)[0]);
+
+let selectedSerial = requestedSerial;
+if (!selectedSerial && attachedDevices.length === 1) selectedSerial = attachedDevices[0];
 
 const problems = [];
 
@@ -91,9 +103,17 @@ function check(label, fn) {
 console.log('e2e: checking preconditions\n');
 
 check('a device is attached', () => {
-  const devices = adb(['devices']).split('\n').slice(1).filter((l) => l.trim().endsWith('device'));
-  if (devices.length === 0) throw new Error('none. Run `npm run emulator:start`.');
-  return devices[0].trim().split(/\s+/)[0];
+  if (attachedDevices.length === 0) throw new Error('none. Run `npm run emulator:start`.');
+  if (!selectedSerial) {
+    throw new Error(
+      `${attachedDevices.length} devices are attached (${attachedDevices.join(', ')}). ` +
+        'Choose one with `--serial <id>` or ANDROID_SERIAL.',
+    );
+  }
+  if (!attachedDevices.includes(selectedSerial)) {
+    throw new Error(`${selectedSerial} is not attached. Available: ${attachedDevices.join(', ')}`);
+  }
+  return selectedSerial;
 });
 
 check('the app is installed', () => {
@@ -128,6 +148,18 @@ check('animations are enabled (LogBox banner would cover the tab bar)', () => {
   return `scale ${scale || '1'}`;
 });
 
+check('the device is awake and the keyguard is disabled', () => {
+  // Emulator snapshots can restore a locked device, and long screenshot/test runs can
+  // let it lock again. Maestro then tests Android's PIN screen and reports every app
+  // assertion as false. Keep the local runner aligned with the CI emulator setup.
+  adb(['shell', 'settings', 'put', 'global', 'stay_on_while_plugged_in', '7']);
+  adb(['shell', 'locksettings', 'set-disabled', 'true']);
+  adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP']);
+  adb(['shell', 'wm', 'dismiss-keyguard']);
+  adb(['shell', 'input', 'keyevent', '82']);
+  return 'awake; stay-awake enabled; keyguard disabled';
+});
+
 check('the local queue has a worker (bells, emails and push are queued)', () => {
   /*
     🔴 Nothing queued happens locally unless someone runs a worker, and the silence looks
@@ -158,7 +190,7 @@ check('the local queue has a worker (bells, emails and push are queued)', () => 
 check('LogBox is suppressed for this build (a banner covers the tab bar)', () => {
   /*
     🔴 Not cosmetic. The LogBox banner sits over the bottom of the screen, on top of the
-    tab bar, and swallows the tap — which broke four of these nine flows on 2026-08-24
+    tab bar, and swallows the tap — which broke four of these flows on 2026-08-24
     (`02-auth-logout`, `03-browse-listings`, `04-browse-groups`, `08-search-flow`) while
     every unit test passed. Measured on a device: dismiss the banner and the same tap
     navigates immediately.
@@ -202,6 +234,10 @@ check('Metro is serving (a debug build fetches its JS at runtime)', () => {
   if (!/packager-status:running/.test(probe.stdout || '')) {
     throw new Error('nothing on :8081. Run `npx expo start` in another terminal.');
   }
+  // `adb reverse` is device state and disappears after an emulator reboot. Expo
+  // normally creates it, but a restarted device can otherwise show a blank native
+  // root while this host-side probe still says Metro is healthy.
+  adb(['reverse', 'tcp:8081', 'tcp:8081']);
   return 'packager-status:running';
 });
 
@@ -223,7 +259,7 @@ console.log('\ne2e: all preconditions met — running flows\n');
 
 const result = spawnSync(
   MAESTRO,
-  ['test', '--env', `TEST_EMAIL=${email}`, '--env', `TEST_PASSWORD=${password}`, flowTarget],
+  ['--device', selectedSerial, 'test', '--env', `TEST_EMAIL=${email}`, '--env', `TEST_PASSWORD=${password}`, flowTarget],
   {
     cwd: MOBILE_ROOT,
     stdio: 'inherit',

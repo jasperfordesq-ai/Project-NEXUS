@@ -14,12 +14,8 @@ const { PNG } = require('pngjs');
 const EXPECTED_SCREENSHOTS = [
   '01-feed.png',
   '02-listings.png',
-  '03-members.png',
   '04-messages.png',
   '05-events.png',
-  '06-wallet.png',
-  '07-volunteering.png',
-  '08-settings.png',
 ];
 
 const ACCEPTED_PORTRAIT_SIZES = new Set([

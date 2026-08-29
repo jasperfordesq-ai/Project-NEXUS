@@ -3,14 +3,8 @@
 #
 # Flow 05 — View Events
 #
-# Verifies the Events tab loads, the "Upcoming" section header is visible,
-# and the list can be scrolled without crashing. The tab bar in the mobile
-# app uses the "Members" label (not "Events") — events are accessed via the
-# home locale tab key or via the feed. The tab bar labels are:
-#   Feed | Listings | Messages | Members | Profile
-#
-# Events are surfaced on the Feed (home) screen under the "Upcoming" header.
-# This flow navigates to the Feed tab and asserts event content.
+# Opens Events through ordinary More navigation, verifies the API-backed screen
+# and both date filters, and confirms the list remains functional after scroll.
 #
 # Run:
 #   maestro test --env TEST_EMAIL=user@example.com --env TEST_PASSWORD=secret \
@@ -18,69 +12,36 @@
 
 appId: ie.project.nexus
 ---
-# ── 1. Launch the app without clearing state
-- launchApp
+# ── 1. Establish this flow's own authenticated session
+- runFlow: subflows/login.yaml
 
+- tapOn: "More"
 - extendedWaitUntil:
-    visible: "Welcome back|Community Feed|Home|Listings|Messages|More|View wallet"
-    timeout: 60000
-
-# ── 2. Re-authenticate if session has expired
-- runFlow:
-    when:
-      visible: "Welcome back"
-    commands:
-      - runFlow:
-          when:
-            visible: "Select your timebank"
-          commands:
-            - tapOn: "hour-timebank"
-      - tapOn:
-          id: "email-input"
-      - inputText: "${TEST_EMAIL}"
-      - tapOn:
-          id: "password-input"
-      - inputText: "${TEST_PASSWORD}"
-      - back
-      - tapOn:
-          id: "login-submit"
-      - extendedWaitUntil:
-          visible: "Community Feed"
-          timeout: 10000
-
-# ── 3. Tap the Feed tab (first tab in the bottom bar) to ensure we start there
-- tapOn: "Home"
-
-# ── 4. Wait for the feed to load
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 5000
-
-# ── 5. Assert either "Upcoming" (events section) or the general Feed title is shown
-- assertVisible: "Community Feed"
-
-# ── 6. Scroll down to surface event cards in the feed
-- swipe:
-    direction: UP
-    duration: 700
-
-# ── 7. Wait a moment for lazy-loaded event cards to appear
-- waitForAnimationToEnd:
-    timeout: 800
-
-# ── 8. Screenshot the events section as it appears in the feed
-- takeScreenshot: events-list
-
-# ── 9. Continue scrolling to verify no crash deeper in the list
-- swipe:
-    direction: UP
-    duration: 700
-
-# ── 10. Scroll back to top to leave the app in a clean state
-- swipe:
+    visible: "View wallet"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "Events"
     direction: DOWN
-    duration: 700
+    timeout: 20000
+- tapOn: "Events"
 
-# ── 11. Assert the feed is still functional after scroll stress
-- assertVisible: "For You"
-- assertVisible: "View post"
+- extendedWaitUntil:
+    visible: "Browse events"
+    timeout: 20000
+- assertVisible: "Events"
+- assertVisible: "Upcoming"
+- assertVisible: "Past"
+
+- tapOn: "Past"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: events-past
+
+- tapOn: "Upcoming"
+- waitForAnimationToEnd:
+    timeout: 2000
+- swipe:
+    direction: UP
+    duration: 700
+- assertVisible: "Upcoming"
+- takeScreenshot: events-upcoming

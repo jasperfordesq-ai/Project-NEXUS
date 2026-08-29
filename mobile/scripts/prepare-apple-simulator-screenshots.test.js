@@ -12,16 +12,12 @@ const {
 } = require('./prepare-apple-simulator-screenshots.cjs');
 
 describe('Apple Simulator screenshot preparation', () => {
-  it('requires the complete eight-screen App Store story', () => {
+  it('exports only the visually accepted four-screen public App Store set', () => {
     expect(EXPECTED_SCREENSHOTS).toEqual([
       '01-feed.png',
       '02-listings.png',
-      '03-members.png',
       '04-messages.png',
       '05-events.png',
-      '06-wallet.png',
-      '07-volunteering.png',
-      '08-settings.png',
     ]);
   });
 

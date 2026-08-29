@@ -16,14 +16,14 @@
 #
 # If you add documentation here, keep the `flows:` key below.
 
-# The flows to run, in filename order. The numeric prefixes are the order:
-# 01 establishes a session that 02 logs out of; 03-08 re-authenticate inline so
-# they can also run alone; 09 registers from a clean install.
+# Root journeys only. Reusable setup lives under subflows/ and is not discovered
+# by this glob. Maestro deliberately does not guarantee discovery order, so every
+# journey resets the app and establishes the state it needs.
 flows:
   - "*.yaml"
 
 # ── Running flows ────────────────────────────────────────────────────────────
-#   Run all flows in order:
+#   Run all flows (discovery order is intentionally not guaranteed):
 #     maestro test .maestro/
 #
 #   Run a single flow:
@@ -39,16 +39,11 @@ flows:
 #   TEST_EMAIL     — email address for an existing test account
 #   TEST_PASSWORD  — password for that account
 #
-# ── Flow ordering ────────────────────────────────────────────────────────────
-#   01  auth-login          Must run first (establishes session used by later flows)
-#   02  auth-logout         Requires login state from 01; logs out and verifies
-#   03  browse-listings     Independent; logs in internally
-#   04  browse-groups       Independent; logs in internally
-#   05  view-events         Independent; logs in internally
-#   06  messages-flow       Independent; logs in internally
-#   07  profile-explore     Independent; logs in internally
-#   08  search-flow         Independent; logs in internally
-#   09  registration-flow   Independent; fresh install, does NOT submit the form
+# ── Flow isolation ───────────────────────────────────────────────────────────
+#   Every journey can run first, last or alone. Authenticated journeys invoke
+#   subflows/login.yaml; registration invokes subflows/open-login.yaml. This is
+#   Maestro's documented isolation model:
+#   https://docs.maestro.dev/maestro-flows/workspace-management/sequential-execution
 #
 # ── Tenant selection screen ──────────────────────────────────────────────────
 #   On a completely clean install (clearState: true) the app may show a
@@ -60,15 +55,7 @@ flows:
 #   🔴 This block pointed at .github/workflows/mobile-eas-build.yml, which DOES
 #      NOT EXIST and never has. Corrected 2026-08-18.
 #
-#   Nothing runs these flows automatically. They are operator-run on a device or
-#   emulator. The real mobile CI job is `mobile-release` in
-#   .github/workflows/ci.yml: release/OTA policy, typecheck, Jest, expo-doctor,
-#   route-parity and API-contract drift, the coverage ratchet, and inspection of
-#   the generated Android manifest. It never launches an emulator, so a green CI
-#   run is NOT evidence that the app starts on a phone.
-#
-#   To wire a device-farm gate later, start from a preview APK and pass
-#   credentials only through repository secrets:
-#     maestro cloud --apiKey $MAESTRO_API_KEY .maestro/
-#   Required secrets: MAESTRO_API_KEY, E2E_TEST_EMAIL, E2E_TEST_PASSWORD.
-#   See docs/TESTING.md.
+#   .github/workflows/mobile-device-tests.yml runs these journeys on an Android
+#   emulator against a disposable Laravel fixture. It is scheduled and manually
+#   dispatchable because the native build and emulator are substantially slower
+#   than the source-level mobile-release job in ci.yml.

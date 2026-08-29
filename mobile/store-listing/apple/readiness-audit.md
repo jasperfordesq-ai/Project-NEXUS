@@ -104,7 +104,7 @@ Xcode debugging and the Simulator, but is not a release prerequisite for this pr
 | Encryption/export | Ready in source | `usesNonExemptEncryption` is false for standard exempt encryption. | Confirm answer in App Store Connect |
 | Age rating | Drafted | Worksheet records social/UGC/messaging, 18+ membership, gamification and paid promotional campaigns. | Complete Apple's live questionnaire |
 | Store metadata | Drafted and machine-checked | English (UK) copy and EAS metadata mapping exist; release is manual. | Legal fields, ASC ID, screenshots and live entry |
-| Screenshots | Device-blocked | Capture storyboard exists; Android or mock images cannot be represented as iPhone screenshots. | Signed iPhone capture |
+| Screenshots | Draft ready from genuine iOS Simulator | Four visually accepted native-resolution iPhone Simulator captures are selected and the preparation gate excludes four quarantined page-sheet/layout diagnostics from the public artifact. Android or mock images are never represented as iPhone screenshots. | Re-run from frozen commit; compare with signed TestFlight candidate |
 | Accessibility | Source coverage only | Automated checks do not certify VoiceOver, Dynamic Type or iOS contrast/gestures. | Physical-device accessibility walk |
 | Localization | Source-ready | Seven native permission-localization files are configured. Store localizations should be added only when maintainable. | Signed permission-dialog check |
 | OTA updates | Configured with control required | Production uses app-version runtime compatibility. Updates must remain JavaScript/assets-only and must not materially change reviewed native functionality. | Document release approval procedure |

@@ -13,35 +13,8 @@
 
 appId: ie.project.nexus
 ---
-# ── 1. Launch the app without clearing state (relies on persisted session)
-- launchApp
-
-- extendedWaitUntil:
-    visible: "Welcome back|Community Feed|Home|Listings|Messages|More|View wallet"
-    timeout: 60000
-
-# ── 2. Handle re-authentication if the session has expired
-- runFlow:
-    when:
-      visible: "Welcome back"
-    commands:
-      - runFlow:
-          when:
-            visible: "Select your timebank"
-          commands:
-            - tapOn: "hour-timebank"
-      - tapOn:
-          id: "email-input"
-      - inputText: "${TEST_EMAIL}"
-      - tapOn:
-          id: "password-input"
-      - inputText: "${TEST_PASSWORD}"
-      - back
-      - tapOn:
-          id: "login-submit"
-      - extendedWaitUntil:
-          visible: "Community Feed"
-          timeout: 10000
+# ── 1. Establish this flow's own authenticated session
+- runFlow: subflows/login.yaml
 
 # ── 3. Tap the Listings tab
 - tapOn: "Listings"
@@ -56,6 +29,7 @@ appId: ie.project.nexus
 - tapOn:
     id: "listings-search"
 - inputText: "garden"
+- back
 
 # ── 6. Wait for debounce to fire and results to update (500 ms debounce + render)
 - waitForAnimationToEnd:
@@ -76,8 +50,11 @@ appId: ie.project.nexus
     direction: UP
     duration: 600
 
-# ── 11. Assert the screen is still intact after scrolling
-- assertVisible: "Listings"
+# ── 11. Assert the screen is still intact after scrolling. The title may be
+# above the viewport after a genuine scroll, so assert the persistent search
+# control rather than an intentionally off-screen heading.
+- assertVisible:
+    id: "listings-search"
 
 # ── 12. Screenshot the scrolled state
 - takeScreenshot: listings-scrolled

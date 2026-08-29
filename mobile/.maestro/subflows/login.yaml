@@ -1,0 +1,31 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Establish an independent authenticated session for a single journey.
+
+appId: ie.project.nexus
+---
+- runFlow: open-login.yaml
+
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "email-input"
+- inputText: "${TEST_EMAIL}"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "password-input"
+- inputText: "${TEST_PASSWORD}"
+- back
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "login-submit"
+
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 15000

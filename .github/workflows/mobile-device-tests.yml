@@ -1,7 +1,7 @@
 # Copyright © 2024–2026 Jasper Ford
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Mobile device tests — the nine Maestro end-to-end flows, on a real Android
+# Mobile device tests — the ten Maestro end-to-end flows, on a real Android
 # emulator, against a real Laravel API.
 #
 # WHY THIS IS A SEPARATE WORKFLOW
@@ -14,7 +14,7 @@
 # a week.
 #
 # 🔴 UNVERIFIED UNTIL ITS FIRST RUN. Every step here was exercised by hand on the
-# development machine (all nine flows pass, screenshots reproduce at 0 pixels), but
+# development machine (all ten flows pass, screenshots reproduce at 0 pixels), but
 # this YAML has never executed on a GitHub runner. Treat the first run as the test
 # of the workflow, not of the app: expect to iterate on the emulator setup, and do
 # not read an early failure as a mobile regression. `workflow_dispatch` is there to
@@ -125,6 +125,12 @@ jobs:
              ON DUPLICATE KEY UPDATE slug = VALUES(slug), is_active = 1;"
           mysql -h 127.0.0.1 -u root -ptesting nexus -e \
             "INSERT IGNORE INTO categories (id, name, slug, tenant_id, type) VALUES (1, 'General', 'general', 2, 'listing');"
+          # The expanded native-module journey must exercise ordinary navigation to
+          # Courses, Podcasts and Partner venues. These are opt-in tenant features,
+          # so make them explicit in the disposable CI tenant rather than silently
+          # skipping the screens because production policy has them disabled.
+          mysql -h 127.0.0.1 -u root -ptesting nexus -e \
+            "UPDATE tenants SET features = JSON_SET(COALESCE(features, '{}'), '$.courses', true, '$.podcasts', true, '$.partner_venues', true) WHERE id = 2;"
 
       - name: Run pending migrations
         run: php artisan migrate --force
@@ -174,7 +180,7 @@ jobs:
           #
           # So login 500'd at the moment it tried to ISSUE a token. The readiness poll
           # below therefore never saw success, timed out after 60s, and the emulator, the
-          # APK build and all nine Maestro flows were skipped.
+          # APK build and all ten Maestro flows were skipped.
           #
           # Note the shape of this bug: bad credentials returned a clean 401, and only a
           # SUCCESSFUL login failed — so probing the endpoint the obvious way says the API
@@ -265,7 +271,7 @@ jobs:
           EXPO_PUBLIC_APP_URL=https://app.project-nexus.ie
           EXPO_PUBLIC_ALLOW_PRODUCTION_API_IN_DEV=true
           # 🔴 Suppresses LogBox for this build only. A warning banner sits over the tab
-          # bar and swallows the tap, which broke four of these nine flows on 2026-08-24
+          # bar and swallows the tap, which broke four of these flows on 2026-08-24
           # while every unit test passed. A suite an unrelated warning can break cannot be
           # trusted to report on the app. See app/_layout.tsx for the measurement.
           EXPO_PUBLIC_E2E=1
@@ -328,7 +334,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           ls -l /dev/kvm
 
-      - name: Run the nine flows on an emulator
+      - name: Run the ten flows on an emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
@@ -349,14 +355,24 @@ jobs:
             adb install -r android/app/build/outputs/apk/debug/app-debug.apk
             adb reverse tcp:8081 tcp:8081
 
+            # Keep the headless device awake for the full suite. Run 33249852302
+            # presented a System UI ANR over the app after the emulator slept,
+            # causing every otherwise-independent flow to fail on the overlay.
+            adb emu power ac on
+            adb shell settings put global stay_on_while_plugged_in 7
+            adb shell settings put secure screensaver_enabled 0
+            adb shell locksettings set-disabled true
+            adb shell input keyevent KEYCODE_WAKEUP
+            adb shell wm dismiss-keyguard
+
             curl -Ls "https://get.maestro.mobile.dev" | bash
             export PATH="$HOME/.maestro/bin:$PATH"
             export MAESTRO_CLI_NO_ANALYTICS=1
             export MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED=true
 
             # e2e.mjs checks every precondition first and says which one is wrong,
-            # rather than letting Maestro report a missing button nine times.
-            npm run e2e
+            # rather than letting Maestro report a missing button ten times.
+            npm run e2e -- --serial emulator-5554
 
             # Captured for eyeballing and uploaded below. NOT compared: the
             # committed baselines were taken on a different emulator build, and

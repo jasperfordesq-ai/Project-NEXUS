@@ -13,35 +13,8 @@
 
 appId: ie.project.nexus
 ---
-# ── 1. Launch the app without clearing state
-- launchApp
-
-- extendedWaitUntil:
-    visible: "Welcome back|Community Feed|Home|Listings|Messages|More|View wallet"
-    timeout: 60000
-
-# ── 2. Re-authenticate if session has expired
-- runFlow:
-    when:
-      visible: "Welcome back"
-    commands:
-      - runFlow:
-          when:
-            visible: "Select your timebank"
-          commands:
-            - tapOn: "hour-timebank"
-      - tapOn:
-          id: "email-input"
-      - inputText: "${TEST_EMAIL}"
-      - tapOn:
-          id: "password-input"
-      - inputText: "${TEST_PASSWORD}"
-      - back
-      - tapOn:
-          id: "login-submit"
-      - extendedWaitUntil:
-          visible: "Community Feed"
-          timeout: 10000
+# ── 1. Establish this flow's own authenticated session
+- runFlow: subflows/login.yaml
 
 # ── 3. Tap the Profile tab to reach the Explore section
 - tapOn: "More"

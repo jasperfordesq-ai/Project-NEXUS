@@ -1,0 +1,76 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Smoke the member-facing entry points added by the native parity completion.
+# Contextual/token routes (receipts, invitations and QR check-ins) are covered by
+# their screen/API/native-intent suites; this device flow proves that the four
+# catalogue modules are reachable through ordinary in-app navigation and render
+# against the real Laravel API.
+
+appId: ie.project.nexus
+---
+- runFlow: subflows/login.yaml
+
+- tapOn: "More"
+- scrollUntilVisible:
+    element: "Courses"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Courses"
+- extendedWaitUntil:
+    visible: "Courses"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: expanded-01-courses
+
+- openLink: "nexus://feed"
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- scrollUntilVisible:
+    element: "Podcasts"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Podcasts"
+- extendedWaitUntil:
+    visible: "Podcasts"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: expanded-02-podcasts
+
+- openLink: "nexus://feed"
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- scrollUntilVisible:
+    element: "Clubs & Associations"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Clubs & Associations"
+- extendedWaitUntil:
+    visible: "Clubs & Associations"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: expanded-03-clubs
+
+- openLink: "nexus://feed"
+- extendedWaitUntil:
+    visible: "Community Feed"
+    timeout: 30000
+- tapOn: "More"
+- scrollUntilVisible:
+    element: "Partner venues"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Partner venues"
+- extendedWaitUntil:
+    visible: "Partner venues"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: expanded-04-venues

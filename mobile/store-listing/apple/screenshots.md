@@ -6,8 +6,11 @@ The first release is iPhone-only. The manually dispatched
 [`iOS Simulator Screenshots`](../../../.github/workflows/ios-simulator-screenshots.yml)
 workflow first compiles the exact Git commit in unsigned iOS Release mode on a standard
 GitHub-hosted Mac, boots an iPhone 16 Pro Max Simulator and captures the eight-screen set.
-It uploads native-resolution, opaque PNGs and a checksum manifest as a private workflow
-artifact; generated screenshots are not committed automatically.
+The preparation gate exports only the four images already accepted by visual inspection
+(Feed, Listings, Messages and Events) as native-resolution opaque PNGs with a checksum
+manifest. The four known page-sheet/layout diagnostics are deliberately excluded from the
+public artifact so they cannot be uploaded accidentally. Generated screenshots are not
+committed automatically.
 
 That set is genuine iOS Simulator runtime evidence and is suitable for layout review and
 draft App Store artwork. It is not a signed-build or physical-device result. Once Apple
@@ -18,7 +21,9 @@ iOS.
 
 ## Accepted source set
 
-Prepare one English (UK) portrait set of eight screenshots for the 6.9-inch display class.
+Prepare one English (UK) portrait set of four public screenshots for the 6.9-inch display
+class. The capture tour may retain eight screens for internal layout review, but only the
+visually accepted four belong in the upload-ready artifact.
 Apple currently accepts these portrait pixel sizes for that class:
 
 - 1260 x 2736

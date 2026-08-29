@@ -4,8 +4,8 @@
 # Flow 01 — Authentication: Login
 #
 # Verifies that a returning user can sign in with valid credentials and land
-# on the main Feed tab. This is the foundation flow — most other flows depend
-# on the session state it establishes when running the full suite.
+# on the main Feed tab. Every flow establishes its own state, so this journey
+# also remains reliable when Maestro discovers the suite in a different order.
 #
 # Run:
 #   maestro test --env TEST_EMAIL=user@example.com --env TEST_PASSWORD=secret \
@@ -13,53 +13,11 @@
 
 appId: ie.project.nexus
 ---
-# ── 1. Launch the app fresh (clears all stored state including any prior session)
-- launchApp:
-    clearState: true
+# ── 1. Reset, select the tenant if needed, and sign in
+- runFlow: subflows/login.yaml
 
-# ── 2. Tenant selection gate ──────────────────────────────────────────────────
-# On a clean install the app shows "Select your timebank" before the login
-# screen. If the screen appears, tap the first (and typically only) community
-# listed. The tapOn is a no-op if the element is not present.
-- runFlow:
-    when:
-      visible: "Select your timebank"
-    commands:
-      # Wait for the community list to populate
-      - extendedWaitUntil:
-          visible: "Select your timebank"
-          timeout: 5000
-      # Tap the test tenant entry — falls back gracefully if already dismissed
-      - tapOn: "hour-timebank"
-
-# ── 3. Verify the login screen has loaded
-- extendedWaitUntil:
-    visible: "Welcome back"
-    timeout: 60000
-- assertVisible: "Welcome back"
-
-# ── 4. Enter email address
-- tapOn:
-    id: "email-input"
-- inputText: "${TEST_EMAIL}"
-
-# ── 5. Enter password
-- tapOn:
-    id: "password-input"
-- inputText: "${TEST_PASSWORD}"
-- back
-
-# ── 6. Tap the Sign in button
-- tapOn:
-    id: "login-submit"
-
-# ── 7. Wait for the home/feed screen to appear (tab bar loaded = login succeeded)
-- extendedWaitUntil:
-    visible: "Community Feed"
-    timeout: 10000
-
-# ── 8. Assert we are on the main screen
+# ── 2. Assert we are on the main screen
 - assertVisible: "Community Feed"
 
-# ── 9. Capture a screenshot for the CI artefact store
+# ── 3. Capture a screenshot for the CI artefact store
 - takeScreenshot: login-success
