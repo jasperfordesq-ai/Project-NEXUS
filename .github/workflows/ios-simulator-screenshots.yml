@@ -279,7 +279,7 @@ jobs:
             --wifiBars 3 \
             --cellularBars 4 || echo "::warning::status-bar override was unavailable"
 
-      - name: Run the four-screen public App Store tour
+      - name: Authenticate and capture the four public App Store screens
         env:
           TEST_EMAIL: ${{ secrets.IOS_SCREENSHOT_TEST_EMAIL }}
           TEST_PASSWORD: ${{ secrets.IOS_SCREENSHOT_TEST_PASSWORD }}
@@ -293,11 +293,66 @@ jobs:
           app_console_pid=$!
           trap 'kill "$app_console_pid" 2>/dev/null || true' EXIT
           password_hex=$(printf '%s' "$TEST_PASSWORD" | od -An -tx1 | tr -d ' \n')
+          # Maestro remains useful for the secure text-entry interaction, but its
+          # iOS 26 XCUITest screenshot/hierarchy server has terminated itself in
+          # three independent runs after the app was already authenticated. Do not
+          # let that third-party driver prevent Apple's own Simulator tools from
+          # proving the visible result.
+          set +e
           maestro --device "$SIMULATOR_UDID" test \
             --env TEST_EMAIL="$TEST_EMAIL" \
             --env TEST_PASSWORD_HEX="$password_hex" \
             --test-output-dir="$RUNNER_TEMP/maestro-output" \
-            .maestro/screens/apple-store-screens.yaml
+            .maestro/screens/apple-store-login.yaml
+          maestro_status=$?
+          set -e
+          if [[ "$maestro_status" -ne 0 ]]; then
+            echo "::warning::Maestro's XCUITest bridge ended after login; validating the app state through native screenshots."
+          fi
+
+          capture_dir="$RUNNER_TEMP/maestro-output/simulator-captures"
+          mkdir -p "$capture_dir"
+          cat > "$RUNNER_TEMP/verify-screenshot.swift" <<'SWIFT'
+          import AppKit
+          import Vision
+
+          let path = CommandLine.arguments[1]
+          let expected = CommandLine.arguments[2]
+          guard let image = NSImage(contentsOfFile: path),
+                let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil)
+          else {
+            fputs("Could not read screenshot at \(path)\n", stderr)
+            exit(2)
+          }
+          let request = VNRecognizeTextRequest()
+          request.recognitionLevel = .accurate
+          request.usesLanguageCorrection = true
+          try VNImageRequestHandler(cgImage: cgImage).perform([request])
+          let text = (request.results ?? [])
+            .compactMap { $0.topCandidates(1).first?.string }
+            .joined(separator: "\n")
+          guard text.localizedCaseInsensitiveContains(expected) else {
+            fputs("Expected OCR text '\(expected)' was absent from \(path). Recognised:\n\(text)\n", stderr)
+            exit(1)
+          }
+          print("\(path): OCR verified '\(expected)'")
+          SWIFT
+
+          capture() {
+            local name="$1"
+            local expected="$2"
+            sleep 8
+            xcrun simctl io "$SIMULATOR_UDID" screenshot "$capture_dir/$name"
+            swift "$RUNNER_TEMP/verify-screenshot.swift" "$capture_dir/$name" "$expected"
+          }
+
+          capture 01-feed.png 'Community Feed'
+          xcrun simctl openurl "$SIMULATOR_UDID" 'nexus://listings'
+          capture 02-listings.png 'Listings'
+          xcrun simctl openurl "$SIMULATOR_UDID" 'nexus://messages'
+          capture 04-messages.png 'Messages'
+          xcrun simctl openurl "$SIMULATOR_UDID" 'nexus://events'
+          capture 05-events.png 'Events'
 
       - name: Prepare opaque App Store PNGs and evidence manifest
         working-directory: mobile

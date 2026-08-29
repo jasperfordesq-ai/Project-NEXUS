@@ -1,0 +1,41 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Authenticate the protected Partner Demo account for the Simulator screenshot
+# workflow. Screenshot capture itself uses Apple's simctl because Maestro 2.9's
+# XCUITest screenshot/hierarchy server is unstable on the current iOS 26 runtime.
+
+appId: ie.project.nexus
+---
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back"
+    timeout: 60000
+
+- runFlow:
+    when:
+      visible: "Select your timebank"
+    commands:
+      - retry:
+          maxRetries: 3
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tenant-option-partner-demo"
+                timeout: 15000
+            - tapOn:
+                id: "tenant-option-partner-demo"
+                retryTapIfNoChange: true
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 60000
+- tapOn:
+    id: "email-input"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    id: "password-input"
+- setClipboard: ${TEST_PASSWORD_HEX.match(/../g).map(pair => String.fromCharCode(parseInt(pair, 16))).join('')}
+- pasteText
+- tapOn:
+    id: "login-submit"
+    waitToSettleTimeoutMs: 0
