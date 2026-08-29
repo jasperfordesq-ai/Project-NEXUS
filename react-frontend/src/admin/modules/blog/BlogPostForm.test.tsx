@@ -194,9 +194,14 @@ describe('BlogPostForm — create mode', () => {
 
     await waitFor(() => {
       expect(mockAdminBlog.uploadFeaturedImage).toHaveBeenCalledWith(file, expect.any(Function));
+      // The origin is environment configuration, not component behaviour:
+      // resolveThumbnailUrl() prefixes VITE_API_BASE, which this machine's .env
+      // sets to http://127.0.0.1:8090 and CI does not set at all. Asserting the
+      // full URL passed locally and failed every CI shard. Assert the path the
+      // upload response actually produced.
       expect(screen.getByRole('img', { name: /featured_image_preview_alt|featured image preview/i })).toHaveAttribute(
         'src',
-        'http://127.0.0.1:8090/storage/tenant_2/uploads/blog/hero.webp',
+        expect.stringContaining('/storage/tenant_2/uploads/blog/hero.webp'),
       );
       expect(mockToast.success).toHaveBeenCalled();
     });
@@ -225,9 +230,14 @@ describe('BlogPostForm — create mode', () => {
 
     await waitFor(() => {
       expect(mockAdminBlog.uploadFeaturedImage).toHaveBeenCalledWith(file, expect.any(Function));
+      // The origin is environment configuration, not component behaviour:
+      // resolveThumbnailUrl() prefixes VITE_API_BASE, which this machine's .env
+      // sets to http://127.0.0.1:8090 and CI does not set at all. Asserting the
+      // full URL passed locally and failed every CI shard. Assert the path the
+      // upload response actually produced.
       expect(screen.getByRole('img', { name: /featured_image_preview_alt|featured image preview/i })).toHaveAttribute(
         'src',
-        'http://127.0.0.1:8090/storage/tenant_2/uploads/blog/hero.jpg',
+        expect.stringContaining('/storage/tenant_2/uploads/blog/hero.jpg'),
       );
       expect(mockToast.success).toHaveBeenCalled();
     });
