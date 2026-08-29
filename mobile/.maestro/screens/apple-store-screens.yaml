@@ -73,11 +73,12 @@ appId: ie.project.nexus
 # and kill its own UI-test host in run 33268251338. Direct links exercise the same
 # authenticated routes without coupling screenshot capture to that menu geometry.
 - openLink: "nexus://messages"
-- runFlow:
-    when:
-      visible: "Open"
-    commands:
-      - tapOn: "Open"
+# On this fixed simulator size Apple's confirmation button is centred at this
+# point. A text lookup makes XCTest serialize the SpringBoard hierarchy and can
+# take long enough to kill Maestro (run 33278642889). The coordinate is also a
+# harmless body tap if iOS has already delivered the link directly.
+- tapOn:
+    point: "67%,54%"
 # Let the sheet dismissal and route transition finish before sampling whether
 # Listings is still present. Without this pause run 33278248859 entered the
 # fallback from a stale Listings hierarchy, then could not find its tab because
@@ -111,11 +112,8 @@ appId: ie.project.nexus
 # process/XCTest session remains alive for the whole public tour.
 - stopApp
 - openLink: "nexus://events"
-- runFlow:
-    when:
-      visible: "Open"
-    commands:
-      - tapOn: "Open"
+- tapOn:
+    point: "67%,54%"
 - extendedWaitUntil:
     visible: "Events"
     timeout: 30000

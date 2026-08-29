@@ -36,8 +36,7 @@ describe('iOS screenshot workflow', () => {
     expect(tour).toContain('takeScreenshot: 02-listings');
     expect(tour).toContain('takeScreenshot: 04-messages');
     expect(tour).toContain('takeScreenshot: 05-events');
-    expect(tour.match(/visible: "Open"/g)).toHaveLength(2);
-    expect(tour.match(/tapOn: "Open"/g)).toHaveLength(2);
+    expect(tour.match(/point: "67%,54%"/g)).toHaveLength(2);
   });
 
   it('runs page-content OCR over every prepared screenshot', () => {
