@@ -119,8 +119,8 @@ budget, asset validation, network policy and the live TLS certificate chain. The
 listing was inspected directly while signed in and the five public policy/support routes were
 requested independently. Tablet evidence is the genuine emulator output under
 `store-listing/screenshots/tablet-{7,10}/`. The 2026-08-30 field audit classified all 201
-typed getters: 101 live non-empty checks, 19 empty, 17 permission/error-blocked, 18 unresolved
-and 46 explicitly client-mapped, with zero required fields missing from a checked response. A
+typed getters: 102 live non-empty checks, 20 empty, 17 permission/error-blocked, 18 unresolved
+and 44 explicitly client-mapped, with zero required fields missing from a checked response. A
 separate three-role verifier accepted 15 populated high-risk contracts, including five
 organisation-owner views that a primary-member-only probe correctly receives as 403. The
 same day's submitted-artefact accessibility pass found additional informational chips in
@@ -160,9 +160,11 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    force a comment reaction to fail and prove authoritative state returns with a visible
    translated error. Do not mark any of these checks complete from Jest or an emulator.
 5. **Increase response-contract evidence.** The 2026-08-30 read-only run classified all 201
-   typed getters and found zero missing required fields across 101 live non-empty checks. It
-   honestly left 19 empty, 17 permission/error-blocked, 18 without a resolvable record id and
-   46 deliberately reshaped in the client. A three-role gate separately accepts 15 populated
+   typed getters and found zero missing required fields across 102 live non-empty checks. It
+   honestly left 20 empty, 17 permission/error-blocked, 18 without a resolvable record id and
+   44 deliberately reshaped in the client. Two marketplace getters previously misclassified
+   a conditional choice between direct requests as response reshaping; the guarded classifier
+   now attempts both, finding one populated and one honestly empty. A three-role gate separately accepts 15 populated
    high-risk contracts, including the five organisation-owner views the generic member audit
    correctly cannot access. Remaining work is deeper real-shape validation for mapped money,
    authentication, messaging and exchange boundaries—not relabelling explicit gaps as proof.

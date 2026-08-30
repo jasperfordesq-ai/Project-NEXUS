@@ -12,6 +12,14 @@ const {
 } = require('./audit-api-field-coverage-helpers.cjs');
 
 describe('response-contract machine-readable output options', () => {
+  it('keeps the first module filter when JSON output is not requested', () => {
+    expect(auditOutputOptions(['marketplace', '--verbose'])).toEqual({
+      verbose: true,
+      jsonOut: null,
+      only: ['marketplace'],
+    });
+  });
+
   it('separates module filters from the JSON output path', () => {
     expect(auditOutputOptions(['marketplace', '--verbose', '--json', 'audit.json'])).toEqual({
       verbose: true,
@@ -31,6 +39,14 @@ describe('response-contract getter classification', () => {
     expect(classifyGetterBody('return parseContract(endpoint, fooSchema, response);')).toBe('validated');
     expect(classifyGetterBody('const response = await api.get<unknown>(endpoint); return parseContract(endpoint, fooSchema, response);')).toBe('validated');
     expect(classifyGetterBody('return { data: response.items.map(mapItem) };')).toBe('mapped');
+  });
+
+  it('treats a conditional choice between direct GET requests as a passthrough', () => {
+    expect(classifyGetterBody(`
+      return acceptedOfferId
+        ? api.get<Foo>(endpoint, { offer_id: String(acceptedOfferId) })
+        : api.get<Foo>(endpoint);
+    `)).toBe('passthrough');
   });
 });
 

@@ -17,6 +17,9 @@ function exitCodeForMissingContracts(missingCount) {
 
 function classifyGetterBody(body) {
   if (/return\s+api\.get</.test(body)) return 'passthrough';
+  if (/return\s+[\s\S]*\?[\s\S]*api\.get(?:<|\()[\s\S]*:[\s\S]*api\.get(?:<|\()/.test(body)) {
+    return 'passthrough';
+  }
   if (/\bparseContract\s*\(/.test(body)) return 'validated';
   return 'mapped';
 }
@@ -36,7 +39,9 @@ function auditOutputOptions(argv) {
   return {
     verbose: args.includes('--verbose'),
     jsonOut,
-    only: args.filter((value, index) => !value.startsWith('--') && index !== jsonIndex + 1),
+    only: args.filter((value, index) => (
+      !value.startsWith('--') && (jsonIndex < 0 || index !== jsonIndex + 1)
+    )),
   };
 }
 
