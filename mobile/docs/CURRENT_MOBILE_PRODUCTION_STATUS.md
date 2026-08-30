@@ -12,8 +12,8 @@ Last reviewed: 2026-08-30
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=708/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=708 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=712/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=712 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,8 +22,9 @@ competing score anywhere.
 
 ## The headline
 
-**708 / 1000 banked on rubric M1.** Commit `4c38d229a` is pushed and all six workflows are
-green, including the 28-job CI pipeline, Android release gate, CodeQL and security scan. The
+**712 / 1000 banked on rubric M1.** Mobile source commit `dbed8f427` is pushed and all six
+exact-source workflows are green, including the CI pipeline, E2E, Android device tests,
+CodeQL and security scan. The
 Android app is publicly installable from Google Play and
 its core timebanking, messaging, volunteering and marketplace journeys have been walked on
 devices. The public listing, Data Safety panel, content rating, policy URLs, production
@@ -32,9 +33,9 @@ captures also prove that three high-value screens render at tablet sizes.
 
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned
-Release app for commit `58654079a` completed the four-screen iPhone 16 Pro Max Simulator tour
-in green workflow run `33286909272`. The working ledger recomputes to 0.728 while the
-published M1 floor remains 708/1000. This is genuine Simulator runtime evidence, but it is
+Release app for commit `87bb70990` completed the four-screen iPhone 16 Pro Max Simulator tour
+in green workflow run `33319960815`. The ledger recomputes to 0.728 and its 218/300 journey
+credit is now banked. This is genuine Simulator runtime evidence, but it is
 not signing, TestFlight, APNs, universal-link or physical-iPhone evidence.
 
 This is not a claim that the next build is ready to upload. The public build predates the
@@ -43,8 +44,9 @@ artefact still needs a clean-install and upgrade walk on a physical phone. The l
 description also says that no money changes hands anywhere, while the app supports purchases
 of physical marketplace goods. That wording must be corrected before another release is
 submitted. Internationalisation, signed-distribution evidence and human-operated
-accessibility remain material gaps. Local effect automation, response-contract coverage and
-accessibility breadth were materially expanded on 2026-08-30 and await exact-commit CI.
+accessibility remain material gaps. The expanded effect automation, response-contract
+coverage and accessibility breadth passed exact-source CI and Android workflow run
+`33320137825` on 2026-08-30.
 
 🔴 **Why the score is not higher, given 377 green test suites and 2,611 passing tests.**
 Most tests still run in Node against mocks. The ledger deliberately gives journey credit
@@ -93,11 +95,11 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every category wa
 against current evidence on 2026-08-26; journey credit remains formula-driven from the
 ledger, while non-journey increases below name the new evidence that earned them.
 The table keeps the rubric's historical `Banked` column name because the score checker reads
-that contract; its 708 total is now committed and CI-backed.
+that contract; its 712 total is now committed and CI-backed.
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 214 | 300 | The banked source remains the previous floor pending exact-commit CI. The working ledger is **0.728**: 62 CERTIFIED, 58 PROVEN, 0 RENDERS and 10 PARTIAL over 137 scoring rows, which would round to 218/300 after banking. Four PROVEN rows moved only because resettable Android journeys now verify their Laravel effects independently: offer creation, volunteering application, event RSVP and connection request. Messaging and marketplace-save effects are also guarded but do not create new ledger rows. |
+| Journey certification | 300 | 218 | 300 | The banked ledger is **0.728**: 62 CERTIFIED, 58 PROVEN, 0 RENDERS and 10 PARTIAL over 137 scoring rows. Four PROVEN rows moved only because resettable Android journeys now verify their Laravel effects independently: offer creation, volunteering application, event RSVP and connection request. Messaging and marketplace-save effects are also guarded but do not create new ledger rows. Exact-source CI and Android device workflow `33320137825` are green. |
 | Capability parity with the website | 120 | 72 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds. Raised a further 4 on 2026-08-23 for writing a feed post, which this table had itself recorded as absent since 2026-08-22 — so that credit is for closing a known gap, not for the comparison getting better. The figure stays well short of full because the comparison is still only eleven capabilities deep and has twice proved incomplete |
 | Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away. Deep links were fixed across parameter names, query strings and exchange/listing identity. All 165 sites that reported a failure without the server's reason now pass it on, walked against a real 409. The score remains conservative because shared-state refresh, offline/error states and destructive-action recovery have not been swept across the full app |
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
@@ -107,7 +109,7 @@ that contract; its 708 total is now committed and CI-backed.
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
 | Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
 | Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
-| **Total** | **1000** | **708** | **1000** | — |
+| **Total** | **1000** | **712** | **1000** | — |
 
 **Provenance.** Journey status comes only from the 140-row ledger below. The isolated Android
 candidate now contains 377 Jest suites and 2,611 tests; its non-build Jest, TypeScript and lint
@@ -122,12 +124,14 @@ and 46 explicitly client-mapped, with zero required fields missing from a checke
 separate three-role verifier accepted 15 populated high-risk contracts, including five
 organisation-owner views that a primary-member-only probe correctly receives as 403. The
 same day's submitted-artefact accessibility pass found additional informational chips in
-Goals, Organisations and Settings; their source fixes are tested but cannot become device
-evidence until the next build. Commit `4c38d229a` and all six workflows were green on
-2026-08-27, so the source/test evidence above is banked; it is still not device evidence for
-a build that does not yet exist.
+Goals, Organisations and Settings. Mobile source `dbed8f427` passed CI, E2E, Docs Lint,
+CodeQL, Security Scan and Android device run `33320137825`; the latter built the APK, checked
+15 live role-aware contracts, completed twelve journeys, asserted seven persisted effects
+and uploaded twelve inspected 1080 x 2400 screenshots. Unsigned iOS run `33319960815` built
+and installed source `87bb70990`, completed the four-page tour and passed Apple Vision OCR.
+This is not evidence for a signed distributed build or physical device.
 
-🔴 **The banked floor ratcheted to 708 on 2026-08-27.** A published total may never fall. If scope is
+🔴 **The banked floor ratcheted to 712 on 2026-08-30.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower a
 banked headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 

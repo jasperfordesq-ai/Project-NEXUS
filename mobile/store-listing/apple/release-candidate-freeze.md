@@ -29,7 +29,7 @@ screenshots and App Review notes from referring to a different build than the on
   backend commit used by production.
 - [x] The unsigned iPhone 16 Pro Max Simulator tour produces the four accepted public
   screenshots and passes checksum, opacity, dimensions, page-content OCR and visual review
-  at source commit `58654079a287006b52b1cd53b66db13244f27756` (run `33286909272`).
+  at source commit `87bb709908bf1412d8a7f9c90df6eec9c312f8d4` (run `33319960815`).
 - [ ] A signed EAS production build processes successfully in App Store Connect/TestFlight.
 - [ ] A real-iPhone journey pass covers login, tenant selection, permissions, push receipt
   and tap from background/terminated state, deep links, camera/photos/microphone/location,

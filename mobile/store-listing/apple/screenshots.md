@@ -84,11 +84,13 @@ labels the unsigned evidence boundary explicitly so it cannot be mistaken for Te
 
 ## 2026-08-30 Simulator capture
 
-Workflow run [33286909272](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33286909272)
-completed against source commit `58654079a287006b52b1cd53b66db13244f27756`. The
+Workflow run [33319960815](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33319960815)
+completed against source commit `87bb709908bf1412d8a7f9c90df6eec9c312f8d4`. The
 unsigned Release build ran on an iPhone 16 Pro Max Simulator with iOS 26.2 and produced
 four opaque 1320 x 2868 PNGs. The downloaded files matched every SHA-256 value in the
 artifact manifest, and Apple Vision OCR verified the intended page content in each image.
+The tour recovered from one bounded Maestro/XCTest-session failure by replacing the app and
+session, then completed and passed every downstream check.
 
 Visual inspection, not workflow success alone, determines the public selection:
 

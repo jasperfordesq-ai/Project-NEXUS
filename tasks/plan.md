@@ -49,12 +49,12 @@ human-only physical-device certification.
   and retain explicit signing/hardware limitations.
 - [x] Task 29: Re-run bundle, dependency, release configuration, store asset, audience,
   documentation, security and full mobile gates; remediate only safe in-scope findings.
-- [ ] Task 30: Refresh the ledger, readiness documents and changelog; commit and push only
+- [x] Task 30: Refresh the ledger, readiness documents and changelog; commit and push only
   scoped paths, then bank the required CI and device-workflow evidence.
 
 ### Checkpoint I: Autonomous boundary complete
 
-- [ ] Every remaining item is named as approval-, legal-, production-, store-console- or
+- [x] Every remaining item is named as approval-, legal-, production-, store-console- or
   genuinely human/physical-device-gated; no autonomous coding or emulator task is left open.
 
 ## Overview

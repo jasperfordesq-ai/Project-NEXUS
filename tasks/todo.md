@@ -27,7 +27,7 @@ claim human-only physical-device certification.
   when they improve evidence or artwork, without claiming signing, APNs or hardware proof.
 - [x] **29 — Full gates:** bundle, dependencies, release config, assets, audience, security,
   documentation and all mobile tests are green or carry a precise external residual risk.
-- [ ] **30 — Bank evidence:** update maintained records and changelog, review secrets/diff,
+- [x] **30 — Bank evidence:** update maintained records and changelog, review secrets/diff,
   commit and push scoped work, and confirm required CI/device workflows.
 
 ### Active-extension evidence
@@ -61,8 +61,23 @@ claim human-only physical-device certification.
 
 ### Completion rule
 
-- [ ] Every remaining item requires approval, store-console access, production authority,
+- [x] Every remaining item requires approval, store-console access, production authority,
   an owner/legal answer or genuine human/physical-device observation.
+
+### Final banking evidence
+
+- Mobile source `dbed8f427` passed CI Pipeline `33320133086`, E2E `33320133074`, Docs Lint
+  `33320133099`, CodeQL `33320132636` and Security Scan `33320133031`.
+- Android device run `33320137825` passed 15 live role-aware contracts, built the APK,
+  completed twelve Maestro journeys, independently asserted seven persisted Laravel effects
+  and uploaded twelve inspected 1080 x 2400 PNGs.
+- Unsigned iOS Simulator run `33319960815` built and installed source `87bb70990` on an iPhone
+  16 Pro Max Simulator running iOS 26.2, completed the four-screen public tour after one
+  bounded XCTest-session retry, passed Apple Vision OCR and uploaded four inspected opaque
+  1320 x 2868 PNGs whose hashes match the manifest.
+- The formula-backed journey credit is now banked at 218/300, raising rubric M1 by four
+  points. The authoritative total remains solely in the maintained mobile status document.
+  No Play/App Store, deployment, OTA, AASA, signing or production state changed.
 
 ## Progress record — 2026-08-30
 

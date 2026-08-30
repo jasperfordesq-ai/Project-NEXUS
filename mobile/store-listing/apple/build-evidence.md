@@ -29,11 +29,12 @@ artifact.
 
 ## Simulator runtime evidence
 
-GitHub Actions run [33286909272](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33286909272)
-restored the exact-source unsigned Release app for commit
-`58654079a287006b52b1cd53b66db13244f27756`, installed it on an iPhone 16 Pro Max
+GitHub Actions run [33319960815](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33319960815)
+built and installed the exact-source unsigned Release app for commit
+`87bb709908bf1412d8a7f9c90df6eec9c312f8d4` on an iPhone 16 Pro Max
 Simulator running iOS 26.2, authenticated to the protected Partner Demo tenant and completed
-the four-screen public tour. The workflow's preparation and Apple Vision OCR gates passed.
+the four-screen public tour after one bounded Maestro/XCTest-session retry. The workflow's
+preparation and Apple Vision OCR gates passed.
 The downloaded artifact was then independently inspected: all four files are opaque native
 1320 x 2868 PNGs showing the intended Feed, Listings, Messages and Events pages with no
 system sheet, credential, keyboard or debug overlay.
@@ -43,7 +44,7 @@ system sheet, credential, keyboard or debug overlay.
 | `01-feed.png` | `5abe170fd5b63aca08f9d934bb1178b5f6509289dd25c0f8860473892d26fd27` |
 | `02-listings.png` | `93389c0fcd7f0d89e4062de3aa07b376828c3092d745f4a47a56d24aa11bb770` |
 | `04-messages.png` | `7ed293436302dcee66c85cd0fbdba33f44b545cb7338b2718f308d34cc8709c1` |
-| `05-events.png` | `8533a97ab120c72251a33cb86ec8e8a320f1b7bcfcc21064665975fc40f815df` |
+| `05-events.png` | `fbc145d508f81e0659c7458aef52b4785a8f927f03182cc57cd9249710681867` |
 
 ## Final app inspection
 

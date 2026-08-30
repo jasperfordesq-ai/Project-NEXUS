@@ -12,16 +12,17 @@ Last reviewed: 2026-08-30
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
 
-Current position: **708 / 1000 banked on rubric M1** (commit `4c38d229a`, all six workflows
-green on 2026-08-27) — see
+Current position: **712 / 1000 banked on rubric M1** (mobile source `dbed8f427`, all six
+exact-source workflows green on 2026-08-30) — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md). Session hand-off, including what this
 plan is missing: [`MOBILE_HANDOFF.md`](MOBILE_HANDOFF.md).
 
-The latest exact-source device evidence is newer than the banked floor: Android workflow
-`33285870541` passed ten flows and nine screenshots, and iOS Simulator workflow
-`33286909272` passed its four-screen tour, both for mobile source commit `58654079a`.
-Neither run authorises a new Play release, and the iOS run is unsigned Simulator evidence.
+The latest exact-source device evidence is banked: Android workflow `33320137825` passed
+15 live contracts, twelve flows, seven independent persisted-effect assertions and twelve
+screenshots for mobile source `dbed8f427`; iOS Simulator workflow `33319960815` built and
+installed source `87bb70990`, then passed its four-screen tour and OCR gate. Neither run
+authorises a new Play release, and the iOS run is unsigned Simulator evidence.
 
 The score is owned and enforced by the status document; this line is only a pointer. The
 short current backlog is now also maintained there under “Ordered backlog before another
