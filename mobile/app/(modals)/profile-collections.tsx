@@ -279,10 +279,28 @@ function CreateCollectionCard({
     <HeroCard variant="secondary" className="rounded-panel p-0">
       <HeroCard.Body className="gap-3 p-4">
         <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('collections.createTitle')}</Text>
-        <Input label={t('collections.name')} value={name} onChangeText={setName} placeholder={t('collections.namePlaceholder')} />
-        <Input label={t('collections.description')} value={description} onChangeText={setDescription} placeholder={t('collections.descriptionPlaceholder')} multiline />
+        <Input
+          testID="saved-collection-name"
+          label={t('collections.name')}
+          value={name}
+          onChangeText={setName}
+          placeholder={t('collections.namePlaceholder')}
+        />
+        <Input
+          testID="saved-collection-description"
+          label={t('collections.description')}
+          value={description}
+          onChangeText={setDescription}
+          placeholder={t('collections.descriptionPlaceholder')}
+          multiline
+        />
         <Toggle value={isPublic} onValueChange={setIsPublic} label={t('collections.makePublic')} />
-        <HeroButton variant="primary" onPress={() => onSubmit({ name, description, isPublic })} isDisabled={isSubmitting}>
+        <HeroButton
+          testID="create-saved-collection-submit"
+          variant="primary"
+          onPress={() => onSubmit({ name, description, isPublic })}
+          isDisabled={isSubmitting}
+        >
           {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="add-outline" size={17} />}
           <HeroButton.Label>{t('collections.create')}</HeroButton.Label>
         </HeroButton>

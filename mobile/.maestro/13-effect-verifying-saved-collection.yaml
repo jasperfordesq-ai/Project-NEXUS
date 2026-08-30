@@ -1,0 +1,35 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Author: Jasper Ford
+# See NOTICE file for attribution and acknowledgements.
+
+# Create a member collection, reopen it from the refreshed list, and leave the
+# row in place for the independent Laravel verifier. A rendered success state
+# alone is not accepted as persistence evidence.
+
+appId: ie.project.nexus
+---
+- runFlow: subflows/login.yaml
+
+- openLink: "nexus://me/collections"
+- extendedWaitUntil:
+    visible: "My collections"
+    timeout: 20000
+- tapOn: "Create collection"
+- tapOn:
+    id: "saved-collection-name"
+- inputText: "E2E Device Journey Collection"
+- back
+- tapOn:
+    id: "saved-collection-description"
+- inputText: "Persisted by the Android saved collection journey."
+- back
+- tapOn:
+    id: "create-saved-collection-submit"
+- extendedWaitUntil:
+    visible: "E2E Device Journey Collection"
+    timeout: 20000
+- tapOn: "E2E Device Journey Collection"
+- extendedWaitUntil:
+    visible: "No saved items"
+    timeout: 20000

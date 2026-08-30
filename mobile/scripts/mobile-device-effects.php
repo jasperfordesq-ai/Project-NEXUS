@@ -22,10 +22,11 @@ const MESSAGE_BODY = 'E2E device journey message persisted independently.';
 const VOLUNTEER_TITLE = 'E2E Community Garden Volunteer';
 const EVENT_TITLE = 'E2E Community Welcome Event';
 const MARKETPLACE_TITLE = 'E2E Marketplace Bicycle Helmet';
+const SAVED_COLLECTION_NAME = 'E2E Device Journey Collection';
 
 $mode = $argv[1] ?? '';
-if (!in_array($mode, ['reset', 'assert'], true)) {
-    fwrite(STDERR, "Usage: php mobile/scripts/mobile-device-effects.php <reset|assert>\n");
+if (!in_array($mode, ['reset', 'assert', 'assert-collection'], true)) {
+    fwrite(STDERR, "Usage: php mobile/scripts/mobile-device-effects.php <reset|assert|assert-collection>\n");
     exit(2);
 }
 
@@ -92,6 +93,12 @@ if ($mode === 'reset') {
             'body' => MESSAGE_BODY,
         ])->delete();
 
+        DB::table('saved_collections')->where([
+            'tenant_id' => $tenantId,
+            'user_id' => $primaryId,
+            'name' => SAVED_COLLECTION_NAME,
+        ])->delete();
+
         DB::table('vol_applications')->where([
             'tenant_id' => $tenantId,
             'opportunity_id' => $volunteerOpportunityId,
@@ -141,7 +148,18 @@ if ($mode === 'reset') {
     exit(0);
 }
 
-$checks = [
+$savedCollectionCheck = DB::table('saved_collections')->where([
+    'tenant_id' => $tenantId,
+    'user_id' => $primaryId,
+    'name' => SAVED_COLLECTION_NAME,
+    'description' => 'Persisted by the Android saved collection journey.',
+    'is_public' => 0,
+    'items_count' => 0,
+])->exists();
+
+$checks = $mode === 'assert-collection' ? [
+    'saved collection persisted' => $savedCollectionCheck,
+] : [
     'listing creation persisted' => DB::table('listings')->where([
         'tenant_id' => $tenantId,
         'user_id' => $primaryId,
@@ -183,6 +201,7 @@ $checks = [
         'user_id' => $primaryId,
         'marketplace_listing_id' => $marketplaceListingId,
     ])->exists(),
+    'saved collection persisted' => $savedCollectionCheck,
 ];
 
 $failed = 0;

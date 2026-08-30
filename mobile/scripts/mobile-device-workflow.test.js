@@ -19,6 +19,15 @@ const openLogin = fs.readFileSync(
   path.resolve(mobileRoot, '.maestro', 'subflows', 'open-login.yaml'),
   'utf8',
 );
+const savedCollectionFlowPath = path.resolve(
+  mobileRoot,
+  '.maestro',
+  '13-effect-verifying-saved-collection.yaml',
+);
+const effectVerifier = fs.readFileSync(
+  path.resolve(mobileRoot, 'scripts', 'mobile-device-effects.php'),
+  'utf8',
+);
 
 describe('Android device screenshot evidence', () => {
   it('waits for the real fresh-install destination before choosing a tenant', () => {
@@ -45,5 +54,20 @@ describe('Android device screenshot evidence', () => {
     expect(workflow).toContain('actions/checkout@v5');
     expect(workflow).toContain('actions/setup-node@v5');
     expect(workflow).toContain('actions/setup-java@v5');
+  });
+});
+
+describe('Android persisted-effect journeys', () => {
+  it('creates and independently verifies a saved collection', () => {
+    expect(fs.existsSync(savedCollectionFlowPath)).toBe(true);
+    const savedCollectionFlow = fs.readFileSync(savedCollectionFlowPath, 'utf8');
+    expect(savedCollectionFlow).toContain('id: "saved-collection-name"');
+    expect(savedCollectionFlow).toContain('id: "saved-collection-description"');
+    expect(savedCollectionFlow).toContain('id: "create-saved-collection-submit"');
+    expect(savedCollectionFlow).toContain('visible: "No saved items"');
+    expect(effectVerifier).toContain("const SAVED_COLLECTION_NAME = 'E2E Device Journey Collection';");
+    expect(effectVerifier).toContain("'saved collection persisted'");
+    expect(effectVerifier).toContain("'assert-collection'");
+    expect(workflow).toContain('thirteen Maestro end-to-end flows');
   });
 });

@@ -128,7 +128,7 @@ beforeEach(() => {
 
 describe('ProfileCollectionsScreen', () => {
   it('renders saved collection cards and opens the create form', async () => {
-    const { findByText, getAllByText, getByPlaceholderText } = render(<ProfileCollectionsScreen />);
+    const { findByText, getAllByText, getByPlaceholderText, getByTestId } = render(<ProfileCollectionsScreen />);
 
     expect(await findByText('Weekend projects')).toBeTruthy();
 
@@ -136,6 +136,9 @@ describe('ProfileCollectionsScreen', () => {
 
     expect(getByPlaceholderText('Weekend projects')).toBeTruthy();
     expect(getByPlaceholderText('Optional note')).toBeTruthy();
+    expect(getByTestId('saved-collection-name')).toBeTruthy();
+    expect(getByTestId('saved-collection-description')).toBeTruthy();
+    expect(getByTestId('create-saved-collection-submit')).toBeTruthy();
   });
 
   it('submits new collections through the API helper', async () => {
