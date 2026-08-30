@@ -58,6 +58,39 @@ jobs:
             } > "$NOTES"
           fi
 
+          # 🔴 GitHub rejects a release body over 125,000 characters with
+          # "HTTP 422: body is too long", which fails the whole job and publishes
+          # nothing. This is not hypothetical: six of the fourteen backfilled
+          # releases failed on it on 2026-08-30, and 1.6.2's section alone is
+          # ~368,000 characters. Sections here are long because this changelog
+          # carries a full paragraph per entry.
+          #
+          # Truncating and linking to the full section is better than failing:
+          # a release with most of its notes plus a pointer is useful, a release
+          # that does not exist is not.
+          #
+          # The cap is on BYTES (`wc -c`) against a CHARACTER limit, which is
+          # deliberately conservative — UTF-8 is never fewer bytes than
+          # characters, so a body inside the byte cap is always inside the
+          # character limit. The headroom also covers the notice appended below.
+          MAX_BYTES=118000
+          if [ "$(wc -c < "$NOTES")" -gt "$MAX_BYTES" ]; then
+            TRUNCATED="$RUNNER_TEMP/release-notes-truncated.md"
+            head -c "$MAX_BYTES" "$NOTES" > "$TRUNCATED"
+            # Drop the final line: `head -c` cuts mid-line, and possibly
+            # mid-multibyte-character, so the last line is never trustworthy.
+            sed -i '$ d' "$TRUNCATED"
+            {
+              echo
+              echo '---'
+              echo
+              echo "These notes were truncated to fit GitHub's 125,000-character limit on a release body."
+              echo "The complete entry for ${VERSION} is in [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md)."
+            } >> "$TRUNCATED"
+            mv "$TRUNCATED" "$NOTES"
+            echo "::notice::Release notes for ${TAG_NAME} were truncated to fit GitHub's release-body limit."
+          fi
+
           echo "notes_file=$NOTES" >> "$GITHUB_ENV"
 
       - name: Publish GitHub release
