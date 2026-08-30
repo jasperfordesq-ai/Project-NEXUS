@@ -35,8 +35,9 @@ captures also prove that three high-value screens render at tablet sizes.
 
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned
-Release app for commit `87bb70990` completed the four-screen iPhone 16 Pro Max Simulator tour
-in green workflow run `33319960815`. The ledger recomputes to 0.736 and its 220/300 journey
+Release app for commit `4c19c5576` completed the four-screen iPhone 16 Pro Max Simulator tour
+in green workflow run `33328237409`. The changed source forced a clean native rebuild rather
+than reuse of the prior app cache. The ledger recomputes to 0.736 and its 220/300 journey
 credit is now banked. This is genuine Simulator runtime evidence, but it is
 not signing, TestFlight, APNs, universal-link or physical-iPhone evidence.
 
@@ -131,8 +132,9 @@ Goals, Organisations and Settings. The final current-source touch crawl verified
 viewport fragments. Mobile source `54d25f764` passed Android device run
 `33324976225`; it built the APK, checked 15 live role-aware contracts, completed thirteen
 journeys, asserted eight persisted effects across three suites and uploaded twelve inspected
-opaque 1080 x 2400 screenshots. Unsigned iOS run `33319960815` built
-and installed source `87bb70990`, completed the four-page tour and passed Apple Vision OCR.
+opaque 1080 x 2400 screenshots. Unsigned iOS run `33328237409` clean-built
+and installed source `4c19c5576`, completed the four-page tour and passed Apple Vision OCR;
+the downloaded four-image artifact matched its manifest and passed independent visual review.
 This is not evidence for a signed distributed build or physical device.
 
 🔴 **The banked floor ratcheted to 714 on 2026-08-30.** A published total may never fall. If scope is

@@ -11,12 +11,11 @@ appId: ie.project.nexus
 ---
 - runFlow: subflows/login.yaml
 
-# Send a real private message to the second fixture member.
-- openLink: "nexus://messages"
-- extendedWaitUntil:
-    visible: "Messages"
-    timeout: 20000
-- tapOn: "New message"
+# Send a real private message to the second fixture member. Open the native
+# composer route directly: a text selector matches both the header icon and the
+# empty-state button, and run 33328312721 showed that ambiguity can leave the
+# flow on Messages even though Maestro reports the tap as complete.
+- openLink: "nexus://messages/new"
 - extendedWaitUntil:
     visible: "Search members"
     timeout: 20000

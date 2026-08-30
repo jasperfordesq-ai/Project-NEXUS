@@ -309,6 +309,17 @@ file; it is the same address already published on the live contact page and was 
 | 7-inch tablet screenshots | 2–8, 320–3840 px, 16:9 or 9:16 | ✅ **4 current genuine emulator captures**, prepared as opaque 1080×1920 PNGs in `store-listing/screenshots/tablet-7/` |
 | 10-inch tablet screenshots | 2–8, 1080–7680 px, 16:9 or 9:16 | ✅ **4 current genuine emulator captures**, prepared as opaque 2560×1440 PNGs in `store-listing/screenshots/tablet-10/` |
 
+Revalidated 2026-08-30 after the Courses, Clubs, Partner Venues and saved-collection work:
+all 24 files still pass the dimension, ratio, colour-type and opacity gate, and a combined
+visual review found no keyboard, system dialog, credential, debug overlay or clipped primary
+action. The eight phone slots remain the stronger listing set because they show populated core
+journeys—Feed, Listings, Messages, Wallet, Events, Groups, Members and Volunteering—in both
+schemes. The exact-current cloud tour also captured Courses, Clubs and Partner Venues, but the
+review tenant has no content in those modules; replacing a populated core frame with an empty
+screen merely because it is newer would make the store listing less informative. Those current
+captures remain runtime evidence rather than marketing replacements until the review tenant has
+honest representative content.
+
 Both graphics are generated, so they can be changed by anyone:
 
 ```bash

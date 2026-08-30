@@ -24,6 +24,10 @@ const savedCollectionFlowPath = path.resolve(
   '.maestro',
   '13-effect-verifying-saved-collection.yaml',
 );
+const coreEffectFlow = fs.readFileSync(
+  path.resolve(mobileRoot, '.maestro', '12-effect-verifying-core-modules.yaml'),
+  'utf8',
+);
 const effectVerifier = fs.readFileSync(
   path.resolve(mobileRoot, 'scripts', 'mobile-device-effects.php'),
   'utf8',
@@ -58,6 +62,11 @@ describe('Android device screenshot evidence', () => {
 });
 
 describe('Android persisted-effect journeys', () => {
+  it('opens the message composer deterministically before asserting its contents', () => {
+    expect(coreEffectFlow).toContain('openLink: "nexus://messages/new"');
+    expect(coreEffectFlow).not.toContain('- tapOn: "New message"');
+  });
+
   it('creates and independently verifies a saved collection', () => {
     expect(fs.existsSync(savedCollectionFlowPath)).toBe(true);
     const savedCollectionFlow = fs.readFileSync(savedCollectionFlowPath, 'utf8');
