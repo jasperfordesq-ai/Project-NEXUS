@@ -1343,10 +1343,6 @@
     "src/pages/bookmarks/BookmarksPage.test.tsx": {
       "TS2345": 2
     },
-    "src/pages/caring-community/CaregiverDashboardPage.test.tsx": {
-      "TS2322": 1,
-      "TS2345": 2
-    },
     "src/pages/caring-community/CivicDigestPage.test.tsx": {
       "TS2345": 2
     },
@@ -1970,7 +1966,7 @@
     }
   },
   "totals": {
-    "fileCount": 580,
-    "errorCount": 1787
+    "fileCount": 579,
+    "errorCount": 1784
   }
 }

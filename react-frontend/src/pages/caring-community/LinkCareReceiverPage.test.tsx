@@ -116,7 +116,11 @@ describe('LinkCareReceiverPage', () => {
     });
 
     render(<LinkCareReceiverPage />);
-    fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'UserB' } });
+    // Cast because `noUncheckedIndexedAccess` types an indexed read as
+    // `HTMLElement | undefined`. The older cases in this file index the same way
+    // and are carried in the test-types baseline; a NEW one must not add to it.
+    const [searchInput] = screen.getAllByRole('textbox');
+    fireEvent.change(searchInput as HTMLElement, { target: { value: 'UserB' } });
 
     await waitFor(() => {
       expect(screen.getByText('E2E UserB')).toBeInTheDocument();

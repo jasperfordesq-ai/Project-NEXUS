@@ -71,9 +71,19 @@ const CAREGIVER_LINKS = [
 const BURNOUT_SAFE = { data: { weekly_hours: 5, threshold: 40, at_risk: false, risk_level: 'none' }, isLoading: false, error: null };
 const BURNOUT_AT_RISK = { data: { weekly_hours: 50, threshold: 40, at_risk: true, risk_level: 'high' }, isLoading: false, error: null };
 
+/**
+ * 🔴 Typed explicitly rather than inferred from the defaults.
+ *
+ * `EMPTY_LINKS_RESULT` has `data: []`, so an inferred parameter type is
+ * `never[]` and every caller passing REAL rows fails with "not assignable to
+ * type 'never'". That is what the lifecycle fields added here surfaced: the
+ * mock rows are correct and it was the helper's signature that was wrong.
+ */
+type UseApiStub = { data: unknown; isLoading: boolean; error: unknown };
+
 function setupUseApi(
-  linksResult = EMPTY_LINKS_RESULT,
-  burnoutResult = BURNOUT_SAFE,
+  linksResult: UseApiStub = EMPTY_LINKS_RESULT,
+  burnoutResult: UseApiStub = BURNOUT_SAFE,
   incomingResult: unknown[] = [],
 ) {
   mockUseApi.mockImplementation((endpoint: string) => {
