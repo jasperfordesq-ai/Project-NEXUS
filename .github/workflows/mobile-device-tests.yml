@@ -128,7 +128,7 @@ jobs:
           # so make them explicit in the disposable CI tenant rather than silently
           # skipping the screens because production policy has them disabled.
           mysql -h 127.0.0.1 -u root -ptesting nexus -e \
-            "UPDATE tenants SET features = JSON_SET(COALESCE(features, '{}'), '$.courses', true, '$.podcasts', true, '$.partner_venues', true) WHERE id = 2;"
+            "UPDATE tenants SET features = JSON_SET(COALESCE(features, '{}'), '$.courses', true, '$.podcasts', true, '$.partner_venues', true, '$.marketplace', true) WHERE id = 2;"
 
       - name: Run pending migrations
         run: php artisan migrate --force
@@ -191,7 +191,7 @@ jobs:
           REDIS_HOST: 127.0.0.1
 
       # One step proves two things: the API is answering, AND the seeded account
-      # authenticates. Fail here rather than eleven flows later — if login does not
+      # authenticates. Fail here rather than twelve flows later — if login does not
       # work, nothing downstream is testing the app.
       #
       # 🔴 The readiness probe is the LOGIN endpoint, not /health.php. Under PHP's
@@ -340,7 +340,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           ls -l /dev/kvm
 
-      - name: Run the eleven flows on an emulator
+      - name: Run the twelve flows on an emulator
         uses: reactivecircus/android-emulator-runner@v2
         env:
           # The effect verifier is a Laravel CLI process on the host. Give it the same
@@ -407,7 +407,10 @@ jobs:
           working-directory: mobile
 
       - name: Upload screenshots
-        if: always()
+        # A green journey suite must produce the inspection artifact. If an earlier
+        # prerequisite failed there is nothing to upload, and a second synthetic failure
+        # would only obscure the original evidence.
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: mobile-screenshots
