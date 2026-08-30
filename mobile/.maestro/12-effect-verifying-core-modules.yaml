@@ -11,11 +11,11 @@ appId: ie.project.nexus
 ---
 - runFlow: subflows/login.yaml
 
-# Send a real private message to the second fixture member. Open the native
-# composer route directly: a text selector matches both the header icon and the
-# empty-state button, and run 33328312721 showed that ambiguity can leave the
-# flow on Messages even though Maestro reports the tap as complete.
-- openLink: "nexus:///messages/new"
+# Send a real private message to the second fixture member. Open Expo Router's
+# exact modal URI: a text selector matches both the header icon and the empty-state
+# button, while the public messages/new URL is interpreted as a conversation id by
+# Android's custom-scheme launcher in this harness.
+- openLink: "nexus:///(modals)/new-message"
 - extendedWaitUntil:
     visible: "Search members"
     timeout: 20000
