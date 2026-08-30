@@ -14,12 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Surface } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Surface } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { getBlogPosts, type BlogPost, type BlogListResponse } from '@/lib/api/blog';
 import AppTopBar from '@/components/ui/AppTopBar';
+import { Chip } from '@/components/ui/StatusChip';
 import EmptyState from '@/components/ui/EmptyState';
 import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';

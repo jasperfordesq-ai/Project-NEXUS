@@ -7,8 +7,8 @@
   ],
   "bundle": {
     "howMeasured": "node scripts/check-startup-budget.mjs — runs node node_modules/expo/bin/cli export --platform android and takes the size in bytes of the single .hbc under _expo/static/js/android",
-    "measuredBytes": 15589812,
-    "measuredOn": "2026-08-29",
+    "measuredBytes": 15590798,
+    "measuredOn": "2026-08-30",
     "ceilingBytes": 17148793,
     "$ceilingNote": "measured + 10%. The gate fails above this and warns within 5% of it.",
     "shippedApkComparison": {
@@ -31,8 +31,9 @@
       "for this app is the native splash — it reported ~1.3s while the JavaScript had not",
       "finished loading. React Native's own reactNativeStartupTiming marks would answer it",
       "from the native side but are undefined in this Expo SDK build (measured on a device",
-      "2026-08-23), and Sentry, which measures cold start properly, has no DSN in any build",
-      "profile. So the JavaScript phase below is what can honestly be measured today."
+      "2026-08-23). Sentry is now configured in production, but no cold-start trace from a",
+      "store-distributed build has been observed. The JavaScript phase below remains the",
+      "only cold-start timing this workspace can honestly prove today."
     ],
     "nativeFirstFrameMs": {
       "howMeasured": "adb shell am start -W -n ie.project.nexus/.MainActivity, TotalTime, three cold starts after am force-stop",

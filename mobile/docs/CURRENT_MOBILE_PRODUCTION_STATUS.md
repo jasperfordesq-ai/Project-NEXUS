@@ -12,8 +12,8 @@ Last reviewed: 2026-08-30
 Status: **Maintained — the only document that states the mobile app's current score**
 
 <!-- doc-consistency: MOBILE_M1_RUBRIC=M1 -->
-<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=712/1000 -->
-<!-- doc-consistency: MOBILE_BANKED_FLOOR=712 -->
+<!-- doc-consistency: MOBILE_M1_CURRENT_SCORE=714/1000 -->
+<!-- doc-consistency: MOBILE_BANKED_FLOOR=714 -->
 <!-- doc-consistency: MOBILE_RUBRIC_CATEGORY_COUNT=10 -->
 
 Read this first, then [`MOBILE_ROADMAP.md`](MOBILE_ROADMAP.md) for what to do next and
@@ -22,9 +22,11 @@ competing score anywhere.
 
 ## The headline
 
-**712 / 1000 banked on rubric M1.** Mobile source commit `dbed8f427` is pushed and all six
-exact-source workflows are green, including the CI pipeline, E2E, Android device tests,
-CodeQL and security scan. The
+**714 / 1000 banked on rubric M1.** Exact-source Android workflow `33324976225` built mobile
+commit `54d25f764`, completed all thirteen journeys and three independent effect suites, and
+uploaded twelve inspected opaque 1080 x 2400 screenshots. The later blog-contract correction
+is pushed as `f1081c195`; its CI, E2E, platform-contract, Docs, Security and CodeQL workflows
+are all green. The
 Android app is publicly installable from Google Play and
 its core timebanking, messaging, volunteering and marketplace journeys have been walked on
 devices. The public listing, Data Safety panel, content rating, policy URLs, production
@@ -34,7 +36,7 @@ captures also prove that three high-value screens render at tablet sizes.
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned
 Release app for commit `87bb70990` completed the four-screen iPhone 16 Pro Max Simulator tour
-in green workflow run `33319960815`. The ledger recomputes to 0.728 and its 218/300 journey
+in green workflow run `33319960815`. The ledger recomputes to 0.736 and its 220/300 journey
 credit is now banked. This is genuine Simulator runtime evidence, but it is
 not signing, TestFlight, APNs, universal-link or physical-iPhone evidence.
 
@@ -46,7 +48,7 @@ of physical marketplace goods. That wording must be corrected before another rel
 submitted. Internationalisation, signed-distribution evidence and human-operated
 accessibility remain material gaps. The expanded effect automation, response-contract
 coverage and accessibility breadth passed exact-source CI and Android workflow run
-`33320137825` on 2026-08-30.
+`33324976225` on 2026-08-30.
 
 🔴 **Why the score is not higher, given 377 green test suites and 2,614 passing tests.**
 Most tests still run in Node against mocks. The ledger deliberately gives journey credit
@@ -95,21 +97,21 @@ Rubric **M1**. Fixed denominator, ten fixed-weight categories. Every category wa
 against current evidence on 2026-08-26; journey credit remains formula-driven from the
 ledger, while non-journey increases below name the new evidence that earned them.
 The table keeps the rubric's historical `Banked` column name because the score checker reads
-that contract; its 712 total is now committed and CI-backed.
+that contract; its 714 total is now evidence-backed.
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 218 | 300 | The banked ledger is **0.728**: 62 CERTIFIED, 58 PROVEN, 0 RENDERS and 10 PARTIAL over 137 scoring rows. Four PROVEN rows moved only because resettable Android journeys now verify their Laravel effects independently: offer creation, volunteering application, event RSVP and connection request. Messaging and marketplace-save effects are also guarded but do not create new ledger rows. Exact-source CI and Android device workflow `33320137825` are green. |
+| Journey certification | 300 | 220 | 300 | The banked ledger is **0.736**: 63 CERTIFIED, 58 PROVEN, 0 RENDERS and 10 PARTIAL over 137 scoring rows. Exact-source Android workflow `33324976225` completed thirteen journeys and independently asserted eight persisted Laravel effects, including the new personal saved-collection creation/reopen journey. |
 | Capability parity with the website | 120 | 72 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds. Raised a further 4 on 2026-08-23 for writing a feed post, which this table had itself recorded as absent since 2026-08-22 — so that credit is for closing a known gap, not for the comparison getting better. The figure stays well short of full because the comparison is still only eleven capabilities deep and has twice proved incomplete |
 | Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away. Deep links were fixed across parameter names, query strings and exchange/listing identity. All 165 sites that reported a failure without the server's reason now pass it on, walked against a real 409. The score remains conservative because shared-state refresh, offline/error states and destructive-action recovery have not been swept across the full app |
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
-| Accessibility | 60 | 38 | 60 | Contrast is gated. The authenticated current-source crawler verified all **37/37** fingerprint-gated routes and 279 targets at the emulator's actual 420dpi: zero below the WCAG 24dp floor, 147 above that floor but below Android's 48dp guidance, and five clipped viewport fragments excluded from sizing failures. Dynamic text, images and transient geometry are excluded from settlement, while a changing actionable/scrollable node set still prevents a pass; exact bounds come from the accepted final tree. TalkBack is installed and enabled, and keyboard focus is visible in UIAutomator, but spoken output and a full swipe/double-tap journey remain genuinely human/instrumentation-gated. |
+| Accessibility | 60 | 38 | 60 | Contrast is gated. The authenticated current-source crawler verified all **37/37** fingerprint-gated routes and 281 targets at the emulator's actual 420dpi: zero below the WCAG 24dp floor, 148 above that floor but below Android's 48dp guidance, and five clipped viewport fragments excluded from sizing failures. The first populated-blog pass found two 20dp no-op metadata buttons; migrating both blog screens to the accessibility-aware informational chip removed them, and the exhaustive rerun stayed green. Dynamic text, images and transient geometry are excluded from settlement, while a changing actionable/scrollable node set still prevents a pass; exact bounds come from the accepted final tree. TalkBack is installed and enabled, and keyboard focus is visible in UIAutomator, but spoken output and a full swipe/double-tap journey remain genuinely human/instrumentation-gated. |
 | Internationalisation | 70 | 25 | 70 | Seven locales ship, and the shrink-only gate now reports **zero** multi-word phrases still identical to English: ga 0, de 0, fr 0, it 0, pt 0 and es 0. All 4,531 original guarded entries were translated or narrowly allowlisted as registered product names, international units, machine-readable formats or genuinely shared words. The work covers coherent member journeys rather than scattered labels, including authentication, discovery, messaging, home, gamification, goals, exchanges, marketplace, federation, events, groups, profile/legal summaries, settings, volunteering, jobs, member collections and appreciations. This is automated catalogue integrity plus a reviewed AI translation pass—not native-speaker certification for any language. Arabic and right-to-left remain excluded from the native app by owner decision. |
-| Automated test depth | 100 | 74 | 100 | `npm run test:ci` passed **377 suites / 2,614 tests** on 2026-08-30; the ratchet reports 76.40% global lines across 336 files, with type checking, zero-warning lint, 28 area floors and source guards. Two maintained Android flows now finish with seven independent Laravel effect assertions. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys. |
+| Automated test depth | 100 | 74 | 100 | `npm run test:ci` passed **377 suites / 2,614 tests** on 2026-08-30; the ratchet reports 76.40% global lines across 336 files, with type checking, zero-warning lint, 28 area floors and source guards. Three maintained effect suites now finish with eight independent Laravel assertions. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys. |
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
 | Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
 | Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
-| **Total** | **1000** | **712** | **1000** | — |
+| **Total** | **1000** | **714** | **1000** | — |
 
 **Provenance.** Journey status comes only from the 140-row ledger below. The isolated Android
 candidate now contains 377 Jest suites and 2,614 tests; its non-build Jest, TypeScript and lint
@@ -124,14 +126,16 @@ and 44 explicitly client-mapped, with zero required fields missing from a checke
 separate three-role verifier accepted 15 populated high-risk contracts, including five
 organisation-owner views that a primary-member-only probe correctly receives as 403. The
 same day's submitted-artefact accessibility pass found additional informational chips in
-Goals, Organisations and Settings. Mobile source `dbed8f427` passed CI, E2E, Docs Lint,
-CodeQL, Security Scan and Android device run `33320137825`; the latter built the APK, checked
-15 live role-aware contracts, completed twelve journeys, asserted seven persisted effects
-and uploaded twelve inspected 1080 x 2400 screenshots. Unsigned iOS run `33319960815` built
+Goals, Organisations and Settings. The final current-source touch crawl verified 37/37 routes,
+281 targets, zero below the AA floor, 148 below Android's 48dp guidance and five clipped
+viewport fragments. Mobile source `54d25f764` passed Android device run
+`33324976225`; it built the APK, checked 15 live role-aware contracts, completed thirteen
+journeys, asserted eight persisted effects across three suites and uploaded twelve inspected
+opaque 1080 x 2400 screenshots. Unsigned iOS run `33319960815` built
 and installed source `87bb70990`, completed the four-page tour and passed Apple Vision OCR.
 This is not evidence for a signed distributed build or physical device.
 
-🔴 **The banked floor ratcheted to 712 on 2026-08-30.** A published total may never fall. If scope is
+🔴 **The banked floor ratcheted to 714 on 2026-08-30.** A published total may never fall. If scope is
 rediscovered, record it in the ledger's RESERVE rows and show the delta; do not lower a
 banked headline. A new rubric id legitimately resets the floor — M1 → M2 would.
 
@@ -187,7 +191,7 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
 7. **Pay down engineering headroom.** The 529-warning lint backlog was cleared on
    2026-08-27: Jest/CommonJS false positives are scoped to test and configuration files,
    real warnings were fixed, and `eslint .` now passes with zero warnings. The latest recorded
-   Android Hermes startup bundle is 14.87 MB, leaving 1.48 MB below its 16.35 MB blocking
+   Android Hermes startup bundle is 14.87 MB, leaving 1.49 MB below its 16.35 MB blocking
    ceiling. This is an internal JavaScript regression budget, not an App Store download-size
    limit; no Play artefact was built or uploaded while the release is under review.
 

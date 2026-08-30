@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Surface } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { getBlogPost, type BlogPost } from '@/lib/api/blog';
@@ -25,6 +25,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import AppTopBar from '@/components/ui/AppTopBar';
+import { Chip } from '@/components/ui/StatusChip';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
