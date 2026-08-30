@@ -1,7 +1,7 @@
 # Copyright © 2024–2026 Jasper Ford
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Mobile device tests — the eleven Maestro end-to-end flows, on a real Android
+# Mobile device tests — the twelve Maestro end-to-end flows, on a real Android
 # emulator, against a real Laravel API.
 #
 # WHY THIS IS A SEPARATE WORKFLOW
@@ -13,12 +13,10 @@
 # than run on every push. A ~35-minute job on every commit would be ignored within
 # a week.
 #
-# 🔴 UNVERIFIED UNTIL ITS FIRST RUN. Every step here was exercised by hand on the
-# development machine (all eleven flows pass, screenshots reproduce at 0 pixels), but
-# this YAML has never executed on a GitHub runner. Treat the first run as the test
-# of the workflow, not of the app: expect to iterate on the emulator setup, and do
-# not read an early failure as a mobile regression. `workflow_dispatch` is there to
-# make that first run deliberate.
+# The workflow is established CI evidence, not an experiment. Each flow starts from
+# isolated app state, while the two effect suites share one deterministic Laravel reset
+# and finish with independent database assertions. A failure is therefore an app,
+# fixture, runner or harness signal that must be classified from the uploaded evidence.
 #
 # WHY THE SCREENSHOT COMPARISON IS NOT A GATE HERE
 #
