@@ -233,4 +233,28 @@ describe('navigateToLink', () => {
     });
     expect(mockReplace).toHaveBeenCalledWith('/(tabs)/exchanges');
   });
+
+  it('keeps foreground create aliases on create screens instead of treating them as record ids', () => {
+    navigateToLink('nexus://listings/create');
+    navigateToLink('/exchanges/new');
+    navigateToLink('/events/create?from=calendar');
+    navigateToLink('/groups/new');
+    navigateToLink('/jobs/create');
+    navigateToLink('/volunteering/new');
+    navigateToLink('/polls/create');
+
+    expect(mockPush).toHaveBeenNthCalledWith(1, '/(modals)/new-exchange');
+    expect(mockPush).toHaveBeenNthCalledWith(2, '/(modals)/new-exchange');
+    expect(mockPush).toHaveBeenNthCalledWith(3, {
+      pathname: '/(modals)/new-event',
+      params: { from: 'calendar' },
+    });
+    expect(mockPush).toHaveBeenNthCalledWith(4, '/(modals)/new-group');
+    expect(mockPush).toHaveBeenNthCalledWith(5, '/(modals)/new-job');
+    expect(mockPush).toHaveBeenNthCalledWith(6, '/(modals)/new-volunteering');
+    expect(mockPush).toHaveBeenNthCalledWith(7, {
+      pathname: '/(modals)/polls',
+      params: { create: '1' },
+    });
+  });
 });

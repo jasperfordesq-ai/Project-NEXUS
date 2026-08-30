@@ -93,15 +93,18 @@ export function navigateToLink(link: string | null): void {
     // different records with different ids, and sharing this case sent every exchange
     // notification to the listing screen, which answered "Listing not found".
     case 'exchanges':
-      if (id) router.push({ pathname: '/(modals)/exchange-request-detail', params: { ...params, id } });
+      if (isCreateAlias(id)) pushWithOptionalParams('/(modals)/new-exchange', params);
+      else if (id) router.push({ pathname: '/(modals)/exchange-request-detail', params: { ...params, id } });
       else pushWithOptionalParams('/(modals)/exchange-requests', params);
       break;
     case 'listings':
-      if (id) router.push({ pathname: '/(modals)/exchange-detail', params: { ...params, id } });
+      if (isCreateAlias(id)) pushWithOptionalParams('/(modals)/new-exchange', params);
+      else if (id) router.push({ pathname: '/(modals)/exchange-detail', params: { ...params, id } });
       else router.replace('/(tabs)/exchanges');
       break;
     case 'events':
-      if (id) router.push({ pathname: '/(modals)/event-detail', params: { ...params, id } });
+      if (isCreateAlias(id)) pushWithOptionalParams('/(modals)/new-event', params);
+      else if (id) router.push({ pathname: '/(modals)/event-detail', params: { ...params, id } });
       else router.replace('/(tabs)/events');
       break;
     case 'members':
@@ -163,11 +166,13 @@ export function navigateToLink(link: string | null): void {
       pushWithOptionalParams('/(modals)/support', { ...params, doc: section });
       break;
     case 'groups':
-      if (id) router.push({ pathname: '/(modals)/group-detail', params: { ...params, id } });
+      if (isCreateAlias(id)) pushWithOptionalParams('/(modals)/new-group', params);
+      else if (id) router.push({ pathname: '/(modals)/group-detail', params: { ...params, id } });
       else pushWithOptionalParams('/(modals)/groups', params);
       break;
     case 'jobs':
-      if (id) router.push({ pathname: '/(modals)/job-detail', params: { ...params, id } });
+      if (isCreateAlias(id)) pushWithOptionalParams('/(modals)/new-job', params);
+      else if (id) router.push({ pathname: '/(modals)/job-detail', params: { ...params, id } });
       else pushWithOptionalParams('/(modals)/jobs', params);
       break;
     case 'job':
@@ -188,7 +193,9 @@ export function navigateToLink(link: string | null): void {
       else pushWithOptionalParams('/(modals)/organisations', params);
       break;
     case 'volunteering':
-      if (id === 'my-organisations') {
+      if (isCreateAlias(id)) {
+        pushWithOptionalParams('/(modals)/new-volunteering', params);
+      } else if (id === 'my-organisations') {
         router.push({ pathname: '/(modals)/volunteering', params: { tab: 'organisations' } } as unknown as Href);
       } else if (id === 'org' && segments[1]) {
         router.push({
@@ -215,7 +222,7 @@ export function navigateToLink(link: string | null): void {
       pushWithOptionalParams('/(modals)/skills', params);
       break;
     case 'polls':
-      pushWithOptionalParams('/(modals)/polls', params);
+      pushWithOptionalParams('/(modals)/polls', isCreateAlias(id) ? { ...params, create: '1' } : params);
       break;
     case 'endorsements':
       pushWithOptionalParams('/(modals)/endorsements', params);
@@ -306,6 +313,10 @@ function parseLink(link: string): { section: string; segments: string[]; params:
     segments,
     params: Object.fromEntries(url.searchParams.entries()),
   };
+}
+
+function isCreateAlias(value: string | undefined): boolean {
+  return value === 'new' || value === 'create';
 }
 
 function navigateMarketplace(segments: string[], queryParams: Record<string, string>): void {
