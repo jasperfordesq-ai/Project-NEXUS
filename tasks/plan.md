@@ -83,8 +83,8 @@ store assets already held in the repository.
 
 - [x] Run focused tests, full applicable gates, diff review, secret scan, and working-tree
   ownership check.
-- [ ] Commit and push only scoped files directly to `main`.
-- [ ] Confirm required GitHub workflows are green and produce a final external-gate handoff.
+- [x] Commit and push only scoped files directly to `main`.
+- [x] Confirm required GitHub workflows are green and produce a final external-gate handoff.
 
 ## Risks and Mitigations
 

@@ -9,6 +9,6 @@
 - [x] Refresh authoritative readiness and release-handoff documentation.
 - [x] Update the changelog and bundled changelog copy.
 - [x] Run final verification and scoped diff/secret review.
-- [ ] Commit and push scoped changes to `main`.
-- [ ] Confirm required CI workflows are green.
-- [ ] Hand off only the Apple-, Play-, legal-, and physical-device-dependent gates.
+- [x] Commit and push scoped changes to `main`.
+- [x] Confirm required CI workflows are green.
+- [x] Hand off only the Apple-, Play-, legal-, and physical-device-dependent gates.
