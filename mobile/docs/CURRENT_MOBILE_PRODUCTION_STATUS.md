@@ -22,8 +22,8 @@ competing score anywhere.
 
 ## The headline
 
-**714 / 1000 banked on rubric M1.** Exact-source Android workflow `33324976225` built mobile
-commit `54d25f764`, completed all thirteen journeys and three independent effect suites, and
+**714 / 1000 banked on rubric M1.** Exact-source Android workflow `33332261410` built mobile
+commit `ee8b9e345`, completed all thirteen journeys and three independent effect suites, and
 uploaded twelve inspected opaque 1080 x 2400 screenshots. The later blog-contract correction
 is pushed as `f1081c195`; its CI, E2E, platform-contract, Docs, Security and CodeQL workflows
 are all green. The
@@ -49,7 +49,7 @@ of physical marketplace goods. That wording must be corrected before another rel
 submitted. Internationalisation, signed-distribution evidence and human-operated
 accessibility remain material gaps. The expanded effect automation, response-contract
 coverage and accessibility breadth passed exact-source CI and Android workflow run
-`33324976225` on 2026-08-30.
+`33332261410` on 2026-08-30.
 
 🔴 **Why the score is not higher, given 377 green test suites and 2,615 passing tests.**
 Most tests still run in Node against mocks. The ledger deliberately gives journey credit
@@ -102,7 +102,7 @@ that contract; its 714 total is now evidence-backed.
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 220 | 300 | The banked ledger is **0.736**: 63 CERTIFIED, 58 PROVEN, 0 RENDERS and 10 PARTIAL over 137 scoring rows. Exact-source Android workflow `33324976225` completed thirteen journeys and independently asserted eight persisted Laravel effects, including the new personal saved-collection creation/reopen journey. |
+| Journey certification | 300 | 220 | 300 | The banked ledger is **0.736**: 63 CERTIFIED, 58 PROVEN, 0 RENDERS and 10 PARTIAL over 137 scoring rows. Exact-source Android workflow `33332261410` completed thirteen journeys and independently asserted eight persisted Laravel effects, including the new personal saved-collection creation/reopen journey. |
 | Capability parity with the website | 120 | 72 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds. Raised a further 4 on 2026-08-23 for writing a feed post, which this table had itself recorded as absent since 2026-08-22 — so that credit is for closing a known gap, not for the comparison getting better. The figure stays well short of full because the comparison is still only eleven capabilities deep and has twice proved incomplete |
 | Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away. Deep links were fixed across parameter names, query strings and exchange/listing identity. All 165 sites that reported a failure without the server's reason now pass it on, walked against a real 409. The score remains conservative because shared-state refresh, offline/error states and destructive-action recovery have not been swept across the full app |
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
@@ -129,8 +129,8 @@ organisation-owner views that a primary-member-only probe correctly receives as 
 same day's submitted-artefact accessibility pass found additional informational chips in
 Goals, Organisations and Settings. The final current-source touch crawl verified 37/37 routes,
 281 targets, zero below the AA floor, 148 below Android's 48dp guidance and five clipped
-viewport fragments. Mobile source `54d25f764` passed Android device run
-`33324976225`; it built the APK, checked 15 live role-aware contracts, completed thirteen
+viewport fragments. Mobile source `ee8b9e345` passed Android device run
+`33332261410`; it built the APK, checked 15 live role-aware contracts, completed thirteen
 journeys, asserted eight persisted effects across three suites and uploaded twelve inspected
 opaque 1080 x 2400 screenshots. Unsigned iOS run `33328237409` clean-built
 and installed source `4c19c5576`, completed the four-page tour and passed Apple Vision OCR;
