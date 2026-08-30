@@ -1,0 +1,78 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# State-changing member journeys. The workflow resets the disposable Laravel
+# fixture before the suite and verifies all three database effects afterwards.
+# A visible confirmation alone is deliberately insufficient evidence.
+
+appId: ie.project.nexus
+---
+- runFlow: subflows/login.yaml
+
+# Create an offer listing and land on its persisted detail page.
+- openLink: "nexus://listings/new"
+- extendedWaitUntil:
+    visible:
+      id: "new-exchange-screen"
+    timeout: 20000
+- tapOn:
+    id: "new-exchange-title"
+- inputText: "E2E Device Journey - Computer Help"
+- back
+- scrollUntilVisible:
+    element:
+      id: "new-exchange-description"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: "new-exchange-description"
+- inputText: "Deterministic listing created by the Android device effect journey."
+- back
+- scrollUntilVisible:
+    element: "E2E General"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "E2E General"
+- tapOn:
+    id: "new-exchange-submit"
+- extendedWaitUntil:
+    visible: "E2E Device Journey - Computer Help"
+    timeout: 30000
+
+# Save another member's deterministic listing.
+- openLink: "nexus://listings"
+- extendedWaitUntil:
+    visible:
+      id: "listings-search"
+    timeout: 20000
+- tapOn:
+    id: "listings-search"
+- inputText: "Bicycle Repair"
+- back
+- extendedWaitUntil:
+    visible: "E2E Fixture Listing.*Bicycle Repair"
+    timeout: 20000
+- tapOn: "Save listing"
+- assertVisible: "Unsave listing"
+
+# Send a connection request to the second fixture member.
+- openLink: "nexus://members"
+- extendedWaitUntil:
+    visible:
+      id: "members-search"
+    timeout: 20000
+- tapOn:
+    id: "members-search"
+- inputText: "E2E UserB"
+- back
+- extendedWaitUntil:
+    visible: "E2E UserB"
+    timeout: 20000
+- tapOn: "View E2E's profile"
+- extendedWaitUntil:
+    visible: "Connect"
+    timeout: 20000
+- tapOn: "Connect"
+- extendedWaitUntil:
+    visible: "Request Sent"
+    timeout: 20000

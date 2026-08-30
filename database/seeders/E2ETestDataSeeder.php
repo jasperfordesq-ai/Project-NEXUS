@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  *   - User A (member, balance 100) — the primary actor / listing owner
  *   - User B (member, balance 25)  — the second actor (messaging/exchange)
  *   - Admin    (admin role)        — admin-area journeys
- *   - One active listing owned by A — discoverable by B in browse/search
+ *   - One active listing per member — each actor can exercise the other's listing
  *
  * Idempotent (updateOrInsert on tenant_id + email / tenant_id + user_id + title),
  * so re-running is safe. Credentials default to the values e2e/global.setup.ts
@@ -46,6 +46,20 @@ class E2ETestDataSeeder extends Seeder
         }
 
         $now = now();
+
+        // Device creation flows need one category whose label does not vary with a
+        // developer's existing fixture catalogue. The CI workflow used to insert
+        // "General" separately, which made the same flow fail on richer local data.
+        DB::table('categories')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'slug' => 'e2e-general', 'type' => 'listing'],
+            [
+                'name' => 'E2E General',
+                'is_active' => 1,
+                'sort_order' => 999,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
 
         $users = [
             [
@@ -125,6 +139,24 @@ class E2ETestDataSeeder extends Seeder
         );
         $this->command?->info("  E2E fixture listing ensured for User A: \"{$listingTitle}\"");
 
-        $this->command?->info('E2E test fixture seeded (tenant ' . $tenantId . '): 3 users + 1 listing.');
+        // A second deterministic listing lets the primary device actor exercise a
+        // genuine save/bookmark journey against someone else's content. Saving the
+        // actor's own listing would make the UI move but would not represent the
+        // member-to-member behaviour the journey is intended to prove.
+        $secondaryListingTitle = 'E2E Fixture Listing — Bicycle Repair';
+        DB::table('listings')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'user_id' => $ids['B (secondary)'], 'title' => $secondaryListingTitle],
+            [
+                'type'         => 'offer',
+                'status'       => 'active',
+                'description'  => 'Deterministic E2E fixture listing owned by E2E User B. Used by effect-verifying save journeys.',
+                'service_type' => 'physical_only',
+                'created_at'   => $now,
+                'updated_at'   => $now,
+            ]
+        );
+        $this->command?->info("  E2E fixture listing ensured for User B: \"{$secondaryListingTitle}\"");
+
+        $this->command?->info('E2E test fixture seeded (tenant ' . $tenantId . '): 3 users + 2 listings + 1 device category.');
     }
 }

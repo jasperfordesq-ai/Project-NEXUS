@@ -8,7 +8,7 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -164,7 +164,14 @@ function GroupExchangesScreenInner() {
     return (
       <NativePressable
         className="w-full p-0"
-        accessibilityLabel={exchange.title}
+        accessibilityLabel={[
+          exchange.title,
+          t(`groupExchanges.status.${exchange.status}`),
+          typeof exchange.participant_count === 'number' ? t('groupExchanges.participants', { count: exchange.participant_count }) : '',
+          t('groupExchanges.hours', { count: Number(exchange.total_hours) }),
+          t(`groupExchanges.split.${exchange.split_type}`),
+          createdDate,
+        ].filter(Boolean).join(', ')}
         onPress={() => router.push({ pathname: '/(modals)/group-exchange-detail', params: { id: String(exchange.id) } } as unknown as Href)}
         feedback="highlight"
       >
@@ -185,28 +192,28 @@ function GroupExchangesScreenInner() {
             ) : null}
 
             <View className="flex-row flex-wrap gap-2">
-              <Chip size="sm" variant="secondary">
-                <Chip.Label>{t(`groupExchanges.status.${exchange.status}`)}</Chip.Label>
-              </Chip>
+              <Surface variant="secondary" className="rounded-full px-3 py-1.5">
+                <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t(`groupExchanges.status.${exchange.status}`)}</Text>
+              </Surface>
               {typeof exchange.participant_count === 'number' ? (
-                <Chip size="sm" variant="secondary">
+                <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
                   <Ionicons name="people-outline" size={12} color={tone} />
-                  <Chip.Label>{t('groupExchanges.participants', { count: exchange.participant_count })}</Chip.Label>
-                </Chip>
+                  <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t('groupExchanges.participants', { count: exchange.participant_count })}</Text>
+                </Surface>
               ) : null}
-              <Chip size="sm" variant="secondary">
+              <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
                 <Ionicons name="time-outline" size={12} color={tone} />
-                <Chip.Label>{t('groupExchanges.hours', { count: Number(exchange.total_hours) })}</Chip.Label>
-              </Chip>
-              <Chip size="sm" variant="secondary">
+                <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t('groupExchanges.hours', { count: Number(exchange.total_hours) })}</Text>
+              </Surface>
+              <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
                 <Ionicons name="git-compare-outline" size={12} color={tone} />
-                <Chip.Label>{t(`groupExchanges.split.${exchange.split_type}`)}</Chip.Label>
-              </Chip>
+                <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t(`groupExchanges.split.${exchange.split_type}`)}</Text>
+              </Surface>
               {createdDate ? (
-                <Chip size="sm" variant="secondary">
+                <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
                   <Ionicons name="calendar-outline" size={12} color={tone} />
-                  <Chip.Label>{createdDate}</Chip.Label>
-                </Chip>
+                  <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{createdDate}</Text>
+                </Surface>
               ) : null}
             </View>
           </HeroCard.Body>

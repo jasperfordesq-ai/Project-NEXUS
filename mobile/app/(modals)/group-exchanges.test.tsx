@@ -122,9 +122,9 @@ describe('GroupExchangesScreen', () => {
       refresh: mockRefresh,
     });
 
-    const { getByText } = render(<GroupExchangesScreen />);
+    const { getByLabelText } = render(<GroupExchangesScreen />);
 
-    expect(getByText('Community garden shift')).toBeTruthy();
+    expect(getByLabelText(/^Community garden shift, Active,/)).toBeTruthy();
   });
 
   it('shows the empty state only when the server really sent no rows', () => {
@@ -142,15 +142,12 @@ describe('GroupExchangesScreen', () => {
   });
 
   it('renders backend group exchange rows with status and split metadata', () => {
-    const { getAllByText, getByText } = render(<GroupExchangesScreen />);
+    const { getByLabelText, getByText } = render(<GroupExchangesScreen />);
 
     expect(getByText('Group Exchanges')).toBeTruthy();
-    expect(getByText('Community garden shift')).toBeTruthy();
-    expect(getByText('Alice Smith')).toBeTruthy();
-    expect(getAllByText('Active').length).toBeGreaterThanOrEqual(2);
-    expect(getByText('3 participants')).toBeTruthy();
-    expect(getByText('6 hours')).toBeTruthy();
-    expect(getByText('Weighted split')).toBeTruthy();
+    expect(getByLabelText(
+      'Community garden shift, Active, 3 participants, 6 hours, Weighted split, 1 May 2026',
+    )).toBeTruthy();
   });
 
   it('reloads with the selected status filter', () => {
@@ -163,9 +160,9 @@ describe('GroupExchangesScreen', () => {
   });
 
   it('opens a backend-supported detail route', () => {
-    const { getByText } = render(<GroupExchangesScreen />);
+    const { getByLabelText } = render(<GroupExchangesScreen />);
 
-    fireEvent.press(getByText('Community garden shift'));
+    fireEvent.press(getByLabelText(/^Community garden shift, Active,/));
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       pathname: '/(modals)/group-exchange-detail',

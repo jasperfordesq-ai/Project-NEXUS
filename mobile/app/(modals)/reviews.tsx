@@ -8,7 +8,7 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -479,10 +479,12 @@ function ReviewCard({
           </Surface>
         ) : null}
         <View className="flex-row flex-wrap gap-2 pl-1">
-          <Chip size="sm" variant="secondary" className="self-start">
+          <Surface variant="secondary" className="self-start flex-row items-center gap-1 rounded-full px-3 py-1.5">
             <Ionicons name="star" size={12} color={tone} />
-            <Chip.Label>{t('reviews.ratingLabel', { rating: review.rating })}</Chip.Label>
-          </Chip>
+            <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>
+              {t('reviews.ratingLabel', { rating: review.rating })}
+            </Text>
+          </Surface>
         </View>
       </HeroCard.Body>
     </HeroCard>

@@ -133,10 +133,12 @@ export default function ActivityScreen() {
                       </Text>
                     </View>
                   </View>
-                  <Chip size="sm" variant="secondary" className="self-start">
+                  <Surface variant="secondary" className="self-start flex-row items-center gap-1 rounded-full px-3 py-1.5">
                     <Ionicons name="analytics-outline" size={12} color={primary} />
-                    <Chip.Label>{t('activity.netBalance', { count: dashboard.hours_summary.net_balance })}</Chip.Label>
-                  </Chip>
+                    <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>
+                      {t('activity.netBalance', { count: dashboard.hours_summary.net_balance })}
+                    </Text>
+                  </Surface>
                 </HeroCard.Body>
               </HeroCard>
 

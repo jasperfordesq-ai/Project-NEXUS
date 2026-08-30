@@ -197,3 +197,32 @@ appId: ie.project.nexus
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: 09-new-exchange
+
+# The latest native modules are catalogue screens with bounded empty/loading states,
+# so they are suitable candidates for deterministic visual coverage. They remain
+# unbanked until two captures reproduce within the pixel budget and are reviewed.
+- openLink: nexus://courses
+- extendedWaitUntil:
+    # The page heading and search field render before the API request settles. Waiting
+    # for the deterministic empty result prevents a loading spinner becoming a baseline.
+    visible: "No courses found."
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 10-courses
+
+- openLink: nexus://clubs
+- extendedWaitUntil:
+    visible: "Clubs & Associations"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 11-clubs
+
+- openLink: nexus://venues
+- extendedWaitUntil:
+    visible: "Partner venues"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 12-partner-venues

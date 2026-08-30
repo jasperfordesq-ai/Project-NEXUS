@@ -8,7 +8,7 @@ import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -264,7 +264,16 @@ function ChallengeCard({ challenge }: { challenge: IdeationChallenge }) {
   const openChallenge = () => router.push({ pathname: '/(modals)/ideation-detail', params: { id: String(challenge.id) } } as unknown as Href);
 
   return (
-    <NativePressable accessibilityLabel={challenge.title} onPress={openChallenge} feedback="highlight">
+    <NativePressable
+      accessibilityLabel={[
+        challenge.title,
+        t(`ideation:status.${challenge.status}`),
+        challenge.category ?? '',
+        t('ideation:ideasCount', { count: challenge.ideas_count ?? 0 }),
+      ].filter(Boolean).join(', ')}
+      onPress={openChallenge}
+      feedback="highlight"
+    >
       <HeroCard variant="default" className="overflow-hidden rounded-panel p-0">
         <View className="absolute bottom-0 left-0 top-0 w-1.5" style={{ backgroundColor: primary }} />
         <HeroCard.Body className="gap-3 p-4 pl-5">
@@ -286,17 +295,17 @@ function ChallengeCard({ challenge }: { challenge: IdeationChallenge }) {
           </View>
 
           <View className="flex-row flex-wrap gap-2 pl-14">
-            <Chip size="sm" variant="secondary">
-              <Chip.Label>{t(`ideation:status.${challenge.status}`)}</Chip.Label>
-            </Chip>
+            <Surface variant="secondary" className="rounded-full px-3 py-1.5">
+              <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t(`ideation:status.${challenge.status}`)}</Text>
+            </Surface>
             {challenge.category ? (
-              <Chip size="sm" variant="soft" color="default">
-                <Chip.Label>{challenge.category}</Chip.Label>
-              </Chip>
+              <Surface variant="secondary" className="rounded-full px-3 py-1.5">
+                <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{challenge.category}</Text>
+              </Surface>
             ) : null}
-            <Chip size="sm" variant="soft" color="default">
-              <Chip.Label>{t('ideation:ideasCount', { count: challenge.ideas_count ?? 0 })}</Chip.Label>
-            </Chip>
+            <Surface variant="secondary" className="rounded-full px-3 py-1.5">
+              <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t('ideation:ideasCount', { count: challenge.ideas_count ?? 0 })}</Text>
+            </Surface>
           </View>
 
           <View className="pl-14">

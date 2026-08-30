@@ -58,6 +58,7 @@ const DEFAULT_SCREENS = [
   'resources', 'polls', 'goals', 'matches', 'organisations', 'blog',
   'group-exchanges', 'achievements', 'leaderboard', 'search', 'settings', 'support',
   'connections', 'activity', 'endorsements', 'reviews', 'skills',
+  'courses', 'podcasts', 'clubs', 'venues', 'ideation',
 ];
 
 /**
@@ -73,7 +74,7 @@ const SCREEN_FINGERPRINT = {
   login: /Welcome back|Sign in to your timebank/,
   'select-tenant': /Select your timebank|Choose the community you belong to/,
   home: /Community Feed|Create post/,
-  listings: /Offers|Requests|Browse exchanges/,
+  listings: /Listings|Offers?|Requests?|Browse exchanges/,
   events: /Upcoming|Past events|step-free/i,
   groups: /GROUPS|Featured|My groups/i,
   members: /Member directory|Search members/i,
@@ -101,6 +102,11 @@ const SCREEN_FINGERPRINT = {
   endorsements: /Endorsements|My skills|Discover/i,
   reviews: /Reviews|Received|Pending/i,
   skills: /Skills|Endorsements|Add skill/i,
+  courses: /Courses|Search courses|My courses/i,
+  podcasts: /Podcasts|Search shows|No podcast shows/i,
+  clubs: /Clubs|Associations|Search clubs/i,
+  venues: /Partner venues|My pass|No partner venues/i,
+  ideation: /Ideas|Challenges|Browse challenges/i,
 };
 
 const screens = argValue('--screens', null)?.split(',').map((s) => s.trim()).filter(Boolean)
@@ -162,9 +168,11 @@ function parseNodes(xml) {
     const bounds = attr('bounds').match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
     if (!bounds) continue;
     const [, x1, y1, x2, y2] = bounds.map(Number);
+    if (x2 <= x1 || y2 <= y1) continue; // off-viewport/invalid UIAutomator fragment
     nodes.push({
       clickable: attr('clickable') === 'true',
       longClickable: attr('long-clickable') === 'true',
+      enabled: attr('enabled') === 'true',
       scrollable: attr('scrollable') === 'true',
       className: attr('class'),
       desc: attr('content-desc'),
@@ -220,7 +228,7 @@ function signatureOf(xml) {
  * consecutive reads agree. A screen that never settles is reported as UNSETTLED and left
  * out of the totals rather than counted as if it had been measured.
  */
-async function settledTree(previousSignature) {
+async function settledTree(previousSignature, fingerprint) {
   const DEADLINE_MS = 20000;
   const POLL_MS = 1200;
   const started = Date.now();
@@ -236,6 +244,10 @@ async function settledTree(previousSignature) {
     }
     const signature = signatureOf(xml);
     if (signature === previousSignature) continue;  // still the screen we came from
+    // A cold-start splash can hold still for two polls before the routed React screen
+    // arrives. Do not declare that stable shell to be the destination and then mark
+    // the route wrong; keep polling until this route's own fingerprint is present.
+    if (fingerprint && !fingerprint.test(xml)) continue;
     if (signature === lastSignature) return { xml, signature, settled: true };
     lastXml = xml;
     lastSignature = signature;
@@ -261,7 +273,8 @@ async function main() {
   for (const route of screens) {
     forceStopApp();
     openScreen(route);
-    const { xml, signature, settled } = await settledTree(previousSignature);
+    const fingerprint = SCREEN_FINGERPRINT[route];
+    const { xml, signature, settled } = await settledTree(previousSignature, fingerprint);
     if (!xml) {
       console.log(`${route.padEnd(18)} UNREADABLE — the screen never arrived`);
       perScreen.push({ route, status: 'unreadable' });
@@ -276,7 +289,6 @@ async function main() {
     }
     previousSignature = signature;
 
-    const fingerprint = SCREEN_FINGERPRINT[route];
     if (fingerprint && !fingerprint.test(xml)) {
       console.log(`${route.padEnd(18)} UNVERIFIED — the screen on the device is not this one`);
       perScreen.push({ route, status: 'unverified' });
@@ -284,7 +296,7 @@ async function main() {
     }
 
     const nodes = parseNodes(xml);
-    const targets = nodes.filter((node) => node.clickable || node.longClickable);
+    const targets = nodes.filter((node) => node.enabled && (node.clickable || node.longClickable));
     const undersized = targets.filter((node) => node.heightPx < aaMinPx || node.widthPx < aaMinPx);
     const clipped = undersized.filter((node) => isClippedAtScrollableEdge(node, nodes));
     const small = undersized.filter((node) => !clipped.includes(node));

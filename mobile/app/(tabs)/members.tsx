@@ -230,6 +230,7 @@ function MembersHeader({
         </View>
 
         <SearchInput
+          testID="members-search"
           value={search}
           onChangeText={setSearch}
           placeholder={t('search.placeholder')}

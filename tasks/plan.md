@@ -1,105 +1,154 @@
-# Implementation Plan: Native Mobile Production Readiness
+# Implementation Plan: Five Pre-Approval Mobile Workstreams
 
 ## Overview
 
-Bring the Expo / React Native application in `mobile/` to the strongest production-ready
-state that can be proved before Apple Developer approval, without changing or uploading
-anything to the Google Play release currently under review. Work is limited to source,
-tests, local and CI automation, release documentation, generated local evidence, and
-store assets already held in the repository.
+Complete the five remaining mobile workstreams that can be proved from the Windows
+workstation, local Laravel fixtures, Android emulators and existing GitHub-hosted device
+automation. The work must improve evidence rather than inflate scores: a mocked component
+test is not a device journey, an accessibility-tree inspection is not spoken TalkBack proof,
+and a valid screenshot is not automatically good store artwork.
+
+## Current checkpoint — 2026-08-30
+
+Items 1–5 are locally implemented and verified. The screenshot decision is to retain seven
+strong Partner Demo frames and replace the empty Messages slot only after a genuinely
+populated Courses (or better module) capture exists; the recipe is prepared and all current
+assets pass, so manufacturing an empty replacement is not remaining work. The detailed
+evidence and the resolved ancestry check are kept at the top of `tasks/todo.md` so a resumed
+session cannot mistake local proof for banked CI or repository preparation for a store upload.
 
 ## Protected Boundaries
 
-- Do not alter the Google Play Console listing, release, review, tracks, screenshots, copy,
-  AABs, APKs, or rollout state.
-- Do not create signed Apple builds, configure Apple credentials, upload to TestFlight, or
-  submit to App Review before Apple Developer Program approval.
-- Do not deploy production services or publish the Apple AASA file.
-- Preserve the adults-only native product boundary and all unrelated concurrent work.
+- Do not open or mutate Google Play Console, its listing, review, tracks, artifacts or rollout.
+- Do not publish a production/staging OTA update, deploy services or publish Apple AASA.
+- Do not create signed Apple builds, configure credentials, upload to TestFlight or submit.
+- Preserve the adults-only native boundary and all unrelated work.
+- The unrelated Sentry commit `d885dee60` was initially local-only and therefore blocked a
+  mobile push. During final verification `origin/main` advanced to the same commit; record
+  that resolution and still stage only the explicit mobile/readiness paths below.
 
-## Architecture Decisions
+## Architecture and Evidence Decisions
 
-- Treat Laravel as the production/default API contract and the Expo app in `mobile/` as the
-  native client. The removed Capacitor project is not part of this work.
-- Separate source readiness, automated emulator evidence, signed-artifact readiness, and
-  physical-device certification in every status claim.
-- Prefer release-critical journey automation and fail-closed release gates over new features.
-- Keep store mutations behind explicit owner approval even when copy or assets are prepared.
+- Device automation must assert an external effect through Laravel/API/database evidence,
+  not merely the presence of a screen or successful tap.
+- Accessibility audits fail closed when a requested route cannot be authenticated,
+  fingerprinted or measured. TalkBack remains PARTIAL unless speech/focus-driven operation
+  is genuinely observed; an Espresso feasibility result must not be overstated.
+- Response-contract coverage counts only non-empty comparable responses. Empty, forbidden,
+  unresolved and client-mapped getters remain named gaps until separately proved.
+- Pixel baselines are accepted only after two independent captures reproduce within the
+  existing 0.1% threshold in each colour scheme.
+- Repository screenshot replacement is allowed; store upload is not. Originals and exact-run
+  artifacts remain traceable.
+
+## Dependency Order
+
+1. Baseline and fixture ownership.
+2. Trustworthy effect-verification and authenticated emulator access.
+3. Journey, accessibility and API coverage expansion.
+4. Deterministic pixel capture.
+5. Store-image comparison and release-ledger refresh.
+6. Full verification, scoped commit and push only when unrelated ownership is resolved.
 
 ## Task List
 
-### Phase 1: Baseline and release boundaries
+### Phase 0: Baseline and selection
 
-- [x] Record the exact source revision, working-tree ownership, current workflow evidence,
-  maintained journey totals, bundle headroom, API drift, and store-asset state.
-- [x] Identify stale or contradictory readiness documents and every actionable OPEN/PARTIAL
-  item that does not require Apple approval, a store mutation, or an unavailable real device.
+- [ ] Task 1: Reconcile the current ledger, device-flow inventory, fixture roles, screenshot
+  artifact and local/remote Git ownership.
+- [ ] Task 2: Select the first high-value PROVEN journeys by release risk and confirm the
+  observable server/database effects available to each.
 
-### Checkpoint: Baseline
+### Checkpoint A: Trustworthy scope
 
-- [x] Protected Apple and Google boundaries are documented and no external state changed.
-- [x] Every proposed task has a reproducible verification command or named evidence limit.
+- [ ] Every selected journey has a state-reset method, runtime action and independent effect
+  assertion; protected store and unrelated Git boundaries are recorded.
 
-### Phase 2: Automated release gates
+### Phase 1: Effect-verifying Android journeys
 
-- [x] Run mobile tests with coverage ratchets, TypeScript, lint, translation integrity,
-  route/API/theme drift, release configuration, security, startup budget, and asset checks.
-- [x] Run repository documentation, SPDX, version, semantic-version, and applicable preflight
-  checks without building or uploading a new store artifact.
-- [x] Investigate every failure or warning that can affect a production binary; add a
-  regression guard for each source defect fixed.
+- [ ] Task 3: Add reusable fixture/effect verification for device flows without exposing
+  credentials or coupling assertions to unstable row identifiers.
+- [ ] Task 4: Automate the selected exchange and messaging effects on the emulator.
+- [ ] Task 5: Automate the selected volunteering/event/marketplace effects on the emulator.
 
-### Checkpoint: Automated gates
+### Checkpoint B: Journey automation
 
-- [x] All applicable non-enrollment gates pass at the same source revision.
-- [x] Expected Apple identifier failures are reported as external blockers, not patched with
-  invented values.
+- [ ] The new flows fail when their server effect is removed, pass independently from a clean
+  fixture state and run through the maintained device harness.
 
-### Phase 3: Actionable production-readiness debt
+### Phase 2: Accessibility breadth
 
-- [x] Audit the ledger's OPEN and PARTIAL rows and close every source, fixture, automation,
-  accessibility, privacy, security, error-handling, or observability issue that can be closed
-  without touching protected store state.
-- [x] Strengthen automated device workflows and critical-journey checks where existing
-  emulator evidence can provide a reliable regression gate.
-- [x] Recheck app-size headroom, production dependencies, sensitive notification boundaries,
-  deep links, account deletion, offline/error recovery, and store-audience enforcement.
+- [ ] Task 6: Run the authenticated touch-target crawler against the current source build,
+  extend route fingerprints where reliable and preserve fail-closed coverage reporting.
+- [ ] Task 7: Fix and regression-test every genuine sub-24dp target or off-card layout defect
+  found in the expanded sample; report 24–47dp guidance debt separately.
+- [ ] Task 8: Perform a bounded Espresso/TalkBack feasibility spike and either add a genuine
+  focus-driven core journey or document the precise physical/instrumentation blocker.
 
-### Checkpoint: Production candidate
+### Checkpoint C: Accessibility evidence
 
-- [x] No actionable source blocker remains outside the protected external gates.
-- [x] Remaining limitations require Apple approval, owner/legal input, protected Play action,
-  or physical-device evidence and are named precisely.
+- [ ] Requested-versus-verified route counts, density, findings and evidence limits are saved;
+  no screenshot or UI tree is described as spoken screen-reader proof.
 
-### Phase 4: Handoff and banked evidence
+### Phase 3: Response-contract breadth
 
-- [x] Refresh the authoritative mobile status, Apple freeze checklist, roadmap, and release
-  handoff so they reference current evidence and do not overclaim simulator proof.
-- [x] Record rollback, monitoring, staged-release, reviewer-access, and exact-candidate steps.
-- [x] Update `CHANGELOG.md` under the correct Unreleased subsection and refresh its bundled
-  frontend copy for all release-relevant changes.
+- [ ] Task 9: Produce a machine-readable classification of all comparable, empty, forbidden,
+  unresolved and client-mapped typed getters.
+- [ ] Task 10: Add deterministic fixture records and authorised roles for the highest-risk
+  empty/unresolved/forbidden money, authentication, messaging and exchange getters.
+- [ ] Task 11: Add mapping-contract tests for high-risk client-reshaped responses and rerun the
+  live read-only Laravel audit with a fail-closed result.
 
-### Phase 5: Final verification and delivery
+### Checkpoint D: API evidence
 
-- [x] Run focused tests, full applicable gates, diff review, secret scan, and working-tree
-  ownership check.
-- [x] Commit and push only scoped files directly to `main`.
-- [x] Confirm required GitHub workflows are green and produce a final external-gate handoff.
+- [ ] Checked coverage rises without reclassifying unproved getters, zero checked required
+  fields are missing, and any genuine mismatch has a failing regression test and source fix.
+
+### Phase 4: Pixel-regression breadth
+
+- [ ] Task 12: Remove controllable volatility from selected high-value screens using fixed
+  fixtures, deterministic ordering and explicit settle conditions.
+- [ ] Task 13: Capture twice in light and dark, approve only reproducible additions and keep
+  irreducibly volatile screens inspection-only with reasons.
+
+### Checkpoint E: Visual gate
+
+- [ ] Every newly gated screen reproduces under 0.1% per scheme and the sensitivity mutation
+  guard still detects a meaningful layout/colour change.
+
+### Phase 5: Google Play screenshot assessment
+
+- [ ] Task 14: Download and hash the exact-head Android screenshot artifact, inspect every
+  image for current content, personal data, overlays, clipping and marketing usefulness.
+- [ ] Task 15: Compare the artifact with the maintained 24-image Play set and prepare scoped
+  repository replacements only where the current image is materially better.
+
+### Checkpoint F: Store assets prepared, not uploaded
+
+- [ ] Phone/tablet/light/dark dimensions and formats pass; a selection record explains every
+  kept or replaced image; no Console or release state changed.
+
+### Phase 6: Bank evidence and deliver
+
+- [ ] Task 16: Refresh the journey ledger, authoritative status, roadmap and changelog without
+  overstating emulator, tree, fixture or screenshot evidence.
+- [ ] Task 17: Run focused mutation checks, full mobile/repository gates, diff/secret review,
+  explicit staging and CI; commit/push only if unrelated Git ownership is safely resolved.
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Accidentally disturbing the Play review | Review delay or rejection | No Console access, upload, build submission, or listing mutation |
-| Treating Simulator success as iPhone proof | False Apple readiness claim | Preserve signed/TestFlight/physical-device gates explicitly |
-| Concurrent work enters the mobile commit | Unreviewed release content | Explicit path staging and final ownership review |
-| Broad test count hides broken journeys | Public defects | Prioritise runtime effects and device-level regression guards |
-| Dependency remediation forces an unsafe Expo upgrade | New release instability | Triage reachability; reject unsafe major upgrades during freeze |
-| Documentation drifts from evidence | Wrong release decisions | One authoritative status and exact run/commit references |
+| Flow passes after tapping but effect failed | False certification | Independent API/database assertion and mutation check |
+| Fixture state makes flows order-dependent | Flaky CI | Idempotent reset and generated semantic identifiers |
+| Accessibility route measures previous screen | False zero findings | Stable fingerprint plus fail-closed requested/verified count |
+| TalkBack claim exceeds evidence | Misleading accessibility status | Separate tree, focus and spoken-operation evidence explicitly |
+| Pixel baseline captures changing data | Noisy or ignored gate | Two independent captures before approval; fixed dates/order |
+| Better-looking image contains member data | Privacy incident | Synthetic fixtures, visual inspection and sensitivity scan |
+| Mobile push includes unrelated work | Unauthorized change | Recheck origin/HEAD and stage only the explicit mobile/readiness paths |
 
 ## Open External Gates
 
-- Apple Developer Program approval, Team ID, App Store Connect numeric ID, signing, APNs,
-  AASA publication, signed EAS build, TestFlight, and real-iPhone certification.
-- Google Play release/listing changes and the exact next Play-distributed physical-phone walk.
-- Owner/legal App Store declarations and explicit authorization at submission/release gates.
+- Apple enrollment, identifiers, signing, APNs, AASA publication, TestFlight and iPhone proof.
+- Google Play review/listing/release changes and exact distributed-artifact physical-phone walk.
+- Qualified native-speaker certification and owner/legal store declarations.

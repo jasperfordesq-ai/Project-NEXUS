@@ -330,6 +330,20 @@ them.** A single Maestro flow over this tier would convert fifteen rows.
 > command failed honestly instead of reporting the verified route's zero AA failures as the
 > whole audit. Protected-screen evidence still awaits the exact next authenticated build.
 
+> **2026-08-30 authenticated pre-approval update for rows 7.9, 7.10 and 7.17:** the current
+> source build was crawled at the emulator's measured 420dpi across 34 authenticated routes,
+> including Courses, Podcasts, Clubs, Partner Venues and Ideation. The expanded run found
+> actionless 20dp metadata chips on Group Exchanges, Activity, Reviews and Ideation; those
+> labels are now non-pressable surfaces. The final evidence is a 33-route complete sweep plus
+> a green rerun of the one resource-heavy unsettled route and the two cards changed during
+> review, giving 34/34 verified routes with zero controls below the 24dp WCAG 2.2 AA floor.
+> TalkBack is installed and enabled and the probe fails closed when it is not, but spoken
+> order and swipe/double-tap operation are still not capturable here, so row 7.9 remains
+> PARTIAL. The pixel gate now compares eight stable light screens and seven stable dark
+> screens: Courses, Clubs and Partner Venues were each captured twice, visually inspected
+> and reproduced at 0 pixels in both schemes. Wallet and Settings stale baselines were also
+> reviewed and repeated before update. Dynamic routes remain inspection-only where recorded.
+
 > **2026-08-27 audit-harness correction:** the picker also showed an apparent 8dp Agoris
 > target at the bottom of the phone viewport. The accessibility tree proved this was a
 > hundreds-of-dp card clipped by the scroll viewport, not a genuinely 8dp control. The
@@ -359,6 +373,13 @@ arrives; never add a row to another tier.
 | 8.8 | RESERVE | OPEN | — |
 | 8.9 | RESERVE | OPEN | — |
 | 8.10 | RESERVE | OPEN | — |
+
+> **2026-08-30 focused response-contract update for row 8.2:** the disposable fixture now
+> authenticates member A, member B and an administrator, and a blocking live check validates
+> populated listing search, member search, connection status in both directions and the admin
+> member directory through the same Laravel responses the client consumes. This closes five
+> high-value fixture/role gaps without pretending the remaining empty, forbidden, unresolved
+> or client-mapped getters have been proved; row 8.2 therefore remains PARTIAL.
 
 ## Capability parity — what the website can do and the app cannot
 

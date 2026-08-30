@@ -1,7 +1,7 @@
 # Copyright © 2024–2026 Jasper Ford
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Mobile device tests — the ten Maestro end-to-end flows, on a real Android
+# Mobile device tests — the eleven Maestro end-to-end flows, on a real Android
 # emulator, against a real Laravel API.
 #
 # WHY THIS IS A SEPARATE WORKFLOW
@@ -14,7 +14,7 @@
 # a week.
 #
 # 🔴 UNVERIFIED UNTIL ITS FIRST RUN. Every step here was exercised by hand on the
-# development machine (all ten flows pass, screenshots reproduce at 0 pixels), but
+# development machine (all eleven flows pass, screenshots reproduce at 0 pixels), but
 # this YAML has never executed on a GitHub runner. Treat the first run as the test
 # of the workflow, not of the app: expect to iterate on the emulator setup, and do
 # not read an early failure as a mobile regression. `workflow_dispatch` is there to
@@ -143,7 +143,7 @@ jobs:
           APP_ENV: testing
           APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
 
-      - name: Seed the E2E fixture (3 users + 1 listing)
+      - name: Seed the E2E fixture (3 users + 2 listings)
         run: php artisan db:seed --class=E2ETestDataSeeder --force
         env:
           DB_HOST: 127.0.0.1
@@ -180,7 +180,7 @@ jobs:
           #
           # So login 500'd at the moment it tried to ISSUE a token. The readiness poll
           # below therefore never saw success, timed out after 60s, and the emulator, the
-          # APK build and all ten Maestro flows were skipped.
+          # APK build and all eleven Maestro flows were skipped.
           #
           # Note the shape of this bug: bad credentials returned a clean 401, and only a
           # SUCCESSFUL login failed — so probing the endpoint the obvious way says the API
@@ -193,7 +193,7 @@ jobs:
           REDIS_HOST: 127.0.0.1
 
       # One step proves two things: the API is answering, AND the seeded account
-      # authenticates. Fail here rather than eight flows later — if login does not
+      # authenticates. Fail here rather than eleven flows later — if login does not
       # work, nothing downstream is testing the app.
       #
       # 🔴 The readiness probe is the LOGIN endpoint, not /health.php. Under PHP's
@@ -253,6 +253,14 @@ jobs:
       - name: Install mobile dependencies
         working-directory: mobile
         run: npm ci
+
+      - name: Verify live member response contracts across fixture roles
+        working-directory: mobile
+        run: npm run verify:live-member-contracts
+        env:
+          # This check runs on the host, before the emulator exists. The workflow-level
+          # 10.0.2.2 URL is only correct from inside Android's network namespace.
+          API_URL: http://127.0.0.1:8090
 
       # 🔴 JDK 17, NOT a newer one. Gradle 8.14.3 rejects Java 25 outright with
       # "Unsupported class file major version 69", which is what Android Studio
@@ -334,8 +342,18 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           ls -l /dev/kvm
 
-      - name: Run the ten flows on an emulator
+      - name: Run the eleven flows on an emulator
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          # The effect verifier is a Laravel CLI process on the host. Give it the same
+          # disposable database/runtime configuration used by migration and seeding.
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: nexus
+          DB_USER: root
+          DB_PASS: testing
+          APP_ENV: testing
+          APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
         with:
           api-level: 36
           target: google_apis
@@ -363,7 +381,7 @@ jobs:
             adb shell settings put secure screensaver_enabled 0
             # API 36's headless System UI can raise its own ANR dialog over a
             # perfectly rendered app. Run 33268853140 showed that same system
-            # process overlay in all ten independent failure screenshots while
+            # process overlay in all eleven independent failure screenshots while
             # Metro kept bundling the app normally. Suppress platform crash/ANR
             # dialogs on this disposable emulator so they cannot intercept the
             # app journey; app crashes still fail through Maestro and logs.
@@ -380,7 +398,9 @@ jobs:
 
             # e2e.mjs checks every precondition first and says which one is wrong,
             # rather than letting Maestro report a missing button ten times.
+            php scripts/mobile-device-effects.php reset
             npm run e2e -- --serial emulator-5554
+            php scripts/mobile-device-effects.php assert
 
             # Captured for eyeballing and uploaded below. NOT compared: the
             # committed baselines were taken on a different emulator build, and

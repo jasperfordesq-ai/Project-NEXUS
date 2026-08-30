@@ -98,6 +98,7 @@ export default function ExchangeCard({ exchange, onToggleSave }: ExchangeCardPro
                 size="sm"
                 variant={isFavorited ? 'danger-soft' : 'secondary'}
                 onPress={toggleSave}
+                testID={`exchange-save-${exchange.id}`}
                 accessibilityLabel={isFavorited ? t('unsaveListing') : t('saveListing')}
               >
                 <Ionicons

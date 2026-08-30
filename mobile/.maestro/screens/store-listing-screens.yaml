@@ -61,13 +61,13 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 02-listings
 
-- tapOn: "Messages"
+- openLink: nexus://courses
 - extendedWaitUntil:
-    visible: "Messages|Conversations|No messages"
-    timeout: 15000
+    visible: "Courses|Search courses|No courses"
+    timeout: 20000
 - waitForAnimationToEnd:
     timeout: 8000
-- takeScreenshot: 03-messages
+- takeScreenshot: 03-courses
 
 - launchApp:
     clearState: false

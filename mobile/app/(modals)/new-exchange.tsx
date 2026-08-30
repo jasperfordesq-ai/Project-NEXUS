@@ -309,6 +309,7 @@ function NewExchangeModalInner() {
 
             <FieldLabel label={t('titleLabel')} theme={theme} />
             <Input
+              testID="new-exchange-title"
               value={title}
               onChangeText={(value) => {
                 setTitle(value);
@@ -331,6 +332,7 @@ function NewExchangeModalInner() {
 
             <FieldLabel label={t('description')} theme={theme} />
             <Input
+              testID="new-exchange-description"
               ref={descriptionRef}
               value={description}
               onChangeText={(value) => {
@@ -484,6 +486,7 @@ function NewExchangeModalInner() {
 
             <FieldLabel label={t('timeCredits')} theme={theme} />
             <Input
+              testID="new-exchange-hours"
               ref={hoursRef}
               value={hours}
               onChangeText={(value) => {
@@ -509,7 +512,7 @@ function NewExchangeModalInner() {
             <HeroButton className="flex-1" variant="secondary" isDisabled={submitting} onPress={() => router.back()}>
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
             </HeroButton>
-            <HeroButton className="flex-1" variant="primary" isDisabled={submitting} onPress={() => void handleSubmit()}>
+            <HeroButton testID="new-exchange-submit" className="flex-1" variant="primary" isDisabled={submitting} onPress={() => void handleSubmit()}>
               {submitting ? <Spinner size="sm" /> : <AccentIcon name="checkmark-outline" size={18} />}
               <HeroButton.Label>{type === 'offer' ? t('postOffer') : t('postRequest')}</HeroButton.Label>
             </HeroButton>

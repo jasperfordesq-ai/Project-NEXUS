@@ -203,6 +203,10 @@ describe('NewExchangeModal', () => {
       expect.objectContaining({ flex: 1, backgroundColor: '#0A0A0F' }),
     );
     expect(getByTestId('new-exchange-footer')).toBeTruthy();
+    expect(getByTestId('new-exchange-title')).toBeTruthy();
+    expect(getByTestId('new-exchange-description')).toBeTruthy();
+    expect(getByTestId('new-exchange-hours')).toBeTruthy();
+    expect(getByTestId('new-exchange-submit')).toBeTruthy();
   });
 
   it('requires title, description, category, and valid credits', async () => {

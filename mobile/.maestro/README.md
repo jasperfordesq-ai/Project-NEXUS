@@ -70,6 +70,8 @@ Credentials are injected via `--env` and referenced in flows as `${TEST_EMAIL}` 
 | `07-profile-explore.yaml` | Profile Explore: Achievements + AI Assistant | No (isolated login) |
 | `08-search-flow.yaml` | Profile > Search: type query, assert filter pills | No (isolated login) |
 | `09-registration-flow.yaml` | Registration form renders correctly (no submit) | No (clearState) |
+| `10-expanded-member-modules.yaml` | Courses, podcasts, clubs and partner venues are reachable | No (isolated login) |
+| `11-effect-verifying-member-actions.yaml` | Create a listing, save another member's listing, and send a connection request; CI verifies database effects | No (isolated login) |
 
 Every root journey starts from a clean state. Authenticated journeys use
 `subflows/login.yaml`; registration uses `subflows/open-login.yaml`. This keeps the

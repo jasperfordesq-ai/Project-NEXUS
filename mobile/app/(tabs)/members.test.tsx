@@ -92,9 +92,10 @@ describe('MembersScreen (tab)', () => {
   });
 
   it('renders the title and search input', () => {
-    const { getAllByText, getByPlaceholderText } = render(<MembersScreen />);
+    const { getAllByText, getByPlaceholderText, getByTestId } = render(<MembersScreen />);
     expect(getAllByText('Members').length).toBeGreaterThan(0);
     expect(getByPlaceholderText('Search members...')).toBeTruthy();
+    expect(getByTestId('members-search')).toBeTruthy();
   });
 
   it('renders empty state when no members and not loading', () => {

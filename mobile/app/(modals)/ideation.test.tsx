@@ -129,13 +129,16 @@ describe('IdeationScreen', () => {
   });
 
   it('renders challenges and opens detail', () => {
-    const { getAllByText, getByText } = render(<IdeationScreen />);
+    const { getAllByText, getByLabelText } = render(<IdeationScreen />);
 
     expect(getAllByText('Ideas').length).toBeGreaterThan(0);
-    expect(getByText('Improve the park')).toBeTruthy();
     expect(getAllByText('Environment').length).toBeGreaterThan(0);
+    const challenge = getByLabelText(
+      'Improve the park, Open, Environment, 3 ideas',
+    );
+    expect(challenge).toBeTruthy();
 
-    fireEvent.press(getByText('View challenge'));
+    fireEvent.press(challenge);
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/ideation-detail', params: { id: '12' } });
   });
 });

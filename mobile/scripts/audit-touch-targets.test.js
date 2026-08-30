@@ -25,10 +25,18 @@ describe('touch-target audit route isolation', () => {
   });
 
   it('fingerprint-gates the widened member-facing screen set', () => {
-    for (const route of ['connections', 'activity', 'endorsements', 'reviews', 'skills']) {
+    for (const route of [
+      'connections', 'activity', 'endorsements', 'reviews', 'skills',
+      'courses', 'podcasts', 'clubs', 'venues', 'ideation',
+    ]) {
       expect(source).toContain(`'${route}'`);
       expect(source).toMatch(new RegExp(`\\b${route.replace('-', "['-]")}\\s*:`));
     }
+  });
+
+  it('does not settle on a stable native splash before the routed screen arrives', () => {
+    expect(source).toContain('async function settledTree(previousSignature, fingerprint)');
+    expect(source).toMatch(/if \(fingerprint && !fingerprint\.test\(xml\)\) continue;/);
   });
 
   it('can audit the public login and community-picker screens without a member session', () => {
@@ -40,6 +48,11 @@ describe('touch-target audit route isolation', () => {
     expect(source).toContain('function isClippedAtScrollableEdge(node, nodes)');
     expect(source).toContain('viewportClipped: clipped.length');
     expect(source).toContain('not counted as target-size failures');
+  });
+
+  it('does not count disabled decorative Pressables or invalid off-viewport bounds as targets', () => {
+    expect(source).toContain('if (x2 <= x1 || y2 <= y1) continue;');
+    expect(source).toMatch(/nodes\.filter\(\(node\) => node\.enabled && \(node\.clickable \|\| node\.longClickable\)\)/);
   });
 });
 

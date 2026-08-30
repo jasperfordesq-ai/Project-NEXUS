@@ -129,7 +129,9 @@ describe('ExchangeCard', () => {
 
   it('exposes a card save action without opening the detail screen', () => {
     const onToggleSave = jest.fn();
-    const { getByLabelText } = render(<ExchangeCard exchange={exchange} onToggleSave={onToggleSave} />);
+    const { getByLabelText, getByTestId } = render(<ExchangeCard exchange={exchange} onToggleSave={onToggleSave} />);
+
+    expect(getByTestId('exchange-save-42')).toBeTruthy();
 
     fireEvent.press(getByLabelText('saveListing'));
 
