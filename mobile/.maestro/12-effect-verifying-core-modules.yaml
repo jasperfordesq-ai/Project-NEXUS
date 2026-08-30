@@ -15,7 +15,7 @@ appId: ie.project.nexus
 # composer route directly: a text selector matches both the header icon and the
 # empty-state button, and run 33328312721 showed that ambiguity can leave the
 # flow on Messages even though Maestro reports the tap as complete.
-- openLink: "nexus://messages/new"
+- openLink: "nexus:///messages/new"
 - extendedWaitUntil:
     visible: "Search members"
     timeout: 20000

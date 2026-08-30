@@ -63,7 +63,7 @@ describe('Android device screenshot evidence', () => {
 
 describe('Android persisted-effect journeys', () => {
   it('opens the message composer deterministically before asserting its contents', () => {
-    expect(coreEffectFlow).toContain('openLink: "nexus://messages/new"');
+    expect(coreEffectFlow).toContain('openLink: "nexus:///messages/new"');
     expect(coreEffectFlow).not.toContain('- tapOn: "New message"');
   });
 

@@ -26,6 +26,7 @@ describe('native intent route rewriting', () => {
   });
 
   it('maps messages and ideation links without going through unmatched routes', () => {
+    expect(mapSystemPathToNativeRoute('nexus:///messages/new')).toBe('/(modals)/new-message');
     expect(mapSystemPathToNativeRoute('/messages/new/260?listing=90877')).toBe('/(modals)/thread?listing=90877&recipientId=260');
     expect(mapSystemPathToNativeRoute('/messages?user=25717&context=event&context_id=12&name=E2E%20Admin')).toBe(
       '/(modals)/thread?context_id=12&name=E2E+Admin&context_type=event&recipientId=25717',
