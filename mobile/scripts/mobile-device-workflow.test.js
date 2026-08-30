@@ -15,12 +15,24 @@ const tour = fs.readFileSync(
   path.resolve(mobileRoot, '.maestro', 'screens', 'capture-screens.yaml'),
   'utf8',
 );
+const openLogin = fs.readFileSync(
+  path.resolve(mobileRoot, '.maestro', 'subflows', 'open-login.yaml'),
+  'utf8',
+);
 
 describe('Android device screenshot evidence', () => {
   it('waits for the real fresh-install destination before choosing a tenant', () => {
     expect(tour).toContain('visible: "Select your timebank|Welcome back"');
     expect(tour).toContain('id: "tenant-option-hour-timebank"');
     expect(tour).toContain('visible: "Welcome back"');
+  });
+
+  it('dismisses an API 36 System UI ANR before testing the app underneath', () => {
+    for (const flow of [openLogin, tour]) {
+      expect(flow).toContain('(System UI|Process system) isn.t responding');
+      expect(flow).toContain('- tapOn: "^Wait$"');
+      expect(flow).toContain('visible: "Select your timebank|Welcome back"');
+    }
   });
 
   it('cannot report green when the listing tour or artifact is missing', () => {

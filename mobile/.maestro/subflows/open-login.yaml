@@ -8,13 +8,23 @@
 appId: ie.project.nexus
 ---
 # A debug client occasionally leaves only the native root view visible while
-# Metro is still attaching after many consecutive cold starts. Retry the whole
-# cold launch once, but never proceed until a genuine first screen is visible.
+# Metro is still attaching after many consecutive cold starts. API 36's headless
+# emulator can also put its own ANR sheet over a correctly rendered picker even
+# when hide_error_dialogs=1. Treat that sheet as a platform condition: choose
+# Wait, then require a genuine app destination before continuing.
 - retry:
     maxRetries: 2
     commands:
       - launchApp:
           clearState: true
+      - extendedWaitUntil:
+          visible: "Select your timebank|Welcome back|(System UI|Process system) isn.t responding"
+          timeout: 60000
+      - runFlow:
+          when:
+            visible: "(System UI|Process system) isn.t responding"
+          commands:
+            - tapOn: "^Wait$"
       - extendedWaitUntil:
           visible: "Select your timebank|Welcome back"
           timeout: 60000

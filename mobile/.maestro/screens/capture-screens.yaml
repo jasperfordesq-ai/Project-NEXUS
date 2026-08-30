@@ -30,6 +30,17 @@ appId: ie.project.nexus
 # A fresh API 36 installation can remain on the native splash beyond Maestro's
 # short conditional lookup. Run 33282022295 checked too early, skipped the tenant
 # branch, and then waited for login while the app was actually on the picker.
+# Run 33283006194 exposed a separate emulator fault: its System UI ANR sheet
+# covered the correctly rendered picker despite hide_error_dialogs=1. Dismiss
+# that platform-owned sheet explicitly, then prove the app destination.
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back|(System UI|Process system) isn.t responding"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "(System UI|Process system) isn.t responding"
+    commands:
+      - tapOn: "^Wait$"
 - extendedWaitUntil:
     visible: "Select your timebank|Welcome back"
     timeout: 60000
