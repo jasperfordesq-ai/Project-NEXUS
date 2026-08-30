@@ -27,14 +27,25 @@ appId: ie.project.nexus
     clearState: true
 
 # ── Sign in ───────────────────────────────────────────────────────────────────
+# A fresh API 36 installation can remain on the native splash beyond Maestro's
+# short conditional lookup. Run 33282022295 checked too early, skipped the tenant
+# branch, and then waited for login while the app was actually on the picker.
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back"
+    timeout: 60000
 - runFlow:
     when:
       visible: "Select your timebank"
     commands:
       - extendedWaitUntil:
-          visible: "Select your timebank"
-          timeout: 5000
-      - tapOn: "hour-timebank"
+          visible:
+            id: "tenant-option-hour-timebank"
+          timeout: 15000
+      - tapOn:
+          id: "tenant-option-hour-timebank"
+      - extendedWaitUntil:
+          visible: "Welcome back"
+          timeout: 15000
 
 - extendedWaitUntil:
     visible: "Welcome back"
