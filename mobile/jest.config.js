@@ -15,6 +15,12 @@ module.exports = {
   // Map react-native-reanimated to a self-contained manual mock so the native
   // react-native-worklets initialisation (NativeWorklets) is never invoked in tests.
   moduleNameMapper: {
+    // The production wrapper imports Ionicons directly to avoid bundling every icon family.
+    // jest-expo's barrel mock does not intercept that path, so the real component otherwise
+    // starts asynchronous font work in test workers, producing React act() warnings and an
+    // occasional worker that Jest must force-exit after the suite. Keep the real glyph map in
+    // the synchronous mock because two screens validate server-provided icon names at runtime.
+    '^@expo/vector-icons/Ionicons$': '<rootDir>/__mocks__/expo-ionicons.js',
     '^react-native-reanimated$': '<rootDir>/__mocks__/react-native-reanimated.js',
     '^react-native-worklets$': '<rootDir>/__mocks__/react-native-worklets.js',
   },

@@ -43,6 +43,8 @@ const heroUiTestTheme = {
   '--color-accent-foreground': '#ffffff',
   '--color-accent-soft-foreground': '#312e81',
   '--color-accent-hover': '#4f46e5',
+  '--color-muted': '#6b7280',
+  '--color-default': '#f3f4f6',
   '--color-default-hover': '#e5e7eb',
   '--color-default-foreground': '#111827',
   '--color-default-soft-foreground': '#374151',

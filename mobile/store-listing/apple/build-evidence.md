@@ -1,6 +1,6 @@
 # iOS build evidence
 
-Last reviewed: 2026-08-29
+Last reviewed: 2026-08-30
 
 This record captures the checked macOS cloud compile and current Simulator runtime evidence
 for the Expo iOS configuration. It does not certify a
@@ -29,9 +29,9 @@ artifact.
 
 ## Simulator runtime evidence
 
-GitHub Actions run [33281688048](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33281688048)
+GitHub Actions run [33286909272](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33286909272)
 restored the exact-source unsigned Release app for commit
-`fc496aedddd6793835f49d80a6c7abc4ffbf7771`, installed it on an iPhone 16 Pro Max
+`58654079a287006b52b1cd53b66db13244f27756`, installed it on an iPhone 16 Pro Max
 Simulator running iOS 26.2, authenticated to the protected Partner Demo tenant and completed
 the four-screen public tour. The workflow's preparation and Apple Vision OCR gates passed.
 The downloaded artifact was then independently inspected: all four files are opaque native

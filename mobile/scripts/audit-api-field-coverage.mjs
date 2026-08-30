@@ -51,7 +51,7 @@ import path from 'node:path';
 
 import coverageHelpers from './audit-api-field-coverage-helpers.cjs';
 
-const { requiredQueryForGetter } = coverageHelpers;
+const { exitCodeForMissingContracts, requiredQueryForGetter } = coverageHelpers;
 
 const API = process.env.API ?? 'http://127.0.0.1:8090/api/v2';
 const LOGIN = process.env.LOGIN ?? 'http://127.0.0.1:8090/api/auth/login';
@@ -389,3 +389,4 @@ console.log(`\n=== totals === checked ${totals.checked} | empty ${totals.empty} 
   + `| unfetchable ${totals.unfetchable} | unresolved ${totals.unresolved} `
   + `| mapped ${totals.mapped} | endpoints missing a required field ${totals.missing}`);
 console.log('=== "checked" is the only number that proves anything about response shape.');
+process.exitCode = exitCodeForMissingContracts(totals.missing);

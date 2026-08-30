@@ -1,18 +1,14 @@
-# Minimal Platform Monorepo Checklist
+# Native Mobile Production-Readiness Checklist
 
-- [x] Isolated worktree created at `C:\platforms\htdocs\nexus-platform-consolidation`.
-- [x] Branch created: `codex/platform-monorepo`.
-- [x] Source SHA and allowlist recorded.
-- [x] ASP.NET tracked snapshot imported to `aspnet-backend/`.
-- [x] Web UK tracked snapshot imported to `web-uk/`.
-- [x] Generated files, caches, local environments, and old changelog excluded.
-- [x] Relative contract tooling added.
-- [x] Separate non-deploying contract CI added.
-- [x] Docker build context exclusions added.
-- [x] ASP.NET build passes; the full API suite remains delegated to the
-      90-minute CI job after exceeding the local ten-minute ceiling.
-- [x] Web UK lint/build/tests pass (55 suites, 1,756 tests).
-- [x] Contract comparisons pass and remaining pre-existing gaps are reported.
-- [x] Laravel deployment scope remains unchanged.
-- [x] Security and staged-file review passes.
-- [x] Branch handed off without push, merge, version bump, or deployment.
+- [x] Baseline exact revision, working tree, workflows, ledgers, assets, bundle, and API drift.
+- [x] Classify every OPEN/PARTIAL item as actionable now or protected external evidence.
+- [x] Run the complete safe mobile and repository release-gate matrix.
+- [x] Fix and regression-test every actionable production blocker found.
+- [x] Strengthen critical journey, accessibility, security, privacy, and observability evidence.
+- [x] Revalidate screenshots and store assets without touching either store.
+- [x] Refresh authoritative readiness and release-handoff documentation.
+- [x] Update the changelog and bundled changelog copy.
+- [x] Run final verification and scoped diff/secret review.
+- [ ] Commit and push scoped changes to `main`.
+- [ ] Confirm required CI workflows are green.
+- [ ] Hand off only the Apple-, Play-, legal-, and physical-device-dependent gates.

@@ -1,93 +1,105 @@
-# Implementation Plan: Minimal NEXUS Platform Monorepo
+# Implementation Plan: Native Mobile Production Readiness
 
 ## Overview
 
-Make the existing Laravel repository the platform repository without moving or
-renaming any production Laravel, React, Blade, mobile, Docker, or deployment
-paths. Import clean tracked snapshots of the experimental ASP.NET backend and
-Web UK, then add isolated contract verification that cannot deploy either new
-application.
+Bring the Expo / React Native application in `mobile/` to the strongest production-ready
+state that can be proved before Apple Developer approval, without changing or uploading
+anything to the Google Play release currently under review. Work is limited to source,
+tests, local and CI automation, release documentation, generated local evidence, and
+store assets already held in the repository.
+
+## Protected Boundaries
+
+- Do not alter the Google Play Console listing, release, review, tracks, screenshots, copy,
+  AABs, APKs, or rollout state.
+- Do not create signed Apple builds, configure Apple credentials, upload to TestFlight, or
+  submit to App Review before Apple Developer Program approval.
+- Do not deploy production services or publish the Apple AASA file.
+- Preserve the adults-only native product boundary and all unrelated concurrent work.
 
 ## Architecture Decisions
 
-- Keep Laravel at the repository root and preserve the existing production
-  build and deployment layout byte-for-byte wherever possible.
-- Import the ASP.NET backend as `aspnet-backend/` and Web UK as `web-uk/`.
-- Do not import ASP.NET Git history, release tags, changelog, generated build
-  output, local environment files, or repository-level deployment automation.
-- Keep the former ASP.NET repository as the historical archive; this branch
-  only contains a source snapshot.
-- Add a separate contract workflow rather than changing the production CI path
-  map or pre-deploy verifier.
-- Do not bump the platform version, deploy, push, merge, rename, or archive a
-  repository as part of this work.
+- Treat Laravel as the production/default API contract and the Expo app in `mobile/` as the
+  native client. The removed Capacitor project is not part of this work.
+- Separate source readiness, automated emulator evidence, signed-artifact readiness, and
+  physical-device certification in every status claim.
+- Prefer release-critical journey automation and fail-closed release gates over new features.
+- Keep store mutations behind explicit owner approval even when copy or assets are prepared.
 
 ## Task List
 
-### Phase 1: Safety foundation
+### Phase 1: Baseline and release boundaries
 
-- [x] Create an isolated worktree and feature branch from current Laravel main.
-- [x] Record source commit `f757ca96168cd294d0599a0b50cd45ac6b7fb799`
-      and the explicit import allowlist.
-- [x] Import tracked source only; exclude repository workflows, Git metadata,
-      changelog, generated build output, and local environment files.
+- [x] Record the exact source revision, working-tree ownership, current workflow evidence,
+  maintained journey totals, bundle headroom, API drift, and store-asset state.
+- [x] Identify stale or contradictory readiness documents and every actionable OPEN/PARTIAL
+  item that does not require Apple approval, a store mutation, or an unavailable real device.
 
-### Checkpoint: Safety foundation
+### Checkpoint: Baseline
 
-- [x] Original Laravel and ASP.NET worktrees remain clean and unchanged.
-- [x] Candidate changes exist only on `codex/platform-monorepo`.
+- [x] Protected Apple and Google boundaries are documented and no external state changed.
+- [x] Every proposed task has a reproducible verification command or named evidence limit.
 
-### Phase 2: Snapshot import
+### Phase 2: Automated release gates
 
-- [x] Import the ASP.NET backend as `aspnet-backend/`.
-- [x] Import Web UK as `web-uk/`.
-- [x] Add package-local instructions and provenance without importing the old
-      changelog or repository history.
+- [x] Run mobile tests with coverage ratchets, TypeScript, lint, translation integrity,
+  route/API/theme drift, release configuration, security, startup budget, and asset checks.
+- [x] Run repository documentation, SPDX, version, semantic-version, and applicable preflight
+  checks without building or uploading a new store artifact.
+- [x] Investigate every failure or warning that can affect a production binary; add a
+  regression guard for each source defect fixed.
 
-### Checkpoint: Imported applications
+### Checkpoint: Automated gates
 
-- [x] ASP.NET solution builds from its new path. The full API test project was
-      active but exceeded a ten-minute local verification ceiling; CI retains
-      a 90-minute test job rather than excluding those tests.
-- [x] Web UK installs, lints, builds, and passes all 1,756 tests from its new
-      path.
+- [x] All applicable non-enrollment gates pass at the same source revision.
+- [x] Expected Apple identifier failures are reported as external blockers, not patched with
+  invented values.
 
-### Phase 3: Contract workspace
+### Phase 3: Actionable production-readiness debt
 
-- [x] Make comparison tools resolve Laravel and ASP.NET roots inside the same
-      checkout without machine-specific absolute paths.
-- [x] Add one local contract-verification entry point.
-- [x] Add a separate non-deploying GitHub Actions workflow for ASP.NET, Web UK,
-      and static contract evidence.
-- [x] Exclude imported applications from Laravel Docker build contexts.
+- [x] Audit the ledger's OPEN and PARTIAL rows and close every source, fixture, automation,
+  accessibility, privacy, security, error-handling, or observability issue that can be closed
+  without touching protected store state.
+- [x] Strengthen automated device workflows and critical-journey checks where existing
+  emulator evidence can provide a reliable regression gate.
+- [x] Recheck app-size headroom, production dependencies, sensitive notification boundaries,
+  deep links, account deletion, offline/error recovery, and store-audience enforcement.
 
-### Checkpoint: Contract workspace
+### Checkpoint: Production candidate
 
-- [x] Static Laravel-to-ASP.NET comparison completes from a clean checkout.
-- [x] Both frontend backend-target configurations remain unchanged.
-- [x] Production compose services and Dockerfile paths are unchanged.
+- [x] No actionable source blocker remains outside the protected external gates.
+- [x] Remaining limitations require Apple approval, owner/legal input, protected Play action,
+  or physical-device evidence and are named precisely.
 
-### Phase 4: Final verification and review
+### Phase 4: Handoff and banked evidence
 
-- [x] Run the repository preflight checks applicable to changed paths.
-- [x] Review correctness, architecture, security, and performance.
-- [x] Confirm there are no secrets, generated outputs, or unintended files.
-- [x] Hand off the unmerged and unpushed branch for explicit user approval.
+- [x] Refresh the authoritative mobile status, Apple freeze checklist, roadmap, and release
+  handoff so they reference current evidence and do not overclaim simulator proof.
+- [x] Record rollback, monitoring, staged-release, reviewer-access, and exact-candidate steps.
+- [x] Update `CHANGELOG.md` under the correct Unreleased subsection and refresh its bundled
+  frontend copy for all release-relevant changes.
+
+### Phase 5: Final verification and delivery
+
+- [x] Run focused tests, full applicable gates, diff review, secret scan, and working-tree
+  ownership check.
+- [ ] Commit and push only scoped files directly to `main`.
+- [ ] Confirm required GitHub workflows are green and produce a final external-gate handoff.
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Laravel deployment begins packaging imported trees | Slower or incorrect production build | Add root `.dockerignore` exclusions and verify compose output/build inputs |
-| Existing pre-deploy CI semantics change | Valid deploys blocked or checks skipped | Do not edit `.github/ci-paths.yml` or the pre-deploy verifier |
-| Secrets or generated files enter the public repository | Security or repository bloat | Import only tracked allowlisted files and scan the staged diff |
-| Cross-platform tooling retains absolute paths | CI works only on one workstation | Resolve roots relative to the repository and accept explicit overrides |
-| Snapshot import obscures historical provenance | Harder archaeology | Record source repository URL and exact source SHA; retain the old repository as archive |
+| Accidentally disturbing the Play review | Review delay or rejection | No Console access, upload, build submission, or listing mutation |
+| Treating Simulator success as iPhone proof | False Apple readiness claim | Preserve signed/TestFlight/physical-device gates explicitly |
+| Concurrent work enters the mobile commit | Unreviewed release content | Explicit path staging and final ownership review |
+| Broad test count hides broken journeys | Public defects | Prioritise runtime effects and device-level regression guards |
+| Dependency remediation forces an unsafe Expo upgrade | New release instability | Triage reachability; reject unsafe major upgrades during freeze |
+| Documentation drifts from evidence | Wrong release decisions | One authoritative status and exact run/commit references |
 
-## Explicit Non-Goals
+## Open External Gates
 
-- No production deployment or container operation.
-- No database access, migration, mutation, upload, or download.
-- No movement of existing Laravel, React, Blade, or mobile files.
-- No v1.6.0 release or version bump.
-- No GitHub repository rename, archive, push, or pull request.
+- Apple Developer Program approval, Team ID, App Store Connect numeric ID, signing, APNs,
+  AASA publication, signed EAS build, TestFlight, and real-iPhone certification.
+- Google Play release/listing changes and the exact next Play-distributed physical-phone walk.
+- Owner/legal App Store declarations and explicit authorization at submission/release gates.

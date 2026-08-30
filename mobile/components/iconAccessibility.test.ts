@@ -70,4 +70,14 @@ describe('decorative icons stay out of the accessibility tree', () => {
     // Props spread AFTER the defaults, so a meaningful icon can still opt back in.
     expect(source).toMatch(/importantForAccessibility="no"\s*\{\.\.\.props\}/);
   });
+
+  it('keeps direct Ionicons synchronous inside Jest workers', () => {
+    const config = require('../jest.config.js') as {
+      moduleNameMapper?: Record<string, string>;
+    };
+
+    expect(config.moduleNameMapper?.['^@expo/vector-icons/Ionicons$']).toBe(
+      '<rootDir>/__mocks__/expo-ionicons.js',
+    );
+  });
 });

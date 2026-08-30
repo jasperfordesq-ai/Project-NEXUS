@@ -26,7 +26,7 @@ and the exact signed candidate will be recorded in
 | Apple Team ID | Not yet recorded; required for the AASA app identifier |
 | Apple signing and APNs credentials | Not configured or verified |
 | iOS cloud build | Unsigned simulator build succeeded and was inspected; signed device build not run |
-| Partner Demo review account | Live login and protected startup endpoints re-verified in run `33281688048`; credentials remain outside Git |
+| Partner Demo review account | Live login and protected startup endpoints re-verified in run `33286909272`; credentials remain outside Git |
 | Planned signed candidate | Version `1.2.0`, iOS build `3`; EAS remote counter was read as `2` before build |
 | Real-iPhone journey walk | Never run |
 | TestFlight upload | Not performed |

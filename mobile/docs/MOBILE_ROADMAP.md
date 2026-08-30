@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile Roadmap to Production
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-08-30
 
 Status: **Maintained — the plan. Phases are ordered; do not reorder them without a reason
 written here.**
@@ -17,6 +17,11 @@ green on 2026-08-27) — see
 [`CURRENT_MOBILE_PRODUCTION_STATUS.md`](CURRENT_MOBILE_PRODUCTION_STATUS.md). Work list:
 [`MOBILE_JOURNEY_LEDGER.md`](MOBILE_JOURNEY_LEDGER.md). Session hand-off, including what this
 plan is missing: [`MOBILE_HANDOFF.md`](MOBILE_HANDOFF.md).
+
+The latest exact-source device evidence is newer than the banked floor: Android workflow
+`33285870541` passed ten flows and nine screenshots, and iOS Simulator workflow
+`33286909272` passed its four-screen tour, both for mobile source commit `58654079a`.
+Neither run authorises a new Play release, and the iOS run is unsigned Simulator evidence.
 
 The score is owned and enforced by the status document; this line is only a pointer. The
 short current backlog is now also maintained there under “Ordered backlog before another

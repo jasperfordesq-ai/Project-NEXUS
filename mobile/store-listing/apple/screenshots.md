@@ -1,6 +1,6 @@
 # Apple screenshot capture plan
 
-Last reviewed: 2026-08-29
+Last reviewed: 2026-08-30
 
 The first release is iPhone-only. The manually dispatched
 [`iOS Simulator Screenshots`](../../../.github/workflows/ios-simulator-screenshots.yml)
@@ -82,10 +82,10 @@ contain no secrets or real-member personal data.
 The Simulator workflow creates the first version of this record automatically. Its manifest
 labels the unsigned evidence boundary explicitly so it cannot be mistaken for TestFlight.
 
-## 2026-08-29 Simulator capture
+## 2026-08-30 Simulator capture
 
-Workflow run [33281688048](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33281688048)
-completed against source commit `fc496aedddd6793835f49d80a6c7abc4ffbf7771`. The
+Workflow run [33286909272](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/33286909272)
+completed against source commit `58654079a287006b52b1cd53b66db13244f27756`. The
 unsigned Release build ran on an iPhone 16 Pro Max Simulator with iOS 26.2 and produced
 four opaque 1320 x 2868 PNGs. The downloaded files matched every SHA-256 value in the
 artifact manifest, and Apple Vision OCR verified the intended page content in each image.

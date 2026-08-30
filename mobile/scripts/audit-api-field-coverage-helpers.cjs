@@ -11,4 +11,8 @@ function requiredQueryForGetter(getterName, listingId) {
   };
 }
 
-module.exports = { requiredQueryForGetter };
+function exitCodeForMissingContracts(missingCount) {
+  return missingCount > 0 ? 1 : 0;
+}
+
+module.exports = { exitCodeForMissingContracts, requiredQueryForGetter };
