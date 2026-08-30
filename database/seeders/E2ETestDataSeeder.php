@@ -123,6 +123,26 @@ class E2ETestDataSeeder extends Seeder
             $this->command?->info("  E2E user {$u['label']}: {$u['email']} (id {$ids[$u['label']]}, balance {$u['balance']})");
         }
 
+        // A published post makes the native blog detail getter resolvable and
+        // exposes the real item shape to the response-contract audit. An empty
+        // blog index can prove only its pagination envelope.
+        DB::table('posts')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'slug' => 'e2e-community-news'],
+            [
+                'author_id' => $ids['A (primary)'],
+                'title' => 'E2E Community News',
+                'excerpt' => 'Deterministic published article for mobile response-contract checks.',
+                'content' => 'The E2E community has published a stable article so native clients can verify the complete blog response.',
+                'html_render' => '<p>The E2E community has published a stable article so native clients can verify the complete blog response.</p>',
+                'featured_image' => null,
+                'status' => 'published',
+                'category_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+        $this->command?->info('  E2E published blog contract target ensured');
+
         // Deterministic active listing owned by User A, discoverable by User B
         // in browse/search — the anchor for exchange/listing/search journeys.
         $listingTitle = 'E2E Fixture Listing — Gardening Help';

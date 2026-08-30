@@ -173,7 +173,7 @@ export default function BlogScreen() {
 
   function renderPost({ item, index }: { item: BlogPost; index: number }) {
     const imageHeight = index === 0 && !committedSearch ? 190 : 150;
-    const coverImage = resolveImageUrl(item.cover_image);
+    const coverImage = resolveImageUrl(item.featured_image);
     const publishedLabel = item.published_at
       ? t('publishedOn', { date: new Date(item.published_at).toLocaleDateString(dateLocale()) })
       : null;
@@ -200,13 +200,13 @@ export default function BlogScreen() {
               {item.category ? (
                 <Chip size="sm" variant="secondary">
                   <Ionicons name="folder-open-outline" size={12} color={primary} />
-                  <Chip.Label>{item.category}</Chip.Label>
+                  <Chip.Label>{item.category.name}</Chip.Label>
                 </Chip>
               ) : null}
-              {item.reading_time_minutes ? (
+              {item.reading_time ? (
                 <Chip size="sm" variant="secondary">
                   <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
-                  <Chip.Label>{t('readingTime', { minutes: item.reading_time_minutes })}</Chip.Label>
+                  <Chip.Label>{t('readingTime', { minutes: item.reading_time })}</Chip.Label>
                 </Chip>
               ) : null}
             </View>
@@ -221,12 +221,6 @@ export default function BlogScreen() {
             ) : null}
 
             <View className="flex-row flex-wrap items-center gap-2">
-              {item.author?.name ? (
-                <Chip size="sm" variant="secondary">
-                  <Ionicons name="person-outline" size={12} color={theme.textSecondary} />
-                  <Chip.Label>{t('by', { name: item.author.name })}</Chip.Label>
-                </Chip>
-              ) : null}
               {publishedLabel ? (
                 <Chip size="sm" variant="secondary">
                   <Ionicons name="calendar-outline" size={12} color={theme.textSecondary} />

@@ -48,7 +48,7 @@ accessibility remain material gaps. The expanded effect automation, response-con
 coverage and accessibility breadth passed exact-source CI and Android workflow run
 `33320137825` on 2026-08-30.
 
-🔴 **Why the score is not higher, given 377 green test suites and 2,613 passing tests.**
+🔴 **Why the score is not higher, given 377 green test suites and 2,614 passing tests.**
 Most tests still run in Node against mocks. The ledger deliberately gives journey credit
 only when a device walk verifies the effect, and only gives full credit when an automated
 guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
@@ -105,21 +105,21 @@ that contract; its 712 total is now committed and CI-backed.
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
 | Accessibility | 60 | 38 | 60 | Contrast is gated. The authenticated current-source crawler verified all **37/37** fingerprint-gated routes and 279 targets at the emulator's actual 420dpi: zero below the WCAG 24dp floor, 147 above that floor but below Android's 48dp guidance, and five clipped viewport fragments excluded from sizing failures. Dynamic text, images and transient geometry are excluded from settlement, while a changing actionable/scrollable node set still prevents a pass; exact bounds come from the accepted final tree. TalkBack is installed and enabled, and keyboard focus is visible in UIAutomator, but spoken output and a full swipe/double-tap journey remain genuinely human/instrumentation-gated. |
 | Internationalisation | 70 | 25 | 70 | Seven locales ship, and the shrink-only gate now reports **zero** multi-word phrases still identical to English: ga 0, de 0, fr 0, it 0, pt 0 and es 0. All 4,531 original guarded entries were translated or narrowly allowlisted as registered product names, international units, machine-readable formats or genuinely shared words. The work covers coherent member journeys rather than scattered labels, including authentication, discovery, messaging, home, gamification, goals, exchanges, marketplace, federation, events, groups, profile/legal summaries, settings, volunteering, jobs, member collections and appreciations. This is automated catalogue integrity plus a reviewed AI translation pass—not native-speaker certification for any language. Arabic and right-to-left remain excluded from the native app by owner decision. |
-| Automated test depth | 100 | 74 | 100 | `npm run test:ci` passed **377 suites / 2,613 tests** on 2026-08-30; the ratchet reports 76.40% global lines across 336 files, with type checking, zero-warning lint, 28 area floors and source guards. Two maintained Android flows now finish with seven independent Laravel effect assertions. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys. |
+| Automated test depth | 100 | 74 | 100 | `npm run test:ci` passed **377 suites / 2,614 tests** on 2026-08-30; the ratchet reports 76.40% global lines across 336 files, with type checking, zero-warning lint, 28 area floors and source guards. Two maintained Android flows now finish with seven independent Laravel effect assertions. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys. |
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
 | Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
 | Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
 | **Total** | **1000** | **712** | **1000** | — |
 
 **Provenance.** Journey status comes only from the 140-row ledger below. The isolated Android
-candidate now contains 377 Jest suites and 2,613 tests; its non-build Jest, TypeScript and lint
+candidate now contains 377 Jest suites and 2,614 tests; its non-build Jest, TypeScript and lint
 checks were re-run on 2026-08-30. The pre-review release baseline separately passed Expo Doctor
 18/18, release policy, route/API/theme drift, production dependency acceptance, startup
 budget, asset validation, network policy and the live TLS certificate chain. The public Play
 listing was inspected directly while signed in and the five public policy/support routes were
 requested independently. Tablet evidence is the genuine emulator output under
 `store-listing/screenshots/tablet-{7,10}/`. The 2026-08-30 field audit classified all 201
-typed getters: 103 live non-empty checks, 20 empty, 17 permission/error-blocked, 17 unresolved
+typed getters: 104 live non-empty checks, 20 empty, 17 permission/error-blocked, 16 unresolved
 and 44 explicitly client-mapped, with zero required fields missing from a checked response. A
 separate three-role verifier accepted 15 populated high-risk contracts, including five
 organisation-owner views that a primary-member-only probe correctly receives as 403. The
@@ -160,12 +160,15 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    force a comment reaction to fail and prove authoritative state returns with a visible
    translated error. Do not mark any of these checks complete from Jest or an emulator.
 5. **Increase response-contract evidence.** The 2026-08-30 read-only run classified all 201
-   typed getters and found zero missing required fields across 103 live non-empty checks. It
-   honestly left 20 empty, 17 permission/error-blocked, 17 without a resolvable record id and
+   typed getters and found zero missing required fields across 104 live non-empty checks. It
+   honestly left 20 empty, 17 permission/error-blocked, 16 without a resolvable record id and
    44 deliberately reshaped in the client. Two marketplace getters previously misclassified
    a conditional choice between direct requests as response reshaping; the guarded classifier
    now attempts both, finding one populated and one honestly empty. A deterministic populated
-   saved collection now makes all three collection getters live-checkable. A three-role gate separately accepts 15 populated
+   saved collection now makes all three collection getters live-checkable. A deterministic
+   published post also exposed four invented required blog fields; the native type and screens
+   now consume Laravel's privacy-preserving public shape, and blog detail is live-checkable.
+   A three-role gate separately accepts 15 populated
    high-risk contracts, including the five organisation-owner views the generic member audit
    correctly cannot access. Remaining work is deeper real-shape validation for mapped money,
    authentication, messaging and exchange boundaries—not relabelling explicit gaps as proof.

@@ -105,10 +105,9 @@ const mockBlogPost = {
   id: 7,
   title: 'Getting Started with Timebanking',
   excerpt: 'Learn how to exchange time credits in your community.',
-  cover_image: null,
-  category: 'Guide',
-  reading_time_minutes: 5,
-  author: { id: 3, name: 'Editor Team' },
+  featured_image: null,
+  category: { id: 2, name: 'Guide', color: 'blue' },
+  reading_time: 5,
   published_at: '2026-01-10T09:00:00Z',
 };
 
@@ -159,7 +158,7 @@ describe('BlogScreen', () => {
     expect(getByText('Getting Started with Timebanking')).toBeTruthy();
   });
 
-  it('renders blog post author name', () => {
+  it('renders the API category name', () => {
     mockUsePaginatedApi.mockReturnValueOnce({
       items: [mockBlogPost],
       isLoading: false,
@@ -171,7 +170,7 @@ describe('BlogScreen', () => {
     });
 
     const { getByText } = render(<BlogScreen />);
-    expect(getByText('By Editor Team')).toBeTruthy();
+    expect(getByText('Guide')).toBeTruthy();
   });
 
   it('renders reading time when provided', () => {

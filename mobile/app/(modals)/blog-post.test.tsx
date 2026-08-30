@@ -81,12 +81,10 @@ const mockPost = {
   slug: 'building-community-timebanking',
   excerpt: 'An exploration of how timebanking brings communities together.',
   content: 'Full content here. Timebanking is a reciprocal service exchange...',
-  cover_image: null,
+  featured_image: null,
   published_at: '2026-03-01T10:00:00Z',
-  reading_time_minutes: 5,
-  category: 'Community',
-  tags: ['timebanking', 'community'],
-  author: { id: 1, name: 'Jane Smith', avatar: null },
+  reading_time: 5,
+  category: { id: 3, name: 'Community', color: 'blue' },
 };
 
 beforeEach(() => {
@@ -118,7 +116,7 @@ describe('BlogPostScreen', () => {
     expect(getByText('Building Community Through Timebanking')).toBeTruthy();
   });
 
-  it('renders the author name', () => {
+  it('renders the API category name', () => {
     mockUseApi.mockReturnValue({
       data: { data: mockPost },
       isLoading: false,
@@ -127,7 +125,7 @@ describe('BlogPostScreen', () => {
     });
 
     const { getByText } = render(<BlogPostScreen />);
-    expect(getByText('By Jane Smith')).toBeTruthy();
+    expect(getByText('Community')).toBeTruthy();
   });
 
   it('renders the post content', () => {
@@ -144,7 +142,7 @@ describe('BlogPostScreen', () => {
 
   it('resolves relative cover image URLs', () => {
     mockUseApi.mockReturnValue({
-      data: { data: { ...mockPost, cover_image: '/uploads/blog/community.jpg' } },
+      data: { data: { ...mockPost, featured_image: '/uploads/blog/community.jpg' } },
       isLoading: false,
       error: null,
       refresh: jest.fn(),

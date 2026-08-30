@@ -6,10 +6,10 @@
 import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 
-export interface BlogAuthor {
+export interface BlogCategory {
   id: number;
   name: string;
-  avatar: string | null;
+  color: string;
 }
 
 export interface BlogPost {
@@ -17,13 +17,11 @@ export interface BlogPost {
   title: string;
   slug: string;
   excerpt: string | null;
-  content: string | null;
-  cover_image: string | null;
-  author: BlogAuthor;
-  category: string | null;
-  tags: string[];
+  content?: string | null;
+  featured_image: string | null;
+  category: BlogCategory | null;
   published_at: string;
-  reading_time_minutes: number | null;
+  reading_time: number;
 }
 
 export interface BlogListResponse {

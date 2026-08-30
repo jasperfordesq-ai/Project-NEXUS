@@ -25,7 +25,6 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import AppTopBar from '@/components/ui/AppTopBar';
-import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -163,9 +162,9 @@ export default function BlogPostScreen() {
           }
         >
           <HeroCard className="mb-4 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}>
-            {post.cover_image ? (
+            {post.featured_image ? (
               <Image
-                source={{ uri: resolveImageUrl(post.cover_image) ?? post.cover_image }}
+                source={{ uri: resolveImageUrl(post.featured_image) ?? post.featured_image }}
                 className="h-[240px] w-full"
                 resizeMode="cover"
                 accessibilityLabel={post.title}
@@ -182,13 +181,13 @@ export default function BlogPostScreen() {
                 {post.category ? (
                   <Chip size="sm" variant="secondary">
                     <Ionicons name="folder-open-outline" size={12} color={primary} />
-                    <Chip.Label>{post.category}</Chip.Label>
+                    <Chip.Label>{post.category.name}</Chip.Label>
                   </Chip>
                 ) : null}
-                {post.reading_time_minutes ? (
+                {post.reading_time ? (
                   <Chip size="sm" variant="secondary">
                     <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
-                    <Chip.Label>{t('readingTime', { minutes: post.reading_time_minutes })}</Chip.Label>
+                    <Chip.Label>{t('readingTime', { minutes: post.reading_time })}</Chip.Label>
                   </Chip>
                 ) : null}
               </View>
@@ -209,11 +208,8 @@ export default function BlogPostScreen() {
                 style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
               >
                 <View className="flex-row items-center gap-3">
-                <Avatar uri={post.author?.avatar ?? null} name={post.author?.name ?? '?'} size={40} />
+                <Ionicons name="calendar-outline" size={20} color={theme.textSecondary} />
                 <View className="min-w-0 flex-1">
-                  <Text className="text-sm font-semibold" style={{ color: theme.text }}>
-                    {t('by', { name: post.author?.name ?? '?' })}
-                  </Text>
                   {publishedDate ? (
                     <Text className="text-xs" style={{ color: theme.textSecondary }}>
                       {t('publishedOn', { date: publishedDate })}
@@ -233,21 +229,6 @@ export default function BlogPostScreen() {
               </Surface>
             </HeroCard.Body>
           </HeroCard>
-
-          {(post.tags ?? []).length > 0 ? (
-            <HeroCard className="mb-4 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.1) }}>
-              <HeroCard.Body className="gap-3 p-4">
-                <SectionTitle icon="pricetags-outline" label={t('detail.tags')} primary={primary} theme={theme} />
-                <View className="flex-row flex-wrap gap-2">
-                  {(post.tags ?? []).map((tag) => (
-                    <Chip key={tag} size="sm" variant="secondary">
-                      <Chip.Label>{tag}</Chip.Label>
-                    </Chip>
-                  ))}
-                </View>
-              </HeroCard.Body>
-            </HeroCard>
-          ) : null}
 
           <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.1) }}>
             <HeroCard.Body className="gap-4 p-5">

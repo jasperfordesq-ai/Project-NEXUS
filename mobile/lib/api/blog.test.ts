@@ -23,20 +23,16 @@ import { api } from '@/lib/api/client';
 import { getBlogPosts, getBlogPost } from './blog';
 import type { BlogListResponse, BlogPost } from './blog';
 
-const mockAuthor = { id: 1, name: 'Jane Smith', avatar: null };
-
 const mockPost: BlogPost = {
   id: 10,
   title: 'How Timebanking Works',
   slug: 'how-timebanking-works',
   excerpt: 'A brief overview.',
   content: 'Full content here.',
-  cover_image: null,
-  author: mockAuthor,
-  category: 'Guides',
-  tags: ['timebank', 'community'],
+  featured_image: null,
+  category: { id: 2, name: 'Guides', color: 'blue' },
   published_at: '2026-01-15T09:00:00Z',
-  reading_time_minutes: 5,
+  reading_time: 5,
 };
 
 const mockBlogListResponse: BlogListResponse = {

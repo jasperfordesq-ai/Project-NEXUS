@@ -135,4 +135,22 @@ class E2ETestDataSeederLoginTest extends TestCase
         ])->exists());
         $this->assertSame(1, (int) DB::table('saved_collections')->where('id', $collectionId)->value('items_count'));
     }
+
+    public function test_seeder_creates_a_published_blog_contract_target(): void
+    {
+        $this->seed(E2ETestDataSeeder::class);
+
+        $tenantId = TenantSeeder::MASTER_TENANT_ID;
+        $primaryId = (int) DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where('email', 'e2e.user.a@project-nexus.local')
+            ->value('id');
+
+        $this->assertTrue(DB::table('posts')->where([
+            'tenant_id' => $tenantId,
+            'author_id' => $primaryId,
+            'slug' => 'e2e-community-news',
+            'status' => 'published',
+        ])->whereNotNull('content')->exists());
+    }
 }
