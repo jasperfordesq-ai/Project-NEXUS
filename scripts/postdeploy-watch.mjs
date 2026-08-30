@@ -95,6 +95,19 @@ async function main() {
 
   // One Sentry counting query. Throws {scope:true} on a permissions failure
   // so callers can print the fix instead of a bare error.
+  // 🔴 Errors from an inline `php -r` one-liner typed into the production
+  // container are tagged `invocation:cli-eval` by the PHP before_send hook
+  // (app/Support/Sentry/SentryInvocation.php) and are excluded here. On
+  // 2026-08-30 a single mistyped verification command spent 3 of the alarm
+  // budget of 10 inside the very window meant to prove the deploy safe; a
+  // second typo would have alarmed a healthy deploy.
+  //
+  // `!tag:value` also matches events that carry no such tag at all, so this is
+  // safe against older releases whose events predate the tag. It excludes ONLY
+  // hand-typed inline code — artisan commands, queue workers and the scheduler
+  // are real production and still counted.
+  const EXCLUDE_HAND_RUN = `!${'invocation'}:cli-eval`;
+
   async function countErrors(projectIds, query, range) {
     const p = new URLSearchParams();
     p.append('field', 'count()');
@@ -103,7 +116,9 @@ async function main() {
     // them (verified live 2026-08-03: 5 real events counted as 0). The
     // errors dataset is exactly what the Sentry UI calls "errors".
     p.append('dataset', 'errors');
-    p.append('query', query.trim());
+    // Every count in this script excludes hand-run one-liners, including the
+    // 24h baseline — so the baseline and the post-switch window stay comparable.
+    p.append('query', `${query.trim()} ${EXCLUDE_HAND_RUN}`.trim());
     for (const id of projectIds) p.append('project', id);
     if (range.statsPeriod) p.append('statsPeriod', range.statsPeriod);
     if (range.start) { p.append('start', range.start); p.append('end', range.end); }

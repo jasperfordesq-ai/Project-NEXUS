@@ -1425,6 +1425,23 @@ class AppServiceProvider extends ServiceProvider
                 'traces_sample_rate' => config('services.sentry.traces_sample_rate', 0.1),
                 'send_default_pii' => false,
                 'before_send' => function (\Sentry\Event $event): ?\Sentry\Event {
+                    // Mark fatals produced by an inline `php -r` one-liner, so a
+                    // typo typed into the production container is not
+                    // indistinguishable from a real production error. It is
+                    // TAGGED, never dropped: that someone ran a query by hand in
+                    // production is itself worth keeping. See SentryInvocation
+                    // for why (NEXUS-PHP-41, triaged twice, nine events, zero
+                    // defects — and three of them spent post-deploy alarm budget).
+                    if (\App\Support\Sentry\SentryInvocation::isEvalInvocation(
+                        $_SERVER['argv'] ?? [],
+                        PHP_SAPI
+                    )) {
+                        $event->setTag(
+                            \App\Support\Sentry\SentryInvocation::TAG_KEY,
+                            \App\Support\Sentry\SentryInvocation::TAG_CLI_EVAL
+                        );
+                    }
+
                     // Scrub sensitive data from request body
                     $request = $event->getRequest();
                     if (!empty($request['data']) && is_array($request['data'])) {
