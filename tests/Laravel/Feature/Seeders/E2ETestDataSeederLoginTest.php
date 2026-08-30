@@ -68,4 +68,41 @@ class E2ETestDataSeederLoginTest extends TestCase
             );
         }
     }
+
+    public function test_seeder_creates_deterministic_mobile_effect_targets(): void
+    {
+        $this->seed(E2ETestDataSeeder::class);
+
+        $tenantId = TenantSeeder::MASTER_TENANT_ID;
+        $secondaryId = (int) DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where('email', 'e2e.user.b@project-nexus.local')
+            ->value('id');
+
+        $this->assertTrue(DB::table('vol_opportunities as opportunity')
+            ->join('vol_organizations as organization', function ($join): void {
+                $join->on('organization.id', '=', 'opportunity.organization_id')
+                    ->on('organization.tenant_id', '=', 'opportunity.tenant_id');
+            })
+            ->where([
+                'opportunity.tenant_id' => $tenantId,
+                'opportunity.title' => 'E2E Community Garden Volunteer',
+                'opportunity.is_active' => 1,
+                'organization.status' => 'approved',
+            ])->exists());
+
+        $this->assertTrue(DB::table('events')->where([
+            'tenant_id' => $tenantId,
+            'title' => 'E2E Community Welcome Event',
+            'status' => 'active',
+        ])->exists());
+
+        $this->assertTrue(DB::table('marketplace_listings')->where([
+            'tenant_id' => $tenantId,
+            'user_id' => $secondaryId,
+            'title' => 'E2E Marketplace Bicycle Helmet',
+            'status' => 'active',
+            'moderation_status' => 'approved',
+        ])->exists());
+    }
 }

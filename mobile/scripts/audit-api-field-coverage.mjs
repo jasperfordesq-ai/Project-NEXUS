@@ -41,6 +41,7 @@
  *   node scripts/audit-api-field-coverage.mjs                  # every module
  *   node scripts/audit-api-field-coverage.mjs marketplace feed  # named modules
  *   node scripts/audit-api-field-coverage.mjs --verbose         # how each id was resolved
+ *   node scripts/audit-api-field-coverage.mjs --json audit.json # per-getter classification
  *
  * Needs docker compose up (Laravel on 127.0.0.1:8090) and the e2e fixture accounts.
  * Read-only: it issues GETs only.
@@ -51,7 +52,13 @@ import path from 'node:path';
 
 import coverageHelpers from './audit-api-field-coverage-helpers.cjs';
 
-const { exitCodeForMissingContracts, requiredQueryForGetter } = coverageHelpers;
+const {
+  auditOutputOptions,
+  classifyGetterBody,
+  exitCodeForMissingContracts,
+  fetchTimeoutMs,
+  requiredQueryForGetter,
+} = coverageHelpers;
 
 const API = process.env.API ?? 'http://127.0.0.1:8090/api/v2';
 const LOGIN = process.env.LOGIN ?? 'http://127.0.0.1:8090/api/auth/login';
@@ -59,10 +66,10 @@ const TENANT = process.env.TENANT ?? 'hour-timebank';
 const EMAIL = process.env.EMAIL ?? 'e2e.user.a@project-nexus.local';
 const PASSWORD = process.env.PASSWORD ?? 'TestPassword123!';
 const API_DIR = path.resolve(import.meta.dirname, '..', 'lib', 'api');
+const FETCH_TIMEOUT_MS = fetchTimeoutMs(process.env.AUDIT_FETCH_TIMEOUT_MS);
 
 const argv = process.argv.slice(2);
-const verbose = argv.includes('--verbose');
-const only = argv.filter((a) => !a.startsWith('--'));
+const { verbose, jsonOut, only } = auditOutputOptions(argv);
 
 /**
  * Last-resort ids, used only when discovery cannot answer. Kept small on purpose: every
@@ -157,8 +164,8 @@ function gettersIn(source, interfaceNames) {
       of exactly the kind this script's envelope note warns about. A getter that returns
       `api.get(...)` directly is comparable; one that returns an object literal is not.
     */
-    const passthrough = /return\s+api\.get</.test(body);
-    out.push({ fn, endpoint: ep[1], type: named, passthrough });
+    const classification = classifyGetterBody(body);
+    out.push({ fn, endpoint: ep[1], type: named, classification });
   }
   return out;
 }
@@ -168,6 +175,7 @@ async function login() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': TENANT },
     body: JSON.stringify({ email: EMAIL, password: PASSWORD }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
   const body = await res.json();
   if (!body.access_token) throw new Error(`login failed: ${res.status}`);
@@ -177,9 +185,16 @@ async function login() {
 let token;
 
 async function get(endpoint) {
-  const res = await fetch(API + endpoint, {
-    headers: { 'X-Tenant-Slug': TENANT, Authorization: `Bearer ${token}` },
-  });
+  let res;
+  try {
+    res = await fetch(API + endpoint, {
+      headers: { 'X-Tenant-Slug': TENANT, Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+  } catch (error) {
+    if (error?.name === 'TimeoutError' || error?.name === 'AbortError') return { code: 'timeout' };
+    return { code: 'network' };
+  }
   if (res.status !== 200) return { code: String(res.status) };
   try {
     return { code: '200', body: await res.json() };
@@ -319,7 +334,8 @@ const modules = fs.readdirSync(API_DIR)
   .map((f) => f.replace(/\.ts$/, ''))
   .filter((name) => only.length === 0 || only.includes(name));
 
-const totals = { checked: 0, empty: 0, unfetchable: 0, unresolved: 0, mapped: 0, missing: 0 };
+const totals = { checked: 0, validated: 0, empty: 0, unfetchable: 0, unresolved: 0, mapped: 0, missing: 0 };
+const moduleResults = [];
 for (const name of modules) {
   const source = fs.readFileSync(path.join(API_DIR, `${name}.ts`), 'utf8');
   const ifaces = interfacesIn(source);
@@ -330,22 +346,37 @@ for (const name of modules) {
   const empty = [];
   const unfetchable = [];
   const unresolved = [];
+  const validated = [];
   const mapped = [];
+  const getterResults = [];
   for (const getter of getters) {
-    if (!getter.passthrough) {
+    if (getter.classification === 'validated') {
+      // parseContract runs a strict Zod boundary on every real response. Keep these
+      // separate from raw live-field checks so neither form of evidence is inflated.
+      validated.push(getter.fn);
+      getterResults.push({ getter: getter.fn, status: 'runtime-validated' });
+      continue;
+    }
+    if (getter.classification === 'mapped') {
       // The client reshapes the response, so its declared type is its own promise, not the
       // server's. Listed rather than silently dropped: these are the endpoints where a
       // contract test has to look at the mapping, not at the raw body.
       mapped.push(getter.fn);
+      getterResults.push({ getter: getter.fn, status: 'mapped' });
       continue;
     }
     const { code, body, how } = await fetchBest(getter);
     if (verbose && how?.length) console.log(`  · ${getter.fn}: ${how.join(', ')}`);
     if (typeof code === 'string' && code.startsWith('no ')) {
       unresolved.push(`${getter.fn}(${code})`);
+      getterResults.push({ getter: getter.fn, status: 'unresolved', reason: code });
       continue;
     }
-    if (code !== '200') { unfetchable.push(`${getter.fn}(${code})`); continue; }
+    if (code !== '200') {
+      unfetchable.push(`${getter.fn}(${code})`);
+      getterResults.push({ getter: getter.fn, status: 'unfetchable', code });
+      continue;
+    }
     const fields = ifaces[getter.type] ?? {};
     /*
       🔴 An ENVELOPE type must be compared with the whole response, not with an item inside
@@ -357,36 +388,60 @@ for (const name of modules) {
     const isEnvelope = 'data' in fields;
     const item = isEnvelope ? body : firstItem(body);
     if (item === 'EMPTY' || item === null || typeof item !== 'object') {
-      empty.push(getter.fn); continue;
+      empty.push(getter.fn);
+      getterResults.push({ getter: getter.fn, status: 'empty' });
+      continue;
     }
     const required = Object.entries(fields)
       .filter((entry) => entry[1]).map((entry) => entry[0]);
     const absent = required.filter((field) => !(field in item));
     totals.checked += 1;
     if (absent.length > 0) findings.push({ ...getter, absent, required: required.length });
+    getterResults.push({
+      getter: getter.fn,
+      status: absent.length > 0 ? 'missing' : 'checked',
+      requiredFields: required.length,
+      missingFields: absent,
+    });
   }
   totals.empty += empty.length;
   totals.unfetchable += unfetchable.length;
   totals.unresolved += unresolved.length;
+  totals.validated += validated.length;
   totals.mapped += mapped.length;
   totals.missing += findings.length;
 
   const checked = getters.length - empty.length - unfetchable.length - unresolved.length
-    - mapped.length;
+    - validated.length - mapped.length;
   console.log(`\n${name}: ${getters.length} typed getters — checked ${checked}, `
     + `empty ${empty.length}, unfetchable ${unfetchable.length}, unresolved ${unresolved.length}, `
-    + `mapped ${mapped.length}`);
+    + `runtime-validated ${validated.length}, mapped ${mapped.length}`);
   for (const f of findings) {
     console.log(`  MISSING ${f.fn} (${f.type}, ${f.required} required): ${f.absent.join(', ')}`);
   }
   if (empty.length > 0) console.log(`     empty (proves nothing): ${empty.join(', ')}`);
   if (unfetchable.length > 0) console.log(`     unfetchable: ${unfetchable.join(', ')}`);
   if (unresolved.length > 0) console.log(`     no id available: ${unresolved.join(', ')}`);
+  if (validated.length > 0) console.log(`     strict runtime contract: ${validated.join(', ')}`);
   if (mapped.length > 0) console.log(`     reshaped in the client, not comparable: ${mapped.join(', ')}`);
+  moduleResults.push({ module: name, typedGetters: getters.length, getters: getterResults });
 }
 
 console.log(`\n=== totals === checked ${totals.checked} | empty ${totals.empty} `
   + `| unfetchable ${totals.unfetchable} | unresolved ${totals.unresolved} `
-  + `| mapped ${totals.mapped} | endpoints missing a required field ${totals.missing}`);
-console.log('=== "checked" is the only number that proves anything about response shape.');
+  + `| runtime-validated ${totals.validated} | mapped ${totals.mapped} `
+  + `| endpoints missing a required field ${totals.missing}`);
+console.log('=== "checked" proves a live raw shape; "runtime-validated" proves a strict client boundary.');
+if (jsonOut) {
+  const outputPath = path.resolve(jsonOut);
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, `${JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    api: API,
+    tenant: TENANT,
+    totals,
+    modules: moduleResults,
+  }, null, 2)}\n`, 'utf8');
+  console.log(`=== machine-readable classification written to ${outputPath}`);
+}
 process.exitCode = exitCodeForMissingContracts(totals.missing);

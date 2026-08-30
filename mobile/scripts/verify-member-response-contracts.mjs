@@ -7,7 +7,18 @@
 
 import contractHelpers from './member-response-contracts.cjs';
 
-const { validateConnectionStatus, validateListingSearch, validateMemberSearch } = contractHelpers;
+const {
+  validateCanonicalEvents,
+  validateConnectionStatus,
+  validateListingSearch,
+  validateMarketplaceSearch,
+  validateMatchesPayload,
+  validateMemberSearch,
+  validateOrganisationCollection,
+  validateOrganisationStats,
+  validateOwnedOrganisation,
+  validateVolunteeringSearch,
+} = contractHelpers;
 const base = process.env.API_URL ?? 'http://127.0.0.1:8090';
 const tenant = process.env.TENANT_SLUG ?? 'hour-timebank';
 const password = process.env.E2E_TEST_PASSWORD ?? 'TestPassword123!';
@@ -17,7 +28,7 @@ const actors = {
   admin: ['e2e.admin@project-nexus.local', process.env.E2E_ADMIN_PASSWORD ?? 'AdminPassword123!'],
 };
 
-async function request(path, { token, method = 'GET', body } = {}) {
+async function request(path, { token, method = 'GET', body, headers = {} } = {}) {
   const response = await fetch(`${base}${path}`, {
     method,
     headers: {
@@ -25,6 +36,7 @@ async function request(path, { token, method = 'GET', body } = {}) {
       'Content-Type': 'application/json',
       'X-Tenant-Slug': tenant,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
@@ -53,11 +65,39 @@ const checks = [
   ['primary connection mapping', primary.token, `/api/v2/connections/status/${secondary.id}`, validateConnectionStatus],
   ['secondary reverse connection mapping', secondary.token, `/api/v2/connections/status/${primary.id}`, validateConnectionStatus],
   ['admin member-directory contract', admin.token, '/api/v2/users?q=E2E%20UserA&offset=0', validateMemberSearch],
+  ['primary canonical Events contract', primary.token, '/api/v2/events?when=upcoming&per_page=20', validateCanonicalEvents, { 'X-Events-Contract': '2' }],
+  ['primary marketplace fixture contract', primary.token, '/api/v2/marketplace/listings?q=E2E%20Marketplace%20Bicycle%20Helmet&limit=20', validateMarketplaceSearch],
+  ['primary volunteering fixture contract', primary.token, '/api/v2/volunteering/opportunities?search=E2E%20Community%20Garden%20Volunteer', validateVolunteeringSearch],
+  ['primary Matches mapping source contract', primary.token, '/api/v2/matches/all', validateMatchesPayload],
 ];
 
-for (const [label, token, path, validate] of checks) {
-  validate(await request(path, { token }));
+let accepted = 0;
+for (const [label, token, path, validate, headers] of checks) {
+  validate(await request(path, { token, headers }));
   console.log(`response-contracts: ok   ${label}`);
+  accepted += 1;
 }
 
-console.log(`response-contracts: OK — ${checks.length} live fixture/role contracts accepted`);
+const ownedOrganisations = await request('/api/v2/volunteering/my-organisations?per_page=50', {
+  token: secondary.token,
+});
+validateOwnedOrganisation(ownedOrganisations);
+const organisationId = Number(ownedOrganisations.data[0].id);
+console.log('response-contracts: ok   secondary owned-organisation discovery');
+accepted += 1;
+
+const ownerChecks = [
+  ['secondary organisation stats', `/api/v2/volunteering/organisations/${organisationId}/stats`, validateOrganisationStats],
+  ['secondary organisation applications', `/api/v2/volunteering/organisations/${organisationId}/applications?per_page=20`, (body) => validateOrganisationCollection(body, 'organisation applications')],
+  ['secondary organisation pending hours', `/api/v2/volunteering/organisations/${organisationId}/hours/pending?per_page=20`, (body) => validateOrganisationCollection(body, 'organisation pending hours')],
+  ['secondary organisation volunteers', `/api/v2/volunteering/organisations/${organisationId}/volunteers?per_page=20`, (body) => validateOrganisationCollection(body, 'organisation volunteers')],
+  ['secondary organisation wallet history', `/api/v2/volunteering/organisations/${organisationId}/wallet/transactions?per_page=20`, (body) => validateOrganisationCollection(body, 'organisation wallet history')],
+];
+
+for (const [label, path, validate] of ownerChecks) {
+  validate(await request(path, { token: secondary.token }));
+  console.log(`response-contracts: ok   ${label}`);
+  accepted += 1;
+}
+
+console.log(`response-contracts: OK — ${accepted} live fixture/role contracts accepted`);

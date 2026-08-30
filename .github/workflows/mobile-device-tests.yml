@@ -143,7 +143,7 @@ jobs:
           APP_ENV: testing
           APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
 
-      - name: Seed the E2E fixture (3 users + 2 listings)
+      - name: Seed the E2E fixture (members, listings and reversible effect targets)
         run: php artisan db:seed --class=E2ETestDataSeeder --force
         env:
           DB_HOST: 127.0.0.1

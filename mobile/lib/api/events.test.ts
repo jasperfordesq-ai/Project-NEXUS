@@ -554,9 +554,11 @@ describe('canonical registration, roster, and series resources', () => {
   it('parses RSVP relationship state from the shared fixture', async () => {
     (api.post as jest.Mock).mockResolvedValue({ data: eventRegistrationFixture });
 
-    const result = await rsvpEvent(101, 'going');
+    const result = await rsvpEvent(101, 'going', 'mobile-rsvp-stable-1');
 
-    expect(api.post).toHaveBeenCalledWith('/api/v2/events/101/rsvp', { status: 'going' }, contractOptions);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/events/101/rsvp', { status: 'going' }, {
+      headers: { ...contractOptions.headers, 'Idempotency-Key': 'mobile-rsvp-stable-1' },
+    });
     expect(result.data.relationship.registration.state).toBe('confirmed');
     expect(result.data.metrics.confirmed_count).toBe(19);
   });

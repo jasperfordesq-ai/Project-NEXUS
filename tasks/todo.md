@@ -1,4 +1,68 @@
-# Five Pre-Approval Mobile Workstreams Checklist
+# Autonomous Mobile Release Readiness Checklist
+
+## Active goal — 2026-08-30
+
+Complete every release-readiness task that can be performed autonomously with code, local
+Laravel fixtures, Android emulators, GitHub-hosted iOS Simulator jobs, Chrome or computer use.
+Do not mutate Apple or Google store state, deploy, publish OTA/AASA, make legal decisions or
+claim human-only physical-device certification.
+
+- [x] **18 — Messaging effect:** reset a disposable conversation, send through the real app,
+  and independently verify the persisted message and recipient relationship.
+- [x] **19 — Volunteering/event effects:** choose deterministic reversible member actions and
+  verify their server state independently of UI confirmations.
+- [x] **20 — Marketplace effect:** exercise a safe non-payment action and verify its persisted
+  ownership/status effect.
+- [x] **21 — Contract baseline:** save reproducible per-getter classification and risk order.
+- [x] **22 — Contract fixtures:** populate and authorise the highest-risk empty/blocked/id gaps.
+- [x] **23 — Mapping contracts:** guard high-risk mapped responses using real Laravel shapes.
+- [x] **24 — Accessibility breadth:** expand beyond 34 authenticated routes and repair every
+  measured WCAG 24dp failure without overstating Android 48dp guidance.
+- [x] **25 — TalkBack feasibility:** prove one focus-driven journey or record a minimal,
+  reproducible platform limitation.
+- [x] **26 — OTA prompt:** observe the update-ready restart path without publishing an update.
+- [x] **27 — Pixel/store images:** widen deterministic light/dark coverage and replace the
+  weak Play frame only when the replacement is populated, safe and materially better.
+- [x] **28 — iOS Simulator breadth:** revalidate the unsigned tour and select additions only
+  when they improve evidence or artwork, without claiming signing, APNs or hardware proof.
+- [x] **29 — Full gates:** bundle, dependencies, release config, assets, audience, security,
+  documentation and all mobile tests are green or carry a precise external residual risk.
+- [ ] **30 — Bank evidence:** update maintained records and changelog, review secrets/diff,
+  commit and push scoped work, and confirm required CI/device workflows.
+
+### Active-extension evidence
+
+- Flows 11 and 12 now reset and independently verify seven Laravel effects: offer creation,
+  saved listing, connection request, exact-recipient message, volunteering application,
+  confirmed event registration and saved marketplace listing. The repeat run exposed and
+  fixed missing RSVP idempotency; all seven assertions passed together on emulator-5554.
+- The field audit classifies all 201 typed getters with a bounded fetch and reports 101 live
+  checks, 19 empty, 17 blocked/error responses, 18 unresolved and 46 client-mapped, with zero
+  checked required fields missing. The three-role verifier accepts 15 populated contracts,
+  including five owner-only organisation views.
+- TalkBack is installed and enabled. UIAutomator can observe keyboard focus, but cannot capture
+  speech or prove TalkBack swipe/double-tap operation; that is the recorded instrumentation
+  boundary. The crawler now defines 37 routes and ignores changing decorative geometry while
+  still requiring the actionable node set to repeat. Its first 37-route run found Federation's
+  informational status exposed as a 20dp no-op button; the status-chip migration removed it and
+  the final full rerun verified 37/37 screens and 279 targets with zero WCAG-minimum failures;
+  147 targets below Android's non-blocking 48dp guidance remain explicitly reported.
+- The update-ready component rehearsal proves pending/downloaded, once-only, dismissable,
+  restart and failure-reporting paths. A debug build has `expo-updates.isEnabled=false`; a real
+  on-device prompt requires publishing a signed update channel, which this goal forbids.
+- Fresh light/dark tours match stable baselines. New Courses/Clubs/Venues frames remain empty
+  regression evidence, so the stronger populated Play set and stable four-screen Apple tour
+  are retained. Expanding store artwork merely to include empty new modules was rejected as a
+  quality regression; the hosted Apple workflow will still be rerun at exact source.
+- Local gates: 377 suites / 2,611 tests, 76.40% line coverage, type check, zero-warning lint,
+  Expo Doctor 18/18, release/network/certificate/drift/translation/audience/dependency/store
+  checks and a 14.87 MB bundle with 1.48 MB internal headroom. `verify:ios-release` has exactly
+  the two enrollment-gated failures: Team-ID AASA and numeric App Store app ID.
+
+### Completion rule
+
+- [ ] Every remaining item requires approval, store-console access, production authority,
+  an owner/legal answer or genuine human/physical-device observation.
 
 ## Progress record — 2026-08-30
 

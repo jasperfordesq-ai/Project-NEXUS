@@ -218,58 +218,53 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1115",
+      "at": "events.ts:1116",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1128",
+      "at": "events.ts:1134",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1140",
+      "at": "events.ts:1146",
       "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1152",
+      "at": "events.ts:1158",
       "http": "DELETE",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1166",
+      "at": "events.ts:1172",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1188",
+      "at": "events.ts:1194",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1207",
+      "at": "events.ts:1213",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1218",
+      "at": "events.ts:1224",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1232",
+      "at": "events.ts:1238",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1245",
+      "at": "events.ts:1251",
       "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1268",
-      "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
@@ -278,18 +273,18 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1290",
-      "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1306",
-      "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1317",
+      "at": "events.ts:1280",
       "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1296",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1312",
+      "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
@@ -299,56 +294,56 @@
     },
     {
       "at": "events.ts:1329",
-      "http": "POST",
+      "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
       "at": "events.ts:1335",
-      "http": "GET",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1347",
-      "http": "GET",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1357",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1372",
+      "at": "events.ts:1341",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1353",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1363",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1389",
+      "at": "events.ts:1378",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
       "at": "events.ts:1395",
-      "http": "PUT",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1404",
-      "http": "PUT",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1413",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1424",
+      "at": "events.ts:1401",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1410",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1419",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1435",
+      "at": "events.ts:1430",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
@@ -358,7 +353,12 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1492",
+      "at": "events.ts:1447",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1498",
       "http": "POST",
       "reason": "endpoint literal nests a template inside an interpolation and could not be resolved statically"
     },
@@ -758,7 +758,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1120"
+        "events.ts:1126"
       ]
     },
     {
@@ -767,7 +767,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1237"
+        "events.ts:1243"
       ]
     },
     {
@@ -776,7 +776,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1223"
+        "events.ts:1229"
       ]
     },
     {
@@ -3665,7 +3665,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1255"
+        "events.ts:1261"
       ]
     },
     {
@@ -3683,7 +3683,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1263"
+        "events.ts:1269"
       ]
     },
     {

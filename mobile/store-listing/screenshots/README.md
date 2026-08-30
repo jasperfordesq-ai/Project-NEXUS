@@ -1,6 +1,6 @@
 # Play Store screenshots
 
-Last reviewed: 2026-08-29
+Last reviewed: 2026-08-30
 
 Recaptured 2026-08-29 at 1080×2400 from the current locally built release APK, running on an emulator
 against the **live Partner Demo community**, not mockups. The original captures were too tall
@@ -12,6 +12,14 @@ invented or hidden.
 Two complete sets. **Light usually reads better as a small thumbnail in the store grid**;
 dark is the more striking image if the listing is being viewed full size. Pick one and stay
 with it — a listing that mixes themes looks like two different apps.
+
+The 2026-08-30 current-source emulator tour also captured Courses, Clubs and Partner Venues
+in both themes. Those frames are useful regression evidence but their deterministic fixture
+states are empty; they are not stronger marketing images than this populated eight-screen
+Partner Demo set. The existing set was therefore retained deliberately, not forgotten. The
+light and dark stable comparisons passed, and the complete phone/tablet asset validator was
+green. Messages remains a truthful empty-conversation frame with the new-message action; do
+not replace it with another empty module merely to make the listing look newer.
 
 The `tablet-7/` and `tablet-10/` folders contain a separate curated set recaptured from genuine
 Nexus 7 and Pixel Tablet Android emulators on 2026-08-29. They show Listings, Wallet,

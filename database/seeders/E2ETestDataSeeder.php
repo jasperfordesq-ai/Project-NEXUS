@@ -157,6 +157,107 @@ class E2ETestDataSeeder extends Seeder
         );
         $this->command?->info("  E2E fixture listing ensured for User B: \"{$secondaryListingTitle}\"");
 
-        $this->command?->info('E2E test fixture seeded (tenant ' . $tenantId . '): 3 users + 2 listings + 1 device category.');
+        // Reversible native-device effect targets. Each belongs to User B so
+        // the primary actor can exercise a genuine member-to-member action.
+        DB::table('vol_organizations')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'slug' => 'e2e-community-garden'],
+            [
+                'user_id' => $ids['B (secondary)'],
+                'name' => 'E2E Community Garden',
+                'description' => 'Deterministic approved organisation for mobile device journeys.',
+                'contact_email' => env('E2E_SECOND_USER_EMAIL', 'e2e.user.b@project-nexus.local'),
+                'status' => 'approved',
+                'org_type' => 'organisation',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+        $volunteerOrganizationId = (int) DB::table('vol_organizations')
+            ->where('tenant_id', $tenantId)
+            ->where('slug', 'e2e-community-garden')
+            ->value('id');
+
+        DB::table('vol_opportunities')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'title' => 'E2E Community Garden Volunteer'],
+            [
+                'organization_id' => $volunteerOrganizationId,
+                'description' => 'Deterministic volunteering opportunity for the mobile effect journey.',
+                'location' => 'E2E Community Centre',
+                'is_remote' => 0,
+                'start_date' => '2030-06-01',
+                'end_date' => '2030-06-30',
+                'is_active' => 1,
+                'status' => 'open',
+                'credits_offered' => 2,
+                'created_by' => $ids['B (secondary)'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+
+        DB::table('events')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'title' => 'E2E Community Welcome Event'],
+            [
+                'user_id' => $ids['B (secondary)'],
+                'description' => 'Deterministic future event for the mobile RSVP effect journey.',
+                'location' => 'E2E Community Centre',
+                'start_time' => '2030-06-15 10:00:00',
+                'start_date' => '2030-06-15 10:00:00',
+                'end_time' => '2030-06-15 12:00:00',
+                'timezone' => 'Europe/Dublin',
+                'is_online' => 0,
+                'max_attendees' => 25,
+                'status' => 'active',
+                'publication_status' => 'published',
+                'operational_status' => 'scheduled',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+
+        DB::table('marketplace_categories')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'slug' => 'e2e-community-goods'],
+            [
+                'name' => 'E2E Community Goods',
+                'description' => 'Deterministic category for mobile device journeys.',
+                'sort_order' => 999,
+                'is_active' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+        $marketplaceCategoryId = (int) DB::table('marketplace_categories')
+            ->where('tenant_id', $tenantId)
+            ->where('slug', 'e2e-community-goods')
+            ->value('id');
+
+        DB::table('marketplace_listings')->updateOrInsert(
+            [
+                'tenant_id' => $tenantId,
+                'user_id' => $ids['B (secondary)'],
+                'title' => 'E2E Marketplace Bicycle Helmet',
+            ],
+            [
+                'description' => 'Deterministic physical-goods listing for the mobile save journey.',
+                'tagline' => 'Safe fixture item — no payment required',
+                'price' => 12.00,
+                'price_currency' => 'EUR',
+                'price_type' => 'fixed',
+                'category_id' => $marketplaceCategoryId,
+                'condition' => 'good',
+                'quantity' => 1,
+                'inventory_count' => 1,
+                'location' => 'E2E Community Centre',
+                'local_pickup' => 1,
+                'delivery_method' => 'pickup',
+                'seller_type' => 'private',
+                'status' => 'active',
+                'moderation_status' => 'approved',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+
+        $this->command?->info('E2E test fixture seeded (tenant ' . $tenantId . '): 3 users + 2 listings + 1 device category + mobile effect targets.');
     }
 }

@@ -72,6 +72,7 @@ Credentials are injected via `--env` and referenced in flows as `${TEST_EMAIL}` 
 | `09-registration-flow.yaml` | Registration form renders correctly (no submit) | No (clearState) |
 | `10-expanded-member-modules.yaml` | Courses, podcasts, clubs and partner venues are reachable | No (isolated login) |
 | `11-effect-verifying-member-actions.yaml` | Create a listing, save another member's listing, and send a connection request; CI verifies database effects | No (isolated login) |
+| `12-effect-verifying-core-modules.yaml` | Send a message, apply to volunteer, RSVP to an event, and save a marketplace listing; CI independently verifies every database effect | No (isolated login) |
 
 Every root journey starts from a clean state. Authenticated journeys use
 `subflows/login.yaml`; registration uses `subflows/open-login.yaml`. This keeps the

@@ -1110,9 +1110,15 @@ export interface UpdateEventReminderInput {
 export async function rsvpEvent(
   eventId: number,
   status: 'going' | 'interested' | 'not_going',
+  idempotencyKey: string,
 ): Promise<{ data: EventRegistrationResponse }> {
   const endpoint = `${API_V2}/events/${eventId}/rsvp`;
-  const response = await api.post<unknown>(endpoint, { status }, eventRequestOptions);
+  const response = await api.post<unknown>(endpoint, { status }, {
+    headers: {
+      ...eventRequestOptions.headers,
+      'Idempotency-Key': idempotencyKey,
+    },
+  });
   return parseContract(endpoint, eventRegistrationEnvelopeSchema, response);
 }
 

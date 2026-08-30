@@ -65,6 +65,7 @@
     "store:assets:check": "node scripts/render-store-assets.mjs --check && node scripts/validate-play-assets.cjs",
     "store:ios-simulator:prepare": "node scripts/prepare-apple-simulator-screenshots.cjs",
     "audit:production": "node scripts/check-production-audit.mjs",
+    "audit:api-fields": "node scripts/audit-api-field-coverage.mjs",
     "audit:touch-targets": "node scripts/audit-touch-targets.mjs",
     "audit:screen-reader": "node scripts/probe-android-screen-reader.mjs",
     "verify:live-member-contracts": "node scripts/verify-member-response-contracts.mjs"

@@ -8,7 +8,7 @@ import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -31,6 +31,7 @@ import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
+import { Chip } from '@/components/ui/StatusChip';
 import { dateLocale } from '@/lib/utils/dateLocale';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];

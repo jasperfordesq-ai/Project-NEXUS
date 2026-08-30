@@ -1,4 +1,61 @@
-# Implementation Plan: Five Pre-Approval Mobile Workstreams
+# Implementation Plan: Autonomous Mobile Release Readiness
+
+## Active extension — 2026-08-30
+
+The original five pre-approval workstreams reached their bounded checkpoint at commit
+`a5bb93add`. This extension completes every further task that can be proved without Apple or
+Google approval, store-console mutation, production deployment, an owner/legal judgement or
+human-only physical-device certification.
+
+### Phase 7: Effect-verifying journey breadth
+
+- [x] Task 18: Add deterministic reset/action/effect proof for a real messaging journey.
+- [x] Task 19: Add deterministic reset/action/effect proof for selected volunteering and
+  event journeys.
+- [x] Task 20: Add deterministic reset/action/effect proof for a selected marketplace
+  journey without real payment or destructive production state.
+
+### Checkpoint G: Device effects
+
+- [x] Each journey fails before the action, passes afterwards, runs independently from reset
+  fixtures and is exercised by the maintained Android device workflow.
+
+### Phase 8: API contract breadth
+
+- [x] Task 21: Capture a machine-readable baseline for all empty, blocked, unresolved and
+  client-mapped typed getters and rank them by money, access, messaging and core-module risk.
+- [x] Task 22: Add idempotent fixture records and authorised roles for the highest-risk gaps.
+- [x] Task 23: Add real-shape mapping tests for high-risk client-reshaped responses and make
+  the live contract gate fail on regressions.
+
+### Checkpoint H: Contract evidence
+
+- [x] Checked live coverage is classified honestly, zero checked required fields are missing,
+  and every remaining gap retains an explicit reason.
+
+### Phase 9: Remaining autonomous device and visual work
+
+- [x] Task 24: Expand authenticated touch-target coverage and fix every genuine sub-24dp
+  defect found; keep Android 48dp guidance debt separately visible.
+- [x] Task 25: Complete a bounded Espresso/TalkBack focus feasibility spike and add genuine
+  focus-driven evidence if the platform exposes it.
+- [x] Task 26: Exercise the update-ready restart prompt in a non-production rehearsal.
+- [x] Task 27: Make additional high-value screens deterministic, widen the light/dark pixel
+  gate and replace the weak Play screenshot only if a materially better safe frame exists.
+
+### Phase 10: iOS Simulator and release controls
+
+- [x] Task 28: Revalidate the unsigned iOS Simulator tour, add only materially useful screens
+  and retain explicit signing/hardware limitations.
+- [x] Task 29: Re-run bundle, dependency, release configuration, store asset, audience,
+  documentation, security and full mobile gates; remediate only safe in-scope findings.
+- [ ] Task 30: Refresh the ledger, readiness documents and changelog; commit and push only
+  scoped paths, then bank the required CI and device-workflow evidence.
+
+### Checkpoint I: Autonomous boundary complete
+
+- [ ] Every remaining item is named as approval-, legal-, production-, store-console- or
+  genuinely human/physical-device-gated; no autonomous coding or emulator task is left open.
 
 ## Overview
 

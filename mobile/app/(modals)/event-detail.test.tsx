@@ -574,8 +574,9 @@ describe('EventDetailScreen', () => {
   it('renders the RSVP button', () => {
     mockUseApi.mockReturnValue({ data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() });
 
-    const { getByText } = render(<EventDetailScreen />);
+    const { getByTestId, getByText } = render(<EventDetailScreen />);
     expect(getByText('Going')).toBeTruthy();
+    expect(getByTestId('event-going-action')).toBeTruthy();
   });
 
   it('keeps the RSVP footer above the device safe area and reserves scroll space', () => {
@@ -611,7 +612,11 @@ describe('EventDetailScreen', () => {
     fireEvent.press(getByText('Going'));
 
     await waitFor(() => {
-      expect(rsvpEvent).toHaveBeenCalledWith(7, 'going');
+      expect(rsvpEvent).toHaveBeenCalledWith(
+        7,
+        'going',
+        expect.stringMatching(/^rsvp-going-7-/),
+      );
       expect(getByText(/1 going.*0 interested/)).toBeTruthy();
     });
   });

@@ -1,0 +1,94 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Author: Jasper Ford
+# See NOTICE file for attribution and acknowledgements.
+
+# Four reversible member actions against deterministic Laravel fixtures. The
+# workflow resets these rows before Maestro and verifies the database effects
+# afterwards; UI success text alone is never treated as proof.
+
+appId: ie.project.nexus
+---
+- runFlow: subflows/login.yaml
+
+# Send a real private message to the second fixture member.
+- openLink: "nexus://messages"
+- extendedWaitUntil:
+    visible: "Messages"
+    timeout: 20000
+- tapOn: "New message"
+- extendedWaitUntil:
+    visible: "Search members"
+    timeout: 20000
+- tapOn: "Search members"
+- inputText: "E2E UserB"
+- back
+- extendedWaitUntil:
+    visible: "Message E2E"
+    timeout: 20000
+- tapOn: "Message E2E"
+- extendedWaitUntil:
+    visible:
+      id: "thread-screen"
+    timeout: 20000
+- tapOn: "Type a message…"
+- inputText: "E2E device journey message persisted independently."
+- back
+- tapOn: "Send"
+- extendedWaitUntil:
+    visible: "E2E device journey message persisted independently."
+    timeout: 20000
+
+# Apply to a real volunteering opportunity.
+- openLink: "nexus://volunteering"
+- extendedWaitUntil:
+    visible: "Search opportunities…"
+    timeout: 20000
+- tapOn: "Search opportunities…"
+- inputText: "E2E Community Garden Volunteer"
+- back
+- scrollUntilVisible:
+    element: "Apply for E2E Community Garden Volunteer"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Apply for E2E Community Garden Volunteer"
+- extendedWaitUntil:
+    notVisible: "Apply for E2E Community Garden Volunteer"
+    timeout: 20000
+
+# Register as going to the deterministic future event.
+- openLink: "nexus://events"
+- extendedWaitUntil:
+    visible: "E2E Community Welcome Event"
+    timeout: 30000
+- tapOn: "E2E Community Welcome Event"
+- extendedWaitUntil:
+    visible:
+      id: "event-rsvp-footer"
+    timeout: 30000
+- tapOn:
+    id: "event-going-action"
+- extendedWaitUntil:
+    visible:
+      id: "event-going-action"
+      selected: true
+    timeout: 20000
+
+# Save a physical-goods marketplace listing without entering checkout.
+- openLink: "nexus://marketplace"
+- extendedWaitUntil:
+    visible: "Search marketplace..."
+    timeout: 20000
+- tapOn: "Search marketplace..."
+- inputText: "E2E Marketplace Bicycle Helmet"
+- back
+- scrollUntilVisible:
+    element: "View details for E2E Marketplace Bicycle Helmet"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "View details for E2E Marketplace Bicycle Helmet"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 20000
+- tapOn: "Save"
+- assertVisible: "Saved"

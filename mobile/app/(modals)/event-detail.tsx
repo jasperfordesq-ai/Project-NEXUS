@@ -71,7 +71,7 @@ import {
 const WEB_URL = 'https://app.project-nexus.ie';
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
 
-function eventMutationKey(action: 'accept-offer', eventId: number): string {
+function eventMutationKey(action: 'accept-offer' | 'rsvp-going' | 'rsvp-interested', eventId: number): string {
   return `${action}-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
@@ -127,11 +127,13 @@ function EventDetailScreenInner() {
   const [analyticsRefreshSignal, setAnalyticsRefreshSignal] = useState(0);
   const [registrationRefreshSignal, setRegistrationRefreshSignal] = useState(0);
   const acceptOfferMutationKeyRef = useRef<string | null>(null);
+  const rsvpMutationKeysRef = useRef<Partial<Record<'going' | 'interested', string>>>({});
 
   useEffect(() => {
     setRelationship(null);
     setMetrics(null);
     acceptOfferMutationKeyRef.current = null;
+    rsvpMutationKeysRef.current = {};
   }, [safeEventId]);
 
   if (safeEventId <= 0) {
@@ -260,7 +262,11 @@ function EventDetailScreenInner() {
 
     setUpdating(true);
     try {
-      const result = await rsvpEvent(event.id, status);
+      const idempotencyKey = rsvpMutationKeysRef.current[status]
+        ?? eventMutationKey(`rsvp-${status}`, event.id);
+      rsvpMutationKeysRef.current[status] = idempotencyKey;
+      const result = await rsvpEvent(event.id, status, idempotencyKey);
+      delete rsvpMutationKeysRef.current[status];
       setRelationship(result.data.relationship);
       setMetrics(result.data.metrics);
     } catch (err) {
@@ -781,6 +787,7 @@ function EventDetailScreenInner() {
                 <View className="flex-row gap-3">
                   {showGoingAction ? (
                     <RsvpButton
+                      testID="event-going-action"
                       label={t('going')}
                       icon="checkmark-circle"
                       selected={currentRsvp === 'going'}
@@ -794,6 +801,7 @@ function EventDetailScreenInner() {
                   ) : null}
                   {showInterestedAction ? (
                     <RsvpButton
+                      testID="event-interested-action"
                       label={t('interested')}
                       icon="star"
                       selected={currentRsvp === 'interested'}
@@ -1587,6 +1595,7 @@ function SectionTitle({ icon, title, primary, theme }: { icon: IoniconName; titl
 }
 
 function RsvpButton({
+  testID,
   label,
   icon,
   selected,
@@ -1595,6 +1604,7 @@ function RsvpButton({
   disabled,
   onPress,
 }: {
+  testID: string;
   label: string;
   icon: IoniconName;
   selected: boolean;
@@ -1605,6 +1615,7 @@ function RsvpButton({
 }) {
   return (
     <HeroButton
+      testID={testID}
       className="flex-1"
       variant={selected ? 'primary' : 'secondary'}
       isDisabled={disabled}

@@ -9,12 +9,34 @@ const path = require('node:path');
 const {
   auditExitCode,
   isKeyguardShowing,
+  structuralSignature,
   summariseResults,
 } = require('./audit-touch-targets-lib.cjs');
 
 const source = fs.readFileSync(path.join(__dirname, 'audit-touch-targets.mjs'), 'utf8');
 
 describe('touch-target audit route isolation', () => {
+  it('settles on accessibility structure rather than dynamic labels', () => {
+    const first = '<node text="3 minutes ago" content-desc="Post by Alice" resource-id="post" class="android.view.View" clickable="true" enabled="true" bounds="[0,0][100,100]" />';
+    const second = '<node text="4 minutes ago" content-desc="Post by Bob" resource-id="post" class="android.view.View" clickable="true" enabled="true" bounds="[0,0][100,100]" />';
+    expect(structuralSignature(first)).toBe(structuralSignature(second));
+  });
+
+  it('ignores transient geometry but detects the actionable set changing', () => {
+    const base = '<hierarchy>'
+      + '<node class="android.widget.TextView" text="1 minute ago" bounds="[20,20][140,50]" />'
+      + '<node resource-id="save-action" class="android.view.View" clickable="true" '
+      + 'long-clickable="false" enabled="true" scrollable="false" bounds="[20,60][140,180]" />'
+      + '</hierarchy>';
+    const decorativeResize = base.replace('[20,20][140,50]', '[20,20][220,50]');
+    const targetMove = base.replace('[20,60][140,180]', '[30,60][150,180]');
+    const targetRemoved = base.replace(/<node resource-id="save-action"[^>]+\/>/, '');
+
+    expect(structuralSignature(base)).toBe(structuralSignature(decorativeResize));
+    expect(structuralSignature(base)).toBe(structuralSignature(targetMove));
+    expect(structuralSignature(base)).not.toBe(structuralSignature(targetRemoved));
+  });
+
   it('force-stops the app immediately before every deep-link probe', () => {
     expect(source).toMatch(/for \(const route of screens\)[\s\S]*?forceStopApp\(\);\s*openScreen\(route\);/);
   });
@@ -28,15 +50,21 @@ describe('touch-target audit route isolation', () => {
     for (const route of [
       'connections', 'activity', 'endorsements', 'reviews', 'skills',
       'courses', 'podcasts', 'clubs', 'venues', 'ideation',
+      'gamification', 'nexus-score', 'federation',
     ]) {
       expect(source).toContain(`'${route}'`);
-      expect(source).toMatch(new RegExp(`\\b${route.replace('-', "['-]")}\\s*:`));
+      expect(source).toContain(route.includes('-') ? `'${route}':` : `${route}:`);
     }
   });
 
   it('does not settle on a stable native splash before the routed screen arrives', () => {
     expect(source).toContain('async function settledTree(previousSignature, fingerprint)');
     expect(source).toMatch(/if \(fingerprint && !fingerprint\.test\(xml\)\) continue;/);
+  });
+
+  it('tolerates one transient UIAutomator subtree omission without accepting one sample', () => {
+    expect(source).toContain('const seenSignatures = new Map()');
+    expect(source).toMatch(/const seen = \(seenSignatures\.get\(signature\) \?\? 0\) \+ 1;[\s\S]*?if \(seen >= 2\)/);
   });
 
   it('can audit the public login and community-picker screens without a member session', () => {

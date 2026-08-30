@@ -77,35 +77,35 @@ and the places a contract test earns the most.
 | eventTickets.ts:148 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:160 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:940 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1115 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1128 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1140 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1152 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1166 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1188 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1207 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1218 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1232 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1245 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1268 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1116 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1134 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1146 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1158 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1172 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1194 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1213 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1224 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1238 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1251 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1274 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1290 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1306 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1317 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1280 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1296 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1312 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1323 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1329 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1335 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1347 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1357 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1372 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1389 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1395 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1404 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1413 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1424 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1435 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1329 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1335 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1341 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1353 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1363 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1378 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1395 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1401 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1410 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1419 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1430 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1441 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1492 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
+| events.ts:1447 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1498 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
 | feed.ts:269 | GET | variable "path" is not a literal endpoint in this module |
 | marketplace.ts:605 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:606 | GET | variable "endpoint" is assigned more than one endpoint in this module |
@@ -156,9 +156,9 @@ and the places a contract test earns the most.
 | GET | `/api/v2/donations/{param}/receipt` | donations.ts:23 |
 | GET | `/api/v2/events/{param}/analytics` | eventAnalytics.ts:119 |
 | GET | `/api/v2/events/{param}/lifecycle-history` | eventLifecycleHistory.ts:61 |
-| DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1120 |
-| DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1237 |
-| GET | `/api/v2/events/{param}/waitlist` | events.ts:1223 |
+| DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1126 |
+| DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1243 |
+| GET | `/api/v2/events/{param}/waitlist` | events.ts:1229 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
 | POST | `/api/v2/exchanges` | client.ts:574, exchanges.ts:212 |
 | DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:199 |
@@ -478,9 +478,9 @@ and the places a contract test earns the most.
 | POST | `/api/v2/podcasts/episodes/{param}/listen` | podcasts.ts:88 |
 | POST | `/api/v2/podcasts/episodes/{param}/reaction` | podcasts.ts:96 |
 | POST | `/api/v2/podcasts/episodes/{param}/report` | podcasts.ts:100 |
-| GET | `/api/v2/polls` | events.ts:1255 |
+| GET | `/api/v2/polls` | events.ts:1261 |
 | POST | `/api/v2/polls` | polls.ts:20 |
-| POST | `/api/v2/polls/{param}/vote` | events.ts:1263 |
+| POST | `/api/v2/polls/{param}/vote` | events.ts:1269 |
 | POST | `/api/v2/reactions` | feed.ts:321 |
 | GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:346 |
 | GET | `/api/v2/resources` | resources.ts:90 |

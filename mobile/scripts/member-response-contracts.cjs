@@ -48,4 +48,83 @@ function validateConnectionStatus(body) {
   requireFields(envelope.data, ['status', 'connection_id', 'direction'], 'connection status');
 }
 
-module.exports = { requireFields, validateConnectionStatus, validateListingSearch, validateMemberSearch };
+function requirePopulatedCollection(body, label) {
+  const envelope = requireFields(body, ['data', 'meta'], `${label} response`);
+  if (!Array.isArray(envelope.data) || envelope.data.length === 0) {
+    throw new Error(`${label} response must contain the deterministic fixture item`);
+  }
+  return envelope.data[0];
+}
+
+function validateCanonicalEvents(body) {
+  requireFields(
+    requirePopulatedCollection(body, 'events'),
+    ['id', 'title', 'description', 'organizer', 'location', 'schedule', 'relationship', 'permissions', 'metrics'],
+    'event item',
+  );
+}
+
+function validateMarketplaceSearch(body) {
+  requireFields(
+    requirePopulatedCollection(body, 'marketplace'),
+    ['id', 'title', 'price', 'price_currency', 'price_type', 'delivery_method', 'status', 'image', 'image_count', 'is_saved', 'is_own', 'is_promoted', 'views_count', 'created_at'],
+    'marketplace item',
+  );
+}
+
+function validateVolunteeringSearch(body) {
+  requireFields(
+    requirePopulatedCollection(body, 'volunteering'),
+    ['id', 'title', 'description', 'organization', 'location', 'is_remote', 'skills_needed', 'status', 'created_at'],
+    'volunteering item',
+  );
+}
+
+function validateMatchesPayload(body) {
+  const envelope = requireFields(body, ['data'], 'matches response');
+  const payload = requireFields(envelope.data, ['matches', 'meta'], 'matches payload');
+  if (!Array.isArray(payload.matches)) throw new Error('matches payload matches must be an array');
+  requireFields(
+    payload.meta,
+    ['needs_location', 'degraded', 'degraded_reason', 'has_active_listings', 'paused'],
+    'matches meta',
+  );
+}
+
+function validateOwnedOrganisation(body) {
+  requireFields(
+    requirePopulatedCollection(body, 'owned organisation'),
+    ['id', 'name'],
+    'owned organisation item',
+  );
+}
+
+function validateOrganisationStats(body) {
+  const envelope = requireFields(body, ['data'], 'organisation stats response');
+  requireFields(
+    envelope.data,
+    ['total_volunteers', 'pending_applications', 'pending_hours', 'total_approved_hours', 'active_opportunities', 'wallet_balance', 'auto_pay_enabled', 'org_name'],
+    'organisation stats',
+  );
+}
+
+function validateOrganisationCollection(body, label) {
+  const envelope = requireFields(body, ['data'], `${label} response`);
+  if (Array.isArray(envelope.data)) return;
+  const collection = requireFields(envelope.data, ['items', 'cursor', 'has_more'], label);
+  if (!Array.isArray(collection.items)) throw new Error(`${label} items must be an array`);
+}
+
+module.exports = {
+  requireFields,
+  validateCanonicalEvents,
+  validateConnectionStatus,
+  validateListingSearch,
+  validateMarketplaceSearch,
+  validateMatchesPayload,
+  validateMemberSearch,
+  validateOrganisationCollection,
+  validateOrganisationStats,
+  validateOwnedOrganisation,
+  validateVolunteeringSearch,
+};

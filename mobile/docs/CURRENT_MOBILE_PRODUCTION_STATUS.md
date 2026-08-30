@@ -33,7 +33,7 @@ captures also prove that three high-value screens render at tablet sizes.
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned
 Release app for commit `58654079a` completed the four-screen iPhone 16 Pro Max Simulator tour
-in green workflow run `33286909272`. The working ledger recomputes to 0.717 while the
+in green workflow run `33286909272`. The working ledger recomputes to 0.728 while the
 published M1 floor remains 708/1000. This is genuine Simulator runtime evidence, but it is
 not signing, TestFlight, APNs, universal-link or physical-iPhone evidence.
 
@@ -42,10 +42,11 @@ fresh-install community-picker correction in the working tree; the exact next si
 artefact still needs a clean-install and upgrade walk on a physical phone. The live store
 description also says that no money changes hands anywhere, while the app supports purchases
 of physical marketplace goods. That wording must be corrected before another release is
-submitted. Internationalisation, response-contract coverage, accessibility breadth and
-end-to-end device automation remain material gaps.
+submitted. Internationalisation, signed-distribution evidence and human-operated
+accessibility remain material gaps. Local effect automation, response-contract coverage and
+accessibility breadth were materially expanded on 2026-08-30 and await exact-commit CI.
 
-🔴 **Why the score is not higher, given 376 green test suites and 2,600 passing tests.**
+🔴 **Why the score is not higher, given 377 green test suites and 2,611 passing tests.**
 Most tests still run in Node against mocks. The ledger deliberately gives journey credit
 only when a device walk verifies the effect, and only gives full credit when an automated
 guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
@@ -96,27 +97,30 @@ that contract; its 708 total is now committed and CI-backed.
 
 | Category | Weight | Banked | Maximum | Basis |
 | --- | ---: | ---: | ---: | --- |
-| Journey certification | 300 | 214 | 300 | Ledger overall credit **0.712** × 300 = 213.6. 58 CERTIFIED, 62 PROVEN, 0 RENDERS, 8 PARTIAL of 137 scoring rows — no row is left at "it renders" for the first time — thirteen screens that had only ever been looked at were walked on a device on 2026-08-24, and one of them (resources) turned out never to re-read its own list — 137, not 138, because Arabic is now an excluded owner decision rather than an open gap. 🔴 The printed formula on this line and in the ledger had been stale since 2026-08-21 — it named 23 CERTIFIED and 26 RENDERS and its own arithmetic came to 55.30, which does not produce the quoted 0.520. The result was right; the shown working was not. Both are now restated from the ledger's summary row. 🔴 **+2 on 2026-08-25**: RESERVE row 8.3 claimed by in-app account deletion, which the website has had all along and the app did not have at all — walked end to end on a device, including a wrong-password refusal that left the account intact and the member signed in. Capability parity is deliberately NOT moved for it: closing one gap does not license a number without redoing the whole hand-comparison, and that comparison is exactly what missed two absent capabilities last time |
+| Journey certification | 300 | 214 | 300 | The banked source remains the previous floor pending exact-commit CI. The working ledger is **0.728**: 62 CERTIFIED, 58 PROVEN, 0 RENDERS and 10 PARTIAL over 137 scoring rows, which would round to 218/300 after banking. Four PROVEN rows moved only because resettable Android journeys now verify their Laravel effects independently: offer creation, volunteering application, event RSVP and connection request. Messaging and marketplace-save effects are also guarded but do not create new ledger rows. |
 | Capability parity with the website | 120 | 72 | 120 | 🔴 The hand-comparison of ten capabilities missed TWO whole capabilities that were absent from the app: the exchange workflow (accept/decline/start/complete/confirm plus any list of your exchanges) and feed moderation (hide, not-interested, mute, report — a safeguarding capability the website has had since the V2 feed). Both have now been built and walked. Raised by 8 for the two builds. Raised a further 4 on 2026-08-23 for writing a feed post, which this table had itself recorded as absent since 2026-08-22 — so that credit is for closing a known gap, not for the comparison getting better. The figure stays well short of full because the comparison is still only eleven capabilities deep and has twice proved incomplete |
 | Interaction integrity | 100 | 74 | 100 | Posting a listing, an event or a group used to leave the member on the filled form with no confirmation — a duplicate-post trap — now fixed for all three. Sheets open, stay open, and close when the screen under them goes away. Deep links were fixed across parameter names, query strings and exchange/listing identity. All 165 sites that reported a failure without the server's reason now pass it on, walked against a real 409. The score remains conservative because shared-state refresh, offline/error states and destructive-action recovery have not been swept across the full app |
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
-| Accessibility | 60 | 38 | 60 | Contrast is gated. TalkBack and the live accessibility tree have been audited across five authenticated core screens plus the public login and community picker. The public pass found one more informational current-community chip exposed as a 20dp clickable target; it now uses the accessibility-aware wrapper. The automated touch-target tool defines 29 fingerprint-gated routes, force-stops before each probe and pins a selected emulator. It now reports a partially visible card clipped at a scroll-viewport edge separately instead of misreporting the visible 8dp fragment as the card's target size. The protected routes still need an authenticated live-device run, and the source fix cannot be credited from the older installed APK. Still short of full: no journey has been operated end to end using TalkBack gestures, most screens remain unaudited, and 88 previously measured targets remain above WCAG AA but below Android's 48dp guidance |
+| Accessibility | 60 | 38 | 60 | Contrast is gated. The authenticated current-source crawler verified all **37/37** fingerprint-gated routes and 279 targets at the emulator's actual 420dpi: zero below the WCAG 24dp floor, 147 above that floor but below Android's 48dp guidance, and five clipped viewport fragments excluded from sizing failures. Dynamic text, images and transient geometry are excluded from settlement, while a changing actionable/scrollable node set still prevents a pass; exact bounds come from the accepted final tree. TalkBack is installed and enabled, and keyboard focus is visible in UIAutomator, but spoken output and a full swipe/double-tap journey remain genuinely human/instrumentation-gated. |
 | Internationalisation | 70 | 25 | 70 | Seven locales ship, and the shrink-only gate now reports **zero** multi-word phrases still identical to English: ga 0, de 0, fr 0, it 0, pt 0 and es 0. All 4,531 original guarded entries were translated or narrowly allowlisted as registered product names, international units, machine-readable formats or genuinely shared words. The work covers coherent member journeys rather than scattered labels, including authentication, discovery, messaging, home, gamification, goals, exchanges, marketplace, federation, events, groups, profile/legal summaries, settings, volunteering, jobs, member collections and appreciations. This is automated catalogue integrity plus a reviewed AI translation pass—not native-speaker certification for any language. Arabic and right-to-left remain excluded from the native app by owner decision. |
-| Automated test depth | 100 | 74 | 100 | `npm run coverage:check` passed **376 suites / 2,600 tests** on 2026-08-30, with type checking, zero-warning lint, 28 ratcheted coverage floors, source guards and nine device flows. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys, and earlier green suites missed broken sheets and half of the core exchange |
+| Automated test depth | 100 | 74 | 100 | `npm run test:ci` passed **377 suites / 2,611 tests** on 2026-08-30; the ratchet reports 76.40% global lines across 336 files, with type checking, zero-warning lint, 28 area floors and source guards. Two maintained Android flows now finish with seven independent Laravel effect assertions. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys. |
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
 | Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
 | Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
 | **Total** | **1000** | **708** | **1000** | — |
 
 **Provenance.** Journey status comes only from the 140-row ledger below. The isolated Android
-candidate now contains 376 Jest suites and 2,600 tests; its non-build Jest, TypeScript and lint
+candidate now contains 377 Jest suites and 2,611 tests; its non-build Jest, TypeScript and lint
 checks were re-run on 2026-08-30. The pre-review release baseline separately passed Expo Doctor
 18/18, release policy, route/API/theme drift, production dependency acceptance, startup
 budget, asset validation, network policy and the live TLS certificate chain. The public Play
 listing was inspected directly while signed in and the five public policy/support routes were
 requested independently. Tablet evidence is the genuine emulator output under
-`store-listing/screenshots/tablet-{7,10}/`. A 2026-08-27 fixture-dependent API probe checked
-108 typed getters and found no required field missing from a response it could inspect. The
+`store-listing/screenshots/tablet-{7,10}/`. The 2026-08-30 field audit classified all 201
+typed getters: 101 live non-empty checks, 19 empty, 17 permission/error-blocked, 18 unresolved
+and 46 explicitly client-mapped, with zero required fields missing from a checked response. A
+separate three-role verifier accepted 15 populated high-risk contracts, including five
+organisation-owner views that a primary-member-only probe correctly receives as 403. The
 same day's submitted-artefact accessibility pass found additional informational chips in
 Goals, Organisations and Settings; their source fixes are tested but cannot become device
 evidence until the next build. Commit `4c38d229a` and all six workflows were green on
@@ -151,18 +155,18 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    prove each refresh indicator follows its request without blanking loaded detail content;
    force a comment reaction to fail and prove authoritative state returns with a visible
    translated error. Do not mark any of these checks complete from Jest or an emulator.
-5. **Increase response-contract evidence.** Re-run the field-coverage instrument against
-   current fixtures, then prioritise money, authentication, messaging and exchange responses.
-   The 2026-08-30 read-only run found zero missing required fields across 108 checked typed
-   getters. It honestly left 18 empty, 11 permission/error-blocked, 18 without a resolvable
-   record id and 46 deliberately reshaped in the client; none of those 93 are counted as
-   response-shape proof. The audit now exits non-zero if any checked contract is missing a
-   required field.
+5. **Increase response-contract evidence.** The 2026-08-30 read-only run classified all 201
+   typed getters and found zero missing required fields across 101 live non-empty checks. It
+   honestly left 19 empty, 17 permission/error-blocked, 18 without a resolvable record id and
+   46 deliberately reshaped in the client. A three-role gate separately accepts 15 populated
+   high-risk contracts, including the five organisation-owner views the generic member audit
+   correctly cannot access. Remaining work is deeper real-shape validation for mapped money,
+   authentication, messaging and exchange boundaries—not relabelling explicit gaps as proof.
 6. **Reduce member-facing quality debt.** The guarded translation baseline is now zero across
    all six non-English shipped locales, but every language still needs native-speaker
-   certification. TalkBack has not driven a complete journey; the
-   target audit defines 29 of roughly 137 screens but protected routes await an authenticated
-   device run; and pixel assertions cover only a small stable subset. Repeated public-entry
+   certification. TalkBack has not driven a complete spoken journey. The current-source target
+   audit now defines 37 authenticated routes and reports the WCAG 24dp floor separately from
+   Android's 48dp guidance; pixel assertions still cover only a small stable subset. Repeated public-entry
    captures are pixel-identical on a phone, 7-inch portrait tablet and 10-inch landscape
    tablet, but they exercise the older submitted APK. The new 720dp tablet width caps and
    accessibility fix must be rechecked in the exact next build. An attempted protected-route
@@ -173,7 +177,7 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
 7. **Pay down engineering headroom.** The 529-warning lint backlog was cleared on
    2026-08-27: Jest/CommonJS false positives are scoped to test and configuration files,
    real warnings were fixed, and `eslint .` now passes with zero warnings. The latest recorded
-   Android Hermes startup bundle is 14.87 MB, leaving 1.49 MB below its 16.35 MB blocking
+   Android Hermes startup bundle is 14.87 MB, leaving 1.48 MB below its 16.35 MB blocking
    ceiling. This is an internal JavaScript regression budget, not an App Store download-size
    limit; no Play artefact was built or uploaded while the release is under review.
 

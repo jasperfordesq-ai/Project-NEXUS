@@ -29,7 +29,7 @@ import path from 'node:path';
 
 import auditHelpers from './audit-touch-targets-lib.cjs';
 
-const { auditExitCode, isKeyguardShowing, summariseResults } = auditHelpers;
+const { auditExitCode, isKeyguardShowing, structuralSignature, summariseResults } = auditHelpers;
 
 const args = process.argv.slice(2);
 const argValue = (name, fallback) => {
@@ -47,6 +47,7 @@ const BASE_URL = 'nexus://';
 /** WCAG 2.2 AA (2.5.8) minimum, and Android's own guidance. */
 const AA_MIN_DP = 24;
 const ANDROID_GUIDANCE_DP = 48;
+const SETTLE_DEADLINE_MS = 30000;
 
 /**
  * The screens to walk. Deep links, because they land on one screen with no navigation
@@ -59,6 +60,7 @@ const DEFAULT_SCREENS = [
   'group-exchanges', 'achievements', 'leaderboard', 'search', 'settings', 'support',
   'connections', 'activity', 'endorsements', 'reviews', 'skills',
   'courses', 'podcasts', 'clubs', 'venues', 'ideation',
+  'gamification', 'nexus-score', 'federation',
 ];
 
 /**
@@ -107,6 +109,9 @@ const SCREEN_FINGERPRINT = {
   clubs: /Clubs|Associations|Search clubs/i,
   venues: /Partner venues|My pass|No partner venues/i,
   ideation: /Ideas|Challenges|Browse challenges/i,
+  gamification: /Achievements|Challenges|Journeys|NEXUS Score|Rewards/i,
+  'nexus-score': /NEXUS Score|Community impact|Your score/i,
+  federation: /Federation|Explore the network|Partner communities|No partners/i,
 };
 
 const screens = argValue('--screens', null)?.split(',').map((s) => s.trim()).filter(Boolean)
@@ -214,7 +219,7 @@ async function sleep(ms) {
 
 /** Cheap identity for a screen: the labels it exposes, in order. */
 function signatureOf(xml) {
-  return [...xml.matchAll(/content-desc="([^"]+)"/g)].map((m) => m[1]).join('|');
+  return structuralSignature(xml);
 }
 
 /**
@@ -229,12 +234,12 @@ function signatureOf(xml) {
  * out of the totals rather than counted as if it had been measured.
  */
 async function settledTree(previousSignature, fingerprint) {
-  const DEADLINE_MS = 20000;
   const POLL_MS = 1200;
   const started = Date.now();
   let lastXml = null;
   let lastSignature = null;
-  while (Date.now() - started < DEADLINE_MS) {
+  const seenSignatures = new Map();
+  while (Date.now() - started < SETTLE_DEADLINE_MS) {
     await sleep(POLL_MS);
     let xml;
     try {
@@ -243,12 +248,18 @@ async function settledTree(previousSignature, fingerprint) {
       continue;
     }
     const signature = signatureOf(xml);
-    if (signature === previousSignature) continue;  // still the screen we came from
+    if (signature === previousSignature && !fingerprint) continue;
     // A cold-start splash can hold still for two polls before the routed React screen
     // arrives. Do not declare that stable shell to be the destination and then mark
     // the route wrong; keep polling until this route's own fingerprint is present.
     if (fingerprint && !fingerprint.test(xml)) continue;
-    if (signature === lastSignature) return { xml, signature, settled: true };
+    // UIAutomator can omit a subtree for one dump while React Native is otherwise
+    // unchanged. Require the same actionable set twice, but not necessarily in adjacent
+    // dumps; the route fingerprint still has to be present every time. This prevents one
+    // transient hierarchy omission from making a stable live-data screen unmeasurable.
+    const seen = (seenSignatures.get(signature) ?? 0) + 1;
+    seenSignatures.set(signature, seen);
+    if (seen >= 2) return { xml, signature, settled: true };
     lastXml = xml;
     lastSignature = signature;
   }
@@ -282,7 +293,7 @@ async function main() {
     }
     if (!settled) {
       // Reported, never silently folded into the totals as if it had been measured.
-      console.log(`${route.padEnd(18)} UNSETTLED — still changing after 20s, skipped`);
+      console.log(`${route.padEnd(18)} UNSETTLED — still changing after ${SETTLE_DEADLINE_MS / 1000}s, skipped`);
       perScreen.push({ route, status: 'unsettled' });
       previousSignature = signature;
       continue;

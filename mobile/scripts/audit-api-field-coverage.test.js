@@ -4,9 +4,44 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const {
+  auditOutputOptions,
+  classifyGetterBody,
   exitCodeForMissingContracts,
+  fetchTimeoutMs,
   requiredQueryForGetter,
 } = require('./audit-api-field-coverage-helpers.cjs');
+
+describe('response-contract machine-readable output options', () => {
+  it('separates module filters from the JSON output path', () => {
+    expect(auditOutputOptions(['marketplace', '--verbose', '--json', 'audit.json'])).toEqual({
+      verbose: true,
+      jsonOut: 'audit.json',
+      only: ['marketplace'],
+    });
+  });
+
+  it('rejects a missing JSON output path', () => {
+    expect(() => auditOutputOptions(['--json'])).toThrow('--json requires an output path');
+  });
+});
+
+describe('response-contract getter classification', () => {
+  it('separates raw passthroughs, runtime-validated contracts, and unvalidated mappings', () => {
+    expect(classifyGetterBody('return api.get<Foo>(endpoint);')).toBe('passthrough');
+    expect(classifyGetterBody('return parseContract(endpoint, fooSchema, response);')).toBe('validated');
+    expect(classifyGetterBody('const response = await api.get<unknown>(endpoint); return parseContract(endpoint, fooSchema, response);')).toBe('validated');
+    expect(classifyGetterBody('return { data: response.items.map(mapItem) };')).toBe('mapped');
+  });
+});
+
+describe('response-contract request timeout', () => {
+  it('uses a bounded default and accepts a positive override', () => {
+    expect(fetchTimeoutMs(undefined)).toBe(10_000);
+    expect(fetchTimeoutMs('2500')).toBe(2_500);
+    expect(fetchTimeoutMs('0')).toBe(10_000);
+    expect(fetchTimeoutMs('not-a-number')).toBe(10_000);
+  });
+});
 
 describe('response-contract required query discovery', () => {
   it('uses a discovered listing for both comment getter families', () => {
