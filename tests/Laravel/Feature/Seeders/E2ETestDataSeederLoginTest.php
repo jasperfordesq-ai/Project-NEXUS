@@ -105,4 +105,34 @@ class E2ETestDataSeederLoginTest extends TestCase
             'moderation_status' => 'approved',
         ])->exists());
     }
+
+    public function test_seeder_creates_a_populated_saved_collection_contract_target(): void
+    {
+        $this->seed(E2ETestDataSeeder::class);
+
+        $tenantId = TenantSeeder::MASTER_TENANT_ID;
+        $primaryId = (int) DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where('email', 'e2e.user.a@project-nexus.local')
+            ->value('id');
+        $listingId = (int) DB::table('listings')
+            ->where('tenant_id', $tenantId)
+            ->where('title', 'E2E Fixture Listing — Bicycle Repair')
+            ->value('id');
+        $collectionId = (int) DB::table('saved_collections')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $primaryId)
+            ->where('name', 'E2E Contract Collection')
+            ->value('id');
+
+        $this->assertGreaterThan(0, $collectionId);
+        $this->assertTrue(DB::table('saved_items')->where([
+            'collection_id' => $collectionId,
+            'user_id' => $primaryId,
+            'tenant_id' => $tenantId,
+            'item_type' => 'listing',
+            'item_id' => $listingId,
+        ])->exists());
+        $this->assertSame(1, (int) DB::table('saved_collections')->where('id', $collectionId)->value('items_count'));
+    }
 }

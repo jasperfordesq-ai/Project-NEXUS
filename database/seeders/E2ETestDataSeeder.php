@@ -157,6 +157,50 @@ class E2ETestDataSeeder extends Seeder
         );
         $this->command?->info("  E2E fixture listing ensured for User B: \"{$secondaryListingTitle}\"");
 
+        // A populated collection lets the native response-contract audit inspect
+        // the SavedItem shape. An empty collection proves only its envelope, and
+        // previously left getSavedCollectionItems unresolved or empty.
+        $secondaryListingId = (int) DB::table('listings')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $ids['B (secondary)'])
+            ->where('title', $secondaryListingTitle)
+            ->value('id');
+        DB::table('saved_collections')->updateOrInsert(
+            [
+                'tenant_id' => $tenantId,
+                'user_id' => $ids['A (primary)'],
+                'name' => 'E2E Contract Collection',
+            ],
+            [
+                'description' => 'Deterministic populated collection for response-contract checks.',
+                'is_public' => 0,
+                'color' => '#6366f1',
+                'icon' => 'bookmark',
+                'items_count' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+        $savedCollectionId = (int) DB::table('saved_collections')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $ids['A (primary)'])
+            ->where('name', 'E2E Contract Collection')
+            ->value('id');
+        DB::table('saved_items')->updateOrInsert(
+            [
+                'collection_id' => $savedCollectionId,
+                'item_type' => 'listing',
+                'item_id' => $secondaryListingId,
+            ],
+            [
+                'user_id' => $ids['A (primary)'],
+                'tenant_id' => $tenantId,
+                'note' => 'Deterministic saved item for mobile response-contract checks.',
+                'saved_at' => $now,
+            ]
+        );
+        $this->command?->info('  E2E populated saved collection ensured for User A');
+
         // Reversible native-device effect targets. Each belongs to User B so
         // the primary actor can exercise a genuine member-to-member action.
         DB::table('vol_organizations')->updateOrInsert(
