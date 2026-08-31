@@ -383,7 +383,7 @@ class CommentsControllerTest extends TestCase
             'tenant_id' => $this->testTenantId,
             'user_id' => $resourceOwner->id,
             'type' => 'comment',
-            'link' => "/resources#comment-{$commentId}",
+            'link' => "/resources/{$resourceId}#comment-{$commentId}",
         ]);
     }
 
