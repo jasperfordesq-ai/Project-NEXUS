@@ -105,6 +105,10 @@ The ordinary on-device data payload is string-only and versioned:
 - Exact marketplace order links first fetch the protected order, resolve whether the signed-in
   member is the buyer or seller, then open and highlight that order in Purchases or Sales. The
   direct fetch prevents an older referenced order disappearing behind the first paginated result.
+- A stored bell/push destination must remain valid in both clients. For example, employer job
+  updates use React's real `/jobs/{id}#applications` destination; the native intent mapper
+  translates that same fragment to the job pipeline. Do not replace a shared link with an
+  invented native-looking path that the React notification bell cannot open.
 - Paid campaigns are the only external-navigation exception. They retain separately reviewed
   copy and a credential-free HTTPS CTA. Their numeric campaign id is queued until authentication
   resolves, then the first tap is recorded through the tenant-scoped

@@ -57,11 +57,12 @@ Metro source was then cold-launched at deterministic seller order 35: it resolve
 placed the exact `MKT-01M0MMJ6RJTQDRMCBBMNBPWGWV` paid order first with seller actions. This adds
 exact producer/route proof without fabricating remote delivery. Row 7.14 and the
 score remain PARTIAL/714 until this backend is deployed and a provider-delivered tap of the
-corrected payload is observed on physical Android or iPhone. Earlier representative source was
-banked by full CI `33376178547`, CodeQL `33376077568`, Security Scan `33376079789`, Android device
-run `33374798270`, and unsigned iOS Simulator run `33376091426`; new exact-source workflow evidence
-is recorded only after this extension is committed. None proves APNs delivery, signing,
-TestFlight or physical-iPhone behaviour.
+corrected payload is observed on physical Android or iPhone. The final audited source is commit
+`ec801add8`: full CI `33400565282`, CodeQL `33400564297`, Security Scan `33400565235`, E2E
+`33400565189`, platform contracts `33400565213`, Docs Lint `33400565208`, the thirteen-flow Android
+device run `33400589987`, and unsigned iOS Simulator run `33400593135` are green. The iOS run
+compiled, installed, toured and content-verified the four current public App Store frames; it does
+not prove APNs delivery, signing, TestFlight or physical-iPhone behaviour.
 
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned
