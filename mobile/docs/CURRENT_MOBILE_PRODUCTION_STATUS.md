@@ -41,16 +41,16 @@ call sites**. The corrected candidate carries a versioned string-only internal d
 detailed content inside the authenticated app, displays a privacy-safe title and generic body in
 the recipient's locale, and sends foreground/background/terminated responses through the
 canonical mapper after authentication. Unsupported, sensitive, staff/browser-only, story and
-non-emergency Caring and group-chat targets fall back or are suppressed; disabled modules and
+all Care in Community and group-chat targets fall back or are suppressed; disabled modules and
 deleted poll/feed resources degrade safely. Exact links were corrected for federated activity,
 volunteer-organisation decisions, matches, settings and marketplace listings/orders/payouts. A
 shared buyer/seller order route fetches and highlights the referenced order even when pagination
 would otherwise hide it. Thirteen duplicate job send paths were removed. Ordinary Android alerts
-use the translated default-importance channel; only emergencies select the translated
+use the translated default-importance channel; supported non-Caring emergencies select the translated
 maximum-importance safeguarding channel and request high-priority FCM/APNs delivery. Paid campaign taps use the sole reviewed public-HTTPS exception
 and defer tenant-scoped open analytics until authentication. The expanded focused backend set
-passes **189 tests / 532 assertions** and the complete native suite passes **380 suites / 2,725
-tests** with 76.83% global line coverage. The exact route inventory, 462-endpoint API ledger and
+passes **190 tests / 538 assertions** and the complete native suite now passes **380 suites / 2,735
+tests** with 76.94% global line coverage. The exact route inventory, 462-endpoint API ledger and
 256-route native parity matrix are green. A release APK from the central lifecycle repair built
 and installed and a killed Android launch reached its deferred Events destination. The current
 Metro source was then cold-launched at deterministic seller order 35: it resolved to Sales and
@@ -63,6 +63,21 @@ corrected payload is observed on physical Android or iPhone. The final audited s
 device run `33400589987`, and unsigned iOS Simulator run `33400593135` are green. The iOS run
 compiled, installed, toured and content-verified the four current public App Store frames; it does
 not prove APNs delivery, signing, TestFlight or physical-iPhone behaviour.
+
+**Deeper final-wire audit, 31 August.** The first producer audit did not pass each route
+through the backend privacy sanitizer, which still removed benign fragments after the producer
+tests had gone green. The corrected contract now preserves only reviewed application, comment
+and discussion fragments; opens supported comment notifications with their native comment
+sheet, scrolls to the named comment and highlights it; and keeps every Care in Community route outside the native apps. Expo delivery is
+chunked to 100 messages, retries transient failures, supports authenticated send and receipt
+requests, retries receipts that are not ready, applies bounded lifetimes and does not delete
+member tokens for server credential or project errors. Permission revocation, iOS provisional
+permission, token rotation, input validation, launcher-badge reconciliation and the integer
+campaign-consent form are covered. Safeguarding/emergency categorisation now takes precedence
+over generic module words, so a volunteer emergency can no longer appear as an ordinary
+Opportunity alert. This materially improves the source candidate but does not
+add M1 points without a provider-delivered tap on the exact signed artefact; the sole official
+score remains **714/1000**.
 
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned

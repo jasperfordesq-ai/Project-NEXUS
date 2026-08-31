@@ -45,9 +45,12 @@ final class CheckExpoPushReceipts implements ShouldQueue
     public function handle(): void
     {
         foreach (array_chunk($this->ticketTokens, 1000, true) as $ticketTokens) {
-            $response = Http::acceptJson()
-                ->asJson()
-                ->timeout(15)
+            $request = Http::acceptJson()->asJson()->timeout(15);
+            $accessToken = trim((string) config('services.expo.access_token', ''));
+            if ($accessToken !== '') {
+                $request = $request->withToken($accessToken);
+            }
+            $response = $request
                 ->post(self::RECEIPTS_URL, ['ids' => array_keys($ticketTokens)]);
 
             if (! $response->successful()) {
@@ -57,6 +60,11 @@ final class CheckExpoPushReceipts implements ShouldQueue
             $receipts = $response->json('data');
             if (! is_array($receipts)) {
                 throw new RuntimeException('Expo push receipt response was malformed');
+            }
+
+            $missingTicketIds = array_diff(array_keys($ticketTokens), array_map('strval', array_keys($receipts)));
+            if ($missingTicketIds !== []) {
+                throw new RuntimeException('Expo push receipts are not ready for every requested ticket');
             }
 
             foreach ($receipts as $ticketId => $receipt) {

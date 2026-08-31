@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * PushLog — delivery observability for device push (web + FCM).
+ * PushLog — provider-acceptance observability for device push (web + FCM).
  *
  * One row per fanOutPush() that reached the send, whatever the outcome. All writes are
  * best-effort and guarded so push and the HTTP request are never affected by a logging
@@ -51,7 +51,7 @@ class PushLog extends Model
     ];
 
     /**
-     * Record a push delivery outcome. Computes a coarse status from the per-channel
+     * Record a push provider outcome. Computes a coarse status from the per-channel
      * results and inserts a row — including when there was nothing to send to, which is
      * recorded as `no_targets` rather than dropped. See the class note: a missing row was
      * indistinguishable from a push that never ran.
@@ -78,6 +78,8 @@ class PushLog extends Model
               browser subscription for this member — the commonest real answer to "why did
               my phone not buzz", and the one the log could not previously give.
             */
+            // `delivered` is the historical stored value and means provider
+            // accepted, not that a handset displayed the notification.
             $status = match (true) {
                 $anySent && $anyFail => 'partial',
                 $anySent => 'delivered',

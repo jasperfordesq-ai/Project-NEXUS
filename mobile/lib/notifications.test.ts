@@ -10,6 +10,7 @@ const mockGetPermissionsAsync = jest.fn();
 const mockRequestPermissionsAsync = jest.fn();
 const mockGetExpoPushTokenAsync = jest.fn();
 const mockSetNotificationChannelAsync = jest.fn();
+const mockSetBadgeCountAsync = jest.fn();
 const mockGetLastNotificationResponseAsync = jest.fn();
 const mockClearLastNotificationResponseAsync = jest.fn();
 const mockResponseSubscriptionRemove = jest.fn();
@@ -25,10 +26,12 @@ jest.mock('expo-constants', () => ({
 
 jest.mock('expo-notifications', () => ({
   AndroidImportance: { DEFAULT: 'default', MAX: 'max' },
+  IosAuthorizationStatus: { AUTHORIZED: 2, PROVISIONAL: 3, EPHEMERAL: 4 },
   getExpoPushTokenAsync: (...args: unknown[]) => mockGetExpoPushTokenAsync(...args),
   getPermissionsAsync: (...args: unknown[]) => mockGetPermissionsAsync(...args),
   requestPermissionsAsync: (...args: unknown[]) => mockRequestPermissionsAsync(...args),
   setNotificationChannelAsync: (...args: unknown[]) => mockSetNotificationChannelAsync(...args),
+  setBadgeCountAsync: (...args: unknown[]) => mockSetBadgeCountAsync(...args),
   setNotificationHandler: jest.fn(),
   getLastNotificationResponseAsync: (...args: unknown[]) => mockGetLastNotificationResponseAsync(...args),
   clearLastNotificationResponseAsync: (...args: unknown[]) => mockClearLastNotificationResponseAsync(...args),
@@ -66,6 +69,7 @@ import {
   getNotificationLink,
   observeNotificationResponses,
   registerForPushNotifications,
+  syncPushBadge,
   unregisterPushNotifications,
 } from './notifications';
 
@@ -123,6 +127,17 @@ describe('push notification links', () => {
     expect(getNotificationLink({
       type: 'group_chatroom_message',
       link: '/groups/42/chat',
+    })).toBe('/notifications');
+  });
+
+  it('fails every Care in Community destination closed at the native store boundary', () => {
+    expect(getNotificationLink({
+      type: 'caring_emergency',
+      link: '/caring-community/emergency-alerts?alert_id=91',
+    })).toBe('/notifications');
+    expect(getNotificationLink({
+      type: 'caring_nudge',
+      link: '/caring-community/request-help',
     })).toBe('/notifications');
   });
 
@@ -318,6 +333,7 @@ describe('push notification registration', () => {
 
   it('does not prompt during automatic session restoration', async () => {
     mockGetPermissionsAsync.mockResolvedValue({ status: 'undetermined' });
+    mockStorageGet.mockResolvedValue(null);
 
     const result = await registerForPushNotifications();
 
@@ -333,6 +349,56 @@ describe('push notification registration', () => {
 
     expect(result).toBe('registered');
     expect(mockRequestPermissionsAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts iOS provisional authorization without prompting again', async () => {
+    const originalPlatform = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' });
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'undetermined', ios: { status: 3 } });
+
+    const result = await registerForPushNotifications();
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatform });
+
+    expect(result).toBe('registered');
+    expect(mockRequestPermissionsAsync).not.toHaveBeenCalled();
+  });
+
+  it('unregisters a stored token after permission is revoked', async () => {
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'denied' });
+
+    const result = await registerForPushNotifications();
+
+    expect(result).toBe('permission-denied');
+    expect(mockPost).toHaveBeenCalledWith('/api/push/unregister-device', {
+      token: 'ExponentPushToken[abc123]',
+      token_type: 'expo',
+    });
+    expect(mockStorageRemove).toHaveBeenCalledWith('nexus_expo_push_token');
+  });
+
+  it('replaces a rotated Expo token and removes the prior registration', async () => {
+    mockStorageGet.mockResolvedValue('ExponentPushToken[old]');
+    mockGetExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[new]' });
+
+    const result = await registerForPushNotifications();
+
+    expect(result).toBe('registered');
+    expect(mockPost).toHaveBeenNthCalledWith(1, '/api/push/register-device', expect.objectContaining({
+      token: 'ExponentPushToken[new]',
+    }));
+    expect(mockPost).toHaveBeenNthCalledWith(2, '/api/push/unregister-device', {
+      token: 'ExponentPushToken[old]',
+      token_type: 'expo',
+    });
+    expect(mockStorageSet).toHaveBeenCalledWith('nexus_expo_push_token', 'ExponentPushToken[new]');
+  });
+
+  it('synchronises the launcher badge with a non-negative unread count', async () => {
+    mockSetBadgeCountAsync.mockResolvedValue(true);
+
+    await syncPushBadge(-3);
+
+    expect(mockSetBadgeCountAsync).toHaveBeenCalledWith(0);
   });
 
   it('unregisters the same Expo push token on logout', async () => {

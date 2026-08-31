@@ -80,9 +80,10 @@ class AdminEmailDeliverabilityController extends BaseApiController
      *
      * Device-push (web + FCM) delivery observability over a window, the push
      * sibling of summary(). Reads push_log (written by NotificationDispatcher::
-     * fanOutPush). Returns delivered/partial/failed counts, FCM sent/failed and
-     * web-delivered totals, a breakdown by notification type, and the most
-     * recent failures so an admin can see whether push is actually landing.
+     * fanOutPush). The legacy `delivered` field means the configured provider
+     * accepted the send; it is not proof that a handset displayed it. Returns
+     * accepted/partial/failed counts, FCM sent/failed and web-send totals, a
+     * breakdown by notification type, and the most recent known failures.
      */
     public function pushSummary(): JsonResponse
     {

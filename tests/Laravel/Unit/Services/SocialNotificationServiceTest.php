@@ -88,6 +88,15 @@ class SocialNotificationServiceTest extends TestCase
         );
     }
 
+    public function test_unknown_comment_target_fails_closed_to_the_authenticated_inbox(): void
+    {
+        DB::shouldReceive('table->where->where->select->first')->andReturnNull();
+        $method = new \ReflectionMethod(SocialNotificationService::class, 'getCommentLink');
+        $method->setAccessible(true);
+
+        $this->assertSame('/notifications', $method->invoke(null, 91));
+    }
+
     public function test_social_email_helpers_use_recipient_tenant_and_translated_subjects(): void
     {
         $source = file_get_contents(app_path('Services/SocialNotificationService.php'));

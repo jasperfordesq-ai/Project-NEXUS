@@ -48,7 +48,7 @@ function normalizeId(value: string | string[] | undefined): number | null {
 
 function FeedItemDetailScreenInner() {
   const { t } = useTranslation(['home', 'common']);
-  const params = useLocalSearchParams<{ id?: string; type?: string }>();
+  const params = useLocalSearchParams<{ id?: string; type?: string; openComments?: string; commentId?: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { hasModule } = useTenant();
@@ -121,7 +121,13 @@ function FeedItemDetailScreenInner() {
               <RefreshControl refreshing={isRefreshing} onRefresh={() => void loadItem(true)} tintColor={primary} colors={[primary]} />
             }
           >
-            <FeedItem item={item} disableDetailNavigation onOpenReactors={setReactorsTarget} />
+            <FeedItem
+              item={item}
+              disableDetailNavigation
+              initialCommentsOpen={params.openComments === '1'}
+              initialCommentId={normalizeId(params.commentId)}
+              onOpenReactors={setReactorsTarget}
+            />
           </ScrollView>
         )}
       </SafeAreaView>

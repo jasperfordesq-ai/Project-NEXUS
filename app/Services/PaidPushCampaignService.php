@@ -642,7 +642,7 @@ class PaidPushCampaignService
                 $preferences = is_array($raw) ? $raw : json_decode((string) $raw, true);
 
                 return is_array($preferences)
-                    && ($preferences['push_campaigns_opted_in'] ?? false) === true;
+                    && in_array($preferences['push_campaigns_opted_in'] ?? false, [true, 1, '1'], true);
             })
             ->map(static fn (object $user): int => (int) $user->id)
             ->values()

@@ -431,6 +431,19 @@ class NotificationDispatcher
         $type = strtolower($activityType);
 
         return match (true) {
+            // Sensitive categories must win over module words in compound types:
+            // `volunteer_emergency` must never appear as the ordinary "Opportunity"
+            // category, and a safeguarding-restricted message is not just a message.
+            str_contains($type, 'safeguarding'),
+            str_contains($type, 'emergency') => 'safeguarding',
+            str_contains($type, 'security'),
+            str_contains($type, 'passkey'),
+            str_contains($type, 'password'),
+            str_contains($type, 'email_changed'),
+            str_starts_with($type, '2fa_'),
+            str_contains($type, 'verification'),
+            str_contains($type, 'gdpr'),
+            str_contains($type, 'support_action') => 'security',
             str_contains($type, 'message') => 'messages',
             str_contains($type, 'connection') => 'connections',
             str_contains($type, 'review') => 'reviews',
@@ -450,14 +463,6 @@ class NotificationDispatcher
             str_starts_with($type, 'vol_'),
             str_contains($type, 'course'),
             str_contains($type, 'deliverable') => 'jobs',
-            str_contains($type, 'safeguarding'),
-            str_contains($type, 'emergency') => 'safeguarding',
-            str_contains($type, 'security'),
-            str_contains($type, 'passkey'),
-            str_contains($type, 'password'),
-            str_contains($type, 'email_changed'),
-            str_starts_with($type, '2fa_'),
-            str_contains($type, 'verification') => 'security',
             str_contains($type, 'ideation'),
             str_contains($type, 'idea'),
             str_contains($type, 'goal'),

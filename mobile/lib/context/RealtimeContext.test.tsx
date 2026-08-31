@@ -30,10 +30,14 @@ jest.mock('@/lib/realtime', () => ({
 
 const mockRegisterRefreshCallback = jest.fn();
 const mockUnregisterRefreshCallback = jest.fn();
+const mockSyncPushBadge = jest.fn();
+const mockRegisterForPushNotifications = jest.fn();
 
 jest.mock('@/lib/notifications', () => ({
   registerRefreshCallback: (...args: unknown[]) => mockRegisterRefreshCallback(...args),
   unregisterRefreshCallback: (...args: unknown[]) => mockUnregisterRefreshCallback(...args),
+  syncPushBadge: (...args: unknown[]) => mockSyncPushBadge(...args),
+  registerForPushNotifications: (...args: unknown[]) => mockRegisterForPushNotifications(...args),
 }));
 
 let mockIsAuthenticated = true;
@@ -43,7 +47,11 @@ jest.mock('@/lib/context/AuthContext', () => ({
 }));
 
 // Mock AppState from react-native
-const mockAddEventListener = jest.fn((_type: string, _handler: (state: string) => void) => ({ remove: jest.fn() }));
+let mockAppStateHandler: ((state: string) => void) | undefined;
+const mockAddEventListener = jest.fn((_type: string, handler: (state: string) => void) => {
+  mockAppStateHandler = handler;
+  return { remove: jest.fn() };
+});
 
 jest.mock('react-native', () => ({
   AppState: {
@@ -63,11 +71,13 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('RealtimeContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAppStateHandler = undefined;
+    mockGetRealtimeClient.mockReturnValue(null);
     mockIsAuthenticated = true;
     // Default: notification counts API returns 3 unread messages
     mockApiGet.mockImplementation((url: string) => {
       if (url.includes('/notifications/counts')) {
-        return Promise.resolve({ data: { messages: 3, notifications: 5 } });
+        return Promise.resolve({ data: { total: 5, messages: 3, transactions: 0, social: 0, system: 0 } });
       }
       if (url.includes('/pusher/config')) {
         return Promise.resolve({ enabled: false, key: null, channels: {} });
@@ -80,6 +90,7 @@ describe('RealtimeContext', () => {
     const { result } = renderHook(() => useRealtimeContext(), { wrapper });
 
     await waitFor(() => expect(result.current.unreadMessages).toBe(3));
+    await waitFor(() => expect(mockSyncPushBadge).toHaveBeenCalledWith(5));
   });
 
   it('fetches Pusher config from the non-versioned /api/pusher/config route', async () => {
@@ -202,6 +213,21 @@ describe('RealtimeContext', () => {
       expect(mockUnregisterRefreshCallback).toHaveBeenCalled(),
     );
   });
+
+  it('reconciles a rotated push token and reconnects realtime on foreground resume', async () => {
+    const connect = jest.fn();
+    mockGetRealtimeClient.mockReturnValue({ connection: { state: 'disconnected' }, connect });
+    renderHook(() => useRealtimeContext(), { wrapper });
+
+    await waitFor(() => expect(mockAppStateHandler).toBeDefined());
+    act(() => {
+      mockAppStateHandler!('background');
+      mockAppStateHandler!('active');
+    });
+
+    expect(mockRegisterForPushNotifications).toHaveBeenCalledWith(false);
+    expect(connect).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('isMessagePayload validation', () => {
@@ -210,6 +236,7 @@ describe('isMessagePayload validation', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetRealtimeClient.mockReturnValue(null);
     mockIsAuthenticated = true;
   });
 

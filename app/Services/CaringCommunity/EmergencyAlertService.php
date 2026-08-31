@@ -149,7 +149,7 @@ class EmergencyAlertService
                 'priority'   => 'high',
                 'sound'      => 'default',
                 'type'       => 'caring_emergency',
-                'link'       => '/notifications',
+                'link'       => '/caring-community/emergency-alerts?alert_id=' . $alertId,
                 'alert_type' => 'emergency',
                 'alert_id'   => (string) $alertId,
             ]

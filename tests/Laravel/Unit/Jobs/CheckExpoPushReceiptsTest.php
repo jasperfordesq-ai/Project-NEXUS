@@ -12,6 +12,7 @@ use App\Jobs\CheckExpoPushReceipts;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 use Tests\Laravel\TestCase;
 
 final class CheckExpoPushReceiptsTest extends TestCase
@@ -20,6 +21,7 @@ final class CheckExpoPushReceiptsTest extends TestCase
 
     public function test_removes_a_token_reported_as_unregistered(): void
     {
+        config(['services.expo.access_token' => 'receipt-access-secret']);
         $token = 'ExponentPushToken[dead-device]';
         DB::table('fcm_device_tokens')->insert([
             'user_id' => 1,
@@ -45,6 +47,24 @@ final class CheckExpoPushReceiptsTest extends TestCase
         (new CheckExpoPushReceipts(['ticket-dead' => $token]))->handle();
 
         $this->assertDatabaseMissing('fcm_device_tokens', ['token' => $token]);
-        Http::assertSent(fn ($request): bool => $request->data() === ['ids' => ['ticket-dead']]);
+        Http::assertSent(fn ($request): bool => $request->data() === ['ids' => ['ticket-dead']]
+            && $request->hasHeader('Authorization', 'Bearer receipt-access-secret'));
+    }
+
+    public function test_retries_when_expo_has_not_published_every_receipt_yet(): void
+    {
+        Http::fake([
+            'https://exp.host/--/api/v2/push/getReceipts' => Http::response([
+                'data' => ['ticket-ready' => ['status' => 'ok']],
+            ], 200),
+        ]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('not ready');
+
+        (new CheckExpoPushReceipts([
+            'ticket-ready' => 'ExponentPushToken[ready]',
+            'ticket-pending' => 'ExponentPushToken[pending]',
+        ]))->handle();
     }
 }

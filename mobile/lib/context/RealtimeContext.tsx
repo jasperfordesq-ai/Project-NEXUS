@@ -17,7 +17,7 @@ import type { Channel } from 'pusher-js';
 import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 import { initRealtime, getRealtimeClient, type PusherConfig } from '@/lib/realtime';
-import { registerRefreshCallback, unregisterRefreshCallback } from '@/lib/notifications';
+import { registerForPushNotifications, registerRefreshCallback, syncPushBadge, unregisterRefreshCallback } from '@/lib/notifications';
 import { useAuthContext } from '@/lib/context/AuthContext';
 import type { Message } from '@/lib/api/messages';
 import type { NotificationCounts } from '@/lib/api/notifications';
@@ -61,6 +61,7 @@ function isMessagePayload(data: unknown): data is { conversation_id: number; mes
 
 /** Minimum interval between foreground-resume refreshes (ms). */
 const REFRESH_THROTTLE_MS = 30_000;
+const PUSH_REGISTRATION_REFRESH_MS = 30 * 60_000;
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthContext();
@@ -76,6 +77,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const pusherConfigRef = useRef<PusherConfig | null>(null);
   /** Timestamp of last successful count refresh — throttles foreground resume calls */
   const lastRefreshRef = useRef(0);
+  const lastPushRegistrationRefreshRef = useRef(0);
 
   // Single function to fetch all notification counts — the ONLY place this
   // endpoint is called. HomeScreen and TabsLayout read from context instead.
@@ -105,6 +107,12 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     lastRefreshRef.current = 0;
     refreshCounts();
   }, [isAuthenticated, refreshCounts]);
+
+  // The API count is authoritative; mirror it to the launcher badge and clear
+  // the badge immediately on logout rather than leaving stale OS chrome behind.
+  useEffect(() => {
+    void syncPushBadge(isAuthenticated ? unreadNotifications : 0);
+  }, [isAuthenticated, unreadNotifications]);
 
   // Connect to Pusher — uses cached config to avoid redundant network calls.
   // Only fetches fresh config on first connect or when cache is empty.
@@ -204,6 +212,14 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
     const handleForegroundResume = () => {
       refreshCounts();
+
+      // Expo tokens can rotate and OS permission can be revoked while the app is
+      // backgrounded. Reconcile periodically without ever presenting a prompt.
+      const now = Date.now();
+      if (now - lastPushRegistrationRefreshRef.current >= PUSH_REGISTRATION_REFRESH_MS) {
+        lastPushRegistrationRefreshRef.current = now;
+        void registerForPushNotifications(false);
+      }
 
       // Reconnect Pusher if it disconnected while backgrounded
       const client = getRealtimeClient();

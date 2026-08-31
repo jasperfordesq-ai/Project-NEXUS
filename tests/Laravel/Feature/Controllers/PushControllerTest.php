@@ -112,6 +112,32 @@ class PushControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_register_device_rejects_invalid_platform_and_malformed_expo_tokens(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPost('/push/register-device', [
+            'token' => 'ExponentPushToken[valid-token]',
+            'token_type' => 'expo',
+            'platform' => 'windows',
+        ])->assertStatus(422);
+
+        $this->apiPost('/push/register-device', [
+            'token' => 'not-an-expo-token',
+            'token_type' => 'expo',
+            'platform' => 'android',
+        ])->assertStatus(422);
+    }
+
+    public function test_unregister_device_rejects_oversized_token(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPost('/push/unregister-device', [
+            'token' => str_repeat('x', 256),
+        ])->assertStatus(422);
+    }
+
     // ------------------------------------------------------------------
     //  POST /push/unregister-device (auth required)
     // ------------------------------------------------------------------

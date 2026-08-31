@@ -31,6 +31,30 @@ import { isSafeExternalBrowserLink } from '@/lib/utils/safeExternalLink';
 
 export type PushRegistrationResult = 'registered' | 'permission-denied' | 'unavailable' | 'failed';
 
+type NotificationPermission = Awaited<ReturnType<typeof Notifications.getPermissionsAsync>>;
+
+/** iOS provisional/ephemeral authorization can receive notifications too. */
+function permissionAllowsNotifications(permission: NotificationPermission): boolean {
+  if (permission.status === 'granted') return true;
+  if (Platform.OS !== 'ios') return false;
+  const iosStatus = permission.ios?.status;
+
+  return iosStatus === Notifications.IosAuthorizationStatus.AUTHORIZED
+    || iosStatus === Notifications.IosAuthorizationStatus.PROVISIONAL
+    || iosStatus === Notifications.IosAuthorizationStatus.EPHEMERAL;
+}
+
+async function removeStoredRegistration(): Promise<void> {
+  const storedToken = await storage.get(STORAGE_KEYS.PUSH_TOKEN);
+  if (!storedToken) return;
+  try {
+    await api.post<void>('/api/push/unregister-device', { token: storedToken, token_type: 'expo' });
+    await storage.remove(STORAGE_KEYS.PUSH_TOKEN);
+  } catch (error) {
+    reportException(error, { tags: { module: 'push-permission-revoked' } });
+  }
+}
+
 /** Normalise the link keys emitted by the platform's notification producers. */
 export function getNotificationLink(data: unknown): string | null {
   if (!data || typeof data !== 'object') return null;
@@ -45,6 +69,9 @@ export function getNotificationLink(data: unknown): string | null {
     const value = record[key];
     if (typeof value !== 'string' || value.trim() === '') continue;
     const normalized = normalizeLegacyNotificationLink(record, value.trim());
+    if (/^(?:https:\/\/app\.project-nexus\.ie)?\/caring-community\//.test(normalized)) {
+      return '/notifications';
+    }
     if (isSensitiveNotificationLink(normalized)) return '/notifications';
     if (isSafeExternalBrowserLink(normalized)) {
       return record.campaign_type === 'paid_push' && key === 'cta_url'
@@ -234,26 +261,38 @@ export async function registerForPushNotifications(
       });
     }
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    let permission = await Notifications.getPermissionsAsync();
 
-    if (existingStatus !== 'granted' && requestPermission) {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+    if (!permissionAllowsNotifications(permission) && requestPermission) {
+      permission = await Notifications.requestPermissionsAsync();
     }
 
-    if (finalStatus !== 'granted') {
+    if (!permissionAllowsNotifications(permission)) {
+      await removeStoredRegistration();
       return 'permission-denied';
     }
 
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
     const tokenData = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
+    const previousToken = await storage.get(STORAGE_KEYS.PUSH_TOKEN);
 
     await api.post<void>('/api/push/register-device', {
       token: tokenData.data,
       token_type: 'expo',
       platform: Platform.OS === 'ios' ? 'ios' : 'android',
     });
+    if (previousToken && previousToken !== tokenData.data) {
+      try {
+        await api.post<void>('/api/push/unregister-device', {
+          token: previousToken,
+          token_type: 'expo',
+        });
+      } catch (error) {
+        // The new registration is already live; retain it and let provider
+        // receipts remove the old token if this best-effort cleanup fails.
+        reportException(error, { tags: { module: 'push-token-rotation' } });
+      }
+    }
     await storage.set(STORAGE_KEYS.PUSH_TOKEN, tokenData.data);
     return 'registered';
   } catch (err) {
@@ -267,8 +306,17 @@ export async function registerForPushNotifications(
 /** Whether this device has already granted notification permission. Never prompts. */
 export async function isPushPermissionGranted(): Promise<boolean> {
   if (!Device.isDevice) return false;
-  const { status } = await Notifications.getPermissionsAsync();
-  return status === 'granted';
+  return permissionAllowsNotifications(await Notifications.getPermissionsAsync());
+}
+
+/** Keep the OS app-icon badge aligned with the authoritative unread count. */
+export async function syncPushBadge(count: number): Promise<void> {
+  if (!Device.isDevice) return;
+  try {
+    await Notifications.setBadgeCountAsync(Math.max(0, Math.floor(count)));
+  } catch (error) {
+    reportException(error, { tags: { module: 'push-badge-sync' } });
+  }
 }
 
 /**

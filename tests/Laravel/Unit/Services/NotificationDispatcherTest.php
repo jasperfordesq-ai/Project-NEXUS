@@ -127,6 +127,8 @@ class NotificationDispatcherTest extends TestCase
         $this->assertSame('Activity', $method->invoke(null, 'like', false));
         $this->assertSame('Opportunity', $method->invoke(null, 'job_application_status', false));
         $this->assertSame('Security', $method->invoke(null, 'passkey_removed', false));
+        $this->assertSame('Safeguarding', $method->invoke(null, 'message_safeguarding_restricted', false));
+        $this->assertSame('Safeguarding', $method->invoke(null, 'volunteer_emergency', false));
         $this->assertSame('New Message', $method->invoke(null, 'new_message', false));
     }
 

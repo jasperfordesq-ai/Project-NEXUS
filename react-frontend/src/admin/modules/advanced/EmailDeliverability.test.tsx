@@ -240,6 +240,17 @@ describe('EmailDeliverability', () => {
     });
   });
 
+  it('labels provider acceptance truthfully instead of claiming device delivery', async () => {
+    const { default: EmailDeliverability } = await import('./EmailDeliverability');
+    render(<EmailDeliverability />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Accepted').length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText('50 accepted but unconfirmed')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Success rate')).not.toBeInTheDocument();
+  });
+
   it('renders email log row with recipient email', async () => {
     const { default: EmailDeliverability } = await import('./EmailDeliverability');
     render(<EmailDeliverability />);

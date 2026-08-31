@@ -84,6 +84,11 @@ return [
         'service_account_path' => env('FIREBASE_SERVICE_ACCOUNT_PATH', base_path('firebase-service-account.json')),
     ],
 
+    'expo' => [
+        // Optional enhanced-security token for Expo Push Service.
+        'access_token' => env('EXPO_PUSH_ACCESS_TOKEN'),
+    ],
+
     'sso' => [
         // Base URL identity providers redirect back to; defaults to
         // app.url. Override when the API is served from another host.

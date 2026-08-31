@@ -487,7 +487,8 @@ class PaidPushCampaignServiceTest extends TestCase
         DB::table('users')->where('id', $optedIn)->update([
             'notification_preferences' => json_encode([
                 'push_enabled' => true,
-                'push_campaigns_opted_in' => true,
+                // Settings are persisted with JSON_SET and read back as integer 1.
+                'push_campaigns_opted_in' => 1,
             ], JSON_THROW_ON_ERROR),
         ]);
         DB::table('users')->where('id', $notOptedIn)->update([

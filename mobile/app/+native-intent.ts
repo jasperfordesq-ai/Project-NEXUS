@@ -158,6 +158,49 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
   const { section, segments, params, fragment } = parsed;
   const [id, detail] = segments;
 
+  const discussionId = fragment?.match(/^discussion-(\d+)$/)?.[1];
+  if (section === 'groups' && discussionId) {
+    return appendParams('/(modals)/feed-item-detail', {
+      type: 'discussion',
+      id: discussionId,
+    });
+  }
+
+  const commentId = fragment?.match(/^comment-(\d+)$/)?.[1];
+  if (commentId || fragment === 'comments') {
+    const commentParams = {
+      ...params,
+      openComments: '1',
+      ...(commentId ? { commentId } : {}),
+    };
+    const simpleFeedType: Record<string, string> = {
+      listings: 'listing', events: 'event', goals: 'goal', polls: 'poll',
+      resources: 'resource', jobs: 'job', job: 'job', ideation: 'challenge', challenges: 'challenge',
+    };
+    if (section === 'feed' && segments[0] === 'posts' && segments[1]) {
+      return appendParams('/(modals)/feed-item-detail', { ...commentParams, type: 'post', id: segments[1] });
+    }
+    if (simpleFeedType[section] && id) {
+      return appendParams('/(modals)/feed-item-detail', { ...commentParams, type: simpleFeedType[section], id });
+    }
+    if (section === 'volunteering') {
+      const volunteerId = id === 'opportunities' ? detail : id;
+      if (volunteerId) {
+        return appendParams('/(modals)/feed-item-detail', { ...commentParams, type: 'volunteer', id: volunteerId });
+      }
+    }
+    if ((section === 'blog' || section === 'blog-post') && id) {
+      return appendParams('/(modals)/blog-post', { ...commentParams, id });
+    }
+    if (section === 'groups' && params.discussion_id) {
+      return appendParams('/(modals)/feed-item-detail', {
+        ...commentParams,
+        type: 'discussion',
+        id: params.discussion_id,
+      });
+    }
+  }
+
   switch (section) {
     // 🔴 `exchanges` and `listings` are DIFFERENT id spaces and used to share this case.
     // On the website `/exchanges/:id` is an exchange REQUEST between two members and

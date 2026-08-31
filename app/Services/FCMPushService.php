@@ -39,6 +39,9 @@ class FCMPushService
     /** Expo Push API endpoint for Expo-managed Android/iOS tokens. */
     private const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 
+    /** Expo accepts at most 100 messages in one send request. */
+    private const EXPO_PUSH_BATCH_SIZE = 100;
+
     /** Cached OAuth2 access token for HTTP v1 API. */
     private static ?string $accessToken = null;
 
@@ -96,23 +99,6 @@ class FCMPushService
     {
         if (empty($userIds)) {
             return ['sent' => 0, 'failed' => 0, 'errors' => []];
-        }
-
-        // Filter out users who turned off push_enabled.
-        try {
-            $optedIn = [];
-            foreach ($userIds as $uid) {
-                $prefs = \App\Models\User::getNotificationPreferences((int) $uid);
-                if ((bool) ($prefs['push_enabled'] ?? true)) {
-                    $optedIn[] = (int) $uid;
-                }
-            }
-            $userIds = $optedIn;
-            if (empty($userIds)) {
-                return ['sent' => 0, 'failed' => 0, 'errors' => []];
-            }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::debug('FCMPushService: batch pref filter failed: ' . $e->getMessage());
         }
 
         $tenantId = TenantContext::getId();
@@ -246,10 +232,13 @@ class FCMPushService
             })
             ->where('device_tokens.tenant_id', $tenantId)
             ->whereIn('device_tokens.user_id', $userIds)
-            ->get(['device_tokens.token', 'users.preferred_language']);
+            ->get(['device_tokens.token', 'users.preferred_language', 'users.notification_preferences']);
 
         $groups = [];
         foreach ($rows as $row) {
+            if (!self::recipientPushEnabled($row->notification_preferences ?? null)) {
+                continue;
+            }
             $token = is_string($row->token ?? null) ? trim($row->token) : '';
             if ($token === '') {
                 continue;
@@ -261,6 +250,15 @@ class FCMPushService
         }
 
         return $groups;
+    }
+
+    private static function recipientPushEnabled(mixed $rawPreferences): bool
+    {
+        $preferences = is_array($rawPreferences)
+            ? $rawPreferences
+            : json_decode((string) $rawPreferences, true);
+
+        return !is_array($preferences) || (bool) ($preferences['push_enabled'] ?? true);
     }
 
     /**
@@ -295,6 +293,7 @@ class FCMPushService
             return ['sent' => 0, 'failed' => 0, 'errors' => []];
         }
         $highPriority = self::shouldUseHighPriority($data);
+        $ttlSeconds = $highPriority ? 900 : 86400;
         [$title, $body, $data] = self::lockScreenSafePresentation($title, $body, $data);
 
         $sent = 0;
@@ -356,13 +355,16 @@ class FCMPushService
                         $message['message']['data'] = array_map('strval', $data);
                     }
                     $message['message']['android'] = [
+                        'ttl' => $ttlSeconds . 's',
                         'notification' => [
                             'channel_id' => $highPriority ? 'emergency' : 'default',
                         ],
                     ];
+                    $message['message']['apns'] = [
+                        'headers' => self::apnsHeadersForDelivery($highPriority, $ttlSeconds),
+                    ];
                     if ($highPriority) {
                         $message['message']['android']['priority'] = 'HIGH';
-                        $message['message']['apns'] = ['headers' => ['apns-priority' => '10']];
                     }
 
                     $response = Http::withToken($accessToken)
@@ -378,26 +380,17 @@ class FCMPushService
                         $errorStatus = $responseBody['error']['status'] ?? '';
                         $errors[] = "Token {$token}: {$errorMsg}";
 
-                        // Remove invalid/expired/unauthenticated tokens.
-                        // FCM v1 dead-token signals:
-                        //   - 404 UNREGISTERED — token permanently invalid (app uninstalled, token refreshed)
-                        //   - 400 INVALID_ARGUMENT / InvalidRegistration — malformed or foreign-app token
-                        //   - 401 UNAUTHENTICATED — stale / revoked token
+                        // Remove only tokens that FCM says are permanently dead.
+                        // Authentication/project errors apply to our credentials,
+                        // not the member's device, and must never erase valid tokens.
+                        // FCM v1 dead-token signal used here:
+                        //   - 404/UNREGISTERED — token permanently invalid
+                        //     (app uninstalled or token refreshed). A generic
+                        //     INVALID_ARGUMENT or 401 is not token-specific.
                         $httpStatus = $response->status();
                         $isDeadToken = $httpStatus === 404
-                            || $httpStatus === 401
                             || str_contains($errorMsg, 'UNREGISTERED')
-                            || str_contains($errorStatus, 'UNREGISTERED')
-                            || str_contains($errorStatus, 'UNAUTHENTICATED')
-                            || (
-                                $httpStatus === 400
-                                && (
-                                    str_contains($errorMsg, 'INVALID_ARGUMENT')
-                                    || str_contains($errorMsg, 'InvalidRegistration')
-                                    || str_contains($errorMsg, 'invalid registration')
-                                    || str_contains($errorStatus, 'INVALID_ARGUMENT')
-                                )
-                            );
+                            || str_contains($errorStatus, 'UNREGISTERED');
 
                         if ($isDeadToken) {
                             DB::table('fcm_device_tokens')->where('token', $token)->delete();
@@ -427,6 +420,7 @@ class FCMPushService
                         'body' => $body,
                         'android_channel_id' => $highPriority ? 'emergency' : 'default',
                     ],
+                    'time_to_live' => $ttlSeconds,
                 ];
 
                 if (!empty($data)) {
@@ -450,7 +444,7 @@ class FCMPushService
                         $errors[] = "Token {$token}: {$errorMsg}";
 
                         // Remove invalid tokens (legacy error strings from FCM HTTP API).
-                        if (in_array($errorMsg, ['NotRegistered', 'InvalidRegistration', 'MismatchSenderId'], true)) {
+                        if (in_array($errorMsg, ['NotRegistered', 'InvalidRegistration'], true)) {
                             DB::table('fcm_device_tokens')->where('token', $token)->delete();
                         }
                     }
@@ -459,18 +453,14 @@ class FCMPushService
                     $status = $response->status();
                     $errors[] = "Token {$token}: HTTP {$status}";
 
-                    // Legacy API HTTP status-based dead-token cleanup:
-                    //   - 401 — stale server/API key (token can't be validated, keep the key-rotation team's record clean)
-                    //   - 404 — token no longer exists
-                    //   - 400 w/ InvalidRegistration / NotRegistered body — malformed token
+                    // A 401 or MismatchSenderId is a server credential/project
+                    // problem, not proof that the member's device token is dead.
                     $body = $response->body();
                     if (
                         $status === 404
-                        || $status === 401
                         || ($status === 400 && (
                             str_contains($body, 'InvalidRegistration')
                             || str_contains($body, 'NotRegistered')
-                            || str_contains($body, 'INVALID_ARGUMENT')
                         ))
                     ) {
                         DB::table('fcm_device_tokens')->where('token', $token)->delete();
@@ -632,10 +622,16 @@ class FCMPushService
             }
         }
 
-        // Web notification links sometimes use a harmless fragment to scroll to
-        // a comment/discussion. Expo Router cannot reproduce that DOM anchor, but
-        // the containing native entity is still the exact useful destination.
-        return $fragment !== '' ? (string) preg_replace('/#.*$/', '', $link) : $link;
+        // Retain the small, explicit set of fragments the native router consumes.
+        // Unknown fragments are removed rather than becoming an untrusted command.
+        if ($fragment === '') {
+            return $link;
+        }
+        if (preg_match('/^(?:applications|comments|comment-\d+|discussion-\d+)$/', $fragment) === 1) {
+            return $link;
+        }
+
+        return (string) preg_replace('/#.*$/', '', $link);
     }
 
     private static function safePaidCampaignCta(mixed $candidate): string
@@ -674,6 +670,23 @@ class FCMPushService
         return $url;
     }
 
+    /**
+     * Bound the lifetime of direct APNs messages as well as Android/Expo ones.
+     * Without an explicit expiration Apple may retain an ordinary notification
+     * long after the underlying activity is useful.
+     *
+     * @return array<string, string>
+     */
+    private static function apnsHeadersForDelivery(bool $highPriority, int $ttlSeconds): array
+    {
+        $headers = ['apns-expiration' => (string) (time() + $ttlSeconds)];
+        if ($highPriority) {
+            $headers['apns-priority'] = '10';
+        }
+
+        return $headers;
+    }
+
     /** @param array<string,mixed> $data */
     private static function shouldSuppressNativePush(array $data): bool
     {
@@ -681,7 +694,7 @@ class FCMPushService
             return false;
         }
         $type = strtolower(is_string($data['type'] ?? null) ? $data['type'] : '');
-        if (str_starts_with($type, 'caring_') && $type !== 'caring_emergency') {
+        if (str_starts_with($type, 'caring_')) {
             return true;
         }
         // Native has no story viewer yet. Opening the general feed does not expose
@@ -845,71 +858,85 @@ class FCMPushService
                 'body' => $body,
                 'sound' => 'default',
                 'channelId' => $highPriority ? 'emergency' : 'default',
+                'ttl' => $highPriority ? 900 : 86400,
                 'data' => array_map('strval', $data),
             ];
             if ($highPriority) {
                 $message['priority'] = 'high';
+                $message['interruptionLevel'] = 'time-sensitive';
             }
 
             return $message;
         }, $tokens);
 
-        try {
-            $response = Http::acceptJson()
-                ->asJson()
-                ->timeout(10)
-                ->post(self::EXPO_PUSH_URL, count($messages) === 1 ? $messages[0] : $messages);
+        $sent = 0;
+        $failed = 0;
+        $errors = [];
 
-            if (!$response->successful()) {
-                return [
-                    'sent' => 0,
-                    'failed' => count($tokens),
-                    'errors' => ['Expo push HTTP ' . $response->status()],
-                ];
-            }
+        foreach (array_chunk($messages, self::EXPO_PUSH_BATCH_SIZE) as $offset => $messageBatch) {
+            $tokenBatch = array_slice($tokens, $offset * self::EXPO_PUSH_BATCH_SIZE, count($messageBatch));
+            try {
+                $request = Http::acceptJson()->asJson()->timeout(10);
+                $accessToken = trim((string) config('services.expo.access_token', ''));
+                if ($accessToken !== '') {
+                    $request = $request->withToken($accessToken);
+                }
+                $response = $request
+                    ->retry(
+                        times: [250, 1000, 4000],
+                        when: static function (\Throwable $exception): bool {
+                            $response = $exception instanceof \Illuminate\Http\Client\RequestException
+                                ? $exception->response
+                                : null;
 
-            $payload = $response->json();
-            $tickets = $payload['data'] ?? [];
-            if (isset($tickets['status'])) {
-                $tickets = [$tickets];
-            }
+                            return $response === null || $response->status() === 429 || $response->serverError();
+                        },
+                        throw: false,
+                    )
+                    ->post(self::EXPO_PUSH_URL, count($messageBatch) === 1 ? $messageBatch[0] : $messageBatch);
 
-            $sent = 0;
-            $failed = 0;
-            $errors = [];
-            $ticketTokens = [];
-
-            foreach ($tokens as $index => $token) {
-                $ticket = $tickets[$index] ?? null;
-                if (($ticket['status'] ?? null) === 'ok') {
-                    $sent++;
-                    if (is_string($ticket['id'] ?? null) && $ticket['id'] !== '') {
-                        $ticketTokens[$ticket['id']] = $token;
-                    }
+                if (!$response->successful()) {
+                    $failed += count($tokenBatch);
+                    $errors[] = 'Expo push HTTP ' . $response->status();
                     continue;
                 }
 
-                $failed++;
-                $message = $ticket['message'] ?? 'Unknown Expo push error';
-                $detailsError = $ticket['details']['error'] ?? null;
-                $errors[] = "Token {$token}: {$message}";
-
-                if ($detailsError === 'DeviceNotRegistered') {
-                    DB::table('fcm_device_tokens')->where('token', $token)->delete();
+                $payload = $response->json();
+                $tickets = $payload['data'] ?? [];
+                if (isset($tickets['status'])) {
+                    $tickets = [$tickets];
                 }
-            }
+                $ticketTokens = [];
 
-            if (! empty($ticketTokens)) {
-                CheckExpoPushReceipts::dispatch($ticketTokens)->delay(now()->addMinutes(15));
-            }
+                foreach ($tokenBatch as $index => $token) {
+                    $ticket = $tickets[$index] ?? null;
+                    if (($ticket['status'] ?? null) === 'ok') {
+                        $sent++;
+                        if (is_string($ticket['id'] ?? null) && $ticket['id'] !== '') {
+                            $ticketTokens[$ticket['id']] = $token;
+                        }
+                        continue;
+                    }
 
-            return ['sent' => $sent, 'failed' => $failed, 'errors' => $errors];
-        } catch (\Throwable $e) {
-            return [
-                'sent' => 0,
-                'failed' => count($tokens),
-                'errors' => ['Expo push failed: ' . $e->getMessage()],
-            ];
+                    $failed++;
+                    $message = $ticket['message'] ?? 'Unknown Expo push error';
+                    $detailsError = $ticket['details']['error'] ?? null;
+                    $errors[] = "Token {$token}: {$message}";
+
+                    if ($detailsError === 'DeviceNotRegistered') {
+                        DB::table('fcm_device_tokens')->where('token', $token)->delete();
+                    }
+                }
+
+                if (! empty($ticketTokens)) {
+                    CheckExpoPushReceipts::dispatch($ticketTokens)->delay(now()->addMinutes(15));
+                }
+            } catch (\Throwable $e) {
+                $failed += count($tokenBatch);
+                $errors[] = 'Expo push failed: ' . $e->getMessage();
+            }
         }
+
+        return ['sent' => $sent, 'failed' => $failed, 'errors' => $errors];
     }
 }

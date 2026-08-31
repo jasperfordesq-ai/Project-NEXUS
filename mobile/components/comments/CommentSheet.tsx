@@ -70,6 +70,7 @@ interface CommentSheetProps {
   visible: boolean;
   targetType: CommentTargetType;
   targetId: number;
+  focusCommentId?: number | null;
   initialCount?: number;
   strings: CommentSheetStrings;
   onClose: () => void;
@@ -84,6 +85,7 @@ export default function CommentSheet({
   visible,
   targetType,
   targetId,
+  focusCommentId = null,
   initialCount = 0,
   strings,
   onClose,
@@ -102,6 +104,10 @@ export default function CommentSheet({
   const [replyTarget, setReplyTarget] = useState<{ id: number; name: string } | null>(null);
   const [editTarget, setEditTarget] = useState<{ id: number } | null>(null);
   const [actionComment, setActionComment] = useState<FlatComment | null>(null);
+  const commentListRef = useRef<{
+    scrollToIndex: (options: { animated?: boolean; index: number; viewPosition?: number }) => void;
+    scrollToOffset: (options: { animated?: boolean; offset: number }) => void;
+  } | null>(null);
   const { mounted: sheetMounted, open: sheetOpen, shouldHonorClose } = useDeferredBottomSheetState(visible);
   const targetKey = `${targetType}-${targetId}`;
   // Android modal screens report bottom inset 0 — floor with the root inset
@@ -111,6 +117,10 @@ export default function CommentSheet({
   const listBottomPadding = 112 + footerBottomInset;
 
   const flattenedComments = useMemo(() => flattenComments(comments), [comments]);
+  const focusedCommentIndex = useMemo(
+    () => focusCommentId ? flattenedComments.findIndex((comment) => comment.id === focusCommentId) : -1,
+    [flattenedComments, focusCommentId],
+  );
 
   const loadSheetComments = useCallback(async (force = false) => {
     if (!visible || isLoading || (!force && loadedTargetKey === targetKey)) return;
@@ -147,6 +157,19 @@ export default function CommentSheet({
     setEditTarget(null);
     setActionComment(null);
   }, [targetKey, visible]);
+
+  useEffect(() => {
+    if (!visible || isLoading || focusedCommentIndex < 0) return;
+    const timer = setTimeout(() => {
+      commentListRef.current?.scrollToIndex({
+        animated: true,
+        index: focusedCommentIndex,
+        viewPosition: 0.3,
+      });
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [focusedCommentIndex, isLoading, visible]);
 
   async function handleSubmit() {
     const content = draft.trim();
@@ -309,10 +332,20 @@ export default function CommentSheet({
               </View>
 
               <BottomSheetFlatList
+                ref={commentListRef as never}
                 data={flattenedComments}
                 keyExtractor={(item) => `${item.id}-${item.depth}`}
                 keyboardShouldPersistTaps="handled"
                 style={{ flex: 1, backgroundColor: theme.bg }}
+                onScrollToIndexFailed={({ averageItemLength, index }) => {
+                  commentListRef.current?.scrollToOffset({
+                    animated: false,
+                    offset: Math.max(0, averageItemLength * index),
+                  });
+                  setTimeout(() => {
+                    commentListRef.current?.scrollToIndex({ animated: true, index, viewPosition: 0.3 });
+                  }, 150);
+                }}
                 contentContainerStyle={{
                   flexGrow: 1,
                   gap: 10,
@@ -342,6 +375,7 @@ export default function CommentSheet({
                     replyLabel={strings.reply}
                     likeLabel={strings.like}
                     primary={primary}
+                    focused={item.id === focusCommentId}
                     onReply={startReply}
                     onToggleLike={handleToggleLike}
                     onOpenActions={setActionComment}
@@ -477,6 +511,7 @@ function CommentRow({
   replyLabel,
   likeLabel,
   primary,
+  focused,
   onReply,
   onToggleLike,
   onOpenActions,
@@ -487,6 +522,7 @@ function CommentRow({
   replyLabel: string;
   likeLabel: string;
   primary: string;
+  focused: boolean;
   onReply: (comment: FlatComment) => void;
   onToggleLike: (comment: FlatComment) => void;
   onOpenActions: (comment: FlatComment) => void;
@@ -532,12 +568,20 @@ function CommentRow({
   }
 
   return (
-    <View style={{ marginLeft }}>
+    <View
+      style={{
+        marginLeft,
+        borderColor: focused ? primary : 'transparent',
+        borderRadius: 18,
+        borderWidth: focused ? 2 : 0,
+      }}
+    >
       <Pressable
         onPress={handleRowPress}
         onPressIn={handleRowPressIn}
         onPressOut={handleRowPressOut}
         testID={`comment-row-${comment.id}`}
+        accessibilityState={{ selected: focused }}
       >
         <Surface variant="secondary" className="rounded-panel p-3.5">
           <View className="flex-row items-start gap-3">

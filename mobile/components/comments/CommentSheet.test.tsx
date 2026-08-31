@@ -23,17 +23,23 @@ const bottomSheetRootProps: Record<string, unknown>[] = [];
 const bottomSheetContentProps: Record<string, unknown>[] = [];
 const bottomSheetFlatListProps: Record<string, unknown>[] = [];
 const bottomSheetFooterProps: Record<string, unknown>[] = [];
+const mockScrollToIndex = jest.fn();
+const mockScrollToOffset = jest.fn();
 
 jest.mock('@gorhom/bottom-sheet', () => {
   const React = require('react');
   const { View } = require('react-native');
 
   return {
-    BottomSheetFlatList: (props: {
+    BottomSheetFlatList: React.forwardRef((props: {
       data?: unknown[];
       renderItem?: (info: { item: unknown }) => React.ReactElement;
       ListEmptyComponent?: unknown;
-    }) => {
+    }, ref: unknown) => {
+      React.useImperativeHandle(ref, () => ({
+        scrollToIndex: mockScrollToIndex,
+        scrollToOffset: mockScrollToOffset,
+      }));
       bottomSheetFlatListProps.push(props);
       const { data, renderItem, ListEmptyComponent } = props;
       const items = Array.isArray(data) ? data : [];
@@ -49,7 +55,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
               ))}
         </View>
       );
-    },
+    }),
     BottomSheetFooter: (props: { children: React.ReactNode; bottomInset?: number }) => {
       bottomSheetFooterProps.push(props);
       return <View testID="comment-footer">{props.children}</View>;
@@ -253,6 +259,8 @@ describe('CommentSheet', () => {
     jest.clearAllMocks();
     mockAwareOnBlur.mockReset();
     mockAwareOnFocus.mockReset();
+    mockScrollToIndex.mockReset();
+    mockScrollToOffset.mockReset();
     bottomSheetRootProps.length = 0;
     bottomSheetContentProps.length = 0;
     bottomSheetFlatListProps.length = 0;
@@ -598,6 +606,44 @@ describe('CommentSheet', () => {
 
     expect(mockToggleCommentReaction).toHaveBeenCalledWith(7, 'like');
     expect(queryByText('1')).toBeNull();
+  });
+
+  it('scrolls to and marks the exact comment named by a notification link', async () => {
+    mockGetComments.mockResolvedValue({
+      data: { comments: [makeComment(), makeComment({ id: 8, content: 'Linked comment' })], count: 2 },
+    });
+    const { getByTestId } = render(
+      <CommentSheet
+        visible
+        targetType="listing"
+        targetId={213}
+        focusCommentId={8}
+        strings={baseStrings}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('comment-row-8').props.accessibilityState).toEqual({ selected: true });
+      expect(getByTestId('comment-row-7').props.accessibilityState).toEqual({ selected: false });
+      expect(mockScrollToIndex).toHaveBeenCalledWith({ animated: true, index: 1, viewPosition: 0.3 });
+    });
+  });
+
+  it('recovers when the virtual list has not measured the linked comment yet', async () => {
+    const { getByTestId } = await openSheetWithComments([makeComment(), makeComment({ id: 8 })]);
+    await waitFor(() => expect(getByTestId('comment-row-8')).toBeTruthy());
+
+    const listProps = bottomSheetFlatListProps[bottomSheetFlatListProps.length - 1] as {
+      onScrollToIndexFailed: (info: { averageItemLength: number; index: number }) => void;
+    };
+    jest.useFakeTimers();
+    act(() => listProps.onScrollToIndexFailed({ averageItemLength: 80, index: 1 }));
+    expect(mockScrollToOffset).toHaveBeenCalledWith({ animated: false, offset: 80 });
+
+    act(() => jest.advanceTimersByTime(150));
+    expect(mockScrollToIndex).toHaveBeenCalledWith({ animated: true, index: 1, viewPosition: 0.3 });
+    jest.useRealTimers();
   });
 
   it('shows visible feedback and reloads comments when a reaction fails', async () => {

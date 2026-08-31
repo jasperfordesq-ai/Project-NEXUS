@@ -361,7 +361,10 @@ class SocialNotificationService
             Log::warning("SocialNotificationService::getCommentLink error: " . $e->getMessage());
         }
 
-        return '/feed#comment-' . $commentId;
+        // Without the target type/id there is no honest native or web deep link.
+        // The authenticated inbox still contains the notification and is safer
+        // than opening an unrelated feed while pretending it is the comment.
+        return '/notifications';
     }
 
     private static function getCommentDeepLink($contentType, $contentId, int $commentId): string

@@ -1326,8 +1326,8 @@
             "title_expression": "$data['title']",
             "body_expression": "$data['body']",
             "type_expression": "caring_emergency",
-            "link_expression": "/notifications",
-            "data_expression": "['priority' => 'high', 'sound' => 'default', 'type' => 'caring_emergency', 'link' => '/notifications', 'alert_type' => 'emergency', 'alert_id' => (string) $alertId]"
+            "link_expression": "'/caring-community/emergency-alerts?alert_id=' . $alertId",
+            "data_expression": "['priority' => 'high', 'sound' => 'default', 'type' => 'caring_emergency', 'link' => '/caring-community/emergency-alerts?alert_id=' . $alertId, 'alert_type' => 'emergency', 'alert_id' => (string) $alertId]"
         },
         {
             "id": "app/Services/CaringCommunity/ProjectAnnouncementService.php:455:NotificationDispatcher::fanOutPush",
@@ -2604,9 +2604,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/NotificationDispatcher.php:557:FCMPushService::sendToUser",
+            "id": "app/Services/NotificationDispatcher.php:562:FCMPushService::sendToUser",
             "file": "app/Services/NotificationDispatcher.php",
-            "line": 557,
+            "line": 562,
             "transport": "FCMPushService::sendToUser",
             "role": "transport_boundary",
             "recipient_expression": "$uid",

@@ -45,6 +45,8 @@ import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 interface FeedItemProps {
   item: FeedItemType;
   disableDetailNavigation?: boolean;
+  initialCommentsOpen?: boolean;
+  initialCommentId?: number | null;
   commentsCountOverride?: number;
   onOpenComments?: (target: FeedCommentTarget) => void;
   onCommentsCountChange?: (target: FeedCommentTarget, count: number) => void;
@@ -304,6 +306,8 @@ function getDetailTarget(item: FeedItemType) {
 function FeedItemInner({
   item,
   disableDetailNavigation = false,
+  initialCommentsOpen = false,
+  initialCommentId = null,
   commentsCountOverride,
   onOpenComments,
   onCommentsCountChange,
@@ -363,7 +367,11 @@ function FeedItemInner({
   const [pollData, setPollData] = useState<PollData | null | undefined>(item.poll_data);
   const [bookmarked, setBookmarked] = useState(item.is_bookmarked ?? false);
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
-  const [commentsVisible, setCommentsVisible] = useState(false);
+  const [commentsVisible, setCommentsVisible] = useState(initialCommentsOpen);
+
+  useEffect(() => {
+    if (initialCommentsOpen) setCommentsVisible(true);
+  }, [initialCommentsOpen, item.id, item.type]);
 
   // Server truth wins after a refresh: when the parent hands us a NEW item
   // object (refetch), reseed the interaction state. Optimistic updates are
@@ -1204,6 +1212,7 @@ function FeedItemInner({
           visible={commentsVisible}
           targetType={item.type as CommentTargetType}
           targetId={item.id}
+          focusCommentId={initialCommentId}
           initialCount={commentsCount}
           strings={{
             title: t('comment'),
@@ -1265,6 +1274,8 @@ function FeedItemGuarded(props: FeedItemProps) {
 const FeedItem = memo(FeedItemGuarded, (prev, next) =>
   prev.item === next.item &&
   prev.commentsCountOverride === next.commentsCountOverride &&
+  prev.initialCommentsOpen === next.initialCommentsOpen &&
+  prev.initialCommentId === next.initialCommentId &&
   prev.disableDetailNavigation === next.disableDetailNavigation &&
   prev.onOpenComments === next.onOpenComments &&
   prev.onCommentsCountChange === next.onCommentsCountChange &&

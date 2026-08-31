@@ -10,6 +10,7 @@ use App\Services\FCMPushService;
 use App\Services\PushNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use App\Core\TenantContext;
 
 /**
@@ -217,8 +218,25 @@ class PushController extends BaseApiController
         $token = $this->input('token');
         $platform = $this->input('platform', 'android');
 
-        if (empty($token)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'token']), 'token', 400);
+        $validation = Validator::make([
+            'token' => $token,
+            'platform' => $platform,
+            'token_type' => $this->input('token_type', 'fcm'),
+        ], [
+            'token' => ['required', 'string', 'max:255'],
+            'platform' => ['required', 'string', 'in:android,ios'],
+            'token_type' => ['required', 'string', 'in:expo,fcm'],
+        ]);
+
+        if ($validation->fails()) {
+            $field = (string) array_key_first($validation->errors()->messages());
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), $field, 422);
+        }
+
+        $token = trim((string) $token);
+        $tokenType = (string) $this->input('token_type', 'fcm');
+        if ($tokenType === 'expo' && preg_match('/^(?:Exponent|Expo)PushToken\[[A-Za-z0-9_-]+\]$/', $token) !== 1) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'token', 422);
         }
 
         $userId = $this->getOptionalUserId();
@@ -266,9 +284,10 @@ class PushController extends BaseApiController
 
         $token = $this->input('token');
 
-        if (empty($token)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'token']), 'token', 400);
+        if (!is_string($token) || trim($token) === '' || strlen($token) > 255) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'token', 422);
         }
+        $token = trim($token);
 
         $userId = $this->getOptionalUserId();
 

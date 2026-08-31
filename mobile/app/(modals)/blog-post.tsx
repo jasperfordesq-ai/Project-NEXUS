@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Image,
   RefreshControl,
@@ -30,6 +30,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import CommentSheet from '@/components/comments/CommentSheet';
 
 const WEB_URL = 'https://app.project-nexus.ie';
 
@@ -70,11 +71,16 @@ function ActionPill({
 }
 
 export default function BlogPostScreen() {
-  const { t } = useTranslation(['blog', 'common']);
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation(['blog', 'home', 'exchanges', 'common']);
+  const { id, openComments, commentId } = useLocalSearchParams<{ id: string; openComments?: string; commentId?: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const slug = id?.trim() || '';
+  const [commentsVisible, setCommentsVisible] = useState(openComments === '1');
+
+  useEffect(() => {
+    if (openComments === '1') setCommentsVisible(true);
+  }, [openComments, slug]);
 
   const handleShare = useCallback(async (sharePost: { title: string; slug: string; excerpt: string | null }) => {
     const url = `${WEB_URL}/blog/${sharePost.slug}`;
@@ -226,6 +232,12 @@ export default function BlogPostScreen() {
                     accessibilityLabel={t('detail.share')}
                     onPress={() => void handleShare(post)}
                   />
+                  <ActionPill
+                    label={t('home:comment')}
+                    icon="chatbubble-outline"
+                    primary={primary}
+                    onPress={() => setCommentsVisible(true)}
+                  />
                 </View>
               </Surface>
             </HeroCard.Body>
@@ -258,6 +270,36 @@ export default function BlogPostScreen() {
             </HeroCard.Body>
           </HeroCard>
         </ScrollView>
+        <CommentSheet
+          visible={commentsVisible}
+          targetType="blog"
+          targetId={post.id}
+          focusCommentId={commentId && /^\d+$/.test(commentId) ? Number(commentId) : null}
+          strings={{
+            title: t('home:comment'),
+            placeholder: t('exchanges:detail.commentPlaceholder'),
+            empty: t('exchanges:detail.noComments'),
+            loadFailed: t('exchanges:detail.commentsFailed'),
+            submitFailed: t('exchanges:detail.commentFailed'),
+            actionFailedTitle: t('exchanges:detail.actionFailedTitle'),
+            reactionFailed: t('exchanges:detail.likeFailed'),
+            send: t('common:buttons.send'),
+            authorFallback: t('common:labels.member'),
+            reply: t('exchanges:detail.commentReply'),
+            replyingTo: t('exchanges:detail.commentReplyingTo'),
+            edit: t('common:buttons.edit'),
+            editing: t('exchanges:detail.commentEditing'),
+            delete: t('common:buttons.delete'),
+            deleteConfirmTitle: t('exchanges:detail.commentDeleteTitle'),
+            deleteConfirmMessage: t('exchanges:detail.commentDeleteMessage'),
+            edited: t('exchanges:detail.commentEdited'),
+            cancel: t('common:buttons.cancel'),
+            like: t('exchanges:detail.commentLike'),
+            editFailed: t('exchanges:detail.commentEditFailed'),
+            deleteFailed: t('exchanges:detail.commentDeleteFailed'),
+          }}
+          onClose={() => setCommentsVisible(false)}
+        />
       </SafeAreaView>
     </ModalErrorBoundary>
   );

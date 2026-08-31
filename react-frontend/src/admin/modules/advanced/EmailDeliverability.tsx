@@ -505,13 +505,17 @@ export default function EmailDeliverability() {
             <Alert variant="secondary">{t('email_deliverability.push.unavailable')}</Alert>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+              {(pushSummary?.fcm_sent ?? 0) > 0 ? (
+                <Alert variant="secondary">
+                  {t('email_deliverability.metrics.unconfirmed', { count: pushSummary?.fcm_sent ?? 0 })}
+                </Alert>
+              ) : null}
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
                 {[
                   { key: 'total', label: t('email_deliverability.push.total'), value: pushSummary?.total ?? 0, color: 'text-theme-primary' },
-                  { key: 'delivered', label: t('email_deliverability.push.delivered'), value: pushSummary?.delivered ?? 0, color: 'text-[var(--color-success)]' },
+                  { key: 'accepted', label: t('email_deliverability.metrics.accepted'), value: pushSummary?.delivered ?? 0, color: 'text-[var(--color-success)]' },
                   { key: 'partial', label: t('email_deliverability.push.partial'), value: pushSummary?.partial ?? 0, color: 'text-[var(--color-warning)]' },
                   { key: 'failed', label: t('email_deliverability.push.failed'), value: pushSummary?.failed ?? 0, color: 'text-[var(--color-error)]' },
-                  { key: 'success', label: t('email_deliverability.push.success_rate'), value: pushSummary?.success_pct != null ? formatPercentValue(pushSummary.success_pct) : '-', color: 'text-theme-primary' },
                   { key: 'fcm', label: t('email_deliverability.push.fcm'), value: `${pushSummary?.fcm_sent ?? 0}/${pushSummary?.fcm_failed ?? 0}`, color: 'text-theme-primary' },
                   { key: 'web', label: t('email_deliverability.push.web'), value: pushSummary?.web_delivered ?? 0, color: 'text-theme-primary' },
                 ].map((tile) => (

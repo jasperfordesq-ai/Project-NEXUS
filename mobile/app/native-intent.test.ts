@@ -32,6 +32,27 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('/marketplace/tools')).toBe('/(modals)/marketplace-tools');
   });
 
+  it('opens the exact comment surface for supported content notification links', () => {
+    expect(mapSystemPathToNativeRoute('/feed/posts/12#comment-91'))
+      .toBe('/(modals)/feed-item-detail?openComments=1&commentId=91&type=post&id=12');
+    expect(mapSystemPathToNativeRoute('/listings/44#comment-92'))
+      .toBe('/(modals)/feed-item-detail?openComments=1&commentId=92&type=listing&id=44');
+    expect(mapSystemPathToNativeRoute('/blog/a-good-news-story#comment-93'))
+      .toBe('/(modals)/blog-post?openComments=1&commentId=93&id=a-good-news-story');
+    expect(mapSystemPathToNativeRoute('/events/45#comment-94'))
+      .toBe('/(modals)/feed-item-detail?openComments=1&commentId=94&type=event&id=45');
+    expect(mapSystemPathToNativeRoute('/resources/46#comment-95'))
+      .toBe('/(modals)/feed-item-detail?openComments=1&commentId=95&type=resource&id=46');
+    expect(mapSystemPathToNativeRoute('/volunteering/opportunities/47#comment-96'))
+      .toBe('/(modals)/feed-item-detail?openComments=1&commentId=96&type=volunteer&id=47');
+    expect(mapSystemPathToNativeRoute('/groups/8?discussion_id=48#comment-97'))
+      .toBe('/(modals)/feed-item-detail?discussion_id=48&openComments=1&commentId=97&type=discussion&id=48');
+    expect(mapSystemPathToNativeRoute('/events/45#comments'))
+      .toBe('/(modals)/feed-item-detail?openComments=1&type=event&id=45');
+    expect(mapSystemPathToNativeRoute('/groups/8#discussion-48'))
+      .toBe('/(modals)/feed-item-detail?type=discussion&id=48');
+  });
+
   it('maps create aliases to native create surfaces', () => {
     expect(mapSystemPathToNativeRoute('/listings/new')).toBe('/(modals)/new-exchange');
     expect(mapSystemPathToNativeRoute('/events/create')).toBe('/(modals)/new-event');

@@ -4,13 +4,15 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 // --- Mocks ---
 
+let mockSearchParams: { id: string; openComments?: string } = { id: '7' };
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
-  useLocalSearchParams: () => ({ id: '7' }),
+  useLocalSearchParams: () => mockSearchParams,
 }));
 
 jest.mock('react-i18next', () => ({
@@ -29,6 +31,7 @@ jest.mock('react-i18next', () => ({
         'detail.readFull': 'Read the full post on the web.',
         'detail.tags': 'Topics',
         'detail.article': 'Article',
+        'home:comment': 'Comment',
         'publishedOn': opts ? String(opts.date ?? '') : '',
         'by': opts ? `By ${String(opts.name ?? '')}` : 'By',
         'readingTime': opts ? `${String(opts.minutes ?? 0)} min read` : '0 min read',
@@ -70,6 +73,8 @@ jest.mock('@/lib/api/blog', () => ({
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+const mockCommentSheet = jest.fn((_props: unknown) => null);
+jest.mock('@/components/comments/CommentSheet', () => (props: unknown) => mockCommentSheet(props));
 
 // --- Tests ---
 
@@ -88,6 +93,7 @@ const mockPost = {
 };
 
 beforeEach(() => {
+  mockSearchParams = { id: '7' };
   mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
 });
 
@@ -138,6 +144,25 @@ describe('BlogPostScreen', () => {
 
     const { getByText } = render(<BlogPostScreen />);
     expect(getByText('Full content here. Timebanking is a reciprocal service exchange...')).toBeTruthy();
+  });
+
+  it('opens comments from both the action and a notification deep link', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: mockPost },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText, rerender } = render(<BlogPostScreen />);
+    expect(mockCommentSheet).toHaveBeenLastCalledWith(expect.objectContaining({ visible: false, targetId: 7 }));
+
+    fireEvent.press(getByText('Comment'));
+    expect(mockCommentSheet).toHaveBeenLastCalledWith(expect.objectContaining({ visible: true, targetId: 7 }));
+
+    mockSearchParams = { id: '7', openComments: '1' };
+    rerender(<BlogPostScreen />);
+    expect(mockCommentSheet).toHaveBeenLastCalledWith(expect.objectContaining({ visible: true, targetId: 7 }));
   });
 
   it('resolves relative cover image URLs', () => {
