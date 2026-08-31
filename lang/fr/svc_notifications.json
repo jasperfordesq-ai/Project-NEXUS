@@ -91,7 +91,8 @@
     "mentioned_in_with_preview": "@{{name}} vous a mentionné(e) dans un(e) {{entity}} : \"{{preview}}\""
   },
   "story": {
-    "reaction": "{{name}} a réagi {{emoji}} à votre story"
+    "reaction": "{{name}} a réagi {{emoji}} à votre story",
+    "reply": "{{name}} a répondu à votre story"
   },
   "sub_account": {
     "management_request": "{{name}} a demandé à gérer votre compte en tant que {{type}}",

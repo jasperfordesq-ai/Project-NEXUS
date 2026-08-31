@@ -118,7 +118,7 @@ class HandleFederatedConnectionReceived implements ShouldQueue
                         ->where('tenant_id', $event->tenantId)
                         ->where('user_id', $localUserId)
                         ->where('type', 'federation_connection')
-                        ->where('link', '/network')
+                        ->where('link', '/federation/connections')
                         ->where('message', $message)
                         ->exists();
 
@@ -126,12 +126,12 @@ class HandleFederatedConnectionReceived implements ShouldQueue
                         Notification::createNotification(
                             $localUserId,
                             $message,
-                            '/network',
+                            '/federation/connections',
                             'federation_connection',
                             false,
                             $event->tenantId
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ($localUserId), 'federation_connection', $message, '/network');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) ($localUserId), 'federation_connection', $message, '/federation/connections');
                     }
                 });
 

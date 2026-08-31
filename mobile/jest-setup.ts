@@ -32,6 +32,7 @@ import enVolunteering from './locales/en/volunteering.json';
 import enOrganisations from './locales/en/organisations.json';
 import enEndorsements from './locales/en/endorsements.json';
 import enFederation from './locales/en/federation.json';
+import enOnboarding from './locales/en/onboarding.json';
 import { Uniwind } from 'uniwind';
 
 // Jest does not run Metro, so global.css is not compiled into Uniwind's native
@@ -91,6 +92,7 @@ i18n.use(initReactI18next).init({
       organisations: enOrganisations,
       endorsements: enEndorsements,
       federation: enFederation,
+      onboarding: enOnboarding,
     },
   },
   lng: 'en',

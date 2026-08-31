@@ -24,7 +24,7 @@ jest.mock('expo-constants', () => ({
 }));
 
 jest.mock('expo-notifications', () => ({
-  AndroidImportance: { MAX: 'max' },
+  AndroidImportance: { DEFAULT: 'default', MAX: 'max' },
   getExpoPushTokenAsync: (...args: unknown[]) => mockGetExpoPushTokenAsync(...args),
   getPermissionsAsync: (...args: unknown[]) => mockGetPermissionsAsync(...args),
   requestPermissionsAsync: (...args: unknown[]) => mockRequestPermissionsAsync(...args),
@@ -62,6 +62,7 @@ jest.mock('@/lib/constants', () => ({
 }));
 
 import {
+  flushPendingPaidCampaignOpen,
   getNotificationLink,
   observeNotificationResponses,
   registerForPushNotifications,
@@ -111,6 +112,40 @@ describe('push notification links', () => {
       cta_url: externalCta,
     })).toBe(externalCta);
     expect(getNotificationLink({ cta_url: externalCta })).toBe('/notifications');
+  });
+
+  it('keeps legacy story payloads in the inbox until an exact native story viewer exists', () => {
+    expect(getNotificationLink({ type: 'story_reaction', link: '/feed' })).toBe('/notifications');
+    expect(getNotificationLink({ type: 'new_story', link: '/feed' })).toBe('/notifications');
+  });
+
+  it('keeps group chatroom pushes in the inbox until the native app has a group chat screen', () => {
+    expect(getNotificationLink({
+      type: 'group_chatroom_message',
+      link: '/groups/42/chat',
+    })).toBe('/notifications');
+  });
+
+  it.each([
+    [{ type: 'federation_connection', link: '/network' }, '/federation/connections'],
+    [{ type: 'federation_review', link: '/profile/42/reviews' }, '/reviews'],
+    [{ type: 'marketplace_payout', link: '/marketplace/orders/42' }, '/marketplace/orders/sales?order_id=42'],
+  ])('repairs a previously queued legacy producer destination', (data, expected) => {
+    expect(getNotificationLink(data)).toBe(expected);
+  });
+
+  it('allows a benign entity anchor but still rejects credential-like fragments', () => {
+    expect(getNotificationLink({ type: 'job_application', link: '/jobs/42#applications' }))
+      .toBe('/jobs/42#applications');
+    expect(getNotificationLink({ type: 'new_message', link: '/messages/42#token=secret' }))
+      .toBe('/notifications');
+  });
+
+  it.each([
+    '/marketplace/reports/42',
+    '/groups/42/chat',
+  ])('fails closed for a real web page with no native equivalent: %s', (link) => {
+    expect(getNotificationLink({ type: 'audit', link })).toBe('/notifications');
   });
 
   it.each([
@@ -177,6 +212,59 @@ describe('push notification response lifecycle', () => {
     expect(onLink).toHaveBeenCalledWith('/events/44');
   });
 
+  it('defers paid-campaign analytics until authentication has resolved', async () => {
+    mockPost.mockResolvedValue(undefined);
+    const onLink = jest.fn();
+    observeNotificationResponses(onLink);
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+
+    listener({ notification: { request: { content: { data: {
+      campaign_type: 'paid_push',
+      campaign_id: '42',
+      cta_url: 'https://partner.example.org/book/42',
+    } } } } });
+
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(onLink).toHaveBeenCalledWith('https://partner.example.org/book/42');
+
+    await flushPendingPaidCampaignOpen();
+    expect(mockPost).toHaveBeenCalledWith('/api/v2/me/push-campaigns/42/open', {});
+  });
+
+  it('retains a paid-campaign tap for retry after a signed-out request fails', async () => {
+    const onLink = jest.fn();
+    observeNotificationResponses(onLink);
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+    listener({ notification: { request: { content: { data: {
+      campaign_type: 'paid_push',
+      campaign_id: '84',
+      cta_url: 'https://partner.example.org/book/84',
+    } } } } });
+
+    mockPost.mockRejectedValueOnce(new Error('Unauthenticated'));
+    await flushPendingPaidCampaignOpen();
+    mockPost.mockResolvedValueOnce(undefined);
+    await flushPendingPaidCampaignOpen();
+
+    expect(mockPost).toHaveBeenNthCalledWith(1, '/api/v2/me/push-campaigns/84/open', {});
+    expect(mockPost).toHaveBeenNthCalledWith(2, '/api/v2/me/push-campaigns/84/open', {});
+  });
+
+  it('does not report malformed or non-paid campaign identifiers', () => {
+    const onLink = jest.fn();
+    observeNotificationResponses(onLink);
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+
+    listener({ notification: { request: { content: { data: {
+      campaign_type: 'paid_push',
+      campaign_id: '../admin',
+      cta_url: 'https://partner.example.org/book/42',
+    } } } } });
+
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(onLink).toHaveBeenCalledWith('https://partner.example.org/book/42');
+  });
+
   it('falls back to the notification centre for malformed response data', () => {
     const onLink = jest.fn();
     observeNotificationResponses(onLink);
@@ -201,14 +289,29 @@ describe('push notification registration', () => {
   });
 
   it('registers Expo push tokens with an explicit token type for backend routing', async () => {
+    const originalPlatform = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
+
     const result = await registerForPushNotifications();
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: originalPlatform });
 
     expect(result).toBe('registered');
+    expect(mockSetNotificationChannelAsync).toHaveBeenNthCalledWith(1, 'default', {
+      name: 'Notifications',
+      importance: 'default',
+      lightColor: '#006FEE',
+    });
+    expect(mockSetNotificationChannelAsync).toHaveBeenNthCalledWith(2, 'emergency', {
+      name: 'Support & Safeguarding',
+      importance: 'max',
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#006FEE',
+    });
     expect(mockGetExpoPushTokenAsync).toHaveBeenCalledWith({ projectId: 'project-123' });
     expect(mockPost).toHaveBeenCalledWith('/api/push/register-device', {
       token: 'ExponentPushToken[abc123]',
       token_type: 'expo',
-      platform: Platform.OS === 'ios' ? 'ios' : 'android',
+      platform: 'android',
     });
     expect(mockStorageSet).toHaveBeenCalledWith('nexus_expo_push_token', 'ExponentPushToken[abc123]');
   });

@@ -9,11 +9,12 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 // --- Mocks ---
 
 const mockRouterPush = jest.fn();
+let mockRouteParams: Record<string, string> = { id: '1' };
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({ id: '1' }),
+  useLocalSearchParams: () => mockRouteParams,
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -439,6 +440,7 @@ import * as ImagePicker from 'expo-image-picker';
 const defaultApiState = { data: null, isLoading: true, error: null, refresh: jest.fn() };
 
 beforeEach(() => {
+  mockRouteParams = { id: '1' };
   mockAuthUser = { id: 99, name: 'Current User' };
   mockUseApi.mockReturnValue(defaultApiState);
   mockRouterPush.mockClear();
@@ -469,6 +471,22 @@ const mockGroupDetail = {
 };
 
 describe('GroupDetailScreen', () => {
+  it('opens the tab named by a notification deep link', () => {
+    mockRouteParams = { id: '1', tab: 'discussion' };
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyAnnouncementsState = { data: { data: { items: [] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyFilesState = { data: { data: { items: [] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyQuestionsState = { data: { data: { items: [] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const eventsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = [groupState, emptyListState, emptyListState, emptyAnnouncementsState, emptyFilesState, emptyQuestionsState, eventsState];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states[call++] ?? emptyListState);
+
+    const { getByText } = render(<GroupDetailScreen />);
+
+    expect(getByText('Join to discuss.')).toBeTruthy();
+  });
   it('names who runs the group, from the creator the server actually sends', () => {
     // 🔴 The load-bearing case. `GroupDetail.admin` was declared required and is not in the
     // response, so `group.admin ? …` was always false and this whole card vanished — a

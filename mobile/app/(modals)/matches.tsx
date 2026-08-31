@@ -6,7 +6,7 @@
 import { useMemo, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -73,6 +73,10 @@ export default function MatchesScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { data, isLoading, error, refresh } = useApi(() => getMatches());
+  const params = useLocalSearchParams<{
+    highlight?: string | string[];
+    type?: string | string[];
+  }>();
   const [filter, setFilter] = useState<Filter>('all');
   const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
   const [dismissingId, setDismissingId] = useState<number | null>(null);
@@ -81,7 +85,24 @@ export default function MatchesScreen() {
     () => (data?.data ?? []).filter((match) => !dismissedIds.has(match.id)),
     [data?.data, dismissedIds],
   );
-  const filteredMatches = filter === 'all' ? matches : matches.filter((match) => match.source_type === filter);
+  const requestedType = Array.isArray(params.type) ? params.type[0] : params.type;
+  const rawHighlight = Array.isArray(params.highlight) ? params.highlight[0] : params.highlight;
+  const highlightMatch = rawHighlight?.match(/^listing-(\d+)$/);
+  const highlightedListingId = highlightMatch ? Number(highlightMatch[1]) : null;
+  const filteredMatches = useMemo(() => {
+    let visible = filter === 'all' ? matches : matches.filter((match) => match.source_type === filter);
+    if (requestedType === 'mutual') {
+      visible = visible.filter((match) => match.match_type === 'mutual');
+    }
+    if (highlightedListingId !== null) {
+      visible = [...visible].sort((left, right) => {
+        const leftIsTarget = left.source_type === 'listing' && left.source_id === highlightedListingId;
+        const rightIsTarget = right.source_type === 'listing' && right.source_id === highlightedListingId;
+        return Number(rightIsTarget) - Number(leftIsTarget);
+      });
+    }
+    return visible;
+  }, [filter, highlightedListingId, matches, requestedType]);
   const averageScore = matches.length
     ? Math.round(matches.reduce((total, match) => total + match.match_score, 0) / matches.length)
     : 0;
@@ -144,6 +165,7 @@ export default function MatchesScreen() {
           renderItem={({ item }) => (
             <MatchCard
               item={item}
+              highlighted={item.source_type === 'listing' && item.source_id === highlightedListingId}
               isDismissing={dismissingId === item.id}
               onDismiss={() => void handleDismiss(item)}
               onOpen={() => openMatch(item)}
@@ -272,11 +294,13 @@ export default function MatchesScreen() {
 
 function MatchCard({
   item,
+  highlighted,
   isDismissing,
   onDismiss,
   onOpen,
 }: {
   item: MatchItem;
+  highlighted: boolean;
   isDismissing: boolean;
   onDismiss: () => void;
   onOpen: () => void;
@@ -287,7 +311,12 @@ function MatchCard({
   const scoreTone = item.match_score >= 80 ? theme.success : item.match_score >= 60 ? theme.warning : config.tone;
 
   return (
-    <HeroCard variant="default" className="mx-4 my-2 overflow-hidden rounded-panel p-0">
+    <HeroCard
+      variant="default"
+      className="mx-4 my-2 overflow-hidden rounded-panel p-0"
+      style={highlighted ? { borderWidth: 2, borderColor: config.tone } : undefined}
+      testID={`match-card-${item.source_type}-${item.source_id}`}
+    >
       <View className="h-1 w-full" style={{ backgroundColor: config.tone }} />
       <HeroCard.Body className="gap-3 p-4">
         <View className="flex-row items-start gap-3">

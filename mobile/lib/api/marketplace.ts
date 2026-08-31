@@ -730,6 +730,11 @@ export function getMarketplaceOrders(
   return api.get<MarketplaceCollectionResponse<MarketplaceOrder>>(`${API_V2}/marketplace/orders/${mode}`, query);
 }
 
+/** Fetch one order so a deep link can resolve whether this member is its buyer or seller. */
+export function getMarketplaceOrder(id: number): Promise<MarketplaceDataResponse<MarketplaceOrder>> {
+  return api.get<MarketplaceDataResponse<MarketplaceOrder>>(`${API_V2}/marketplace/orders/${id}`);
+}
+
 export function shipMarketplaceOrder(
   id: number,
   payload: { tracking_number?: string | null; tracking_url?: string | null; shipping_method?: string | null },

@@ -1,5 +1,24 @@
 # Autonomous Mobile Release Readiness Checklist
 
+## Active goal — 2026-08-31: exhaustive push-producer certification
+
+- [x] Generate the complete direct/indirect native-push producer population and make drift fail
+  closed when an unclassified producer is added.
+- [x] Classify every type and destination for relevance, recipient locale, lock-screen privacy,
+  exact native reachability, authentication, stale entities and module/role availability.
+- [x] Repair every confirmed producer or cross-stack contract defect with a regression that fails
+  without the fix.
+- [x] Prove foreground, background, killed/cold-start and signed-out/auth-deferred handling plus
+  the exceptional opted-in paid HTTPS CTA rule.
+- [ ] Run feasible Android emulator journeys and all backend/mobile/API/store gates without
+  claiming provider-delivered physical-device evidence.
+- [ ] Refresh readiness evidence and changelog, commit/push scoped work, and bank green CI.
+
+### Completion rule
+
+- [ ] Every current native-push producer is classified and guarded; all remaining evidence is
+  explicitly physical-device/provider-, approval-, production- or store-gated.
+
 ## Active goal — 2026-08-31: actionable push notifications and final audit
 
 - [x] Inventory every backend push producer and the exact data delivered to Expo/FCM.
@@ -30,11 +49,15 @@
   Feed items, Connections/Network, current Profile, job application pipelines, marketplace seller
   tools and saved searches. Representative message, wallet, event, social, goal, course, job,
   marketplace and volunteering routes are guarded.
-- Focused push/dispatcher/paid-campaign backend result: 61 tests / 160 assertions. Full mobile
-  result: 377 suites / 2,648 tests;
-  coverage 76.40% lines over 336 files, with every ratchet floor green. TypeScript, zero-warning
+- Expanded push/dispatcher/federation/volunteering/paid-campaign/agent backend result: 189 tests / 532
+  assertions. Full mobile result: 380 suites / 2,725 tests;
+  coverage 76.83% lines over 339 files, with every ratchet floor green. TypeScript, zero-warning
   lint, Expo Doctor 18/18, 462/462 resolvable API routes, 256-route parity, network/certificate
-  policy, audience, translations, assets, dependency audit and 14.86 MB bundle budget are green.
+  policy, audience, translations, assets and the repository's blocking dependency gate are green;
+  the current bundle is 14.88 MB with 1.48 MB of headroom. The dependency gate transparently
+  reports two dated no-patch `image-size` parser exceptions (review due 2026-11-26) confined to
+  Expo/Metro's local build tooling; they are not runtime app code and remain visible until upstream
+  ships a compatible fix.
 - A freshly bundled release APK built and installed. The maintained login journey passed on the
   debug build, then `nexus://events` launched from a killed authenticated app into the real Events
   screen. Android forbids a shell-owned synthetic notification from launching another package,

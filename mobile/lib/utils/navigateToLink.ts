@@ -8,6 +8,7 @@ import { router, type Href } from 'expo-router';
 import { mapSystemPathToNativeRoute } from '@/app/+native-intent';
 import { reportException, reportMessage, safeLinkSummary } from '@/lib/observability/report';
 import { isSafeExternalBrowserLink } from '@/lib/utils/safeExternalLink';
+import { isNativeHrefDisabled } from '@/lib/navigation/tenantCapabilityStore';
 
 /**
  * Navigate a platform web/custom-scheme link through the same canonical mapper used by
@@ -31,6 +32,10 @@ export function navigateToLink(link: string | null): void {
       { link: safeLinkSummary(link) },
       'deeplink-unhandled'
     );
+    return;
+  }
+  if (isNativeHrefDisabled(mappedHref)) {
+    router.push('/(modals)/notifications');
     return;
   }
 

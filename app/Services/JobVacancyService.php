@@ -1487,7 +1487,7 @@ class JobVacancyService
                     \App\Services\NotificationDispatcher::fanOutPush((int) ($applicantId), 'job_application', $message, "/jobs/{$application->vacancy_id}");
 
                     // Real-time broadcast to candidate
-                    RealtimeService::broadcastAndPush($applicantId, $message, [
+                    RealtimeService::broadcastOnly($applicantId, $message, [
                         'type'        => 'job_application_status',
                         'job_id'      => (int) $application->vacancy_id,
                         'job_title'   => $jobTitle,

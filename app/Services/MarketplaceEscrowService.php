@@ -317,13 +317,13 @@ class MarketplaceEscrowService
                             'amount' => $escrow->amount,
                             'order'  => $order->id,
                         ]),
-                        '/marketplace/orders/' . $order->id,
+                        '/marketplace/orders/sales?order_id=' . $order->id,
                         'marketplace_payout'
                     );
                     \App\Services\NotificationDispatcher::fanOutPush((int) ($sellerId), 'marketplace_payout', __('svc_notifications.marketplace_payout.payout_sent_bell', [
                         'amount' => $escrow->amount,
                         'order'  => $order->id,
-                    ]), '/marketplace/orders/' . $order->id);
+                    ]), '/marketplace/orders/sales?order_id=' . $order->id);
                 });
             }
         } catch (\Throwable $e) {

@@ -494,12 +494,12 @@ class UserService
                     Notification::createNotification(
                         $userId,
                         __('svc_notifications.user_security.email_changed'),
-                        null,
+                        '/settings/security',
                         'email_changed',
                         false,
                         $notificationTenantId
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'email_changed', __('svc_notifications.user_security.email_changed'), null);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'email_changed', __('svc_notifications.user_security.email_changed'), '/settings/security');
                 } catch (\Throwable $e) {
                     Log::warning('Failed to create email change notification', ['user_id' => $userId, 'error' => $e->getMessage()]);
                 }
@@ -673,12 +673,12 @@ class UserService
                     Notification::createNotification(
                         (int) $user->id,
                         __('api_controllers_2.password_reset.changed_bell'),
-                        null,
+                        '/settings/security',
                         'password_changed',
                         false,
                         (int) $user->tenant_id
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $user->id, 'password_changed', __('api_controllers_2.password_reset.changed_bell'), null);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $user->id, 'password_changed', __('api_controllers_2.password_reset.changed_bell'), '/settings/security');
                 });
             });
         } catch (\Throwable $e) {

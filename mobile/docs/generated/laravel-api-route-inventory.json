@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2727,
-  "api_route_rows": 2692,
-  "distinct_api_paths": 2238,
+  "total_registered_routes": 2728,
+  "api_route_rows": 2693,
+  "distinct_api_paths": 2239,
   "route_source_fingerprint": {
-    "digest": "61dd67ded3fd8a53e28c37ef31afbe7eb7a623a56d51953bef99d3060d652c96",
+    "digest": "3dcef7ad1da79ec06e6081b97879d9a0eb08fa2d1f0e1ef4ed3240376aa530e5",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "4313a27f302a536747a1b0c894295f226730834b13d164257b74f6e4fb7b9247"
+        "sha256": "44489ba9ce91558e38b989bb6d1443403c2887fdd8086db1bcd94329b7785b9e"
       },
       {
         "file": "routes/channels.php",
@@ -5937,6 +5937,9 @@
     "/api/v2/me/push-campaigns/{id}": [
       "DELETE",
       "PUT"
+    ],
+    "/api/v2/me/push-campaigns/{id}/open": [
+      "POST"
     ],
     "/api/v2/me/push-campaigns/{id}/submit": [
       "POST"

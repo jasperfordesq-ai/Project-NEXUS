@@ -159,7 +159,29 @@ describe('the routes this outage actually broke', () => {
     expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/marketplace/map'))
       .toBe('/(modals)/marketplace-map');
     expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/marketplace/orders/sales'))
-      .toBe('/(modals)/marketplace-sales-orders');
+      .toBe('/(modals)/marketplace-orders?mode=sales');
+  });
+
+  it('resolves exact marketplace order/listing links and rejects unsupported reports', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/marketplace/orders/sales?order_id=42'))
+      .toBe('/(modals)/marketplace-orders?mode=sales&order_id=42');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/marketplace/orders/42'))
+      .toBe('/(modals)/marketplace-order?id=42');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/marketplace/listings/42'))
+      .toBe('/(modals)/marketplace-detail?id=42');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/marketplace/reports/42')).toBeNull();
+    expect(isBrowserOnlyPath('https://app.project-nexus.ie/marketplace/reports/42')).toBe(true);
+  });
+
+  it('maps reviewed legacy settings/review routes and declines absent native group chat', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/profile/42/reviews'))
+      .toBe('/(modals)/reviews');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/settings?tab=linked-accounts'))
+      .toBe('/(modals)/settings-linked-accounts?tab=linked-accounts');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/settings/verification'))
+      .toBe('/(modals)/verify-identity');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/groups/42/chat')).toBeNull();
+    expect(isBrowserOnlyPath('https://app.project-nexus.ie/groups/42/chat')).toBe(true);
   });
 
   it('distinguishes the two seller onboarding routes, which differ by one letter', () => {

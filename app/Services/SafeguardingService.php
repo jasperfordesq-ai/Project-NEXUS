@@ -379,12 +379,12 @@ class SafeguardingService
                         \App\Models\Notification::createNotification(
                             (int) $record->user_id,
                             __('emails_misc.safeguarding.training_verified', ['training_name' => $trainingName]),
-                            '/dashboard',
+                            '/notifications',
                             'moderation',
                             true,
                             $tenantId
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $record->user_id), 'moderation', __('emails_misc.safeguarding.training_verified', ['training_name' => $trainingName]), '/dashboard');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $record->user_id), 'moderation', __('emails_misc.safeguarding.training_verified', ['training_name' => $trainingName]), '/notifications');
 
                         if ($trainee && !empty($trainee->email)) {
                             $traineeName  = UserDisplayName::resolve($trainee) ?: ($trainee->name ?? '');
@@ -458,12 +458,12 @@ class SafeguardingService
                         \App\Models\Notification::createNotification(
                             (int) $record->user_id,
                             __('emails_misc.safeguarding.training_not_approved', ['training_name' => $trainingName]),
-                            '/help',
+                            '/notifications',
                             'moderation',
                             true,
                             $tenantId
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $record->user_id), 'moderation', __('emails_misc.safeguarding.training_not_approved', ['training_name' => $trainingName]), '/help');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $record->user_id), 'moderation', __('emails_misc.safeguarding.training_not_approved', ['training_name' => $trainingName]), '/notifications');
 
                         if ($trainee && !empty($trainee->email)) {
                             $traineeName  = UserDisplayName::resolve($trainee) ?: ($trainee->name ?? '');

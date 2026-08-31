@@ -439,6 +439,7 @@ class PaidPushCampaignService
         // Only update the first open — ignore if already opened
         $updated = DB::table(self::TABLE_SENDS)
             ->where('campaign_id', $campaignId)
+            ->where('tenant_id', $tenantId)
             ->where('user_id', $userId)
             ->whereNull('opened_at')
             ->update(['opened_at' => $now]);
@@ -568,6 +569,30 @@ class PaidPushCampaignService
 
         if (!OutboundUrlGuard::isSafeBrowserUrl($value)) {
             throw new \InvalidArgumentException(__('api.invalid_url'));
+        }
+
+        $parts = parse_url($value);
+        $host = is_array($parts) ? strtolower(trim((string) ($parts['host'] ?? ''), '[]')) : '';
+        if (!is_array($parts)
+            || strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
+            || isset($parts['user'])
+            || isset($parts['pass'])
+            || isset($parts['port'])
+            || isset($parts['fragment'])
+            || $host === 'localhost'
+            || str_ends_with($host, '.localhost')
+            || str_ends_with($host, '.local')
+            || str_ends_with($host, '.internal')
+            || filter_var($host, FILTER_VALIDATE_IP) !== false
+            || !str_contains($host, '.')
+        ) {
+            throw new \InvalidArgumentException(__('api.invalid_url'));
+        }
+        parse_str((string) ($parts['query'] ?? ''), $query);
+        foreach (array_keys($query) as $key) {
+            if (preg_match('/token|secret|password|signature|authorization|api[_-]?key/i', (string) $key) === 1) {
+                throw new \InvalidArgumentException(__('api.invalid_url'));
+            }
         }
 
         return $value;

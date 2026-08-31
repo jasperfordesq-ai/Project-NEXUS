@@ -231,13 +231,14 @@ class ConnectionsController extends BaseApiController
                         ?: ($decliner->name ?? __('emails.common.fallback_someone'));
 
                     // Bell notification
+                    $declinerProfile = '/profile/' . (int) $decliner->id;
                     Notification::createNotification(
                         (int) $requesterId,
                         __('emails_misc.social.connection_declined', ['name' => $declinerName]),
-                        '/members',
+                        $declinerProfile,
                         'connection_declined'
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($requesterId), 'connection_declined', __('emails_misc.social.connection_declined', ['name' => $declinerName]), '/members');
+                    \App\Services\NotificationDispatcher::fanOutPush((int) ($requesterId), 'connection_declined', __('emails_misc.social.connection_declined', ['name' => $declinerName]), $declinerProfile);
 
                     // Email notification. Declines use the same connections
                     // preference as requests/acceptances so the direct email

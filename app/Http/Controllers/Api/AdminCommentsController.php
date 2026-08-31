@@ -247,7 +247,10 @@ class AdminCommentsController extends BaseApiController
 
             if ($commentAuthorId && $commentAuthorId !== $adminId) {
                 $link = $comment->target_type && $comment->target_id
-                    ? "/{$comment->target_type}s/{$comment->target_id}"
+                    ? \App\Services\SocialNotificationService::getContentLink(
+                        (string) $comment->target_type,
+                        (int) $comment->target_id,
+                    )
                     : null;
 
                 Notification::createNotification(

@@ -44,6 +44,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { useParamTab } from '@/lib/hooks/useParamTab';
 
 type OrgTab = 'overview' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -56,6 +57,8 @@ const ORG_TABS: { key: OrgTab; icon: IoniconName }[] = [
   { key: 'wallet', icon: 'wallet-outline' },
   { key: 'settings', icon: 'settings-outline' },
 ];
+const resolveOrgTab = (raw: string | undefined): OrgTab | null =>
+  ORG_TABS.some((item) => item.key === raw) ? raw as OrgTab : null;
 
 function parseId(value?: string | string[]) {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -539,11 +542,11 @@ function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | nul
 
 function VolunteeringOrgDashboardInner() {
   const { t } = useTranslation(['volunteering', 'common']);
-  const params = useLocalSearchParams<{ id?: string; tab?: OrgTab }>();
+  const params = useLocalSearchParams<{ id?: string; tab?: string | string[] }>();
   const orgId = parseId(params.id);
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const [tab, setTab] = useState<OrgTab>(ORG_TABS.some((item) => item.key === params.tab) ? params.tab as OrgTab : 'overview');
+  const [tab, setTab] = useParamTab<OrgTab>(params.tab, resolveOrgTab, 'overview');
 
   const orgApi = useApi(() => (orgId ? getOrganisation(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });
   const statsApi = useApi(() => (orgId ? getOrganisationStats(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });

@@ -215,7 +215,14 @@ final class AgentExecutor
                 }
                 $title = (string) ($payload['title'] ?? 'NEXUS');
                 $body  = (string) ($payload['body']  ?? '');
-                $extra = (array)  ($payload['extra'] ?? []);
+                // Agent-authored payloads must not choose an arbitrary native
+                // destination. Caring nudges are deliberately outside the 18+
+                // native feature set, so their authenticated detail remains in
+                // the notification centre.
+                $extra = [
+                    'type' => $type === 'send_activity_summary' ? 'activity_summary' : 'caring_smart_nudge',
+                    'link' => $type === 'send_activity_summary' ? '/activity' : '/notifications',
+                ];
                 if (class_exists(FCMPushService::class) && method_exists(FCMPushService::class, 'sendToUsers')) {
                     FCMPushService::sendToUsers([$userId], $title, $body, $extra);
                 }

@@ -293,6 +293,24 @@ class PaidPushCampaignController extends BaseApiController
         return $this->respondWithData(['cancelled' => true]);
     }
 
+    /**
+     * POST /v2/me/push-campaigns/{id}/open
+     * Record an authenticated member's first tap of a delivered paid push.
+     *
+     * This endpoint deliberately remains available when the campaign feature is
+     * later disabled: a notification that was already delivered must still open,
+     * and the service only updates a send row belonging to this user and tenant.
+     */
+    public function recordOpen(int $id): JsonResponse
+    {
+        $userId   = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+
+        PaidPushCampaignService::recordOpen($id, $userId, $tenantId);
+
+        return $this->respondWithData(['recorded' => true]);
+    }
+
     // =========================================================================
     // Admin endpoints
     // =========================================================================

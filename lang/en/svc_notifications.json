@@ -93,7 +93,8 @@
     "mentioned_in_with_preview": "@{{name}} mentioned you in a {{entity}}: \"{{preview}}\""
   },
   "story": {
-    "reaction": "{{name}} reacted {{emoji}} to your story"
+    "reaction": "{{name}} reacted {{emoji}} to your story",
+    "reply": "{{name}} replied to your story"
   },
   "sub_account": {
     "management_request": "{{name}} has requested to manage your account as a {{type}}",

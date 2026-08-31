@@ -104,13 +104,13 @@ class HandleFederatedReviewReceived implements ShouldQueue
                             'name'   => __('emails.notification.someone'),
                             'rating' => $rating,
                         ]),
-                        '/profile/' . $receiverId . '/reviews',
+                        '/reviews',
                         'federation_review'
                     );
                     \App\Services\NotificationDispatcher::fanOutPush((int) ($receiverId), 'federation_review', __('notifications.review_received_in_app', [
                         'name'   => __('emails.notification.someone'),
                         'rating' => $rating,
-                    ]), '/profile/' . $receiverId . '/reviews');
+                    ]), '/reviews');
                     $this->markReviewSideEffectSent('notification_sent_at');
                 }
 

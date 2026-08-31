@@ -91,7 +91,8 @@
     "mentioned_in_with_preview": "@{{name}} さんが {{entity}} であなたをメンションしました：「{{preview}}」"
   },
   "story": {
-    "reaction": "{{name}} さんがあなたのストーリーに {{emoji}} でリアクションしました"
+    "reaction": "{{name}} さんがあなたのストーリーに {{emoji}} でリアクションしました",
+    "reply": "{{name}} さんがあなたのストーリーに返信しました"
   },
   "sub_account": {
     "management_request": "{{name}} さんが {{type}} としてあなたのアカウントを管理することを申請しました",

@@ -38,6 +38,7 @@ import {
   getGroupMarketplaceListings,
   getGroupMarketplaceStats,
   getMarketplaceListing,
+  getMarketplaceOrder,
   getMarketplaceListingPickupSlots,
   getMarketplaceListings,
   getMarketplaceOrders,
@@ -443,6 +444,9 @@ describe('marketplace api', () => {
       limit: '20',
       status: 'paid,shipped',
     });
+
+    await getMarketplaceOrder(14);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/marketplace/orders/14');
 
     await shipMarketplaceOrder(14, {
       tracking_number: 'TRACK123',

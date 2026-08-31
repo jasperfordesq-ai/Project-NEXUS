@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useState, type ComponentProps } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import { FlatList, Image, Linking, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -28,6 +28,7 @@ import {
   createMarketplacePaymentIntent,
   disputeMarketplaceOrder,
   getMarketplaceDeliveryOffers,
+  getMarketplaceOrder,
   getMarketplaceOrders,
   marketplaceHasMore,
   marketplaceNextCursor,
@@ -37,6 +38,7 @@ import {
   type MarketplaceOrder,
 } from '@/lib/api/marketplace';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -133,8 +135,11 @@ function MarketplaceOrdersScreen() {
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-  const params = useLocalSearchParams<{ mode?: string }>();
-  const initialMode: OrderMode = params.mode === 'sales' ? 'sales' : 'purchases';
+  const params = useLocalSearchParams<{ mode?: string | string[]; order_id?: string | string[] }>();
+  const requestedMode = Array.isArray(params.mode) ? params.mode[0] : params.mode;
+  const rawOrderId = Array.isArray(params.order_id) ? params.order_id[0] : params.order_id;
+  const requestedOrderId = /^\d+$/.test(rawOrderId ?? '') ? Number(rawOrderId) : null;
+  const initialMode: OrderMode = requestedMode === 'sales' ? 'sales' : 'purchases';
   const [mode, setMode] = useState<OrderMode>(initialMode);
   const [statusTab, setStatusTab] = useState<OrderStatusTab>('all');
   const [shipOrder, setShipOrder] = useState<MarketplaceOrder | null>(null);
@@ -165,10 +170,25 @@ function MarketplaceOrdersScreen() {
     [mode, statusTab],
     { enabled: canLoadOrders },
   );
+  const targetOrderState = useApi(
+    () => getMarketplaceOrder(requestedOrderId ?? 0),
+    [requestedOrderId],
+    { enabled: canLoadOrders && requestedOrderId !== null },
+  );
 
   useEffect(() => {
-    setMode(params.mode === 'sales' ? 'sales' : 'purchases');
-  }, [params.mode]);
+    setMode(requestedMode === 'sales' ? 'sales' : 'purchases');
+  }, [requestedMode]);
+
+  const visibleOrders = useMemo(() => {
+    if (requestedOrderId === null) return orders.items;
+    const target = targetOrderState.data?.data;
+    const complete = target && !orders.items.some((item) => item.id === target.id)
+      ? [target, ...orders.items]
+      : orders.items;
+    return [...complete].sort((left, right) =>
+      Number(right.id === requestedOrderId) - Number(left.id === requestedOrderId));
+  }, [orders.items, requestedOrderId, targetOrderState.data]);
 
   function openShipModal(order: MarketplaceOrder) {
     setShipOrder(order);
@@ -382,7 +402,7 @@ function MarketplaceOrdersScreen() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('orders.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <FlatList
-        data={orders.items}
+        data={visibleOrders}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ gap: 12, paddingHorizontal: 16, paddingBottom: 132 }}
         ListHeaderComponent={
@@ -442,6 +462,7 @@ function MarketplaceOrdersScreen() {
           <OrderCard
             item={item}
             mode={mode}
+            highlighted={item.id === requestedOrderId}
             isSubmitting={isSubmitting}
             onShip={() => openShipModal(item)}
             onConfirmDelivery={() => void confirmDelivery(item)}
@@ -621,6 +642,7 @@ function MarketplaceOrdersScreen() {
 function OrderCard({
   item,
   mode,
+  highlighted,
   isSubmitting,
   onShip,
   onConfirmDelivery,
@@ -632,6 +654,7 @@ function OrderCard({
 }: {
   item: MarketplaceOrder;
   mode: OrderMode;
+  highlighted: boolean;
   isSubmitting: boolean;
   onShip: () => void;
   onConfirmDelivery: () => void;
@@ -678,7 +701,11 @@ function OrderCard({
   const hasBuyerRating = orderHasRating(item, 'buyer');
   const hasCurrentUserRating = orderHasRating(item, mode === 'purchases' ? 'buyer' : 'seller');
   return (
-    <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.border }}>
+    <HeroCard
+      className="overflow-hidden rounded-panel p-0"
+      style={{ borderWidth: highlighted ? 2 : 1, borderColor: highlighted ? primary : theme.border }}
+      testID={`marketplace-order-card-${item.id}`}
+    >
       <HeroCard.Body className="gap-3 p-3.5">
         <View className="flex-row gap-3">
           <View

@@ -14,7 +14,7 @@ Every Laravel endpoint the Expo client calls, and whether the API still exposes 
 The Jest suite mocks the HTTP client, so it cannot detect a renamed or deleted route.
 This ledger is the compensating control.
 
-Verified against: `docs/generated/laravel-api-route-inventory.json (2238 distinct API paths)`
+Verified against: `docs/generated/laravel-api-route-inventory.json (2239 distinct API paths)`
 
 > Not verified against `openapi.json`. That file documents only a subset of the
 > application routes and has produced false drift findings for working endpoints.
@@ -22,7 +22,7 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2238 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 55 |
-| Call sites | 551 |
+| Call sites | 552 |
 | Distinct method + endpoint pairs | 462 |
 | Verified against openapi.json | 462 |
 | **Missing from Laravel routes** | **0** |
@@ -109,8 +109,8 @@ and the places a contract test earns the most.
 | feed.ts:269 | GET | variable "path" is not a literal endpoint in this module |
 | marketplace.ts:605 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | marketplace.ts:606 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:835 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:836 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:840 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:841 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 
 ## Verified endpoints
 
@@ -143,11 +143,11 @@ and the places a contract test earns the most.
 | POST | `/api/v2/connections/{param}/accept` | connections.ts:69 |
 | POST | `/api/v2/connections/request` | connections.ts:64 |
 | GET | `/api/v2/connections/status/{param}` | connections.ts:59 |
-| GET | `/api/v2/coupons` | marketplace.ts:1164 |
-| GET | `/api/v2/coupons/{param}` | marketplace.ts:1168 |
-| POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1172 |
-| POST | `/api/v2/coupons/redeem-qr` | marketplace.ts:1176 |
-| POST | `/api/v2/coupons/validate` | marketplace.ts:855 |
+| GET | `/api/v2/coupons` | marketplace.ts:1169 |
+| GET | `/api/v2/coupons/{param}` | marketplace.ts:1173 |
+| POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1177 |
+| POST | `/api/v2/coupons/redeem-qr` | marketplace.ts:1181 |
+| POST | `/api/v2/coupons/validate` | marketplace.ts:860 |
 | GET | `/api/v2/courses` | courses.ts:109 |
 | GET | `/api/v2/courses/{param}` | courses.ts:121 |
 | POST | `/api/v2/courses/{param}/enroll` | courses.ts:133 |
@@ -352,14 +352,14 @@ and the places a contract test earns the most.
 | POST | `/api/v2/listings/generate-description` | exchanges.ts:254 |
 | GET | `/api/v2/marketplace/categories` | marketplace.ts:592 |
 | GET | `/api/v2/marketplace/categories/{param}/template` | marketplace.ts:596 |
-| GET | `/api/v2/marketplace/collections` | marketplace.ts:980 |
-| POST | `/api/v2/marketplace/collections` | marketplace.ts:988 |
-| DELETE | `/api/v2/marketplace/collections/{param}` | marketplace.ts:992 |
-| GET | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1003 |
-| POST | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1007 |
-| DELETE | `/api/v2/marketplace/collections/{param}/items/{param}` | marketplace.ts:1014 |
-| GET | `/api/v2/marketplace/groups/{param}/listings` | marketplace.ts:954 |
-| GET | `/api/v2/marketplace/groups/{param}/stats` | marketplace.ts:958 |
+| GET | `/api/v2/marketplace/collections` | marketplace.ts:985 |
+| POST | `/api/v2/marketplace/collections` | marketplace.ts:993 |
+| DELETE | `/api/v2/marketplace/collections/{param}` | marketplace.ts:997 |
+| GET | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1008 |
+| POST | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1012 |
+| DELETE | `/api/v2/marketplace/collections/{param}/items/{param}` | marketplace.ts:1019 |
+| GET | `/api/v2/marketplace/groups/{param}/listings` | marketplace.ts:959 |
+| GET | `/api/v2/marketplace/groups/{param}/stats` | marketplace.ts:963 |
 | GET | `/api/v2/marketplace/listings` | marketplace.ts:562 |
 | POST | `/api/v2/marketplace/listings` | marketplace.ts:612 |
 | DELETE | `/api/v2/marketplace/listings/{param}` | marketplace.ts:631 |
@@ -367,7 +367,7 @@ and the places a contract test earns the most.
 | POST | `/api/v2/marketplace/listings/{param}/images` | marketplace.ts:656 |
 | DELETE | `/api/v2/marketplace/listings/{param}/images/{param}` | marketplace.ts:660 |
 | POST | `/api/v2/marketplace/listings/{param}/offers` | marketplace.ts:685 |
-| POST | `/api/v2/marketplace/listings/{param}/promote` | marketplace.ts:1026 |
+| POST | `/api/v2/marketplace/listings/{param}/promote` | marketplace.ts:1031 |
 | POST | `/api/v2/marketplace/listings/{param}/renew` | marketplace.ts:650 |
 | POST | `/api/v2/marketplace/listings/{param}/report` | marketplace.ts:642 |
 | DELETE | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:646 |
@@ -378,57 +378,57 @@ and the places a contract test earns the most.
 | GET | `/api/v2/marketplace/listings/free` | marketplace.ts:588 |
 | POST | `/api/v2/marketplace/listings/generate-description` | marketplace.ts:627 |
 | GET | `/api/v2/marketplace/listings/nearby` | marketplace.ts:576 |
-| GET | `/api/v2/marketplace/me/pickups` | marketplace.ts:1107 |
+| GET | `/api/v2/marketplace/me/pickups` | marketplace.ts:1112 |
 | GET | `/api/v2/marketplace/my-offers/{param}` | marketplace.ts:695 |
 | DELETE | `/api/v2/marketplace/offers/{param}` | marketplace.ts:718 |
 | PUT | `/api/v2/marketplace/offers/{param}/accept` | marketplace.ts:699 |
 | PUT | `/api/v2/marketplace/offers/{param}/accept-counter` | marketplace.ts:710 |
 | PUT | `/api/v2/marketplace/offers/{param}/counter` | marketplace.ts:706 |
 | PUT | `/api/v2/marketplace/offers/{param}/decline` | marketplace.ts:714 |
-| POST | `/api/v2/marketplace/orders` | marketplace.ts:802 |
-| GET | `/api/v2/marketplace/orders/{param}` | marketplace.ts:730 |
-| PUT | `/api/v2/marketplace/orders/{param}/cancel` | marketplace.ts:745 |
-| PUT | `/api/v2/marketplace/orders/{param}/confirm-delivery` | marketplace.ts:741 |
-| GET | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:767 |
-| POST | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:774 |
-| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/accept` | marketplace.ts:781 |
-| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/confirm` | marketplace.ts:788 |
-| POST | `/api/v2/marketplace/orders/{param}/dispute` | marketplace.ts:759 |
-| POST | `/api/v2/marketplace/orders/{param}/pickup-reservation` | marketplace.ts:840 |
-| POST | `/api/v2/marketplace/orders/{param}/rate` | marketplace.ts:752 |
-| GET | `/api/v2/marketplace/orders/{param}/ratings` | marketplace.ts:763 |
-| PUT | `/api/v2/marketplace/orders/{param}/ship` | marketplace.ts:737 |
-| POST | `/api/v2/marketplace/payments/confirm` | marketplace.ts:818 |
-| POST | `/api/v2/marketplace/payments/create-intent` | marketplace.ts:806 |
-| GET | `/api/v2/marketplace/promotions/mine` | marketplace.ts:1022 |
-| GET | `/api/v2/marketplace/promotions/products` | marketplace.ts:1018 |
-| GET | `/api/v2/marketplace/saved-searches` | marketplace.ts:962 |
-| POST | `/api/v2/marketplace/saved-searches` | marketplace.ts:972 |
-| DELETE | `/api/v2/marketplace/saved-searches/{param}` | marketplace.ts:976 |
-| GET | `/api/v2/marketplace/seller/balance` | marketplace.ts:899 |
-| GET | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1115 |
-| POST | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1132 |
-| DELETE | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1156 |
-| PUT | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1152 |
-| GET | `/api/v2/marketplace/seller/coupons/{param}/redemptions` | marketplace.ts:1160 |
-| GET | `/api/v2/marketplace/seller/dashboard` | marketplace.ts:929 |
-| POST | `/api/v2/marketplace/seller/onboard` | marketplace.ts:910 |
-| GET | `/api/v2/marketplace/seller/onboard/status` | marketplace.ts:895 |
-| GET | `/api/v2/marketplace/seller/payouts` | marketplace.ts:906 |
-| POST | `/api/v2/marketplace/seller/pickup-scan` | marketplace.ts:1111 |
-| GET | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1032 |
-| POST | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1085 |
-| DELETE | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1103 |
-| PUT | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1099 |
-| GET | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1036 |
-| POST | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1055 |
-| DELETE | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1074 |
-| PUT | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1070 |
-| GET | `/api/v2/marketplace/sellers/{param}` | marketplace.ts:914 |
-| GET | `/api/v2/marketplace/sellers/{param}/listings` | marketplace.ts:925 |
-| GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | marketplace.ts:1042 |
-| POST | `/api/v2/matches/{param}/dismiss` | matches.ts:237 |
-| GET | `/api/v2/matches/all` | matches.ts:219 |
+| POST | `/api/v2/marketplace/orders` | marketplace.ts:807 |
+| GET | `/api/v2/marketplace/orders/{param}` | marketplace.ts:730, marketplace.ts:735 |
+| PUT | `/api/v2/marketplace/orders/{param}/cancel` | marketplace.ts:750 |
+| PUT | `/api/v2/marketplace/orders/{param}/confirm-delivery` | marketplace.ts:746 |
+| GET | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:772 |
+| POST | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:779 |
+| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/accept` | marketplace.ts:786 |
+| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/confirm` | marketplace.ts:793 |
+| POST | `/api/v2/marketplace/orders/{param}/dispute` | marketplace.ts:764 |
+| POST | `/api/v2/marketplace/orders/{param}/pickup-reservation` | marketplace.ts:845 |
+| POST | `/api/v2/marketplace/orders/{param}/rate` | marketplace.ts:757 |
+| GET | `/api/v2/marketplace/orders/{param}/ratings` | marketplace.ts:768 |
+| PUT | `/api/v2/marketplace/orders/{param}/ship` | marketplace.ts:742 |
+| POST | `/api/v2/marketplace/payments/confirm` | marketplace.ts:823 |
+| POST | `/api/v2/marketplace/payments/create-intent` | marketplace.ts:811 |
+| GET | `/api/v2/marketplace/promotions/mine` | marketplace.ts:1027 |
+| GET | `/api/v2/marketplace/promotions/products` | marketplace.ts:1023 |
+| GET | `/api/v2/marketplace/saved-searches` | marketplace.ts:967 |
+| POST | `/api/v2/marketplace/saved-searches` | marketplace.ts:977 |
+| DELETE | `/api/v2/marketplace/saved-searches/{param}` | marketplace.ts:981 |
+| GET | `/api/v2/marketplace/seller/balance` | marketplace.ts:904 |
+| GET | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1120 |
+| POST | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1137 |
+| DELETE | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1161 |
+| PUT | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1157 |
+| GET | `/api/v2/marketplace/seller/coupons/{param}/redemptions` | marketplace.ts:1165 |
+| GET | `/api/v2/marketplace/seller/dashboard` | marketplace.ts:934 |
+| POST | `/api/v2/marketplace/seller/onboard` | marketplace.ts:915 |
+| GET | `/api/v2/marketplace/seller/onboard/status` | marketplace.ts:900 |
+| GET | `/api/v2/marketplace/seller/payouts` | marketplace.ts:911 |
+| POST | `/api/v2/marketplace/seller/pickup-scan` | marketplace.ts:1116 |
+| GET | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1037 |
+| POST | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1090 |
+| DELETE | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1108 |
+| PUT | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1104 |
+| GET | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1041 |
+| POST | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1060 |
+| DELETE | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1079 |
+| PUT | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1075 |
+| GET | `/api/v2/marketplace/sellers/{param}` | marketplace.ts:919 |
+| GET | `/api/v2/marketplace/sellers/{param}/listings` | marketplace.ts:930 |
+| GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | marketplace.ts:1047 |
+| POST | `/api/v2/matches/{param}/dismiss` | matches.ts:240 |
+| GET | `/api/v2/matches/all` | matches.ts:222 |
 | GET | `/api/v2/me/collections` | savedCollections.ts:55 |
 | POST | `/api/v2/me/collections` | savedCollections.ts:63 |
 | GET | `/api/v2/me/collections/{param}/items` | savedCollections.ts:67 |
@@ -438,11 +438,11 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/me/saved-items/{param}` | savedCollections.ts:74 |
 | POST | `/api/v2/members/{param}/endorse` | endorsements.ts:188 |
 | GET | `/api/v2/members/{param}/endorsements` | endorsements.ts:152 |
-| POST | `/api/v2/merchant-onboarding/complete` | marketplace.ts:891 |
-| GET | `/api/v2/merchant-onboarding/status` | marketplace.ts:863 |
-| POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:873 |
-| POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:880 |
-| POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:887 |
+| POST | `/api/v2/merchant-onboarding/complete` | marketplace.ts:896 |
+| GET | `/api/v2/merchant-onboarding/status` | marketplace.ts:868 |
+| POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:878 |
+| POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:885 |
+| POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:892 |
 | GET | `/api/v2/messages` | messages.ts:142 |
 | POST | `/api/v2/messages` | messages.ts:204, messages.ts:230 |
 | DELETE | `/api/v2/messages/{param}` | messages.ts:199 |
@@ -515,8 +515,8 @@ and the places a contract test earns the most.
 | PUT | `/api/v2/users/me` | profile.ts:24 |
 | GET | `/api/v2/users/me/activity/dashboard` | activity.ts:72 |
 | POST | `/api/v2/users/me/avatar` | profile.ts:94 |
-| GET | `/api/v2/users/me/match-preferences` | matches.ts:241 |
-| PUT | `/api/v2/users/me/match-preferences` | matches.ts:248 |
+| GET | `/api/v2/users/me/match-preferences` | matches.ts:244 |
+| PUT | `/api/v2/users/me/match-preferences` | matches.ts:251 |
 | GET | `/api/v2/users/me/parent-accounts` | settings.ts:148 |
 | PUT | `/api/v2/users/me/parent-accounts/{param}/permissions` | settings.ts:189 |
 | POST | `/api/v2/users/me/password` | profile.ts:37 |

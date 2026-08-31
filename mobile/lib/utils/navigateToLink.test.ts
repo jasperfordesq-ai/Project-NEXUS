@@ -22,11 +22,13 @@ jest.mock('@sentry/react-native', () => ({
 }));
 
 import { navigateToLink } from './navigateToLink';
+import { setNavigationTenantCapabilities } from '@/lib/navigation/tenantCapabilityStore';
 
 describe('navigateToLink', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockOpenURL.mockResolvedValue(undefined);
+    setNavigationTenantCapabilities(null);
   });
 
   it('opens an approved external campaign destination in the system browser', () => {
@@ -58,6 +60,37 @@ describe('navigateToLink', () => {
     navigateToLink('https://app.project-nexus.ie/volunteering');
 
     expect(mockPush).toHaveBeenCalledWith('/(modals)/volunteering');
+  });
+
+  it.each([
+    ['/events/44', 'events', 'feature'],
+    ['/marketplace/44', 'marketplace', 'feature'],
+    ['/messages/5', 'direct_messaging', 'feature'],
+    ['/polls/5', 'polls', 'feature'],
+    ['/resources/5', 'resources', 'feature'],
+    ['/wallet', 'wallet', 'module'],
+    ['/feed/posts/12', 'feed', 'module'],
+  ] as const)('falls back to the notification centre when %s belongs to a disabled tenant capability', (link, key, kind) => {
+    setNavigationTenantCapabilities({
+      features: kind === 'feature' ? { [key]: false } : {},
+      modules: kind === 'module' ? { [key]: false } : {},
+    });
+
+    navigateToLink(link);
+
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/notifications');
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('does not reject a valid route when tenant capabilities are unavailable offline', () => {
+    setNavigationTenantCapabilities(null);
+
+    navigateToLink('/events/44');
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(modals)/event-detail',
+      params: { id: '44' },
+    });
   });
 
   it('never lets a query id override the record named in the path', () => {
@@ -212,6 +245,20 @@ describe('navigateToLink', () => {
     });
     expect(mockPush).toHaveBeenNthCalledWith(3, '/(modals)/connections');
     expect(mockReplace).toHaveBeenCalledWith('/(tabs)/home');
+  });
+
+  it('opens social poll and resource notifications on the referenced item, not a list or KB article', () => {
+    navigateToLink('/polls/12');
+    navigateToLink('/resources/34');
+
+    expect(mockPush).toHaveBeenNthCalledWith(1, {
+      pathname: '/(modals)/feed-item-detail',
+      params: { type: 'poll', id: '12' },
+    });
+    expect(mockPush).toHaveBeenNthCalledWith(2, {
+      pathname: '/(modals)/feed-item-detail',
+      params: { type: 'resource', id: '34' },
+    });
   });
 
   it('maps marketplace deep links to native marketplace screens', () => {

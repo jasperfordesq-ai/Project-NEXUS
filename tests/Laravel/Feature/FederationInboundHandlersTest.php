@@ -599,7 +599,7 @@ class FederationInboundHandlersTest extends TestCase
             ->where('tenant_id', $this->testTenantId)
             ->where('user_id', $localUser->id)
             ->where('type', 'federation_connection')
-            ->where('link', '/network')
+            ->where('link', '/federation/connections')
             ->count());
         $connection = DB::table('federation_inbound_connections')
             ->where('external_partner_id', $this->partnerId)
@@ -666,7 +666,7 @@ class FederationInboundHandlersTest extends TestCase
             ->where('tenant_id', $this->testTenantId)
             ->where('user_id', $localUser->id)
             ->where('type', 'federation_connection')
-            ->where('link', '/network')
+            ->where('link', '/federation/connections')
             ->count());
     }
 

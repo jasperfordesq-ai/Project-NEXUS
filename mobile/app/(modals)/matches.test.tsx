@@ -9,9 +9,11 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 const mockUseApi = jest.fn();
 const mockPush = jest.fn();
 const mockDismissMatch = jest.fn();
+let mockParams: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
+  useLocalSearchParams: () => mockParams,
 }));
 
 jest.mock('@/lib/hooks/useApi', () => ({
@@ -120,6 +122,7 @@ const jobMatch = {
 
 describe('MatchesScreen', () => {
   beforeEach(() => {
+    mockParams = {};
     mockPush.mockClear();
     mockDismissMatch.mockResolvedValue({});
     mockUseApi.mockReturnValue({
@@ -253,6 +256,28 @@ describe('MatchesScreen', () => {
 
     expect(getByText('Community organiser')).toBeTruthy();
     expect(queryByText('Garden help')).toBeNull();
+  });
+
+  it('honours hot and mutual-match notification parameters while the screen opens', () => {
+    mockParams = { type: 'mutual', highlight: 'listing-10' };
+    mockUseApi.mockReturnValue({
+      data: {
+        data: [
+          { ...jobMatch, match_type: 'potential' },
+          { ...listingMatch, match_type: 'mutual' },
+        ],
+        meta: { needsLocation: false, degraded: false, degradedReason: null, hasActiveListings: true, paused: false },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId, getByText, queryByText } = render(<MatchesScreen />);
+
+    expect(getByTestId('match-card-listing-10')).toHaveStyle({ borderWidth: 2 });
+    expect(getByText('Garden help')).toBeTruthy();
+    expect(queryByText('Community organiser')).toBeNull();
   });
 
   it('opens and dismisses listing matches', async () => {

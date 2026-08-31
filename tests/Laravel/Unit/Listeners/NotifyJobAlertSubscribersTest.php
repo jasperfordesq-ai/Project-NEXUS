@@ -27,7 +27,7 @@ use Tests\Laravel\TestCase;
  * Strategy: use real DB rows (JobAlert, JobVacancy, User) inside a database
  * transaction that rolls back after each test. The three static-class side
  * effects (Notification::createNotification, NotificationDispatcher::fanOutPush,
- * RealtimeService::broadcastAndPush, JobAlertEmailService::sendImmediateAlert)
+ * RealtimeService::broadcastOnly, JobAlertEmailService::sendImmediateAlert)
  * are alias-mocked so the test never touches email/push infra.
  *
  * @runTestsInSeparateProcesses

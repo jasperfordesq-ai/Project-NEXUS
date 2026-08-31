@@ -1,44 +1,44 @@
 {
   "note": "Shrink-only coverage floors for the Expo client, by area. Raise a floor only after a real improvement; never lower one to make a red check green. Regenerate with `node scripts/check-coverage-ratchet.mjs --write-baseline` after running `npm run test:coverage`.",
-  "measured_on_files": 309,
+  "measured_on_files": 339,
   "global_floor": {
-    "lines": 75.71,
-    "statements": 72.63,
-    "branches": 65.31,
-    "functions": 68.98
+    "lines": 76.33,
+    "statements": 73.28,
+    "branches": 65.98,
+    "functions": 69.25
   },
   "area_floors": {
     "app": {
-      "lines_pct": 95.78,
-      "instrumented_lines": 215
+      "lines_pct": 96.45,
+      "instrumented_lines": 262
     },
     "app/_layout.tsx": {
       "lines_pct": 0,
-      "instrumented_lines": 64
+      "instrumented_lines": 55
     },
     "app/(auth)": {
       "lines_pct": 89.84,
       "instrumented_lines": 238
     },
     "app/(modals)": {
-      "lines_pct": 73.76,
-      "instrumented_lines": 10805
+      "lines_pct": 73.97,
+      "instrumented_lines": 11428
     },
     "app/(tabs)": {
       "lines_pct": 70.97,
       "instrumented_lines": 750
     },
     "components": {
-      "lines_pct": 75.7,
-      "instrumented_lines": 521
+      "lines_pct": 75.56,
+      "instrumented_lines": 564
     },
     "components/comments": {
       "lines_pct": 88.94,
       "instrumented_lines": 142
     },
     "components/events": {
-      "lines_pct": 59.83,
-      "instrumented_lines": 484
+      "lines_pct": 59.91,
+      "instrumented_lines": 485
     },
     "components/federation": {
       "lines_pct": 88.53,
@@ -65,12 +65,12 @@
       "instrumented_lines": 179
     },
     "lib/api": {
-      "lines_pct": 78.07,
-      "instrumented_lines": 1563
+      "lines_pct": 78.81,
+      "instrumented_lines": 1663
     },
     "lib/context": {
-      "lines_pct": 82.72,
-      "instrumented_lines": 298
+      "lines_pct": 82.94,
+      "instrumented_lines": 302
     },
     "lib/eventOfflineCheckinStore.ts": {
       "lines_pct": 94.47,
@@ -86,11 +86,11 @@
     },
     "lib/navigation": {
       "lines_pct": 99.5,
-      "instrumented_lines": 23
+      "instrumented_lines": 67
     },
     "lib/notifications.ts": {
-      "lines_pct": 60.72,
-      "instrumented_lines": 49
+      "lines_pct": 80.53,
+      "instrumented_lines": 116
     },
     "lib/observability": {
       "lines_pct": 99.5,
@@ -110,15 +110,15 @@
     },
     "lib/storage.ts": {
       "lines_pct": 99.5,
-      "instrumented_lines": 36
+      "instrumented_lines": 42
     },
     "lib/theme": {
       "lines_pct": 99.5,
       "instrumented_lines": 80
     },
     "lib/utils": {
-      "lines_pct": 73.8,
-      "instrumented_lines": 393
+      "lines_pct": 90.61,
+      "instrumented_lines": 225
     }
   }
 }

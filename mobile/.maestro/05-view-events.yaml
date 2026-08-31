@@ -40,8 +40,11 @@ appId: ie.project.nexus
 - tapOn: "Upcoming"
 - waitForAnimationToEnd:
     timeout: 2000
+- extendedWaitUntil:
+    visible: "E2E Community Welcome Event"
+    timeout: 10000
 - swipe:
     direction: UP
     duration: 700
-- assertVisible: "Upcoming"
+- assertVisible: "E2E Community Welcome Event"
 - takeScreenshot: events-upcoming

@@ -262,7 +262,7 @@ class HandleFederatedConnectionReceivedTest extends TestCase
             ->first();
 
         $this->assertNotNull($notif, 'Expected a federation_connection notification row');
-        $this->assertSame('/network', $notif->link);
+        $this->assertSame('/federation/connections', $notif->link);
     }
 
     public function test_creates_notification_for_accepted_connection(): void
@@ -375,7 +375,7 @@ class HandleFederatedConnectionReceivedTest extends TestCase
             'user_id'    => $this->userId,
             'type'       => 'federation_connection',
             'message'    => $message,
-            'link'       => '/network',
+            'link'       => '/federation/connections',
             'is_read'    => 0,
             'created_at' => now(),
         ]);

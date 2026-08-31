@@ -109,6 +109,7 @@ import Input from '@/components/ui/Input';
 import TextArea from '@/components/ui/TextArea';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { useParamTab } from '@/lib/hooks/useParamTab';
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -118,6 +119,9 @@ const CARD_MIN_HEIGHT = 118;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TabKey = 'overview' | 'discussion' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
+const TAB_KEYS: readonly TabKey[] = ['overview', 'discussion', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
+const resolveGroupTab = (raw: string | undefined): TabKey | null =>
+  TAB_KEYS.includes(raw as TabKey) ? raw as TabKey : null;
 type ApiGroupDetail = GroupDetail & {
   viewer_membership?: { status?: string; role?: string; is_admin?: boolean } | null;
   avatar_url?: string | null;
@@ -283,12 +287,12 @@ function GroupDetailScreenInner() {
   const { t } = useTranslation(['groups', 'common', 'marketplace']);
   const { user } = useAuth();
   const { hasFeature } = useTenant();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, tab } = useLocalSearchParams<{ id: string; tab?: string | string[] }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
-  const [activeTab, setActiveTab] = useState<TabKey>('overview');
+  const [activeTab, setActiveTab] = useParamTab<TabKey>(tab, resolveGroupTab, 'overview');
 
   const groupId = Number(id);
   const safeGroupId = Number.isFinite(groupId) && groupId > 0 ? groupId : 0;

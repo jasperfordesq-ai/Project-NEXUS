@@ -143,6 +143,7 @@ jest.mock('@/lib/api/marketplace', () => ({
   createMarketplacePaymentIntent: jest.fn(),
   disputeMarketplaceOrder: jest.fn(),
   getMarketplaceDeliveryOffers: jest.fn(),
+  getMarketplaceOrder: jest.fn(),
   getMarketplaceOrders: jest.fn(),
   marketplaceHasMore: jest.fn(() => false),
   marketplaceNextCursor: jest.fn(() => null),
@@ -167,6 +168,7 @@ import {
   confirmMarketplacePayment,
   createMarketplacePaymentIntent,
   getMarketplaceDeliveryOffers,
+  getMarketplaceOrder,
   getMarketplaceOrders,
 } from '@/lib/api/marketplace';
 import { presentMarketplacePayment } from '@/lib/payments/marketplacePayment';
@@ -186,6 +188,7 @@ describe('MarketplaceOrdersRoute', () => {
       meta: { cursor: null, has_more: false },
     });
     (getMarketplaceDeliveryOffers as jest.Mock).mockResolvedValue({ data: [] });
+    (getMarketplaceOrder as jest.Mock).mockResolvedValue({ data: null });
     (createMarketplacePaymentIntent as jest.Mock).mockResolvedValue({
       data: { client_secret: 'pi_secret', payment_intent_id: 'pi_42' },
     });
@@ -208,6 +211,73 @@ describe('MarketplaceOrdersRoute', () => {
       );
     });
 
+    unmount();
+  });
+
+  it('opens the requested sales order first and highlights its exact card', async () => {
+    mockParams = { mode: 'sales', order_id: '72' };
+    (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({
+      data: [
+        {
+          id: 71,
+          order_number: 'MKT-000071',
+          quantity: 1,
+          unit_price: 10,
+          total_price: 10,
+          currency: 'EUR',
+          status: 'paid',
+          created_at: '2026-08-01T10:00:00Z',
+          listing: { id: 101, title: 'Other sale', image: null, delivery_method: 'shipping' },
+        },
+        {
+          id: 72,
+          order_number: 'MKT-000072',
+          quantity: 1,
+          unit_price: 12,
+          total_price: 12,
+          currency: 'EUR',
+          status: 'paid',
+          created_at: '2026-08-02T10:00:00Z',
+          listing: { id: 102, title: 'Payout sale', image: null, delivery_method: 'shipping' },
+        },
+      ],
+      meta: { cursor: null, has_more: false },
+    });
+
+    const { getByTestId, getByText, unmount } = render(<MarketplaceOrdersRoute />);
+
+    await waitFor(() => {
+      expect(getMarketplaceOrders).toHaveBeenCalledWith('sales', null, null);
+      expect(getByText('Payout sale')).toBeTruthy();
+    });
+    expect(getByTestId('marketplace-order-card-72')).toHaveStyle({ borderWidth: 2 });
+    expect(getByTestId('marketplace-order-card-71')).toHaveStyle({ borderWidth: 1 });
+    unmount();
+  });
+
+  it('loads the referenced order directly when it has fallen off the first list page', async () => {
+    mockParams = { mode: 'sales', order_id: '99' };
+    (getMarketplaceOrder as jest.Mock).mockResolvedValueOnce({
+      data: {
+        id: 99,
+        order_number: 'MKT-000099',
+        quantity: 1,
+        unit_price: 22,
+        total_price: 22,
+        currency: 'EUR',
+        status: 'completed',
+        created_at: '2026-01-02T10:00:00Z',
+        listing: { id: 199, title: 'Older referenced sale', image: null, delivery_method: 'shipping' },
+      },
+    });
+
+    const { getByTestId, getByText, unmount } = render(<MarketplaceOrdersRoute />);
+
+    await waitFor(() => {
+      expect(getMarketplaceOrder).toHaveBeenCalledWith(99);
+      expect(getByText('Older referenced sale')).toBeTruthy();
+    });
+    expect(getByTestId('marketplace-order-card-99')).toHaveStyle({ borderWidth: 2 });
     unmount();
   });
 

@@ -7,10 +7,11 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
+let mockRouteParams: Record<string, string> = { id: '5' };
 
 jest.mock('expo-router', () => ({
   router: { push: mockPush, replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
-  useLocalSearchParams: () => ({ id: '5' }),
+  useLocalSearchParams: () => mockRouteParams,
 }));
 
 jest.mock('react-i18next', () => ({
@@ -181,6 +182,7 @@ function mockDashboardApis() {
 describe('VolunteeringOrgDashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRouteParams = { id: '5' };
     mockDashboardApis();
   });
 
@@ -190,6 +192,14 @@ describe('VolunteeringOrgDashboard', () => {
     expect(getByText('Community gardens.')).toBeTruthy();
     expect(getByText('22h')).toBeTruthy();
     expect(getByText('Review applications')).toBeTruthy();
+  });
+
+  it('opens the applications tab named by a notification deep link', () => {
+    mockRouteParams = { id: '5', tab: 'applications' };
+    const { getByText } = render(<VolunteeringOrgDashboard />);
+
+    expect(getByText('Alex Volunteer')).toBeTruthy();
+    expect(getByText('I can help')).toBeTruthy();
   });
 
   it('switches through organiser workflow tabs', () => {

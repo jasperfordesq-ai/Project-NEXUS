@@ -33,21 +33,35 @@ devices. The public listing, Data Safety panel, content rating, policy URLs, pro
 signing, Sentry project and source-map path now exist. Genuine 7-inch and 10-inch emulator
 captures also prove that three high-value screens render at tablet sizes.
 
-**31 August push-routing correction.** The owner's report was correct and systemic: the
-backend discarded every ordinary push destination and replaced it with `/notifications`, while
-the tap path used a second route mapper that lagged behind new native modules. The corrected
-candidate retains a versioned validated internal destination, keeps detailed content inside the
-authenticated app, displays only a privacy-safe translated category/curated title plus a generic
-body, and sends foreground/background/terminated responses through the canonical mapper after
-authentication. Unsupported, staff/browser-only, credential-bearing and sensitive targets fail
-safely to Notifications. The full mobile suite now passes **377 suites / 2,648 tests** with
-76.40% global line coverage; a fresh release APK built/installed and a killed authenticated
-Android launch reached Events. Row 7.14 and the score remain PARTIAL/714 until the fixed backend
-is deployed and a real provider-delivered notification tap is observed on physical hardware.
-The final source was banked by full CI `33376178547`, CodeQL `33376077568` and Security Scan
-`33376079789`; Android device run `33374798270` completed all 13 maintained flows, and unsigned
-iOS Simulator run `33376091426` compiled, installed, toured and content-verified the four accepted
-App Store frames. These runs do not claim APNs delivery, signing, TestFlight or physical-iPhone proof.
+**31 August push-routing correction and exhaustive producer audit.** The owner's report was
+correct and systemic: the backend discarded every ordinary push destination and replaced it with
+`/notifications`, while the tap path used a second route mapper that lagged behind native modules.
+A generated fail-closed inventory now classifies all **239 direct and indirect Laravel producer
+call sites**. The corrected candidate carries a versioned string-only internal destination, keeps
+detailed content inside the authenticated app, displays a privacy-safe title and generic body in
+the recipient's locale, and sends foreground/background/terminated responses through the
+canonical mapper after authentication. Unsupported, sensitive, staff/browser-only, story and
+non-emergency Caring and group-chat targets fall back or are suppressed; disabled modules and
+deleted poll/feed resources degrade safely. Exact links were corrected for federated activity,
+volunteer-organisation decisions, matches, settings and marketplace listings/orders/payouts. A
+shared buyer/seller order route fetches and highlights the referenced order even when pagination
+would otherwise hide it. Thirteen duplicate job send paths were removed. Ordinary Android alerts
+use the translated default-importance channel; only emergencies select the translated
+maximum-importance safeguarding channel and request high-priority FCM/APNs delivery. Paid campaign taps use the sole reviewed public-HTTPS exception
+and defer tenant-scoped open analytics until authentication. The expanded focused backend set
+passes **189 tests / 532 assertions** and the complete native suite passes **380 suites / 2,725
+tests** with 76.83% global line coverage. The exact route inventory, 462-endpoint API ledger and
+256-route native parity matrix are green. A release APK from the central lifecycle repair built
+and installed and a killed Android launch reached its deferred Events destination. The current
+Metro source was then cold-launched at deterministic seller order 35: it resolved to Sales and
+placed the exact `MKT-01M0MMJ6RJTQDRMCBBMNBPWGWV` paid order first with seller actions. This adds
+exact producer/route proof without fabricating remote delivery. Row 7.14 and the
+score remain PARTIAL/714 until this backend is deployed and a provider-delivered tap of the
+corrected payload is observed on physical Android or iPhone. Earlier representative source was
+banked by full CI `33376178547`, CodeQL `33376077568`, Security Scan `33376079789`, Android device
+run `33374798270`, and unsigned iOS Simulator run `33376091426`; new exact-source workflow evidence
+is recorded only after this extension is committed. None proves APNs delivery, signing,
+TestFlight or physical-iPhone behaviour.
 
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned
@@ -67,7 +81,7 @@ accessibility remain material gaps. The expanded effect automation, response-con
 coverage and accessibility breadth passed exact-source CI and Android workflow run
 `33332261410` on 2026-08-30.
 
-🔴 **Why the score is not higher, given 377 green test suites and 2,615 passing tests.**
+🔴 **Why the score is not higher, given 380 green test suites and 2,725 passing tests.**
 Most tests still run in Node against mocks. The ledger deliberately gives journey credit
 only when a device walk verifies the effect, and only gives full credit when an automated
 guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
@@ -124,14 +138,14 @@ that contract; its 714 total is now evidence-backed.
 | Layout across device sizes | 80 | 60 | 80 | The 411dp and 360dp phone widths remain guarded. Genuine Android emulator captures now cover Listings, Wallet and Volunteering on both a 7-inch portrait device (1080×1920) and a 10-inch landscape device (2560×1440), and the Play validator enforces their dimensions and ratios. With only three tablet screens and no comprehensive tablet interaction sweep, the remaining 20 points are withheld |
 | Accessibility | 60 | 38 | 60 | Contrast is gated. The authenticated current-source crawler verified all **37/37** fingerprint-gated routes and 281 targets at the emulator's actual 420dpi: zero below the WCAG 24dp floor, 148 above that floor but below Android's 48dp guidance, and five clipped viewport fragments excluded from sizing failures. The first populated-blog pass found two 20dp no-op metadata buttons; migrating both blog screens to the accessibility-aware informational chip removed them, and the exhaustive rerun stayed green. Dynamic text, images and transient geometry are excluded from settlement, while a changing actionable/scrollable node set still prevents a pass; exact bounds come from the accepted final tree. TalkBack is installed and enabled, and keyboard focus is visible in UIAutomator, but spoken output and a full swipe/double-tap journey remain genuinely human/instrumentation-gated. |
 | Internationalisation | 70 | 25 | 70 | Seven locales ship, and the shrink-only gate now reports **zero** multi-word phrases still identical to English: ga 0, de 0, fr 0, it 0, pt 0 and es 0. All 4,531 original guarded entries were translated or narrowly allowlisted as registered product names, international units, machine-readable formats or genuinely shared words. The work covers coherent member journeys rather than scattered labels, including authentication, discovery, messaging, home, gamification, goals, exchanges, marketplace, federation, events, groups, profile/legal summaries, settings, volunteering, jobs, member collections and appreciations. This is automated catalogue integrity plus a reviewed AI translation pass—not native-speaker certification for any language. Arabic and right-to-left remain excluded from the native app by owner decision. |
-| Automated test depth | 100 | 74 | 100 | `npm run test:ci` passed **377 suites / 2,648 tests** on 2026-08-31; the ratchet reports 76.40% global lines across 336 files, with type checking, zero-warning lint, 28 area floors and source guards. Notification coverage now guards the versioned server payload, privacy fallbacks, response lifecycle and canonical destination mapper. Three maintained effect suites finish with eight independent Laravel assertions. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys. |
+| Automated test depth | 100 | 74 | 100 | `npm run coverage:check` passed **380 suites / 2,725 tests** on 2026-08-31; the ratchet reports 76.83% global lines across 339 files, with type checking, zero-warning lint, 28 area floors and source guards. Notification coverage now guards all 239 direct/indirect producers, the versioned server payload, exact native hrefs, privacy and localisation fallbacks, response lifecycle, authentication deferral, every tenant-capability route family, stale targets, paid-tap isolation and the canonical destination mapper. Three maintained effect suites finish with eight independent Laravel assertions. The score does not rise for raw test count: the device flows remain a thin slice of 140 ledger journeys. |
 | Observability and operations | 70 | 60 | 70 | The `nexus-mobile` Sentry project exists in the EU region, accepted a test event that was read back, production builds carry the DSN and upload source maps, and the nightly triage sweep includes it. JavaScript errors also reach the server-side app log. Ten points remain withheld until a real crash and cold-start trace from a Play-distributed build are observed end to end |
 | Distribution and update lever | 60 | 55 | 60 | The app is publicly installable from Google Play, after internal testing, and the production listing was visibly live on 2026-08-26. Signed local AAB creation, Play App Signing, force-update, OTA update and rollback paths exist. Five points remain withheld because the exact next Play-signed artefact has not had the required clean-install plus upgrade walk on a physical phone |
 | Store readiness | 40 | 36 | 40 | The public listing is live with 24 screenshot entries, a parental-guidance rating, Data Safety disclosures, deletion support and a signed production release. The privacy, terms, account-deletion, child-safety and contact URLs all returned HTTP 200 on 2026-08-26. Four points are withheld because the live description incorrectly claims that no money changes hands anywhere although physical marketplace purchases are supported; the prepared truthful copy already contains the required distinction |
 | **Total** | **1000** | **714** | **1000** | — |
 
 **Provenance.** Journey status comes only from the 140-row ledger below. The isolated Android
-candidate now contains 377 Jest suites and 2,648 tests; its Jest, TypeScript and lint checks
+candidate now contains 380 Jest suites and 2,725 tests; its Jest, TypeScript and lint checks
 were re-run on 2026-08-31. The pre-review release baseline separately passed Expo Doctor
 18/18, release policy, route/API/theme drift, production dependency acceptance, startup
 budget, asset validation, network policy and the live TLS certificate chain. The public Play

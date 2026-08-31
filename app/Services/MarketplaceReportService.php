@@ -707,7 +707,7 @@ class MarketplaceReportService
         $isEnforcement = in_array($event, ['action', 'appeal_outcome', 'suspended'], true);
         // Account-level events (suspension) and missing listings link to the
         // marketplace home rather than to a specific listing.
-        $link = ($event === 'suspended' || $listingId <= 0) ? '/marketplace' : ('/marketplace/listings/' . $listingId);
+        $link = ($event === 'suspended' || $listingId <= 0) ? '/marketplace' : ('/marketplace/' . $listingId);
 
         \App\I18n\LocaleContext::withLocale($seller, function () use ($seller, $sellerId, $tenantId, $event, $actionCode, $reason, $listingTitle, $link, $isEnforcement, $appealable): void {
             $ns = 'emails_misc.marketplace_enforcement.';

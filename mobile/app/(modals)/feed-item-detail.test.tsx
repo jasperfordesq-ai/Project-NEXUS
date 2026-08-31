@@ -126,6 +126,17 @@ describe('FeedItemDetailScreen', () => {
     expect(getByText('Not found.')).toBeTruthy();
   });
 
+  it.each(['poll', 'resource'] as const)('shows a recoverable not-found state for a stale %s notification target', async (type) => {
+    mockUseLocalSearchParams.mockReturnValue({ id: '42', type });
+    mockGetFeedItem.mockRejectedValue(Object.assign(new Error('Not found'), { status: 404 }));
+
+    const { getByText } = render(<FeedItemDetailScreen />);
+
+    await waitFor(() => expect(mockGetFeedItem).toHaveBeenCalledWith(type, 42));
+    expect(getByText('Not found.')).toBeTruthy();
+    expect(getByText('Retry')).toBeTruthy();
+  });
+
   it('opens the reactors sheet from the detail card', async () => {
     mockGetFeedItem.mockResolvedValue({
       data: {

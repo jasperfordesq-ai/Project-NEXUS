@@ -1,11 +1,11 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2238 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2239 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 55,
-    "call_sites": 551,
+    "call_sites": 552,
     "distinct_endpoints": 462,
     "verified": 462,
     "unverified": 0,
@@ -378,12 +378,12 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:835",
+      "at": "marketplace.ts:840",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:836",
+      "at": "marketplace.ts:841",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     }
@@ -641,7 +641,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1164"
+        "marketplace.ts:1169"
       ]
     },
     {
@@ -650,7 +650,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1168"
+        "marketplace.ts:1173"
       ]
     },
     {
@@ -659,7 +659,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1172"
+        "marketplace.ts:1177"
       ]
     },
     {
@@ -668,7 +668,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1176"
+        "marketplace.ts:1181"
       ]
     },
     {
@@ -677,7 +677,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:855"
+        "marketplace.ts:860"
       ]
     },
     {
@@ -2530,7 +2530,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:980"
+        "marketplace.ts:985"
       ]
     },
     {
@@ -2539,7 +2539,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:988"
+        "marketplace.ts:993"
       ]
     },
     {
@@ -2548,7 +2548,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:992"
+        "marketplace.ts:997"
       ]
     },
     {
@@ -2557,7 +2557,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1003"
+        "marketplace.ts:1008"
       ]
     },
     {
@@ -2566,7 +2566,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1007"
+        "marketplace.ts:1012"
       ]
     },
     {
@@ -2575,7 +2575,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1014"
+        "marketplace.ts:1019"
       ]
     },
     {
@@ -2584,7 +2584,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:954"
+        "marketplace.ts:959"
       ]
     },
     {
@@ -2593,7 +2593,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:958"
+        "marketplace.ts:963"
       ]
     },
     {
@@ -2665,7 +2665,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1026"
+        "marketplace.ts:1031"
       ]
     },
     {
@@ -2764,7 +2764,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1107"
+        "marketplace.ts:1112"
       ]
     },
     {
@@ -2827,7 +2827,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:802"
+        "marketplace.ts:807"
       ]
     },
     {
@@ -2836,7 +2836,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:730"
+        "marketplace.ts:730",
+        "marketplace.ts:735"
       ]
     },
     {
@@ -2845,7 +2846,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:745"
+        "marketplace.ts:750"
       ]
     },
     {
@@ -2854,7 +2855,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:741"
+        "marketplace.ts:746"
       ]
     },
     {
@@ -2863,7 +2864,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:767"
+        "marketplace.ts:772"
       ]
     },
     {
@@ -2872,7 +2873,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:774"
+        "marketplace.ts:779"
       ]
     },
     {
@@ -2881,7 +2882,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:781"
+        "marketplace.ts:786"
       ]
     },
     {
@@ -2890,7 +2891,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:788"
+        "marketplace.ts:793"
       ]
     },
     {
@@ -2899,7 +2900,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:759"
+        "marketplace.ts:764"
       ]
     },
     {
@@ -2908,7 +2909,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:840"
+        "marketplace.ts:845"
       ]
     },
     {
@@ -2917,7 +2918,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:752"
+        "marketplace.ts:757"
       ]
     },
     {
@@ -2926,7 +2927,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:763"
+        "marketplace.ts:768"
       ]
     },
     {
@@ -2935,7 +2936,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:737"
+        "marketplace.ts:742"
       ]
     },
     {
@@ -2944,7 +2945,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:818"
+        "marketplace.ts:823"
       ]
     },
     {
@@ -2953,7 +2954,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:806"
+        "marketplace.ts:811"
       ]
     },
     {
@@ -2962,7 +2963,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1022"
+        "marketplace.ts:1027"
       ]
     },
     {
@@ -2971,7 +2972,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1018"
+        "marketplace.ts:1023"
       ]
     },
     {
@@ -2980,7 +2981,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:962"
+        "marketplace.ts:967"
       ]
     },
     {
@@ -2989,7 +2990,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:972"
+        "marketplace.ts:977"
       ]
     },
     {
@@ -2998,7 +2999,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:976"
+        "marketplace.ts:981"
       ]
     },
     {
@@ -3007,7 +3008,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:899"
+        "marketplace.ts:904"
       ]
     },
     {
@@ -3016,7 +3017,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1115"
+        "marketplace.ts:1120"
       ]
     },
     {
@@ -3025,7 +3026,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1132"
+        "marketplace.ts:1137"
       ]
     },
     {
@@ -3034,7 +3035,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1156"
+        "marketplace.ts:1161"
       ]
     },
     {
@@ -3043,7 +3044,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1152"
+        "marketplace.ts:1157"
       ]
     },
     {
@@ -3052,7 +3053,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1160"
+        "marketplace.ts:1165"
       ]
     },
     {
@@ -3061,7 +3062,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:929"
+        "marketplace.ts:934"
       ]
     },
     {
@@ -3070,7 +3071,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:910"
+        "marketplace.ts:915"
       ]
     },
     {
@@ -3079,7 +3080,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:895"
+        "marketplace.ts:900"
       ]
     },
     {
@@ -3088,7 +3089,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:906"
+        "marketplace.ts:911"
       ]
     },
     {
@@ -3097,7 +3098,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1111"
+        "marketplace.ts:1116"
       ]
     },
     {
@@ -3106,7 +3107,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1032"
+        "marketplace.ts:1037"
       ]
     },
     {
@@ -3115,7 +3116,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1085"
+        "marketplace.ts:1090"
       ]
     },
     {
@@ -3124,7 +3125,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1103"
+        "marketplace.ts:1108"
       ]
     },
     {
@@ -3133,7 +3134,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1099"
+        "marketplace.ts:1104"
       ]
     },
     {
@@ -3142,7 +3143,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1036"
+        "marketplace.ts:1041"
       ]
     },
     {
@@ -3151,7 +3152,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1055"
+        "marketplace.ts:1060"
       ]
     },
     {
@@ -3160,7 +3161,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1074"
+        "marketplace.ts:1079"
       ]
     },
     {
@@ -3169,7 +3170,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1070"
+        "marketplace.ts:1075"
       ]
     },
     {
@@ -3178,7 +3179,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:914"
+        "marketplace.ts:919"
       ]
     },
     {
@@ -3187,7 +3188,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:925"
+        "marketplace.ts:930"
       ]
     },
     {
@@ -3196,7 +3197,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1042"
+        "marketplace.ts:1047"
       ]
     },
     {
@@ -3205,7 +3206,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:237"
+        "matches.ts:240"
       ]
     },
     {
@@ -3214,7 +3215,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:219"
+        "matches.ts:222"
       ]
     },
     {
@@ -3304,7 +3305,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:891"
+        "marketplace.ts:896"
       ]
     },
     {
@@ -3313,7 +3314,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:863"
+        "marketplace.ts:868"
       ]
     },
     {
@@ -3322,7 +3323,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:873"
+        "marketplace.ts:878"
       ]
     },
     {
@@ -3331,7 +3332,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:880"
+        "marketplace.ts:885"
       ]
     },
     {
@@ -3340,7 +3341,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:887"
+        "marketplace.ts:892"
       ]
     },
     {
@@ -4000,7 +4001,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:241"
+        "matches.ts:244"
       ]
     },
     {
@@ -4009,7 +4010,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "matches.ts:248"
+        "matches.ts:251"
       ]
     },
     {

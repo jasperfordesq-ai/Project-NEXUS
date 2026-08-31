@@ -291,6 +291,10 @@ class FCMPushService
      */
     private static function sendToTokens(array $tokens, string $title, string $body, array $data): array
     {
+        if (self::shouldSuppressNativePush($data)) {
+            return ['sent' => 0, 'failed' => 0, 'errors' => []];
+        }
+        $highPriority = self::shouldUseHighPriority($data);
         [$title, $body, $data] = self::lockScreenSafePresentation($title, $body, $data);
 
         $sent = 0;
@@ -308,7 +312,7 @@ class FCMPushService
         }
 
         if (!empty($expoTokens)) {
-            $expoResult = self::sendToExpoTokens($expoTokens, $title, $body, $data);
+            $expoResult = self::sendToExpoTokens($expoTokens, $title, $body, $data, $highPriority);
             $sent += $expoResult['sent'];
             $failed += $expoResult['failed'];
             $errors = array_merge($errors, $expoResult['errors']);
@@ -350,6 +354,15 @@ class FCMPushService
                     if (!empty($data)) {
                         // FCM data values must be strings
                         $message['message']['data'] = array_map('strval', $data);
+                    }
+                    $message['message']['android'] = [
+                        'notification' => [
+                            'channel_id' => $highPriority ? 'emergency' : 'default',
+                        ],
+                    ];
+                    if ($highPriority) {
+                        $message['message']['android']['priority'] = 'HIGH';
+                        $message['message']['apns'] = ['headers' => ['apns-priority' => '10']];
                     }
 
                     $response = Http::withToken($accessToken)
@@ -412,11 +425,15 @@ class FCMPushService
                     'notification' => [
                         'title' => $title,
                         'body' => $body,
+                        'android_channel_id' => $highPriority ? 'emergency' : 'default',
                     ],
                 ];
 
                 if (!empty($data)) {
                     $payload['data'] = $data;
+                }
+                if ($highPriority) {
+                    $payload['priority'] = 'high';
                 }
 
                 $response = Http::withHeaders([
@@ -477,8 +494,7 @@ class FCMPushService
      * category title may be shown, and a validated non-sensitive internal route is
      * retained as data so a tap can open the relevant authenticated screen. Unsafe,
      * browser-only and credential-bearing routes fall back to the notification centre.
-     * Paid
-     * promotional campaigns are the one explicit exception: their copy is the
+     * Paid promotional campaigns are the one explicit exception: their copy is the
      * notification's purpose and recipients have separately opted in.
      *
      * Apple App Review Guideline 4.5.4:
@@ -490,13 +506,29 @@ class FCMPushService
     private static function lockScreenSafePresentation(string $title, string $body, array $data): array
     {
         if (($data['campaign_type'] ?? null) === 'paid_push') {
-            return [$title, $body, $data];
+            $campaignId = is_scalar($data['campaign_id'] ?? null)
+                ? (string) $data['campaign_id']
+                : '';
+            $ctaUrl = self::safePaidCampaignCta($data['cta_url'] ?? null);
+
+            return [$title, $body, [
+                'schema_version' => '1',
+                'campaign_type' => 'paid_push',
+                'campaign_id' => preg_match('/^[1-9][0-9]{0,18}$/', $campaignId) === 1 ? $campaignId : '',
+                'cta_url' => $ctaUrl,
+            ]];
         }
 
         $type = is_string($data['type'] ?? null) ? (string) $data['type'] : '';
         $mayDisplayCuratedTitle = ($data['display_title_safe'] ?? null) === '1'
             && !self::requiresCategoryOnlyTitle($type);
-        $safeTitle = $mayDisplayCuratedTitle ? $title : self::privacySafeTitleForData($data);
+        // Never trust the caller-rendered title for ordinary pushes. A queued or
+        // after-response producer may have rendered it in the actor's locale;
+        // this method runs inside the recipient LocaleContext and can render the
+        // same curated catalogue key correctly for this device token group.
+        $safeTitle = $mayDisplayCuratedTitle
+            ? NotificationDispatcher::recipientPushTitle($type)
+            : self::privacySafeTitleForData($data);
 
         return [
             $safeTitle,
@@ -567,7 +599,11 @@ class FCMPushService
 
         $scheme = strtolower((string) ($parts['scheme'] ?? ''));
         $host = strtolower((string) ($parts['host'] ?? ''));
-        if (isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment']) || isset($parts['port'])) {
+        if (isset($parts['user']) || isset($parts['pass']) || isset($parts['port'])) {
+            return '/notifications';
+        }
+        $fragment = (string) ($parts['fragment'] ?? '');
+        if ($fragment !== '' && preg_match('/token|secret|password|signature|authorization|api[_-]?key/i', $fragment) === 1) {
             return '/notifications';
         }
         if ($scheme !== '') {
@@ -580,7 +616,7 @@ class FCMPushService
         }
 
         $path = '/' . ltrim(rawurldecode((string) ($parts['path'] ?? '')), '/');
-        foreach (['/admin', '/admin-legacy', '/broker', '/super-admin', '/support-actions/confirm', '/password/reset'] as $blockedPrefix) {
+        foreach (['/admin', '/admin-legacy', '/broker', '/super-admin', '/support-actions/confirm', '/password/reset', '/marketplace/reports'] as $blockedPrefix) {
             if ($path === $blockedPrefix || str_starts_with($path, $blockedPrefix . '/')) {
                 return '/notifications';
             }
@@ -596,7 +632,100 @@ class FCMPushService
             }
         }
 
-        return $link;
+        // Web notification links sometimes use a harmless fragment to scroll to
+        // a comment/discussion. Expo Router cannot reproduce that DOM anchor, but
+        // the containing native entity is still the exact useful destination.
+        return $fragment !== '' ? (string) preg_replace('/#.*$/', '', $link) : $link;
+    }
+
+    private static function safePaidCampaignCta(mixed $candidate): string
+    {
+        if (!is_string($candidate) || trim($candidate) === '') {
+            return '/notifications';
+        }
+        $url = trim($candidate);
+        $parts = parse_url($url);
+        if (!is_array($parts)) {
+            return '/notifications';
+        }
+        $host = strtolower(trim((string) ($parts['host'] ?? ''), '[]'));
+        if (strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
+            || $host === ''
+            || isset($parts['user'])
+            || isset($parts['pass'])
+            || isset($parts['port'])
+            || isset($parts['fragment'])
+            || $host === 'localhost'
+            || str_ends_with($host, '.localhost')
+            || str_ends_with($host, '.local')
+            || str_ends_with($host, '.internal')
+            || filter_var($host, FILTER_VALIDATE_IP) !== false
+            || !str_contains($host, '.')
+        ) {
+            return '/notifications';
+        }
+        parse_str((string) ($parts['query'] ?? ''), $query);
+        foreach (array_keys($query) as $key) {
+            if (preg_match('/token|secret|password|signature|authorization|api[_-]?key/i', (string) $key) === 1) {
+                return '/notifications';
+            }
+        }
+
+        return $url;
+    }
+
+    /** @param array<string,mixed> $data */
+    private static function shouldSuppressNativePush(array $data): bool
+    {
+        if (($data['campaign_type'] ?? null) === 'paid_push') {
+            return false;
+        }
+        $type = strtolower(is_string($data['type'] ?? null) ? $data['type'] : '');
+        if (str_starts_with($type, 'caring_') && $type !== 'caring_emergency') {
+            return true;
+        }
+        // Native has no story viewer yet. Opening the general feed does not expose
+        // the referenced story, so keep these in the in-app inbox until an exact
+        // native destination exists instead of sending a misleading device alert.
+        if (str_contains($type, 'story') || $type === 'group_chatroom_message') {
+            return true;
+        }
+
+        $candidate = $data['link'] ?? $data['url'] ?? $data['cta_url'] ?? null;
+        if (!is_string($candidate) || trim($candidate) === '') {
+            return false;
+        }
+        $parts = parse_url(trim($candidate));
+        if (!is_array($parts)) {
+            return false;
+        }
+        $segments = array_values(array_filter(explode('/', rawurldecode((string) ($parts['path'] ?? '')))));
+        $blocked = ['admin', 'admin-legacy', 'broker', 'super-admin', 'auth'];
+        foreach ($segments as $index => $segment) {
+            if ($index > 1) {
+                break;
+            }
+            if (in_array(strtolower($segment), $blocked, true)) {
+                return true;
+            }
+        }
+        $path = '/' . implode('/', $segments);
+
+        return $path === '/verify-identity/callback'
+            || str_starts_with($path, '/join/')
+            || str_starts_with($path, '/support-actions/confirm/');
+    }
+
+    /** @param array<string,mixed> $data */
+    private static function shouldUseHighPriority(array $data): bool
+    {
+        if (($data['campaign_type'] ?? null) === 'paid_push') {
+            return false;
+        }
+
+        $type = strtolower(is_string($data['type'] ?? null) ? $data['type'] : '');
+
+        return str_contains($type, 'emergency');
     }
 
     /**
@@ -701,15 +830,29 @@ class FCMPushService
      *
      * @return array{sent: int, failed: int, errors: string[]}
      */
-    private static function sendToExpoTokens(array $tokens, string $title, string $body, array $data): array
+    private static function sendToExpoTokens(
+        array $tokens,
+        string $title,
+        string $body,
+        array $data,
+        bool $highPriority = false,
+    ): array
     {
-        $messages = array_map(static fn (string $token): array => [
-            'to' => $token,
-            'title' => $title,
-            'body' => $body,
-            'sound' => 'default',
-            'data' => array_map('strval', $data),
-        ], $tokens);
+        $messages = array_map(static function (string $token) use ($title, $body, $data, $highPriority): array {
+            $message = [
+                'to' => $token,
+                'title' => $title,
+                'body' => $body,
+                'sound' => 'default',
+                'channelId' => $highPriority ? 'emergency' : 'default',
+                'data' => array_map('strval', $data),
+            ];
+            if ($highPriority) {
+                $message['priority'] = 'high';
+            }
+
+            return $message;
+        }, $tokens);
 
         try {
             $response = Http::acceptJson()

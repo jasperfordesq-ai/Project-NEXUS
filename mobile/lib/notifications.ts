@@ -35,20 +35,57 @@ export type PushRegistrationResult = 'registered' | 'permission-denied' | 'unava
 export function getNotificationLink(data: unknown): string | null {
   if (!data || typeof data !== 'object') return null;
   const record = data as Record<string, unknown>;
+  // The native client does not yet ship a story viewer. Older queued payloads
+  // must not revive the previous misleading behaviour of opening the feed.
+  if (typeof record.type === 'string' && record.type.toLowerCase().includes('story')) {
+    return '/notifications';
+  }
+  if (record.type === 'group_chatroom_message') return '/notifications';
   for (const key of ['link', 'url', 'cta_url'] as const) {
     const value = record[key];
     if (typeof value !== 'string' || value.trim() === '') continue;
-    if (isSensitiveNotificationLink(value)) return '/notifications';
-    if (isSafeExternalBrowserLink(value)) {
+    const normalized = normalizeLegacyNotificationLink(record, value.trim());
+    if (isSensitiveNotificationLink(normalized)) return '/notifications';
+    if (isSafeExternalBrowserLink(normalized)) {
       return record.campaign_type === 'paid_push' && key === 'cta_url'
-        ? value
+        ? normalized
         : '/notifications';
     }
-    if (isBrowserOnlyPath(value)) return '/notifications';
-    if (mapSystemPathToNativeRoute(value) === null) return '/notifications';
-    return value;
+    if (isBrowserOnlyPath(normalized)) return '/notifications';
+    if (mapSystemPathToNativeRoute(normalized) === null) return '/notifications';
+    return normalized;
   }
   return '/notifications';
+}
+
+let pendingPaidCampaignOpenId: string | null = null;
+let paidCampaignOpenInFlight = false;
+
+/** Queue paid-campaign analytics until the root navigator has resolved authentication. */
+function queuePaidCampaignOpen(data: unknown): void {
+  if (!data || typeof data !== 'object') return;
+  const record = data as Record<string, unknown>;
+  if (record.campaign_type !== 'paid_push') return;
+  const campaignId = record.campaign_id;
+  if (typeof campaignId !== 'string' || !/^[1-9][0-9]{0,18}$/.test(campaignId)) return;
+
+  pendingPaidCampaignOpenId = campaignId;
+}
+
+/** Best-effort analytics called only after authentication is known to be ready. */
+export async function flushPendingPaidCampaignOpen(): Promise<void> {
+  const campaignId = pendingPaidCampaignOpenId;
+  if (!campaignId || paidCampaignOpenInFlight) return;
+
+  paidCampaignOpenInFlight = true;
+  try {
+    await api.post<void>(`/api/v2/me/push-campaigns/${campaignId}/open`, {});
+    if (pendingPaidCampaignOpenId === campaignId) pendingPaidCampaignOpenId = null;
+  } catch (error) {
+    reportException(error, { tags: { module: 'paid-push-open' } });
+  } finally {
+    paidCampaignOpenInFlight = false;
+  }
 }
 
 /**
@@ -68,8 +105,10 @@ export function observeNotificationResponses(
     Notifications.getLastNotificationResponseAsync(),
   ]).then(([launchUrl, response]) => {
     if (!active) return;
-    const notificationLink = getNotificationLink(response?.notification.request.content.data);
+    const data = response?.notification.request.content.data;
+    const notificationLink = getNotificationLink(data);
     if (notificationLink) {
+      queuePaidCampaignOpen(data);
       onLink(notificationLink);
       void Notifications.clearLastNotificationResponseAsync().catch((error) => {
         reportException(error, { tags: { module: 'push-notification-response-clear' } });
@@ -82,8 +121,12 @@ export function observeNotificationResponses(
   });
 
   const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-    const notificationLink = getNotificationLink(response.notification.request.content.data);
-    if (notificationLink) onLink(notificationLink);
+    const data = response.notification.request.content.data;
+    const notificationLink = getNotificationLink(data);
+    if (notificationLink) {
+      queuePaidCampaignOpen(data);
+      onLink(notificationLink);
+    }
   });
 
   return () => {
@@ -96,7 +139,8 @@ function isSensitiveNotificationLink(link: string): boolean {
   try {
     const normalized = link.includes('://') || link.startsWith('/') ? link : `/${link}`;
     const url = new URL(normalized, 'https://app.project-nexus.ie');
-    if (url.username || url.password || url.port || url.hash) return true;
+    if (url.username || url.password || url.port) return true;
+    if (url.hash && /token|secret|password|signature|authorization|api[_-]?key/i.test(url.hash)) return true;
     for (const key of url.searchParams.keys()) {
       if (/token|secret|password|signature|authorization|api[_-]?key/i.test(key)) return true;
     }
@@ -107,6 +151,22 @@ function isSensitiveNotificationLink(link: string): boolean {
   } catch {
     return true;
   }
+}
+
+function normalizeLegacyNotificationLink(record: Record<string, unknown>, link: string): string {
+  const type = typeof record.type === 'string' ? record.type : '';
+  if (type === 'federation_connection' && link === '/network') {
+    return '/federation/connections';
+  }
+  if (type === 'federation_review' && /^\/profile\/\d+\/reviews(?:[?#].*)?$/.test(link)) {
+    return '/reviews';
+  }
+  const sellerOrder = link.match(/^\/marketplace\/orders\/(\d+)$/);
+  if (type === 'marketplace_payout' && sellerOrder) {
+    return `/marketplace/orders/sales?order_id=${sellerOrder[1]}`;
+  }
+
+  return link;
 }
 
 /** Callback registered by RealtimeContext to refresh foreground notification state. */
@@ -161,6 +221,12 @@ export async function registerForPushNotifications(
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: i18n.t('notifications:title'),
+        importance: Notifications.AndroidImportance.DEFAULT,
+        // Brand color — tenant-specific theming not available at notification channel setup time
+        lightColor: '#006FEE',
+      });
+      await Notifications.setNotificationChannelAsync('emergency', {
+        name: i18n.t('onboarding:safeguarding_title'),
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         // Brand color — tenant-specific theming not available at notification channel setup time

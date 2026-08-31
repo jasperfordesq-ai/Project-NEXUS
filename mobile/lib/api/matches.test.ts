@@ -61,6 +61,7 @@ describe('matches API', () => {
     const match = result.data[0];
     expect(match.source_type).toBe('listing');
     expect(match.source_id).toBe(529);
+    expect(match.match_type).toBe('potential');
     expect(match.reasons).toEqual(['Same category: Home and Garden', 'Posted recently']);
     expect(match.matched_user).toEqual({ id: 674, name: 'E2E UserA', avatar_url: null });
     expect(match.matched_at).toBe('2026-08-22 09:36:47');

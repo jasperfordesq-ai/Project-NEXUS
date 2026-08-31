@@ -78,6 +78,16 @@ class SocialNotificationServiceTest extends TestCase
         $this->assertEquals('', $result);
     }
 
+    public function test_discussion_link_opens_the_exact_native_group_tab(): void
+    {
+        DB::shouldReceive('table->where->where->value')->andReturn(44);
+
+        $this->assertSame(
+            '/groups/44?tab=discussion&discussion_id=91',
+            SocialNotificationService::getContentLink('discussion', 91),
+        );
+    }
+
     public function test_social_email_helpers_use_recipient_tenant_and_translated_subjects(): void
     {
         $source = file_get_contents(app_path('Services/SocialNotificationService.php'));

@@ -417,7 +417,7 @@ class KiAgentService
                 if ($userId) {
                     $title = (string) ($data['title'] ?? 'NEXUS');
                     $body  = (string) ($data['body'] ?? '');
-                    $extra = (array) ($data['extra'] ?? []);
+                    $extra = ['type' => 'caring_smart_nudge', 'link' => '/notifications'];
                     FCMPushService::sendToUsers([$userId], $title, $body, $extra);
                 }
                 break;
@@ -427,7 +427,7 @@ class KiAgentService
                 if ($userId) {
                     $title = (string) ($data['title'] ?? 'Activity Summary');
                     $body  = (string) ($data['body'] ?? '');
-                    $extra = (array) ($data['extra'] ?? []);
+                    $extra = ['type' => 'activity_summary', 'link' => '/activity'];
                     FCMPushService::sendToUsers([$userId], $title, $body, $extra);
                 }
                 break;

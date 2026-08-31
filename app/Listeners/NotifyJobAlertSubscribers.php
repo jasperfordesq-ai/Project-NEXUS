@@ -108,7 +108,7 @@ class NotifyJobAlertSubscribers implements ShouldQueue
                             'job_application'
                         );
                         \App\Services\NotificationDispatcher::fanOutPush((int) ($alertUserId), 'job_application', __('svc_notifications.job_alert.match_bell', ['title' => $vacancy->title]), "/jobs/{$vacancy->id}");
-                        RealtimeService::broadcastAndPush($alertUserId, __('svc_notifications.job_alert.match_push_title'), [
+                        RealtimeService::broadcastOnly($alertUserId, __('svc_notifications.job_alert.match_push_title'), [
                             'type'      => 'job_alert_match',
                             'job_id'    => (int) $vacancy->id,
                             'job_title' => $vacancy->title,

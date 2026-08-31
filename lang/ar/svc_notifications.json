@@ -91,7 +91,8 @@
     "mentioned_in_with_preview": "أشار إليك @{{name}} في {{entity}}: \"{{preview}}\""
   },
   "story": {
-    "reaction": "تفاعل {{name}} بـ {{emoji}} على قصتك"
+    "reaction": "تفاعل {{name}} بـ {{emoji}} على قصتك",
+    "reply": "رد {{name}} على قصتك"
   },
   "sub_account": {
     "management_request": "طلب {{name}} إدارة حسابك بصفة {{type}}",

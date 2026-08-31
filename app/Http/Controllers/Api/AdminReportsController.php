@@ -266,7 +266,10 @@ class AdminReportsController extends BaseApiController
 
             if ($reporterId) {
                 $link = $report->target_type && $report->target_id
-                    ? "/{$report->target_type}s/{$report->target_id}"
+                    ? \App\Services\SocialNotificationService::getContentLink(
+                        (string) $report->target_type,
+                        (int) $report->target_id,
+                    )
                     : null;
 
                 $recipient = DB::table('users')

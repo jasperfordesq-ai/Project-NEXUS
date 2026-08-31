@@ -272,18 +272,30 @@ class StoryController extends BaseApiController
                         [(int) $story->user_id, $tenantId]
                     );
 
-                    LocaleContext::withLocale($recipient, function () use ($reactor, $story) {
+                    LocaleContext::withLocale($recipient, function () use ($reactor, $story, $reactionType) {
                         $reactorName = $reactor
                             ? UserDisplayName::resolve($reactor)
                             : __('emails.common.fallback_someone');
+                        $emoji = [
+                            'heart' => "\u{2764}\u{FE0F}",
+                            'laugh' => "\u{1F602}",
+                            'wow'   => "\u{1F62E}",
+                            'fire'  => "\u{1F525}",
+                            'clap'  => "\u{1F44F}",
+                            'sad'   => "\u{1F622}",
+                        ][$reactionType] ?? $reactionType;
+                        $message = __('svc_notifications.story.reaction', [
+                            'name' => $reactorName,
+                            'emoji' => $emoji,
+                        ]);
 
                         Notification::createNotification(
                             (int) $story->user_id,
-                            "{$reactorName} reacted to your story",
+                            $message,
                             '/feed',
                             'story_reaction'
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $story->user_id), 'story_reaction', "{$reactorName} reacted to your story", '/feed');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $story->user_id, 'story_reaction', $message, '/feed');
                     });
                 }
             } catch (\Throwable $e) {
@@ -505,14 +517,15 @@ class StoryController extends BaseApiController
                         $replierName = $replier
                             ? UserDisplayName::resolve($replier)
                             : __('emails.common.fallback_someone');
+                        $message = __('svc_notifications.story.reply', ['name' => $replierName]);
 
                         Notification::createNotification(
                             (int) $story->user_id,
-                            "{$replierName} replied to your story",
+                            $message,
                             '/feed',
                             'story_reply'
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $story->user_id), 'story_reply', "{$replierName} replied to your story", '/feed');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $story->user_id, 'story_reply', $message, '/feed');
                     });
                 }
             } catch (\Throwable $e) {

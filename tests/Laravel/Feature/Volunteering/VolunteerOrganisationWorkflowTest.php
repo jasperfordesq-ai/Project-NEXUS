@@ -195,6 +195,16 @@ class VolunteerOrganisationWorkflowTest extends TestCase
             $this->hasNotification($registrant->id, $expectedType),
             sprintf('%s -> %s did not notify the registrant', $from, $to),
         );
+
+        $notification = DB::table('notifications')
+            ->where('user_id', $registrant->id)
+            ->where('type', $expectedType)
+            ->latest('id')
+            ->first(['link']);
+        $expectedLink = in_array($to, ['active', 'approved'], true)
+            ? '/organisations/' . $orgId
+            : '/volunteering';
+        self::assertSame($expectedLink, $notification?->link);
     }
 
     /** @return array<string, array{0: string, 1: string, 2: string}> */

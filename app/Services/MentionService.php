@@ -415,10 +415,10 @@ class MentionService
     private static function getEntityLink(string $entityType, int $entityId): string
     {
         return match ($entityType) {
-            'post'    => '/feed',
-            'comment' => '/feed',
+            'post'    => '/feed/posts/' . $entityId,
+            'comment' => SocialNotificationService::getContentLink('comment', $entityId),
             'message' => '/messages',
-            default   => '/',
+            default   => '/notifications',
         };
     }
 }

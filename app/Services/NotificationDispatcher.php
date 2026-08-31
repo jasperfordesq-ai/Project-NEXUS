@@ -414,6 +414,18 @@ class NotificationDispatcher
             : __('notifications.push_default');
     }
 
+    /**
+     * Resolve the curated push title in the locale active at delivery time.
+     *
+     * fanOutPush() schedules delivery after the response, so the title originally
+     * passed into FCMPushService may have been rendered in the request actor's
+     * locale. FCMPushService calls this method inside the recipient LocaleContext.
+     */
+    public static function recipientPushTitle(string $activityType): string
+    {
+        return self::resolvePushTitle($activityType, false) ?? __('notifications.push_default');
+    }
+
     private static function pushCategoryForActivityType(string $activityType): string
     {
         $type = strtolower($activityType);
@@ -521,7 +533,7 @@ class NotificationDispatcher
         $tid = TenantContext::currentId();
 
         $deliver = function () use ($uid, $pushTitle, $pushContent, $pushLink, $pushType, $tid) {
-            // Web push (browser) and mobile push (FCM via Capacitor) fan out in
+            // Web push (browser) and native mobile push (Expo/FCM) fan out in
             // parallel — a user on multiple devices is notified everywhere they
             // are subscribed. Failure-isolated so one provider being down does
             // not suppress the other. Per-channel outcomes are captured and

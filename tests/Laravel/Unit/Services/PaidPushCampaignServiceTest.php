@@ -190,6 +190,32 @@ class PaidPushCampaignServiceTest extends TestCase
         $this->createCampaign($userId, ['cta_url' => 'javascript:alert(1)']);
     }
 
+    public function test_paid_campaign_cta_rejects_non_https_credentials_fragments_and_secrets(): void
+    {
+        $method = new \ReflectionMethod(PaidPushCampaignService::class, 'safeCtaUrl');
+        $method->setAccessible(true);
+
+        foreach ([
+            'http://example.com/promo',
+            'https://member:password@example.com/promo',
+            'https://example.com:444/promo',
+            'https://example.com/promo#offer',
+            'https://example.com/promo?token=secret',
+            'https://127.0.0.1/promo',
+            'https://offers.internal/promo',
+            'https://offers.local/promo',
+        ] as $unsafe) {
+            try {
+                $method->invoke(null, $unsafe);
+                $this->fail("Unsafe paid-push CTA was accepted: {$unsafe}");
+            } catch (\ReflectionException $exception) {
+                throw $exception;
+            } catch (\Throwable $exception) {
+                $this->assertInstanceOf(\InvalidArgumentException::class, $exception->getPrevious() ?? $exception);
+            }
+        }
+    }
+
     public function test_createCampaign_stores_audience_filter_as_json(): void
     {
         $userId  = $this->insertUser('c11');
@@ -627,6 +653,42 @@ class PaidPushCampaignServiceTest extends TestCase
         $row = DB::table('paid_push_campaigns')->where('id', $id)->first();
         // Second call is a no-op because opened_at is already set
         $this->assertSame(1, (int) $row->open_count);
+    }
+
+    public function test_recordOpen_cannot_update_a_send_from_another_tenant(): void
+    {
+        $userId = $this->insertUser('ro3');
+        $id = DB::table('paid_push_campaigns')->insertGetId([
+            'tenant_id'         => self::TENANT_ID,
+            'created_by'        => $userId,
+            'name'              => 'Tenant Scoped Open',
+            'status'            => 'sent',
+            'advertiser_type'   => 'sme',
+            'title'             => 'T',
+            'body'              => 'B',
+            'actual_send_count' => 1,
+            'total_cost_cents'  => 5,
+            'cost_per_send'     => 5,
+            'open_count'        => 0,
+            'click_count'       => 0,
+            'created_at'        => now(),
+            'updated_at'        => now(),
+        ]);
+
+        DB::table('paid_push_campaign_sends')->insert([
+            'campaign_id' => $id,
+            'tenant_id'   => self::TENANT_ID,
+            'user_id'     => $userId,
+            'sent_at'     => now(),
+            'opened_at'   => null,
+        ]);
+
+        PaidPushCampaignService::recordOpen($id, $userId, self::TENANT_ID + 1);
+
+        $campaign = DB::table('paid_push_campaigns')->where('id', $id)->first();
+        $send = DB::table('paid_push_campaign_sends')->where('campaign_id', $id)->first();
+        $this->assertSame(0, (int) $campaign->open_count);
+        $this->assertNull($send->opened_at);
     }
 
     // ─── getCampaignAnalytics ────────────────────────────────────────────────

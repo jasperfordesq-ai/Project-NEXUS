@@ -127,6 +127,11 @@ export function isBrowserOnlyPath(rawPath: string | null): boolean {
   const segments = pathname.split('/').filter(Boolean).map(decodeURIComponent);
   if (segments.length === 0) return false;
   if (BROWSER_ONLY_PATHS.has(segments.join('/'))) return true;
+  // These authenticated member pages do not yet have a native equivalent. Let
+  // ordinary App/Universal Links remain in the browser; push taps fail closed to
+  // the notification centre instead of opening an unrelated native screen.
+  if (segments[0] === 'marketplace' && segments[1] === 'reports') return true;
+  if (segments[0] === 'groups' && segments.length >= 3 && segments[2] === 'chat') return true;
   // `join/:code` is the Care in Community invite redemption route, which is
   // deliberately absent from both adults-only native apps. Support-action tokens
   // are public, side-effecting linked-account confirmations and must finish on web.
@@ -185,12 +190,14 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     case 'groups':
       if (id === 'invite' && detail) return appendParams('/(modals)/group-invite', { ...params, token: detail });
       if (isCreateAlias(id)) return appendParams('/(modals)/new-group', params);
+      if (id && detail === 'chat') return null;
       return id ? appendParams('/(modals)/group-detail', { ...params, id }) : '/(modals)/groups';
 
     case 'members':
       return id ? appendParams('/(modals)/member-profile', { ...params, id }) : '/(modals)/members';
 
     case 'profile':
+      if (id && detail === 'reviews') return appendParams('/(modals)/reviews', params);
       return id
         ? appendParams('/(modals)/member-profile', { ...params, id })
         : appendParams('/(tabs)/profile', params);
@@ -210,7 +217,10 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       return mapMessagePath(segments, params);
 
     case 'polls':
-      return appendParams('/(modals)/polls', isCreateAlias(id) ? { ...params, create: '1' } : params);
+      if (isCreateAlias(id)) return appendParams('/(modals)/polls', { ...params, create: '1' });
+      return id
+        ? appendParams('/(modals)/feed-item-detail', { ...params, type: 'poll', id })
+        : appendParams('/(modals)/polls', params);
 
     case 'ideation':
     case 'challenges':
@@ -237,7 +247,9 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       return appendParams('/(modals)/search', params);
 
     case 'resources':
-      return id ? appendParams('/(modals)/kb-article', { ...params, id }) : appendParams('/(modals)/resources', params);
+      return id
+        ? appendParams('/(modals)/feed-item-detail', { ...params, type: 'resource', id })
+        : appendParams('/(modals)/resources', params);
 
     case 'support':
     case 'help':
@@ -389,6 +401,8 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     case 'settings':
       if (id === 'blocked') return appendParams('/(modals)/settings-blocked-users', params);
       if (id === 'data-export') return appendParams('/(modals)/settings-data-export', params);
+      if (id === 'verification') return appendParams('/(modals)/verify-identity', params);
+      if (params.tab === 'linked-accounts') return appendParams('/(modals)/settings-linked-accounts', params);
       return appendParams('/(modals)/settings', params);
 
     case 'linked-accounts':
@@ -497,7 +511,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
  * `/marketplace/:id` catch-all, or `/marketplace/collections` would be read as a
  * listing whose id is "collections".
  */
-function mapMarketplacePath(segments: string[], params: Record<string, string>): string {
+function mapMarketplacePath(segments: string[], params: Record<string, string>): string | null {
   const [first, second, third, fourth] = segments;
 
   if (!first) return appendParams('/(modals)/marketplace', params);
@@ -523,10 +537,23 @@ function mapMarketplacePath(segments: string[], params: Record<string, string>):
   }
 
   if (first === 'orders') {
-    return second === 'sales'
-      ? appendParams('/(modals)/marketplace-sales-orders', params)
+    if (second === 'sales') {
+      return appendParams('/(modals)/marketplace-orders', { mode: 'sales', ...params });
+    }
+    // A single-order link is shared by buyer and seller notifications. Resolve
+    // the member's role from the protected order endpoint before selecting the
+    // purchases or sales list; defaulting here sent every seller to Purchases.
+    return second && /^\d+$/.test(second)
+      ? appendParams('/(modals)/marketplace-order', { ...params, id: second })
       : appendParams('/(modals)/marketplace-orders', params);
   }
+
+  // Legacy notifications used the API-style `/marketplace/listings/:id` path.
+  // Keep already-queued payloads useful while all new producers emit `/marketplace/:id`.
+  if (first === 'listings' && second && /^\d+$/.test(second)) {
+    return appendParams('/(modals)/marketplace-detail', { ...params, id: second });
+  }
+  if (first === 'reports') return null;
 
   if (first === 'me' && second === 'pickups') return appendParams('/(modals)/marketplace-pickups', params);
   if (first === 'category' && second) {

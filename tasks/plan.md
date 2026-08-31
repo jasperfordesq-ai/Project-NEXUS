@@ -1,5 +1,47 @@
 # Implementation Plan: Autonomous Mobile Release Readiness
 
+## Active extension — 2026-08-31: exhaustive push-producer certification
+
+The first push repair corrected the central privacy/routing defect and proved representative
+destinations. This extension closes the remaining evidence gap: every current backend path that
+can reach native FCM/Expo delivery must be enumerated and classified, including indirect
+dispatcher, realtime, event-outbox, emergency, AI-agent and paid-campaign calls. A representative
+sample is not completion evidence for this phase.
+
+### Phase 14: Complete producer population
+
+- [x] Task 39: Mechanically enumerate every direct and indirect native-push callsite, emitted
+  type, candidate link field and exceptional promotional path; fail when an unclassified producer
+  appears.
+- [x] Task 40: Record the producer-to-type-to-destination contract and classify relevance,
+  recipient locale, privacy, native reachability, stale-entity behaviour and module/role boundary.
+
+### Checkpoint M: No unknown producer
+
+- [x] Every native delivery path is classified as exact-native, intentional safe fallback,
+  separately opted-in external CTA, suppressed, or a confirmed defect; no unknown row remains.
+
+### Phase 15: Defect repair and lifecycle proof
+
+- [x] Task 41: Fix every confirmed relevance, localization, privacy or destination defect at its
+  root and add focused tests that fail without the repair.
+- [x] Task 42: Add fail-closed cross-stack contract tests proving every allowed producer route
+  maps to an installed Expo screen and hostile, credential-bearing, staff-only, browser-only,
+  stale or module-disabled targets degrade safely.
+- [x] Task 43: Exercise the feasible foreground/background/killed/signed-out Android paths and
+  exact high-risk destinations without representing shell-generated alerts as provider delivery.
+
+### Phase 16: Bank exhaustive evidence
+
+- [ ] Task 44: Run full backend/mobile/API/store gates, refresh the authoritative readiness
+  evidence and changelog, commit/push only scoped completed work and monitor/fix required CI.
+
+### Checkpoint N: Exhaustive push audit complete
+
+- [ ] The only residual item is a genuine provider-delivered tap on physical Android/iPhone or
+  another explicitly named external approval/hardware boundary; no autonomous producer audit,
+  contract test or emulator task remains.
+
 ## Active extension — 2026-08-31: actionable push notifications
 
 The user has reported that Android push notifications contain little useful context and that

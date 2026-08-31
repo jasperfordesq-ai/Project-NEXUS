@@ -10,6 +10,7 @@ import { DEFAULT_TENANT, STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 import { themeStore } from '@/lib/theme/themeStore';
 import { setRegion } from '@/lib/utils/regionStore';
+import { setNavigationTenantCapabilities } from '@/lib/navigation/tenantCapabilityStore';
 
 interface TenantContextValue {
   tenant: TenantConfig | null;
@@ -88,6 +89,9 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setRegion(tenant?.settings?.region);
   }, [tenant?.settings?.region]);
+  useEffect(() => {
+    setNavigationTenantCapabilities(tenant);
+  }, [tenant]);
   const [isLoading, setIsLoading] = useState(true);
   const isMountedRef = useRef(true);
 

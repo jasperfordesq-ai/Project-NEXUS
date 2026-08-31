@@ -14,6 +14,7 @@ export interface MatchItem {
   source_type: MatchSourceType;
   source_id: number;
   match_score: number;
+  match_type?: string | null;
   title: string;
   description?: string | null;
   reasons: string[];
@@ -57,6 +58,7 @@ interface RawMatch {
   title?: string | null;
   description?: string | null;
   match_score?: number;
+  match_type?: string | null;
   match_reasons?: string[] | null;
   created_at?: string | null;
   category_name?: string | null;
@@ -188,6 +190,7 @@ function normalizeMatch(raw: RawMatch): MatchItem {
     source_type: sourceType,
     source_id: sourceId,
     match_score: typeof raw.match_score === 'number' ? raw.match_score : 0,
+    match_type: typeof raw.match_type === 'string' ? raw.match_type : null,
     title: (raw.title ?? '').trim(),
     description: raw.description ?? null,
     reasons: Array.isArray(raw.match_reasons) ? raw.match_reasons.filter((r) => typeof r === 'string') : [],

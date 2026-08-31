@@ -4106,6 +4106,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v2/me/push-campaigns/estimate-audience', [\App\Http\Controllers\Api\PaidPushCampaignController::class, 'estimateAudience']);
     Route::put('/v2/me/push-campaigns/{id}', [\App\Http\Controllers\Api\PaidPushCampaignController::class, 'updateCampaign']);
     Route::post('/v2/me/push-campaigns/{id}/submit', [\App\Http\Controllers\Api\PaidPushCampaignController::class, 'submitForReview']);
+    Route::post('/v2/me/push-campaigns/{id}/open', [\App\Http\Controllers\Api\PaidPushCampaignController::class, 'recordOpen']);
     Route::delete('/v2/me/push-campaigns/{id}', [\App\Http\Controllers\Api\PaidPushCampaignController::class, 'cancelCampaign']);
 });
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {

@@ -290,8 +290,8 @@ class SocialNotificationService
             'listing' => '/listings/' . $contentId,
             'event' => '/events/' . $contentId,
             'goal' => '/goals/' . $contentId,
-            'poll' => '/polls',
-            'resource' => '/resources',
+            'poll' => '/polls/' . $contentId,
+            'resource' => '/resources/' . $contentId,
             'volunteering' => '/volunteering/opportunities/' . $contentId,
             'volunteer' => '/volunteering/opportunities/' . $contentId,
             'ideation_challenge' => '/ideation/' . $contentId,
@@ -302,7 +302,7 @@ class SocialNotificationService
             'discussion' => self::getDiscussionLink((int) $contentId),
             'comment' => self::getCommentLink((int) $contentId),
         ];
-        return $routes[$contentType] ?? '/';
+        return $routes[$contentType] ?? '/notifications';
     }
 
     private static function getBlogLink(int $contentId): string
@@ -332,7 +332,7 @@ class SocialNotificationService
                 ->value('group_id');
 
             if ($groupId) {
-                return '/groups/' . $groupId . '#discussion-' . $contentId;
+                return '/groups/' . $groupId . '?tab=discussion&discussion_id=' . $contentId;
             }
         } catch (\Throwable $e) {
             Log::warning("SocialNotificationService::getDiscussionLink error: " . $e->getMessage());

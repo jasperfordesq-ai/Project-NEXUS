@@ -96,29 +96,45 @@ class RealtimeService
     /**
      * Broadcast a notification via Pusher AND send FCM push to mobile devices.
      *
-     * Combines both delivery channels in a single call. Gracefully no-ops
-     * if FCM is unconfigured. The $data array should include 'message' and
-     * 'type'. An optional 'url' key is used for tap-to-navigate on mobile.
+     * Combines both delivery channels in a single call. Native delivery goes
+     * through the canonical dispatcher so privacy, route validation, recipient
+     * locale and duplicate suppression cannot be bypassed. The $data array
+     * should include 'message' and 'type'; `url` is the optional tap target.
      */
     public static function broadcastAndPush(int $userId, string $title, array $data): bool
     {
         // Pusher real-time broadcast
         $pusherResult = self::broadcastNotification($userId, $data);
 
-        // FCM push notification (no-ops if unconfigured)
+        // Canonical web/native fan-out. If a legacy caller also invokes
+        // fanOutPush() directly, its per-(user,type,link) claim suppresses the
+        // duplicate rather than showing two device alerts.
         try {
-            $body = $data['message'] ?? $title;
-            $url = $data['url'] ?? null;
-            $pushData = ['type' => $data['type'] ?? 'notification'];
-            if ($url) {
-                $pushData['url'] = $url;
-            }
-            FCMPushService::sendToUser($userId, $title, $body, $pushData);
+            NotificationDispatcher::fanOutPush(
+                $userId,
+                is_string($data['type'] ?? null) ? $data['type'] : 'notification',
+                is_string($data['message'] ?? null) ? $data['message'] : $title,
+                is_string($data['url'] ?? null) ? $data['url'] : null,
+            );
         } catch (\Throwable $e) {
-            Log::warning('RealtimeService::broadcastAndPush FCM failed', ['error' => $e->getMessage()]);
+            Log::warning('RealtimeService::broadcastAndPush fan-out failed', ['error' => $e->getMessage()]);
         }
 
         return $pusherResult;
+    }
+
+    /**
+     * Broadcast a live in-app refresh when the caller already used fanOutPush().
+     *
+     * Job workflows need both channels, but sending FCM from both helpers creates
+     * two lock-screen alerts for one event. Keep the title argument so paired
+     * callsites remain explicit and cannot accidentally swap the data payload.
+     */
+    public static function broadcastOnly(int $userId, string $title, array $data): bool
+    {
+        unset($title);
+
+        return self::broadcastNotification($userId, $data);
     }
 
     /**

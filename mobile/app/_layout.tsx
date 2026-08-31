@@ -15,7 +15,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
 import { markAppReady } from '@/lib/startupTiming';
 import { registerLegalAcceptanceRequiredCallback } from '@/lib/api/client';
-import { observeNotificationResponses } from '@/lib/notifications';
+import { flushPendingPaidCampaignOpen, observeNotificationResponses } from '@/lib/notifications';
 import { ThemeProvider, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -357,6 +357,9 @@ function RootNavigator() {
     if (decision.action === 'deep-link') {
       // Cleared before navigating so a re-render cannot follow the same link twice.
       setPendingDeepLink(null);
+      // Paid-campaign tap analytics require auth. The response observer queues the
+      // campaign id, and this branch runs only after the auth gate has resolved.
+      void flushPendingPaidCampaignOpen();
       navigateToLink(decision.url);
       return;
     }
@@ -727,6 +730,10 @@ function RootNavigator() {
       />
       <Stack.Screen
         name="(modals)/marketplace-orders"
+        options={{ ...modalOptions, headerShown: false, title: t('marketplace:orders.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/marketplace-order"
         options={{ ...modalOptions, headerShown: false, title: t('marketplace:orders.title') }}
       />
       <Stack.Screen

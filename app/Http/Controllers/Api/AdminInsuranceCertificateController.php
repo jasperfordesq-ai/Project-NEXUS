@@ -228,11 +228,11 @@ class AdminInsuranceCertificateController extends BaseApiController
                         Notification::createNotification(
                             $userId,
                             __('api_controllers_3.admin_bells.insurance_verified'),
-                            '/dashboard',
+                            '/notifications',
                             'moderation',
                             true
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'moderation', __('api_controllers_3.admin_bells.insurance_verified'), '/dashboard');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'moderation', __('api_controllers_3.admin_bells.insurance_verified'), '/notifications');
                     });
                     $emailSent = (bool) LocaleContext::withLocale(
                         $recipient,
@@ -287,11 +287,11 @@ class AdminInsuranceCertificateController extends BaseApiController
                         Notification::createNotification(
                             $userId,
                             __('api_controllers_3.admin_bells.insurance_rejected'),
-                            '/help',
+                            '/notifications',
                             'moderation',
                             true
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'moderation', __('api_controllers_3.admin_bells.insurance_rejected'), '/help');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'moderation', __('api_controllers_3.admin_bells.insurance_rejected'), '/notifications');
                     });
                     $emailSent = (bool) LocaleContext::withLocale(
                         $recipient,

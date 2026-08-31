@@ -113,8 +113,8 @@ class NotifyOwnerOfVolunteerOrganisationDecision implements ShouldQueue
                 // Approved organisations get a link to their live page; the
                 // others go to the volunteering home, because the organisation
                 // page is not publicly reachable in those states.
-                $path = in_array($outcome, ['approved', 'reinstated'], true) && ! empty($organisation->slug)
-                    ? '/volunteering/organisations/' . $organisation->slug
+                $path = in_array($outcome, ['approved', 'reinstated'], true) && (int) $organisation->id > 0
+                    ? '/organisations/' . (int) $organisation->id
                     : '/volunteering';
                 $url = $base . $path;
 

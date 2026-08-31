@@ -237,7 +237,7 @@ class HandleFederatedReviewReceivedTest extends TestCase
             ->first();
 
         $this->assertNotNull($notif, 'Expected a federation_review notification row');
-        $this->assertSame('/profile/' . $this->userId . '/reviews', $notif->link);
+        $this->assertSame('/reviews', $notif->link);
     }
 
     // ─── Idempotency: notification_claimed_at acts as a distributed lock ────

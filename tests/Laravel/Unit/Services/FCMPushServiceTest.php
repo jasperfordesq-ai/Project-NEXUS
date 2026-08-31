@@ -89,6 +89,7 @@ class FCMPushServiceTest extends TestCase
                 && $payload['to'] === 'ExponentPushToken[abc123]'
                 && $payload['title'] === 'New Notification'
                 && $payload['body'] === 'Open Timebank Global to view this private update.'
+                && $payload['channelId'] === 'default'
                 && $payload['data'] === [
                     'schema_version' => '1',
                     'link' => '/messages/123',
@@ -125,16 +126,17 @@ class FCMPushServiceTest extends TestCase
         DB::shouldReceive('table')->with('fcm_device_tokens')->once()->andReturn($tokenQuery);
         DB::shouldReceive('table')->with('users')->twice()->andReturn($userQuery);
 
-        $result = FCMPushService::sendToUser(1, 'Private English title', 'Private English body', [
-            'type' => 'unknown_type',
+        $result = FCMPushService::sendToUser(1, 'New Message', 'Private English body', [
+            'type' => 'new_message',
             'link' => '/notifications',
+            'display_title_safe' => '1',
         ]);
 
         $this->assertSame(1, $result['sent']);
         Http::assertSent(function ($request): bool {
             $payload = $request->data();
 
-            return $payload['title'] === 'Nuashonrú'
+            return $payload['title'] === 'Teachtaireacht Nua'
                 && $payload['body'] === 'Oscail Timebank Global chun an nuashonrú príobháideach seo a fheiceáil.';
         });
     }
@@ -217,6 +219,7 @@ class FCMPushServiceTest extends TestCase
             'https://member:secret@app.project-nexus.ie/messages/123',
             'https://app.project-nexus.ie:444/messages/123',
             '/messages/123#token=secret-value',
+            '/marketplace/reports/42',
         ] as $unsafeLink) {
             [, , $data] = $method->invoke(null, 'Security update', 'Private contents', [
                 'type' => 'security',
@@ -232,6 +235,82 @@ class FCMPushServiceTest extends TestCase
         }
     }
 
+    public function test_native_payload_strips_a_benign_web_anchor_but_keeps_the_entity_route(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        [, , $data] = $method->invoke(null, 'Comment', 'Private contents', [
+            'type' => 'comment',
+            'link' => '/groups/44#discussion-91',
+        ]);
+
+        $this->assertSame('/groups/44', $data['link']);
+    }
+
+    public function test_native_delivery_suppresses_staff_browser_and_excluded_caring_targets(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'shouldSuppressNativePush');
+        $method->setAccessible(true);
+
+        foreach ([
+            ['type' => 'support_report', 'link' => '/admin/support-reports?report=1'],
+            ['type' => 'new_user_registered', 'link' => '/hour-timebank/broker/members'],
+            ['type' => 'caring_smart_nudge', 'link' => '/notifications'],
+            ['type' => 'story_reaction', 'link' => '/feed'],
+            ['type' => 'new_story', 'link' => '/feed'],
+            ['type' => 'group_chatroom_message', 'link' => '/groups/42/chat'],
+            ['type' => 'support_action_pending', 'link' => '/support-actions/confirm/secret'],
+        ] as $payload) {
+            $this->assertTrue($method->invoke(null, $payload));
+        }
+
+        foreach ([
+            ['type' => 'new_message', 'link' => '/messages/1'],
+            ['type' => 'caring_emergency', 'link' => '/notifications'],
+            ['campaign_type' => 'paid_push', 'cta_url' => 'https://community.example.org/offer'],
+        ] as $payload) {
+            $this->assertFalse($method->invoke(null, $payload));
+        }
+    }
+
+    public function test_emergency_delivery_uses_expo_high_priority_without_leaking_private_data(): void
+    {
+        Queue::fake();
+        Http::fake([
+            'https://exp.host/--/api/v2/push/send' => Http::response([
+                'data' => [['status' => 'ok', 'id' => 'ticket-emergency']],
+            ], 200),
+        ]);
+
+        $presentation = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $presentation->setAccessible(true);
+        [$title, $body, $data] = $presentation->invoke(null, 'Private emergency title', 'Private emergency body', [
+            'type' => 'caring_emergency',
+            'link' => '/notifications',
+            'alert_id' => '91',
+        ]);
+
+        $send = new \ReflectionMethod(FCMPushService::class, 'sendToExpoTokens');
+        $send->setAccessible(true);
+        $result = $send->invoke(null, ['ExponentPushToken[emergency]'], $title, $body, $data, true);
+
+        $this->assertSame(1, $result['sent']);
+        Http::assertSent(function ($request): bool {
+            $payload = $request->data();
+
+            return $payload['priority'] === 'high'
+                && $payload['channelId'] === 'emergency'
+                && $payload['title'] === 'Safeguarding'
+                && $payload['body'] === 'Open Timebank Global to view this private update.'
+                && $payload['data'] === [
+                    'schema_version' => '1',
+                    'link' => '/notifications',
+                    'type' => 'caring_emergency',
+                ];
+        });
+    }
+
     public function test_separately_opted_in_paid_campaign_keeps_its_promotional_copy(): void
     {
         $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
@@ -239,13 +318,37 @@ class FCMPushServiceTest extends TestCase
         $payload = [
             'campaign_type' => 'paid_push',
             'campaign_id' => '42',
-            'cta_url' => '/marketplace/42',
+            'cta_url' => 'https://community.example.org/offers/42',
+            'private_member_name' => 'Must not leave the server',
         ];
 
         $this->assertSame(
-            ['Local repair café', 'Book a place this Saturday.', $payload],
+            ['Local repair café', 'Book a place this Saturday.', [
+                'schema_version' => '1',
+                'campaign_type' => 'paid_push',
+                'campaign_id' => '42',
+                'cta_url' => 'https://community.example.org/offers/42',
+            ]],
             $method->invoke(null, 'Local repair café', 'Book a place this Saturday.', $payload),
         );
+    }
+
+    public function test_paid_campaign_payload_rejects_credential_bearing_cta_data(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        [, , $data] = $method->invoke(null, 'Promotion', 'Approved copy', [
+            'campaign_type' => 'paid_push',
+            'campaign_id' => '42',
+            'cta_url' => 'https://community.example.org/offer?token=secret',
+        ]);
+
+        $this->assertSame('/notifications', $data['cta_url']);
+        $this->assertSame(['schema_version', 'campaign_type', 'campaign_id', 'cta_url'], array_keys($data));
+        foreach ($data as $value) {
+            $this->assertIsString($value);
+        }
     }
 
     // =========================================================================
