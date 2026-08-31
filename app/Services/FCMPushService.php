@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\I18n\LocaleContext;
 use App\Jobs\CheckExpoPushReceipts;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -78,7 +79,12 @@ class FCMPushService
             return ['sent' => 0, 'failed' => 0, 'errors' => []];
         }
 
-        return self::sendToTokens($tokens, $title, $body, $data);
+        $preferredLocale = self::preferredLocaleForUser($userId, $tenantId);
+
+        return LocaleContext::withLocale(
+            $preferredLocale ?? (string) config('app.locale', 'en'),
+            fn (): array => self::sendToTokens($tokens, $title, $body, $data),
+        );
     }
 
     /**
@@ -110,17 +116,23 @@ class FCMPushService
         }
 
         $tenantId = TenantContext::getId();
-        $tokens = DB::table('fcm_device_tokens')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('user_id', $userIds)
-            ->pluck('token')
-            ->toArray();
-
-        if (empty($tokens)) {
+        $tokenGroups = self::tokensGroupedByRecipientLocale($userIds, $tenantId);
+        if ($tokenGroups === []) {
             return ['sent' => 0, 'failed' => 0, 'errors' => []];
         }
 
-        return self::sendToTokens($tokens, $title, $body, $data);
+        $combined = ['sent' => 0, 'failed' => 0, 'errors' => []];
+        foreach ($tokenGroups as $locale => $tokens) {
+            $result = LocaleContext::withLocale(
+                $locale !== '' ? $locale : (string) config('app.locale', 'en'),
+                fn (): array => self::sendToTokens($tokens, $title, $body, $data),
+            );
+            $combined['sent'] += $result['sent'];
+            $combined['failed'] += $result['failed'];
+            array_push($combined['errors'], ...$result['errors']);
+        }
+
+        return $combined;
     }
 
     /**
@@ -205,6 +217,51 @@ class FCMPushService
     // =========================================================================
     // Internal helpers
     // =========================================================================
+
+    private static function preferredLocaleForUser(int $userId, int $tenantId): ?string
+    {
+        try {
+            $locale = DB::table('users')
+                ->where('id', $userId)
+                ->where('tenant_id', $tenantId)
+                ->value('preferred_language');
+
+            return is_string($locale) && trim($locale) !== '' ? trim($locale) : null;
+        } catch (\Throwable $e) {
+            Log::debug('FCMPushService: preferred-locale lookup failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * @param list<int> $userIds
+     * @return array<string,list<string>>
+     */
+    private static function tokensGroupedByRecipientLocale(array $userIds, int $tenantId): array
+    {
+        $rows = DB::table('fcm_device_tokens as device_tokens')
+            ->join('users', function ($join): void {
+                $join->on('users.id', '=', 'device_tokens.user_id')
+                    ->on('users.tenant_id', '=', 'device_tokens.tenant_id');
+            })
+            ->where('device_tokens.tenant_id', $tenantId)
+            ->whereIn('device_tokens.user_id', $userIds)
+            ->get(['device_tokens.token', 'users.preferred_language']);
+
+        $groups = [];
+        foreach ($rows as $row) {
+            $token = is_string($row->token ?? null) ? trim($row->token) : '';
+            if ($token === '') {
+                continue;
+            }
+            $locale = is_string($row->preferred_language ?? null)
+                ? trim($row->preferred_language)
+                : '';
+            $groups[$locale][] = $token;
+        }
+
+        return $groups;
+    }
 
     /**
      * Static configuration check.

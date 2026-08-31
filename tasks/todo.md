@@ -30,7 +30,7 @@
   Feed items, Connections/Network, current Profile, job application pipelines, marketplace seller
   tools and saved searches. Representative message, wallet, event, social, goal, course, job,
   marketplace and volunteering routes are guarded.
-- Focused push/dispatcher/paid-campaign backend result: 60 tests / 150 assertions. Full mobile
+- Focused push/dispatcher/paid-campaign backend result: 61 tests / 160 assertions. Full mobile
   result: 377 suites / 2,648 tests;
   coverage 76.40% lines over 336 files, with every ratchet floor green. TypeScript, zero-warning
   lint, Expo Doctor 18/18, 462/462 resolvable API routes, 256-route parity, network/certificate
@@ -42,6 +42,8 @@
 - Separately opted-in paid campaigns retain their approved promotional copy. Their CTA may open
   the system browser only when it is a credential-free HTTPS URL on a public DNS host; ordinary
   notification payloads cannot use this exception.
+- Device tokens are grouped by the recipient's `preferred_language` before privacy-safe push copy
+  is rendered, so queue/cron sends do not silently revert non-English lock screens to English.
 - Enrollment-only red gates remain exactly the Team-ID AASA file and numeric App Store Connect ID.
 
 ### Protected boundaries

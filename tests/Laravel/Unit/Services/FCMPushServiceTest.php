@@ -96,6 +96,49 @@ class FCMPushServiceTest extends TestCase
         });
     }
 
+    public function test_sendToUser_renders_lock_screen_copy_in_the_recipient_locale(): void
+    {
+        Queue::fake();
+        config([
+            'services.fcm.server_key' => null,
+            'services.fcm.project_id' => null,
+            'services.fcm.service_account_path' => base_path('missing-firebase-service-account.json'),
+        ]);
+
+        Http::fake([
+            'https://exp.host/--/api/v2/push/send' => Http::response([
+                'data' => [['status' => 'ok', 'id' => 'ticket-ga']],
+            ], 200),
+        ]);
+
+        $tokenQuery = \Mockery::mock();
+        $tokenQuery->shouldReceive('where')->with('user_id', 1)->once()->andReturnSelf();
+        $tokenQuery->shouldReceive('where')->with('tenant_id', $this->testTenantId)->once()->andReturnSelf();
+        $tokenQuery->shouldReceive('pluck')->with('token')->once()->andReturn(collect(['ExponentPushToken[ga123]']));
+
+        $userQuery = \Mockery::mock();
+        // getNotificationPreferences() and the locale lookup both address this user.
+        $userQuery->shouldReceive('where')->with('id', 1)->twice()->andReturnSelf();
+        $userQuery->shouldReceive('where')->with('tenant_id', $this->testTenantId)->twice()->andReturnSelf();
+        $userQuery->shouldReceive('value')->with('preferred_language')->once()->andReturn('ga');
+
+        DB::shouldReceive('table')->with('fcm_device_tokens')->once()->andReturn($tokenQuery);
+        DB::shouldReceive('table')->with('users')->twice()->andReturn($userQuery);
+
+        $result = FCMPushService::sendToUser(1, 'Private English title', 'Private English body', [
+            'type' => 'unknown_type',
+            'link' => '/notifications',
+        ]);
+
+        $this->assertSame(1, $result['sent']);
+        Http::assertSent(function ($request): bool {
+            $payload = $request->data();
+
+            return $payload['title'] === 'Nuashonrú'
+                && $payload['body'] === 'Oscail Timebank Global chun an nuashonrú príobháideach seo a fheiceáil.';
+        });
+    }
+
     public function test_native_payload_removes_confidential_content_and_unsafe_navigation_data(): void
     {
         $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');

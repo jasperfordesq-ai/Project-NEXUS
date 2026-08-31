@@ -144,11 +144,13 @@ Adding it without a real background task would widen review and energy-use risk.
 - The complete mobile Jest suite passed: **377 suites, 2,648 tests**; the coverage ratchet reports
   76.40% global lines over 336 files and every area remains above its floor.
 - Expo Doctor passed **18/18** checks.
-- The focused push/dispatcher/paid-campaign backend regression passed **60 tests, 150 assertions**. It guards
+- The focused push/dispatcher/paid-campaign backend regression passed **61 tests, 160 assertions**. It guards
   the versioned/string-only payload, confidential-data stripping, curated/category titles,
   safe route retention, hostile/token-bearing fallbacks, paid-campaign exception and queued
   delivery/receipt paths. Native response and route tests cover foreground/background/killed
   lifecycle plus representative message, wallet, event, social and newer-module destinations.
+- The central sender groups tokens by `preferred_language` and renders under `LocaleContext`;
+  an Irish payload regression prevents queue/cron sends falling back to English.
 - A fresh 78,222,902-byte four-architecture release APK built and installed. The maintained
   Android login flow passed, and an authenticated killed-app `nexus://events` launch reached
   the real Events screen. Android does not permit a shell-owned synthetic notification to launch
