@@ -58,6 +58,7 @@ const KNOWN_SECTIONS = new Set([
   'group-exchanges',
   'goals',
   'blog',
+  'blog-post',
   'kb',
   'feed',
   'dashboard',
@@ -66,10 +67,12 @@ const KNOWN_SECTIONS = new Set([
   'activity',
   'chat',
   'connections',
+  'network',
   'matches',
   'reviews',
   'saved',
   'skills',
+  'endorsements',
   'wallet',
   'achievements',
   'leaderboard',
@@ -81,6 +84,11 @@ const KNOWN_SECTIONS = new Set([
   'clubs',
   'venues',
   'donations',
+  'job',
+  'organisation',
+  'organization',
+  'gamification',
+  'trust',
 ]);
 
 /**
@@ -180,8 +188,12 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       return id ? appendParams('/(modals)/group-detail', { ...params, id }) : '/(modals)/groups';
 
     case 'members':
-    case 'profile':
       return id ? appendParams('/(modals)/member-profile', { ...params, id }) : '/(modals)/members';
+
+    case 'profile':
+      return id
+        ? appendParams('/(modals)/member-profile', { ...params, id })
+        : appendParams('/(tabs)/profile', params);
 
     case 'users':
       if (id && detail === 'appreciations') return appendParams('/(modals)/appreciations', { ...params, userId: id });
@@ -239,6 +251,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     case 'cookies':
     case 'accessibility':
     case 'trust-and-safety':
+    case 'trust':
       return appendParams('/(modals)/support', { ...params, doc: supportDocumentForSection(section) });
 
     case 'platform':
@@ -286,6 +299,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     // -- Jobs ----------------------------------------------------------------
     case 'jobs':
+    case 'job':
       if (id === 'employers' && detail) return appendParams('/(modals)/member-profile', { ...params, id: detail });
       if (isCreateAlias(id)) return appendParams('/(modals)/new-job', params);
       if (id === 'alerts') return appendParams('/(modals)/jobs', { ...params, view: 'alerts' });
@@ -295,6 +309,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       if (id && detail === 'analytics') return appendParams('/(modals)/job-analytics', { ...params, id });
       if (id && detail === 'edit') return appendParams('/(modals)/edit-job', { ...params, id });
       if (id && detail === 'kanban') return appendParams('/(modals)/job-pipeline', { ...params, id });
+      if (id && detail === 'applications') return appendParams('/(modals)/job-pipeline', { ...params, id });
       return id ? appendParams('/(modals)/job-detail', { ...params, id }) : appendParams('/(modals)/jobs', params);
 
     // -- Federation ----------------------------------------------------------
@@ -323,10 +338,14 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
         // wrong, which is why nobody hit it by tapping around.
         return appendParams('/(modals)/volunteering-org-dashboard', { ...params, id: detail });
       }
-      return appendParams('/(modals)/volunteering', params);
+      return id
+        ? appendParams('/(modals)/volunteering-detail', { ...params, id })
+        : appendParams('/(modals)/volunteering', params);
 
     // -- Organisations -------------------------------------------------------
     case 'organisations':
+    case 'organisation':
+    case 'organization':
       if (id === 'register') return appendParams('/(modals)/new-organisation', params);
       return id
         ? appendParams('/(modals)/organisation-detail', { ...params, id })
@@ -345,6 +364,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     // -- Content -------------------------------------------------------------
     case 'blog':
+    case 'blog-post':
       // 🔴 The web route is /blog/:slug, so this segment is a slug — but the parameter
       // must still be called `id`, because blog-post.tsx reads
       // `useLocalSearchParams<{ id: string }>()` and then does `const slug = id`. Passing
@@ -388,6 +408,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       return appendParams('/(modals)/chat', params);
 
     case 'connections':
+    case 'network':
       return appendParams('/(modals)/connections', params);
 
     case 'matches':
@@ -444,6 +465,9 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     case 'skills':
       return appendParams('/(modals)/skills', params);
 
+    case 'endorsements':
+      return appendParams('/(modals)/endorsements', params);
+
     case 'wallet':
       return appendParams('/(modals)/wallet', params);
 
@@ -455,6 +479,9 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     case 'nexus-score':
       return appendParams('/(modals)/nexus-score', params);
+
+    case 'gamification':
+      return appendParams('/(modals)/gamification', params);
 
     default:
       return null;
@@ -476,6 +503,7 @@ function mapMarketplacePath(segments: string[], params: Record<string, string>):
   if (!first) return appendParams('/(modals)/marketplace', params);
 
   if (first === 'seller') {
+    if (second === 'dashboard') return appendParams('/(modals)/marketplace-tools', params);
     if (second === 'coupons') {
       if (third === 'new') return appendParams('/(modals)/marketplace-coupon-edit', params);
       if (third && fourth === 'edit') {
@@ -512,7 +540,10 @@ function mapMarketplacePath(segments: string[], params: Record<string, string>):
     case 'map': return appendParams('/(modals)/marketplace-map', params);
     case 'my-listings': return appendParams('/(modals)/marketplace-my-listings', params);
     case 'my-offers': return appendParams('/(modals)/marketplace-offers', params);
+    case 'offers': return appendParams('/(modals)/marketplace-offers', params);
+    case 'tools': return appendParams('/(modals)/marketplace-tools', params);
     case 'search': return appendParams('/(modals)/marketplace-search', params);
+    case 'saved-searches': return appendParams('/(modals)/marketplace-collections', { ...params, tab: 'saved' });
     case 'sell': return appendParams('/(modals)/new-marketplace-listing', params);
     default: break;
   }

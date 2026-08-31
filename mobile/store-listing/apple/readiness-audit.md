@@ -87,8 +87,8 @@ Xcode debugging and the Simulator, but is not a release prerequisite for this pr
 | Notification consent | Ready in source | Login no longer triggers the system prompt. Permission is requested only when the member enables device push in Settings. | iPhone permission walk |
 | Promotional notifications | Ready in source; disclosure revised | Separate preference defaults off, filters campaign recipients and offers in-app opt-out. The public policy now explains local targeting, no advertiser data disclosure and withdrawal. | Owner/legal confirmation; end-to-end iPhone proof |
 | Push delivery lifecycle | Ready in source | Token register/unregister, stored-token logout cleanup, Expo ticket handling and delayed receipt cleanup are implemented. | Queue/production credentials and iPhone proof |
-| Notification navigation | Ready in source | Live taps and last-response cold starts normalize `link`, `url` and `cta_url`. | Terminated-app iPhone proof |
-| Lock-screen privacy | Ready in source | The native delivery boundary replaces every non-promotional title/body with generic localized copy and replaces its data with one generic authenticated notification-centre link. Full detail and even the original destination stay behind authentication. Separately opted-in paid campaign copy is the explicit exception. | Inspect exact APNs payloads on iPhone |
+| Notification navigation | Ready in source; Android route proved | Live taps and last-response cold starts normalize `link`, `url` and `cta_url`, wait for authentication and use the same canonical mapper as App/Universal Links. A killed authenticated Android app opened Events from the current-source build; lifecycle and representative producer routes are regression-tested. | Real remote-push tap on Android and terminated-app iPhone proof |
+| Lock-screen privacy | Ready in source | Ordinary payloads keep a generic localized body, show only a translated privacy-safe category or explicitly curated title, and retain a versioned validated internal route. Arbitrary producer data, confidential copy, credential-bearing links and staff/browser-only targets are removed or sent to the authenticated notification centre. Separately opted-in paid campaign copy is the explicit exception; its CTA can leave the app only for a credential-free HTTPS public-domain URL. | Inspect exact FCM/APNs payloads on physical devices |
 | Background mechanisms | Intentionally not declared | Visible APNs notifications do not require background fetch or silent remote-notification mode. No background location is declared. | Do not add unless a real feature requires it |
 | Universal Links | Enrollment-blocked | Associated-domain entitlement is declared; AASA generator fails closed without real Team ID. Public AASA is absent. | Team ID, deploy approval and public proof |
 | Custom URL scheme | Ready in source | `nexus` supports app deep links and Stripe return routing. | Signed Stripe redirect test |
@@ -128,20 +128,31 @@ Member control has two independent layers:
 
 The app listens for foreground arrivals to refresh unread state and response/tap events to
 navigate. It reads and clears the last notification response on startup, covering a tap that
-launches a terminated app. Deep-link payloads support all three keys emitted by producers.
+launches a terminated app. Deep-link payloads support all three keys emitted by producers and
+go through the same route mapper as App/Universal Links. The backend preserves only a versioned
+type and validated internal destination; sensitive, unsupported and browser-only links fall back
+to Notifications. The body stays generic, while translated category or explicitly curated titles
+make ordinary alerts useful without exposing message, finance, employment or safeguarding detail.
 
 There is deliberately no silent-push/background-fetch claim. Apple does not require the
 `remote-notification` background mode for ordinary visible notifications or tap handling.
 Adding it without a real background task would widen review and energy-use risk.
 
-## Verification recorded on 27 August 2026
+## Verification recorded on 31 August 2026
 
 - Mobile TypeScript and ESLint passed.
-- The complete post-freeze mobile Jest suite passed: **337 suites, 2,433 tests**.
+- The complete mobile Jest suite passed: **377 suites, 2,648 tests**; the coverage ratchet reports
+  76.40% global lines over 336 files and every area remains above its floor.
 - Expo Doctor passed **18/18** checks.
-- The combined notification, promotional-consent, group-message and Expo-receipt backend
-  regression passed **62 tests, 138 assertions**. After the native payload was tightened to
-  the single generic destination, its focused suite passed again: **12 tests, 29 assertions**.
+- The focused push/dispatcher/paid-campaign backend regression passed **60 tests, 150 assertions**. It guards
+  the versioned/string-only payload, confidential-data stripping, curated/category titles,
+  safe route retention, hostile/token-bearing fallbacks, paid-campaign exception and queued
+  delivery/receipt paths. Native response and route tests cover foreground/background/killed
+  lifecycle plus representative message, wallet, event, social and newer-module destinations.
+- A fresh 78,222,902-byte four-architecture release APK built and installed. The maintained
+  Android login flow passed, and an authenticated killed-app `nexus://events` launch reached
+  the real Events screen. Android does not permit a shell-owned synthetic notification to launch
+  another package, so a provider-delivered notification tap remains an explicit device gate.
 - The React privacy-policy file passed ESLint and the React TypeScript project check; public
   prerender tests passed **2/2**.
 - Documentation hygiene, version consistency and `git diff --check` passed.

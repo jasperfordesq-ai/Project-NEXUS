@@ -8,7 +8,6 @@ import '@/global.css'; // Tailwind v4 + HeroUI Native styles — must be first
 import { useEffect, useRef, useState } from 'react';
 import { LogBox, View } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
-import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -16,7 +15,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
 import { markAppReady } from '@/lib/startupTiming';
 import { registerLegalAcceptanceRequiredCallback } from '@/lib/api/client';
-import { getNotificationLink } from '@/lib/notifications';
+import { observeNotificationResponses } from '@/lib/notifications';
 import { ThemeProvider, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -302,29 +301,15 @@ function RootNavigator() {
   const legalScreenOpenRef = useRef(false);
 
   useEffect(() => {
-    void Promise.all([
+    const unsubscribeFromNotifications = observeNotificationResponses(
+      setPendingDeepLink,
       Linking.getInitialURL(),
-      Notifications.getLastNotificationResponseAsync(),
-    ]).then(([initialUrl, notificationResponse]) => {
-      const notificationLink = getNotificationLink(notificationResponse?.notification.request.content.data);
-      if (notificationLink) {
-        setPendingDeepLink(notificationLink);
-        void Notifications.clearLastNotificationResponseAsync();
-      } else if (initialUrl) {
-        setPendingDeepLink(initialUrl);
-      }
-    });
+    );
     const linkSubscription = Linking.addEventListener('url', ({ url }) => {
       setPendingDeepLink(url);
     });
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const notificationLink = getNotificationLink(response.notification.request.content.data);
-      if (notificationLink) {
-        setPendingDeepLink(notificationLink);
-      }
-    });
     return () => {
-      subscription.remove();
+      unsubscribeFromNotifications();
       linkSubscription.remove();
     };
   }, []);

@@ -3,9 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { Linking } from 'react-native';
+
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockCaptureMessage = jest.fn();
+const mockOpenURL = jest.spyOn(Linking, 'openURL');
 
 jest.mock('expo-router', () => ({
   router: {
@@ -23,6 +26,15 @@ import { navigateToLink } from './navigateToLink';
 describe('navigateToLink', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockOpenURL.mockResolvedValue(undefined);
+  });
+
+  it('opens an approved external campaign destination in the system browser', () => {
+    navigateToLink('https://partner.example.org/book/42?campaign=nexus');
+
+    expect(mockOpenURL).toHaveBeenCalledWith('https://partner.example.org/book/42?campaign=nexus');
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   /**
@@ -103,9 +115,9 @@ describe('navigateToLink', () => {
     navigateToLink('nexus://events');
     navigateToLink('nexus://settings?tab=notifications');
 
-    expect(mockPush).toHaveBeenNthCalledWith(1, '/(tabs)/messages');
-    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/events');
-    expect(mockPush).toHaveBeenNthCalledWith(2, {
+    expect(mockReplace).toHaveBeenNthCalledWith(1, '/(tabs)/messages');
+    expect(mockReplace).toHaveBeenNthCalledWith(2, '/(tabs)/events');
+    expect(mockPush).toHaveBeenNthCalledWith(1, {
       pathname: '/(modals)/settings',
       params: { tab: 'notifications' },
     });
@@ -143,10 +155,7 @@ describe('navigateToLink', () => {
     navigateToLink('/me/collections');
     navigateToLink('/me/collections/9');
 
-    expect(mockPush).toHaveBeenNthCalledWith(1, {
-      pathname: '/(modals)/profile-collections',
-      params: {},
-    });
+    expect(mockPush).toHaveBeenNthCalledWith(1, '/(modals)/profile-collections');
     expect(mockPush).toHaveBeenNthCalledWith(2, {
       pathname: '/(modals)/profile-collections',
       params: { collectionId: '9' },
@@ -187,6 +196,24 @@ describe('navigateToLink', () => {
     expect(mockPush).toHaveBeenNthCalledWith(8, { pathname: '/(modals)/support', params: { doc: 'privacy' } });
   });
 
+  it('uses the complete App Link mapper for notification-only module destinations', () => {
+    navigateToLink('/courses/timebanking-basics');
+    navigateToLink('/feed/posts/12');
+    navigateToLink('/connections');
+    navigateToLink('/dashboard');
+
+    expect(mockPush).toHaveBeenNthCalledWith(1, {
+      pathname: '/(modals)/course-detail',
+      params: { id: 'timebanking-basics' },
+    });
+    expect(mockPush).toHaveBeenNthCalledWith(2, {
+      pathname: '/(modals)/feed-item-detail',
+      params: { type: 'post', id: '12' },
+    });
+    expect(mockPush).toHaveBeenNthCalledWith(3, '/(modals)/connections');
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/home');
+  });
+
   it('maps marketplace deep links to native marketplace screens', () => {
     navigateToLink('/marketplace');
     navigateToLink('/marketplace/search?q=lamp');
@@ -197,9 +224,9 @@ describe('navigateToLink', () => {
 
     expect(mockPush).toHaveBeenNthCalledWith(1, '/(modals)/marketplace');
     expect(mockPush).toHaveBeenNthCalledWith(2, { pathname: '/(modals)/marketplace-search', params: { q: 'lamp' } });
-    expect(mockPush).toHaveBeenNthCalledWith(3, { pathname: '/(modals)/marketplace-category', params: { id: 'furniture' } });
+    expect(mockPush).toHaveBeenNthCalledWith(3, { pathname: '/(modals)/marketplace-category', params: { slug: 'furniture' } });
     expect(mockPush).toHaveBeenNthCalledWith(4, { pathname: '/(modals)/marketplace-seller', params: { id: '8' } });
-    expect(mockPush).toHaveBeenNthCalledWith(5, { pathname: '/(modals)/marketplace-tools', params: { tab: 'savedSearches' } });
+    expect(mockPush).toHaveBeenNthCalledWith(5, { pathname: '/(modals)/marketplace-collections', params: { tab: 'saved' } });
     expect(mockPush).toHaveBeenNthCalledWith(6, { pathname: '/(modals)/marketplace-detail', params: { id: '44' } });
   });
 

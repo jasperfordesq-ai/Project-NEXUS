@@ -86,6 +86,63 @@ class NotificationDispatcherTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
+    public function test_push_fanout_emits_the_versioned_actionable_mobile_contract(): void
+    {
+        $web = Mockery::mock('alias:App\Services\WebPushService');
+        $web->shouldReceive('sendToUserStatic')
+            ->once()
+            ->with($this->userId, 'New Post', 'Private post content', '/groups/44');
+
+        $fcm = Mockery::mock('alias:App\Services\FCMPushService');
+        $fcm->shouldReceive('sendToUser')
+            ->once()
+            ->with($this->userId, 'New Post', 'Private post content', [
+                'schema_version' => '1',
+                'type' => 'new_topic',
+                'link' => '/groups/44',
+                'display_title_safe' => '1',
+            ])
+            ->andReturn(['sent' => 1, 'failed' => 0, 'errors' => []]);
+
+        $log = Mockery::mock('alias:App\Models\PushLog');
+        $log->shouldReceive('record')->once()->andReturnNull();
+
+        NotificationDispatcher::fanOutPush(
+            $this->userId,
+            'new_topic',
+            'Private post content',
+            '/groups/44',
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_explicit_pushes_get_translated_category_titles_instead_of_new_notification(): void
+    {
+        $method = new \ReflectionMethod(NotificationDispatcher::class, 'resolvePushTitle');
+        $method->setAccessible(true);
+
+        $this->assertSame('Credits', $method->invoke(null, 'transaction', false));
+        $this->assertSame('Event', $method->invoke(null, 'event_update', false));
+        $this->assertSame('Activity', $method->invoke(null, 'like', false));
+        $this->assertSame('Opportunity', $method->invoke(null, 'job_application_status', false));
+        $this->assertSame('Security', $method->invoke(null, 'passkey_removed', false));
+        $this->assertSame('New Message', $method->invoke(null, 'new_message', false));
+    }
+
+    public function test_automatic_pushes_still_require_an_explicitly_curated_type(): void
+    {
+        $method = new \ReflectionMethod(NotificationDispatcher::class, 'resolvePushTitle');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke(null, 'event_update', true));
+        $this->assertSame('New Message', $method->invoke(null, 'new_message', true));
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function test_dispatch_always_creates_in_app_notification(): void
     {
         $this->stubPushServices();

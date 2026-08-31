@@ -1,5 +1,56 @@
 # Implementation Plan: Autonomous Mobile Release Readiness
 
+## Active extension — 2026-08-31: actionable push notifications
+
+The user has reported that Android push notifications contain little useful context and that
+tapping them opens the app shell rather than the relevant destination. Treat this as a
+systemic production-readiness defect. Audit the complete path rather than repairing one
+notification type in isolation: Laravel producers, central FCM/Expo payload construction,
+Android receipt data, Expo foreground/background/cold-start response handling, route mapping,
+authentication deferral and safe fallback behaviour.
+
+### Phase 11: Notification contract and reproduction
+
+- [x] Task 31: Inventory every push producer, central dispatcher, payload field and mobile
+  notification response handler; classify every target as exact, lossy, invalid or absent.
+- [x] Task 32: Reproduce tap handling for foreground, background and killed-app delivery, and
+  preserve a minimal failing test for the reported generic-app-shell behaviour.
+
+### Checkpoint J: Root cause proved
+
+- [x] The failure is localized across backend and native boundaries; privacy sanitisation is
+  distinguished from lost navigation metadata, and no payload contents are guessed.
+
+### Phase 12: End-to-end repair
+
+- [x] Task 33: Define and implement a versioned, privacy-safe push data contract carrying a
+  canonical mobile destination while retaining a valid notifications-screen fallback.
+- [x] Task 34: Resolve canonical web/API notification links to real Expo routes, including
+  query parameters, unsupported targets, signed-out deferral and post-login continuation.
+- [x] Task 35: Guard backend payload generation and mobile foreground/background/cold-start
+  response handling with focused regression and contract tests.
+- [x] Task 36: Exercise representative message, transaction, event and social notification
+  destinations through the payload/response/route contracts, then prove a killed authenticated
+  Android app reaches the exact Events screen without claiming a provider-delivered tap.
+
+### Checkpoint K: Push is actionable
+
+- [x] Representative notification contracts display meaningful privacy-appropriate copy; lifecycle
+  tests route foreground, background and killed-app responses, an Android killed-app route reaches
+  Events, and malformed or unauthorized targets fail safely to the notification centre.
+
+### Phase 13: Remaining pre-registration audit and banking
+
+- [x] Task 37: Re-run the full machine-actionable mobile launch audit and remediate any new
+  release, security, accessibility, observability, bundle or store-evidence defects found.
+- [ ] Task 38: Update the readiness score, journey ledger and changelog using only proved
+  evidence; run all local gates, commit scoped changes, push `main`, and fix CI/device failures.
+
+### Checkpoint L: Pre-registration boundary complete
+
+- [ ] All remaining items require store registration/approval, signing credentials,
+  production/store mutation, owner/legal judgement or genuine human/physical-device proof.
+
 ## Active extension — 2026-08-30
 
 The original five pre-approval workstreams reached their bounded checkpoint at commit

@@ -415,10 +415,11 @@ class FCMPushService
      * Keep confidential application data out of native lock-screen payloads.
      *
      * The authenticated in-app notification retains its full localized content.
-     * Native push is only a wake-up/tap surface, so ordinary notifications use
-     * generic presentation text and a single generic notification-centre link.
-     * The original destination can itself reveal the category of a confidential
-     * event (for example an emergency or GDPR request), so it is not forwarded.
+     * Native push is only a wake-up/tap surface, so ordinary notifications never
+     * include the full bell body or arbitrary producer data. A dispatcher-curated
+     * category title may be shown, and a validated non-sensitive internal route is
+     * retained as data so a tap can open the relevant authenticated screen. Unsafe,
+     * browser-only and credential-bearing routes fall back to the notification centre.
      * Paid
      * promotional campaigns are the one explicit exception: their copy is the
      * notification's purpose and recipients have separately opted in.
@@ -435,11 +436,110 @@ class FCMPushService
             return [$title, $body, $data];
         }
 
+        $type = is_string($data['type'] ?? null) ? (string) $data['type'] : '';
+        $mayDisplayCuratedTitle = ($data['display_title_safe'] ?? null) === '1'
+            && !self::requiresCategoryOnlyTitle($type);
+        $safeTitle = $mayDisplayCuratedTitle ? $title : self::privacySafeTitleForData($data);
+
         return [
-            __('notifications.push_default'),
+            $safeTitle,
             __('notifications.push_private_body'),
-            ['link' => '/notifications'],
+            self::safeNavigationData($data),
         ];
+    }
+
+    /** @param array<string,mixed> $data */
+    private static function privacySafeTitleForData(array $data): string
+    {
+        $type = $data['type'] ?? $data['alert_type'] ?? null;
+        if (!is_string($type) || preg_match('/^[a-z0-9_:-]{1,80}$/i', $type) !== 1) {
+            return __('notifications.push_default');
+        }
+
+        return NotificationDispatcher::privacySafePushTitle($type);
+    }
+
+    private static function requiresCategoryOnlyTitle(string $type): bool
+    {
+        $normalized = strtolower($type);
+        foreach (['gdpr', 'safeguarding', 'emergency', 'support_action'] as $sensitiveMarker) {
+            if (str_contains($normalized, $sensitiveMarker)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Reduce producer data to the versioned fields the native tap handler consumes.
+     *
+     * @param array<string,mixed> $data
+     * @return array<string,string>
+     */
+    private static function safeNavigationData(array $data): array
+    {
+        $result = [
+            'schema_version' => '1',
+            'link' => self::safeInternalLink($data['link'] ?? $data['url'] ?? $data['cta_url'] ?? null),
+        ];
+
+        $type = $data['type'] ?? null;
+        if (is_string($type) && preg_match('/^[a-z0-9_:-]{1,80}$/i', $type) === 1) {
+            $result['type'] = $type;
+        }
+
+        return $result;
+    }
+
+    private static function safeInternalLink(mixed $candidate): string
+    {
+        if (!is_string($candidate)) {
+            return '/notifications';
+        }
+
+        $link = trim($candidate);
+        if ($link === '' || strlen($link) > 2048 || str_starts_with($link, '//')) {
+            return '/notifications';
+        }
+
+        $parts = parse_url($link);
+        if ($parts === false) {
+            return '/notifications';
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        $host = strtolower((string) ($parts['host'] ?? ''));
+        if (isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment']) || isset($parts['port'])) {
+            return '/notifications';
+        }
+        if ($scheme !== '') {
+            $trustedWeb = $scheme === 'https' && $host === 'app.project-nexus.ie';
+            if (!$trustedWeb && $scheme !== 'nexus') {
+                return '/notifications';
+            }
+        } elseif (!str_starts_with($link, '/')) {
+            return '/notifications';
+        }
+
+        $path = '/' . ltrim(rawurldecode((string) ($parts['path'] ?? '')), '/');
+        foreach (['/admin', '/admin-legacy', '/broker', '/super-admin', '/support-actions/confirm', '/password/reset'] as $blockedPrefix) {
+            if ($path === $blockedPrefix || str_starts_with($path, $blockedPrefix . '/')) {
+                return '/notifications';
+            }
+            if (preg_match('#^/[^/]+'.preg_quote($blockedPrefix, '#').'(?:/|$)#', $path) === 1) {
+                return '/notifications';
+            }
+        }
+
+        parse_str((string) ($parts['query'] ?? ''), $query);
+        foreach (array_keys($query) as $key) {
+            if (preg_match('/token|secret|password|signature|authorization|api[_-]?key/i', (string) $key) === 1) {
+                return '/notifications';
+            }
+        }
+
+        return $link;
     }
 
     /**

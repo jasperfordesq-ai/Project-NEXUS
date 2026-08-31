@@ -89,11 +89,14 @@ class FCMPushServiceTest extends TestCase
                 && $payload['to'] === 'ExponentPushToken[abc123]'
                 && $payload['title'] === 'New Notification'
                 && $payload['body'] === 'Open Timebank Global to view this private update.'
-                && $payload['data'] === ['link' => '/notifications'];
+                && $payload['data'] === [
+                    'schema_version' => '1',
+                    'link' => '/messages/123',
+                ];
         });
     }
 
-    public function test_native_payload_removes_confidential_content_and_non_navigation_data(): void
+    public function test_native_payload_removes_confidential_content_and_unsafe_navigation_data(): void
     {
         $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
         $method->setAccessible(true);
@@ -107,9 +110,83 @@ class FCMPushServiceTest extends TestCase
             'alert_id' => '91',
         ]);
 
-        $this->assertSame('New Notification', $title);
+        $this->assertSame('Update', $title);
         $this->assertSame('Open Timebank Global to view this private update.', $body);
-        $this->assertSame(['link' => '/notifications'], $data);
+        $this->assertSame([
+            'schema_version' => '1',
+            'link' => '/notifications',
+            'type' => 'gdpr_account_deletion',
+        ], $data);
+    }
+
+    public function test_native_payload_keeps_a_curated_title_and_safe_internal_destination(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        [$title, $body, $data] = $method->invoke(null, 'New Message', 'Private message contents', [
+            'schema_version' => '1',
+            'type' => 'new_message',
+            'link' => '/messages/123?context_type=listing&context_id=44',
+            'display_title_safe' => '1',
+            'sender_name' => 'Jane Doe',
+        ]);
+
+        $this->assertSame('New Message', $title);
+        $this->assertSame('Open Timebank Global to view this private update.', $body);
+        $this->assertSame([
+            'schema_version' => '1',
+            'link' => '/messages/123?context_type=listing&context_id=44',
+            'type' => 'new_message',
+        ], $data);
+    }
+
+    public function test_direct_typed_payload_uses_a_translated_privacy_safe_category_title(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        [$title, $body, $data] = $method->invoke(null, 'Reminder: Private event name', 'Private event details', [
+            'type' => 'event_reminder',
+            'link' => '/events/44',
+        ]);
+
+        $this->assertSame('Event', $title);
+        $this->assertSame('Open Timebank Global to view this private update.', $body);
+        $this->assertSame([
+            'schema_version' => '1',
+            'link' => '/events/44',
+            'type' => 'event_reminder',
+        ], $data);
+    }
+
+    public function test_native_payload_rejects_external_and_credential_bearing_destinations(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        foreach ([
+            'https://evil.example/messages/123',
+            '/password/reset?token=secret-value',
+            '/support-actions/confirm/secret-value',
+            '/hour-timebank/admin/gdpr',
+            '//evil.example/messages/123',
+            'https://member:secret@app.project-nexus.ie/messages/123',
+            'https://app.project-nexus.ie:444/messages/123',
+            '/messages/123#token=secret-value',
+        ] as $unsafeLink) {
+            [, , $data] = $method->invoke(null, 'Security update', 'Private contents', [
+                'type' => 'security',
+                'link' => $unsafeLink,
+                'display_title_safe' => '1',
+            ]);
+
+            $this->assertSame([
+                'schema_version' => '1',
+                'link' => '/notifications',
+                'type' => 'security',
+            ], $data, "Unsafe push destination was retained: {$unsafeLink}");
+        }
     }
 
     public function test_separately_opted_in_paid_campaign_keeps_its_promotional_copy(): void

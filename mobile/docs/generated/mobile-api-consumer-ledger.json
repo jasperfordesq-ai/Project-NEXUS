@@ -504,7 +504,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "blog.ts:45"
+        "blog.ts:43"
       ]
     },
     {
@@ -513,7 +513,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "blog.ts:56"
+        "blog.ts:54"
       ]
     },
     {

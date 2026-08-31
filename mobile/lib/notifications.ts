@@ -26,6 +26,8 @@ import { api } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 import i18n from 'i18next';
+import { isBrowserOnlyPath, mapSystemPathToNativeRoute } from '@/app/+native-intent';
+import { isSafeExternalBrowserLink } from '@/lib/utils/safeExternalLink';
 
 export type PushRegistrationResult = 'registered' | 'permission-denied' | 'unavailable' | 'failed';
 
@@ -35,9 +37,76 @@ export function getNotificationLink(data: unknown): string | null {
   const record = data as Record<string, unknown>;
   for (const key of ['link', 'url', 'cta_url'] as const) {
     const value = record[key];
-    if (typeof value === 'string' && value.trim() !== '') return value;
+    if (typeof value !== 'string' || value.trim() === '') continue;
+    if (isSensitiveNotificationLink(value)) return '/notifications';
+    if (isSafeExternalBrowserLink(value)) {
+      return record.campaign_type === 'paid_push' && key === 'cta_url'
+        ? value
+        : '/notifications';
+    }
+    if (isBrowserOnlyPath(value)) return '/notifications';
+    if (mapSystemPathToNativeRoute(value) === null) return '/notifications';
+    return value;
   }
-  return null;
+  return '/notifications';
+}
+
+/**
+ * Observe notification taps in every app state. The initial-response lookup covers a
+ * notification that launched a terminated app; the listener covers foreground/background
+ * interactions. An initial App Link may be supplied so notification intent wins
+ * deterministically when Android reports both during startup.
+ */
+export function observeNotificationResponses(
+  onLink: (link: string) => void,
+  initialUrl: Promise<string | null> = Promise.resolve(null),
+): () => void {
+  let active = true;
+
+  void Promise.all([
+    initialUrl,
+    Notifications.getLastNotificationResponseAsync(),
+  ]).then(([launchUrl, response]) => {
+    if (!active) return;
+    const notificationLink = getNotificationLink(response?.notification.request.content.data);
+    if (notificationLink) {
+      onLink(notificationLink);
+      void Notifications.clearLastNotificationResponseAsync().catch((error) => {
+        reportException(error, { tags: { module: 'push-notification-response-clear' } });
+      });
+    } else if (launchUrl) {
+      onLink(launchUrl);
+    }
+  }).catch((error) => {
+    reportException(error, { tags: { module: 'push-notification-response-startup' } });
+  });
+
+  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+    const notificationLink = getNotificationLink(response.notification.request.content.data);
+    if (notificationLink) onLink(notificationLink);
+  });
+
+  return () => {
+    active = false;
+    subscription.remove();
+  };
+}
+
+function isSensitiveNotificationLink(link: string): boolean {
+  try {
+    const normalized = link.includes('://') || link.startsWith('/') ? link : `/${link}`;
+    const url = new URL(normalized, 'https://app.project-nexus.ie');
+    if (url.username || url.password || url.port || url.hash) return true;
+    for (const key of url.searchParams.keys()) {
+      if (/token|secret|password|signature|authorization|api[_-]?key/i.test(key)) return true;
+    }
+    return url.pathname === '/password/reset'
+      || url.pathname.startsWith('/password/reset/')
+      || url.pathname === '/support-actions/confirm'
+      || url.pathname.startsWith('/support-actions/confirm/');
+  } catch {
+    return true;
+  }
 }
 
 /** Callback registered by RealtimeContext to refresh foreground notification state. */

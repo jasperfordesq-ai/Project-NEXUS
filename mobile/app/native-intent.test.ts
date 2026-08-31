@@ -17,6 +17,20 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('/users/25717/collections')).toBe('/(modals)/profile-collections?userId=25717&scope=public');
   });
 
+  it('keeps the current-member profile link on the Profile tab', () => {
+    expect(mapSystemPathToNativeRoute('/profile')).toBe('/(tabs)/profile');
+    expect(mapSystemPathToNativeRoute('/profile/25717')).toBe('/(modals)/member-profile?id=25717');
+  });
+
+  it('maps push-producer seller and job workflow links to actionable native screens', () => {
+    expect(mapSystemPathToNativeRoute('/marketplace/seller/dashboard')).toBe('/(modals)/marketplace-tools');
+    expect(mapSystemPathToNativeRoute('/jobs/44/applications')).toBe('/(modals)/job-pipeline?id=44');
+    expect(mapSystemPathToNativeRoute('/volunteering/7')).toBe('/(modals)/volunteering-detail?id=7');
+    expect(mapSystemPathToNativeRoute('/endorsements')).toBe('/(modals)/endorsements');
+    expect(mapSystemPathToNativeRoute('/marketplace/offers')).toBe('/(modals)/marketplace-offers');
+    expect(mapSystemPathToNativeRoute('/marketplace/tools')).toBe('/(modals)/marketplace-tools');
+  });
+
   it('maps create aliases to native create surfaces', () => {
     expect(mapSystemPathToNativeRoute('/listings/new')).toBe('/(modals)/new-exchange');
     expect(mapSystemPathToNativeRoute('/events/create')).toBe('/(modals)/new-event');

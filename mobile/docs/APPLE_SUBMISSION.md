@@ -153,10 +153,12 @@ Checked against Apple's current App Review Guidelines on 2026-08-27:
   advertisers do not receive member attributes, device tokens or recipient lists. Keep the
   conservative Advertising and Developer's Advertising or Marketing answers unless the
   feature is actually removed.
-- Native push delivery generically presents every non-promotional notification and replaces
-  its data with a generic authenticated notification-centre link, so private messages, GDPR,
-  safeguarding, verification, moderation, employment and financial detail — including the
-  original destination category — remain behind authentication.
+- Native push delivery keeps the body generic and never forwards arbitrary producer data. It
+  may show a translated privacy-safe category or an explicitly curated title, and carries only
+  a versioned, validated internal destination so a tap can open the relevant authenticated
+  native screen. Credential-bearing, staff/browser-only, unsupported and especially sensitive
+  destinations fall back to the notification centre; paid campaign copy remains the explicit
+  separately opted-in exception.
 
 These are source-and-policy findings, not an Apple decision. Recheck the live guidelines
 before submission because store rules can change.
@@ -257,7 +259,9 @@ decisions.
 Android uses Firebase/FCM credentials and a gitignored `google-services.json`. iOS push
 uses Apple Push Notification service credentials managed through EAS for this app; a
 Firebase `GoogleService-Info.plist` is not required by the current Expo notification
-path. Push must be tested on a physical iPhone.
+path. Foreground/background taps and the terminated-app last response share the canonical
+App/Universal Link mapper and retain authentication deferral. APNs delivery and a real tap
+must still be tested on a physical iPhone.
 
 ## Release gate meaning
 

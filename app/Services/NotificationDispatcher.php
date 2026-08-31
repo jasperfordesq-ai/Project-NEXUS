@@ -372,9 +372,9 @@ class NotificationDispatcher
      * Resolve a push title for an activity type.
      *
      * Returns the curated `notifications.push_<type>` title when one exists.
-     * Otherwise returns the generic default title — or null when $onlyCurated
-     * is set, which lets the auto-push path skip activity types nobody curated
-     * a push title for (so routine bell writes don't all turn into push).
+     * Otherwise returns a translated privacy-safe category title — or null when
+     * $onlyCurated is set, which lets the auto-push path skip activity types nobody
+     * curated a push title for (so routine bell writes don't all turn into push).
      */
     private static function resolvePushTitle(string $activityType, bool $onlyCurated = false): ?string
     {
@@ -383,7 +383,84 @@ class NotificationDispatcher
         if ($translated !== $key) {
             return $translated;
         }
-        return $onlyCurated ? null : __('notifications.push_default');
+        if ($onlyCurated) {
+            return null;
+        }
+
+        // Explicit push callers have already decided the event warrants a device alert.
+        // Give those alerts a translated, privacy-safe category instead of rendering every
+        // uncurated type as the meaningless "New Notification". These labels are shared
+        // with the maintained accessible notification inbox and exist in every locale.
+        $category = self::pushCategoryForActivityType($activityType);
+        $categoryKey = 'govuk_alpha.notifications.types.' . $category;
+        $categoryTitle = __($categoryKey);
+
+        return $categoryTitle !== $categoryKey
+            ? $categoryTitle
+            : __('notifications.push_default');
+    }
+
+    /**
+     * Return a translated category title that is safe to expose on a lock screen.
+     * Direct FCM/Expo producers use this when they bypass fanOutPush().
+     */
+    public static function privacySafePushTitle(string $activityType): string
+    {
+        $categoryKey = 'govuk_alpha.notifications.types.' . self::pushCategoryForActivityType($activityType);
+        $categoryTitle = __($categoryKey);
+
+        return $categoryTitle !== $categoryKey
+            ? $categoryTitle
+            : __('notifications.push_default');
+    }
+
+    private static function pushCategoryForActivityType(string $activityType): string
+    {
+        $type = strtolower($activityType);
+
+        return match (true) {
+            str_contains($type, 'message') => 'messages',
+            str_contains($type, 'connection') => 'connections',
+            str_contains($type, 'review') => 'reviews',
+            str_contains($type, 'transaction'),
+            str_contains($type, 'wallet'),
+            str_contains($type, 'payment'),
+            str_contains($type, 'payout'),
+            str_contains($type, 'credit'),
+            str_contains($type, 'donation') => 'transactions',
+            str_contains($type, 'event') => 'events',
+            str_contains($type, 'group') => 'groups',
+            str_contains($type, 'listing'),
+            str_contains($type, 'marketplace'),
+            str_contains($type, 'saved_search') => 'listings',
+            str_contains($type, 'job'),
+            str_contains($type, 'volunteer'),
+            str_starts_with($type, 'vol_'),
+            str_contains($type, 'course'),
+            str_contains($type, 'deliverable') => 'jobs',
+            str_contains($type, 'safeguarding'),
+            str_contains($type, 'emergency') => 'safeguarding',
+            str_contains($type, 'security'),
+            str_contains($type, 'passkey'),
+            str_contains($type, 'password'),
+            str_contains($type, 'email_changed'),
+            str_starts_with($type, '2fa_'),
+            str_contains($type, 'verification') => 'security',
+            str_contains($type, 'ideation'),
+            str_contains($type, 'idea'),
+            str_contains($type, 'goal'),
+            str_contains($type, 'poll') => 'ideation',
+            str_contains($type, 'like'),
+            str_contains($type, 'comment'),
+            str_contains($type, 'reply'),
+            str_contains($type, 'share'),
+            str_contains($type, 'reaction'),
+            str_contains($type, 'appreciation'),
+            str_contains($type, 'mention'),
+            str_contains($type, 'story'),
+            str_contains($type, 'achievement') => 'social',
+            default => 'other',
+        };
     }
 
     /**
@@ -465,7 +542,13 @@ class NotificationDispatcher
 
             try {
                 if (class_exists(\App\Services\FCMPushService::class)) {
-                    $result = \App\Services\FCMPushService::sendToUser($uid, $pushTitle, $pushContent, ['link' => $pushLink]);
+                    $result = \App\Services\FCMPushService::sendToUser($uid, $pushTitle, $pushContent, [
+                        'schema_version' => '1',
+                        'type' => $pushType,
+                        'link' => $pushLink,
+                        // resolvePushTitle() only returns translation-catalogue copy.
+                        'display_title_safe' => '1',
+                    ]);
                     $fcmSent = (int) ($result['sent'] ?? 0);
                     $fcmFailed = (int) ($result['failed'] ?? 0);
                     foreach ((array) ($result['errors'] ?? []) as $fcmErr) {

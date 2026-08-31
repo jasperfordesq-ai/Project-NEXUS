@@ -1,5 +1,56 @@
 # Autonomous Mobile Release Readiness Checklist
 
+## Active goal — 2026-08-31: actionable push notifications and final audit
+
+- [x] Inventory every backend push producer and the exact data delivered to Expo/FCM.
+- [x] Reproduce foreground, background and cold-start notification tap routing.
+- [x] Preserve privacy-safe lock-screen content without discarding the actionable destination.
+- [x] Map supported notification links to real native routes with authentication deferral and a
+  safe notification-centre fallback.
+- [x] Add backend payload-contract tests and native notification-response regression tests.
+- [x] Prove representative message, transaction, event and social routing through contract tests;
+  prove a killed-app authenticated Events destination on Android. A real remote-push tap remains
+  physical-device/provider evidence and is not represented by the emulator shell notification.
+- [x] Re-run all other pre-registration launch gates and fix machine-actionable regressions.
+- [ ] Refresh authoritative evidence and score, commit/push scoped work, and bank green CI.
+
+### 2026-08-31 evidence
+
+- Root cause: `FCMPushService` replaced every ordinary payload with the title “New
+  Notification” and `link=/notifications`; the device never received the producer's route.
+  A second, older mapper handled notification taps and did not know newer native modules.
+- The central payload contract is now string-only and versioned (`schema_version`, `type`,
+  `link`). It keeps generic body copy, uses a translated privacy-safe category/curated title,
+  validates the internal destination and strips all arbitrary producer data. Confidential,
+  credential-bearing, browser/staff-only and unsupported destinations fail to Notifications.
+- Foreground/background response events and terminated-app last responses share one observer;
+  notification startup wins over a duplicate App/Universal Link, is cleared after consumption,
+  and waits behind the existing authentication gate.
+- All navigation now uses `app/+native-intent.ts`. Producer routes newly covered include Courses,
+  Feed items, Connections/Network, current Profile, job application pipelines, marketplace seller
+  tools and saved searches. Representative message, wallet, event, social, goal, course, job,
+  marketplace and volunteering routes are guarded.
+- Focused push/dispatcher/paid-campaign backend result: 60 tests / 150 assertions. Full mobile
+  result: 377 suites / 2,648 tests;
+  coverage 76.40% lines over 336 files, with every ratchet floor green. TypeScript, zero-warning
+  lint, Expo Doctor 18/18, 462/462 resolvable API routes, 256-route parity, network/certificate
+  policy, audience, translations, assets, dependency audit and 14.86 MB bundle budget are green.
+- A freshly bundled release APK built and installed. The maintained login journey passed on the
+  debug build, then `nexus://events` launched from a killed authenticated app into the real Events
+  screen. Android forbids a shell-owned synthetic notification from launching another package,
+  so this is deep-link evidence plus lifecycle-contract evidence—not a fabricated remote-push tap.
+- Separately opted-in paid campaigns retain their approved promotional copy. Their CTA may open
+  the system browser only when it is a credential-free HTTPS URL on a public DNS host; ordinary
+  notification payloads cannot use this exception.
+- Enrollment-only red gates remain exactly the Team-ID AASA file and numeric App Store Connect ID.
+
+### Protected boundaries
+
+- Do not deploy, publish OTA/AASA, submit either store, mutate the protected Google Play
+  release, configure unavailable Apple credentials or claim physical-device/human evidence.
+- Do not expose message text, member identity or other sensitive context merely to make a
+  lock-screen notification more descriptive; actionable routing belongs in non-display data.
+
 ## Active goal — 2026-08-30
 
 Complete every release-readiness task that can be performed autonomously with code, local

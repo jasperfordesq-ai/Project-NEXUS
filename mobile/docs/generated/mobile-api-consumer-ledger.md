@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-08-30
+Last reviewed: 2026-08-31
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -128,8 +128,8 @@ and the places a contract test earns the most.
 | POST | `/api/auth/verify-email` | auth.ts:174 |
 | POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:53 |
 | POST | `/api/v2/auth/register` | auth.ts:153 |
-| GET | `/api/v2/blog` | blog.ts:45 |
-| GET | `/api/v2/blog/{param}` | blog.ts:56 |
+| GET | `/api/v2/blog` | blog.ts:43 |
+| GET | `/api/v2/blog/{param}` | blog.ts:54 |
 | POST | `/api/v2/bookmarks` | feed.ts:380 |
 | GET | `/api/v2/categories` | exchanges.ts:187 |
 | GET | `/api/v2/clubs` | clubs.ts:31 |
