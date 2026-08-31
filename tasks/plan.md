@@ -43,12 +43,12 @@ authentication deferral and safe fallback behaviour.
 
 - [x] Task 37: Re-run the full machine-actionable mobile launch audit and remediate any new
   release, security, accessibility, observability, bundle or store-evidence defects found.
-- [ ] Task 38: Update the readiness score, journey ledger and changelog using only proved
+- [x] Task 38: Update the readiness score, journey ledger and changelog using only proved
   evidence; run all local gates, commit scoped changes, push `main`, and fix CI/device failures.
 
 ### Checkpoint L: Pre-registration boundary complete
 
-- [ ] All remaining items require store registration/approval, signing credentials,
+- [x] All remaining items require store registration/approval, signing credentials,
   production/store mutation, owner/legal judgement or genuine human/physical-device proof.
 
 ## Active extension — 2026-08-30

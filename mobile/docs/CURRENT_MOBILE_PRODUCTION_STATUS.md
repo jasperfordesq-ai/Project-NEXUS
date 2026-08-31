@@ -44,6 +44,10 @@ safely to Notifications. The full mobile suite now passes **377 suites / 2,648 t
 76.40% global line coverage; a fresh release APK built/installed and a killed authenticated
 Android launch reached Events. Row 7.14 and the score remain PARTIAL/714 until the fixed backend
 is deployed and a real provider-delivered notification tap is observed on physical hardware.
+The final source was banked by full CI `33376178547`, CodeQL `33376077568` and Security Scan
+`33376079789`; Android device run `33374798270` completed all 13 maintained flows, and unsigned
+iOS Simulator run `33376091426` compiled, installed, toured and content-verified the four accepted
+App Store frames. These runs do not claim APNs delivery, signing, TestFlight or physical-iPhone proof.
 
 Apple preparation has moved ledger row 7.18 from OPEN to PARTIAL. The app compiled in EAS's
 macOS iOS Simulator toolchain, its final `.app` was inspected, and the exact-source unsigned

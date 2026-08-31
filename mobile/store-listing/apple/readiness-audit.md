@@ -155,6 +155,10 @@ Adding it without a real background task would widen review and energy-use risk.
   Android login flow passed, and an authenticated killed-app `nexus://events` launch reached
   the real Events screen. Android does not permit a shell-owned synthetic notification to launch
   another package, so a provider-delivered notification tap remains an explicit device gate.
+- Exact-current unsigned iOS Simulator run `33376091426` compiled the Release app, installed it on
+  the iPhone 16 Pro Max Simulator, completed the four-screen tour and content-verified all four
+  opaque App Store PNGs. Its predecessor failed before compilation when CocoaPods' public CDN
+  returned HTTP 400 for a Stripe podspec; the workflow now makes three bounded resolution attempts.
 - The React privacy-policy file passed ESLint and the React TypeScript project check; public
   prerender tests passed **2/2**.
 - Documentation hygiene, version consistency and `git diff --check` passed.

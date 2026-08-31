@@ -12,7 +12,7 @@
   prove a killed-app authenticated Events destination on Android. A real remote-push tap remains
   physical-device/provider evidence and is not represented by the emulator shell notification.
 - [x] Re-run all other pre-registration launch gates and fix machine-actionable regressions.
-- [ ] Refresh authoritative evidence and score, commit/push scoped work, and bank green CI.
+- [x] Refresh authoritative evidence and score, commit/push scoped work, and bank green CI.
 
 ### 2026-08-31 evidence
 
@@ -45,6 +45,11 @@
 - Device tokens are grouped by the recipient's `preferred_language` before privacy-safe push copy
   is rendered, so queue/cron sends do not silently revert non-English lock screens to English.
 - Enrollment-only red gates remain exactly the Team-ID AASA file and numeric App Store Connect ID.
+- Banked workflow evidence: forced full CI `33376178547`, CodeQL `33376077568`, Security Scan
+  `33376079789`, Android's 13-flow device run `33374798270`, and the unsigned four-screen iOS
+  Simulator run `33376091426` all completed successfully. The first iOS attempt failed before
+  compilation on a transient CocoaPods CDN HTTP 400; bounded dependency-resolution retries were
+  added, and the successful rerun compiled, installed, toured and content-verified all four PNGs.
 
 ### Protected boundaries
 
