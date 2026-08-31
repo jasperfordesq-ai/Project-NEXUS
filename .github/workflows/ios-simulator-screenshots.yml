@@ -230,7 +230,21 @@ jobs:
           mkdir -p "$HOME/.expo"
           npx expo prebuild --platform ios --no-install
           cd ios
-          pod install
+          # CocoaPods' public CDN occasionally returns a transient 4xx/5xx while
+          # fetching a podspec. Retry the complete resolution rather than treating
+          # one CDN response as an application build failure.
+          for attempt in 1 2 3; do
+            if pod install; then
+              break
+            fi
+            if [[ "$attempt" -eq 3 ]]; then
+              echo "CocoaPods install failed after ${attempt} attempts."
+              exit 1
+            fi
+            delay=$((attempt * 15))
+            echo "CocoaPods install attempt ${attempt} failed; retrying in ${delay}s."
+            sleep "$delay"
+          done
 
       - name: Compile the unsigned iOS Release build
         if: steps.restored-simulator-app.outputs.found != 'true'
