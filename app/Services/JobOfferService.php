@@ -339,16 +339,16 @@ class JobOfferService
                         Notification::createNotification(
                             (int) $posterId,
                             __('svc_notifications.job_offer.accepted_bell', ['title' => $jobTitle]),
-                            "/jobs/{$offer->vacancy_id}/applications",
+                            "/jobs/{$offer->vacancy_id}#applications",
                             'job_application_status'
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', __('svc_notifications.job_offer.accepted_bell', ['title' => $jobTitle]), "/jobs/{$offer->vacancy_id}/applications");
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', __('svc_notifications.job_offer.accepted_bell', ['title' => $jobTitle]), "/jobs/{$offer->vacancy_id}#applications");
                         RealtimeService::broadcastOnly((int) $posterId, __('svc_notifications.job_offer.accepted_push_title', ['title' => $jobTitle]), [
                             'type'      => 'job_offer_accepted',
                             'job_id'    => (int) $offer->vacancy_id,
                             'job_title' => $jobTitle,
                             'message'   => __('svc_notifications.job_offer.accepted_push_message', ['title' => $jobTitle]),
-                            'url'       => "/jobs/{$offer->vacancy_id}/applications",
+                            'url'       => "/jobs/{$offer->vacancy_id}#applications",
                         ]);
                     });
                 }
@@ -425,16 +425,16 @@ class JobOfferService
                         Notification::createNotification(
                             (int) $posterId,
                             __('svc_notifications.job_offer.rejected_bell', ['title' => $jobTitle]),
-                            "/jobs/{$offer->vacancy_id}/applications",
+                            "/jobs/{$offer->vacancy_id}#applications",
                             'job_application_status'
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', __('svc_notifications.job_offer.rejected_bell', ['title' => $jobTitle]), "/jobs/{$offer->vacancy_id}/applications");
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', __('svc_notifications.job_offer.rejected_bell', ['title' => $jobTitle]), "/jobs/{$offer->vacancy_id}#applications");
                         RealtimeService::broadcastOnly((int) $posterId, __('svc_notifications.job_offer.rejected_push_title', ['title' => $jobTitle]), [
                             'type'      => 'job_offer_rejected',
                             'job_id'    => (int) $offer->vacancy_id,
                             'job_title' => $jobTitle,
                             'message'   => __('svc_notifications.job_offer.rejected_push_message', ['title' => $jobTitle]),
-                            'url'       => "/jobs/{$offer->vacancy_id}/applications",
+                            'url'       => "/jobs/{$offer->vacancy_id}#applications",
                         ]);
                     });
                 }

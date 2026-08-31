@@ -86,12 +86,13 @@ class NativePushProducerInventoryTest extends TestCase
         ], $pushMethods);
     }
 
-    public function test_job_application_push_uses_the_native_applications_path_not_a_fragment(): void
+    public function test_job_application_notification_uses_the_shared_web_and_native_applications_link(): void
     {
         $source = (string) file_get_contents(base_path('app/Http/Controllers/Api/JobVacanciesController.php'));
 
-        // The email review URL intentionally keeps its browser fragment. Both
-        // the in-app bell and native push use the fragment-free native path.
-        self::assertSame(2, substr_count($source, '"/jobs/{$id}/applications"'));
+        // The stored destination powers both the React notification bell and the
+        // native push. React owns the fragment route; the native intent mapper
+        // converts the same link to the implemented employer pipeline screen.
+        self::assertSame(2, substr_count($source, '"/jobs/{$id}#applications"'));
     }
 }

@@ -35,7 +35,7 @@ const STATIC_ROUTE_EXPECTATIONS: Record<string, StaticRouteExpectation> = {
   '/goals/1': { notification_link: '/goals/1', native_href: '/(modals)/goal-detail?id=1' },
   '/groups/1': { notification_link: '/groups/1', native_href: '/(modals)/group-detail?id=1' },
   '/jobs/1': { notification_link: '/jobs/1', native_href: '/(modals)/job-detail?id=1' },
-  '/jobs/1/applications': { notification_link: '/jobs/1/applications', native_href: '/(modals)/job-pipeline?id=1' },
+  '/jobs/1#applications': { notification_link: '/jobs/1#applications', native_href: '/(modals)/job-pipeline?id=1' },
   '/jobs/1/kanban': { notification_link: '/jobs/1/kanban', native_href: '/(modals)/job-pipeline?id=1' },
   '/listings/1': { notification_link: '/listings/1', native_href: '/(modals)/exchange-detail?id=1' },
   '/marketplace/orders/sales?order_id=1': { notification_link: '/marketplace/orders/sales?order_id=1', native_href: '/(modals)/marketplace-orders?mode=sales&order_id=1' },

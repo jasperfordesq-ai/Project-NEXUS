@@ -715,7 +715,7 @@
             "title_expression": null,
             "body_expression": "__('svc_notifications.job_application.owner_applied', ['name' => $applicantName, 'title' => $job->title])",
             "type_expression": "job_application",
-            "link_expression": "\"/jobs/{$id}/applications\"",
+            "link_expression": "\"/jobs/{$id}#applications\"",
             "data_expression": null
         },
         {
@@ -2158,7 +2158,7 @@
             "title_expression": null,
             "body_expression": "$acceptMsg",
             "type_expression": "job_application_status",
-            "link_expression": "\"/jobs/{$interview->vacancy_id}/applications\"",
+            "link_expression": "\"/jobs/{$interview->vacancy_id}#applications\"",
             "data_expression": null
         },
         {
@@ -2171,7 +2171,7 @@
             "title_expression": null,
             "body_expression": "$declineMsg",
             "type_expression": "job_application_status",
-            "link_expression": "\"/jobs/{$interview->vacancy_id}/applications\"",
+            "link_expression": "\"/jobs/{$interview->vacancy_id}#applications\"",
             "data_expression": null
         },
         {
@@ -2210,7 +2210,7 @@
             "title_expression": null,
             "body_expression": "$message",
             "type_expression": "job_interview_proposed",
-            "link_expression": "\"/jobs/{$interview->vacancy_id}/applications\"",
+            "link_expression": "\"/jobs/{$interview->vacancy_id}#applications\"",
             "data_expression": null
         },
         {
@@ -2275,7 +2275,7 @@
             "title_expression": null,
             "body_expression": "__('svc_notifications.job_offer.accepted_bell', ['title' => $jobTitle])",
             "type_expression": "job_application_status",
-            "link_expression": "\"/jobs/{$offer->vacancy_id}/applications\"",
+            "link_expression": "\"/jobs/{$offer->vacancy_id}#applications\"",
             "data_expression": null
         },
         {
@@ -2288,7 +2288,7 @@
             "title_expression": null,
             "body_expression": "__('svc_notifications.job_offer.rejected_bell', ['title' => $jobTitle])",
             "type_expression": "job_application_status",
-            "link_expression": "\"/jobs/{$offer->vacancy_id}/applications\"",
+            "link_expression": "\"/jobs/{$offer->vacancy_id}#applications\"",
             "data_expression": null
         },
         {

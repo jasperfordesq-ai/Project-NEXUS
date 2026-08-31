@@ -554,7 +554,7 @@ class JobVacanciesController extends BaseApiController
                             'name' => $applicantName,
                             'title' => $job->title,
                         ]),
-                        "/jobs/{$id}/applications",
+                        "/jobs/{$id}#applications",
                         'job_application'
                     );
                     \App\Services\NotificationDispatcher::fanOutPush(
@@ -564,7 +564,7 @@ class JobVacanciesController extends BaseApiController
                             'name' => $applicantName,
                             'title' => $job->title,
                         ]),
-                        "/jobs/{$id}/applications"
+                        "/jobs/{$id}#applications"
                     );
                 });
             }

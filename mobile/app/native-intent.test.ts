@@ -24,6 +24,7 @@ describe('native intent route rewriting', () => {
 
   it('maps push-producer seller and job workflow links to actionable native screens', () => {
     expect(mapSystemPathToNativeRoute('/marketplace/seller/dashboard')).toBe('/(modals)/marketplace-tools');
+    expect(mapSystemPathToNativeRoute('/jobs/44#applications')).toBe('/(modals)/job-pipeline?id=44');
     expect(mapSystemPathToNativeRoute('/jobs/44/applications')).toBe('/(modals)/job-pipeline?id=44');
     expect(mapSystemPathToNativeRoute('/volunteering/7')).toBe('/(modals)/volunteering-detail?id=7');
     expect(mapSystemPathToNativeRoute('/endorsements')).toBe('/(modals)/endorsements');

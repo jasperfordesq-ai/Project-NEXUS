@@ -200,23 +200,23 @@ class JobInterviewService
                         Notification::createNotification(
                             (int) $posterId,
                             $acceptMsg,
-                            "/jobs/{$interview->vacancy_id}/applications",
+                            "/jobs/{$interview->vacancy_id}#applications",
                             'job_application_status'
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', $acceptMsg, "/jobs/{$interview->vacancy_id}/applications");
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', $acceptMsg, "/jobs/{$interview->vacancy_id}#applications");
                         RealtimeService::broadcastOnly((int) $posterId, $acceptMsg, [
                             'type'      => 'job_interview_accepted',
                             'job_id'    => (int) $interview->vacancy_id,
                             'job_title' => $jobTitle,
                             'message'   => $acceptMsg,
-                            'url'       => "/jobs/{$interview->vacancy_id}/applications",
+                            'url'       => "/jobs/{$interview->vacancy_id}#applications",
                         ]);
                         static::sendInterviewEmail(
                             (int) $posterId,
                             'emails_misc.jobs.interview_email_subject_accepted',
                             'emails_misc.jobs.interview_accepted',
                             ['title' => $jobTitle],
-                            "/jobs/{$interview->vacancy_id}/applications"
+                            "/jobs/{$interview->vacancy_id}#applications"
                         );
                     });
                 }
@@ -295,23 +295,23 @@ class JobInterviewService
                         Notification::createNotification(
                             (int) $posterId,
                             $declineMsg,
-                            "/jobs/{$interview->vacancy_id}/applications",
+                            "/jobs/{$interview->vacancy_id}#applications",
                             'job_application_status'
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', $declineMsg, "/jobs/{$interview->vacancy_id}/applications");
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', $declineMsg, "/jobs/{$interview->vacancy_id}#applications");
                         RealtimeService::broadcastOnly((int) $posterId, $declineMsg, [
                             'type'      => 'job_interview_declined',
                             'job_id'    => (int) $interview->vacancy_id,
                             'job_title' => $jobTitle,
                             'message'   => $declineMsg,
-                            'url'       => "/jobs/{$interview->vacancy_id}/applications",
+                            'url'       => "/jobs/{$interview->vacancy_id}#applications",
                         ]);
                         static::sendInterviewEmail(
                             (int) $posterId,
                             'emails_misc.jobs.interview_email_subject_declined',
                             'emails_misc.jobs.interview_declined',
                             ['title' => $jobTitle],
-                            "/jobs/{$interview->vacancy_id}/applications"
+                            "/jobs/{$interview->vacancy_id}#applications"
                         );
                     });
                 }
@@ -597,7 +597,7 @@ class JobInterviewService
                                     'emails_misc.jobs.interview_email_subject_reminder',
                                     'emails_misc.jobs.interview_reminder',
                                     $params,
-                                    "/jobs/{$interview->vacancy_id}/applications"
+                                    "/jobs/{$interview->vacancy_id}#applications"
                                 )) {
                                     $emailOk = false;
                                     return;
@@ -607,16 +607,16 @@ class JobInterviewService
                                     Notification::createNotification(
                                         (int) $posterId,
                                         $message,
-                                        "/jobs/{$interview->vacancy_id}/applications",
+                                        "/jobs/{$interview->vacancy_id}#applications",
                                         'job_interview_proposed'
                                     );
-                                    \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_interview_proposed', $message, "/jobs/{$interview->vacancy_id}/applications");
+                                    \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_interview_proposed', $message, "/jobs/{$interview->vacancy_id}#applications");
                                     RealtimeService::broadcastOnly((int) $posterId, __('emails_misc.jobs.interview_reminder_push_title'), [
                                         'type'      => 'job_interview_reminder',
                                         'job_id'    => (int) $interview->vacancy_id,
                                         'job_title' => $jobTitle,
                                         'message'   => $message,
-                                        'url'       => "/jobs/{$interview->vacancy_id}/applications",
+                                        'url'       => "/jobs/{$interview->vacancy_id}#applications",
                                     ]);
                                 } catch (\Throwable $e) {
                                     Log::warning('JobInterviewService::sendReminders poster bell/push failed after email send', [

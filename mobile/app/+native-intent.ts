@@ -155,7 +155,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
   const parsed = parseSystemPath(rawPath);
   if (!parsed) return null;
 
-  const { section, segments, params } = parsed;
+  const { section, segments, params, fragment } = parsed;
   const [id, detail] = segments;
 
   switch (section) {
@@ -321,7 +321,9 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       if (id && detail === 'analytics') return appendParams('/(modals)/job-analytics', { ...params, id });
       if (id && detail === 'edit') return appendParams('/(modals)/edit-job', { ...params, id });
       if (id && detail === 'kanban') return appendParams('/(modals)/job-pipeline', { ...params, id });
-      if (id && detail === 'applications') return appendParams('/(modals)/job-pipeline', { ...params, id });
+      if (id && (detail === 'applications' || fragment === 'applications')) {
+        return appendParams('/(modals)/job-pipeline', { ...params, id });
+      }
       return id ? appendParams('/(modals)/job-detail', { ...params, id }) : appendParams('/(modals)/jobs', params);
 
     // -- Federation ----------------------------------------------------------
@@ -632,7 +634,12 @@ function mapFeedPath(segments: string[], params: Record<string, string>): string
   return appendParams('/(tabs)/home', params);
 }
 
-function parseSystemPath(rawPath: string | null): { section: string; segments: string[]; params: Record<string, string> } | null {
+function parseSystemPath(rawPath: string | null): {
+  section: string;
+  segments: string[];
+  params: Record<string, string>;
+  fragment: string | null;
+} | null {
   const trimmed = rawPath?.trim();
   if (!trimmed) return null;
   const normalized = trimmed.includes('://') || trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
@@ -658,6 +665,7 @@ function parseSystemPath(rawPath: string | null): { section: string; segments: s
     section,
     segments,
     params: Object.fromEntries(url.searchParams.entries()),
+    fragment: url.hash ? decodeURIComponent(url.hash.slice(1)) : null,
   };
 }
 
