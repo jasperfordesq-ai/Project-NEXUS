@@ -148,12 +148,31 @@ class AppController extends BaseApiController
         $version = preg_replace('/[^a-zA-Z0-9_.-]/', '', substr($version, 0, 20));
         $platform = preg_replace('/[^a-zA-Z0-9_.-]/', '', substr($platform, 0, 20));
 
+        /*
+         * 🔴 The message carries the fault's IDENTITY only. The full payload goes in the
+         * log context, NOT in the message text.
+         *
+         * Sentry groups a plain Log::error by its message text, and this message used to
+         * embed json_encode($data) whole — including the mobile client's JS `stack`, whose
+         * frames are absolute paths containing a per-install simulator/bundle UUID. Two
+         * reports of the identical fault therefore never had the same message, so each one
+         * opened its own Sentry issue. Measured on 2026-09-01: a single expo-secure-store
+         * failure ("A required entitlement isn't present", key nexus_tenant_slug) produced
+         * roughly 25 separate issues in four days — 25 of the 37 items in the nightly triage
+         * queue, all one bug. Same defect class as the GDPR alarm in NEXUS-PHP-51, where
+         * request ages embedded in the message re-grouped it every night.
+         *
+         * Nothing is lost: appLogIdentity() drops only the volatile diagnostic fields, and
+         * the untouched payload is passed as log context, which reaches both the log file
+         * and Sentry (as the `log_context` extra). Grouping still separates genuinely
+         * different faults, because the error's name and message stay in the identity.
+         */
         $line = sprintf(
             '[APP LOG] Event: %s | Version: %s | Platform: %s | Data: %s',
             $event,
             $version,
             $platform,
-            json_encode($data)
+            json_encode(self::appLogIdentity($data))
         );
 
         /*
@@ -176,11 +195,73 @@ class AppController extends BaseApiController
          * before, so the change cannot make things worse.
          */
         if ($event === 'mobile_error') {
-            \Illuminate\Support\Facades\Log::error($line);
+            \Illuminate\Support\Facades\Log::error($line, ['app_log_data' => $data]);
         } else {
-            \Illuminate\Support\Facades\Log::warning($line);
+            \Illuminate\Support\Facades\Log::warning($line, ['app_log_data' => $data]);
         }
 
         return $this->respondWithData(['message' => __('api_controllers_1.app.log_recorded')]);
+    }
+
+    /**
+     * Payload fields that describe WHERE a fault happened rather than WHICH fault it is.
+     *
+     * Every one of these carries per-install detail (absolute bundle paths, simulator and
+     * application UUIDs, line offsets that move with each build), so including any of them
+     * in the message defeats Sentry grouping. They stay in the log context.
+     */
+    private const APP_LOG_VOLATILE_KEYS = [
+        'stack',
+        'stacktrace',
+        'stack_trace',
+        'componentstack',
+        'component_stack',
+        'trace',
+    ];
+
+    /** Longest string kept in the identity; anything longer is diagnostic detail. */
+    private const APP_LOG_IDENTITY_VALUE_MAX = 300;
+
+    /**
+     * Reduce an app-log payload to the part that identifies the fault.
+     *
+     * Keeps scalar fields (an error's `name`, `message`, the storage key and operation),
+     * drops the volatile ones above, drops nested structures — whose shape varies between
+     * clients — and sorts by key so that two clients serialising the same fields in a
+     * different order still produce a byte-identical message.
+     *
+     * @param  mixed  $data  Raw `data` member of the request body; not necessarily an array.
+     * @return mixed  A stable, bounded summary safe to use as a Sentry grouping key.
+     */
+    private static function appLogIdentity(mixed $data): mixed
+    {
+        if (is_string($data)) {
+            return mb_substr($data, 0, self::APP_LOG_IDENTITY_VALUE_MAX);
+        }
+
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        $identity = [];
+
+        foreach ($data as $key => $value) {
+            if (in_array(strtolower((string) $key), self::APP_LOG_VOLATILE_KEYS, true)) {
+                continue;
+            }
+
+            // Nested structures stay in the context: their shape is not part of the identity.
+            if (is_array($value) || is_object($value)) {
+                continue;
+            }
+
+            $identity[$key] = is_string($value)
+                ? mb_substr($value, 0, self::APP_LOG_IDENTITY_VALUE_MAX)
+                : $value;
+        }
+
+        ksort($identity);
+
+        return $identity;
     }
 }
