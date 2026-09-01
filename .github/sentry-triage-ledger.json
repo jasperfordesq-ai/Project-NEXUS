@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-08-28T02:09:48.501Z",
+  "lastRunAt": "2026-09-01T09:52:41.535Z",
   "issues": {
     "123575422": {
       "title": "Support report submitted",
@@ -307,6 +307,339 @@
       "sha": "28948ed1f",
       "decidedAt": "2026-08-28T11:12:00.957Z",
       "decidedAtRelease": "nexus-php@489c627e13b9"
+    },
+    "143385289": {
+      "title": "Error: Error encountered while fetching Expo token: TypeError: Network request failed.",
+      "culprit": "tryCallOne(index.android)",
+      "decision": "watching",
+      "note": "Flagged sensitive only because the word \"token\" appears in the title; it is a push-registration network error, not a credential leak. One event, one user, 2026-08-28, release ie.project.nexus@1.2.0+5, tagged module=push-notifications: \"Error encountered while fetching Expo token: TypeError: Network request failed.\" That is a transient failure reaching Expo's push service, so that device simply did not register for push. A single sample is not a signal, and the app has no offline retry to test against. Watching: if this becomes common, members would silently stop receiving push notifications with nothing to show for it, and registration should gain a bounded retry.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:51.121Z",
+      "decidedAtRelease": "ie.project.nexus@1.2.0+5"
+    },
+    "143390111": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "SENSITIVE (gdpr) — superseded grouping, no action. This is the OLD message format of the nightly GDPR backlog alarm, the one that embedded each request's age in the message text and therefore minted a new Sentry group every night. That defect is fixed and live: commit cf7323601 moved the ages into log_context, and the current alarm groups stably as NEXUS-PHP-64 (143723388). This pre-fix group cannot recur. The backlog behind it is tracked on 143723388; the standing decision from NEXUS-PHP-4A is that the four requests are the owner's own admin test requests.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:49.637Z",
+      "decidedAtRelease": "nexus-php@7878297dc5c1"
+    },
+    "143465400": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "FIXED (grouping only) in 9c36b61d1. This issue is one of THIRTY-ONE Sentry groups opened by a single mobile fault in four days — 31 of the 37 items in the 2026-09-01 triage queue. Root cause of the fan-out: POST /api/app/log built its Log::error message by embedding the client payload whole, including the JS `stack`, whose frames are absolute paths carrying a per-install CoreSimulator device and application UUID. Sentry groups a plain Log::error by message text, so identical faults never matched. Five sampled events were byte-identical except for those UUIDs. The message now carries the fault's identity only (event, version, platform plus bounded, key-sorted scalar fields); the full payload moves to log context and still reaches Sentry as the `log_context` extra. Three regression tests in AppControllerTest hold it, verified failing before the fix. NOT DEPLOYED. 🔴 The MOBILE fault itself is NOT fixed — see the needs-owner decision on NEXUS-PHP-67 (143797835).",
+      "sha": "9c36b61d1",
+      "decidedAt": "2026-09-01T10:55:54.563Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143473828": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:05.340Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143507026": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:42.448Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143513306": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:41.052Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143518121": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:39.590Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143523318": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:38.060Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143527734": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:36.472Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143532124": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "FIXED (grouping only) in 9c36b61d1. This issue is one of THIRTY-ONE Sentry groups opened by a single mobile fault in four days — 31 of the 37 items in the 2026-09-01 triage queue. Root cause of the fan-out: POST /api/app/log built its Log::error message by embedding the client payload whole, including the JS `stack`, whose frames are absolute paths carrying a per-install CoreSimulator device and application UUID. Sentry groups a plain Log::error by message text, so identical faults never matched. Five sampled events were byte-identical except for those UUIDs. The message now carries the fault's identity only (event, version, platform plus bounded, key-sorted scalar fields); the full payload moves to log context and still reaches Sentry as the `log_context` extra. Three regression tests in AppControllerTest hold it, verified failing before the fix. NOT DEPLOYED. 🔴 The MOBILE fault itself is NOT fixed — see the needs-owner decision on NEXUS-PHP-67 (143797835).",
+      "sha": "9c36b61d1",
+      "decidedAt": "2026-09-01T10:55:49.813Z",
+      "decidedAtRelease": "nexus-php@5a34b9aef871"
+    },
+    "143534254": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:02.369Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143535155": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:35.082Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143537623": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:33.438Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143538655": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:31.989Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143540595": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:30.380Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143544800": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:28.817Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143586620": {
+      "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
+      "culprit": null,
+      "decision": "wont-fix",
+      "note": "SENSITIVE (gdpr) — superseded grouping, no action. This is the OLD message format of the nightly GDPR backlog alarm, the one that embedded each request's age in the message text and therefore minted a new Sentry group every night. That defect is fixed and live: commit cf7323601 moved the ages into log_context, and the current alarm groups stably as NEXUS-PHP-64 (143723388). This pre-fix group cannot recur. The backlog behind it is tracked on 143723388; the standing decision from NEXUS-PHP-4A is that the four requests are the owner's own admin test requests.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:48.073Z",
+      "decidedAtRelease": "nexus-php@18effa577cdc"
+    },
+    "143603545": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:27.333Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143662646": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:25.865Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143663581": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:24.219Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143665071": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:22.595Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143668516": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:21.190Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143670393": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:19.497Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143671561": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:17.879Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143679675": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:16.280Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143682423": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:14.817Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143683146": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:13.281Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143683600": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:11.571Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143685590": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:10.127Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143686227": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:08.533Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143688048": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:07.144Z",
+      "decidedAtRelease": "nexus-php@ad2029ba7fc1"
+    },
+    "143723388": {
+      "title": "GDPR ALERT: data-subject requests pending past the response threshold",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "SENSITIVE (gdpr) — diagnosed, no code touched. GOOD NEWS FIRST: the nightly respawn defect IS fixed and IS live. Commit cf7323601 moved the per-request ages out of the message text into log_context, and this issue proves it works — one stable group (\"GDPR ALERT: data-subject requests pending past the response threshold\") accumulating 3 events across 2026-08-30/31 and 09-01, instead of a fresh group each morning. THE BACKLOG ITSELF REMAINS AND IS GROWING: 4 requests, all 4 already past the 30-day statutory deadline — #6 t5 portability 78d, #7 t5 rectification 77d, #8 t5 objection 77d, #11 t11 rectification 61d. The standing owner decision from NEXUS-PHP-4A (2026-08-13) is that these are the owner's own admin test requests, so there is no real Article 12(3) clock. If that is still true, closing them in the admin GDPR queue is what stops the alarm; it will otherwise fire nightly for ever with rising numbers, which trains everyone to ignore a compliance alarm. Owner action, not code.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:46.685Z",
+      "decidedAtRelease": "nexus-php@5a34b9aef871"
+    },
+    "143725191": {
+      "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "SENSITIVE (safeguarding) — diagnosed, no code touched. Two findings. (1) The alarm itself: tenant 2 has no safeguarding jurisdiction configured (log_context: affected_count 1, jurisdiction \"unconfigured\", configured false), so the vetted-interaction contact gate cannot operate. The alarm states its own remedy — configure the jurisdiction in the broker panel under Vetting -> Jurisdiction. That is an ADMIN action, not a code change, and it is the same unresolved condition already recorded against NEXUS-PHP-39. (2) A defect in the alarm: 143725191 and 143725193 are TWO Sentry groups for the SAME occurrence, same second. 143725191 carries logger=production and a log_context extra (the Log::error leg); 143725193 carries neither (the explicit Sentry capture leg). So every occurrence double-reports and doubles its weight in the queue and in the post-deploy error watch. Same two-leg pattern documented against NEXUS-PHP-51. Suggested fix: send one leg only, or fingerprint both identically. Not applied — safeguarding code needs owner authorisation.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:43.817Z",
+      "decidedAtRelease": "nexus-php@5a34b9aef871"
+    },
+    "143725193": {
+      "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "SENSITIVE (safeguarding) — diagnosed, no code touched. Two findings. (1) The alarm itself: tenant 2 has no safeguarding jurisdiction configured (log_context: affected_count 1, jurisdiction \"unconfigured\", configured false), so the vetted-interaction contact gate cannot operate. The alarm states its own remedy — configure the jurisdiction in the broker panel under Vetting -> Jurisdiction. That is an ADMIN action, not a code change, and it is the same unresolved condition already recorded against NEXUS-PHP-39. (2) A defect in the alarm: 143725191 and 143725193 are TWO Sentry groups for the SAME occurrence, same second. 143725191 carries logger=production and a log_context extra (the Log::error leg); 143725193 carries neither (the explicit Sentry capture leg). So every occurrence double-reports and doubles its weight in the queue and in the post-deploy error watch. Same two-leg pattern documented against NEXUS-PHP-51. Suggested fix: send one leg only, or fingerprint both identically. Not applied — safeguarding code needs owner authorisation.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:45.207Z",
+      "decidedAtRelease": "nexus-php@5a34b9aef871"
+    },
+    "143797835": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "needs-owner",
+      "note": "THE REAL MOBILE FAULT, needing a decision only the owner can take. expo-secure-store fails on every write: SecureStore.setItemAsync -> iOS Keychain -> \"A required entitlement isn't present\" (key nexus_tenant_slug, storage_op set). SOURCE IDENTIFIED, and it is almost certainly not a member: every event carries an iOS Simulator bundle path under /Users/runner/, X-Tenant-Slug partner-demo, a GitHub-Actions Azure IP and a US country code — which is exactly .github/workflows/ios-simulator-screenshots.yml (runs-on macos-15, EXPO_PUBLIC_DEFAULT_TENANT partner-demo, EXPO_PUBLIC_API_URL https://api.project-nexus.ie). The unsigned Simulator build has no keychain-sharing entitlement, so the Keychain refuses it. Consequence in the app: mobile/lib/storage.ts set() caches in memory ONLY after a successful encrypted write, so a failed write persists nothing and the tenant slug is lost — the \"random logouts\" symptom that reporting was added to diagnose. Two decisions for the owner: (1) should the CI screenshot tour keep pointing at PRODUCTION, where its failures land in real error tracking; (2) does a non-secret value like the tenant slug belong in the Keychain at all, or should storage.set fall back to plain storage for non-secret keys so a missing entitlement cannot silently break persistence. Not fixed automatically: both are mobile build/ architecture choices, and an iOS build cannot be verified from this machine.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:00.839Z",
+      "decidedAtRelease": "nexus-php@5a34b9aef871"
+    },
+    "143911830": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Duplicate grouping of the same single mobile fault as NEXUS-PHP-5E/57/69 — one expo-secure-store write failure (\"A required entitlement isn't present\", key nexus_tenant_slug) that opened 31 separate Sentry groups in four days because the log message embedded a per-install UUID. The fan-out is fixed on main in 9c36b61d1 (not deployed); these pre-fix groups cannot recur, because the message text changes. Left unresolved rather than bulk-resolved: only the three highest-scoring groups were formally taken and verified this run. The owner can close the rest in Sentry in one action. The underlying mobile fault is recorded as needs-owner on NEXUS-PHP-67 (143797835). Parked so it stops filling the queue.",
+      "sha": null,
+      "decidedAt": "2026-09-01T10:56:03.788Z",
+      "decidedAtRelease": "nexus-php@5a34b9aef871"
+    },
+    "144002377": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "fixed",
+      "note": "FIXED (grouping only) in 9c36b61d1. This issue is one of THIRTY-ONE Sentry groups opened by a single mobile fault in four days — 31 of the 37 items in the 2026-09-01 triage queue. Root cause of the fan-out: POST /api/app/log built its Log::error message by embedding the client payload whole, including the JS `stack`, whose frames are absolute paths carrying a per-install CoreSimulator device and application UUID. Sentry groups a plain Log::error by message text, so identical faults never matched. Five sampled events were byte-identical except for those UUIDs. The message now carries the fault's identity only (event, version, platform plus bounded, key-sorted scalar fields); the full payload moves to log context and still reaches Sentry as the `log_context` extra. Three regression tests in AppControllerTest hold it, verified failing before the fix. NOT DEPLOYED. 🔴 The MOBILE fault itself is NOT fixed — see the needs-owner decision on NEXUS-PHP-67 (143797835).",
+      "sha": "9c36b61d1",
+      "decidedAt": "2026-09-01T10:55:59.224Z",
+      "decidedAtRelease": "nexus-php@5a34b9aef871"
     }
   }
 }
