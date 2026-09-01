@@ -199,8 +199,14 @@ class RegionalAnalyticsService
         $ageBuckets = ['<25' => 0, '25-44' => 0, '45-64' => 0, '65+' => 0];
         $genderBuckets = ['M' => 0, 'F' => 0, 'Other' => 0, 'Unspecified' => 0];
 
+        // This query used to select a `gender` column. No table in this schema
+        // has ever had one — the platform does not collect gender — so the
+        // select failed and took the whole partner dashboard down with it
+        // whenever the demographics module was enabled. `gender_buckets` is kept
+        // in the response so the payload shape stays stable for subscribers, and
+        // every active member is reported as Unspecified, which is the truth.
         $rows = DB::table('users')
-            ->select('date_of_birth', 'gender')
+            ->select('date_of_birth')
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->get();
@@ -220,16 +226,7 @@ class RegionalAnalyticsService
                 }
             }
 
-            $g = strtoupper((string) ($u->gender ?? ''));
-            if ($g === 'M' || $g === 'MALE') {
-                $genderBuckets['M']++;
-            } elseif ($g === 'F' || $g === 'FEMALE') {
-                $genderBuckets['F']++;
-            } elseif ($g !== '') {
-                $genderBuckets['Other']++;
-            } else {
-                $genderBuckets['Unspecified']++;
-            }
+            $genderBuckets['Unspecified']++;
         }
 
         return [

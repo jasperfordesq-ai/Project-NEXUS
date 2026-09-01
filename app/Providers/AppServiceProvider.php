@@ -234,7 +234,6 @@ use App\Services\WebAuthnChallengeStore;
 use App\Services\WebPushService;
 use App\Services\WebhookDispatchService;
 use App\Services\AI\AIServiceFactory;
-use App\Observers\CommentObserver;
 use App\Observers\EventObserver;
 use App\Observers\FeedPostObserver;
 use App\Observers\GroupObserver;
@@ -1163,7 +1162,6 @@ class AppServiceProvider extends ServiceProvider
         MarketplaceListing::observe(MarketplaceListingObserver::class);
         \App\Models\Course::observe(\App\Observers\CourseObserver::class);
         FeedPost::observe(FeedPostObserver::class);
-        \App\Models\Comment::observe(CommentObserver::class);
 
         // Prerender cache invalidation hooks. On save/delete, the observers
         // enqueue a NORMAL-priority recache for the affected route(s) and

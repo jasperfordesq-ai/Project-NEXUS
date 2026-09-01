@@ -217,11 +217,11 @@ class AchievementUnlockablesService
      */
     public static function getUserActiveUnlockables(int $userId): array
     {
-        $tenantId = TenantContext::getId();
-
+        // user_active_unlockables has no tenant_id column: a user belongs to
+        // exactly one tenant, so user_id already scopes the row. Filtering on a
+        // tenant_id here threw "Unknown column" on every call.
         $result = DB::table('user_active_unlockables')
             ->where('user_id', $userId)
-            ->where('tenant_id', $tenantId)
             ->select(['unlockable_type', 'unlockable_key'])
             ->get();
 
@@ -253,18 +253,17 @@ class AchievementUnlockablesService
             return false;
         }
 
-        $tenantId = TenantContext::getId();
-
-        // Upsert the active unlockable
+        // Upsert the active unlockable. The conflict target must match the real
+        // unique index, `unique_user_type` (user_id, unlockable_type); the table
+        // carries no tenant_id, and naming one made every write fail.
         DB::table('user_active_unlockables')->upsert(
             [
-                'tenant_id' => $tenantId,
                 'user_id' => $userId,
                 'unlockable_type' => $type,
                 'unlockable_key' => $key,
                 'activated_at' => now(),
             ],
-            ['tenant_id', 'user_id', 'unlockable_type'],
+            ['user_id', 'unlockable_type'],
             ['unlockable_key', 'activated_at']
         );
 
@@ -276,12 +275,9 @@ class AchievementUnlockablesService
      */
     public static function removeActiveUnlockable(int $userId, string $type): bool
     {
-        $tenantId = TenantContext::getId();
-
         DB::table('user_active_unlockables')
             ->where('user_id', $userId)
             ->where('unlockable_type', $type)
-            ->where('tenant_id', $tenantId)
             ->delete();
 
         return true;

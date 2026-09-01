@@ -39,7 +39,7 @@
  * ---------------------
  * Only patterns where BOTH the table and the column are literal are checked:
  *
- *   DB::table('t')->insert/update/updateOrInsert/insertGetId([ 'col' => ... ])
+ *   DB::table('t')->insert/update/updateOrInsert/insertGetId/upsert([ 'col' => ... ])
  *   INSERT INTO t (col, col, ...)
  *   UPDATE t SET col = ...
  *
@@ -216,7 +216,7 @@ function extractPairs(file) {
     // attributed to the wrong table.
     const stop = rest.search(/;|DB::table\(/);
     const chain = stop === -1 ? rest : rest.slice(0, stop);
-    const writeCall = chain.match(/->(insert|update|updateOrInsert|insertGetId)\s*\(/);
+    const writeCall = chain.match(/->(insert|update|updateOrInsert|insertGetId|upsert)\s*\(/);
     if (!writeCall) continue;
 
     const openParen = afterIndex + writeCall.index + writeCall[0].length - 1;

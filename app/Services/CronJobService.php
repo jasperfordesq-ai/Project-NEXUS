@@ -22,7 +22,7 @@ class CronJobService
     {
         $jobs = DB::table('cron_jobs')
             ->where(fn ($q) => $q->where('tenant_id', $tenantId)->orWhereNull('tenant_id'))
-            ->orderBy('name')
+            ->orderBy('job_name')
             ->get()
             ->map(fn ($j) => (array) $j)
             ->all();

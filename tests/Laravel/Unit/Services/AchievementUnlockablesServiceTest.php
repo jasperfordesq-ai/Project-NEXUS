@@ -22,15 +22,15 @@ use Tests\Laravel\TestCase;
  * and assert the real unlock logic (level requirements, badge requirements,
  * available vs locked partitioning).
  *
- * SCHEMA NOTE — three methods are deferred (markTestSkipped), not converted:
- *   getUserActiveUnlockables(), setActiveUnlockable() (happy path), and
- *   removeActiveUnlockable() all read/write `user_active_unlockables.tenant_id`,
- *   but the nexus_test copy of that table has NO `tenant_id` column (its unique
- *   key is (user_id, unlockable_type) only). Calling them throws
- *   "SQLSTATE[42S22] Unknown column 'tenant_id'" — a test-DB schema-drift issue,
- *   not a logic bug, so it cannot be exercised here without altering the schema.
- *   The not-unlocked branch of setActiveUnlockable() IS tested, because it
- *   returns false before reaching the broken upsert.
+ * SCHEMA NOTE (corrected 2026-09-01) — three of these tests used to be skipped,
+ * on the grounds that `user_active_unlockables.tenant_id` was missing from the
+ * test database and that this was "schema drift, not a logic bug". That reading
+ * was backwards. The committed schema dump, the development database and the
+ * test database all agree the column has never existed; the service was querying
+ * a column that was never there, so every equip, unequip and read of an equipped
+ * item threw "SQLSTATE[42S22] Unknown column 'tenant_id'" in production too.
+ * The service now scopes by user_id alone — a user belongs to exactly one tenant,
+ * so the row is already scoped — and these tests exercise the real round trip.
  */
 class AchievementUnlockablesServiceTest extends TestCase
 {
@@ -127,7 +127,7 @@ class AchievementUnlockablesServiceTest extends TestCase
     public function test_setActiveUnlockable_returns_false_when_not_unlocked(): void
     {
         // A level-1 user has unlocked nothing, so setActiveUnlockable must return
-        // false BEFORE reaching the (tenant_id) upsert — this path is real.
+        // false before it writes anything.
         $user = User::factory()->forTenant($this->testTenantId)->create(['level' => 1]);
         TenantContext::setById($this->testTenantId);
 
@@ -140,25 +140,75 @@ class AchievementUnlockablesServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
-    // --- Deferred: test-DB schema drift (user_active_unlockables.tenant_id missing) ---
+    // --- Equipping: the real round trip against user_active_unlockables ---
 
-    public function test_getUserActiveUnlockables_returns_array(): void
+    public function test_getUserActiveUnlockables_returns_equipped_items_keyed_by_type(): void
     {
-        $this->markTestSkipped(
-            'getUserActiveUnlockables() queries user_active_unlockables.tenant_id, '
-            . 'but the nexus_test table has no tenant_id column (schema drift). '
-            . 'The call throws SQLSTATE[42S22] Unknown column tenant_id. '
-            . 'Cannot be exercised without altering the test schema.'
+        $user = User::factory()->forTenant($this->testTenantId)->create(['level' => 50]);
+        TenantContext::setById($this->testTenantId);
+
+        DB::table('user_active_unlockables')->insert([
+            'user_id'         => $user->id,
+            'unlockable_type' => 'theme',
+            'unlockable_key'  => 'theme_legendary',
+            'activated_at'    => now(),
+        ]);
+
+        $active = AchievementUnlockablesService::getUserActiveUnlockables((int) $user->id);
+
+        $this->assertSame(['theme' => 'theme_legendary'], $active);
+    }
+
+    public function test_setActiveUnlockable_persists_the_choice(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['level' => 50]);
+        TenantContext::setById($this->testTenantId);
+
+        $result = AchievementUnlockablesService::setActiveUnlockable(
+            (int) $user->id,
+            'theme',
+            'theme_legendary'
+        );
+
+        $this->assertTrue($result);
+        $this->assertSame(
+            ['theme' => 'theme_legendary'],
+            AchievementUnlockablesService::getUserActiveUnlockables((int) $user->id)
         );
     }
 
-    public function test_removeActiveUnlockable_returns_true(): void
+    public function test_setActiveUnlockable_replaces_rather_than_duplicates(): void
     {
-        $this->markTestSkipped(
-            'removeActiveUnlockable() filters user_active_unlockables on tenant_id, '
-            . 'but the nexus_test table has no tenant_id column (schema drift). '
-            . 'The DELETE throws SQLSTATE[42S22] Unknown column tenant_id. '
-            . 'Cannot be exercised without altering the test schema.'
-        );
+        // The upsert's conflict target must match the real unique index,
+        // `unique_user_type` (user_id, unlockable_type). If it names a column
+        // that is not in that index, equipping a second theme either throws or
+        // leaves the member with two equipped themes at once.
+        $user = User::factory()->forTenant($this->testTenantId)->create(['level' => 50]);
+        TenantContext::setById($this->testTenantId);
+
+        AchievementUnlockablesService::setActiveUnlockable((int) $user->id, 'theme', 'theme_legendary');
+        AchievementUnlockablesService::setActiveUnlockable((int) $user->id, 'theme', 'theme_dark_gold');
+
+        $rows = DB::table('user_active_unlockables')
+            ->where('user_id', $user->id)
+            ->where('unlockable_type', 'theme')
+            ->get();
+
+        $this->assertCount(1, $rows, 'Equipping a second theme must replace the first, not add a row.');
+        $this->assertSame('theme_dark_gold', $rows[0]->unlockable_key);
+    }
+
+    public function test_removeActiveUnlockable_deletes_the_equipped_row(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['level' => 50]);
+        TenantContext::setById($this->testTenantId);
+
+        AchievementUnlockablesService::setActiveUnlockable((int) $user->id, 'theme', 'theme_legendary');
+        $this->assertNotEmpty(AchievementUnlockablesService::getUserActiveUnlockables((int) $user->id));
+
+        $result = AchievementUnlockablesService::removeActiveUnlockable((int) $user->id, 'theme');
+
+        $this->assertTrue($result);
+        $this->assertSame([], AchievementUnlockablesService::getUserActiveUnlockables((int) $user->id));
     }
 }

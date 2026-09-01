@@ -252,23 +252,27 @@ class MatchingService
                 ->where('user_id', $userId)
                 ->count();
 
+            // match_cache stores these as match_score / distance_km, and marks a
+            // reciprocal match with match_type = 'mutual' — there is no `score`,
+            // `is_mutual` or `distance` column. Naming them threw on the second
+            // query, and the catch below turned the whole method into zeroes.
             $hot = (int) DB::table('match_cache')
                 ->where('user_id', $userId)
-                ->where('score', '>=', 80)
+                ->where('match_score', '>=', 80)
                 ->count();
 
             $mutual = (int) DB::table('match_cache')
                 ->where('user_id', $userId)
-                ->where('is_mutual', true)
+                ->where('match_type', 'mutual')
                 ->count();
 
             $avgScore = DB::table('match_cache')
                 ->where('user_id', $userId)
-                ->avg('score');
+                ->avg('match_score');
 
             $avgDistance = DB::table('match_cache')
                 ->where('user_id', $userId)
-                ->avg('distance');
+                ->avg('distance_km');
 
             return [
                 'total_matches'  => $total,

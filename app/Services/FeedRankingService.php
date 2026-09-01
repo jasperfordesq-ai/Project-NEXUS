@@ -469,10 +469,15 @@ class FeedRankingService
         }
         try {
             $tenantId = TenantContext::getId();
+            // feed_hidden identifies a hidden item by target_type + target_id,
+            // not post_id — the same shape getBatchNegativeSignals() uses. The
+            // old column threw, and the catch below returned the neutral score,
+            // so a post the member had hidden was never penalised.
             $hidden = DB::table('feed_hidden')
                 ->where('user_id', $viewerId)
                 ->where('tenant_id', $tenantId)
-                ->where('post_id', $postId)
+                ->where('target_type', 'post')
+                ->where('target_id', $postId)
                 ->exists();
             if ($hidden) {
                 return self::HIDE_PENALTY;

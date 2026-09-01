@@ -211,11 +211,20 @@ class LeaderboardSeasonService
         }
 
         if ($ranking) {
+            // season_rankings stores the points in `score`; there is no
+            // `season_xp` column. Reading one threw "Undefined array key" and
+            // then ordered by a column that does not exist, so a member who had
+            // a stored ranking row could not load their season rank at all.
+            // `season_xp` is still the key this method promises its callers, so
+            // it is derived here and the two branches return the same shape.
+            $seasonXp = (int) ($ranking['score'] ?? 0);
+
             $position = (int) DB::table('season_rankings')
                 ->where('season_id', $seasonId)
-                ->where('season_xp', '>', $ranking['season_xp'])
+                ->where('score', '>', $seasonXp)
                 ->count() + 1;
 
+            $ranking['season_xp'] = $seasonXp;
             $ranking['position'] = $position;
             return $ranking;
         }
