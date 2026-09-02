@@ -85,7 +85,6 @@ jest.mock('@/lib/hooks/usePaginatedApi', () => ({
 const mockRealtimeContext = {
   unreadMessages: 0,
   unreadNotifications: 0,
-  resetUnread: jest.fn(),
   refreshCounts: jest.fn(),
   subscribeToMessages: jest.fn(() => jest.fn()),
 };

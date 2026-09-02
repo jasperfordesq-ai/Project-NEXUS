@@ -74,10 +74,16 @@ describe('RealtimeContext', () => {
     mockAppStateHandler = undefined;
     mockGetRealtimeClient.mockReturnValue(null);
     mockIsAuthenticated = true;
-    // Default: notification counts API returns 3 unread messages
+    // The message badge must come from /messages/unread-count (the real
+    // messages.is_read count). `notifications/counts.messages` counts bell rows
+    // and is deliberately seeded with a sentinel here: if any test in this file
+    // starts reporting 99, the badge has been wired back to the wrong store.
     mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) {
+        return Promise.resolve({ data: { count: 3 } });
+      }
       if (url.includes('/notifications/counts')) {
-        return Promise.resolve({ data: { total: 5, messages: 3, transactions: 0, social: 0, system: 0 } });
+        return Promise.resolve({ data: { total: 5, messages: 99, transactions: 0, social: 0, system: 0 } });
       }
       if (url.includes('/pusher/config')) {
         return Promise.resolve({ enabled: false, key: null, channels: {} });
@@ -117,17 +123,92 @@ describe('RealtimeContext', () => {
     );
   });
 
-  it('resetUnread sets count to 0', async () => {
+  // ---------------------------------------------------------------------------
+  // Regression: the message badge came back at every login.
+  //
+  // The badge used to read `notifications/counts.messages`, which counts unread
+  // rows in the `notifications` table. Reading a conversation clears
+  // `messages.is_read`, never those rows, so the count survived being read and
+  // reappeared on the next launch. Opening the Messages tab only *looked* like
+  // it helped because resetUnread() set local state to 0 without telling the
+  // server anything.
+  // ---------------------------------------------------------------------------
+
+  it('sources the badge from /messages/unread-count, not the bell count', async () => {
     const { result } = renderHook(() => useRealtimeContext(), { wrapper });
 
-    // Wait for seed
     await waitFor(() => expect(result.current.unreadMessages).toBe(3));
+    expect(mockApiGet).toHaveBeenCalledWith(
+      expect.stringContaining('/messages/unread-count'),
+    );
+    // 99 is the bell count. Reaching it means the badge is reading the store
+    // that reading a message does not clear.
+    expect(result.current.unreadMessages).not.toBe(99);
+  });
 
-    act(() => {
-      result.current.resetUnread();
+  it('reports zero messages when the server says everything is read', async () => {
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) {
+        return Promise.resolve({ data: { count: 0 } });
+      }
+      if (url.includes('/notifications/counts')) {
+        // Stale bell rows for messages already read — the exact production state.
+        return Promise.resolve({ data: { total: 2, messages: 2 } });
+      }
+      return Promise.resolve({ enabled: false, key: null, channels: {} });
     });
 
+    const { result } = renderHook(() => useRealtimeContext(), { wrapper });
+
+    await waitFor(() => expect(result.current.unreadNotifications).toBe(2));
     expect(result.current.unreadMessages).toBe(0);
+  });
+
+  it('keeps the previous badge value when the unread-count call fails', async () => {
+    const { result } = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(result.current.unreadMessages).toBe(3));
+
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) {
+        return Promise.reject(new Error('offline'));
+      }
+      if (url.includes('/notifications/counts')) {
+        return Promise.resolve({ data: { total: 5, messages: 99 } });
+      }
+      return Promise.resolve({});
+    });
+
+    await act(async () => {
+      result.current.refreshCounts(true);
+    });
+
+    // A dropped request must not invent "you have read everything".
+    expect(result.current.unreadMessages).toBe(3);
+  });
+
+  it('refreshCounts(true) re-queries immediately instead of waiting out the throttle', async () => {
+    const { result } = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(result.current.unreadMessages).toBe(3));
+
+    const callsAfterSeed = mockApiGet.mock.calls.filter(([url]: [string]) =>
+      String(url).includes('/messages/unread-count'),
+    ).length;
+
+    // Unforced: inside the 30s throttle window, so it must be a no-op.
+    await act(async () => {
+      result.current.refreshCounts();
+    });
+    expect(
+      mockApiGet.mock.calls.filter(([url]: [string]) => String(url).includes('/messages/unread-count')).length,
+    ).toBe(callsAfterSeed);
+
+    // Forced: the caller has just marked a conversation read and needs truth now.
+    await act(async () => {
+      result.current.refreshCounts(true);
+    });
+    expect(
+      mockApiGet.mock.calls.filter(([url]: [string]) => String(url).includes('/messages/unread-count')).length,
+    ).toBe(callsAfterSeed + 1);
   });
 
   it('subscribeToMessages — handler receives messages, unsubscribe works', async () => {

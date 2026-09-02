@@ -69,19 +69,25 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const { unreadMessages, resetUnread } = useRealtimeContext();
+  const { unreadMessages, refreshCounts } = useRealtimeContext();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
   // Single source of truth from RealtimeContext — no duplicate API call
   const messagesBadgeCount = unreadMessages;
 
-  // Clear the badge whenever the user navigates to the Messages tab
+  // Re-read the real unread count when the user arrives at the Messages tab.
+  //
+  // This used to zero the badge locally instead. That was cosmetic — it told the
+  // server nothing, so the count was still waiting at the next login, which is
+  // what made the red dot look like it kept coming back. Merely *looking* at the
+  // conversation list also does not read anything; the badge must keep agreeing
+  // with the "N unread" chip on the list itself.
   useEffect(() => {
     if (pathname === '/messages') {
-      resetUnread();
+      refreshCounts(true);
     }
-  }, [pathname, resetUnread]);
+  }, [pathname, refreshCounts]);
 
   return (
     <Tabs

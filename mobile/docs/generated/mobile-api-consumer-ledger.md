@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-08-31
+Last reviewed: 2026-09-02
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -22,9 +22,9 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2239 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 55 |
-| Call sites | 552 |
-| Distinct method + endpoint pairs | 462 |
-| Verified against openapi.json | 462 |
+| Call sites | 553 |
+| Distinct method + endpoint pairs | 463 |
+| Verified against openapi.json | 463 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
@@ -444,16 +444,17 @@ and the places a contract test earns the most.
 | POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:885 |
 | POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:892 |
 | GET | `/api/v2/messages` | messages.ts:142 |
-| POST | `/api/v2/messages` | messages.ts:204, messages.ts:230 |
-| DELETE | `/api/v2/messages/{param}` | messages.ts:199 |
+| POST | `/api/v2/messages` | messages.ts:216, messages.ts:242 |
+| DELETE | `/api/v2/messages/{param}` | messages.ts:211 |
 | GET | `/api/v2/messages/{param}` | messages.ts:149 |
-| PUT | `/api/v2/messages/{param}` | messages.ts:195 |
-| POST | `/api/v2/messages/{param}/reactions` | messages.ts:191 |
-| PUT | `/api/v2/messages/{param}/read` | messages.ts:183 |
+| PUT | `/api/v2/messages/{param}` | messages.ts:207 |
+| POST | `/api/v2/messages/{param}/reactions` | messages.ts:203 |
+| PUT | `/api/v2/messages/{param}/read` | messages.ts:195 |
 | DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:175 |
 | POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:179 |
-| GET | `/api/v2/messages/restriction-status` | messages.ts:187 |
-| POST | `/api/v2/messages/voice` | messages.ts:262 |
+| GET | `/api/v2/messages/restriction-status` | messages.ts:199 |
+| GET | `/api/v2/messages/unread-count` | messages.ts:191 |
+| POST | `/api/v2/messages/voice` | messages.ts:274 |
 | DELETE | `/api/v2/notifications/{param}` | notifications.ts:83 |
 | POST | `/api/v2/notifications/{param}/read` | notifications.ts:69 |
 | GET | `/api/v2/notifications/counts` | notifications.ts:64 |

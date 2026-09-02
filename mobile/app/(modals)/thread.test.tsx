@@ -138,12 +138,15 @@ jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
+const mockRefreshCounts = jest.fn();
+
 jest.mock('@/lib/context/RealtimeContext', () => ({
   useRealtimeContext: () => ({
     subscribeToMessages: jest.fn((_threadId: number, callback: (message: MockThreadMessage) => void) => {
       mockRealtimeCallback = callback;
       return jest.fn();
     }),
+    refreshCounts: (...args: unknown[]) => mockRefreshCounts(...args),
   }),
 }));
 
@@ -332,6 +335,7 @@ beforeEach(() => {
   // every later send silently.
   (sendMessage as jest.Mock).mockResolvedValue({ data: { id: 99 } });
   mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
+  mockRefreshCounts.mockClear();
   jest.restoreAllMocks();
 });
 
@@ -352,6 +356,31 @@ describe('ThreadScreen', () => {
 
     const { toJSON } = render(<ThreadScreen />);
     expect(toJSON()).toBeTruthy();
+  });
+
+  it('🔴 refreshes the unread badge after the thread loads', () => {
+    // Regression: the message badge came back at every login. Fetching a thread
+    // marks it read server-side, but nothing told the badge, so it kept showing
+    // a count for messages the member had already read. A forced refresh is
+    // required — the throttled call is a no-op this soon after the seed.
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    render(<ThreadScreen />);
+
+    expect(mockRefreshCounts).toHaveBeenCalledWith(true);
+  });
+
+  it('does not refresh the badge when the thread failed to load', () => {
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: new Error('nope'), refresh: jest.fn() });
+
+    render(<ThreadScreen />);
+
+    expect(mockRefreshCounts).not.toHaveBeenCalled();
   });
 
   it('renders the message input and send button', () => {

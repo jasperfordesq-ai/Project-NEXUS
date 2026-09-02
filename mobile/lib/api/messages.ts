@@ -179,6 +179,18 @@ export function restoreConversation(conversationId: number): Promise<{ data?: { 
   return api.post(`${API_V2}/messages/conversations/${conversationId}/restore`, {});
 }
 
+/**
+ * Count of genuinely unread messages for the signed-in member.
+ *
+ * 🔴 This is the ONLY correct source for the message badge. Do not use
+ * `notifications/counts.messages`: that counts unread rows in the
+ * `notifications` table, which reading a conversation does not clear, so the
+ * badge survived being read and came back at the next login.
+ */
+export function getUnreadMessageCount(): Promise<{ data: { count: number } }> {
+  return api.get<{ data: { count: number } }>(`${API_V2}/messages/unread-count`);
+}
+
 export function markConversationRead(otherUserId: number): Promise<{ data?: { marked_read?: number } }> {
   return api.put(`${API_V2}/messages/${otherUserId}/read`, {});
 }

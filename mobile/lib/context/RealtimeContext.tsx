@@ -19,7 +19,7 @@ import { API_V2 } from '@/lib/constants';
 import { initRealtime, getRealtimeClient, type PusherConfig } from '@/lib/realtime';
 import { registerForPushNotifications, registerRefreshCallback, syncPushBadge, unregisterRefreshCallback } from '@/lib/notifications';
 import { useAuthContext } from '@/lib/context/AuthContext';
-import type { Message } from '@/lib/api/messages';
+import { getUnreadMessageCount, type Message } from '@/lib/api/messages';
 import type { NotificationCounts } from '@/lib/api/notifications';
 
 type MessageHandler = (msg: Message) => void;
@@ -29,10 +29,12 @@ interface RealtimeContextValue {
   unreadMessages: number;
   /** Total unread notification count (all categories). Single source of truth. */
   unreadNotifications: number;
-  /** Call when the user opens the Messages tab — resets the message badge. */
-  resetUnread: () => void;
-  /** Manually trigger a count refresh (e.g. after marking notifications read). */
-  refreshCounts: () => void;
+  /**
+   * Re-read the counts from the server. Pass `force` after an action that has
+   * just changed them (opening a conversation marks it read server-side) so the
+   * 30s throttle does not leave a stale badge on screen.
+   */
+  refreshCounts: (force?: boolean) => void;
   /**
    * Subscribe to incoming Pusher messages for a specific conversation.
    * Returns an unsubscribe function — call it in a useEffect cleanup.
@@ -43,7 +45,6 @@ interface RealtimeContextValue {
 const RealtimeContext = createContext<RealtimeContextValue>({
   unreadMessages: 0,
   unreadNotifications: 0,
-  resetUnread: () => undefined,
   refreshCounts: () => undefined,
   subscribeToMessages: () => () => undefined,
 });
@@ -79,21 +80,42 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const lastRefreshRef = useRef(0);
   const lastPushRegistrationRefreshRef = useRef(0);
 
-  // Single function to fetch all notification counts — the ONLY place this
-  // endpoint is called. HomeScreen and TabsLayout read from context instead.
-  const refreshCounts = useCallback(() => {
+  // Single function to fetch all badge counts — the ONLY place these endpoints
+  // are called. HomeScreen and TabsLayout read from context instead.
+  //
+  // 🔴 The message badge MUST come from /messages/unread-count, not from
+  // `notifications/counts.messages`. Those are two different stores: the latter
+  // counts unread rows in the `notifications` table (types message /
+  // new_message / message_received / federation_message), and reading a
+  // conversation clears `messages.is_read`, not those rows. Sourcing the badge
+  // from the bell count is why the red dot came back at every login even after
+  // the member had read everything. The React frontend has always read
+  // /messages/unread-count for this reason and pins it with its own test —
+  // see react-frontend/src/contexts/NotificationsContext.tsx.
+  const refreshCounts = useCallback((force = false) => {
     if (!isAuthenticated) return;
     const now = Date.now();
-    if (now - lastRefreshRef.current < REFRESH_THROTTLE_MS) return;
+    if (!force && now - lastRefreshRef.current < REFRESH_THROTTLE_MS) return;
     lastRefreshRef.current = now;
 
-    api
-      .get<{ data: NotificationCounts }>(`${API_V2}/notifications/counts`)
-      .then((res) => {
-        setUnreadMessages(res.data.messages);
-        setUnreadNotifications(res.data.total);
-      })
-      .catch(() => { /* non-critical — badges stay at previous value */ });
+    // Settled, not all-or-nothing: a failing message count must not also blank
+    // the notification badge, and vice versa.
+    void Promise.allSettled([
+      api.get<{ data: NotificationCounts }>(`${API_V2}/notifications/counts`),
+      getUnreadMessageCount(),
+    ]).then(([countsResult, messagesResult]) => {
+      if (countsResult.status === 'fulfilled') {
+        const total = countsResult.value?.data?.total;
+        if (typeof total === 'number') setUnreadNotifications(total);
+      }
+      if (messagesResult.status === 'fulfilled') {
+        const count = messagesResult.value?.data?.count;
+        if (typeof count === 'number') setUnreadMessages(count);
+      }
+      // On failure each badge deliberately keeps its previous value. Falling
+      // back to 0 would tell the member they have read everything because the
+      // network dropped, which is the same lie in the other direction.
+    });
   }, [isAuthenticated]);
 
   // Seed counts from REST API on initial auth
@@ -103,9 +125,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       setUnreadNotifications(0);
       return;
     }
-    // Force immediate refresh (bypass throttle for initial seed)
-    lastRefreshRef.current = 0;
-    refreshCounts();
+    refreshCounts(true);
   }, [isAuthenticated, refreshCounts]);
 
   // The API count is authoritative; mirror it to the launcher badge and clear
@@ -241,8 +261,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     registerRefreshCallback(() => {
       // Bypass throttle for push-triggered refreshes — the server sent us
       // a signal that counts changed, so we should always honour it.
-      lastRefreshRef.current = 0;
-      refreshCounts();
+      refreshCounts(true);
     });
     refreshCallbackRegisteredRef.current = true;
 
@@ -252,8 +271,6 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       refreshCallbackRegisteredRef.current = false;
     };
   }, [isAuthenticated, refreshCounts]);
-
-  const resetUnread = useCallback(() => setUnreadMessages(0), []);
 
   const subscribeToMessages = useCallback(
     (conversationId: number, handler: MessageHandler): (() => void) => {
@@ -269,7 +286,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <RealtimeContext.Provider
-      value={{ unreadMessages, unreadNotifications, resetUnread, refreshCounts, subscribeToMessages }}
+      value={{ unreadMessages, unreadNotifications, refreshCounts, subscribeToMessages }}
     >
       {children}
     </RealtimeContext.Provider>

@@ -8,7 +8,9 @@ import { render } from '@testing-library/react-native';
 
 const tabScreens: { name: string; options?: Record<string, unknown>; listeners?: Record<string, (event: { preventDefault: () => void }) => void> }[] = [];
 const mockRouterPush = jest.fn();
-const mockResetUnread = jest.fn();
+const mockRefreshCounts = jest.fn();
+
+let mockPathname = '/home';
 
 jest.mock('expo-router', () => {
   const React = require('react');
@@ -22,7 +24,7 @@ jest.mock('expo-router', () => {
   return {
     Tabs,
     router: { push: (...args: unknown[]) => mockRouterPush(...args) },
-    usePathname: () => '/home',
+    usePathname: () => mockPathname,
   };
 });
 
@@ -45,7 +47,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 jest.mock('@/lib/context/RealtimeContext', () => ({
   useRealtimeContext: () => ({
     unreadMessages: 0,
-    resetUnread: mockResetUnread,
+    refreshCounts: mockRefreshCounts,
   }),
 }));
 
@@ -54,6 +56,7 @@ import TabsLayout from './_layout';
 describe('TabsLayout', () => {
   beforeEach(() => {
     tabScreens.length = 0;
+    mockPathname = '/home';
     jest.clearAllMocks();
   });
 
@@ -70,6 +73,27 @@ describe('TabsLayout', () => {
     expect(tabScreens.find((screen) => screen.name === 'explore')?.options?.href).toBeNull();
     expect(tabScreens.find((screen) => screen.name === 'search')?.options?.href).toBeNull();
     expect(tabScreens.find((screen) => screen.name === 'groups')?.options?.href).toBeNull();
+  });
+
+  it('🔴 re-reads the real unread count on arriving at Messages, rather than zeroing the badge', () => {
+    // Regression: the message badge came back at every login. This effect used
+    // to call resetUnread(), which set local state to 0 and told the server
+    // nothing — so the count was still there at the next launch. Opening the
+    // conversation list does not read any message, so the badge must come from
+    // the server, not from the act of looking.
+    mockPathname = '/messages';
+
+    render(<TabsLayout />);
+
+    expect(mockRefreshCounts).toHaveBeenCalledWith(true);
+  });
+
+  it('does not touch the counts from other tabs', () => {
+    mockPathname = '/home';
+
+    render(<TabsLayout />);
+
+    expect(mockRefreshCounts).not.toHaveBeenCalled();
   });
 
   it('opens quick create from the Create tab instead of navigating to a blank tab', () => {

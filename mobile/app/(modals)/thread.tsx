@@ -86,7 +86,7 @@ function ThreadScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { subscribeToMessages } = useRealtimeContext();
+  const { subscribeToMessages, refreshCounts } = useRealtimeContext();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const unknownMemberLabel = t('unknownMember');
@@ -152,6 +152,15 @@ function ThreadScreenInner() {
     }
   }, [enrichedMessages]);
 
+  // Fetching a thread marks it read server-side (MessagesController::show calls
+  // markAsRead), so the badge is now stale by however many messages this
+  // conversation held. Force a re-read rather than waiting out the throttle —
+  // the member is watching the tab bar as they come back out of the thread.
+  useEffect(() => {
+    if (!isValidId || !data?.data) return;
+    refreshCounts(true);
+  }, [data, isValidId, refreshCounts]);
+
   useEffect(() => {
     if (messages.length === 0) return;
     const timer = setTimeout(() => {
@@ -169,10 +178,12 @@ function ThreadScreenInner() {
         return [...prev, acknowledged].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       });
       if (!incoming.is_own) {
-        void markConversationRead(safeThreadLookupId).catch(() => null);
+        void markConversationRead(safeThreadLookupId)
+          .then(() => refreshCounts(true))
+          .catch(() => null);
       }
     });
-  }, [isValidId, safeThreadLookupId, subscribeToMessages]);
+  }, [isValidId, refreshCounts, safeThreadLookupId, subscribeToMessages]);
 
   useEffect(() => {
     if (!isValidId) return undefined;

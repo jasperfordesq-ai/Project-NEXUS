@@ -5,9 +5,9 @@
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 55,
-    "call_sites": 552,
-    "distinct_endpoints": 462,
-    "verified": 462,
+    "call_sites": 553,
+    "distinct_endpoints": 463,
+    "verified": 463,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -3359,8 +3359,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:204",
-        "messages.ts:230"
+        "messages.ts:216",
+        "messages.ts:242"
       ]
     },
     {
@@ -3369,7 +3369,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:199"
+        "messages.ts:211"
       ]
     },
     {
@@ -3387,7 +3387,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:195"
+        "messages.ts:207"
       ]
     },
     {
@@ -3396,7 +3396,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:191"
+        "messages.ts:203"
       ]
     },
     {
@@ -3405,7 +3405,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:183"
+        "messages.ts:195"
       ]
     },
     {
@@ -3432,7 +3432,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:187"
+        "messages.ts:199"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/messages/unread-count",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:191"
       ]
     },
     {
@@ -3441,7 +3450,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:262"
+        "messages.ts:274"
       ]
     },
     {
