@@ -125,7 +125,65 @@ describe('secure storage on a native platform', () => {
     expect(mockReportException).toHaveBeenCalledWith(failure, {
       storage_op: 'set',
       key: 'auth_token',
+      // Not on the memory-fallback allowlist: a credential is still dropped
+      // rather than cached, so the report says the value was genuinely lost.
+      recovered_in_memory: false,
     });
+  });
+
+  it('does NOT cache a credential whose encrypted write failed', async () => {
+    // A failed token write must not manufacture a session that looks alive now
+    // and disappears on the next launch. This is the rule MEMORY_FALLBACK_KEYS
+    // deliberately does not relax.
+    mockSetItemAsync.mockRejectedValue(new Error('keychain unavailable'));
+    mockGetItemAsync.mockResolvedValue(null);
+
+    await storage.set('nexus_auth_token', 'token-value');
+
+    await expect(storage.get('nexus_auth_token')).resolves.toBeNull();
+    expect(mockGetItemAsync).toHaveBeenCalledWith('nexus_auth_token');
+  });
+
+  it('keeps a non-secret value for this session when the Keychain refuses the write', async () => {
+    // 🔴 The measured fault: expo-secure-store fails outright on a build with no
+    // keychain-sharing entitlement ("A required entitlement isn't present"),
+    // writing nexus_tenant_slug. Before this, set() cached nothing on failure,
+    // so the community the member was browsing was lost for the whole session.
+    const failure = new Error("A required entitlement isn't present.");
+    mockSetItemAsync.mockRejectedValue(failure);
+
+    await expect(storage.set('nexus_tenant_slug', 'hour-timebank')).resolves.toBeUndefined();
+
+    // Survives in memory, and without touching the store that just failed.
+    await expect(storage.get('nexus_tenant_slug')).resolves.toBe('hour-timebank');
+    expect(mockGetItemAsync).not.toHaveBeenCalled();
+
+    // Still reported — a working fallback must not hide that the write failed.
+    expect(mockReportException).toHaveBeenCalledWith(failure, {
+      storage_op: 'set',
+      key: 'nexus_tenant_slug',
+      recovered_in_memory: true,
+    });
+  });
+
+  it('applies the memory fallback to every allowlisted non-secret key', async () => {
+    mockSetItemAsync.mockRejectedValue(new Error('keychain unavailable'));
+
+    for (const key of ['nexus_tenant_slug', 'nexus_language', 'nexus_theme_mode']) {
+      await storage.set(key, `value-for-${key}`);
+      await expect(storage.get(key)).resolves.toBe(`value-for-${key}`);
+    }
+  });
+
+  it('treats an unknown key strictly, so a new key does not silently opt in', async () => {
+    // The allowlist exists so that adding a key later keeps the strict
+    // behaviour until someone decides it is safe to relax.
+    mockSetItemAsync.mockRejectedValue(new Error('keychain unavailable'));
+    mockGetItemAsync.mockResolvedValue(null);
+
+    await storage.set('nexus_some_future_key', 'value');
+
+    await expect(storage.get('nexus_some_future_key')).resolves.toBeNull();
   });
 
   it('stays silent when a delete fails, because an absent key is not an error', async () => {

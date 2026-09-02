@@ -10,6 +10,37 @@ import { Platform } from 'react-native';
 const memoryStorage = new Map<string, string>();
 const platformOS = Platform.OS;
 
+/**
+ * 🔴 Keys that MAY be kept in memory when the encrypted write fails.
+ *
+ * `set()` deliberately caches only after a successful write, because a failed
+ * credential write must not manufacture a session that vanishes on the next
+ * launch. That rule is right for tokens and wrong for everything else: when the
+ * Keychain refuses, a non-credential value is simply LOST, and the app spends
+ * the rest of the session without it.
+ *
+ * Measured: `expo-secure-store` fails outright on an iOS build with no
+ * keychain-sharing entitlement — "A required entitlement isn't present" —
+ * writing key `nexus_tenant_slug`. That is the community the member is browsing.
+ * Losing it mid-session is the symptom the `set()` reporting was added to chase.
+ *
+ * This is an ALLOWLIST, not a denylist, so a key added later keeps the strict
+ * behaviour until someone decides otherwise. Nothing here is a credential and
+ * nothing here identifies a person; each is context the app can re-derive on a
+ * later launch, so holding it in memory costs nothing and loses nothing.
+ *
+ * NOTE this is a partial mitigation, not the whole answer. Memory does not
+ * survive an app restart. Making these survive properly means storing
+ * non-secret values outside the Keychain altogether, which needs a persistence
+ * dependency the app does not currently have — an open decision, not an
+ * oversight.
+ */
+const MEMORY_FALLBACK_KEYS: ReadonlySet<string> = new Set([
+  'nexus_tenant_slug',
+  'nexus_language',
+  'nexus_theme_mode',
+]);
+
 function canUseWebStorage(): boolean {
   return platformOS === 'web' && typeof window !== 'undefined' && !!window.localStorage;
 }
@@ -36,8 +67,15 @@ function isWeb(): boolean {
  * Same class of mistake as coupling AuthProvider to the toast provider: infrastructure
  * must stay light enough to be used without a full native environment.
  */
-function reportStorageFailure(err: unknown, op: string, key: string): void {
-  reportToSink(err, { storage_op: op, key });
+function reportStorageFailure(err: unknown, op: string, key: string, recovered?: boolean): void {
+  // `recovered` says whether the value survived in memory for this session or
+  // was lost outright. Without it both cases look identical in triage, and they
+  // need different responses.
+  reportToSink(err, {
+    storage_op: op,
+    key,
+    ...(recovered === undefined ? {} : { recovered_in_memory: recovered }),
+  });
 }
 
 export const storage = {
@@ -84,9 +122,17 @@ export const storage = {
       // must not create a session that disappears on the next app launch.
       memoryStorage.set(key, value);
     } catch (err) {
+      // A credential is still NOT cached here — see the comment above. But a
+      // non-credential on the allowlist is kept for this session rather than
+      // silently lost, which is what MEMORY_FALLBACK_KEYS exists for.
+      const recovered = MEMORY_FALLBACK_KEYS.has(key);
+      if (recovered) {
+        memoryStorage.set(key, value);
+      }
+
       // Diagnose "random logouts". Reported to BOTH Sentry and our own server —
       // Sentry alone has no DSN in any build profile, so this used to go nowhere.
-      reportStorageFailure(err, 'set', key);
+      reportStorageFailure(err, 'set', key, recovered);
     }
   },
 
