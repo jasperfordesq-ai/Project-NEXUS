@@ -141,10 +141,27 @@ class MessageAttachmentsTest extends TestCase
         }
     }
 
+    /**
+     * Unlike the four service-level tests above, this one goes over HTTP, and
+     * apiGet() always sends X-Tenant-ID: $this->testTenantId. Building the
+     * fixture in tenantAndTwoUsers()'s "first active tenant" instead put the
+     * message in one tenant while the request ran in another, so the controller's
+     * tenant-scoped Message lookup found nothing and returned 404 — and the
+     * outsider's 403 was a false pass (middleware tenant_mismatch, never the
+     * participation check). Build the fixture in the tenant the request actually
+     * runs in, with participants this test owns, so both assertions test the
+     * controller.
+     */
     public function test_private_attachment_delivery_requires_message_participation(): void
     {
-        [$tenantId, $sender, $receiver] = $this->tenantAndTwoUsers();
+        $tenantId = $this->testTenantId;
+        TenantContext::setById($tenantId);
+        $this->app->instance('tenant.id', $tenantId);
+        $sender = (int) User::factory()->forTenant($tenantId)->create(['status' => 'active', 'is_approved' => true])->id;
+        $receiver = (int) User::factory()->forTenant($tenantId)->create(['status' => 'active', 'is_approved' => true])->id;
+
         $message = MessageService::send($sender, $receiver, ['body' => 'private media']);
+        $this->assertNotEmpty($message, 'Send failed: ' . json_encode(MessageService::getErrors()));
         $relative = "message-media/{$tenantId}/attachments/test-private.pdf";
         $privatePath = storage_path('app/private/' . $relative);
         File::ensureDirectoryExists(dirname($privatePath), 0700, true);
@@ -168,9 +185,12 @@ class MessageAttachmentsTest extends TestCase
             $this->apiGet("/v2/messages/{$message['id']}/attachments/{$attachmentId}")->assertForbidden();
 
             Sanctum::actingAs(User::withoutGlobalScopes()->findOrFail($sender), ['*']);
+            // Symfony's ResponseHeaderBag re-serialises Cache-Control with its
+            // directives sorted alphabetically, so assert the normalised value
+            // rather than the order the controller happens to write them in.
             $this->apiGet("/v2/messages/{$message['id']}/attachments/{$attachmentId}")
                 ->assertOk()
-                ->assertHeader('Cache-Control', 'private, no-store, max-age=0');
+                ->assertHeader('Cache-Control', 'max-age=0, no-store, private');
 
             $this->assertFileDoesNotExist(base_path("httpdocs/uploads/{$tenantId}/message_attachments/test-private.pdf"));
         } finally {
