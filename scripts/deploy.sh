@@ -167,8 +167,38 @@ ENV_FILE=".secrets.local/deploy.env"
 [ -f "$ENV_FILE" ] || { echo "===> Missing $ENV_FILE — cannot reach the server."; exit 2; }
 SSH_HOST=$(grep ^PROD_SSH_HOST "$ENV_FILE" | cut -d= -f2-)
 SSH_KEY=$(grep ^PROD_SSH_KEY "$ENV_FILE" | cut -d= -f2-)
+# 🔴 GIT_TERMINAL_PROMPT=0 is not optional, and it belongs HERE rather than
+# on the server. When GitHub refuses the server's ANONYMOUS fetch it answers
+# with `www-authenticate: Basic realm="GitHub"`, and git then asks for a
+# username on a terminal nobody is watching, so the deploy HANGS instead of
+# failing. Measured twice on 2026-09-02 — once for about an hour, while the
+# operator reasonably believed a build was running. With prompting disabled the
+# same refusal exits 128 at once and `&&` stops the chain before
+# `git reset --hard`, so the failure is loud and nothing downstream runs.
+#
+# It goes through `sudo env` because sudo's default `env_reset` strips the
+# variable — exporting it server-side (/etc/environment, a shell profile) would
+# NOT reach `sudo git`. That is why this is a change to the deploy command and
+# not to production configuration.
 ssh -i "$SSH_KEY" -o RequestTTY=force "$SSH_HOST" \
-    "cd /opt/nexus-php && sudo git fetch origin main && sudo git reset --hard origin/main && sudo bash scripts/deploy/bluegreen-deploy.sh deploy --detach$WEBUK_FLAG"
+    "cd /opt/nexus-php && sudo env GIT_TERMINAL_PROMPT=0 git fetch origin main && sudo git reset --hard origin/main && sudo bash scripts/deploy/bluegreen-deploy.sh deploy --detach$WEBUK_FLAG"
+
+DEPLOY_SSH_STATUS=$?
+if [ "$DEPLOY_SSH_STATUS" -ne 0 ]; then
+    echo ""
+    echo "===> ✗ The server could not start the deploy (exit $DEPLOY_SSH_STATUS)."
+    echo "===>   Production is UNCHANGED: the fetch runs before 'git reset --hard'"
+    echo "===>   and before the blue/green engine, so a failure here leaves the"
+    echo "===>   active colour serving exactly what it was serving."
+    echo "===>   Confirm with: bluegreen-deploy.sh status"
+    echo "===>"
+    echo "===>   If the error mentions a GitHub username, the server's ANONYMOUS"
+    echo "===>   fetch was refused — the remote is https:// with no credentials."
+    echo "===>   Authenticated access is not subject to the per-IP anonymous"
+    echo "===>   limits, so a deploy key is the durable fix. Retrying can also"
+    echo "===>   succeed, because the refusal is intermittent."
+    exit 1
+fi
 
 echo ""
 echo "===> Deploy launched. Watch it with:"
