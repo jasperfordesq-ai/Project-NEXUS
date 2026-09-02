@@ -6,6 +6,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -96,7 +97,9 @@ class StuckStripeWebhookCheck extends Command
         // embedding counts/samples mints a new Sentry issue whenever they
         // change (the exact defect OverdueGdprRequestCheck produced nightly,
         // sixteen times over). Volatile detail travels in the context.
-        Log::error(
+        // Local log ONLY — the explicit capture below is the single Sentry
+        // event. See OperatorLog.
+        OperatorLog::withoutSentry()->error(
             'STRIPE WEBHOOK ALERT: webhook events stuck in failed status',
             $context + ['message' => $message],
         );

@@ -6,6 +6,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -153,7 +154,11 @@ class BackupVerify extends Command
         // embeds filenames and ages that change per run — the defect that
         // minted a new GDPR issue nightly. Volatile detail travels in the
         // context.
-        Log::error(
+        // Local log ONLY — the explicit capture below is the single Sentry
+        // event. The default stack also carries the `sentry` channel in
+        // production, which would add a second, unfingerprinted group for the
+        // same occurrence. See OperatorLog.
+        OperatorLog::withoutSentry()->error(
             'BACKUP ALERT: newest database backup is missing, empty, or stale',
             $context + ['message' => $message],
         );

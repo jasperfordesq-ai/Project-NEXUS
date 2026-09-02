@@ -6,6 +6,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -144,7 +145,9 @@ class SloCheck extends Command
         // places, so consecutive breaches would mint a new Sentry issue per
         // run through this leg (the OverdueGdprRequestCheck defect). Volatile
         // detail travels in the context.
-        Log::error(
+        // Local log ONLY — the explicit capture below is the single Sentry
+        // event. See OperatorLog.
+        OperatorLog::withoutSentry()->error(
             'SLO BREACH: exchange-completion success rate below target',
             $context + ['message' => $message],
         );

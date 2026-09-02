@@ -34,7 +34,21 @@ class SafeguardingPolicyHealthCheckTest extends TestCase
         $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
         $this->protectMember($member);
 
-        Log::spy();
+        // The alarm logs through OperatorLog::withoutSentry(), i.e.
+        // Log::stack(<channels minus sentry>)->error(...), so intercept the
+        // stack rather than the facade's own error().
+        $channelsSeen = [];
+        $logger = \Mockery::spy(\Psr\Log\LoggerInterface::class);
+
+        Log::shouldReceive('stack')
+            ->andReturnUsing(function (array $channels) use (&$channelsSeen, $logger) {
+                $channelsSeen[] = $channels;
+
+                return $logger;
+            });
+        Log::shouldReceive('debug')->andReturnNull();
+        Log::shouldReceive('info')->andReturnNull();
+        Log::shouldReceive('warning')->andReturnNull();
 
         $this->artisan('safeguarding:check-policy-health')
             ->expectsOutputToContain((string) $this->testTenantId)
@@ -42,12 +56,20 @@ class SafeguardingPolicyHealthCheckTest extends TestCase
 
         // Stable message string (the Sentry grouping key), volatile detail in
         // context only — the OverdueGdprRequestCheck rule.
-        Log::shouldHaveReceived('error')
+        $logger->shouldHaveReceived('error')
             ->with(
                 'Safeguarding contact gate unusable for tenants with live vetted-interaction selections',
                 \Mockery::on(fn (array $context): bool => ($context['affected_count'] ?? 0) >= 1),
             )
             ->once();
+
+        // 🔴 The regression this guards: one occurrence used to open TWO Sentry
+        // groups (NEXUS-PHP-65 and -66 on 2026-08-30, same second) because the
+        // log leg also reached Sentry, unfingerprinted.
+        $this->assertNotSame([], $channelsSeen, 'The alarm did not log through a stack at all.');
+        foreach ($channelsSeen as $channels) {
+            $this->assertNotContains('sentry', $channels, 'The alarm log line must not reach Sentry on its own.');
+        }
     }
 
     public function test_passes_when_the_policy_is_usable(): void

@@ -285,8 +285,13 @@ class OverdueGdprRequestCheckTest extends TestCase
         $this->seedGdprRequest(now()->subDays(40)->toDateTimeString(), 'pending', 'access');
 
         $messages = [];
-        \Illuminate\Support\Facades\Log::spy();
-        \Illuminate\Support\Facades\Log::shouldReceive('error')
+        $channelsSeen = [];
+
+        // The alarm logs through OperatorLog::withoutSentry(), i.e.
+        // Log::stack(<channels minus sentry>)->error(...), so intercept the
+        // stack rather than the facade's own error().
+        $logger = \Mockery::mock(\Psr\Log\LoggerInterface::class);
+        $logger->shouldReceive('error')
             ->andReturnUsing(function (string $message, array $context = []) use (&$messages): void {
                 $messages[] = $message;
                 // The human-readable detail must not be lost — it moves into
@@ -295,6 +300,16 @@ class OverdueGdprRequestCheckTest extends TestCase
                 $this->assertArrayHasKey('sample', $context);
             });
 
+        \Illuminate\Support\Facades\Log::shouldReceive('stack')
+            ->andReturnUsing(function (array $channels) use (&$channelsSeen, $logger) {
+                $channelsSeen[] = $channels;
+
+                return $logger;
+            });
+        \Illuminate\Support\Facades\Log::shouldReceive('debug')->andReturnNull();
+        \Illuminate\Support\Facades\Log::shouldReceive('info')->andReturnNull();
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')->andReturnNull();
+
         $this->artisan('gdpr:check-overdue-requests', ['--days' => 25])->assertExitCode(1);
 
         Carbon::setTestNow(now()->addDay());
@@ -302,6 +317,16 @@ class OverdueGdprRequestCheckTest extends TestCase
             $this->artisan('gdpr:check-overdue-requests', ['--days' => 25])->assertExitCode(1);
         } finally {
             Carbon::setTestNow();
+        }
+
+        $this->assertNotSame([], $channelsSeen, 'The alarm did not log through a stack at all.');
+        foreach ($channelsSeen as $channels) {
+            $this->assertNotContains(
+                'sentry',
+                $channels,
+                'The alarm log line must not go through the sentry channel: a log line cannot carry a '
+                . 'fingerprint, so it opens a SECOND Sentry group alongside the explicit capture.',
+            );
         }
 
         $this->assertCount(2, $messages, 'Expected exactly one ERROR log per nightly run.');

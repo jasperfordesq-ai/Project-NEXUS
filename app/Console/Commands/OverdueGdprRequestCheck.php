@@ -6,6 +6,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -117,16 +118,26 @@ class OverdueGdprRequestCheck extends Command
      */
     private function raiseAlert(string $message, array $context): void
     {
-        // 1. Always: ERROR log — with a STABLE message string. The production
-        // LOG_STACK includes the `sentry` channel, which groups by the raw
-        // message text; the fingerprint below covers only the explicit capture,
-        // NOT this leg. $message embeds each request's age in days, which
-        // increments nightly, so this line minted a brand-new Sentry issue
-        // every night — sixteen duplicates (140426477…143159289) accumulated
-        // between 2026-08-13 and 2026-08-28 while leg 2 was already fixed.
-        // The full human sentence travels in the context, where Sentry shows
-        // it without grouping on it.
-        Log::error(
+        // 1. Always: ERROR log, LOCAL ONLY, with a STABLE message string.
+        //
+        // Two separate defects were fixed here, in this order:
+        //
+        // (a) The message string. It used to embed each request's age in days,
+        //     which increments nightly, so this line minted a brand-new Sentry
+        //     issue every night — sixteen duplicates (140426477…143159289)
+        //     accumulated between 2026-08-13 and 2026-08-28 while the explicit
+        //     capture was already fingerprinted. The full human sentence now
+        //     travels in the context, where Sentry shows it without grouping
+        //     on it.
+        //
+        // (b) The channel. Even with a stable string this line still reached
+        //     Sentry on its own, because production's LOG_STACK contains the
+        //     `sentry` channel and a log line cannot carry a fingerprint. So
+        //     one occurrence produced TWO groups: this leg and the capture
+        //     below. OperatorLog::withoutSentry() logs through the configured
+        //     stack minus that channel, leaving the capture as the only Sentry
+        //     event while keeping the local log intact.
+        OperatorLog::withoutSentry()->error(
             'GDPR ALERT: data-subject requests pending past the response threshold',
             $context + ['message' => $message],
         );

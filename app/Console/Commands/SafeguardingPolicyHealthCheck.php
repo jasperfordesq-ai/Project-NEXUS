@@ -7,6 +7,7 @@
 namespace App\Console\Commands;
 
 use App\Services\SafeguardingJurisdictionService;
+use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -85,10 +86,10 @@ class SafeguardingPolicyHealthCheck extends Command
             return self::SUCCESS;
         }
 
-        // The log message is deliberately STABLE — no counts, no tenant ids,
-        // no ages — so the sentry log channel groups every occurrence into one
-        // issue. Everything volatile goes in the context (see the identical
-        // rule in OverdueGdprRequestCheck).
+        // The message is deliberately STABLE — no counts, no tenant ids, no
+        // ages — because Sentry groups the capture below by its message text.
+        // Everything volatile goes in the context (see the identical rule in
+        // OverdueGdprRequestCheck).
         $message = 'Safeguarding contact gate unusable for tenants with live vetted-interaction selections';
         $context = [
             'affected_tenants' => $affected,
@@ -96,7 +97,11 @@ class SafeguardingPolicyHealthCheck extends Command
             'fix' => 'Configure the safeguarding jurisdiction in the broker panel (Vetting -> Jurisdiction) for each tenant.',
         ];
 
-        Log::error($message, $context);
+        // Local log ONLY — the explicit capture below is the single Sentry
+        // event. Logging through the default stack would ALSO reach Sentry (the
+        // `sentry` channel is in production's LOG_STACK) as a second,
+        // unfingerprinted group. See OperatorLog.
+        OperatorLog::withoutSentry()->error($message, $context);
 
         try {
             if (function_exists('Sentry\\captureMessage') && config('sentry.dsn')) {

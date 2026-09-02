@@ -53,6 +53,7 @@ class AlarmSentryFingerprintTest extends TestCase
             'AlarmSelftest.php',
             'BackupVerify.php',
             'OverdueGdprRequestCheck.php',
+            'SafeguardingPolicyHealthCheck.php',
             'SloCheck.php',
             'StuckStripeWebhookCheck.php',
         ];
@@ -100,6 +101,67 @@ class AlarmSentryFingerprintTest extends TestCase
                 . 'sprintf() and any run-varying value will open a new Sentry issue per run: '
                 . implode(', ', $missing)
         );
+    }
+
+    public function test_no_alarm_command_double_reports_its_alarm_line_into_sentry(): void
+    {
+        // 🔴 A fingerprint on the explicit capture is only half the job.
+        //
+        // Production's LOG_STACK includes the `sentry` channel, so ANY
+        // `Log::error()` inside a command that also calls captureMessage()
+        // becomes a SECOND Sentry event — and a log line cannot carry a
+        // fingerprint, so it groups by message text as its own issue.
+        //
+        // Measured: the safeguarding contact-gate alarm fired once on
+        // 2026-08-30 and opened both NEXUS-PHP-65 (the log leg, tagged
+        // logger=production with a `log_context` extra) and NEXUS-PHP-66 (the
+        // capture leg) in the same second. All five alarm commands shared it,
+        // so each spent two of the ten-event budget in postdeploy-watch.mjs.
+        //
+        // The fix is App\Support\Sentry\OperatorLog::withoutSentry(), which
+        // logs through the configured stack minus the sentry channel.
+        $offenders = [];
+
+        foreach (glob($this->root . '/app/Console/Commands/*.php') ?: [] as $path) {
+            $source = (string) file_get_contents($path);
+            if (! str_contains($source, 'Sentry\\captureMessage')) {
+                continue;
+            }
+            if (str_contains($source, 'Log::error(')) {
+                $offenders[] = basename($path);
+            }
+        }
+
+        self::assertSame(
+            [],
+            $offenders,
+            'These alarm commands call Log::error() alongside an explicit Sentry capture, so every occurrence '
+                . 'opens TWO Sentry issues — the fingerprinted capture and an unfingerprinted log leg. Use '
+                . 'App\\Support\\Sentry\\OperatorLog::withoutSentry()->error(...) for the alarm line instead: '
+                . implode(', ', $offenders)
+        );
+    }
+
+    public function test_alarm_commands_route_their_alarm_line_through_the_non_sentry_logger(): void
+    {
+        // The negative test above passes vacuously if someone deletes the log
+        // line entirely, which would lose local visibility of the alarm. Every
+        // alarm command that captures to Sentry must still log locally.
+        foreach (self::alarmCommands() as $file) {
+            $source = (string) file_get_contents($this->root . '/app/Console/Commands/' . $file);
+
+            // AlarmSelftest is a heartbeat at info level and has no error line.
+            if ($file === 'AlarmSelftest.php') {
+                continue;
+            }
+
+            self::assertStringContainsString(
+                'OperatorLog::withoutSentry()',
+                $source,
+                $file . ' no longer logs its alarm locally through OperatorLog::withoutSentry(). The alarm must '
+                    . 'stay visible in docker logs and the daily file, just not as a second Sentry group.'
+            );
+        }
     }
 
     public function test_fingerprints_are_literal_and_do_not_vary_per_run(): void
