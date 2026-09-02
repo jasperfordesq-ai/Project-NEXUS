@@ -283,14 +283,24 @@ export function TenantForm() {
           navigate(tenantPath(newId ? `/super-admin/tenants/${newId}` : '/super-admin/tenants'));
         }
       } else {
-        // Show the server's own reason (e.g. "Maximum hierarchy depth exceeded",
-        // "Slug 'x' is already in use"). The API returns it as errors[0].message
-        // and the client maps that to res.error; showing only the generic string
-        // left the operator with a 422 and nothing to act on.
+        // 🔴 Do NOT surface `res.error` here yet, however useful the reason is.
+        // The refusals this endpoint returns are hardcoded English in
+        // TenantHierarchyService ('Maximum hierarchy depth exceeded',
+        // "Slug 'x' is already in use", 'Tenant not found', and a
+        // 'Failed to create tenant: ' . $e->getMessage() that leaks exception
+        // text). Showing them puts untranslated English in front of an operator
+        // who may be working in any of the eleven locales, which is why
+        // check-admin-ui-literals.mjs blocks the pattern as
+        // 'server-message-bypass' — correctly.
+        //
+        // The `admin-i18n-ignore: localized server message` comment used
+        // elsewhere in admin/ is NOT applicable: it asserts the API already
+        // localised the string, and here it has not. Restore the specific reason
+        // once those messages go through __(), not before.
         const generic = isEdit
           ? t('tenant_form.failed_to_update_tenant')
           : t('tenant_form.failed_to_create_tenant');
-        toast.error(res.error || generic);
+        toast.error(generic);
       }
     } catch {
       toast.error(t('tenant_form.an_error_occurred'));
