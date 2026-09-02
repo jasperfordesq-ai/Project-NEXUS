@@ -963,6 +963,7 @@
     "page_title_create": "Titre Créer",
     "page_title_edit": "Titre Modifier",
     "page_title_fallback": "Titre de secours",
+    "parent_depth_limit_reached": "Limite de profondeur atteinte : impossible d'ajouter une communauté sous ce hub",
     "parent_edit_desc": "Le parent ne peut pas être modifié ici. Utilisez Déplacer le locataire sur la page du locataire.",
     "hub_capability_managed_desc": "La fonctionnalité de hub est gérée dans les paramètres du hub sur la page du locataire.",
     "open_hub_settings": "Ouvrir les paramètres du hub",

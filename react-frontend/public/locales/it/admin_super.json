@@ -963,6 +963,7 @@
     "page_title_create": "Titolo Crea",
     "page_title_edit": "Modifica titolo",
     "page_title_fallback": "Titolo di riserva",
+    "parent_depth_limit_reached": "Limite di profondità raggiunto: impossibile aggiungere una comunità in questo hub",
     "parent_edit_desc": "Il tenant principale non può essere modificato qui. Usa Sposta tenant nella pagina del tenant.",
     "hub_capability_managed_desc": "La funzionalità Hub viene gestita dalle Impostazioni Hub nella pagina del tenant.",
     "open_hub_settings": "Apri Impostazioni Hub",

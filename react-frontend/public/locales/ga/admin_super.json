@@ -981,6 +981,7 @@
     "page_title_create": "Teideal Cruthaigh",
     "page_title_edit": "Teideal in Eagar",
     "page_title_fallback": "Teideal Fallback",
+    "parent_depth_limit_reached": "Teorainn doimhneachta sroichte — ní féidir fo-thionónta a chur faoin mol seo",
     "parent_edit_desc": "Ní féidir an tuismitheoir a athrú anseo. Úsáid Bog Tionónta ar leathanach an tionónta.",
     "hub_capability_managed_desc": "Déantar cumas an Mhoil a bhainistiú ó Shocruithe an Mhoil ar leathanach an tionónta.",
     "open_hub_settings": "Oscail Socruithe an Mhoil",

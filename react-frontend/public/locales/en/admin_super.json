@@ -954,6 +954,7 @@
     "page_title_create": "Title Create",
     "page_title_edit": "Title Edit",
     "page_title_fallback": "Title Fallback",
+    "parent_depth_limit_reached": "Depth limit reached — cannot add a community under this hub",
     "parent_edit_desc": "The parent cannot be changed here. Use Move Tenant on the tenant page.",
     "hub_capability_managed_desc": "Hub capability is managed from Hub Settings on the tenant page.",
     "open_hub_settings": "Open Hub Settings",

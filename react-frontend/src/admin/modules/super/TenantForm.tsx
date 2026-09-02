@@ -41,6 +41,21 @@ const PLATFORM_LANGUAGES = [
   { code: 'es', short: 'ES' },
 ];
 
+/**
+ * Whether a hub still has room below it for one more community.
+ *
+ * `max_depth` is an ABSOLUTE level cap, not a relative allowance — the server
+ * rejects a child whose own depth would exceed the parent's max_depth (see
+ * TenantHierarchyService::createTenant). So a hub sitting at or past its own
+ * cap can never hold anything, and offering it as a parent only produces a 422.
+ * `max_depth` of 0 means unlimited.
+ */
+function parentHasRoom(parent: Pick<SuperAdminTenant, 'depth' | 'max_depth'>): boolean {
+  const maxDepth = Number(parent.max_depth ?? 0);
+  if (maxDepth <= 0) return true;
+  return Number(parent.depth ?? 0) + 1 <= maxDepth;
+}
+
 export function TenantForm() {
   const { t, i18n } = useTranslation('admin_super');
   const { id } = useParams<{ id: string }>();
@@ -195,6 +210,10 @@ export function TenantForm() {
     if (isEdit) loadTenant();
   }, [isEdit, loadTenant, loadParentTenants]);
 
+  // Hubs offered as a parent. The list endpoint already filters to hubs
+  // (allows_subtenants = 1); a tenant can never be its own parent.
+  const selectableParents = parentTenants.filter((parent) => String(parent.id) !== id);
+
   const handleSubmit = async () => {
     if (!form.name.trim()) {
       toast.error(t('tenant_form.name_required'));
@@ -264,7 +283,14 @@ export function TenantForm() {
           navigate(tenantPath(newId ? `/super-admin/tenants/${newId}` : '/super-admin/tenants'));
         }
       } else {
-        toast.error(isEdit ? t('tenant_form.failed_to_update_tenant') : t('tenant_form.failed_to_create_tenant'));
+        // Show the server's own reason (e.g. "Maximum hierarchy depth exceeded",
+        // "Slug 'x' is already in use"). The API returns it as errors[0].message
+        // and the client maps that to res.error; showing only the generic string
+        // left the operator with a 422 and nothing to act on.
+        const generic = isEdit
+          ? t('tenant_form.failed_to_update_tenant')
+          : t('tenant_form.failed_to_create_tenant');
+        toast.error(res.error || generic);
       }
     } catch {
       toast.error(t('tenant_form.an_error_occurred'));
@@ -372,12 +398,21 @@ export function TenantForm() {
                 }}
                 isDisabled={isEdit}
                 description={isEdit ? t('tenant_form.parent_edit_desc') : undefined}
+                disabledKeys={selectableParents
+                  .filter((parent) => !parentHasRoom(parent))
+                  .map((parent) => String(parent.id))}
               >
-                {parentTenants
-                  .filter((t) => String(t.id) !== id)
-                  .map((t) => (
-                    <SelectItem key={String(t.id)} id={String(t.id)}>{t.name}</SelectItem>
-                  ))}
+                {selectableParents.map((parent) => (
+                  <SelectItem
+                    key={String(parent.id)}
+                    id={String(parent.id)}
+                    description={parentHasRoom(parent)
+                      ? undefined
+                      : t('tenant_form.parent_depth_limit_reached')}
+                  >
+                    {parent.name}
+                  </SelectItem>
+                ))}
               </Select>
               <div className="flex items-center gap-8">
                 <Switch

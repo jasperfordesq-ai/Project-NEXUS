@@ -972,6 +972,7 @@
     "page_title_create": "Tytuł Utwórz",
     "page_title_edit": "Edycja tytułu",
     "page_title_fallback": "Tytuł zastępczy",
+    "parent_depth_limit_reached": "Osiągnięto limit głębokości — nie można dodać społeczności w tym centrum",
     "parent_edit_desc": "Nie można tutaj zmienić elementu nadrzędnego. Użyj opcji Przenieś dzierżawcę na stronie dzierżawcy.",
     "hub_capability_managed_desc": "Funkcja koncentratora jest zarządzana w Ustawieniach koncentratora na stronie dzierżawcy.",
     "open_hub_settings": "Otwórz ustawienia koncentratora",

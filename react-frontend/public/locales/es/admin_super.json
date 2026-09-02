@@ -963,6 +963,7 @@
     "page_title_create": "Título Crear",
     "page_title_edit": "Título Editar",
     "page_title_fallback": "Título alternativo",
+    "parent_depth_limit_reached": "Se alcanzó el límite de profundidad: no se puede agregar una comunidad en este centro",
     "parent_edit_desc": "El elemento principal no se puede cambiar aquí. Use Mover inquilino en la página del inquilino.",
     "hub_capability_managed_desc": "La función de concentrador se administra desde Configuración del concentrador en la página del inquilino.",
     "open_hub_settings": "Abrir configuración del concentrador",

@@ -954,6 +954,7 @@
     "page_title_create": "タイトルの作成",
     "page_title_edit": "タイトル編集",
     "page_title_fallback": "タイトルフォールバック",
+    "parent_depth_limit_reached": "深さの制限に達しました - このハブの下にコミュニティを追加できません",
     "parent_edit_desc": "ここでは親を変更できません。テナントページの「テナントを移動」を使用してください。",
     "hub_capability_managed_desc": "ハブ機能はテナントページのハブ設定で管理します。",
     "open_hub_settings": "ハブ設定を開く",

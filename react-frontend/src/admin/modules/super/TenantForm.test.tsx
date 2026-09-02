@@ -77,23 +77,33 @@ vi.mock('@/components/ui', async (importOriginal) => {
         {children}
       </label>
     ),
-    Select: ({ children, label, selectedKeys, onSelectionChange }: {
+    Select: ({ children, label, selectedKeys, onSelectionChange, disabledKeys }: {
       children?: React.ReactNode; label?: string;
       selectedKeys?: Iterable<string>; onSelectionChange?: (keys: Set<string>) => void;
+      disabledKeys?: Iterable<string>;
     }) => {
       const keys = selectedKeys ? Array.from(selectedKeys) : [];
+      const disabled = new Set(disabledKeys ? Array.from(disabledKeys) : []);
       return (
         <select
           aria-label={label}
           value={keys[0] ?? ''}
           onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}
         >
-          {children}
+          {React.Children.map(children, (child) =>
+            React.isValidElement<{ id?: string; isDisabled?: boolean }>(child)
+              ? React.cloneElement(child, { isDisabled: disabled.has(String(child.props.id)) })
+              : child
+          )}
         </select>
       );
     },
-    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
-      <option value={id}>{children}</option>
+    SelectItem: ({ children, id, description, isDisabled }: {
+      children?: React.ReactNode; id?: string; description?: React.ReactNode; isDisabled?: boolean;
+    }) => (
+      <option value={id} disabled={isDisabled}>
+        {children}{description ? ` — ${String(description)}` : ''}
+      </option>
     ),
     Checkbox: ({ isSelected, onValueChange, children }: { isSelected?: boolean; onValueChange?: (v: boolean) => void; children?: React.ReactNode }) => (
       <label>
@@ -207,6 +217,73 @@ describe('TenantForm — create mode', () => {
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  // A 422 from the create endpoint carries the actual reason (e.g. "Maximum
+  // hierarchy depth exceeded"). Showing only the generic string left the
+  // operator with no way to tell which rule rejected the save.
+  it('surfaces the server error message rather than the generic failure text', async () => {
+    mockAdminSuper.createTenant.mockResolvedValue({
+      success: false,
+      error: 'Maximum hierarchy depth exceeded',
+      code: 'VALIDATION_ERROR',
+    });
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'DepthTenant');
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('create') || b.textContent?.toLowerCase().includes('save')
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() =>
+      expect(mockToast.error).toHaveBeenCalledWith('Maximum hierarchy depth exceeded')
+    );
+  });
+
+  it('falls back to the generic message when the server sends no reason', async () => {
+    mockAdminSuper.createTenant.mockResolvedValue({ success: false });
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'QuietFailure');
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('create') || b.textContent?.toLowerCase().includes('save')
+    );
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to create tenant'));
+  });
+
+  // max_depth is an absolute level cap: a hub already sitting at its cap can
+  // never take a child, so offering it as a parent only produces a 422.
+  it('disables hubs that have reached their depth limit in the parent picker', async () => {
+    mockAdminSuper.listTenants.mockResolvedValue({
+      success: true,
+      data: [
+        { id: 4, name: 'Timebank Global', depth: 1, max_depth: 2, allows_subtenants: true },
+        { id: 11, name: 'Timebanking UK', depth: 2, max_depth: 2, allows_subtenants: true },
+        { id: 1, name: 'Project NEXUS', depth: 0, max_depth: 0, allows_subtenants: true },
+      ],
+    });
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    const roomy = await screen.findByRole('option', { name: /Timebank Global/ });
+    const full = await screen.findByRole('option', { name: /Timebanking UK/ });
+    // max_depth 0 means unlimited — never disabled.
+    const unlimited = await screen.findByRole('option', { name: /Project NEXUS/ });
+
+    expect(roomy).not.toBeDisabled();
+    expect(unlimited).not.toBeDisabled();
+    expect(full).toBeDisabled();
+    expect(full).toHaveTextContent(/Depth limit reached/);
   });
 });
 

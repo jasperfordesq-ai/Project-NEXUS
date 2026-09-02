@@ -954,6 +954,7 @@
     "page_title_create": "Titel erstellen",
     "page_title_edit": "Titel bearbeiten",
     "page_title_fallback": "Titel-Fallback",
+    "parent_depth_limit_reached": "Tiefenlimit erreicht – unter diesem Hub kann keine Community hinzugefügt werden",
     "parent_edit_desc": "Das übergeordnete Element kann hier nicht geändert werden. Verwenden Sie „Mandant verschieben“ auf der Mandantenseite.",
     "hub_capability_managed_desc": "Die Hub-Funktion wird in den Hub-Einstellungen auf der Mandantenseite verwaltet.",
     "open_hub_settings": "Hub-Einstellungen öffnen",

@@ -954,6 +954,7 @@
     "page_title_create": "Titel Creëer",
     "page_title_edit": "Titel bewerken",
     "page_title_fallback": "Titel Terugval",
+    "parent_depth_limit_reached": "Dieptelimiet bereikt: kan geen community onder deze hub toevoegen",
     "parent_edit_desc": "De bovenliggende tenant kan hier niet worden gewijzigd. Gebruik Tenant verplaatsen op de tenantpagina.",
     "hub_capability_managed_desc": "De Hubfunctie wordt beheerd via Hubinstellingen op de tenantpagina.",
     "open_hub_settings": "Hubinstellingen openen",

@@ -963,6 +963,7 @@
     "page_title_create": "Criar título",
     "page_title_edit": "Edição de título",
     "page_title_fallback": "Substituição de título",
+    "parent_depth_limit_reached": "Limite de profundidade atingido — não é possível adicionar uma comunidade neste hub",
     "parent_edit_desc": "O elemento principal não pode ser alterado aqui. Use Mover locatário na página do locatário.",
     "hub_capability_managed_desc": "A funcionalidade de hub é gerida nas Definições do hub na página do locatário.",
     "open_hub_settings": "Abrir definições do hub",
