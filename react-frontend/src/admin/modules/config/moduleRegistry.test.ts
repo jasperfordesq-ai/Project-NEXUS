@@ -29,8 +29,9 @@ describe('module registry podcast module', () => {
     const podcasts = modules.find(module => module.id === 'podcasts');
 
     expect(podcasts).toBeDefined();
-    // Promoted out of alpha (2026-07-03) — absent stage means stable/GA.
-    expect(podcasts?.stage).toBeUndefined();
+    // Promoted out of alpha 2026-07-03, then labelled beta 2026-09-02: the
+    // module works end to end but has not been signed off as finished/tested.
+    expect(podcasts?.stage).toBe('beta');
     expect(podcasts?.configSource).toBe('podcast_config');
     expect(podcasts?.detailPageUrl).toBe('/admin/podcasts');
 

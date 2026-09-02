@@ -41,7 +41,7 @@ vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
 }));
 
-// ── Mock AlphaBadge (component from @/components/ui) ─────────────────────────
+// ── Mock admin shell (PageHeader) ────────────────────────────────────────────
 // Avoid errors from exotic UI atoms — PageHeader is real enough
 vi.mock('../../components', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,

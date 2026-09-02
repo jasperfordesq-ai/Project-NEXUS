@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Avatar, Button, Card, CardBody, Chip, SearchField, Select, SelectItem, Spinner } from '@/components/ui';
+import { Avatar, Button, Card, CardBody, Chip, ModuleStageBadge, SearchField, Select, SelectItem, Spinner } from '@/components/ui';
 import { useAuth, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { podcastsApi, type PodcastShow } from '@/lib/api/podcasts';
@@ -146,7 +146,10 @@ export default function PodcastsPage() {
     <div className="mx-auto max-w-7xl px-4 py-6">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold leading-tight">{t('title')}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold leading-tight">{t('title')}</h1>
+            <ModuleStageBadge stage="beta" />
+          </div>
           <p className="mt-1 max-w-2xl text-sm text-muted">{t('subtitle')}</p>
         </div>
 

@@ -5,13 +5,13 @@
 
 /**
  * Admin Courses — moderation queue, instructor grants, and tenant analytics
- * for the Courses module (alpha). Platform/tenant admin only.
+ * for the Courses module (beta). Platform/tenant admin only.
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Card, CardBody, Button, Chip, Spinner, Input, AlphaBadge,
+  Card, CardBody, Button, Chip, Spinner, Input, ModuleStageBadge,
   Table, TableHeader, TableBody, TableRow, TableColumn, TableCell,
 } from '@/components/ui';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
@@ -135,7 +135,7 @@ export default function CoursesAdmin() {
         description={t('admin.subtitle')}
         actions={
           <div className="flex items-center gap-2">
-            <AlphaBadge />
+            <ModuleStageBadge stage="beta" />
             <Button variant="tertiary" size="sm" startContent={<RefreshCw size={16} />} onPress={load}>
               {t('admin.refresh')}
             </Button>

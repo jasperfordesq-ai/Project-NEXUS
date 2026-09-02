@@ -4,13 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * CoursesPage — public/member browse + search for the Courses module (alpha).
+ * CoursesPage — public/member browse + search for the Courses module (beta).
  */
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { SearchField, Select, SelectItem, Spinner, AlphaBadge, Button } from '@/components/ui';
+import { SearchField, Select, SelectItem, Spinner, ModuleStageBadge, Button } from '@/components/ui';
 import Search from 'lucide-react/icons/search';
 import Plus from 'lucide-react/icons/plus';
 import { usePageTitle } from '@/hooks';
@@ -100,7 +100,7 @@ export default function CoursesPage() {
       <div className="flex flex-col gap-3 mb-1 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold leading-tight">{t('title')}</h1>
-          <AlphaBadge />
+          <ModuleStageBadge stage="beta" />
         </div>
         {isAuthenticated && (
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">

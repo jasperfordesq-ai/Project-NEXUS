@@ -64,7 +64,7 @@ export { CloseButton, type CloseButtonProps } from './CloseButton';
 export { ToggleButtonGroup, ToggleButton, type ToggleButtonGroupProps, type ToggleButtonProps } from './ToggleButtonGroup';
 export { Badge, type BadgeProps } from './Badge';
 export { Chip, type ChipProps } from './Chip';
-export { AlphaBadge } from './AlphaBadge';
+export { ModuleStageBadge, type ModuleStageBadgeProps } from './ModuleStageBadge';
 export { TagGroup, Tag, type TagGroupProps, type TagProps } from './TagGroup';
 export { Spinner, type SpinnerProps } from './Spinner';
 export { Skeleton, type SkeletonProps } from './Skeleton';

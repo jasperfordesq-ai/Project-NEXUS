@@ -250,7 +250,7 @@ vi.mock('@/components/ui', () => {
     Fieldset: passthrough, FieldsetLegend: passthrough, FieldGroup: passthrough,
     FieldsetActions: passthrough,
     AlgorithmLabel: noop,
-    AlphaBadge: noop,
+    ModuleStageBadge: noop,
     Accordion: passthrough,
     AccordionItem: passthrough,
     // Provider hooks

@@ -66,7 +66,7 @@ vi.mock('@/components/ui', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/ui')>();
   return {
     ...actual,
-    AlphaBadge: () => <span data-testid="alpha-badge">Alpha</span>,
+    ModuleStageBadge: () => <span data-testid="module-stage-badge">Beta</span>,
   };
 });
 

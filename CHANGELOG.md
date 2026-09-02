@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The Courses and Podcasts modules are now labelled "Beta" to members instead of "Alpha" (Courses) or nothing at all (Podcasts).** Both modules work end to end, but neither has been signed off as finished and tested, and the platform as a whole is generally available at 1.7.0 — so a member landing on either page needs to know it is held to a different standard from the rest of the site. "Beta" is the ordinary word for that and needs no explaining. The shared `AlphaBadge` component could only ever say "Alpha"; it is replaced by `ModuleStageBadge`, which takes the stage as a prop (amber for alpha, accent for beta, matching the admin module-config chip). The admin module registry is updated in the same commit so the three places that state a maturity level agree: Courses moves from `alpha` to `beta`, and Podcasts — promoted out of alpha on 2026-07-03 to no label at all, which reads as generally available — is now explicitly `beta`. The chip text reuses the `Beta` wording already translated for the admin stage chip in all eleven locales, so no new untranslated strings ship.
+
 ### Internal
 
 - **The database-column gate now watches `upsert()`, which is how a broken write got past it.** `scripts/check-db-column-references.mjs` matched `insert`, `update`, `updateOrInsert` and `insertGetId` but not `upsert`, so `AchievementUnlockablesService` writing a non-existent `tenant_id` column sat in the tree unnoticed. Adding the one method brings 19 more column references under the gate, and it was confirmed to catch that exact write when run against the unfixed code. Everything else about the gate is unchanged, including its deliberate decision not to check `where()`/`orderBy()`/`select()`, which can name a joined table's column.

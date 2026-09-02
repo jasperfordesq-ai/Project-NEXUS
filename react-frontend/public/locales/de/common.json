@@ -2408,6 +2408,7 @@
     "scheme_system": "System"
   },
   "alpha_badge": "Alpha",
+  "beta_badge": "Beta",
   "wellbeing": {
     "mood_struggling": "Kämpfend",
     "mood_low": "Niedrig",

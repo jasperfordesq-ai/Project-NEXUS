@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardBody, Chip, Spinner, AlphaBadge } from '@/components/ui';
+import { Button, Card, CardBody, Chip, Spinner, ModuleStageBadge } from '@/components/ui';
 import BookOpen from 'lucide-react/icons/book-open';
 import PlayCircle from 'lucide-react/icons/play-circle';
 import { usePageTitle } from '@/hooks';
@@ -105,7 +105,7 @@ export default function CourseDetailPage() {
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <Chip size="sm" variant="soft">{t(`level.${course.level}`)}</Chip>
             {course.category?.name ? <Chip size="sm" variant="soft" color="secondary">{course.category.name}</Chip> : null}
-            <AlphaBadge />
+            <ModuleStageBadge stage="beta" />
           </div>
           <h1 className="text-2xl font-bold leading-tight mb-2">{course.title}</h1>
           {course.summary ? <p className="text-muted mb-4">{course.summary}</p> : null}

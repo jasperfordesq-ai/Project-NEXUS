@@ -679,7 +679,7 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     type: 'feature',
     configSource: 'tenant_features',
     detailPageUrl: '/admin/courses',
-    stage: 'alpha',
+    stage: 'beta',
     configOptions: [
       { key: 'courses.allow_member_authoring', type: 'boolean', defaultValue: true, category: 'authoring' },
       { key: 'courses.moderation_enabled', type: 'boolean', defaultValue: false, category: 'moderation' },
@@ -695,6 +695,7 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     type: 'feature',
     configSource: 'podcast_config',
     detailPageUrl: '/admin/podcasts',
+    stage: 'beta',
     configOptions: [
       { key: 'podcasts.allow_member_show_creation', type: 'boolean', defaultValue: true, category: 'authoring' },
       { key: 'podcasts.max_shows_per_user', type: 'number', defaultValue: 5, category: 'authoring', min: 0, max: 100 },
