@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-09-02T08:39:27.529Z",
+  "lastRunAt": "2026-09-02T09:20:15.084Z",
   "issues": {
     "123575422": {
       "title": "Support report submitted",
@@ -24,9 +24,9 @@
       "title": "Safeguarding interaction policy unavailable",
       "culprit": "http://api.project-nexus.ie/api/v2/matches/all",
       "decision": "needs-owner",
-      "note": "RECURRED since the 2026-08-23 needs-owner decision, and the surface has CHANGED - this is the part worth the owner's attention. The earlier decision recorded it firing from a scheduled CLI run on channel legacy_match_suggestion (recipient 623, tenant 2), where the effect was simply that a match-suggestion notification was withheld. The latest event (2026-08-27 11:41, release 489c627e13b9) comes from a live member request instead: GET /api/v2/matches/all?modules=listings&limit=4&min_score=40, from Chrome on Windows - a member loading their matches. Same underlying cause, still failing in the SAFE direction: app/Services/SafeguardingInteractionPolicy.php refuses vetted-interaction paths when the tenant has no safeguarding jurisdiction configured (no scheme code, attestation code or policy version). This is NOT evidence of a bad fix - no fix was ever applied; the 2026-08-23 decision was needs-owner, and it recurs because the required admin action has not been taken. Suggested fix unchanged and still an ADMIN action, not a code change: configure the tenant's safeguarding jurisdiction and attestation scheme. Open question for the owner: because it now fires on a member-facing page load, someone should confirm what the member actually sees on their matches page when the policy is unavailable. Sensitive area (safeguarding) - no code touched.",
+      "note": "Updated 2026-09-02. Unchanged and still owner action: the same unconfigured safeguarding jurisdiction on tenant 2 (see 143725193). No code fix applies - the policy is failing in the SAFE direction by refusing vetted-interaction paths when no jurisdiction is set. The alarm noise around it is now reduced: e7df93a73 stops the daily pager double-reporting. Open question for the owner is unchanged - what does a member see on their matches page while this is unavailable.",
       "sha": null,
-      "decidedAt": "2026-08-28T11:13:34.875Z",
+      "decidedAt": "2026-09-02T09:18:43.731Z",
       "decidedAtRelease": "nexus-php@489c627e13b9"
     },
     "138843429": {
@@ -590,28 +590,28 @@
     "143723388": {
       "title": "GDPR ALERT: data-subject requests pending past the response threshold",
       "culprit": null,
-      "decision": "needs-owner",
-      "note": "Reaffirmed 2026-09-02. Fired again on schedule (2026-09-02 07:50) with the same 4 overdue data-subject requests. The nightly respawn defect is fixed and live (cf7323601 is in release 44070e8c1) - this is now ONE stable group accumulating events, which is why 39 pre-fix duplicate groups could be closed today. The backlog itself is unchanged and is owner action, not code: per the standing NEXUS-PHP-4A decision these are the owner's own admin test requests, and closing them in the admin GDPR queue is what stops the alarm. Sensitive (gdpr) - no code touched.",
+      "decision": "fixed",
+      "note": "The alarm was correct and the backlog was real; it is now empty. Owner confirmed the 4 open requests were test data and authorised closing them. Read from production first: #6/#7/#8 (tenant 5) belonged to partner.demo+niamh@example.test, a reserved .test domain; #11 (tenant 11) belonged to a member account that had since been erased and anonymised, so nothing remained to rectify. NONE of the four was an erasure request, checked explicitly because marking an erasure 'completed' triggers a real irreversible Article 17 deletion. All four set to 'cancelled' with a per-row note recording why, deliberately NOT 'completed', which would have manufactured a compliance record claiming a DSAR was fulfilled. Alarm then run on production and confirmed healthy, exit 0.",
       "sha": null,
-      "decidedAt": "2026-09-02T08:40:10.806Z",
+      "decidedAt": "2026-09-02T09:18:25.504Z",
       "decidedAtRelease": "nexus-php@44070e8c150b"
     },
     "143725191": {
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
-      "decision": "needs-owner",
-      "note": "Reaffirmed 2026-09-02. Fired again on schedule (2026-09-02 08:05) because the required ADMIN action has not been taken: tenant 2 still has no safeguarding jurisdiction configured (broker panel -> Vetting -> Jurisdiction). Not a bad fix and not a code defect - no fix was ever applied, and the gate is failing in the safe direction. The two-group double-report defect noted on 2026-09-01 still stands. Sensitive (safeguarding) - no code touched.",
-      "sha": null,
-      "decidedAt": "2026-09-02T08:40:09.275Z",
+      "decision": "fixed",
+      "note": "This was the duplicate half of the double-report, not a separate fault. Production's LOG_STACK contains the sentry channel, so the alarm's Log::error line became its own unfingerprinted Sentry group alongside the fingerprinted capture (143725193). Fixed in e7df93a73: the alarm line now routes through App\\Support\\Sentry\\OperatorLog::withoutSentry(), the configured stack minus that channel, so local logging is unchanged and only the capture reaches Sentry. Same defect fixed in all five alarm commands. Two source-level guards added, confirmed failing against the unfixed code. Resolve-in-next-release, so it reopens by itself if the log leg ever returns.",
+      "sha": "e7df93a73",
+      "decidedAt": "2026-09-02T09:18:30.244Z",
       "decidedAtRelease": "nexus-php@44070e8c150b"
     },
     "143725193": {
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "Reaffirmed 2026-09-02. Fired again on schedule (2026-09-02 08:05) because the required ADMIN action has not been taken: tenant 2 still has no safeguarding jurisdiction configured (broker panel -> Vetting -> Jurisdiction). Not a bad fix and not a code defect - no fix was ever applied, and the gate is failing in the safe direction. The two-group double-report defect noted on 2026-09-01 still stands. Sensitive (safeguarding) - no code touched.",
+      "note": "Updated 2026-09-02. The double-report half of this is FIXED in e7df93a73 (the Log::error leg no longer reaches Sentry, so this condition now produces ONE group instead of two). The underlying condition is NOT fixed and is still an admin action, not code: tenant 2 has no safeguarding jurisdiction configured, so the vetted-interaction contact gate cannot operate. Set it in the broker panel under Vetting -> Jurisdiction. Until then this alarm fires daily, correctly. Also still open: someone should confirm what a member actually sees on their matches page while the gate is unavailable (NEXUS-PHP-39 shows it firing on a live member page load, not just a scheduled run).",
       "sha": null,
-      "decidedAt": "2026-09-02T08:40:07.728Z",
+      "decidedAt": "2026-09-02T09:18:41.543Z",
       "decidedAtRelease": "nexus-php@44070e8c150b"
     },
     "143797835": {
