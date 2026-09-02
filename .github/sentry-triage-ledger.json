@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-09-01T21:36:54.158Z",
+  "lastRunAt": "2026-09-02T08:39:27.529Z",
   "issues": {
     "123575422": {
       "title": "Support report submitted",
@@ -591,28 +591,28 @@
       "title": "GDPR ALERT: data-subject requests pending past the response threshold",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "SENSITIVE (gdpr) — diagnosed, no code touched. GOOD NEWS FIRST: the nightly respawn defect IS fixed and IS live. Commit cf7323601 moved the per-request ages out of the message text into log_context, and this issue proves it works — one stable group (\"GDPR ALERT: data-subject requests pending past the response threshold\") accumulating 3 events across 2026-08-30/31 and 09-01, instead of a fresh group each morning. THE BACKLOG ITSELF REMAINS AND IS GROWING: 4 requests, all 4 already past the 30-day statutory deadline — #6 t5 portability 78d, #7 t5 rectification 77d, #8 t5 objection 77d, #11 t11 rectification 61d. The standing owner decision from NEXUS-PHP-4A (2026-08-13) is that these are the owner's own admin test requests, so there is no real Article 12(3) clock. If that is still true, closing them in the admin GDPR queue is what stops the alarm; it will otherwise fire nightly for ever with rising numbers, which trains everyone to ignore a compliance alarm. Owner action, not code.",
+      "note": "Reaffirmed 2026-09-02. Fired again on schedule (2026-09-02 07:50) with the same 4 overdue data-subject requests. The nightly respawn defect is fixed and live (cf7323601 is in release 44070e8c1) - this is now ONE stable group accumulating events, which is why 39 pre-fix duplicate groups could be closed today. The backlog itself is unchanged and is owner action, not code: per the standing NEXUS-PHP-4A decision these are the owner's own admin test requests, and closing them in the admin GDPR queue is what stops the alarm. Sensitive (gdpr) - no code touched.",
       "sha": null,
-      "decidedAt": "2026-09-01T10:56:46.685Z",
-      "decidedAtRelease": "nexus-php@5a34b9aef871"
+      "decidedAt": "2026-09-02T08:40:10.806Z",
+      "decidedAtRelease": "nexus-php@44070e8c150b"
     },
     "143725191": {
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "SENSITIVE (safeguarding) — diagnosed, no code touched. Two findings. (1) The alarm itself: tenant 2 has no safeguarding jurisdiction configured (log_context: affected_count 1, jurisdiction \"unconfigured\", configured false), so the vetted-interaction contact gate cannot operate. The alarm states its own remedy — configure the jurisdiction in the broker panel under Vetting -> Jurisdiction. That is an ADMIN action, not a code change, and it is the same unresolved condition already recorded against NEXUS-PHP-39. (2) A defect in the alarm: 143725191 and 143725193 are TWO Sentry groups for the SAME occurrence, same second. 143725191 carries logger=production and a log_context extra (the Log::error leg); 143725193 carries neither (the explicit Sentry capture leg). So every occurrence double-reports and doubles its weight in the queue and in the post-deploy error watch. Same two-leg pattern documented against NEXUS-PHP-51. Suggested fix: send one leg only, or fingerprint both identically. Not applied — safeguarding code needs owner authorisation.",
+      "note": "Reaffirmed 2026-09-02. Fired again on schedule (2026-09-02 08:05) because the required ADMIN action has not been taken: tenant 2 still has no safeguarding jurisdiction configured (broker panel -> Vetting -> Jurisdiction). Not a bad fix and not a code defect - no fix was ever applied, and the gate is failing in the safe direction. The two-group double-report defect noted on 2026-09-01 still stands. Sensitive (safeguarding) - no code touched.",
       "sha": null,
-      "decidedAt": "2026-09-01T10:56:43.817Z",
-      "decidedAtRelease": "nexus-php@5a34b9aef871"
+      "decidedAt": "2026-09-02T08:40:09.275Z",
+      "decidedAtRelease": "nexus-php@44070e8c150b"
     },
     "143725193": {
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "SENSITIVE (safeguarding) — diagnosed, no code touched. Two findings. (1) The alarm itself: tenant 2 has no safeguarding jurisdiction configured (log_context: affected_count 1, jurisdiction \"unconfigured\", configured false), so the vetted-interaction contact gate cannot operate. The alarm states its own remedy — configure the jurisdiction in the broker panel under Vetting -> Jurisdiction. That is an ADMIN action, not a code change, and it is the same unresolved condition already recorded against NEXUS-PHP-39. (2) A defect in the alarm: 143725191 and 143725193 are TWO Sentry groups for the SAME occurrence, same second. 143725191 carries logger=production and a log_context extra (the Log::error leg); 143725193 carries neither (the explicit Sentry capture leg). So every occurrence double-reports and doubles its weight in the queue and in the post-deploy error watch. Same two-leg pattern documented against NEXUS-PHP-51. Suggested fix: send one leg only, or fingerprint both identically. Not applied — safeguarding code needs owner authorisation.",
+      "note": "Reaffirmed 2026-09-02. Fired again on schedule (2026-09-02 08:05) because the required ADMIN action has not been taken: tenant 2 still has no safeguarding jurisdiction configured (broker panel -> Vetting -> Jurisdiction). Not a bad fix and not a code defect - no fix was ever applied, and the gate is failing in the safe direction. The two-group double-report defect noted on 2026-09-01 still stands. Sensitive (safeguarding) - no code touched.",
       "sha": null,
-      "decidedAt": "2026-09-01T10:56:45.207Z",
-      "decidedAtRelease": "nexus-php@5a34b9aef871"
+      "decidedAt": "2026-09-02T08:40:07.728Z",
+      "decidedAtRelease": "nexus-php@44070e8c150b"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
