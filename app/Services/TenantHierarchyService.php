@@ -39,7 +39,7 @@ class TenantHierarchyService
             ->select('id', 'slug', 'domain', 'accessible_domain')
             ->first();
         if (!$tenant) {
-            return ['success' => false, 'error' => 'Tenant not found'];
+            return ['success' => false, 'error' => __('api.super_tenant_not_found')];
         }
 
         $normalized = [];
@@ -52,7 +52,7 @@ class TenantHierarchyService
                 return ['success' => false, 'error' => __('api.slug_reserved_short', ['slug' => $slug])];
             }
             if (DB::table('tenants')->where('slug', $slug)->where('id', '!=', $tenantId)->exists()) {
-                return ['success' => false, 'error' => "Slug '{$slug}' is already in use"];
+                return ['success' => false, 'error' => __('api.super_slug_in_use', ['slug' => $slug])];
             }
             $normalized['slug'] = $slug;
         }
@@ -79,7 +79,7 @@ class TenantHierarchyService
             : strtolower(rtrim((string) ($tenant->accessible_domain ?? ''), '.'));
         if ($effectiveDomain !== '' && $effectiveAccessible !== ''
             && strcasecmp($effectiveDomain, $effectiveAccessible) === 0) {
-            return ['success' => false, 'error' => 'Primary and accessible domains must be different'];
+            return ['success' => false, 'error' => __('api.super_domains_must_differ')];
         }
 
         foreach (['domain', 'accessible_domain'] as $field) {
@@ -90,7 +90,7 @@ class TenantHierarchyService
                     $query->where('domain', $host)->orWhere('accessible_domain', $host);
                 })
                 ->exists()) {
-                return ['success' => false, 'error' => "Domain '{$host}' is already in use"];
+                return ['success' => false, 'error' => __('api.super_domain_in_use', ['domain' => $host])];
             }
         }
 
@@ -140,7 +140,7 @@ class TenantHierarchyService
             self::lockPasskeyRoutingBoundary($tenantId);
             $tenant = DB::table('tenants')->where('id', $tenantId)->first();
             if ($tenant === null) {
-                return ['success' => false, 'error' => 'Tenant not found'];
+                return ['success' => false, 'error' => __('api.super_tenant_not_found')];
             }
 
             $validation = self::validateRoutingUpdate($tenantId, $routingInput, $tenant);
@@ -382,23 +382,23 @@ class TenantHierarchyService
             // Validate parent exists
             $parent = DB::table('tenants')->where('id', $parentId)->first();
             if (!$parent) {
-                return ['success' => false, 'error' => 'Parent tenant not found'];
+                return ['success' => false, 'error' => __('api.super_parent_not_found')];
             }
 
             // Check parent allows sub-tenants
             if (!$parent->allows_subtenants && $parentId !== 1) {
-                return ['success' => false, 'error' => 'Parent tenant does not allow sub-tenants'];
+                return ['success' => false, 'error' => __('api.super_parent_no_subtenants')];
             }
 
             // Check max depth
             $newDepth = ($parent->depth ?? 0) + 1;
             if ($parent->max_depth > 0 && $newDepth > $parent->max_depth) {
-                return ['success' => false, 'error' => 'Maximum hierarchy depth exceeded'];
+                return ['success' => false, 'error' => __('api.super_max_depth_exceeded')];
             }
 
             $name = trim($data['name'] ?? '');
             if (empty($name)) {
-                return ['success' => false, 'error' => 'Tenant name is required'];
+                return ['success' => false, 'error' => __('api.super_tenant_name_required')];
             }
 
             // Generate slug if not provided
@@ -416,7 +416,7 @@ class TenantHierarchyService
             // Check slug uniqueness
             $existingSlug = DB::table('tenants')->where('slug', $slug)->exists();
             if ($existingSlug) {
-                return ['success' => false, 'error' => "Slug '{$slug}' is already in use"];
+                return ['success' => false, 'error' => __('api.super_slug_in_use', ['slug' => $slug])];
             }
 
             // Check domain uniqueness if provided. The React custom domain
@@ -436,7 +436,7 @@ class TenantHierarchyService
             }
 
             if ($domain !== '' && $accessibleDomain !== '' && strcasecmp($domain, $accessibleDomain) === 0) {
-                return ['success' => false, 'error' => 'Primary and accessible domains must be different'];
+                return ['success' => false, 'error' => __('api.super_domains_must_differ')];
             }
 
             foreach ([$domain, $accessibleDomain] as $host) {
@@ -449,7 +449,7 @@ class TenantHierarchyService
                     })
                     ->exists();
                 if ($inUse) {
-                    return ['success' => false, 'error' => "Domain '{$host}' is already in use"];
+                    return ['success' => false, 'error' => __('api.super_domain_in_use', ['domain' => $host])];
                 }
             }
 
@@ -547,8 +547,11 @@ class TenantHierarchyService
 
             return ['success' => true, 'tenant_id' => $tenantId];
         } catch (\Throwable $e) {
-            Log::error('TenantHierarchyService::createTenant failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'Failed to create tenant: ' . $e->getMessage()];
+            Log::error('TenantHierarchyService::createTenant failed', ['error' => $e->getMessage(), 'exception' => $e]);
+            // The operator gets a translated generic failure, never the raw
+            // exception text: it is unlocalised and can carry SQL, table names
+            // and connection detail. The message above is the record for triage.
+            return ['success' => false, 'error' => __('api.super_tenant_create_failed')];
         }
     }
 
@@ -562,7 +565,7 @@ class TenantHierarchyService
         try {
             $tenant = DB::table('tenants')->where('id', $tenantId)->first();
             if (!$tenant) {
-                return ['success' => false, 'error' => 'Tenant not found'];
+                return ['success' => false, 'error' => __('api.super_tenant_not_found')];
             }
 
             $routingInput = array_intersect_key(
@@ -598,7 +601,7 @@ class TenantHierarchyService
                 : strtolower(rtrim((string) ($tenant->accessible_domain ?? ''), '.'));
             if ($effectiveDomain !== '' && $effectiveAccessible !== ''
                 && strcasecmp($effectiveDomain, $effectiveAccessible) === 0) {
-                return ['success' => false, 'error' => 'Primary and accessible domains must be different'];
+                return ['success' => false, 'error' => __('api.super_domains_must_differ')];
             }
 
             // Build update array from allowed fields
@@ -651,7 +654,7 @@ class TenantHierarchyService
                         ->where('id', '!=', $tenantId)
                         ->exists();
                     if ($existingSlug) {
-                        return ['success' => false, 'error' => "Slug '{$value}' is already in use"];
+                        return ['success' => false, 'error' => __('api.super_slug_in_use', ['slug' => $value])];
                     }
                 }
 
@@ -679,7 +682,7 @@ class TenantHierarchyService
                         })
                         ->exists();
                     if ($inUse) {
-                        return ['success' => false, 'error' => "Domain '{$value}' is already in use"];
+                        return ['success' => false, 'error' => __('api.super_domain_in_use', ['domain' => $value])];
                     }
                 }
 
@@ -688,7 +691,7 @@ class TenantHierarchyService
             }
 
             if (empty($update)) {
-                return ['success' => false, 'error' => 'No valid fields to update'];
+                return ['success' => false, 'error' => __('api.no_valid_fields_to_update')];
             }
 
             $update['updated_at'] = now();
@@ -729,7 +732,7 @@ class TenantHierarchyService
                     self::lockPasskeyRoutingBoundary($tenantId);
                     $lockedTenant = DB::table('tenants')->where('id', $tenantId)->first();
                     if ($lockedTenant === null) {
-                        return ['success' => false, 'error' => 'Tenant not found'];
+                        return ['success' => false, 'error' => __('api.super_tenant_not_found')];
                     }
 
                     // The preflight response is useful to admins, but it is not
@@ -807,8 +810,11 @@ class TenantHierarchyService
 
             return ['success' => true];
         } catch (\Throwable $e) {
-            Log::error('TenantHierarchyService::updateTenant failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'Failed to update tenant: ' . $e->getMessage()];
+            Log::error('TenantHierarchyService::updateTenant failed', ['error' => $e->getMessage(), 'exception' => $e]);
+            // The operator gets a translated generic failure, never the raw
+            // exception text: it is unlocalised and can carry SQL, table names
+            // and connection detail. The message above is the record for triage.
+            return ['success' => false, 'error' => __('api.super_tenant_update_failed')];
         }
     }
 
@@ -825,12 +831,12 @@ class TenantHierarchyService
     {
         try {
             if ($tenantId === 1) {
-                return ['success' => false, 'error' => 'Cannot delete the Master tenant'];
+                return ['success' => false, 'error' => __('api.super_delete_master_forbidden')];
             }
 
             $tenant = DB::table('tenants')->where('id', $tenantId)->first();
             if (!$tenant) {
-                return ['success' => false, 'error' => 'Tenant not found'];
+                return ['success' => false, 'error' => __('api.super_tenant_not_found')];
             }
 
             if ($hardDelete) {
@@ -847,7 +853,7 @@ class TenantHierarchyService
                 ->count();
 
             if ($activeChildren > 0) {
-                return ['success' => false, 'error' => 'Cannot delete a tenant with active sub-tenants. Deactivate or move them first.'];
+                return ['success' => false, 'error' => __('api.super_delete_has_children')];
             }
 
             DB::transaction(function () use ($tenantId): void {
@@ -874,8 +880,11 @@ class TenantHierarchyService
 
             return ['success' => true];
         } catch (\Throwable $e) {
-            Log::error('TenantHierarchyService::deleteTenant failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'Failed to delete tenant: ' . $e->getMessage()];
+            Log::error('TenantHierarchyService::deleteTenant failed', ['error' => $e->getMessage(), 'exception' => $e]);
+            // The operator gets a translated generic failure, never the raw
+            // exception text: it is unlocalised and can carry SQL, table names
+            // and connection detail. The message above is the record for triage.
+            return ['success' => false, 'error' => __('api.super_tenant_delete_failed')];
         }
     }
 
@@ -888,31 +897,31 @@ class TenantHierarchyService
     {
         try {
             if ($tenantId === 1) {
-                return ['success' => false, 'error' => 'Cannot move the Master tenant'];
+                return ['success' => false, 'error' => __('api.super_move_master_forbidden')];
             }
 
             if ($tenantId === $newParentId) {
-                return ['success' => false, 'error' => 'Cannot move a tenant to be its own parent'];
+                return ['success' => false, 'error' => __('api.super_move_self_parent')];
             }
 
             $tenant = DB::table('tenants')->where('id', $tenantId)->first();
             if (!$tenant) {
-                return ['success' => false, 'error' => 'Tenant not found'];
+                return ['success' => false, 'error' => __('api.super_tenant_not_found')];
             }
 
             $newParent = DB::table('tenants')->where('id', $newParentId)->first();
             if (!$newParent) {
-                return ['success' => false, 'error' => 'New parent tenant not found'];
+                return ['success' => false, 'error' => __('api.super_new_parent_not_found')];
             }
 
             // Prevent circular hierarchy: new parent cannot be a descendant of this tenant.
             // Requires both path fields to be populated — null means the tree is corrupt;
             // fail safe rather than allowing an undetectable cycle.
             if (empty($tenant->path) || empty($newParent->path)) {
-                return ['success' => false, 'error' => 'Cannot move tenant: hierarchy path data is missing. Re-save the affected tenants to rebuild paths.'];
+                return ['success' => false, 'error' => __('api.super_move_path_missing')];
             }
             if (str_starts_with($newParent->path, $tenant->path)) {
-                return ['success' => false, 'error' => 'Cannot move a tenant under one of its own descendants'];
+                return ['success' => false, 'error' => __('api.super_move_into_descendant')];
             }
 
             $move = DB::transaction(function () use ($tenantId, $newParentId): array {
@@ -929,16 +938,16 @@ class TenantHierarchyService
                 $lockedTenant = DB::table('tenants')->where('id', $tenantId)->first();
                 $lockedNewParent = DB::table('tenants')->where('id', $newParentId)->first();
                 if ($lockedTenant === null) {
-                    return ['success' => false, 'error' => 'Tenant not found'];
+                    return ['success' => false, 'error' => __('api.super_tenant_not_found')];
                 }
                 if ($lockedNewParent === null) {
-                    return ['success' => false, 'error' => 'New parent tenant not found'];
+                    return ['success' => false, 'error' => __('api.super_new_parent_not_found')];
                 }
                 if (empty($lockedTenant->path) || empty($lockedNewParent->path)) {
-                    return ['success' => false, 'error' => 'Cannot move tenant: hierarchy path data is missing. Re-save the affected tenants to rebuild paths.'];
+                    return ['success' => false, 'error' => __('api.super_move_path_missing')];
                 }
                 if (str_starts_with($lockedNewParent->path, $lockedTenant->path)) {
-                    return ['success' => false, 'error' => 'Cannot move a tenant under one of its own descendants'];
+                    return ['success' => false, 'error' => __('api.super_move_into_descendant')];
                 }
 
                 $passkeyFailure = self::passkeyMoveBoundaryFailure($lockedTenant, $newParentId);
@@ -1010,8 +1019,11 @@ class TenantHierarchyService
 
             return ['success' => true];
         } catch (\Throwable $e) {
-            Log::error('TenantHierarchyService::moveTenant failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'Failed to move tenant: ' . $e->getMessage()];
+            Log::error('TenantHierarchyService::moveTenant failed', ['error' => $e->getMessage(), 'exception' => $e]);
+            // The operator gets a translated generic failure, never the raw
+            // exception text: it is unlocalised and can carry SQL, table names
+            // and connection detail. The message above is the record for triage.
+            return ['success' => false, 'error' => __('api.super_tenant_move_failed')];
         }
     }
 
@@ -1025,7 +1037,7 @@ class TenantHierarchyService
         try {
             $tenant = DB::table('tenants')->where('id', $tenantId)->first();
             if (!$tenant) {
-                return ['success' => false, 'error' => 'Tenant not found'];
+                return ['success' => false, 'error' => __('api.super_tenant_not_found')];
             }
 
             $oldValue = (bool) $tenant->allows_subtenants;
@@ -1065,8 +1077,11 @@ class TenantHierarchyService
 
             return ['success' => true];
         } catch (\Throwable $e) {
-            Log::error('TenantHierarchyService::toggleSubtenantCapability failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'Failed to toggle sub-tenant capability: ' . $e->getMessage()];
+            Log::error('TenantHierarchyService::toggleSubtenantCapability failed', ['error' => $e->getMessage(), 'exception' => $e]);
+            // The operator gets a translated generic failure, never the raw
+            // exception text: it is unlocalised and can carry SQL, table names
+            // and connection detail. The message above is the record for triage.
+            return ['success' => false, 'error' => __('api.super_toggle_subtenants_failed')];
         }
     }
 
@@ -1080,16 +1095,16 @@ class TenantHierarchyService
         try {
             $user = DB::table('users')->where('id', $userId)->first();
             if (!$user) {
-                return ['success' => false, 'error' => 'User not found'];
+                return ['success' => false, 'error' => __('api.user_not_found')];
             }
 
             if ((int) $user->tenant_id !== $tenantId) {
-                return ['success' => false, 'error' => 'User does not belong to this tenant'];
+                return ['success' => false, 'error' => __('api.super_user_not_in_this_tenant')];
             }
 
             $tenant = DB::table('tenants')->where('id', $tenantId)->first();
             if (!$tenant || !$tenant->allows_subtenants) {
-                return ['success' => false, 'error' => 'Tenant does not support sub-tenants'];
+                return ['success' => false, 'error' => __('api.super_tenant_no_subtenants')];
             }
 
             DB::table('users')->where('id', $userId)->update([
@@ -1110,8 +1125,11 @@ class TenantHierarchyService
 
             return ['success' => true];
         } catch (\Throwable $e) {
-            Log::error('TenantHierarchyService::assignTenantSuperAdmin failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'Failed to grant super admin: ' . $e->getMessage()];
+            Log::error('TenantHierarchyService::assignTenantSuperAdmin failed', ['error' => $e->getMessage(), 'exception' => $e]);
+            // The operator gets a translated generic failure, never the raw
+            // exception text: it is unlocalised and can carry SQL, table names
+            // and connection detail. The message above is the record for triage.
+            return ['success' => false, 'error' => __('api.super_grant_super_admin_failed')];
         }
     }
 
@@ -1125,7 +1143,7 @@ class TenantHierarchyService
         try {
             $user = DB::table('users')->where('id', $userId)->first();
             if (!$user) {
-                return ['success' => false, 'error' => 'User not found'];
+                return ['success' => false, 'error' => __('api.user_not_found')];
             }
 
             DB::table('users')->where('id', $userId)->update([
@@ -1146,8 +1164,11 @@ class TenantHierarchyService
 
             return ['success' => true];
         } catch (\Throwable $e) {
-            Log::error('TenantHierarchyService::revokeTenantSuperAdmin failed', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'Failed to revoke super admin: ' . $e->getMessage()];
+            Log::error('TenantHierarchyService::revokeTenantSuperAdmin failed', ['error' => $e->getMessage(), 'exception' => $e]);
+            // The operator gets a translated generic failure, never the raw
+            // exception text: it is unlocalised and can carry SQL, table names
+            // and connection detail. The message above is the record for triage.
+            return ['success' => false, 'error' => __('api.super_revoke_super_admin_failed')];
         }
     }
 

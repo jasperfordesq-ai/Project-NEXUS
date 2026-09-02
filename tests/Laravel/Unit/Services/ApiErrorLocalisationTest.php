@@ -68,6 +68,10 @@ class ApiErrorLocalisationTest extends TestCase
         'app/Services/PaidPushCampaignService.php',
         'app/Services/RetentionPolicyService.php',
         'app/Services/StoryService.php',
+        // Added 2026-09-02. The super-admin panel shows this service's refusal
+        // text verbatim (TenantForm), so a literal here is an English toast for
+        // an operator working in any of the eleven locales.
+        'app/Services/TenantHierarchyService.php',
         'app/Services/VolunteerService.php',
         'app/Services/VolunteeringConfigurationService.php',
     ];

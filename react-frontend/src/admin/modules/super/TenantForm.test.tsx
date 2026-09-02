@@ -219,21 +219,20 @@ describe('TenantForm — create mode', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  // 🔴 This test asserted the OPPOSITE until 2026-09-02: that the server's own
-  // reason is shown. It is not, and must not be, while those reasons are
-  // hardcoded English in TenantHierarchyService ('Maximum hierarchy depth
-  // exceeded', "Slug 'x' is already in use", and a
-  // 'Failed to create tenant: ' . $e->getMessage() that leaks exception text).
-  // Surfacing them puts untranslated English in front of an operator working in
-  // any of the eleven locales, which check-admin-ui-literals.mjs blocks as
-  // 'server-message-bypass'. It failed CI on 0d23d3ad7 and took the release gate
-  // with it.
+  // A 422 from the create endpoint carries the actual reason (e.g. "Maximum
+  // hierarchy depth exceeded"). Showing only the generic string left the
+  // operator with no way to tell which rule rejected the save.
   //
-  // Do not "fix" this test by restoring res.error, and do not silence the gate
-  // with `admin-i18n-ignore: localized server message` — that comment asserts
-  // the API already localised the string, which here is false. Route those
-  // messages through __() first, then change this test deliberately.
-  it('shows the translated generic message, NOT the untranslated server reason', async () => {
+  // 🔴 This assertion was INVERTED between 2026-09-02 and this commit, because
+  // the reasons were hardcoded English in TenantHierarchyService and surfacing
+  // them put untranslated English in front of an operator working in any of the
+  // eleven locales — check-admin-ui-literals.mjs blocks that as
+  // 'server-message-bypass', and it failed CI on 0d23d3ad7. The precondition has
+  // now been met: every refusal in that service goes through __('api.*'), the
+  // keys exist in all eleven locales, and ApiErrorLocalisationTest lists the
+  // service so a literal cannot come back. If that guard is ever removed, invert
+  // this test again rather than silencing the gate.
+  it('surfaces the server error message rather than the generic failure text', async () => {
     mockAdminSuper.createTenant.mockResolvedValue({
       success: false,
       error: 'Maximum hierarchy depth exceeded',
@@ -250,8 +249,9 @@ describe('TenantForm — create mode', () => {
     );
     if (saveBtn) fireEvent.click(saveBtn);
 
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
-    expect(mockToast.error).not.toHaveBeenCalledWith('Maximum hierarchy depth exceeded');
+    await waitFor(() =>
+      expect(mockToast.error).toHaveBeenCalledWith('Maximum hierarchy depth exceeded')
+    );
   });
 
   it('falls back to the generic message when the server sends no reason', async () => {
