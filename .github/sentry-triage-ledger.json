@@ -609,9 +609,9 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "Updated 2026-09-02. The double-report half of this is FIXED in e7df93a73 (the Log::error leg no longer reaches Sentry, so this condition now produces ONE group instead of two). The underlying condition is NOT fixed and is still an admin action, not code: tenant 2 has no safeguarding jurisdiction configured, so the vetted-interaction contact gate cannot operate. Set it in the broker panel under Vetting -> Jurisdiction. Until then this alarm fires daily, correctly. Also still open: someone should confirm what a member actually sees on their matches page while the gate is unavailable (NEXUS-PHP-39 shows it firing on a live member page load, not just a scheduled run).",
+      "note": "ANSWERED 2026-09-02 - the standing question 'what does a member actually see while the contact gate is unavailable?' now has a measured answer, so it does not need asking a fourth time. They see NOTHING: no error, no notice. MatchingService::getSuggestionsForUser evaluates the policy in BOTH directions and calls continue when either side is not isAllowed(); UNAVAILABLE is not allowed, so the affected member is silently skipped and simply never appears in anyone's suggestions. Blast radius measured on production: 3 members on tenant 2 (of 261 active) and 1 on tenant 11 hold a live non-revoked vetted-interaction preference on an active option - 4 members platform-wide. It fails SAFE, so nobody is exposed; the cost is that the protection those 4 asked for currently renders them invisible in matching rather than protected within it, and nobody is told. Still an ADMIN fix, not code: configure the jurisdiction (broker panel -> Vetting -> Jurisdiction) for tenants 2 and 11. Separately worth noting the per-request log noise was already fixed on 2026-08-28 - steady-state configuration reasons now log at WARNING, below the sentry channel's ERROR threshold, and are deduplicated per tenant+reason, which is why NEXUS-PHP-39 stopped producing events after 2026-08-27.",
       "sha": null,
-      "decidedAt": "2026-09-02T09:18:41.543Z",
+      "decidedAt": "2026-09-02T09:36:25.487Z",
       "decidedAtRelease": "nexus-php@44070e8c150b"
     },
     "143797835": {
