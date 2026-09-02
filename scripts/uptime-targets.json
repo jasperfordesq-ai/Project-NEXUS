@@ -25,6 +25,13 @@
     "the accessible frontend down platform-wide was already covered by the main",
     "host; a per-host one was not.",
     "",
+    "🔴 The AWID community accessible domain was added on 2026-09-02, the day that",
+    "community's own hostnames (awid.timebank.global and",
+    "accessible-awid.timebank.global) were attached to the platform. Add both",
+    "entries for every new community accessible domain at the point the vhost is",
+    "created, not later: the vhost files and the origin certificate binding live",
+    "only on the server, so a per-host fault is invisible to every other check.",
+    "",
     "🔴 The /version entries now assert the response BODY says nexus-webuk, not",
     "merely that something returned 200. The entry named 'not a silent fallback'",
     "did not actually verify that: a React SPA answers 200 on any path, so a vhost",
@@ -104,6 +111,23 @@
     {
       "name": "Minehead and Coast accessible domain is web-uk",
       "url": "https://accessible-minehead-and-coast.timebank.global/version",
+      "track": "production",
+      "expectStatus": [
+        200
+      ],
+      "expectBodyContains": "nexus-webuk"
+    },
+    {
+      "name": "Accessible frontend (AWID community domain)",
+      "url": "https://accessible-awid.timebank.global",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "AWID accessible domain is web-uk",
+      "url": "https://accessible-awid.timebank.global/version",
       "track": "production",
       "expectStatus": [
         200

@@ -204,7 +204,8 @@ enforce_webuk_live_marker() {
         log_warn "   they used to fall back to was deleted on 2026-08-14, so the <IfDefine !NEXUS_WEBUK_PORT>"
         log_warn "   arm now proxies them to a Laravel app with no accessible routes."
         log_warn "   Affected: accessible.project-nexus.ie, accessible-uk.timebank.global,"
-        log_warn "   accessible-minehead-and-coast.timebank.global, and /{slug}/accessible on every community."
+        log_warn "   accessible-minehead-and-coast.timebank.global, accessible-awid.timebank.global,"
+        log_warn "   and /{slug}/accessible on every community."
         log_warn "Marker kept at $WEBUK_LIVE_MARKER. Recover by deploying again WITH --with-webuk."
         return 0
     }

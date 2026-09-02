@@ -158,7 +158,8 @@ if [ "$WEBUK_FLAG" = " --without-webuk" ]; then
     echo "===>"
     echo "===> ⚠  --without-webuk WILL TAKE THE ACCESSIBLE HOSTNAMES OFFLINE."
     echo "===>    accessible.project-nexus.ie, accessible-uk.timebank.global,"
-    echo "===>    accessible-minehead-and-coast.timebank.global and /{slug}/accessible"
+    echo "===>    accessible-minehead-and-coast.timebank.global,"
+    echo "===>    accessible-awid.timebank.global and /{slug}/accessible"
     echo "===>    have nothing to fall back to since Blade was deleted on 2026-08-14."
     echo "===>"
 fi
