@@ -42,9 +42,11 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Tab, Tabs } from '@/components/ui/Tabs';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { QrCodeImage } from '@/components/volunteering/QrCodeImage';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { useInstallPrompt } from '@/lib/installPrompt';
+import { ANDROID_PLAY_STORE_URL } from '@/config/externalLinks';
 
 type DeviceKey = 'android' | 'iphone' | 'windows' | 'mac';
 
@@ -208,6 +210,106 @@ export function InstallAppPage() {
           {t('install_app.subheading', { name: appName })}
         </p>
       </motion.header>
+
+      {/* The Android app went live on Google Play on 2026-08-26 and is the best
+          option for anyone on Android, so it sits above the PWA prompt rather
+          than inside the "kinds of app" grid further down. The QR code reuses
+          QrCodeImage, which lazy-loads the generator into its own chunk and
+          degrades to a plain link if that chunk fails — so this section cannot
+          become a dead end on a stale deploy. */}
+      <motion.section variants={itemVariants} aria-labelledby="install-play-heading">
+        <GlassCard className="p-5 sm:p-6" data-testid="install-play-live">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <div className="inline-flex rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 p-2.5">
+              <Store className="h-5 w-5 text-emerald-500" aria-hidden="true" />
+            </div>
+            <h2
+              id="install-play-heading"
+              className="text-xl font-semibold text-theme-primary sm:text-2xl"
+            >
+              {t('install_app.play_live_title')}
+            </h2>
+            <Chip size="sm" variant="flat" color="success">
+              {t('install_app.play_live_tag')}
+            </Chip>
+          </div>
+
+          <div className="grid items-start gap-6 sm:grid-cols-[1fr_auto]">
+            <div className="space-y-4">
+              <p className="text-sm leading-relaxed text-theme-secondary sm:text-base">
+                {t('install_app.play_live_body')}
+              </p>
+
+              <Button
+                as="a"
+                href={ANDROID_PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                size="lg"
+                className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto sm:px-8"
+                startContent={<Store className="h-5 w-5" aria-hidden="true" />}
+                data-testid="install-play-cta"
+              >
+                {t('install_app.play_live_cta')}
+              </Button>
+
+              <p className="text-sm text-theme-muted">
+                {t('install_app.play_live_requirement')}
+              </p>
+            </div>
+
+            {/* Deliberately not hidden on small screens: someone reading this on
+                a laptop is the person who needs the code, but someone reading on
+                a tablet may well want to scan it with their phone. */}
+            <figure className="mx-auto flex flex-col items-center gap-2 sm:mx-0">
+              <div className="rounded-xl bg-white p-3">
+                <QrCodeImage
+                  value={ANDROID_PLAY_STORE_URL}
+                  alt={t('install_app.play_live_qr_alt')}
+                  size={148}
+                />
+              </div>
+              <figcaption className="max-w-[10rem] text-center text-xs text-theme-muted">
+                {t('install_app.play_live_qr_caption')}
+              </figcaption>
+            </figure>
+          </div>
+
+          <div className="mt-5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+            <p className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-theme-warning">
+              <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {t('install_app.play_live_early_title')}
+            </p>
+            <p className="text-sm leading-relaxed text-theme-secondary">
+              {t('install_app.play_live_early_body')}
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-xl bg-accent/10 p-4">
+            <p className="mb-1.5 text-sm font-semibold text-theme-primary">
+              {t('install_app.play_live_feedback_title')}
+            </p>
+            <p className="mb-3 text-sm leading-relaxed text-theme-secondary">
+              {t('install_app.play_live_feedback_body')}
+            </p>
+            <Button
+              as={Link}
+              to={tenantPath('/contact')}
+              variant="flat"
+              size="sm"
+              className="bg-theme-elevated text-theme-primary"
+              data-testid="install-play-feedback-cta"
+            >
+              {t('install_app.play_live_feedback_cta')}
+            </Button>
+          </div>
+
+          <p className="mt-4 flex items-start gap-2 text-sm leading-relaxed text-theme-secondary">
+            <Apple className="mt-0.5 h-4 w-4 shrink-0 text-theme-secondary" aria-hidden="true" />
+            <span>{t('install_app.play_live_apple_next')}</span>
+          </p>
+        </GlassCard>
+      </motion.section>
 
       {/* One-tap install, only where the browser actually offered us a prompt. */}
       {install.isInstalled ? (

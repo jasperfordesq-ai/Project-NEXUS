@@ -129,6 +129,47 @@ describe('InstallAppPage', () => {
     expect(screen.getByText(/We will keep this page up to date/)).toBeInTheDocument();
   });
 
+  it('offers the live Google Play release with a working link, a QR code and an early-release warning', () => {
+    render(<InstallAppPage />);
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'The Android app is live on Google Play' }),
+    ).toBeInTheDocument();
+
+    // The link is the point of the section: assert the real store URL rather
+    // than just that a button exists, because a button pointing nowhere would
+    // still satisfy a name-only assertion.
+    const cta = screen.getByTestId('install-play-cta');
+    expect(cta).toHaveAttribute('href', 'https://play.google.com/store/apps/details?id=ie.project.nexus');
+    expect(cta).toHaveAttribute('rel', expect.stringContaining('noopener'));
+
+    // QrCodeImage renders an aria-labelled placeholder until its generator
+    // chunk resolves, so the accessible name is present either way.
+    expect(
+      screen.getByRole('img', { name: 'QR code that opens the Google Play page for the app' }),
+    ).toBeInTheDocument();
+
+    // Early-release honesty and the invitation to give feedback both have to
+    // survive: they are the reason this is framed as an early release at all.
+    expect(screen.getByText(/This is an early release, and we are still working on it/)).toBeInTheDocument();
+    expect(screen.getByText(/first public release and the app is still being built/)).toBeInTheDocument();
+    expect(screen.getByText(/Be one of the first/)).toBeInTheDocument();
+    expect(screen.getByTestId('install-play-feedback-cta')).toHaveAttribute('href', '/test/contact');
+
+    // iPhone/iPad is stated as nearly ready but deliberately without a date.
+    expect(screen.getByText(/An iPhone and iPad version is built from the same app/)).toBeInTheDocument();
+  });
+
+  it('no longer claims there is no download link, now that Android has shipped', () => {
+    render(<InstallAppPage />);
+
+    // Guards the specific regression this section replaced: the native-app card
+    // used to end with "There is no download link here yet", which contradicted
+    // the store link above it the moment Android went live.
+    expect(screen.queryByText(/no download link here yet/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Android is live, and the download link and QR code are at the top/)).toBeInTheDocument();
+  });
+
   it('explains why Apple devices are the awkward ones, in Apple-rule terms', () => {
     render(<InstallAppPage />);
 
@@ -156,9 +197,13 @@ describe('InstallAppPage', () => {
     expect(screen.getByText(/short for Progressive Web App/)).toBeInTheDocument();
     expect(screen.getByText(/Developers call this a native app/)).toBeInTheDocument();
     // One app covers both platforms, and the ordering is stated honestly.
+    // 🔴 This used to assert "Android is closest" and "no download link here
+    // yet". Android shipped on 2026-08-26, so both sentences became false and
+    // the second one contradicted the store link now at the top of the page.
+    // The assertions moved with the copy rather than being deleted.
     expect(screen.getByText('One app for both Android and iPhone or iPad')).toBeInTheDocument();
-    expect(screen.getByText(/Android is closest/)).toBeInTheDocument();
-    expect(screen.getByText(/no download link here yet/)).toBeInTheDocument();
+    expect(screen.getByText(/Android is live/)).toBeInTheDocument();
+    expect(screen.getByText(/We will add a link here the moment it is available/)).toBeInTheDocument();
     // The Capacitor wrapper stays off the page while its future is undecided.
     expect(screen.queryByText(/Capacitor/)).toBeNull();
   });
