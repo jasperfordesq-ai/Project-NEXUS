@@ -299,5 +299,10 @@
     "misleading": "Míthreorach",
     "spam": "Turscar",
     "other": "Rud eile"
+  },
+  "link_preview": {
+    "opens_externally": "Seinnfear é lasmuigh den aip",
+    "play_video_accessibility": "Seinn físeán: {{title}}. Osclaítear lasmuigh den aip.",
+    "open_link_accessibility": "Oscail nasc: {{title}}"
   }
 }

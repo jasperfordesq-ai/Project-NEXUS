@@ -299,5 +299,10 @@
     "misleading": "Trompeur",
     "spam": "Indésirable",
     "other": "Autre chose"
+  },
+  "link_preview": {
+    "opens_externally": "Lecture en dehors de l'application",
+    "play_video_accessibility": "Lire la vidéo : {{title}}. S'ouvre en dehors de l'application.",
+    "open_link_accessibility": "Ouvrir le lien : {{title}}"
   }
 }

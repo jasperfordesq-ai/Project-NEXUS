@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { Linking } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import type { FeedItem as FeedItemType } from '@/lib/api/feed';
@@ -864,5 +865,100 @@ describe('the "View post" link on milestone cards', () => {
         expect(mockReport).toHaveBeenCalledWith(181, 'spam', 'post'),
       );
     });
+  });
+});
+
+/**
+ * 🔴 Owner's report, 2026-09-03: "the YouTube video won't play in the native
+ * Android app", while the same post played perfectly on the website.
+ *
+ * The card rendered `image_url` — which for a YouTube link IS the video's own
+ * thumbnail — inside a plain View with NO press handler, and ignored
+ * `content_type` entirely. So it looked exactly like a player and tapping it
+ * did nothing at all. The web build embeds an iframe; this app ships no
+ * WebView, so the fix hands the URL to the OS instead.
+ *
+ * Note this was never YouTube-specific: no link preview of any kind was
+ * tappable, so every shared article was a dead end too.
+ */
+describe('feed link previews', () => {
+  const YOUTUBE_URL = 'https://www.youtube.com/watch?v=k0Flh6cuuWs';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  function itemWithPreview(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 163,
+      type: 'post',
+      title: null,
+      content: 'Worth a watch.',
+      image_url: null,
+      user_id: 1,
+      author_name: 'Alan',
+      author_avatar: null,
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-07-04T13:03:34Z',
+      link_previews: [{
+        url: YOUTUBE_URL,
+        title: 'Timebanking in the UK',
+        description: 'A TEDx talk',
+        image_url: 'https://img.youtube.com/vi/k0Flh6cuuWs/hqdefault.jpg',
+        site_name: 'YouTube',
+        domain: 'youtube.com',
+        content_type: 'video',
+        ...overrides,
+      }],
+    } as unknown as FeedItemType;
+  }
+
+  it('opens a video link preview outside the app when it is tapped', () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+
+    const { getByTestId } = render(<FeedItem item={itemWithPreview()} />);
+    fireEvent.press(getByTestId('feed-link-preview'));
+
+    expect(openURL).toHaveBeenCalledWith(YOUTUBE_URL);
+  });
+
+  it('opens an ordinary article preview too — none of them were tappable', () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+
+    const { getByTestId } = render(
+      <FeedItem item={itemWithPreview({ url: 'https://example.com/news', content_type: 'website' })} />,
+    );
+    fireEvent.press(getByTestId('feed-link-preview'));
+
+    expect(openURL).toHaveBeenCalledWith('https://example.com/news');
+  });
+
+  it('says a video plays outside the app, so a thumbnail is not mistaken for a player', () => {
+    const { getByText } = render(<FeedItem item={itemWithPreview()} />);
+    expect(getByText('link_preview.opens_externally')).toBeTruthy();
+  });
+
+  it('does not claim an article plays outside the app', () => {
+    const { queryByText } = render(
+      <FeedItem item={itemWithPreview({ content_type: 'website' })} />,
+    );
+    expect(queryByText('link_preview.opens_externally')).toBeNull();
+  });
+
+  /**
+   * `url` is member-supplied content echoed back by the API, and
+   * Linking.openURL hands any scheme to whatever app claims it.
+   */
+  it('refuses to hand a non-http url to the operating system', () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+
+    const { getByTestId } = render(
+      <FeedItem item={itemWithPreview({ url: 'javascript:alert(1)' })} />,
+    );
+    fireEvent.press(getByTestId('feed-link-preview'));
+
+    expect(openURL).not.toHaveBeenCalled();
   });
 });

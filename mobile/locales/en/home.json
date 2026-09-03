@@ -299,5 +299,10 @@
     "misleading": "Misleading",
     "spam": "Spam",
     "other": "Something else"
+  },
+  "link_preview": {
+    "opens_externally": "Plays outside the app",
+    "play_video_accessibility": "Play video: {{title}}. Opens outside the app.",
+    "open_link_accessibility": "Open link: {{title}}"
   }
 }

@@ -299,5 +299,10 @@
     "misleading": "Engañoso",
     "spam": "Spam",
     "other": "Otra cosa"
+  },
+  "link_preview": {
+    "opens_externally": "Se reproduce fuera de la aplicación",
+    "play_video_accessibility": "Reproducir vídeo: {{title}}. Se abre fuera de la aplicación.",
+    "open_link_accessibility": "Abrir enlace: {{title}}"
   }
 }

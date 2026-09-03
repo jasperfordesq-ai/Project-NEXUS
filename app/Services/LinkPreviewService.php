@@ -167,23 +167,57 @@ class LinkPreviewService
      */
     public function extractUrls(string $text): array
     {
-        // Strip HTML tags first to get plain text
-        $plainText = strip_tags($text);
-
         $pattern = '/https?:\/\/[^\s<>\'")\]]+/i';
-        preg_match_all($pattern, $plainText, $matches);
 
-        // Deduplicate and trim trailing punctuation
+        // 🔴 Anchor hrefs come FIRST, before any tag stripping. The composer's
+        // link button renders the member's own wording as the visible text, so
+        // the address exists only in the href — strip_tags() discarded it and no
+        // preview was ever built. Ordering also matters: an href-only link keeps
+        // its position ahead of URLs written further down the post.
+        $candidates = [];
+        preg_match_all('/<a\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|\'([^\']*)\')/i', $text, $hrefMatches, PREG_SET_ORDER);
+        foreach ($hrefMatches as $match) {
+            $href = ($match[1] ?? '') !== '' ? $match[1] : ($match[2] ?? '');
+            if ($href !== '') {
+                $candidates[] = $this->decodeHtmlEntities($href);
+            }
+        }
+
+        // Then the visible text. Entities are decoded AFTER stripping tags, never
+        // before: decoding first would turn an escaped "&lt;a href=..." into a
+        // real tag and hand an attacker a way to inject an extra candidate.
+        $plainText = $this->decodeHtmlEntities(strip_tags($text));
+        preg_match_all($pattern, $plainText, $matches);
+        foreach ($matches[0] as $found) {
+            $candidates[] = $found;
+        }
+
+        // Deduplicate, trim trailing punctuation, and keep only http(s). An href
+        // can hold any scheme — javascript:, mailto:, data: — and none of those
+        // may ever reach fetchPreview as a candidate.
         $urls = [];
-        foreach ($matches[0] as $url) {
-            // Remove trailing punctuation that's not part of the URL
-            $url = rtrim($url, '.,;:!?)>');
+        foreach ($candidates as $url) {
+            $url = rtrim(trim($url), '.,;:!?)>');
+            if ($url === '' || preg_match('/^' . substr($pattern, 1, -2) . '$/i', $url) !== 1) {
+                continue;
+            }
             if (! in_array($url, $urls, true)) {
                 $urls[] = $url;
             }
         }
 
         return $urls;
+    }
+
+    /**
+     * Decode HTML entities in a URL. A post stores "&" as "&amp;", which left a
+     * literal "&amp;" in the extracted address and corrupted every query
+     * parameter after the first. YouTube only escaped it because its video id
+     * sits before the first "&".
+     */
+    private function decodeHtmlEntities(string $value): string
+    {
+        return html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
     /**

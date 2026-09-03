@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Platform, Pressable, Share, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Linking, Platform, Pressable, Share, Text, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@/components/ui/Icon';
 import { router } from 'expo-router';
@@ -635,6 +635,29 @@ function FeedItemInner({
   const likeButtonActive = isReactable ? userReaction !== null : liked;
   const linkPreview = item.link_previews?.[0];
   const linkPreviewImageUrl = resolveImageUrl(linkPreview?.image_url);
+  const linkPreviewIsVideo = linkPreview?.content_type === 'video';
+  /**
+   * Open a link preview outside the app.
+   *
+   * 🔴 This card had no press handler at all. For a YouTube link that was the
+   * whole bug: `image_url` is the video's own thumbnail, so the card looked
+   * exactly like a player, and tapping it did nothing. The web build embeds an
+   * iframe; this app has no WebView, so handing the URL to the OS is the fix —
+   * on Android that opens the YouTube app, which plays it better than an
+   * in-app frame would.
+   *
+   * The scheme is checked before opening. `url` is member-supplied content
+   * echoed back by the API, and `Linking.openURL` will happily hand a custom
+   * scheme to whatever app claims it.
+   */
+  const openLinkPreview = useCallback(() => {
+    const url = linkPreview?.url;
+    if (!url || !/^https?:\/\//i.test(url)) return;
+    void Linking.openURL(url).catch(() => {
+      // Nothing installed can open it. Silence is correct here: the card is
+      // still readable and there is no recovery to offer.
+    });
+  }, [linkPreview?.url]);
   const commentTarget = isCommentable
     ? { targetType: item.type as CommentTargetType, targetId: item.id, initialCount: commentsCount }
     : null;
@@ -884,22 +907,65 @@ function FeedItemInner({
             ) : null}
 
             {linkPreview ? (
-              <Surface variant="secondary" className="overflow-hidden rounded-panel-inner">
-                {linkPreviewImageUrl ? (
-                  <Image source={{ uri: linkPreviewImageUrl }} style={{ width: '100%', height: 120 }} contentFit="cover" />
-                ) : null}
-                <View className="gap-1 p-3">
-                  <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{linkPreview.domain || linkPreview.site_name}</Text>
-                  <Text className="font-semibold" style={{ color: theme.text }} numberOfLines={2}>
-                    {linkPreview.title || linkPreview.url}
-                  </Text>
-                  {linkPreview.description ? (
-                    <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={2}>
-                      {linkPreview.description}
-                    </Text>
+              <Pressable
+                onPress={openLinkPreview}
+                accessibilityRole="link"
+                accessibilityLabel={
+                  linkPreviewIsVideo
+                    ? t('link_preview.play_video_accessibility', {
+                        title: linkPreview.title || linkPreview.domain || linkPreview.url,
+                      })
+                    : t('link_preview.open_link_accessibility', {
+                        title: linkPreview.title || linkPreview.domain || linkPreview.url,
+                      })
+                }
+                testID="feed-link-preview"
+              >
+                <Surface variant="secondary" className="overflow-hidden rounded-panel-inner">
+                  {linkPreviewImageUrl ? (
+                    <View style={{ position: 'relative' }}>
+                      <Image source={{ uri: linkPreviewImageUrl }} style={{ width: '100%', height: 120 }} contentFit="cover" />
+                      {/* A video thumbnail with no play mark is what made this
+                          look broken rather than external. */}
+                      {linkPreviewIsVideo ? (
+                        <View
+                          style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
+                          pointerEvents="none"
+                        >
+                          <View
+                            style={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: 24,
+                              backgroundColor: 'rgba(0,0,0,0.6)',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Ionicons name="play" size={24} color="#ffffff" />
+                          </View>
+                        </View>
+                      ) : null}
+                    </View>
                   ) : null}
-                </View>
-              </Surface>
+                  <View className="gap-1 p-3">
+                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{linkPreview.domain || linkPreview.site_name}</Text>
+                    <Text className="font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+                      {linkPreview.title || linkPreview.url}
+                    </Text>
+                    {linkPreview.description ? (
+                      <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                        {linkPreview.description}
+                      </Text>
+                    ) : null}
+                    {linkPreviewIsVideo ? (
+                      <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                        {t('link_preview.opens_externally')}
+                      </Text>
+                    ) : null}
+                  </View>
+                </Surface>
+              </Pressable>
             ) : null}
 
             {item.type === 'poll' && pollData ? (

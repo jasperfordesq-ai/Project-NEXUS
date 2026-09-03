@@ -91,6 +91,47 @@ class LinkPreviewServiceTest extends TestCase
         $this->assertEquals('https://example.com/blog/my-article', $result[0]);
     }
 
+    /**
+     * 🔴 The composer's link button produces an anchor whose visible text is the
+     * member's own wording, so the address exists ONLY in the href. Stripping
+     * tags first threw it away and no preview was ever built — a YouTube link
+     * inserted that way rendered as plain words with no player, and the failure
+     * was invisible because createPostV2 logs preview errors at debug level.
+     */
+    public function test_extractUrls_finds_a_url_that_only_exists_in_an_anchor_href(): void
+    {
+        $html = '<p><a href="https://www.youtube.com/watch?v=k0Flh6cuuWs">Watch this</a></p>';
+        $result = $this->service->extractUrls($html);
+        $this->assertSame(['https://www.youtube.com/watch?v=k0Flh6cuuWs'], $result);
+    }
+
+    /** An href and matching visible text must still yield ONE url, not two. */
+    public function test_extractUrls_deduplicates_a_url_present_in_both_href_and_text(): void
+    {
+        $html = '<p><a href="https://example.com/a">https://example.com/a</a></p>';
+        $this->assertSame(['https://example.com/a'], $this->service->extractUrls($html));
+    }
+
+    /**
+     * HTML-encoded ampersands survived extraction, so the stored url held a
+     * literal "&amp;" and every query parameter after the first was wrong.
+     * YouTube only escaped this by luck: its video id sits before the first "&".
+     */
+    public function test_extractUrls_decodes_html_entities_inside_urls(): void
+    {
+        $html = '<p>https://example.com/search?q=test&amp;page=2</p>';
+        $result = $this->service->extractUrls($html);
+        $this->assertSame(['https://example.com/search?q=test&page=2'], $result);
+        $this->assertStringNotContainsString('&amp;', $result[0]);
+    }
+
+    /** A javascript: href must never be promoted into a preview candidate. */
+    public function test_extractUrls_ignores_non_http_anchor_hrefs(): void
+    {
+        $html = '<p><a href="javascript:alert(1)">click</a><a href="mailto:a@b.test">mail</a></p>';
+        $this->assertSame([], $this->service->extractUrls($html));
+    }
+
     // ------------------------------------------------------------------
     //  fetchPreview() — cache and SSRF protection
     // ------------------------------------------------------------------
@@ -113,12 +154,25 @@ class LinkPreviewServiceTest extends TestCase
         $this->assertNull($result);
     }
 
+    /**
+     * 🔴 This asserted caching but silently depended on LIVE DNS, so it passed
+     * in CI and failed on any machine without outbound resolution — including
+     * the dev container, which made the pre-commit gate unusable for anyone
+     * editing this file. `fetchPreview()` runs `OutboundUrlGuard::isSafeHttpUrl()`
+     * FIRST, and that resolves the host to check it is not a private address; a
+     * failed lookup returns false, so the method returned null before the mocked
+     * cache was ever consulted and the failure looked like a caching bug.
+     *
+     * A public IP literal skips resolution entirely (the guard only range-checks
+     * it), which is what makes this a real unit test. `domain` still comes from
+     * the cached row, not the URL, so the assertion below is unchanged.
+     */
     public function test_fetchPreview_returns_cached_data_when_available(): void
     {
-        $urlHash = hash('sha256', 'https://example.com/');
+        $urlHash = hash('sha256', 'https://93.184.216.34/');
 
         $cachedRow = (object) [
-            'url' => 'https://example.com',
+            'url' => 'https://93.184.216.34/',
             'title' => 'Cached Title',
             'description' => 'Cached description',
             'image_url' => 'https://example.com/img.jpg',
@@ -133,9 +187,11 @@ class LinkPreviewServiceTest extends TestCase
             ->once()
             ->andReturn($cachedRow);
 
-        $result = $this->service->fetchPreview('https://example.com');
+        $result = $this->service->fetchPreview('https://93.184.216.34/');
         $this->assertNotNull($result);
         $this->assertEquals('Cached Title', $result['title']);
+        // Read back off the cached row, not derived from the URL — which is why
+        // swapping the request URL for an IP literal does not weaken this.
         $this->assertEquals('example.com', $result['domain']);
     }
 

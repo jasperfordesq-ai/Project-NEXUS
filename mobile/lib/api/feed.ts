@@ -129,6 +129,17 @@ export interface FeedItem {
     image_url?: string | null;
     site_name?: string | null;
     domain?: string | null;
+    /**
+     * 'video' for YouTube, Vimeo, Twitch, TikTok, Spotify and SoundCloud links.
+     * The API has always sent this; it was missing from this type, so the feed
+     * card could not tell a video apart from an article and rendered YouTube as
+     * a still thumbnail with nothing to tap.
+     *
+     * `embed_html` (the iframe src the web player uses) is deliberately NOT
+     * declared here: this app has no WebView, so there is nothing that could
+     * render it. Videos open in the YouTube app or the browser instead.
+     */
+    content_type?: string | null;
   }[];
   poll_data?: PollData | null;
   media?: {
