@@ -40,7 +40,18 @@
     "newGoal": "Sprioc nua",
     "newGoalDescription": "Rianaigh cloch mhíle banc ama pearsanta.",
     "emptyTitle": "Níl aon ghníomhartha cruthaithe ar fáil",
-    "emptySubtitle": "Beidh modúil chumasaithe le feiceáil anseo."
+    "emptySubtitle": "Beidh modúil chumasaithe le feiceáil anseo.",
+    "newJob": "Folúntas nua",
+    "newJobDescription": "Cuir folúntas poist ar fáil do do phobal.",
+    "newVolunteering": "Deis nua obair dheonach",
+    "newVolunteeringDescription": "Cuir seal-obair ar fáil d’eagraíocht a chabhraíonn tú a reáchtáil.",
+    "newOrganisation": "Cláraigh eagraíocht",
+    "newOrganisationDescription": "Cuir grúpa nó eagraíocht le do phobal.",
+    "newCourse": "Cúrsa nua",
+    "newCourseDescription": "Múin scil do do phobal.",
+    "newPodcast": "Podchraoladh nua",
+    "newPodcastDescription": "Tosaigh clár nó taifead eipeasóid.",
+    "opensOnWebsite": "Osclaítear ar an suíomh gréasáin"
   },
   "buttons": {
     "save": "Sábháil",

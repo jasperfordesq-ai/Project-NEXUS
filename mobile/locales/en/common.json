@@ -40,7 +40,18 @@
     "newGoal": "New goal",
     "newGoalDescription": "Track a personal timebank milestone.",
     "emptyTitle": "No create actions available",
-    "emptySubtitle": "Enabled modules will appear here."
+    "emptySubtitle": "Enabled modules will appear here.",
+    "newJob": "New job",
+    "newJobDescription": "Post a job vacancy for your community.",
+    "newVolunteering": "New volunteering opportunity",
+    "newVolunteeringDescription": "Post shifts for an organisation you help run.",
+    "newOrganisation": "Register an organisation",
+    "newOrganisationDescription": "Add a group or organisation to your community.",
+    "newCourse": "New course",
+    "newCourseDescription": "Teach a skill to your community.",
+    "newPodcast": "New podcast",
+    "newPodcastDescription": "Start a show or record an episode.",
+    "opensOnWebsite": "Opens on the website"
   },
   "buttons": {
     "save": "Save",

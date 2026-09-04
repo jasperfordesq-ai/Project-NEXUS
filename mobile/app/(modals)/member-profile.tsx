@@ -42,7 +42,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { APP_URL } from '@/lib/constants';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import VerificationBadgeRow from '@/components/verification/VerificationBadgeRow';
 import {
   getMember,
@@ -134,7 +134,7 @@ function MemberProfileScreenInner() {
   const { t } = useTranslation(['members', 'federation', 'common']);
   const { id, tenant_id: tenantIdParam, name: nameParam } = useLocalSearchParams<{ id?: string; tenant_id?: string; name?: string }>();
   const primary = usePrimaryColor();
-  const { hasFeature, hasModule } = useTenant();
+  const { hasFeature, hasModule, tenant } = useTenant();
   const theme = useTheme();
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
@@ -287,7 +287,11 @@ function MemberProfileScreenInner() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
-        message: t('profile.shareMessage', { name: getMemberDisplayName(member), url: `${APP_URL}/members/${member.id}` }),
+        // Slug-prefixed so the link resolves to this community on the shared host.
+        message: t('profile.shareMessage', {
+          name: getMemberDisplayName(member),
+          url: buildWebUrl(tenant?.slug, `/members/${member.id}`),
+        }),
       });
     } catch {
       // Native share cancellation is not an error state.

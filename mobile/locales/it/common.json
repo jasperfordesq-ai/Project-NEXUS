@@ -40,7 +40,18 @@
     "newGoal": "New obiettivo",
     "newGoalDescription": "Traccia un traguardo della banca del tempo personale.",
     "emptyTitle": "Nessuna azione di creazione disponibile",
-    "emptySubtitle": "I moduli abilitati appariranno qui."
+    "emptySubtitle": "I moduli abilitati appariranno qui.",
+    "newJob": "Nuova offerta di lavoro",
+    "newJobDescription": "Pubblica un annuncio di lavoro per la tua comunità.",
+    "newVolunteering": "Nuova opportunità di volontariato",
+    "newVolunteeringDescription": "Pubblica turni per un’organizzazione che aiuti a gestire.",
+    "newOrganisation": "Registra un’organizzazione",
+    "newOrganisationDescription": "Aggiungi un gruppo o un’organizzazione alla tua comunità.",
+    "newCourse": "Nuovo corso",
+    "newCourseDescription": "Insegna una competenza alla tua comunità.",
+    "newPodcast": "Nuovo podcast",
+    "newPodcastDescription": "Avvia un programma o registra un episodio.",
+    "opensOnWebsite": "Si apre sul sito web"
   },
   "buttons": {
     "save": "Salva",

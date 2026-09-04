@@ -22,7 +22,7 @@ import {
   type IdentityStatus,
 } from '@/lib/api/verification';
 import { IDENTITY_VERIFICATION_AVAILABLE_IN_APP } from '@/lib/constants';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { presentIdentityPayment } from '@/lib/payments/identityPayment';
 import { withAlpha } from '@/lib/utils/color';
@@ -53,6 +53,7 @@ function VerifyIdentityScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { tenant } = useTenant();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [status, setStatus] = useState<IdentityStatus | null>(null);
   const [pageState, setPageState] = useState<PageState>('loading');
@@ -199,6 +200,7 @@ function VerifyIdentityScreenInner() {
         clientSecret: data.client_secret,
         publishableKey: data.publishable_key,
         merchantDisplayName: 'Project NEXUS',
+        tenantSlug: tenant?.slug,
       });
 
       if (paymentResult.status === 'redirected' || paymentResult.status === 'canceled') {

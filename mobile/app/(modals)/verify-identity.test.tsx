@@ -62,6 +62,8 @@ jest.mock('@/components/ui/AppToast', () => {
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006fee',
+  // The screen now reads the community slug so its web fallback stays inside the community.
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({

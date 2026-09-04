@@ -135,6 +135,7 @@ function MarketplaceOrdersScreen() {
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { tenant } = useTenant();
   const params = useLocalSearchParams<{ mode?: string | string[]; order_id?: string | string[] }>();
   const requestedMode = Array.isArray(params.mode) ? params.mode[0] : params.mode;
   const rawOrderId = Array.isArray(params.order_id) ? params.order_id[0] : params.order_id;
@@ -269,6 +270,7 @@ function MarketplaceOrdersScreen() {
         const paymentResult = await presentMarketplacePayment({
           clientSecret: payment.data.client_secret,
           merchantDisplayName: t('orders.paymentMerchantDisplayName'),
+          tenantSlug: tenant?.slug,
         });
         if (paymentResult.status === 'completed' && payment.data.payment_intent_id) {
           await confirmMarketplacePayment(payment.data.payment_intent_id);

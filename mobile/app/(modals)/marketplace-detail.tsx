@@ -44,7 +44,7 @@ import {
   type MarketplacePickupSlotOption,
   type MarketplaceShippingOption,
 } from '@/lib/api/marketplace';
-import { APP_URL } from '@/lib/constants';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -378,6 +378,7 @@ function MarketplaceDetailScreen() {
         const paymentResult = await presentMarketplacePayment({
           clientSecret: payment.data.client_secret,
           merchantDisplayName: t('checkout.merchantDisplayName'),
+          tenantSlug: tenant?.slug,
         });
         if (paymentResult.status === 'completed' && payment.data.payment_intent_id) {
           await confirmMarketplacePayment(payment.data.payment_intent_id);
@@ -509,8 +510,9 @@ function MarketplaceDetailScreen() {
     try {
       await Share.share({
         title: listing!.title,
-        message: `${listing!.title}\n\n${APP_URL}/marketplace/${listing!.id}`,
-        url: `${APP_URL}/marketplace/${listing!.id}`,
+        // Slug-prefixed so the link resolves to this community on the shared host.
+        message: `${listing!.title}\n\n${buildWebUrl(tenant?.slug, `/marketplace/${listing!.id}`)}`,
+        url: buildWebUrl(tenant?.slug, `/marketplace/${listing!.id}`),
       });
     } catch {
       // Share dismissed.

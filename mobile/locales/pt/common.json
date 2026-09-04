@@ -40,7 +40,18 @@
     "newGoal": "Nova meta",
     "newGoalDescription": "Monitorar um marco pessoal do banco de tempo.",
     "emptyTitle": "Não há ações de criação disponíveis",
-    "emptySubtitle": "Os módulos ativados aparecerão aqui."
+    "emptySubtitle": "Os módulos ativados aparecerão aqui.",
+    "newJob": "Nova vaga de emprego",
+    "newJobDescription": "Publique uma vaga para a sua comunidade.",
+    "newVolunteering": "Nova oportunidade de voluntariado",
+    "newVolunteeringDescription": "Publique turnos para uma organização que ajuda a gerir.",
+    "newOrganisation": "Registar uma organização",
+    "newOrganisationDescription": "Adicione um grupo ou organização à sua comunidade.",
+    "newCourse": "Novo curso",
+    "newCourseDescription": "Ensine uma competência à sua comunidade.",
+    "newPodcast": "Novo podcast",
+    "newPodcastDescription": "Comece um programa ou grave um episódio.",
+    "opensOnWebsite": "Abre no site"
   },
   "buttons": {
     "save": "Guardar",

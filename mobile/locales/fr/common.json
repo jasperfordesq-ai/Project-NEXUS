@@ -40,7 +40,18 @@
     "newGoal": "Nouveau goal",
     "newGoalDescription": "Suivre un jalon de banque de temps personnel.",
     "emptyTitle": "Aucune action de création disponible",
-    "emptySubtitle": "Les modules activés apparaîtront ici."
+    "emptySubtitle": "Les modules activés apparaîtront ici.",
+    "newJob": "Nouvelle offre d’emploi",
+    "newJobDescription": "Publiez une offre d’emploi pour votre communauté.",
+    "newVolunteering": "Nouvelle mission bénévole",
+    "newVolunteeringDescription": "Publiez des créneaux pour une organisation que vous aidez à gérer.",
+    "newOrganisation": "Inscrire une organisation",
+    "newOrganisationDescription": "Ajoutez un groupe ou une organisation à votre communauté.",
+    "newCourse": "Nouveau cours",
+    "newCourseDescription": "Enseignez une compétence à votre communauté.",
+    "newPodcast": "Nouveau podcast",
+    "newPodcastDescription": "Lancez une émission ou enregistrez un épisode.",
+    "opensOnWebsite": "S’ouvre sur le site web"
   },
   "buttons": {
     "save": "Enregistrer",

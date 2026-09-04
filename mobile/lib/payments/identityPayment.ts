@@ -5,7 +5,7 @@
 
 import { Linking } from 'react-native';
 
-import { APP_URL } from '@/lib/constants';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 
 type PaymentResult =
   | { status: 'completed' }
@@ -17,9 +17,15 @@ interface PresentIdentityPaymentOptions {
   clientSecret: string;
   publishableKey?: string;
   merchantDisplayName: string;
+  /**
+   * The member's community slug. 🔴 Without it the hand-off lands on the
+   * platform landing page on the shared host and the member never reaches
+   * verification — see lib/utils/webUrl.ts.
+   */
+  tenantSlug?: string | null;
 }
 
-export async function presentIdentityPayment(_options: PresentIdentityPaymentOptions): Promise<PaymentResult> {
-  await Linking.openURL(`${APP_URL}/settings/verify-identity`);
+export async function presentIdentityPayment(options: PresentIdentityPaymentOptions): Promise<PaymentResult> {
+  await Linking.openURL(buildWebUrl(options.tenantSlug, '/settings/verify-identity'));
   return { status: 'redirected' };
 }

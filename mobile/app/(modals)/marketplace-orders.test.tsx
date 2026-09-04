@@ -99,7 +99,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ tenant: { currency: 'EUR' } }),
+  useTenant: () => ({ tenant: { currency: 'EUR', slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
@@ -460,9 +460,12 @@ describe('MarketplaceOrdersRoute', () => {
 
     await waitFor(() => {
       expect(createMarketplacePaymentIntent).toHaveBeenCalledWith(42);
+      // 🔴 tenantSlug is asserted deliberately: without it the web fallback lands
+      // on the platform page, not this community's orders.
       expect(presentMarketplacePayment).toHaveBeenCalledWith({
         clientSecret: 'pi_secret',
         merchantDisplayName: 'Project NEXUS marketplace',
+        tenantSlug: 'hour-timebank',
       });
       expect(confirmMarketplacePayment).toHaveBeenCalledWith('pi_42');
       expect(showToast).toHaveBeenCalledWith({

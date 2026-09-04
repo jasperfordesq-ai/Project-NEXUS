@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { ScrollView, View } from 'react-native';
+import { Linking, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -15,6 +15,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -23,7 +24,13 @@ interface QuickCreateOption {
   labelKey: string;
   descriptionKey: string;
   icon: IoniconName;
+  /**
+   * Either an in-app route, or — when `opensOnWebsite` is set — a path on the
+   * website for the member's community. Two builders exist only on the web today
+   * (courses and podcasts); handing off is how a member reaches them at all.
+   */
   route: string;
+  opensOnWebsite?: boolean;
   tone: string;
   featureGate?: string;
   moduleGate?: string;
@@ -106,11 +113,68 @@ const QUICK_CREATE_OPTIONS: QuickCreateOption[] = [
     tone: '#2563eb',
     featureGate: 'goals',
   },
+  /*
+    🔴 Owner's report, 2026-09-04: "I couldn't see anything for courses or podcasts"
+    in this menu, on a community that had both switched on. Auditing every module
+    against this list found three native builders that already existed but were
+    never offered here (jobs, volunteering, organisations), and two modules the app
+    can only VIEW — courses and podcasts have no native builder at all. A member
+    reasonably concluded those features did not exist.
+
+    The three native builders are added as ordinary options. The two web-only
+    builders hand off to the website for the member's own community, which is the
+    only way to reach them from the app today; the option says so on its face.
+    Group exchanges are deliberately absent — that builder needs a group, so it
+    belongs inside a group. Care in Community is deliberately absent — it is
+    outside native scope by store-audience policy.
+  */
+  {
+    labelKey: 'quickCreate.newJob',
+    descriptionKey: 'quickCreate.newJobDescription',
+    icon: 'briefcase-outline',
+    route: '/(modals)/new-job',
+    tone: '#0891b2',
+    featureGate: 'job_vacancies',
+  },
+  {
+    labelKey: 'quickCreate.newVolunteering',
+    descriptionKey: 'quickCreate.newVolunteeringDescription',
+    icon: 'hand-left-outline',
+    route: '/(modals)/new-volunteering',
+    tone: '#059669',
+    featureGate: 'volunteering',
+  },
+  {
+    labelKey: 'quickCreate.newOrganisation',
+    descriptionKey: 'quickCreate.newOrganisationDescription',
+    icon: 'business-outline',
+    route: '/(modals)/new-organisation',
+    tone: '#4f46e5',
+    featureGate: 'organisations',
+  },
+  {
+    labelKey: 'quickCreate.newCourse',
+    descriptionKey: 'quickCreate.newCourseDescription',
+    icon: 'school-outline',
+    route: '/courses/instructor/new',
+    opensOnWebsite: true,
+    tone: '#7c3aed',
+    featureGate: 'courses',
+  },
+  {
+    labelKey: 'quickCreate.newPodcast',
+    descriptionKey: 'quickCreate.newPodcastDescription',
+    icon: 'mic-outline',
+    route: '/podcasts/studio',
+    opensOnWebsite: true,
+    tone: '#db2777',
+    featureGate: 'podcasts',
+  },
 ];
 
 function QuickCreateRouteInner() {
   const { t } = useTranslation(['common']);
-  const { hasFeature, hasModule } = useTenant();
+  const { hasFeature, hasModule, tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const visibleOptions = QUICK_CREATE_OPTIONS.filter((option) => {
@@ -118,6 +182,18 @@ function QuickCreateRouteInner() {
     if (option.moduleGate && !hasModule(option.moduleGate)) return false;
     return true;
   });
+
+  function openOption(option: QuickCreateOption) {
+    if (!option.opensOnWebsite) {
+      router.push(option.route as Href);
+      return;
+    }
+    // The slug is load-bearing: on the shared host a slug-less path lands on the
+    // platform page and the builder is never reached. See lib/utils/webUrl.ts.
+    void Linking.openURL(buildWebUrl(tenant?.slug, option.route)).catch(() => {
+      // No browser available. The option stays readable; there is no recovery to offer.
+    });
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
@@ -143,10 +219,15 @@ function QuickCreateRouteInner() {
             {visibleOptions.map((option) => (
               <HeroButton
                 key={option.labelKey}
-                accessibilityLabel={t(option.labelKey)}
+                accessibilityLabel={
+                  option.opensOnWebsite
+                    ? `${t(option.labelKey)}. ${t('quickCreate.opensOnWebsite')}`
+                    : t(option.labelKey)
+                }
+                testID={`quick-create-${option.labelKey.split('.').pop()}`}
                 className="h-auto justify-start rounded-panel p-0"
                 variant="secondary"
-                onPress={() => router.push(option.route as Href)}
+                onPress={() => openOption(option)}
               >
                 <View className="w-full flex-row items-center gap-3 px-3 py-3">
                   <View className="size-12 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(option.tone, 0.14) }}>
@@ -159,8 +240,19 @@ function QuickCreateRouteInner() {
                     <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
                       {t(option.descriptionKey)}
                     </Text>
+                    {option.opensOnWebsite ? (
+                      // A tap that leaves the app must never be a surprise: say so
+                      // before the tap, not after.
+                      <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                        {t('quickCreate.opensOnWebsite')}
+                      </Text>
+                    ) : null}
                   </View>
-                  <Ionicons name="chevron-forward-outline" size={18} color={theme.textSecondary} />
+                  <Ionicons
+                    name={option.opensOnWebsite ? 'open-outline' : 'chevron-forward-outline'}
+                    size={18}
+                    color={theme.textSecondary}
+                  />
                 </View>
               </HeroButton>
             ))}

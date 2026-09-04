@@ -5,7 +5,7 @@
 
 import { Linking } from 'react-native';
 
-import { APP_URL } from '@/lib/constants';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 
 type PaymentResult =
   | { status: 'completed' }
@@ -16,9 +16,15 @@ type PaymentResult =
 interface PresentMarketplacePaymentOptions {
   clientSecret: string;
   merchantDisplayName: string;
+  /**
+   * The member's community slug. 🔴 Without it the hand-off lands on the
+   * platform landing page on the shared host, not this community's orders —
+   * see lib/utils/webUrl.ts.
+   */
+  tenantSlug?: string | null;
 }
 
-export async function presentMarketplacePayment(_options: PresentMarketplacePaymentOptions): Promise<PaymentResult> {
-  await Linking.openURL(`${APP_URL}/marketplace/orders`);
+export async function presentMarketplacePayment(options: PresentMarketplacePaymentOptions): Promise<PaymentResult> {
+  await Linking.openURL(buildWebUrl(options.tenantSlug, '/marketplace/orders'));
   return { status: 'redirected' };
 }

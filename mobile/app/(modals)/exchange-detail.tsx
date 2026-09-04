@@ -35,10 +35,10 @@ import {
   type Exchange,
 } from '@/lib/api/exchanges';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { APP_URL } from '@/lib/constants';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { contrastText } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import Avatar from '@/components/ui/Avatar';
@@ -96,6 +96,7 @@ function ExchangeDetailModalInner() {
   const onPrimary = contrastText(primary);
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { tenant } = useTenant();
   const { user: currentUser } = useAuth();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -262,8 +263,9 @@ function ExchangeDetailModalInner() {
     try {
       await Share.share({
         title: exchange!.title,
-        message: `${exchange!.title}\n${APP_URL}/listings/${exchange!.id}`,
-        url: `${APP_URL}/listings/${exchange!.id}`,
+        // Slug-prefixed so the link resolves to this community on the shared host.
+        message: `${exchange!.title}\n${buildWebUrl(tenant?.slug, `/listings/${exchange!.id}`)}`,
+        url: buildWebUrl(tenant?.slug, `/listings/${exchange!.id}`),
       });
     } catch {
       // User cancelled or share failed — silently ignore

@@ -40,7 +40,18 @@
     "newGoal": "Neu Ziel",
     "newGoalDescription": "Verfolgen Sie einen persönlichen Zeitbank-Meilenstein.",
     "emptyTitle": "Keine Erstellungsaktionen verfügbar",
-    "emptySubtitle": "Aktivierte Module werden hier angezeigt."
+    "emptySubtitle": "Aktivierte Module werden hier angezeigt.",
+    "newJob": "Neue Stelle",
+    "newJobDescription": "Veröffentliche eine Stellenanzeige für deine Gemeinschaft.",
+    "newVolunteering": "Neue Freiwilligenaufgabe",
+    "newVolunteeringDescription": "Veröffentliche Einsätze für eine Organisation, die du mitleitest.",
+    "newOrganisation": "Organisation registrieren",
+    "newOrganisationDescription": "Füge deiner Gemeinschaft eine Gruppe oder Organisation hinzu.",
+    "newCourse": "Neuer Kurs",
+    "newCourseDescription": "Bringe deiner Gemeinschaft eine Fähigkeit bei.",
+    "newPodcast": "Neuer Podcast",
+    "newPodcastDescription": "Starte eine Sendung oder nimm eine Folge auf.",
+    "opensOnWebsite": "Wird auf der Website geöffnet"
   },
   "buttons": {
     "save": "Speichern",

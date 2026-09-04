@@ -142,21 +142,35 @@ describe('identity verification payment on web', () => {
     mockOpenURL.mockResolvedValue(undefined);
   });
 
-  it('redirects to the web app instead of opening a native sheet', async () => {
+  /*
+    🔴 The community slug in the URL is the fix, not decoration. Until 2026-09-04
+    this redirect was slug-less, and on the shared host (`app.project-nexus.ie`)
+    the web app renders the platform landing page for a slug-less path — so a
+    member sent to "verify your identity" arrived somewhere else entirely.
+  */
+  it('redirects to the web app, inside the member’s own community, instead of opening a native sheet', async () => {
+    await expect(presentIdentityWeb({ ...identityOptions, tenantSlug: 'hour-timebank' })).resolves.toEqual({
+      status: 'redirected',
+    });
+
+    expect(mockOpenURL).toHaveBeenCalledWith('https://app.example.test/hour-timebank/settings/verify-identity');
+    expect(mockInitStripe).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a slug-less URL only when no community is known', async () => {
     await expect(presentIdentityWeb(identityOptions)).resolves.toEqual({ status: 'redirected' });
 
     expect(mockOpenURL).toHaveBeenCalledWith('https://app.example.test/settings/verify-identity');
-    expect(mockInitStripe).not.toHaveBeenCalled();
   });
 
   it('behaves identically through the default (non-suffixed) entry point', async () => {
     // Metro picks this file when no platform-specific variant matches. If the two
     // ever diverge, a member on one platform gets a different journey.
-    await expect(identityDefault.presentIdentityPayment(identityOptions)).resolves.toEqual({
-      status: 'redirected',
-    });
+    await expect(
+      identityDefault.presentIdentityPayment({ ...identityOptions, tenantSlug: 'hour-timebank' })
+    ).resolves.toEqual({ status: 'redirected' });
 
-    expect(mockOpenURL).toHaveBeenCalledWith('https://app.example.test/settings/verify-identity');
+    expect(mockOpenURL).toHaveBeenCalledWith('https://app.example.test/hour-timebank/settings/verify-identity');
     expect(mockInitStripe).not.toHaveBeenCalled();
   });
 });
@@ -236,8 +250,19 @@ describe('marketplace payment on a device', () => {
     mockOpenURL.mockResolvedValue(undefined);
 
     await expect(
-      marketplaceDefault.presentMarketplacePayment(marketplaceOptions)
+      marketplaceDefault.presentMarketplacePayment({ ...marketplaceOptions, tenantSlug: 'hour-timebank' })
     ).resolves.toEqual({ status: 'redirected' });
+    // Slug-prefixed for the same reason as identity above: slug-less lands on
+    // the platform page, not this community's orders.
+    expect(mockOpenURL).toHaveBeenCalledWith('https://app.example.test/hour-timebank/marketplace/orders');
+  });
+
+  it('falls back to a slug-less orders URL only when no community is known', async () => {
+    mockOpenURL.mockResolvedValue(undefined);
+
+    await expect(marketplaceDefault.presentMarketplacePayment(marketplaceOptions)).resolves.toEqual({
+      status: 'redirected',
+    });
     expect(mockOpenURL).toHaveBeenCalledWith('https://app.example.test/marketplace/orders');
   });
 });
