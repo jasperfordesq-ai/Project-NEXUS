@@ -166,6 +166,8 @@ const i18nMap: Record<string, string> = {
   'auth.sign_up': 'Sign Up',
   'create.new_listing': 'New Listing',
   'create.new_event': 'New Event',
+  'create.new_course': 'New Course',
+  'create.new_podcast': 'New Podcast',
   'create.new_post': 'New Post',
   'user_menu.my_profile': 'My Profile',
   'user_menu.wallet': 'Wallet',
@@ -829,6 +831,54 @@ describe('Navbar', () => {
       const bodyText = document.body.textContent ?? '';
       expect(bodyText.indexOf('Courses')).toBeLessThan(bodyText.indexOf('Podcasts'));
       expect(bodyText.indexOf('Podcasts')).toBeLessThan(bodyText.indexOf('Premium'));
+    });
+  });
+
+  /**
+   * 🔴 Owner's report, 2026-09-03: "I don't see any way to create a new course or
+   * a new podcast" — on a community where both features were already on. This "+"
+   * is where a member goes to start something and it offered only a listing and
+   * an event, while the Courses and Podcasts pages (which do have working create
+   * buttons) sit last in the right-hand column of the "Community" dropdown.
+   */
+  describe('create menu', () => {
+    it('offers Course and Podcast when those features are on', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
+        tenant: {
+          hasFeature: vi.fn((feature: string) => ['courses', 'podcasts'].includes(feature)),
+          hasModule: vi.fn(() => false),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'Create new' }));
+
+      expect(screen.getByText('New Course')).toBeInTheDocument();
+      expect(screen.getByText('New Podcast')).toBeInTheDocument();
+    });
+
+    it('omits them when the features are off, because the route redirects home', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
+        tenant: {
+          // Both default to FALSE platform-wide and are off or unset on 9 of 13
+          // communities. Offering a builder whose route bounces to the home page
+          // would be worse than not offering it.
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => false),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'Create new' }));
+
+      expect(screen.queryByText('New Course')).not.toBeInTheDocument();
+      expect(screen.queryByText('New Podcast')).not.toBeInTheDocument();
+      // The always-available option is still there, so this is not an empty menu.
+      expect(screen.getByText('New Listing')).toBeInTheDocument();
     });
   });
 

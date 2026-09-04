@@ -165,7 +165,9 @@
   },
   "create": {
     "new_listing": "新しいリスティング",
-    "new_event": "新しいイベント"
+    "new_event": "新しいイベント",
+    "new_course": "新しいコース",
+    "new_podcast": "新しいポッドキャスト"
   },
   "search": {
     "placeholder": "リスティング、メンバー、イベントを検索...",
@@ -209,12 +211,12 @@
     "legal_hub": "法務センター",
     "terms_of_service": "利用規約",
     "privacy_policy": "プライバシーポリシー",
+    "account_deletion": "アカウントの削除",
+    "child_safety": "児童保護基準",
     "cookie_policy": "Cookieポリシー",
     "accessibility": "アクセシビリティ",
     "type_community_guidelines": "コミュニティガイドライン",
-    "type_acceptable_use": "利用規約",
-    "account_deletion": "アカウントの削除",
-    "child_safety": "児童保護基準"
+    "type_acceptable_use": "利用規約"
   },
   "admin_tools": {
     "section": "管理ツール",
@@ -430,7 +432,11 @@
     "new_goal": "新しい目標",
     "new_goal_desc": "個人目標を設定",
     "offer_time": "時間を提供する",
-    "offer_time_desc": "ケアハブを開く"
+    "offer_time_desc": "ケアハブを開く",
+    "new_course_desc": "コミュニティにスキルを教える",
+    "new_podcast_desc": "番組を開始するかエピソードを録画する",
+    "new_course": "新しいコース",
+    "new_podcast": "新しいポッドキャスト"
   },
   "caring_community": {
     "meta": {

@@ -168,7 +168,9 @@
   },
   "create": {
     "new_listing": "Liostú Nua",
-    "new_event": "Imeacht Nua"
+    "new_event": "Imeacht Nua",
+    "new_course": "Cúrsa nua",
+    "new_podcast": "Podchraoladh nua"
   },
   "search": {
     "placeholder": "Cuardaigh liostuithe, baill, imeachtaí...",
@@ -442,7 +444,11 @@
     "new_goal": "Sprioc Nua",
     "new_goal_desc": "Socraigh sprioc phearsanta",
     "offer_time": "Tairg do chuid ama",
-    "offer_time_desc": "Oscail an mol cúraim"
+    "offer_time_desc": "Oscail an mol cúraim",
+    "new_course": "Cúrsa nua",
+    "new_podcast": "Podchraoladh nua",
+    "new_course_desc": "Múin scil do do phobal",
+    "new_podcast_desc": "Tosaigh clár nó taifead eipeasóid"
   },
   "caring_community": {
     "meta": {

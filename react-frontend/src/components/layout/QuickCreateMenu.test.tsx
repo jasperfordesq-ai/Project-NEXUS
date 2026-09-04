@@ -262,4 +262,42 @@ describe('QuickCreateMenu', () => {
       expect(opt.module).toBeUndefined();
     });
   });
+
+  /**
+   * 🔴 Owner's report, 2026-09-03: "I don't see any way to create a new course or
+   * a new podcast" — on a community where BOTH features were already switched on.
+   * The Courses and Podcasts pages have always had working create buttons; this
+   * menu, which is where a member goes to start something, offered only a listing
+   * and an event. The pages themselves sit last in the right-hand column of the
+   * "Community" dropdown, so there was no discoverable route to either builder.
+   */
+  it('offers Course and Podcast, pointing at the builders rather than the index pages', async () => {
+    const { getVisibleCreateOptions } = await import('./QuickCreateMenu');
+    const options = getVisibleCreateOptions(() => true, () => true);
+
+    const course = options.find((o) => o.labelKey === 'quick_create.new_course');
+    const podcast = options.find((o) => o.labelKey === 'quick_create.new_podcast');
+
+    // The href is the point: an index page would not let anyone create anything.
+    expect(course?.href).toBe('/courses/instructor/new');
+    expect(podcast?.href).toBe('/podcasts/studio');
+    expect(course?.feature).toBe('courses');
+    expect(podcast?.feature).toBe('podcasts');
+  });
+
+  it('hides Course and Podcast when those features are off', async () => {
+    const { getVisibleCreateOptions } = await import('./QuickCreateMenu');
+    // Both default to FALSE platform-wide and are off (or unset) on 9 of 13
+    // communities, so showing them unconditionally would offer most members a
+    // builder they cannot reach — the route redirects home.
+    const only = (name: string) => (f: string) => f !== name;
+
+    const noCourses = getVisibleCreateOptions(only('courses') as never, () => true);
+    expect(noCourses.some((o) => o.labelKey === 'quick_create.new_course')).toBe(false);
+    expect(noCourses.some((o) => o.labelKey === 'quick_create.new_podcast')).toBe(true);
+
+    const noPodcasts = getVisibleCreateOptions(only('podcasts') as never, () => true);
+    expect(noPodcasts.some((o) => o.labelKey === 'quick_create.new_podcast')).toBe(false);
+    expect(noPodcasts.some((o) => o.labelKey === 'quick_create.new_course')).toBe(true);
+  });
 });

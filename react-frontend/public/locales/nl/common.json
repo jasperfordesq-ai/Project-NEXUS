@@ -165,7 +165,9 @@
   },
   "create": {
     "new_listing": "Nieuwe advertentie",
-    "new_event": "Nieuw evenement"
+    "new_event": "Nieuw evenement",
+    "new_course": "Nieuwe cursus",
+    "new_podcast": "Nieuwe podcast"
   },
   "search": {
     "placeholder": "Zoek advertenties, leden, evenementen...",
@@ -209,12 +211,12 @@
     "legal_hub": "Juridisch centrum",
     "terms_of_service": "Servicevoorwaarden",
     "privacy_policy": "Privacybeleid",
+    "account_deletion": "Account verwijderen",
+    "child_safety": "Normen voor kinderveiligheid",
     "cookie_policy": "Cookiebeleid",
     "accessibility": "Toegankelijkheid",
     "type_community_guidelines": "Communityrichtlijnen",
-    "type_acceptable_use": "Acceptabel gebruik",
-    "account_deletion": "Account verwijderen",
-    "child_safety": "Normen voor kinderveiligheid"
+    "type_acceptable_use": "Acceptabel gebruik"
   },
   "admin_tools": {
     "section": "Beheertools",
@@ -430,7 +432,11 @@
     "new_goal": "Nieuw doel",
     "new_goal_desc": "Stel een persoonlijk doel in",
     "offer_time": "Tijd aanbieden",
-    "offer_time_desc": "Open de zorghub"
+    "offer_time_desc": "Open de zorghub",
+    "new_course_desc": "Leer een vaardigheid aan uw gemeenschap",
+    "new_podcast_desc": "Start een programma of neem een ​​aflevering op",
+    "new_course": "Nieuwe cursus",
+    "new_podcast": "Nieuwe podcast"
   },
   "caring_community": {
     "meta": {

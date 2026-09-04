@@ -17,6 +17,8 @@ import ListTodo from 'lucide-react/icons/list-todo';
 import Wallet from 'lucide-react/icons/wallet';
 import Users from 'lucide-react/icons/users';
 import Calendar from 'lucide-react/icons/calendar';
+import GraduationCap from 'lucide-react/icons/graduation-cap';
+import Podcast from 'lucide-react/icons/podcast';
 import Settings from 'lucide-react/icons/settings';
 import LogOut from 'lucide-react/icons/log-out';
 import Menu from 'lucide-react/icons/menu';
@@ -855,6 +857,29 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                           startContent={<Calendar className="w-4 h-4" aria-hidden="true" />}
                         >
                           {t('create.new_event')}
+                        </DropdownItem>
+                      ) : null}
+                      {/* 🔴 Both were missing here, which is what made Courses and
+                          Podcasts look unavailable: this "+" is where a member goes
+                          to start something, and it offered only a listing and an
+                          event. The pages themselves have always had working create
+                          buttons — they were just unreachable, sitting last in the
+                          right-hand column of the "Community" dropdown.
+                          Feature-gated, because both default to OFF platform-wide. */}
+                      {hasFeature('courses') ? (
+                        <DropdownItem
+                          key={tenantPath('/courses/instructor/new')} id={tenantPath('/courses/instructor/new')}
+                          startContent={<GraduationCap className="w-4 h-4" aria-hidden="true" />}
+                        >
+                          {t('create.new_course')}
+                        </DropdownItem>
+                      ) : null}
+                      {hasFeature('podcasts') ? (
+                        <DropdownItem
+                          key={tenantPath('/podcasts/studio')} id={tenantPath('/podcasts/studio')}
+                          startContent={<Podcast className="w-4 h-4" aria-hidden="true" />}
+                        >
+                          {t('create.new_podcast')}
                         </DropdownItem>
                       ) : null}
                     </DropdownMenu>

@@ -165,7 +165,9 @@
   },
   "create": {
     "new_listing": "New Listing",
-    "new_event": "New Event"
+    "new_event": "New Event",
+    "new_course": "New Course",
+    "new_podcast": "New Podcast"
   },
   "search": {
     "placeholder": "Search listings, members, events...",
@@ -430,7 +432,11 @@
     "new_goal": "New Goal",
     "new_goal_desc": "Set a personal goal",
     "offer_time": "Offer Time",
-    "offer_time_desc": "Open the care hub"
+    "offer_time_desc": "Open the care hub",
+    "new_course": "New Course",
+    "new_course_desc": "Teach a skill to your community",
+    "new_podcast": "New Podcast",
+    "new_podcast_desc": "Start a show or record an episode"
   },
   "caring_community": {
     "meta": {

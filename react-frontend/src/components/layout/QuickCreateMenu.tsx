@@ -17,6 +17,8 @@ import Calendar from 'lucide-react/icons/calendar';
 import Users from 'lucide-react/icons/users';
 import Target from 'lucide-react/icons/target';
 import Heart from 'lucide-react/icons/heart';
+import GraduationCap from 'lucide-react/icons/graduation-cap';
+import Podcast from 'lucide-react/icons/podcast';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
 import { useTenant, useAuth } from '@/contexts';
@@ -80,6 +82,31 @@ const createOptionDefs: CreateOptionDef[] = [
     icon: Target,
     color: 'from-blue-500 to-cyan-600',
     feature: 'goals',
+  },
+  // 🔴 Courses and Podcasts were absent from BOTH create menus, so the only way
+  // to reach their builders was the Courses/Podcasts pages themselves — and those
+  // sit last in the right-hand column of the "Community" dropdown, under a
+  // heading that reads as members and events. A member looking for "make a
+  // course" found a Create menu offering only a listing and an event and
+  // reasonably concluded the feature did not exist.
+  //
+  // The hrefs are the builders, not the index pages: the point of this menu is to
+  // start something.
+  {
+    labelKey: 'quick_create.new_course',
+    descKey: 'quick_create.new_course_desc',
+    href: '/courses/instructor/new',
+    icon: GraduationCap,
+    color: 'from-violet-500 to-purple-600',
+    feature: 'courses',
+  },
+  {
+    labelKey: 'quick_create.new_podcast',
+    descKey: 'quick_create.new_podcast_desc',
+    href: '/podcasts/studio',
+    icon: Podcast,
+    color: 'from-rose-500 to-pink-600',
+    feature: 'podcasts',
   },
 ];
 

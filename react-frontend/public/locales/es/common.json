@@ -166,7 +166,9 @@
   },
   "create": {
     "new_listing": "Nuevo Anuncio",
-    "new_event": "Nuevo Evento"
+    "new_event": "Nuevo Evento",
+    "new_course": "Nuevo curso",
+    "new_podcast": "Nuevo podcast"
   },
   "search": {
     "placeholder": "Buscar anuncios, miembros, eventos...",
@@ -210,12 +212,12 @@
     "legal_hub": "Centro Legal",
     "terms_of_service": "Términos de Servicio",
     "privacy_policy": "Política de Privacidad",
+    "account_deletion": "Eliminación de la cuenta",
+    "child_safety": "Normas de protección de la infancia",
     "cookie_policy": "Política de Cookies",
     "accessibility": "Accesibilidad",
     "type_community_guidelines": "Normas de la comunidad",
-    "type_acceptable_use": "Uso aceptable",
-    "account_deletion": "Eliminación de la cuenta",
-    "child_safety": "Normas de protección de la infancia"
+    "type_acceptable_use": "Uso aceptable"
   },
   "admin_tools": {
     "section": "Herramientas de Admin",
@@ -434,7 +436,11 @@
     "new_goal": "Nuevo objetivo",
     "new_goal_desc": "Establecer un objetivo personal",
     "offer_time": "Ofrecer tiempo",
-    "offer_time_desc": "Abrir el centro de cuidados"
+    "offer_time_desc": "Abrir el centro de cuidados",
+    "new_course_desc": "Enseña una habilidad a tu comunidad",
+    "new_podcast_desc": "Iniciar un programa o grabar un episodio",
+    "new_course": "Nuevo curso",
+    "new_podcast": "Nuevo podcast"
   },
   "caring_community": {
     "meta": {

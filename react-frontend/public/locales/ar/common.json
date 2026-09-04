@@ -169,7 +169,9 @@
   },
   "create": {
     "new_listing": "إعلان جديد",
-    "new_event": "فعالية جديدة"
+    "new_event": "فعالية جديدة",
+    "new_course": "دورة جديدة",
+    "new_podcast": "بودكاست جديد"
   },
   "search": {
     "placeholder": "ابحث عن إعلانات، أعضاء، فعاليات...",
@@ -213,12 +215,12 @@
     "legal_hub": "المركز القانوني",
     "terms_of_service": "شروط الخدمة",
     "privacy_policy": "سياسة الخصوصية",
+    "account_deletion": "حذف الحساب",
+    "child_safety": "معايير حماية الأطفال",
     "cookie_policy": "سياسة ملفات تعريف الارتباط",
     "accessibility": "إمكانية الوصول",
     "type_community_guidelines": "إرشادات المجتمع",
-    "type_acceptable_use": "الاستخدام المقبول",
-    "account_deletion": "حذف الحساب",
-    "child_safety": "معايير حماية الأطفال"
+    "type_acceptable_use": "الاستخدام المقبول"
   },
   "admin_tools": {
     "section": "أدوات الإدارة",
@@ -446,7 +448,11 @@
     "new_goal": "هدف جديد",
     "new_goal_desc": "حدد هدفاً شخصياً",
     "offer_time": "تقديم الوقت",
-    "offer_time_desc": "افتح مركز الرعاية"
+    "offer_time_desc": "افتح مركز الرعاية",
+    "new_course_desc": "تعليم مهارة لمجتمعك",
+    "new_podcast_desc": "ابدأ عرضًا أو سجل حلقة",
+    "new_course": "دورة جديدة",
+    "new_podcast": "بودكاست جديد"
   },
   "caring_community": {
     "meta": {
