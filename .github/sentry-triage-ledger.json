@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-09-02T09:20:15.084Z",
+  "lastRunAt": "2026-09-04T02:10:38.839Z",
   "issues": {
     "123575422": {
       "title": "Support report submitted",
@@ -609,10 +609,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "ANSWERED 2026-09-02 - the standing question 'what does a member actually see while the contact gate is unavailable?' now has a measured answer, so it does not need asking a fourth time. They see NOTHING: no error, no notice. MatchingService::getSuggestionsForUser evaluates the policy in BOTH directions and calls continue when either side is not isAllowed(); UNAVAILABLE is not allowed, so the affected member is silently skipped and simply never appears in anyone's suggestions. Blast radius measured on production: 3 members on tenant 2 (of 261 active) and 1 on tenant 11 hold a live non-revoked vetted-interaction preference on an active option - 4 members platform-wide. It fails SAFE, so nobody is exposed; the cost is that the protection those 4 asked for currently renders them invisible in matching rather than protected within it, and nobody is told. Still an ADMIN fix, not code: configure the jurisdiction (broker panel -> Vetting -> Jurisdiction) for tenants 2 and 11. Separately worth noting the per-request log noise was already fixed on 2026-08-28 - steady-state configuration reasons now log at WARNING, below the sentry channel's ERROR threshold, and are deduplicated per tenant+reason, which is why NEXUS-PHP-39 stopped producing events after 2026-08-27.",
+      "note": "Recurred, but recurrence is expected: this is a nightly health-check alarm, not a regression. SafeguardingPolicyHealthCheck reports that tenant 2 (hour-timebank) has at least one live member safeguarding selection requiring vetted interaction while no safeguarding jurisdiction is configured, so the contact gate cannot work. The command's own docblock states the fix is configuration, not code: broker panel, Vetting -> Jurisdiction, for tenant 2. It will fire every night until that is set. Probably the same root cause as the parked NEXUS-PHP-39 'Safeguarding interaction policy unavailable'. Safeguarding-sensitive, so no code was touched.",
       "sha": null,
-      "decidedAt": "2026-09-02T09:36:25.487Z",
-      "decidedAtRelease": "nexus-php@44070e8c150b"
+      "decidedAt": "2026-09-04T20:11:48.055Z",
+      "decidedAtRelease": "nexus-php@f7a71cc5f7ed"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -640,6 +640,15 @@
       "sha": "9c36b61d1",
       "decidedAt": "2026-09-01T10:55:59.224Z",
       "decidedAtRelease": "nexus-php@5a34b9aef871"
+    },
+    "144785932": {
+      "title": "Listing image upload failed",
+      "culprit": "http://api.project-nexus.ie/api/v2/listings/504/image",
+      "decision": "needs-owner",
+      "note": "Real member harm, but the fix is bigger than a nightly change. A member (user 74, tenant 2) uploaded a 7173x9333 (66.9 megapixel) photo to listing 504. ImageUploader rejects anything over 25 MP as decompression-bomb protection, which is correct, but it throws a bare \\Exception for validation refusals AND for genuine server faults alike. ListingsController::uploadImage catches everything and returns HTTP 500 with the generic 'Failed to upload image', so the member is never told the photo is too big and cannot fix it. Suggested fix: give ImageUploader a distinct validation exception, return 422 with a specific reason, and stop reporting member input refusals to Sentry as server errors. Needs a new translated string in all 11 locales plus a review of the other ~10 ImageUploader callers, so it is past the size a nightly run should attempt.",
+      "sha": null,
+      "decidedAt": "2026-09-04T20:11:40.712Z",
+      "decidedAtRelease": "nexus-php@f7a71cc5f7ed"
     }
   }
 }
