@@ -97,7 +97,7 @@ const createOptionDefs: CreateOptionDef[] = [
     descKey: 'quick_create.new_course_desc',
     href: '/courses/instructor/new',
     icon: GraduationCap,
-    color: 'from-violet-500 to-purple-600',
+    color: 'from-violet-500 to-fuchsia-600',
     feature: 'courses',
   },
   {
