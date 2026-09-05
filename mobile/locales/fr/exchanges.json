@@ -250,7 +250,14 @@
     "aiGenerating": "Écriture...",
     "aiEnterTitleFirst": "Entrez d'abord un titre pour que l'assistant ait quelque chose d'utile avec lequel travailler.",
     "hoursPlaceholder": "Entrez les heures",
-    "hoursHint": "Utilisez des incréments d'une demi-heure lorsque cela aide à décrire l'échange."
+    "hoursHint": "Utilisez des incréments d'une demi-heure lorsque cela aide à décrire l'échange.",
+    "categoriesLoading": "Chargement des catégories…",
+    "categoriesFailed": "Les catégories n’ont pas pu être chargées ; cette annonce ne peut donc pas encore être publiée. Vos informations sont conservées.",
+    "categoriesRetry": "Réessayer",
+    "categoriesEmpty": "Cette communauté n’a pas encore de catégories ; aucune annonce ne peut donc être publiée. Contactez votre coordination.",
+    "unsavedTitle": "Abandonner cette annonce ?",
+    "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
+    "discard": "Abandonner"
   },
   "serviceType": {
     "physical_only": "En personne",
@@ -265,7 +272,8 @@
     "descriptionMinLength": "Utilisez au moins 20 caractères pour la description.",
     "categoryRequired": "Veuillez choisir une catégorie.",
     "invalidCredits": "Veuillez saisir un nombre de fois valide. crédits.",
-    "creditsRange": "Entrez entre 0,5 et 100 crédits."
+    "creditsRange": "Entrez entre 0,5 et 100 crédits.",
+    "categoriesUnavailable": "Une catégorie est obligatoire, mais aucune n’a pu être chargée. Réessayez ci-dessus."
   },
   "typeLabel": "Type : {{type}}",
   "categoryLabel": "{{name}} catégorie",
@@ -390,7 +398,9 @@
     "commentEdited": "(modifié)",
     "commentLike": "J'aime",
     "commentEditFailed": "Nous n'avons pas pu mettre à jour votre commentaire.",
-    "commentDeleteFailed": "Nous n'avons pas pu supprimer le commentaire."
+    "commentDeleteFailed": "Nous n'avons pas pu supprimer le commentaire.",
+    "tagsSaveFailedTitle": "Annonce enregistrée",
+    "tagsSaveFailedMessage": "L’annonce a été enregistrée, mais pas ses étiquettes de compétences. Vous pouvez les ajouter en modifiant l’annonce."
   },
   "status": {
     "active": "Actif",

@@ -250,7 +250,14 @@
     "aiGenerating": "Escrevendo...",
     "aiEnterTitleFirst": "Insira um título primeiro para que o assistente tenha algo útil para trabalhar.",
     "hoursPlaceholder": "Introduza as horas",
-    "hoursHint": "Use incrementos de meia hora quando isso ajudar a descrever a troca."
+    "hoursHint": "Use incrementos de meia hora quando isso ajudar a descrever a troca.",
+    "categoriesLoading": "A carregar categorias…",
+    "categoriesFailed": "Não foi possível carregar as categorias, por isso este anúncio ainda não pode ser publicado. Os seus dados foram mantidos.",
+    "categoriesRetry": "Tentar novamente",
+    "categoriesEmpty": "Esta comunidade ainda não tem categorias, por isso não é possível publicar anúncios. Contacte a sua coordenação.",
+    "unsavedTitle": "Descartar este anúncio?",
+    "unsavedMessage": "Tem dados por guardar. Se sair agora, perde-os.",
+    "discard": "Descartar"
   },
   "serviceType": {
     "physical_only": "Pessoalmente",
@@ -265,7 +272,8 @@
     "descriptionMinLength": "Use pelo menos 20 caracteres para a descrição.",
     "categoryRequired": "Escolha uma categoria.",
     "invalidCredits": "Insira um número válido de créditos de tempo.",
-    "creditsRange": "Insira entre 0,5 e 100 créditos."
+    "creditsRange": "Insira entre 0,5 e 100 créditos.",
+    "categoriesUnavailable": "É necessária uma categoria, mas nenhuma pôde ser carregada. Tente novamente acima."
   },
   "typeLabel": "{{type}} tipo",
   "categoryLabel": "{{name}} categoria",
@@ -390,7 +398,9 @@
     "commentEdited": "(editado)",
     "commentLike": "Gosto",
     "commentEditFailed": "Não foi possível atualizar o seu comentário.",
-    "commentDeleteFailed": "Não foi possível eliminar o comentário."
+    "commentDeleteFailed": "Não foi possível eliminar o comentário.",
+    "tagsSaveFailedTitle": "Anúncio guardado",
+    "tagsSaveFailedMessage": "O anúncio foi guardado, mas as etiquetas de competências não. Pode adicioná-las ao editar o anúncio."
   },
   "status": {
     "active": "Ativo",

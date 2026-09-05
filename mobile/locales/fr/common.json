@@ -142,5 +142,7 @@
     "title": "Mise à jour prête",
     "description": "Une nouvelle version a été téléchargée. Redémarrez pour l'utiliser.",
     "action": "Redémarrer"
-  }
+  },
+  "unreadBadge_one": "{{count}} message non lu",
+  "unreadBadge_other": "{{count}} messages non lus"
 }

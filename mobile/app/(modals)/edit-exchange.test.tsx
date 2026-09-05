@@ -23,6 +23,8 @@ let mockAccessibilityLabel = 'Accessibility';
 jest.mock('expo-router', () => ({
   router: { back: (...args: unknown[]) => mockBack(...args), replace: (...args: unknown[]) => mockReplace(...args), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({ id: '5' }),
+  // The unsaved-changes guard subscribes to `beforeRemove`.
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn() }),
 }));
 
 jest.mock('react-i18next', () => ({

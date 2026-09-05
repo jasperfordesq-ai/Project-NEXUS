@@ -63,6 +63,7 @@ import {
   type GamificationProfile,
 } from '@/lib/api/gamification';
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 interface MemberProfile {
   id: number | string;
   name?: string;
@@ -844,7 +845,7 @@ function FederatedTransferCard({
   const tenantId = member.timebank?.id ?? member.tenant_id;
 
   async function submit() {
-    const parsedAmount = Number(amount.replace(',', '.').trim());
+    const parsedAmount = parseDecimalInput(amount) ?? Number.NaN;
     if (!Number.isInteger(parsedAmount) || parsedAmount < 1 || parsedAmount > 100) {
       showToast({ title: t('profile.transferValidationTitle'), description: t('profile.transferAmountRequired'), variant: 'warning' });
       return;

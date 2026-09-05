@@ -250,7 +250,14 @@
     "aiGenerating": "Schreiben...",
     "aiEnterTitleFirst": "Geben Sie zuerst einen Titel ein, damit der Assistent etwas hat Nützlich zum Arbeiten.",
     "hoursPlaceholder": "Stunden eingeben",
-    "hoursHint": "Verwenden Sie Halbstundenschritte, wenn dies hilft, den Austausch zu beschreiben."
+    "hoursHint": "Verwenden Sie Halbstundenschritte, wenn dies hilft, den Austausch zu beschreiben.",
+    "categoriesLoading": "Kategorien werden geladen…",
+    "categoriesFailed": "Die Kategorien konnten nicht geladen werden, daher kann dieses Angebot noch nicht veröffentlicht werden. Deine Angaben bleiben erhalten.",
+    "categoriesRetry": "Erneut versuchen",
+    "categoriesEmpty": "Diese Gemeinschaft hat noch keine Kategorien, daher können keine Angebote veröffentlicht werden. Bitte wende dich an deine Koordination.",
+    "unsavedTitle": "Dieses Angebot verwerfen?",
+    "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
+    "discard": "Verwerfen"
   },
   "serviceType": {
     "physical_only": "Persönlich",
@@ -265,7 +272,8 @@
     "descriptionMinLength": "Verwenden Sie mindestens 20 Zeichen für die Beschreibung.",
     "categoryRequired": "Bitte wählen Sie eine Kategorie.",
     "invalidCredits": "Bitte geben Sie eine gültige Anzahl an Zeit-Credits ein.",
-    "creditsRange": "Geben Sie zwischen 0,5 und 100 Credits ein."
+    "creditsRange": "Geben Sie zwischen 0,5 und 100 Credits ein.",
+    "categoriesUnavailable": "Eine Kategorie ist erforderlich, aber es konnte keine geladen werden. Versuche es oben erneut."
   },
   "typeLabel": "{{type}} Typ",
   "categoryLabel": "{{name}} Kategorie",
@@ -390,7 +398,9 @@
     "commentEdited": "(bearbeitet)",
     "commentLike": "Gefällt mir",
     "commentEditFailed": "Dein Kommentar konnte nicht aktualisiert werden.",
-    "commentDeleteFailed": "Der Kommentar konnte nicht gelöscht werden."
+    "commentDeleteFailed": "Der Kommentar konnte nicht gelöscht werden.",
+    "tagsSaveFailedTitle": "Angebot gespeichert",
+    "tagsSaveFailedMessage": "Das Angebot wurde gespeichert, die Fähigkeiten-Tags jedoch nicht. Du kannst sie beim Bearbeiten hinzufügen."
   },
   "status": {
     "active": "Aktiv",

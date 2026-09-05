@@ -250,7 +250,14 @@
     "aiGenerating": "Escribiendo...",
     "aiEnterTitleFirst": "Ingrese primero un título para que el asistente tenga algo útil con qué trabajar.",
     "hoursPlaceholder": "Introduce las horas",
-    "hoursHint": "Utilice incrementos de media hora cuando eso ayude a describir el intercambio."
+    "hoursHint": "Utilice incrementos de media hora cuando eso ayude a describir el intercambio.",
+    "categoriesLoading": "Cargando categorías…",
+    "categoriesFailed": "No se pudieron cargar las categorías, así que este anuncio aún no se puede publicar. Tus datos se conservan.",
+    "categoriesRetry": "Reintentar",
+    "categoriesEmpty": "Esta comunidad aún no tiene categorías, por lo que no se pueden publicar anuncios. Contacta con tu coordinación.",
+    "unsavedTitle": "¿Descartar este anuncio?",
+    "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
+    "discard": "Descartar"
   },
   "serviceType": {
     "physical_only": "En persona",
@@ -265,7 +272,8 @@
     "descriptionMinLength": "Utilice al menos 20 caracteres para la descripción.",
     "categoryRequired": "Elija una categoría.",
     "invalidCredits": "Ingrese un número válido de créditos de tiempo.",
-    "creditsRange": "Ingrese entre 0,5 y 100 créditos."
+    "creditsRange": "Ingrese entre 0,5 y 100 créditos.",
+    "categoriesUnavailable": "Se requiere una categoría, pero no se pudo cargar ninguna. Reintenta arriba."
   },
   "typeLabel": "{{type}} tipo",
   "categoryLabel": "{{name}} categoría",
@@ -390,7 +398,9 @@
     "commentEdited": "(editado)",
     "commentLike": "Me gusta",
     "commentEditFailed": "No pudimos actualizar tu comentario.",
-    "commentDeleteFailed": "No pudimos eliminar el comentario."
+    "commentDeleteFailed": "No pudimos eliminar el comentario.",
+    "tagsSaveFailedTitle": "Anuncio guardado",
+    "tagsSaveFailedMessage": "El anuncio se guardó, pero sus etiquetas de habilidades no. Puedes añadirlas editando el anuncio."
   },
   "status": {
     "active": "Activo",

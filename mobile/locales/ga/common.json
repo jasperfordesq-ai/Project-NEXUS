@@ -142,5 +142,10 @@
     "title": "Nuashonrú réidh",
     "description": "Íoslódáladh leagan nua. Atosaigh chun é a úsáid.",
     "action": "Atosaigh anois"
-  }
+  },
+  "unreadBadge_one": "{{count}} teachtaireacht neamhléite",
+  "unreadBadge_two": "{{count}} theachtaireacht neamhléite",
+  "unreadBadge_few": "{{count}} theachtaireacht neamhléite",
+  "unreadBadge_many": "{{count}} dteachtaireacht neamhléite",
+  "unreadBadge_other": "{{count}} teachtaireacht neamhléite"
 }

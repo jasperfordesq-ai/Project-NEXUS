@@ -22,6 +22,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 const splitTypes: GroupExchange['split_type'][] = ['equal', 'custom', 'weighted'];
 
 type ParticipantDraft = {
@@ -60,7 +61,9 @@ function NewGroupExchangeScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const parsedHours = useMemo(() => Number.parseFloat(totalHours), [totalHours]);
+  // parseDecimalInput, not parseFloat: parseFloat('1,5') is 1 — silently the wrong
+  // number of hours for a comma-locale member (audit 2026-09-05, F06).
+  const parsedHours = useMemo(() => parseDecimalInput(totalHours) ?? Number.NaN, [totalHours]);
   const canSubmit = title.trim().length >= 3 && Number.isFinite(parsedHours) && parsedHours > 0 && !isSubmitting;
   const selectedIds = useMemo(() => new Set(participants.map((participant) => participant.user_id)), [participants]);
   const providerCount = participants.filter((participant) => participant.role === 'provider').length;
@@ -118,8 +121,8 @@ function NewGroupExchangeScreen() {
           ? participants.map((participant) => ({
               user_id: participant.user_id,
               role: participant.role,
-              hours: Number.parseFloat(participant.hours) || 0,
-              weight: Number.parseFloat(participant.weight) || 1,
+              hours: parseDecimalInput(participant.hours) ?? 0,
+              weight: parseDecimalInput(participant.weight) ?? 1,
             }))
           : undefined,
       };

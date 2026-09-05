@@ -38,6 +38,9 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Input from '@/components/ui/Input';
 import AccentIcon from '@/components/ui/AccentIcon';
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useConfirm } from '@/components/ui/useConfirm';
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
 type ExperienceOption = (typeof experienceOptions)[number];
 type EquipmentOption = (typeof equipmentOptions)[number];
@@ -82,13 +85,26 @@ function NewExchangeModalInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const bottomInset = useBottomInset();
+  const { confirm, confirmDialog } = useConfirm();
+  // Set the instant a save is confirmed, so the exit guard stands down for the
+  // screen's own navigation to the created listing.
+  const [hasSaved, setHasSaved] = useState(false);
   const { show: showToast } = useAppToast();
   const { user } = useAuth();
   const profileLocation = getProfileLocation(user);
   const descriptionRef = useRef<TextInput>(null);
   const hoursRef = useRef<TextInput>(null);
 
-  const { data: categoriesData } = useApi(() => getExchangeCategories());
+  // 🔴 All four fields, not just `data`. Reading only `data` made a failed category
+  // request look like "no categories": the picker (and even its required-field
+  // error) vanished while the form still looked fillable, so a member could not
+  // submit and was never told why (audit 2026-09-05, F02).
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+    refresh: refreshCategories,
+  } = useApi(() => getExchangeCategories());
   const categories: ExchangeCategory[] = categoriesData?.data ?? [];
 
   const [type, setType] = useState<ExchangeType>('offer');
@@ -107,6 +123,31 @@ function NewExchangeModalInner() {
   const [error, setError] = useState<string | null>(null);
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Anything the member has typed, chosen or attached beyond the defaults.
+  const isDirty =
+    title !== ''
+    || description !== ''
+    || hours !== '1'
+    || categoryId !== null
+    || skillTags !== ''
+    || accessibilityNotes !== ''
+    || experienceLevel !== ''
+    || equipmentProvided !== ''
+    || selectedImageUri !== null
+    || type !== 'offer'
+    || serviceType !== 'hybrid';
+  // 🔴 A mistaken Back or Cancel used to drop a long description, tags and a chosen
+  // image without a word (audit 2026-09-05, F05). Same guard as edit-profile.
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: submitting || hasSaved,
+    confirm,
+    title: t('form.unsavedTitle'),
+    message: t('form.unsavedMessage'),
+    discardLabel: t('form.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   const selectedCategoryName = categories.find((category) => category.id === categoryId)?.name ?? t('form.summaryNotSet');
   const isGenericTitle = isGenericListingTitle(title, selectedCategoryName);
@@ -153,7 +194,8 @@ function NewExchangeModalInner() {
   async function handleSubmit() {
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
-    const parsedHours = Number(hours);
+    // Locale-aware: "1,5" is valid input for half the app's locales (audit F06).
+    const parsedHours = parseDecimalInput(hours) ?? Number.NaN;
     const nextErrors: FieldErrors = {};
 
     if (!trimmedTitle) {
@@ -166,7 +208,12 @@ function NewExchangeModalInner() {
     } else if (trimmedDescription.length < MIN_LISTING_DESCRIPTION_LENGTH) {
       nextErrors.description = t('validation.descriptionMinLength');
     }
-    if (!categoryId) nextErrors.category = t('validation.categoryRequired');
+    if (!categoryId) {
+      // Say which problem it is: the member has not chosen, or there is nothing to choose.
+      nextErrors.category = categories.length > 0
+        ? t('validation.categoryRequired')
+        : t('validation.categoriesUnavailable');
+    }
     if (!Number.isFinite(parsedHours)) {
       nextErrors.hours = t('validation.invalidCredits');
     } else if (parsedHours < MIN_LISTING_HOURS || parsedHours > MAX_LISTING_HOURS) {
@@ -190,8 +237,13 @@ function NewExchangeModalInner() {
     setError(null);
     setSubmitting(true);
     let successDestination: Parameters<typeof router.push>[0] | null = null;
+    // 🔴 Only a confirmed creation may leave this form. Before this flag existed the
+    // navigation block below ran after the catch as well, so a rejected or timed-out
+    // save showed its error for a frame and then threw away everything the member had
+    // typed (audit 2026-09-05, F01, reproduced with a mocked rejection).
+    let created = false;
     try {
-      const created = await createExchange({
+      const createdResponse = await createExchange({
         title: trimmedTitle,
         description: buildEnrichedDescription(trimmedDescription, {
           experience: experienceLevel,
@@ -204,10 +256,20 @@ function NewExchangeModalInner() {
         location: profileLocation,
         service_type: serviceType,
       });
-      const listingId = created.data?.id;
+      created = true;
+      const listingId = createdResponse.data?.id;
       const tags = skillTags.split(',').map((tag) => tag.trim()).filter(Boolean);
       if (listingId) {
-        await setExchangeTags(listingId, tags).catch(() => null);
+        if (tags.length > 0) {
+          // Partial success must be reported, like the image below: the listing exists,
+          // the tags do not, and the member would otherwise never know (audit F04). Do
+          // not retry the whole creation — that is how duplicates are made.
+          try {
+            await setExchangeTags(listingId, tags);
+          } catch (err) {
+            showToast({ title: t('detail.tagsSaveFailedTitle'), description: describeApiError(err, t('detail.tagsSaveFailedMessage')), variant: 'danger' });
+          }
+        }
         if (selectedImageUri) {
           try {
             await uploadExchangeImage(listingId, selectedImageUri);
@@ -228,6 +290,10 @@ function NewExchangeModalInner() {
     } finally {
       setSubmitting(false);
     }
+
+    // Failed: stay here with every field, tag and image intact, and the error visible.
+    if (!created) return;
+    setHasSaved(true);
 
     // 🔴 `replace`, not `push`, and it is the difference between working and silent.
     //
@@ -459,32 +525,52 @@ function NewExchangeModalInner() {
           </FormSection>
 
           <FormSection title={t('form.organiseTitle')} icon="albums-outline" primary={primary} theme={theme}>
-            {categories.length > 0 ? (
-              <>
-                <FieldLabel label={t('category')} theme={theme} />
-                <View className="flex-row flex-wrap gap-2">
-                  {categories.map((category) => {
-                    const selected = categoryId === category.id;
-                    return (
-                      <HeroButton
-                        key={category.id}
-                        size="sm"
-                        variant={selected ? 'primary' : 'secondary'}
-                        onPress={() => {
-                          setCategoryId(category.id);
-                          if (fieldErrors.category) setFieldErrors((current) => ({ ...current, category: undefined }));
-                        }}
-                        accessibilityLabel={t('categoryLabel', { name: category.name })}
-                        accessibilityState={{ selected }}
-                      >
-                        <HeroButton.Label>{category.name}</HeroButton.Label>
-                      </HeroButton>
-                    );
-                  })}
-                </View>
-                {fieldErrors.category ? <ErrorText message={fieldErrors.category} theme={theme} /> : null}
-              </>
-            ) : null}
+            <FieldLabel label={t('category')} theme={theme} />
+            {/*
+              Four states, each said out loud: loading, loaded, failed (with a retry that
+              keeps every other field), and genuinely empty. Collapsing them into "has
+              categories / hasn't" is what hid the F02 dead end.
+            */}
+            {categoriesLoading ? (
+              <View className="flex-row items-center gap-2" accessibilityLiveRegion="polite" testID="new-exchange-categories-loading">
+                <Spinner size="sm" />
+                <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('form.categoriesLoading')}</Text>
+              </View>
+            ) : categories.length > 0 ? (
+              <View className="flex-row flex-wrap gap-2">
+                {categories.map((category) => {
+                  const selected = categoryId === category.id;
+                  return (
+                    <HeroButton
+                      key={category.id}
+                      size="sm"
+                      variant={selected ? 'primary' : 'secondary'}
+                      onPress={() => {
+                        setCategoryId(category.id);
+                        if (fieldErrors.category) setFieldErrors((current) => ({ ...current, category: undefined }));
+                      }}
+                      accessibilityLabel={t('categoryLabel', { name: category.name })}
+                      accessibilityState={{ selected }}
+                    >
+                      <HeroButton.Label>{category.name}</HeroButton.Label>
+                    </HeroButton>
+                  );
+                })}
+              </View>
+            ) : categoriesError ? (
+              <View className="gap-2" accessibilityLiveRegion="polite" testID="new-exchange-categories-failed">
+                <Text className="text-sm" style={{ color: theme.error }}>{t('form.categoriesFailed')}</Text>
+                <HeroButton size="sm" variant="secondary" onPress={refreshCategories} accessibilityLabel={t('form.categoriesRetry')}>
+                  <Ionicons name="refresh-outline" size={15} color={primary} />
+                  <HeroButton.Label>{t('form.categoriesRetry')}</HeroButton.Label>
+                </HeroButton>
+              </View>
+            ) : (
+              <Text className="text-sm" style={{ color: theme.textSecondary }} testID="new-exchange-categories-empty">
+                {t('form.categoriesEmpty')}
+              </Text>
+            )}
+            {fieldErrors.category ? <ErrorText message={fieldErrors.category} theme={theme} /> : null}
 
             <FieldLabel label={t('timeCredits')} theme={theme} />
             <Input
@@ -525,6 +611,7 @@ function NewExchangeModalInner() {
           </View>
         </View>
       </KeyboardAvoidingView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

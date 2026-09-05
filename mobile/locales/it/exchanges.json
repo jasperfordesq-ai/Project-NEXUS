@@ -250,7 +250,14 @@
     "aiGenerating": "Scrivi...",
     "aiEnterTitleFirst": "Inserisci prima un titolo in modo che l'assistente abbia qualcosa di utile su cui lavorare.",
     "hoursPlaceholder": "Inserisca le ore",
-    "hoursHint": "Utilizza incrementi di mezz'ora quando ciò aiuta a descrivere lo scambio."
+    "hoursHint": "Utilizza incrementi di mezz'ora quando ciò aiuta a descrivere lo scambio.",
+    "categoriesLoading": "Caricamento delle categorie…",
+    "categoriesFailed": "Non è stato possibile caricare le categorie, quindi questo annuncio non può ancora essere pubblicato. I tuoi dati sono conservati.",
+    "categoriesRetry": "Riprova",
+    "categoriesEmpty": "Questa comunità non ha ancora categorie, quindi non è possibile pubblicare annunci. Contatta il tuo coordinamento.",
+    "unsavedTitle": "Eliminare questo annuncio?",
+    "unsavedMessage": "Hai dati non salvati. Se esci ora, andranno persi.",
+    "discard": "Elimina"
   },
   "serviceType": {
     "physical_only": "Di persona",
@@ -265,7 +272,8 @@
     "descriptionMinLength": "Utilizza almeno 20 caratteri per la descrizione.",
     "categoryRequired": "Scegli una categoria.",
     "invalidCredits": "Inserisci un numero valido di crediti temporali.",
-    "creditsRange": "Inserisci tra 0,5 e 100 crediti."
+    "creditsRange": "Inserisci tra 0,5 e 100 crediti.",
+    "categoriesUnavailable": "È richiesta una categoria, ma non è stato possibile caricarne nessuna. Riprova qui sopra."
   },
   "typeLabel": "{{type}} tipo",
   "categoryLabel": "{{name}} categoria",
@@ -390,7 +398,9 @@
     "commentEdited": "(modificato)",
     "commentLike": "Mi piace",
     "commentEditFailed": "Non siamo riusciti ad aggiornare il tuo commento.",
-    "commentDeleteFailed": "Non siamo riusciti a eliminare il commento."
+    "commentDeleteFailed": "Non siamo riusciti a eliminare il commento.",
+    "tagsSaveFailedTitle": "Annuncio salvato",
+    "tagsSaveFailedMessage": "L’annuncio è stato salvato, ma non i suoi tag di competenze. Puoi aggiungerli modificando l’annuncio."
   },
   "status": {
     "active": "Attivo",

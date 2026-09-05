@@ -55,6 +55,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 function formatDateTime(value?: string | null) {
   if (!value) return null;
   const date = new Date(value);
@@ -184,7 +185,7 @@ function ExchangeRequestDetailScreen() {
 
   const submitConfirmation = useCallback(async () => {
     if (!exchange) return;
-    const hours = Number(hoursInput.replace(',', '.'));
+    const hours = parseDecimalInput(hoursInput) ?? Number.NaN;
     if (!Number.isFinite(hours) || hours <= 0) {
       showToast({
         variant: 'danger',

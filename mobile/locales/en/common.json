@@ -142,5 +142,7 @@
     "title": "Update ready",
     "description": "A new version has been downloaded. Restart to use it.",
     "action": "Restart now"
-  }
+  },
+  "unreadBadge_one": "{{count}} unread message",
+  "unreadBadge_other": "{{count}} unread messages"
 }

@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiResponseError } from '@/lib/api/client';
 
+import i18n from 'i18next';
 /** HTTP status codes worth retrying (transient server/network errors). */
 const RETRYABLE_STATUSES = new Set([500, 502, 503, 504]);
 
@@ -101,11 +102,13 @@ export function useApi<T>(
           return;
         }
 
-        // No more retries — surface the error
+        // No more retries — surface the error. Translated at the moment it is set,
+        // like lib/api/client.ts does: this string is shown verbatim by ~a dozen
+        // screens, and it used to be English in every locale (audit 2026-09-05, F07).
         if (err instanceof ApiResponseError) {
           setError(err.message);
         } else {
-          setError('An unexpected error occurred.');
+          setError(i18n.t('common:errors.generic'));
         }
         setIsLoading(false);
       }

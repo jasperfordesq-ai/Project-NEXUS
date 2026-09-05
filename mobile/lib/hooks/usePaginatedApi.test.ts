@@ -196,7 +196,8 @@ describe('usePaginatedApi', () => {
     });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.error).toBe('An unexpected error occurred.');
+    // A translation key, not English prose: the hook no longer hard-codes the message.
+    expect(result.current.error).toBe('common:errors.generic');
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
@@ -234,3 +235,6 @@ describe('usePaginatedApi', () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 });
+
+// The hook translates its fallback error; return the key so the assertion is locale-free.
+jest.mock('i18next', () => ({ __esModule: true, default: { t: (key: string) => key } }));

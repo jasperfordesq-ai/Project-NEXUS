@@ -142,5 +142,7 @@
     "title": "Update bereit",
     "description": "Eine neue Version wurde heruntergeladen. Starte neu, um sie zu nutzen.",
     "action": "Jetzt neu starten"
-  }
+  },
+  "unreadBadge_one": "{{count}} ungelesene Nachricht",
+  "unreadBadge_other": "{{count}} ungelesene Nachrichten"
 }

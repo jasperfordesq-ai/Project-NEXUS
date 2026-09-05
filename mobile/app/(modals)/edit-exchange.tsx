@@ -41,6 +41,9 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Input from '@/components/ui/Input';
 import AccentIcon from '@/components/ui/AccentIcon';
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useConfirm } from '@/components/ui/useConfirm';
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
 
 const serviceTypes: ServiceType[] = ['hybrid', 'physical_only', 'remote_only', 'location_dependent'];
@@ -70,6 +73,10 @@ function EditExchangeModalInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const bottomInset = useBottomInset();
+  const { confirm, confirmDialog } = useConfirm();
+  const [hasSaved, setHasSaved] = useState(false);
+  // The form as it was hydrated from the listing; dirty = differs from this.
+  const [baseline, setBaseline] = useState<string | null>(null);
   const { show: showToast } = useAppToast();
   const { user } = useAuth();
   const profileLocation = getProfileLocation(user);
@@ -127,7 +134,39 @@ function EditExchangeModalInner() {
     setSelectedImageUri(null);
     setRemoveExistingImage(false);
     setHydratedListingId(listing.id);
+    // Same field order as `formSnapshot` below, from the same source values.
+    setBaseline(JSON.stringify({
+      title: listing.title ?? '',
+      description: parsedDescription.description,
+      experienceLevel: parsedDescription.experience,
+      equipmentProvided: parsedDescription.equipment,
+      accessibilityNotes: parsedDescription.accessibility,
+      type: listing.type ?? 'offer',
+      hours: String(listing.hours_estimate ?? listing.estimated_hours ?? 1),
+      serviceType: listing.service_type ?? 'hybrid',
+      listingLocation: listing.location ?? profileLocation,
+      skillTags: (listing.skill_tags ?? []).join(', '),
+      categoryId: listing.category_id ?? null,
+      selectedImageUri: null,
+      removeExistingImage: false,
+    }));
   }, [hydratedListingId, listing, profileLocation, t]);
+
+  const formSnapshot = JSON.stringify({
+    title, description, experienceLevel, equipmentProvided, accessibilityNotes, type, hours,
+    serviceType, listingLocation, skillTags, categoryId, selectedImageUri, removeExistingImage,
+  });
+  const isDirty = baseline !== null && formSnapshot !== baseline;
+  // 🔴 Same guard as new-exchange and edit-profile (audit 2026-09-05, F05).
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: saving || hasSaved,
+    confirm,
+    title: t('form.unsavedTitle'),
+    message: t('form.unsavedMessage'),
+    discardLabel: t('form.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   async function handlePickImage() {
     try {
@@ -172,7 +211,8 @@ function EditExchangeModalInner() {
   async function handleSave() {
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
-    const parsedHours = Number(hours);
+    // Locale-aware: "1,5" is valid input for half the app's locales (audit F06).
+    const parsedHours = parseDecimalInput(hours) ?? Number.NaN;
     const nextErrors: FieldErrors = {};
 
     if (!trimmedTitle) {
@@ -220,7 +260,13 @@ function EditExchangeModalInner() {
         service_type: serviceType,
       });
       const tags = skillTags.split(',').map((tag) => tag.trim()).filter(Boolean);
-      await setExchangeTags(safeListingId, tags).catch(() => null);
+      // Partial success is reported, not swallowed: the listing is saved, the tags are
+      // not, and the member needs to know (audit 2026-09-05, F04).
+      try {
+        await setExchangeTags(safeListingId, tags);
+      } catch (err) {
+        showToast({ title: t('detail.tagsSaveFailedTitle'), description: describeApiError(err, t('detail.tagsSaveFailedMessage')), variant: 'danger' });
+      }
       if (selectedImageUri) {
         await uploadExchangeImage(safeListingId, selectedImageUri);
       } else if (removeExistingImage && listing?.image_url) {
@@ -228,6 +274,7 @@ function EditExchangeModalInner() {
       }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.editSavedTitle'), description: t('detail.editSavedMessage'), variant: 'success' });
+      setHasSaved(true);
       router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } });
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -567,6 +614,7 @@ function EditExchangeModalInner() {
           </View>
         </View>
       </KeyboardAvoidingView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

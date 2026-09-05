@@ -250,7 +250,14 @@
     "aiGenerating": "Writing...",
     "aiEnterTitleFirst": "Enter a title first so the assistant has something useful to work with.",
     "hoursPlaceholder": "Enter hours",
-    "hoursHint": "Use half-hour increments when that helps describe the exchange."
+    "hoursHint": "Use half-hour increments when that helps describe the exchange.",
+    "categoriesLoading": "Loading categories…",
+    "categoriesFailed": "Categories could not be loaded, so this listing can’t be published yet. Your details are kept.",
+    "categoriesRetry": "Try again",
+    "categoriesEmpty": "This community has no listing categories yet, so listings can’t be published. Please contact your coordinator.",
+    "unsavedTitle": "Discard this listing?",
+    "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
+    "discard": "Discard"
   },
   "serviceType": {
     "physical_only": "In person",
@@ -265,7 +272,8 @@
     "descriptionMinLength": "Use at least 20 characters for the description.",
     "categoryRequired": "Please choose a category.",
     "invalidCredits": "Please enter a valid number of time credits.",
-    "creditsRange": "Enter between 0.5 and 100 credits."
+    "creditsRange": "Enter between 0.5 and 100 credits.",
+    "categoriesUnavailable": "A category is required, but none could be loaded. Try again above."
   },
   "typeLabel": "{{type}} type",
   "categoryLabel": "{{name}} category",
@@ -390,7 +398,9 @@
     "commentEdited": "(edited)",
     "commentLike": "Like",
     "commentEditFailed": "We couldn't update your comment.",
-    "commentDeleteFailed": "We couldn't delete the comment."
+    "commentDeleteFailed": "We couldn't delete the comment.",
+    "tagsSaveFailedTitle": "Listing saved",
+    "tagsSaveFailedMessage": "The listing was saved, but its skill tags could not be. You can add them by editing the listing."
   },
   "status": {
     "active": "Active",

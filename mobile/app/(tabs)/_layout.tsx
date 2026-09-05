@@ -14,15 +14,25 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
+import { contrastText } from '@/lib/utils/color';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 /** Animated badge that scales in with a spring when it appears. */
-function TabBadge({ count }: { count: number }) {
+function TabBadge({ count, accessibilityLabel }: { count: number; accessibilityLabel: string }) {
   const scale = useRef(new Animated.Value(0)).current;
   const primary = usePrimaryColor();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (count > 0) {
+      // 🔴 Hand-written Animated code is outside HeroUI's reduced-motion handling, so
+      // this bounce ran for members who had asked the OS for no motion (audit
+      // 2026-09-05, F09). With the setting on, the badge simply appears.
+      if (reducedMotion) {
+        scale.setValue(1);
+        return;
+      }
       scale.setValue(0);
       Animated.spring(scale, {
         toValue: 1,
@@ -33,7 +43,7 @@ function TabBadge({ count }: { count: number }) {
     } else {
       scale.setValue(0);
     }
-  }, [count, scale]);
+  }, [count, scale, reducedMotion]);
 
   if (count <= 0) return null;
 
@@ -41,8 +51,12 @@ function TabBadge({ count }: { count: number }) {
     <Animated.View
       className="absolute -top-1 -right-2.5 min-w-[18px] h-[18px] rounded-full items-center justify-center px-1"
       style={{ backgroundColor: primary, transform: [{ scale }] }}
+      accessibilityLabel={accessibilityLabel}
+      testID="messages-tab-badge"
     >
-      <Animated.Text className="text-white text-[10px] font-bold text-center">
+      {/* Foreground from the shared contrast rule, not hard-coded white: a bright tenant
+          accent (e.g. yellow) made white 10px digits unreadable. */}
+      <Animated.Text className="text-[10px] font-bold text-center" style={{ color: contrastText(primary) }}>
         {count > 99 ? '99+' : count}
       </Animated.Text>
     </Animated.View>
@@ -134,7 +148,7 @@ export default function TabsLayout() {
                   color={color}
                 />
                 {name === 'messages' && (
-                  <TabBadge count={messagesBadgeCount} />
+                  <TabBadge count={messagesBadgeCount} accessibilityLabel={t('unreadBadge', { count: messagesBadgeCount })} />
                 )}
               </View>
             ),

@@ -142,5 +142,7 @@
     "title": "Actualización lista",
     "description": "Se ha descargado una nueva versión. Reinicia para usarla.",
     "action": "Reiniciar ahora"
-  }
+  },
+  "unreadBadge_one": "{{count}} mensaje sin leer",
+  "unreadBadge_other": "{{count}} mensajes sin leer"
 }

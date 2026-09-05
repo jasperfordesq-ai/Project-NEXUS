@@ -72,11 +72,20 @@ export default function Button({
       style={wrapperStyle}
       className={className}
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ busy: isLoading, disabled: disabled || isLoading }}
       testID={testID}
     >
+      {/*
+        🔴 The label stays while loading. Swapping it for a bare spinner (the old
+        behaviour) left a sighted member looking at an anonymous pill and a screen
+        reader with nothing to announce mid-action (audit 2026-09-05, F08). The
+        spinner sits beside the text; `busy` in accessibilityState says why it is
+        not responding. Duplicate taps are already blocked by `isDisabled`.
+      */}
       {isLoading ? (
         <View className="flex-row items-center gap-2">
           <Spinner size="sm" color={variant === 'solid' ? (color ? contrastText(color) : '#fff') : color ?? 'default'} />
+          {typeof children === 'string' ? <HeroButton.Label>{children}</HeroButton.Label> : children}
         </View>
       ) : typeof children === 'string' ? (
         <HeroButton.Label>{children}</HeroButton.Label>

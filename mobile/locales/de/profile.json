@@ -300,11 +300,10 @@
   "account": "Account",
   "actions": "Actions",
   "quickStats": {
-    "trust": "Vertrauensstatus",
-    "network": "Netzwerkbereiche",
-    "account": "Konto",
-    "active": "Aktiv",
-    "ready": "Bereit"
+    "network": "Verfügbare Bereiche",
+    "profile": "Profil",
+    "profileComplete": "Vollständig",
+    "profileIncomplete": "Noch offen"
   },
   "navDescriptions": {
     "myProfile": "Sehen Sie sich Ihr öffentliches Profil an und Sichtbarkeit der Föderation.",
@@ -373,10 +372,31 @@
     "save": "Einstellungen speichern",
     "save_success": "Matching-Einstellungen gespeichert",
     "save_failed": "Matching-Einstellungen konnten nicht gespeichert werden",
-    "pause": { "title": "Abgleich pausieren" },
-    "thresholds": { "title": "Distanz & Qualität", "distance_label": "Maximale Entfernung", "distance_value": "{{value}} km", "quality_label": "Minimale Übereinstimmungsqualität", "quality_value": "{{value}}%" },
-    "categories": { "title": "Kategorieinteressen", "description": "Wählen Sie die Kategorien aus, denen Sie zugeordnet werden möchten. Lassen Sie alles deaktiviert, damit alle Kategorien übereinstimmen.", "empty": "Es sind noch keine Kategorien verfügbar." },
-    "notifications": { "title": "Benachrichtigungen", "frequency_label": "Passen Sie die Digest-Häufigkeit an", "daily": "Täglich", "fortnightly": "Alle zwei Wochen", "monthly": "Monatlich", "never": "Nie", "hot_matches": "Benachrichtigungen zu besonders guten Übereinstimmungen", "mutual_matches": "Benachrichtigungen zu gegenseitigen Übereinstimmungen" }
+    "pause": {
+      "title": "Abgleich pausieren"
+    },
+    "thresholds": {
+      "title": "Distanz & Qualität",
+      "distance_label": "Maximale Entfernung",
+      "distance_value": "{{value}} km",
+      "quality_label": "Minimale Übereinstimmungsqualität",
+      "quality_value": "{{value}}%"
+    },
+    "categories": {
+      "title": "Kategorieinteressen",
+      "description": "Wählen Sie die Kategorien aus, denen Sie zugeordnet werden möchten. Lassen Sie alles deaktiviert, damit alle Kategorien übereinstimmen.",
+      "empty": "Es sind noch keine Kategorien verfügbar."
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "frequency_label": "Passen Sie die Digest-Häufigkeit an",
+      "daily": "Täglich",
+      "fortnightly": "Alle zwei Wochen",
+      "monthly": "Monatlich",
+      "never": "Nie",
+      "hot_matches": "Benachrichtigungen zu besonders guten Übereinstimmungen",
+      "mutual_matches": "Benachrichtigungen zu gegenseitigen Übereinstimmungen"
+    }
   },
   "sessionUnavailableTitle": "Deine Sitzung ist nicht verfügbar",
   "sessionUnavailableSubtitle": "Wir konnten dein Profil nicht laden. Bitte melde dich erneut an."

@@ -300,11 +300,10 @@
   "account": "Cuenta",
   "actions": "Acciones",
   "quickStats": {
-    "trust": "Estado de confianza",
-    "network": "Áreas de red",
-    "account": "Cuenta",
-    "active": "Activo",
-    "ready": "Listo"
+    "network": "Áreas disponibles",
+    "profile": "Perfil",
+    "profileComplete": "Completo",
+    "profileIncomplete": "Por terminar"
   },
   "navDescriptions": {
     "myProfile": "Vea su perfil público y visibilidad de la federación.",
@@ -373,10 +372,31 @@
     "save": "Guardar preferencias",
     "save_success": "Preferencias de coincidencias guardadas",
     "save_failed": "No se pudieron guardar las preferencias de coincidencia",
-    "pause": { "title": "Pausar coincidencia" },
-    "thresholds": { "title": "Distancia y calidad", "distance_label": "Distancia máxima", "distance_value": "{{value}} km", "quality_label": "Calidad mínima de coincidencia", "quality_value": "{{value}}%" },
-    "categories": { "title": "Intereses de categoría", "description": "Elija las categorías en las que le gustaría que lo emparejen. Deje todo sin marcar para que coincida en todas las categorías.", "empty": "Aún no hay categorías disponibles." },
-    "notifications": { "title": "Notificaciones", "frequency_label": "Frecuencia de resumen de coincidencias", "daily": "A diario", "fortnightly": "Cada dos semanas", "monthly": "Mensualmente", "never": "Nunca", "hot_matches": "Alertas de coincidencias prioritarias", "mutual_matches": "Alertas de coincidencias mutuas" }
+    "pause": {
+      "title": "Pausar coincidencia"
+    },
+    "thresholds": {
+      "title": "Distancia y calidad",
+      "distance_label": "Distancia máxima",
+      "distance_value": "{{value}} km",
+      "quality_label": "Calidad mínima de coincidencia",
+      "quality_value": "{{value}}%"
+    },
+    "categories": {
+      "title": "Intereses de categoría",
+      "description": "Elija las categorías en las que le gustaría que lo emparejen. Deje todo sin marcar para que coincida en todas las categorías.",
+      "empty": "Aún no hay categorías disponibles."
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "frequency_label": "Frecuencia de resumen de coincidencias",
+      "daily": "A diario",
+      "fortnightly": "Cada dos semanas",
+      "monthly": "Mensualmente",
+      "never": "Nunca",
+      "hot_matches": "Alertas de coincidencias prioritarias",
+      "mutual_matches": "Alertas de coincidencias mutuas"
+    }
   },
   "sessionUnavailableTitle": "Tu sesión no está disponible",
   "sessionUnavailableSubtitle": "No hemos podido cargar tu perfil. Inicia sesión de nuevo."

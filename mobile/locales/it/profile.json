@@ -300,11 +300,10 @@
   "account": "Account",
   "actions": "Azioni",
   "quickStats": {
-    "trust": "Stato di attendibilità",
-    "network": "Aree di rete",
-    "account": "Account",
-    "active": "Attivo",
-    "ready": "Pronto"
+    "network": "Aree disponibili",
+    "profile": "Profilo",
+    "profileComplete": "Completo",
+    "profileIncomplete": "Da completare"
   },
   "navDescriptions": {
     "myProfile": "Visualizza il tuo profilo pubblico e la visibilità della federazione.",
@@ -373,10 +372,31 @@
     "save": "Salva le preferenze",
     "save_success": "Preferenze di corrispondenza salvate",
     "save_failed": "Impossibile salvare le preferenze di corrispondenza",
-    "pause": { "title": "Metti in pausa la corrispondenza" },
-    "thresholds": { "title": "Distanza e qualità", "distance_label": "Distanza massima", "distance_value": "{{value}} km", "quality_label": "Qualità di corrispondenza minima", "quality_value": "{{value}}%" },
-    "categories": { "title": "Interessi di categoria", "description": "Scegli le categorie in cui desideri essere abbinato. Lascia tutto deselezionato per corrispondere a tutte le categorie.", "empty": "Nessuna categoria è ancora disponibile." },
-    "notifications": { "title": "Notifiche", "frequency_label": "Frequenza del riepilogo delle corrispondenze", "daily": "Ogni giorno", "fortnightly": "Ogni due settimane", "monthly": "Ogni mese", "never": "Mai", "hot_matches": "Avvisi per corrispondenze prioritarie", "mutual_matches": "Avvisi di corrispondenza reciproca" }
+    "pause": {
+      "title": "Metti in pausa la corrispondenza"
+    },
+    "thresholds": {
+      "title": "Distanza e qualità",
+      "distance_label": "Distanza massima",
+      "distance_value": "{{value}} km",
+      "quality_label": "Qualità di corrispondenza minima",
+      "quality_value": "{{value}}%"
+    },
+    "categories": {
+      "title": "Interessi di categoria",
+      "description": "Scegli le categorie in cui desideri essere abbinato. Lascia tutto deselezionato per corrispondere a tutte le categorie.",
+      "empty": "Nessuna categoria è ancora disponibile."
+    },
+    "notifications": {
+      "title": "Notifiche",
+      "frequency_label": "Frequenza del riepilogo delle corrispondenze",
+      "daily": "Ogni giorno",
+      "fortnightly": "Ogni due settimane",
+      "monthly": "Ogni mese",
+      "never": "Mai",
+      "hot_matches": "Avvisi per corrispondenze prioritarie",
+      "mutual_matches": "Avvisi di corrispondenza reciproca"
+    }
   },
   "sessionUnavailableTitle": "La tua sessione non è disponibile",
   "sessionUnavailableSubtitle": "Non è stato possibile caricare il tuo profilo. Accedi di nuovo."

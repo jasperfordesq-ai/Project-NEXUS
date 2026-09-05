@@ -142,5 +142,7 @@
     "title": "Atualização pronta",
     "description": "Foi descarregada uma nova versão. Reinicie para a usar.",
     "action": "Reiniciar agora"
-  }
+  },
+  "unreadBadge_one": "{{count}} mensagem por ler",
+  "unreadBadge_other": "{{count}} mensagens por ler"
 }

@@ -40,6 +40,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
+import { formatDecimal } from '@/lib/utils/decimal';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
 type WalletAction = 'transfer' | 'donate' | null;
@@ -77,7 +78,8 @@ function formatDate(iso?: string | null): string {
 
 function formatHours(value: number | null | undefined): string {
   const amount = typeof value === 'number' && Number.isFinite(value) ? value : 0;
-  return Number.isInteger(amount) ? String(amount) : amount.toFixed(1);
+  // Locale-aware: "1,5" for a German member, "1.5" for an Irish one (audit 2026-09-05, F06).
+  return formatDecimal(amount, 1);
 }
 
 function unwrap<T>(response: { data?: T } | T | null | undefined): T | null {

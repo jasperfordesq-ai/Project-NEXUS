@@ -300,11 +300,10 @@
   "account": "Account",
   "actions": "Actions",
   "quickStats": {
-    "trust": "Trust status",
-    "network": "Network areas",
-    "account": "Account",
-    "active": "Active",
-    "ready": "Ready"
+    "network": "Available areas",
+    "profile": "Profile",
+    "profileComplete": "Complete",
+    "profileIncomplete": "To finish"
   },
   "navDescriptions": {
     "myProfile": "View your public profile and federation visibility.",
@@ -373,10 +372,31 @@
     "save": "Save preferences",
     "save_success": "Match preferences saved",
     "save_failed": "Failed to save match preferences",
-    "pause": { "title": "Pause matching" },
-    "thresholds": { "title": "Distance & quality", "distance_label": "Maximum distance", "distance_value": "{{value}} km", "quality_label": "Minimum match quality", "quality_value": "{{value}}%" },
-    "categories": { "title": "Category interests", "description": "Choose the categories you'd like to be matched on. Leave everything unchecked to match on all categories.", "empty": "No categories are available yet." },
-    "notifications": { "title": "Notifications", "frequency_label": "Match digest frequency", "daily": "Daily", "fortnightly": "Fortnightly", "monthly": "Monthly", "never": "Never", "hot_matches": "Hot match alerts", "mutual_matches": "Mutual match alerts" }
+    "pause": {
+      "title": "Pause matching"
+    },
+    "thresholds": {
+      "title": "Distance & quality",
+      "distance_label": "Maximum distance",
+      "distance_value": "{{value}} km",
+      "quality_label": "Minimum match quality",
+      "quality_value": "{{value}}%"
+    },
+    "categories": {
+      "title": "Category interests",
+      "description": "Choose the categories you'd like to be matched on. Leave everything unchecked to match on all categories.",
+      "empty": "No categories are available yet."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "frequency_label": "Match digest frequency",
+      "daily": "Daily",
+      "fortnightly": "Fortnightly",
+      "monthly": "Monthly",
+      "never": "Never",
+      "hot_matches": "Hot match alerts",
+      "mutual_matches": "Mutual match alerts"
+    }
   },
   "sessionUnavailableTitle": "Your session is unavailable",
   "sessionUnavailableSubtitle": "We could not load your profile. Please sign in again."

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockBack = jest.fn();
@@ -16,12 +16,24 @@ const mockUploadExchangeImage = jest.fn();
 const mockGenerateExchangeDescription = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 
+// The unsaved-changes guard subscribes to `beforeRemove`; capture the handler so a
+// test can fire it the way Back / a swipe would.
+const mockNavListeners: Record<string, (e: unknown) => void> = {};
+const mockNavDispatch = jest.fn();
+
 jest.mock('expo-router', () => ({
   router: {
     back: (...args: unknown[]) => mockBack(...args),
     replace: (...args: unknown[]) => mockReplace(...args),
     canGoBack: jest.fn(() => false),
   },
+  useNavigation: () => ({
+    addListener: (event: string, handler: (e: unknown) => void) => {
+      mockNavListeners[event] = handler;
+      return () => { delete mockNavListeners[event]; };
+    },
+    dispatch: (...args: unknown[]) => mockNavDispatch(...args),
+  }),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -320,5 +332,127 @@ describe('NewExchangeModal', () => {
         'Accessibility: Ground floor room',
       ].join('\n'),
     })));
+  });
+});
+
+/*
+  Regressions from the 2026-09-05 native-app audit. Each of these was a reproduced
+  defect, not a hypothetical: the audit's own fixtures asserted the broken behaviour.
+*/
+describe('NewExchangeModal — audit 2026-09-05 regressions', () => {
+  function fillValidListing(screen: ReturnType<typeof render>) {
+    fireEvent.changeText(screen.getByPlaceholderText('What are you offering?'), 'Gardening help');
+    fireEvent.changeText(screen.getByPlaceholderText('Add more details...'), 'I can help with weeding and pruning.');
+  }
+
+  beforeEach(() => {
+    for (const key of Object.keys(mockNavListeners)) delete mockNavListeners[key];
+    mockNavDispatch.mockClear();
+  });
+
+  /**
+   * 🔴 F01. A rejected save used to show its error for a frame and then run the same
+   * navigation block as a success — back, or replace with the listings tab — taking
+   * every typed field with it.
+   */
+  it('stays on the form with the input intact when the save is rejected', async () => {
+    mockCreateExchange.mockRejectedValue(new Error('offline'));
+    const screen = render(<NewExchangeModal />);
+    fillValidListing(screen);
+    fireEvent.press(screen.getByText('Teaching'));
+
+    fireEvent.press(screen.getByText('Post Offer'));
+    await waitFor(() => expect(mockCreateExchange).toHaveBeenCalled());
+    // The old navigation ran on a 0ms timer; give it every chance to fire.
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Gardening help')).toBeTruthy();
+    expect(screen.getByDisplayValue('I can help with weeding and pruning.')).toBeTruthy();
+    expect(screen.getByText(/createError|Failed to create/)).toBeTruthy();
+  });
+
+  /**
+   * 🔴 F02. Reading only `data` from useApi made a failed category request look like
+   * "no categories": the picker and even its required-field error disappeared, so the
+   * form looked fillable but could never be submitted, with no explanation.
+   */
+  it('says categories failed to load, offers a retry, and explains why publishing is blocked', async () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Network error', refresh });
+    const screen = render(<NewExchangeModal />);
+
+    expect(screen.getByTestId('new-exchange-categories-failed')).toBeTruthy();
+    fireEvent.press(screen.getByText(/categoriesRetry|Try again/));
+    expect(refresh).toHaveBeenCalled();
+
+    fillValidListing(screen);
+    fireEvent.press(screen.getByText('Post Offer'));
+    await act(async () => {});
+
+    expect(mockCreateExchange).not.toHaveBeenCalled();
+    expect(screen.getByText(/categoriesUnavailable|none could be loaded/)).toBeTruthy();
+    // Input survives the failed attempt so a retry costs nothing.
+    expect(screen.getByDisplayValue('Gardening help')).toBeTruthy();
+  });
+
+  it('distinguishes categories still loading from a community that has none', () => {
+    mockUseApi.mockReturnValue({ data: null, isLoading: true, error: null, refresh: jest.fn() });
+    expect(render(<NewExchangeModal />).getByTestId('new-exchange-categories-loading')).toBeTruthy();
+
+    mockUseApi.mockReturnValue({ data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() });
+    expect(render(<NewExchangeModal />).getByTestId('new-exchange-categories-empty')).toBeTruthy();
+  });
+
+  /**
+   * F04. Tags used to fail silently (`.catch(() => null)`): the listing existed, the
+   * tags did not, and the member never knew. The listing is still opened — retrying
+   * the whole creation is how duplicates are made.
+   */
+  it('reports that the listing was saved but its tags were not', async () => {
+    mockSetExchangeTags.mockRejectedValue(new Error('tags down'));
+    const screen = render(<NewExchangeModal />);
+    fillValidListing(screen);
+    fireEvent.changeText(screen.getByPlaceholderText('gardening, mentoring'), 'gardening, pruning');
+    fireEvent.press(screen.getByText('Teaching'));
+
+    fireEvent.press(screen.getByText('Post Offer'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: expect.stringMatching(/tagsSaveFailedTitle|Listing saved/),
+      variant: 'danger',
+    })));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: '9' } }));
+    expect(mockCreateExchange).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * F05. Back, Cancel, the Android back button and an iOS swipe all pop the screen via
+   * `beforeRemove`; with unsaved input the guard holds the screen and asks first.
+   */
+  it('asks before discarding unsaved input, and lets a clean form leave freely', () => {
+    const screen = render(<NewExchangeModal />);
+    expect(mockNavListeners.beforeRemove).toBeUndefined();
+
+    fireEvent.changeText(screen.getByPlaceholderText('What are you offering?'), 'Half-typed title');
+    expect(mockNavListeners.beforeRemove).toBeDefined();
+
+    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
+    mockNavListeners.beforeRemove?.(e);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(mockNavDispatch).not.toHaveBeenCalled();
+  });
+
+  /** F06. Half the app's locales type decimals with a comma. */
+  it('accepts a comma decimal for time credits', async () => {
+    const screen = render(<NewExchangeModal />);
+    fillValidListing(screen);
+    fireEvent.press(screen.getByText('Teaching'));
+    fireEvent.changeText(screen.getByDisplayValue('1'), '1,5');
+
+    fireEvent.press(screen.getByText('Post Offer'));
+
+    await waitFor(() => expect(mockCreateExchange).toHaveBeenCalledWith(expect.objectContaining({ hours_estimate: 1.5 })));
   });
 });

@@ -250,7 +250,14 @@
     "aiGenerating": "Ag scríobh...",
     "aiEnterTitleFirst": "Cuir isteach teideal ar dtús ionas go mbeidh rud éigin úsáideach ag an gcúntóir le bheith ag obair leis.",
     "hoursPlaceholder": "Cuir uaireanta isteach",
-    "hoursHint": "Úsáid breisithe leathuaire nuair a chuidíonn sé sin le cur síos a dhéanamh ar an malartú."
+    "hoursHint": "Úsáid breisithe leathuaire nuair a chuidíonn sé sin le cur síos a dhéanamh ar an malartú.",
+    "categoriesLoading": "Catagóirí á lódáil…",
+    "categoriesFailed": "Níorbh fhéidir na catagóirí a lódáil, mar sin ní féidir an fógra seo a fhoilsiú fós. Coinnítear do shonraí.",
+    "categoriesRetry": "Bain triail eile as",
+    "categoriesEmpty": "Níl aon chatagóirí ag an bpobal seo go fóill, mar sin ní féidir fógraí a fhoilsiú. Déan teagmháil le do chomhordaitheoir.",
+    "unsavedTitle": "An fógra seo a chaitheamh i dtraipisí?",
+    "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
+    "discard": "Caith i dtraipisí"
   },
   "serviceType": {
     "physical_only": "Go pearsanta",
@@ -265,7 +272,8 @@
     "descriptionMinLength": "Úsáid 20 carachtar ar a laghad don chur síos.",
     "categoryRequired": "Roghnaigh catagóir.",
     "invalidCredits": "Cuir isteach líon bailí creidiúintí ama, le do thoil.",
-    "creditsRange": "Cuir isteach idir 0.5 agus 100 creidiúint."
+    "creditsRange": "Cuir isteach idir 0.5 agus 100 creidiúint.",
+    "categoriesUnavailable": "Tá catagóir ag teastáil, ach níorbh fhéidir ceann ar bith a lódáil. Bain triail eile as thuas."
   },
   "typeLabel": "{{type}} cineál",
   "categoryLabel": "{{name}} catagóir",
@@ -390,7 +398,9 @@
     "commentEdited": "(curtha in eagar)",
     "commentLike": "Is maith liom",
     "commentEditFailed": "Níorbh fhéidir linn do nóta tráchta a nuashonrú.",
-    "commentDeleteFailed": "Níorbh fhéidir linn an nóta tráchta a scriosadh."
+    "commentDeleteFailed": "Níorbh fhéidir linn an nóta tráchta a scriosadh.",
+    "tagsSaveFailedTitle": "Fógra sábháilte",
+    "tagsSaveFailedMessage": "Sábháladh an fógra, ach níor sábháladh a chlibeanna scileanna. Is féidir iad a chur leis tríd an fhógra a chur in eagar."
   },
   "status": {
     "active": "Gníomhach",

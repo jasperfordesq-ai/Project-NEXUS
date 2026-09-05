@@ -142,5 +142,7 @@
     "title": "Aggiornamento pronto",
     "description": "È stata scaricata una nuova versione. Riavvia per usarla.",
     "action": "Riavvia ora"
-  }
+  },
+  "unreadBadge_one": "{{count}} messaggio non letto",
+  "unreadBadge_other": "{{count}} messaggi non letti"
 }

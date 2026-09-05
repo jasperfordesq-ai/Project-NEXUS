@@ -24,6 +24,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import AccentIcon from '@/components/ui/AccentIcon';
 
+import { formatDecimal } from '@/lib/utils/decimal';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface MenuItem {
@@ -185,7 +186,7 @@ export default function MoreScreen() {
                 {balance !== null ? (
                   <Chip size="sm" variant="secondary">
                     <Ionicons name="time-outline" size={12} color={primary} />
-                    <Chip.Label>{t('balanceLabel', { balance: balance.toFixed(1) })}</Chip.Label>
+                    <Chip.Label>{t('balanceLabel', { balance: formatDecimal(balance, 1) })}</Chip.Label>
                   </Chip>
                 ) : null}
               </View>
@@ -210,10 +211,23 @@ export default function MoreScreen() {
           </HeroCard.Body>
         </HeroCard>
 
+        {/*
+          🔴 Only statuses the app can actually stand behind. This strip used to read
+          "Trust status: Active" and "Account: Ready" from literal strings — no backend
+          value fed either, so a member could take decoration for an assurance about
+          verification or setup (audit 2026-09-05, F03). Profile completion is real
+          (`user.onboarding_completed`); the second card is an honest count of the
+          areas this community makes available, labelled as exactly that.
+        */}
         <View className="mb-4 flex-row gap-3">
-          <MetricCard icon="star-outline" label={t('quickStats.trust')} value={t('quickStats.active')} tone="#f59e0b" theme={theme} />
-          <MetricCard icon="git-network-outline" label={t('quickStats.network')} value={visibleDiscover.length.toString()} tone="#0ea5e9" theme={theme} />
-          <MetricCard icon="shield-checkmark-outline" label={t('quickStats.account')} value={t('quickStats.ready')} tone="#22c55e" theme={theme} />
+          <MetricCard
+            icon={user?.onboarding_completed === false ? 'person-outline' : 'checkmark-circle-outline'}
+            label={t('quickStats.profile')}
+            value={user?.onboarding_completed === false ? t('quickStats.profileIncomplete') : t('quickStats.profileComplete')}
+            tone={user?.onboarding_completed === false ? '#f59e0b' : '#22c55e'}
+            theme={theme}
+          />
+          <MetricCard icon="apps-outline" label={t('quickStats.network')} value={visibleDiscover.length.toString()} tone="#0ea5e9" theme={theme} />
         </View>
 
         <MenuSection title={t('discover')} items={visibleDiscover} onNavigate={navigate} theme={theme} />

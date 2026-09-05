@@ -300,11 +300,10 @@
   "account": "Cuntas",
   "actions": "Gníomhartha",
   "quickStats": {
-    "trust": "Stádas iontaobhais",
-    "network": "Réimsí líonra",
-    "account": "Cuntas",
-    "active": "Gníomhach",
-    "ready": "Réidh"
+    "network": "Réimsí ar fáil",
+    "profile": "Próifíl",
+    "profileComplete": "Iomlán",
+    "profileIncomplete": "Le críochnú"
   },
   "navDescriptions": {
     "myProfile": "Féach ar do phróifíl phoiblí agus ar infheictheacht an chónaidhm.",
@@ -373,10 +372,31 @@
     "save": "Sábháil sainroghanna",
     "save_success": "Sábháladh na sainroghanna meaitseála",
     "save_failed": "Theip ar shábháil roghanna meaitseála",
-    "pause": { "title": "Cuir meaitseáil ar sos" },
-    "thresholds": { "title": "Fad agus cáilíocht", "distance_label": "Fad uasta", "distance_value": "{{value}} km", "quality_label": "Íoschaighdeán meaitseála", "quality_value": "{{value}} %" },
-    "categories": { "title": "Spéiseanna catagóirí", "description": "Roghnaigh na catagóirí ar mhaith leat meaitseálacha a fháil iontu. Fág gach ceann gan tic chun meaitseálacha a fháil i ngach catagóir.", "empty": "Níl aon chatagóir ar fáil go fóill." },
-    "notifications": { "title": "Fógraí", "frequency_label": "Minicíocht achoimre na meaitseálacha", "daily": "Gach lá", "fortnightly": "Gach coicís", "monthly": "Gach mí", "never": "Riamh", "hot_matches": "Foláirimh meaitseálacha láidre", "mutual_matches": "Foláirimh meaitseálacha cómhalartacha" }
+    "pause": {
+      "title": "Cuir meaitseáil ar sos"
+    },
+    "thresholds": {
+      "title": "Fad agus cáilíocht",
+      "distance_label": "Fad uasta",
+      "distance_value": "{{value}} km",
+      "quality_label": "Íoschaighdeán meaitseála",
+      "quality_value": "{{value}} %"
+    },
+    "categories": {
+      "title": "Spéiseanna catagóirí",
+      "description": "Roghnaigh na catagóirí ar mhaith leat meaitseálacha a fháil iontu. Fág gach ceann gan tic chun meaitseálacha a fháil i ngach catagóir.",
+      "empty": "Níl aon chatagóir ar fáil go fóill."
+    },
+    "notifications": {
+      "title": "Fógraí",
+      "frequency_label": "Minicíocht achoimre na meaitseálacha",
+      "daily": "Gach lá",
+      "fortnightly": "Gach coicís",
+      "monthly": "Gach mí",
+      "never": "Riamh",
+      "hot_matches": "Foláirimh meaitseálacha láidre",
+      "mutual_matches": "Foláirimh meaitseálacha cómhalartacha"
+    }
   },
   "sessionUnavailableTitle": "Níl do sheisiún ar fáil",
   "sessionUnavailableSubtitle": "Níorbh fhéidir linn do phróifíl a lódáil. Sínigh isteach arís."

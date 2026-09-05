@@ -21,10 +21,12 @@ describe('Button component', () => {
         expect(onPressMock).toHaveBeenCalledTimes(1);
     });
 
-    it('renders loading indicator when isLoading is true', () => {
-        const { queryByText } = render(<Button isLoading={true}>Click Me</Button>);
-        // Button replaces text with ActivityIndicator when loading
-        expect(queryByText('Click Me')).toBeNull();
+    it('keeps the action label visible and reports busy while loading', () => {
+        const { getByText, getByTestId } = render(<Button isLoading={true} testID="btn">Click Me</Button>);
+        // 🔴 The label used to be replaced by a bare spinner, leaving the button
+        // anonymous mid-action (audit 2026-09-05, F08).
+        expect(getByText('Click Me')).toBeTruthy();
+        expect(getByTestId('btn').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
     });
 
     it('does not trigger press when disabled', () => {

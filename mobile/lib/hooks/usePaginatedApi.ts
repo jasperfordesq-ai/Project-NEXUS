@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState, type DependencyList } from 'react';
 import { ApiResponseError } from '@/lib/api/client';
+import i18n from 'i18next';
 
 /** HTTP status codes worth retrying (transient server/network errors). */
 const RETRYABLE_STATUSES = new Set([500, 502, 503, 504]);
@@ -165,7 +166,9 @@ export function usePaginatedApi<TItem, TResponse>(
         if (err instanceof ApiResponseError) {
           setError(err.message);
         } else {
-          setError('An unexpected error occurred.');
+          // Translated at the moment it is set, like useApi and lib/api/client.ts
+          // (audit 2026-09-05, F07: this was English in every locale).
+          setError(i18n.t('common:errors.generic'));
         }
       } finally {
         const isCurrentRequest = requestVersion === requestVersionRef.current;
