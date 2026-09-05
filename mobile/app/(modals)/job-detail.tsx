@@ -11,6 +11,7 @@ import {
   Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, CloseButton, Surface } from 'heroui-native';
@@ -44,6 +45,7 @@ export default function JobDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const bottomInset = useBottomInset();
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
 
@@ -282,7 +284,7 @@ export default function JobDetailScreen() {
         }}
       />
 
-      <ScrollView style={{ flex: 1, backgroundColor: theme.bg }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 132 }}>
+      <ScrollView style={{ flex: 1, backgroundColor: theme.bg }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 132 + bottomInset }}>
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: isClosed ? theme.textMuted : typeColor[job.type] }} />
           <HeroCard.Body className="gap-4 p-4">
@@ -426,7 +428,13 @@ export default function JobDetailScreen() {
         ) : null}
       </ScrollView>
 
-      <Surface variant="default" className="absolute bottom-0 left-0 right-0 gap-3 border-t border-border px-4 pb-5 pt-3">
+      {/* Pinned with bottom: 0, so it must clear the Android nav bar itself — see useBottomInset. */}
+      <Surface
+        testID="job-detail-footer"
+        variant="default"
+        className="absolute bottom-0 left-0 right-0 gap-3 border-t border-border px-4 pt-3"
+        style={{ paddingBottom: Math.max(20, bottomInset + 12) }}
+      >
         <View className="flex-row gap-2">
           {isOwner ? (
             <HeroButton

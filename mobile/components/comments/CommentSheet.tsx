@@ -8,8 +8,8 @@ import { Platform, Pressable, Text, View } from 'react-native';
 import { BottomSheetFlatList, BottomSheetFooter, type BottomSheetFooterProps } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@/components/ui/Icon';
 import { BottomSheet as HeroBottomSheet, Button as HeroButton, Spinner, Surface, useBottomSheetAwareHandlers } from 'heroui-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getRootBottomInset } from '@/lib/ui/rootInsets';
+
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import * as Haptics from '@/lib/haptics';
 
 import Avatar from '@/components/ui/Avatar';
@@ -93,7 +93,7 @@ export default function CommentSheet({
 }: CommentSheetProps) {
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
+  const footerBottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -112,7 +112,6 @@ export default function CommentSheet({
   const targetKey = `${targetType}-${targetId}`;
   // Android modal screens report bottom inset 0 — floor with the root inset
   // so the composer footer clears the system navigation bar.
-  const footerBottomInset = Math.max(0, insets.bottom, getRootBottomInset());
   const composerBottomPadding = 12;
   const listBottomPadding = 112 + footerBottomInset;
 

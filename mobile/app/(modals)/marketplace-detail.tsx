@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { Image, Linking, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { ResizeMode, Video } from 'expo-av';
 import { Ionicons } from '@/components/ui/Icon';
@@ -72,6 +73,7 @@ function MarketplaceDetailScreen() {
   const params = useLocalSearchParams<{ id?: string; offer_id?: string; offer_amount?: string }>();
   const primary = usePrimaryColor();
   const { hasFeature, tenant } = useTenant();
+  const bottomInset = useBottomInset();
   const theme = useTheme();
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
@@ -805,8 +807,14 @@ function MarketplaceDetailScreen() {
 
       </ScrollView>
 
+      {/* In a modal route the SafeAreaView's bottom padding is 0 on Android; the footer clears the nav bar itself. */}
       {!isOwner ? (
-        <Surface variant="default" className="border-t border-border/50 px-4 pt-3 pb-4">
+        <Surface
+          testID="marketplace-detail-footer"
+          variant="default"
+          className="border-t border-border/50 px-4 pt-3"
+          style={{ paddingBottom: Math.max(16, bottomInset + 12) }}
+        >
           <View className="gap-2">
             <View className="flex-row gap-2">
               <HeroButton className="flex-1" variant="secondary" onPress={handleToggleSave}>

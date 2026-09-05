@@ -6,9 +6,7 @@
 import { View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Spinner, Surface, Text } from 'heroui-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { getRootBottomInset } from '@/lib/ui/rootInsets';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useTheme } from '@/lib/hooks/useTheme';
 import AccentIcon from '@/components/ui/AccentIcon';
 
@@ -35,7 +33,6 @@ export default function FormActionFooter({
   onSubmit: () => void;
   onSecondary?: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const theme = useTheme();
 
   /**
@@ -60,9 +57,9 @@ export default function FormActionFooter({
    * button fill whatever row it lands on, so neither case looks accidental — and no
    * magic number has to be re-tuned when a translation gets longer.
    */
-  // Android modal screens report bottom inset 0 — use the root-recorded
-  // inset as a floor so the footer clears the system navigation bar.
-  const bottomInset = Math.max(insets.bottom, getRootBottomInset());
+  // Android modal screens report bottom inset 0 — useBottomInset floors it with
+  // the root-recorded inset so the footer clears the system navigation bar.
+  const bottomInset = useBottomInset();
 
   return (
     <Surface

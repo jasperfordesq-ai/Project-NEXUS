@@ -14,7 +14,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Audio } from 'expo-av';
@@ -85,7 +86,7 @@ function ThreadScreenInner() {
   const { user: authUser } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const { subscribeToMessages, refreshCounts } = useRealtimeContext();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -684,7 +685,7 @@ function ThreadScreenInner() {
         <Surface
           variant="default"
           className="border-t border-border/50 px-3 py-2.5"
-          style={{ paddingBottom: Math.max(10, insets.bottom) }}
+          style={{ paddingBottom: Math.max(10, bottomInset) }}
         >
           {pendingAttachments.length > 0 ? (
             <View className="mb-2 flex-row flex-wrap gap-2">

@@ -11,7 +11,8 @@ import {
   RefreshControl,
   Share,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@/components/ui/Icon';
@@ -95,7 +96,7 @@ function ExchangeDetailModalInner() {
   const primary = usePrimaryColor();
   const onPrimary = contrastText(primary);
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const { tenant } = useTenant();
   const { user: currentUser } = useAuth();
   const { show: showToast } = useAppToast();
@@ -252,7 +253,9 @@ function ExchangeDetailModalInner() {
   const responseCount = listing.responses_count ?? 0;
   const contactCount = listing.contact_count ?? 0;
   const showMemberActions = !isOwner && exchangeUser.id > 0;
-  const footerBottomPadding = Math.max(16, insets.bottom + 12);
+  // useBottomInset, not insets.bottom: the raw hook reports 0 inside Android modal
+  // screens, which put this footer under the 3-button nav bar.
+  const footerBottomPadding = Math.max(16, bottomInset + 12);
   const footerReservedSpace = showMemberActions ? footerBottomPadding + 112 : 32;
   const primaryActionLabel = workflowEnabled
     ? activeExchange ? t('detail.exchangeActive') : t('detail.requestExchange')

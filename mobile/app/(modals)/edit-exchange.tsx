@@ -6,6 +6,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
@@ -68,6 +69,7 @@ function EditExchangeModalInner() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const bottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
   const { user } = useAuth();
   const profileLocation = getProfileLocation(user);
@@ -549,7 +551,11 @@ function EditExchangeModalInner() {
           </FormSection>
 
         </ScrollView>
-        <View className="border-t px-4 py-3" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+        <View
+          testID="edit-exchange-footer"
+          className="border-t px-4 pt-3"
+          style={{ paddingBottom: Math.max(12, bottomInset + 12), backgroundColor: theme.surface, borderColor: theme.border }}
+        >
           <View className="flex-row gap-3">
             <HeroButton className="flex-1" variant="secondary" isDisabled={saving} onPress={() => router.back()}>
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>

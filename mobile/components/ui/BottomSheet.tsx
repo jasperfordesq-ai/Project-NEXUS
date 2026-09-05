@@ -7,8 +7,7 @@ import React, { useCallback, useRef } from 'react';
 import { View } from 'react-native';
 import { BottomSheet as HeroBottomSheet } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getRootBottomInset } from '@/lib/ui/rootInsets';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useDeferredBottomSheetState } from './useDeferredBottomSheetState';
 
 interface BottomSheetProps {
@@ -34,7 +33,6 @@ export default function BottomSheet({
   title,
   childrenClassName,
 }: BottomSheetProps) {
-  const insets = useSafeAreaInsets();
   const { mounted: sheetMounted, open: sheetOpen, shouldHonorClose } = useDeferredBottomSheetState(visible);
 
   /**
@@ -69,7 +67,7 @@ export default function BottomSheet({
   // Inside Android `presentation: 'modal'` screens useSafeAreaInsets()
   // reports bottom: 0, which put sheet footers underneath the system nav
   // bar. Fall back to the inset recorded at the app root.
-  const bottomInset = Math.max(insets.bottom, getRootBottomInset());
+  const bottomInset = useBottomInset();
 
   // With explicit snap points, honour them (numbers get the bottom inset added
   // so content isn't clipped). With none, let the library size the sheet to its

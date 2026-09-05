@@ -6,6 +6,7 @@
 import { type ReactNode, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Text } from 'heroui-native';
@@ -50,6 +51,7 @@ function MarketplaceMapScreen() {
   const { hasFeature } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const bottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
   const [latitude, setLatitude] = useState(firstParam(params.latitude) ?? firstParam(params.lat) ?? '');
   const [longitude, setLongitude] = useState(firstParam(params.longitude) ?? firstParam(params.lng) ?? '');
@@ -139,7 +141,7 @@ function MarketplaceMapScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132 + bottomInset }}
         ListHeaderComponent={
           <View className="gap-3">
             <HeroCard className="overflow-hidden rounded-panel p-0">
@@ -260,6 +262,8 @@ function MapPreview({
   theme: ReturnType<typeof useTheme>;
   t: ReturnType<typeof useTranslation>['t'];
 }) {
+  // The preview card floats over the map with an absolute bottom; it must clear the nav bar itself.
+  const bottomInset = useBottomInset();
   const hasCoordinates = parseCoordinate(latitude) !== null && parseCoordinate(longitude) !== null;
 
   return (
@@ -283,7 +287,12 @@ function MapPreview({
           <View className="size-2.5 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
         </View>
 
-        <View className="absolute inset-x-4 bottom-4 gap-3 rounded-panel-inner p-3" style={{ backgroundColor: withAlpha(theme.surface, 0.94) }}>
+        {/* Floats over the map; `bottom` includes the Android nav-bar inset or the card sits under it. */}
+        <View
+          testID="marketplace-map-preview"
+          className="absolute inset-x-4 gap-3 rounded-panel-inner p-3"
+          style={{ bottom: 16 + bottomInset, backgroundColor: withAlpha(theme.surface, 0.94) }}
+        >
           <View className="flex-row items-center justify-between gap-3">
             <View className="min-w-0 flex-1">
               <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>

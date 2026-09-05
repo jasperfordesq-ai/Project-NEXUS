@@ -6,6 +6,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, type TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
@@ -80,6 +81,7 @@ function NewExchangeModalInner() {
   const { t } = useTranslation('exchanges');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const bottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
   const { user } = useAuth();
   const profileLocation = getProfileLocation(user);
@@ -507,7 +509,11 @@ function NewExchangeModalInner() {
           </FormSection>
         </ScrollView>
 
-        <View testID="new-exchange-footer" className="border-t px-4 py-3" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+        <View
+          testID="new-exchange-footer"
+          className="border-t px-4 pt-3"
+          style={{ paddingBottom: Math.max(12, bottomInset + 12), backgroundColor: theme.surface, borderColor: theme.border }}
+        >
           <View className="flex-row gap-3">
             <HeroButton className="flex-1" variant="secondary" isDisabled={submitting} onPress={() => router.back()}>
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>

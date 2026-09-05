@@ -12,7 +12,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -436,7 +437,7 @@ function ChatScreenInner() {
   const { t } = useTranslation(['chat', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const { user, displayName } = useAuth();
 
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -708,7 +709,7 @@ function ChatScreenInner() {
           </HeroCard>
           <Text
             className="px-2 pt-2 text-center text-[11px]"
-            style={{ color: theme.textMuted, paddingBottom: Math.max(8, insets.bottom) }}
+            style={{ color: theme.textMuted, paddingBottom: Math.max(8, bottomInset) }}
           >
             {t('disclaimer')}
           </Text>

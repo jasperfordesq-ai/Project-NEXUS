@@ -6,6 +6,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
@@ -136,6 +137,7 @@ function MemberProfileScreenInner() {
   const primary = usePrimaryColor();
   const { hasFeature, hasModule, tenant } = useTenant();
   const theme = useTheme();
+  const bottomInset = useBottomInset();
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -398,7 +400,7 @@ function MemberProfileScreenInner() {
       <ScrollView
         style={{ flex: 1, backgroundColor: theme.bg }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 96 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 96 + bottomInset }}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => void refresh()} tintColor={primary} colors={[primary]} />}
       >
         <View className="px-4">
@@ -620,7 +622,17 @@ function MemberProfileScreenInner() {
         </View>
       </ScrollView>
 
-      <Surface variant="default" className="absolute bottom-0 left-0 right-0 border-t border-border px-3 py-3">
+      {/*
+        🔴 Absolutely positioned, so the SafeAreaView's bottom padding does not reach it —
+        and on Android modal screens that padding is 0 anyway. Owner's screenshot,
+        2026-09-05: Connect / Send credits / Send Message sat under the 3-button nav bar.
+      */}
+      <Surface
+        testID="member-profile-footer"
+        variant="default"
+        className="absolute bottom-0 left-0 right-0 border-t border-border px-3 pt-3"
+        style={{ paddingBottom: Math.max(12, bottomInset + 12) }}
+      >
         <View className="flex-row items-center gap-2">
           {isOwnProfile ? (
             <HeroButton

@@ -211,6 +211,15 @@ jest.mock('@/components/ui/useConfirm', () => ({
 
 // --- Tests ---
 
+// A 3-button Android nav bar: the raw safe-area hook reports 0 inside modal routes,
+// so the root-recorded value is what the screen must honour.
+jest.mock('@/lib/ui/rootInsets', () => ({
+  useBottomInset: () => 48,
+  getRootBottomInset: () => 48,
+  setRootBottomInset: jest.fn(),
+}));
+
+import { StyleSheet } from 'react-native';
 import MemberProfileScreen from './member-profile';
 import {
   acceptFederationConnection,
@@ -297,6 +306,22 @@ describe('MemberProfileScreen', () => {
 
     const { toJSON } = render(<MemberProfileScreen />);
     expect(toJSON()).toBeTruthy();
+  });
+
+  /**
+   * 🔴 Owner's screenshot, 2026-09-05: "Connect / Send credits / Send Message" sat
+   * under Android's back / home / recents bar. The bar is absolutely positioned, so
+   * the SafeAreaView's padding never reached it, and inside a modal route that
+   * padding is 0 anyway. The footer must pad by the root-recorded inset itself, and
+   * the scroll content must reserve the same extra room so nothing hides behind it.
+   */
+  it('keeps the action bar clear of the Android navigation bar', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId } = render(<MemberProfileScreen />);
+
+    const footer = StyleSheet.flatten(getByTestId('member-profile-footer').props.style);
+    expect(footer.paddingBottom).toBe(48 + 12);
   });
 
   it('renders a loading spinner when the API is loading', () => {

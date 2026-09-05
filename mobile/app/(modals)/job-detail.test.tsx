@@ -177,6 +177,15 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // --- Tests ---
 
+// A 3-button Android nav bar: the raw safe-area hook reports 0 inside modal routes,
+// so the root-recorded value is what the screen must honour.
+jest.mock('@/lib/ui/rootInsets', () => ({
+  useBottomInset: () => 48,
+  getRootBottomInset: () => 48,
+  setRootBottomInset: jest.fn(),
+}));
+
+import { StyleSheet } from 'react-native';
 import JobDetailScreen from './job-detail';
 import { ApiResponseError } from '@/lib/api/client';
 import { router } from 'expo-router';
@@ -228,6 +237,23 @@ describe('JobDetailScreen', () => {
 
     const { toJSON } = render(<JobDetailScreen />);
     expect(toJSON()).toBeTruthy();
+  });
+
+  // Same fault as the member profile (owner report, 2026-09-05): an absolutely
+  // positioned action bar gets none of the SafeAreaView's padding, and inside a
+  // modal route that padding is 0 on Android anyway.
+  it('keeps the action bar clear of the Android navigation bar', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: mockJob },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<JobDetailScreen />);
+
+    const footer = StyleSheet.flatten(getByTestId('job-detail-footer').props.style);
+    expect(footer.paddingBottom).toBe(48 + 12);
   });
 
   it('renders the job title', () => {

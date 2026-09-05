@@ -5,7 +5,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Linking, RefreshControl, ScrollView, Share, Text, TextInput, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomInset } from '@/lib/ui/rootInsets';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -98,7 +99,7 @@ function EventDetailScreenInner() {
   const { user } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
+  const bottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
 
@@ -215,7 +216,9 @@ function EventDetailScreenInner() {
     || event.permissions.edit
     || event.permissions.manage_registration
   ));
-  const footerBottomPadding = Math.max(16, insets.bottom + 12);
+  // useBottomInset, not insets.bottom: the raw hook reports 0 inside Android modal
+  // screens, which left this footer 16px from the edge and under the 3-button nav bar.
+  const footerBottomPadding = Math.max(16, bottomInset + 12);
   const footerReservedSpace = hasParticipationActions
     ? footerBottomPadding + (hasActiveWaitlistOffer ? 176 : hasWaitlistAction ? 124 : 88)
     : 24;
