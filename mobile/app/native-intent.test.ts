@@ -99,6 +99,31 @@ describe('native intent route rewriting', () => {
     opened a detail screen reporting that no such course or show existed. Ordering is
     the whole fix, so these assertions guard the order, not just the mapping.
   */
+  /*
+    🔴 An input BOUND, from the 2026-09-06 audit's dependency triage. Whatever this
+    returns is handed to React Navigation's `getStateFromPath`, which parses the query
+    string through `query-string` -> `decode-uri-component@0.2.2`, which carries
+    GHSA-vcc3-ghjq-m6fr: malformed percent-encoded input decodes in exponential time. It is
+    the one advisory in the production tree that actually ships, and it cannot be patched
+    from here - the fixed release is ESM-only and its consumer is CommonJS, so an npm
+    override would break every deep link rather than harden one.
+
+    Reachable: app.json claims every https://app.project-nexus.ie/* URL with autoVerify and
+    no pathPrefix, so any web page can hand a member an arbitrary link into this function.
+  */
+  it('refuses an absurdly long link before it can reach the router query parser', () => {
+    const hostile = `/listings?q=${'%E0%A4%A'.repeat(600)}`;
+    expect(hostile.length).toBeGreaterThan(2048);
+    expect(redirectSystemPath({ path: hostile, initial: false })).toBe('/');
+  });
+
+  it('leaves a long-but-plausible link alone, so the bound cannot break a real one', () => {
+    // The app's longest real link is a password-reset URL with a token, under 200 chars.
+    const realistic = `/password/reset/${'a'.repeat(120)}?email=someone%40example.org`;
+    expect(realistic.length).toBeLessThan(2048);
+    expect(redirectSystemPath({ path: realistic, initial: false })).not.toBe('/');
+  });
+
   it('maps course authoring links to the native builder rather than a course detail', () => {
     expect(mapSystemPathToNativeRoute('/courses/instructor')).toBe('/(modals)/course-instructor');
     expect(mapSystemPathToNativeRoute('/courses/instructor/new')).toBe('/(modals)/new-course');

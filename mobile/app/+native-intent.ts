@@ -146,7 +146,31 @@ export function isBrowserOnlyPath(rawPath: string | null): boolean {
   return BROWSER_ONLY_SECTIONS.has(segments[0]!);
 }
 
+/**
+ * The longest incoming link this app will look at.
+ *
+ * 🔴 A bound, not a preference. Whatever this function returns is handed on to React
+ * Navigation's `getStateFromPath`, which parses the query string with `query-string` →
+ * `decode-uri-component`. The installed `decode-uri-component@0.2.2` carries
+ * GHSA-vcc3-ghjq-m6fr: malformed percent-encoded input decodes in exponential time. It is
+ * the one advisory in this app's PRODUCTION tree that actually ships — the eight
+ * high-severity ones are Metro/Expo build tooling — and it cannot be patched from here:
+ * the fixed release (0.5.0) is ESM-only, and its consumer `query-string@7` is CommonJS, so
+ * an npm override would break every deep link rather than harden one. The real fix is an
+ * Expo/expo-router major, tracked separately.
+ *
+ * Android hands us every `https://app.project-nexus.ie/*` URL (autoVerify, no pathPrefix),
+ * so this is genuinely attacker-reachable: any web page can send a member here. 2,048
+ * characters is far above every real link the app produces — the longest of them, a
+ * password-reset URL with a token, is under 200 — and far below the length at which the
+ * decoder's cost becomes noticeable.
+ */
+const MAX_DEEP_LINK_LENGTH = 2048;
+
 export function redirectSystemPath({ path }: RedirectEvent): string {
+  // Refused before it reaches the router's query parser. Returning the app's root is the
+  // safe answer: a link this long is not one of ours.
+  if (typeof path === 'string' && path.length > MAX_DEEP_LINK_LENGTH) return '/';
   try {
     // Declined on purpose — see BROWSER_ONLY_SECTIONS. Returning the path unchanged
     // lets Android carry on to the browser instead of stranding the member here.
