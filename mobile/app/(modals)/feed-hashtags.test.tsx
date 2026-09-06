@@ -29,6 +29,8 @@ const mockT = (key: string, values?: Record<string, unknown>) => {
     'hashtags.emptyTitle': 'No hashtags found',
     'hashtags.emptySubtitle': 'Trending topics will appear here.',
     'hashtags.noMatch': `No hashtags match "${values?.query ?? ''}".`,
+    'hashtags.searchFailedTitle': 'Hashtag search is unavailable',
+    'hashtags.searchFailedSubtitle': "We couldn't search hashtags just now. This doesn't mean the tag is missing.",
   };
   return map[key] ?? key;
 };
@@ -114,5 +116,36 @@ describe('FeedHashtagsScreen', () => {
 
     await waitFor(() => expect(mockGetTrendingHashtags).not.toHaveBeenCalled());
     expect(getByText('Not found.')).toBeTruthy();
+  });
+  /**
+   * 🔴 A failed hashtag search set the results to an empty list, and an empty list renders
+   * as "No hashtags match …" — so a dropped request told the member the tag does not exist
+   * (audit 2026-09-06). The same fault as the federated recipient search.
+   */
+  it('says the search failed rather than that the hashtag does not exist', async () => {
+    mockGetTrendingHashtags.mockResolvedValue({ data: [] });
+    mockSearchHashtags.mockRejectedValueOnce(new Error('offline'));
+
+    const { getByPlaceholderText, getByText, queryByText } = render(<FeedHashtagsScreen />);
+    await waitFor(() => expect(mockGetTrendingHashtags).toHaveBeenCalled());
+
+    fireEvent.changeText(getByPlaceholderText('Search hashtags'), 'garden');
+
+    await waitFor(() => expect(getByText('Hashtag search is unavailable')).toBeTruthy());
+    expect(queryByText('No hashtags match "garden".')).toBeNull();
+    expect(getByText('Retry')).toBeTruthy();
+  });
+
+  it('still says there is no match when the search succeeds and finds nothing', async () => {
+    mockGetTrendingHashtags.mockResolvedValue({ data: [] });
+    mockSearchHashtags.mockResolvedValue({ data: [] });
+
+    const { getByPlaceholderText, getByText, queryByText } = render(<FeedHashtagsScreen />);
+    await waitFor(() => expect(mockGetTrendingHashtags).toHaveBeenCalled());
+
+    fireEvent.changeText(getByPlaceholderText('Search hashtags'), 'garden');
+
+    await waitFor(() => expect(getByText('No hashtags match "garden".')).toBeTruthy());
+    expect(queryByText('Hashtag search is unavailable')).toBeNull();
   });
 });

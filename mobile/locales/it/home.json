@@ -250,7 +250,9 @@
     "unableToLoad": "Impossibile caricare gli hashtag",
     "emptyTitle": "Nessun hashtag trovato",
     "emptySubtitle": "Gli argomenti di tendenza appariranno qui quando i membri taggano i post.",
-    "noMatch": "Nessun hashtag corrisponde a \"{{query}}\"."
+    "noMatch": "Nessun hashtag corrisponde a \"{{query}}\".",
+    "searchFailedTitle": "Ricerca hashtag non disponibile",
+    "searchFailedSubtitle": "Al momento non è possibile cercare hashtag. Non significa che il tag non esista."
   },
   "hashtag": {
     "title": "Hashtag",

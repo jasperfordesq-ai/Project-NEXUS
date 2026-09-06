@@ -250,7 +250,9 @@
     "unableToLoad": "No se pudieron cargar los hashtags",
     "emptyTitle": "No se encontraron hashtags",
     "emptySubtitle": "Los temas populares apareceran aqui cuando los miembros etiqueten publicaciones.",
-    "noMatch": "Ningun hashtag coincide con \"{{query}}\"."
+    "noMatch": "Ningun hashtag coincide con \"{{query}}\".",
+    "searchFailedTitle": "La búsqueda de hashtags no está disponible",
+    "searchFailedSubtitle": "No hemos podido buscar hashtags ahora mismo. Eso no significa que la etiqueta no exista."
   },
   "hashtag": {
     "title": "Hashtag",

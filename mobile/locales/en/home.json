@@ -250,7 +250,9 @@
     "unableToLoad": "Could not load hashtags",
     "emptyTitle": "No hashtags found",
     "emptySubtitle": "Trending topics will appear here when members tag feed posts.",
-    "noMatch": "No hashtags match \"{{query}}\"."
+    "noMatch": "No hashtags match \"{{query}}\".",
+    "searchFailedTitle": "Hashtag search is unavailable",
+    "searchFailedSubtitle": "We couldn't search hashtags just now. This doesn't mean the tag is missing."
   },
   "hashtag": {
     "title": "Hashtag",

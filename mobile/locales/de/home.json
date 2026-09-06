@@ -250,7 +250,9 @@
     "unableToLoad": "Hashtags konnten nicht geladen werden",
     "emptyTitle": "Keine Hashtags gefunden",
     "emptySubtitle": "Trendthemen erscheinen hier, wenn Mitglieder Feed-Beitrage taggen.",
-    "noMatch": "Keine Hashtags passen zu \"{{query}}\"."
+    "noMatch": "Keine Hashtags passen zu \"{{query}}\".",
+    "searchFailedTitle": "Hashtag-Suche nicht verfügbar",
+    "searchFailedSubtitle": "Die Suche ist gerade nicht möglich. Das heißt nicht, dass es den Hashtag nicht gibt."
   },
   "hashtag": {
     "title": "Hashtag",

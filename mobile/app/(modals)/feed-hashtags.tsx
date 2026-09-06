@@ -34,6 +34,8 @@ export default function FeedHashtagsScreen() {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchFailed, setSearchFailed] = useState(false);
+  const [searchAttempt, setSearchAttempt] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -70,12 +72,19 @@ export default function FeedHashtagsScreen() {
     }
 
     setIsSearching(true);
+    setSearchFailed(false);
     searchTimerRef.current = setTimeout(async () => {
       try {
         const response = await searchHashtags(trimmed);
         setSearchResults(normalizeHashtags(response));
       } catch {
+        /*
+          🔴 An empty result list is rendered below as "No hashtags match …", so a dropped
+          request told the member the tag does not exist (audit 2026-09-06). Same fault as
+          the federated recipient search.
+        */
         setSearchResults([]);
+        setSearchFailed(true);
       } finally {
         setIsSearching(false);
       }
@@ -86,7 +95,7 @@ export default function FeedHashtagsScreen() {
         clearTimeout(searchTimerRef.current);
       }
     };
-  }, [query]);
+  }, [query, searchAttempt]);
 
   const displayHashtags = useMemo(() => (query.trim().length >= 2 ? searchResults : hashtags), [hashtags, query, searchResults]);
 
@@ -180,11 +189,21 @@ export default function FeedHashtagsScreen() {
               </View>
             }
             ListEmptyComponent={
-              <EmptyState
-                icon="pricetag-outline"
-                title={t('hashtags.emptyTitle')}
-                subtitle={query.trim().length >= 2 ? t('hashtags.noMatch', { query }) : t('hashtags.emptySubtitle')}
-              />
+              searchFailed ? (
+                <EmptyState
+                  icon="cloud-offline-outline"
+                  title={t('hashtags.searchFailedTitle')}
+                  subtitle={t('hashtags.searchFailedSubtitle')}
+                  actionLabel={t('common:buttons.retry')}
+                  onAction={() => setSearchAttempt((n) => n + 1)}
+                />
+              ) : (
+                <EmptyState
+                  icon="pricetag-outline"
+                  title={t('hashtags.emptyTitle')}
+                  subtitle={query.trim().length >= 2 ? t('hashtags.noMatch', { query }) : t('hashtags.emptySubtitle')}
+                />
+              )
             }
             contentContainerStyle={{ paddingBottom: 28 }}
           />

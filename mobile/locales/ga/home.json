@@ -250,7 +250,9 @@
     "unableToLoad": "Niorbh fheider hashtags a luchtu",
     "emptyTitle": "Ni bhfuarthas hashtags",
     "emptySubtitle": "Beidh topaici treochta anseo nuair a chuireann baill clibeanna ar phostail.",
-    "noMatch": "Ni mheaitsealaionn aon hashtag \"{{query}}\"."
+    "noMatch": "Ni mheaitsealaionn aon hashtag \"{{query}}\".",
+    "searchFailedTitle": "Níl cuardach haischlibeanna ar fáil",
+    "searchFailedSubtitle": "Níorbh fhéidir cuardach a dhéanamh faoi láthair. Ní hionann sin is a rá nach bhfuil an chlib ann."
   },
   "hashtag": {
     "title": "Hashtag",
