@@ -742,7 +742,8 @@
     "retention_policies": "coimeád|GDPR|diúscairt|cuir as|cartlann",
     "sso_providers": "síniú-aonar|Ceangal OpenID|Entra|aitheantas|logáil isteach",
     "categories": "gníomhaíochtaí|catagóirí gníomhaíochta|catagóirí liostaí|topaicí",
-    "event_settings": "cé atá in ann imeachtaí a chruthú|polasaí cruthaithe|ceadanna imeachtaí|toilleadh réamhshocraithe|liosta feithimh|meabhrúcháin"
+    "event_settings": "cé atá in ann imeachtaí a chruthú|polasaí cruthaithe|ceadanna imeachtaí|toilleadh réamhshocraithe|liosta feithimh|meabhrúcháin",
+    "native_app": "app dúchais|app soghluaiste|android|ios|suiteálacha|fógraí brú|gléas|play store"
   },
   "user_report": "Tuairisc Úsáideoir",
   "municipal_impact": "Tuarascálacha Tionchair Chathrach",

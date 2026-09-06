@@ -21,7 +21,8 @@
     "retention_policies": "retention|GDPR|disposal|purge|archive",
     "sso_providers": "single sign-on|OpenID Connect|Entra|identity|login",
     "categories": "activities|activity categories|listing categories|offer categories|request categories|topics",
-    "event_settings": "who can create events|creation policy|event permissions|default capacity|waitlist|reminders"
+    "event_settings": "who can create events|creation policy|event permissions|default capacity|waitlist|reminders",
+    "native_app": "native app|mobile app|android|ios|installs|installations|push|device|play store"
   },
   "community_fund": "Community Fund",
   "dashboard": "Dashboard",

@@ -730,7 +730,8 @@
     "retention_policies": "bewaring|AVG|verwijdering|opschonen|archief",
     "sso_providers": "single sign-on|OpenID Connect|Entra|identiteit|inloggen",
     "categories": "activiteiten|activiteitencategorieën|aanbodcategorieën|onderwerpen",
-    "event_settings": "wie kan evenementen maken|aanmaakbeleid|evenementrechten|standaardcapaciteit|wachtlijst|herinneringen"
+    "event_settings": "wie kan evenementen maken|aanmaakbeleid|evenementrechten|standaardcapaciteit|wachtlijst|herinneringen",
+    "native_app": "native app|mobiele app|android|ios|installaties|pushmeldingen|apparaat|play store"
   },
   "user_report": "Gebruikersrapport",
   "municipal_impact": "Gemeentelijke Impactrapporten",

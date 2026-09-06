@@ -730,7 +730,8 @@
     "retention_policies": "Aufbewahrung|DSGVO|Entsorgung|Löschung|Archiv",
     "sso_providers": "einmalige Anmeldung|OpenID Connect|Entra|Identität|Anmeldung",
     "categories": "Aktivitäten|Aktivitätskategorien|Angebotskategorien|Themen",
-    "event_settings": "wer kann veranstaltungen erstellen|erstellungsrichtlinie|veranstaltungsberechtigungen|standardkapazität|warteliste|erinnerungen"
+    "event_settings": "wer kann veranstaltungen erstellen|erstellungsrichtlinie|veranstaltungsberechtigungen|standardkapazität|warteliste|erinnerungen",
+    "native_app": "native app|mobile app|android|ios|installationen|installiert|push|gerät|play store"
   },
   "user_report": "Benutzerbericht",
   "municipal_impact": "Kommunale Wirkungsberichte",

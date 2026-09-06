@@ -734,7 +734,8 @@
     "retention_policies": "rétention|RGPD|élimination|purge|archive",
     "sso_providers": "authentification unique|OpenID Connect|Entra|identité|connexion",
     "categories": "activités|catégories d'activités|catégories d'annonces|thèmes",
-    "event_settings": "qui peut créer des événements|politique de création|autorisations des événements|capacité par défaut|liste d’attente|rappels"
+    "event_settings": "qui peut créer des événements|politique de création|autorisations des événements|capacité par défaut|liste d’attente|rappels",
+    "native_app": "application native|application mobile|android|ios|installations|notifications push|appareil|play store"
   },
   "user_report": "Rapport utilisateur",
   "municipal_impact": "Rapports d'impact municipaux",

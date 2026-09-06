@@ -730,7 +730,8 @@
     "retention_policies": "保持|GDPR|廃棄|削除|アーカイブ",
     "sso_providers": "シングルサインオン|OpenID Connect|Entra|ID|ログイン",
     "categories": "アクティビティ|活動カテゴリ|募集カテゴリ|トピック",
-    "event_settings": "イベントを作成できるユーザー|作成ポリシー|イベントの権限|既定の定員|キャンセル待ち|リマインダー"
+    "event_settings": "イベントを作成できるユーザー|作成ポリシー|イベントの権限|既定の定員|キャンセル待ち|リマインダー",
+    "native_app": "ネイティブアプリ|モバイルアプリ|android|ios|インストール|プッシュ通知|端末|play store"
   },
   "user_report": "ユーザーレポート",
   "municipal_impact": "自治体の影響レポート",

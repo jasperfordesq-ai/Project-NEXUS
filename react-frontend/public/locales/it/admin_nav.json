@@ -734,7 +734,8 @@
     "retention_policies": "conservazione|GDPR|smaltimento|purga|archiviazione",
     "sso_providers": "accesso unico|OpenID Connect|Entra|identità|login",
     "categories": "attività|categorie di attività|categorie di annunci|argomenti",
-    "event_settings": "chi può creare eventi|criterio di creazione|autorizzazioni eventi|capienza predefinita|lista d’attesa|promemoria"
+    "event_settings": "chi può creare eventi|criterio di creazione|autorizzazioni eventi|capienza predefinita|lista d’attesa|promemoria",
+    "native_app": "applicazione nativa|app mobile|android|ios|installazioni|notifiche push|dispositivo|play store"
   },
   "user_report": "Rapporto utente",
   "municipal_impact": "Rapporti sull'impatto municipale",

@@ -28,6 +28,7 @@ import Trophy from 'lucide-react/icons/trophy';
 import Megaphone from 'lucide-react/icons/megaphone';
 import Coins from 'lucide-react/icons/coins';
 import Building2 from 'lucide-react/icons/building-2';
+import Smartphone from 'lucide-react/icons/smartphone';
 import Globe from 'lucide-react/icons/globe';
 import Settings from 'lucide-react/icons/settings';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
@@ -529,6 +530,9 @@ function useAdminNav(): NavSection[] {
         items: [
           { label: t('settings'), href: '/admin/settings', icon: Settings },
           { label: t('onboarding_settings'), href: '/admin/onboarding-settings', icon: Heart },
+          // The page has existed at this route since the legacy admin was retired but
+          // was never linked from anywhere, so it was reachable only by typing the URL.
+          { label: t('breadcrumbs.native_app'), href: '/admin/native-app', icon: Smartphone, keywords: keyword(t('search_keywords.native_app')) },
           ...(isSuperAdmin ? [{ label: t('module_configuration'), href: '/admin/module-configuration', icon: Puzzle }] : []),
           ...(isPlatformSuperAdmin ? [{ label: t('platform_capabilities'), href: '/admin/platform-capabilities', icon: SlidersHorizontal }] : []),
           { label: t('operations'), href: '/admin/operations', icon: Activity },

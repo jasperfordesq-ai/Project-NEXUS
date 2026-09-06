@@ -313,6 +313,23 @@ describe('AdminSidebar', () => {
     );
   });
 
+  it('links Native App from Platform Operations', async () => {
+    // Regression: the page existed at /admin/native-app from the legacy-admin
+    // retirement onwards but was linked from nowhere, so the only way to reach
+    // it was to type the URL. An admin reasonably concluded it did not exist.
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const operationsTrigger = screen.getByRole('button', { name: 'Platform Operations' });
+    await userEvent.click(operationsTrigger);
+    expect(operationsTrigger).toHaveAttribute('aria-expanded', 'true');
+
+    expect(screen.getByRole('link', { name: 'Native App' })).toHaveAttribute(
+      'href',
+      '/test/admin/native-app',
+    );
+  });
+
   it('hides super admin section for non-super-admin users', async () => {
     // The file-level @/contexts mock already supplies a plain `admin` user, which
     // is exactly the subject of this test. A second vi.mock('@/contexts', …) used

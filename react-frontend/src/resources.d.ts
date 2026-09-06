@@ -22501,6 +22501,7 @@ export default interface Resources {
       "group_organization": "tags|collections|automatic assignment|bundles",
       "groups": "clubs|circles|communities",
       "help_faqs": "frequently asked questions|questions|help centre|answers",
+      "native_app": "native app|mobile app|android|ios|installs|installations|push|device|play store",
       "pending_approvals": "approval|waiting",
       "podcasts": "audio|shows|episodes",
       "residency_verifications": "residency|address|municipality|verification|attestation",
