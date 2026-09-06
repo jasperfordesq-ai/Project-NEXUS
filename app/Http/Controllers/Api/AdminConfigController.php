@@ -20,6 +20,7 @@ use App\Services\PodcastConfigurationService;
 use App\Services\PrerenderContentInvalidator;
 use App\Services\VolunteeringConfigurationService;
 use App\Services\MemberRankingService;
+use App\Services\NativeAppInstallStatsService;
 use App\Services\RedisCache;
 use App\Services\SearchService;
 use App\Services\SmartMatchingEngine;
@@ -1972,6 +1973,47 @@ class AdminConfigController extends BaseApiController
             'tenant_id' => $tenantId,
             'native_app' => $config,
             'deployment_readiness' => $this->nativeAppReadiness($config),
+        ]);
+    }
+
+    /**
+     * GET /api/v2/admin/config/native-app/install-stats
+     *
+     * Who has the native mobile app installed and registered for push.
+     *
+     * Two tiers, and the difference is the whole point of this endpoint:
+     *
+     * - Any tenant admin sees THEIR OWN tenant only, scoped by `tenant_id`.
+     * - A god-mode operator (`users.is_god`) additionally receives a
+     *   cross-tenant `platform` block. Nothing else unlocks it —
+     *   `is_super_admin` and `is_tenant_super_admin` alone do NOT, because a
+     *   hub-tenant super admin is confined to its own subtree and this block
+     *   is not subtree-filtered.
+     *
+     * 🔴 `platform` is the only cross-tenant payload here. If you add a field
+     * to it, you are widening what one community's operator could see about
+     * another; keep the god check as the single gate and do not move any
+     * cross-tenant field into the tenant block.
+     *
+     * 🔴 The numbers are push registrations, NOT app-store installs. The
+     * response says so in `disclaimer_key` so no client can present them as
+     * install counts by accident.
+     */
+    public function getNativeAppInstallStats(): JsonResponse
+    {
+        $userId = $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        $isGod = \App\Models\User::isGod($userId);
+        $stats = new NativeAppInstallStatsService();
+
+        return $this->respondWithData([
+            'tenant_id' => $tenantId,
+            'is_god' => $isGod,
+            'scope' => $isGod ? 'platform' : 'tenant',
+            'disclaimer_key' => 'push_registrations_not_store_installs',
+            'tenant' => $stats->tenantStats($tenantId),
+            'platform' => $isGod ? $stats->platformStats() : null,
         ]);
     }
 

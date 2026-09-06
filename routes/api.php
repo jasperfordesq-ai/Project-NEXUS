@@ -1835,6 +1835,7 @@ Route::put('/v2/admin/config/languages', [\App\Http\Controllers\Api\AdminConfigC
 Route::get('/v2/admin/config/native-app', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppConfig']);
 Route::put('/v2/admin/config/native-app', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateNativeAppConfig']);
 Route::get('/v2/admin/config/native-app/build-manifest', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppBuildManifest']);
+Route::get('/v2/admin/config/native-app/install-stats', [\App\Http\Controllers\Api\AdminConfigController::class, 'getNativeAppInstallStats']);
 // ── Admin: Landing Page Configuration ──────────────────────────────────────
 Route::get('/v2/admin/config/landing-page', [\App\Http\Controllers\Api\AdminConfigController::class, 'getLandingPageConfig']);
 Route::put('/v2/admin/config/landing-page', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateLandingPageConfig']);

@@ -2116,6 +2116,9 @@ export const adminSettings = {
   getNativeAppSettings: () => api.get<Record<string, unknown>>('/v2/admin/config/native-app'),
   updateNativeAppSettings: (data: Record<string, unknown>) => api.put<{ success: boolean }>('/v2/admin/config/native-app', data),
   getNativeAppBuildManifest: () => api.get<Record<string, unknown>>('/v2/admin/config/native-app/build-manifest'),
+  // Push-registration counts, NOT app-store installs. The cross-tenant
+  // `platform` block is null unless the caller is a god-mode operator.
+  getNativeAppInstallStats: () => api.get<Record<string, unknown>>('/v2/admin/config/native-app/install-stats'),
 
   getEmailConfig: () => api.get<Record<string, unknown>>('/v2/admin/email/config'),
   updateEmailConfig: (data: Record<string, unknown>) => api.put<{ success: boolean }>('/v2/admin/email/config', data),

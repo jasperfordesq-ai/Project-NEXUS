@@ -15,6 +15,9 @@ const { mockToast, mockAdminSettings } = vi.hoisted(() => ({
     getNativeAppSettings: vi.fn(),
     updateNativeAppSettings: vi.fn(),
     getNativeAppBuildManifest: vi.fn(),
+    // The page now embeds NativeAppInstallStats, which fetches on mount.
+    // Its own behaviour is covered in NativeAppInstallStats.test.tsx.
+    getNativeAppInstallStats: vi.fn(),
   },
 }));
 
@@ -76,6 +79,7 @@ const basePayload = {
 describe('NativeApp', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAdminSettings.getNativeAppInstallStats.mockResolvedValue({ success: true, data: null });
   });
 
   it('shows a loading spinner while fetching settings', () => {

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageHeader } from '../../components/PageHeader';
+import { NativeAppInstallStats } from './NativeAppInstallStats';
 import { adminSettings } from '../../api/adminApi';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -163,6 +164,8 @@ export function NativeApp() {
       />
 
       <div className="space-y-4">
+        <NativeAppInstallStats />
+
         <Card>
           <CardHeader className="flex items-center gap-2">
             <Smartphone size={20} />

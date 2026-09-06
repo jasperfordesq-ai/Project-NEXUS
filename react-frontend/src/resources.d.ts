@@ -1533,6 +1533,7 @@ export default interface Resources {
             "reset_queue": "Repair queue"
           },
           "checks": {
+            "authoritative_block": "Platform-wide rebuild",
             "cache_filesystem": "Cache storage",
             "cache_readable": "Cache can be read",
             "cache_writable": "Cache can be written",
@@ -30015,6 +30016,45 @@ export default interface Resources {
         "fullscreen": "Fullscreen",
         "install_prompt": "Install prompt",
         "install_prompt_desc": "Show eligible browser install prompts.",
+        "installs": {
+          "browser_subscriptions": "Browser notifications",
+          "by_community": "By community",
+          "by_community_table_label": "App installs broken down by community",
+          "columns": {
+            "community": "Community",
+            "last_seen": "Last seen",
+            "latest_install": "Most recent",
+            "member": "Member",
+            "people": "Members",
+            "phones": "Phones",
+            "platform": "Device",
+            "registered": "Registered"
+          },
+          "communities_with_installs": "Communities with installs",
+          "empty": "Nobody has registered the app yet.",
+          "first_last": "First registration {{first}} · most recent {{last}}",
+          "god_only": "God mode only",
+          "load_failed": "Could not load app install figures.",
+          "never": "Never",
+          "not_store_installs": "These are members who installed the app, signed in and allowed notifications — not Google Play or App Store install counts. Someone who installs the app and declines the notification prompt will not appear here. For store install figures, use Google Play Console.",
+          "people_with_app": "Members with the app",
+          "people_with_app_all": "Members with the app (all)",
+          "phones_registered": "Phones registered",
+          "phones_registered_all": "Phones registered (all)",
+          "platform_description": "Every community on the platform, including ones you do not administer. Visible to god-mode operators only.",
+          "platform_split": "{{android}} on Android · {{ios}} on iOS",
+          "platform_title": "All communities",
+          "reachable_by_push": "Members reachable by push",
+          "reachable_by_push_all": "Reachable by push (all)",
+          "reachable_by_push_hint": "Counted once, whether by phone, browser, or both.",
+          "recent_all_communities": "Recent registrations, all communities",
+          "recent_all_table_label": "Recent app registrations across all communities",
+          "recent_table_label": "Recent app registrations in this community",
+          "scope_this_community": "This community only",
+          "title": "App installs in this community",
+          "unnamed_community": "Community #{{id}}",
+          "unnamed_member": "Member #{{id}}"
+        },
         "ios_app_store_id": "iOS App Store ID",
         "ios_identity": "iOS identity",
         "landscape": "Landscape",
@@ -36728,8 +36768,10 @@ export default interface Resources {
       "title": "Cover Care"
     },
     "create": {
+      "new_course": "New Course",
       "new_event": "New Event",
-      "new_listing": "New Listing"
+      "new_listing": "New Listing",
+      "new_podcast": "New Podcast"
     },
     "credentials": {
       "status_expired": "Expired",
@@ -38250,6 +38292,8 @@ export default interface Resources {
     "question_required": "Required",
     "quick_create": {
       "close_aria": "Close create menu",
+      "new_course": "New Course",
+      "new_course_desc": "Teach a skill to your community",
       "new_event": "New Event",
       "new_event_desc": "Organise a community event",
       "new_goal": "New Goal",
@@ -38258,6 +38302,8 @@ export default interface Resources {
       "new_group_desc": "Start a community group",
       "new_listing": "New Listing",
       "new_listing_desc": "Offer or request a service",
+      "new_podcast": "New Podcast",
+      "new_podcast_desc": "Start a show or record an episode",
       "offer_time": "Offer Time",
       "offer_time_desc": "Open the care hub",
       "title": "Create New"
