@@ -206,6 +206,9 @@ function EditProfileScreenInner() {
     return errors;
   }
 
+  // The first field error, so the footer can say what is wrong without the member scrolling.
+  const firstFooterError = fieldErrors.firstName ?? fieldErrors.phone ?? null;
+
   async function handleSave() {
     const errors = validate();
     if (Object.keys(errors).length > 0) {
@@ -383,7 +386,12 @@ function EditProfileScreenInner() {
 
         <FormActionFooter
           title={t('edit.reviewTitle')}
-          subtitle={isDirty ? t('edit.reviewSubtitleDirty') : t('edit.reviewSubtitleClean')}
+          /*
+            🔴 S3-14: a failed validation marked the FIRST NAME field at the top of a long
+            scroll view and left this copy unchanged, so a member at the bottom saw the
+            button do nothing and had no idea why (audit 2026-09-06).
+          */
+          subtitle={firstFooterError ?? (isDirty ? t('edit.reviewSubtitleDirty') : t('edit.reviewSubtitleClean'))}
           submitLabel={saving ? t('edit.saving') : t('edit.saveChanges')}
           secondaryLabel={t('edit.cancel')}
           primary={primary}

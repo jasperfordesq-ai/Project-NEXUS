@@ -12,6 +12,14 @@ const mockGenerateJobDescription = jest.fn();
 const mockReplace = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 
+// The form guards against a stray Back (audit 2026-09-06); the confirmation is inert here.
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirmDialog: null,
+  }),
+}));
+
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),

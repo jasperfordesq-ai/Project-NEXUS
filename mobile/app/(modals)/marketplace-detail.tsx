@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { Image, Linking, ScrollView, Share, View } from 'react-native';
@@ -87,6 +88,7 @@ function MarketplaceDetailScreen() {
     ? parsedOfferAmount
     : null;
   const [listing, setListing] = useState<MarketplaceListingDetail | null>(null);
+  const [listingError, setListingError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
@@ -208,11 +210,18 @@ function MarketplaceDetailScreen() {
       return;
     }
     setIsLoading(true);
+    setListingError(null);
     try {
       const response = await getMarketplaceListing(safeId, acceptedOfferId);
       setListing(response.data);
-    } catch {
+    } catch (err) {
+      /*
+        🔴 S5: any failure was turned into `listing = null`, which renders "This item may
+        have been sold, removed, or moved" — a definite statement about someone else's
+        listing, produced by the member's own dropped connection (audit 2026-09-06).
+      */
       setListing(null);
+      setListingError(describeApiError(err, t('detail.loadFailed')));
     } finally {
       setIsLoading(false);
     }
@@ -234,6 +243,15 @@ function MarketplaceDetailScreen() {
         <View className="flex-1 items-center justify-center" style={{ flex: 1 }}>
           <LoadingSpinner />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!listing && listingError) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
+        <ErrorState subtitle={listingError} onRetry={() => void loadListing()} isRetrying={isLoading} testID="marketplace-detail-error" />
       </SafeAreaView>
     );
   }

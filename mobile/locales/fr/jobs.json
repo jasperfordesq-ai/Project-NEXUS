@@ -231,6 +231,9 @@
   "error": "Impossible de charger les emplois",
   "retry": "Réessayer",
   "create": {
+    "unsavedTitle": "Abandonner cette offre ?",
+    "unsavedMessage": "Le poste, la description et tout ce que vous avez saisi seront perdus.",
+    "discard": "Abandonner",
     "eyebrow": "Nouveau rôle",
     "title": "Créer un emploi",
     "editTitle": "Modifier l'emploi",

@@ -83,6 +83,7 @@
     "invalidHint": "Non siamo riusciti a identificare quale inserzione aprire.",
     "notFound": "Annuncio non trovato",
     "notFoundHint": "Questo articolo potrebbe essere stato venduto, rimosso o spostato.",
+    "loadFailed": "Non è stato possibile caricare questo annuncio. Riprova.",
     "share": "Condividi elenco",
     "noImages": "Nessuna immagine ancora",
     "video": "Video dell'annuncio",
@@ -128,6 +129,9 @@
     }
   },
   "forms": {
+    "unsavedTitle": "Eliminare questo annuncio?",
+    "unsavedMessage": "Titolo, descrizione, prezzo e le foto scelte andranno persi.",
+    "discard": "Elimina",
     "eyebrow": "Nuova scheda del marketplace",
     "createTitle": "Vendi un articolo",
     "editTitle": "Modifica scheda",

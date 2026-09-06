@@ -83,6 +83,7 @@
     "invalidHint": "No pudimos identificar qué listado abrir.",
     "notFound": "Listado no encontrado",
     "notFoundHint": "Es posible que este artículo se haya vendido, eliminado o movido.",
+    "loadFailed": "No se pudo cargar este anuncio. Inténtalo de nuevo.",
     "share": "Compartir listado",
     "noImages": "Aún no hay imágenes",
     "video": "Vídeo del anuncio",
@@ -128,6 +129,9 @@
     }
   },
   "forms": {
+    "unsavedTitle": "¿Descartar este anuncio?",
+    "unsavedMessage": "Se perderán el título, la descripción, el precio y las fotos que has elegido.",
+    "discard": "Descartar",
     "eyebrow": "Nueva lista de mercado",
     "createTitle": "Vender un artículo",
     "editTitle": "Editar lista",

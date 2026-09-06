@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -91,7 +92,7 @@ export default function BlogPostScreen() {
     await Share.share({ message, url });
   }, []);
 
-  const { data, isLoading, refresh } = useApi(
+  const { data, isLoading, error: postError, refresh } = useApi(
     () => getBlogPost(slug),
     [slug],
     { enabled: slug.length > 0 },
@@ -121,6 +122,20 @@ export default function BlogPostScreen() {
           <View className="flex-1 items-center justify-center" style={{ flex: 1 }}>
           <LoadingSpinner />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  /*
+    🔴 S5: a dropped connection or a 500 rendered the "not found" state, so a member on a
+    bad signal was told the post no longer exists — with a button that navigates away from
+    it (audit 2026-09-06).
+  */
+  if (!post && postError) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/blog" />
+        <ErrorState subtitle={postError} onRetry={refresh} isRetrying={isLoading} testID="blog-post-error" />
       </SafeAreaView>
     );
   }

@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useState, useEffect } from 'react';
 import {
@@ -53,7 +54,7 @@ export default function JobDetailScreen() {
   const jobId = Number(id);
   const safeId = isNaN(jobId) || jobId <= 0 ? 0 : jobId;
 
-  const { data, isLoading, refresh: refreshJob } = useApi(
+  const { data, isLoading, error: jobError, refresh: refreshJob } = useApi(
     () => getJobDetail(safeId),
     [safeId],
     { enabled: safeId > 0 },
@@ -119,6 +120,20 @@ export default function JobDetailScreen() {
         <View className="flex-1 items-center justify-center" style={{ flex: 1 }}>
           <LoadingSpinner />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  /*
+    🔴 S5: a dropped connection or a 500 rendered the "not found" state, so a member on a
+    bad signal was told the item no longer exists — with a browse button that navigates
+    away from the thing they were looking for. A load failure gets a retry (audit 2026-09-06).
+  */
+  if (!job && jobError) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detailTitle')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
+        <ErrorState subtitle={jobError} onRetry={refreshJob} isRetrying={isLoading} testID="job-detail-error" />
       </SafeAreaView>
     );
   }

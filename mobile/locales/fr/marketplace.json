@@ -83,6 +83,7 @@
     "invalidHint": "Nous n'avons pas pu identifier l'annonce à ouvrir.",
     "notFound": "Annonce non trouvée",
     "notFoundHint": "Cet article a peut-être été vendu, supprimé ou déplacé.",
+    "loadFailed": "Cette annonce n'a pas pu être chargée. Veuillez réessayer.",
     "share": "Partager annonce",
     "noImages": "Aucune image pour l'instant",
     "video": "Vidéo de l'annonce",
@@ -128,6 +129,9 @@
     }
   },
   "forms": {
+    "unsavedTitle": "Abandonner cette annonce ?",
+    "unsavedMessage": "Le titre, la description, le prix et les photos choisies seront perdus.",
+    "discard": "Abandonner",
     "eyebrow": "Nouvelle annonce sur le marché",
     "createTitle": "Vendre un article",
     "editTitle": "Modifier l'annonce",

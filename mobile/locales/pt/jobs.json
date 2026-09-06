@@ -231,6 +231,9 @@
   "error": "Falha ao carregar empregos",
   "retry": "Tentar novamente",
   "create": {
+    "unsavedTitle": "Descartar esta oferta de emprego?",
+    "unsavedMessage": "A função, a descrição e tudo o mais que introduziste serão perdidos.",
+    "discard": "Descartar",
     "eyebrow": "Nova função",
     "title": "Criar emprego",
     "editTitle": "Editar emprego",

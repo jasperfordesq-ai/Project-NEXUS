@@ -231,6 +231,9 @@
   "error": "Theip ar lódáil na bpost",
   "retry": "Bain triail eile as",
   "create": {
+    "unsavedTitle": "An fógra poist seo a chur i leataobh?",
+    "unsavedMessage": "Caillfear an ról, an cur síos agus gach rud eile atá curtha isteach agat.",
+    "discard": "Cuir i leataobh",
     "eyebrow": "Ról nua",
     "title": "Cruthaigh post",
     "editTitle": "Cuir post in eagar",

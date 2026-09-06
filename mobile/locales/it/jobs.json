@@ -231,6 +231,9 @@
   "error": "Impossibile caricare i lavori",
   "retry": "Riprova",
   "create": {
+    "unsavedTitle": "Eliminare questo annuncio di lavoro?",
+    "unsavedMessage": "Il ruolo, la descrizione e tutto il resto che hai inserito andranno persi.",
+    "discard": "Elimina",
     "eyebrow": "Nuovo ruolo",
     "title": "Crea lavoro",
     "editTitle": "Modifica lavoro",

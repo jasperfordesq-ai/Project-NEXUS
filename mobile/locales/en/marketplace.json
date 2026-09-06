@@ -83,6 +83,7 @@
     "invalidHint": "We could not identify which listing to open.",
     "notFound": "Listing not found",
     "notFoundHint": "This item may have been sold, removed, or moved.",
+    "loadFailed": "This listing could not be loaded. Please try again.",
     "share": "Share listing",
     "noImages": "No images yet",
     "video": "Listing video",
@@ -128,6 +129,9 @@
     }
   },
   "forms": {
+    "unsavedTitle": "Discard this listing?",
+    "unsavedMessage": "The title, description, price and photos you have chosen will be lost.",
+    "discard": "Discard",
     "eyebrow": "New marketplace listing",
     "createTitle": "Sell an item",
     "editTitle": "Edit listing",

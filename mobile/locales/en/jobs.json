@@ -231,6 +231,9 @@
   "error": "Failed to load jobs",
   "retry": "Retry",
   "create": {
+    "unsavedTitle": "Discard this job posting?",
+    "unsavedMessage": "The role, description and everything else you have entered will be lost.",
+    "discard": "Discard",
     "eyebrow": "New role",
     "title": "Create Job",
     "editTitle": "Edit Job",

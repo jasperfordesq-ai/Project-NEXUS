@@ -92,6 +92,9 @@ function ActionPill({
   );
 }
 
+/** The keys the legal-document screen can actually fetch (`GET /v2/legal/{type}`). */
+const LEGAL_DOCUMENT_TYPES = new Set(['terms', 'privacy', 'cookies']);
+
 export default function SupportRoute() {
   return (
     <ModalErrorBoundary>
@@ -108,6 +111,21 @@ function SupportScreen() {
   const tone = theme.info;
   const initialDocumentKey = normalizeSupportDocumentKey(doc);
   const [selectedDocumentKey, setSelectedDocumentKey] = useState<string | null>(initialDocumentKey);
+
+  /*
+    🔴 S3-06: "Read in app" showed three fixed translated paragraphs for Terms, Privacy and
+    Cookies — not the community's own legal text, which is the text the acceptance gate
+    actually enforces. A member could believe they had read their community's terms when
+    they had read generic copy. Those three now open the real document; the rest (About,
+    Contact, Accessibility, Trust) have no legal-document type and keep the summary sheet.
+  */
+  function openSupportDocument(key: string | null) {
+    if (key && LEGAL_DOCUMENT_TYPES.has(key)) {
+      router.push({ pathname: '/(modals)/legal-document', params: { type: key } } as Href);
+      return;
+    }
+    setSelectedDocumentKey(key);
+  }
   const selectedDocument = selectedDocumentKey ? SUPPORT_DOCUMENTS[selectedDocumentKey] : null;
 
   useEffect(() => {
@@ -166,7 +184,7 @@ function SupportScreen() {
                       icon="reader-outline"
                       tone={tone}
                       primary
-                      onPress={() => setSelectedDocumentKey(item.documentKey ?? null)}
+                      onPress={() => openSupportDocument(item.documentKey ?? null)}
                     />
                   ) : null}
                   <ActionPill

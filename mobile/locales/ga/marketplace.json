@@ -83,6 +83,7 @@
     "invalidHint": "Níorbh fhéidir linn a aithint cé acu liostú le hoscailt.",
     "notFound": "Ní bhfuarthas an liostú",
     "notFoundHint": "Seans gur díoladh, gur baineadh nó gur bogadh an mhír seo.",
+    "loadFailed": "Níorbh fhéidir an liostú seo a lódáil. Bain triail eile as.",
     "share": "Comhroinn liostú",
     "noImages": "Níl aon íomhánna fós",
     "video": "Físeán liosta",
@@ -128,6 +129,9 @@
     }
   },
   "forms": {
+    "unsavedTitle": "An liostú seo a chur i leataobh?",
+    "unsavedMessage": "Caillfear an teideal, an cur síos, an praghas agus na grianghraif atá roghnaithe agat.",
+    "discard": "Cuir i leataobh",
     "eyebrow": "Liostú margadh nua",
     "createTitle": "Díol mír",
     "editTitle": "Cuir an liostú in eagar",

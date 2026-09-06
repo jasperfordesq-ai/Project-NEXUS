@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useEffect, useState } from 'react';
@@ -81,6 +83,21 @@ function NewJobScreen() {
   const [deadline, setDeadline] = useState('');
   const [isRemote, setIsRemote] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const { confirm, confirmDialog } = useConfirm();
+  /*
+    🔴 S5: a long description, a price and chosen photos were lost to a stray Back with
+    no prompt — the same fault the two listing forms had before the 5 September audit.
+  */
+  useUnsavedChangesGuard({
+    isDirty: Boolean(title.trim() || description.trim()),
+    isBusy: isSubmitting || hasSubmitted,
+    confirm,
+    title: t('create.unsavedTitle'),
+    message: t('create.unsavedMessage'),
+    discardLabel: t('create.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
 
@@ -189,6 +206,7 @@ function NewJobScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const id = result.data?.id ?? jobId;
       if (id) {
+        setHasSubmitted(true);
         router.replace({ pathname: '/(modals)/job-detail', params: { id: String(id) } });
       } else {
         router.back();
@@ -331,6 +349,7 @@ function NewJobScreen() {
         onSubmit={submit}
       />
       </KeyboardAvoidingView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

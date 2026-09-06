@@ -231,6 +231,9 @@
   "error": "No se pudieron cargar los empleos",
   "retry": "Reintentar",
   "create": {
+    "unsavedTitle": "¿Descartar esta oferta de empleo?",
+    "unsavedMessage": "Se perderán el puesto, la descripción y todo lo demás que hayas introducido.",
+    "discard": "Descartar",
     "eyebrow": "Nuevo puesto",
     "title": "Crear empleo",
     "editTitle": "Editar empleo",

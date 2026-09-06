@@ -83,6 +83,7 @@
     "invalidHint": "Wir konnten nicht identifizieren, welcher Eintrag geöffnet werden soll.",
     "notFound": "Eintrag nicht gefunden",
     "notFoundHint": "Dieser Artikel wurde möglicherweise verkauft, entfernt oder verschoben.",
+    "loadFailed": "Dieser Eintrag konnte nicht geladen werden. Bitte versuche es erneut.",
     "share": "Eintrag teilen",
     "noImages": "Noch keine Bilder",
     "video": "Eintragsvideo",
@@ -128,6 +129,9 @@
     }
   },
   "forms": {
+    "unsavedTitle": "Diesen Eintrag verwerfen?",
+    "unsavedMessage": "Titel, Beschreibung, Preis und die ausgewählten Fotos gehen verloren.",
+    "discard": "Verwerfen",
     "eyebrow": "Neuer Marktplatzeintrag",
     "createTitle": "Einen Artikel verkaufen",
     "editTitle": "Eintrag bearbeiten",

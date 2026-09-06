@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useState } from 'react';
@@ -127,6 +129,21 @@ export function MarketplaceListingForm() {
   const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null);
   const [removeExistingVideo, setRemoveExistingVideo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const { confirm, confirmDialog } = useConfirm();
+  /*
+    🔴 S5: a long description, a price and chosen photos were lost to a stray Back with
+    no prompt — the same fault the two listing forms had before the 5 September audit.
+  */
+  useUnsavedChangesGuard({
+    isDirty: Boolean(title.trim() || description.trim() || price.trim() || imageUris.length > 0),
+    isBusy: isSubmitting || hasSubmitted,
+    confirm,
+    title: t('forms.unsavedTitle'),
+    message: t('forms.unsavedMessage'),
+    discardLabel: t('forms.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   // The footer says what is missing instead of "publish when ready" over an empty form.
@@ -339,6 +356,8 @@ export function MarketplaceListingForm() {
       if (notice) {
         showToast({ title: t('marketplace:forms.published'), description: notice, variant: 'default' });
       }
+
+      setHasSubmitted(true);
 
       router.replace({ pathname: '/(modals)/marketplace-detail', params: { id: String(response.data.id) } } as unknown as Href);
     } catch (err) {
@@ -666,6 +685,7 @@ export function MarketplaceListingForm() {
         onSubmit={submit}
       />
       </KeyboardAvoidingView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

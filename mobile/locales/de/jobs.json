@@ -231,6 +231,9 @@
   "error": "Stellen konnten nicht geladen werden",
   "retry": "Erneut versuchen",
   "create": {
+    "unsavedTitle": "Diese Stellenausschreibung verwerfen?",
+    "unsavedMessage": "Die Rolle, die Beschreibung und alles andere, was du eingegeben hast, gehen verloren.",
+    "discard": "Verwerfen",
     "eyebrow": "Neue Rolle",
     "title": "Job erstellen",
     "editTitle": "Job bearbeiten",

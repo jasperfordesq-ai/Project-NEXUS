@@ -81,25 +81,47 @@ describe('SupportRoute', () => {
     expect(Linking.openURL).toHaveBeenCalledWith('https://app.project-nexus.ie/hour-timebank/help');
   });
 
-  it('renders native legal summaries in a bottom sheet and keeps canonical web links available', () => {
-    const { getAllByText, getByText, getByTestId, queryByTestId } = render(<SupportRoute />);
+  it('opens the community\'s REAL privacy document, not a generic summary of one', () => {
+    /*
+      🔴 S3-06: "Read in app" for Terms, Privacy and Cookies showed three fixed translated
+      paragraphs — not the community's own legal text, which is what the acceptance gate
+      enforces. A member could believe they had read their community's terms when they had
+      read generic copy (audit 2026-09-06).
+    */
+    const { router } = require('expo-router');
+    router.push.mockClear();
+    const { getAllByText, queryByTestId } = render(<SupportRoute />);
+
+    // Order follows SUPPORT_LINKS: about, contact, terms, privacy, cookies, …
+    fireEvent.press(getAllByText('Read in app')[3]);
+
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/(modals)/legal-document',
+      params: { type: 'privacy' },
+    });
+    // And the generic summary sheet does NOT open in its place.
+    expect(queryByTestId('support-document-sheet')).toBeNull();
+  });
+
+  it('keeps the in-app summary for the pages that have no legal document', () => {
+    const { getAllByText, getByTestId, queryByTestId } = render(<SupportRoute />);
 
     // Sheet is closed until "Read in app" is tapped — the document used to
     // render at the TOP of the scroll view, invisible from further down the
     // page (looked like a dead button).
     expect(queryByTestId('support-document-sheet')).toBeNull();
 
-    fireEvent.press(getAllByText('Read in app')[3]);
+    fireEvent.press(getAllByText('Read in app')[0]);
 
     expect(getByTestId('support-document-sheet')).toBeTruthy();
-    expect(getByText('Privacy summary')).toBeTruthy();
-    expect(getByText('Data you provide')).toBeTruthy();
+    // The title appears in the row and again in the sheet; the sheet's own body is the proof.
+    expect(getAllByText('About Project NEXUS').length).toBeGreaterThan(1);
 
     // The sheet's own "Open web" action is rendered last in the tree
     const openWebButtons = getAllByText('Open web');
     fireEvent.press(openWebButtons[openWebButtons.length - 1]);
 
-    expect(Linking.openURL).toHaveBeenCalledWith('https://app.project-nexus.ie/hour-timebank/privacy');
+    expect(Linking.openURL).toHaveBeenCalledWith('https://app.project-nexus.ie/hour-timebank/about');
   });
 
   it('opens a requested legal document from native route params', () => {
