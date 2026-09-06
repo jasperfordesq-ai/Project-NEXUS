@@ -925,4 +925,54 @@ class SitemapServiceTest extends TestCase
             'updated_at' => $now,
         ]);
     }
+
+    // =========================================================================
+    // Sitemap <-> prerender route plan parity.
+    //
+    // These are two separately maintained lists. On 2026-08-12 /install-app was
+    // added to the sitemap but not to PrerenderService::ALWAYS_PUBLIC_ROUTES;
+    // the prerender drift sweep then threw
+    // "Route is not available for tenant in enqueueJob: /install-app" on every
+    // 2-minute pass. Nothing compared the two lists, so nothing caught it.
+    // =========================================================================
+
+    public function test_every_static_sitemap_route_is_in_the_prerender_route_plan(): void
+    {
+        $xml = $this->service->generateForTenant($this->testTenantId, 'https://parity.example');
+        $this->assertNotEmpty($xml, 'sitemap fixture produced no XML');
+
+        $this->assertTrue(preg_match_all('#<loc>(.*?)</loc>#i', $xml, $m) > 0);
+
+        $prerender = app(\App\Services\PrerenderService::class);
+        $plan = $prerender->routesForTenant($this->testTenantId);
+        $this->assertNotEmpty($plan, 'prerender route plan for the test tenant is empty');
+
+        $missing = [];
+        foreach ($m[1] as $loc) {
+            $route = (string) parse_url(html_entity_decode($loc), PHP_URL_PATH);
+            $route = '/' . ltrim($route, '/');
+            if ($route === '/') {
+                $route = '/';
+            }
+            // Only the static floor is compared here. Dynamic content routes
+            // (/blog/{slug}, /listings/{id}, ...) are admitted to the plan from
+            // the sitemap itself, so they cannot drift the way a hand-written
+            // static route can.
+            if (preg_match('#^/(?:blog|listings|events|groups|jobs|volunteering|organisations|ideation|kb|coupons|page)/#', $route)) {
+                continue;
+            }
+            if (!in_array($route, $plan, true)) {
+                $missing[] = $route;
+            }
+        }
+
+        $this->assertSame(
+            [],
+            array_values(array_unique($missing)),
+            'These routes are published in the sitemap but are absent from '
+            . 'PrerenderService::ALWAYS_PUBLIC_ROUTES / FEATURE_GATED_ROUTES / '
+            . 'MODULE_GATED_ROUTES, so prerender:detect-drift will reject them. '
+            . 'Add them to the prerender route plan (or remove them from the sitemap).'
+        );
+    }
 }

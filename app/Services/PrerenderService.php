@@ -76,7 +76,7 @@ class PrerenderService
      * CPU and clutters the inventory.
      */
     private const ALWAYS_PUBLIC_ROUTES = [
-        '/', '/about', '/faq', '/contact', '/help',
+        '/', '/about', '/faq', '/contact', '/help', '/install-app',
         '/terms', '/privacy', '/accessibility', '/cookies',
         '/community-guidelines', '/trust-and-safety', '/account-deletion', '/child-safety', '/acceptable-use',
         '/legal', '/terms/versions', '/privacy/versions', '/accessibility/versions',

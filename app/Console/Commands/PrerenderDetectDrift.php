@@ -285,7 +285,52 @@ class PrerenderDetectDrift extends Command
                 $missingRoutes,
                 $identityBackfillRoutes
             )));
-            if (empty($allRoutes) && empty($unexpectedRoutes)) continue;
+
+            // A tenant's sitemap (SitemapService) and its prerender route plan
+            // (PrerenderService::routesForTenant) are two separately maintained
+            // lists, so they can drift apart. When they do, enqueueJob() rejects
+            // the route with InvalidArgumentException — and that used to escape
+            // this loop, abandoning the sweep for every tenant after this one.
+            // The sweep runs every 2 minutes, so it failed, restarted and failed
+            // again on the same route until someone noticed.
+            //
+            // Ask the plan first and keep going. The plan is the authority on
+            // what can actually be rendered, so a route it rejects is never
+            // handed to enqueueJob; a genuinely malformed route still reaches
+            // enqueueJob and still throws. The divergence is a real contract
+            // bug, so it is reported per tenant AND counted as a planning error
+            // rather than being quietly dropped.
+            $unavailableRoutes = [];
+            if ($allRoutes !== []) {
+                $renderableRoutes = [];
+                foreach ($allRoutes as $route) {
+                    // Pass the tenant target we already loaded: without it every
+                    // call re-queries the whole tenants table.
+                    if ($this->prerender->tenantRouteCanBePrerendered((int) $tenantId, $route, $t)) {
+                        $renderableRoutes[] = $route;
+                    } else {
+                        $unavailableRoutes[] = $route;
+                    }
+                }
+                if ($unavailableRoutes !== []) {
+                    $allRoutes = $renderableRoutes;
+                    // force_render is driven by the identity-backfill set; drop
+                    // any of those that the plan rejected so a tenant whose only
+                    // backfill route is unavailable does not force a rebuild.
+                    $identityBackfillRoutes = array_values(
+                        array_intersect($identityBackfillRoutes, $renderableRoutes)
+                    );
+                    $planningErrors += count($unavailableRoutes);
+                }
+            }
+
+            if (empty($allRoutes) && empty($unexpectedRoutes)) {
+                if ($unavailableRoutes !== []) {
+                    $skipped[$t['slug']] = 'routes_not_in_tenant_plan: '
+                        . implode(',', array_slice($unavailableRoutes, 0, 5));
+                }
+                continue;
+            }
 
             // Cap routes per tenant so we don't generate a giant single job.
             if (count($allRoutes) > $maxRoutes) {
@@ -326,6 +371,8 @@ class PrerenderDetectDrift extends Command
                 'identity_backfill_routes' => count($identityBackfillRoutes),
                 'unexpected_routes' => count($unexpectedRoutes),
                 'purged_routes' => $purgedCount,
+                'unavailable_routes' => count($unavailableRoutes),
+                'unavailable_sample' => array_slice($unavailableRoutes, 0, 5),
                 'sample'        => array_slice($allRoutes, 0, 5),
             ];
             $tenantCount++;

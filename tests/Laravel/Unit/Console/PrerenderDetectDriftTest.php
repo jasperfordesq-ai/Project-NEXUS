@@ -124,6 +124,13 @@ class PrerenderDetectDriftTest extends TestCase
             ->shouldReceive('authoritativeRepairRequired')
             ->byDefault()
             ->andReturn(false);
+        // The reconciler asks the route plan whether each drifted route can
+        // actually be rendered for this tenant before enqueueing it. Neutral
+        // default: everything the sitemap publishes is renderable.
+        $this->prerenderMock
+            ->shouldReceive('tenantRouteCanBePrerendered')
+            ->byDefault()
+            ->andReturn(true);
 
         $this->app->instance(PrerenderService::class, $this->prerenderMock);
         $this->app->instance(SitemapService::class,   $this->sitemapMock);
@@ -152,6 +159,18 @@ class PrerenderDetectDriftTest extends TestCase
             $urls .= "<url><loc>{$loc}</loc><lastmod>{$lastmod}</lastmod></url>\n";
         }
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset>{$urls}</urlset>";
+    }
+
+    private function sitemapXmlForHost(string $host, string $prefix, array $entries): string
+    {
+        $urls = '';
+        foreach ($entries as $path => $lastmod) {
+            $loc = 'https://' . $host . $prefix . $path;
+            $urls .= "<url><loc>{$loc}</loc><lastmod>{$lastmod}</lastmod></url>
+";
+        }
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<urlset>{$urls}</urlset>";
     }
 
     private function makeTenantTarget(): array
@@ -731,5 +750,175 @@ class PrerenderDetectDriftTest extends TestCase
         $this->artisan('prerender:detect-drift')
             ->expectsOutputToContain('authoritative_global_job_exists')
             ->assertExitCode(0);
+    }
+
+    // =========================================================================
+    // A route the tenant's route plan rejects must not abandon the sweep.
+    //
+    // A tenant's sitemap and PrerenderService's route plan are two separately
+    // maintained lists. When they diverge, enqueueJob() throws
+    // InvalidArgumentException. That exception used to escape the per-tenant
+    // loop, so one tenant missing one route stopped drift detection for every
+    // tenant after it — and the sweep runs every 2 minutes, so it failed,
+    // restarted, and failed again on the same route indefinitely.
+    // =========================================================================
+
+    public function test_route_missing_from_tenant_plan_does_not_abandon_the_sweep(): void
+    {
+        $secondTenantId   = self::TENANT_ID + 1;
+        $secondTenantSlug = self::TENANT_SLUG . '-b';
+        $secondTenantHost = 'drift-99716.project-nexus.ie';
+
+        $this->prerenderMock
+            ->shouldReceive('loadTenantTargets')
+            ->once()
+            ->andReturn([
+                $this->makeTenantTarget(),
+                [
+                    'tenant_id' => $secondTenantId,
+                    'slug'      => $secondTenantSlug,
+                    'host'      => $secondTenantHost,
+                    'prefix'    => '/' . $secondTenantSlug,
+                ],
+            ]);
+
+        // Neither tenant has any snapshot, so every sitemap route is "missing".
+        $this->prerenderMock
+            ->shouldReceive('inventory')
+            ->once()
+            ->with(null, false)
+            ->andReturn([]);
+
+        $this->sitemapMock
+            ->shouldReceive('generateForTenant')
+            ->twice()
+            ->andReturnUsing(function (int $tenantId) use ($secondTenantHost, $secondTenantSlug): string {
+                if ($tenantId === self::TENANT_ID) {
+                    return $this->sitemapXml(['/install-app' => date('Y-m-d')]);
+                }
+                return $this->sitemapXmlForHost(
+                    $secondTenantHost,
+                    '/' . $secondTenantSlug,
+                    ['/about' => date('Y-m-d')]
+                );
+            });
+
+        // The first tenant's only drifted route is absent from its route plan.
+        $this->prerenderMock
+            ->shouldReceive('tenantRouteCanBePrerendered')
+            ->with(self::TENANT_ID, '/install-app', Mockery::any())
+            ->andReturn(false);
+
+        // Mirror the real PrerenderService: enqueueJob() re-validates every
+        // token and throws when the route is not in the tenant's plan. Without
+        // the filter above, this exception escapes the per-tenant loop and the
+        // second tenant is never reached.
+        $enqueuedTenants = [];
+        $this->prerenderMock
+            ->shouldReceive('enqueueJob')
+            ->andReturnUsing(function (?int $tenantId, ?string $routes) use (&$enqueuedTenants): int {
+                foreach (explode(',', (string) $routes) as $token) {
+                    if ($tenantId === self::TENANT_ID && $token === '/install-app') {
+                        throw new \InvalidArgumentException(
+                            "Route is not available for tenant in enqueueJob: {$token}"
+                        );
+                    }
+                }
+                $enqueuedTenants[] = $tenantId;
+                return 2002;
+            });
+
+        $exitCode = Artisan::call('prerender:detect-drift');
+        $report = $this->decodeReport(Artisan::output());
+
+        // The sweep reached the tenant AFTER the one with the bad route.
+        $this->assertSame([$secondTenantId], $enqueuedTenants);
+        $this->assertArrayHasKey($secondTenantSlug, $report['enqueued']);
+
+        // Reported, not silently swallowed.
+        $this->assertStringContainsString(
+            'routes_not_in_tenant_plan',
+            $report['skipped'][self::TENANT_SLUG] ?? ''
+        );
+        $this->assertStringContainsString(
+            '/install-app',
+            $report['skipped'][self::TENANT_SLUG] ?? ''
+        );
+
+        // A plan/sitemap divergence is a real contract bug, so the pass
+        // completes its work but still reports failure.
+        $this->assertSame(1, $report['planning_errors']);
+        $this->assertSame(1, $exitCode);
+    }
+
+    public function test_unavailable_routes_are_reported_alongside_a_tenants_renderable_ones(): void
+    {
+        $this->prerenderMock
+            ->shouldReceive('loadTenantTargets')
+            ->once()
+            ->andReturn([$this->makeTenantTarget()]);
+
+        $this->prerenderMock
+            ->shouldReceive('inventory')
+            ->once()
+            ->with(null, false)
+            ->andReturn([]);
+
+        $this->sitemapMock
+            ->shouldReceive('generateForTenant')
+            ->once()
+            ->andReturn($this->sitemapXml([
+                '/about'       => date('Y-m-d'),
+                '/install-app' => date('Y-m-d'),
+            ]));
+
+        $this->prerenderMock
+            ->shouldReceive('tenantRouteCanBePrerendered')
+            ->with(self::TENANT_ID, '/install-app', Mockery::any())
+            ->andReturn(false);
+
+        // The renderable route is still enqueued; only the rejected one drops.
+        $this->prerenderMock
+            ->shouldReceive('enqueueJob')
+            ->once()
+            ->with(
+                self::TENANT_ID,
+                Mockery::on(fn ($r) => is_string($r)
+                    && str_contains($r, '/about')
+                    && !str_contains($r, '/install-app')),
+                false,
+                false,
+                null,
+                PrerenderService::PRIORITY_HIGH
+            )
+            ->andReturn(2003);
+
+        $exitCode = Artisan::call('prerender:detect-drift');
+        $report = $this->decodeReport(Artisan::output());
+
+        $tenantReport = $report['enqueued'][self::TENANT_SLUG] ?? null;
+        $this->assertNotNull($tenantReport, 'the tenant was not enqueued at all');
+        $this->assertSame(1, $tenantReport['unavailable_routes']);
+        $this->assertSame(['/install-app'], $tenantReport['unavailable_sample']);
+        $this->assertSame(['/about'], $tenantReport['sample']);
+        $this->assertSame(1, $report['planning_errors']);
+        $this->assertSame(1, $exitCode);
+    }
+
+    /**
+     * Decode the command's JSON report, tolerating any warning lines printed
+     * before it.
+     *
+     * @return array<string,mixed>
+     */
+    private function decodeReport(string $output): array
+    {
+        $start = strpos($output, '{');
+        $this->assertNotFalse($start, "command printed no JSON report:
+{$output}");
+        $decoded = json_decode(substr($output, $start), true);
+        $this->assertIsArray($decoded, "command report was not valid JSON:
+{$output}");
+        return $decoded;
     }
 }
