@@ -373,7 +373,7 @@ export default function ExchangesScreen() {
     <Surface variant="default" className="gap-3 rounded-panel-inner p-3">
       <View className="flex-row items-center justify-between gap-3">
         <View className="min-w-0 flex-1">
-          <Text className="text-xl font-bold leading-6" style={{ color: theme.text }}>
+          <Text className="text-xl font-bold" style={{ color: theme.text }}>
             {t('title')}
           </Text>
         </View>

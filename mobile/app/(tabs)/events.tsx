@@ -346,7 +346,7 @@ function EventCard({
               style={{ backgroundColor: withAlpha(accent, 0.12), borderColor: withAlpha(accent, 0.28) }}
             >
               <Text className="text-[11px] font-semibold uppercase" style={{ color: accent }}>{month}</Text>
-              <Text className="text-2xl font-bold leading-7" style={{ color: theme.text }}>{day}</Text>
+              <Text className="text-2xl font-bold" style={{ color: theme.text }}>{day}</Text>
               {weekday ? <Text className="text-[10px]" style={{ color: theme.textSecondary }}>{weekday}</Text> : null}
             </View>
 

@@ -585,7 +585,7 @@ function Section({
           <Ionicons name={icon} size={18} color={primary} />
         </View>
         <View className="min-w-0 flex-1">
-          <Text className="text-base font-bold leading-5 text-foreground" numberOfLines={1}>{title}</Text>
+          <Text className="text-base font-bold text-foreground" numberOfLines={1}>{title}</Text>
           <Text className="text-xs leading-4 text-muted-foreground" numberOfLines={2}>{subtitle}</Text>
         </View>
       </View>

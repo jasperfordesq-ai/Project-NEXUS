@@ -101,7 +101,7 @@ function StatTile({
         <Ionicons name={icon} size={17} color={tone} />
       </View>
       <View className="min-w-0 flex-1 gap-0.5">
-        <Text className="text-xl font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>
+        <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
           {value}
         </Text>
         <Text className="text-[11px] font-semibold uppercase leading-4" style={{ color: theme.textSecondary }} numberOfLines={1}>

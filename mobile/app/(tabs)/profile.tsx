@@ -372,7 +372,7 @@ function MenuRow({ item, onPress, theme }: { item: MenuItem; onPress: () => void
           <Ionicons name={item.icon} size={20} color={item.tone} />
         </View>
         <View className="min-w-0 flex-1 gap-1">
-          <Text className="text-base font-semibold leading-5" style={{ color: theme.text }} numberOfLines={2}>
+          <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>
             {t(item.labelKey)}
           </Text>
           <Text className="text-xs leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>

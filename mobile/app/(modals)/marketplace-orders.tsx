@@ -723,7 +723,7 @@ function OrderCard({
           <View className="min-w-0 flex-1 gap-2">
             <View className="flex-row items-start justify-between gap-3">
               <View className="min-w-0 flex-1">
-                <Text className="text-base font-bold leading-5" style={{ color: theme.text }} numberOfLines={2}>{item.listing?.title ?? item.order_number}</Text>
+                <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={2}>{item.listing?.title ?? item.order_number}</Text>
                 <Text className="text-sm font-semibold" style={{ color: theme.textSecondary }} numberOfLines={1}>{total}</Text>
               </View>
               <Chip size="sm" variant="secondary" style={{ backgroundColor: withAlpha(statusColor, 0.14) }}>

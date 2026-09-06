@@ -215,7 +215,7 @@ export default function BlogPostScreen() {
                 ) : null}
               </View>
 
-              <Text className="text-3xl font-bold leading-9" style={{ color: theme.text }} numberOfLines={5}>
+              <Text className="text-3xl font-bold" style={{ color: theme.text }} numberOfLines={5}>
                 {post.title}
               </Text>
 

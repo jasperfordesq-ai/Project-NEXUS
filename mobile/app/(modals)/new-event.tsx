@@ -44,6 +44,7 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import {
   eventIsoToLocalInput,
   eventLocalInputToIso,
+  isValidTimeZone,
   localEventTimeZone,
   shiftEventLocalDate,
 } from '@/lib/utils/eventDateTime';
@@ -118,15 +119,6 @@ function toApiDate(value: string, timeZone: string, allDay: boolean, isEnd: bool
     ? `${isEnd ? shiftEventLocalDate(dateOnly, 1) : dateOnly}T00:00`
     : trimmed;
   return eventLocalInputToIso(localValue, timeZone) ?? '';
-}
-
-function isValidTimeZone(timeZone: string): boolean {
-  try {
-    new Intl.DateTimeFormat(undefined, { timeZone }).format(0);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function resolveEventCategory(event: CanonicalEvent): string {

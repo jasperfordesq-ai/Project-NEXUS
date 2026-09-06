@@ -346,7 +346,7 @@ function OnboardingNudge({ primary, onDismiss }: { primary: string; onDismiss: (
             <Ionicons name="ribbon-outline" size={21} color={primary} />
           </View>
           <View className="min-w-0 flex-1">
-            <Text className="text-base font-bold leading-5" style={{ color: theme.text }} numberOfLines={2}>{t('myListings.onboardingNudge.title')}</Text>
+            <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={2}>{t('myListings.onboardingNudge.title')}</Text>
             <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>{t('myListings.onboardingNudge.subtitle')}</Text>
           </View>
         </View>

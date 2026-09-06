@@ -563,7 +563,7 @@ function StatTile({
       <View className="h-8 w-8 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(tone, 0.14) }}>
         <Ionicons name={icon} size={17} color={tone} />
       </View>
-      <Text className="text-xl font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>
+      <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
         {value}
       </Text>
       <Text className="text-[11px] font-semibold uppercase leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>

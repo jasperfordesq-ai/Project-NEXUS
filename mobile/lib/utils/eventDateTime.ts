@@ -159,14 +159,25 @@ function validDate(value: string | null): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function safeTimeZone(timeZone: string): string {
+/**
+ * Whether the runtime recognises this IANA zone name.
+ *
+ * Exported because `new-event.tsx` carried its own copy of this, which is how it ended up
+ * with an unexempted `Intl.DateTimeFormat(undefined, …)` and failed the date-locale gate
+ * (2026-09-06). One probe, one exemption, one place to correct.
+ */
+export function isValidTimeZone(timeZone: string): boolean {
   try {
     // locale-exempt: validity probe for the IANA zone; output is discarded.
     new Intl.DateTimeFormat('en', { timeZone }).format(0);
-    return timeZone;
+    return true;
   } catch {
-    return 'UTC';
+    return false;
   }
+}
+
+function safeTimeZone(timeZone: string): string {
+  return isValidTimeZone(timeZone) ? timeZone : 'UTC';
 }
 
 export function formatEventSchedule(
