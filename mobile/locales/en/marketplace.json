@@ -906,8 +906,6 @@
     "previewCoordinatesEmpty": "No coordinates selected",
     "previewRadius": "Radius {{radius}} km",
     "previewHint": "Use current location or enter coordinates to search nearby listings.",
-    "pinCount": "{{count}} pins",
-    "pinCount_one": "{{count}} pin",
     "resultsTitle": "Nearby results",
     "latitude": "Latitude",
     "latitudePlaceholder": "40.7128",
@@ -929,7 +927,8 @@
     "startTitle": "Enter a location",
     "startSubtitle": "Enter coordinates or open a shared map link to browse nearby marketplace listings.",
     "emptyTitle": "No nearby listings found",
-    "emptySubtitle": "Try a wider radius or another location."
+    "emptySubtitle": "Try a wider radius or another location.",
+    "nearestResult": "Closest result: {{distance}} km away"
   },
   "advancedSearch": {
     "categoriesUnavailable": "Categories didn't load — tap to retry",

@@ -127,6 +127,17 @@ function MarketplaceMapScreen() {
     }
   }
 
+  /*
+    The closest result's distance, from the data the search actually returned. Real
+    information about the area, in place of the three decorative dots that used to stand
+    where a map would be (audit 2026-09-06, F14).
+  */
+  const nearestKm = items.reduce<number | null>((closest, item) => {
+    const distance = item.distance_km == null ? null : Number(item.distance_km);
+    if (distance === null || !Number.isFinite(distance)) return closest;
+    return closest === null ? distance : Math.min(closest, distance);
+  }, null);
+
   if (!hasFeature('marketplace')) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
@@ -158,11 +169,12 @@ function MarketplaceMapScreen() {
                     <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('map.subtitle')}</Text>
                   </View>
                 </View>
-                <MapPreview
+                <SearchAreaSummary
                   latitude={latitude}
                   longitude={longitude}
                   radius={radius}
                   resultCount={items.length}
+                  nearestKm={nearestKm}
                   hasSearched={hasSearched}
                   primary={primary}
                   theme={theme}
@@ -244,11 +256,29 @@ function MarketplaceMapScreen() {
   );
 }
 
-function MapPreview({
+/**
+ * A summary of the area being searched — NOT a map.
+ *
+ * 🔴 What stood here drew a fixed grid and three coloured dots at hardcoded positions, and
+ * the caption beneath it read "{{count}} pins". It received no listing coordinates and
+ * never could: changing the search location or the results changed the text and the number
+ * and left the dots exactly where they were. So the screen showed a member three
+ * geographical markers that corresponded to nothing, and told them those were their
+ * results. The underlying nearby search is real; the picture of it was not.
+ *
+ * Deliberately NOT replaced with a working map: `react-native-maps` is a native module, so
+ * adding one means a new Play/App Store build and no existing install could receive this
+ * fix. A real map is worth doing — recorded as the next step — but showing nothing beats
+ * showing something untrue, and what a member actually needs from this panel (where am I
+ * searching, how far out, how many results, how near the closest one is) is all real data
+ * that can be stated plainly today.
+ */
+function SearchAreaSummary({
   latitude,
   longitude,
   radius,
   resultCount,
+  nearestKm,
   hasSearched,
   primary,
   theme,
@@ -258,63 +288,44 @@ function MapPreview({
   longitude: string;
   radius: string;
   resultCount: number;
+  nearestKm: number | null;
   hasSearched: boolean;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: ReturnType<typeof useTranslation>['t'];
 }) {
-  // The preview card floats over the map with an absolute bottom; it must clear the nav bar itself.
-  const bottomInset = useBottomInset();
   const hasCoordinates = parseCoordinate(latitude) !== null && parseCoordinate(longitude) !== null;
 
   return (
-    <Surface variant="secondary" className="overflow-hidden rounded-panel-inner p-0">
-      <View className="relative h-48 overflow-hidden rounded-panel-inner">
-        <View className="absolute inset-0" style={{ backgroundColor: withAlpha(primary, 0.08) }} />
-        <View className="absolute left-0 right-0 top-12 h-px" style={{ backgroundColor: withAlpha(primary, 0.18) }} />
-        <View className="absolute left-0 right-0 top-24 h-px" style={{ backgroundColor: withAlpha(theme.text, 0.08) }} />
-        <View className="absolute left-0 right-0 top-36 h-px" style={{ backgroundColor: withAlpha(primary, 0.14) }} />
-        <View className="absolute bottom-0 top-0 left-16 w-px" style={{ backgroundColor: withAlpha(theme.text, 0.08) }} />
-        <View className="absolute bottom-0 top-0 left-36 w-px" style={{ backgroundColor: withAlpha(primary, 0.14) }} />
-        <View className="absolute bottom-0 top-0 right-20 w-px" style={{ backgroundColor: withAlpha(theme.text, 0.08) }} />
-
-        <View className="absolute left-7 top-8 size-7 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha('#14b8a6', 0.16) }}>
-          <View className="size-2.5 rounded-full" style={{ backgroundColor: '#14b8a6' }} />
-        </View>
-        <View className="absolute right-10 top-12 size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.18) }}>
-          <View className="size-3 rounded-full" style={{ backgroundColor: primary }} />
-        </View>
-        <View className="absolute bottom-10 left-28 size-7 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha('#f59e0b', 0.18) }}>
-          <View className="size-2.5 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
-        </View>
-
-        {/* Floats over the map; `bottom` includes the Android nav-bar inset or the card sits under it. */}
-        <View
-          testID="marketplace-map-preview"
-          className="absolute inset-x-4 gap-3 rounded-panel-inner p-3"
-          style={{ bottom: 16 + bottomInset, backgroundColor: withAlpha(theme.surface, 0.94) }}
-        >
-          <View className="flex-row items-center justify-between gap-3">
-            <View className="min-w-0 flex-1">
-              <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
-                {t('map.previewTitle')}
-              </Text>
-              <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
-                {hasCoordinates
-                  ? t('map.previewCoordinates', { latitude, longitude })
-                  : t('map.previewCoordinatesEmpty')}
-              </Text>
-            </View>
-            <Chip size="sm" variant="secondary">
-              <Ionicons name="radio-button-on-outline" size={12} color={primary} />
-              <Chip.Label>{t('map.previewRadius', { radius })}</Chip.Label>
-            </Chip>
-          </View>
-          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
-            {hasSearched ? t('map.pinCount', { count: resultCount }) : t('map.previewHint')}
+    <Surface variant="secondary" className="gap-3 rounded-panel-inner p-3" testID="marketplace-map-preview">
+      <View className="flex-row items-center justify-between gap-3">
+        <View className="min-w-0 flex-1">
+          <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            {t('map.previewTitle')}
+          </Text>
+          <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+            {hasCoordinates
+              ? t('map.previewCoordinates', { latitude, longitude })
+              : t('map.previewCoordinatesEmpty')}
           </Text>
         </View>
+        <Chip size="sm" variant="secondary">
+          <Ionicons name="radio-button-on-outline" size={12} color={primary} />
+          <Chip.Label>{t('map.previewRadius', { radius })}</Chip.Label>
+        </Chip>
       </View>
+      <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>
+        {/*
+          Counts LISTINGS, which is what the search returns. It used to say "pins", which
+          promised markers on a map that were never drawn from these results.
+        */}
+        {hasSearched ? t('map.results', { count: resultCount }) : t('map.previewHint')}
+      </Text>
+      {hasSearched && nearestKm !== null ? (
+        <Text testID="marketplace-map-nearest" className="text-xs leading-4" style={{ color: theme.textSecondary }}>
+          {t('map.nearestResult', { distance: formatDecimal(nearestKm, 1) })}
+        </Text>
+      ) : null}
     </Surface>
   );
 }

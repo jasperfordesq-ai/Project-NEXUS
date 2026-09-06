@@ -906,8 +906,6 @@
     "previewCoordinatesEmpty": "Nessuna coordinata selezionata",
     "previewRadius": "Raggio: {{radius}} km",
     "previewHint": "Usa la posizione attuale o inserisci le coordinate per cercare annunci nelle vicinanze.",
-    "pinCount": "{{count}} indicatori",
-    "pinCount_one": "{{count}} indicatore",
     "resultsTitle": "Risultati nelle vicinanze",
     "latitude": "Latitudine",
     "latitudePlaceholder": "40.7128",
@@ -929,7 +927,8 @@
     "startTitle": "Edit Placeholder Location",
     "startSubtitle": "Inserisci le coordinate o apri un collegamento alla mappa condivisa per esplorare il mercato nelle vicinanze annunci.",
     "emptyTitle": "Nessun annuncio trovato nelle vicinanze",
-    "emptySubtitle": "Prova con un raggio più ampio o un'altra posizione."
+    "emptySubtitle": "Prova con un raggio più ampio o un'altra posizione.",
+    "nearestResult": "Risultato più vicino: a {{distance}} km"
   },
   "advancedSearch": {
     "categoriesUnavailable": "Categorie non caricate: tocca per riprovare",

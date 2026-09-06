@@ -87,7 +87,13 @@
     "exportSuccessTitle": "Export bereit",
     "exportSuccessMessage": "Ihr Transaktionsexport wurde vorbereitet.",
     "exportNoDataTitle": "Nichts zum Exportieren",
-    "exportNoDataMessage": "Es sind noch keine Transaktionen zum Exportieren vorhanden."
+    "exportNoDataMessage": "Es sind noch keine Transaktionen zum Exportieren vorhanden.",
+    "exportSuccessCount": "Ihr Export enthält {{count}} Transaktionen.",
+    "exportPartial": "Ihr Export enthält {{count}} Transaktionen. Ihr Verlauf ist länger, als ein Export abdecken kann, daher fehlen die ältesten Einträge.",
+    "exportFailedTitle": "Export fehlgeschlagen",
+    "exportFailedMessage": "Wir konnten Ihren Transaktionsexport nicht vorbereiten. Bitte versuchen Sie es erneut.",
+    "exportSuccessCount_one": "Ihr Export enthält {{count}} Transaktion.",
+    "exportPartial_one": "Ihr Export enthält {{count}} Transaktion. Ihr Verlauf ist länger, als ein Export abdecken kann, daher fehlen die ältesten Einträge."
   },
   "status": {
     "completed": "Abgeschlossen",
@@ -110,5 +116,6 @@
     "balanceAfter": "Guthaben danach",
     "reference": "Referenz",
     "footnote": "Zeitguthaben sind eine Aufzeichnung geleisteter und erhaltener Hilfe. Sie sind kein Geld und können nicht dagegen getauscht werden."
-  }
+  },
+  "noFilteredTransactionsPartial": "Im bisher geladenen Teil Ihres Verlaufs passt nichts zu diesem Filter. Laden Sie mehr, um weiter zurückzuschauen."
 }

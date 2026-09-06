@@ -5,7 +5,7 @@
 
 import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
-import { useMemo, useState, type ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -23,7 +23,7 @@ import {
   type ConnectionListStatus,
 } from '@/lib/api/connections';
 import { displayName } from '@/lib/api/messages';
-import { useApi } from '@/lib/hooks/useApi';
+import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -72,8 +72,32 @@ function ConnectionsScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
-  const { data, isLoading, error, refresh } = useApi(() => getConnections(tab), [tab]);
-  const connections = useMemo(() => unwrapConnections(data), [data]);
+  /*
+    🔴 Paged, not a single call (audit 2026-09-06, F11). The API wrapper asks for 20 at
+    a time and the endpoint returns a cursor and `has_more`; this screen called it once,
+    with no cursor, and rendered that page inside a ScrollView with no way to ask for
+    another. A member with more than twenty connections - or more than twenty pending
+    requests - simply could not reach the rest of them from here, in any of the three tabs.
+  */
+  const {
+    items: connections,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    loadMore,
+    refresh,
+  } = usePaginatedApi<Connection, ConnectionListResponse>(
+    (cursor) => getConnections(tab, cursor),
+    (response) => ({
+      items: unwrapConnections(response),
+      cursor: response?.meta?.cursor ?? null,
+      // Trust `has_more` when the server sends it; otherwise infer from there being a
+      // cursor at all, rather than assuming the list has ended.
+      hasMore: response?.meta?.has_more ?? Boolean(response?.meta?.cursor),
+    }),
+    [tab],
+  );
 
   function runAction(connection: Connection, action: 'accept' | 'remove') {
     const id = connectionId(connection);
@@ -119,7 +143,7 @@ function ConnectionsScreen() {
       <AppTopBar title={t('connections.title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
       <ScrollView
         // Only a pull shows this: on the first load the list already shows its own spinner.
-        refreshControl={<RefreshControl refreshing={isLoading && Boolean(data)} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
+        refreshControl={<RefreshControl refreshing={isLoading && connections.length > 0} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
       >
         <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
@@ -207,6 +231,18 @@ function ConnectionsScreen() {
                 />
               );
             })}
+            {hasMore ? (
+              <HeroButton
+                testID="connections-load-more"
+                variant="secondary"
+                isDisabled={isLoadingMore}
+                onPress={loadMore}
+              >
+                <HeroButton.Label>
+                  {isLoadingMore ? t('common:loading') : t('common:buttons.loadMore')}
+                </HeroButton.Label>
+              </HeroButton>
+            ) : null}
           </View>
         )}
       </ScrollView>

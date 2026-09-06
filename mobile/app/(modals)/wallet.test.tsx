@@ -113,6 +113,9 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
+const mockWriteAsStringAsync = jest.fn(async (..._args: unknown[]) => undefined);
+const mockIsSharingAvailable = jest.fn(async (..._args: unknown[]) => true);
+const mockShareAsync = jest.fn(async (..._args: unknown[]) => undefined);
 const mockUseApi = jest.fn();
 jest.mock('@/lib/hooks/useApi', () => ({
   /**
@@ -130,6 +133,22 @@ jest.mock('@/lib/hooks/useApi', () => ({
 
 jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'View',
+}));
+
+/*
+  🔴 The native export writes a real .csv and hands it to the share sheet rather than
+  sharing a wall of comma-separated text as a message (audit 2026-09-06, F13). A CSV in a
+  chat bubble cannot be saved as a spreadsheet, which is the only reason anyone exports a
+  wallet.
+*/
+jest.mock('expo-file-system/legacy', () => ({
+  cacheDirectory: 'file:///cache/',
+  writeAsStringAsync: (...args: unknown[]) => mockWriteAsStringAsync(...args),
+  EncodingType: { UTF8: 'utf8' },
+}));
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: (...args: unknown[]) => mockIsSharingAvailable(...args),
+  shareAsync: (...args: unknown[]) => mockShareAsync(...args),
 }));
 
 jest.mock('@/lib/api/wallet', () => ({
@@ -225,6 +244,99 @@ const mockFederationTransaction = {
 };
 
 describe('WalletModal', () => {
+  /*
+    🔴 Audit F12 and F13. Both defects were quiet: the screen looked correct and was
+    wrong about what it was telling the member.
+  */
+
+  /**
+   * Stub the screen's four queries, in the order it calls them.
+   *
+   * 🔴 A cycling `mockImplementation`, not `mockReturnValueOnce` — these tests press a
+   * filter chip, so the screen renders more than once and a queue of Once values is empty
+   * by the second render. The cycle length MUST equal the number of `useApi` calls in the
+   * screen; add a state here whenever it grows another query.
+   */
+  function stubWallet(transactions: unknown[], meta?: Record<string, unknown>) {
+    const states = [
+      { data: { data: { balance: 5, currency: 'hours' } }, isLoading: false, error: null, refresh: jest.fn() },
+      { data: { data: transactions, meta }, isLoading: false, error: null, refresh: jest.fn() },
+      { data: { data: { balance: 0 } }, isLoading: false, error: null, refresh: jest.fn() },
+      { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+    ];
+    let call = 0;
+    mockUseApi.mockReset().mockImplementation(() => {
+      const state = states[call % states.length];
+      call += 1;
+      return state;
+    });
+  }
+
+  const debitRow = {
+    id: 1, type: 'debit', status: 'completed', amount: 2,
+    created_at: '2026-09-01T10:00:00Z', description: 'Gardening',
+  };
+
+  it('offers the next page from a filter that matches nothing in what is loaded', () => {
+    /*
+      Earned and Spent filter the rows already in memory, and the next-page button used to
+      be rendered for "All" alone. So a member whose recent transactions happened to be all
+      outgoing was shown a flat "No matching transactions" on Earned, with older credits one
+      page away and nothing on screen to say the history went further.
+    */
+    stubWallet([debitRow], { cursor: 'next-page', has_more: true });
+
+    const { getAllByText, getByTestId } = render(<WalletModal />);
+    // 'Earned' is both a stats tile and a filter chip; the filter is the later of the two.
+    fireEvent.press(getAllByText('Earned').at(-1)!);
+
+    expect(getByTestId('wallet-load-more')).toBeTruthy();
+  });
+
+  it('does not offer a next page once the server says the history has ended', () => {
+    stubWallet([debitRow], { cursor: null, has_more: false });
+
+    const { getAllByText, queryByTestId } = render(<WalletModal />);
+    fireEvent.press(getAllByText('Earned').at(-1)!);
+
+    expect(queryByTestId('wallet-load-more')).toBeNull();
+  });
+
+  it('exports every transaction, not only the pages the member happened to open', async () => {
+    /*
+      The export serialised whatever was in memory, so its contents depended on how many
+      times "Load more" had been pressed. A member who opened the wallet and exported
+      straight away got their most recent rows in a file that said nothing about being
+      partial - and would reasonably treat it as their record.
+    */
+    stubWallet([debitRow], { cursor: 'page-2', has_more: true });
+    mockGetWalletTransactions.mockResolvedValueOnce({
+      data: [{ id: 2, type: 'credit', status: 'completed', amount: 3, created_at: '2026-08-01T10:00:00Z', description: 'Older credit' }],
+      meta: { cursor: null, has_more: false },
+    });
+
+    const { getByText } = render(<WalletModal />);
+    fireEvent.press(getByText('Export'));
+
+    await waitFor(() => expect(mockWriteAsStringAsync).toHaveBeenCalled());
+    const [, csv] = mockWriteAsStringAsync.mock.calls[0] as unknown as [string, string];
+    // The row that was never on screen is in the file.
+    expect(csv).toContain('Older credit');
+    expect(csv).toContain('Gardening');
+  });
+
+  it('shares the export as a .csv file rather than as a message', async () => {
+    stubWallet([debitRow], { cursor: null, has_more: false });
+
+    const { getByText } = render(<WalletModal />);
+    fireEvent.press(getByText('Export'));
+
+    await waitFor(() => expect(mockShareAsync).toHaveBeenCalled());
+    const [uri, options] = mockShareAsync.mock.calls[0] as unknown as [string, { mimeType?: string }];
+    expect(uri).toMatch(/\.csv$/);
+    expect(options.mimeType).toBe('text/csv');
+  });
+
   it('renders without crashing', () => {
     const { toJSON } = render(<WalletModal />);
     expect(toJSON()).toBeTruthy();

@@ -906,8 +906,6 @@
     "previewCoordinatesEmpty": "Keine Koordinaten ausgewählt",
     "previewRadius": "Radius: {{radius}} km",
     "previewHint": "Nutze deinen aktuellen Standort oder gib Koordinaten ein, um Einträge in der Nähe zu suchen.",
-    "pinCount": "{{count}} Markierungen",
-    "pinCount_one": "{{count}} Markierung",
     "resultsTitle": "Ergebnisse in der Nähe",
     "latitude": "Breitengrad",
     "latitudePlaceholder": "40,7128",
@@ -929,7 +927,8 @@
     "startTitle": "Edit Placeholder Location",
     "startSubtitle": "Geben Sie Koordinaten ein oder öffnen Sie einen freigegebenen Kartenlink, um in der Nähe befindliche Marktplatzeinträge zu durchsuchen.",
     "emptyTitle": "Keine in der Nähe befindlichen Einträge gefunden",
-    "emptySubtitle": "Versuchen Sie es mit einem größeren Umkreis oder einem anderen Standort."
+    "emptySubtitle": "Versuchen Sie es mit einem größeren Umkreis oder einem anderen Standort.",
+    "nearestResult": "Nächstes Ergebnis: {{distance}} km entfernt"
   },
   "advancedSearch": {
     "categoriesUnavailable": "Kategorien nicht geladen – zum Wiederholen tippen",

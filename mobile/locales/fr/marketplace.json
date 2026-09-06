@@ -906,8 +906,6 @@
     "previewCoordinatesEmpty": "Aucune coordonnée sélectionnée",
     "previewRadius": "Rayon : {{radius}} km",
     "previewHint": "Utilisez votre position actuelle ou saisissez des coordonnées pour rechercher des annonces à proximité.",
-    "pinCount": "{{count}} repères",
-    "pinCount_one": "{{count}} repère",
     "resultsTitle": "Résultats à proximité",
     "latitude": "Latitude",
     "latitudePlaceholder": "40.7128",
@@ -929,7 +927,8 @@
     "startTitle": "Edit Placeholder Location",
     "startSubtitle": "Entrez les coordonnées ou ouvrez un lien de carte partagée pour parcourir les listes des marchés à proximité.",
     "emptyTitle": "Aucune liste à proximité. trouvé",
-    "emptySubtitle": "Essayez un rayon plus large ou un autre emplacement."
+    "emptySubtitle": "Essayez un rayon plus large ou un autre emplacement.",
+    "nearestResult": "Résultat le plus proche : à {{distance}} km"
   },
   "advancedSearch": {
     "categoriesUnavailable": "Catégories non chargées – touchez pour réessayer",

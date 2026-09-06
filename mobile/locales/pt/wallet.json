@@ -87,7 +87,13 @@
     "exportSuccessTitle": "Exportação pronta",
     "exportSuccessMessage": "Sua transação exportada foi preparado.",
     "exportNoDataTitle": "Nada para exportar",
-    "exportNoDataMessage": "Ainda não há transações para exportar."
+    "exportNoDataMessage": "Ainda não há transações para exportar.",
+    "exportSuccessCount": "A sua exportação contém {{count}} transações.",
+    "exportPartial": "A sua exportação contém {{count}} transações. O seu histórico é mais longo do que uma exportação consegue abranger, pelo que as entradas mais antigas não estão incluídas.",
+    "exportFailedTitle": "A exportação falhou",
+    "exportFailedMessage": "Não foi possível preparar a exportação das suas transações. Tente novamente.",
+    "exportSuccessCount_one": "A sua exportação contém {{count}} transação.",
+    "exportPartial_one": "A sua exportação contém {{count}} transação. O seu histórico é mais longo do que uma exportação consegue abranger, pelo que as entradas mais antigas não estão incluídas."
   },
   "status": {
     "completed": "Concluído",
@@ -110,5 +116,6 @@
     "balanceAfter": "Saldo depois",
     "reference": "Referência",
     "footnote": "Os créditos de tempo são um registo da ajuda dada e recebida. Não são dinheiro e não podem ser trocados por dinheiro."
-  }
+  },
+  "noFilteredTransactionsPartial": "Nada corresponde a este filtro na parte do seu histórico carregada até agora. Carregue mais para ver mais atrás."
 }

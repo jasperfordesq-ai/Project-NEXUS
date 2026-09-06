@@ -6,6 +6,8 @@
 import { parseDecimalInput , formatDecimal } from '@/lib/utils/decimal';
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, RefreshControl, ScrollView, Share, View } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -45,6 +47,23 @@ type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
 type WalletAction = 'transfer' | 'donate' | null;
 type DonationTarget = 'community_fund' | 'user';
+
+/**
+ * How many extra pages an export will fetch (100 rows each) before it stops and says so.
+ * A ceiling rather than an unbounded loop: a wallet years deep should not hold the export
+ * button for minutes with no way out.
+ */
+const EXPORT_PAGE_LIMIT = 50;
+
+/**
+ * A cursor-paged wallet response. `next_cursor` is accepted alongside `cursor` because the
+ * endpoint has used both spellings; taking either is cheaper than a page of history going
+ * silently unreachable when one of them changes.
+ */
+type PagedPayload = {
+  data?: TransactionItem[];
+  meta?: { cursor?: string | null; next_cursor?: string | null; has_more?: boolean };
+};
 
 const filters: TransactionFilter[] = ['all', 'earned', 'spent', 'pending'];
 
@@ -127,6 +146,16 @@ function WalletModalInner() {
   const [extraCursor, setExtraCursor] = useState<string | null>(null);
   const [extraHasMore, setExtraHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  /*
+    Pending rows are their own request (see below), so they need their own paging state.
+    🔴 They had none: the screen asked for 50 and consumed neither the cursor nor
+    `has_more`, so a member with more than fifty pending rows saw a truncated list presented
+    as the whole of it (audit 2026-09-06, F12).
+  */
+  const [extraPending, setExtraPending] = useState<TransactionItem[]>([]);
+  const [extraPendingCursor, setExtraPendingCursor] = useState<string | null>(null);
+  const [extraPendingHasMore, setExtraPendingHasMore] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const balanceQuery = useApi(() => getWalletBalance(), []);
   const transactionsQuery = useApi(() => getWalletTransactions(undefined, 50, 'all'), []);
@@ -145,17 +174,30 @@ function WalletModalInner() {
     [],
     { enabled: filter === 'pending' },
   );
-  const pendingTransactions = useMemo(() => {
+  const firstPagePending = useMemo(() => {
     // Array-checked rather than `?? []`: a payload that is present but not a list would
     // otherwise reach the list renderer and be spread, taking the whole wallet down with
     // an error boundary instead of showing an empty filter.
     const items = unwrap<TransactionItem[]>(pendingQuery.data);
     return Array.isArray(items) ? items : [];
   }, [pendingQuery.data]);
+  const pendingTransactions = useMemo(
+    () => [...firstPagePending, ...extraPending],
+    [extraPending, firstPagePending],
+  );
+  const pendingPayload = pendingQuery.data as PagedPayload | TransactionItem[] | null | undefined;
+  const initialPendingCursor = !Array.isArray(pendingPayload)
+    ? (pendingPayload?.meta?.cursor ?? pendingPayload?.meta?.next_cursor ?? null)
+    : null;
+  const initialPendingHasMore = !Array.isArray(pendingPayload)
+    ? Boolean(pendingPayload?.meta?.has_more)
+    : firstPagePending.length >= 50;
+  const nextPendingCursor = extraPendingCursor ?? initialPendingCursor;
+  const hasMorePending = extraPending.length > 0 ? extraPendingHasMore : initialPendingHasMore;
 
   const balance = unwrap<WalletBalance>(balanceQuery.data)?.balance ?? null;
   const wallet = unwrap<WalletBalance>(balanceQuery.data);
-  const transactionsPayload = transactionsQuery.data as { data?: TransactionItem[]; meta?: { cursor?: string | null; next_cursor?: string | null; has_more?: boolean } } | TransactionItem[] | null | undefined;
+  const transactionsPayload = transactionsQuery.data as PagedPayload | TransactionItem[] | null | undefined;
   const firstPageTransactions = useMemo(() => unwrap<TransactionItem[]>(transactionsQuery.data) ?? [], [transactionsQuery.data]);
   const initialCursor = !Array.isArray(transactionsPayload) ? (transactionsPayload?.meta?.cursor ?? transactionsPayload?.meta?.next_cursor ?? null) : null;
   const initialHasMore = !Array.isArray(transactionsPayload) ? Boolean(transactionsPayload?.meta?.has_more) : firstPageTransactions.length >= 50;
@@ -205,20 +247,42 @@ function WalletModalInner() {
     setExtraTransactions([]);
     setExtraCursor(null);
     setExtraHasMore(false);
+    setExtraPending([]);
+    setExtraPendingCursor(null);
+    setExtraPendingHasMore(false);
     balanceQuery.refresh();
     transactionsQuery.refresh();
     fundQuery.refresh();
     pendingQuery.refresh();
   }
 
+  /*
+    🔴 Reachable from EVERY filter, not only "All" (audit 2026-09-06, F12).
+
+    Earned and Spent filter the rows already in memory, and the next-page button used to be
+    rendered for "All" alone - so a member whose recent 50 transactions happened to be all
+    outgoing saw an empty Earned tab, with no way to reach the credits sitting one page
+    back, and nothing on screen to suggest the history went any further. The filtering is
+    still done client-side over one shared list; what changes is that every filter can now
+    extend that list.
+  */
   async function loadMoreTransactions() {
-    if (!nextCursor || isLoadingMore) return;
+    if (isLoadingMore) return;
+    const pending = filter === 'pending';
+    const cursor = pending ? nextPendingCursor : nextCursor;
+    if (!cursor) return;
     setIsLoadingMore(true);
     try {
-      const response = await getWalletTransactions(nextCursor, 50, 'all');
-      setExtraTransactions((current) => [...current, ...(response.data ?? [])]);
-      setExtraCursor(response.meta?.cursor ?? null);
-      setExtraHasMore(Boolean(response.meta?.has_more));
+      const response = await getWalletTransactions(cursor, 50, pending ? 'pending' : 'all');
+      if (pending) {
+        setExtraPending((current) => [...current, ...(response.data ?? [])]);
+        setExtraPendingCursor(response.meta?.cursor ?? null);
+        setExtraPendingHasMore(Boolean(response.meta?.has_more));
+      } else {
+        setExtraTransactions((current) => [...current, ...(response.data ?? [])]);
+        setExtraCursor(response.meta?.cursor ?? null);
+        setExtraHasMore(Boolean(response.meta?.has_more));
+      }
     } catch (err) {
       showToast({
         title: t('actions.loadMoreFailedTitle'),
@@ -230,7 +294,48 @@ function WalletModalInner() {
     }
   }
 
+  const canLoadMore = filter === 'pending' ? hasMorePending : hasMoreTransactions;
+
+  /**
+   * Collect the member's whole completed history, not just the pages they happened to open.
+   *
+   * 🔴 The export used to serialise `transactions` - literally whatever was in memory -
+   * so its contents depended on how many times the member had pressed "Load more". A member
+   * who opened the wallet and exported immediately got their most recent fifty rows in a
+   * file that said nothing about being partial, and would reasonably treat it as their
+   * record. Bounded at EXPORT_PAGE_LIMIT pages so a very long history cannot spin for ever;
+   * the caller says plainly when it hit that bound rather than silently truncating.
+   */
+  async function collectAllTransactions(): Promise<{ rows: TransactionItem[]; complete: boolean }> {
+    const collected = [...transactions];
+    let cursor = nextCursor;
+    let more = hasMoreTransactions;
+    let pages = 0;
+
+    while (more && cursor && pages < EXPORT_PAGE_LIMIT) {
+      const response = await getWalletTransactions(cursor, 100, 'all');
+      const page = response.data ?? [];
+      collected.push(...page);
+      cursor = response.meta?.cursor ?? null;
+      more = Boolean(response.meta?.has_more) && Boolean(cursor);
+      pages += 1;
+    }
+
+    // De-duplicated by id: the first page in memory and the first page fetched here can
+    // overlap when the member has already pressed "Load more".
+    const seen = new Set<string>();
+    const rows = collected.filter((tx) => {
+      const key = String(tx.id);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return { rows, complete: !more };
+  }
+
   async function handleExport() {
+    if (isExporting) return;
     if (transactions.length === 0) {
       showToast({
         title: t('actions.exportNoDataTitle'),
@@ -240,36 +345,74 @@ function WalletModalInner() {
       return;
     }
 
-    const rows = [
-      ['date', 'type', 'status', 'amount', 'member', 'description'],
-      ...transactions.map((tx) => [
-        formatDate(tx.created_at),
-        tx.type,
-        tx.status,
-        formatHours(tx.type === 'credit' ? tx.amount : -Math.abs(tx.amount)),
-        getOtherName(tx, t('system')),
-        tx.description ?? '',
-      ]),
-    ];
-    const csv = rows.map((row) => row.map(csvCell).join(',')).join('\n');
+    setIsExporting(true);
+    try {
+      const { rows: exported, complete } = await collectAllTransactions();
 
-    if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `wallet-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
-      link.click();
-      URL.revokeObjectURL(url);
+      const rows = [
+        ['date', 'type', 'status', 'amount', 'member', 'description'],
+        ...exported.map((tx) => [
+          formatDate(tx.created_at),
+          tx.type,
+          tx.status,
+          formatHours(tx.type === 'credit' ? tx.amount : -Math.abs(tx.amount)),
+          getOtherName(tx, t('system')),
+          tx.description ?? '',
+        ]),
+      ];
+      const csv = rows.map((row) => row.map(csvCell).join(',')).join('\n');
+      const filename = `wallet-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+
+      if (Platform.OS === 'web' && typeof document !== 'undefined') {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      } else {
+        /*
+          🔴 A FILE, not a message. The native branch used to call
+          `Share.share({ message: csv })`, which hands other apps a wall of comma-separated
+          text: it arrives in a chat or a mail body and cannot be saved as a spreadsheet,
+          which is the only thing anyone exports a wallet for. Written to the cache
+          directory and shared with the CSV mime type so the sheet offers Files, Drive and
+          a spreadsheet app.
+        */
+        const target = `${FileSystem.cacheDirectory}${filename}`;
+        await FileSystem.writeAsStringAsync(target, csv, { encoding: FileSystem.EncodingType.UTF8 });
+        if (!(await Sharing.isAvailableAsync())) {
+          // Nothing on this device can receive a file. Falling back to the old text share is
+          // better than telling the member the export failed when the data is ready.
+          await Share.share({ message: csv });
+        } else {
+          await Sharing.shareAsync(target, {
+            mimeType: 'text/csv',
+            UTI: 'public.comma-separated-values-text',
+            dialogTitle: t('export'),
+          });
+        }
+      }
+
       showToast({
         title: t('actions.exportSuccessTitle'),
-        description: t('actions.exportSuccessMessage'),
-        variant: 'success',
+        // Says how many rows went in, and says so plainly when the history was too long to
+        // fetch in full rather than presenting a truncated file as complete.
+        description: complete
+          ? t('actions.exportSuccessCount', { count: exported.length })
+          : t('actions.exportPartial', { count: exported.length }),
+        variant: complete ? 'success' : 'default',
       });
-      return;
+    } catch (err) {
+      showToast({
+        title: t('actions.exportFailedTitle'),
+        description: describeApiError(err, t('actions.exportFailedMessage')),
+        variant: 'danger',
+      });
+    } finally {
+      setIsExporting(false);
     }
-
-    await Share.share({ message: csv });
   }
 
   return (
@@ -358,16 +501,43 @@ function WalletModalInner() {
                     <EmptyState
                       icon="wallet-outline"
                       title={filter === 'all' ? t('noTransactions') : t('noFilteredTransactions')}
-                      subtitle={filter === 'all' ? t('noTransactionsDesc') : t('noFilteredTransactionsDesc')}
+                      /*
+                        🔴 "None on this filter" and "none in the part of your history we
+                        have loaded" are different statements, and the screen used to make
+                        the first when only the second was true. Earned and Spent filter the
+                        rows already in memory, so a member whose recent fifty happened to be
+                        all outgoing was told flatly that they had never earned anything.
+                      */
+                      subtitle={canLoadMore
+                        ? t('noFilteredTransactionsPartial')
+                        : filter === 'all' ? t('noTransactionsDesc') : t('noFilteredTransactionsDesc')}
                     />
+                    {canLoadMore ? (
+                      <View className="mt-4">
+                        <HeroButton
+                          testID="wallet-load-more"
+                          variant="secondary"
+                          onPress={loadMoreTransactions}
+                          isDisabled={isLoadingMore}
+                        >
+                          {isLoadingMore ? <Spinner size="sm" /> : <Ionicons name="chevron-down-outline" size={16} color={primary} />}
+                          <HeroButton.Label>{t('loadMore')}</HeroButton.Label>
+                        </HeroButton>
+                      </View>
+                    ) : null}
                   </Surface>
                 ) : (
                   <View className="gap-3">
                     {filteredTransactions.map((transaction) => (
                       <TransactionCard key={String(transaction.id)} transaction={transaction} theme={theme} primary={primary} t={t} />
                     ))}
-                    {filter === 'all' && hasMoreTransactions ? (
-                      <HeroButton variant="secondary" onPress={loadMoreTransactions} isDisabled={isLoadingMore}>
+                    {canLoadMore ? (
+                      <HeroButton
+                        testID="wallet-load-more"
+                        variant="secondary"
+                        onPress={loadMoreTransactions}
+                        isDisabled={isLoadingMore}
+                      >
                         {isLoadingMore ? <Spinner size="sm" /> : <Ionicons name="chevron-down-outline" size={16} color={primary} />}
                         <HeroButton.Label>{t('loadMore')}</HeroButton.Label>
                       </HeroButton>

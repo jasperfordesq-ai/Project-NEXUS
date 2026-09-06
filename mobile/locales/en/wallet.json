@@ -87,7 +87,13 @@
     "exportSuccessTitle": "Export ready",
     "exportSuccessMessage": "Your transaction export has been prepared.",
     "exportNoDataTitle": "Nothing to export",
-    "exportNoDataMessage": "There are no transactions to export yet."
+    "exportNoDataMessage": "There are no transactions to export yet.",
+    "exportSuccessCount": "Your export contains {{count}} transactions.",
+    "exportPartial": "Your export contains {{count}} transactions. Your history is longer than one export can cover, so the oldest entries are not included.",
+    "exportFailedTitle": "Export failed",
+    "exportFailedMessage": "We could not prepare your transaction export. Please try again.",
+    "exportSuccessCount_one": "Your export contains {{count}} transaction.",
+    "exportPartial_one": "Your export contains {{count}} transaction. Your history is longer than one export can cover, so the oldest entries are not included."
   },
   "status": {
     "completed": "Completed",
@@ -110,5 +116,6 @@
     "balanceAfter": "Balance afterwards",
     "reference": "Reference",
     "footnote": "Time credits are a record of help given and received. They are not money and cannot be exchanged for it."
-  }
+  },
+  "noFilteredTransactionsPartial": "Nothing matches this filter in the part of your history loaded so far. Load more to look further back."
 }

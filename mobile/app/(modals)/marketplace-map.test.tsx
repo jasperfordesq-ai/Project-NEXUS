@@ -47,6 +47,7 @@ jest.mock('react-i18next', () => ({
       if (key === 'map.radiusLabel') return `Within ${String(opts?.radius ?? '')} km`;
       if (key === 'map.coordinatesLabel') return `${String(opts?.latitude ?? '')}, ${String(opts?.longitude ?? '')}`;
       if (key === 'map.distance') return `${String(opts?.distance ?? '')} km away`;
+      if (key === 'map.nearestResult') return `Closest result: ${String(opts?.distance ?? '')} km away`;
       return map[key] ?? key;
     },
   }),
@@ -122,6 +123,36 @@ describe('MarketplaceMapRoute', () => {
         limit: 50,
       });
     });
+
+    unmount();
+  });
+
+  /*
+    🔴 Audit F14. The panel above the search fields drew a fixed grid and three coloured
+    dots at hardcoded positions and captioned them "{{count}} pins". It received no listing
+    coordinates and never could: changing the location or the results changed the number and
+    left the dots exactly where they were, so a member was shown three geographical markers
+    that corresponded to nothing and told those were their results. The nearby search itself
+    is real; only the picture of it was invented.
+  */
+  it('summarises the search area from real results instead of drawing invented pins', async () => {
+    mockSearchParams = { latitude: '53.3498', longitude: '-6.2603', radius: '25' };
+    (getNearbyMarketplaceListings as jest.Mock).mockResolvedValue({
+      data: [
+        { id: 1, title: 'Ladder', distance_km: 4.2 },
+        { id: 2, title: 'Drill', distance_km: 1.8 },
+      ],
+    });
+
+    const { getByTestId, getByText, queryByText, unmount } = render(<MarketplaceMapRoute />);
+    fireEvent.press(getByText('Search nearby'));
+
+    // Counts LISTINGS, which is what the search returns.
+    await waitFor(() => expect(getByTestId('marketplace-map-preview')).toHaveTextContent(/2 nearby listings/));
+    // The nearest distance comes from the results, not from a fixed position on a drawing.
+    expect(getByTestId('marketplace-map-nearest')).toHaveTextContent(/1\.8/);
+    // And nothing on screen promises pins any more.
+    expect(queryByText(/pin/i)).toBeNull();
 
     unmount();
   });

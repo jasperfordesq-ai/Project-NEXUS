@@ -906,8 +906,6 @@
     "previewCoordinatesEmpty": "Níor roghnaíodh aon chomhordanáidí",
     "previewRadius": "Ga {{radius}} km",
     "previewHint": "Úsáid do shuíomh reatha nó cuir comhordanáidí isteach chun liostaí in aice láimhe a chuardach.",
-    "pinCount": "{{count}} pionna léarscáile",
-    "pinCount_one": "{{count}} pionna léarscáile",
     "resultsTitle": "Torthaí in aice láimhe",
     "latitude": "Domhanleithead",
     "latitudePlaceholder": "40.7128",
@@ -929,7 +927,8 @@
     "startTitle": "Cuir suíomh isteach",
     "startSubtitle": "Cuir comhordanáidí isteach nó oscail nasc léarscáile roinnte chun liostaí margaidh in aice láimhe a bhrabhsáil.",
     "emptyTitle": "Níor aimsíodh aon liostaí in aice láimhe",
-    "emptySubtitle": "Bain triail as ga níos leithne nó suíomh eile."
+    "emptySubtitle": "Bain triail as ga níos leithne nó suíomh eile.",
+    "nearestResult": "An toradh is gaire: {{distance}} km ar shiúl"
   },
   "advancedSearch": {
     "categoriesUnavailable": "Níor lódáladh na catagóirí – tapáil chun triail eile a bhaint as",

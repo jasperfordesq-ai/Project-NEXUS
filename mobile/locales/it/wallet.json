@@ -87,7 +87,13 @@
     "exportSuccessTitle": "Esportazione pronta",
     "exportSuccessMessage": "L'esportazione della transazione è stata preparata.",
     "exportNoDataTitle": "Niente da esporta",
-    "exportNoDataMessage": "Non ci sono ancora transazioni da esportare."
+    "exportNoDataMessage": "Non ci sono ancora transazioni da esportare.",
+    "exportSuccessCount": "L’esportazione contiene {{count}} transazioni.",
+    "exportPartial": "L’esportazione contiene {{count}} transazioni. La tua cronologia è più lunga di quanto una singola esportazione possa coprire, quindi le voci più vecchie non sono incluse.",
+    "exportFailedTitle": "Esportazione non riuscita",
+    "exportFailedMessage": "Non siamo riusciti a preparare l’esportazione delle tue transazioni. Riprova.",
+    "exportSuccessCount_one": "L’esportazione contiene {{count}} transazione.",
+    "exportPartial_one": "L’esportazione contiene {{count}} transazione. La tua cronologia è più lunga di quanto una singola esportazione possa coprire, quindi le voci più vecchie non sono incluse."
   },
   "status": {
     "completed": "Completato",
@@ -110,5 +116,6 @@
     "balanceAfter": "Saldo successivo",
     "reference": "Riferimento",
     "footnote": "I crediti di tempo registrano l’aiuto dato e ricevuto. Non sono denaro e non possono essere scambiati con denaro."
-  }
+  },
+  "noFilteredTransactionsPartial": "Nulla corrisponde a questo filtro nella parte di cronologia caricata finora. Carica altro per guardare più indietro."
 }

@@ -87,7 +87,13 @@
     "exportSuccessTitle": "Easpórtáil réidh",
     "exportSuccessMessage": "Tá d'easpórtáil idirbheart ullmhaithe.",
     "exportNoDataTitle": "Níl aon rud le heaspórtáil",
-    "exportNoDataMessage": "Níl aon idirbhearta le heaspórtáil fós."
+    "exportNoDataMessage": "Níl aon idirbhearta le heaspórtáil fós.",
+    "exportSuccessCount": "Tá {{count}} idirbheart san easpórtáil.",
+    "exportPartial": "Tá {{count}} idirbheart san easpórtáil. Tá do stair níos faide ná mar is féidir le heaspórtáil amháin a chlúdach, mar sin níl na hiontrálacha is sine san áireamh.",
+    "exportFailedTitle": "Theip ar an easpórtáil",
+    "exportFailedMessage": "Níorbh fhéidir linn easpórtáil do chuid idirbheart a ullmhú. Bain triail eile as.",
+    "exportSuccessCount_one": "Tá {{count}} idirbheart amháin san easpórtáil.",
+    "exportPartial_one": "Tá {{count}} idirbheart amháin san easpórtáil. Tá do stair níos faide ná mar is féidir le heaspórtáil amháin a chlúdach, mar sin níl na hiontrálacha is sine san áireamh."
   },
   "status": {
     "completed": "Críochnaithe",
@@ -110,5 +116,6 @@
     "balanceAfter": "Iarmhéid ina dhiaidh",
     "reference": "Tagairt",
     "footnote": "Is taifead ar chabhair a tugadh agus a fuarthas atá i gcreidmheasanna ama. Ní airgead iad agus ní féidir iad a mhalartú ar airgead."
-  }
+  },
+  "noFilteredTransactionsPartial": "Níl aon rud a mheaitseálann an scagaire seo sa chuid de do stair atá lódáilte go dtí seo. Lódáil tuilleadh chun breathnú níos faide siar."
 }

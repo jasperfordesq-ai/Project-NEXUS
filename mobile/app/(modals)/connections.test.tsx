@@ -64,9 +64,9 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
-const mockUseApi = jest.fn();
-jest.mock('@/lib/hooks/useApi', () => ({
-  useApi: (...args: unknown[]) => mockUseApi(...args),
+const mockUsePaginatedApi = jest.fn();
+jest.mock('@/lib/hooks/usePaginatedApi', () => ({
+  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
 }));
 
 const mockConfirm = jest.fn();
@@ -105,7 +105,7 @@ import ConnectionsRoute from './connections';
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUseApi.mockReturnValue({ data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() });
+  mockUsePaginatedApi.mockReturnValue(paginated({ items: [], isLoading: false, error: null }));
 });
 
 const connection = {
@@ -122,6 +122,34 @@ const connection = {
   },
 };
 
+/**
+ * The paginated state shape the screen reads, with sensible defaults.
+ *
+ * 🔴 The screen moved from `useApi` to `usePaginatedApi` because it fetched exactly one
+ * page of twenty and offered no way to ask for another, so a member with more than twenty
+ * connections or pending requests could not reach the rest (audit 2026-09-06, F11).
+ */
+function paginated(overrides: Partial<{
+  items: unknown[];
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  error: string | null;
+  hasMore: boolean;
+  loadMore: () => void;
+  refresh: () => void;
+}> = {}) {
+  return {
+    items: [],
+    isLoading: false,
+    isLoadingMore: false,
+    error: null,
+    hasMore: false,
+    loadMore: jest.fn(),
+    refresh: jest.fn(),
+    ...overrides,
+  };
+}
+
 describe('ConnectionsRoute', () => {
   it('renders the accepted empty state with browse members action', () => {
     const { getByText } = render(<ConnectionsRoute />);
@@ -129,8 +157,33 @@ describe('ConnectionsRoute', () => {
     expect(getByText('Browse members')).toBeTruthy();
   });
 
+  /*
+    🔴 Audit F11. The API wrapper asks for twenty at a time and the endpoint returns a
+    cursor and `has_more`; the screen called it once, with no cursor, and mapped that single
+    page inside a ScrollView. There was no next-page action on any of the three tabs, so a
+    member with more than twenty connections - or more than twenty pending requests - could
+    not reach the older ones at all.
+  */
+  it('offers a way to reach connections beyond the first page', () => {
+    const loadMore = jest.fn();
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [connection], hasMore: true, loadMore }));
+
+    const { getByTestId } = render(<ConnectionsRoute />);
+    fireEvent.press(getByTestId('connections-load-more'));
+
+    expect(loadMore).toHaveBeenCalled();
+  });
+
+  it('does not offer a next page when the server says there is none', () => {
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [connection], hasMore: false }));
+
+    const { queryByTestId } = render(<ConnectionsRoute />);
+
+    expect(queryByTestId('connections-load-more')).toBeNull();
+  });
+
   it('renders connection cards and routes to profile and thread', () => {
-    mockUseApi.mockReturnValueOnce({ data: { data: [connection] }, isLoading: false, error: null, refresh: jest.fn() });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [connection], isLoading: false, error: null }));
     const { router } = require('expo-router');
     const { getByText, getByLabelText } = render(<ConnectionsRoute />);
     expect(getByText('Katherine')).toBeTruthy();
@@ -170,7 +223,7 @@ describe('ConnectionsRoute', () => {
     const { removeConnection } = require('@/lib/api/connections');
     removeConnection.mockClear();
     mockConfirm.mockClear();
-    mockUseApi.mockReturnValueOnce({ data: { data: [connection] }, isLoading: false, error: null, refresh: jest.fn() });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [connection], isLoading: false, error: null }));
 
     const { getByText } = render(<ConnectionsRoute />);
     fireEvent.press(getByText('Remove'));
@@ -187,12 +240,7 @@ describe('ConnectionsRoute', () => {
 
   it('labels a pending request from the tab, never from the raw status', () => {
     const pending = { ...connection, status: 'pending' as const };
-    mockUseApi.mockReturnValue({
-      data: { data: [pending] },
-      isLoading: false,
-      error: null,
-      refresh: jest.fn(),
-    });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [pending], isLoading: false, error: null }));
 
     const { getByText, queryByText, getAllByText } = render(<ConnectionsRoute />);
 
@@ -212,12 +260,7 @@ describe('ConnectionsRoute', () => {
    */
   it('says a pending request was requested, not that it is connected', () => {
     const pending = { ...connection, status: 'pending' as const };
-    mockUseApi.mockReturnValue({
-      data: { data: [pending] },
-      isLoading: false,
-      error: null,
-      refresh: jest.fn(),
-    });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [pending], isLoading: false, error: null }));
 
     const { getByText, queryByText } = render(<ConnectionsRoute />);
     fireEvent.press(getByText('Received'));
