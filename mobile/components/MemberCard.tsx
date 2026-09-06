@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -92,7 +93,7 @@ export default function MemberCard({ member }: MemberCardProps) {
                   <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
                     <Ionicons name="star" size={13} color={theme.warning} />
                     <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>
-                      {member.rating.toFixed(1)}
+                      {formatDecimal(member.rating, 1, 1)}
                     </Text>
                   </Surface>
                 ) : null}

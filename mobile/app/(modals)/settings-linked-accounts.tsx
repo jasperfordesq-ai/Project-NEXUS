@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -73,6 +74,7 @@ export default function SettingsLinkedAccountsRoute() {
 
 function SettingsLinkedAccountsScreen() {
   const { t } = useTranslation(['settings', 'common']);
+  const { confirm, confirmDialog } = useConfirm();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -111,7 +113,23 @@ function SettingsLinkedAccountsScreen() {
     }
   }
 
-  async function revoke(item: SubAccountRelationship) {
+  function revoke(item: SubAccountRelationship) {
+    /*
+      🔴 S3-17: this fired on one tap. The row is a carer or dependent relationship — a
+      safeguarding-relevant link — and a mis-tap severed it with nothing to undo. Blocking
+      a member two screens away already confirms first.
+    */
+    confirm({
+      title: t('linkedAccounts.revokeConfirmTitle'),
+      message: t('linkedAccounts.revokeConfirmMessage'),
+      confirmLabel: t('linkedAccounts.remove'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: () => void performRevoke(item),
+    });
+  }
+
+  async function performRevoke(item: SubAccountRelationship) {
     try {
       setBusyId(item.relationship_id);
       await revokeSubAccount(item.relationship_id);
@@ -240,6 +258,7 @@ function SettingsLinkedAccountsScreen() {
           </>
         )}
       </ScrollView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

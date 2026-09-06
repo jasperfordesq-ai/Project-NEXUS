@@ -72,7 +72,14 @@
       "synced": "Synchronisiert",
       "conflict": "Konflikt",
       "rejected": "Abgelehnt"
-    }
+    },
+    "readOnlyTitle": "Der Offline-Check-in auf diesem Gerät ist beendet",
+    "readOnlyExpired": "Die heruntergeladene Teilnehmerliste ist abgelaufen. Es kann nichts Neues eingereiht werden, aber nicht synchronisierte Check-ins bleiben erhalten, bis du sie entfernst.",
+    "readOnlyRotated": "Die Berechtigung dieses Geräts wurde ersetzt. Es kann nichts Neues eingereiht werden, aber nicht synchronisierte Check-ins bleiben erhalten, bis du sie entfernst.",
+    "pendingKept": "{{count}} nicht synchronisierte Check-ins sind noch auf diesem Gerät gespeichert.",
+    "pendingKept_one": "{{count}} nicht synchronisierter Check-in ist noch auf diesem Gerät gespeichert.",
+    "purgePendingWarning": "{{count}} nicht synchronisierte Check-ins gehen endgültig verloren.",
+    "purgePendingWarning_one": "{{count}} nicht synchronisierter Check-in geht endgültig verloren."
   },
   "conflicts": {
     "title": "Check-in-Konflikte",

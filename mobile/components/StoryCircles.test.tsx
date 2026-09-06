@@ -27,6 +27,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#006FEE',
 }));
 

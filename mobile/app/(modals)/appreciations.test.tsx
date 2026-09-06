@@ -10,6 +10,8 @@ const mockUseApi = jest.fn();
 const mockReactToAppreciation = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useLocalSearchParams: () => ({ userId: '7', name: 'Alice' }),
 }));
 
@@ -22,6 +24,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

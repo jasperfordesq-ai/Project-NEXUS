@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGet = jest.fn();
 const mockGetDetail = jest.fn();
@@ -16,7 +16,21 @@ const mockCancel = jest.fn();
 const mockRetry = jest.fn();
 const mockShowToast = jest.fn();
 
+const mockConfirm = jest.fn();
+const mockNavListeners: Record<string, (e: unknown) => void> = {};
+const mockNavDispatch = jest.fn();
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...args), confirmDialog: null }),
+}));
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
+  useNavigation: () => ({
+    addListener: (event: string, handler: (e: unknown) => void) => {
+      mockNavListeners[event] = handler;
+      return () => { delete mockNavListeners[event]; };
+    },
+    dispatch: (...args: unknown[]) => mockNavDispatch(...args),
+  }),
   useLocalSearchParams: () => ({ id: '42' }),
   router: { canGoBack: () => true, back: jest.fn(), replace: jest.fn() },
 }));
@@ -110,6 +124,11 @@ jest.mock('react-i18next', () => {
     'common:buttons.loadMore': 'Load more',
     'common:buttons.edit': 'Edit',
     'common:buttons.done': 'Done',
+    unsaved_title: 'Discard this message?',
+    unsaved_message: 'You have unsaved wording.',
+    discard: 'Discard',
+    schedule_invalid_title: 'Check the schedule',
+    schedule_invalid_description: 'Enter a valid local date and time.',
   };
   return {
     useTranslation: () => ({
@@ -152,6 +171,7 @@ function broadcast(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  Object.keys(mockNavListeners).forEach((key) => { delete mockNavListeners[key]; });
   mockGet.mockResolvedValue({
     data: [broadcast()],
     meta: { base_url: '', current_page: 1, per_page: 50, total: 1, total_pages: 1, has_more: false },
@@ -242,6 +262,65 @@ describe('EventCommunicationsScreen', () => {
     fireEvent.press(screen.getByText('Confirm cancellation'));
 
     await waitFor(() => expect(mockCancel).toHaveBeenCalledWith(8, 2, 'Plan changed', expect.any(String)));
+  });
+
+  /** 🔴 S4-04. The composer's Cancel (and Back) used to drop organiser wording silently. */
+  it('asks before closing a composer that holds unsaved wording, and closes only on confirmation', async () => {
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+
+    fireEvent.press(screen.getByText('New message'));
+    // A pristine composer closes freely and no navigation guard is armed.
+    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Half-written notice');
+    expect(mockNavListeners.beforeRemove).toBeDefined();
+
+    fireEvent.press(screen.getByText('common:buttons.cancel'));
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this message?', variant: 'danger' }));
+    // Still open, wording intact.
+    expect(screen.getByDisplayValue('Half-written notice')).toBeTruthy();
+
+    const options = mockConfirm.mock.calls[0][0] as { onConfirm: () => void };
+    act(() => { options.onConfirm(); });
+    expect(screen.queryByTestId('event-communication-body')).toBeNull();
+  });
+
+  /** S4-23. The label stays beside the spinner while a preview is in flight. */
+  it('keeps the preview label visible while the preview request is pending', async () => {
+    let resolvePreview: (value: unknown) => void = () => undefined;
+    mockPreview.mockReturnValueOnce(new Promise((resolve) => { resolvePreview = resolve; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Notice');
+    fireEvent.press(screen.getByText('Preview audience'));
+
+    await waitFor(() => expect(mockPreview).toHaveBeenCalled());
+    expect(screen.getByText('Preview audience')).toBeTruthy();
+    await act(async () => { resolvePreview({ recipient_count: 12, delivery_count: 24 }); });
+  });
+
+  /** S4-25. The schedule field is a local wall-clock time; a mistyped one is refused, not sent as "now". */
+  it('converts a typed local schedule to an instant and refuses one it cannot parse', async () => {
+    const { eventLocalInputToIso, localEventTimeZone } = jest.requireActual('@/lib/utils/eventDateTime');
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+
+    fireEvent.press(screen.getByText('Schedule'));
+    fireEvent.changeText(screen.getByTestId('event-communication-scheduled-at'), 'tomorrow 10am');
+    fireEvent.press(screen.getByText('Confirm schedule'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Check the schedule' })));
+    expect(mockSchedule).not.toHaveBeenCalled();
+
+    fireEvent.changeText(screen.getByTestId('event-communication-scheduled-at'), '2030-08-01T10:00');
+    fireEvent.press(screen.getByText('Confirm schedule'));
+    await waitFor(() => expect(mockSchedule).toHaveBeenCalledWith(
+      8,
+      1,
+      eventLocalInputToIso('2030-08-01T10:00', localEventTimeZone()),
+      expect.any(String),
+    ));
   });
 
   it('loads the current draft and saves a revision with optimistic versioning', async () => {

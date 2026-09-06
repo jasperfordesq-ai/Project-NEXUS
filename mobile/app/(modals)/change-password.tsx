@@ -146,10 +146,15 @@ function ChangePasswordScreenInner() {
         </ScrollView>
         <FormActionFooter
           title={t('password.reviewTitle')}
-          subtitle={t('password.reviewSubtitle')}
+          subtitle={
+            !currentPassword || !newPassword || !confirmPassword
+              ? t('password.footerMissing')
+              : newPassword !== confirmPassword
+                ? t('password.footerMismatch')
+                : t('password.reviewSubtitle')
+          }
           submitLabel={isLoading ? t('password.saving') : t('password.save')}
           secondaryLabel={t('common:buttons.cancel')}
-          primary={primary}
           isSubmitting={isLoading}
           onSubmit={() => void handleSubmit()}
           onSecondary={() => router.back()}

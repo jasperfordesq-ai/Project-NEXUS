@@ -3,7 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { api } from '@/lib/api/client';
+import i18n from 'i18next';
+import { api, ApiResponseError } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 import { type User } from '@/lib/api/auth';
 import { Platform } from 'react-native';
@@ -95,7 +96,7 @@ export async function updateAvatar(uri: string): Promise<{ data: { avatar_url: s
   const avatarUrl = response.data?.avatar_url ?? response.avatar_url ?? null;
 
   if (!avatarUrl) {
-    throw new Error(response.message ?? 'Avatar upload did not return an image URL.');
+    throw new ApiResponseError(502, response.message ?? i18n.t('common:errors.uploadIncomplete'));
   }
 
   return { data: { avatar_url: avatarUrl } };

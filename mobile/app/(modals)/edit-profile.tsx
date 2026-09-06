@@ -276,10 +276,10 @@ function EditProfileScreenInner() {
                 />
                 <View className="min-w-0 flex-1">
                   <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
-                    {hydrating ? t('edit.loadingProfile') : t('edit.title')}
+                    {t('edit.title')}
                   </Text>
                   <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }}>
-                    {t('edit.subtitle')}
+                    {hydrating ? t('edit.loadingProfile') : t('edit.subtitle')}
                   </Text>
                 </View>
               </View>

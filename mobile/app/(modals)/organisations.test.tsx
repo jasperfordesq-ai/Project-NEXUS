@@ -9,6 +9,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 const mockPush = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: (...args: unknown[]) => mockPush(...args), replace: jest.fn(), back: jest.fn() }),
   router: { push: (...args: unknown[]) => mockPush(...args), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({}),

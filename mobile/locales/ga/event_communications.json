@@ -94,5 +94,8 @@
   "variants": { "announcement": "Fógra", "follow_up": "Obair leantach i ndiaidh na himeachta", "review_request": "Iarratas ar léirmheas" },
   "statuses": { "draft": "Dréacht", "scheduled": "Sceidealaithe", "sending": "Á sheoladh", "sent": "Seolta", "cancelled": "Cealaithe", "failed": "Teipthe" },
   "segments": { "registration_confirmed": "Clárúcháin deimhnithe", "waitlist_active": "Liosta feithimh gníomhach", "attendance_attended": "D’fhreastail", "attendance_no_show": "Níor fhreastail" },
-  "channels": { "email": "Ríomhphost", "in_app": "Fógra san aip", "push": "Brúfhógra" }
+  "channels": { "email": "Ríomhphost", "in_app": "Fógra san aip", "push": "Brúfhógra" },
+  "unsaved_title": "An teachtaireacht seo a chaitheamh i dtraipisí?",
+  "unsaved_message": "Tá focail neamhshábháilte agat. Má dhúnann tú anois, caillfear iad.",
+  "discard": "Caith i dtraipisí"
 }

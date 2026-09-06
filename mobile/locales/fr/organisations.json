@@ -37,7 +37,8 @@
     "organisations": "Partenaires",
     "verified": "Vérifié",
     "opportunities": "Opportunités",
-    "volunteers": "Bénévoles"
+    "volunteers": "Bénévoles",
+    "loadedNote": "Les chiffres portent sur les organisations chargées jusqu'ici."
   },
   "register": {
     "title": "Enregistrer l'organisation",
@@ -70,7 +71,10 @@
       "emailInvalid": "Entrez une adresse e-mail valide.",
       "websiteInvalid": "Entrez l'URL complète d'un site Web commençant par http:// ou https://.",
       "termsRequired": "Confirmez que vous êtes autorisé à enregistrer cette organisation."
-    }
+    },
+    "unsavedTitle": "Abandonner cette inscription ?",
+    "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
+    "discard": "Abandonner"
   },
   "detail": {
     "title": "Organisation",

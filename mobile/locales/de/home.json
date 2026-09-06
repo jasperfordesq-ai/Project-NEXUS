@@ -52,6 +52,9 @@
   "newPost": {
     "title": "Beitrag erstellen",
     "placeholder": "Was beschäftigt Sie?",
+    "unsavedTitle": "Diesen Beitrag verwerfen?",
+    "unsavedMessage": "Was du geschrieben hast, geht verloren.",
+    "discard": "Verwerfen",
     "submit": "Posten",
     "created": "Beitrag erstellt!",
     "failed": "Beitrag konnte nicht erstellt werden.",
@@ -153,7 +156,9 @@
     "closed": "Umfrage beendet",
     "vote": "Abstimmen",
     "resultsHiddenUntilClose": "Ergebnisse erscheinen nach Ablauf der Umfrage",
-    "voteToSeeResults": "Abstimmen, um Ergebnisse zu sehen"
+    "voteToSeeResults": "Abstimmen, um Ergebnisse zu sehen",
+    "voteFailedTitle": "Stimme nicht gespeichert",
+    "voteFailed": "Deine Stimme konnte nicht erfasst werden. Bitte versuche es erneut."
   },
   "pollsScreen": {
     "title": "Umfragen",

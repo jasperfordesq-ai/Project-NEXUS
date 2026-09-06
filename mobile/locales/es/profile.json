@@ -41,6 +41,7 @@
     "score": "{{score}} % de coincidencia",
     "open": "Abrir coincidencia",
     "dismiss": "Dismiss",
+    "dismissFailed": "No se pudo descartar esta coincidencia. Inténtalo de nuevo.",
     "emptyTitle": "Sin coincidencias aún",
     "emptySubtitle": "Las nuevas recomendaciones aparecerán aquí cuando estén disponibles.",
     "errorTitle": "No se pudieron cargar las coincidencias",
@@ -67,6 +68,10 @@
     "pendingCount": "Revisiones pendientes",
     "delete": "Delete",
     "deleteSuccess": "Reseña eliminada.",
+    "submitFailed": "No se pudo enviar tu reseña. Inténtalo de nuevo.",
+    "deleteFailed": "No se pudo eliminar la reseña. Inténtalo de nuevo.",
+    "deleteConfirmTitle": "¿Eliminar esta reseña?",
+    "deleteConfirmMessage": "Se quitará del perfil del miembro. Esto no se puede deshacer.",
     "write": "Escribir reseña",
     "cancel": "Cancel",
     "submit": "Enviar reseña",
@@ -371,6 +376,9 @@
     "load_failed": "No se pudieron cargar tus preferencias de coincidencia",
     "save": "Guardar preferencias",
     "save_success": "Preferencias de coincidencias guardadas",
+    "unsavedTitle": "¿Descartar los cambios?",
+    "unsavedMessage": "Tus preferencias de coincidencias no se han guardado.",
+    "discard": "Descartar",
     "save_failed": "No se pudieron guardar las preferencias de coincidencia",
     "pause": {
       "title": "Pausar coincidencia"

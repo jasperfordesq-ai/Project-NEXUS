@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { ApiResponseError } from '@/lib/api/client';
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 
@@ -11,11 +12,14 @@ const mockReplace = jest.fn();
 let mockParams: Record<string, string | undefined> = { token: 'verify-token' };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn() }),
   useLocalSearchParams: () => mockParams,
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -50,12 +54,21 @@ describe('VerifyEmailScreen', () => {
     expect(mockVerifyEmail).not.toHaveBeenCalled();
   });
 
-  it('shows an error state when verification fails', async () => {
-    mockVerifyEmail.mockRejectedValue(new Error('Expired token'));
+  it('shows the server wording when verification is refused', async () => {
+    mockVerifyEmail.mockRejectedValue(new ApiResponseError(400, 'Expired token'));
 
     const { findByText } = render(<VerifyEmailScreen />);
 
     expect(await findByText('Could not verify email')).toBeTruthy();
     expect(await findByText('Expired token')).toBeTruthy();
+  });
+
+  it('does not show raw JavaScript error text when verification fails', async () => {
+    mockVerifyEmail.mockRejectedValue(new TypeError("Cannot read properties of undefined (reading 'data')"));
+
+    const { findByText, queryByText } = render(<VerifyEmailScreen />);
+
+    expect(await findByText('Could not verify email')).toBeTruthy();
+    expect(queryByText(/Cannot read properties/)).toBeNull();
   });
 });

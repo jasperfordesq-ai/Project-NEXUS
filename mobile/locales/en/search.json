@@ -41,6 +41,8 @@
     "saveFailedTitle": "Could not save search",
     "saveFailedMessage": "Please check the search name and try again.",
     "deleteFailedTitle": "Could not delete search",
-    "deleteFailedMessage": "Please try again."
+    "deleteFailedMessage": "Please try again.",
+    "deleteConfirmTitle": "Delete this saved search?",
+    "deleteConfirmMessage": "You can save it again from a new search at any time."
   }
 }

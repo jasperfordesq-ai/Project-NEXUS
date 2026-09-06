@@ -22,6 +22,7 @@ import {
 
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';
+import AccentIcon from '@/components/ui/AccentIcon';
 import { ApiResponseError } from '@/lib/api/client';
 import {
   commitEventRecurrenceDefinitions,
@@ -121,6 +122,9 @@ function EventRecurrenceBlueprintsScreenInner() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadMoreFailed, setLoadMoreFailed] = useState(false);
+  /** The commit succeeded but the history list could not be refreshed afterwards (S4-17). */
+  const [historyRefreshFailed, setHistoryRefreshFailed] = useState(false);
+  const [isRefreshingHistory, setIsRefreshingHistory] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -152,6 +156,8 @@ function EventRecurrenceBlueprintsScreenInner() {
     setWorkflowError(null);
     setIsLoadingMore(false);
     setLoadMoreFailed(false);
+    setHistoryRefreshFailed(false);
+    setIsRefreshingHistory(false);
     setIsPreviewing(false);
     setIsCommitting(false);
     setIsConfirmOpen(false);
@@ -254,6 +260,27 @@ function EventRecurrenceBlueprintsScreenInner() {
     }
   }
 
+  async function refreshHistory(): Promise<void> {
+    const generation = generationRef.current;
+    const sourceIdentity = subjectIdentityRef.current;
+    setIsRefreshingHistory(true);
+    try {
+      const refreshed = await getEventRecurrenceDefinitionHistory(eventId);
+      if (generation !== generationRef.current || sourceIdentity !== subjectIdentityRef.current) return;
+      setHistory(refreshed.data.items);
+      setNextBeforeVersion(refreshed.data.next_before_version);
+      setHistoryRefreshFailed(false);
+    } catch {
+      // 🔴 Not `setLoadFailed(true)`. That replaced the WHOLE screen — including the
+      // "saved" confirmation the member had just earned — with "could not load", so a
+      // successful commit read as a failure (S4-17). The list keeps its last state and
+      // says, inline, that it is stale.
+      if (generation === generationRef.current) setHistoryRefreshFailed(true);
+    } finally {
+      if (generation === generationRef.current) setIsRefreshingHistory(false);
+    }
+  }
+
   async function commitPreview(): Promise<void> {
     if (!preview || !recurrenceId || !pendingIdempotencyKey || !isConfirmed || isCommitting) return;
     if (previewExpired) {
@@ -280,14 +307,7 @@ function EventRecurrenceBlueprintsScreenInner() {
       setPendingIdempotencyKey(null);
       setIsConfirmOpen(false);
       setIsConfirmed(false);
-      try {
-        const refreshed = await getEventRecurrenceDefinitionHistory(eventId);
-        if (generation !== generationRef.current || sourceIdentity !== subjectIdentityRef.current) return;
-        setHistory(refreshed.data.items);
-        setNextBeforeVersion(refreshed.data.next_before_version);
-      } catch {
-        setLoadFailed(true);
-      }
+      await refreshHistory();
     } catch (error) {
       if (generation !== generationRef.current || sourceIdentity !== subjectIdentityRef.current) return;
       const code = codeOf(error);
@@ -419,7 +439,7 @@ function EventRecurrenceBlueprintsScreenInner() {
                   onPress={() => void preparePreview()}
                   accessibilityState={{ busy: isPreviewing }}
                 >
-                  {isPreviewing ? <Spinner size="sm" /> : <Ionicons name="scan-outline" size={18} color="#fff" />}
+                  {isPreviewing ? <Spinner size="sm" /> : <AccentIcon name="scan-outline" size={18} />}
                   <Button.Label>{isPreviewing ? t('previewing') : t('preview_button')}</Button.Label>
                 </Button>
               </Card.Body>
@@ -499,6 +519,15 @@ function EventRecurrenceBlueprintsScreenInner() {
                     <CountList counts={item.counts} compact />
                   </View>
                 ))}
+                {historyRefreshFailed ? (
+                  <View className="gap-2" testID="event-recurrence-history-refresh-failed" accessibilityRole="alert">
+                    <Text className="text-sm" style={{ color: theme.error }}>{t('history_refresh_error_description')}</Text>
+                    <Button variant="secondary" size="sm" isDisabled={isRefreshingHistory} onPress={() => void refreshHistory()}>
+                      {isRefreshingHistory ? <Spinner size="sm" /> : null}
+                      <Button.Label>{t('retry')}</Button.Label>
+                    </Button>
+                  </View>
+                ) : null}
                 {loadMoreFailed ? (
                   <Text className="text-sm" style={{ color: theme.error }}>{t('load_more_error_description')}</Text>
                 ) : null}

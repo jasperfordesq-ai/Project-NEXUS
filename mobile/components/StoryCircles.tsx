@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { withAlpha } from '@/lib/utils/color';
+import { contrastText, withAlpha } from '@/lib/utils/color';
 import Avatar from '@/components/ui/Avatar';
 import NativePressable from '@/components/ui/NativePressable';
 
@@ -51,7 +51,7 @@ export default function StoryCircles({ members, onPress }: StoryCirclesProps) {
               className="absolute -bottom-0.5 -right-0.5 h-5 w-5 items-center justify-center rounded-full border-2 border-background"
               style={{ backgroundColor: primary }}
             >
-              <Ionicons name="add" size={14} color="#fff" />
+              <Ionicons name="add" size={14} color={contrastText(primary)} />
             </View>
           </Surface>
           <Text className="mt-1 max-w-[60px] text-center text-[11px] font-semibold" style={{ color: theme.textSecondary }} numberOfLines={1}>

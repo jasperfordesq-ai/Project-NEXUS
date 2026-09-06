@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useState, useEffect } from 'react';
 import {
   View,
@@ -23,7 +24,7 @@ import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import type { JobOwnerApplication, JobVacancy } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { withAlpha } from '@/lib/utils/color';
@@ -38,12 +39,12 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 
-const WEB_URL = 'https://app.project-nexus.ie';
 
 export default function JobDetailScreen() {
   const { t } = useTranslation(['jobs', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
+  const { tenant } = useTenant();
   const theme = useTheme();
   const bottomInset = useBottomInset();
   const { user } = useAuth();
@@ -193,8 +194,8 @@ export default function JobDetailScreen() {
     try {
       await Share.share({
         title: job.title,
-        message: `${job.title}\n\n${WEB_URL}/jobs/${job.id}`,
-        url: `${WEB_URL}/jobs/${job.id}`,
+        message: `${job.title}\n\n${buildWebUrl(tenant?.slug, `/jobs/${job.id}`)}`,
+        url: buildWebUrl(tenant?.slug, `/jobs/${job.id}`),
       });
     } catch {
       // User dismissed share sheet — no error needed
@@ -673,7 +674,7 @@ function OwnerToolsSection({
             <HeroButton.Label>{t('detail.kanban_board')}</HeroButton.Label>
           </HeroButton>
           <HeroButton size="sm" variant={job.status === 'open' ? 'secondary' : 'primary'} onPress={onToggleStatus}>
-            <Ionicons name={job.status === 'open' ? 'close-circle-outline' : 'refresh-outline'} size={14} color={job.status === 'open' ? theme.error : '#fff'} />
+            {job.status === 'open' ? <Ionicons name="close-circle-outline" size={14} color={theme.error} /> : <AccentIcon name="refresh-outline" size={14} />}
             <HeroButton.Label>{job.status === 'open' ? t('detail.close_vacancy') : t('detail.reopen_vacancy')}</HeroButton.Label>
           </HeroButton>
         </View>

@@ -8,6 +8,7 @@ import { Appearance, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { t as translate } from 'i18next';
 import Button from '@/components/ui/Button';
+import { reportException } from '@/lib/observability/report';
 
 interface Props {
   children: React.ReactNode;
@@ -46,6 +47,10 @@ export default class ModalErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    // Every modal route (~130 screens) sits behind this boundary, and until 2026-09-05 a
+    // render crash here only reached the console: the member saw "Something went wrong"
+    // and nothing reached Sentry or the API error log. Same fix as ErrorBoundary.tsx.
+    reportException(error, { componentStack: info.componentStack ?? '' });
     console.error('ModalErrorBoundary caught:', error, info.componentStack);
   }
 

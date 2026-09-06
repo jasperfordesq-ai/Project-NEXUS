@@ -28,7 +28,8 @@
     "groups": "Groups",
     "featured": "Featured",
     "members": "Members",
-    "joined": "Joined"
+    "joined": "Joined",
+    "loadedNote": "I conteggi riguardano i gruppi caricati finora."
   },
   "detail": {
     "title": "Gruppo",
@@ -102,8 +103,12 @@
       "delete": "Delete",
       "deleteLabel": "Elimina{{name}}",
       "deleteTitle": "Elimina file",
+      "downloadFailed": "Non è stato possibile scaricare questo file. Riprova.",
+      "sharingUnavailable": "Questo dispositivo non può aprire il file. Prova dal sito web.",
       "deleteMessage": "Eliminare {{name}} da questo gruppo?",
-      "deleteError": "Impossibile eliminare il file."
+      "deleteError": "Impossibile eliminare il file.",
+      "downloadFailed": "Non è stato possibile scaricare il file.",
+      "sharingUnavailable": "Questo dispositivo non può aprire i file scaricati."
     },
     "media": {
       "title": "Contenuti multimediali del gruppo",
@@ -244,7 +249,8 @@
         "in_progress": "{{count}} in corso",
         "done": "{{count}} completate",
         "overdue": "{{count}} scaduto"
-      }
+      },
+      "dueDateInvalid": "Inserisci la data di scadenza nel formato YYYY-MM-DD, ad esempio 2026-06-30."
     },
     "analytics": {
       "title": "Analisi del gruppo",
@@ -327,7 +333,21 @@
     "edit": "Modifica gruppo",
     "notFound": "Gruppo non trovato.",
     "invalidId": "ID gruppo non valido.",
-    "goBack": "Indietro"
+    "goBack": "Indietro",
+    "sectionLoadError": "Non è stato possibile caricare questa sezione.",
+    "composerUnsavedTitle": "Scartare questa bozza?",
+    "composerUnsavedMessage": "Hai del testo non inviato. Se chiudi ora, andrà perduto.",
+    "composerDiscard": "Scarta",
+    "discussionReplies": {
+      "title": "Risposte",
+      "empty": "Nessuna risposta per ora. Rispondi per primo.",
+      "placeholder": "Scrivi una risposta…",
+      "post": "Pubblica risposta",
+      "loadError": "Non è stato possibile caricare le risposte.",
+      "postError": "Non è stato possibile pubblicare la risposta.",
+      "validation": "Scrivi una risposta prima di pubblicare.",
+      "openLabel": "Apri la discussione {{title}}"
+    }
   },
   "filter": {
     "all": "Tutti",
@@ -381,7 +401,10 @@
     "loadFailed": "Impossibile caricare i dettagli del gruppo. Riprova.",
     "saveFailedTitle": "Gruppo non salvato",
     "saveFailedDescription": "Impossibile salvare il gruppo. Riprova.",
-    "failedDescription": "Impossibile creare il gruppo. Riprova."
+    "failedDescription": "Impossibile creare il gruppo. Riprova.",
+    "unsavedTitle": "Scartare questo gruppo?",
+    "unsavedMessage": "Hai dati non salvati. Se esci ora, andranno perduti.",
+    "discard": "Scarta"
   },
   "invite_accept": {
     "title": "Invito al gruppo",

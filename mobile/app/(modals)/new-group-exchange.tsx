@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -60,6 +62,17 @@ function NewGroupExchangeScreen() {
   const [memberResults, setMemberResults] = useState<Member[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const { confirm, confirmDialog } = useConfirm();
+  useUnsavedChangesGuard({
+    isDirty: Boolean(title.trim() || description.trim() || totalHours.trim() || participants.length > 0),
+    isBusy: isSubmitting || hasSubmitted,
+    confirm,
+    title: t('form.unsavedTitle'),
+    message: t('form.unsavedMessage'),
+    discardLabel: t('form.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   // parseDecimalInput, not parseFloat: parseFloat('1,5') is 1 — silently the wrong
   // number of hours for a comma-locale member (audit 2026-09-05, F06).
@@ -129,9 +142,11 @@ function NewGroupExchangeScreen() {
       const response = await createGroupExchange(payload);
       const id = response.data?.id;
       if (id) {
+        setHasSubmitted(true);
         router.replace({ pathname: '/(modals)/group-exchange-detail', params: { id: String(id) } } as unknown as Href);
         return;
       }
+      setHasSubmitted(true);
       router.replace('/(modals)/group-exchanges' as Href);
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('groupExchanges.create.error')), variant: 'danger' });
@@ -343,6 +358,7 @@ function NewGroupExchangeScreen() {
         </HeroCard>
       </ScrollView>
       </KeyboardAvoidingView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import i18n, { changeLanguage as changeI18nextLanguage, use as installI18nextPlugin } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
@@ -349,6 +350,20 @@ installI18nextPlugin(initReactI18next)
     ns: [...NAMESPACES],
     interpolation: {
       escapeValue: false, // React Native handles XSS
+      /*
+        🔴 `{{count}}` used to be `String(n)`, so a German member read "1,5 Stunden" from
+        formatDecimal() in one place and "+1.5h" from a raw interpolation two lines below
+        (audit 2026-09-05, S2-12: 25 call sites across wallet, exchanges, goals, reviews).
+        `alwaysFormat` runs this for every value; only non-integer numbers are touched so
+        counts, ids and pluralisation are exactly as before.
+      */
+      alwaysFormat: true,
+      format: (value: unknown) => {
+        if (typeof value === 'number' && Number.isFinite(value) && !Number.isInteger(value)) {
+          return formatDecimal(value, 2);
+        }
+        return value as string;
+      },
     },
     compatibilityJSON: 'v4',
   });

@@ -3,6 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { ApiResponseError } from '@/lib/api/client';
+import { describeApiError } from '@/lib/api/describeApiError';
+import ErrorState from '@/components/ui/ErrorState';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -59,6 +62,7 @@ function FeedItemDetailScreenInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   const loadItem = useCallback(async (refreshing = false) => {
     if (!id || !hasModule('feed')) {
@@ -72,12 +76,21 @@ function FeedItemDetailScreenInner() {
       setIsLoading(true);
     }
     setError(null);
+    setNotFound(false);
 
     try {
       const response = await getFeedItem(type, id);
       setItem(response.data);
-    } catch {
-      setError(t('common:errors.generic'));
+    } catch (err) {
+      // 🔴 S3-02: any failure used to say "Not found", so a member on a bad signal was told
+      // the post no longer exists. Only a real 404 means that.
+      // The status, whichever shape the error arrives in — the client throws
+      // ApiResponseError, but a plain Error with a `status` is just as informative.
+      const status = err instanceof ApiResponseError
+        ? err.status
+        : (err as { status?: number } | null)?.status;
+      setNotFound(status === 404);
+      setError(describeApiError(err, t('common:errors.generic')));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -104,13 +117,18 @@ function FeedItemDetailScreenInner() {
             title={t('common:errors.notFound')}
             subtitle={t('feed.emptySubtitle')}
           />
-        ) : error || !item ? (
+        ) : notFound ? (
           <EmptyState
-            icon="warning-outline"
+            icon="newspaper-outline"
             title={t('common:errors.notFound')}
-            subtitle={error ?? t('common:errors.generic')}
+            subtitle={t('feed.emptySubtitle')}
             actionLabel={t('common:buttons.retry')}
             onAction={() => void loadItem(false)}
+          />
+        ) : error || !item ? (
+          <ErrorState
+            subtitle={error ?? t('common:errors.generic')}
+            onRetry={() => void loadItem(false)}
           />
         ) : (
           <ScrollView

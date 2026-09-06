@@ -47,6 +47,8 @@
     "messagingRestrictedTitle": "Nachrichten pausiert",
     "messagingRestrictedContact": "Bitte kontaktiere dein Community-Team, bevor du weitere Nachrichten sendest.",
     "messageOptions": "Nachrichtenoptionen",
+    "messageActions": "Nachrichtenaktionen",
+    "attachmentOpenFailed": "Dieser Anhang konnte nicht geöffnet werden. Bitte versuche es erneut.",
     "edit": "Bearbeiten",
     "editing": "Nachricht bearbeiten",
     "saveEdit": "Änderung speichern",

@@ -518,6 +518,13 @@
     "validationDates": "Use a valid date and time, such as 2026-06-30 17:00.",
     "validationMaxIdeas": "Use a whole number between 1 and 50.",
     "failedTitle": "Could not create challenge",
-    "failedDescription": "Try again in a moment."
+    "failedDescription": "Try again in a moment.",
+    "unsavedTitle": "Discard this challenge?",
+    "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
+    "discard": "Discard",
+    "footerIncomplete": "Not ready yet",
+    "footerMissingTitle": "Add a challenge title to continue.",
+    "footerMissingDescription": "Add a description to continue.",
+    "loadFailedTitle": "Couldn't open this challenge"
   }
 }

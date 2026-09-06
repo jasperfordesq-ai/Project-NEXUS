@@ -7,7 +7,8 @@ jest.mock('@/lib/api/client', () => ({
   api: { get: jest.fn(), post: jest.fn() },
   ApiResponseError: class ApiResponseError extends Error {
     status: number;
-    constructor(status: number, message: string) { super(message); this.status = status; }
+    code?: string;
+    constructor(status: number, message: string, _errors?: unknown, code?: string) { super(message); this.status = status; this.code = code; }
   },
 }));
 jest.mock('@/lib/constants', () => ({ API_V2: '/api/v2' }));
@@ -74,7 +75,7 @@ describe('mobile Event offline check-in API', () => {
     });
 
     await expect(getOfflineCheckinWorkspace(91)).rejects
-      .toMatchObject({ message: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
+      .toHaveProperty('code', 'EVENT_CHECKIN_CONTRACT_DRIFT');
     const telemetry = JSON.stringify((Sentry.captureMessage as jest.Mock).mock.calls);
     expect(telemetry).toContain('/api/v2/events/{id}/offline-checkin');
     expect(telemetry).not.toContain('nxd1_private-secret');

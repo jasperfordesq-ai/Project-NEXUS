@@ -18,6 +18,7 @@
  * the community mid-exchange (409). Neither moves any credits.
  */
 
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -74,6 +75,7 @@ function ExchangeRequestDetailScreen() {
   const theme = useTheme();
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const params = useLocalSearchParams<{ id?: string }>();
   const id = Number(params.id);
 
@@ -137,13 +139,14 @@ function ExchangeRequestDetailScreen() {
   const [hoursInput, setHoursInput] = useState('');
 
   const run = useCallback(
-    async (key: string, fn: () => Promise<unknown>, successMessage: string) => {
+    async (key: string, fn: () => Promise<unknown>, successMessage: string): Promise<boolean> => {
       setBusy(key);
       try {
         await fn();
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({ title: successMessage, variant: 'success' });
         refresh();
+        return true;
       } catch (err) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         showToast({
@@ -153,6 +156,10 @@ function ExchangeRequestDetailScreen() {
           // worth far more to a member than "something went wrong".
           description: describeApiError(err, t('requests.actionFailedFallback')),
         });
+        // 🔴 Resolving here used to look exactly like success to the caller, whose
+        // `.then(() => router.back())` then popped the member back to the list with the
+        // exchange still open (audit 2026-09-05, S2-01).
+        return false;
       } finally {
         setBusy(null);
       }
@@ -309,7 +316,9 @@ function ExchangeRequestDetailScreen() {
             'decline',
             () => declineExchangeRequest(exchange.id),
             t('requests.declinedToast'),
-          ).then(() => router.back()),
+          ).then((ok) => {
+            if (ok) router.back();
+          }),
       });
     }
     if (actions.canReportProblem) {
@@ -330,11 +339,21 @@ function ExchangeRequestDetailScreen() {
         label: t('requests.actions.cancel'),
         variant: 'tertiary',
         onPress: () =>
-          void run(
-            'cancel',
-            () => cancelExchangeRequest(exchange.id),
-            t('requests.cancelledToast'),
-          ).then(() => router.back()),
+          confirm({
+            title: t('requests.cancelConfirmTitle'),
+            message: t('requests.cancelConfirmMessage'),
+            confirmLabel: t('requests.cancelConfirmAction'),
+            cancelLabel: t('common:buttons.cancel'),
+            variant: 'danger',
+            onConfirm: () =>
+              void run(
+                'cancel',
+                () => cancelExchangeRequest(exchange.id),
+                t('requests.cancelledToast'),
+              ).then((ok) => {
+                if (ok) router.back();
+              }),
+          }),
       });
     }
 
@@ -393,7 +412,7 @@ function ExchangeRequestDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <AppTopBar title={t('requests.detailTitle')} backLabel={t('requests.back')} />
+      <AppTopBar title={t('requests.detailTitle')} backLabel={t('common:back')} />
 
       {isLoading && !exchange ? (
         <LoadingSpinner />
@@ -583,6 +602,7 @@ function ExchangeRequestDetailScreen() {
           </View>
         </View>
       </BottomSheet>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

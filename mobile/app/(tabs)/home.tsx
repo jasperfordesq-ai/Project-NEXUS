@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -249,7 +250,7 @@ export default function HomeScreen() {
                       className="absolute right-0 top-0 h-5 min-w-5 items-center justify-center rounded-full border-2 border-background px-1"
                       style={{ backgroundColor: primary }}
                     >
-                      <Text className="text-[10px] font-bold leading-3 text-white">
+                      <Text className="text-[10px] font-bold leading-3" style={{ color: contrastText(primary) }}>
                         {notificationBadgeText}
                       </Text>
                     </View>

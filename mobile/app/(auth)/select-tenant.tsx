@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import { useCallback, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -150,7 +151,7 @@ export default function SelectTenantScreen() {
                   accessibilityRole="image"
                   accessibilityLabel={t('selectTenant.iconLabel')}
                 >
-                  <Ionicons name="business-outline" size={24} color="#fff" />
+                  <Ionicons name="business-outline" size={24} color={contrastText(primary)} />
                 </View>
                 <HeroCard.Title className="text-2xl font-bold">
                   {t('selectTenant.title')}
@@ -216,7 +217,7 @@ export default function SelectTenantScreen() {
                         className="w-12 h-12 rounded-2xl items-center justify-center"
                         style={{ backgroundColor: primary }}
                       >
-                        <Text className="text-white font-bold text-lg">
+                        <Text className="font-bold text-lg" style={{ color: contrastText(primary) }}>
                           {item.name.charAt(0).toUpperCase()}
                         </Text>
                       </View>

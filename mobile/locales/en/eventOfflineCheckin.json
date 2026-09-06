@@ -72,7 +72,14 @@
       "synced": "Synced",
       "conflict": "Conflict",
       "rejected": "Rejected"
-    }
+    },
+    "readOnlyTitle": "Offline check-in has ended on this device",
+    "readOnlyExpired": "The downloaded roster has expired. Nothing new can be queued, but unsynced check-ins are kept until you remove them.",
+    "readOnlyRotated": "This device's authorisation was replaced. Nothing new can be queued, but unsynced check-ins are kept until you remove them.",
+    "pendingKept": "{{count}} unsynced check-ins are still stored on this device.",
+    "pendingKept_one": "{{count}} unsynced check-in is still stored on this device.",
+    "purgePendingWarning": "{{count}} unsynced check-ins will be lost for good.",
+    "purgePendingWarning_one": "{{count}} unsynced check-in will be lost for good."
   },
   "conflicts": {
     "title": "Check-in conflicts",

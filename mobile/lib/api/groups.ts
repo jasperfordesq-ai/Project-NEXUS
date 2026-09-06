@@ -3,7 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { api } from '@/lib/api/client';
+import i18n from 'i18next';
+import { api, ApiResponseError } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 import { Platform } from 'react-native';
 
@@ -491,7 +492,7 @@ export async function uploadGroupImage(id: number, uri: string): Promise<{ data:
   const response = await api.upload<UploadGroupImageResponse>(`${API_V2}/groups/${id}/image`, formData);
   const imageUrl = response.data?.image_url ?? response.image_url ?? null;
   if (!imageUrl) {
-    throw new Error(response.message ?? 'Group image upload did not return an image URL.');
+    throw new ApiResponseError(502, response.message ?? i18n.t('common:errors.uploadIncomplete'));
   }
 
   return { data: { image_url: imageUrl } };
@@ -571,7 +572,7 @@ export async function uploadGroupMedia(id: number, asset: GroupMediaUploadAsset)
   await appendGroupMediaFile(formData, asset);
   const response = await api.upload<UploadGroupMediaResponse>(`${API_V2}/groups/${id}/media`, formData);
   if (!response.data) {
-    throw new Error(response.message ?? 'Group media upload did not return a media item.');
+    throw new ApiResponseError(502, response.message ?? i18n.t('common:errors.uploadIncomplete'));
   }
   return { data: response.data };
 }

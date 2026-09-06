@@ -3,10 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import AccentIcon from '@/components/ui/AccentIcon';
+import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, Linking, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -84,14 +85,17 @@ function ActionPill({
       className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isPrimary ? primary : withAlpha(primary, 0.12),
-        borderWidth: isPrimary ? 0 : 1,
-        borderColor: isPrimary ? 'transparent' : withAlpha(primary, 0.22),
+      // Selected pills let HeroUI's primary variant paint the fill AND pick the label colour
+      // for it: a hardcoded white label is invisible on a pale community colour, and a raw
+      // `primary` fill skips the dark-mode lift every other primary button gets.
+      style={isPrimary ? undefined : {
+        backgroundColor: withAlpha(primary, 0.12),
+        borderWidth: 1,
+        borderColor: withAlpha(primary, 0.22),
       }}
     >
-      <Ionicons name={icon} size={16} color={isPrimary ? '#ffffff' : primary} />
-      <HeroButton.Label className="text-sm font-semibold" style={{ color: isPrimary ? '#ffffff' : theme.text }} numberOfLines={1}>
+      {isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
+      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={1}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -174,6 +178,7 @@ function OrganisationsHero({
           <StatTile icon="heart-outline" label={t('stats.opportunities')} value={String(opportunitiesCount)} tone="#f43f5e" theme={theme} />
           <StatTile icon="people-outline" label={t('stats.volunteers')} value={String(volunteersCount)} tone="#0ea5e9" theme={theme} />
         </View>
+        <Text className="text-xs" style={{ color: theme.textMuted }}>{t('stats.loadedNote')}</Text>
 
         <View className="flex-row flex-wrap gap-2">
           <ActionPill
@@ -352,6 +357,23 @@ export default function OrganisationsScreen() {
 
   const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
     usePaginatedApi<Organisation, OrganisationsResponse>(fetchFn, extractOrganisationPage, [debouncedSearch]);
+  const refreshOnFocus = refresh;
+  /*
+    🔴 S4-09: an RSVP, a join, or something created on a child screen was invisible here
+    until the member pulled to refresh — the list still offered "Apply" for an opportunity
+    they had applied to. Refetch on every return; the first mount already fetched.
+  */
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refreshOnFocus();
+    }, [refreshOnFocus]),
+  );
+
 
   const organisations = useMemo(() => items, [items]);
 

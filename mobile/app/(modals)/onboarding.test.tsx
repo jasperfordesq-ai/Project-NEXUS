@@ -19,6 +19,8 @@ let mockUser: Record<string, unknown> = {
 };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { replace: (...args: unknown[]) => mockReplace(...args) },
 }));
 jest.mock('react-i18next', () => ({

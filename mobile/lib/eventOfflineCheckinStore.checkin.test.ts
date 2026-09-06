@@ -109,7 +109,9 @@ import {
   activateMobileOfflineSession,
   enqueueMobileOfflineCredential,
   loadMobileOfflineSession,
+  loadMobileOfflineSessionForReview,
   refreshMobileOfflineManifest,
+  sealMobileOfflinePayload,
   syncMobileOfflineSession,
   verifyMobileOfflineCredential,
   type MobileOfflineSession,
@@ -653,6 +655,47 @@ describe('reading a stored session back', () => {
 
     await expect(loadMobileOfflineSession(EVENT_ID, DEVICE_ID)).rejects.toThrow('offline_ciphertext_invalid');
     expect(mockFiles.has(path)).toBe(false);
+  });
+
+  /**
+   * 🔴 S4-19. An EXPIRED roster is not an unreadable one. The store used to purge on any
+   * failure in `loadMobileOfflineSession`, so a steward who scanned members offline and
+   * reopened the app after the manifest lapsed found every never-synced check-in deleted,
+   * silently. The record must survive, be readable for review with its pending queue
+   * intact, and only ever leave the device on an explicit purge.
+   */
+  it('keeps an expired session and its unsynced queue on the device, readable for review', async () => {
+    // Same deterministic key the store derives from the mocked getRandomBytes.
+    const key = Uint8Array.from({ length: nacl.secretbox.keyLength }, (_, index) => (index * 7 + 11) % 256);
+    mockStorageMap.set('nexus_event_checkin_encryption_key_v1', Buffer.from(key).toString('base64'));
+    const expired = session({
+      manifest: { ...manifest(), expires_at: '2000-01-01T00:00:00Z' },
+      queue: [{
+        clientNonce: 'nonce-1',
+        registrationId: 1,
+        userId: 501,
+        displayName: 'Ada',
+        operation: 'check_in',
+        observedAt: '2026-09-01T18:05:00Z',
+        expectedAttendanceVersion: 1,
+        credentialFingerprint: 'abcdef0123456789',
+        credentialHashReference: 'a'.repeat(64),
+        reason: null,
+        state: 'pending',
+        code: null,
+        decisionVersion: null,
+      }],
+    });
+    const path = `file:///documents/event-offline-checkin-v1/event-${EVENT_ID}-device-${DEVICE_ID}.nqx`;
+    mockFiles.set(path, sealMobileOfflinePayload(JSON.stringify(expired), key));
+
+    const review = await loadMobileOfflineSessionForReview(EVENT_ID, DEVICE_ID);
+    expect(review.inactive).toBe('manifest_expired');
+    expect(review.session?.queue.filter((item) => item.state === 'pending')).toHaveLength(1);
+    // The strict loader still refuses to hand out an inactive session for queueing…
+    await expect(loadMobileOfflineSession(EVENT_ID, DEVICE_ID)).rejects.toThrow('manifest_expired');
+    // …but neither call destroyed the record.
+    expect(mockFiles.has(path)).toBe(true);
   });
 });
 

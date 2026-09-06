@@ -323,7 +323,7 @@ function NewExchangeModalInner() {
       className="flex-1 bg-background"
       style={{ flex: 1, backgroundColor: theme.bg }}
     >
-      <AppTopBar title={t('newExchange')} backLabel={t('detail.goBack')} fallbackHref="/(tabs)/exchanges" />
+      <AppTopBar title={t('newExchange')} backLabel={t('common:back')} fallbackHref="/(tabs)/exchanges" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView
           testID="new-exchange-scroll"

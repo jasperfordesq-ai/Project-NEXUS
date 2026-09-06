@@ -15,6 +15,9 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import NativePressable from '@/components/ui/NativePressable';
+import { useAppToast } from '@/components/ui/AppToast';
+import { describeApiError } from '@/lib/api/describeApiError';
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 
 interface PollCardProps {
   pollData: PollData;
@@ -30,6 +33,7 @@ interface PollCardProps {
 
 export default function PollCard({ pollData, itemId, onVoted, showQuestion = true }: PollCardProps) {
   const { t } = useTranslation('home');
+  const { show: showToast } = useAppToast();
   const primary = usePrimaryColor();
   const theme = useTheme();
 
@@ -101,13 +105,19 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
       const result = await voteFeedPoll(itemId, optionId);
       setPoll(result.data);
       onVoted?.(result.data);
-    } catch {
-      // Revert on error
+    } catch (err) {
+      // Revert, and SAY so. A silent rollback reads as the app ignoring the tap, and it
+      // threw away the server's reason (poll closed, already voted).
       setPoll(previousPoll);
+      showToast({
+        title: t('poll.voteFailedTitle'),
+        description: describeApiError(err, t('poll.voteFailed')),
+        variant: 'danger',
+      });
     } finally {
       setIsVoting(false);
     }
-  }, [isVoting, hasVoted, poll, itemId, onVoted]);
+  }, [isVoting, hasVoted, poll, itemId, onVoted, showToast, t]);
 
   if (!poll || !poll.options?.length) return null;
 
@@ -188,21 +198,26 @@ interface PollOptionRowProps {
 
 function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPress, disabled }: PollOptionRowProps) {
   const fillAnim = useRef(new Animated.Value(0)).current;
+  const reduceMotion = useReducedMotion();
   // Withheld tallies arrive as null; animating to null leaves the bar in an undefined
   // state, so treat it as an empty bar.
   const percentage = option.percentage ?? 0;
 
   useEffect(() => {
-    if (showResults) {
-      Animated.timing(fillAnim, {
-        toValue: percentage,
-        duration: 500,
-        useNativeDriver: false,
-      }).start();
-    } else {
+    if (!showResults) {
       fillAnim.setValue(0);
+      return;
     }
-  }, [showResults, percentage, fillAnim]);
+    if (reduceMotion) {
+      fillAnim.setValue(percentage);
+      return;
+    }
+    Animated.timing(fillAnim, {
+      toValue: percentage,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
+  }, [showResults, percentage, fillAnim, reduceMotion]);
 
   const fillWidth = fillAnim.interpolate({
     inputRange: [0, 100],

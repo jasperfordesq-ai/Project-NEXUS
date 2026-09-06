@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -190,7 +191,7 @@ export default function PollsScreen() {
                     onPress={() => setShowCreate((value) => !value)}
                     accessibilityLabel={t('pollsScreen.createPoll')}
                   >
-                    <Ionicons name={showCreate ? 'close-outline' : 'add-circle-outline'} size={18} color={showCreate ? primary : theme.onPrimary} />
+                    {showCreate ? <Ionicons name="close-outline" size={18} color={primary} /> : <AccentIcon name="add-circle-outline" size={18} />}
                     <HeroButton.Label>{showCreate ? t('common:buttons.cancel') : t('pollsScreen.createPoll')}</HeroButton.Label>
                   </HeroButton>
                 </HeroCard.Body>
@@ -255,7 +256,7 @@ export default function PollsScreen() {
                         accessibilityLabel={t('pollsScreen.submitPoll')}
                         style={{ backgroundColor: isCreating ? theme.border : primary }}
                       >
-                        {isCreating ? <LoadingSpinner /> : <Ionicons name="checkmark-outline" size={16} color={theme.onPrimary} />}
+                        {isCreating ? <LoadingSpinner /> : <AccentIcon name="checkmark-outline" size={16} />}
                         <HeroButton.Label>{isCreating ? t('pollsScreen.creating') : t('pollsScreen.submitPoll')}</HeroButton.Label>
                       </HeroButton>
                     </View>

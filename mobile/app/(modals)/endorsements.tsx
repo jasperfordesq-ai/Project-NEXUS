@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
+import ErrorState from '@/components/ui/ErrorState';
 import { useCallback, useMemo, useRef, useState, type ComponentProps, type RefObject } from 'react';
 import {
   FlatList,
@@ -110,15 +112,16 @@ function ActionPill({
       className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isPrimary ? primary : withAlpha(color, 0.12),
-        borderWidth: isPrimary ? 0 : 1,
-        borderColor: isPrimary ? 'transparent' : withAlpha(color, 0.22),
+      // Selected pills let HeroUI paint the fill and pick a readable label for it.
+      style={isPrimary ? { opacity: disabled ? 0.55 : 1 } : {
+        backgroundColor: withAlpha(color, 0.12),
+        borderWidth: 1,
+        borderColor: withAlpha(color, 0.22),
         opacity: disabled ? 0.55 : 1,
       }}
     >
-      <Ionicons name={icon} size={16} color={isPrimary ? '#ffffff' : color} />
-      <HeroButton.Label className="text-sm font-semibold" style={{ color: isPrimary ? '#ffffff' : theme.text }} numberOfLines={1}>
+      {isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={color} />}
+      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={1}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -179,7 +182,6 @@ export default function EndorsementsScreen() {
   const [skillMembers, setSkillMembers] = useState<SkillMember[]>([]);
   const [loadingSkill, setLoadingSkill] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const skillInputRef = useRef<TextInput>(null);
 
   const userId = user?.id ?? 0;
@@ -187,12 +189,14 @@ export default function EndorsementsScreen() {
   const {
     data: skillsData,
     isLoading: skillsLoading,
+    error: skillsError,
     refresh: refreshSkills,
   } = useApi(() => getMySkills(), [], { enabled: userId > 0 });
 
   const {
     data: endorsementsData,
     isLoading: endorsementsLoading,
+    error: endorsementsError,
     refresh: refreshEndorsements,
   } = useApi(() => getUserEndorsements(userId), [userId], { enabled: userId > 0 });
   const {
@@ -200,10 +204,11 @@ export default function EndorsementsScreen() {
     isLoading: categoriesLoading,
   } = useApi(() => getSkillCategories(), []);
 
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.allSettled([refreshSkills(), refreshEndorsements()]);
-    setRefreshing(false);
+  const handleRefresh = useCallback(() => {
+    // `refreshSkills()` returns void, so awaiting it cleared the indicator before any
+    // request finished. The RefreshControl now reads the hooks' own loading flags.
+    refreshSkills();
+    refreshEndorsements();
   }, [refreshSkills, refreshEndorsements]);
 
   const skills = useMemo<Skill[]>(() => skillsData?.data?.skills ?? [], [skillsData?.data?.skills]);
@@ -389,7 +394,7 @@ export default function EndorsementsScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 110 }}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={Boolean(skillsData) && (skillsLoading || endorsementsLoading)}
               onRefresh={() => void handleRefresh()}
               tintColor={primary}
               colors={[primary]}
@@ -430,6 +435,11 @@ export default function EndorsementsScreen() {
               <View className="items-center justify-center py-14">
                 <LoadingSpinner />
               </View>
+            ) : activeTab === 'skills' && skillsError ? (
+              // A failed load used to read as "No skills yet" beside a live "Add skill" button.
+              <ErrorState subtitle={skillsError} onRetry={refreshSkills} />
+            ) : activeTab === 'endorsements' && endorsementsError ? (
+              <ErrorState subtitle={endorsementsError} onRetry={refreshEndorsements} />
             ) : (
               <View className="px-4 py-8">
                 <EmptyState

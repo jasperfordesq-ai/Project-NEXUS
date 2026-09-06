@@ -82,6 +82,8 @@ function MarketplaceSearchScreen() {
   const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc' | 'popular'>(initialSort);
   const [postedWithin, setPostedWithin] = useState(firstParam(params.posted_within) ?? '');
   const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
+  const [categoriesFailed, setCategoriesFailed] = useState(false);
+  const [categoriesAttempt, setCategoriesAttempt] = useState(0);
   const [items, setItems] = useState<MarketplaceListingItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -98,13 +100,17 @@ function MarketplaceSearchScreen() {
   useEffect(() => {
     if (!hasFeature('marketplace')) return;
     let mounted = true;
+    setCategoriesFailed(false);
     getMarketplaceCategories().then((response) => {
       if (mounted) setCategories(response.data);
-    }).catch(() => undefined);
+    }).catch(() => {
+      // The filter used to render empty with no hint; now it offers a retry.
+      if (mounted) setCategoriesFailed(true);
+    });
     return () => {
       mounted = false;
     };
-  }, [hasFeature]);
+  }, [hasFeature, categoriesAttempt]);
 
   const activeFilterCount = useMemo(() => [
     categoryId,
@@ -251,6 +257,9 @@ function MarketplaceSearchScreen() {
                   {categories.map((category) => (
                     <FilterButton key={category.id} active={categoryId === category.id} label={category.name} onPress={() => setCategoryId(category.id)} />
                   ))}
+                  {categoriesFailed ? (
+                    <FilterButton active={false} label={t('advancedSearch.categoriesUnavailable')} onPress={() => setCategoriesAttempt((n) => n + 1)} />
+                  ) : null}
                 </FilterStrip>
 
                 <FilterStrip label={t('advancedSearch.condition')}>

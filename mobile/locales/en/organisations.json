@@ -37,7 +37,8 @@
     "organisations": "Partners",
     "verified": "Verified",
     "opportunities": "Opportunities",
-    "volunteers": "Volunteers"
+    "volunteers": "Volunteers",
+    "loadedNote": "Counts cover the organisations loaded so far."
   },
   "register": {
     "title": "Register organisation",
@@ -70,7 +71,10 @@
       "emailInvalid": "Enter a valid email address.",
       "websiteInvalid": "Enter a full website URL starting with http:// or https://.",
       "termsRequired": "Confirm you are authorised to register this organisation."
-    }
+    },
+    "unsavedTitle": "Discard this registration?",
+    "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
+    "discard": "Discard"
   },
   "detail": {
     "title": "Organisation",

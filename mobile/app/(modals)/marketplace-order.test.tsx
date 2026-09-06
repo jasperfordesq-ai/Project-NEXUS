@@ -11,6 +11,8 @@ let mockParams: Record<string, string> = { id: '42' };
 let mockUser = { id: 7 };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { replace: (...args: unknown[]) => mockReplace(...args) },
   useLocalSearchParams: () => mockParams,
 }));

@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -91,7 +92,7 @@ export default function ResetPasswordScreen() {
             <HeroCard className="overflow-hidden">
               <HeroCard.Header className="items-center px-6 pt-8 pb-4">
                 <View className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl bg-danger">
-                  <Ionicons name="alert-outline" size={32} color="#fff" />
+                  <Ionicons name="alert-outline" size={32} color={contrastText(primary)} />
                 </View>
                 <HeroCard.Title className="text-center text-2xl font-bold">{t('resetPassword.invalidTitle')}</HeroCard.Title>
                 <HeroCard.Description className="mt-1 text-center">{t('resetPassword.invalidSubtitle')}</HeroCard.Description>
@@ -123,7 +124,7 @@ export default function ResetPasswordScreen() {
                 className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"
                 style={{ backgroundColor: isSubmitted ? theme.success : primary }}
               >
-                <Ionicons name={isSubmitted ? 'checkmark-outline' : 'lock-closed-outline'} size={32} color="#fff" />
+                <Ionicons name={isSubmitted ? 'checkmark-outline' : 'lock-closed-outline'} size={32} color={contrastText(primary)} />
               </View>
               <HeroCard.Title className="text-center text-2xl font-bold">
                 {isSubmitted ? t('resetPassword.successTitle') : t('resetPassword.title')}

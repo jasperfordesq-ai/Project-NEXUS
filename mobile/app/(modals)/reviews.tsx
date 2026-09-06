@@ -3,6 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
+import { formatDecimal } from '@/lib/utils/decimal';
+import { describeApiError } from '@/lib/api/describeApiError';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { useAppToast } from '@/components/ui/AppToast';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,6 +46,8 @@ const TABS: ReviewTab[] = ['received', 'given', 'pending'];
 
 export default function ReviewsScreen() {
   const { t } = useTranslation(['profile', 'common']);
+  const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const { user } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -119,7 +126,6 @@ export default function ReviewsScreen() {
 
   async function handleSubmitReview() {
     if (!activePending || rating < 1 || submitting) return;
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSubmitting(true);
     try {
       await createReview({
@@ -128,24 +134,41 @@ export default function ReviewsScreen() {
         comment: comment.trim() || undefined,
         transaction_id: activePending.transaction_id ?? undefined,
       });
+      // The success buzz comes AFTER the server agreed; it used to fire before the request,
+      // so a failed submission buzzed "success" and left the sheet open with no explanation.
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       resetForm();
       refreshPending();
       refreshReviews();
+    } catch (err) {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('reviews.submitFailed')), variant: 'danger' });
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function handleDeleteReview(review: ReviewItem) {
+  function handleDeleteReview(review: ReviewItem) {
     if (deletingId !== null) return;
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    setDeletingId(review.id);
-    try {
-      await deleteReview(review.id);
-      refreshReviews();
-    } finally {
-      setDeletingId(null);
-    }
+    confirm({
+      title: t('reviews.deleteConfirmTitle'),
+      message: t('reviews.deleteConfirmMessage'),
+      confirmLabel: t('reviews.delete'),
+      cancelLabel: t('reviews.cancel'),
+      variant: 'danger',
+      onConfirm: async () => {
+        setDeletingId(review.id);
+        try {
+          await deleteReview(review.id);
+          refreshReviews();
+        } catch (err) {
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('reviews.deleteFailed')), variant: 'danger' });
+        } finally {
+          setDeletingId(null);
+        }
+      },
+    });
   }
 
   function handleRefresh() {
@@ -198,7 +221,7 @@ export default function ReviewsScreen() {
             >
               <HeroCard.Body className="flex-row gap-2 p-2.5">
                 <StatTile icon="chatbubble-ellipses-outline" label={t('reviews.total')} value={reviews.length} tone={primary} />
-                <StatTile icon="star-outline" label={t('reviews.average')} value={averageRating ? averageRating.toFixed(1) : '0.0'} tone="#f59e0b" />
+                <StatTile icon="star-outline" label={t('reviews.average')} value={formatDecimal(averageRating || 0, 1, 1)} tone="#f59e0b" />
                 <StatTile icon="create-outline" label={t('reviews.pendingCount')} value={pending.length} tone="#22c55e" />
               </HeroCard.Body>
             </HeroCard>
@@ -281,6 +304,7 @@ export default function ReviewsScreen() {
             />
           ) : null}
         </BottomSheet>
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );
@@ -347,7 +371,7 @@ function PendingList({
                 isDisabled={submitting}
                 onPress={() => onStart(item)}
               >
-                <Ionicons name="create-outline" size={14} color={isActive ? primary : '#fff'} />
+                {isActive ? <Ionicons name="create-outline" size={14} color={primary} /> : <AccentIcon name="create-outline" size={14} />}
                 <HeroButton.Label>{t('reviews.write')}</HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>

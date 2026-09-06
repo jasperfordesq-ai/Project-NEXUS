@@ -41,6 +41,7 @@
     "score": "{{score}}% di corrispondenza",
     "open": "Apri corrispondenza",
     "dismiss": "Dismiss",
+    "dismissFailed": "Non è stato possibile ignorare questa corrispondenza. Riprova.",
     "emptyTitle": "Nessun abbinamento ancora",
     "emptySubtitle": "Le nuove raccomandazioni appariranno qui quando saranno disponibili.",
     "errorTitle": "Impossibile caricare le corrispondenze",
@@ -67,6 +68,10 @@
     "pendingCount": "Revisioni in attesa",
     "delete": "Delete",
     "deleteSuccess": "Recensione eliminata.",
+    "submitFailed": "Non è stato possibile inviare la tua recensione. Riprova.",
+    "deleteFailed": "Non è stato possibile eliminare la recensione. Riprova.",
+    "deleteConfirmTitle": "Eliminare questa recensione?",
+    "deleteConfirmMessage": "Verrà rimossa dal profilo del membro. Non è possibile tornare indietro.",
     "write": "Scrivi recensione",
     "cancel": "Cancel",
     "submit": "Invia recensione",
@@ -371,6 +376,9 @@
     "load_failed": "Impossibile caricare le tue preferenze di corrispondenza",
     "save": "Salva le preferenze",
     "save_success": "Preferenze di corrispondenza salvate",
+    "unsavedTitle": "Annullare le modifiche?",
+    "unsavedMessage": "Le tue preferenze di abbinamento non sono state salvate.",
+    "discard": "Annulla",
     "save_failed": "Impossibile salvare le preferenze di corrispondenza",
     "pause": {
       "title": "Metti in pausa la corrispondenza"

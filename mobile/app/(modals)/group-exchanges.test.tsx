@@ -47,6 +47,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -68,6 +69,8 @@ jest.mock('@/lib/api/groupExchanges', () => ({
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockRouterPush(...args) },
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn() }),
+  useFocusEffect: jest.fn(),
 }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ui/Avatar', () => 'View');
@@ -156,7 +159,7 @@ describe('GroupExchangesScreen', () => {
     fireEvent.press(getByText('Needs confirmation'));
 
     const latestCall = mockUseApi.mock.calls[mockUseApi.mock.calls.length - 1];
-    expect(latestCall[1]).toEqual(['pending_confirmation']);
+    expect(latestCall[1]).toEqual(['pending_confirmation', 20]);
   });
 
   it('opens a backend-supported detail route', () => {

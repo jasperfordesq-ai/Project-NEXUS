@@ -12,6 +12,8 @@ let mockFeatures: Record<string, boolean> = { ideation_challenges: true };
 let mockUser: { id: number } | null = { id: 7 };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => mockParams,
 }));

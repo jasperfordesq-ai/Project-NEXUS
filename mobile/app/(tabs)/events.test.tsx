@@ -12,6 +12,7 @@ const mockRouterPush = jest.fn();
 const mockGetCanonicalEvents = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   useSegments: () => ['(tabs)'],
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },

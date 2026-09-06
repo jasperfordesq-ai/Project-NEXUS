@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useState, useCallback } from 'react';
 import {
   View,
@@ -195,7 +196,7 @@ function ExchangeDetailModalInner() {
     return (
       <DetailState
         title={t('detailTitle')}
-        backLabel={t('detail.goBack')}
+        backLabel={t('common:back')}
         message={t('detail.invalidId')}
         onAction={() => router.back()}
       />
@@ -208,7 +209,7 @@ function ExchangeDetailModalInner() {
     return (
       <DetailState
         title={t('detailTitle')}
-        backLabel={t('detail.goBack')}
+        backLabel={t('common:back')}
         message={error ?? t('detail.notFound')}
         onAction={() => router.back()}
       />
@@ -242,7 +243,11 @@ function ExchangeDetailModalInner() {
   const locationLabel = listing.location ?? t('detail.onlineOrFlexible');
   const serviceTypeLabel = listing.service_type ? t(`serviceType.${listing.service_type}`) : null;
   const tags = Array.isArray(listing.skill_tags) ? listing.skill_tags.filter(Boolean) : [];
-  const requestHoursValue = Number(requestHours || listing.hours_estimate || listing.estimated_hours || 1);
+  // A typed value goes through the locale-aware parser ("1,5" used to become NaN and was
+  // sent as `proposed_hours: null` with no warning); an empty field falls back to the listing.
+  const requestHoursValue = requestHours.trim()
+    ? (parseDecimalInput(requestHours) ?? Number.NaN)
+    : Number(listing.hours_estimate || listing.estimated_hours || 1);
   const authorRating = listing.author_rating ?? exchangeUser.average_rating ?? null;
   const authorReviews = listing.author_reviews_count ?? exchangeUser.reviews_count ?? 0;
   const authorExchanges = listing.author_exchanges_count ?? 0;
@@ -394,6 +399,10 @@ function ExchangeDetailModalInner() {
       }
       return;
     }
+    if (requestHours.trim() && !(Number.isFinite(requestHoursValue) && requestHoursValue > 0)) {
+      showToast({ title: t('detail.actionFailedTitle'), description: t('validation.invalidCredits'), variant: 'warning' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const response = await createExchangeRequest({
@@ -421,7 +430,7 @@ function ExchangeDetailModalInner() {
     >
       <AppTopBar
         title={t('detailTitle')}
-        backLabel={t('detail.goBack')}
+        backLabel={t('common:back')}
         fallbackHref="/(tabs)/exchanges"
         rightAction={{ accessibilityLabel: t('share'), icon: 'share-outline', onPress: handleShare }}
       />
@@ -793,11 +802,9 @@ function ExchangeDetailModalInner() {
               {isSubmitting ? (
                 <Spinner size="sm" color={onPrimary} />
               ) : (
-                <>
-                  <Ionicons name="paper-plane-outline" size={16} color={onPrimary} />
-                  <HeroButton.Label style={{ color: onPrimary }}>{t('detail.sendRequest')}</HeroButton.Label>
-                </>
+                <Ionicons name="paper-plane-outline" size={16} color={onPrimary} />
               )}
+              <HeroButton.Label style={{ color: onPrimary }}>{t('detail.sendRequest')}</HeroButton.Label>
             </HeroButton>
           </View>
         </View>
@@ -927,15 +934,13 @@ function ExchangeDetailModalInner() {
               handleAction(exchangeUser.id, exchangeUserName);
             }}
           >
+            <HeroButton.Label className="text-[13px] font-semibold leading-4" style={{ color: onPrimary }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+              {primaryActionLabel}
+            </HeroButton.Label>
             {isSubmitting ? (
-              <Spinner size="sm" />
+              <Spinner size="sm" color={onPrimary} />
             ) : (
-              <>
-                <HeroButton.Label className="text-[13px] font-semibold leading-4" style={{ color: onPrimary }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
-                  {primaryActionLabel}
-                </HeroButton.Label>
-                <Ionicons name={primaryActionIcon} size={16} color={onPrimary} />
-              </>
+              <Ionicons name={primaryActionIcon} size={16} color={onPrimary} />
             )}
           </HeroButton>
         </Surface>

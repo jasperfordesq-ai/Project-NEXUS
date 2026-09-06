@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateEvent = jest.fn().mockResolvedValue({ data: { id: 6 } });
 const mockCreateRecurringEvent = jest.fn().mockResolvedValue({ data: { template: { id: 60 }, occurrences_created: 10 } });
@@ -18,6 +18,12 @@ const mockPreviewEventRecurrenceRevision = jest.fn();
 const mockUploadEventImage = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockReplace = jest.fn();
+const mockBack = jest.fn();
+const mockConfirm = jest.fn();
+// The unsaved-changes guard subscribes to `beforeRemove`; capture the handler so a test
+// can fire it the way Back / a swipe would.
+const mockNavListeners: Record<string, (e: unknown) => void> = {};
+const mockNavDispatch = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 const v2RecurrenceCapabilitiesResponse = {
   data: {
@@ -36,9 +42,29 @@ const v2RecurrenceCapabilitiesResponse = {
 };
 
 jest.mock('expo-router', () => ({
-  router: { replace: (...args: unknown[]) => mockReplace(...args), back: jest.fn() },
+  useFocusEffect: jest.fn(),
+  router: {
+    replace: (...args: unknown[]) => mockReplace(...args),
+    back: (...args: unknown[]) => mockBack(...args),
+    canGoBack: () => true,
+  },
   useLocalSearchParams: () => mockSearchParams,
+  useNavigation: () => ({
+    addListener: (event: string, handler: (e: unknown) => void) => {
+      mockNavListeners[event] = handler;
+      return () => { delete mockNavListeners[event]; };
+    },
+    dispatch: (...args: unknown[]) => mockNavDispatch(...args),
+  }),
 }));
+
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (...args: unknown[]) => mockConfirm(...args),
+    confirmDialog: null,
+  }),
+}));
+jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -155,6 +181,16 @@ jest.mock('react-i18next', () => ({
         'create.validationCapacity': 'Capacity must be between 1 and 10,000.',
         'create.invalidCoordinates': 'Enter both latitude and longitude using valid coordinate ranges.',
         'create.loadFailed': 'Could not load event.',
+        'create.loadFailedTitle': "Couldn't open this event",
+        'create.validationDateFormat': 'Enter dates as YYYY-MM-DDTHH:mm.',
+        'create.reviewMissing': 'Add a title, description and start time before continuing.',
+        'create.unsavedTitle': 'Discard this event?',
+        'create.unsavedMessage': 'You have unsaved details.',
+        'create.discard': 'Discard',
+        'create.failedTitle': 'Event not created',
+        'create.failedDescription': 'We could not create the event.',
+        'common:buttons.retry': 'Retry',
+        'common:buttons.cancel': 'Cancel',
         'category.workshop': 'Workshop',
         'category.social': 'Social',
         'category.outdoor': 'Outdoor',
@@ -175,6 +211,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -207,7 +244,9 @@ jest.mock('expo-crypto', () => ({ randomUUID: () => 'mobile-revision-key-1' }));
 
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
   NotificationFeedbackType: { Success: 'success' },
+  ImpactFeedbackStyle: { Light: 'light' },
 }));
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
@@ -229,10 +268,11 @@ jest.mock('@/components/ui/AppToast', () => {
 jest.mock('@/components/ui/FormActionFooter', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
-  return function MockFormActionFooter({ submitLabel, onSubmit }: { submitLabel: string; onSubmit: () => void }) {
+  return function MockFormActionFooter({ subtitle, submitLabel, isDisabled, onSubmit }: { subtitle: string; submitLabel: string; isDisabled?: boolean; onSubmit: () => void }) {
     return (
       <View>
-        <Pressable accessibilityRole="button" onPress={onSubmit}>
+        <Text>{subtitle}</Text>
+        <Pressable accessibilityRole="button" testID="footer-submit" accessibilityState={{ disabled: !!isDisabled }} onPress={onSubmit}>
           <Text>{submitLabel}</Text>
         </Pressable>
       </View>
@@ -243,8 +283,8 @@ jest.mock('@/components/ui/FormActionFooter', () => {
 jest.mock('heroui-native', () => {
   const React = require('react');
   const { Pressable, Text, TextInput, View } = require('react-native');
-  const Button = ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) => (
-    <Pressable onPress={onPress}>
+  const Button = ({ children, onPress, accessibilityLabel, accessibilityState }: { children: React.ReactNode; onPress?: () => void; accessibilityLabel?: string; accessibilityState?: Record<string, unknown> }) => (
+    <Pressable onPress={onPress} accessibilityLabel={accessibilityLabel} accessibilityState={accessibilityState}>
       <View>{children}</View>
     </Pressable>
   );
@@ -335,6 +375,10 @@ describe('NewEventRoute', () => {
       assets: [{ uri: 'file:///tmp/event-cover.jpg', mimeType: 'image/jpeg', fileSize: 1024 }],
     });
     mockReplace.mockClear();
+    mockBack.mockClear();
+    mockConfirm.mockClear();
+    mockNavDispatch.mockClear();
+    Object.keys(mockNavListeners).forEach((key) => { delete mockNavListeners[key]; });
   });
 
   it('keeps the native create event frame full height with an explicit background', () => {
@@ -654,15 +698,21 @@ describe('NewEventRoute', () => {
       },
     });
 
-    const { getByText } = render(<NewEventRoute />);
+    const { getByText, queryByText } = render(<NewEventRoute />);
 
     await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({
       description: 'Could not load event.',
       variant: 'danger',
     })));
-    fireEvent.press(getByText('Update event'));
-
+    // S4-03: no form and no live submit over blank fields — the failure is shown with a retry.
+    expect(queryByText('Update event')).toBeNull();
+    expect(getByText("Couldn't open this event")).toBeTruthy();
     expect(mockUpdateEvent).not.toHaveBeenCalled();
+
+    mockGetEvent.mockResolvedValueOnce({ data: canonicalEditEvent });
+    fireEvent.press(getByText('Retry'));
+    await waitFor(() => expect(mockGetEvent).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(getByText('Update event')).toBeTruthy());
   });
 
   it('does not silently disable federation when v2 omits legacy visibility state', async () => {
@@ -714,5 +764,114 @@ describe('NewEventRoute', () => {
 
     await waitFor(() => expect(mockUpdateEvent).toHaveBeenCalled());
     expect(mockUploadEventImage).toHaveBeenCalledWith(7, 'file:///tmp/event-cover.jpg');
+  });
+
+  function fillValidEvent(screen: ReturnType<typeof render>) {
+    fireEvent.changeText(screen.getByPlaceholderText('What is happening?'), 'Repair workshop');
+    fireEvent.changeText(screen.getByPlaceholderText('Tell members what to expect.'), 'Bring something small to mend together.');
+    fireEvent.changeText(screen.getByPlaceholderText('YYYY-MM-DDTHH:mm'), '2099-01-02T12:00');
+  }
+
+  /**
+   * 🔴 S4-01. A rejected create used to toast for a frame and then run the same navigation
+   * as a success, taking every typed field with it.
+   */
+  it('stays on the form with the input intact when the save is rejected', async () => {
+    mockCreateEvent.mockRejectedValueOnce(new Error('offline'));
+    const screen = render(<NewEventRoute />);
+    fillValidEvent(screen);
+
+    fireEvent.press(screen.getByText('Create event'));
+    await waitFor(() => expect(mockCreateEvent).toHaveBeenCalled());
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Event not created', variant: 'danger' })));
+    // The old navigation ran on a 0ms timer; give it every chance to fire.
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Repair workshop')).toBeTruthy();
+    expect(screen.getByDisplayValue('Bring something small to mend together.')).toBeTruthy();
+  });
+
+  /** S4-04. Back, Cancel and gestures pop the screen via `beforeRemove`; dirty input is guarded. */
+  it('asks before discarding unsaved input, and lets an untouched form leave freely', () => {
+    const screen = render(<NewEventRoute />);
+    expect(mockNavListeners.beforeRemove).toBeUndefined();
+
+    fireEvent.changeText(screen.getByPlaceholderText('What is happening?'), 'Half-typed title');
+    expect(mockNavListeners.beforeRemove).toBeDefined();
+
+    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
+    mockNavListeners.beforeRemove?.(e);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(mockNavDispatch).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this event?', variant: 'danger' }));
+  });
+
+  /** S4-05. Half the app's locales type decimals with a comma; coordinates too. */
+  it('accepts comma decimals for coordinates', async () => {
+    const screen = render(<NewEventRoute />);
+    fillValidEvent(screen);
+    fireEvent.changeText(screen.getByPlaceholderText('51.5007'), '51,5');
+    fireEvent.changeText(screen.getByPlaceholderText('-0.1246'), '-0,12');
+
+    fireEvent.press(screen.getByText('Create event'));
+
+    await waitFor(() => expect(mockCreateEvent).toHaveBeenCalledWith(expect.objectContaining({ latitude: 51.5, longitude: -0.12 })));
+  });
+
+  /** S4-25. A mistyped date is a format problem, not a missing field. */
+  it('reports a mistyped start as an invalid format rather than a missing field', async () => {
+    const screen = render(<NewEventRoute />);
+    fillValidEvent(screen);
+    fireEvent.changeText(screen.getByPlaceholderText('YYYY-MM-DDTHH:mm'), 'next friday');
+
+    fireEvent.press(screen.getByText('Create event'));
+
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Enter dates as YYYY-MM-DDTHH:mm.' })));
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ description: 'Add a title, description, and valid future start time.' }));
+    expect(mockCreateEvent).not.toHaveBeenCalled();
+  });
+
+  /** S4-18. An event that has already started can still be edited when its start is left alone. */
+  it('lets an already-started event be edited without touching its start, but not moved into the past', async () => {
+    mockSearchParams = { id: '7' };
+    mockGetEvent.mockResolvedValueOnce({
+      data: {
+        ...canonicalEditEvent,
+        schedule: { ...canonicalEditEvent.schedule, start_at: '2001-01-02T12:00:00.000Z', end_at: null },
+      },
+    });
+
+    const { getByDisplayValue, getByText, getByPlaceholderText } = render(<NewEventRoute />);
+    await waitFor(() => expect(getByDisplayValue('Existing workshop')).toBeTruthy());
+
+    fireEvent.changeText(getByDisplayValue('Existing workshop'), 'Renamed workshop');
+    fireEvent.press(getByText('Update event'));
+    await waitFor(() => expect(mockUpdateEvent).toHaveBeenCalledWith(7, expect.objectContaining({ title: 'Renamed workshop' })));
+
+    fireEvent.changeText(getByPlaceholderText('YYYY-MM-DDTHH:mm'), '2001-01-03T12:00');
+    fireEvent.press(getByText('Update event'));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Choose a future start time.' })));
+    expect(mockUpdateEvent).toHaveBeenCalledTimes(1);
+  });
+
+  /** S4-26. The toggle chips announce their state to assistive technology. */
+  it('exposes the all-day toggle state to accessibility', () => {
+    const { getByLabelText } = render(<NewEventRoute />);
+    expect(getByLabelText('All-day event').props.accessibilityState).toEqual(expect.objectContaining({ selected: false }));
+    fireEvent.press(getByLabelText('All-day event'));
+    expect(getByLabelText('All-day event').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+  });
+
+  /** S6-07. The footer says what is missing and is disabled until the required fields are filled. */
+  it('derives the footer copy and disabled state from the required fields', () => {
+    const screen = render(<NewEventRoute />);
+    expect(screen.getByText('Add a title, description and start time before continuing.')).toBeTruthy();
+    expect(screen.getByTestId('footer-submit').props.accessibilityState.disabled).toBe(true);
+
+    fillValidEvent(screen);
+    expect(screen.getByText('Review first.')).toBeTruthy();
+    expect(screen.getByTestId('footer-submit').props.accessibilityState.disabled).toBe(false);
   });
 });

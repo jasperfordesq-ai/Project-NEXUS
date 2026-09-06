@@ -46,10 +46,12 @@ import type {
 import { ApiResponseError } from '@/lib/api/client';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import Avatar from '@/components/ui/Avatar';
+import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -69,7 +71,6 @@ import {
   isRecurrenceDefinitionBlueprintCandidate,
 } from '@/lib/events/recurrenceBlueprints';
 
-const WEB_URL = 'https://app.project-nexus.ie';
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
 
 function eventMutationKey(action: 'accept-offer' | 'rsvp-going' | 'rsvp-interested', eventId: number): string {
@@ -97,6 +98,7 @@ function EventDetailScreenInner() {
   ]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const bottomInset = useBottomInset();
@@ -105,7 +107,7 @@ function EventDetailScreenInner() {
 
   const eventId = Number(id);
   const safeEventId = Number.isFinite(eventId) && eventId > 0 ? eventId : 0;
-  const { data, isLoading, refresh } = useApi(() => getEvent(safeEventId), [safeEventId], { enabled: safeEventId > 0 });
+  const { data, isLoading, error, refresh } = useApi(() => getEvent(safeEventId), [safeEventId], { enabled: safeEventId > 0 });
   const remindersApi = useApi(() => getEventReminders(safeEventId), [safeEventId], { enabled: safeEventId > 0 && !!user });
   const event = data?.data ?? null;
   const canLoadRoster = Boolean(event?.permissions.manage_people);
@@ -139,7 +141,7 @@ function EventDetailScreenInner() {
 
   if (safeEventId <= 0) {
     return (
-      <ScreenShell title={t('detailTitle')} backLabel={t('detail.goBack')}>
+      <ScreenShell title={t('detailTitle')} backLabel={t('common:back')}>
         <CenteredState text={t('detail.invalidId')} />
       </ScreenShell>
     );
@@ -147,7 +149,7 @@ function EventDetailScreenInner() {
 
   if (isLoading && !event) {
     return (
-      <ScreenShell title={t('detailTitle')} backLabel={t('detail.goBack')}>
+      <ScreenShell title={t('detailTitle')} backLabel={t('common:back')}>
         <View className="flex-1 items-center justify-center">
           <LoadingSpinner />
         </View>
@@ -155,9 +157,19 @@ function EventDetailScreenInner() {
     );
   }
 
+  // 🔴 A network failure used to read as "Event not found" with no way back but killing
+  // the app (S4-06). A load error is a load error, and it gets a retry.
+  if (!event && error) {
+    return (
+      <ScreenShell title={t('detailTitle')} backLabel={t('common:back')}>
+        <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading} testID="event-detail-error" />
+      </ScreenShell>
+    );
+  }
+
   if (!event) {
     return (
-      <ScreenShell title={t('detailTitle')} backLabel={t('detail.goBack')}>
+      <ScreenShell title={t('detailTitle')} backLabel={t('common:back')}>
         <CenteredState text={t('detail.notFound')} />
       </ScreenShell>
     );
@@ -228,7 +240,7 @@ function EventDetailScreenInner() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
-        message: t('detail.shareMessage', { title: event.title, url: `${WEB_URL}/events/${event.id}` }),
+        message: t('detail.shareMessage', { title: event.title, url: buildWebUrl(tenant?.slug, `/events/${event.id}`) }),
       });
     } catch {
       // User cancelled native share.
@@ -469,7 +481,7 @@ function EventDetailScreenInner() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
       <AppTopBar
         title={t('detailTitle')}
-        backLabel={t('detail.goBack')}
+        backLabel={t('common:back')}
         fallbackHref="/(tabs)/events"
         rightAction={{ accessibilityLabel: t('share'), icon: 'share-outline', onPress: handleShare }}
       />
@@ -825,7 +837,11 @@ function EventDetailScreenInner() {
                   accessibilityLabel={currentRelationship.registration.can_leave_waitlist ? t('detail.leaveWaitlist') : t('detail.joinWaitlist')}
                   accessibilityState={{ busy: updating }}
                 >
-                  {updating ? <Spinner size="sm" /> : <Ionicons name="hourglass-outline" size={16} color={currentRelationship.registration.can_leave_waitlist ? primary : '#fff'} />}
+                  {updating
+                    ? <Spinner size="sm" />
+                    : currentRelationship.registration.can_leave_waitlist
+                      ? <Ionicons name="hourglass-outline" size={16} color={primary} />
+                      : <AccentIcon name="hourglass-outline" size={16} />}
                   <HeroButton.Label>
                     {currentRelationship.registration.can_leave_waitlist
                       ? t('detail.leaveWaitlist')
@@ -1229,7 +1245,9 @@ function EventReminderCard({
               accessibilityRole="switch"
               accessibilityState={{ checked: enabled, busy: saving }}
             >
-              <Ionicons name={enabled ? 'notifications' : 'notifications-off-outline'} size={15} color={enabled ? '#fff' : primary} />
+              {enabled
+                ? <AccentIcon name="notifications" size={15} />
+                : <Ionicons name="notifications-off-outline" size={15} color={primary} />}
               <HeroButton.Label>{enabled ? t('reminders.enabled') : t('reminders.disabled')}</HeroButton.Label>
             </HeroButton>
             <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('reminders.timing')}</Text>
@@ -1246,7 +1264,9 @@ function EventReminderCard({
                   accessibilityLabel={t(`reminders.option.${minutes}`)}
                   accessibilityState={{ selected: selectedOption, busy: saving }}
                 >
-                  <Ionicons name={selectedOption ? 'notifications' : 'notifications-outline'} size={15} color={selectedOption ? '#fff' : primary} />
+                  {selectedOption
+                    ? <AccentIcon name="notifications" size={15} />
+                    : <Ionicons name="notifications-outline" size={15} color={primary} />}
                   <HeroButton.Label>{t(`reminders.option.${minutes}`)}</HeroButton.Label>
                 </HeroButton>
               );
@@ -1626,7 +1646,7 @@ function RsvpButton({
       accessibilityLabel={label}
       accessibilityState={{ busy: loading, selected }}
     >
-      {loading ? <Spinner size="sm" /> : <Ionicons name={icon} size={16} color={selected ? '#fff' : primary} />}
+      {loading ? <Spinner size="sm" /> : selected ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
       <HeroButton.Label>{label}</HeroButton.Label>
     </HeroButton>
   );

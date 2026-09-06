@@ -261,7 +261,8 @@ export default function EventSafetyCard({
                   onPress={() => void acknowledgeCode()}
                   style={{ backgroundColor: primary }}
                 >
-                  {pendingAction === 'acknowledge' ? <Spinner size="sm" /> : t('safety.actions.acknowledge')}
+                  {pendingAction === 'acknowledge' ? <Spinner size="sm" /> : null}
+                  <Button.Label>{t('safety.actions.acknowledge')}</Button.Label>
                 </Button>
               </View>
             ) : null}
@@ -271,7 +272,8 @@ export default function EventSafetyCard({
                 isDisabled={pendingAction !== null}
                 onPress={withdrawCode}
               >
-                {pendingAction === 'withdraw_code' ? <Spinner size="sm" /> : t('safety.actions.withdraw_acknowledgement')}
+                {pendingAction === 'withdraw_code' ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('safety.actions.withdraw_acknowledgement')}</Button.Label>
               </Button>
             ) : null}
           </View>
@@ -330,7 +332,8 @@ export default function EventSafetyCard({
                   onPress={() => void requestGuardian()}
                   style={{ backgroundColor: primary }}
                 >
-                  {pendingAction === 'request_guardian' ? <Spinner size="sm" /> : t('safety.actions.request_guardian_consent')}
+                  {pendingAction === 'request_guardian' ? <Spinner size="sm" /> : null}
+                  <Button.Label>{t('safety.actions.request_guardian_consent')}</Button.Label>
                 </Button>
               </View>
             ) : null}
@@ -340,7 +343,8 @@ export default function EventSafetyCard({
                 isDisabled={pendingAction !== null}
                 onPress={withdrawGuardian}
               >
-                {pendingAction === 'withdraw_guardian' ? <Spinner size="sm" /> : t('safety.actions.withdraw_guardian_consent')}
+                {pendingAction === 'withdraw_guardian' ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('safety.actions.withdraw_guardian_consent')}</Button.Label>
               </Button>
             ) : null}
           </View>

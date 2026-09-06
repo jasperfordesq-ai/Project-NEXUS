@@ -14,13 +14,21 @@ let mockParams: Record<string, string> = {};
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
   useLocalSearchParams: () => mockParams,
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn() }),
+  useFocusEffect: jest.fn(),
 }));
+jest.mock('@/components/ui/AppToast', () => {
+  const show = jest.fn();
+  const hide = jest.fn();
+  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+});
 
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

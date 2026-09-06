@@ -52,6 +52,9 @@
   "newPost": {
     "title": "Crear publicación",
     "placeholder": "¿Qué tienes en mente?",
+    "unsavedTitle": "¿Descartar esta publicación?",
+    "unsavedMessage": "Se perderá lo que has escrito.",
+    "discard": "Descartar",
     "submit": "Publicar",
     "created": "¡Publicación creada!",
     "failed": "Error al crear la publicación.",
@@ -153,7 +156,9 @@
     "closed": "Encuesta cerrada",
     "vote": "Votar",
     "resultsHiddenUntilClose": "Resultados revelados cuando cierre la encuesta",
-    "voteToSeeResults": "Vota para ver los resultados"
+    "voteToSeeResults": "Vota para ver los resultados",
+    "voteFailedTitle": "Voto no guardado",
+    "voteFailed": "No se pudo registrar tu voto. Inténtalo de nuevo."
   },
   "pollsScreen": {
     "title": "Encuestas",

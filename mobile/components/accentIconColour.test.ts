@@ -30,8 +30,19 @@ import path from 'node:path';
 const MOBILE_ROOT = path.resolve(__dirname, '..');
 const SEARCH_DIRS = ['app', 'components'];
 
-/** Spellings of white seen in this codebase. */
-const WHITE = /color=(?:"#fff"|"#ffffff"|"#FFF"|"#FFFFFF"|\{'#fff'\}|\{'#ffffff'\})/;
+/**
+ * Spellings of white seen in this codebase — literal AND conditional.
+ *
+ * 🔴 The first version matched only `color="#fff"` / `color={'#fff'}`. The idiom on every
+ * toggle and segmented button in the app is `color={selected ? '#fff' : primary}` inside
+ * `variant={selected ? 'primary' : 'secondary'}`, and 33 such icons plus 9 labels sat
+ * invisible to this check until the 2026-09-05 sweep (S6-03). A conditional variant has no
+ * literal `variant="…"`, so it is treated as primary below — which is exactly the branch
+ * where the white lands.
+ */
+const WHITE = /color=(?:"#fff"|"#ffffff"|"#FFF"|"#FFFFFF"|\{'#fff'\}|\{'#ffffff'\}|\{[^}]*'#(?:fff|ffffff)'[^}]*\})/i;
+/** A label forced white: `style={{ color: … '#fff' … }}` or a `text-white` class. */
+const WHITE_LABEL = /<HeroButton\.Label\b(?:[^>]|>(?=[^<]*<\/HeroButton\.Label>))*?(?:style=\{\{[^}]*'#(?:fff|ffffff)'[^}]*\}\}|className="[^"]*\btext-white\b)/i;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -96,6 +107,13 @@ function findOffenders(): Offender[] {
           offenders.push({
             file: path.relative(MOBILE_ROOT, file).split(path.sep).join('/'),
             line: src.slice(0, absolute).split('\n').length,
+          });
+        }
+        const label = WHITE_LABEL.exec(block);
+        if (label) {
+          offenders.push({
+            file: path.relative(MOBILE_ROOT, file).split(path.sep).join('/'),
+            line: src.slice(0, match.index + label.index).split('\n').length,
           });
         }
       }

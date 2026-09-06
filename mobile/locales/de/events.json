@@ -167,7 +167,13 @@
     "invalidCoordinates": "Geben Sie Breiten- und Längengrad mit gültigen Koordinaten ein Bereiche.",
     "failedTitle": "Ereignis nicht erstellt",
     "loadFailed": "Wir konnten dieses Ereignis nicht zur Bearbeitung laden.",
-    "failedDescription": "Wir konnten das Ereignis nicht erstellen. Bitte versuchen Sie es erneut."
+    "failedDescription": "Wir konnten das Ereignis nicht erstellen. Bitte versuchen Sie es erneut.",
+    "validationDateFormat": "Gib Datum und Uhrzeit als YYYY-MM-DDTHH:mm ein (oder YYYY-MM-DD für ganztägige Veranstaltungen), zum Beispiel 2026-06-30T18:00.",
+    "reviewMissing": "Füge einen Titel, eine Beschreibung und eine Startzeit hinzu, bevor du fortfährst.",
+    "loadFailedTitle": "Diese Veranstaltung konnte nicht geöffnet werden",
+    "unsavedTitle": "Diese Veranstaltung verwerfen?",
+    "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
+    "discard": "Verwerfen"
   },
   "category": {
     "workshop": "Werkstatt",

@@ -30,6 +30,8 @@ const mockT = (key: string, values?: Record<string, unknown>) => {
 
 jest.mock('@/components/reactions/ReactorsSheet', () => 'View');
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() },
   useLocalSearchParams: () => mockUseLocalSearchParams(),
 }));

@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -69,6 +71,19 @@ export default function MatchPreferencesScreen() {
   useEffect(() => {
     if (data?.preferences) setDraft(data.preferences);
   }, [data?.preferences]);
+
+  // A settings form with a Save button: Back used to discard changed toggles silently.
+  const { confirm, confirmDialog } = useConfirm();
+  const isDirty = Boolean(draft && data?.preferences && JSON.stringify(draft) !== JSON.stringify(data.preferences));
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: isSaving,
+    confirm,
+    title: t('matchPreferences.unsavedTitle'),
+    message: t('matchPreferences.unsavedMessage'),
+    discardLabel: t('matchPreferences.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   const save = useCallback(async () => {
     if (!draft || isSaving) return;
@@ -275,6 +290,7 @@ export default function MatchPreferencesScreen() {
             </View>
           </ScrollView>
         )}
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );

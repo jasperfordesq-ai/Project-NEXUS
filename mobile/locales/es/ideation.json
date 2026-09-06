@@ -523,6 +523,13 @@
     "validationDates": "Utilice una fecha y hora válidas, como 2026-06-30 17:00.",
     "validationMaxIdeas": "Usar un número entero entre 1 y 50.",
     "failedTitle": "No se pudo crear el desafío",
-    "failedDescription": "Inténtalo de nuevo en un momento."
+    "failedDescription": "Inténtalo de nuevo en un momento.",
+    "unsavedTitle": "¿Descartar este desafío?",
+    "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
+    "discard": "Descartar",
+    "footerIncomplete": "Aún no está listo",
+    "footerMissingTitle": "Añade un título al desafío para continuar.",
+    "footerMissingDescription": "Añade una descripción para continuar.",
+    "loadFailedTitle": "No se pudo abrir este desafío"
   }
 }

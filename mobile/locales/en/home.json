@@ -52,6 +52,9 @@
   "newPost": {
     "title": "Create post",
     "placeholder": "What's on your mind?",
+    "unsavedTitle": "Discard this post?",
+    "unsavedMessage": "What you have written will be lost.",
+    "discard": "Discard",
     "submit": "Post",
     "created": "Post created!",
     "failed": "Failed to create post.",
@@ -153,7 +156,9 @@
     "closed": "Poll closed",
     "vote": "Vote",
     "resultsHiddenUntilClose": "Results revealed when poll closes",
-    "voteToSeeResults": "Vote to see results"
+    "voteToSeeResults": "Vote to see results",
+    "voteFailedTitle": "Vote not saved",
+    "voteFailed": "Your vote could not be recorded. Please try again."
   },
   "pollsScreen": {
     "title": "Polls",

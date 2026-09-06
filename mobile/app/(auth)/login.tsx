@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -103,7 +104,7 @@ export default function LoginScreen() {
                 accessibilityRole="image"
                 accessibilityLabel={t('common:appName')}
               >
-                <Text className="text-white text-[32px] font-bold">N</Text>
+                <Text className="text-[32px] font-bold" style={{ color: contrastText(primary) }}>N</Text>
               </View>
               <HeroCard.Title className="text-2xl font-bold text-center">
                 {t('login.title')}

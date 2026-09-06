@@ -3,10 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, Image, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -95,6 +95,10 @@ function StatTile({
   );
 }
 
+/*
+  🔴 S4-24: these read "GROUPS 1" from the page that happened to be loaded, which a member
+  reads as the community's total. The label now says what the number is.
+*/
 function GroupsHero({
   groups,
   primary,
@@ -113,7 +117,7 @@ function GroupsHero({
   return (
     <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
       <View className="h-1.5" style={{ backgroundColor: primary }} />
-      <HeroCard.Body className="gap-5 p-4 pt-0">
+      <HeroCard.Body className="gap-5 p-4">
         <View className="flex-row items-start gap-3">
           <View className="size-12 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
             <Ionicons name="people-outline" size={24} color={primary} />
@@ -131,6 +135,7 @@ function GroupsHero({
           <StatTile label={t('stats.members')} value={String(membersCount)} tone="#22c55e" theme={theme} />
           <StatTile label={t('stats.joined')} value={String(joinedCount)} tone="#8b5cf6" theme={theme} />
         </View>
+        <Text className="text-xs" style={{ color: theme.textMuted }}>{t('stats.loadedNote')}</Text>
       </HeroCard.Body>
     </HeroCard>
   );
@@ -278,6 +283,23 @@ export default function GroupsScreen() {
 
   const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
     usePaginatedApi<Group, GroupsResponse>(fetchGroups, extractGroupPage, [debouncedSearch, filter]);
+  const refreshOnFocus = refresh;
+  /*
+    🔴 S4-09: an RSVP, a join, or something created on a child screen was invisible here
+    until the member pulled to refresh — the list still offered "Apply" for an opportunity
+    they had applied to. Refetch on every return; the first mount already fetched.
+  */
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refreshOnFocus();
+    }, [refreshOnFocus]),
+  );
+
 
   const groups = useMemo(() => items as ApiGroup[], [items]);
   const filterOptions: { value: FilterValue; label: string }[] = [

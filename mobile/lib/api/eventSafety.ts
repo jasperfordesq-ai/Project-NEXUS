@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import i18n from 'i18next';
 import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 import { api, ApiResponseError, type RequestOptions } from '@/lib/api/client';
@@ -130,7 +131,7 @@ function parseSafety(endpoint: string, response: unknown): { data: EventSafety }
       })),
     },
   });
-  throw new ApiResponseError(422, 'EVENT_SAFETY_CONTRACT_DRIFT');
+  throw new ApiResponseError(422, i18n.t('common:errors.contractDrift'), undefined, 'EVENT_SAFETY_CONTRACT_DRIFT');
 }
 
 export async function getEventSafety(eventId: number): Promise<{ data: EventSafety }> {

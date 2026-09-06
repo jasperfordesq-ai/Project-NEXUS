@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import AccentIcon from '@/components/ui/AccentIcon';
 import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
@@ -22,21 +24,32 @@ import { createIdeationChallenge, getIdeationChallenge, updateIdeationChallenge,
 import * as Haptics from '@/lib/haptics';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { withAlpha } from '@/lib/utils/color';
+import { eventIsoToLocalInput, eventLocalInputToIso, localEventTimeZone } from '@/lib/utils/eventDateTime';
 
 type ChallengeCreateStatus = Extract<IdeationStatus, 'draft' | 'open'>;
 
-function normalizeDateTime(value: string): string | null {
+/**
+ * 🔴 Deadlines are wall-clock times in the member's zone, sent as instants (S4-13).
+ *
+ * The old code sliced the server's UTC string as if it were local and saved a naive
+ * "YYYY-MM-DD HH:mm:00" back, so every save shifted the deadline by the UTC offset —
+ * an Irish organiser in summer lost an hour per edit. Both directions now go through the
+ * shared helpers: the ISO from the server is rendered in the device zone, and the typed
+ * wall-clock value is converted back to an ISO instant in that same zone.
+ */
+const DEADLINE_TIME_ZONE = localEventTimeZone();
+
+function deadlineInputToIso(value: string): string | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
-  const normalized = trimmed.replace('T', ' ');
-  const parsed = new Date(normalized);
-  if (Number.isNaN(parsed.getTime())) return null;
+  const withTime = /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? `${trimmed}T00:00` : trimmed.replace(' ', 'T');
+  return eventLocalInputToIso(withTime, DEADLINE_TIME_ZONE);
+}
 
-  const [datePart = '', timePart = ''] = normalized.split(' ');
-  const [hour = '00', minute = '00'] = timePart.split(':');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return null;
-  return `${datePart} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00`;
+function deadlineIsoToInput(value: string | null | undefined): string {
+  return eventIsoToLocalInput(value, DEADLINE_TIME_ZONE).replace('T', ' ');
 }
 
 export default function NewChallengeRoute() {
@@ -53,6 +66,7 @@ function NewChallengeScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const { id, mode } = useLocalSearchParams<{ id?: string; mode?: string }>();
   const challengeId = Number(id ?? 0);
   const isEdit = mode === 'edit' && challengeId > 0;
@@ -65,29 +79,84 @@ function NewChallengeScreen() {
   const [maxIdeasPerUser, setMaxIdeasPerUser] = useState('');
   const [status, setStatus] = useState<ChallengeCreateStatus>('open');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(isEdit);
+  const [hasHydrated, setHasHydrated] = useState(!isEdit);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
+  const attemptedRetryRef = useRef<number | null>(null);
+  // Mount tracking in its own effect: a re-render mid-fetch must not cancel the hydration.
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
-    if (!isEdit) return;
-    let active = true;
+    if (!isEdit || hasHydrated || attemptedRetryRef.current === retryToken) return;
+    attemptedRetryRef.current = retryToken;
     setIsLoading(true);
+    setLoadFailed(false);
     void getIdeationChallenge(challengeId)
       .then((challenge) => {
-        if (!active) return;
+        if (!isMountedRef.current) return;
         setTitle(challenge.title ?? '');
         setDescription(challenge.description ?? '');
         setCategory(challenge.category ?? '');
         setPrizeDescription(challenge.prize_description ?? '');
-        setSubmissionDeadline(challenge.submission_deadline?.slice(0, 16).replace('T', ' ') ?? '');
-        setVotingDeadline(challenge.voting_deadline?.slice(0, 16).replace('T', ' ') ?? '');
+        setSubmissionDeadline(deadlineIsoToInput(challenge.submission_deadline));
+        setVotingDeadline(deadlineIsoToInput(challenge.voting_deadline));
         setMaxIdeasPerUser(challenge.max_ideas_per_user == null ? '' : String(challenge.max_ideas_per_user));
+        setHasHydrated(true);
       })
       .catch((error) => {
-        if (active) showToast({ title: t('ideation:challenges.load_error'), description: error instanceof Error ? error.message : t('ideation:toast.error_generic'), variant: 'danger' });
+        if (!isMountedRef.current) return;
+        // 🔴 Not a dead form: a failed load used to leave empty fields under a live
+        // "Update" button, which would have wiped the record (S4-03).
+        setLoadFailed(true);
+        showToastRef.current({
+          title: tRef.current('ideation:challenges.load_error'),
+          description: error instanceof Error ? error.message : tRef.current('ideation:toast.error_generic'),
+          variant: 'danger',
+        });
       })
-      .finally(() => { if (active) setIsLoading(false); });
-    return () => { active = false; };
-  }, [challengeId, isEdit, showToast, t]);
+      .finally(() => { if (isMountedRef.current) setIsLoading(false); });
+  }, [challengeId, hasHydrated, isEdit, retryToken]);
+
+  // Everything the member can type or choose, compared with the form as first shown.
+  const formFingerprint = JSON.stringify([title, description, category, prizeDescription, submissionDeadline, votingDeadline, maxIdeasPerUser, status]);
+  const baselineRef = useRef<string | null>(null);
+  if (!isEdit && baselineRef.current === null) baselineRef.current = formFingerprint;
+  useEffect(() => {
+    if (isEdit && hasHydrated && baselineRef.current === null) baselineRef.current = formFingerprint;
+  }, [formFingerprint, hasHydrated, isEdit]);
+  const isDirty = baselineRef.current !== null && formFingerprint !== baselineRef.current;
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: isSubmitting || hasSaved,
+    confirm,
+    title: t('ideation:create.unsavedTitle'),
+    message: t('ideation:create.unsavedMessage'),
+    discardLabel: t('ideation:create.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
+  const hasTitle = title.trim().length > 0;
+  const hasDescription = description.trim().length > 0;
+  const isValid = hasTitle && hasDescription && hasHydrated;
+  // 🔴 The footer used to say "Ready" / "Open for ideas." over an empty form (S4-14).
+  const footerTitle = isValid ? t('ideation:create.reviewTitle') : t('ideation:create.footerIncomplete');
+  const footerSubtitle = !hasTitle
+    ? t('ideation:create.footerMissingTitle')
+    : !hasDescription
+      ? t('ideation:create.footerMissingDescription')
+      : t('ideation:create.reviewSubtitle');
 
   if (!hasFeature('ideation_challenges')) {
     return (
@@ -101,6 +170,7 @@ function NewChallengeScreen() {
   }
 
   async function submit() {
+    if (isEdit && !hasHydrated) return;
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
     if (!trimmedTitle || !trimmedDescription) {
@@ -108,8 +178,8 @@ function NewChallengeScreen() {
       return;
     }
 
-    const submissionDate = normalizeDateTime(submissionDeadline);
-    const votingDate = normalizeDateTime(votingDeadline);
+    const submissionDate = deadlineInputToIso(submissionDeadline);
+    const votingDate = deadlineInputToIso(votingDeadline);
     if ((submissionDeadline.trim() && !submissionDate) || (votingDeadline.trim() && !votingDate)) {
       showToast({ title: t('ideation:create.validationTitle'), description: t('ideation:create.validationDates'), variant: 'warning' });
       return;
@@ -136,6 +206,7 @@ function NewChallengeScreen() {
       const challenge = isEdit
         ? await updateIdeationChallenge(challengeId, payload)
         : await createIdeationChallenge({ ...payload, status });
+      setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (challenge.id) {
         successDestination = { pathname: '/(modals)/ideation-detail', params: { id: String(challenge.id) } };
@@ -148,18 +219,27 @@ function NewChallengeScreen() {
       setIsSubmitting(false);
     }
 
+    // `replace`, not `push`: going "back" to a form whose contents have already been
+    // posted is a duplicate-post trap, and push is a no-op from a deep-link root (S4-14).
     if (successDestination) {
-      setTimeout(() => {
-        if (typeof router.push === 'function') router.push(successDestination);
-        else router.replace(successDestination);
-      }, 0);
+      setTimeout(() => router.replace(successDestination), 0);
     }
   }
 
   return (
     <SafeAreaView testID="new-challenge-screen" className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
       <AppTopBar title={isEdit ? t('ideation:edit_page.title') : t('ideation:create.title')} backLabel={t('common:back')} fallbackHref={isEdit ? ({ pathname: '/(modals)/ideation-detail', params: { id: String(challengeId) } } as unknown as Href) : ('/(modals)/ideation' as Href)} />
-      {isLoading ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : (
+      {isEdit && loadFailed ? (
+        <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-challenge-load-failed">
+          <EmptyState
+            icon="bulb-outline"
+            title={t('ideation:create.loadFailedTitle')}
+            subtitle={t('ideation:challenges.load_error')}
+            actionLabel={t('common:buttons.retry')}
+            onAction={() => setRetryToken((value) => value + 1)}
+          />
+        </View>
+      ) : isLoading || (isEdit && !hasHydrated) ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : (
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: theme.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -226,12 +306,17 @@ function NewChallengeScreen() {
                       variant={status === item ? 'primary' : 'secondary'}
                       onPress={() => setStatus(item)}
                       accessibilityLabel={t(`ideation:create.status.${item}`)}
+                      accessibilityState={{ selected: status === item }}
                     >
-                      <Ionicons
-                        name={item === 'open' ? 'radio-button-on-outline' : 'document-text-outline'}
-                        size={16}
-                        color={status === item ? theme.onPrimary : primary}
-                      />
+                      {status === item
+                        ? <AccentIcon name={item === 'open' ? 'radio-button-on-outline' : 'document-text-outline'} size={16} />
+                        : (
+                          <Ionicons
+                            name={item === 'open' ? 'radio-button-on-outline' : 'document-text-outline'}
+                            size={16}
+                            color={primary}
+                          />
+                        )}
                       <HeroButton.Label>{t(`ideation:create.status.${item}`)}</HeroButton.Label>
                     </HeroButton>
                   ))}
@@ -290,18 +375,20 @@ function NewChallengeScreen() {
           </HeroCard>
         </ScrollView>
         <FormActionFooter
-          title={t('ideation:create.footerTitle')}
-          subtitle={t('ideation:create.footerSubtitle')}
+          title={footerTitle}
+          subtitle={footerSubtitle}
           submitLabel={isSubmitting ? (isEdit ? t('ideation:form.updating') : t('ideation:create.saving')) : (isEdit ? t('ideation:form.update') : t('ideation:create.submit'))}
           secondaryLabel={t('common:buttons.cancel')}
           icon="checkmark-outline"
           primary={primary}
           isSubmitting={isSubmitting}
+          isDisabled={!isValid}
           onSubmit={() => void submit()}
           onSecondary={() => router.back()}
         />
       </KeyboardAvoidingView>
       )}
+      {confirmDialog}
     </SafeAreaView>
   );
 }

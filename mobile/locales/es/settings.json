@@ -23,7 +23,11 @@
     "device": "Permitir notificaciones en este dispositivo",
     "promotions": "Notificaciones promocionales",
     "permissionNeeded": "Las notificaciones no están activadas",
-    "permissionNeededHint": "Permite las notificaciones cuando el dispositivo lo solicite. Puedes cambiarlo más tarde en los ajustes del sistema."
+    "permissionNeededHint": "Permite las notificaciones cuando el dispositivo lo solicite. Puedes cambiarlo más tarde en los ajustes del sistema.",
+    "registerFailed": "No se pudieron configurar las notificaciones",
+    "registerFailedHint": "Algo falló al registrar este dispositivo. Inténtalo de nuevo.",
+    "unavailable": "Las notificaciones no están disponibles aquí",
+    "unavailableHint": "Este dispositivo o esta versión no puede recibir notificaciones push."
   },
   "email": {
     "messages": "Mensajes",
@@ -55,6 +59,8 @@
     "saving": "Guardando contraseña...",
     "reviewTitle": "Listo para ¿actualizar?",
     "reviewSubtitle": "Guarde solo cuando su nueva contraseña y su confirmación coincidan.",
+    "footerMissing": "Rellena los tres campos para continuar.",
+    "footerMismatch": "La nueva contraseña y su confirmación aún no coinciden.",
     "success": "Password cambiada",
     "successMessage": "Su contraseña se ha actualizado correctamente.",
     "validation": {
@@ -232,6 +238,8 @@
     "approve": "Approve",
     "decline": "Decline",
     "remove": "Remove",
+    "revokeConfirmTitle": "¿Eliminar esta cuenta vinculada?",
+    "revokeConfirmMessage": "El vínculo y los permisos que concede terminan de inmediato. Esto no se puede deshacer.",
     "approveFailed": "No se pudo aprobar esta solicitud. Inténtalo de nuevo.",
     "revokeFailed": "No se pudo eliminar esta cuenta vinculada. Inténtalo de nuevo.",
     "permissionFailed": "No se pudo actualizar el permiso de la cuenta vinculada. Inténtalo de nuevo.",

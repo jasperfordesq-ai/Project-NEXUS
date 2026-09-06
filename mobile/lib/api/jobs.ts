@@ -412,25 +412,23 @@ export async function getMyInterviews(): Promise<JobInterview[]> {
 /**
  * PUT /api/v2/jobs/interviews/{id}/accept — accept an interview invitation.
  */
-export async function acceptInterview(interviewId: number): Promise<boolean> {
-  try {
-    await api.put<void>(`${API_V2}/jobs/interviews/${interviewId}/accept`);
-    return true;
-  } catch {
-    return false;
-  }
+export async function acceptInterview(interviewId: number): Promise<void> {
+  // 🔴 This used to swallow the error and return false. The only caller checked `if (ok)`
+  // with no else branch, so a 409/422 ("offer already withdrawn") or a dropped connection
+  // ended with the spinner stopping and nothing else (audit 2026-09-05, S1-05). The
+  // server's reason now reaches the screen, which shows it beside the buttons.
+  await api.put<void>(`${API_V2}/jobs/interviews/${interviewId}/accept`);
 }
 
 /**
  * PUT /api/v2/jobs/interviews/{id}/decline — decline an interview invitation.
  */
-export async function declineInterview(interviewId: number): Promise<boolean> {
-  try {
-    await api.put<void>(`${API_V2}/jobs/interviews/${interviewId}/decline`);
-    return true;
-  } catch {
-    return false;
-  }
+export async function declineInterview(interviewId: number): Promise<void> {
+  // 🔴 This used to swallow the error and return false. The only caller checked `if (ok)`
+  // with no else branch, so a 409/422 ("offer already withdrawn") or a dropped connection
+  // ended with the spinner stopping and nothing else (audit 2026-09-05, S1-05). The
+  // server's reason now reaches the screen, which shows it beside the buttons.
+  await api.put<void>(`${API_V2}/jobs/interviews/${interviewId}/decline`);
 }
 
 /**
@@ -444,25 +442,23 @@ export async function getMyOffers(): Promise<JobOffer[]> {
 /**
  * PUT /api/v2/jobs/offers/{id}/accept — accept a job offer.
  */
-export async function acceptOffer(offerId: number): Promise<boolean> {
-  try {
-    await api.put<void>(`${API_V2}/jobs/offers/${offerId}/accept`);
-    return true;
-  } catch {
-    return false;
-  }
+export async function acceptOffer(offerId: number): Promise<void> {
+  // 🔴 This used to swallow the error and return false. The only caller checked `if (ok)`
+  // with no else branch, so a 409/422 ("offer already withdrawn") or a dropped connection
+  // ended with the spinner stopping and nothing else (audit 2026-09-05, S1-05). The
+  // server's reason now reaches the screen, which shows it beside the buttons.
+  await api.put<void>(`${API_V2}/jobs/offers/${offerId}/accept`);
 }
 
 /**
  * PUT /api/v2/jobs/offers/{id}/reject — reject a job offer.
  */
-export async function rejectOffer(offerId: number): Promise<boolean> {
-  try {
-    await api.put<void>(`${API_V2}/jobs/offers/${offerId}/reject`);
-    return true;
-  } catch {
-    return false;
-  }
+export async function rejectOffer(offerId: number): Promise<void> {
+  // 🔴 This used to swallow the error and return false. The only caller checked `if (ok)`
+  // with no else branch, so a 409/422 ("offer already withdrawn") or a dropped connection
+  // ended with the spinner stopping and nothing else (audit 2026-09-05, S1-05). The
+  // server's reason now reaches the screen, which shows it beside the buttons.
+  await api.put<void>(`${API_V2}/jobs/offers/${offerId}/reject`);
 }
 
 /**

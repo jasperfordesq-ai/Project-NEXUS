@@ -17,6 +17,7 @@ jest.mock('expo-router', () => {
     router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
     useLocalSearchParams: () => ({}),
     useNavigation: () => ({ setOptions: jest.fn() }),
+    useFocusEffect: jest.fn(),
   };
 });
 

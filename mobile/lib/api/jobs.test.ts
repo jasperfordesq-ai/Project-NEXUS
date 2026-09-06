@@ -324,35 +324,33 @@ describe('interviews and offers — failures must not read as success', () => {
     await expect(getMyOffers()).resolves.toEqual([]);
   });
 
-  it('reports true only when the accept actually succeeded', async () => {
+  it('resolves when the accept actually succeeded', async () => {
     mockPut.mockResolvedValue(undefined);
 
-    await expect(acceptInterview(11)).resolves.toBe(true);
-    await expect(acceptOffer(22)).resolves.toBe(true);
+    await expect(acceptInterview(11)).resolves.toBeUndefined();
+    await expect(acceptOffer(22)).resolves.toBeUndefined();
 
     expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/interviews/11/accept');
     expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/offers/22/accept');
   });
 
-  it('reports FALSE when the request fails, because the client throws', async () => {
-    // This is the assertion that keeps the catch blocks honest. The mobile client
-    // throws ApiResponseError on a non-2xx; if these functions ever stopped
-    // catching it, an unhandled rejection would reach the screen — and if the
-    // catch were removed in the belief it was dead code, a failed accept would
-    // be reported to the member as done.
+  it('rejects with the server reason when the request fails', async () => {
+    // These used to catch and return false. The caller had no else branch, so the
+    // member saw the spinner stop and nothing else (audit 2026-09-05). The reason
+    // must reach the screen, which is why the rejection carries the message.
     mockPut.mockRejectedValue(new ApiResponseError(422, 'Offer already withdrawn'));
 
-    await expect(acceptInterview(11)).resolves.toBe(false);
-    await expect(declineInterview(11)).resolves.toBe(false);
-    await expect(acceptOffer(22)).resolves.toBe(false);
-    await expect(rejectOffer(22)).resolves.toBe(false);
+    await expect(acceptInterview(11)).rejects.toThrow('Offer already withdrawn');
+    await expect(declineInterview(11)).rejects.toThrow('Offer already withdrawn');
+    await expect(acceptOffer(22)).rejects.toThrow('Offer already withdrawn');
+    await expect(rejectOffer(22)).rejects.toThrow('Offer already withdrawn');
   });
 
   it('declines and rejects on their own endpoints when they succeed', async () => {
     mockPut.mockResolvedValue(undefined);
 
-    await expect(declineInterview(11)).resolves.toBe(true);
-    await expect(rejectOffer(22)).resolves.toBe(true);
+    await expect(declineInterview(11)).resolves.toBeUndefined();
+    await expect(rejectOffer(22)).resolves.toBeUndefined();
 
     expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/interviews/11/decline');
     expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/offers/22/reject');

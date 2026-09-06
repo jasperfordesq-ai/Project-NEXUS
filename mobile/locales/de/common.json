@@ -80,7 +80,9 @@
     "unauthorized": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
     "sessionEndedTitle": "Abgemeldet",
     "notFound": "Nicht gefunden.",
-    "alertTitle": "Error"
+    "alertTitle": "Error",
+    "contractDrift": "Dieser Bildschirm hat Daten in einer unerwarteten Form erhalten. Bitte aktualisiere die App oder versuche es später erneut.",
+    "uploadIncomplete": "Der Upload ist abgeschlossen, aber der Server hat die Datei nicht zurückgegeben."
   },
   "labels": {
     "timeBalance": "Zeitsaldo",

@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -90,7 +91,6 @@ export default function MembersScreen() {
             search={search}
             setSearch={setSearch}
             totalCount={totalMembers ?? items.length}
-            loadedCount={items.length}
             isLoading={isLoading}
           />
         }
@@ -168,7 +168,6 @@ function MembersHeader({
   search,
   setSearch,
   totalCount,
-  loadedCount,
   isLoading,
 }: {
   t: TFunction;
@@ -177,7 +176,6 @@ function MembersHeader({
   search: string;
   setSearch: (value: string) => void;
   totalCount: number;
-  loadedCount: number;
   isLoading: boolean;
 }) {
   return (
@@ -196,7 +194,7 @@ function MembersHeader({
               <Text className="mt-1 text-[26px] font-bold leading-8" style={{ color: theme.text }} numberOfLines={1}>
                 {t('title')}
               </Text>
-              <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>
+              <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
                 {t('subtitle')}
               </Text>
             </View>
@@ -206,10 +204,6 @@ function MembersHeader({
             <Chip size="sm" variant="soft" color="accent">
               <Ionicons name="people-outline" size={12} color={primary} />
               <Chip.Label>{isLoading ? t('resultsLoading') : t('memberCount', { count: totalCount })}</Chip.Label>
-            </Chip>
-            <Chip size="sm" variant="soft" color="default">
-              <Ionicons name="download-outline" size={12} color={theme.textMuted} />
-              <Chip.Label>{t('loadedCount', { count: loadedCount })}</Chip.Label>
             </Chip>
           </View>
         </HeroCard.Body>
@@ -238,7 +232,7 @@ function MembersHeader({
           returnKeyType="search"
           accessibilityLabel={t('search.placeholder')}
           containerClassName="mb-0"
-          groupClassName="min-h-12 rounded-full bg-content2"
+          groupClassName="min-h-12 rounded-full bg-surface-secondary"
         />
       </Surface>
     </View>
@@ -266,16 +260,20 @@ function ActionPill({
       onPress={onPress}
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isPrimary ? primary : withAlpha(primary, 0.1),
-        borderColor: isPrimary ? primary : withAlpha(primary, 0.18),
+      // The primary variant paints its own accent fill and picks a readable label for it;
+      // a hardcoded white label was invisible on a pale community colour.
+      style={isPrimary ? undefined : {
+        backgroundColor: withAlpha(primary, 0.1),
+        borderColor: withAlpha(primary, 0.18),
         borderWidth: 1,
       }}
     >
-      {icon ? <Ionicons name={icon} size={16} color={isPrimary ? '#fff' : primary} /> : null}
-      <HeroButton.Label className="text-sm font-bold" style={{ color: isPrimary ? '#fff' : primary }}>
-        {label}
-      </HeroButton.Label>
+      {icon ? (isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />) : null}
+      {isPrimary ? (
+        <HeroButton.Label className="text-sm font-bold">{label}</HeroButton.Label>
+      ) : (
+        <HeroButton.Label className="text-sm font-bold" style={{ color: primary }}>{label}</HeroButton.Label>
+      )}
     </HeroButton>
   );
 }

@@ -14,9 +14,11 @@ jest.mock('@/lib/api/client', () => ({
   },
   ApiResponseError: class ApiResponseError extends Error {
     status!: number;
-    constructor(mockStatus: number, mockMessage: string) {
+    code?: string;
+    constructor(mockStatus: number, mockMessage: string, _mockErrors?: unknown, mockCode?: string) {
       super(mockMessage);
       this.status = mockStatus;
+      this.code = mockCode;
       this.name = 'ApiResponseError';
     }
   },
@@ -193,7 +195,7 @@ describe('read-only Event agenda contract', () => {
       meta: { base_url: 'https://test.api' },
     });
 
-    await expect(getEventAgenda(101)).rejects.toMatchObject({ message: 'EVENTS_CONTRACT_DRIFT' });
+    await expect(getEventAgenda(101)).rejects.toHaveProperty('code', 'EVENTS_CONTRACT_DRIFT');
 
     expect(Sentry.captureMessage).toHaveBeenCalledWith('Events contract drift', expect.objectContaining({
       tags: expect.objectContaining({
@@ -524,7 +526,7 @@ describe('canonical Events boundary', () => {
     });
 
     await expect(getEventRecurrenceDefinitionHistory(101))
-      .rejects.toMatchObject({ message: 'EVENTS_CONTRACT_DRIFT' });
+      .rejects.toHaveProperty('code', 'EVENTS_CONTRACT_DRIFT');
     expect(JSON.stringify((Sentry.captureMessage as jest.Mock).mock.calls[0][1]))
       .not.toContain('private-member');
   });
@@ -534,7 +536,7 @@ describe('canonical Events boundary', () => {
       data: { ...(eventDetailFixture as Record<string, unknown>), title: 42, description: 'private description' },
     });
 
-    await expect(getEvent(101)).rejects.toMatchObject({ message: 'EVENTS_CONTRACT_DRIFT' });
+    await expect(getEvent(101)).rejects.toHaveProperty('code', 'EVENTS_CONTRACT_DRIFT');
 
     expect(Sentry.captureMessage).toHaveBeenCalledWith('Events contract drift', expect.objectContaining({
       tags: expect.objectContaining({

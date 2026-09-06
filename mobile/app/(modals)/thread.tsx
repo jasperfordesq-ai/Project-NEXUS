@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
@@ -13,6 +14,7 @@ import {
   RefreshControl,
   Text,
   View,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
@@ -30,7 +32,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
-import { withAlpha } from '@/lib/utils/color';
+import { contrastText, withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ActionSheet from '@/components/ui/ActionSheet';
@@ -122,6 +124,16 @@ function ThreadScreenInner() {
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [messagingRestriction, setMessagingRestriction] = useState<MessagingRestrictionStatus | null>(null);
+  /*
+    🔴 Which message shows the 👍 ❤️ 😂 ⋯ quick-react row. It used to be EVERY message: the
+    row was as tall as the bubble it belonged to, so a thread showed three messages per
+    screen and read as a wall of buttons (emulator, 2026-09-05). Tap a bubble to reveal
+    the row for that message only; long-press opens the options sheet directly.
+  */
+  const [quickReactFor, setQuickReactFor] = useState<number | null>(null);
+  const toggleQuickReact = useCallback((messageId: number) => {
+    setQuickReactFor((current) => (current === messageId ? null : messageId));
+  }, []);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false);
@@ -530,7 +542,16 @@ function ThreadScreenInner() {
     }
   }, [isSending, messagingRestriction?.messaging_disabled, newConversationOptions, recordingSeconds, resolvedRecipientId, showToast, t, voiceUri]);
 
+  const handleAttachmentOpenFailed = useCallback((err: unknown) => {
+    showToast({
+      title: t('common:errors.alertTitle'),
+      description: describeApiError(err, t('thread.attachmentOpenFailed')),
+      variant: 'danger',
+    });
+  }, [showToast, t]);
+
   const handleReaction = useCallback(async (messageId: number, emoji: string) => {
+    setQuickReactFor(null);
     try {
       const response = await toggleMessageReaction(messageId, emoji);
       const action = response.data?.action ?? 'added';
@@ -557,7 +578,7 @@ function ThreadScreenInner() {
 
   if (!isValidId) {
     return (
-      <ThreadShell title={t('threadTitle')} backLabel={t('thread.goBack')}>
+      <ThreadShell title={t('threadTitle')} backLabel={t('common:back')}>
         <CenteredState icon="alert-circle-outline" text={t('thread.invalidConversation')} primary={primary} />
       </ThreadShell>
     );
@@ -565,7 +586,7 @@ function ThreadScreenInner() {
 
   if (isLoading && !data) {
     return (
-      <ThreadShell title={threadTitle} backLabel={t('thread.goBack')}>
+      <ThreadShell title={threadTitle} backLabel={t('common:back')}>
         <LoadingSpinner />
       </ThreadShell>
     );
@@ -573,7 +594,7 @@ function ThreadScreenInner() {
 
   if (error && !data) {
     return (
-      <ThreadShell title={threadTitle} backLabel={t('thread.goBack')}>
+      <ThreadShell title={threadTitle} backLabel={t('common:back')}>
         <CenteredState icon="warning-outline" text={t('thread.loadError')} primary={primary}>
           <HeroButton variant="primary" onPress={() => void refresh()}>
             <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
@@ -585,7 +606,7 @@ function ThreadScreenInner() {
 
   return (
     <SafeAreaView testID="thread-screen" className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
-      <AppTopBar title={threadTitle} backLabel={t('thread.goBack')} fallbackHref="/(tabs)/messages" />
+      <AppTopBar title={threadTitle} backLabel={t('common:back')} fallbackHref="/(tabs)/messages" />
       <OfflineBanner />
       <KeyboardAvoidingView
         className="flex-1"
@@ -618,7 +639,20 @@ function ThreadScreenInner() {
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => <MessageBubble item={item} primary={primary} theme={theme} t={t} unknownMemberLabel={unknownMemberLabel} onReact={handleReaction} onOptions={openMessageOptions} />}
+          renderItem={({ item }) => (
+            <MessageBubble
+              item={item}
+              primary={primary}
+              theme={theme}
+              t={t}
+              unknownMemberLabel={unknownMemberLabel}
+              showQuickReactions={quickReactFor === item.id}
+              onToggleQuickReactions={toggleQuickReact}
+              onReact={handleReaction}
+              onOptions={openMessageOptions}
+              onAttachmentOpenFailed={handleAttachmentOpenFailed}
+            />
+          )}
           style={{ flex: 1, backgroundColor: theme.bg }}
           contentContainerStyle={{
             flexGrow: 1,
@@ -912,18 +946,26 @@ function MessageBubble({
   theme,
   t,
   unknownMemberLabel,
+  showQuickReactions,
+  onToggleQuickReactions,
   onReact,
   onOptions,
+  onAttachmentOpenFailed,
 }: {
   item: Message;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, options?: Record<string, unknown>) => string;
   unknownMemberLabel: string;
+  showQuickReactions: boolean;
+  onToggleQuickReactions: (messageId: number) => void;
   onReact: (messageId: number, emoji: string) => void;
   onOptions: (message: Message) => void;
+  onAttachmentOpenFailed: (error: unknown) => void;
 }) {
   const isOwn = item.is_own;
+  // Own bubbles are painted with the community colour; white text on a pale one is unreadable.
+  const onPrimary = contrastText(primary);
   const senderName = displayName(item.sender, unknownMemberLabel);
   const reactions = item.reactions ?? {};
   const hasReactions = Object.keys(reactions).length > 0;
@@ -933,19 +975,25 @@ function MessageBubble({
     <View className={`my-1.5 flex-row items-end gap-2 ${isOwn ? 'justify-end pl-12' : 'justify-start pr-12'}`}>
       {!isOwn ? <Avatar uri={item.sender?.avatar_url ?? null} name={senderName} size={32} /> : null}
       <View className={`max-w-[82%] gap-1.5 ${isOwn ? 'items-end' : 'items-start'}`}>
-        <View
+        <Pressable
+          onPress={() => onToggleQuickReactions(item.id)}
+          onLongPress={item.is_deleted || item.is_voice ? undefined : () => onOptions(item)}
+          accessibilityRole="button"
+          accessibilityLabel={t('thread.messageActions')}
+          accessibilityState={{ expanded: showQuickReactions }}
           className="rounded-[20px] px-4 pb-2.5 pt-3 shadow-sm"
           style={isOwn
             ? { backgroundColor: primary, borderBottomRightRadius: 4 }
             : { backgroundColor: theme.surface, borderBottomLeftRadius: 4, borderColor: theme.borderSubtle, borderWidth: 1 }}
         >
           {item.is_deleted ? (
-            <Text className={`text-[14px] italic ${isOwn ? 'text-white/80' : 'text-foreground'}`}>
+            <Text className="text-[14px] italic" style={{ color: isOwn ? withAlpha(onPrimary, 0.8) : theme.text }}>
               {t('thread.deletedMessage')}
             </Text>
           ) : item.is_voice && item.audio_url ? (
             <VoiceMessageBubble
               audioUrl={resolveMediaUrl(item.audio_url) ?? item.audio_url}
+              durationMs={typeof item.audio_duration === 'number' && item.audio_duration > 0 ? item.audio_duration * 1000 : undefined}
               isOwn={isOwn}
               primaryColor={primary}
               textColor={theme.text}
@@ -953,13 +1001,13 @@ function MessageBubble({
             />
           ) : item.is_voice ? (
             <View className="flex-row items-center gap-1.5">
-              <Ionicons name="mic" size={16} color={isOwn ? 'rgba(255,255,255,0.9)' : theme.textSecondary} />
-              <Text className={`text-[14px] italic ${isOwn ? 'text-white' : 'text-foreground'}`}>
+              <Ionicons name="mic" size={16} color={isOwn ? withAlpha(onPrimary, 0.9) : theme.textSecondary} />
+              <Text className="text-[14px] italic" style={{ color: isOwn ? onPrimary : theme.text }}>
                 {t('thread.voiceMessage')}
               </Text>
             </View>
           ) : (
-            <Text className={`text-[15px] leading-6 ${isOwn ? 'text-white' : 'text-foreground'}`}>
+            <Text className="text-[15px] leading-6" style={{ color: isOwn ? onPrimary : theme.text }}>
               {body}
             </Text>
           )}
@@ -975,9 +1023,12 @@ function MessageBubble({
                     accessibilityLabel={t('thread.attachments.open', { name: attachmentLabel })}
                     className="self-start rounded-panel-inner p-0"
                     onPress={() => {
-                      if (attachment.url) {
-                        void openAuthenticatedMessageMedia(attachment.url, attachmentLabel);
-                      }
+                      if (!attachment.url) return;
+                      // 🔴 S3-12: an unhandled rejection here (a failed download, or a device
+                      // with no share sheet) meant the tap simply did nothing.
+                      void openAuthenticatedMessageMedia(attachment.url, attachmentLabel).catch((err) => {
+                        onAttachmentOpenFailed(err);
+                      });
                     }}
                   >
                     {isImage ? (
@@ -986,7 +1037,7 @@ function MessageBubble({
                       <View className="max-w-[220px] flex-row items-center gap-2 rounded-panel-inner px-3 py-2" style={{ backgroundColor: isOwn ? 'rgba(255,255,255,0.14)' : theme.bg }}>
                         <Ionicons name="document-text-outline" size={18} color={isOwn ? '#fff' : theme.textSecondary} />
                         <View className="min-w-0 flex-1">
-                          <Text className={`text-xs font-medium ${isOwn ? 'text-white' : 'text-foreground'}`} numberOfLines={1}>
+                          <Text className="text-xs font-medium" style={{ color: isOwn ? onPrimary : theme.text }} numberOfLines={1}>
                             {attachmentLabel}
                           </Text>
                           {attachment.size ? (
@@ -1015,7 +1066,7 @@ function MessageBubble({
           >
             {formatTime(item.created_at)}
           </Text>
-        </View>
+        </Pressable>
         {hasReactions ? (
           <View className="flex-row flex-wrap gap-1.5">
             {Object.entries(reactions).map(([emoji, count]) => (
@@ -1034,7 +1085,7 @@ function MessageBubble({
             ))}
           </View>
         ) : null}
-        {!item.is_deleted ? (
+        {!item.is_deleted && showQuickReactions ? (
           <View className="flex-row flex-wrap gap-1">
             {REACTION_EMOJIS.slice(0, 3).map((emoji) => (
               <HeroButton
@@ -1159,8 +1210,8 @@ function formatTime(iso: string): string {
 
 function formatFileSize(size: number): string {
   if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  if (size < 1024 * 1024) return `${formatDecimal(size / 1024, 1, 1)} KB`;
+  return `${formatDecimal(size / (1024 * 1024), 1, 1)} MB`;
 }
 
 function formatRecordingTime(seconds: number): string {

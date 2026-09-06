@@ -39,7 +39,7 @@ const SEARCH_DIRS = ['app', 'components'];
  * Remaining sites, measured 2026-08-23. Shrink only: convert one to NativePressable and
  * lower this number in the same commit.
  */
-const BUDGET = 8;
+const BUDGET = 7;
 
 function collectTsx(dir: string, out: string[] = []): string[] {
   const abs = path.join(MOBILE_ROOT, dir);

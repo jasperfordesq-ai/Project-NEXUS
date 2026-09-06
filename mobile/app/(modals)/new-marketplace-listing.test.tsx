@@ -19,6 +19,8 @@ jest.mock('@/components/ui/AppToast', () => {
 });
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => mockParams,
 }));

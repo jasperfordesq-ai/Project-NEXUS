@@ -47,6 +47,8 @@
     "messagingRestrictedTitle": "Mensagens em pausa",
     "messagingRestrictedContact": "Contacte a sua equipa da comunidade antes de enviar mais mensagens.",
     "messageOptions": "Opcoes da mensagem",
+    "messageActions": "Ações da mensagem",
+    "attachmentOpenFailed": "Não foi possível abrir este anexo. Tenta novamente.",
     "edit": "Editar",
     "editing": "A editar mensagem",
     "saveEdit": "Guardar edicao",

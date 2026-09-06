@@ -13,6 +13,8 @@ const mockReplace = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { replace: (...args: unknown[]) => mockReplace(...args), back: jest.fn() },
   useLocalSearchParams: () => mockSearchParams,
 }));
@@ -107,7 +109,8 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#6366f1' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     bg: '#ffffff',

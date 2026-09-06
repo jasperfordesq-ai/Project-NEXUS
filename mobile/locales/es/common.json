@@ -80,7 +80,9 @@
     "unauthorized": "Tu sesión ha caducado. Inicia sesión de nuevo.",
     "sessionEndedTitle": "Sesión cerrada",
     "notFound": "No encontrado.",
-    "alertTitle": "Error"
+    "alertTitle": "Error",
+    "contractDrift": "Esta pantalla recibió información en un formato inesperado. Actualiza la app o inténtalo más tarde.",
+    "uploadIncomplete": "La subida terminó, pero el servidor no devolvió el archivo."
   },
   "labels": {
     "timeBalance": "Saldo de tiempo",

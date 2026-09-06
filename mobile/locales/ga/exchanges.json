@@ -70,6 +70,7 @@
     "errorTitle": "Níorbh fhéidir malartuithe grúpa a luchtú",
     "errorDescription": "Tarraing chun athnuachan nó bain triail eile as ar ball.",
     "moreAvailable": "Tá tuilleadh malartuithe grúpa ar fáil ar an amharc Gréasáin.",
+    "loadMore": "Lódáil níos mó",
     "create": {
       "open": "Cruthaigh malartú grúpa",
       "title": "Cruthaigh malartú grúpa",
@@ -130,6 +131,7 @@
   "filtersIntro": "Cuardaigh de réir scile, catagóire, áite, nó ball.",
   "filterAllCategories": "Gach catagóir",
   "categoriesLoading": "Catagóirí á luchtú",
+  "categoriesRetry": "Níor lódáladh na catagóirí – tapáil chun triail eile a bhaint as",
   "filters": "Scagairí",
   "filtersWithCount": "Scagairí ({{count}})",
   "filtersWithCount_one": "Scagairí ({{count}})",
@@ -458,6 +460,9 @@
     "completedToast": "Réidh le deimhniú",
     "confirmedToast": "Uaireanta deimhnithe",
     "cancelledToast": "Cealaíodh an malartú",
+    "cancelConfirmTitle": "An malartú seo a chealú?",
+    "cancelConfirmMessage": "Cuirfear in iúl don bhall eile gur cealaíodh é. Ní féidir é seo a chur ar ceal.",
+    "cancelConfirmAction": "Cealaigh an malartú",
     "status": {
       "pending_provider": "Ag fanacht ar ghlacadh",
       "pending_broker": "Ag fanacht ar chomhordaitheoir",

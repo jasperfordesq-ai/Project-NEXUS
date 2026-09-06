@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useMemo } from 'react';
 import {
   Linking,
@@ -25,7 +26,7 @@ import {
   type FederatedTenant,
 } from '@/lib/api/federation';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -36,7 +37,6 @@ import AccentIcon from '@/components/ui/AccentIcon';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
-const WEB_URL = 'https://app.project-nexus.ie';
 
 const permissionIcons: Record<string, IoniconName> = {
   profiles: 'person-outline',
@@ -222,6 +222,7 @@ export default function FederationPartnerScreen() {
   const { t } = useTranslation(['federation', 'common']);
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const primary = usePrimaryColor();
+  const { tenant } = useTenant();
   const theme = useTheme();
 
   const partnerId = useMemo(() => {
@@ -248,7 +249,7 @@ export default function FederationPartnerScreen() {
   async function handleShare() {
     if (!partner) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const url = `${WEB_URL}/federation/partners/${partner.id}`;
+    const url = buildWebUrl(tenant?.slug, `/federation/partners/${partner.id}`);
     try {
       await Share.share({ message: t('detail.shareMessage', { name: partner.name, url }) });
     } catch {

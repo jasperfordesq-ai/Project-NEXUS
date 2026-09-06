@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { describeApiError } from '@/lib/api/describeApiError';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -53,8 +55,11 @@ const MAX_IMAGES = 20;
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 function toNumber(value: string): number | null {
-  const parsed = Number(value.replace(/[,\s]/g, ''));
-  return Number.isFinite(parsed) && value.trim() ? parsed : null;
+  // 🔴 This stripped commas before Number(): a price typed as "12,50" on a comma keypad
+  // became 1250. parseDecimalInput understands both separators.
+  if (!value.trim()) return null;
+  const parsed = parseDecimalInput(value);
+  return parsed !== null && Number.isFinite(parsed) ? parsed : null;
 }
 
 function basenameFromUri(uri: string): string {
@@ -124,6 +129,8 @@ export function MarketplaceListingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  // The footer says what is missing instead of "publish when ready" over an empty form.
+  const footerIncomplete = !title.trim() || (priceType !== 'free' && toNumber(price) === null);
 
   useEffect(() => {
     let mounted = true;
@@ -290,17 +297,31 @@ export function MarketplaceListingForm() {
       const response = isEditing
         ? await updateMarketplaceListing(listingId, payload)
         : await createMarketplaceListing(payload);
-      if (isEditing && removedImageIds.length > 0) {
-        await Promise.all(removedImageIds.map((imageId) => deleteMarketplaceListingImage(response.data.id, imageId)));
+      /*
+        🔴 The listing exists from here on. A failed photo or video step used to fall into the
+        outer catch and read as "could not save", leaving the seller on the form — whose next
+        tap on Publish created a SECOND listing. Media failures are reported as partial
+        success and the seller is taken to the listing they did create (audit 2026-09-06).
+      */
+      let mediaFailure: unknown = null;
+      try {
+        if (isEditing && removedImageIds.length > 0) {
+          await Promise.all(removedImageIds.map((imageId) => deleteMarketplaceListingImage(response.data.id, imageId)));
+        }
+        if (imageUris.length > 0) {
+          await uploadMarketplaceImages(response.data.id, imageUris);
+        }
+        if (isEditing && removeExistingVideo && !videoAsset) {
+          await deleteMarketplaceVideo(response.data.id);
+        }
+        if (videoAsset) {
+          await uploadMarketplaceVideo(response.data.id, videoAsset);
+        }
+      } catch (err) {
+        mediaFailure = err;
       }
-      if (imageUris.length > 0) {
-        await uploadMarketplaceImages(response.data.id, imageUris);
-      }
-      if (isEditing && removeExistingVideo && !videoAsset) {
-        await deleteMarketplaceVideo(response.data.id);
-      }
-      if (videoAsset) {
-        await uploadMarketplaceVideo(response.data.id, videoAsset);
+      if (mediaFailure) {
+        showToast({ title: t('forms.mediaSaveFailedTitle'), description: describeApiError(mediaFailure, t('forms.mediaSaveFailedMessage')), variant: 'warning' });
       }
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -321,7 +342,7 @@ export function MarketplaceListingForm() {
 
       router.replace({ pathname: '/(modals)/marketplace-detail', params: { id: String(response.data.id) } } as unknown as Href);
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('forms.saveFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('forms.saveFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -638,9 +659,9 @@ export function MarketplaceListingForm() {
       </ScrollView>
       <FormActionFooter
         title={isEditing ? t('forms.footerEditTitle') : t('forms.footerCreateTitle')}
-        subtitle={t('forms.footerSubtitle')}
+        subtitle={footerIncomplete ? t('forms.footerMissing') : t('forms.footerSubtitle')}
         submitLabel={isEditing ? t('forms.update') : t('forms.publish')}
-        primary={primary}
+        isDisabled={isEditing && !hydrated}
         isSubmitting={isSubmitting}
         onSubmit={submit}
       />

@@ -3,7 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useState } from 'react';
+import ErrorState from '@/components/ui/ErrorState';
+import { parseDecimalInput } from '@/lib/utils/decimal';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -13,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -380,7 +382,7 @@ function CreateGoalForm({
 
     setSubmitting(true);
     try {
-      const parsed = targetValue.trim() !== '' ? Number(targetValue) : undefined;
+      const parsed = targetValue.trim() !== '' ? (parseDecimalInput(targetValue) ?? Number.NaN) : undefined;
       const result = await createGoal({
         title: trimmedTitle,
         ...(description.trim() ? { description: description.trim() } : {}),
@@ -458,7 +460,8 @@ function CreateGoalForm({
             onPress={() => void handleSubmit()}
             isDisabled={submitting || !title.trim()}
           >
-            {submitting ? <Spinner size="sm" /> : <HeroButton.Label>{t('create.submit')}</HeroButton.Label>}
+            {submitting ? <Spinner size="sm" /> : null}
+            <HeroButton.Label>{t('create.submit')}</HeroButton.Label>
           </HeroButton>
         </HeroCard.Footer>
       </HeroCard.Body>
@@ -610,7 +613,8 @@ function GoalTemplatesPanel({
                           onPress={() => void applyTemplate(template)}
                           accessibilityLabel={t('templates.useLabel', { title: template.title })}
                         >
-                          {creatingFromId === template.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('templates.use')}</HeroButton.Label>}
+                          {creatingFromId === template.id ? <Spinner size="sm" /> : null}
+                          <HeroButton.Label>{t('templates.use')}</HeroButton.Label>
                         </HeroButton>
                       </View>
 
@@ -658,6 +662,19 @@ export default function GoalsScreen() {
 
   const { data, isLoading, error, refresh } = useApi(() => getGoals(null), []);
 
+  // Progress saved or an exchange created on a child screen was invisible until a pull to
+  // refresh (audit 2026-09-05, S2-10). Refetch on every return; the first mount already fetched.
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refresh();
+    }, [refresh]),
+  );
+
   useEffect(() => {
     if (data) {
       setGoals((data.data ?? []) as ApiGoal[]);
@@ -665,6 +682,11 @@ export default function GoalsScreen() {
       setRefreshing(false);
     }
   }, [data]);
+
+  useEffect(() => {
+    // A failed refresh never changes `data`, so the pull indicator used to spin for ever.
+    if (error) setRefreshing(false);
+  }, [error]);
 
   const sortedGoals = useMemo(() => {
     const rank = { active: 0, completed: 1, abandoned: 2 };
@@ -770,10 +792,7 @@ export default function GoalsScreen() {
                 !isLoading && !showForm ? (
                   <View className="pt-4">
                     {error ? (
-                      <Surface variant="secondary" className="items-center gap-3 rounded-panel p-6">
-                        <Ionicons name="alert-circle-outline" size={28} color={theme.error} />
-                        <Text className="text-center text-sm text-danger">{error}</Text>
-                      </Surface>
+                      <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading} />
                     ) : (
                       <EmptyState
                         icon="flag-outline"

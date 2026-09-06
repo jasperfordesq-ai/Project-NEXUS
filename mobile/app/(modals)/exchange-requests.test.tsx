@@ -47,6 +47,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   router: { push: (...args: unknown[]) => mockRouterPush(...args) },
   // Runs the effect once on mount, which is what focus does on a freshly opened screen.
   useFocusEffect: (cb: () => void) => {

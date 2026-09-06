@@ -9,6 +9,7 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({ id: '10' }),
@@ -24,6 +25,10 @@ jest.mock('react-i18next', () => ({
         'detail.about': 'About this opportunity',
         'detail.invalidId': 'Invalid opportunity ID.',
         'detail.notFound': 'Opportunity not found.',
+        'myShifts.cancelConfirmTitle': 'Cancel this shift?',
+        'myShifts.cancelConfirmMessage': 'Your place will be released for someone else.',
+        'common:errors.loadFailedTitle': "Couldn't load this",
+        'common:buttons.retry': 'Retry',
         'detail.goBack': 'Go Back',
         'expressInterest': 'Express Interest',
         'interestSent': 'Interest Sent',
@@ -93,7 +98,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -139,7 +144,6 @@ jest.mock('@expo/vector-icons', () => ({
 
 jest.mock('@/lib/api/volunteering', () => ({
   getOpportunity: jest.fn(),
-  getOpportunities: jest.fn(),
   expressInterest: jest.fn().mockResolvedValue(undefined),
   getOpportunityApplications: jest.fn(),
   handleVolunteerApplication: (...args: unknown[]) => mockHandleVolunteerApplication(...args),
@@ -309,7 +313,6 @@ describe('VolunteeringDetailScreen', () => {
     const applicationsApiRefresh = jest.fn();
     mockUseApi
       .mockReturnValueOnce({ data: { data: ownerOpportunity }, isLoading: false, error: null, refresh: jest.fn() })
-      .mockReturnValueOnce(defaultApiState)
       .mockReturnValueOnce({
         data: {
           data: {
@@ -355,6 +358,42 @@ describe('VolunteeringDetailScreen', () => {
     const { queryByText } = render(<VolunteeringDetailScreen />);
 
     expect(queryByText('Sign up for shift')).toBeNull();
+  });
+
+  /** 🔴 S4-06 / S4-28. A failed request used to fetch the WHOLE list as a fallback and then say "not found". */
+  it('shows a load error with a retry instead of "not found" when the request fails', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Network down', refresh });
+
+    const { getByTestId, getByText, queryByText } = render(<VolunteeringDetailScreen />);
+    expect(getByTestId('volunteering-detail-error')).toBeTruthy();
+    expect(getByText('Network down')).toBeTruthy();
+    expect(queryByText('Opportunity not found.')).toBeNull();
+    fireEvent.press(getByText('Retry'));
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  /** S4-07. A refresh with data already on screen must not replace it with a spinner. */
+  it('keeps the loaded opportunity on screen while refreshing', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: true, error: null, refresh: jest.fn() });
+
+    const { getByText } = render(<VolunteeringDetailScreen />);
+    expect(getByText('Community Garden Volunteer')).toBeTruthy();
+  });
+
+  /** S4-10. Share links carry the community slug. */
+  it('shares a slug-prefixed web link', async () => {
+    const { Share } = require('react-native');
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByLabelText } = render(<VolunteeringDetailScreen />);
+    fireEvent.press(getByLabelText('Share'));
+
+    await waitFor(() => expect(shareSpy).toHaveBeenCalledWith({
+      message: expect.stringContaining('/hour-timebank/volunteering/opportunities/10'),
+    }));
+    shareSpy.mockRestore();
   });
 
   it('renders the not found state when data is null after loading', () => {
@@ -493,6 +532,13 @@ describe('VolunteeringDetailScreen', () => {
     const { getByTestId } = render(<VolunteeringDetailScreen />);
 
     fireEvent.press(getByTestId('shift-cancel-1'));
+    // S4-16: releasing a place is destructive, so nothing happens until the member agrees.
+    expect(cancelShiftSignup).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Cancel this shift?', variant: 'danger' }));
+    const options = mockConfirm.mock.calls[0][0] as { onConfirm: () => Promise<void> };
+    await act(async () => {
+      await options.onConfirm();
+    });
 
     await waitFor(() => {
       expect(cancelShiftSignup).toHaveBeenCalledWith(1);

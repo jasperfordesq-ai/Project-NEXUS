@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { describeApiError } from '@/lib/api/describeApiError';
+import { useAppToast } from '@/components/ui/AppToast';
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import {
   FlatList,
@@ -30,7 +32,7 @@ import {
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { withAlpha } from '@/lib/utils/color';
+import { contrastText, withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
@@ -267,7 +269,8 @@ function MessageBubble({
                   </Text>
                 </View>
               ) : null}
-              <Text className="text-sm leading-5" style={{ color: isUser ? '#ffffff' : isError ? theme.error : theme.text }}>
+              {/* 🔴 S3-09: white on a pale community colour made the member's own questions unreadable. */}
+              <Text className="text-sm leading-5" style={{ color: isUser ? contrastText(primary) : isError ? theme.error : theme.text }}>
                 {message.content}
               </Text>
             </>
@@ -291,16 +294,20 @@ function MessageBubble({
                   key={vote}
                   isIconOnly
                   size="sm"
-                  variant={selected ? 'primary' : 'secondary'}
+                  variant={selected ? (vote === 'up' ? 'primary' : 'danger') : 'secondary'}
                   accessibilityLabel={t(`feedback.${vote === 'up' ? 'upLabel' : 'downLabel'}`)}
+                  accessibilityState={{ selected }}
                   onPress={() => onFeedback?.(message as ChatMessage, vote)}
-                  style={selected ? { backgroundColor: vote === 'up' ? primary : theme.error } : undefined}
                 >
-                  <Ionicons
-                    name={vote === 'up' ? 'thumbs-up-outline' : 'thumbs-down-outline'}
-                    size={14}
-                    color={selected ? '#ffffff' : vote === 'up' ? primary : theme.error}
-                  />
+                  {selected && vote === 'up' ? (
+                    <AccentIcon name="thumbs-up-outline" size={14} />
+                  ) : (
+                    <Ionicons
+                      name={vote === 'up' ? 'thumbs-up-outline' : 'thumbs-down-outline'}
+                      size={14}
+                      color={selected ? contrastText(theme.error) : vote === 'up' ? primary : theme.error}
+                    />
+                  )}
                 </HeroButton>
               );
             })}
@@ -435,6 +442,7 @@ export default function ChatScreen() {
 
 function ChatScreenInner() {
   const { t } = useTranslation(['chat', 'common']);
+  const { show: showToast } = useAppToast();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const bottomInset = useBottomInset();
@@ -580,14 +588,16 @@ function ChatScreenInner() {
         setPendingFeedbackNote(null);
         setFeedbackNote('');
       }
-    } catch {
+    } catch (err) {
       setFeedbackState((prev) => {
         const next = { ...prev };
         delete next[message.id];
         return next;
       });
+      // The thumb used to simply un-select itself, which reads as the tap being ignored.
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('chat:feedback.failed')), variant: 'danger' });
     }
-  }, []);
+  }, [showToast, t]);
 
   const closeFeedbackNote = useCallback(() => {
     setPendingFeedbackNote(null);

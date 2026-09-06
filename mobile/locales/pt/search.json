@@ -41,6 +41,8 @@
     "saveFailedTitle": "Não foi possível guardar a pesquisa",
     "saveFailedMessage": "Verifique o nome da pesquisa e tente novamente.",
     "deleteFailedTitle": "Não foi possível eliminar a pesquisa",
-    "deleteFailedMessage": "Tente novamente."
+    "deleteFailedMessage": "Tente novamente.",
+    "deleteConfirmTitle": "Eliminar esta pesquisa guardada?",
+    "deleteConfirmMessage": "Podes guardá-la novamente a partir de uma nova pesquisa em qualquer altura."
   }
 }

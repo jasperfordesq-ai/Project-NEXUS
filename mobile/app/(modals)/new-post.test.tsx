@@ -29,6 +29,8 @@ const mockRouterBack = jest.fn();
   "navigation never happened" while the app navigated perfectly well.
 */
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: {
     replace: (...args: unknown[]) => mockRouterReplace(...args),
     push: (...args: unknown[]) => mockRouterReplace(...args),
@@ -95,6 +97,14 @@ jest.mock('@/lib/feedRefreshSignal', () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
+
+// Confirmations resolve immediately so the guarded discard runs in the test.
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirmDialog: null,
+  }),
+}));
 
 import NewPostRoute from './new-post';
 

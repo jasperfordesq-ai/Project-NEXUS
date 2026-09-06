@@ -41,6 +41,8 @@
     "saveFailedTitle": "Impossible d’enregistrer la recherche",
     "saveFailedMessage": "Vérifiez le nom de la recherche et réessayez.",
     "deleteFailedTitle": "Impossible de supprimer la recherche",
-    "deleteFailedMessage": "Veuillez réessayer."
+    "deleteFailedMessage": "Veuillez réessayer.",
+    "deleteConfirmTitle": "Supprimer cette recherche enregistrée ?",
+    "deleteConfirmMessage": "Vous pourrez l'enregistrer de nouveau à tout moment depuis une nouvelle recherche."
   }
 }

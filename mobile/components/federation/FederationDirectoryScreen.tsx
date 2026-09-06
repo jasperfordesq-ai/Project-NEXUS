@@ -1348,7 +1348,7 @@ function MessageThreadView({
             inputClassName="min-h-28 flex-1 rounded-panel-inner border border-border bg-surface px-4 py-3 text-base"
             style={{ color: theme.text }}
           />
-          <HeroButton variant="primary" isDisabled={!canSend} onPress={() => void sendReply()} style={{ backgroundColor: canSend ? primary : theme.border }}>
+          <HeroButton variant="primary" isDisabled={!canSend} onPress={() => void sendReply()}>
             {isSending ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={17} />}
             <HeroButton.Label>{t('directory.messages.sendReply')}</HeroButton.Label>
           </HeroButton>
@@ -1590,7 +1590,7 @@ function FederationComposeCard({
           />
         </View>
 
-        <HeroButton variant="primary" isDisabled={!canSend} onPress={() => void handleSend()} style={{ backgroundColor: canSend ? primary : theme.border }}>
+        <HeroButton variant="primary" isDisabled={!canSend} onPress={() => void handleSend()}>
           {isSending ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={17} />}
           <HeroButton.Label>{t('directory.messages.send')}</HeroButton.Label>
         </HeroButton>
@@ -1679,7 +1679,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
             isDisabled={isTogglingStatus}
             accessibilityLabel={federationEnabled ? t('directory.settings.disable') : t('directory.settings.enable')}
           >
-            {isTogglingStatus ? <Spinner size="sm" /> : <Ionicons name={federationEnabled ? 'shield-outline' : 'shield-checkmark-outline'} size={16} color={federationEnabled ? theme.error : '#fff'} />}
+            {isTogglingStatus ? <Spinner size="sm" /> : federationEnabled ? <Ionicons name="shield-outline" size={16} color={theme.error} /> : <AccentIcon name="shield-checkmark-outline" size={16} />}
             <HeroButton.Label>{federationEnabled ? t('directory.settings.disable') : t('directory.settings.enable')}</HeroButton.Label>
           </HeroButton>
         </HeroCard.Body>
@@ -1734,7 +1734,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
                 variant={current.service_reach === reach ? 'primary' : 'secondary'}
                 onPress={() => setDraft((prev) => ({ ...(prev ?? current), service_reach: reach }))}
               >
-                <Ionicons name={reachIcon(reach)} size={14} color={current.service_reach === reach ? '#fff' : primary} />
+                {current.service_reach === reach ? <AccentIcon name={reachIcon(reach)} size={14} /> : <Ionicons name={reachIcon(reach)} size={14} color={primary} />}
                 <HeroButton.Label>{t(`directory.settings.reach.${reach}`)}</HeroButton.Label>
               </HeroButton>
             ))}

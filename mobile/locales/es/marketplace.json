@@ -192,6 +192,9 @@
     "footerCreateTitle": "Revisar listado",
     "footerEditTitle": "Revisar cambios",
     "footerSubtitle": "Publicar el listado cuando los detalles estén listos.",
+    "footerMissing": "Añade un título y un precio antes de publicar.",
+    "mediaSaveFailedTitle": "Anuncio guardado, fotos no",
+    "mediaSaveFailedMessage": "Tu anuncio está publicado, pero no se pudieron subir las fotos o el vídeo. Edita el anuncio para añadirlos.",
     "publish": "Publicar",
     "update": "Actualizar",
     "validation": "Validación",
@@ -925,6 +928,7 @@
     "emptySubtitle": "Pruebe en un radio más amplio u otra ubicación."
   },
   "advancedSearch": {
+    "categoriesUnavailable": "Las categorías no se cargaron: toca para reintentar",
     "eyebrow": "Búsqueda en el mercado por facetas",
     "title": "Búsqueda avanzada",
     "subtitle": "Utilice los mismos filtros del mercado que la aplicación web para limitar los resultados rápidamente.",

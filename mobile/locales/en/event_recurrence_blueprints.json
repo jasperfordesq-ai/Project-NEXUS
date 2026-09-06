@@ -117,5 +117,6 @@
   "confirm_ack_description": "I reviewed the selected sections, counts, conflicts and effective recurrence identity.",
   "cancel": "Cancel",
   "commit_button": "Save immutable version",
-  "committing": "Saving version"
+  "committing": "Saving version",
+  "history_refresh_error_description": "The future setup was saved, but the history below could not be refreshed. Try again to reload it."
 }

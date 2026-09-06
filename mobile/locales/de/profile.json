@@ -41,6 +41,7 @@
     "score": "{{score}} % Übereinstimmung",
     "open": "Übereinstimmung öffnen",
     "dismiss": "Dismiss",
+    "dismissFailed": "Dieser Treffer konnte nicht ausgeblendet werden. Bitte versuche es erneut.",
     "emptyTitle": "Noch keine Übereinstimmungen",
     "emptySubtitle": "Neue Empfehlungen werden hier angezeigt, sobald sie verfügbar sind.",
     "errorTitle": "Übereinstimmungen konnten nicht geladen werden",
@@ -67,6 +68,10 @@
     "pendingCount": "Ausstehende Bewertungen",
     "delete": "Delete",
     "deleteSuccess": "Bewertung gelöscht.",
+    "submitFailed": "Deine Bewertung konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "deleteFailed": "Die Bewertung konnte nicht gelöscht werden. Bitte versuche es erneut.",
+    "deleteConfirmTitle": "Diese Bewertung löschen?",
+    "deleteConfirmMessage": "Sie wird vom Profil des Mitglieds entfernt. Das lässt sich nicht rückgängig machen.",
     "write": "Rezension schreiben",
     "cancel": "Cancel",
     "submit": "Bewertung absenden",
@@ -371,6 +376,9 @@
     "load_failed": "Ihre Matching-Einstellungen konnten nicht geladen werden",
     "save": "Einstellungen speichern",
     "save_success": "Matching-Einstellungen gespeichert",
+    "unsavedTitle": "Änderungen verwerfen?",
+    "unsavedMessage": "Deine Matching-Einstellungen wurden nicht gespeichert.",
+    "discard": "Verwerfen",
     "save_failed": "Matching-Einstellungen konnten nicht gespeichert werden",
     "pause": {
       "title": "Abgleich pausieren"

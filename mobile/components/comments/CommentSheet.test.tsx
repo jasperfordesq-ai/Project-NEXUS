@@ -167,6 +167,7 @@ jest.mock('@/lib/api/comments', () => ({
   toggleCommentReaction: (...args: unknown[]) => mockToggleCommentReaction(...args),
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#006FEE',
 }));
 jest.mock('@/lib/hooks/useTheme', () => ({

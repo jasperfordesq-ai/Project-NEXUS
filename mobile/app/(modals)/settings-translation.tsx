@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -45,15 +46,23 @@ export default function SettingsTranslationScreen() {
   const [targetLocale, setTargetLocale] = useState<MobileTranslationLocale>(initialLocale);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const preferences = await getUserPreferences();
       setPrefersChronological(Boolean(preferences.feed?.prefers_chronological));
       setAutoTranslate(Boolean(preferences.translation?.auto_translate_ugc));
       setTargetLocale(normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale));
     } catch (err) {
+      /*
+        🔴 S3-16: the form used to render its DEFAULTS after a failed load with Save enabled,
+        so one tap wrote `auto_translate: false` and the device's UI language over whatever
+        the member had actually chosen. A load failure now blocks the form instead.
+      */
+      setLoadError(describeApiError(err, t('translation.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
@@ -82,7 +91,12 @@ export default function SettingsTranslationScreen() {
           auto_translate_target_locale: targetLocale,
         },
       });
-      await changeLanguage(targetLocale);
+      /*
+        🔴 S3-29: this ran even with auto-translate OFF, so choosing a translation target
+        silently changed the app's own language. The target is what other members' words get
+        translated INTO; it is not the interface language.
+      */
+      if (autoTranslate) await changeLanguage(targetLocale);
       showToast({ title: t('translation.saved'), description: t('translation.savedBody'), variant: 'success' });
     } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.saveError')), variant: 'danger' });
@@ -116,6 +130,8 @@ export default function SettingsTranslationScreen() {
 
           {isLoading ? (
             <LoadingSpinner />
+          ) : loadError ? (
+            <ErrorState subtitle={loadError} onRetry={() => void load()} isRetrying={isLoading} testID="translation-settings-error" />
           ) : (
             <>
               <HeroCard className="rounded-panel p-0">

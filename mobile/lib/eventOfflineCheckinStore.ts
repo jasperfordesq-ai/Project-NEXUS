@@ -306,22 +306,60 @@ export async function refreshMobileOfflineManifest(
   return next;
 }
 
-export async function loadMobileOfflineSession(
+export type MobileOfflineInactiveReason = 'manifest_expired' | 'device_rotated';
+
+export interface MobileOfflineSessionReview {
+  session: MobileOfflineSession | null;
+  /** Why the session can no longer queue or sync — null while it is still active. */
+  inactive: MobileOfflineInactiveReason | null;
+}
+
+/**
+ * Read a stored session WITHOUT destroying it when the manifest has expired or the device
+ * was rotated.
+ *
+ * 🔴 `loadMobileOfflineSession` used to purge on ANY error, including those two. A staff
+ * member who scanned twenty members while offline and opened the app a day later found the
+ * queue gone with no word — the never-synced check-ins were deleted along with the expired
+ * roster (audit 2026-09-05, S4-19). Only an unreadable record (wrong key, tampered
+ * ciphertext) is destroyed here; an inactive session is returned read-only so the caller
+ * can show how many pending items it still holds and let the member decide.
+ */
+export async function loadMobileOfflineSessionForReview(
   eventId: number,
   deviceId: number,
-): Promise<MobileOfflineSession | null> {
+): Promise<MobileOfflineSessionReview> {
   const ciphertext = await readCiphertext(eventId, deviceId);
-  if (!ciphertext) return null;
+  if (!ciphertext) return { session: null, inactive: null };
+  let session: MobileOfflineSession;
   try {
     const key = await encryptionKey();
-    const session = JSON.parse(openMobileOfflinePayload(ciphertext, key)) as MobileOfflineSession;
+    session = JSON.parse(openMobileOfflinePayload(ciphertext, key)) as MobileOfflineSession;
     session.activeBatchNonces ??= [];
-    assertMobileOfflineSessionActive(session);
-    return session;
   } catch (error) {
     await purgeMobileOfflineSession(eventId, deviceId);
     throw error;
   }
+  try {
+    assertMobileOfflineSessionActive(session);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : '';
+    if (reason === 'manifest_expired' || reason === 'device_rotated') {
+      return { session, inactive: reason };
+    }
+    throw error;
+  }
+  return { session, inactive: null };
+}
+
+export async function loadMobileOfflineSession(
+  eventId: number,
+  deviceId: number,
+): Promise<MobileOfflineSession | null> {
+  const review = await loadMobileOfflineSessionForReview(eventId, deviceId);
+  // Inactive is reported, not purged — see loadMobileOfflineSessionForReview.
+  if (review.inactive) throw new Error(review.inactive);
+  return review.session;
 }
 
 export async function verifyMobileOfflineCredential(

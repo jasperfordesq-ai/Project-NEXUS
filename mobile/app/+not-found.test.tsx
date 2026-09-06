@@ -21,6 +21,8 @@ const mockReplace = jest.fn();
 let mockPathname = '/courses/42';
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { replace: (...args: unknown[]) => mockReplace(...args), back: jest.fn(), canGoBack: jest.fn(() => false) },
   usePathname: () => mockPathname,
 }));

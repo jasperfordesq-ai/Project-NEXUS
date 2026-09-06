@@ -20,6 +20,7 @@ jest.mock('react-native-safe-area-context', () => ({
 // portal, so navigating away used to leave it sitting over unrelated content). The mock runs
 // the effect and lets its cleanup fire on unmount, which is exactly what blur does.
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: (cb: () => void | (() => void)) => {
     const React = require('react');
     React.useEffect(() => cb(), [cb]);

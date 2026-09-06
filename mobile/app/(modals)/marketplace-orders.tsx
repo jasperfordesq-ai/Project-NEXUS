@@ -566,7 +566,7 @@ function MarketplaceOrdersScreen() {
               </View>
               <OrderInput label={t('orders.ratingComment')} value={ratingComment} onChangeText={setRatingComment} placeholder={t('orders.ratingCommentPlaceholder')} multiline />
               <HeroButton variant={isAnonymousRating ? 'primary' : 'secondary'} onPress={() => setIsAnonymousRating((value) => !value)}>
-                <Ionicons name={isAnonymousRating ? 'eye-off-outline' : 'eye-outline'} size={17} color={isAnonymousRating ? '#fff' : primary} />
+                {isAnonymousRating ? <AccentIcon name={isAnonymousRating ? 'eye-off-outline' : 'eye-outline'} size={17} /> : <Ionicons name={isAnonymousRating ? 'eye-off-outline' : 'eye-outline'} size={17} color={primary} />}
                 <HeroButton.Label>{t('orders.anonymousRating')}</HeroButton.Label>
               </HeroButton>
               <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitRating()}>

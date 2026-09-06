@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -166,6 +167,9 @@ function MemberProfileScreenInner() {
   const [connStatus, setConnStatus] = useState<ConnectionStatusType>('none');
   const [connId, setConnId] = useState<number | null>(null);
   const [connLoading, setConnLoading] = useState(false);
+  // True when the status request failed: "Connect" is then hidden in favour of a retry,
+  // because offering it would send a duplicate request to someone already connected.
+  const [connStatusFailed, setConnStatusFailed] = useState(false);
   const [connActionLoading, setConnActionLoading] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
   const [showFederationTransfer, setShowFederationTransfer] = useState(false);
@@ -183,8 +187,10 @@ function MemberProfileScreenInner() {
         setConnStatus(res.data.status);
         setConnId(res.data.connection_id);
       }
+      setConnStatusFailed(false);
     } catch {
-      // Non-critical; the profile itself should remain usable.
+      // Non-critical for the profile itself, but the connect button must not guess.
+      setConnStatusFailed(true);
     } finally {
       setConnLoading(false);
     }
@@ -427,7 +433,7 @@ function MemberProfileScreenInner() {
                   {member.rating != null ? (
                     <Chip size="sm" variant="soft" color="warning">
                       <Ionicons name="star" size={12} color={theme.warning} />
-                      <Chip.Label>{member.rating.toFixed(1)}</Chip.Label>
+                      <Chip.Label>{formatDecimal(member.rating, 1, 1)}</Chip.Label>
                     </Chip>
                   ) : null}
                   {member.location ? (
@@ -647,7 +653,13 @@ function MemberProfileScreenInner() {
               <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.editProfile')}</HeroButton.Label>
             </HeroButton>
           ) : null}
-          {!isOwnProfile && connStatus === 'none' ? (
+          {!isOwnProfile && connStatusFailed ? (
+            <HeroButton className="min-w-0 flex-1" variant="secondary" style={{ minHeight: 48, paddingHorizontal: 8 }} isDisabled={connLoading} accessibilityLabel={t('profile.connectionStatusUnavailable')} onPress={() => void loadConnectionStatus()}>
+              <Ionicons name="refresh-outline" size={16} color={primary} />
+              <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.connectionStatusUnavailable')}</HeroButton.Label>
+            </HeroButton>
+          ) : null}
+          {!isOwnProfile && !connStatusFailed && connStatus === 'none' ? (
             <HeroButton className="min-w-0 flex-1" variant="secondary" style={{ minHeight: 48, paddingHorizontal: 8 }} isDisabled={connActionLoading} accessibilityLabel={t('profile.connect')} onPress={() => void handleConnect()}>
               {connActionLoading ? <Spinner size="sm" /> : <Ionicons name="person-add-outline" size={16} color={primary} />}
               <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.connect')}</HeroButton.Label>
@@ -791,7 +803,7 @@ function ExternalFederatedMemberState({
               </Text>
             </View>
             <View className="w-full gap-3">
-              <HeroButton variant="primary" isDisabled={!canMessage} onPress={openMessage} style={{ backgroundColor: canMessage ? primary : theme.border }}>
+              <HeroButton variant="primary" isDisabled={!canMessage} onPress={openMessage}>
                 <AccentIcon name="chatbubble-ellipses-outline" size={18} />
                 <HeroButton.Label>{t('profile.sendMessage')}</HeroButton.Label>
               </HeroButton>
@@ -1495,7 +1507,7 @@ function ReviewsSection({
               <Surface variant="secondary" className="rounded-panel-inner px-3 py-3">
                 <View className="flex-row items-center gap-3">
                   <Text className="text-3xl font-bold" style={{ color: theme.text }}>
-                    {rating.toFixed(1)}
+                    {formatDecimal(rating, 1, 1)}
                   </Text>
                   <View>
                     <View className="flex-row gap-0.5">

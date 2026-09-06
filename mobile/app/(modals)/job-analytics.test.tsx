@@ -7,6 +7,7 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({ id: '1' }),
   useNavigation: () => ({ setOptions: jest.fn() }),
@@ -66,6 +67,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

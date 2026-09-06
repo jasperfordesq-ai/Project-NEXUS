@@ -11,11 +11,14 @@ const mockReplace = jest.fn();
 let mockParams: Record<string, string | undefined> = { token: 'reset-token' };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn() }),
   useLocalSearchParams: () => mockParams,
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

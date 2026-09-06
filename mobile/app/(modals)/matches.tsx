@@ -3,6 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
+import { describeApiError } from '@/lib/api/describeApiError';
+import { useAppToast } from '@/components/ui/AppToast';
 import { useMemo, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -70,6 +73,7 @@ const SOURCE_CONFIG: Record<MatchSourceType, { icon: IoniconName; tone: string; 
 
 export default function MatchesScreen() {
   const { t } = useTranslation(['profile', 'common']);
+  const { show: showToast } = useAppToast();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { data, isLoading, error, refresh } = useApi(() => getMatches());
@@ -145,6 +149,9 @@ export default function MatchesScreen() {
     try {
       await dismissMatch(match.source_id);
       setDismissedIds((current) => new Set(current).add(match.id));
+    } catch (err) {
+      // Without this the rejection was unhandled: the spinner stopped and the card stayed.
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('matches.dismissFailed')), variant: 'danger' });
     } finally {
       setDismissingId(null);
     }
@@ -171,7 +178,7 @@ export default function MatchesScreen() {
               onOpen={() => openMatch(item)}
             />
           )}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={() => void refresh()} tintColor={primary} colors={[primary]} />}
+          refreshControl={<RefreshControl refreshing={isLoading && Boolean(data)} onRefresh={() => void refresh()} tintColor={primary} colors={[primary]} />}
           contentContainerStyle={{ paddingBottom: 40 }}
           ListHeaderComponent={
             <View className="gap-3 pb-2">
@@ -357,7 +364,7 @@ function MatchCard({
         <View className="flex-row gap-2">
           <HeroButton className="flex-1" size="sm" variant="primary" onPress={onOpen} accessibilityLabel={t('matches.open')}>
             <HeroButton.Label>{t('matches.open')}</HeroButton.Label>
-            <Ionicons name="chevron-forward-outline" size={16} color={theme.onPrimary} />
+            <AccentIcon name="chevron-forward-outline" size={16} />
           </HeroButton>
           {item.source_type === 'listing' ? (
             <HeroButton

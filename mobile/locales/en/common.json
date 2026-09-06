@@ -80,7 +80,9 @@
     "unauthorized": "Your session has expired. Please log in again.",
     "sessionEndedTitle": "Signed out",
     "notFound": "Not found.",
-    "alertTitle": "Error"
+    "alertTitle": "Error",
+    "contractDrift": "This screen received information in a shape it did not expect. Please update the app, or try again later.",
+    "uploadIncomplete": "The upload finished, but the server did not return the file."
   },
   "labels": {
     "timeBalance": "Time balance",

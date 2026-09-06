@@ -9,6 +9,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
@@ -32,6 +33,8 @@ jest.mock('react-i18next', () => ({
         'password.successMessage': 'Your password has been updated successfully.',
         'password.changeError': 'Failed to change password.',
         'password.validation.currentRequired': 'Current password is required.',
+        'password.footerMissing': 'Fill in all three fields to continue.',
+        'password.footerMismatch': 'The new password and its confirmation do not match yet.',
         'password.validation.newRequired': 'New password is required.',
         'password.validation.tooShort': 'Password must be at least 8 characters.',
         'password.validation.mismatch': 'Passwords do not match.',
@@ -112,6 +115,11 @@ describe('ChangePasswordScreen', () => {
   it('shows the Save Password submit button', () => {
     const { getByText } = render(<ChangePasswordScreen />);
     expect(getByText('Save Password')).toBeTruthy();
+  });
+
+  it('tells the member in the footer what is still missing instead of "Ready to update?" alone', () => {
+    const { getByText } = render(<ChangePasswordScreen />);
+    expect(getByText('Fill in all three fields to continue.')).toBeTruthy();
   });
 
   it('shows validation errors when the form is submitted with empty fields', async () => {

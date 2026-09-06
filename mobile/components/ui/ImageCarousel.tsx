@@ -5,11 +5,11 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 import {
-  Dimensions,
   FlatList,
   Text,
   View,
   type ViewToken,
+  useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -27,13 +27,15 @@ interface ImageCarouselProps {
   onImagePress?: (index: number) => void;
 }
 
-const screenWidth = Dimensions.get('window').width;
 const HORIZONTAL_MARGIN = 16;
 const CARD_PADDING = 16;
-const IMAGE_WIDTH = screenWidth - HORIZONTAL_MARGIN * 2 - CARD_PADDING * 2;
 
 export default function ImageCarousel({ images, height = 250, onImagePress }: ImageCarouselProps) {
   const { t } = useTranslation('common');
+  // Measured per render, not once at module load: a rotation or split-screen resize left
+  // the pages snapping to the old width.
+  const { width: screenWidth } = useWindowDimensions();
+  const IMAGE_WIDTH = screenWidth - HORIZONTAL_MARGIN * 2 - CARD_PADDING * 2;
   const [activeIndex, setActiveIndex] = useState(0);
 
   const onViewableItemsChanged = useRef(
@@ -78,7 +80,7 @@ export default function ImageCarousel({ images, height = 250, onImagePress }: Im
         />
       </HeroButton>
     ),
-    [handleImagePress, height, images.length, t],
+    [handleImagePress, height, images.length, t, IMAGE_WIDTH],
   );
 
   const keyExtractor = useCallback((_: CarouselImage, index: number) => `carousel-${index}`, []);

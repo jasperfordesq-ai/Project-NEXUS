@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateGroup = jest.fn().mockResolvedValue({ data: { id: 484 } });
 const mockGetGroup = jest.fn();
@@ -13,18 +13,51 @@ const mockUpdateGroup = jest.fn();
 const mockUploadGroupImage = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockReplace = jest.fn();
+const mockBack = jest.fn();
+const mockConfirm = jest.fn();
+const mockNavListeners: Record<string, (e: unknown) => void> = {};
+const mockNavDispatch = jest.fn();
 let mockSearchParams: Record<string, string | undefined> = {};
 
 jest.mock('expo-router', () => ({
-  router: { replace: (...args: unknown[]) => mockReplace(...args), back: jest.fn() },
+  useFocusEffect: jest.fn(),
+  router: {
+    replace: (...args: unknown[]) => mockReplace(...args),
+    back: (...args: unknown[]) => mockBack(...args),
+    canGoBack: () => true,
+  },
   useLocalSearchParams: () => mockSearchParams,
+  useNavigation: () => ({
+    addListener: (event: string, handler: (e: unknown) => void) => {
+      mockNavListeners[event] = handler;
+      return () => { delete mockNavListeners[event]; };
+    },
+    dispatch: (...args: unknown[]) => mockNavDispatch(...args),
+  }),
 }));
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...args), confirmDialog: null }),
+}));
+jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/components/ui/AccentIcon', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return () => <View testID="accent-icon" />;
+});
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'create.eyebrow': 'New group',
+        'create.loadFailedTitle': "Couldn't open this group",
+        'create.loadFailed': 'Could not load group.',
+        'create.unsavedTitle': 'Discard this group?',
+        'create.unsavedMessage': 'You have unsaved details.',
+        'create.discard': 'Discard',
+        'create.failedTitle': 'Group not created',
+        'common:buttons.retry': 'Retry',
+        'common:buttons.cancel': 'Cancel',
         'create.title': 'Create Group',
         'create.editTitle': 'Edit Group',
         'create.subtitle': 'Start a community space.',
@@ -74,7 +107,8 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#6366f1' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     bg: '#ffffff',
@@ -95,7 +129,9 @@ jest.mock('@/lib/api/groups', () => ({
 }));
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
   NotificationFeedbackType: { Success: 'success' },
+  ImpactFeedbackStyle: { Light: 'light' },
 }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('expo-image', () => ({ Image: 'View' }));
@@ -114,10 +150,11 @@ jest.mock('@/components/ui/AppToast', () => {
 jest.mock('@/components/ui/FormActionFooter', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
-  return function MockFormActionFooter({ submitLabel, onSubmit }: { submitLabel: string; onSubmit: () => void }) {
+  return function MockFormActionFooter({ subtitle, submitLabel, isDisabled, onSubmit }: { subtitle: string; submitLabel: string; isDisabled?: boolean; onSubmit: () => void }) {
     return (
       <View>
-        <Pressable accessibilityRole="button" onPress={onSubmit}>
+        <Text>{subtitle}</Text>
+        <Pressable accessibilityRole="button" testID="footer-submit" accessibilityState={{ disabled: !!isDisabled }} onPress={onSubmit}>
           <Text>{submitLabel}</Text>
         </Pressable>
       </View>
@@ -127,8 +164,8 @@ jest.mock('@/components/ui/FormActionFooter', () => {
 jest.mock('heroui-native', () => {
   const React = require('react');
   const { Pressable, Text, TextInput, View } = require('react-native');
-  const Button = ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) => (
-    <Pressable onPress={onPress}>
+  const Button = ({ children, onPress, accessibilityLabel, accessibilityState }: { children: React.ReactNode; onPress?: () => void; accessibilityLabel?: string; accessibilityState?: Record<string, unknown> }) => (
+    <Pressable onPress={onPress} accessibilityLabel={accessibilityLabel} accessibilityState={accessibilityState}>
       <View>{children}</View>
     </Pressable>
   );
@@ -181,6 +218,10 @@ describe('NewGroupRoute', () => {
       assets: [{ uri: 'file:///tmp/group.jpg', mimeType: 'image/jpeg', fileSize: 1024 }],
     });
     mockReplace.mockClear();
+    mockBack.mockClear();
+    mockConfirm.mockClear();
+    mockNavDispatch.mockClear();
+    Object.keys(mockNavListeners).forEach((key) => { delete mockNavListeners[key]; });
     mockSearchParams = {};
     showToast.mockClear();
   });
@@ -395,5 +436,88 @@ describe('NewGroupRoute', () => {
 
     await waitFor(() => expect(mockUpdateGroup).toHaveBeenCalled());
     expect(mockUploadGroupImage).toHaveBeenCalledWith(9, 'file:///tmp/group.jpg');
+  });
+
+  function fillValidGroup(screen: ReturnType<typeof render>) {
+    fireEvent.changeText(screen.getByPlaceholderText('Name your group'), 'Garden crew');
+    fireEvent.changeText(screen.getByPlaceholderText('What is this group for?'), 'A group for coordinating seasonal planting and shared gardening days.');
+  }
+
+  /** 🔴 S4-02. A rejected create used to toast for a frame and then leave the form anyway. */
+  it('stays on the form with the input intact when the save is rejected', async () => {
+    mockCreateGroup.mockRejectedValueOnce(new Error('offline'));
+    const screen = render(<NewGroupRoute />);
+    fillValidGroup(screen);
+
+    fireEvent.press(screen.getByText('Create group'));
+    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalled());
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Garden crew')).toBeTruthy();
+  });
+
+  /** 🔴 S4-03. A failed hydration must not leave a live "Update group" over blank fields. */
+  it('withholds the form when the group cannot be loaded, offers a retry, and never saves blanks', async () => {
+    mockSearchParams = { id: '9' };
+    mockGetGroup.mockRejectedValueOnce(new Error('offline'));
+
+    const { getByText, queryByText, getByDisplayValue } = render(<NewGroupRoute />);
+
+    await waitFor(() => expect(getByText("Couldn't open this group")).toBeTruthy());
+    expect(queryByText('Update group')).toBeNull();
+    expect(mockUpdateGroup).not.toHaveBeenCalled();
+
+    mockGetGroup.mockResolvedValueOnce({ data: { id: 9, name: 'Garden crew', description: 'A group for coordinating seasonal planting and shared gardening days.', visibility: 'public', federated_visibility: 'none' } });
+    fireEvent.press(getByText('Retry'));
+    await waitFor(() => expect(getByDisplayValue('Garden crew')).toBeTruthy());
+    expect(getByText('Update group')).toBeTruthy();
+  });
+
+  /** S4-04. Dirty input is guarded on Back / gestures. */
+  it('asks before discarding unsaved input', () => {
+    const screen = render(<NewGroupRoute />);
+    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    fireEvent.changeText(screen.getByPlaceholderText('Name your group'), 'Half-typed');
+    expect(mockNavListeners.beforeRemove).toBeDefined();
+
+    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
+    mockNavListeners.beforeRemove?.(e);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(mockNavDispatch).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this group?' }));
+  });
+
+  /** S4-05. Comma decimals for coordinates. */
+  it('accepts comma decimals for coordinates', async () => {
+    const screen = render(<NewGroupRoute />);
+    fillValidGroup(screen);
+    fireEvent.changeText(screen.getByPlaceholderText('51.5007'), '52,1');
+    fireEvent.changeText(screen.getByPlaceholderText('-0.1246'), '-6,3');
+    fireEvent.press(screen.getByText('Create group'));
+
+    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledWith(expect.objectContaining({ latitude: 52.1, longitude: -6.3 })));
+  });
+
+  /** S4-22 / S4-26. The selected visibility uses the accent foreground and announces its state. */
+  it('marks the selected visibility for assistive technology and paints its icon with the accent foreground', () => {
+    const { getByLabelText, getAllByTestId } = render(<NewGroupRoute />);
+    expect(getByLabelText('Public').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+    expect(getByLabelText('Private').props.accessibilityState).toEqual(expect.objectContaining({ selected: false }));
+    // Public (selected) is the only accent-painted icon among the three toggles.
+    expect(getAllByTestId('accent-icon')).toHaveLength(1);
+
+    fireEvent.press(getByLabelText('Private'));
+    expect(getByLabelText('Private').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+  });
+
+  /** S6-07. Footer copy and disabled state follow the required fields. */
+  it('derives the footer copy and disabled state from the required fields', () => {
+    const screen = render(<NewGroupRoute />);
+    expect(screen.getByTestId('footer-submit').props.accessibilityState.disabled).toBe(true);
+    fillValidGroup(screen);
+    expect(screen.getByTestId('footer-submit').props.accessibilityState.disabled).toBe(false);
   });
 });

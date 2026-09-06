@@ -192,6 +192,9 @@
     "footerCreateTitle": "Rivedi elenco",
     "footerEditTitle": "Rivedi modifiche",
     "footerSubtitle": "Pubblica l'elenco quando i dettagli sono pronti.",
+    "footerMissing": "Aggiungi un titolo e un prezzo prima di pubblicare.",
+    "mediaSaveFailedTitle": "Annuncio salvato, foto no",
+    "mediaSaveFailedMessage": "Il tuo annuncio è online, ma non è stato possibile caricare foto o video. Modifica l'annuncio per aggiungerli.",
     "publish": "Pubblica",
     "update": "Aggiorna",
     "validation": "Convalida",
@@ -925,6 +928,7 @@
     "emptySubtitle": "Prova con un raggio più ampio o un'altra posizione."
   },
   "advancedSearch": {
+    "categoriesUnavailable": "Categorie non caricate: tocca per riprovare",
     "eyebrow": "Ricerca nel marketplace sfaccettato",
     "title": "Ricerca avanzata",
     "subtitle": "Utilizza gli stessi filtri del marketplace dell'app Web per restringere i risultati rapidamente.",

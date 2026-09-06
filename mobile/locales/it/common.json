@@ -80,7 +80,9 @@
     "unauthorized": "La sessione è scaduta. Accedi di nuovo.",
     "sessionEndedTitle": "Disconnesso",
     "notFound": "Non trovato.",
-    "alertTitle": "Error"
+    "alertTitle": "Error",
+    "contractDrift": "Questa schermata ha ricevuto informazioni in un formato inatteso. Aggiorna l'app o riprova più tardi.",
+    "uploadIncomplete": "Il caricamento è terminato, ma il server non ha restituito il file."
   },
   "labels": {
     "timeBalance": "Saldo ore",

@@ -8,6 +8,8 @@ import { Text, View } from 'react-native';
 import { t as translate } from 'i18next';
 import Button from '@/components/ui/Button';
 import { reportException } from '@/lib/observability/report';
+import { themeStore } from '@/lib/theme/themeStore';
+import { DARK, LIGHT } from '@/lib/hooks/useTheme';
 
 interface Props {
   children: React.ReactNode;
@@ -27,6 +29,9 @@ interface State {
 function ErrorFallback({ onReset }: { onReset: () => void }) {
   const title = translate('errors.boundaryTitle', { ns: 'common' });
   const retry = translate('buttons.retry', { ns: 'common' });
+  // This boundary sits outside the providers, but the theme store needs none: a dark-mode
+  // crash used to flash a white screen with near-black text.
+  const palette = themeStore.getSnapshot() === 'dark' ? DARK : LIGHT;
 
   return (
     <View
@@ -35,14 +40,14 @@ function ErrorFallback({ onReset }: { onReset: () => void }) {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 24,
-        backgroundColor: '#fff',
+        backgroundColor: palette.bg,
       }}
     >
       <Text
         style={{
           fontSize: 16,
           fontWeight: '600',
-          color: '#1a1a1a',
+          color: palette.text,
           marginBottom: 16,
           textAlign: 'center',
         }}

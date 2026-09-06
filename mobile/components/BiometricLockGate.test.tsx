@@ -23,7 +23,8 @@ jest.mock('@/lib/context/AuthContext', () => ({
   useAuthContext: () => ({ ...mockAuthState, logout: mockLogout }),
 }));
 
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#2563eb' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#2563eb' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     bg: '#ffffff', text: '#111111', textSecondary: '#555555', error: '#b91c1c',

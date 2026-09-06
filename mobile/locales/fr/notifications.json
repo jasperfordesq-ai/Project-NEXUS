@@ -7,6 +7,7 @@
   "markError": "Erreur lors du marquage",
   "allCaughtUp": "Tout est lu !",
   "allCaughtUpSub": "Vous n'avez aucune nouvelle notification.",
+  "loadingSummary": "Recherche de nouvelles notifications…",
   "unreadCount": "{{count}} non lu(s)",
   "unreadSummary": "Vous avez {{count}} notification non lue.",
   "unreadSummary_one": "Vous avez {{count}} notification non lue.",

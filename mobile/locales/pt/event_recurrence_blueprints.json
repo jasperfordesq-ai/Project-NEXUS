@@ -81,5 +81,6 @@
   "confirm_ack_description": "Revi as secções, contagens, conflitos e identidade de recorrência efetiva.",
   "cancel": "Cancelar",
   "commit_button": "Guardar versão imutável",
-  "committing": "A guardar versão"
+  "committing": "A guardar versão",
+  "history_refresh_error_description": "A configuração futura foi guardada, mas não foi possível atualizar o histórico abaixo. Tente novamente para o recarregar."
 }

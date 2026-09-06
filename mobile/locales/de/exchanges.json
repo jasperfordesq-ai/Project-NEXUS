@@ -70,6 +70,7 @@
     "errorTitle": "Gruppenbörsen konnten nicht geladen werden",
     "errorDescription": "Zum Aktualisieren ziehen oder später erneut versuchen.",
     "moreAvailable": "Weitere Gruppenbörsen sind in der Webansicht verfügbar.",
+    "loadMore": "Mehr laden",
     "create": {
       "open": "Gruppentausch erstellen",
       "title": "Gruppentausch erstellen",
@@ -130,6 +131,7 @@
   "filtersIntro": "Suche nach Fähigkeit, Kategorie, Ort oder Mitglied.",
   "filterAllCategories": "Alle Kategorien",
   "categoriesLoading": "Kategorien werden geladen",
+  "categoriesRetry": "Kategorien nicht geladen – zum Wiederholen tippen",
   "filters": "Filter",
   "filtersWithCount": "Filter ({{count}})",
   "filtersWithCount_one": "Filter ({{count}})",
@@ -458,6 +460,9 @@
     "completedToast": "Bereit zur Bestätigung",
     "confirmedToast": "Stunden bestätigt",
     "cancelledToast": "Tauschvorgang abgebrochen",
+    "cancelConfirmTitle": "Diesen Austausch abbrechen?",
+    "cancelConfirmMessage": "Das andere Mitglied wird über den Abbruch informiert. Das lässt sich nicht rückgängig machen.",
+    "cancelConfirmAction": "Austausch abbrechen",
     "status": {
       "pending_provider": "Warten auf Annahme",
       "pending_broker": "Warten auf eine Koordination",

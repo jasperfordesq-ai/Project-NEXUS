@@ -9,13 +9,27 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 const mockBack = jest.fn();
 const mockReplace = jest.fn();
 const mockCreateOrganisation = jest.fn();
+const mockConfirm = jest.fn();
+const mockNavListeners: Record<string, (e: unknown) => void> = {};
+const mockNavDispatch = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: {
     back: (...args: unknown[]) => mockBack(...args),
     push: jest.fn(),
     replace: (...args: unknown[]) => mockReplace(...args),
   },
+  useNavigation: () => ({
+    addListener: (event: string, handler: (e: unknown) => void) => {
+      mockNavListeners[event] = handler;
+      return () => { delete mockNavListeners[event]; };
+    },
+    dispatch: (...args: unknown[]) => mockNavDispatch(...args),
+  }),
+}));
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...args), confirmDialog: null }),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -52,6 +66,10 @@ jest.mock('react-i18next', () => ({
         'register.errors.emailInvalid': 'Enter a valid email address.',
         'register.errors.websiteInvalid': 'Enter a full website URL starting with http:// or https://.',
         'register.errors.termsRequired': 'Confirm you are authorised to register this organisation.',
+        'register.unsavedTitle': 'Discard this registration?',
+        'register.unsavedMessage': 'You have unsaved details.',
+        'register.discard': 'Discard',
+        'common:buttons.cancel': 'Cancel',
       };
       return map[key] ?? key;
     },
@@ -60,6 +78,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -140,6 +159,26 @@ describe('NewOrganisationScreen', () => {
     jest.clearAllMocks();
     mockCreateOrganisation.mockResolvedValue({ data: { id: 44, name: 'Neighbourhood Skills Network' } });
     mockShowToast.mockClear();
+    Object.keys(mockNavListeners).forEach((key) => { delete mockNavListeners[key]; });
+  });
+
+  /** S4-04. Cancel, Back and gestures pop the screen via `beforeRemove`; dirty input is guarded. */
+  it('asks before discarding unsaved input, and lets an untouched form leave freely', () => {
+    const { getByPlaceholderText, getByText } = render(<NewOrganisationScreen />);
+    expect(mockNavListeners.beforeRemove).toBeUndefined();
+
+    fireEvent.changeText(getByPlaceholderText('Community skills network'), 'Half-typed');
+    expect(mockNavListeners.beforeRemove).toBeDefined();
+
+    // Cancel still asks the navigator to go back; the guard intercepts that pop.
+    fireEvent.press(getByText('Cancel'));
+    expect(mockBack).toHaveBeenCalled();
+
+    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
+    mockNavListeners.beforeRemove?.(e);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(mockNavDispatch).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this registration?', variant: 'danger' }));
   });
 
   it('renders the organisation registration form', () => {

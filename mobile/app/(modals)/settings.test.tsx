@@ -11,6 +11,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 const mockUseApi = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
@@ -96,6 +97,12 @@ jest.mock('@/lib/hooks/useTheme', () => ({
     borderSubtle: '#eeeeee',
     error: '#e53e3e',
     success: '#22c55e',
+    // 🔴 `warning` and `info` are required fields on the real theme. The mock omitted them,
+    // so a dead `theme.warning ?? primary` fallback in the screen was the only thing keeping
+    // this suite green — removing it crashed a row on an undefined colour (audit 2026-09-06).
+    warning: '#f59e0b',
+    info: '#3b82f6',
+    onPrimary: '#ffffff',
   }),
   useThemeController: () => ({
     mode: 'system',

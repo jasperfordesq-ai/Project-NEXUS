@@ -47,6 +47,8 @@
     "messagingRestrictedTitle": "Mensajes pausados",
     "messagingRestrictedContact": "Contacta con tu equipo comunitario antes de enviar mas mensajes.",
     "messageOptions": "Opciones del mensaje",
+    "messageActions": "Acciones del mensaje",
+    "attachmentOpenFailed": "No se pudo abrir este archivo adjunto. Inténtalo de nuevo.",
     "edit": "Editar",
     "editing": "Editando mensaje",
     "saveEdit": "Guardar edicion",

@@ -416,7 +416,8 @@ export default function EventRegistrationPanel({
               onPress={() => void acceptInvitation(invitation.id)}
               style={{ backgroundColor: primary }}
             >
-              {pendingAction === `invitation-${invitation.id}` ? <Spinner size="sm" /> : t('accessible.accept_invitation')}
+              {pendingAction === `invitation-${invitation.id}` ? <Spinner size="sm" /> : null}
+              <Button.Label>{t('accessible.accept_invitation')}</Button.Label>
             </Button>
           </View>
         ))}
@@ -436,14 +437,16 @@ export default function EventRegistrationPanel({
             </View>
             {submission?.status === 'submitted' ? (
               <Button variant="secondary" isDisabled={pendingAction !== null} onPress={() => void amendAnswers()}>
-                {pendingAction === 'amend' ? <Spinner size="sm" /> : t('submissions.amend')}
+                {pendingAction === 'amend' ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('submissions.amend')}</Button.Label>
               </Button>
             ) : (
               <>
                 {visibleQuestions.map(renderQuestion)}
                 <View className="flex-row flex-wrap gap-2">
                   <Button variant="secondary" isDisabled={pendingAction !== null} onPress={() => void saveAnswers(false)}>
-                    {pendingAction === 'save' ? <Spinner size="sm" /> : t('submissions.save_draft')}
+                    {pendingAction === 'save' ? <Spinner size="sm" /> : null}
+                    <Button.Label>{t('submissions.save_draft')}</Button.Label>
                   </Button>
                   <Button
                     variant="primary"
@@ -451,7 +454,8 @@ export default function EventRegistrationPanel({
                     onPress={() => void saveAnswers(true)}
                     style={{ backgroundColor: primary }}
                   >
-                    {pendingAction === 'submit' ? <Spinner size="sm" /> : t('accessible.submit_answers')}
+                    {pendingAction === 'submit' ? <Spinner size="sm" /> : null}
+                    <Button.Label>{t('accessible.submit_answers')}</Button.Label>
                   </Button>
                 </View>
               </>
@@ -479,7 +483,8 @@ export default function EventRegistrationPanel({
                       guest.display_name ?? t('guests.name_hidden'),
                     )}
                   >
-                    {pendingAction === `guest-${guest.id}` ? <Spinner size="sm" /> : t('guests.cancel')}
+                    {pendingAction === `guest-${guest.id}` ? <Spinner size="sm" /> : null}
+                    <Button.Label>{t('guests.cancel')}</Button.Label>
                   </Button>
                 ) : null}
               </View>
@@ -501,7 +506,8 @@ export default function EventRegistrationPanel({
               onPress={() => void addGuest()}
               style={{ backgroundColor: primary }}
             >
-              {pendingAction === 'guest-add' ? <Spinner size="sm" /> : t('accessible.add_guest')}
+              {pendingAction === 'guest-add' ? <Spinner size="sm" /> : null}
+              <Button.Label>{t('accessible.add_guest')}</Button.Label>
             </Button>
           </View>
         ) : null}

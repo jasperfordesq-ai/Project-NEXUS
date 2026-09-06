@@ -7,9 +7,11 @@ jest.mock('@/lib/api/client', () => ({
   api: { get: jest.fn(), post: jest.fn() },
   ApiResponseError: class ApiResponseError extends Error {
     status: number;
-    constructor(status: number, message: string) {
+    code?: string;
+    constructor(status: number, message: string, _errors?: unknown, code?: string) {
       super(message);
       this.status = status;
+      this.code = code;
     }
   },
 }));
@@ -271,7 +273,7 @@ describe('mobile event communications API', () => {
       },
     });
 
-    await expect(getEventCommunications(42)).rejects.toThrow('EVENTS_CONTRACT_DRIFT');
+    await expect(getEventCommunications(42)).rejects.toHaveProperty('code', 'EVENTS_CONTRACT_DRIFT');
     expect(Sentry.captureMessage).toHaveBeenCalledWith(
       'Event communications contract drift',
       expect.objectContaining({ extra: { issues: expect.any(Array) } }),

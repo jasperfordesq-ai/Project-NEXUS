@@ -12,6 +12,8 @@ let mockParams: Record<string, string> = {};
 const VALID_TOKEN = 'a'.repeat(40);
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { replace: (...args: unknown[]) => mockReplace(...args), push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => mockParams,
 }));

@@ -41,6 +41,8 @@
     "saveFailedTitle": "Suche konnte nicht gespeichert werden",
     "saveFailedMessage": "Prüfe den Namen der Suche und versuche es erneut.",
     "deleteFailedTitle": "Suche konnte nicht gelöscht werden",
-    "deleteFailedMessage": "Bitte versuchen Sie es erneut."
+    "deleteFailedMessage": "Bitte versuchen Sie es erneut.",
+    "deleteConfirmTitle": "Diese gespeicherte Suche löschen?",
+    "deleteConfirmMessage": "Du kannst sie jederzeit aus einer neuen Suche wieder speichern."
   }
 }

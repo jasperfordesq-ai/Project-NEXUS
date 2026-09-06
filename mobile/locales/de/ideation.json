@@ -518,6 +518,13 @@
     "validationDates": "Verwenden Sie ein gültiges Datum und eine gültige Uhrzeit, z. B. 30.06.2026 17:00 Uhr.",
     "validationMaxIdeas": "Verwenden Sie eine ganze Zahl zwischen 1 und 50.",
     "failedTitle": "Herausforderung konnte nicht erstellt werden",
-    "failedDescription": "Versuchen Sie es gleich noch einmal."
+    "failedDescription": "Versuchen Sie es gleich noch einmal.",
+    "unsavedTitle": "Diese Herausforderung verwerfen?",
+    "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
+    "discard": "Verwerfen",
+    "footerIncomplete": "Noch nicht bereit",
+    "footerMissingTitle": "Füge einen Titel für die Herausforderung hinzu, um fortzufahren.",
+    "footerMissingDescription": "Füge eine Beschreibung hinzu, um fortzufahren.",
+    "loadFailedTitle": "Diese Herausforderung konnte nicht geöffnet werden"
   }
 }

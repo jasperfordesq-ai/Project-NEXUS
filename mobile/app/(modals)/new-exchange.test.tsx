@@ -22,6 +22,7 @@ const mockNavListeners: Record<string, (e: unknown) => void> = {};
 const mockNavDispatch = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: {
     back: (...args: unknown[]) => mockBack(...args),
     replace: (...args: unknown[]) => mockReplace(...args),
@@ -120,6 +121,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

@@ -3,6 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { downloadAuthenticatedFile, SHARING_UNAVAILABLE } from '@/lib/volunteering/authenticatedFileDownload';
+import { buildWebUrl } from '@/lib/utils/webUrl';
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Image,
@@ -114,7 +117,6 @@ import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingC
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 
-const WEB_URL = 'https://app.project-nexus.ie';
 const CARD_MIN_HEIGHT = 118;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -289,6 +291,7 @@ function GroupDetailScreenInner() {
   const { hasFeature } = useTenant();
   const { id, tab } = useLocalSearchParams<{ id: string; tab?: string | string[] }>();
   const primary = usePrimaryColor();
+  const { tenant } = useTenant();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -380,7 +383,9 @@ function GroupDetailScreenInner() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
-        message: `${group.name} - ${WEB_URL}/groups/${group.id}`,
+        // 🔴 S4-10: a bare platform host lands the recipient on the wrong community (or a
+        // 404) for anyone whose community has its own domain.
+        message: `${group.name} - ${buildWebUrl(tenant?.slug, `/groups/${group.id}`)}`,
       });
     } catch {
       // Native share can be cancelled; no user-facing error needed.
@@ -711,11 +716,11 @@ function GroupDetailScreenInner() {
                 <Spinner size="sm" />
               ) : (
                 <>
-                  <Ionicons
-                    name={currentIsMember ? 'exit-outline' : 'add-outline'}
-                    size={18}
-                    color={currentIsMember ? primary : '#fff'}
-                  />
+                  {currentIsMember ? (
+                    <Ionicons name="exit-outline" size={18} color={primary} />
+                  ) : (
+                    <AccentIcon name="add-outline" size={18} />
+                  )}
                   <HeroButton.Label>{currentIsMember ? t('leave') : t('join')}</HeroButton.Label>
                 </>
               )}
@@ -985,7 +990,7 @@ function GroupDetailScreenInner() {
                             variant={announcementPinned ? 'primary' : 'secondary'}
                             onPress={() => setAnnouncementPinned((value) => !value)}
                           >
-                            <Ionicons name="pin-outline" size={16} color={announcementPinned ? '#fff' : primary} />
+                            {announcementPinned ? <AccentIcon name="pin-outline" size={16} /> : <Ionicons name="pin-outline" size={16} color={primary} />}
                             <HeroButton.Label>{announcementPinned ? t('detail.pinned') : t('detail.pinAnnouncement')}</HeroButton.Label>
                           </HeroButton>
                           <HeroButton isDisabled={creatingAnnouncement} onPress={() => void handleCreateAnnouncement()}>
@@ -1316,9 +1321,19 @@ function GroupFilesPanel({
   const { confirm, confirmDialog } = useConfirm();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  function openDownload(fileId: number) {
-    const url = `${API_BASE_URL}${API_V2}/groups/${groupId}/files/${fileId}/download`;
-    void Linking.openURL(url);
+  function openDownload(file: GroupFileItem) {
+    /*
+      🔴 S4-11: this handed the API URL to the system browser, which carries no bearer token,
+      so every Download tap landed on a JSON "Unauthenticated." page. The bytes are fetched
+      with the member's own session and handed to the share sheet instead.
+    */
+    void downloadAuthenticatedFile(`${API_V2}/groups/${groupId}/files/${file.id}/download`, file.file_name)
+      .catch((err) => {
+        const description = (err as Error)?.message === SHARING_UNAVAILABLE
+          ? t('detail.files.sharingUnavailable')
+          : describeApiError(err, t('detail.files.downloadFailed'));
+        showToast({ title: t('common:errors.alertTitle'), description, variant: 'danger' });
+      });
   }
 
   function confirmDelete(file: GroupFileItem) {
@@ -1402,7 +1417,7 @@ function GroupFilesPanel({
                 <HeroButton
                   size="sm"
                   variant="secondary"
-                  onPress={() => openDownload(file.id)}
+                  onPress={() => openDownload(file)}
                   accessibilityLabel={t('detail.files.downloadLabel', { name: file.file_name })}
                 >
                   <Ionicons name="download-outline" size={16} color={primary} />
@@ -1859,7 +1874,7 @@ function GroupQAPanel({
                     onPress={() => void voteTarget('question', question.id, 'up')}
                     accessibilityLabel={t('detail.qa.upvoteQuestion')}
                   >
-                    {votingTarget === `question:${question.id}:up` ? <Spinner size="sm" /> : <Ionicons name="arrow-up-outline" size={15} color={question.user_vote === 1 ? '#fff' : primary} />}
+                    {votingTarget === `question:${question.id}:up` ? <Spinner size="sm" /> : question.user_vote === 1 ? <AccentIcon name="arrow-up-outline" size={15} /> : <Ionicons name="arrow-up-outline" size={15} color={primary} />}
                     <HeroButton.Label>{t('detail.qa.upvote')}</HeroButton.Label>
                   </HeroButton>
                   <HeroButton
@@ -1869,7 +1884,7 @@ function GroupQAPanel({
                     onPress={() => void voteTarget('question', question.id, 'down')}
                     accessibilityLabel={t('detail.qa.downvoteQuestion')}
                   >
-                    {votingTarget === `question:${question.id}:down` ? <Spinner size="sm" /> : <Ionicons name="arrow-down-outline" size={15} color={question.user_vote === -1 ? '#fff' : primary} />}
+                    {votingTarget === `question:${question.id}:down` ? <Spinner size="sm" /> : question.user_vote === -1 ? <AccentIcon name="arrow-down-outline" size={15} /> : <Ionicons name="arrow-down-outline" size={15} color={primary} />}
                     <HeroButton.Label>{t('detail.qa.downvote')}</HeroButton.Label>
                   </HeroButton>
                 </View>
@@ -1908,7 +1923,7 @@ function GroupQAPanel({
                               onPress={() => void voteTarget('answer', answer.id, 'up')}
                               accessibilityLabel={t('detail.qa.upvoteAnswer')}
                             >
-                              {votingTarget === `answer:${answer.id}:up` ? <Spinner size="sm" /> : <Ionicons name="arrow-up-outline" size={15} color={answer.user_vote === 1 ? '#fff' : primary} />}
+                              {votingTarget === `answer:${answer.id}:up` ? <Spinner size="sm" /> : answer.user_vote === 1 ? <AccentIcon name="arrow-up-outline" size={15} /> : <Ionicons name="arrow-up-outline" size={15} color={primary} />}
                               <HeroButton.Label>{t('detail.qa.upvote')}</HeroButton.Label>
                             </HeroButton>
                             <HeroButton
@@ -1918,7 +1933,7 @@ function GroupQAPanel({
                               onPress={() => void voteTarget('answer', answer.id, 'down')}
                               accessibilityLabel={t('detail.qa.downvoteAnswer')}
                             >
-                              {votingTarget === `answer:${answer.id}:down` ? <Spinner size="sm" /> : <Ionicons name="arrow-down-outline" size={15} color={answer.user_vote === -1 ? '#fff' : primary} />}
+                              {votingTarget === `answer:${answer.id}:down` ? <Spinner size="sm" /> : answer.user_vote === -1 ? <AccentIcon name="arrow-down-outline" size={15} /> : <Ionicons name="arrow-down-outline" size={15} color={primary} />}
                               <HeroButton.Label>{t('detail.qa.downvote')}</HeroButton.Label>
                             </HeroButton>
                             {canAcceptAnswers && !answer.is_accepted ? (

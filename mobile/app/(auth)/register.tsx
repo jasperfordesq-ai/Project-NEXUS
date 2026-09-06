@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,6 +33,8 @@ import { registerForPushNotifications } from '@/lib/notifications';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 function makeRegisterSchema(t: (key: string) => string) {
   const phoneRegex = /^\+?\d{7,15}$/;
@@ -93,7 +96,7 @@ export default function RegisterScreen() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema) as Resolver<RegisterFormValues>,
     defaultValues: {
@@ -130,6 +133,17 @@ export default function RegisterScreen() {
     if (globalError) scrollRef.current?.scrollTo({ y: 0, animated: true });
   }, [globalError]);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
+  // Eight fields of typing should not vanish on a stray Back or swipe (audit 2026-09-05).
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: isLoading || Boolean(pendingMessage),
+    confirm,
+    title: t('register.unsavedTitle'),
+    message: t('register.unsavedMessage'),
+    discardLabel: t('register.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -233,7 +247,7 @@ export default function RegisterScreen() {
                 accessibilityRole="image"
                 accessibilityLabel={t('register.successTitle')}
               >
-                <Ionicons name="mail-unread-outline" size={30} color="#fff" />
+                <Ionicons name="mail-unread-outline" size={30} color={contrastText(primary)} />
               </View>
               <HeroCard.Title className="text-2xl font-bold text-center">
                 {t('register.successTitle')}
@@ -287,7 +301,7 @@ export default function RegisterScreen() {
                 accessibilityRole="image"
                 accessibilityLabel={t('common:appName')}
               >
-                <Ionicons name="person-add-outline" size={30} color="#fff" />
+                <Ionicons name="person-add-outline" size={30} color={contrastText(primary)} />
               </View>
               <HeroCard.Title className="text-2xl font-bold text-center">
                 {t('register.title')}
@@ -341,6 +355,7 @@ export default function RegisterScreen() {
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
+                      error={errors.lastName?.message}
                       placeholder={t('register.lastNamePlaceholder')}
                       autoCapitalize="words"
                       returnKeyType="next"
@@ -503,6 +518,7 @@ export default function RegisterScreen() {
           </HeroCard>
         </View>
       </ScrollView>
+      {confirmDialog}
     </KeyboardAvoidingView>
   );
 }

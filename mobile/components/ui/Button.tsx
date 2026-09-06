@@ -8,6 +8,7 @@ import { View, type ViewStyle, type StyleProp } from 'react-native';
 import { Button as HeroButton, Spinner } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { contrastText } from '@/lib/utils/color';
+import { useAccentForeground } from '@/lib/theme/accentForeground';
 
 // Legacy variant names kept for backwards compatibility with 32 importing screens.
 // 'solid' is mapped to HeroUI's 'primary'.
@@ -52,6 +53,8 @@ export default function Button({
   accessibilityLabel,
   testID,
 }: ButtonProps) {
+  // The spinner on a solid accent button must be the same colour as the label beside it.
+  const accentForeground = useAccentForeground();
   const handlePress = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress?.();
@@ -84,7 +87,7 @@ export default function Button({
       */}
       {isLoading ? (
         <View className="flex-row items-center gap-2">
-          <Spinner size="sm" color={variant === 'solid' ? (color ? contrastText(color) : '#fff') : color ?? 'default'} />
+          <Spinner size="sm" color={variant === 'solid' ? (color ? contrastText(color) : accentForeground) : color ?? 'default'} />
           {typeof children === 'string' ? <HeroButton.Label>{children}</HeroButton.Label> : children}
         </View>
       ) : typeof children === 'string' ? (

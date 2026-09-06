@@ -21,6 +21,7 @@ jest.mock('expo-router', () => {
   const router = { push: jest.fn(), replace: jest.fn(), back: jest.fn() };
   return {
     useRouter: () => router,
+    useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn() }),
     Link: ({ children, style }: { children: React.ReactNode; style?: any }) =>
       React.createElement(Text, { style }, children),
     router,
@@ -81,6 +82,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -199,6 +201,16 @@ describe('RegisterScreen', () => {
     pressSubmit(getAllByText);
 
     await waitFor(() => expect(getByText('First name is required')).toBeTruthy());
+    expect(mockApiRegister).not.toHaveBeenCalled();
+  });
+
+  it('shows last name validation error when last name is empty (it was the only field without one)', async () => {
+    const { getAllByText, getByTestId, getByText } = render(<RegisterScreen />);
+
+    fillRequiredRegistrationFields(getByTestId, getByText, { lastName: '' });
+    pressSubmit(getAllByText);
+
+    await waitFor(() => expect(getByText('Last name is required')).toBeTruthy());
     expect(mockApiRegister).not.toHaveBeenCalled();
   });
 

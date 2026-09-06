@@ -47,6 +47,8 @@
     "messagingRestrictedTitle": "Messaggi in pausa",
     "messagingRestrictedContact": "Contatta il team della comunita prima di inviare altri messaggi.",
     "messageOptions": "Opzioni messaggio",
+    "messageActions": "Azioni del messaggio",
+    "attachmentOpenFailed": "Non è stato possibile aprire questo allegato. Riprova.",
     "edit": "Modifica",
     "editing": "Modifica messaggio",
     "saveEdit": "Salva modifica",

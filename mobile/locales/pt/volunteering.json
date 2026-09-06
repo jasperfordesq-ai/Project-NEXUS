@@ -80,7 +80,8 @@
   "stats": {
     "opportunities": "Oportunidades",
     "applications": "Inscrições",
-    "hours": "Horários verificados"
+    "hours": "Horários verificados",
+    "loadedNote": "A contagem de oportunidades abrange o que foi carregado até agora."
   },
   "tabs": {
     "opportunities": "Oportunidades",
@@ -102,9 +103,13 @@
     "cancel": "Cancelar turno",
     "cancelError": "Não foi possível cancelar este turno.",
     "openOpportunityLabel": "Abrir oportunidade {{title}}",
-    "cancelLabel": "Cancelar turno de {{title}}"
+    "cancelLabel": "Cancelar turno de {{title}}",
+    "cancelConfirmTitle": "Cancelar este turno?",
+    "cancelConfirmMessage": "O seu lugar ficará livre para outra pessoa."
   },
   "certificates": {
+    "openFailed": "Não foi possível abrir este certificado. Tenta novamente.",
+    "sharingUnavailable": "Este dispositivo não consegue abrir o certificado. Experimenta no site.",
     "title": "Certificados de voluntariado",
     "description": "Gere e abra certificados verificados das horas de voluntariado aprovadas.",
     "generate": "Gerar certificado",
@@ -116,7 +121,9 @@
     "dateUnknown": "Data indisponível",
     "organizationHours": "{{name}}: {{hours}} h",
     "open": "Abrir certificado",
-    "openLabel": "Abrir certificado {{code}}"
+    "openLabel": "Abrir certificado {{code}}",
+    "downloadFailed": "Não foi possível transferir o certificado.",
+    "sharingUnavailable": "Este dispositivo não consegue abrir ficheiros transferidos."
   },
   "expenses": {
     "submit": "Enviar despesa",
@@ -345,7 +352,14 @@
     "loadFailed": "Não foi possível carregar esta oportunidade para edição.",
     "failedDescription": "Não foi possível criar a oportunidade. Tente novamente.",
     "editFailedTitle": "Oportunidade não atualizada",
-    "editFailedDescription": "Não foi possível atualizar a oportunidade. Por favor, tente novamente."
+    "editFailedDescription": "Não foi possível atualizar a oportunidade. Por favor, tente novamente.",
+    "validationDateFormat": "Introduza as datas no formato YYYY-MM-DD, por exemplo 2026-06-30.",
+    "reviewMissing": "Adicione um título e uma descrição antes de continuar.",
+    "loadFailedTitle": "Não foi possível abrir esta oportunidade",
+    "organisationsLoadFailed": "Não foi possível carregar as suas organizações, por isso a oportunidade ainda não pode ser publicada.",
+    "unsavedTitle": "Descartar esta oportunidade?",
+    "unsavedMessage": "Tem dados por guardar. Se sair agora, vai perdê-los.",
+    "discard": "Descartar"
   },
   "org": {
     "title": "Painel da organização",
@@ -475,7 +489,9 @@
     "optionsError": "Não foi possível carregar os outros turnos.",
     "requestSentTitle": "Pedido de troca enviado",
     "requestSentBody": "Perguntámos à outra pessoa. Será avisado quando responder.",
-    "requestError": "Não foi possível enviar esse pedido de troca."
+    "requestError": "Não foi possível enviar esse pedido de troca.",
+    "cancelConfirmTitle": "Cancelar este pedido de troca?",
+    "cancelConfirmMessage": "Deixará de ser pedida a troca à outra pessoa voluntária."
   },
   "shiftCancelledTitle": "Turno cancelado",
   "shiftCancelledMessage": "Já não está inscrito neste turno.",
@@ -505,5 +521,8 @@
     "forbidden": "Não tem permissão para verificar check-ins deste turno.",
     "error": "Algo deu errado. Tente novamente.",
     "done": "Concluído"
-  }
+  },
+  "panelLoadError": "Não foi possível carregar esta secção.",
+  "confirmWithdrawTitle": "Retirar esta candidatura?",
+  "confirmWithdrawMessage": "A organização deixará de ver a sua candidatura."
 }

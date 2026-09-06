@@ -11,6 +11,8 @@ const mockToast = jest.fn();
 let mockFeatures: Record<string, boolean> = { partner_venues: true };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: (...args: unknown[]) => mockPush(...args), back: jest.fn() },
   useLocalSearchParams: () => ({}),
 }));

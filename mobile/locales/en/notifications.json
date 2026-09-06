@@ -7,6 +7,7 @@
   "markError": "Could not mark notifications as read.",
   "allCaughtUp": "You're all caught up!",
   "allCaughtUpSub": "You have no new notifications.",
+  "loadingSummary": "Checking for new notifications…",
   "unreadCount": "{{count}} unread",
   "unreadSummary": "You have {{count}} unread notification.",
   "unreadSummary_one": "You have {{count}} unread notification.",

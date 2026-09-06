@@ -20,17 +20,19 @@ import { useTranslation } from 'react-i18next';
 
 import { getOrganisation } from '@/lib/api/organisations';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { buildWebUrl } from '@/lib/utils/webUrl';
+import AccentIcon from '@/components/ui/AccentIcon';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
-const WEB_URL = 'https://app.project-nexus.ie';
 const TRANSLATABLE_STATUSES = new Set(['approved', 'active', 'pending', 'declined']);
 
 function getStatusLabel(status: string | null | undefined, t: (key: string) => string): string | null {
@@ -65,20 +67,23 @@ function ActionPill({
   const isPrimary = tone === 'primary';
 
   return (
+    // 🔴 No fill override on the primary pill: HeroUI derives the label colour from the same
+    // accent pair it paints the fill with, so a hardcoded fill + white icon split them on
+    // pale brands (S4-22). The secondary pill keeps its tinted outline.
     <HeroButton
       accessibilityLabel={accessibilityLabel ?? label}
       onPress={onPress}
       className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isPrimary ? primary : withAlpha(primary, 0.12),
-        borderWidth: isPrimary ? 0 : 1,
-        borderColor: isPrimary ? 'transparent' : withAlpha(primary, 0.22),
+      style={isPrimary ? undefined : {
+        backgroundColor: withAlpha(primary, 0.12),
+        borderWidth: 1,
+        borderColor: withAlpha(primary, 0.22),
       }}
     >
-      <Ionicons name={icon} size={16} color={isPrimary ? '#ffffff' : primary} />
-      <HeroButton.Label className="text-sm font-semibold" style={{ color: isPrimary ? '#ffffff' : theme.text }} numberOfLines={1}>
+      {isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
+      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={1}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -88,6 +93,7 @@ function ActionPill({
 export default function OrganisationDetailScreen() {
   const { t } = useTranslation(['organisations', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -95,7 +101,7 @@ export default function OrganisationDetailScreen() {
   const orgId = Number(id);
   const safeId = isNaN(orgId) || orgId <= 0 ? 0 : orgId;
 
-  const { data, isLoading, refresh } = useApi(
+  const { data, isLoading, error, refresh } = useApi(
     () => getOrganisation(safeId),
     [safeId],
     { enabled: safeId > 0 },
@@ -118,12 +124,25 @@ export default function OrganisationDetailScreen() {
     );
   }
 
-  if (isLoading) {
+  // `&& !organisation`: a pull-to-refresh used to swap the whole screen for a spinner (S4-07).
+  if (isLoading && !organisation) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={t('detailTitle')} backLabel={t('common:back')} fallbackHref="/(modals)/organisations" />
         <View className="flex-1 items-center justify-center" style={{ flex: 1 }}>
           <LoadingSpinner />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 🔴 A network failure used to read as "not found" (S4-06). It gets a retry instead.
+  if (!organisation && error) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detailTitle')} backLabel={t('common:back')} fallbackHref="/(modals)/organisations" />
+        <View className="flex-1 justify-center" style={{ flex: 1 }}>
+          <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading} testID="organisation-detail-error" />
         </View>
       </SafeAreaView>
     );
@@ -149,7 +168,7 @@ export default function OrganisationDetailScreen() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
-        message: `${organisation.name} - ${WEB_URL}/organisations/${organisation.id}`,
+        message: `${organisation.name} - ${buildWebUrl(tenant?.slug, `/organisations/${organisation.id}`)}`,
       });
     } catch {
       // Share sheet dismissed.

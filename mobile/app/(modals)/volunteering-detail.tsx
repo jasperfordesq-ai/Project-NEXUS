@@ -24,7 +24,6 @@ import {
   getMyShifts,
   getOpportunityApplications,
   getOpportunity,
-  getOpportunities,
   handleVolunteerApplication,
   type MyShiftsResponse,
   type OpportunityApplication,
@@ -37,21 +36,21 @@ import {
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import BottomSheet from '@/components/ui/BottomSheet';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
-
-const WEB_URL = 'https://app.project-nexus.ie';
 
 type ApiOpportunity = VolunteerOpportunity & {
   organization?: VolunteeringOrganisation | null;
@@ -117,7 +116,7 @@ function StateMessage({
           <View className="size-12 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
             <Ionicons name="heart-outline" size={24} color={primary} />
           </View>
-          <Text className="text-center text-sm" style={{ color: '#6b7280' }}>{title}</Text>
+          <Text className="text-center text-sm" style={{ color: theme.textSecondary }}>{title}</Text>
           <HeroButton variant="secondary" onPress={() => router.back()}>
             <HeroButton.Label>{action}</HeroButton.Label>
           </HeroButton>
@@ -218,13 +217,16 @@ function ShiftCard({
             isDisabled={cancelling}
             onPress={onCancel}
             testID={`shift-cancel-${shift.id}`}
+            accessibilityState={{ busy: cancelling }}
           >
-            {cancelling ? <Spinner size="sm" /> : <HeroButton.Label>{t('myShifts.cancel')}</HeroButton.Label>}
+            {cancelling ? <Spinner size="sm" /> : null}
+            <HeroButton.Label>{t('myShifts.cancel')}</HeroButton.Label>
           </HeroButton>
         ) : null}
         {canSignUp && !isMine ? (
-          <HeroButton size="sm" variant="secondary" isDisabled={signingUp} onPress={onSignUp}>
-            {signingUp ? <Spinner size="sm" /> : <HeroButton.Label>{t('signUpForShift')}</HeroButton.Label>}
+          <HeroButton size="sm" variant="secondary" isDisabled={signingUp} onPress={onSignUp} accessibilityState={{ busy: signingUp }}>
+            {signingUp ? <Spinner size="sm" /> : null}
+            <HeroButton.Label>{t('signUpForShift')}</HeroButton.Label>
           </HeroButton>
         ) : null}
       </HeroCard.Body>
@@ -304,16 +306,20 @@ function ApplicationCard({
               variant="secondary"
               isDisabled={isActing}
               onPress={() => onAction(application.id, 'decline')}
+              accessibilityState={{ busy: isActing }}
             >
-              {isActing ? <Spinner size="sm" /> : <HeroButton.Label>{t('applications.decline')}</HeroButton.Label>}
+              {isActing ? <Spinner size="sm" /> : null}
+              <HeroButton.Label>{t('applications.decline')}</HeroButton.Label>
             </HeroButton>
             <HeroButton
               className="flex-1"
               size="sm"
               isDisabled={isActing}
               onPress={() => onAction(application.id, 'approve')}
+              accessibilityState={{ busy: isActing }}
             >
-              {isActing ? <Spinner size="sm" /> : <HeroButton.Label>{t('applications.approve')}</HeroButton.Label>}
+              {isActing ? <Spinner size="sm" /> : null}
+              <HeroButton.Label>{t('applications.approve')}</HeroButton.Label>
             </HeroButton>
           </View>
         ) : null}
@@ -333,6 +339,7 @@ export default function VolunteeringDetailScreen() {
 function VolunteeringDetailScreenInner() {
   const { t } = useTranslation(['volunteering', 'common']);
   const { isAuthenticated } = useAuth();
+  const { tenant } = useTenant();
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -349,19 +356,15 @@ function VolunteeringDetailScreenInner() {
   const opportunityId = Number(id);
   const safeId = Number.isFinite(opportunityId) && opportunityId > 0 ? opportunityId : 0;
 
-  const { data, isLoading, refresh } = useApi(
+  const { data, isLoading, error, refresh } = useApi(
     () => getOpportunity(safeId),
     [safeId],
     { enabled: safeId > 0 },
   );
 
-  const fallbackList = useApi(
-    () => getOpportunities(null),
-    [safeId],
-    { enabled: safeId > 0 },
-  );
-
-  const opportunity = (data?.data ?? fallbackList.data?.data?.find((item) => item.id === safeId) ?? null) as ApiOpportunity | null;
+  // 🔴 No whole-list fallback fetch (S4-28). It loaded every opportunity on every visit to
+  // paper over a failed detail request; the error state below is the honest answer.
+  const opportunity = (data?.data ?? null) as ApiOpportunity | null;
 
   const ownerApplicationsApi = useApi(
     () => getOpportunityApplications(safeId, 'pending'),
@@ -408,7 +411,7 @@ function VolunteeringDetailScreenInner() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
-        message: `${opportunity.title} - ${WEB_URL}/volunteering/opportunities/${opportunity.id}`,
+        message: `${opportunity.title} - ${buildWebUrl(tenant?.slug, `/volunteering/opportunities/${opportunity.id}`)}`,
       });
     } catch {
       // Native share can be cancelled.
@@ -492,7 +495,20 @@ function VolunteeringDetailScreenInner() {
     void performSignUpForShift(shiftId);
   }
 
-  async function handleCancelShift(shiftId: number) {
+  function handleCancelShift(shiftId: number) {
+    // 🔴 Destructive: one tap used to release the place with no way back (S4-16).
+    confirm({
+      title: t('myShifts.cancelConfirmTitle'),
+      message: t('myShifts.cancelConfirmMessage'),
+      confirmLabel: t('myShifts.cancel'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'shift-cancel-confirm',
+      onConfirm: () => performCancelShift(shiftId),
+    });
+  }
+
+  async function performCancelShift(shiftId: number) {
     setCancellingShiftId(shiftId);
     try {
       await cancelShiftSignup(shiftId);
@@ -535,12 +551,25 @@ function VolunteeringDetailScreenInner() {
     return <StateMessage title={t('detail.invalidId')} action={t('detail.goBack')} primary={primary} />;
   }
 
-  if (isLoading) {
+  // `&& !opportunity`: a pull-to-refresh used to swap the whole screen for a spinner (S4-07).
+  if (isLoading && !opportunity) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
         <View className="flex-1 items-center justify-center" style={{ flex: 1 }}>
           <LoadingSpinner />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // 🔴 A network failure used to read as "not found" (S4-06). It gets a retry instead.
+  if (!opportunity && error) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
+        <View className="flex-1 justify-center" style={{ flex: 1 }}>
+          <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading} testID="volunteering-detail-error" />
         </View>
       </SafeAreaView>
     );
@@ -702,7 +731,7 @@ function VolunteeringDetailScreenInner() {
                   canSignUp={canSignUpForShifts}
                   isMine={myShiftForThisOpportunity?.id === shift.id}
                   onSignUp={() => handleSignUpForShift(shift.id)}
-                  onCancel={() => void handleCancelShift(shift.id)}
+                  onCancel={() => handleCancelShift(shift.id)}
                 />
               ))}
             </HeroCard.Body>
@@ -778,17 +807,14 @@ function VolunteeringDetailScreenInner() {
               <HeroButton
                 isDisabled={!open || hasApplied || interestLoading}
                 onPress={() => setApplySheetOpen(true)}
+                accessibilityState={{ busy: interestLoading }}
               >
-                {interestLoading ? (
-                  <Spinner size="sm" />
-                ) : (
-                  <>
-                    <AccentIcon name={hasApplied ? 'checkmark-circle-outline' : 'send-outline'} size={18} />
-                    <HeroButton.Label>
-                      {hasApplied ? t('interestSent') : open ? t('expressInterest') : t('status.closed')}
-                    </HeroButton.Label>
-                  </>
-                )}
+                {interestLoading
+                  ? <Spinner size="sm" />
+                  : <AccentIcon name={hasApplied ? 'checkmark-circle-outline' : 'send-outline'} size={18} />}
+                <HeroButton.Label>
+                  {hasApplied ? t('interestSent') : open ? t('expressInterest') : t('status.closed')}
+                </HeroButton.Label>
               </HeroButton>
             </HeroCard.Body>
           </HeroCard>

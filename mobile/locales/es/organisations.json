@@ -37,7 +37,8 @@
     "organisations": "Fogonadura",
     "verified": "Verificado",
     "opportunities": "Oportunidades",
-    "volunteers": "Voluntarios"
+    "volunteers": "Voluntarios",
+    "loadedNote": "Los recuentos incluyen las organizaciones cargadas hasta ahora."
   },
   "register": {
     "title": "Registrar organización",
@@ -70,7 +71,10 @@
       "emailInvalid": "Ingrese una dirección de correo electrónico válida.",
       "websiteInvalid": "Ingrese la URL completa de un sitio web que comience con http:// o https://.",
       "termsRequired": "Confirme que está autorizado a registrar esta organización."
-    }
+    },
+    "unsavedTitle": "¿Descartar este registro?",
+    "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
+    "discard": "Descartar"
   },
   "detail": {
     "title": "Organización",

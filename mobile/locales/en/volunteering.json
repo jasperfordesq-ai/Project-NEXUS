@@ -80,7 +80,8 @@
   "stats": {
     "opportunities": "Opportunities",
     "applications": "Applications",
-    "hours": "Verified hours"
+    "hours": "Verified hours",
+    "loadedNote": "Opportunity counts cover what has loaded so far."
   },
   "tabs": {
     "opportunities": "Opportunities",
@@ -102,9 +103,13 @@
     "cancel": "Cancel shift",
     "cancelError": "Could not cancel this shift.",
     "openOpportunityLabel": "Open opportunity for {{title}}",
-    "cancelLabel": "Cancel shift for {{title}}"
+    "cancelLabel": "Cancel shift for {{title}}",
+    "cancelConfirmTitle": "Cancel this shift?",
+    "cancelConfirmMessage": "Your place will be released for someone else."
   },
   "certificates": {
+    "openFailed": "This certificate could not be opened. Please try again.",
+    "sharingUnavailable": "This device cannot open the certificate. Try the website instead.",
     "title": "Volunteer certificates",
     "description": "Generate and open verified certificates for approved volunteering hours.",
     "generate": "Generate certificate",
@@ -116,7 +121,9 @@
     "dateUnknown": "Date unavailable",
     "organizationHours": "{{name}}: {{hours}}h",
     "open": "Open certificate",
-    "openLabel": "Open certificate {{code}}"
+    "openLabel": "Open certificate {{code}}",
+    "downloadFailed": "Could not download the certificate.",
+    "sharingUnavailable": "This device cannot open downloaded files."
   },
   "expenses": {
     "submit": "Submit expense",
@@ -344,7 +351,14 @@
     "loadFailed": "We could not load this opportunity for editing.",
     "failedDescription": "We could not create the opportunity. Please try again.",
     "editFailedTitle": "Opportunity not updated",
-    "editFailedDescription": "We could not update the opportunity. Please try again."
+    "editFailedDescription": "We could not update the opportunity. Please try again.",
+    "validationDateFormat": "Enter dates as YYYY-MM-DD, for example 2026-06-30.",
+    "reviewMissing": "Add a title and description before continuing.",
+    "loadFailedTitle": "Couldn't open this opportunity",
+    "organisationsLoadFailed": "Your organisations could not be loaded, so the opportunity cannot be posted yet.",
+    "unsavedTitle": "Discard this opportunity?",
+    "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
+    "discard": "Discard"
   },
   "org": {
     "title": "Organisation dashboard",
@@ -474,7 +488,9 @@
     "optionsError": "Could not load the other shifts.",
     "requestSentTitle": "Swap request sent",
     "requestSentBody": "We have asked the other volunteer. You will be told when they answer.",
-    "requestError": "Could not send that swap request."
+    "requestError": "Could not send that swap request.",
+    "cancelConfirmTitle": "Cancel this swap request?",
+    "cancelConfirmMessage": "The other volunteer will no longer be asked to swap."
   },
   "shiftCancelledTitle": "Shift cancelled",
   "shiftCancelledMessage": "You are no longer signed up for this shift.",
@@ -504,5 +520,8 @@
     "forbidden": "You do not have permission to verify check-ins for this shift.",
     "error": "Something went wrong. Please try again.",
     "done": "Done"
-  }
+  },
+  "panelLoadError": "This section could not be loaded.",
+  "confirmWithdrawTitle": "Withdraw this application?",
+  "confirmWithdrawMessage": "The organisation will no longer see your application."
 }

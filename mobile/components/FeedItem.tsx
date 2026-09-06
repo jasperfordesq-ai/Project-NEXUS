@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Linking, Platform, Pressable, Share, Text, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -29,7 +30,7 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import NativePressable from '@/components/ui/NativePressable';
 import type { CommentTargetType } from '@/lib/api/comments';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import Avatar from '@/components/ui/Avatar';
@@ -41,6 +42,8 @@ import ReactionBar, { REACTION_EMOJI_MAP } from '@/components/reactions/Reaction
 import ReactionSummaryRow from '@/components/reactions/ReactionSummaryRow';
 import PollCard from '@/components/PollCard';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
+import { withAlpha } from '@/lib/utils/color';
 
 interface FeedItemProps {
   item: FeedItemType;
@@ -254,6 +257,23 @@ function getTypeIcon(type: FeedItemType['type'] | string): keyof typeof Ionicons
   return getTypeConfig(type).icon;
 }
 
+/**
+ * The web route a feed item lives at, so a shared link opens the item and not the app root.
+ * Types the web app has no dedicated page for fall back to the feed, which at least lands
+ * the recipient in the right community.
+ */
+function webPathForFeedItem(type: string, id: number): string {
+  switch (type) {
+    case 'listing': return `/listings/${id}`;
+    case 'event': return `/events/${id}`;
+    case 'job': return `/jobs/${id}`;
+    case 'blog': return `/blog/${id}`;
+    case 'volunteer': return `/volunteering/${id}`;
+    case 'goal': return `/goals/${id}`;
+    default: return `/feed/${id}`;
+  }
+}
+
 function getDetailTarget(item: FeedItemType) {
   switch (item.type) {
     case 'listing':
@@ -336,7 +356,9 @@ function FeedItemInner({
   const [reportReason, setReportReason] = useState<ReportReason>('safety_concern');
   const [isReporting, setIsReporting] = useState(false);
   const primary = usePrimaryColor();
+  const { tenant } = useTenant();
   const theme = useTheme();
+  const reduceMotion = useReducedMotion();
 
   /**
    * 🔴 Word labels come off the action row on narrow phones.
@@ -473,6 +495,7 @@ function FeedItemInner({
   }, [item.id, item.type, reactions, showToast, t]);
 
   function showHeartOverlay() {
+    if (reduceMotion) return;
     overlayOpacity.setValue(1);
     overlayScale.setValue(0.5);
 
@@ -493,6 +516,7 @@ function FeedItemInner({
 
   function animateHeartButton() {
     heartBtnScale.setValue(1);
+    if (reduceMotion) return;
     Animated.spring(heartBtnScale, {
       toValue: 1.3,
       friction: 3,
@@ -680,19 +704,29 @@ function FeedItemInner({
 
   const handleShare = useCallback(async () => {
     try {
-      await Share.share({ message: `${item.title ?? ''}\n${item.content ?? ''}`.trim() });
+      // `item.content` is stored HTML for web-written posts; the display path already
+      // flattens it, and so must the share sheet, or WhatsApp receives `<p class=…>`.
+      /*
+        🔴 S3-08: the share carried the words and no link at all, so a recipient had no way
+        to open the post — or to find the community it belongs to.
+      */
+      const link = buildWebUrl(tenant?.slug, webPathForFeedItem(item.type, item.id));
+      const body = `${toPlainText(item.title ?? '')}\n${toPlainText(item.content ?? '')}`.trim();
+      await Share.share({ message: `${body}\n\n${link}`.trim(), url: link });
     } catch {
       // User cancelled or share failed.
     }
-  }, [item.content, item.title]);
+  }, [item.content, item.id, item.title, item.type, tenant?.slug]);
 
   const handleSave = useCallback(async () => {
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const wasBookmarked = bookmarked;
     setBookmarked(!wasBookmarked);
     try {
       const result = await toggleBookmark(item.type, item.id);
       setBookmarked(result.data.bookmarked);
+      // The success buzz belongs AFTER the server agreed; before, a failed save buzzed
+      // "success" and then rolled back.
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setBookmarked(wasBookmarked);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('saveFailed')), variant: 'danger' });
@@ -787,7 +821,12 @@ function FeedItemInner({
         <View
           className="h-1 w-full"
           style={[
-            { backgroundColor: typeConfig.strip[1] },
+            /*
+              A plain post used to get #E4E4E7: a stark white bar in dark mode and an
+              invisible one in light. A neutral post reads as neutral in both schemes when
+              it borrows the theme's muted text tone (emulator, 2026-09-05).
+            */
+            { backgroundColor: item.type === 'post' ? withAlpha(theme.textMuted, 0.45) : typeConfig.strip[1] },
             Platform.OS === 'web'
               ? ({
                   backgroundImage: `linear-gradient(90deg, ${typeConfig.strip[0]}, ${typeConfig.strip[1]}, ${typeConfig.strip[2]})`,
@@ -803,25 +842,32 @@ function FeedItemInner({
               "Avatar" description as a third stop after it.
             */}
             <Avatar uri={author.avatar} name={authorName} size={40} decorative />
+            {/*
+              The type and "official" chips sit on the timestamp line, not beside the name.
+              Beside it, a 360dp phone squeezed the author to "E2E Us…" (emulator,
+              2026-09-05); here the name keeps the whole row and the chips wrap if needed.
+            */}
             <View className="min-w-0 flex-1">
               <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
                 {authorName}
               </Text>
-              <Text className="text-xs" style={{ color: theme.textSecondary }}>
-                {item.created_at ? formatRelativeTime(item.created_at) : ''}
-              </Text>
+              <View className="flex-row flex-wrap items-center gap-x-2 gap-y-1">
+                <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                  {item.created_at ? formatRelativeTime(item.created_at) : ''}
+                </Text>
+                {item.type !== 'post' ? (
+                  <Chip size="sm" variant="soft" color={getTypeColor(item.type)}>
+                    <Ionicons name={getTypeIcon(item.type)} size={12} color={typeConfig.strip[1]} />
+                    <Chip.Label>{t(`feedTypes.${item.type}`, { defaultValue: item.type })}</Chip.Label>
+                  </Chip>
+                ) : null}
+                {item.is_official ? (
+                  <Chip size="sm" variant="soft" color="accent">
+                    <Chip.Label>{t('official')}</Chip.Label>
+                  </Chip>
+                ) : null}
+              </View>
             </View>
-            {item.type !== 'post' ? (
-              <Chip size="sm" variant="soft" color={getTypeColor(item.type)}>
-                <Ionicons name={getTypeIcon(item.type)} size={12} color={typeConfig.strip[1]} />
-                <Chip.Label>{t(`feedTypes.${item.type}`, { defaultValue: item.type })}</Chip.Label>
-              </Chip>
-            ) : null}
-            {item.is_official ? (
-              <Chip size="sm" variant="soft" color="accent">
-                <Chip.Label>{t('official')}</Chip.Label>
-              </Chip>
-            ) : null}
             <HeroButton
               isIconOnly
               size="sm"

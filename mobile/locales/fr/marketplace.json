@@ -192,6 +192,9 @@
     "footerCreateTitle": "Examiner la liste",
     "footerEditTitle": "Examiner les modifications",
     "footerSubtitle": "Publiez la liste lorsque les détails sont prêts.",
+    "footerMissing": "Ajoutez un titre et un prix avant de publier.",
+    "mediaSaveFailedTitle": "Annonce enregistrée, photos non",
+    "mediaSaveFailedMessage": "Votre annonce est en ligne, mais ses photos ou sa vidéo n'ont pas pu être envoyées. Modifiez l'annonce pour les ajouter.",
     "publish": "Publier",
     "update": "Mettre à jour",
     "validation": "Validation",
@@ -925,6 +928,7 @@
     "emptySubtitle": "Essayez un rayon plus large ou un autre emplacement."
   },
   "advancedSearch": {
+    "categoriesUnavailable": "Catégories non chargées – touchez pour réessayer",
     "eyebrow": "Recherche à facettes sur le marché",
     "title": "Recherche avancée",
     "subtitle": "Utilisez les mêmes filtres sur le marché que l'application Web pour affiner rapidement les résultats.",

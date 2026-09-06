@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import { Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -194,5 +195,5 @@ function formatDistance(distanceKm: number, t: ReturnType<typeof useTranslation>
     return t('distanceMeters', { distance: Math.round(distanceKm * 1000) });
   }
 
-  return t('distanceKilometers', { distance: distanceKm.toFixed(1) });
+  return t('distanceKilometers', { distance: formatDecimal(distanceKm, 1) });
 }

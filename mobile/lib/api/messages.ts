@@ -73,6 +73,8 @@ export interface Message {
   is_own: boolean;
   is_voice: boolean;
   audio_url: string | null;
+  /** Seconds, as stored by the server (`max(1, duration)`); null for text messages. */
+  audio_duration?: number | null;
   reactions: Record<string, number>;
   is_read: boolean;
   is_edited?: boolean;

@@ -50,6 +50,7 @@
     "noteTitle": "Was hat nicht gestimmt?",
     "noteDescription": "Schreiben Sie eine kurze Notiz, damit künftige Antworten verbessert werden können.",
     "notePlaceholder": "Was hat gefehlt oder war falsch?",
+    "failed": "Dein Feedback konnte nicht gespeichert werden. Bitte versuche es erneut.",
     "submitNote": "Notiz senden",
     "skipNote": "Überspringen"
   }

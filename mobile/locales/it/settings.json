@@ -23,7 +23,11 @@
     "device": "Consenti le notifiche su questo dispositivo",
     "promotions": "Notifiche promozionali",
     "permissionNeeded": "Le notifiche non sono abilitate",
-    "permissionNeededHint": "Consenti le notifiche quando il dispositivo lo richiede. Puoi modificare questa scelta in seguito nelle impostazioni di sistema."
+    "permissionNeededHint": "Consenti le notifiche quando il dispositivo lo richiede. Puoi modificare questa scelta in seguito nelle impostazioni di sistema.",
+    "registerFailed": "Non è stato possibile configurare le notifiche",
+    "registerFailedHint": "Qualcosa è andato storto durante la registrazione di questo dispositivo. Riprova.",
+    "unavailable": "Le notifiche non sono disponibili qui",
+    "unavailableHint": "Questo dispositivo o questa build non può ricevere notifiche push."
   },
   "email": {
     "messages": "Messaggi",
@@ -55,6 +59,8 @@
     "saving": "Salvataggio password...",
     "reviewTitle": "Pronto per l'aggiornamento?",
     "reviewSubtitle": "Salva solo quando la nuova password e la conferma corrispondono.",
+    "footerMissing": "Compila tutti e tre i campi per continuare.",
+    "footerMismatch": "La nuova password e la conferma non corrispondono ancora.",
     "success": "Password modificata",
     "successMessage": "La tua password è stata stato aggiornato correttamente.",
     "validation": {
@@ -232,6 +238,8 @@
     "approve": "Approve",
     "decline": "Decline",
     "remove": "Remove",
+    "revokeConfirmTitle": "Rimuovere questo account collegato?",
+    "revokeConfirmMessage": "Il collegamento e i permessi che concede terminano subito. Non è possibile tornare indietro.",
     "approveFailed": "Impossibile approvare questa richiesta. Riprova.",
     "revokeFailed": "Impossibile rimuovere questo account collegato. Riprova.",
     "permissionFailed": "Impossibile aggiornare l’autorizzazione dell’account collegato. Riprova.",

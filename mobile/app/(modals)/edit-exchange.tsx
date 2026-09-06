@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
 import { useEffect, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -101,12 +102,12 @@ function EditExchangeModalInner() {
   const [saving, setSaving] = useState(false);
   const [hydratedListingId, setHydratedListingId] = useState<number | null>(null);
 
-  const { data, isLoading, error } = useApi(
+  const { data, isLoading, error, refresh } = useApi(
     () => getExchange(safeListingId),
     [safeListingId],
     { enabled: safeListingId > 0 },
   );
-  const { data: categoriesData } = useApi(() => getExchangeCategories());
+  const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError, refresh: refreshCategories } = useApi(() => getExchangeCategories());
   const categories: ExchangeCategory[] = categoriesData?.data ?? [];
 
   const listing: Exchange | undefined = (data as { data?: Exchange })?.data ?? (data as Exchange | null) ?? undefined;
@@ -227,7 +228,7 @@ function EditExchangeModalInner() {
       nextErrors.description = t('validation.descriptionMinLength');
     }
 
-    if (categories.length > 0 && !categoryId && !listing?.category_id) {
+    if (!categoryId && !listing?.category_id) {
       nextErrors.category = t('validation.categoryRequired');
     }
 
@@ -255,7 +256,9 @@ function EditExchangeModalInner() {
         }, t),
         type,
         hours_estimate: parsedHours,
-        category_id: categoryId ?? listing?.category_id ?? 1,
+        // 🔴 `?? 1` used to re-file the listing under category 1 whenever the picker had
+        // not loaded. Validation above guarantees one of these is set.
+        category_id: (categoryId ?? listing?.category_id) as number,
         location: listingLocation,
         service_type: serviceType,
       });
@@ -267,10 +270,16 @@ function EditExchangeModalInner() {
       } catch (err) {
         showToast({ title: t('detail.tagsSaveFailedTitle'), description: describeApiError(err, t('detail.tagsSaveFailedMessage')), variant: 'danger' });
       }
-      if (selectedImageUri) {
-        await uploadExchangeImage(safeListingId, selectedImageUri);
-      } else if (removeExistingImage && listing?.image_url) {
-        await deleteExchangeImage(safeListingId);
+      // Same rule as the tags: the listing IS saved by now, so an image failure is reported
+      // as partial success rather than as "could not save changes" (audit 2026-09-05, S2-04).
+      try {
+        if (selectedImageUri) {
+          await uploadExchangeImage(safeListingId, selectedImageUri);
+        } else if (removeExistingImage && listing?.image_url) {
+          await deleteExchangeImage(safeListingId);
+        }
+      } catch (err) {
+        showToast({ title: t('detail.imageSaveFailedTitle'), description: describeApiError(err, t('detail.imageSaveFailedMessage')), variant: 'warning' });
       }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.editSavedTitle'), description: t('detail.editSavedMessage'), variant: 'success' });
@@ -287,7 +296,7 @@ function EditExchangeModalInner() {
   if (safeListingId <= 0) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-        <AppTopBar title={t('editTitle')} backLabel={t('detail.goBack')} fallbackHref="/(tabs)/exchanges" />
+        <AppTopBar title={t('editTitle')} backLabel={t('common:back')} fallbackHref="/(tabs)/exchanges" />
         <HeroCard variant="secondary" className="mx-4 my-6">
           <HeroCard.Body className="items-center gap-3 p-6">
             <Ionicons name="alert-circle-outline" size={28} color={theme.error} />
@@ -303,20 +312,15 @@ function EditExchangeModalInner() {
   if (error || !listing) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-        <AppTopBar title={t('editTitle')} backLabel={t('detail.goBack')} fallbackHref="/(tabs)/exchanges" />
-        <HeroCard variant="secondary" className="mx-4 my-6">
-          <HeroCard.Body className="items-center gap-3 p-6">
-            <Ionicons name="alert-circle-outline" size={28} color={theme.error} />
-            <Text className="text-center text-sm text-muted-foreground">{error ?? t('detail.editLoadFailed')}</Text>
-          </HeroCard.Body>
-        </HeroCard>
+        <AppTopBar title={t('editTitle')} backLabel={t('common:back')} fallbackHref="/(tabs)/exchanges" />
+        <ErrorState subtitle={error ?? t('detail.editLoadFailed')} onRetry={refresh} isRetrying={isLoading} />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-      <AppTopBar title={t('editTitle')} backLabel={t('detail.goBack')} fallbackHref={{ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } }} />
+      <AppTopBar title={t('editTitle')} backLabel={t('common:back')} fallbackHref={{ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }} keyboardShouldPersistTaps="handled">
           <HeroCard variant="default" className="overflow-hidden">
@@ -540,6 +544,9 @@ function EditExchangeModalInner() {
           </FormSection>
 
           <FormSection title={t('form.organiseTitle')} icon="albums-outline" primary={primary} theme={theme}>
+              {categoriesError ? (
+                <ErrorState subtitle={categoriesError} onRetry={refreshCategories} isRetrying={categoriesLoading} />
+              ) : null}
               {categories.length > 0 ? (
                 <>
                   <FieldLabel label={t('category')} theme={theme} />

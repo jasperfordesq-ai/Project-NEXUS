@@ -52,8 +52,9 @@ import { useTranslation } from 'react-i18next';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { APP_URL } from '@/lib/constants';
 
-const WEB_ORIGIN = 'https://app.project-nexus.ie';
+const WEB_ORIGIN = APP_URL;
 
 export default function NotFoundRoute() {
   return (
@@ -85,7 +86,7 @@ function NotFoundScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       {/* A SHORT title here, not the full sentence below: using one string for both
           made the member read the identical sentence twice. */}
       <AppTopBar

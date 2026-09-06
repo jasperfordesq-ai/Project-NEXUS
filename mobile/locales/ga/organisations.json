@@ -37,7 +37,8 @@
     "organisations": "Comhpháirtithe",
     "verified": "Fíoraithe",
     "opportunities": "Deiseanna",
-    "volunteers": "Oibrithe Deonacha"
+    "volunteers": "Oibrithe Deonacha",
+    "loadedNote": "Baineann na comhairimh leis na heagraíochtaí atá lódáilte go dtí seo."
   },
   "register": {
     "title": "Cláraigh eagraíocht",
@@ -70,7 +71,10 @@
       "emailInvalid": "Cuir isteach seoladh ríomhphoist bailí.",
       "websiteInvalid": "Cuir isteach URL suíomh Gréasáin iomlán ag tosú le http:// nó https://.",
       "termsRequired": "Deimhnigh go bhfuil tú údaraithe chun an eagraíocht seo a chlárú."
-    }
+    },
+    "unsavedTitle": "An clárú seo a chaitheamh i dtraipisí?",
+    "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
+    "discard": "Caith i dtraipisí"
   },
   "detail": {
     "title": "Eagraíocht",

@@ -473,7 +473,7 @@ function CreateCollectionModal({
           <FormInput label={t('collections.description')} value={description} onChangeText={onDescriptionChange} placeholder={t('collections.descriptionPlaceholder')} multiline />
 
           <HeroButton variant={isPublic ? 'primary' : 'secondary'} onPress={() => onPublicChange(!isPublic)}>
-            <Ionicons name={isPublic ? 'globe-outline' : 'lock-closed-outline'} size={16} color={isPublic ? '#fff' : primary} />
+            {isPublic ? <AccentIcon name={isPublic ? 'globe-outline' : 'lock-closed-outline'} size={16} /> : <Ionicons name={isPublic ? 'globe-outline' : 'lock-closed-outline'} size={16} color={primary} />}
             <HeroButton.Label>{isPublic ? t('collections.public') : t('collections.private')}</HeroButton.Label>
           </HeroButton>
 

@@ -192,6 +192,9 @@
     "footerCreateTitle": "Léirmheas ar an liostú",
     "footerEditTitle": "Déan athbhreithniú ar athruithe",
     "footerSubtitle": "Foilsigh an liostú nuair atá na sonraí réidh.",
+    "footerMissing": "Cuir teideal agus praghas leis roimh fhoilsiú.",
+    "mediaSaveFailedTitle": "Liostú sábháilte, grianghraif gan sábháil",
+    "mediaSaveFailedMessage": "Tá do liostú beo ach níorbh fhéidir na grianghraif nó an físeán a uaslódáil. Cuir an liostú in eagar chun iad a chur leis.",
     "publish": "Foilsigh",
     "update": "Nuashonraigh",
     "validation": "Bailíochtú",
@@ -925,6 +928,7 @@
     "emptySubtitle": "Bain triail as ga níos leithne nó suíomh eile."
   },
   "advancedSearch": {
+    "categoriesUnavailable": "Níor lódáladh na catagóirí – tapáil chun triail eile a bhaint as",
     "eyebrow": "Cuardach margaidh casta",
     "title": "Cuardach ardleibhéil",
     "subtitle": "Úsáid na scagairí margaidh céanna leis an aip gréasáin chun torthaí a chaolú go tapa.",

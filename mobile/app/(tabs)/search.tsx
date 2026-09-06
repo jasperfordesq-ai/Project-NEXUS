@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import NativePressable from '@/components/ui/NativePressable';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useState, useCallback } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -121,6 +123,7 @@ export default function SearchScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const initialType = isSearchResultType(params.type) ? params.type : 'all';
   const [query, setQuery] = useState(typeof params.q === 'string' ? params.q : '');
   const [activeFilter, setActiveFilter] = useState<FilterOption>(initialType);
@@ -193,13 +196,25 @@ export default function SearchScreen() {
     }
   }
 
-  async function handleDeleteSavedSearch(item: SavedSearch) {
-    try {
-      await deleteSavedSearch(item.id);
-      savedSearchesQuery.refresh();
-    } catch (err) {
-      showToast({ title: t('saved.deleteFailedTitle'), description: describeApiError(err, t('saved.deleteFailedMessage')), variant: 'danger' });
-    }
+  function handleDeleteSavedSearch(item: SavedSearch) {
+    // One mis-tap on a small row button used to erase the search outright; archiving a
+    // conversation on the Messages tab confirms first, and so does this now.
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    confirm({
+      title: t('saved.deleteConfirmTitle'),
+      message: t('saved.deleteConfirmMessage'),
+      confirmLabel: t('common:buttons.delete'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await deleteSavedSearch(item.id);
+          savedSearchesQuery.refresh();
+        } catch (err) {
+          showToast({ title: t('saved.deleteFailedTitle'), description: describeApiError(err, t('saved.deleteFailedMessage')), variant: 'danger' });
+        }
+      },
+    });
   }
 
   function renderResult({ item }: { item: SearchResult }) {
@@ -207,17 +222,21 @@ export default function SearchScreen() {
     const typeLabel = t(`types.${item.type}`);
     const tone = TYPE_TONES[item.type];
     return (
-      <HeroButton
+      /*
+        A card inside a HeroButton gives its `flex-1` title block zero width — the same
+        measured fault select-tenant.tsx documents — so the row is a NativePressable.
+      */
+      <NativePressable
         className="mx-4 my-2"
-        variant="ghost"
-        feedbackVariant="scale"
+        feedback="scale"
         onPress={() => {
           void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           navigateToResult(item);
         }}
+        accessibilityRole="button"
         accessibilityLabel={item.title}
       >
-        <HeroCard variant="default" className="overflow-hidden rounded-panel p-0">
+        <HeroCard variant="default" className="w-full overflow-hidden rounded-panel p-0">
           <View className="h-1 w-full" style={{ backgroundColor: tone }} />
           <HeroCard.Body className="flex-row items-center gap-3 p-4">
             {item.type === 'user' ? (
@@ -244,7 +263,7 @@ export default function SearchScreen() {
             </View>
           </HeroCard.Body>
         </HeroCard>
-      </HeroButton>
+      </NativePressable>
     );
   }
 
@@ -354,6 +373,7 @@ export default function SearchScreen() {
         contentContainerStyle={results.length === 0 ? { flexGrow: 1, paddingBottom: 24 } : { paddingBottom: 24 }}
         keyboardShouldPersistTaps="handled"
       />
+      {confirmDialog}
     </SafeAreaView>
   );
 }

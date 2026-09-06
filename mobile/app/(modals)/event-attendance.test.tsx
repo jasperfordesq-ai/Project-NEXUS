@@ -11,6 +11,8 @@ const mockShowToast = jest.fn();
 const mockTransitionAttendance = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useLocalSearchParams: () => ({ id: '7' }),
   router: { canGoBack: () => true, back: jest.fn(), replace: jest.fn() },
 }));
@@ -41,7 +43,8 @@ jest.mock('@/components/ui/useConfirm', () => ({
   }),
 }));
 
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#006FEE' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#006FEE' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     text: '#111111',

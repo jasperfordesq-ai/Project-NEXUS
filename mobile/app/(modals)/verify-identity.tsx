@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -413,6 +414,6 @@ function formatFee(cents: number, currency: string): string {
   try {
     return new Intl.NumberFormat(dateLocale(), { style: 'currency', currency: currency || 'EUR' }).format((cents || 0) / 100);
   } catch {
-    return `${((cents || 0) / 100).toFixed(2)} ${currency || 'EUR'}`;
+    return `${formatDecimal((cents || 0) / 100, 2, 2)} ${currency || 'EUR'}`;
   }
 }

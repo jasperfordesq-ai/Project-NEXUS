@@ -3,7 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { api } from '@/lib/api/client';
+import i18n from 'i18next';
+import { api, ApiResponseError } from '@/lib/api/client';
 
 const AI_API = '/api/ai';
 
@@ -89,7 +90,7 @@ export function sendChatMessage(
     const body = response.data?.message ? response.data : response;
     const reply = body.message;
     if (!reply) {
-      throw new Error(response.error ?? 'Missing AI response');
+      throw new ApiResponseError(502, response.error ?? i18n.t('common:errors.generic'));
     }
 
     return {

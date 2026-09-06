@@ -23,7 +23,11 @@
     "device": "Allow notifications on this device",
     "promotions": "Promotional notifications",
     "permissionNeeded": "Notifications are not enabled",
-    "permissionNeededHint": "Allow notifications when your device asks. You can change this later in system settings."
+    "permissionNeededHint": "Allow notifications when your device asks. You can change this later in system settings.",
+    "registerFailed": "Notifications could not be set up",
+    "registerFailedHint": "Something went wrong while registering this device. Please try again.",
+    "unavailable": "Notifications are not available here",
+    "unavailableHint": "This device or build cannot receive push notifications."
   },
   "email": {
     "messages": "Messages",
@@ -55,6 +59,8 @@
     "saving": "Saving password...",
     "reviewTitle": "Ready to update?",
     "reviewSubtitle": "Save only when your new password and confirmation match.",
+    "footerMissing": "Fill in all three fields to continue.",
+    "footerMismatch": "The new password and its confirmation do not match yet.",
     "success": "Password changed",
     "successMessage": "Your password has been updated successfully.",
     "validation": {
@@ -232,6 +238,8 @@
     "approve": "Approve",
     "decline": "Decline",
     "remove": "Remove",
+    "revokeConfirmTitle": "Remove this linked account?",
+    "revokeConfirmMessage": "The link and any permissions it grants end straight away. This cannot be undone.",
     "approveFailed": "Could not approve this request. Please try again.",
     "revokeFailed": "Could not remove this linked account. Please try again.",
     "permissionFailed": "Could not update linked account permission. Please try again.",

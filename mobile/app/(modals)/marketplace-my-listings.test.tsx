@@ -50,6 +50,8 @@ let mockAuthState: {
 };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn() },
 }));
 
@@ -91,6 +93,7 @@ jest.mock('@/components/ui/EmptyState', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#006FEE',
 }));
 

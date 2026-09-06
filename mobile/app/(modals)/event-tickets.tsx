@@ -300,8 +300,10 @@ function EventTicketsScreenInner() {
                     variant="danger"
                     isDisabled={isCancelling}
                     onPress={() => void confirmCancellation()}
+                    accessibilityState={{ busy: isCancelling }}
                   >
-                    {isCancelling ? <Spinner size="sm" /> : t('tickets.mobile.confirmCancellation')}
+                    {isCancelling ? <Spinner size="sm" /> : null}
+                    <Button.Label>{t('tickets.mobile.confirmCancellation')}</Button.Label>
                   </Button>
                 </Card.Footer>
               </Card>
@@ -365,10 +367,10 @@ function EventTicketsScreenInner() {
                         <Button
                           isDisabled={allocatingId !== null}
                           onPress={() => void allocate(ticket)}
+                          accessibilityState={{ busy: allocatingId === ticket.id }}
                         >
-                          {allocatingId === ticket.id
-                            ? <Spinner size="sm" />
-                            : t('tickets.mobile.claimFreeTicket')}
+                          {allocatingId === ticket.id ? <Spinner size="sm" /> : null}
+                          <Button.Label>{t('tickets.mobile.claimFreeTicket')}</Button.Label>
                         </Button>
                       </Card.Footer>
                     ) : null}

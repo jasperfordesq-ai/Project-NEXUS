@@ -16,7 +16,6 @@ export default function FormActionFooter({
   submitLabel,
   secondaryLabel,
   icon = 'checkmark-outline',
-  primary,
   isSubmitting,
   isDisabled,
   onSubmit,
@@ -27,7 +26,8 @@ export default function FormActionFooter({
   submitLabel: string;
   secondaryLabel?: string;
   icon?: React.ComponentProps<typeof Ionicons>['name'];
-  primary: string;
+  /** Kept for the eleven callers; the fill now comes from the theme (see the style note below). */
+  primary?: string;
   isSubmitting: boolean;
   isDisabled?: boolean;
   onSubmit: () => void;
@@ -100,11 +100,14 @@ export default function FormActionFooter({
             variant="primary"
             onPress={onSubmit}
             isDisabled={isSubmitting || isDisabled}
-            style={{
-              flexGrow: 1,
-              flexBasis: 'auto',
-              backgroundColor: isSubmitting || isDisabled ? theme.border : primary,
-            }}
+            // 🔴 No `backgroundColor` override here. It used to paint `theme.border` while
+            // disabled and `primary` otherwise. HeroUI derives the label colour from the
+            // SAME accent pair it paints the fill with, so overriding only the fill split
+            // them: on the emulator (2026-09-05) the disabled "Save changes" label was
+            // near-black on dark grey in dark mode and white on pale grey in light mode —
+            // unreadable in both. The primary variant already resolves to the community's
+            // accent through the generated themes, so the override bought nothing.
+            style={{ flexGrow: 1, flexBasis: 'auto' }}
           >
             {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name={icon} size={16} />}
             <HeroButton.Label numberOfLines={1}>{submitLabel}</HeroButton.Label>

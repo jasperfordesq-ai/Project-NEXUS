@@ -41,6 +41,7 @@
     "score": "{{score}}% match",
     "open": "Open match",
     "dismiss": "Dismiss",
+    "dismissFailed": "This match could not be dismissed. Please try again.",
     "emptyTitle": "No matches yet",
     "emptySubtitle": "New recommendations will appear here when they are available.",
     "errorTitle": "Could not load matches",
@@ -67,6 +68,10 @@
     "pendingCount": "Pending reviews",
     "delete": "Delete",
     "deleteSuccess": "Review deleted.",
+    "submitFailed": "Your review could not be submitted. Please try again.",
+    "deleteFailed": "The review could not be deleted. Please try again.",
+    "deleteConfirmTitle": "Delete this review?",
+    "deleteConfirmMessage": "It will be removed from the member's profile. This cannot be undone.",
     "write": "Write review",
     "cancel": "Cancel",
     "submit": "Submit review",
@@ -371,6 +376,9 @@
     "load_failed": "Failed to load your match preferences",
     "save": "Save preferences",
     "save_success": "Match preferences saved",
+    "unsavedTitle": "Discard your changes?",
+    "unsavedMessage": "Your matching preferences have not been saved.",
+    "discard": "Discard",
     "save_failed": "Failed to save match preferences",
     "pause": {
       "title": "Pause matching"

@@ -50,6 +50,7 @@
     "noteTitle": "O que correu mal?",
     "noteDescription": "Adicione uma nota breve para ajudar a melhorar as respostas futuras.",
     "notePlaceholder": "Diga-nos o que faltou ou estava errado",
+    "failed": "Não foi possível guardar a tua opinião. Tenta novamente.",
     "submitNote": "Enviar nota",
     "skipNote": "Ignorar"
   }

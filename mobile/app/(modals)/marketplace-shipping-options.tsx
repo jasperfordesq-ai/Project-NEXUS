@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -147,8 +149,8 @@ function MarketplaceShippingOptionsScreen() {
   }
 
   async function save() {
-    const price = Number(form.price);
-    const estimatedDays = form.estimatedDays ? Number(form.estimatedDays) : null;
+    const price = parseDecimalInput(form.price) ?? Number.NaN;
+    const estimatedDays = form.estimatedDays ? parseDecimalInput(form.estimatedDays) : null;
     if (!form.courierName.trim() || !Number.isFinite(price) || price < 0) {
       showToast({ title: t('common:errors.alertTitle'), description: t('shipping.validation'), variant: 'warning' });
       return;
@@ -263,7 +265,7 @@ function MarketplaceShippingOptionsScreen() {
                     </ScrollView>
                   </View>
                   <HeroButton variant={form.isDefault ? 'primary' : 'secondary'} onPress={() => update('isDefault', !form.isDefault)}>
-                    <Ionicons name={form.isDefault ? 'checkmark-circle-outline' : 'ellipse-outline'} size={16} color={form.isDefault ? '#fff' : primary} />
+                    {form.isDefault ? <AccentIcon name={form.isDefault ? 'checkmark-circle-outline' : 'ellipse-outline'} size={16} /> : <Ionicons name={form.isDefault ? 'checkmark-circle-outline' : 'ellipse-outline'} size={16} color={primary} />}
                     <HeroButton.Label>{t('shipping.defaultToggle')}</HeroButton.Label>
                   </HeroButton>
                   <View className="flex-row gap-2">

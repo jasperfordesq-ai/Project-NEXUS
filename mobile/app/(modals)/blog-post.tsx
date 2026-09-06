@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Image,
@@ -20,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getBlogPost, type BlogPost } from '@/lib/api/blog';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
@@ -32,7 +33,6 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import CommentSheet from '@/components/comments/CommentSheet';
 
-const WEB_URL = 'https://app.project-nexus.ie';
 
 function ActionPill({
   label,
@@ -74,6 +74,7 @@ export default function BlogPostScreen() {
   const { t } = useTranslation(['blog', 'home', 'exchanges', 'common']);
   const { id, openComments, commentId } = useLocalSearchParams<{ id: string; openComments?: string; commentId?: string }>();
   const primary = usePrimaryColor();
+  const { tenant } = useTenant();
   const theme = useTheme();
   const slug = id?.trim() || '';
   const [commentsVisible, setCommentsVisible] = useState(openComments === '1');
@@ -83,7 +84,7 @@ export default function BlogPostScreen() {
   }, [openComments, slug]);
 
   const handleShare = useCallback(async (sharePost: { title: string; slug: string; excerpt: string | null }) => {
-    const url = `${WEB_URL}/blog/${sharePost.slug}`;
+    const url = buildWebUrl(tenant?.slug, `/blog/${sharePost.slug}`);
     const message = sharePost.excerpt
       ? `${sharePost.title}\n\n${sharePost.excerpt}\n\n${url}`
       : `${sharePost.title}\n\n${url}`;

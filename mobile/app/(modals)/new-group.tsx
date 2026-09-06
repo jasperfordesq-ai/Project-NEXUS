@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -19,11 +19,17 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { contrastText, withAlpha } from '@/lib/utils/color';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import AccentIcon from '@/components/ui/AccentIcon';
+import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
 const GROUP_NAME_MIN_LENGTH = 3;
@@ -32,13 +38,6 @@ const GROUP_DESCRIPTION_MIN_LENGTH = 20;
 const GROUP_DESCRIPTION_MAX_LENGTH = 2000;
 const MAX_GROUP_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_GROUP_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
-function toNumber(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
-}
 
 export default function NewGroupRoute() {
   return (
@@ -54,6 +53,7 @@ function NewGroupScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const groupId = Number(params.id);
   const isEditing = Number.isFinite(groupId) && groupId > 0;
   const [name, setName] = useState('');
@@ -68,30 +68,51 @@ function NewGroupScreen() {
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [existingImage, setExistingImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
+  const [editLoadFailed, setEditLoadFailed] = useState(false);
+  const [editRetryToken, setEditRetryToken] = useState(0);
+  const attemptedEditRetryRef = useRef<number | null>(null);
+  // Mount tracking in its own effect: a re-render mid-fetch must not cancel the hydration.
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
+  const tRef = useRef(t);
+  tRef.current = t;
   const fallbackHref = isEditing
     ? ({ pathname: '/(modals)/group-detail', params: { id: String(groupId) } } as unknown as Href)
     : '/(tabs)/groups';
 
   useEffect(() => {
-    if (!isEditing || hasHydratedEdit) return;
+    if (!isEditing || hasHydratedEdit || attemptedEditRetryRef.current === editRetryToken) return;
+    attemptedEditRetryRef.current = editRetryToken;
 
-    let isMounted = true;
+    setEditLoadFailed(false);
     getGroup(groupId)
       .then((response) => {
-        if (!isMounted) return;
+        if (!isMountedRef.current) return;
         hydrateFromGroup(response.data);
         setHasHydratedEdit(true);
       })
       .catch(() => {
-        if (!isMounted) return;
-        showToast({ title: t('create.loadFailedTitle'), description: t('create.loadFailed'), variant: 'danger' });
+        if (!isMountedRef.current) return;
+        // 🔴 Not a dead form. A failed hydration used to leave empty fields under a live
+        // "Update group" button — one tap would have wiped the server record (S4-03).
+        setEditLoadFailed(true);
+        showToastRef.current({
+          title: tRef.current('create.loadFailedTitle'),
+          description: tRef.current('create.loadFailed'),
+          variant: 'danger',
+        });
       });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [groupId, hasHydratedEdit, isEditing, showToast, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRetryToken, groupId, hasHydratedEdit, isEditing]);
 
   useEffect(() => {
     if (isEditing) return;
@@ -123,6 +144,30 @@ function NewGroupScreen() {
     setExistingImage(group.image_url ?? group.cover_image ?? null);
     setSelectedImageUri(null);
   }
+
+  // Everything the member can type or choose, compared with the form as first shown.
+  const formFingerprint = JSON.stringify([
+    name, description, location, latitude, longitude, visibility, isFederated, selectedTemplateId, selectedImageUri,
+  ]);
+  const baselineRef = useRef<string | null>(null);
+  if (!isEditing && baselineRef.current === null) baselineRef.current = formFingerprint;
+  useEffect(() => {
+    if (isEditing && hasHydratedEdit && baselineRef.current === null) baselineRef.current = formFingerprint;
+  }, [formFingerprint, hasHydratedEdit, isEditing]);
+  const isDirty = baselineRef.current !== null && formFingerprint !== baselineRef.current;
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: isSubmitting || hasSaved,
+    confirm,
+    title: t('create.unsavedTitle'),
+    message: t('create.unsavedMessage'),
+    discardLabel: t('create.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
+  const requiredFieldsFilled = name.trim().length > 0
+    && description.trim().length > 0
+    && (!isEditing || hasHydratedEdit);
 
   function applyTemplate(template: GroupTemplate) {
     setSelectedTemplateId(template.id);
@@ -159,6 +204,11 @@ function NewGroupScreen() {
   }
 
   async function submit() {
+    if (isEditing && !hasHydratedEdit) {
+      showToast({ title: t('create.loadFailedTitle'), description: t('create.loadFailed'), variant: 'danger' });
+      return;
+    }
+
     const trimmedName = name.trim();
     const trimmedDescription = description.trim();
 
@@ -179,8 +229,8 @@ function NewGroupScreen() {
 
     const hasLatitude = latitude.trim().length > 0;
     const hasLongitude = longitude.trim().length > 0;
-    const latitudeValue = toNumber(latitude);
-    const longitudeValue = toNumber(longitude);
+    const latitudeValue = parseDecimalInput(latitude);
+    const longitudeValue = parseDecimalInput(longitude);
     if (
       hasLatitude !== hasLongitude
       || (hasLatitude && (latitudeValue === null || latitudeValue < -90 || latitudeValue > 90))
@@ -192,6 +242,7 @@ function NewGroupScreen() {
 
     setIsSubmitting(true);
     let successDestination: Parameters<typeof router.push>[0] | null = null;
+    let saved = false;
     try {
       const payload = {
         name: trimmedName,
@@ -203,6 +254,8 @@ function NewGroupScreen() {
         federated_visibility: isFederated ? 'listed' : 'none',
       } as const;
       const result = isEditing ? await updateGroup(groupId, payload) : await createGroup(payload);
+      saved = true;
+      setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const id = result.data?.id ?? groupId;
       if (id) {
@@ -226,6 +279,10 @@ function NewGroupScreen() {
     } finally {
       setIsSubmitting(false);
     }
+
+    // 🔴 A rejected save used to fall through to the navigation below and leave the form
+    // anyway, taking every typed field with it (S4-02).
+    if (!saved) return;
 
     // 🔴 `replace`, not `push`, and it is the difference between working and silent.
     //
@@ -256,6 +313,21 @@ function NewGroupScreen() {
         backLabel={t('common:back')}
         fallbackHref={fallbackHref}
       />
+      {isEditing && editLoadFailed ? (
+        <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-group-load-failed">
+          <EmptyState
+            icon="people-outline"
+            title={t('create.loadFailedTitle')}
+            subtitle={t('create.loadFailed')}
+            actionLabel={t('common:buttons.retry')}
+            onAction={() => setEditRetryToken((value) => value + 1)}
+          />
+        </View>
+      ) : isEditing && !hasHydratedEdit ? (
+        <View className="flex-1 items-center justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-group-loading">
+          <LoadingSpinner />
+        </View>
+      ) : (
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: theme.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -380,19 +452,42 @@ function NewGroupScreen() {
             <View className="gap-2">
               <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.visibilityLabel')}</Text>
               <View className="flex-row gap-2">
-                <HeroButton className="flex-1" variant={visibility === 'public' ? 'primary' : 'secondary'} onPress={() => setVisibility('public')}>
-                  <Ionicons name="globe-outline" size={15} color={visibility === 'public' ? '#fff' : primary} />
+                <HeroButton
+                  className="flex-1"
+                  variant={visibility === 'public' ? 'primary' : 'secondary'}
+                  onPress={() => setVisibility('public')}
+                  accessibilityLabel={t('public')}
+                  accessibilityState={{ selected: visibility === 'public' }}
+                >
+                  {visibility === 'public'
+                    ? <AccentIcon name="globe-outline" size={15} />
+                    : <Ionicons name="globe-outline" size={15} color={primary} />}
                   <HeroButton.Label>{t('public')}</HeroButton.Label>
                 </HeroButton>
-                <HeroButton className="flex-1" variant={visibility === 'private' ? 'primary' : 'secondary'} onPress={() => setVisibility('private')}>
-                  <Ionicons name="lock-closed-outline" size={15} color={visibility === 'private' ? '#fff' : primary} />
+                <HeroButton
+                  className="flex-1"
+                  variant={visibility === 'private' ? 'primary' : 'secondary'}
+                  onPress={() => setVisibility('private')}
+                  accessibilityLabel={t('private')}
+                  accessibilityState={{ selected: visibility === 'private' }}
+                >
+                  {visibility === 'private'
+                    ? <AccentIcon name="lock-closed-outline" size={15} />
+                    : <Ionicons name="lock-closed-outline" size={15} color={primary} />}
                   <HeroButton.Label>{t('private')}</HeroButton.Label>
                 </HeroButton>
               </View>
             </View>
 
-            <HeroButton variant={isFederated ? 'primary' : 'secondary'} onPress={() => setIsFederated((value) => !value)}>
-              <Ionicons name="git-network-outline" size={15} color={isFederated ? '#fff' : primary} />
+            <HeroButton
+              variant={isFederated ? 'primary' : 'secondary'}
+              onPress={() => setIsFederated((value) => !value)}
+              accessibilityLabel={t('create.federated')}
+              accessibilityState={{ selected: isFederated }}
+            >
+              {isFederated
+                ? <AccentIcon name="git-network-outline" size={15} />
+                : <Ionicons name="git-network-outline" size={15} color={primary} />}
               <HeroButton.Label>{t('create.federated')}</HeroButton.Label>
             </HeroButton>
 
@@ -401,13 +496,16 @@ function NewGroupScreen() {
       </ScrollView>
         <FormActionFooter
           title={isEditing ? t('create.editReviewTitle') : t('create.reviewTitle')}
-          subtitle={t('create.reviewSubtitle')}
+          subtitle={requiredFieldsFilled ? t('create.reviewSubtitle') : t('create.validationRequired')}
           submitLabel={isEditing ? t('create.updateSubmit') : t('create.submit')}
           primary={primary}
           isSubmitting={isSubmitting}
+          isDisabled={!requiredFieldsFilled}
           onSubmit={submit}
         />
       </KeyboardAvoidingView>
+      )}
+      {confirmDialog}
     </SafeAreaView>
   );
 }

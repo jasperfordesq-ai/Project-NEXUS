@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import { useState } from 'react';
 import { FlatList, Image, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -191,10 +192,10 @@ function SellerReviewCard({ review }: { review: ReviewItem }) {
           </View>
           <Chip size="sm" variant="secondary" color="warning">
             <Ionicons name="star" size={12} color={theme.warning} />
-            <Chip.Label>{t('seller.reviewRating', { rating: Math.max(0, Math.min(5, review.rating)).toFixed(1) })}</Chip.Label>
+            <Chip.Label>{t('seller.reviewRating', { rating: formatDecimal(Math.max(0, Math.min(5, review.rating)), 1, 1) })}</Chip.Label>
           </Chip>
         </View>
-        <View className="flex-row gap-0.5" accessibilityLabel={t('seller.reviewRating', { rating: Math.max(0, Math.min(5, review.rating)).toFixed(1) })}>
+        <View className="flex-row gap-0.5" accessibilityLabel={t('seller.reviewRating', { rating: formatDecimal(Math.max(0, Math.min(5, review.rating)), 1, 1) })}>
           {[1, 2, 3, 4, 5].map((level) => (
             <Ionicons key={level} name={level <= Math.round(review.rating) ? 'star' : 'star-outline'} size={16} color={theme.warning} />
           ))}
@@ -285,7 +286,7 @@ function SellerHeader({ profile, canMessage }: { profile: MarketplaceSellerProfi
 
         <View className="flex-row flex-wrap gap-2">
           <SellerStat icon="bag-check-outline" label={t('seller.totalSales')} value={String(profile.total_sales ?? 0)} tone={primary} />
-          <SellerStat icon="star-outline" label={t('seller.avgRating')} value={profile.avg_rating !== null && profile.avg_rating !== undefined ? profile.avg_rating.toFixed(1) : t('seller.na')} tone={theme.warning} />
+          <SellerStat icon="star-outline" label={t('seller.avgRating')} value={profile.avg_rating !== null && profile.avg_rating !== undefined ? formatDecimal(profile.avg_rating, 1, 1) : t('seller.na')} tone={theme.warning} />
           <SellerStat icon="time-outline" label={t('seller.responseTime')} value={profile.response_time_avg || t('seller.na')} tone="#14b8a6" />
           <SellerStat icon="storefront-outline" label={t('seller.activeListings')} value={String(profile.active_listings ?? 0)} tone="#8b5cf6" />
         </View>

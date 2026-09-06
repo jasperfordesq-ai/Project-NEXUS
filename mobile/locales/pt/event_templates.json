@@ -53,7 +53,8 @@
         "revised": "Modelo revisto",
         "archived": "Modelo arquivado",
         "materialized": "Rascunho criado"
-      }
+      },
+      "validationDateFormat": "Introduza o início e o fim no formato YYYY-MM-DDTHH:mm, por exemplo 2030-08-01T10:00."
     },
     "checks": {
       "event_template_check_source_manage": "Você ainda tem permissão para gerenciar o evento de origem",

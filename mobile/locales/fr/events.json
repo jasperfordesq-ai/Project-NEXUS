@@ -167,7 +167,13 @@
     "invalidCoordinates": "Entrez la latitude et la longitude en utilisant des coordonnées valides. plages.",
     "failedTitle": "Événement non créé",
     "loadFailed": "Nous n'avons pas pu charger cet événement pour le modifier.",
-    "failedDescription": "Nous n'avons pas pu créer l'événement. Veuillez réessayer."
+    "failedDescription": "Nous n'avons pas pu créer l'événement. Veuillez réessayer.",
+    "validationDateFormat": "Saisissez les dates au format YYYY-MM-DDTHH:mm (ou YYYY-MM-DD pour un événement sur toute la journée), par exemple 2026-06-30T18:00.",
+    "reviewMissing": "Ajoutez un titre, une description et une heure de début avant de continuer.",
+    "loadFailedTitle": "Impossible d'ouvrir cet événement",
+    "unsavedTitle": "Abandonner cet événement ?",
+    "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
+    "discard": "Abandonner"
   },
   "category": {
     "workshop": "Atelier",

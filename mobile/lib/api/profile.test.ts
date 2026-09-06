@@ -118,7 +118,7 @@ describe('updateAvatar', () => {
   it('throws when the upload response has no avatar URL', async () => {
     (api.upload as jest.Mock).mockResolvedValue({ success: true, data: {} });
 
-    await expect(updateAvatar('file:///any.jpg')).rejects.toThrow('Avatar upload did not return an image URL.');
+    await expect(updateAvatar('file:///any.jpg')).rejects.toThrow('did not return the file');
   });
 
   it('propagates upload failures from the API client', async () => {

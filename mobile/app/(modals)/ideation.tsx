@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useAccentForeground } from '@/lib/theme/accentForeground';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -226,6 +227,7 @@ function FilterPill({
   theme: ReturnType<typeof useTheme>;
   onPress: () => void;
 }) {
+  const accentForeground = useAccentForeground();
   return (
     <HeroButton
       className="min-h-10 flex-row items-center gap-2 rounded-full px-3.5"
@@ -233,19 +235,22 @@ function FilterPill({
       onPress={onPress}
       size="sm"
       variant={isSelected ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isSelected ? primary : withAlpha(primary, 0.08),
-        borderColor: isSelected ? primary : theme.borderSubtle,
+      // Selected pills let HeroUI's primary variant paint the fill AND pick the label colour
+      // for it: a hardcoded white label is invisible on a pale community colour, and a raw
+      // `primary` fill skips the dark-mode lift every other primary button gets.
+      style={isSelected ? undefined : {
+        backgroundColor: withAlpha(primary, 0.08),
+        borderColor: theme.borderSubtle,
         borderWidth: 1,
       }}
     >
-      <HeroButton.Label className="text-sm font-bold" style={{ color: isSelected ? '#fff' : theme.text }} numberOfLines={1}>
+      <HeroButton.Label className="text-sm font-bold" style={isSelected ? undefined : { color: theme.text }} numberOfLines={1}>
         {label}
       </HeroButton.Label>
       {detail ? (
         <View
           className="rounded-full px-2 py-0.5"
-          style={{ backgroundColor: isSelected ? withAlpha('#ffffff', 0.2) : withAlpha(primary, 0.12) }}
+          style={{ backgroundColor: isSelected ? withAlpha(accentForeground, 0.2) : withAlpha(primary, 0.12) }}
         >
           <Text className="text-[11px] font-semibold" style={{ color: isSelected ? '#fff' : primary }} numberOfLines={1}>
             {detail}

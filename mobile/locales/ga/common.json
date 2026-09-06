@@ -80,7 +80,9 @@
     "unauthorized": "Tá do sheisiún imithe in éag. Logáil isteach arís.",
     "sessionEndedTitle": "Sínithe amach",
     "notFound": "Gan aimsiú.",
-    "alertTitle": "Error"
+    "alertTitle": "Error",
+    "contractDrift": "Fuair an scáileán seo eolas i gcruth nach raibh súil leis. Nuashonraigh an aip, nó bain triail eile as ar ball.",
+    "uploadIncomplete": "Críochnaíodh an uaslódáil, ach níor sheol an freastalaí an comhad ar ais."
   },
   "labels": {
     "timeBalance": "Iarmhéid ama",

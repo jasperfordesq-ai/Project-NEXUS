@@ -167,7 +167,13 @@
     "invalidCoordinates": "Ingrese la latitud y la longitud utilizando rangos de coordenadas válidos.",
     "failedTitle": "Evento no creado",
     "loadFailed": "No pudimos cargar este evento para editarlo.",
-    "failedDescription": "No pudimos crear el evento. Inténtelo de nuevo."
+    "failedDescription": "No pudimos crear el evento. Inténtelo de nuevo.",
+    "validationDateFormat": "Escribe las fechas como YYYY-MM-DDTHH:mm (o YYYY-MM-DD para eventos de todo el día), por ejemplo 2026-06-30T18:00.",
+    "reviewMissing": "Añade un título, una descripción y una hora de inicio antes de continuar.",
+    "loadFailedTitle": "No se pudo abrir este evento",
+    "unsavedTitle": "¿Descartar este evento?",
+    "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
+    "discard": "Descartar"
   },
   "category": {
     "workshop": "Taller",

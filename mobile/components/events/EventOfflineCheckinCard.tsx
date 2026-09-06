@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@/components/ui/Icon';
@@ -13,6 +13,7 @@ import Input from '@/components/ui/Input';
 import TextArea from '@/components/ui/TextArea';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
+import AccentIcon from '@/components/ui/AccentIcon';
 import {
   downloadOfflineCheckinManifest,
   getOfflineCheckinConflicts,
@@ -28,11 +29,12 @@ import { ApiResponseError } from '@/lib/api/client';
 import {
   activateMobileOfflineSession,
   enqueueMobileOfflineCredential,
-  loadMobileOfflineSession,
+  loadMobileOfflineSessionForReview,
   purgeMobileOfflineSession,
   purgeRevokedOrExpiredMobileSessions,
   refreshMobileOfflineManifest,
   syncMobileOfflineSession,
+  type MobileOfflineInactiveReason,
   type MobileOfflineSession,
 } from '@/lib/eventOfflineCheckinStore';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -53,6 +55,15 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
   const [permission, requestPermission] = useCameraPermissions();
   const [workspace, setWorkspace] = useState<MobileOfflineWorkspace | null>(null);
   const [session, setSession] = useState<MobileOfflineSession | null>(null);
+  /**
+   * 🔴 Set when the stored session can no longer queue or sync (roster expired, device
+   * re-authorised). The store used to DELETE such a session on load, taking every
+   * never-synced check-in with it and saying nothing (audit 2026-09-05, S4-19). Now it
+   * stays on the device read-only: the queue is shown, the pending count is announced,
+   * and only the member's explicit "Remove offline data" — after a confirmation that
+   * states what will be lost — purges it.
+   */
+  const [sessionInactive, setSessionInactive] = useState<MobileOfflineInactiveReason | null>(null);
   const [conflicts, setConflicts] = useState<MobileOfflineConflicts | null>(null);
   const [deviceLabel, setDeviceLabel] = useState('');
   const [revocationReason, setRevocationReason] = useState('');
@@ -64,6 +75,12 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  // Read through refs inside `load` so a re-created `t` or toast handle cannot re-run the
+  // workspace fetch on every render (the effect below keys on `load`).
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const loadConflicts = useCallback(async () => {
     try {
@@ -81,20 +98,32 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       await purgeRevokedOrExpiredMobileSessions(nextWorkspace);
       setWorkspace(nextWorkspace);
       let restored: MobileOfflineSession | null = null;
+      let inactive: MobileOfflineInactiveReason | null = null;
       for (const device of nextWorkspace.devices) {
         if (device.status !== 'active') continue;
         try {
-          restored = await loadMobileOfflineSession(eventId, device.id);
+          const review = await loadMobileOfflineSessionForReview(eventId, device.id);
+          if (review.session) {
+            restored = review.session;
+            inactive = review.inactive;
+            break;
+          }
         } catch {
-          restored = null;
+          // Unreadable ciphertext: the store has already destroyed it.
         }
-        if (restored) break;
       }
-      if (restored && restored.manifest.manifest_version !== nextWorkspace.manifest_version) {
+      if (restored && !inactive && restored.manifest.manifest_version !== nextWorkspace.manifest_version) {
         const manifest = await downloadOfflineCheckinManifest(eventId, restored.deviceSecret);
         restored = await refreshMobileOfflineManifest(restored, manifest, nextWorkspace);
       }
       setSession(restored);
+      setSessionInactive(inactive);
+      if (restored && inactive) {
+        const pending = restored.queue.filter((item) => item.state === 'pending').length;
+        if (pending > 0) {
+          showToastRef.current({ title: tRef.current('queue.pendingKept', { count: pending }), variant: 'warning' });
+        }
+      }
       await loadConflicts();
     } catch {
       setLoadError(true);
@@ -120,6 +149,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       const next = await activateMobileOfflineSession(result.device.secret, manifest, nextWorkspace);
       setWorkspace(nextWorkspace);
       setSession(next);
+      setSessionInactive(null);
       setDeviceLabel('');
       showToast({ title: t('workspace.ready'), variant: 'success' });
     } catch {
@@ -176,7 +206,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
   }
 
   async function enqueue() {
-    if (!session || !credential.trim()) return;
+    if (!session || sessionInactive || !credential.trim()) return;
     setBusy(true);
     try {
       const next = await enqueueMobileOfflineCredential(session, credential, operation, reason);
@@ -200,7 +230,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
   }
 
   async function synchronize() {
-    if (!session) return;
+    if (!session || sessionInactive) return;
     setBusy(true);
     try {
       const result = await syncMobileOfflineSession(session);
@@ -297,8 +327,8 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
         <Card.Body className="gap-3 px-4 py-4">
           <Text className="text-base font-bold" style={{ color: theme.text }}>{t('device.title')}</Text>
           <Input label={t('device.label')} value={deviceLabel} onChangeText={setDeviceLabel} placeholder={t('device.labelPlaceholder')} editable={!busy} />
-          <Button variant="primary" style={{ backgroundColor: primary }} isDisabled={busy || !deviceLabel.trim()} onPress={() => void registerDevice()}>
-            {busy ? <Spinner size="sm" /> : <Ionicons name="phone-portrait-outline" size={18} color="#fff" />}
+          <Button variant="primary" isDisabled={busy || !deviceLabel.trim()} onPress={() => void registerDevice()}>
+            {busy ? <Spinner size="sm" /> : <AccentIcon name="phone-portrait-outline" size={18} />}
             <Button.Label>{t('device.register')}</Button.Label>
           </Button>
           <TextArea label={t('device.reason')} value={revocationReason} onChangeText={setRevocationReason} placeholder={t('device.reasonHint')} editable={!busy} />
@@ -323,6 +353,17 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
 
       {session ? (
         <>
+          {sessionInactive ? (
+            <Alert status="warning" testID="event-offline-checkin-read-only">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>{t('queue.readOnlyTitle')}</Alert.Title>
+                <Alert.Description>
+                  {t(sessionInactive === 'manifest_expired' ? 'queue.readOnlyExpired' : 'queue.readOnlyRotated')}
+                </Alert.Description>
+              </Alert.Content>
+            </Alert>
+          ) : (
           <Card variant="secondary">
             <Card.Body className="gap-3 px-4 py-4">
               <Text className="text-base font-bold" style={{ color: theme.text }}>{t('scan.title')}</Text>
@@ -355,11 +396,12 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
                 ))}
               </View>
               <TextArea label={t('scan.reason')} value={reason} onChangeText={setReason} placeholder={t('scan.reasonHint')} editable={!busy} />
-              <Button variant="primary" style={{ backgroundColor: primary }} isDisabled={busy || !credential.trim()} onPress={() => void enqueue()}>
+              <Button variant="primary" isDisabled={busy || !credential.trim()} onPress={() => void enqueue()}>
                 <Button.Label>{t('scan.queue')}</Button.Label>
               </Button>
             </Card.Body>
           </Card>
+          )}
 
           <Card variant="secondary">
             <Card.Body className="gap-3 px-4 py-4">
@@ -368,7 +410,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
                   <Text className="text-base font-bold" style={{ color: theme.text }}>{t('queue.title')}</Text>
                   <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('queue.pending', { count: pendingCount })}</Text>
                 </View>
-                <Button size="sm" variant="primary" style={{ backgroundColor: primary }} isDisabled={busy || pendingCount === 0} onPress={() => void synchronize()}>
+                <Button size="sm" variant="primary" isDisabled={busy || pendingCount === 0 || sessionInactive !== null} onPress={() => void synchronize()}>
                   <Button.Label>{t('queue.sync')}</Button.Label>
                 </Button>
               </View>
@@ -381,16 +423,19 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
                   <Chip size="sm" color={item.state === 'synced' ? 'success' : item.state === 'conflict' ? 'warning' : item.state === 'rejected' ? 'danger' : 'default'}><Chip.Label>{t(`queue.states.${item.state}`)}</Chip.Label></Chip>
                 </Surface>
               ))}
-              <Button size="sm" variant="danger-soft" onPress={() => {
+              <Button size="sm" variant="danger-soft" testID="event-offline-checkin-purge" onPress={() => {
                 confirm({
                   title: t('queue.purgeTitle'),
-                  message: t('queue.purgeDescription'),
+                  message: pendingCount > 0
+                    ? `${t('queue.purgeDescription')} ${t('queue.purgePendingWarning', { count: pendingCount })}`
+                    : t('queue.purgeDescription'),
                   confirmLabel: t('queue.purge'),
                   cancelLabel: t('device.keep'),
                   variant: 'danger',
                   onConfirm: async () => {
                     await purgeMobileOfflineSession(session.eventId, session.deviceId);
                     setSession(null);
+                    setSessionInactive(null);
                   },
                 });
               }}><Button.Label>{t('queue.purge')}</Button.Label></Button>

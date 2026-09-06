@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText, withAlpha } from '@/lib/utils/color';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
@@ -103,10 +104,13 @@ export default function VoiceMessageBubble({
   // theme kept only for border color in waveform (dynamic unfilled bar color depends on isOwn + theme.border)
   const theme = useTheme();
 
-  const iconColor = isOwn ? 'rgba(255,255,255,0.95)' : primaryColor; // contrast on primary
-  const timeColor = isOwn ? 'rgba(255,255,255,0.8)' : textColorSecondary; // contrast on primary
-  const labelColor = isOwn ? '#fff' : textColor; // contrast on primary
-  const unfilledBarColor = isOwn ? 'rgba(255,255,255,0.35)' : theme.border; // contrast on primary
+  // Own bubbles are painted with the community colour, which can be pale: pick the
+  // readable foreground for it instead of assuming white.
+  const onPrimary = contrastText(primaryColor);
+  const iconColor = isOwn ? withAlpha(onPrimary, 0.95) : primaryColor;
+  const timeColor = isOwn ? withAlpha(onPrimary, 0.8) : textColorSecondary;
+  const labelColor = isOwn ? onPrimary : textColor;
+  const unfilledBarColor = isOwn ? withAlpha(onPrimary, 0.35) : theme.border;
 
   const progress = totalMs > 0 ? positionMs / totalMs : 0;
   const displayTime = isPlaying || positionMs > 0
@@ -149,7 +153,7 @@ export default function VoiceMessageBubble({
                 height: barHeight,
                 borderRadius: 2,
                 backgroundColor: filled
-                  ? (isOwn ? 'rgba(255,255,255,0.95)' : primaryColor) // contrast on primary
+                  ? iconColor
                   : unfilledBarColor,
               }}
             />

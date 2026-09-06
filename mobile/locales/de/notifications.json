@@ -7,6 +7,7 @@
   "markError": "Fehler beim Markieren",
   "allCaughtUp": "Alles erledigt!",
   "allCaughtUpSub": "Du hast keine neuen Benachrichtigungen.",
+  "loadingSummary": "Neue Benachrichtigungen werden geprüft…",
   "unreadCount": "{{count}} ungelesen",
   "unreadSummary": "Sie haben {{count}} ungelesene Benachrichtigungen.",
   "unreadSummary_one": "Sie haben {{count}} ungelesene Benachrichtigung.",

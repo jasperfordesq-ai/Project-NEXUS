@@ -37,6 +37,8 @@ interface NativePressableProps {
   className?: string;
   contentClassName?: string;
   style?: StyleProp<ViewStyle>;
+  /** Extra touch area in dp for icons and small rows; HeroUI's sm buttons are 40dp, under the 44–48dp guidance. */
+  hitSlop?: number;
 }
 
 export default function NativePressable({
@@ -53,6 +55,7 @@ export default function NativePressable({
   className,
   contentClassName,
   style,
+  hitSlop,
 }: NativePressableProps) {
   const handlePress = useCallback((event: GestureResponderEvent) => {
     if (disabled) return;
@@ -78,6 +81,7 @@ export default function NativePressable({
         accessibilityState={accessibilityState}
         className={`overflow-hidden ${className ?? ''}`}
         disabled={disabled}
+        hitSlop={hitSlop}
         onLongPress={onLongPress}
         onPress={handlePress}
         style={style}
@@ -99,6 +103,7 @@ export default function NativePressable({
       accessibilityState={accessibilityState}
       animation={useScale ? false : 'disable-all'}
       className={`overflow-hidden ${className ?? ''}`}
+      hitSlop={hitSlop}
       isDisabled={disabled}
       onLongPress={onLongPress}
       onPress={handlePress}

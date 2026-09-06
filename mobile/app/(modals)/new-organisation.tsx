@@ -15,9 +15,11 @@ import * as Haptics from '@/lib/haptics';
 import { createOrganisation } from '@/lib/api/organisations';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
 import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -61,10 +63,24 @@ function NewOrganisationInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
+
+  // 🔴 Cancel and Back used to drop a half-written registration without a word (S4-04).
+  const isDirty = form.name !== '' || form.description !== '' || form.contact_email !== '' || form.website !== '' || agreedTerms;
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: isSubmitting || hasSaved,
+    confirm,
+    title: t('register.unsavedTitle'),
+    message: t('register.unsavedMessage'),
+    discardLabel: t('register.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   const trimmed = useMemo(() => ({
     name: form.name.trim(),
@@ -123,6 +139,7 @@ function NewOrganisationInner() {
         ...(trimmed.website ? { website: trimmed.website } : {}),
       });
       const organisation = response.data;
+      setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('register.successTitle'), description: t('register.successMessage'), variant: 'success' });
       router.replace({
@@ -245,6 +262,7 @@ function NewOrganisationInner() {
         </HeroCard>
       </ScrollView>
       </KeyboardAvoidingView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

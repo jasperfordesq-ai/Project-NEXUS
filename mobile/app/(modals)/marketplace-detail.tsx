@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { Image, Linking, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -435,8 +436,9 @@ function MarketplaceDetailScreen() {
 
   async function handleSubmitOffer() {
     if (!listing || isActionLoading) return;
-    const amount = Number(offerAmount.replace(/[,\s]/g, ''));
-    if (!Number.isFinite(amount) || amount <= 0) {
+    // 🔴 This stripped commas before Number(): a German member's "12,50" was sent as 1250.
+    const amount = parseDecimalInput(offerAmount);
+    if (amount === null || !Number.isFinite(amount) || amount <= 0) {
       showToast({ title: t('forms.validation'), description: t('offers.amountRequired'), variant: 'warning' });
       return;
     }
@@ -572,7 +574,7 @@ function MarketplaceDetailScreen() {
                       onPress={() => setActiveImage(index)}
                       accessibilityLabel={t('common:aria.carouselImage', { current: index + 1, total: images.length })}
                     >
-                      {thumb ? <Image source={{ uri: thumb }} className="size-9 rounded-xl" resizeMode="cover" /> : <Ionicons name="image-outline" size={17} color={activeImage === index ? '#fff' : primary} />}
+                      {thumb ? <Image source={{ uri: thumb }} className="size-9 rounded-xl" resizeMode="cover" /> : activeImage === index ? <AccentIcon name="image-outline" size={17} /> : <Ionicons name="image-outline" size={17} color={primary} />}
                     </HeroButton>
                   );
                 })}
@@ -741,7 +743,7 @@ function MarketplaceDetailScreen() {
                       accessibilityState={{ selected: fulfilmentChoice === 'pickup' }}
                       testID="marketplace-fulfilment-pickup"
                     >
-                      <Ionicons name="location-outline" size={16} color={fulfilmentChoice === 'pickup' ? '#fff' : primary} />
+                      {fulfilmentChoice === 'pickup' ? <AccentIcon name="location-outline" size={16} /> : <Ionicons name="location-outline" size={16} color={primary} />}
                       <HeroButton.Label>{t('checkout.localPickup')}</HeroButton.Label>
                     </HeroButton>
                   ) : null}
@@ -763,7 +765,7 @@ function MarketplaceDetailScreen() {
                           accessibilityState={{ selected }}
                           testID={`marketplace-shipping-option-${option.id}`}
                         >
-                          <Ionicons name="cube-outline" size={16} color={selected ? '#fff' : primary} />
+                          {selected ? <AccentIcon name="cube-outline" size={16} /> : <Ionicons name="cube-outline" size={16} color={primary} />}
                           <HeroButton.Label>{formatShippingOption(option)}</HeroButton.Label>
                         </HeroButton>
                       );

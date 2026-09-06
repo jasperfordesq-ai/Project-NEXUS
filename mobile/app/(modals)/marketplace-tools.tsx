@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -1249,7 +1250,7 @@ function couponPayload(form: CouponFormState) {
     title: form.title.trim(),
     description: form.description.trim() || null,
     discount_type: form.discountType,
-    discount_value: form.discountType === 'bogo' ? null : Number(form.discountValue) || 0,
+    discount_value: form.discountType === 'bogo' ? null : parseDecimalInput(form.discountValue) ?? 0,
     min_order_cents: form.minOrderCents ? Number(form.minOrderCents) : null,
     max_uses: form.maxUses ? Number(form.maxUses) : null,
     max_uses_per_member: form.maxUsesPerMember ? Number(form.maxUsesPerMember) : 1,

@@ -192,6 +192,9 @@
     "footerCreateTitle": "Review listing",
     "footerEditTitle": "Review changes",
     "footerSubtitle": "Publish the listing when the details are ready.",
+    "footerMissing": "Add a title and a price before publishing.",
+    "mediaSaveFailedTitle": "Listing saved, photos not",
+    "mediaSaveFailedMessage": "Your listing is live but its photos or video could not be uploaded. Edit the listing to add them.",
     "publish": "Publish",
     "update": "Update",
     "validation": "Validation",
@@ -925,6 +928,7 @@
     "emptySubtitle": "Try a wider radius or another location."
   },
   "advancedSearch": {
+    "categoriesUnavailable": "Categories didn't load — tap to retry",
     "eyebrow": "Faceted marketplace search",
     "title": "Advanced search",
     "subtitle": "Use the same marketplace filters as the web app to narrow results quickly.",

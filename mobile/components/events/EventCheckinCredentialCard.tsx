@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, Share, Text, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
+import AccentIcon from '@/components/ui/AccentIcon';
 import * as Clipboard from 'expo-clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import { Alert, Button, Card, Chip, Spinner, Surface } from 'heroui-native';
@@ -243,7 +244,7 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
               accessibilityState={{ busy }}
               onPress={() => void issue()}
             >
-              {busy ? <Spinner size="sm" /> : <Ionicons name="qr-code-outline" size={18} color="#fff" />}
+              {busy ? <Spinner size="sm" /> : <AccentIcon name="qr-code-outline" size={18} />}
               <Button.Label>{t('eventOfflineCheckin:credential.issue')}</Button.Label>
             </Button>
           ) : (

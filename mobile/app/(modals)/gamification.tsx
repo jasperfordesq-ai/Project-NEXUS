@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   RefreshControl,
@@ -431,7 +432,7 @@ function DailyRewardCard({
           ) : null}
           {status.claimed_today ? (
             <Chip size="sm" variant="secondary" color="success">
-              <Ionicons name="checkmark-circle-outline" size={12} color={theme.success ?? primary} />
+              <Ionicons name="checkmark-circle-outline" size={12} color={theme.success} />
               <Chip.Label>{t('dailyReward.claimed')}</Chip.Label>
             </Chip>
           ) : (
@@ -441,9 +442,8 @@ function DailyRewardCard({
               isDisabled={isClaiming}
               onPress={() => void onClaim()}
               accessibilityLabel={t('dailyReward.claimReward')}
-              style={{ backgroundColor: isClaiming ? theme.border : primary }}
             >
-              {isClaiming ? <LoadingSpinner /> : <Ionicons name="sparkles-outline" size={16} color={theme.onPrimary} />}
+              {isClaiming ? <LoadingSpinner /> : <AccentIcon name="sparkles-outline" size={16} />}
               <HeroButton.Label>{isClaiming ? t('dailyReward.claiming') : t('dailyReward.claimReward')}</HeroButton.Label>
             </HeroButton>
           )}
@@ -543,7 +543,7 @@ function ShowcaseManager({
             accessibilityLabel={t('showcase.save')}
             style={{ backgroundColor: saving ? theme.border : primary }}
           >
-            {saving ? <LoadingSpinner /> : <Ionicons name="save-outline" size={16} color={theme.onPrimary} />}
+            {saving ? <LoadingSpinner /> : <AccentIcon name="save-outline" size={16} />}
             <HeroButton.Label>{saving ? t('showcase.saving') : t('showcase.save')}</HeroButton.Label>
           </HeroButton>
         </View>
@@ -654,12 +654,12 @@ function ChallengeCard({
             accessibilityLabel={t('challenges.claimXp', { xp: challenge.reward_xp })}
             style={{ backgroundColor: claimingId === challenge.id ? theme.border : primary }}
           >
-            {claimingId === challenge.id ? <LoadingSpinner /> : <Ionicons name="gift-outline" size={16} color={theme.onPrimary} />}
+            {claimingId === challenge.id ? <LoadingSpinner /> : <AccentIcon name="gift-outline" size={16} />}
             <HeroButton.Label>{t('challenges.claimXp', { xp: challenge.reward_xp })}</HeroButton.Label>
           </HeroButton>
         ) : challenge.reward_claimed ? (
           <Chip size="sm" variant="secondary" color="success">
-            <Ionicons name="checkmark-circle-outline" size={12} color={theme.success ?? primary} />
+            <Ionicons name="checkmark-circle-outline" size={12} color={theme.success} />
             <Chip.Label>{t('challenges.claimed')}</Chip.Label>
           </Chip>
         ) : null}
@@ -888,7 +888,7 @@ function ShopItemCard({
             accessibilityLabel={t('shop.purchaseItem', { name: item.name })}
             style={{ backgroundColor: !canAfford || purchasingId === item.id ? theme.border : primary }}
           >
-            {purchasingId === item.id ? <LoadingSpinner /> : <Ionicons name="bag-add-outline" size={16} color={theme.onPrimary} />}
+            {purchasingId === item.id ? <LoadingSpinner /> : <AccentIcon name="bag-add-outline" size={16} />}
             <HeroButton.Label>{purchasingId === item.id ? t('shop.buying') : t('shop.purchase')}</HeroButton.Label>
           </HeroButton>
         )}
@@ -1362,7 +1362,10 @@ export default function GamificationScreen() {
   // 🔴 `lbLoading` was missing from this list while being present in the two refresh
   // effects above, so the screen could paint before the leaderboard arrived — which is
   // the tab a `/leaderboard` link opens on.
-  const isLoading = profileLoading || badgesLoading || lbLoading || scoreLoading || rewardLoading || challengesLoading || collectionsLoading || shopLoading;
+  // The leaderboard gates the FIRST paint (a /leaderboard link opens on that tab) but not a
+  // period change: with `lbLoading` alone every period tap collapsed the whole screen to a
+  // spinner (audit 2026-09-05, S2-19). The tab keeps its own local spinner for reloads.
+  const isLoading = profileLoading || badgesLoading || (lbLoading && !leaderboardData) || scoreLoading || rewardLoading || challengesLoading || collectionsLoading || shopLoading;
 
   // Nothing to show AND the load failed. Partial failures deliberately do not reach here:
   // if the profile arrived, the sections that loaded are still worth showing.

@@ -533,6 +533,13 @@
     "validationDates": "Úsáid dáta agus am bailí, mar shampla 2026-06-30 17:00.",
     "validationMaxIdeas": "Úsáid slánuimhir idir 1 agus 50.",
     "failedTitle": "Níorbh fhéidir dúshlán a chruthú",
-    "failedDescription": "Déan iarracht arís i gceann bomaite."
+    "failedDescription": "Déan iarracht arís i gceann bomaite.",
+    "unsavedTitle": "An dúshlán seo a chaitheamh i dtraipisí?",
+    "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
+    "discard": "Caith i dtraipisí",
+    "footerIncomplete": "Níl sé réidh fós",
+    "footerMissingTitle": "Cuir teideal leis an dúshlán chun leanúint ar aghaidh.",
+    "footerMissingDescription": "Cuir cur síos leis chun leanúint ar aghaidh.",
+    "loadFailedTitle": "Níorbh fhéidir an dúshlán seo a oscailt"
   }
 }

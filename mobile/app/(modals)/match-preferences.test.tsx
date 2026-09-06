@@ -62,7 +62,8 @@ jest.mock('@/components/ui/AppTopBar', () => {
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#6366f1' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     text: '#111827',

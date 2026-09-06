@@ -9,6 +9,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn() },
   useNavigation: () => ({
     setOptions: jest.fn(),
@@ -69,6 +70,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

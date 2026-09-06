@@ -13,6 +13,8 @@ let mockFeatures = new Set(['marketplace', 'merchant_coupons']);
 const mockUseApi = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: {
     push: (...args: unknown[]) => mockPush(...args),
     replace: (...args: unknown[]) => mockReplace(...args),

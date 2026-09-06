@@ -11,6 +11,8 @@ const mockSubmitIdea = jest.fn();
 const mockVoteIdea = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useLocalSearchParams: () => ({ id: '12' }),
 }));
 

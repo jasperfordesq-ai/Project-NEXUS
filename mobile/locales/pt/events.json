@@ -167,7 +167,13 @@
     "invalidCoordinates": "Insira a latitude e a longitude usando intervalos de coordenadas válidos.",
     "failedTitle": "Evento não criado",
     "loadFailed": "Não foi possível carregar este evento para edição.",
-    "failedDescription": "Não foi possível criar o evento. Tente novamente."
+    "failedDescription": "Não foi possível criar o evento. Tente novamente.",
+    "validationDateFormat": "Introduza as datas no formato YYYY-MM-DDTHH:mm (ou YYYY-MM-DD para eventos de dia inteiro), por exemplo 2026-06-30T18:00.",
+    "reviewMissing": "Adicione um título, uma descrição e uma hora de início antes de continuar.",
+    "loadFailedTitle": "Não foi possível abrir este evento",
+    "unsavedTitle": "Descartar este evento?",
+    "unsavedMessage": "Tem dados por guardar. Se sair agora, vai perdê-los.",
+    "discard": "Descartar"
   },
   "category": {
     "workshop": "Oficina",

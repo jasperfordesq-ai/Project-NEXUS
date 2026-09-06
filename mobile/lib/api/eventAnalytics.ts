@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import i18n from 'i18next';
 import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 
@@ -130,5 +131,5 @@ export async function getEventAnalytics(eventId: number): Promise<{
       })),
     },
   });
-  throw new ApiResponseError(422, 'EVENT_ANALYTICS_CONTRACT_DRIFT');
+  throw new ApiResponseError(422, i18n.t('common:errors.contractDrift'), undefined, 'EVENT_ANALYTICS_CONTRACT_DRIFT');
 }

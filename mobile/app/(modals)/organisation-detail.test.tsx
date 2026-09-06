@@ -4,11 +4,12 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({ id: '3' }),
   useNavigation: () => ({ setOptions: jest.fn() }),
@@ -39,6 +40,8 @@ jest.mock('react-i18next', () => ({
         'opportunities': opts ? `${String(opts.count ?? 0)} opportunities` : '0 opportunities',
         'hoursLogged': opts ? `${String(opts.hours ?? 0)}h logged` : '0h logged',
         'common:errors.alertTitle': 'Error',
+        'common:errors.loadFailedTitle': "Couldn't load this",
+        'common:buttons.retry': 'Retry',
         'common:back': 'Back',
       };
       return map[key] ?? key;
@@ -49,7 +52,13 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
+  useTenant: () => ({ hasFeature: () => true, tenant: { slug: 'hour-timebank' } }),
 }));
+jest.mock('@/components/ui/AccentIcon', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return () => <View testID="accent-icon" />;
+});
 
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -171,6 +180,44 @@ describe('OrganisationDetailScreen', () => {
     mockUseApi.mockReturnValue({ data: null, isLoading: true, error: null, refresh: jest.fn() });
 
     expect(() => render(<OrganisationDetailScreen />)).not.toThrow();
+  });
+
+  /** 🔴 S4-06. A network failure used to read as "not found" with no retry. */
+  it('shows a load error with a retry instead of "not found" when the request fails', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Network down', refresh });
+
+    const { getByTestId, getByText, queryByText } = render(<OrganisationDetailScreen />);
+    expect(getByTestId('organisation-detail-error')).toBeTruthy();
+    expect(getByText('Network down')).toBeTruthy();
+    expect(queryByText('Organisation not found.')).toBeNull();
+    fireEvent.press(getByText('Retry'));
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  /** S4-07. A refresh with data already on screen must not replace it with a spinner. */
+  it('keeps the loaded organisation on screen while refreshing', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: true, error: null, refresh: jest.fn() });
+
+    const { getAllByText } = render(<OrganisationDetailScreen />);
+    expect(getAllByText('Dublin Community Hub').length).toBeGreaterThan(0);
+  });
+
+  /** S4-10 / S4-22. Share links carry the community slug, and the primary pill's icon takes the accent foreground. */
+  it('shares a slug-prefixed web link from the accent-painted share pill', async () => {
+    const { Share } = require('react-native');
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getAllByLabelText, queryAllByTestId } = render(<OrganisationDetailScreen />);
+    // Website (secondary) and Share (secondary) pills: no accent icon; the header share is not an ActionPill.
+    expect(queryAllByTestId('accent-icon')).toHaveLength(0);
+    fireEvent.press(getAllByLabelText('Share')[0]);
+
+    await waitFor(() => expect(shareSpy).toHaveBeenCalledWith({
+      message: expect.stringContaining('/hour-timebank/organisations/3'),
+    }));
+    shareSpy.mockRestore();
   });
 
   it('renders not found state when data is null after loading', () => {

@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
-import { Card as HeroCard, Chip, Surface } from 'heroui-native';
+import { Card as HeroCard, Chip, Surface, Spinner } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -113,7 +113,7 @@ export default function ActivityScreen() {
           data={dashboard.timeline}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={() => void refresh()} tintColor={primary} colors={[primary]} />}
+          refreshControl={<RefreshControl refreshing={isLoading && Boolean(data)} onRefresh={() => void refresh()} tintColor={primary} colors={[primary]} />}
           contentContainerStyle={{ paddingBottom: 40 }}
           ListHeaderComponent={
             <View className="gap-3 pb-2">
@@ -142,6 +142,9 @@ export default function ActivityScreen() {
                 </HeroCard.Body>
               </HeroCard>
 
+              {isLoading && !data ? (
+                <View className="items-center py-6"><Spinner size="sm" /></View>
+              ) : (
               <View className="mx-4 flex-row flex-wrap gap-3">
                 <StatTile icon="arrow-up-outline" label={t('activity.hoursGiven')} value={dashboard.hours_summary.hours_given} tone="#22c55e" />
                 <StatTile icon="arrow-down-outline" label={t('activity.hoursReceived')} value={dashboard.hours_summary.hours_received} tone="#6366f1" />
@@ -150,6 +153,7 @@ export default function ActivityScreen() {
                 <StatTile icon="chatbox-ellipses-outline" label={t('activity.posts')} value={dashboard.engagement.posts_count} tone="#f43f5e" />
                 <StatTile icon="construct-outline" label={t('activity.skills')} value={dashboard.skills_breakdown.skills.length} tone="#8b5cf6" />
               </View>
+              )}
 
               {hasMonthlyHours ? (
                 <MonthlyHoursChart

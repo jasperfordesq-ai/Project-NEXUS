@@ -106,6 +106,7 @@ jest.mock('@/lib/api/describeApiError', () => ({
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   router: { back: (...args: unknown[]) => mockBack(...args) },
   useLocalSearchParams: () => ({ id: '61' }),
   // Runs the effect once on mount, which is what focus does on a freshly opened screen.
@@ -256,6 +257,36 @@ describe('ExchangeRequestDetailScreen', () => {
     );
     // The screen re-reads rather than trusting its own optimistic guess about the status.
     expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it('stays on the exchange when a decline is refused, instead of popping back as if it worked', async () => {
+    /*
+      🔴 The screen's `run()` swallowed the error and resolved, so the caller's
+      `.then(() => router.back())` fired on failure too: the member saw a red toast for a
+      moment and was then returned to the list with the exchange still open — the exact
+      thing a success looks like (audit 2026-09-06, S2-01).
+    */
+    mockDecline.mockRejectedValueOnce(new Error('Already accepted elsewhere'));
+
+    const { getByTestId } = mount(exchange());
+
+    fireEvent.press(getByTestId('exchange-action-decline'));
+
+    await waitFor(() => expect(mockDecline).toHaveBeenCalledWith(61));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: 'danger' }),
+    ));
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+
+  it('leaves the exchange only when the decline actually succeeded', async () => {
+    mockDecline.mockResolvedValueOnce(undefined);
+
+    const { getByTestId } = mount(exchange());
+
+    fireEvent.press(getByTestId('exchange-action-decline'));
+
+    await waitFor(() => expect(mockBack).toHaveBeenCalled());
   });
 
   it('confirms the hours through the sheet, pre-filled with the agreed figure', async () => {

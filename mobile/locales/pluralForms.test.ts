@@ -61,7 +61,6 @@ const ALLOWED_WITHOUT_SINGULAR = [
   'marketplace:publicCoupons.perMember',
   'members:hoursGivenShort',
   'members:hoursTotalShort',
-  'members:loadedCount',
   'messages:archivedCount',
   'messages:unreadCount',
   'messages:visibleCount',

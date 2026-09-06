@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import AppTopBar from './AppTopBar';
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#006FEE',
 }));
 

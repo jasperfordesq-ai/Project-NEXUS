@@ -50,6 +50,7 @@
     "noteTitle": "Cad a bhí mícheart?",
     "noteDescription": "Cuir nóta gairid leis chun cabhrú linn freagraí amach anseo a fheabhsú.",
     "notePlaceholder": "Inis dúinn cad a bhí in easnamh nó mícheart",
+    "failed": "Níorbh fhéidir d'aiseolas a shábháil. Bain triail eile as.",
     "submitNote": "Seol an nóta",
     "skipNote": "Ná bac leis"
   }

@@ -52,6 +52,9 @@
   "newPost": {
     "title": "Crea post",
     "placeholder": "Cosa Le passa per la mente?",
+    "unsavedTitle": "Eliminare questo post?",
+    "unsavedMessage": "Quello che hai scritto andrà perso.",
+    "discard": "Elimina",
     "submit": "Pubblica",
     "created": "Post creato!",
     "failed": "Impossibile creare il post.",
@@ -153,7 +156,9 @@
     "closed": "Sondaggio chiuso",
     "vote": "Vota",
     "resultsHiddenUntilClose": "Risultati rivelati alla chiusura del sondaggio",
-    "voteToSeeResults": "Vota per vedere i risultati"
+    "voteToSeeResults": "Vota per vedere i risultati",
+    "voteFailedTitle": "Voto non salvato",
+    "voteFailed": "Non è stato possibile registrare il tuo voto. Riprova."
   },
   "pollsScreen": {
     "title": "Sondaggi",

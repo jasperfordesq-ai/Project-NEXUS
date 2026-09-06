@@ -80,7 +80,8 @@
   "stats": {
     "opportunities": "Gelegenheiten",
     "applications": "Anwendungen",
-    "hours": "Verifizierte Stunden"
+    "hours": "Verifizierte Stunden",
+    "loadedNote": "Die Zahl der Gelegenheiten bezieht sich auf das bisher Geladene."
   },
   "tabs": {
     "opportunities": "Gelegenheiten",
@@ -102,9 +103,13 @@
     "cancel": "Schicht absagen",
     "cancelError": "Diese Schicht konnte nicht abgesagt werden.",
     "openOpportunityLabel": "Möglichkeit für {{title}} öffnen",
-    "cancelLabel": "Schicht für {{title}} absagen"
+    "cancelLabel": "Schicht für {{title}} absagen",
+    "cancelConfirmTitle": "Diese Schicht absagen?",
+    "cancelConfirmMessage": "Dein Platz wird für jemand anderen freigegeben."
   },
   "certificates": {
+    "openFailed": "Dieses Zertifikat konnte nicht geöffnet werden. Bitte versuche es erneut.",
+    "sharingUnavailable": "Dieses Gerät kann das Zertifikat nicht öffnen. Versuche es auf der Website.",
     "title": "Bescheinigungen über Freiwilligenarbeit",
     "description": "Erstelle und öffne verifizierte Bescheinigungen für genehmigte Stunden der Freiwilligenarbeit.",
     "generate": "Bescheinigung erstellen",
@@ -116,7 +121,9 @@
     "dateUnknown": "Datum nicht verfügbar",
     "organizationHours": "{{name}}: {{hours}} Std.",
     "open": "Bescheinigung öffnen",
-    "openLabel": "Bescheinigung {{code}} öffnen"
+    "openLabel": "Bescheinigung {{code}} öffnen",
+    "downloadFailed": "Das Zertifikat konnte nicht heruntergeladen werden.",
+    "sharingUnavailable": "Dieses Gerät kann heruntergeladene Dateien nicht öffnen."
   },
   "expenses": {
     "submit": "Ausgabe einreichen",
@@ -344,7 +351,14 @@
     "loadFailed": "Wir konnten diese Opportunity nicht zur Bearbeitung laden.",
     "failedDescription": "Wir konnten die Opportunity nicht erstellen. Bitte versuchen Sie es erneut.",
     "editFailedTitle": "Opportunity nicht aktualisiert",
-    "editFailedDescription": "Wir konnten die Opportunity nicht aktualisieren. Bitte versuchen Sie es erneut."
+    "editFailedDescription": "Wir konnten die Opportunity nicht aktualisieren. Bitte versuchen Sie es erneut.",
+    "validationDateFormat": "Gib Datumsangaben als YYYY-MM-DD ein, zum Beispiel 2026-06-30.",
+    "reviewMissing": "Füge einen Titel und eine Beschreibung hinzu, bevor du fortfährst.",
+    "loadFailedTitle": "Diese Gelegenheit konnte nicht geöffnet werden",
+    "organisationsLoadFailed": "Deine Organisationen konnten nicht geladen werden, daher kann die Gelegenheit noch nicht veröffentlicht werden.",
+    "unsavedTitle": "Diese Gelegenheit verwerfen?",
+    "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
+    "discard": "Verwerfen"
   },
   "org": {
     "title": "Organisationsübersicht",
@@ -474,7 +488,9 @@
     "optionsError": "Die anderen Schichten konnten nicht geladen werden.",
     "requestSentTitle": "Tauschanfrage gesendet",
     "requestSentBody": "Wir haben die andere Person gefragt. Sie erfahren es, sobald sie antwortet.",
-    "requestError": "Diese Tauschanfrage konnte nicht gesendet werden."
+    "requestError": "Diese Tauschanfrage konnte nicht gesendet werden.",
+    "cancelConfirmTitle": "Diese Tauschanfrage zurückziehen?",
+    "cancelConfirmMessage": "Die andere Person wird dann nicht mehr um einen Tausch gebeten."
   },
   "shiftCancelledTitle": "Schicht abgesagt",
   "shiftCancelledMessage": "Du bist für diese Schicht nicht mehr angemeldet.",
@@ -504,5 +520,8 @@
     "forbidden": "Du hast keine Berechtigung, Check-ins für diese Schicht zu bestätigen.",
     "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "done": "Fertig"
-  }
+  },
+  "panelLoadError": "Dieser Bereich konnte nicht geladen werden.",
+  "confirmWithdrawTitle": "Diese Bewerbung zurückziehen?",
+  "confirmWithdrawMessage": "Die Organisation sieht deine Bewerbung dann nicht mehr."
 }

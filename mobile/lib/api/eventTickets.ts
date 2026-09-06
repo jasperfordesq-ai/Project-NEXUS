@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import i18n from 'i18next';
 import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 
@@ -125,7 +126,7 @@ function parseContract<T>(endpoint: string, schema: z.ZodType<T>, value: unknown
       })),
     },
   });
-  throw new ApiResponseError(422, 'EVENT_TICKETS_CONTRACT_DRIFT');
+  throw new ApiResponseError(422, i18n.t('common:errors.contractDrift'), undefined, 'EVENT_TICKETS_CONTRACT_DRIFT');
 }
 
 function idempotency(key: string) {

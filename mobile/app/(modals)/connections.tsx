@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useConfirm } from '@/components/ui/useConfirm';
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useMemo, useState, type ComponentProps } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -64,6 +66,7 @@ export default function ConnectionsRoute() {
 
 function ConnectionsScreen() {
   const { t } = useTranslation(['members', 'common']);
+  const { confirm, confirmDialog } = useConfirm();
   const [tab, setTab] = useState<ConnectionTab>('accepted');
   const [actionId, setActionId] = useState<number | null>(null);
   const primary = usePrimaryColor();
@@ -72,7 +75,29 @@ function ConnectionsScreen() {
   const { data, isLoading, error, refresh } = useApi(() => getConnections(tab), [tab]);
   const connections = useMemo(() => unwrapConnections(data), [data]);
 
-  async function runAction(connection: Connection, action: 'accept' | 'remove') {
+  function runAction(connection: Connection, action: 'accept' | 'remove') {
+    const id = connectionId(connection);
+    if (!id) return;
+    if (action !== 'remove') {
+      void performAction(connection, action);
+      return;
+    }
+    /*
+      🔴 S3-23: Remove / Decline / Cancel acted on one tap. The same disconnect on a
+      member's profile has always confirmed first, so the safe and the unsafe route to the
+      identical outcome sat side by side.
+    */
+    confirm({
+      title: t('connections.removeConfirmTitle'),
+      message: t('connections.removeConfirmMessage'),
+      confirmLabel: t('connections.remove'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: () => void performAction(connection, action),
+    });
+  }
+
+  async function performAction(connection: Connection, action: 'accept' | 'remove') {
     const id = connectionId(connection);
     if (!id) return;
     setActionId(id);
@@ -93,7 +118,8 @@ function ConnectionsScreen() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('connections.title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
       <ScrollView
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
+        // Only a pull shows this: on the first load the list already shows its own spinner.
+        refreshControl={<RefreshControl refreshing={isLoading && Boolean(data)} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
       >
         <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
@@ -184,6 +210,7 @@ function ConnectionsScreen() {
           </View>
         )}
       </ScrollView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }
@@ -384,9 +411,12 @@ function ActionPill({
       onPress={onPress}
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isPrimary ? primary : withAlpha(color, 0.1),
-        borderColor: isPrimary ? primary : withAlpha(color, 0.18),
+      // Selected pills let HeroUI's primary variant paint the fill AND pick the label colour
+      // for it: a hardcoded white label is invisible on a pale community colour, and a raw
+      // `primary` fill skips the dark-mode lift every other primary button gets.
+      style={isPrimary ? { opacity: isDisabled ? 0.5 : 1 } : {
+        backgroundColor: withAlpha(color, 0.1),
+        borderColor: withAlpha(color, 0.18),
         borderWidth: 1,
         opacity: isDisabled ? 0.5 : 1,
       }}
@@ -394,9 +424,9 @@ function ActionPill({
       {isLoading ? (
         <Spinner size="sm" />
       ) : icon ? (
-        <Ionicons name={icon} size={15} color={isPrimary ? '#fff' : color} />
+        isPrimary ? <AccentIcon name={icon} size={15} /> : <Ionicons name={icon} size={15} color={color} />
       ) : null}
-      <HeroButton.Label className="text-sm font-bold" style={{ color: isPrimary ? '#fff' : color }} numberOfLines={1}>
+      <HeroButton.Label className="text-sm font-bold" style={isPrimary ? undefined : { color }} numberOfLines={1}>
         {label}
       </HeroButton.Label>
     </HeroButton>

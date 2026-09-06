@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,10 +18,15 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import AccentIcon from '@/components/ui/AccentIcon';
+import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
 function unwrapOrgs(response: { data?: VolunteeringOrganisation[]; items?: VolunteeringOrganisation[] } | null | undefined): VolunteeringOrganisation[] {
@@ -65,6 +70,7 @@ function NewVolunteeringScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const opportunityId = Number(params.id);
   const isEditing = Number.isFinite(opportunityId) && opportunityId > 0;
   const orgQuery = useApi(() => getMyOrganisations(), []);
@@ -79,26 +85,66 @@ function NewVolunteeringScreen() {
   const [endDate, setEndDate] = useState('');
   const [isRemote, setIsRemote] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
+  const [editLoadFailed, setEditLoadFailed] = useState(false);
+  const [editRetryToken, setEditRetryToken] = useState(0);
+  const attemptedEditRetryRef = useRef<number | null>(null);
+  // Mount tracking in its own effect: a re-render mid-fetch must not cancel the hydration.
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
-    if (!isEditing || hasHydratedEdit) return;
-    let isMounted = true;
+    if (!isEditing || hasHydratedEdit || attemptedEditRetryRef.current === editRetryToken) return;
+    attemptedEditRetryRef.current = editRetryToken;
+    setEditLoadFailed(false);
     getOpportunity(opportunityId)
       .then((response) => {
-        if (!isMounted) return;
+        if (!isMountedRef.current) return;
         hydrateFromOpportunity(response.data);
         setHasHydratedEdit(true);
       })
       .catch(() => {
-        if (!isMounted) return;
-        showToast({ title: t('create.failedTitle'), description: t('create.loadFailed'), variant: 'danger' });
+        if (!isMountedRef.current) return;
+        // 🔴 Not a dead form. A failed hydration used to leave empty fields under a live
+        // "Update opportunity" button — one tap would have wiped the record (S4-03).
+        setEditLoadFailed(true);
+        showToastRef.current({
+          title: tRef.current('create.failedTitle'),
+          description: tRef.current('create.loadFailed'),
+          variant: 'danger',
+        });
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRetryToken, hasHydratedEdit, isEditing, opportunityId]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [hasHydratedEdit, isEditing, opportunityId, showToast, t]);
+  // Everything the member can type, compared with the form as first shown. The organisation
+  // choice is left out: a lone organisation is auto-selected below, which is not their input.
+  const formFingerprint = JSON.stringify([title, description, location, skills, startDate, endDate, isRemote]);
+  const baselineRef = useRef<string | null>(null);
+  if (!isEditing && baselineRef.current === null) baselineRef.current = formFingerprint;
+  useEffect(() => {
+    if (isEditing && hasHydratedEdit && baselineRef.current === null) baselineRef.current = formFingerprint;
+  }, [formFingerprint, hasHydratedEdit, isEditing]);
+  const isDirty = baselineRef.current !== null && formFingerprint !== baselineRef.current;
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: isSubmitting || hasSaved,
+    confirm,
+    title: t('create.unsavedTitle'),
+    message: t('create.unsavedMessage'),
+    discardLabel: t('create.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   useEffect(() => {
     if (isEditing || organisationId || organisations.length !== 1) {
@@ -120,6 +166,11 @@ function NewVolunteeringScreen() {
   }
 
   async function submit() {
+    if (isEditing && !hasHydratedEdit) {
+      showToast({ title: t('create.failedTitle'), description: t('create.loadFailed'), variant: 'danger' });
+      return;
+    }
+
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
     const trimmedStartDate = startDate.trim();
@@ -143,6 +194,12 @@ function NewVolunteeringScreen() {
     const parsedStartDate = trimmedStartDate ? parseDateOnly(trimmedStartDate) : null;
     const parsedEndDate = trimmedEndDate ? parseDateOnly(trimmedEndDate) : null;
 
+    // A typed date that does not parse is a FORMAT problem, not a missing field (S4-25).
+    if ((trimmedStartDate && parsedStartDate === null) || (trimmedEndDate && parsedEndDate === null)) {
+      showToast({ title: t('create.validationTitle'), description: t('create.validationDateFormat'), variant: 'warning' });
+      return;
+    }
+
     if (parsedStartDate !== null && parsedEndDate !== null && parsedEndDate <= parsedStartDate) {
       showToast({ title: t('create.validationTitle'), description: t('create.validationEndAfterStart'), variant: 'warning' });
       return;
@@ -165,6 +222,7 @@ function NewVolunteeringScreen() {
           organization_id: organisationId as number,
           ...payload,
         });
+      setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const id = result.data?.id ?? opportunityId;
       if (id) {
@@ -183,9 +241,36 @@ function NewVolunteeringScreen() {
     }
   }
 
+  const organisationsFailed = !isEditing && Boolean(orgQuery.error);
+  const organisationMissing = !isEditing && !organisationId;
+  const requiredFieldsFilled = title.trim().length > 0
+    && description.trim().length > 0
+    && !organisationMissing
+    && (!isEditing || hasHydratedEdit);
+  const footerSubtitle = organisationMissing
+    ? t('create.validationRequired')
+    : !requiredFieldsFilled
+      ? t('create.reviewMissing')
+      : isEditing ? t('create.editReviewSubtitle') : t('create.reviewSubtitle');
+
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
       <AppTopBar title={isEditing ? t('create.editTitle') : t('create.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
+      {isEditing && editLoadFailed ? (
+        <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-volunteering-load-failed">
+          <EmptyState
+            icon="heart-outline"
+            title={t('create.loadFailedTitle')}
+            subtitle={t('create.loadFailed')}
+            actionLabel={t('common:buttons.retry')}
+            onAction={() => setEditRetryToken((value) => value + 1)}
+          />
+        </View>
+      ) : isEditing && !hasHydratedEdit ? (
+        <View className="flex-1 items-center justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-volunteering-loading">
+          <LoadingSpinner />
+        </View>
+      ) : (
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: theme.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -216,14 +301,31 @@ function NewVolunteeringScreen() {
           <HeroCard.Body className="gap-4 p-4">
             <View className="gap-2">
               <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.organisationLabel')}</Text>
-              {orgQuery.isLoading ? <Spinner size="sm" /> : organisations.length === 0 ? (
+              {orgQuery.isLoading ? <Spinner size="sm" /> : organisationsFailed ? (
+                // 🔴 A failed organisation load used to read as "you have no organisations"
+                // and disabled the form for ever (S4-08). Say so, and offer the retry.
+                <EmptyState
+                  icon="business-outline"
+                  title={t('create.organisationsLoadFailed')}
+                  actionLabel={t('common:buttons.retry')}
+                  onAction={orgQuery.refresh}
+                  testID="new-volunteering-organisations-failed"
+                />
+              ) : organisations.length === 0 ? (
                 <Surface variant="secondary" className="rounded-panel-inner p-3">
                   <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('create.noOrganisations')}</Text>
                 </Surface>
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                   {organisations.map((org) => (
-                    <HeroButton key={org.id} size="sm" variant={organisationId === org.id ? 'primary' : 'secondary'} onPress={() => setOrganisationId(org.id)}>
+                    <HeroButton
+                      key={org.id}
+                      size="sm"
+                      variant={organisationId === org.id ? 'primary' : 'secondary'}
+                      onPress={() => setOrganisationId(org.id)}
+                      accessibilityLabel={org.name}
+                      accessibilityState={{ selected: organisationId === org.id }}
+                    >
                       <HeroButton.Label>{org.name}</HeroButton.Label>
                     </HeroButton>
                   ))}
@@ -240,8 +342,15 @@ function NewVolunteeringScreen() {
             <FormField label={t('create.startLabel')} value={startDate} onChangeText={setStartDate} placeholder={t('create.datePlaceholder')} theme={theme} />
             <FormField label={t('create.endLabel')} value={endDate} onChangeText={setEndDate} placeholder={t('create.datePlaceholder')} theme={theme} />
 
-            <HeroButton variant={isRemote ? 'primary' : 'secondary'} onPress={() => setIsRemote((value) => !value)}>
-              <Ionicons name="globe-outline" size={15} color={isRemote ? '#fff' : primary} />
+            <HeroButton
+              variant={isRemote ? 'primary' : 'secondary'}
+              onPress={() => setIsRemote((value) => !value)}
+              accessibilityLabel={t('create.remote')}
+              accessibilityState={{ selected: isRemote }}
+            >
+              {isRemote
+                ? <AccentIcon name="globe-outline" size={15} />
+                : <Ionicons name="globe-outline" size={15} color={primary} />}
               <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
             </HeroButton>
 
@@ -250,14 +359,16 @@ function NewVolunteeringScreen() {
       </ScrollView>
       <FormActionFooter
         title={isEditing ? t('create.editReviewTitle') : t('create.reviewTitle')}
-        subtitle={isEditing ? t('create.editReviewSubtitle') : t('create.reviewSubtitle')}
+        subtitle={footerSubtitle}
         submitLabel={isEditing ? t('create.updateSubmit') : t('create.submit')}
         primary={primary}
         isSubmitting={isSubmitting}
-        isDisabled={!isEditing && organisations.length === 0}
+        isDisabled={!requiredFieldsFilled || organisationsFailed}
         onSubmit={submit}
       />
       </KeyboardAvoidingView>
+      )}
+      {confirmDialog}
     </SafeAreaView>
   );
 }

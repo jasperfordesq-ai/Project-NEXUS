@@ -137,6 +137,10 @@ jest.mock('expo-router', () => ({
         back: jest.fn(),
     }),
     useSegments: () => ['(tabs)'],
+    // Screens guarded by useUnsavedChangesGuard / refreshed by useFocusEffect need these;
+    // without them a test that never touched navigation failed with "is not a function".
+    useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn() }),
+    useFocusEffect: jest.fn(),
     Link: 'Link',
     router: {
         push: jest.fn(),

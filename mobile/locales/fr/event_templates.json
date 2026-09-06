@@ -53,7 +53,8 @@
         "revised": "Modèle révisé",
         "archived": "Modèle archivé",
         "materialized": "Brouillon créé"
-      }
+      },
+      "validationDateFormat": "Saisissez le début et la fin au format YYYY-MM-DDTHH:mm, par exemple 2030-08-01T10:00."
     },
     "checks": {
       "event_template_check_source_manage": "Vous êtes toujours autorisé à gérer l'événement source",

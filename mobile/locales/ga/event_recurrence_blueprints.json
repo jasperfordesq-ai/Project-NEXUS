@@ -81,5 +81,6 @@
   "confirm_ack_description": "Sheiceáil mé na rannáin, comhairimh, coinbhleachtaí agus an t-aitheantas atarlaithe éifeachtach.",
   "cancel": "Cealaigh",
   "commit_button": "Sábháil leagan do-athraithe",
-  "committing": "Leagan á shábháil"
+  "committing": "Leagan á shábháil",
+  "history_refresh_error_description": "Sábháladh an socrú amach anseo, ach níorbh fhéidir an stair thíos a athnuachan. Bain triail eile as chun í a athlódáil."
 }

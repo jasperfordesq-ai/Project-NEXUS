@@ -21,6 +21,7 @@ let mockEquipmentLabel = 'Equipment';
 let mockAccessibilityLabel = 'Accessibility';
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: { back: (...args: unknown[]) => mockBack(...args), replace: (...args: unknown[]) => mockReplace(...args), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({ id: '5' }),
   // The unsaved-changes guard subscribes to `beforeRemove`.
@@ -67,6 +68,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

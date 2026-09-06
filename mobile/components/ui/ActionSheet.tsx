@@ -45,7 +45,7 @@ export default function ActionSheet({ visible, onClose, title, actions }: Action
           <Button
             key={index}
             variant="ghost"
-            className={`w-full justify-start rounded-none py-4${index < actions.length - 1 ? ' border-b border-black/10' : ''}`}
+            className={`w-full justify-start rounded-none py-4${index < actions.length - 1 ? ' border-b border-border' : ''}`}
             onPress={() => handleAction(action)}
             accessibilityLabel={action.label}
           >

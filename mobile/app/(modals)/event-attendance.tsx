@@ -8,6 +8,7 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 
@@ -398,11 +399,13 @@ function AttendancePersonCard({
                   accessibilityState={{ busy }}
                   onPress={() => onAction(person, action)}
                 >
-                  {busy ? <Spinner size="sm" /> : (
+                  {busy ? <Spinner size="sm" /> : action === 'check_in' ? (
+                    <AccentIcon name="log-in-outline" size={16} />
+                  ) : (
                     <Ionicons
-                      name={action === 'check_in' ? 'log-in-outline' : action === 'check_out' ? 'log-out-outline' : 'person-remove-outline'}
+                      name={action === 'check_out' ? 'log-out-outline' : 'person-remove-outline'}
                       size={16}
-                      color={action === 'check_in' ? '#fff' : action === 'no_show' ? theme.error : primary}
+                      color={action === 'no_show' ? theme.error : primary}
                     />
                   )}
                   <HeroButton.Label>{t(`attendance.actions.${action}`)}</HeroButton.Label>

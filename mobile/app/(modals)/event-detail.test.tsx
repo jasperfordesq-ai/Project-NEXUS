@@ -15,6 +15,7 @@ const mockConfirm = jest.fn((opts: { onConfirm: () => void | Promise<void> }) =>
 });
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: mockRouterPush, replace: jest.fn(), back: jest.fn() }),
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({ id: '7' }),
@@ -123,6 +124,11 @@ jest.mock('react-i18next', () => ({
         'agenda.status.cancelled': 'Cancelled',
         'detail.invalidId': 'Invalid event ID.',
         'detail.notFound': 'Event not found.',
+        'detail.shareMessage': opts ? `${String(opts.title ?? '')} ${String(opts.url ?? '')}` : 'share',
+        'share': 'Share event',
+        'common:back': 'Back',
+        'common:errors.loadFailedTitle': "Couldn't load this",
+        'common:buttons.retry': 'Retry',
         'detail.goBack': 'Go Back',
         'going': 'Going',
         'interested': 'Interested',
@@ -171,7 +177,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -563,12 +569,40 @@ describe('EventDetailScreen', () => {
     expect(getByText('Postponed')).toBeTruthy();
   });
 
+  /** 🔴 S4-06. A network failure used to read as "Event not found" with no way to retry. */
+  it('shows a load error with a retry instead of "not found" when the request fails', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Network down', refresh });
+
+    const { getByTestId, getByText, queryByText } = render(<EventDetailScreen />);
+    expect(getByTestId('event-detail-error')).toBeTruthy();
+    expect(getByText('Network down')).toBeTruthy();
+    expect(queryByText('Event not found.')).toBeNull();
+    fireEvent.press(getByText('Retry'));
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  /** S4-10. Share links carry the community slug; the bare shared-host URL lands on the platform page. */
+  it('shares a slug-prefixed web link', async () => {
+    const { Share } = require('react-native');
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+    mockUseApi.mockReturnValue({ data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByLabelText } = render(<EventDetailScreen />);
+    fireEvent.press(getByLabelText('Share event'));
+
+    await waitFor(() => expect(shareSpy).toHaveBeenCalledWith({
+      message: expect.stringContaining('/hour-timebank/events/7'),
+    }));
+    shareSpy.mockRestore();
+  });
+
   it('renders the not found state', () => {
     mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
 
     const { getByText } = render(<EventDetailScreen />);
     expect(getByText('Event not found.')).toBeTruthy();
-    expect(getByText('Go Back')).toBeTruthy();
+    expect(getByText('Back')).toBeTruthy();
   });
 
   it('renders the RSVP button', () => {

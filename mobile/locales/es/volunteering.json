@@ -80,7 +80,8 @@
   "stats": {
     "opportunities": "Oportunidades",
     "applications": "Solicitudes",
-    "hours": "Horas verificadas"
+    "hours": "Horas verificadas",
+    "loadedNote": "El recuento de oportunidades incluye lo cargado hasta ahora."
   },
   "tabs": {
     "opportunities": "Oportunidades",
@@ -102,9 +103,13 @@
     "cancel": "Cancelar turno",
     "cancelError": "No se pudo cancelar este turno.",
     "openOpportunityLabel": "Abrir la oportunidad {{title}}",
-    "cancelLabel": "Cancelar el turno de {{title}}"
+    "cancelLabel": "Cancelar el turno de {{title}}",
+    "cancelConfirmTitle": "¿Cancelar este turno?",
+    "cancelConfirmMessage": "Tu plaza quedará libre para otra persona."
   },
   "certificates": {
+    "openFailed": "No se pudo abrir este certificado. Inténtalo de nuevo.",
+    "sharingUnavailable": "Este dispositivo no puede abrir el certificado. Prueba en el sitio web.",
     "title": "Certificados de voluntariado",
     "description": "Genera y abre certificados verificados de las horas de voluntariado aprobadas.",
     "generate": "Generar certificado",
@@ -116,7 +121,9 @@
     "dateUnknown": "Fecha no disponible",
     "organizationHours": "{{name}}: {{hours}} h",
     "open": "Abrir certificado",
-    "openLabel": "Abrir certificado {{code}}"
+    "openLabel": "Abrir certificado {{code}}",
+    "downloadFailed": "No se pudo descargar el certificado.",
+    "sharingUnavailable": "Este dispositivo no puede abrir archivos descargados."
   },
   "expenses": {
     "submit": "Enviar gasto",
@@ -345,7 +352,14 @@
     "loadFailed": "No pudimos cargar esta oportunidad para editando.",
     "failedDescription": "No pudimos crear la oportunidad. Inténtelo de nuevo.",
     "editFailedTitle": "Oportunidad no actualizada",
-    "editFailedDescription": "No pudimos actualizar la oportunidad. Inténtelo de nuevo."
+    "editFailedDescription": "No pudimos actualizar la oportunidad. Inténtelo de nuevo.",
+    "validationDateFormat": "Escribe las fechas como YYYY-MM-DD, por ejemplo 2026-06-30.",
+    "reviewMissing": "Añade un título y una descripción antes de continuar.",
+    "loadFailedTitle": "No se pudo abrir esta oportunidad",
+    "organisationsLoadFailed": "No se pudieron cargar tus organizaciones, así que la oportunidad aún no se puede publicar.",
+    "unsavedTitle": "¿Descartar esta oportunidad?",
+    "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
+    "discard": "Descartar"
   },
   "org": {
     "title": "Panel de la organización",
@@ -475,7 +489,9 @@
     "optionsError": "No se han podido cargar los demás turnos.",
     "requestSentTitle": "Solicitud de cambio enviada",
     "requestSentBody": "Hemos preguntado a la otra persona. Te avisaremos cuando responda.",
-    "requestError": "No se ha podido enviar esa solicitud de cambio."
+    "requestError": "No se ha podido enviar esa solicitud de cambio.",
+    "cancelConfirmTitle": "¿Cancelar esta solicitud de intercambio?",
+    "cancelConfirmMessage": "Ya no se pedirá el intercambio a la otra persona voluntaria."
   },
   "shiftCancelledTitle": "Turno cancelado",
   "shiftCancelledMessage": "Ya no estás inscrito en este turno.",
@@ -505,5 +521,8 @@
     "forbidden": "No tienes permiso para verificar registros de este turno.",
     "error": "Algo salió mal. Inténtalo de nuevo.",
     "done": "Listo"
-  }
+  },
+  "panelLoadError": "No se pudo cargar esta sección.",
+  "confirmWithdrawTitle": "¿Retirar esta solicitud?",
+  "confirmWithdrawMessage": "La organización dejará de ver tu solicitud."
 }

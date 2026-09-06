@@ -576,6 +576,7 @@ function CommentRow({
       }}
     >
       <Pressable
+        accessibilityRole="button"
         onPress={handleRowPress}
         onPressIn={handleRowPressIn}
         onPressOut={handleRowPressOut}

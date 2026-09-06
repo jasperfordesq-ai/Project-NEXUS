@@ -22,6 +22,9 @@ import {
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { eventLocalInputToIso, localEventTimeZone } from '@/lib/utils/eventDateTime';
 import { describeApiError } from '@/lib/api/describeApiError';
 import {
   cancelEventCommunication,
@@ -88,6 +91,7 @@ function EventCommunicationsScreenInner() {
   const eventId = Number(id);
   const safeEventId = Number.isInteger(eventId) && eventId > 0 ? eventId : 0;
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const auditGeneration = useRef(0);
   const [broadcasts, setBroadcasts] = useState<MobileEventBroadcast[]>([]);
   const [page, setPage] = useState(1);
@@ -99,6 +103,8 @@ function EventCommunicationsScreenInner() {
   const [editing, setEditing] = useState<MobileEventBroadcast | null>(null);
   const [openingDraftId, setOpeningDraftId] = useState<number | null>(null);
   const [input, setInput] = useState<MobileEventBroadcastInput>(initialInput);
+  /** The composer as opened; anything different from it is unsaved wording (S4-04). */
+  const [composerBaseline, setComposerBaseline] = useState<MobileEventBroadcastInput>(initialInput);
   const [preview, setPreview] = useState<MobileEventBroadcastPreview | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -170,9 +176,23 @@ function EventCommunicationsScreenInner() {
     setPreview(null);
   }
 
+  const composerDirty = composerOpen && JSON.stringify(input) !== JSON.stringify(composerBaseline);
+  // 🔴 Back, a swipe or the composer's own Cancel used to drop organiser wording silently.
+  useUnsavedChangesGuard({
+    isDirty: composerDirty,
+    isBusy: isSaving,
+    confirm,
+    title: t('unsaved_title'),
+    message: t('unsaved_message'),
+    discardLabel: t('discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
   function openNewComposer() {
+    const fresh = initialInput();
     setEditing(null);
-    setInput(initialInput());
+    setInput(fresh);
+    setComposerBaseline(fresh);
     setPreview(null);
     setComposerOpen(true);
   }
@@ -181,7 +201,23 @@ function EventCommunicationsScreenInner() {
     setComposerOpen(false);
     setEditing(null);
     setInput(initialInput());
+    setComposerBaseline(initialInput());
     setPreview(null);
+  }
+
+  function requestCloseComposer() {
+    if (!composerDirty) {
+      closeComposer();
+      return;
+    }
+    confirm({
+      title: t('unsaved_title'),
+      message: t('unsaved_message'),
+      confirmLabel: t('discard'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: closeComposer,
+    });
   }
 
   async function openEditComposer(broadcast: MobileEventBroadcast) {
@@ -194,12 +230,14 @@ function EventCommunicationsScreenInner() {
         throw new Error('event_broadcast_not_editable');
       }
       setEditing(latest);
-      setInput({
+      const loaded: MobileEventBroadcastInput = {
         variant: latest.variant,
         segments: [...latest.audience.segments],
         channels: [...latest.channels],
         body: latest.body,
-      });
+      };
+      setInput(loaded);
+      setComposerBaseline(loaded);
       setPreview(null);
       setComposerOpen(true);
     } catch (err) {
@@ -365,8 +403,10 @@ function EventCommunicationsScreenInner() {
     if (!scheduleTarget) return;
     let timestamp: string | null = null;
     if (scheduledAt.trim()) {
-      const parsed = new Date(scheduledAt.trim());
-      if (Number.isNaN(parsed.getTime())) {
+      // The field is a local wall-clock time in the placeholder's format; the shared helper
+      // turns it into the matching instant in the device zone (S4-25).
+      const parsed = eventLocalInputToIso(scheduledAt.trim().replace(' ', 'T'), localEventTimeZone());
+      if (!parsed) {
         showToast({
           title: t('schedule_invalid_title'),
           description: t('schedule_invalid_description'),
@@ -374,7 +414,7 @@ function EventCommunicationsScreenInner() {
         });
         return;
       }
-      timestamp = parsed.toISOString();
+      timestamp = parsed;
     }
     setIsScheduling(true);
     try {
@@ -602,7 +642,7 @@ function EventCommunicationsScreenInner() {
               <Button
                 variant="secondary"
                 isDisabled={isPreviewing || isSaving}
-                onPress={closeComposer}
+                onPress={requestCloseComposer}
               >
                 {t('common:buttons.cancel')}
               </Button>
@@ -610,14 +650,18 @@ function EventCommunicationsScreenInner() {
                 variant="secondary"
                 isDisabled={isPreviewing || isSaving}
                 onPress={() => void previewAudience()}
+                accessibilityState={{ busy: isPreviewing }}
               >
-                {isPreviewing ? <Spinner size="sm" /> : t('preview_button')}
+                {isPreviewing ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('preview_button')}</Button.Label>
               </Button>
               <Button
                 isDisabled={isSaving || !preview || preview.recipient_count < 1}
                 onPress={() => void saveDraft()}
+                accessibilityState={{ busy: isSaving }}
               >
-                {isSaving ? <Spinner size="sm" /> : t(editing ? 'revise_draft_button' : 'save_draft_button')}
+                {isSaving ? <Spinner size="sm" /> : null}
+                <Button.Label>{t(editing ? 'revise_draft_button' : 'save_draft_button')}</Button.Label>
               </Button>
             </Card.Footer>
           </Card>
@@ -643,8 +687,9 @@ function EventCommunicationsScreenInner() {
               <Button variant="secondary" isDisabled={isScheduling} onPress={() => setScheduleTarget(null)}>
                 {t('common:buttons.cancel')}
               </Button>
-              <Button isDisabled={isScheduling} onPress={() => void confirmSchedule()}>
-                {isScheduling ? <Spinner size="sm" /> : t('confirm_schedule')}
+              <Button isDisabled={isScheduling} onPress={() => void confirmSchedule()} accessibilityState={{ busy: isScheduling }}>
+                {isScheduling ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('confirm_schedule')}</Button.Label>
               </Button>
             </Card.Footer>
           </Card>
@@ -669,8 +714,9 @@ function EventCommunicationsScreenInner() {
               <Button variant="secondary" isDisabled={isCancelling} onPress={() => setCancelTarget(null)}>
                 {t('common:buttons.cancel')}
               </Button>
-              <Button variant="danger" isDisabled={isCancelling} onPress={() => void confirmCancel()}>
-                {isCancelling ? <Spinner size="sm" /> : t('confirm_cancel')}
+              <Button variant="danger" isDisabled={isCancelling} onPress={() => void confirmCancel()} accessibilityState={{ busy: isCancelling }}>
+                {isCancelling ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('confirm_cancel')}</Button.Label>
               </Button>
             </Card.Footer>
           </Card>
@@ -737,8 +783,10 @@ function EventCommunicationsScreenInner() {
                       variant="secondary"
                       isDisabled={isAuditLoadingMore}
                       onPress={() => void loadMoreAuditHistory()}
+                      accessibilityState={{ busy: isAuditLoadingMore }}
                     >
-                      {isAuditLoadingMore ? <Spinner size="sm" /> : t('common:buttons.loadMore')}
+                      {isAuditLoadingMore ? <Spinner size="sm" /> : null}
+                      <Button.Label>{t('common:buttons.loadMore')}</Button.Label>
                     </Button>
                   ) : null}
                 </View>
@@ -809,8 +857,10 @@ function EventCommunicationsScreenInner() {
                   variant="secondary"
                   isDisabled={openingDraftId !== null || isSaving || composerOpen}
                   onPress={() => void openEditComposer(broadcast)}
+                  accessibilityState={{ busy: openingDraftId === broadcast.id }}
                 >
-                  {openingDraftId === broadcast.id ? <Spinner size="sm" /> : t('common:buttons.edit')}
+                  {openingDraftId === broadcast.id ? <Spinner size="sm" /> : null}
+                  <Button.Label>{t('common:buttons.edit')}</Button.Label>
                 </Button>
               ) : null}
               <Button
@@ -818,10 +868,10 @@ function EventCommunicationsScreenInner() {
                 variant="secondary"
                 isDisabled={isAuditLoading && auditTarget?.id === broadcast.id}
                 onPress={() => void openAudit(broadcast)}
+                accessibilityState={{ busy: isAuditLoading && auditTarget?.id === broadcast.id }}
               >
-                {isAuditLoading && auditTarget?.id === broadcast.id
-                  ? <Spinner size="sm" />
-                  : t('history_button')}
+                {isAuditLoading && auditTarget?.id === broadcast.id ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('history_button')}</Button.Label>
               </Button>
               {broadcast.capabilities.schedule ? (
                 <Button size="sm" onPress={() => {
@@ -841,21 +891,25 @@ function EventCommunicationsScreenInner() {
                   variant="secondary"
                   isDisabled={retryingId !== null}
                   onPress={() => void retryFailed(broadcast)}
+                  accessibilityState={{ busy: retryingId === broadcast.id }}
                 >
-                  {retryingId === broadcast.id ? <Spinner size="sm" /> : t('retry_button')}
+                  {retryingId === broadcast.id ? <Spinner size="sm" /> : null}
+                  <Button.Label>{t('retry_button')}</Button.Label>
                 </Button>
               ) : null}
             </Card.Footer>
               </Card>
             ))}
             {hasMore ? (
-              <Button variant="secondary" isDisabled={isLoadingMore} onPress={() => void loadMore()}>
-                {isLoadingMore ? <Spinner size="sm" /> : t('common:buttons.loadMore')}
+              <Button variant="secondary" isDisabled={isLoadingMore} onPress={() => void loadMore()} accessibilityState={{ busy: isLoadingMore }}>
+                {isLoadingMore ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('common:buttons.loadMore')}</Button.Label>
               </Button>
             ) : null}
           </>
         )}
       </ScrollView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

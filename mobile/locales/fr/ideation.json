@@ -523,6 +523,13 @@
     "validationDates": "Utilisez une date et une heure valides, telles que 2026-06-30 17:00.",
     "validationMaxIdeas": "Utilisez un nombre entier compris entre 1 et 50.",
     "failedTitle": "Impossible de créer le défi",
-    "failedDescription": "Réessayez dans un instant."
+    "failedDescription": "Réessayez dans un instant.",
+    "unsavedTitle": "Abandonner ce défi ?",
+    "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
+    "discard": "Abandonner",
+    "footerIncomplete": "Pas encore prêt",
+    "footerMissingTitle": "Ajoutez un titre au défi pour continuer.",
+    "footerMissingDescription": "Ajoutez une description pour continuer.",
+    "loadFailedTitle": "Impossible d'ouvrir ce défi"
   }
 }

@@ -80,7 +80,8 @@
   "stats": {
     "opportunities": "Deiseanna",
     "applications": "Feidhmchláir",
-    "hours": "Uaireanta fíoraithe"
+    "hours": "Uaireanta fíoraithe",
+    "loadedNote": "Baineann comhaireamh na ndeiseanna leis an méid atá lódáilte go dtí seo."
   },
   "tabs": {
     "opportunities": "Deiseanna",
@@ -102,9 +103,13 @@
     "cancel": "Cealaigh an seal oibre",
     "cancelError": "Níorbh fhéidir an seal oibre seo a chealú.",
     "openOpportunityLabel": "Oscail an deis {{title}}",
-    "cancelLabel": "Cealaigh an seal oibre le haghaidh {{title}}"
+    "cancelLabel": "Cealaigh an seal oibre le haghaidh {{title}}",
+    "cancelConfirmTitle": "An seal oibre seo a chealú?",
+    "cancelConfirmMessage": "Scaoilfear d'áit do dhuine eile."
   },
   "certificates": {
+    "openFailed": "Níorbh fhéidir an teastas seo a oscailt. Bain triail eile as.",
+    "sharingUnavailable": "Ní féidir leis an ngléas seo an teastas a oscailt. Bain triail as an suíomh gréasáin.",
     "title": "Teastais oibrithe deonacha",
     "description": "Cruthaigh agus oscail teastais dheimhnithe d'uaireanta obair dheonach atá ceadaithe.",
     "generate": "Cruthaigh teastas",
@@ -116,7 +121,9 @@
     "dateUnknown": "Dáta gan fáil",
     "organizationHours": "{{name}}: {{hours}} u",
     "open": "Oscail an teastas",
-    "openLabel": "Oscail teastas {{code}}"
+    "openLabel": "Oscail teastas {{code}}",
+    "downloadFailed": "Níorbh fhéidir an teastas a íoslódáil.",
+    "sharingUnavailable": "Ní féidir leis an ngléas seo comhaid íoslódáilte a oscailt."
   },
   "expenses": {
     "submit": "Cuir éileamh costais isteach",
@@ -347,7 +354,14 @@
     "loadFailed": "Níorbh fhéidir linn an deis seo chun eagarthóireacht a lódáil.",
     "failedDescription": "Níorbh fhéidir linn an deis a chruthú. Bain triail eile as.",
     "editFailedTitle": "Níor nuashonraíodh an deis",
-    "editFailedDescription": "Níorbh fhéidir linn an deis a nuashonrú. Bain triail eile as."
+    "editFailedDescription": "Níorbh fhéidir linn an deis a nuashonrú. Bain triail eile as.",
+    "validationDateFormat": "Cuir isteach na dátaí san fhormáid YYYY-MM-DD, mar shampla 2026-06-30.",
+    "reviewMissing": "Cuir teideal agus cur síos leis roimh leanúint ar aghaidh.",
+    "loadFailedTitle": "Níorbh fhéidir an deis seo a oscailt",
+    "organisationsLoadFailed": "Níorbh fhéidir d'eagraíochtaí a lódáil, mar sin ní féidir an deis a phostáil fós.",
+    "unsavedTitle": "An deis seo a chaitheamh i dtraipisí?",
+    "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
+    "discard": "Caith i dtraipisí"
   },
   "org": {
     "title": "Deais na heagraíochta",
@@ -477,7 +491,9 @@
     "optionsError": "Níorbh fhéidir na sealanna eile a lódáil.",
     "requestSentTitle": "Iarratas babhtála seolta",
     "requestSentBody": "D'iarr muid ar an oibrí deonach eile. Cuirfear in iúl duit nuair a fhreagraíonn sé.",
-    "requestError": "Níorbh fhéidir an iarratas babhtála sin a sheoladh."
+    "requestError": "Níorbh fhéidir an iarratas babhtála sin a sheoladh.",
+    "cancelConfirmTitle": "An t-iarratas malartaithe seo a chealú?",
+    "cancelConfirmMessage": "Ní iarrfar ar an saorálaí eile malartú a thuilleadh."
   },
   "shiftCancelledTitle": "Seal curtha ar ceal",
   "shiftCancelledMessage": "Níl tú cláraithe don seal seo a thuilleadh.",
@@ -507,5 +523,8 @@
     "forbidden": "Níl cead agat seiceálacha isteach a fhíorú don seal seo.",
     "error": "Chuaigh rud éigin amú. Bain triail eile as.",
     "done": "Déanta"
-  }
+  },
+  "panelLoadError": "Níorbh fhéidir an chuid seo a lódáil.",
+  "confirmWithdrawTitle": "An t-iarratas seo a tharraingt siar?",
+  "confirmWithdrawMessage": "Ní fheicfidh an eagraíocht d'iarratas a thuilleadh."
 }

@@ -34,11 +34,18 @@ import {
 import { useTheme } from '@/lib/hooks/useTheme';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/utils/eventDateTime';
 
-function defaultStart(): string {
-  const date = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  date.setMinutes(0, 0, 0);
-  return date.toISOString().slice(0, 16);
+/**
+ * Tomorrow, on the hour, as a wall-clock value IN THE TEMPLATE'S ZONE.
+ *
+ * 🔴 This used `toISOString().slice(0, 16)` — a UTC wall clock — and the field beneath it
+ * was labelled with the template's time zone, so a Dublin template in summer proposed a
+ * start one hour earlier than the organiser read (S4-12).
+ */
+function defaultStart(timeZone: string): string {
+  const local = eventIsoToLocalInput(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), timeZone);
+  return local ? `${local.slice(0, 13)}:00` : '';
 }
 
 function idempotencyKey(): string {
@@ -67,7 +74,7 @@ function EventTemplatesScreenInner() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [selected, setSelected] = useState<MobileEventTemplate | null>(null);
   const [title, setTitle] = useState('');
-  const [startTime, setStartTime] = useState(defaultStart());
+  const [startTime, setStartTime] = useState(() => defaultStart('UTC'));
   const [endTime, setEndTime] = useState('');
   const [timezone, setTimezone] = useState('UTC');
   const [preview, setPreview] = useState<MobileEventTemplatePreview | null>(null);
@@ -201,15 +208,24 @@ function EventTemplatesScreenInner() {
     setSelected(template);
     setTitle(template.version.configuration.title);
     setTimezone(template.version.configuration.timezone);
-    setStartTime(defaultStart());
+    setStartTime(defaultStart(template.version.configuration.timezone));
     setEndTime('');
     setPreview(null);
     setConfirmedInput(null);
   }
 
+  /** Why the schedule cannot be sent yet, so the message can say the right thing (S4-25). */
+  function scheduleProblem(): 'missing' | 'format' | 'order' | null {
+    if (!selected || !title.trim() || !startTime.trim() || !timezone.trim()) return 'missing';
+    const start = eventLocalInputToIso(startTime.trim(), timezone.trim());
+    const end = endTime.trim() ? eventLocalInputToIso(endTime.trim(), timezone.trim()) : undefined;
+    if (!start || end === null) return 'format';
+    if (end && end <= start) return 'order';
+    return null;
+  }
+
   function inputForSelection(): MobileEventTemplateInput | null {
-    if (!selected || !title.trim() || !startTime.trim() || !timezone.trim()) return null;
-    if (endTime.trim() && endTime.trim() <= startTime.trim()) return null;
+    if (!selected || scheduleProblem() !== null) return null;
     const overrides: MobileEventTemplateInput['overrides'] = {};
     if (title.trim() !== selected.version.configuration.title) overrides.title = title.trim();
     if (timezone.trim() !== selected.version.configuration.timezone) overrides.timezone = timezone.trim();
@@ -228,7 +244,9 @@ function EventTemplatesScreenInner() {
     if (!input) {
       showToast({
         title: t('templates.mobile.validationTitle'),
-        description: t('templates.mobile.validationDescription'),
+        description: t(scheduleProblem() === 'format'
+          ? 'templates.mobile.validationDateFormat'
+          : 'templates.mobile.validationDescription'),
         variant: 'warning',
       });
       return;
@@ -367,8 +385,9 @@ function EventTemplatesScreenInner() {
                 {t('common:buttons.done')}
               </Button>
               {auditNextCursor ? (
-                <Button variant="secondary" isDisabled={isAuditLoadingMore} onPress={() => void loadMoreAudit()}>
-                  {isAuditLoadingMore ? <Spinner size="sm" /> : t('common:buttons.loadMore')}
+                <Button variant="secondary" isDisabled={isAuditLoadingMore} onPress={() => void loadMoreAudit()} accessibilityState={{ busy: isAuditLoadingMore }}>
+                  {isAuditLoadingMore ? <Spinner size="sm" /> : null}
+                  <Button.Label>{t('common:buttons.loadMore')}</Button.Label>
                 </Button>
               ) : null}
             </Card.Footer>
@@ -420,10 +439,10 @@ function EventTemplatesScreenInner() {
                     variant="secondary"
                     isDisabled={isAuditLoading && auditTarget?.id === template.id}
                     onPress={() => void openAudit(template)}
+                    accessibilityState={{ busy: isAuditLoading && auditTarget?.id === template.id }}
                   >
-                    {isAuditLoading && auditTarget?.id === template.id
-                      ? <Spinner size="sm" />
-                      : t('templates.mobile.auditButton')}
+                    {isAuditLoading && auditTarget?.id === template.id ? <Spinner size="sm" /> : null}
+                    <Button.Label>{t('templates.mobile.auditButton')}</Button.Label>
                   </Button>
                 ) : null}
                 <Button
@@ -437,8 +456,9 @@ function EventTemplatesScreenInner() {
               </Card>
             ))}
             {nextCursor ? (
-              <Button variant="secondary" isDisabled={isLoadingMore} onPress={() => void loadMore()}>
-                {isLoadingMore ? <Spinner size="sm" /> : t('common:buttons.loadMore')}
+              <Button variant="secondary" isDisabled={isLoadingMore} onPress={() => void loadMore()} accessibilityState={{ busy: isLoadingMore }}>
+                {isLoadingMore ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('common:buttons.loadMore')}</Button.Label>
               </Button>
             ) : null}
           </>
@@ -480,8 +500,9 @@ function EventTemplatesScreenInner() {
               <Button variant="secondary" onPress={() => setSelected(null)}>
                 {t('common:buttons.cancel')}
               </Button>
-              <Button isDisabled={isPreviewing} onPress={() => void reviewDraft()}>
-                {isPreviewing ? <Spinner size="sm" /> : t('templates.mobile.review')}
+              <Button isDisabled={isPreviewing} onPress={() => void reviewDraft()} accessibilityState={{ busy: isPreviewing }}>
+                {isPreviewing ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('templates.mobile.review')}</Button.Label>
               </Button>
             </Card.Footer>
           </Card>
@@ -522,8 +543,9 @@ function EventTemplatesScreenInner() {
               >
                 {t('templates.mobile.changeDetails')}
               </Button>
-              <Button isDisabled={isCreating} onPress={() => void createDraft()}>
-                {isCreating ? <Spinner size="sm" /> : t('templates.mobile.createDraft')}
+              <Button isDisabled={isCreating} onPress={() => void createDraft()} accessibilityState={{ busy: isCreating }}>
+                {isCreating ? <Spinner size="sm" /> : null}
+                <Button.Label>{t('templates.mobile.createDraft')}</Button.Label>
               </Button>
             </Card.Footer>
           </Card>

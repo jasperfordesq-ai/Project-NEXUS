@@ -117,5 +117,6 @@
   "confirm_ack_description": "J’ai vérifié les sections, décomptes, conflits et l’identité de récurrence effective.",
   "cancel": "Annuler",
   "commit_button": "Enregistrer la version immuable",
-  "committing": "Enregistrement de la version"
+  "committing": "Enregistrement de la version",
+  "history_refresh_error_description": "La configuration future a été enregistrée, mais l'historique ci-dessous n'a pas pu être actualisé. Réessayez pour le recharger."
 }

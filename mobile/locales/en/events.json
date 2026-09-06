@@ -167,7 +167,13 @@
     "invalidCoordinates": "Enter both latitude and longitude using valid coordinate ranges.",
     "failedTitle": "Event not created",
     "loadFailed": "We could not load this event for editing.",
-    "failedDescription": "We could not create the event. Please try again."
+    "failedDescription": "We could not create the event. Please try again.",
+    "validationDateFormat": "Enter dates as YYYY-MM-DDTHH:mm (or YYYY-MM-DD for all-day events), for example 2026-06-30T18:00.",
+    "reviewMissing": "Add a title, description and start time before continuing.",
+    "loadFailedTitle": "Couldn't open this event",
+    "unsavedTitle": "Discard this event?",
+    "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
+    "discard": "Discard"
   },
   "category": {
     "workshop": "Workshop",

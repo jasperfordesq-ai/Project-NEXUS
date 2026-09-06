@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useState } from 'react';
 import { FlatList, Image, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -247,8 +248,8 @@ function OfferCard({
   const imageUrl = resolveImageUrl(offer.listing?.image?.thumbnail_url || offer.listing?.image?.url);
 
   function submitCounter() {
-    const value = Number(counterAmount);
-    if (!Number.isFinite(value) || value <= 0) {
+    const value = parseDecimalInput(counterAmount);
+    if (value === null || !Number.isFinite(value) || value <= 0) {
       showToast({ title: t('offers.amountRequired'), description: t('offers.amountRequired'), variant: 'warning' });
       return;
     }

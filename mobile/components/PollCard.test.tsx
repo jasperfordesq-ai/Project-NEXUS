@@ -17,10 +17,13 @@ jest.mock('@/lib/api/feed', () => ({
 
 jest.mock('@/lib/haptics', () => ({
   ImpactFeedbackStyle: { Light: 'Light' },
+  NotificationFeedbackType: { Success: 'Success', Warning: 'Warning', Error: 'Error' },
   impactAsync: jest.fn(),
+  notificationAsync: jest.fn(),
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#006FEE',
 }));
 
@@ -52,6 +55,8 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'View',
 }));
 
+const mockToastShow = jest.fn();
+
 jest.mock('heroui-native', () => {
   const React = require('react');
   const { Text, View } = require('react-native');
@@ -59,7 +64,7 @@ jest.mock('heroui-native', () => {
   const Chip = ({ children }: { children?: React.ReactNode }) => <View>{children}</View>;
   Chip.Label = ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text>;
 
-  return { Chip };
+  return { Chip, useToast: () => ({ toast: { show: mockToastShow, hide: jest.fn() }, isToastVisible: false }) };
 });
 
 describe('PollCard', () => {
@@ -176,5 +181,28 @@ describe('PollCard', () => {
     expect(getByText('2 votes')).toBeTruthy();
     expect(getByText('Results revealed when poll closes')).toBeTruthy();
     expect(queryByText('0%')).toBeNull();
+  });
+
+  it('tells the member when a vote is rejected instead of silently un-selecting it', async () => {
+    mockVoteFeedPoll.mockRejectedValueOnce(new Error('offline'));
+    const openPoll = {
+      id: 9,
+      question: 'Which session should we run?',
+      total_votes: 0,
+      is_active: true,
+      options: [
+        { id: 11, text: 'Skill swap clinic', vote_count: 0, percentage: 0 },
+        { id: 12, text: 'Repair cafe', vote_count: 0, percentage: 0 },
+      ],
+    } as PollData;
+
+    const { getByLabelText, queryByText } = render(<PollCard pollData={openPoll} itemId={77} />);
+
+    fireEvent.press(getByLabelText('Skill swap clinic'));
+
+    await waitFor(() => expect(mockToastShow).toHaveBeenCalledTimes(1));
+    expect(mockToastShow.mock.calls[0][0]).toMatchObject({ variant: 'danger' });
+    // The optimistic selection is rolled back — no "You voted" state may remain.
+    expect(queryByText('You voted')).toBeNull();
   });
 });

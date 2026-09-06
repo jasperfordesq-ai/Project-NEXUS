@@ -7,6 +7,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({}),

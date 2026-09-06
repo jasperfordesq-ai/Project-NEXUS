@@ -23,7 +23,11 @@
     "device": "Ceadaigh fógraí ar an ngléas seo",
     "promotions": "Fógraí cur chun cinn",
     "permissionNeeded": "Níl fógraí cumasaithe",
-    "permissionNeededHint": "Ceadaigh fógraí nuair a iarrann do ghléas ort. Is féidir é seo a athrú níos déanaí i socruithe an chórais."
+    "permissionNeededHint": "Ceadaigh fógraí nuair a iarrann do ghléas ort. Is féidir é seo a athrú níos déanaí i socruithe an chórais.",
+    "registerFailed": "Níorbh fhéidir fógraí a shocrú",
+    "registerFailedHint": "Chuaigh rud éigin amú agus an gléas seo á chlárú. Bain triail eile as.",
+    "unavailable": "Níl fógraí ar fáil anseo",
+    "unavailableHint": "Ní féidir leis an ngléas nó leis an leagan seo fógraí brú a fháil."
   },
   "email": {
     "messages": "Teachtaireachtaí",
@@ -55,6 +59,8 @@
     "saving": "Pasfhocal á shábháil...",
     "reviewTitle": "Réidh le nuashonrú?",
     "reviewSubtitle": "Sábháil ach nuair a mheaitseálann do phasfhocal nua agus deimhniú.",
+    "footerMissing": "Líon isteach na trí réimse chun leanúint ar aghaidh.",
+    "footerMismatch": "Ní mheaitseálann an pasfhocal nua agus an deimhniú go fóill.",
     "success": "Pasfhocal athraithe",
     "successMessage": "D'éirigh le nuashonrú do phasfhocal.",
     "validation": {
@@ -232,6 +238,8 @@
     "approve": "Ceadaigh",
     "decline": "Diúltaigh",
     "remove": "Bain",
+    "revokeConfirmTitle": "An cuntas nasctha seo a bhaint?",
+    "revokeConfirmMessage": "Cuirfear deireadh leis an nasc agus le haon chearta a thugann sé láithreach. Ní féidir é seo a chur ar ceal.",
     "approveFailed": "Níorbh fhéidir an t-iarratas seo a cheadú. Bain triail eile as.",
     "revokeFailed": "Níorbh fhéidir an cuntas nasctha seo a bhaint. Bain triail eile as.",
     "permissionFailed": "Níorbh fhéidir cead an chuntais nasctha a nuashonrú. Bain triail eile as.",

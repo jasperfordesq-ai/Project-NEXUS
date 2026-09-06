@@ -72,7 +72,13 @@ function AppreciationsScreenInner() {
 
   useEffect(() => {
     if (!data?.data) return;
-    setItems((current) => (page === 1 ? data.data : [...current, ...data.data]));
+    setItems((current) => {
+      if (page === 1) return data.data;
+      // useApi keeps the previous page's data while the next loads, so this effect runs
+      // once with page 1's rows under page 2 — they were appended twice. Dedupe by id.
+      const seen = new Set(current.map((item) => item.id));
+      return [...current, ...data.data.filter((item) => !seen.has(item.id))];
+    });
   }, [data, page]);
 
   const totalPages = useMemo(() => data?.meta?.last_page ?? data?.meta?.total_pages ?? 1, [data?.meta?.last_page, data?.meta?.total_pages]);

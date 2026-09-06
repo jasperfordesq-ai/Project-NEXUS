@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import i18n from 'i18next';
 import { reportSentryMessage } from '@/lib/observability/report';
 import { Platform } from 'react-native';
 import { z } from 'zod';
@@ -841,7 +842,7 @@ function parseContract<T>(
   if (parsed.success) return parsed.data;
 
   reportContractDrift(endpoint, parsed.error, contractVersion);
-  throw new ApiResponseError(422, 'EVENTS_CONTRACT_DRIFT');
+  throw new ApiResponseError(422, i18n.t('common:errors.contractDrift'), undefined, 'EVENTS_CONTRACT_DRIFT');
 }
 
 export interface CreateEventPayload {

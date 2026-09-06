@@ -28,7 +28,8 @@
     "groups": "Groups",
     "featured": "Featured",
     "members": "Members",
-    "joined": "Joined"
+    "joined": "Joined",
+    "loadedNote": "Die Zahlen beziehen sich auf die bisher geladenen Gruppen."
   },
   "detail": {
     "title": "Gruppe",
@@ -102,8 +103,12 @@
       "delete": "Delete",
       "deleteLabel": "Löschen Sie{{name}}",
       "deleteTitle": "Datei löschen",
+      "downloadFailed": "Diese Datei konnte nicht heruntergeladen werden. Bitte versuche es erneut.",
+      "sharingUnavailable": "Dieses Gerät kann die Datei nicht öffnen. Versuche es auf der Website.",
       "deleteMessage": "{{name}} aus dieser Gruppe löschen?",
-      "deleteError": "Die Datei konnte nicht gelöscht werden."
+      "deleteError": "Die Datei konnte nicht gelöscht werden.",
+      "downloadFailed": "Die Datei konnte nicht heruntergeladen werden.",
+      "sharingUnavailable": "Dieses Gerät kann heruntergeladene Dateien nicht öffnen."
     },
     "media": {
       "title": "Gruppenmedien",
@@ -244,7 +249,8 @@
         "in_progress": "{{count}} in Bearbeitung",
         "done": "{{count}} erledigt",
         "overdue": "{{count}} überfällig"
-      }
+      },
+      "dueDateInvalid": "Gib das Fälligkeitsdatum als YYYY-MM-DD ein, zum Beispiel 2026-06-30."
     },
     "analytics": {
       "title": "Gruppenanalysen",
@@ -327,7 +333,21 @@
     "edit": "Gruppe bearbeiten",
     "notFound": "Gruppe nicht gefunden.",
     "invalidId": "Ungültige Gruppen-ID.",
-    "goBack": "Zurück"
+    "goBack": "Zurück",
+    "sectionLoadError": "Dieser Bereich konnte nicht geladen werden.",
+    "composerUnsavedTitle": "Diesen Entwurf verwerfen?",
+    "composerUnsavedMessage": "Du hast noch nicht gesendeten Text. Wenn du jetzt schließt, geht er verloren.",
+    "composerDiscard": "Verwerfen",
+    "discussionReplies": {
+      "title": "Antworten",
+      "empty": "Noch keine Antworten. Antworte als Erste oder Erster.",
+      "placeholder": "Antwort schreiben…",
+      "post": "Antwort senden",
+      "loadError": "Die Antworten konnten nicht geladen werden.",
+      "postError": "Die Antwort konnte nicht gesendet werden.",
+      "validation": "Schreibe eine Antwort, bevor du sie sendest.",
+      "openLabel": "Diskussion {{title}} öffnen"
+    }
   },
   "filter": {
     "all": "Alle",
@@ -381,7 +401,10 @@
     "loadFailed": "Die Gruppendetails konnten nicht geladen werden. Versuche es erneut.",
     "saveFailedTitle": "Gruppe nicht gespeichert",
     "saveFailedDescription": "Die Gruppe konnte nicht gespeichert werden. Versuche es erneut.",
-    "failedDescription": "Die Gruppe konnte nicht erstellt werden. Versuche es erneut."
+    "failedDescription": "Die Gruppe konnte nicht erstellt werden. Versuche es erneut.",
+    "unsavedTitle": "Diese Gruppe verwerfen?",
+    "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
+    "discard": "Verwerfen"
   },
   "invite_accept": {
     "title": "Gruppeneinladung",

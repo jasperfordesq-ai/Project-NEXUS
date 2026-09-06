@@ -9,6 +9,8 @@ import { render } from '@testing-library/react-native';
 const mockUseApi = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useLocalSearchParams: () => ({ id: '7' }),
 }));
 

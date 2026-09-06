@@ -14,6 +14,8 @@ const mockReplace = jest.fn();
 const mockShowToast = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: {
     canGoBack: () => true,
     back: jest.fn(),
@@ -57,6 +59,9 @@ jest.mock('react-i18next', () => {
     'templates.mobile.review': 'Review draft',
     'templates.mobile.readyTitle': 'Ready to create a draft',
     'templates.mobile.createDraft': 'Create draft',
+    'templates.mobile.validationTitle': 'Check the schedule',
+    'templates.mobile.validationDescription': 'Enter a title, time zone and valid future schedule.',
+    'templates.mobile.validationDateFormat': 'Enter the start and end as YYYY-MM-DDTHH:mm.',
     'common:buttons.loadMore': 'Load more',
     'common:buttons.done': 'Done',
   };
@@ -234,6 +239,59 @@ describe('EventTemplatesScreen', () => {
       });
     });
   });
+  /**
+   * 🔴 S4-12. The suggested start was built from `toISOString()` — UTC — and then labelled
+   * with the template's zone, so it read an hour (or more) off. It must be tomorrow on the
+   * hour IN THAT ZONE.
+   */
+  it('proposes the default start in the template time zone, not UTC', async () => {
+    const { eventIsoToLocalInput } = jest.requireActual('@/lib/utils/eventDateTime');
+    const now = new Date('2030-07-31T22:30:00Z').getTime();
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now);
+    mockGetTemplates.mockResolvedValue({
+      data: [{ ...template, version: { ...template.version, configuration: { ...template.version.configuration, timezone: 'Pacific/Auckland' } } }],
+      meta: { per_page: 20, next_cursor: null, has_more: false },
+    });
+
+    const screen = render(<EventTemplatesScreen />);
+    await screen.findByText('Reusable event');
+    fireEvent.press(screen.getByText('Use template'));
+
+    const expected = `${eventIsoToLocalInput(new Date(now + 24 * 60 * 60 * 1000).toISOString(), 'Pacific/Auckland').slice(0, 13)}:00`;
+    expect(expected).toBe('2030-08-02T10:00'); // 22:30Z + 24h is 10:30 the day after in Auckland (UTC+12)
+    expect(screen.getByTestId('event-template-start').props.value).toBe(expected);
+    nowSpy.mockRestore();
+  });
+
+  /** S4-25. A mistyped start is a format problem, not a missing field. */
+  it('reports a mistyped start as an invalid format', async () => {
+    const screen = render(<EventTemplatesScreen />);
+    await screen.findByText('Reusable event');
+    fireEvent.press(screen.getByText('Use template'));
+    fireEvent.changeText(screen.getByTestId('event-template-start'), 'tomorrow 10am');
+    fireEvent.press(screen.getByText('Review draft'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'Enter the start and end as YYYY-MM-DDTHH:mm.',
+    })));
+    expect(mockPreview).not.toHaveBeenCalled();
+  });
+
+  /** S4-23. The label stays beside the spinner while the preview is pending. */
+  it('keeps the review label visible while the preview request is pending', async () => {
+    const pending = deferred<unknown>();
+    mockPreview.mockReturnValueOnce(pending.promise);
+    const screen = render(<EventTemplatesScreen />);
+    await screen.findByText('Reusable event');
+    fireEvent.press(screen.getByText('Use template'));
+    fireEvent.changeText(screen.getByTestId('event-template-start'), '2030-08-01T10:00');
+    fireEvent.press(screen.getByText('Review draft'));
+
+    await waitFor(() => expect(mockPreview).toHaveBeenCalled());
+    expect(screen.getByText('Review draft')).toBeTruthy();
+    await act(async () => { pending.resolve({ configuration: { title: 'x' }, checklist: [] }); });
+  });
+
   it('loads every cursor page in the template library', async () => {
     mockGetTemplates
       .mockResolvedValueOnce({

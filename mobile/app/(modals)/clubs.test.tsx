@@ -8,6 +8,8 @@ import { Linking } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
 }));

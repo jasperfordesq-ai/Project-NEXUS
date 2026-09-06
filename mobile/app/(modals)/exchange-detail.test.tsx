@@ -10,6 +10,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({ id: '5' }),
@@ -262,7 +263,7 @@ describe('ExchangeDetailModal', () => {
 
     const { getAllByText, getByText } = render(<ExchangeDetailModal />);
     expect(getByText('Exchange not found.')).toBeTruthy();
-    expect(getAllByText('Go Back').length).toBeGreaterThan(0);
+    expect(getAllByText('common:back').length).toBeGreaterThan(0);
   });
 
   it('renders the exchange type (offer/request) badge', () => {

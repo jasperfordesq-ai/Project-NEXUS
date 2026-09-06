@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, RefreshControl, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -98,7 +99,8 @@ function getStatusLabel(transaction: TransactionItem, t: (key: string, opts?: Re
 }
 
 function normaliseAmount(value: string): number {
-  return Number(value.replace(',', '.').trim());
+  // The shared parser: "1 000", "1.000,5" and "1,5" all resolve the way the member meant.
+  return parseDecimalInput(value) ?? Number.NaN;
 }
 
 function csvCell(value: string | number | null | undefined): string {
@@ -276,7 +278,10 @@ function WalletModalInner() {
       <AppTopBar title={t('title')} backLabel={t('back')} />
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
+        // Only a pull-to-refresh shows the indicator. On the initial load it floated over
+        // the hero card's eyebrow text (emulator, 2026-09-05); the cards carry their own
+        // loading states for that phase.
+        refreshControl={<RefreshControl refreshing={isLoading && Boolean(balanceQuery.data)} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
         showsVerticalScrollIndicator={false}
       >
         <HeaderCard t={t} theme={theme} primary={primary} onRefresh={refresh} isLoading={isLoading} />
@@ -697,7 +702,7 @@ function BalanceCard({
           </View>
         </View>
         <View className="flex-row gap-3">
-          <HeroButton className="flex-1" variant="primary" onPress={onSend} isDisabled={!canSpend} style={{ backgroundColor: canSpend ? primary : theme.border }}>
+          <HeroButton className="flex-1" variant="primary" onPress={onSend} isDisabled={!canSpend}>
             <AccentIcon name="send-outline" size={16} />
             <HeroButton.Label>{t('sendCredits')}</HeroButton.Label>
           </HeroButton>
@@ -800,7 +805,7 @@ function TransactionCard({
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const isCredit = transaction.type === 'credit';
-  const tone = isCredit ? '#22c55e' : '#f43f5e';
+  const tone = isCredit ? theme.success : theme.error;
   const name = getOtherName(transaction, t('system'));
   const signedAmount = transaction.amount < 0 ? '-' : (isCredit ? '+' : '-');
   const amount = t('signedHours', { sign: signedAmount, count: Math.abs(transaction.amount) });

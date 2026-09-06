@@ -41,6 +41,8 @@
     "saveFailedTitle": "Impossibile salvare la ricerca",
     "saveFailedMessage": "Controlla il nome della ricerca e riprova.",
     "deleteFailedTitle": "Impossibile eliminare la ricerca",
-    "deleteFailedMessage": "Riprova."
+    "deleteFailedMessage": "Riprova.",
+    "deleteConfirmTitle": "Eliminare questa ricerca salvata?",
+    "deleteConfirmMessage": "Puoi salvarla di nuovo in qualsiasi momento da una nuova ricerca."
   }
 }

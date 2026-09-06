@@ -38,7 +38,9 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { contrastText, withAlpha } from '@/lib/utils/color';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import {
   eventIsoToLocalInput,
   eventLocalInputToIso,
@@ -47,8 +49,11 @@ import {
 } from '@/lib/utils/eventDateTime';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
 const eventCategoryIds = ['workshop', 'social', 'outdoor', 'online', 'meeting', 'training', 'other'] as const;
@@ -115,11 +120,13 @@ function toApiDate(value: string, timeZone: string, allDay: boolean, isEnd: bool
   return eventLocalInputToIso(localValue, timeZone) ?? '';
 }
 
-function toNumber(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
+function isValidTimeZone(timeZone: string): boolean {
+  try {
+    new Intl.DateTimeFormat(undefined, { timeZone }).format(0);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function resolveEventCategory(event: CanonicalEvent): string {
@@ -141,6 +148,7 @@ function NewEventScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const parsedGroupId = Number(params.group_id);
   const groupId = Number.isFinite(parsedGroupId) && parsedGroupId > 0 ? parsedGroupId : null;
   const eventId = Number(params.id);
@@ -185,12 +193,17 @@ function NewEventScreen() {
     endDate: string | null;
     startClock: string | null;
     endClock: string | null;
+    /** The stored start instant, so an unchanged past start is not re-validated as "future" (S4-18). */
+    startIso: string | null;
   } | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [existingCoverImage, setExistingCoverImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
-  const hasAttemptedEditHydrationRef = useRef(false);
+  const [editLoadFailed, setEditLoadFailed] = useState(false);
+  const [editRetryToken, setEditRetryToken] = useState(0);
+  const attemptedEditRetryRef = useRef<number | null>(null);
   const parsedSeriesId = Number(params.series_id);
   const [seriesId, setSeriesId] = useState<number | null>(
     Number.isFinite(parsedSeriesId) && parsedSeriesId > 0 ? parsedSeriesId : null,
@@ -201,27 +214,49 @@ function NewEventScreen() {
       ? ({ pathname: '/(modals)/group-detail', params: { id: String(groupId) } } as unknown as Href)
       : '/(tabs)/events';
 
+  // Mount tracking lives in its own effect so a re-render mid-fetch (a toast, a category
+  // response, a re-created `t`) cannot cancel the hydration through a dependency cleanup.
+  const isMountedRef = useRef(true);
   useEffect(() => {
-    if (!isEditing || hasHydratedEdit || hasAttemptedEditHydrationRef.current) return;
-    hasAttemptedEditHydrationRef.current = true;
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
+  const tRef = useRef(t);
+  tRef.current = t;
 
-    let isMounted = true;
+  useEffect(() => {
+    if (!isEditing || hasHydratedEdit || attemptedEditRetryRef.current === editRetryToken) return;
+    attemptedEditRetryRef.current = editRetryToken;
+
+    setEditLoadFailed(false);
     getEvent(eventId)
       .then((response) => {
-        if (!isMounted) return;
+        if (!isMountedRef.current) return;
         if (!response.data.permissions.edit) throw new Error('EVENT_EDIT_NOT_ALLOWED');
         hydrateFromEvent(response.data);
         setHasHydratedEdit(true);
       })
       .catch(() => {
-        if (!isMounted) return;
-        showToast({ title: t('create.failedTitle'), description: t('create.loadFailed'), variant: 'danger' });
+        if (!isMountedRef.current) return;
+        // 🔴 Not a dead form. A failed hydration used to leave the empty fields on screen
+        // with a live "Update event" button — one tap would have overwritten the server
+        // record with blanks (audit 2026-09-05, S4-03). The form is withheld until the
+        // event loads, and the failure is shown with a retry.
+        setEditLoadFailed(true);
+        showToastRef.current({
+          title: tRef.current('create.failedTitle'),
+          description: tRef.current('create.loadFailed'),
+          variant: 'danger',
+        });
       });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [eventId, hasHydratedEdit, isEditing, showToast, t]);
+    // hydrateFromEvent is a plain closure over setters; the ref-based reads above are
+    // deliberate so the fetch does not restart on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRetryToken, eventId, hasHydratedEdit, isEditing]);
 
   useEffect(() => {
     let isMounted = true;
@@ -294,6 +329,7 @@ function NewEventScreen() {
       endDate: visibleEndLocal ? visibleEndLocal.slice(0, 10) : null,
       startClock: event.schedule.all_day ? null : startLocal.slice(11, 16),
       endClock: event.schedule.all_day || !endBoundaryLocal ? null : endBoundaryLocal.slice(11, 16),
+      startIso: event.schedule.start_at,
     };
     setTitle(event.title ?? '');
     setDescription(event.description ?? '');
@@ -351,6 +387,37 @@ function NewEventScreen() {
     ]);
   }
 
+  // Everything the member can type or choose. Recurrence settings count only once the
+  // recurring toggle is on, because capability negotiation may normalise them silently.
+  const formFingerprint = JSON.stringify([
+    currentRevisionFingerprint(),
+    isRecurring,
+    isRecurring ? [recurrenceFrequency, recurrenceDays, recurrenceEndType, recurrenceCount, recurrenceEndDate] : null,
+  ]);
+  // The baseline is the form as first shown: the defaults for a new event, the hydrated
+  // values for an edit. Anything different from it is unsaved input worth asking about.
+  const baselineRef = useRef<string | null>(null);
+  if (!isEditing && baselineRef.current === null) baselineRef.current = formFingerprint;
+  useEffect(() => {
+    if (isEditing && hasHydratedEdit && baselineRef.current === null) baselineRef.current = formFingerprint;
+  }, [formFingerprint, hasHydratedEdit, isEditing]);
+  const isDirty = baselineRef.current !== null && formFingerprint !== baselineRef.current;
+  // 🔴 A mistaken Back used to drop a whole event description without a word (S4-04).
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: isSubmitting || hasSaved,
+    confirm,
+    title: t('create.unsavedTitle'),
+    message: t('create.unsavedMessage'),
+    discardLabel: t('create.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
+  const requiredFieldsFilled = title.trim().length > 0
+    && description.trim().length > 0
+    && startTime.trim().length > 0
+    && (!isEditing || hasHydratedEdit);
+
   async function pickCoverImage() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -383,15 +450,33 @@ function NewEventScreen() {
     }
 
     const eventTimezone = timezone.trim();
-    const start = toApiDate(startTime, eventTimezone, allDay, false);
-    const end = endTime.trim() ? toApiDate(endTime, eventTimezone, allDay, true) : null;
-    if (!title.trim() || !description.trim() || !eventTimezone || !start || (allDay && !end)) {
+    const startInput = startTime.trim();
+    const endInput = endTime.trim();
+    if (!title.trim() || !description.trim() || !eventTimezone || !startInput || (allDay && !endInput)) {
+      showToast({ title: t('create.validationTitle'), description: t('create.validationRequired'), variant: 'warning' });
+      return;
+    }
+    if (!isValidTimeZone(eventTimezone)) {
       showToast({ title: t('create.validationTitle'), description: t('create.validationRequired'), variant: 'warning' });
       return;
     }
 
+    const start = toApiDate(startTime, eventTimezone, allDay, false);
+    const end = endInput ? toApiDate(endTime, eventTimezone, allDay, true) : null;
+    // A typed date that does not parse is a FORMAT problem, not a missing field — saying
+    // "required" over a filled box sent members in circles (S4-25).
+    if (!start || (endInput && !end)) {
+      showToast({ title: t('create.validationTitle'), description: t('create.validationDateFormat'), variant: 'warning' });
+      return;
+    }
+
     const startDate = new Date(start);
-    if (startDate <= new Date()) {
+    // An event that has already started may still be edited as long as its start is left
+    // alone; only a start the member actually changed has to be in the future (S4-18).
+    const startUnchanged = isEditing && originalScheduleRef.current?.startIso !== null
+      && originalScheduleRef.current?.startIso !== undefined
+      && new Date(originalScheduleRef.current.startIso).getTime() === startDate.getTime();
+    if (startDate <= new Date() && !startUnchanged) {
       showToast({ title: t('create.validationTitle'), description: t('create.validationStartFuture'), variant: 'warning' });
       return;
     }
@@ -409,8 +494,8 @@ function NewEventScreen() {
 
     const hasLatitude = latitude.trim().length > 0;
     const hasLongitude = longitude.trim().length > 0;
-    const latitudeValue = toNumber(latitude);
-    const longitudeValue = toNumber(longitude);
+    const latitudeValue = parseDecimalInput(latitude);
+    const longitudeValue = parseDecimalInput(longitude);
     if (
       hasLatitude !== hasLongitude
       || (hasLatitude && (latitudeValue === null || latitudeValue < -90 || latitudeValue > 90))
@@ -443,6 +528,7 @@ function NewEventScreen() {
 
     setIsSubmitting(true);
     let successDestination: Parameters<typeof router.push>[0] | null = null;
+    let saved = false;
     let attemptedRecurrenceRevision = false;
     try {
       const selectedCategory = categories.find((option) => String(option.id) === category);
@@ -567,6 +653,8 @@ function NewEventScreen() {
         const result = await createEvent(payload);
         id = result.data.id;
       }
+      saved = true;
+      setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (id) {
         if (selectedImageUri) {
@@ -597,6 +685,10 @@ function NewEventScreen() {
     } finally {
       setIsSubmitting(false);
     }
+
+    // 🔴 A rejected save used to fall through to the navigation below and leave the form
+    // anyway — the toast showed for a frame and every typed field was gone (S4-01).
+    if (!saved) return;
 
     // 🔴 `replace`, not `push`, and it is the difference between working and silent.
     //
@@ -642,6 +734,7 @@ function NewEventScreen() {
         idempotencyKey,
       );
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setHasSaved(true);
       setRevisionPreview(null);
       setRevisionPatch(null);
       setRevisionFingerprint(null);
@@ -677,6 +770,21 @@ function NewEventScreen() {
         backLabel={t('common:back')}
         fallbackHref={fallbackHref}
       />
+      {isEditing && editLoadFailed ? (
+        <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-event-load-failed">
+          <EmptyState
+            icon="calendar-outline"
+            title={t('create.loadFailedTitle')}
+            subtitle={t('create.loadFailed')}
+            actionLabel={t('common:buttons.retry')}
+            onAction={() => setEditRetryToken((value) => value + 1)}
+          />
+        </View>
+      ) : isEditing && !hasHydratedEdit ? (
+        <View className="flex-1 items-center justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-event-loading">
+          <LoadingSpinner />
+        </View>
+      ) : (
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: theme.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -970,7 +1078,9 @@ function NewEventScreen() {
       </ScrollView>
         <FormActionFooter
           title={isEditing ? t('create.editReviewTitle') : t('create.reviewTitle')}
-          subtitle={isEditing ? t('create.editReviewSubtitle') : t('create.reviewSubtitle')}
+          subtitle={!requiredFieldsFilled
+            ? t('create.reviewMissing')
+            : isEditing ? t('create.editReviewSubtitle') : t('create.reviewSubtitle')}
           submitLabel={isEditing && isRecurringSeries && recurrenceEditScope === 'this_and_future'
             ? t('create.revisionPreview')
             : isEditing
@@ -978,9 +1088,12 @@ function NewEventScreen() {
               : t('create.submit')}
           primary={primary}
           isSubmitting={isSubmitting}
+          isDisabled={!requiredFieldsFilled}
           onSubmit={submit}
         />
       </KeyboardAvoidingView>
+      )}
+      {confirmDialog}
     </SafeAreaView>
   );
 }
@@ -1018,9 +1131,15 @@ function FormField({
   );
 }
 
-function ToggleChip({ label, selected, onPress, primary }: { label: string; selected: boolean; onPress: () => void; primary: string }) {
+function ToggleChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void; primary: string }) {
   return (
-    <HeroButton size="sm" variant={selected ? 'primary' : 'secondary'} onPress={onPress}>
+    <HeroButton
+      size="sm"
+      variant={selected ? 'primary' : 'secondary'}
+      onPress={onPress}
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+    >
       <HeroButton.Label>{label}</HeroButton.Label>
     </HeroButton>
   );

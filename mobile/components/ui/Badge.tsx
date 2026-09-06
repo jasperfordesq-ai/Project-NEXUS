@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import React from 'react';
 import { Chip } from 'heroui-native';
 import type { ChipSize } from 'heroui-native';
@@ -44,7 +45,7 @@ export default function Badge({ label, color, size = 'md', variant = 'solid' }: 
         }
       >
         <Chip.Label
-          style={variant === 'solid' ? { color: '#fff' } : { color: resolvedColor }}
+          style={variant === 'solid' ? { color: contrastText(resolvedColor) } : { color: resolvedColor }}
         >
           {label}
         </Chip.Label>

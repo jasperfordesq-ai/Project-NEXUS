@@ -83,6 +83,11 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
+const mockUsePaginatedApi = jest.fn();
+jest.mock('@/lib/hooks/usePaginatedApi', () => ({
+  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+}));
+
 const mockUseApi = jest.fn();
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
@@ -164,9 +169,24 @@ import { navigateToLink } from '@/lib/utils/navigateToLink';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
+/** The list is paginated since the 2026-09-06 audit; older notifications used to be unreachable. */
+function pageState(items: unknown[] = [], overrides: Record<string, unknown> = {}) {
+  return {
+    items,
+    isLoading: false,
+    isLoadingMore: false,
+    error: null,
+    hasMore: false,
+    loadMore: jest.fn(),
+    refresh: jest.fn(),
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockUseApi.mockReturnValue(defaultApiState);
+  mockUsePaginatedApi.mockReturnValue(pageState());
 });
 
 const mockNotification = {
@@ -197,24 +217,14 @@ describe('NotificationsScreen', () => {
   });
 
   it('renders a loading spinner when data is loading', () => {
-    mockUseApi.mockReturnValueOnce({
-      data: null,
-      isLoading: true,
-      error: null,
-      refresh: jest.fn(),
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([], { isLoading: true }));
 
     const { toJSON } = render(<NotificationsScreen />);
     expect(toJSON()).toBeTruthy();
   });
 
   it('renders notification items when data is available', () => {
-    mockUseApi.mockReturnValueOnce({
-      data: { data: [mockNotification] },
-      isLoading: false,
-      error: null,
-      refresh: jest.fn(),
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([mockNotification]));
 
     const { getByText } = render(<NotificationsScreen />);
     expect(getByText('New message from Alice')).toBeTruthy();
@@ -227,14 +237,8 @@ describe('NotificationsScreen', () => {
    * grouped. `/v2/notifications/counts` has the real total. Journey 7.15.
    */
   it('shows the unread total from the server, not the count on the loaded page', () => {
-    let call = 0;
-    mockUseApi.mockImplementation(() => {
-      call += 1;
-      if (call === 1) {
-        return { data: { data: [mockNotification] }, isLoading: false, error: null, refresh: jest.fn() };
-      }
-      return { data: { data: { total: 26 } }, isLoading: false, error: null, refresh: jest.fn() };
-    });
+    mockUsePaginatedApi.mockReturnValue(pageState([mockNotification]));
+    mockUseApi.mockReturnValue({ data: { data: { total: 26 } }, isLoading: false, error: null, refresh: jest.fn() });
 
     const { getByText } = render(<NotificationsScreen />);
 
@@ -243,14 +247,8 @@ describe('NotificationsScreen', () => {
   });
 
   it('falls back to the loaded page when the count request gives nothing', () => {
-    let call = 0;
-    mockUseApi.mockImplementation(() => {
-      call += 1;
-      if (call === 1) {
-        return { data: { data: [mockNotification] }, isLoading: false, error: null, refresh: jest.fn() };
-      }
-      return { data: null, isLoading: false, error: 'offline', refresh: jest.fn() };
-    });
+    mockUsePaginatedApi.mockReturnValue(pageState([mockNotification]));
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'offline', refresh: jest.fn() });
 
     const { getByText } = render(<NotificationsScreen />);
 
@@ -260,13 +258,9 @@ describe('NotificationsScreen', () => {
   it('refreshes both the notification list and the server unread total on pull', () => {
     const listRefresh = jest.fn();
     const countRefresh = jest.fn();
-    let call = 0;
-    mockUseApi.mockImplementation(() => {
-      call += 1;
-      return call % 2 === 1
-        ? { data: { data: [mockNotification] }, isLoading: false, error: null, refresh: listRefresh }
-        : { data: { data: { total: 26 } }, isLoading: false, error: null, refresh: countRefresh };
-    });
+    // The list is paginated and the count is a separate request; a pull must touch both.
+    mockUsePaginatedApi.mockReturnValue(pageState([mockNotification], { refresh: listRefresh }));
+    mockUseApi.mockReturnValue({ data: { data: { total: 26 } }, isLoading: false, error: null, refresh: countRefresh });
 
     const { UNSAFE_getByType } = render(<NotificationsScreen />);
     fireEvent(UNSAFE_getByType(RefreshControl), 'refresh');
@@ -275,14 +269,26 @@ describe('NotificationsScreen', () => {
     expect(countRefresh).toHaveBeenCalledTimes(1);
   });
 
+  it('reaches past the first page, so older notifications are not stranded', () => {
+    /*
+      🔴 S3-03: the screen fetched exactly ONE page of 25 and offered no load-more. On the
+      emulator fixture (47 unread) the header said 47 and the list held 25; the other 22
+      could not be reached from inside the app at all.
+    */
+    const loadMore = jest.fn();
+    mockUsePaginatedApi.mockReturnValue(pageState([mockNotification], { hasMore: true, loadMore }));
+
+    const { UNSAFE_getByType } = render(<NotificationsScreen />);
+    const list = UNSAFE_getByType(require('react-native').FlatList);
+
+    expect(typeof list.props.onEndReached).toBe('function');
+    list.props.onEndReached();
+    expect(loadMore).toHaveBeenCalled();
+  });
+
   it('marks a single notification as read from the card action', async () => {
     const refresh = jest.fn();
-    mockUseApi.mockReturnValueOnce({
-      data: { data: [mockNotification] },
-      isLoading: false,
-      error: null,
-      refresh,
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([mockNotification], { refresh: refresh }));
 
     const { getAllByText } = render(<NotificationsScreen />);
     fireEvent.press(getAllByText('Mark read')[0]);
@@ -293,12 +299,7 @@ describe('NotificationsScreen', () => {
 
   it('deletes a notification from the card action', async () => {
     const refresh = jest.fn();
-    mockUseApi.mockReturnValueOnce({
-      data: { data: [mockNotification] },
-      isLoading: false,
-      error: null,
-      refresh,
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([mockNotification], { refresh: refresh }));
 
     const { getAllByText } = render(<NotificationsScreen />);
     fireEvent.press(getAllByText('Delete')[0]);
@@ -309,12 +310,7 @@ describe('NotificationsScreen', () => {
 
   it('exposes a swipe action for marking an ungrouped notification read', async () => {
     const refresh = jest.fn();
-    mockUseApi.mockReturnValue({
-      data: { data: [mockNotification] },
-      isLoading: false,
-      error: null,
-      refresh,
-    });
+    mockUsePaginatedApi.mockReturnValue(pageState([mockNotification], { refresh: refresh }));
 
     const { getByLabelText } = render(<NotificationsScreen />);
 
@@ -325,12 +321,7 @@ describe('NotificationsScreen', () => {
 
   it('exposes a swipe action for deleting an ungrouped notification', async () => {
     const refresh = jest.fn();
-    mockUseApi.mockReturnValue({
-      data: { data: [mockNotification] },
-      isLoading: false,
-      error: null,
-      refresh,
-    });
+    mockUsePaginatedApi.mockReturnValue(pageState([mockNotification], { refresh: refresh }));
 
     const { getByLabelText } = render(<NotificationsScreen />);
     fireEvent.press(getByLabelText('Swipe action: delete notification'));
@@ -340,12 +331,7 @@ describe('NotificationsScreen', () => {
 
   it('opens a notification link and marks it read when the card body is pressed', async () => {
     const refresh = jest.fn();
-    mockUseApi.mockReturnValueOnce({
-      data: { data: [mockNotification] },
-      isLoading: false,
-      error: null,
-      refresh,
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([mockNotification], { refresh: refresh }));
 
     const { getByLabelText } = render(<NotificationsScreen />);
     fireEvent.press(getByLabelText('Unread: New message from Alice. Alice sent you a message about your listing.'));
@@ -371,12 +357,7 @@ describe('NotificationsScreen', () => {
       latest_at: new Date(Date.now() - 120_000).toISOString(),
     };
     const refresh = jest.fn();
-    mockUseApi.mockReturnValue({
-      data: { data: [grouped] },
-      isLoading: false,
-      error: null,
-      refresh,
-    });
+    mockUsePaginatedApi.mockReturnValue(pageState([grouped], { refresh: refresh }));
 
     const { getAllByText, getByLabelText, getByText, queryByText } = render(<NotificationsScreen />);
 
@@ -395,36 +376,21 @@ describe('NotificationsScreen', () => {
   });
 
   it('renders the "Mark all read" button when unread notifications exist', () => {
-    mockUseApi.mockReturnValueOnce({
-      data: { data: [mockNotification] },
-      isLoading: false,
-      error: null,
-      refresh: jest.fn(),
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([mockNotification]));
 
     const { getByText } = render(<NotificationsScreen />);
     expect(getByText('Mark all read')).toBeTruthy();
   });
 
   it('does not render "Mark all read" when all notifications are read', () => {
-    mockUseApi.mockReturnValueOnce({
-      data: { data: [{ ...mockNotification, is_read: true }] },
-      isLoading: false,
-      error: null,
-      refresh: jest.fn(),
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([{ ...mockNotification, is_read: true }]));
 
     const { queryByText } = render(<NotificationsScreen />);
     expect(queryByText('Mark all read')).toBeNull();
   });
 
   it('renders error state with retry button when there is an error', () => {
-    mockUseApi.mockReturnValueOnce({
-      data: null,
-      isLoading: false,
-      error: 'Failed to load notifications.',
-      refresh: jest.fn(),
-    });
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([], { error: 'Failed to load notifications.' }));
 
     const { getByText } = render(<NotificationsScreen />);
     expect(getByText('Failed to load notifications.')).toBeTruthy();

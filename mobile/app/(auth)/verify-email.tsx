@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -12,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Card as HeroCard, Spinner } from 'heroui-native';
 
 import { verifyEmail } from '@/lib/api/auth';
-import { ApiResponseError } from '@/lib/api/client';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import Button from '@/components/ui/Button';
@@ -52,7 +53,8 @@ export default function VerifyEmailScreen() {
         setState('success');
       } catch (err) {
         if (cancelled) return;
-        setMessage(err instanceof ApiResponseError || err instanceof Error ? err.message : t('verifyEmail.genericError'));
+        // describeApiError keeps the server's wording and hides raw JavaScript error text.
+        setMessage(describeApiError(err, t('verifyEmail.genericError')));
         setState('error');
       }
     }
@@ -98,7 +100,7 @@ export default function VerifyEmailScreen() {
                 {state === 'loading' ? (
                   <Spinner color="white" />
                 ) : (
-                  <Ionicons name={icon} size={32} color="#fff" />
+                  <Ionicons name={icon} size={32} color={contrastText(primary)} />
                 )}
               </View>
               <HeroCard.Title className="text-center text-2xl font-bold">{title}</HeroCard.Title>

@@ -16,6 +16,15 @@ const mockUpdateSubAccountTiers = jest.fn();
 const mockUpdateManagerSubAccountTiers = jest.fn();
 const mockGetSubAccountActivity = jest.fn();
 
+// Removing a linked account is confirmed first (audit 2026-09-06, S3-17); the mock
+// resolves immediately so the revoke itself is still what this suite exercises.
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirmDialog: null,
+  }),
+}));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, opts?: Record<string, unknown>) => {
@@ -89,7 +98,8 @@ jest.mock('react-i18next', () => ({
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#6366f1' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     text: '#000',

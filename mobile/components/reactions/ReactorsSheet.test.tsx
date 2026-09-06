@@ -43,7 +43,8 @@ jest.mock('@/components/ui/Avatar', () => {
   return () => <View testID="reactor-avatar" />;
 });
 
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#2563eb' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#2563eb' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     surface: '#fff', borderSubtle: '#ddd', textSecondary: '#555', text: '#111', textMuted: '#777',

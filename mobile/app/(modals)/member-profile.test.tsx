@@ -13,6 +13,7 @@ const mockHasFeature = jest.fn<boolean, [string]>(() => true);
 const mockHasModule = jest.fn<boolean, [string]>(() => true);
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => mockParams,

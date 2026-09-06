@@ -181,7 +181,7 @@ describe('exchange images', () => {
     (api.upload as jest.Mock).mockResolvedValue({ success: true, data: {} });
 
     await expect(uploadExchangeImage(5, 'file:///tmp/listing.jpg')).rejects.toThrow(
-      'Listing image upload did not return an image URL.',
+      'did not return the file',
     );
   });
 

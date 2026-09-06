@@ -7,9 +7,11 @@ jest.mock('@/lib/api/client', () => ({
   api: { get: jest.fn(), post: jest.fn() },
   ApiResponseError: class ApiResponseError extends Error {
     status: number;
-    constructor(status: number, message: string) {
+    code?: string;
+    constructor(status: number, message: string, _errors?: unknown, code?: string) {
       super(message);
       this.status = status;
+      this.code = code;
     }
   },
 }));
@@ -107,9 +109,10 @@ describe('mobile event registration product contract', () => {
   it('fails closed on secret-bearing contract drift without logging the secret', async () => {
     (api.get as jest.Mock).mockResolvedValue({ data: { ...state, source_snapshot_ciphertext: 'private-ciphertext' } });
 
-    await expect(getAttendeeRegistrationProduct(42)).rejects.toMatchObject({
-      message: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT',
-    });
+    await expect(getAttendeeRegistrationProduct(42)).rejects.toHaveProperty(
+      'code',
+      'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT',
+    );
     const telemetry = JSON.stringify((Sentry.captureMessage as jest.Mock).mock.calls);
     expect(telemetry).not.toContain('private-ciphertext');
     expect(telemetry).toContain('/api/v2/events/{id}/registration-product');

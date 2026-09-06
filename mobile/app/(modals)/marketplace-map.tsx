@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { formatDecimal } from '@/lib/utils/decimal';
 import { type ReactNode, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -219,7 +220,7 @@ function MarketplaceMapScreen() {
               <View className="mb-1 self-start">
                 <Chip size="sm" variant="secondary">
                   <Ionicons name="navigate-outline" size={12} color={primary} />
-                  <Chip.Label>{t('map.distance', { distance: Number(item.distance_km).toFixed(1) })}</Chip.Label>
+                  <Chip.Label>{t('map.distance', { distance: formatDecimal(Number(item.distance_km), 1) })}</Chip.Label>
                 </Chip>
               </View>
             ) : null}

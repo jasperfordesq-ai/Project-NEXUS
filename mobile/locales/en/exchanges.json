@@ -70,6 +70,7 @@
     "errorTitle": "Could not load group exchanges",
     "errorDescription": "Pull to refresh or try again later.",
     "moreAvailable": "More group exchanges are available on the web view.",
+    "loadMore": "Load more",
     "create": {
       "open": "Create group exchange",
       "title": "Create group exchange",
@@ -130,6 +131,7 @@
   "filtersIntro": "Search by skill, category, place, or member.",
   "filterAllCategories": "All categories",
   "categoriesLoading": "Loading categories",
+  "categoriesRetry": "Categories didn't load — tap to retry",
   "filters": "Filters",
   "filtersWithCount": "Filters ({{count}})",
   "filtersWithCount_one": "Filters ({{count}})",
@@ -458,6 +460,9 @@
     "completedToast": "Ready to confirm",
     "confirmedToast": "Hours confirmed",
     "cancelledToast": "Exchange cancelled",
+    "cancelConfirmTitle": "Cancel this exchange?",
+    "cancelConfirmMessage": "The other member will be told it was cancelled. This cannot be undone.",
+    "cancelConfirmAction": "Cancel exchange",
     "status": {
       "pending_provider": "Awaiting acceptance",
       "pending_broker": "Awaiting a coordinator",

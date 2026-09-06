@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
+import { formatDecimal } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,7 +34,8 @@ function formatBytes(bytes: number | null): string {
     value /= 1024;
     unit += 1;
   }
-  return `${value.toFixed(value < 10 && unit > 0 ? 1 : 0)} ${units[unit]}`;
+  const digits = value < 10 && unit > 0 ? 1 : 0;
+  return `${formatDecimal(value, digits, digits)} ${units[unit]}`;
 }
 
 function formatDate(value: string | null): string {
@@ -51,12 +54,17 @@ export default function SettingsDataExportScreen() {
   const [history, setHistory] = useState<DataExportHistoryRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRequesting, setIsRequesting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadHistory = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       setHistory(await getDataExportHistory());
     } catch (err) {
+      // 🔴 S3-15: once the toast faded the member was told "No exports yet", which is a
+      // different and much more alarming statement than "we could not check".
+      setLoadError(describeApiError(err, t('dataExport.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
@@ -137,7 +145,7 @@ export default function SettingsDataExportScreen() {
                 <HeroButton.Label>{isRequesting ? t('dataExport.requesting') : t('dataExport.requestButton')}</HeroButton.Label>
               </HeroButton>
               <View className="flex-row items-start gap-2">
-                <Ionicons name="warning-outline" size={16} color={theme.warning ?? primary} />
+                <Ionicons name="warning-outline" size={16} color={theme.warning} />
                 <Text className="min-w-0 flex-1 text-xs leading-4" style={{ color: theme.textSecondary }}>{t('dataExport.warning')}</Text>
               </View>
             </HeroCard.Body>
@@ -153,6 +161,8 @@ export default function SettingsDataExportScreen() {
               </View>
               {isLoading ? (
                 <LoadingSpinner />
+              ) : loadError ? (
+                <ErrorState subtitle={loadError} onRetry={() => void loadHistory()} isRetrying={isLoading} testID="data-export-history-error" />
               ) : history.length === 0 ? (
                 <EmptyState icon="document-text-outline" title={t('dataExport.history.empty')} subtitle={t('dataExport.history.emptyDesc')} />
               ) : (

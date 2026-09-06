@@ -114,5 +114,8 @@
     "email": "E-Mail",
     "in_app": "In-App-Benachrichtigung",
     "push": "Push-Benachrichtigung"
-  }
+  },
+  "unsaved_title": "Diese Nachricht verwerfen?",
+  "unsaved_message": "Du hast ungespeicherten Text. Wenn du jetzt schließt, geht er verloren.",
+  "discard": "Verwerfen"
 }

@@ -10,6 +10,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 // --- Mocks ---
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({ id: 'ext-2' }),
   useNavigation: () => ({ setOptions: jest.fn() }),
@@ -66,6 +67,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -221,8 +223,10 @@ describe('FederationPartnerScreen', () => {
 
     fireEvent.press(getByText('Share partner'));
 
+    // The link carries the member's own community: a bare platform host lands the
+    // recipient on the wrong community for anyone on a custom domain (audit 2026-09-06).
     expect(shareSpy).toHaveBeenCalledWith({
-      message: 'TimeOverflow Local — https://app.project-nexus.ie/federation/partners/ext-2',
+      message: 'TimeOverflow Local — https://app.project-nexus.ie/hour-timebank/federation/partners/ext-2',
     });
     shareSpy.mockRestore();
   });

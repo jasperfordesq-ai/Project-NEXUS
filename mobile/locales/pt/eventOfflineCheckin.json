@@ -72,7 +72,14 @@
       "synced": "Sincronizado",
       "conflict": "Conflito",
       "rejected": "Rejeitado"
-    }
+    },
+    "readOnlyTitle": "O check-in offline terminou neste dispositivo",
+    "readOnlyExpired": "A lista transferida expirou. Não é possível colocar nada de novo em fila, mas os check-ins por sincronizar são mantidos até os remover.",
+    "readOnlyRotated": "A autorização deste dispositivo foi substituída. Não é possível colocar nada de novo em fila, mas os check-ins por sincronizar são mantidos até os remover.",
+    "pendingKept": "{{count}} check-ins por sincronizar continuam guardados neste dispositivo.",
+    "pendingKept_one": "{{count}} check-in por sincronizar continua guardado neste dispositivo.",
+    "purgePendingWarning": "{{count}} check-ins por sincronizar serão perdidos definitivamente.",
+    "purgePendingWarning_one": "{{count}} check-in por sincronizar será perdido definitivamente."
   },
   "conflicts": {
     "title": "Conflitos de check-in",

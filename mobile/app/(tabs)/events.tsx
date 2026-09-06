@@ -3,11 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { Button as HeroButton, Card as HeroCard, Select, Separator, Spinner, Surface, Tabs } from 'heroui-native';
@@ -63,6 +63,23 @@ export default function EventsScreen() {
 
   const { items, isLoading, isLoadingMore, hasMore, refresh, loadMore, error } =
     usePaginatedApi<CanonicalEvent, CanonicalEventsResponse>(fetcher, extractEventsPage, [when, stepFree]);
+  const refreshOnFocus = refresh;
+  /*
+    🔴 S4-09: an RSVP, a join, or something created on a child screen was invisible here
+    until the member pulled to refresh — the list still offered "Apply" for an opportunity
+    they had applied to. Refetch on every return; the first mount already fetched.
+  */
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refreshOnFocus();
+    }, [refreshOnFocus]),
+  );
+
 
   function handleTabChange(tab: EventTab) {
     if (tab !== when) {

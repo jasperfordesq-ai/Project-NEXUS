@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile Visual Audit
 
-Last reviewed: 2026-08-19
+Last reviewed: 2026-09-06
 
 Findings from looking at the Expo client on an emulator, screen by screen. This
 exists because the app was reported as having "quite a lot of visual bugs" and
@@ -30,6 +30,46 @@ wrong with it. Still not a complete audit — see
 Run a large-text pass with
 `adb shell settings put system font_scale 1.3` before `npm run screenshot:sweep`,
 and put it back to `1.0` afterwards.
+
+---
+
+## 7. Second pass, 2026-09-05/06 — screens behind an action, both schemes, two widths
+
+The first sweep only walked navigation. This pass signed in as the `e2e.user.a` fixture on
+`nexus_test` and photographed the screens behind an action — listing detail, a message
+thread with voice notes, the wallet, notifications with 47 unread, Edit Profile, the create
+forms, Jobs, Groups, Members, Search, Settings — in dark mode, then light, then at a 360dp
+control (`wm size 720x1600` + `wm density 320`, restored afterwards). Everything found was
+fixed in the same pass and is itemised in `CHANGELOG.md` under `[Unreleased]`; the
+screen-level ones:
+
+| Where | What a member saw | Root cause |
+|---|---|---|
+| Home banner | Hour Timebank's wordmark as an unreadable 30dp smear | `TenantBanner` forced every logo into a 30×30 box with `contain` |
+| Feed, plain post | A stark near-white bar across the card in dark mode; nothing in light | `#E4E4E7` strip hard-coded for the `post` type |
+| Feed at 360dp | Author name cut to "E2E Us…" | Type chip shared the header row with the name |
+| Message thread | A 👍 ❤️ 😂 ⋯ row as tall as the bubble under *every* message; three messages per screen | Quick-react bar rendered unconditionally |
+| Voice notes | Every note read 0:00 until played | Server sent `audio_duration`; the bubble never received it |
+| Notifications | "You have no new notifications" over a spinner, with 47 unread | Hero copy fell back to a loaded-page count of 0 while both requests were in flight |
+| Notifications rows | A "?" avatar and a chip reading "Notification" on system rows | No actor → `Avatar name="?"`; unclassified category → generic label |
+| Edit Profile | The screen *title* read "Loading profile" over a filled form | `hydrating` flag swapped the title, not the subtitle |
+| Any disabled Save | "Save changes" invisible in both schemes | `FormActionFooter` painted `theme.border` while HeroUI kept the accent's label colour |
+| Jobs at 411dp | "My Appl…" and "My Post…" | Two-per-row wrap only engaged below 380dp; measured broken at 411dp too |
+| Groups / Jobs hero | Text jammed against the accent strip | `pt-0` on the hero body |
+| Members, Messages | "5 loaded", "1 shown" | Developer counts shown to members |
+| Wallet | Refresh spinner over the heading on first open | `refreshing={isLoading}` fired for the initial load |
+| Eleven top bars | "Go back" where every other screen says "Back" | Three per-namespace keys instead of `common:back` |
+
+🔴 **Two false alarms worth recording.** Every early screenshot had a green ring around one
+element: TalkBack was still enabled on the emulator from an earlier session, and its focus
+highlight looked exactly like a stray `border-2 border-success`. And after the 360dp control
+was reset with `wm size reset` / `wm density reset`, the *running* app kept the old density
+and drew every screen ~30% too wide, cut off at the right edge — a convincing "layout is
+broken everywhere" that was cured by force-stopping the app. Check `settings get secure
+enabled_accessibility_services` and restart the app before believing either.
+
+Still not covered by any picture: the create forms after a failed submit, 1.5x and 2.0x text,
+and a physical phone.
 
 ---
 

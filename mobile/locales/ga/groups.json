@@ -63,8 +63,12 @@
       "delete": "Scrios",
       "deleteLabel": "Scrios {{name}}",
       "deleteTitle": "Scrios an comhad",
+      "downloadFailed": "Níorbh fhéidir an comhad seo a íoslódáil. Bain triail eile as.",
+      "sharingUnavailable": "Ní féidir leis an ngléas seo an comhad a oscailt. Bain triail as an suíomh gréasáin.",
       "deleteMessage": "An bhfuil fonn ort {{name}} a scriosadh ón ngrúpa seo?",
-      "deleteError": "Níorbh fhéidir an comhad a scriosadh."
+      "deleteError": "Níorbh fhéidir an comhad a scriosadh.",
+      "downloadFailed": "Níorbh fhéidir an comhad a íoslódáil.",
+      "sharingUnavailable": "Ní féidir leis an ngléas seo comhaid íoslódáilte a oscailt."
     },
     "media": {
       "title": "Meáin an ghrúpa",
@@ -205,7 +209,8 @@
         "in_progress": "{{count}} ar siúl",
         "done": "{{count}} déanta",
         "overdue": "{{count}} thar téarma"
-      }
+      },
+      "dueDateInvalid": "Cuir isteach an dáta dlite san fhormáid YYYY-MM-DD, mar shampla 2026-06-30."
     },
     "analytics": {
       "title": "Anailísíocht an ghrúpa",
@@ -319,7 +324,21 @@
       "posts": "Postálacha"
     },
     "ownerTools": "Uirlisí grúpa",
-    "edit": "Cuir an grúpa in eagar"
+    "edit": "Cuir an grúpa in eagar",
+    "sectionLoadError": "Níorbh fhéidir an chuid seo a lódáil.",
+    "composerUnsavedTitle": "An dréacht seo a chaitheamh i dtraipisí?",
+    "composerUnsavedMessage": "Tá téacs neamhsheolta agat. Má dhúnann tú anois, caillfear é.",
+    "composerDiscard": "Caith i dtraipisí",
+    "discussionReplies": {
+      "title": "Freagraí",
+      "empty": "Níl aon fhreagra fós. Bí ar an gcéad duine a fhreagraíonn.",
+      "placeholder": "Scríobh freagra…",
+      "post": "Postáil freagra",
+      "loadError": "Níorbh fhéidir na freagraí a lódáil.",
+      "postError": "Níorbh fhéidir an freagra a phostáil.",
+      "validation": "Scríobh freagra roimh phostáil.",
+      "openLabel": "Oscail an plé {{title}}"
+    }
   },
   "create": {
     "templateLabel": "Teimpléad grúpa",
@@ -367,7 +386,10 @@
     "loadFailed": "Níorbh fhéidir linn sonraí an ghrúpa a luchtú. Bain triail eile as.",
     "saveFailedTitle": "Níor sábháladh an grúpa",
     "saveFailedDescription": "Níorbh fhéidir linn an grúpa a shábháil. Bain triail eile as.",
-    "failedDescription": "Níorbh fhéidir linn an grúpa a chruthú. Bain triail eile as."
+    "failedDescription": "Níorbh fhéidir linn an grúpa a chruthú. Bain triail eile as.",
+    "unsavedTitle": "An grúpa seo a chaitheamh i dtraipisí?",
+    "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
+    "discard": "Caith i dtraipisí"
   },
   "filter": {
     "all": "Gach ceann",
@@ -381,7 +403,8 @@
     "groups": "Grúpaí",
     "featured": "Faoi thrácht",
     "members": "Baill",
-    "joined": "Ball de"
+    "joined": "Ball de",
+    "loadedNote": "Baineann na comhairimh leis na grúpaí atá lódáilte go dtí seo."
   },
   "invite_accept": {
     "title": "Cuireadh grúpa",

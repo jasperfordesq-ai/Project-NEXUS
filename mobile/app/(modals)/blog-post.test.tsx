@@ -11,6 +11,8 @@ import { fireEvent, render } from '@testing-library/react-native';
 let mockSearchParams: { id: string; openComments?: string } = { id: '7' };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => mockSearchParams,
 }));
@@ -44,6 +46,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({

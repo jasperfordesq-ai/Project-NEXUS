@@ -23,7 +23,11 @@
     "device": "Permitir notificações neste dispositivo",
     "promotions": "Notificações promocionais",
     "permissionNeeded": "As notificações não estão ativadas",
-    "permissionNeededHint": "Permita as notificações quando o dispositivo solicitar. Pode alterar esta opção mais tarde nas definições do sistema."
+    "permissionNeededHint": "Permita as notificações quando o dispositivo solicitar. Pode alterar esta opção mais tarde nas definições do sistema.",
+    "registerFailed": "Não foi possível configurar as notificações",
+    "registerFailedHint": "Algo correu mal ao registar este dispositivo. Tenta novamente.",
+    "unavailable": "As notificações não estão disponíveis aqui",
+    "unavailableHint": "Este dispositivo ou esta versão não consegue receber notificações push."
   },
   "email": {
     "messages": "Mensagens",
@@ -55,6 +59,8 @@
     "saving": "Salvar senha...",
     "reviewTitle": "Pronto para atualizar?",
     "reviewSubtitle": "Salve somente quando sua nova senha e confirmação corresponderem.",
+    "footerMissing": "Preenche os três campos para continuar.",
+    "footerMismatch": "A nova palavra-passe e a confirmação ainda não coincidem.",
     "success": "Senha alterada",
     "successMessage": "Sua senha foi atualizada com sucesso.",
     "validation": {
@@ -232,6 +238,8 @@
     "approve": "Approve",
     "decline": "Decline",
     "remove": "Remove",
+    "revokeConfirmTitle": "Remover esta conta associada?",
+    "revokeConfirmMessage": "A ligação e as permissões que concede terminam de imediato. Isto não pode ser anulado.",
     "approveFailed": "Não foi possível aprovar este pedido. Tente novamente.",
     "revokeFailed": "Não foi possível remover esta conta associada. Tente novamente.",
     "permissionFailed": "Não foi possível atualizar a permissão da conta associada. Tente novamente.",

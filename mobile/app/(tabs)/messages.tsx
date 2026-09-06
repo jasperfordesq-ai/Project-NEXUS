@@ -3,10 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { contrastText } from '@/lib/utils/color';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Platform, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from '@/lib/haptics';
@@ -70,6 +71,24 @@ export default function MessagesScreen() {
   const activePage = activeTab === 'archived' ? archivedPage : inboxPage;
   const { items: conversations } = inboxPage;
   const { items: archivedConversations } = archivedPage;
+
+  /*
+    Returning from a thread showed the OLD preview and unread count until the member pulled
+    to refresh, while the tab-bar badge (refreshed by the tab layout) already showed the new
+    total — two numbers for one inbox. Refresh the inbox page on every return; the first
+    mount already fetched, so it is skipped.
+  */
+  const hasFocusedOnceRef = useRef(false);
+  const refreshInbox = inboxPage.refresh;
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refreshInbox();
+    }, [refreshInbox]),
+  );
   const {
     items: activeConversations,
     isLoading,
@@ -402,7 +421,7 @@ function MessagesHeader({
             accessibilityState={{ selected: activeTab === 'inbox' }}
             onPress={() => setActiveTab('inbox')}
           >
-            <Ionicons name="mail-outline" size={15} color={activeTab === 'inbox' ? '#fff' : primary} />
+            {activeTab === 'inbox' ? <AccentIcon name="mail-outline" size={15} /> : <Ionicons name="mail-outline" size={15} color={primary} />}
             <HeroButton.Label>{t('tabs.inbox')}</HeroButton.Label>
           </HeroButton>
           <HeroButton
@@ -412,7 +431,7 @@ function MessagesHeader({
             accessibilityState={{ selected: activeTab === 'archived' }}
             onPress={() => setActiveTab('archived')}
           >
-            <Ionicons name="archive-outline" size={15} color={activeTab === 'archived' ? '#fff' : primary} />
+            {activeTab === 'archived' ? <AccentIcon name="archive-outline" size={15} /> : <Ionicons name="archive-outline" size={15} color={primary} />}
             <HeroButton.Label>{t('tabs.archived')}</HeroButton.Label>
           </HeroButton>
         </View>
@@ -426,13 +445,16 @@ function MessagesHeader({
               {t('filtersIntro')}
             </Text>
           </View>
-          <Chip size="sm" variant="soft" color="default">
-            <Chip.Label>
-              {activeTab === 'archived'
-                ? t('archivedCount', { count: archivedCount })
-                : t('visibleCount', { count: visibleCount })}
-            </Chip.Label>
-          </Chip>
+          {/* "N shown" only means something while a search is narrowing the list. */}
+          {activeTab === 'archived' || searchQuery.trim() ? (
+            <Chip size="sm" variant="soft" color="default">
+              <Chip.Label>
+                {activeTab === 'archived'
+                  ? t('archivedCount', { count: archivedCount })
+                  : t('visibleCount', { count: visibleCount })}
+              </Chip.Label>
+            </Chip>
+          ) : null}
         </View>
 
         <Input
@@ -490,7 +512,7 @@ function ConversationCard({
           onPress={() => onArchive(conversation)}
         >
           <AccentIcon name="archive-outline" size={21} />
-          <HeroButton.Label className="text-xs font-semibold text-white" numberOfLines={1}>{t('archive')}</HeroButton.Label>
+          <HeroButton.Label className="text-xs font-semibold" numberOfLines={1}>{t('archive')}</HeroButton.Label>
         </HeroButton>
       )}
       overshootRight={false}
@@ -521,7 +543,7 @@ function ConversationCard({
                     className="absolute -right-1 -top-1 min-w-[22px] items-center justify-center rounded-full px-1.5 py-0.5"
                     style={{ backgroundColor: primary }}
                   >
-                    <Text className="text-[11px] font-bold text-white">{unreadCount > 99 ? '99+' : unreadCount}</Text>
+                    <Text className="text-[11px] font-bold" style={{ color: contrastText(primary) }}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
                   </View>
                 ) : null}
               </View>

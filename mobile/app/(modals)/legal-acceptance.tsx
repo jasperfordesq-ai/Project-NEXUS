@@ -4,11 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Spinner, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import * as Haptics from '@/lib/haptics';
@@ -140,7 +140,7 @@ function LegalAcceptanceScreenInner() {
 
         {isLoading ? (
           <View className="items-center py-8">
-            <ActivityIndicator color={primary} />
+            <Spinner size="lg" />
           </View>
         ) : loadFailed ? (
           <HeroCard className="rounded-panel p-0">

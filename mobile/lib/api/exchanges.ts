@@ -3,7 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { api } from '@/lib/api/client';
+import i18n from 'i18next';
+import { api, ApiResponseError } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 import { Platform } from 'react-native';
 
@@ -313,7 +314,7 @@ export async function uploadExchangeImage(id: number, uri: string): Promise<{ da
   const imageUrl = response.data?.image_url ?? response.image_url ?? null;
 
   if (!imageUrl) {
-    throw new Error(response.message ?? 'Listing image upload did not return an image URL.');
+    throw new ApiResponseError(502, response.message ?? i18n.t('common:errors.uploadIncomplete'));
   }
 
   return { data: { image_url: imageUrl } };

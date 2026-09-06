@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
 import { Children, Fragment, useEffect, useState } from 'react';
 import {
   View,
@@ -133,8 +134,8 @@ export default function SettingsScreen() {
     }
   }
 
-  const { data, isLoading } = useApi(() => getPrefs());
-  const { data: preferencesData, isLoading: isLoadingPreferences } = useApi(() => getPreferences());
+  const { data, isLoading, error: prefsError, refresh: refreshPrefs } = useApi(() => getPrefs());
+  const { data: preferencesData, isLoading: isLoadingPreferences, error: preferencesError, refresh: refreshPreferences } = useApi(() => getPreferences());
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null);
   const [privacyPrefs, setPrivacyPrefs] = useState<PrivacyPrefs | null>(null);
   const [saving, setSaving] = useState(false);
@@ -187,10 +188,17 @@ export default function SettingsScreen() {
 
       const result = await registerForPushNotifications(true);
       if (result !== 'registered') {
+        /*
+          🔴 S3-26: every non-registered outcome was reported as "permission needed", which
+          is wrong on a simulator or after a network failure, and sent the member to a system
+          setting that was never the problem.
+        */
+        const failed = result === 'failed';
+        const unavailable = result === 'unavailable';
         showToast({
-          title: t('push.permissionNeeded'),
-          description: t('push.permissionNeededHint'),
-          variant: 'warning',
+          title: failed ? t('push.registerFailed') : unavailable ? t('push.unavailable') : t('push.permissionNeeded'),
+          description: failed ? t('push.registerFailedHint') : unavailable ? t('push.unavailableHint') : t('push.permissionNeededHint'),
+          variant: failed ? 'danger' : 'warning',
         });
         return;
       }
@@ -319,7 +327,7 @@ export default function SettingsScreen() {
               label={t('changePassword')}
               subtitle={t('changePasswordHint')}
               icon="key-outline"
-              tone={theme.warning ?? primary}
+              tone={theme.warning}
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/(modals)/change-password');
@@ -388,6 +396,9 @@ export default function SettingsScreen() {
             primary={primary}
             theme={theme}
           >
+            {preferencesError ? (
+              <ErrorState subtitle={preferencesError} onRetry={refreshPreferences} isRetrying={isLoadingPreferences} testID="settings-privacy-error" />
+            ) : null}
             <PrivacyVisibilityRow
               label={t('privacy.profileVisibility')}
               value={currentPrivacy?.privacy_profile ?? 'members'}
@@ -468,6 +479,14 @@ export default function SettingsScreen() {
             primary={primary}
             theme={theme}
           >
+            {/*
+              🔴 S3-04: when the preferences request failed, `current` stayed null, every
+              switch rendered at its default and `toggle()` returned silently — the member
+              flipped switches that did nothing and was never told why.
+            */}
+            {prefsError ? (
+              <ErrorState subtitle={prefsError} onRetry={refreshPrefs} isRetrying={isLoading} testID="settings-push-error" />
+            ) : null}
             <SettingRow
               label={t('push.device')}
               value={Boolean(current?.push_enabled && devicePushEnabled)}
@@ -489,6 +508,9 @@ export default function SettingsScreen() {
             primary={primary}
             theme={theme}
           >
+            {prefsError ? (
+              <ErrorState subtitle={prefsError} onRetry={refreshPrefs} isRetrying={isLoading} testID="settings-email-error" />
+            ) : null}
             <SettingRow
               label={t('email.messages')}
               value={current?.email_messages ?? true}

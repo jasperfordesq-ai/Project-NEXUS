@@ -138,7 +138,7 @@ function WalletTransactionScreenInner() {
               </Text>
               <Text
                 className="text-5xl font-bold leading-[58px]"
-                style={{ color: isCredit ? '#22c55e' : '#f43f5e' }}
+                style={{ color: isCredit ? theme.success : theme.error }}
                 testID="transaction-amount"
               >
                 {amount}

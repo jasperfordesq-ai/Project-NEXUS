@@ -72,7 +72,14 @@
       "synced": "Synchronisé",
       "conflict": "Conflit",
       "rejected": "Rejeté"
-    }
+    },
+    "readOnlyTitle": "L'enregistrement hors ligne est terminé sur cet appareil",
+    "readOnlyExpired": "La liste téléchargée a expiré. Rien de nouveau ne peut être mis en attente, mais les enregistrements non synchronisés sont conservés jusqu'à ce que vous les supprimiez.",
+    "readOnlyRotated": "L'autorisation de cet appareil a été remplacée. Rien de nouveau ne peut être mis en attente, mais les enregistrements non synchronisés sont conservés jusqu'à ce que vous les supprimiez.",
+    "pendingKept": "{{count}} enregistrements non synchronisés sont encore stockés sur cet appareil.",
+    "pendingKept_one": "{{count}} enregistrement non synchronisé est encore stocké sur cet appareil.",
+    "purgePendingWarning": "{{count}} enregistrements non synchronisés seront définitivement perdus.",
+    "purgePendingWarning_one": "{{count}} enregistrement non synchronisé sera définitivement perdu."
   },
   "conflicts": {
     "title": "Conflits d’enregistrement",

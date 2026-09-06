@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useTenant } from '@/lib/hooks/useTenant';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import type { ComponentProps } from 'react';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -24,7 +26,7 @@ import { contrastText, withAlpha } from '@/lib/utils/color';
 type SupportItem = {
   key: string;
   icon: ComponentProps<typeof Ionicons>['name'];
-  url?: string;
+  path?: string;
   route?: Href;
   documentKey?: string;
 };
@@ -32,24 +34,24 @@ type SupportItem = {
 type SupportDocument = {
   key: string;
   icon: ComponentProps<typeof Ionicons>['name'];
-  url: string;
+  path: string;
 };
 
 const SUPPORT_ITEMS: SupportItem[] = [
-  { key: 'help', icon: 'help-circle-outline', url: 'https://app.project-nexus.ie/help' },
+  { key: 'help', icon: 'help-circle-outline', path: '/help' },
   { key: 'resources', icon: 'library-outline', route: '/(modals)/resources' as Href },
-  { key: 'about', icon: 'information-circle-outline', url: 'https://app.project-nexus.ie/about', documentKey: 'about' },
-  { key: 'contact', icon: 'mail-outline', url: 'https://app.project-nexus.ie/contact', documentKey: 'contact' },
-  { key: 'terms', icon: 'document-text-outline', url: 'https://app.project-nexus.ie/terms', documentKey: 'terms' },
-  { key: 'privacy', icon: 'shield-checkmark-outline', url: 'https://app.project-nexus.ie/privacy', documentKey: 'privacy' },
-  { key: 'cookies', icon: 'settings-outline', url: 'https://app.project-nexus.ie/cookies', documentKey: 'cookies' },
-  { key: 'accessibility', icon: 'accessibility-outline', url: 'https://app.project-nexus.ie/accessibility', documentKey: 'accessibility' },
-  { key: 'trust', icon: 'shield-outline', url: 'https://app.project-nexus.ie/trust-and-safety', documentKey: 'trust' },
+  { key: 'about', icon: 'information-circle-outline', path: '/about', documentKey: 'about' },
+  { key: 'contact', icon: 'mail-outline', path: '/contact', documentKey: 'contact' },
+  { key: 'terms', icon: 'document-text-outline', path: '/terms', documentKey: 'terms' },
+  { key: 'privacy', icon: 'shield-checkmark-outline', path: '/privacy', documentKey: 'privacy' },
+  { key: 'cookies', icon: 'settings-outline', path: '/cookies', documentKey: 'cookies' },
+  { key: 'accessibility', icon: 'accessibility-outline', path: '/accessibility', documentKey: 'accessibility' },
+  { key: 'trust', icon: 'shield-outline', path: '/trust-and-safety', documentKey: 'trust' },
 ];
 
 const SUPPORT_DOCUMENTS: Record<string, SupportDocument> = SUPPORT_ITEMS.reduce((acc, item) => {
-  if (item.documentKey && item.url) {
-    acc[item.documentKey] = { key: item.documentKey, icon: item.icon, url: item.url };
+  if (item.documentKey && item.path) {
+    acc[item.documentKey] = { key: item.documentKey, icon: item.icon, path: item.path };
   }
   return acc;
 }, {} as Record<string, SupportDocument>);
@@ -100,6 +102,7 @@ export default function SupportRoute() {
 
 function SupportScreen() {
   const { t } = useTranslation(['profile', 'common']);
+  const { tenant } = useTenant();
   const { doc } = useLocalSearchParams<{ doc?: string | string[] }>();
   const theme = useTheme();
   const tone = theme.info;
@@ -170,7 +173,7 @@ function SupportScreen() {
                     label={t(item.route ? 'support.open' : 'support.openWeb')}
                     icon={item.route ? 'chevron-forward-outline' : 'open-outline'}
                     tone={tone}
-                    onPress={() => item.route ? router.push(item.route) : void Linking.openURL(item.url ?? '')}
+                    onPress={() => item.route ? router.push(item.route) : void Linking.openURL(buildWebUrl(tenant?.slug, item.path ?? '/'))}
                   />
                 </View>
               </HeroCard.Body>
@@ -218,7 +221,7 @@ function SupportScreen() {
                   label={t('support.openWeb')}
                   icon="open-outline"
                   tone={tone}
-                  onPress={() => void Linking.openURL(selectedDocument.url)}
+                  onPress={() => void Linking.openURL(buildWebUrl(tenant?.slug, selectedDocument.path))}
                 />
                 <ActionPill
                   label={t('support.closeDocument')}

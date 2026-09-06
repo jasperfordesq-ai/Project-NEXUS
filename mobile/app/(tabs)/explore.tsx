@@ -30,6 +30,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import NativePressable from '@/components/ui/NativePressable';
@@ -81,7 +82,7 @@ function countItems(data: ExploreData | null, key: string): number {
     nearYou: data.near_you_listings,
     events: data.upcoming_events,
     groups: data.active_groups,
-    people: [...data.suggested_connections, ...data.new_members],
+    people: uniqueById([...data.suggested_connections, ...data.new_members]),
     contributors: data.top_contributors,
     posts: data.trending_posts,
     volunteering: data.volunteering_opportunities,
@@ -96,6 +97,27 @@ function countItems(data: ExploreData | null, key: string): number {
 
 function visibleForTab(section: SectionMeta, tab: ExploreTab): boolean {
   return tab === 'all' || section.tab === tab || (tab === 'forYou' && section.key === 'recommended');
+}
+
+/** A member suggested as a connection AND listed as new appeared twice with the same key. */
+function uniqueById<T extends { id: number }>(items: T[]): T[] {
+  const seen = new Set<number>();
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
+function formatExploreEventStart(startAt: string | null | undefined): string {
+  if (!startAt) return '';
+  const date = new Date(startAt);
+  if (Number.isNaN(date.getTime())) return '';
+  try {
+    return date.toLocaleString(dateLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
 }
 
 export default function ExploreScreen() {
@@ -251,7 +273,7 @@ function getSectionItems(sectionKey: string, data: ExploreData | null): (Record<
     nearYou: data.near_you_listings as unknown as (Record<string, unknown> & { id: number })[],
     events: data.upcoming_events as unknown as (Record<string, unknown> & { id: number })[],
     groups: data.active_groups as unknown as (Record<string, unknown> & { id: number })[],
-    people: [...data.suggested_connections, ...data.new_members] as unknown as (Record<string, unknown> & { id: number })[],
+    people: uniqueById([...data.suggested_connections, ...data.new_members]) as unknown as (Record<string, unknown> & { id: number })[],
     contributors: data.top_contributors as unknown as (Record<string, unknown> & { id: number })[],
     posts: data.trending_posts as unknown as (Record<string, unknown> & { id: number })[],
     volunteering: data.volunteering_opportunities as unknown as (Record<string, unknown> & { id: number })[],
@@ -339,7 +361,8 @@ function getItemSubtitle(sectionKey: string, item: Record<string, unknown>, leve
     }
     case 'events': {
       const event = item as unknown as ExploreEvent;
-      return [event.location, event.start_at].filter(Boolean).join(' • ');
+      // `start_at` is an ISO timestamp; unformatted it read "Cork • 2026-09-12T18:30:00+01:00".
+      return [event.location, formatExploreEventStart(event.start_at)].filter(Boolean).join(' • ');
     }
     case 'groups': {
       const group = item as unknown as ExploreGroup;
@@ -418,10 +441,11 @@ function getItemRoute(sectionKey: string, item: Record<string, unknown> & { id: 
       return { pathname: '/(modals)/organisation-detail', params: { id: String(item.id) } } as Href;
     case 'jobs':
       return { pathname: '/(modals)/job-detail', params: { id: String(item.id) } } as Href;
+    // A tapped poll or resource opens THAT item, not the whole list.
     case 'polls':
-      return '/(modals)/polls' as Href;
+      return { pathname: '/(modals)/feed-item-detail', params: { id: String(item.id), type: 'poll' } } as Href;
     case 'resources':
-      return '/(modals)/resources' as Href;
+      return { pathname: '/(modals)/feed-item-detail', params: { id: String(item.id), type: 'resource' } } as Href;
     default:
       return null;
   }

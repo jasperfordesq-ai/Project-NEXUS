@@ -80,7 +80,9 @@
     "unauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
     "sessionEndedTitle": "Déconnecté",
     "notFound": "Introuvable.",
-    "alertTitle": "Error"
+    "alertTitle": "Error",
+    "contractDrift": "Cet écran a reçu des informations dans un format inattendu. Mettez l'application à jour ou réessayez plus tard.",
+    "uploadIncomplete": "Le téléversement est terminé, mais le serveur n'a pas renvoyé le fichier."
   },
   "labels": {
     "timeBalance": "Balance temporelle",

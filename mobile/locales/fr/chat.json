@@ -50,6 +50,7 @@
     "noteTitle": "Qu'est-ce qui n'allait pas ?",
     "noteDescription": "Ajoutez une courte note pour nous aider à améliorer les prochaines réponses.",
     "notePlaceholder": "Indiquez ce qui manquait ou était incorrect",
+    "failed": "Votre avis n'a pas pu être enregistré. Veuillez réessayer.",
     "submitNote": "Envoyer la note",
     "skipNote": "Ignorer"
   }

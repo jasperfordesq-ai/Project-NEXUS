@@ -18,6 +18,8 @@ jest.mock('@sentry/react-native', () => ({
   captureMessage: jest.fn(),
 }));
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useLocalSearchParams: () => ({ id: mockEventId }),
   router: { canGoBack: () => true, back: jest.fn(), replace: jest.fn() },
 }));
@@ -30,7 +32,8 @@ jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: Re
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ text: '#111111', textSecondary: '#555555', error: '#cc0000' }),
 }));
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#4f46e5' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#4f46e5' }));
 jest.mock('@/lib/api/events', () => ({
   getEvent: (...args: unknown[]) => mockGetEvent(...args),
   getEventRecurrenceCapabilities: (...args: unknown[]) => mockGetCapabilities(...args),
@@ -222,6 +225,57 @@ describe('EventRecurrenceBlueprintsScreen', () => {
       'signed-preview-token',
       firstKey,
     );
+  });
+
+  /**
+   * 🔴 S4-17. After a successful commit the history refresh used to set `loadFailed`, which
+   * swapped the whole screen — the "saved" confirmation included — for "could not load".
+   */
+  it('keeps the saved confirmation when only the history refresh fails, and offers an inline retry', async () => {
+    mockPreview.mockResolvedValue({
+      data: {
+        preview_token: 'signed-preview-token',
+        preview_expires_at: '2099-04-01T08:05:00Z',
+        schema_version: 1,
+        root_event_id: 1,
+        source_event_id: 7,
+        source_recurrence_id: '20300501T101500Z',
+        effective_from_recurrence_id: '20300501T101500Z',
+        selected_sections: defaultSections,
+        manifest_hash: 'b'.repeat(64),
+        blueprint_set_version: 0,
+        counts: { sessions: 2 },
+        conflicts: [],
+        can_commit: true,
+      },
+    });
+    mockCommit.mockResolvedValueOnce({
+      data: {
+        blueprint_id: 10, blueprint_version: 1, schema_version: 1, root_event_id: 1, source_event_id: 7,
+        source_recurrence_id: '20300501T101500Z', effective_from_recurrence_id: '20300501T101500Z',
+        selected_sections: defaultSections, manifest_hash: 'b'.repeat(64), counts: { sessions: 2 },
+        idempotent_replay: false, created_at: '2030-04-01T08:01:00Z',
+      },
+    });
+    mockGetHistory
+      .mockResolvedValueOnce(history([], null))
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(history([item(10, 1)], null));
+
+    const screen = render(<EventRecurrenceBlueprintsScreen />);
+    fireEvent.press(await screen.findByText('Preview future setup'));
+    fireEvent.press(await screen.findByText('Review and confirm'));
+    fireEvent.press(await screen.findByText('I confirm this future-only definition version'));
+    fireEvent.press(screen.getByText('Save immutable version'));
+
+    expect(await screen.findByText('Future setup saved')).toBeTruthy();
+    expect(await screen.findByTestId('event-recurrence-history-refresh-failed')).toBeTruthy();
+    expect(screen.queryByTestId('event-recurrence-blueprints-unavailable')).toBeNull();
+
+    fireEvent.press(screen.getByText('Try again'));
+    expect(await screen.findByTestId('event-recurrence-blueprint-history-10')).toBeTruthy();
+    expect(screen.getByText('Future setup saved')).toBeTruthy();
+    expect(mockGetHistory).toHaveBeenCalledTimes(3);
   });
 
   it('ignores a stale preview after source navigation and resets selections to current permissions', async () => {

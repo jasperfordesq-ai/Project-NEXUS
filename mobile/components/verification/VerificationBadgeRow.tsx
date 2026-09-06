@@ -62,6 +62,7 @@ export default function VerificationBadgeRow({
   const numericUserId = typeof userId === 'string' ? Number(userId) : userId;
   const [badges, setBadges] = useState<VerificationBadge[]>(propBadges ?? []);
   const [loaded, setLoaded] = useState(Boolean(propBadges) || disabled || !numericUserId);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (disabled) {
@@ -82,13 +83,22 @@ export default function VerificationBadgeRow({
 
     let cancelled = false;
     setLoaded(false);
+    setLoadFailed(false);
 
     void getUserVerificationBadges(numericUserId)
       .then((nextBadges) => {
         if (!cancelled) setBadges(nextBadges);
       })
       .catch(() => {
-        if (!cancelled) setBadges([]);
+        /*
+          🔴 S3-07: this set an empty list, and with `showUnverified` the row then printed
+          "Not ID verified" — a network hiccup shown as a definite statement about someone's
+          trust status. A failed check says nothing at all.
+        */
+        if (!cancelled) {
+          setBadges([]);
+          setLoadFailed(true);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoaded(true);
@@ -103,12 +113,12 @@ export default function VerificationBadgeRow({
     const normalized = badges.map((badge) => ({ ...badge, type: normalizeBadgeType(badge) })).filter((badge) => badge.type);
     const hasIdVerified = normalized.some((badge) => badge.type === 'id_verified');
 
-    if (!hasIdVerified && showUnverified) {
+    if (!hasIdVerified && showUnverified && !loadFailed) {
       return [...normalized, { type: '__unverified__', label: t('verification.not_id_verified') }];
     }
 
     return normalized;
-  }, [badges, showUnverified, t]);
+  }, [badges, showUnverified, loadFailed, t]);
 
   if (!loaded || visibleBadges.length === 0) {
     return null;

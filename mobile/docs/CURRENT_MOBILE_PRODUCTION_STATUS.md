@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Current Mobile Production Status
 
-Last reviewed: 2026-08-31
+Last reviewed: 2026-09-06
 
 Status: **Maintained — the only document that states the mobile app's current score**
 
@@ -102,6 +102,25 @@ Most tests still run in Node against mocks. The ledger deliberately gives journe
 only when a device walk verifies the effect, and only gives full credit when an automated
 guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
 size of the test suite or the fact that the app has reached production distribution.
+
+## Emulator and source audit — 2026-09-05/06
+
+The 5 September source audit had no device attached. This pass walked the app on the
+`nexus_test` emulator (light and dark, 411dp and a 360dp control, TalkBack found switched on
+from an earlier session and disabled) and then covered the source module by module. It found
+and fixed more than sixty member-visible defects; the full list, with the test that guards
+each, is in `CHANGELOG.md` under `[Unreleased]`. The two that mattered most for money were a
+marketplace price or offer typed with a comma decimal being sent with the comma *stripped*
+(`12,50` became `1250`), and nine other decimal fields rejecting `1,5` outright or sending
+`null` with no warning. The two that mattered most for trust were exchange decline/cancel
+leaving the screen as if it had worked when the server refused, and every modal route's
+error boundary swallowing crashes without reporting them.
+
+This is source and emulator evidence, not distributed-device evidence: the fixes have not
+been walked on the Play-distributed artefact, so the banked M1 score is unchanged. Two design
+findings from the 5 September audit — the More screen's long directory and hero cards
+repeating the top-bar title on roughly forty screens — are deliberately left for an owner
+decision rather than restyled.
 
 ## Source-only critical-journey audit — 2026-08-27
 

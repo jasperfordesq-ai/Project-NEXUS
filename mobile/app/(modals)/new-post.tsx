@@ -24,6 +24,8 @@
  * and does not promise the member their community can already see it.
  */
 
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -65,8 +67,22 @@ function NewPostScreen() {
   const { show: showToast } = useAppToast();
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasPosted, setHasPosted] = useState(false);
+  const { confirm, confirmDialog } = useConfirm();
 
   const trimmed = content.trim();
+
+  // 🔴 S3-01: this composer autoFocuses, and Back, Cancel or the Android back button threw
+  // away everything typed with no prompt.
+  useUnsavedChangesGuard({
+    isDirty: trimmed.length > 0,
+    isBusy: isSubmitting || hasPosted,
+    confirm,
+    title: t('newPost.unsavedTitle'),
+    message: t('newPost.unsavedMessage'),
+    discardLabel: t('newPost.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
   const isTooLong = content.length > MAX_POST_LENGTH;
   const counter = useMemo(() => {
     const format = new Intl.NumberFormat(dateLocale());
@@ -108,6 +124,8 @@ function NewPostScreen() {
     }
 
     if (destination) {
+      // The post is away: the unsaved-changes guard must not stop the screen leaving.
+      setHasPosted(true);
       setTimeout(() => {
         if (typeof router.replace === 'function') router.replace(destination);
         else router.push(destination);
@@ -212,6 +230,7 @@ function NewPostScreen() {
         />
       </KeyboardAvoidingView>
       )}
+      {confirmDialog}
     </SafeAreaView>
   );
 }

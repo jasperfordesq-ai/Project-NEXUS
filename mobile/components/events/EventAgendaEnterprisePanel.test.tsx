@@ -22,7 +22,8 @@ jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: mockS
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({ confirm: mockConfirm, confirmDialog: null }),
 }));
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#6366f1' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => {
   const actual = jest.requireActual('@/lib/hooks/useTheme');
   return { ...actual, useTheme: () => actual.DARK };

@@ -73,6 +73,8 @@ let mockSellerProfile = {
 };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => mockParams,
 }));
@@ -138,6 +140,7 @@ jest.mock('@/components/marketplace/MarketplaceListingCard', () => {
   return ({ item }: { item: { title: string } }) => <Text>{item.title}</Text>;
 });
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 jest.mock('@/lib/hooks/useAuth', () => ({

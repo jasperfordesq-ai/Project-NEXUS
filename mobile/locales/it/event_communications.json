@@ -94,5 +94,8 @@
   "variants": { "announcement": "Annuncio", "follow_up": "Seguito dopo l’evento", "review_request": "Richiesta di recensione" },
   "statuses": { "draft": "Bozza", "scheduled": "Programmato", "sending": "Invio in corso", "sent": "Inviato", "cancelled": "Annullato", "failed": "Non riuscito" },
   "segments": { "registration_confirmed": "Iscrizioni confermate", "waitlist_active": "Lista d’attesa attiva", "attendance_attended": "Presenti", "attendance_no_show": "Assenti" },
-  "channels": { "email": "E-mail", "in_app": "Notifica nell’app", "push": "Notifica push" }
+  "channels": { "email": "E-mail", "in_app": "Notifica nell’app", "push": "Notifica push" },
+  "unsaved_title": "Scartare questo messaggio?",
+  "unsaved_message": "Hai del testo non salvato. Se chiudi ora, andrà perduto.",
+  "discard": "Scarta"
 }

@@ -106,7 +106,7 @@ export default function UpdateRequiredScreen({ requirement }: Props) {
   // Padding plus an inner items-center group, with font size and weight as inline
   // styles, renders correctly.
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.bg }} testID="update-required-screen">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }} testID="update-required-screen">
       <View className="px-8 pt-24">
         <View className="items-center gap-4">
           {/* theme.text, not the tenant accent: `usePrimaryColor()` needs TenantProvider,

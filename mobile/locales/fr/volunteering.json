@@ -80,7 +80,8 @@
   "stats": {
     "opportunities": "Opportunités",
     "applications": "Applications",
-    "hours": "Heures vérifiées"
+    "hours": "Heures vérifiées",
+    "loadedNote": "Le nombre d'opportunités porte sur ce qui a été chargé jusqu'ici."
   },
   "tabs": {
     "opportunities": "Opportunités",
@@ -102,9 +103,13 @@
     "cancel": "Annuler le créneau",
     "cancelError": "Impossible d’annuler ce créneau.",
     "openOpportunityLabel": "Ouvrir la mission {{title}}",
-    "cancelLabel": "Annuler le créneau pour {{title}}"
+    "cancelLabel": "Annuler le créneau pour {{title}}",
+    "cancelConfirmTitle": "Annuler ce créneau ?",
+    "cancelConfirmMessage": "Votre place sera libérée pour quelqu'un d'autre."
   },
   "certificates": {
+    "openFailed": "Ce certificat n'a pas pu être ouvert. Veuillez réessayer.",
+    "sharingUnavailable": "Cet appareil ne peut pas ouvrir le certificat. Essayez sur le site web.",
     "title": "Attestations de bénévolat",
     "description": "Créez et ouvrez des attestations vérifiées pour les heures de bénévolat approuvées.",
     "generate": "Créer une attestation",
@@ -116,7 +121,9 @@
     "dateUnknown": "Date indisponible",
     "organizationHours": "{{name}} : {{hours}} h",
     "open": "Ouvrir l’attestation",
-    "openLabel": "Ouvrir l’attestation {{code}}"
+    "openLabel": "Ouvrir l’attestation {{code}}",
+    "downloadFailed": "Impossible de télécharger le certificat.",
+    "sharingUnavailable": "Cet appareil ne peut pas ouvrir les fichiers téléchargés."
   },
   "expenses": {
     "submit": "Envoyer une dépense",
@@ -345,7 +352,14 @@
     "loadFailed": "Nous n'avons pas pu charger cette opportunité pour la modifier.",
     "failedDescription": "Nous n'avons pas pu créer l'opportunité. Veuillez réessayer.",
     "editFailedTitle": "Opportunité non mise à jour",
-    "editFailedDescription": "Nous n'avons pas pu mettre à jour l'opportunité. Veuillez réessayer."
+    "editFailedDescription": "Nous n'avons pas pu mettre à jour l'opportunité. Veuillez réessayer.",
+    "validationDateFormat": "Saisissez les dates au format YYYY-MM-DD, par exemple 2026-06-30.",
+    "reviewMissing": "Ajoutez un titre et une description avant de continuer.",
+    "loadFailedTitle": "Impossible d'ouvrir cette opportunité",
+    "organisationsLoadFailed": "Vos organisations n'ont pas pu être chargées ; l'opportunité ne peut donc pas encore être publiée.",
+    "unsavedTitle": "Abandonner cette opportunité ?",
+    "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
+    "discard": "Abandonner"
   },
   "org": {
     "title": "Tableau de bord de l’organisation",
@@ -475,7 +489,9 @@
     "optionsError": "Impossible de charger les autres créneaux.",
     "requestSentTitle": "Demande d’échange envoyée",
     "requestSentBody": "Nous avons interrogé l’autre bénévole. Vous serez informé de sa réponse.",
-    "requestError": "Impossible d’envoyer cette demande d’échange."
+    "requestError": "Impossible d’envoyer cette demande d’échange.",
+    "cancelConfirmTitle": "Annuler cette demande d'échange ?",
+    "cancelConfirmMessage": "L'autre bénévole ne sera plus sollicité pour l'échange."
   },
   "shiftCancelledTitle": "Créneau annulé",
   "shiftCancelledMessage": "Vous n'êtes plus inscrit à ce créneau.",
@@ -505,5 +521,8 @@
     "forbidden": "Vous n’êtes pas autorisé à valider les enregistrements de ce créneau.",
     "error": "Une erreur s’est produite. Veuillez réessayer.",
     "done": "Terminé"
-  }
+  },
+  "panelLoadError": "Cette section n'a pas pu être chargée.",
+  "confirmWithdrawTitle": "Retirer cette candidature ?",
+  "confirmWithdrawMessage": "L'organisation ne verra plus votre candidature."
 }

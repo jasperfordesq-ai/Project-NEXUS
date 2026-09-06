@@ -192,6 +192,9 @@
     "footerCreateTitle": "Eintrag überprüfen",
     "footerEditTitle": "Änderungen überprüfen",
     "footerSubtitle": "Veröffentlichen Sie den Eintrag, wenn die Details vorliegen.",
+    "footerMissing": "Füge vor dem Veröffentlichen einen Titel und einen Preis hinzu.",
+    "mediaSaveFailedTitle": "Eintrag gespeichert, Fotos nicht",
+    "mediaSaveFailedMessage": "Dein Eintrag ist online, aber Fotos oder Video konnten nicht hochgeladen werden. Bearbeite den Eintrag, um sie hinzuzufügen.",
     "publish": "Veröffentlichen",
     "update": "Aktualisieren",
     "validation": "Validierung",
@@ -925,6 +928,7 @@
     "emptySubtitle": "Versuchen Sie es mit einem größeren Umkreis oder einem anderen Standort."
   },
   "advancedSearch": {
+    "categoriesUnavailable": "Kategorien nicht geladen – zum Wiederholen tippen",
     "eyebrow": "Facetierte Marktplatzsuche",
     "title": "Erweiterte Suche",
     "subtitle": "Verwenden Sie dieselben Marktplatzfilter wie die Web-App, um die Ergebnisse schnell einzugrenzen.",

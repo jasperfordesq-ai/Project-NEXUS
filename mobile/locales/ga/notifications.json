@@ -7,6 +7,7 @@
   "markError": "Earráid ag marcáil",
   "allCaughtUp": "Tá gach rud léite!",
   "allCaughtUpSub": "Níl aon fhógraí nua agat.",
+  "loadingSummary": "Ag seiceáil fógraí nua…",
   "unreadCount": "{{count}} gan léamh",
   "unreadSummary": "Tá {{count}} fógra neamhléite agat.",
   "unreadSummary_one": "Tá {{count}} fhógra gan léamh agat.",

@@ -10,6 +10,8 @@ import SettingsBlockedUsersScreen from './settings-blocked-users';
 import { getBlockedUsers, unblockUser } from '@/lib/api/settings';
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn(), push: jest.fn() },
 }));
 
@@ -64,6 +66,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

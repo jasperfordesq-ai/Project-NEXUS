@@ -52,6 +52,9 @@
   "newPost": {
     "title": "Créer un post",
     "placeholder": "Qu'avez-vous en tête ?",
+    "unsavedTitle": "Abandonner cette publication ?",
+    "unsavedMessage": "Ce que vous avez écrit sera perdu.",
+    "discard": "Abandonner",
     "submit": "Publier",
     "created": "Publication créée !",
     "failed": "Impossible de créer la publication.",
@@ -153,7 +156,9 @@
     "closed": "Sondage terminé",
     "vote": "Voter",
     "resultsHiddenUntilClose": "Résultats révélés à la clôture du sondage",
-    "voteToSeeResults": "Votez pour voir les résultats"
+    "voteToSeeResults": "Votez pour voir les résultats",
+    "voteFailedTitle": "Vote non enregistré",
+    "voteFailed": "Votre vote n'a pas pu être enregistré. Veuillez réessayer."
   },
   "pollsScreen": {
     "title": "Sondages",

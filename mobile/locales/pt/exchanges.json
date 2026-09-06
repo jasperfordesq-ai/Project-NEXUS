@@ -70,6 +70,7 @@
     "errorTitle": "Não foi possível carregar trocas de grupo",
     "errorDescription": "Puxe para atualizar ou tente novamente mais tarde.",
     "moreAvailable": "Mais trocas de grupo estão disponíveis na visualização da web.",
+    "loadMore": "Carregar mais",
     "create": {
       "open": "Criar troca em grupo",
       "title": "Criar troca em grupo",
@@ -130,6 +131,7 @@
   "filtersIntro": "Pesquise por habilidade, categoria, local ou membro.",
   "filterAllCategories": "Todas as categorias",
   "categoriesLoading": "Carregando categorias",
+  "categoriesRetry": "As categorias não carregaram – toca para tentar novamente",
   "filters": "Filtros",
   "filtersWithCount": "Filtros ({{count}})",
   "filtersWithCount_one": "Filtros ({{count}})",
@@ -458,6 +460,9 @@
     "completedToast": "Pronto para confirmar",
     "confirmedToast": "Horas confirmadas",
     "cancelledToast": "Troca cancelada",
+    "cancelConfirmTitle": "Cancelar esta troca?",
+    "cancelConfirmMessage": "O outro membro será informado do cancelamento. Isto não pode ser anulado.",
+    "cancelConfirmAction": "Cancelar troca",
     "status": {
       "pending_provider": "À espera de aceitação",
       "pending_broker": "À espera de coordenação",

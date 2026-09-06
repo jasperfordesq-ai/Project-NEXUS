@@ -70,6 +70,7 @@
     "errorTitle": "Impossibile caricare gli scambi di gruppo",
     "errorDescription": "Premi per aggiornare o riprova più tardi.",
     "moreAvailable": "Altri scambi di gruppo sono disponibili nella visualizzazione web.",
+    "loadMore": "Carica altri",
     "create": {
       "open": "Crea scambio di gruppo",
       "title": "Crea scambio di gruppo",
@@ -130,6 +131,7 @@
   "filtersIntro": "Cerca per competenza, categoria, luogo o membro.",
   "filterAllCategories": "Tutte le categorie",
   "categoriesLoading": "Caricamento di categorie",
+  "categoriesRetry": "Categorie non caricate: tocca per riprovare",
   "filters": "Filtri",
   "filtersWithCount": "Filtri ({{count}})",
   "filtersWithCount_one": "Filtri ({{count}})",
@@ -458,6 +460,9 @@
     "completedToast": "Pronto per la conferma",
     "confirmedToast": "Ore confermate",
     "cancelledToast": "Scambio annullato",
+    "cancelConfirmTitle": "Annullare questo scambio?",
+    "cancelConfirmMessage": "L'altro membro verrà avvisato dell'annullamento. Non è possibile tornare indietro.",
+    "cancelConfirmAction": "Annulla scambio",
     "status": {
       "pending_provider": "In attesa di accettazione",
       "pending_broker": "In attesa di un coordinatore",

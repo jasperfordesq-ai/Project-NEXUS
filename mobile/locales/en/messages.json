@@ -47,6 +47,8 @@
     "messagingRestrictedTitle": "Messaging paused",
     "messagingRestrictedContact": "Please contact your community team before sending more messages.",
     "messageOptions": "Message options",
+    "messageActions": "Message actions",
+    "attachmentOpenFailed": "This attachment could not be opened. Please try again.",
     "edit": "Edit",
     "editing": "Editing message",
     "saveEdit": "Save edit",

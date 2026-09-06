@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { useCallback, useState } from 'react';
 import {
   FlatList,
@@ -13,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Surface } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Surface, Spinner } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,7 @@ import {
   markGroupRead,
   markRead,
   type Notification,
+  type NotificationListResponse,
 } from '@/lib/api/notifications';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -44,6 +46,19 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
 
+/** Stable references so the paginated hook does not refetch on every render. */
+function fetchNotificationsPage(cursor: string | null): Promise<NotificationListResponse> {
+  return getNotifications(cursor);
+}
+
+function extractNotificationsPage(response: NotificationListResponse) {
+  return {
+    items: response.data ?? [],
+    cursor: response.meta?.cursor ?? null,
+    hasMore: Boolean(response.meta?.has_more),
+  };
+}
+
 export default function NotificationsScreen() {
   const { t } = useTranslation(['notifications', 'common']);
   const primary = usePrimaryColor();
@@ -54,8 +69,24 @@ export default function NotificationsScreen() {
   const [actingId, setActingId] = useState<number | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-  const { data, isLoading, error, refresh } = useApi(() => getNotifications());
-  const notifications = data?.data ?? [];
+  /*
+    🔴 S3-03: this fetched exactly one page of 25 with no load-more and no footer. A member
+    with 47 unread — the emulator fixture on 2026-09-05 — could read the header saying 47 and
+    reach 25 of them; the rest were unreachable from inside the app. The API has always
+    accepted a cursor and returned `meta.cursor`.
+  */
+  const {
+    items: notifications,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    loadMore,
+    refresh,
+  } = usePaginatedApi<Notification, NotificationListResponse>(
+    fetchNotificationsPage,
+    extractNotificationsPage,
+  );
 
   /**
    * 🔴 Count unread from the SERVER, not from the page that happens to be loaded.
@@ -107,7 +138,10 @@ export default function NotificationsScreen() {
 
   function handleNotificationPress(item: Notification) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    void markRead(item.id).then(() => refreshAll()).catch(console.warn);
+    // 🔴 S3-38: this went to console.warn — the member tapped, the dot stayed, nothing said why.
+    void markRead(item.id)
+      .then(() => refreshAll())
+      .catch((err) => showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('markError')), variant: 'danger' }));
     navigateToLink(item.link ?? null);
   }
 
@@ -159,7 +193,11 @@ export default function NotificationsScreen() {
                   {t('title')}
                 </Text>
                 <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-                  {unreadCount > 0 ? t('unreadSummary', { count: unreadCount }) : t('allCaughtUpSub')}
+                  {unreadCount > 0
+                    ? t('unreadSummary', { count: unreadCount })
+                    : isLoading || countsApi.isLoading
+                      ? t('loadingSummary')
+                      : t('allCaughtUpSub')}
                 </Text>
               </View>
               {unreadCount > 0 ? (
@@ -256,13 +294,25 @@ export default function NotificationsScreen() {
                       </View>
                     ))}
                   </View>
-                ) : (
+                ) : item.actor ? (
                   <View className="relative">
-                    <Avatar uri={item.actor?.avatar_url ?? null} name={item.actor?.name ?? '?'} size={44} />
+                    <Avatar uri={item.actor.avatar_url ?? null} name={item.actor.name ?? ''} size={44} />
                     <View
                       className="absolute bottom-0 right-0 size-3 rounded-full border-[1.5px]"
                       style={{ backgroundColor: categoryTint, borderColor: theme.surface }}
                     />
+                  </View>
+                ) : (
+                  /*
+                    A system notification (achievement, approval, reminder) has no actor.
+                    This used to fall through to an Avatar with the name "?", so every
+                    system row wore a question mark. Seen on the emulator 2026-09-05.
+                  */
+                  <View
+                    className="size-11 items-center justify-center rounded-full"
+                    style={{ backgroundColor: withAlpha(categoryTint, 0.14) }}
+                  >
+                    <Ionicons name={categoryIcon(item.category)} size={20} color={categoryTint} />
                   </View>
                 )}
 
@@ -300,10 +350,13 @@ export default function NotificationsScreen() {
                   </View>
 
                   <View className="flex-row flex-wrap items-center gap-2">
-                    <Chip size="sm" variant="secondary">
-                      <Ionicons name={categoryIcon(item.category)} size={12} color={categoryTint} />
-                      <Chip.Label>{categoryLabel(item.category, t)}</Chip.Label>
-                    </Chip>
+                    {/* No chip for an unclassified row: "Notification" on a notification says nothing. */}
+                    {item.category && item.category !== 'other' ? (
+                      <Chip size="sm" variant="secondary">
+                        <Ionicons name={categoryIcon(item.category)} size={12} color={categoryTint} />
+                        <Chip.Label>{categoryLabel(item.category, t)}</Chip.Label>
+                      </Chip>
+                    ) : null}
                     <Chip size="sm" variant="secondary">
                       <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
                       <Chip.Label>
@@ -402,6 +455,17 @@ export default function NotificationsScreen() {
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
           ListHeaderComponent={renderHeader}
+          onEndReached={() => { if (hasMore && !isLoadingMore) loadMore(); }}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View className="items-center py-4"><Spinner size="sm" /></View>
+            ) : !hasMore && notifications.length > 0 ? (
+              <View className="items-center py-4">
+                <Text className="text-xs" style={{ color: theme.textMuted }}>{t('common:endOfList')}</Text>
+              </View>
+            ) : null
+          }
           refreshControl={
             <RefreshControl refreshing={isLoading && notifications.length > 0} onRefresh={refreshAll} />
           }

@@ -3,10 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useState } from 'react';
+import AccentIcon from '@/components/ui/AccentIcon';
+import ErrorState from '@/components/ui/ErrorState';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -90,7 +92,23 @@ function GroupExchangesScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const [status, setStatus] = useState<StatusFilter>('all');
-  const { data, isLoading, error, refresh } = useApi(() => getGroupExchanges({ status, limit: 20, offset: 0 }), [status]);
+  // `offset` was fixed at 0 and `hasMore` only rendered a sentence, so the 21st exchange
+  // could never be seen (audit 2026-09-05, S2-17). The limit grows per "load more".
+  const [limit, setLimit] = useState(20);
+  const { data, isLoading, error, refresh } = useApi(() => getGroupExchanges({ status, limit, offset: 0 }), [status, limit]);
+
+  // Progress saved or an exchange created on a child screen was invisible until a pull to
+  // refresh (audit 2026-09-05, S2-10). Refetch on every return; the first mount already fetched.
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refresh();
+    }, [refresh]),
+  );
   const { items, hasMore } = useMemo(() => unwrapGroupExchanges(data), [data]);
 
   return (
@@ -119,7 +137,7 @@ function GroupExchangesScreenInner() {
               accessibilityLabel={t('groupExchanges.create.open')}
             >
               <HeroButton.Label>{t('groupExchanges.create.open')}</HeroButton.Label>
-              <Ionicons name="add-outline" size={16} color={theme.onPrimary} />
+              <AccentIcon name="add-outline" size={16} />
             </HeroButton>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               {statusFilters.map((value) => (
@@ -140,16 +158,16 @@ function GroupExchangesScreenInner() {
         {isLoading ? (
           <View className="items-center py-8"><Spinner size="lg" /></View>
         ) : error ? (
-          <EmptyState icon="warning-outline" title={t('groupExchanges.errorTitle')} subtitle={t('groupExchanges.errorDescription')} />
+          <ErrorState title={t('groupExchanges.errorTitle')} subtitle={t('groupExchanges.errorDescription')} onRetry={refresh} />
         ) : items.length === 0 ? (
           <EmptyState icon="git-compare-outline" title={t('groupExchanges.emptyTitle')} subtitle={t(status === 'all' ? 'groupExchanges.emptyAll' : 'groupExchanges.emptyFiltered')} />
         ) : (
           <View className="gap-3">
             {items.map((exchange) => <GroupExchangeCard key={exchange.id} exchange={exchange} />)}
             {hasMore ? (
-              <Surface variant="secondary" className="rounded-panel p-3">
-                <Text className="text-center text-sm" style={{ color: theme.textSecondary }}>{t('groupExchanges.moreAvailable')}</Text>
-              </Surface>
+              <HeroButton variant="secondary" onPress={() => setLimit((current) => current + 20)} accessibilityLabel={t('groupExchanges.loadMore')}>
+                <HeroButton.Label>{t('groupExchanges.loadMore')}</HeroButton.Label>
+              </HeroButton>
             ) : null}
           </View>
         )}

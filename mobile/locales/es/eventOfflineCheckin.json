@@ -72,7 +72,14 @@
       "synced": "Sincronizado",
       "conflict": "Conflicto",
       "rejected": "Rechazado"
-    }
+    },
+    "readOnlyTitle": "El registro sin conexión ha terminado en este dispositivo",
+    "readOnlyExpired": "La lista descargada ha caducado. No se puede añadir nada nuevo a la cola, pero los registros sin sincronizar se conservan hasta que los elimines.",
+    "readOnlyRotated": "La autorización de este dispositivo fue reemplazada. No se puede añadir nada nuevo a la cola, pero los registros sin sincronizar se conservan hasta que los elimines.",
+    "pendingKept": "{{count}} registros sin sincronizar siguen guardados en este dispositivo.",
+    "pendingKept_one": "{{count}} registro sin sincronizar sigue guardado en este dispositivo.",
+    "purgePendingWarning": "{{count}} registros sin sincronizar se perderán definitivamente.",
+    "purgePendingWarning_one": "{{count}} registro sin sincronizar se perderá definitivamente."
   },
   "conflicts": {
     "title": "Conflictos de registro",

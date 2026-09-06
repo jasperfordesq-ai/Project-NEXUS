@@ -28,7 +28,8 @@
     "groups": "Groups",
     "featured": "Featured",
     "members": "Members",
-    "joined": "Joined"
+    "joined": "Joined",
+    "loadedNote": "Les chiffres portent sur les groupes chargés jusqu'ici."
   },
   "detail": {
     "title": "Groupe",
@@ -102,8 +103,12 @@
       "delete": "Delete",
       "deleteLabel": "Supprimer{{name}}",
       "deleteTitle": "Supprimer le fichier",
+      "downloadFailed": "Ce fichier n'a pas pu être téléchargé. Veuillez réessayer.",
+      "sharingUnavailable": "Cet appareil ne peut pas ouvrir le fichier. Essayez sur le site web.",
       "deleteMessage": "Supprimer {{name}} de ce groupe ?",
-      "deleteError": "Impossible de supprimer le fichier."
+      "deleteError": "Impossible de supprimer le fichier.",
+      "downloadFailed": "Impossible de télécharger le fichier.",
+      "sharingUnavailable": "Cet appareil ne peut pas ouvrir les fichiers téléchargés."
     },
     "media": {
       "title": "Médias du groupe",
@@ -244,7 +249,8 @@
         "in_progress": "{{count}} en cours",
         "done": "{{count}} terminées",
         "overdue": "{{count}} en retard"
-      }
+      },
+      "dueDateInvalid": "Saisissez la date d'échéance au format YYYY-MM-DD, par exemple 2026-06-30."
     },
     "analytics": {
       "title": "Statistiques du groupe",
@@ -327,7 +333,21 @@
     "edit": "Modifier le groupe",
     "notFound": "Groupe introuvable.",
     "invalidId": "Identifiant de groupe invalide.",
-    "goBack": "Retour"
+    "goBack": "Retour",
+    "sectionLoadError": "Cette section n'a pas pu être chargée.",
+    "composerUnsavedTitle": "Abandonner ce brouillon ?",
+    "composerUnsavedMessage": "Vous avez du texte non envoyé. En fermant maintenant, vous le perdrez.",
+    "composerDiscard": "Abandonner",
+    "discussionReplies": {
+      "title": "Réponses",
+      "empty": "Pas encore de réponse. Soyez la première personne à répondre.",
+      "placeholder": "Écrire une réponse…",
+      "post": "Publier la réponse",
+      "loadError": "Impossible de charger les réponses.",
+      "postError": "Impossible de publier la réponse.",
+      "validation": "Écrivez une réponse avant de publier.",
+      "openLabel": "Ouvrir la discussion {{title}}"
+    }
   },
   "filter": {
     "all": "Tous",
@@ -381,7 +401,10 @@
     "loadFailed": "Impossible de charger les informations du groupe. Réessayez.",
     "saveFailedTitle": "Groupe non enregistré",
     "saveFailedDescription": "Impossible d’enregistrer le groupe. Réessayez.",
-    "failedDescription": "Impossible de créer le groupe. Réessayez."
+    "failedDescription": "Impossible de créer le groupe. Réessayez.",
+    "unsavedTitle": "Abandonner ce groupe ?",
+    "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
+    "discard": "Abandonner"
   },
   "invite_accept": {
     "title": "Invitation au groupe",

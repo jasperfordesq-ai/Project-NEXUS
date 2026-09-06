@@ -10,6 +10,8 @@ const mockPush = jest.fn();
 let mockSearchParams: Record<string, string | string[] | undefined> = {};
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: mockPush, replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => mockSearchParams,
 }));

@@ -50,6 +50,7 @@
     "noteTitle": "¿Qué ha fallado?",
     "noteDescription": "Añade una nota breve para ayudar a mejorar las respuestas futuras.",
     "notePlaceholder": "Indica qué faltaba o qué era incorrecto",
+    "failed": "No se pudo guardar tu valoración. Inténtalo de nuevo.",
     "submitNote": "Enviar nota",
     "skipNote": "Omitir"
   }

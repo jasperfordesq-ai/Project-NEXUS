@@ -13,6 +13,8 @@ const mockHasFeature = jest.fn<boolean, [string]>(() => true);
 const mockUseApi = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: (...args: unknown[]) => mockRouterPush(...args) },
 }));
 

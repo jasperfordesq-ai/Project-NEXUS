@@ -53,7 +53,8 @@
         "revised": "Plantilla revisada",
         "archived": "Plantilla archivada",
         "materialized": "Borrador creado"
-      }
+      },
+      "validationDateFormat": "Escribe el inicio y el fin como YYYY-MM-DDTHH:mm, por ejemplo 2030-08-01T10:00."
     },
     "checks": {
       "event_template_check_source_manage": "Aún tienes permiso para gestionar el evento de origen.",

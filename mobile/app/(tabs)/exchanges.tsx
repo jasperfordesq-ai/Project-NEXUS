@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Location from 'expo-location';
 import * as Haptics from '@/lib/haptics';
@@ -111,6 +111,8 @@ export default function ExchangesScreen() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<ExchangeCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
+  const [categoriesAttempt, setCategoriesAttempt] = useState(0);
   const [hoursRange, setHoursRange] = useState<HoursRange>('any');
   const [serviceFilter, setServiceFilter] = useState<ServiceFilter>('any');
   const [postedWithin, setPostedWithin] = useState<PostedWithin>('any');
@@ -127,12 +129,18 @@ export default function ExchangesScreen() {
   useEffect(() => {
     let cancelled = false;
 
+    setCategoriesLoading(true);
+    setCategoriesError(false);
     getExchangeCategories()
       .then((response) => {
         if (!cancelled) setCategories(response.data ?? []);
       })
       .catch(() => {
-        if (!cancelled) setCategories([]);
+        // The strip used to vanish silently; now it offers a retry (the F02 twin).
+        if (!cancelled) {
+          setCategories([]);
+          setCategoriesError(true);
+        }
       })
       .finally(() => {
         if (!cancelled) setCategoriesLoading(false);
@@ -141,7 +149,7 @@ export default function ExchangesScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [categoriesAttempt]);
 
   const fetchExchanges = useCallback(
     (cursor: string | null) => {
@@ -174,6 +182,19 @@ export default function ExchangesScreen() {
       extractExchangePage,
       [debouncedSearch, typeFilter, categoryId, hoursRange, serviceFilter, postedWithin, sortMode, nearMeCoordinates, radiusKm],
     );
+
+  // A listing created, edited or deleted on a child screen was still absent or present here
+  // until a pull to refresh (audit 2026-09-05, S2-10). Refetch on every return.
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refresh();
+    }, [refresh]),
+  );
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const wasRefreshingRef = useRef(false);
@@ -403,8 +424,8 @@ export default function ExchangesScreen() {
           isDisabled={isLocating}
           accessibilityState={{ selected: nearMeCoordinates !== null, busy: isLocating }}
         >
-          {isLocating ? <Spinner size="sm" /> : <Ionicons name={nearMeCoordinates ? 'location' : 'location-outline'} size={15} color={nearMeCoordinates ? contrastText(primary) : primary} />}
-          <HeroButton.Label style={nearMeCoordinates ? { color: contrastText(primary) } : undefined} numberOfLines={1}>
+          {isLocating ? <Spinner size="sm" /> : nearMeCoordinates ? <AccentIcon name="location" size={15} /> : <Ionicons name="location-outline" size={15} color={primary} />}
+          <HeroButton.Label numberOfLines={1}>
             {nearMeCoordinates ? t('nearMeOnWithRadius', { radius: radiusKm }) : t('nearMe')}
           </HeroButton.Label>
         </HeroButton>
@@ -415,8 +436,8 @@ export default function ExchangesScreen() {
           onPress={() => setShowAdvancedFilters((current) => !current)}
           accessibilityState={{ expanded: showAdvancedFilters }}
         >
-          <Ionicons name="options-outline" size={15} color={showAdvancedFilters ? contrastText(primary) : theme.textMuted} />
-          <HeroButton.Label style={showAdvancedFilters ? { color: contrastText(primary) } : undefined} numberOfLines={1}>
+          {showAdvancedFilters ? <AccentIcon name="options-outline" size={15} /> : <Ionicons name="options-outline" size={15} color={theme.textMuted} />}
+          <HeroButton.Label numberOfLines={1}>
             {activeFilterCount > 0 ? t('filtersWithCount', { count: activeFilterCount }) : t('filters')}
           </HeroButton.Label>
         </HeroButton>
@@ -454,8 +475,18 @@ export default function ExchangesScreen() {
 
       {showAdvancedFilters ? (
         <View className="gap-3">
-          {categories.length > 0 || categoriesLoading ? (
+          {categories.length > 0 || categoriesLoading || categoriesError ? (
             <FilterStrip label={t('category')}>
+              {categoriesError ? (
+                <FilterButton
+                  active={false}
+                  label={t('categoriesRetry')}
+                  icon="refresh-outline"
+                  onPress={() => setCategoriesAttempt((n) => n + 1)}
+                  primary={primary}
+                  theme={theme}
+                />
+              ) : null}
               <FilterButton
                 active={categoryId === null}
                 label={categoriesLoading ? t('categoriesLoading') : t('filterAllCategories')}
@@ -651,8 +682,8 @@ function FilterButton({
       onPress={onPress}
       accessibilityState={{ selected: active }}
     >
-      <Ionicons name={icon} size={14} color={active ? contrastText(primary) : theme.textMuted} />
-      <HeroButton.Label style={active ? { color: contrastText(primary) } : undefined} numberOfLines={1}>
+      {active ? <AccentIcon name={icon} size={14} /> : <Ionicons name={icon} size={14} color={theme.textMuted} />}
+      <HeroButton.Label numberOfLines={1}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -720,7 +751,7 @@ function NearMeFilter({
               onPress={() => onPresetPress(preset)}
               accessibilityState={{ selected: appliedRadiusKm === preset }}
             >
-              <HeroButton.Label style={appliedRadiusKm === preset ? { color: contrastText(primary) } : undefined}>
+              <HeroButton.Label>
                 {t('radiusKm', { radius: preset })}
               </HeroButton.Label>
             </HeroButton>

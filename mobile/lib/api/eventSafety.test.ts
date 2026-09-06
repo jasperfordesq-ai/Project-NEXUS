@@ -11,9 +11,11 @@ jest.mock('@/lib/api/client', () => ({
   },
   ApiResponseError: class ApiResponseError extends Error {
     status: number;
-    constructor(status: number, message: string) {
+    code?: string;
+    constructor(status: number, message: string, _errors?: unknown, code?: string) {
       super(message);
       this.status = status;
+      this.code = code;
     }
   },
 }));
@@ -61,7 +63,7 @@ describe('mobile Event Safety contract', () => {
       data: { ...(fixture as object), guardian_email: 'private@example.test' },
     });
 
-    await expect(getEventSafety(101)).rejects.toMatchObject({ message: 'EVENT_SAFETY_CONTRACT_DRIFT' });
+    await expect(getEventSafety(101)).rejects.toHaveProperty('code', 'EVENT_SAFETY_CONTRACT_DRIFT');
     const telemetry = JSON.stringify((Sentry.captureMessage as jest.Mock).mock.calls);
     expect(telemetry).not.toContain('private@example.test');
     expect(telemetry).toContain('/api/v2/events/{id}/safety');

@@ -81,5 +81,6 @@
   "confirm_ack_description": "Ho controllato sezioni, conteggi, conflitti e identità di ricorrenza effettiva.",
   "cancel": "Annulla",
   "commit_button": "Salva versione immutabile",
-  "committing": "Salvataggio versione"
+  "committing": "Salvataggio versione",
+  "history_refresh_error_description": "La configurazione futura è stata salvata, ma non è stato possibile aggiornare la cronologia qui sotto. Riprova per ricaricarla."
 }

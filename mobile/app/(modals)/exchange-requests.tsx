@@ -154,7 +154,7 @@ function ExchangeRequestsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <AppTopBar title={t('requests.title')} backLabel={t('requests.back')} />
+      <AppTopBar title={t('requests.title')} backLabel={t('common:back')} />
 
       {isLoading && items.length === 0 ? (
         <LoadingSpinner />

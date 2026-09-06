@@ -83,7 +83,8 @@ export default function ConfirmDialog({
               isDisabled={confirmDisabled || isConfirming}
               onPress={() => void onConfirm()}
             >
-              {isConfirming ? <Spinner size="sm" /> : <HeroButton.Label>{confirmLabel}</HeroButton.Label>}
+              {isConfirming ? <Spinner size="sm" /> : null}
+              <HeroButton.Label>{confirmLabel}</HeroButton.Label>
             </HeroButton>
           </View>
         </Dialog.Content>

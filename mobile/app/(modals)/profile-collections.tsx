@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -56,6 +57,7 @@ export default function ProfileCollectionsScreen() {
 
 function ProfileCollectionsInner() {
   const { t } = useTranslation(['members', 'common']);
+  const { confirm, confirmDialog } = useConfirm();
   const params = useLocalSearchParams<{ userId?: string; name?: string; scope?: string; collectionId?: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -106,7 +108,19 @@ function ProfileCollectionsInner() {
     setItems([]);
   }
 
-  async function handleRemoveItem(item: SavedItem) {
+  function handleRemoveItem(item: SavedItem) {
+    // 🔴 S3-24: one tap on a small row button erased a saved item with nothing to undo.
+    confirm({
+      title: t('collections.removeConfirmTitle'),
+      message: t('collections.removeConfirmMessage'),
+      confirmLabel: t('collections.remove'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: () => void performRemoveItem(item),
+    });
+  }
+
+  async function performRemoveItem(item: SavedItem) {
     try {
       await removeSavedItem(item.id);
       setItems((current) => current.filter((candidate) => candidate.id !== item.id));
@@ -258,6 +272,7 @@ function ProfileCollectionsInner() {
           )
         }
       />
+      {confirmDialog}
     </SafeAreaView>
   );
 }

@@ -52,6 +52,9 @@
   "newPost": {
     "title": "Cruthaigh postáil",
     "placeholder": "Cad atá ar d'intinn?",
+    "unsavedTitle": "An postáil seo a chur i leataobh?",
+    "unsavedMessage": "Caillfear a bhfuil scríofa agat.",
+    "discard": "Cuir i leataobh",
     "submit": "Postáil",
     "created": "Cruthaíodh an phostáil!",
     "failed": "Níorbh fhéidir an phostáil a chruthú.",
@@ -153,7 +156,9 @@
     "closed": "Pobalbhreith dúnta",
     "vote": "Vótáil",
     "resultsHiddenUntilClose": "Nochtfar na torthaí nuair a dhúnfar an phobalbhreith",
-    "voteToSeeResults": "Vótáil chun torthaí a fheiceáil"
+    "voteToSeeResults": "Vótáil chun torthaí a fheiceáil",
+    "voteFailedTitle": "Níor sábháladh an vóta",
+    "voteFailed": "Níorbh fhéidir do vóta a thaifeadadh. Bain triail eile as."
   },
   "pollsScreen": {
     "title": " Pobalbhreith",

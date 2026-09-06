@@ -10,6 +10,8 @@ const mockGetHistory = jest.fn();
 let mockEventId = '7';
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useLocalSearchParams: () => ({ id: mockEventId }),
   router: { canGoBack: () => true, back: jest.fn(), replace: jest.fn() },
 }));
@@ -26,7 +28,8 @@ jest.mock('@/lib/hooks/useTheme', () => ({
     error: '#cc0000',
   }),
 }));
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#4f46e5' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#4f46e5' }));
 jest.mock('@/lib/api/eventLifecycleHistory', () => ({
   getEventLifecycleHistory: (...args: unknown[]) => mockGetHistory(...args),
 }));

@@ -41,6 +41,7 @@
     "score": "{{score}}% de correspondência",
     "open": "Abrir correspondência",
     "dismiss": "Dismiss",
+    "dismissFailed": "Não foi possível dispensar esta correspondência. Tenta novamente.",
     "emptyTitle": "Sem correspondências ainda",
     "emptySubtitle": "As novas recomendações aparecerão aqui quando estiverem disponíveis.",
     "errorTitle": "Não foi possível carregar as correspondências",
@@ -67,6 +68,10 @@
     "pendingCount": "Revisões pendentes",
     "delete": "Delete",
     "deleteSuccess": "Avaliação eliminada.",
+    "submitFailed": "Não foi possível enviar a tua avaliação. Tenta novamente.",
+    "deleteFailed": "Não foi possível eliminar a avaliação. Tenta novamente.",
+    "deleteConfirmTitle": "Eliminar esta avaliação?",
+    "deleteConfirmMessage": "Será removida do perfil do membro. Isto não pode ser anulado.",
     "write": "Escrever comentário",
     "cancel": "Cancel",
     "submit": "Enviar avaliação",
@@ -371,6 +376,9 @@
     "load_failed": "Falha ao carregar suas preferências de partida",
     "save": "Salvar preferências",
     "save_success": "Preferências de correspondência salvas",
+    "unsavedTitle": "Descartar as alterações?",
+    "unsavedMessage": "As tuas preferências de correspondência não foram guardadas.",
+    "discard": "Descartar",
     "save_failed": "Falha ao salvar preferências de partida",
     "pause": {
       "title": "Pausar correspondência"

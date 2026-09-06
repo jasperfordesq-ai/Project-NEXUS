@@ -81,5 +81,6 @@
   "confirm_ack_description": "He revisado las secciones, recuentos, conflictos y la identidad de recurrencia efectiva.",
   "cancel": "Cancelar",
   "commit_button": "Guardar versión inmutable",
-  "committing": "Guardando versión"
+  "committing": "Guardando versión",
+  "history_refresh_error_description": "La configuración futura se guardó, pero no se pudo actualizar el historial de abajo. Inténtalo de nuevo para recargarlo."
 }

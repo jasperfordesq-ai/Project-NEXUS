@@ -11,15 +11,35 @@ const mockCreateOpportunity = jest.fn();
 const mockGetOpportunity = jest.fn();
 const mockUpdateOpportunity = jest.fn();
 const mockReplace = jest.fn();
+const mockConfirm = jest.fn();
+const mockNavListeners: Record<string, (e: unknown) => void> = {};
+const mockNavDispatch = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: {
     back: jest.fn(),
     replace: (...args: unknown[]) => mockReplace(...args),
   },
   useLocalSearchParams: () => mockSearchParams,
+  useNavigation: () => ({
+    addListener: (event: string, handler: (e: unknown) => void) => {
+      mockNavListeners[event] = handler;
+      return () => { delete mockNavListeners[event]; };
+    },
+    dispatch: (...args: unknown[]) => mockNavDispatch(...args),
+  }),
 }));
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...args), confirmDialog: null }),
+}));
+jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/components/ui/AccentIcon', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return () => <View testID="accent-icon" />;
+});
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -62,6 +82,15 @@ jest.mock('react-i18next', () => ({
         'create.editFailedTitle': 'Opportunity not updated',
         'create.editFailedDescription': 'We could not update the opportunity.',
         'create.loadFailed': 'Could not load opportunity.',
+        'create.loadFailedTitle': "Couldn't open this opportunity",
+        'create.organisationsLoadFailed': 'Your organisations could not be loaded.',
+        'create.validationDateFormat': 'Enter dates as YYYY-MM-DD.',
+        'create.reviewMissing': 'Add a title and description before continuing.',
+        'create.unsavedTitle': 'Discard this opportunity?',
+        'create.unsavedMessage': 'You have unsaved details.',
+        'create.discard': 'Discard',
+        'common:buttons.retry': 'Retry',
+        'common:buttons.cancel': 'Cancel',
         'common:back': 'Back',
       };
       return map[key] ?? key;
@@ -75,6 +104,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -97,7 +127,9 @@ jest.mock('@/lib/api/volunteering', () => ({
 
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
   NotificationFeedbackType: { Success: 'success' },
+  ImpactFeedbackStyle: { Light: 'light' },
 }));
 
 // Stable AppToast mock — create the fns inside the factory closure so screens
@@ -118,10 +150,11 @@ jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: Re
 jest.mock('@/components/ui/FormActionFooter', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
-  return function MockFormActionFooter({ submitLabel, onSubmit, isDisabled }: { submitLabel: string; onSubmit: () => void; isDisabled?: boolean }) {
+  return function MockFormActionFooter({ subtitle, submitLabel, onSubmit, isDisabled }: { subtitle: string; submitLabel: string; onSubmit: () => void; isDisabled?: boolean }) {
     return (
       <View>
-        <Pressable accessibilityRole="button" disabled={isDisabled} onPress={onSubmit}>
+        <Text>{subtitle}</Text>
+        <Pressable accessibilityRole="button" testID="footer-submit" accessibilityState={{ disabled: !!isDisabled }} disabled={isDisabled} onPress={onSubmit}>
           <Text>{submitLabel}</Text>
         </Pressable>
       </View>
@@ -132,8 +165,8 @@ jest.mock('@/components/ui/FormActionFooter', () => {
 jest.mock('heroui-native', () => {
   const React = require('react');
   const { Pressable, Text, TextInput, View } = require('react-native');
-  const Button = ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) => (
-    <Pressable onPress={onPress}>
+  const Button = ({ children, onPress, accessibilityLabel, accessibilityState }: { children: React.ReactNode; onPress?: () => void; accessibilityLabel?: string; accessibilityState?: Record<string, unknown> }) => (
+    <Pressable onPress={onPress} accessibilityLabel={accessibilityLabel} accessibilityState={accessibilityState}>
       <View>{children}</View>
     </Pressable>
   );
@@ -170,6 +203,9 @@ describe('NewVolunteeringRoute', () => {
     mockUpdateOpportunity.mockReset().mockResolvedValue({ data: { id: 19 } });
     mockReplace.mockClear();
     mockShowToast.mockClear();
+    mockConfirm.mockClear();
+    mockNavDispatch.mockClear();
+    Object.keys(mockNavListeners).forEach((key) => { delete mockNavListeners[key]; });
   });
 
   afterEach(() => {
@@ -334,5 +370,84 @@ describe('NewVolunteeringRoute', () => {
         location: 'Community hall',
       }));
     });
+  });
+
+  /** 🔴 S4-03. A failed hydration must not leave a live "Update opportunity" over blank fields. */
+  it('withholds the form when the opportunity cannot be loaded, offers a retry, and never saves blanks', async () => {
+    mockSearchParams = { id: '19' };
+    mockGetOpportunity.mockRejectedValueOnce(new Error('offline'));
+
+    const { getByText, queryByText, getByDisplayValue } = render(<NewVolunteeringRoute />);
+
+    await waitFor(() => expect(getByText("Couldn't open this opportunity")).toBeTruthy());
+    expect(queryByText('Update opportunity')).toBeNull();
+    expect(mockUpdateOpportunity).not.toHaveBeenCalled();
+
+    mockGetOpportunity.mockResolvedValueOnce({ data: { id: 19, title: 'Food bank packing', description: 'Help pack food parcels for local families every week.', organisation: { id: 7, name: 'Helping Hands' }, location: null, is_remote: false, skills_needed: [], status: 'open', spots_available: null, deadline: null, created_at: '2026-05-01T00:00:00Z', start_date: null, end_date: null } });
+    fireEvent.press(getByText('Retry'));
+    await waitFor(() => expect(getByDisplayValue('Food bank packing')).toBeTruthy());
+    expect(getByText('Update opportunity')).toBeTruthy();
+  });
+
+  /** 🔴 S4-08. A failed organisation load used to read as "no organisations" and disable the form for ever. */
+  it('says the organisations failed to load, offers a retry, and keeps publishing blocked until it works', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Network error', refresh });
+
+    const { getByTestId, getByText, queryByText } = render(<NewVolunteeringRoute />);
+
+    expect(getByTestId('new-volunteering-organisations-failed')).toBeTruthy();
+    expect(queryByText('You need an approved organisation.')).toBeNull();
+    fireEvent.press(getByText('Retry'));
+    expect(refresh).toHaveBeenCalled();
+    expect(getByTestId('footer-submit').props.accessibilityState.disabled).toBe(true);
+  });
+
+  /** S4-04. Dirty input is guarded on Back / gestures. */
+  it('asks before discarding unsaved input', () => {
+    const { getByPlaceholderText } = render(<NewVolunteeringRoute />);
+    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Half-typed');
+    expect(mockNavListeners.beforeRemove).toBeDefined();
+
+    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
+    mockNavListeners.beforeRemove?.(e);
+    expect(e.preventDefault).toHaveBeenCalled();
+    expect(mockNavDispatch).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this opportunity?' }));
+  });
+
+  /** S4-25. A mistyped date is a format problem, not a missing field. */
+  it('reports a mistyped date as an invalid format', async () => {
+    const { getByPlaceholderText, getAllByPlaceholderText, getByText } = render(<NewVolunteeringRoute />);
+    fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Food bank packing');
+    fireEvent.changeText(getByPlaceholderText('Describe the role, support, and expected impact.'), 'Help pack food parcels for local families every week.');
+    fireEvent.changeText(getAllByPlaceholderText('YYYY-MM-DD')[0], '31/12/2026');
+    fireEvent.press(getByText('Create opportunity'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Enter dates as YYYY-MM-DD.' })));
+    expect(mockCreateOpportunity).not.toHaveBeenCalled();
+  });
+
+  /** S4-22. The remote toggle paints its icon with the accent foreground once selected, and announces its state. */
+  it('uses the accent foreground for the selected remote toggle icon', () => {
+    const { getByLabelText, queryAllByTestId } = render(<NewVolunteeringRoute />);
+    expect(getByLabelText('Remote opportunity').props.accessibilityState).toEqual(expect.objectContaining({ selected: false }));
+    expect(queryAllByTestId('accent-icon')).toHaveLength(0);
+    fireEvent.press(getByLabelText('Remote opportunity'));
+    expect(getByLabelText('Remote opportunity').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+    expect(queryAllByTestId('accent-icon')).toHaveLength(1);
+  });
+
+  /** S6-07. Footer copy and disabled state follow the required fields. */
+  it('derives the footer copy and disabled state from the required fields', () => {
+    const { getByPlaceholderText, getByTestId, getByText } = render(<NewVolunteeringRoute />);
+    expect(getByText('Add a title and description before continuing.')).toBeTruthy();
+    expect(getByTestId('footer-submit').props.accessibilityState.disabled).toBe(true);
+
+    fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Food bank packing');
+    fireEvent.changeText(getByPlaceholderText('Describe the role, support, and expected impact.'), 'Help pack food parcels for local families every week.');
+    expect(getByText('Check before posting.')).toBeTruthy();
+    expect(getByTestId('footer-submit').props.accessibilityState.disabled).toBe(false);
   });
 });

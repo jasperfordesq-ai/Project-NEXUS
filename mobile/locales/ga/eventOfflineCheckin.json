@@ -72,7 +72,14 @@
       "synced": "Sioncronaithe",
       "conflict": "Coinbhleacht",
       "rejected": "Diúltaithe"
-    }
+    },
+    "readOnlyTitle": "Tá an seiceáil isteach as líne thart ar an ngléas seo",
+    "readOnlyExpired": "Tá an liosta íoslódáilte imithe in éag. Ní féidir rud ar bith nua a chur sa scuaine, ach coinnítear seiceálacha isteach neamhshioncronaithe go dtí go mbainfidh tú iad.",
+    "readOnlyRotated": "Cuireadh údarú an ghléis seo in ionad ceann eile. Ní féidir rud ar bith nua a chur sa scuaine, ach coinnítear seiceálacha isteach neamhshioncronaithe go dtí go mbainfidh tú iad.",
+    "pendingKept": "Tá {{count}} seiceáil isteach neamhshioncronaithe stóráilte ar an ngléas seo fós.",
+    "pendingKept_one": "Tá {{count}} seiceáil isteach neamhshioncronaithe stóráilte ar an ngléas seo fós.",
+    "purgePendingWarning": "Caillfear {{count}} seiceáil isteach neamhshioncronaithe go buan.",
+    "purgePendingWarning_one": "Caillfear {{count}} seiceáil isteach neamhshioncronaithe go buan."
   },
   "conflicts": {
     "title": "Coinbhleachtaí seiceáil isteach",

@@ -23,7 +23,11 @@
     "device": "Benachrichtigungen auf diesem Gerät erlauben",
     "promotions": "Werbliche Benachrichtigungen",
     "permissionNeeded": "Benachrichtigungen sind nicht aktiviert",
-    "permissionNeededHint": "Erlauben Sie Benachrichtigungen, wenn Ihr Gerät danach fragt. Sie können dies später in den Systemeinstellungen ändern."
+    "permissionNeededHint": "Erlauben Sie Benachrichtigungen, wenn Ihr Gerät danach fragt. Sie können dies später in den Systemeinstellungen ändern.",
+    "registerFailed": "Benachrichtigungen konnten nicht eingerichtet werden",
+    "registerFailedHint": "Beim Registrieren dieses Geräts ist etwas schiefgelaufen. Bitte versuche es erneut.",
+    "unavailable": "Benachrichtigungen sind hier nicht verfügbar",
+    "unavailableHint": "Dieses Gerät oder dieser Build kann keine Push-Benachrichtigungen empfangen."
   },
   "email": {
     "messages": "Nachrichten",
@@ -55,6 +59,8 @@
     "saving": "Passwort wird gespeichert...",
     "reviewTitle": "Bereit zur Aktualisierung?",
     "reviewSubtitle": "Nur speichern, wenn Ihr neues Passwort und Ihre Bestätigung übereinstimmen.",
+    "footerMissing": "Fülle alle drei Felder aus, um fortzufahren.",
+    "footerMismatch": "Das neue Passwort und die Bestätigung stimmen noch nicht überein.",
     "success": "Passwort geändert",
     "successMessage": "Ihr Passwort wurde erfolgreich aktualisiert.",
     "validation": {
@@ -232,6 +238,8 @@
     "approve": "Approve",
     "decline": "Decline",
     "remove": "Remove",
+    "revokeConfirmTitle": "Dieses verknüpfte Konto entfernen?",
+    "revokeConfirmMessage": "Die Verknüpfung und alle damit erteilten Rechte enden sofort. Das lässt sich nicht rückgängig machen.",
     "approveFailed": "Diese Anfrage konnte nicht genehmigt werden. Versuche es erneut.",
     "revokeFailed": "Dieses verknüpfte Konto konnte nicht entfernt werden. Versuche es erneut.",
     "permissionFailed": "Die Berechtigung für das verknüpfte Konto konnte nicht aktualisiert werden. Versuche es erneut.",

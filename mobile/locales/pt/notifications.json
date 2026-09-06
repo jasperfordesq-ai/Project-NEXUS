@@ -7,6 +7,7 @@
   "markError": "Erro ao marcar",
   "allCaughtUp": "Tudo em dia!",
   "allCaughtUpSub": "Não tens novas notificações.",
+  "loadingSummary": "A verificar novas notificações…",
   "unreadCount": "{{count}} não lidas",
   "unreadSummary": "Você tem {{count}} notificação não lida.",
   "unreadSummary_one": "Você tem {{count}} notificação não lida.",

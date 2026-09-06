@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { describeApiError } from '@/lib/api/describeApiError';
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -194,7 +196,7 @@ function NewJobScreen() {
     } catch (error) {
       showToast({
         title: isEditing ? t('create.editFailedTitle') : t('create.failedTitle'),
-        description: error instanceof Error ? error.message : (isEditing ? t('create.editFailedDescription') : t('create.failedDescription')),
+        description: describeApiError(error, isEditing ? t('create.editFailedDescription') : t('create.failedDescription')),
         variant: 'danger',
       });
     } finally {
@@ -292,7 +294,7 @@ function NewJobScreen() {
                   variant={salaryNegotiable ? 'primary' : 'secondary'}
                   onPress={() => setSalaryNegotiable((value) => !value)}
                 >
-                  <Ionicons name="cash-outline" size={15} color={salaryNegotiable ? '#fff' : primary} />
+                  {salaryNegotiable ? <AccentIcon name="cash-outline" size={15} /> : <Ionicons name="cash-outline" size={15} color={primary} />}
                   <HeroButton.Label>{t('create.salaryNegotiable')}</HeroButton.Label>
                 </HeroButton>
               </View>
@@ -300,12 +302,12 @@ function NewJobScreen() {
             <FormField label={t('create.deadlineLabel')} value={deadline} onChangeText={setDeadline} placeholder={t('create.deadlinePlaceholder')} theme={theme} />
 
             <HeroButton variant={isRemote ? 'primary' : 'secondary'} onPress={() => setIsRemote((value) => !value)}>
-              <Ionicons name="globe-outline" size={15} color={isRemote ? '#fff' : primary} />
+              {isRemote ? <AccentIcon name="globe-outline" size={15} /> : <Ionicons name="globe-outline" size={15} color={primary} />}
               <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
             </HeroButton>
 
             <HeroButton variant={blindHiring ? 'primary' : 'secondary'} onPress={() => setBlindHiring((value) => !value)}>
-              <Ionicons name="eye-off-outline" size={15} color={blindHiring ? '#fff' : primary} />
+              {blindHiring ? <AccentIcon name="eye-off-outline" size={15} /> : <Ionicons name="eye-off-outline" size={15} color={primary} />}
               <HeroButton.Label>{t('create.blindHiring')}</HeroButton.Label>
             </HeroButton>
 
@@ -318,9 +320,13 @@ function NewJobScreen() {
       </ScrollView>
       <FormActionFooter
         title={isEditing ? t('create.editReviewTitle') : t('create.reviewTitle')}
-        subtitle={isEditing ? t('create.editReviewSubtitle') : t('create.reviewSubtitle')}
+        subtitle={
+          !title.trim() || !description.trim()
+            ? t('create.footerMissing')
+            : isEditing ? t('create.editReviewSubtitle') : t('create.reviewSubtitle')
+        }
         submitLabel={isEditing ? t('create.updateSubmit') : t('create.submit')}
-        primary={primary}
+        isDisabled={isEditing && !hasHydratedEdit}
         isSubmitting={isSubmitting}
         onSubmit={submit}
       />

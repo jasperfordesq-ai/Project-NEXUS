@@ -70,6 +70,7 @@
     "errorTitle": "No se pudieron cargar los intercambios grupales",
     "errorDescription": "Extraiga para actualizar o vuelva a intentarlo más tarde.",
     "moreAvailable": "Hay más intercambios grupales disponibles en la vista web.",
+    "loadMore": "Cargar más",
     "create": {
       "open": "Crear intercambio grupal",
       "title": "Crear intercambio grupal",
@@ -130,6 +131,7 @@
   "filtersIntro": "Busque por habilidad, categoría, lugar o miembro.",
   "filterAllCategories": "Todas las categorias",
   "categoriesLoading": "Cargando categorías",
+  "categoriesRetry": "Las categorías no se cargaron: toca para reintentar",
   "filters": "Filtros",
   "filtersWithCount": "Filtros ({{count}})",
   "filtersWithCount_one": "Filtros ({{count}})",
@@ -458,6 +460,9 @@
     "completedToast": "Listo para confirmar",
     "confirmedToast": "Horas confirmadas",
     "cancelledToast": "Intercambio cancelado",
+    "cancelConfirmTitle": "¿Cancelar este intercambio?",
+    "cancelConfirmMessage": "Se avisará al otro miembro de la cancelación. Esto no se puede deshacer.",
+    "cancelConfirmAction": "Cancelar intercambio",
     "status": {
       "pending_provider": "Esperando aceptación",
       "pending_broker": "Esperando a una persona coordinadora",

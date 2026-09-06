@@ -45,7 +45,7 @@ const SearchInput = forwardRef<TextInput, SearchInputProps>(function SearchInput
       isDisabled={disabled}
       className={containerClassName ?? 'mb-3'}
     >
-      <SearchField.Group className={groupClassName ?? 'min-h-12 rounded-full bg-content2'}>
+      <SearchField.Group className={groupClassName ?? 'min-h-12 rounded-full bg-surface-secondary'}>
         {/*
           🔴 Our own icon, not `SearchField.SearchIcon`.
 

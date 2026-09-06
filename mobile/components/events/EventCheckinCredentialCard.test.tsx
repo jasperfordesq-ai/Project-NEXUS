@@ -66,7 +66,8 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#006FEE' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#006FEE' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ text: '#111111', textSecondary: '#555555' }),
 }));

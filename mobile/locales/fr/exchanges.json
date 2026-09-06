@@ -70,6 +70,7 @@
     "errorTitle": "Impossible de charger les échanges de groupe",
     "errorDescription": "Tirez pour actualiser ou réessayez plus tard.",
     "moreAvailable": "D'autres échanges de groupe sont disponibles sur la vue Web.",
+    "loadMore": "Charger plus",
     "create": {
       "open": "Créer un échange collectif",
       "title": "Créer un échange collectif",
@@ -130,6 +131,7 @@
   "filtersIntro": "Recherchez par compétence, catégorie, lieu ou membre.",
   "filterAllCategories": "Toutes les catégories",
   "categoriesLoading": "Chargement des catégories",
+  "categoriesRetry": "Catégories non chargées – touchez pour réessayer",
   "filters": "Filtres",
   "filtersWithCount": "Filtres ({{count}})",
   "filtersWithCount_one": "Filtres ({{count}})",
@@ -458,6 +460,9 @@
     "completedToast": "Prêt à confirmer",
     "confirmedToast": "Heures confirmées",
     "cancelledToast": "Échange annulé",
+    "cancelConfirmTitle": "Annuler cet échange ?",
+    "cancelConfirmMessage": "L'autre membre sera informé de l'annulation. Cette action est irréversible.",
+    "cancelConfirmAction": "Annuler l'échange",
     "status": {
       "pending_provider": "En attente d'acceptation",
       "pending_broker": "En attente d'un coordinateur",

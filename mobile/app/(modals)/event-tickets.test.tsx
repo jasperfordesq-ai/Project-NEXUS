@@ -12,6 +12,8 @@ const mockCancel = jest.fn();
 const mockShowToast = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useLocalSearchParams: () => ({ id: '4' }),
   router: { canGoBack: () => true, back: jest.fn() },
 }));

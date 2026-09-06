@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { Animated } from 'react-native';
 
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 
 interface TypingIndicatorProps {
   visible: boolean;
@@ -26,8 +27,18 @@ export default function TypingIndicator({ visible }: TypingIndicatorProps) {
   const dot3 = useRef(new Animated.Value(0)).current;
   const loopRef = useRef<Animated.CompositeAnimation | null>(null);
 
+  const reduceMotion = useReducedMotion();
+
   useEffect(() => {
     if (visible) {
+      if (reduceMotion) {
+        // Static dots: the member asked the OS for less motion.
+        containerOpacity.setValue(1);
+        dot1.setValue(0);
+        dot2.setValue(0);
+        dot3.setValue(0);
+        return;
+      }
       // Fade in
       Animated.timing(containerOpacity, {
         toValue: 1,
@@ -83,7 +94,7 @@ export default function TypingIndicator({ visible }: TypingIndicatorProps) {
         loopRef.current = null;
       }
     };
-  }, [visible, containerOpacity, dot1, dot2, dot3]);
+  }, [visible, containerOpacity, dot1, dot2, dot3, reduceMotion]);
 
   return (
     <Animated.View

@@ -36,6 +36,7 @@ let mockRealtimeCallback: ((message: MockThreadMessage) => void) | null = null;
 const thumbsUpReaction = '\u{1F44D}';
 
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   router: { push: (...args: unknown[]) => mockRouterPush(...args), back: jest.fn() },
   useLocalSearchParams: () => mockThreadSearchParams,
   useNavigation: () => ({ setOptions: jest.fn() }),
@@ -68,6 +69,7 @@ jest.mock('react-i18next', () => ({
         'thread.messagingRestrictedTitle': 'Messaging paused',
         'thread.messagingRestrictedContact': 'Please contact your community team before sending more messages.',
         'thread.messageOptions': 'Message options',
+        'thread.messageActions': 'Message actions',
         'thread.attachments.add': 'Add attachment',
         'thread.attachments.title': 'Add attachment',
         'thread.attachments.photoLibrary': 'Photo library',
@@ -117,6 +119,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -180,6 +183,7 @@ const mockSendVoiceMessage = jest.fn().mockResolvedValue({
     is_own: true,
     is_voice: true,
     audio_url: 'https://example.test/voice.m4a',
+    audio_duration: 38,
     reactions: {},
     is_read: false,
   },
@@ -249,7 +253,12 @@ jest.mock('@/components/ui/ActionSheet', () => {
   };
 });
 jest.mock('@/components/OfflineBanner', () => () => null);
-jest.mock('@/components/VoiceMessageBubble', () => 'View');
+jest.mock('@/components/VoiceMessageBubble', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return (props: { durationMs?: number }) =>
+    React.createElement(View, { testID: `voice-bubble-${props.durationMs ?? 'none'}` });
+});
 
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
@@ -296,6 +305,20 @@ const mockMessages = [
     is_own: true,
     is_voice: false,
     audio_url: null,
+    reactions: {},
+    is_read: true,
+  },
+  {
+    // id 7, not 3: the realtime test pushes id 3 and the thread dedupes by id.
+    id: 7,
+    body: '',
+    sender: { id: 1, name: 'Me', avatar_url: null },
+    created_at: '2026-03-10T10:02:00Z',
+    is_own: true,
+    is_voice: true,
+    audio_url: 'https://example.test/voice.m4a',
+    // The server stores the length; the client type carries it since the 2026-09-06 audit.
+    audio_duration: 38,
     reactions: {},
     is_read: true,
   },
@@ -757,7 +780,9 @@ describe('ThreadScreen', () => {
 
     const { getAllByLabelText, getByDisplayValue, getByLabelText, getByText } = render(<ThreadScreen />);
 
-    fireEvent.press(getAllByLabelText('Message options')[1]);
+    // Quick actions are hidden until the bubble is tapped (audit 2026-09-05).
+    fireEvent.press(getAllByLabelText('Message actions')[1]);
+    fireEvent.press(getAllByLabelText('Message options')[0]);
     fireEvent.press(getByLabelText('Edit'));
 
     expect(getByText('Editing message')).toBeTruthy();
@@ -781,6 +806,7 @@ describe('ThreadScreen', () => {
 
     const { getAllByLabelText, queryByText } = render(<ThreadScreen />);
 
+    fireEvent.press(getAllByLabelText('Message actions')[0]);
     fireEvent.press(getAllByLabelText('Message options')[0]);
     await act(async () => {
       fireEvent.press(getAllByLabelText('Delete for me')[0]);
@@ -887,11 +913,51 @@ describe('ThreadScreen', () => {
 
     const { getAllByLabelText, getByText } = render(<ThreadScreen />);
 
+    fireEvent.press(getAllByLabelText('Message actions')[0]);
     fireEvent.press(getAllByLabelText(`React with ${thumbsUpReaction}`)[0]);
 
     await waitFor(() => {
       expect(mockToggleMessageReaction).toHaveBeenCalledWith(1, thumbsUpReaction);
       expect(getByText('1')).toBeTruthy();
     });
+  });
+
+  it('gives the voice bubble the length the server stored, so it does not read 0:00', () => {
+    /*
+      🔴 The server records `audio_duration` and the client type never carried it, so every
+      voice note showed 0:00 until the member pressed play (emulator, 2026-09-05).
+    */
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<ThreadScreen />);
+
+    // 38 seconds, in milliseconds, as the audio component expects.
+    expect(getByTestId('voice-bubble-38000')).toBeTruthy();
+  });
+
+  it('shows the quick-react row only for the tapped message, not under every bubble', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getAllByLabelText, queryAllByLabelText } = render(<ThreadScreen />);
+
+    // Nothing is expanded on first render — the thread reads as messages, not buttons.
+    expect(queryAllByLabelText(`React with ${thumbsUpReaction}`)).toHaveLength(0);
+
+    fireEvent.press(getAllByLabelText('Message actions')[0]);
+    expect(queryAllByLabelText(`React with ${thumbsUpReaction}`)).toHaveLength(1);
+
+    // Tapping the same bubble again folds it away.
+    fireEvent.press(getAllByLabelText('Message actions')[0]);
+    expect(queryAllByLabelText(`React with ${thumbsUpReaction}`)).toHaveLength(0);
   });
 });

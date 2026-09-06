@@ -41,6 +41,7 @@
     "score": "{{score}} % de correspondance",
     "open": "Ouvrir la correspondance",
     "dismiss": "Dismiss",
+    "dismissFailed": "Cette correspondance n'a pas pu être ignorée. Veuillez réessayer.",
     "emptyTitle": "Aucune correspondance pour le moment",
     "emptySubtitle": "De nouvelles recommandations apparaîtront ici lorsqu’elles seront disponibles.",
     "errorTitle": "Impossible de charger les correspondances",
@@ -67,6 +68,10 @@
     "pendingCount": "Examens en attente",
     "delete": "Delete",
     "deleteSuccess": "Avis supprimé.",
+    "submitFailed": "Votre avis n'a pas pu être envoyé. Veuillez réessayer.",
+    "deleteFailed": "L'avis n'a pas pu être supprimé. Veuillez réessayer.",
+    "deleteConfirmTitle": "Supprimer cet avis ?",
+    "deleteConfirmMessage": "Il sera retiré du profil du membre. Cette action est irréversible.",
     "write": "Écrire un avis",
     "cancel": "Cancel",
     "submit": "Envoyer l’avis",
@@ -371,6 +376,9 @@
     "load_failed": "Échec du chargement de vos préférences de correspondance",
     "save": "Enregistrer les préférences",
     "save_success": "Préférences de correspondance enregistrées",
+    "unsavedTitle": "Abandonner vos modifications ?",
+    "unsavedMessage": "Vos préférences de mise en relation n'ont pas été enregistrées.",
+    "discard": "Abandonner",
     "save_failed": "Échec de l'enregistrement des préférences de correspondance",
     "pause": {
       "title": "Suspendre la correspondance"

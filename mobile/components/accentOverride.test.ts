@@ -109,7 +109,13 @@ function findOffenders(): Offender[] {
         // have sent someone to "fix" correct code, which is how a noisy check gets
         // switched off. The value must be `primary` itself, terminated by a comma, a
         // closing brace, or the end of the line.
-        const solid = /backgroundColor:\s*primary\s*(?:,|\}|$)/m.test(tag)
+        // 🔴 The conditional form `backgroundColor: selected ? primary : …` escaped the first
+        // regex on 16 buttons (2026-09-05 sweep, S6-04): a raw `primary` fill is not
+        // dark-lifted, and when the same ternary painted `theme.border` for the disabled
+        // state the label became unreadable. `cond ? primary` is caught here; `primary ?`
+        // (primary as the condition) still is not, for the support.tsx reason above.
+        const solid = (/backgroundColor:\s*primary\s*(?:,|\}|$)/m.test(tag)
+          || /backgroundColor:\s*[^,}\n?]*\?\s*primary\b/.test(tag))
           && !/backgroundColor:\s*withAlpha\(primary/.test(tag);
         const variant = /variant="([a-z-]+)"/.exec(tag);
         const isPrimary = !variant || variant[1] === 'primary';

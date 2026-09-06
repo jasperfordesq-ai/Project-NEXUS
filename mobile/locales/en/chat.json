@@ -50,6 +50,7 @@
     "noteTitle": "What went wrong?",
     "noteDescription": "Add a short note to help improve future answers.",
     "notePlaceholder": "Tell us what was missing or wrong",
+    "failed": "Your feedback could not be saved. Please try again.",
     "submitNote": "Send note",
     "skipNote": "Skip"
   }

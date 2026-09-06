@@ -32,6 +32,8 @@ let mockApiState: {
 };
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ replace: mockReplace }),
 }));
 

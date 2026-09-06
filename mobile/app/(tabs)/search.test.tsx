@@ -14,6 +14,8 @@ const mockRunSavedSearch = jest.fn();
 const mockDeleteSavedSearch = jest.fn();
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) }),
   useSegments: () => ['(tabs)'],
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
@@ -119,6 +121,13 @@ jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/OfflineBanner', () => () => null);
 // Stable references so screens that put `show` in a useCallback/useEffect
 // dependency array don't re-run their effects on every render.
+// Confirmations resolve immediately so the guarded action runs in the test.
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirmDialog: null,
+  }),
+}));
 jest.mock('@/components/ui/AppToast', () => {
   const show = jest.fn();
   const hide = jest.fn();

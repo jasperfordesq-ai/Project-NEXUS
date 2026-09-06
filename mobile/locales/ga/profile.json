@@ -41,6 +41,7 @@
     "score": "Meaitseáil {{score}}%",
     "open": "Oscail an mheaitseáil",
     "dismiss": "Díbhe",
+    "dismissFailed": "Níorbh fhéidir an meaitseáil seo a dhíbhe. Bain triail eile as.",
     "emptyTitle": "Níl aon mheaitseáil ann fós",
     "emptySubtitle": "Beidh moltaí nua le feiceáil anseo nuair a bheidh siad ar fáil.",
     "errorTitle": "Níorbh fhéidir na meaitseálacha a lódáil",
@@ -67,6 +68,10 @@
     "pendingCount": "Léirmheasanna ar feitheamh",
     "delete": "Scrios",
     "deleteSuccess": "Scriosadh an léirmheas.",
+    "submitFailed": "Níorbh fhéidir do léirmheas a sheoladh. Bain triail eile as.",
+    "deleteFailed": "Níorbh fhéidir an léirmheas a scriosadh. Bain triail eile as.",
+    "deleteConfirmTitle": "An léirmheas seo a scriosadh?",
+    "deleteConfirmMessage": "Bainfear é de phróifíl an bhaill. Ní féidir é seo a chur ar ceal.",
     "write": "Scríobh léirmheas",
     "cancel": "Cealaigh",
     "submit": "Seol an léirmheas",
@@ -371,6 +376,9 @@
     "load_failed": "Theip ar do shainroghanna meaitseála a lódáil",
     "save": "Sábháil sainroghanna",
     "save_success": "Sábháladh na sainroghanna meaitseála",
+    "unsavedTitle": "Do chuid athruithe a chur i leataobh?",
+    "unsavedMessage": "Níor sábháladh do roghanna meaitseála.",
+    "discard": "Cuir i leataobh",
     "save_failed": "Theip ar shábháil roghanna meaitseála",
     "pause": {
       "title": "Cuir meaitseáil ar sos"

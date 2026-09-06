@@ -114,5 +114,8 @@
     "email": "Email",
     "in_app": "In-app notification",
     "push": "Push notification"
-  }
+  },
+  "unsaved_title": "Discard this message?",
+  "unsaved_message": "You have unsaved wording. Closing now will lose it.",
+  "discard": "Discard"
 }

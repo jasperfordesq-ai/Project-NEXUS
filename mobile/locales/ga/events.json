@@ -167,7 +167,13 @@
     "invalidCoordinates": "Cuir isteach idir dhomhanleithead agus domhanfhad ag baint úsáide as raonta comhordanáidí bailí.",
     "failedTitle": "Níor cruthaíodh an t-imeacht",
     "loadFailed": "Níorbh fhéidir linn an t-imeacht seo a lódáil le haghaidh eagarthóireachta.",
-    "failedDescription": "Níorbh fhéidir linn an t-imeacht a chruthú. Bain triail eile as."
+    "failedDescription": "Níorbh fhéidir linn an t-imeacht a chruthú. Bain triail eile as.",
+    "validationDateFormat": "Cuir isteach na dátaí san fhormáid YYYY-MM-DDTHH:mm (nó YYYY-MM-DD d'imeachtaí lae iomláin), mar shampla 2026-06-30T18:00.",
+    "reviewMissing": "Cuir teideal, cur síos agus am tosaigh leis roimh leanúint ar aghaidh.",
+    "loadFailedTitle": "Níorbh fhéidir an imeacht seo a oscailt",
+    "unsavedTitle": "An imeacht seo a chaitheamh i dtraipisí?",
+    "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
+    "discard": "Caith i dtraipisí"
   },
   "category": {
     "workshop": "Ceardlann",

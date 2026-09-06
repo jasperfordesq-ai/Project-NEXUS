@@ -41,6 +41,8 @@
     "saveFailedTitle": "Níorbh fhéidir an cuardach a shábháil",
     "saveFailedMessage": "Seiceáil ainm an chuardaigh agus bain triail eile as.",
     "deleteFailedTitle": "Níorbh fhéidir an cuardach a scriosadh",
-    "deleteFailedMessage": "Bain triail eile as."
+    "deleteFailedMessage": "Bain triail eile as.",
+    "deleteConfirmTitle": "An cuardach sábháilte seo a scriosadh?",
+    "deleteConfirmMessage": "Is féidir leat é a shábháil arís ó chuardach nua am ar bith."
   }
 }

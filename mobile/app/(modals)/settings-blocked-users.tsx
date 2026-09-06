@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,12 +40,17 @@ export default function SettingsBlockedUsersScreen() {
   const [users, setUsers] = useState<BlockedUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unblockingId, setUnblockingId] = useState<number | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       setUsers(await getBlockedUsers());
     } catch (err) {
+      // 🔴 S3-15: the toast faded and the screen then said "No blocked users" and "0
+      // blocked" — a confident, wrong answer with no way to try again.
+      setLoadError(describeApiError(err, t('blockedUsers.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('blockedUsers.loadError')), variant: 'danger' });
     } finally {
       setIsLoading(false);
@@ -108,6 +114,8 @@ export default function SettingsBlockedUsersScreen() {
 
           {isLoading ? (
             <LoadingSpinner />
+          ) : loadError ? (
+            <ErrorState subtitle={loadError} onRetry={() => void load()} isRetrying={isLoading} testID="blocked-users-error" />
           ) : users.length === 0 ? (
             <EmptyState
               icon="shield-checkmark-outline"

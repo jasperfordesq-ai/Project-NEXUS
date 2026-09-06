@@ -53,7 +53,8 @@
         "revised": "Teimpléad athbhreithnithe",
         "archived": "Teimpléad curtha sa chartlann",
         "materialized": "Dréacht cruthaithe"
-      }
+      },
+      "validationDateFormat": "Cuir isteach an tús agus an deireadh san fhormáid YYYY-MM-DDTHH:mm, mar shampla 2030-08-01T10:00."
     },
     "checks": {
       "event_template_check_source_manage": "Tá cead agat fós an t-imeacht foinse a bhainistiú",

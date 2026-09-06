@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FlatList,
@@ -252,7 +253,7 @@ function JobsHero({
   return (
     <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
       <View className="h-1.5" style={{ backgroundColor: primary }} />
-      <HeroCard.Body className="gap-4 p-4 pt-0">
+      <HeroCard.Body className="gap-4 p-4">
         <View className="flex-row items-start gap-3">
           <View className="size-13 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
             <Ionicons name="briefcase-outline" size={25} color={primary} />
@@ -438,9 +439,15 @@ function ApplicationCard({
               isDisabled={actionLoading}
               onPress={async () => {
                 setActionLoading(true);
-                const ok = await acceptInterview(interview.id);
-                setActionLoading(false);
-                if (ok) onInterviewAccepted(interview.id);
+                setStatusMessage(null);
+                try {
+                  await acceptInterview(interview.id);
+                  onInterviewAccepted(interview.id);
+                } catch (err) {
+                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
+                } finally {
+                  setActionLoading(false);
+                }
               }}
               accessibilityLabel={t('applications.accept_interview')}
             >
@@ -453,9 +460,15 @@ function ApplicationCard({
               isDisabled={actionLoading}
               onPress={async () => {
                 setActionLoading(true);
-                const ok = await declineInterview(interview.id);
-                setActionLoading(false);
-                if (ok) onInterviewDeclined(interview.id);
+                setStatusMessage(null);
+                try {
+                  await declineInterview(interview.id);
+                  onInterviewDeclined(interview.id);
+                } catch (err) {
+                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
+                } finally {
+                  setActionLoading(false);
+                }
               }}
               accessibilityLabel={t('applications.decline_interview')}
             >
@@ -488,9 +501,15 @@ function ApplicationCard({
               isDisabled={actionLoading}
               onPress={async () => {
                 setActionLoading(true);
-                const ok = await acceptOffer(offer.id);
-                setActionLoading(false);
-                if (ok) onOfferAccepted(offer.id);
+                setStatusMessage(null);
+                try {
+                  await acceptOffer(offer.id);
+                  onOfferAccepted(offer.id);
+                } catch (err) {
+                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
+                } finally {
+                  setActionLoading(false);
+                }
               }}
               accessibilityLabel={t('applications.accept_offer')}
             >
@@ -503,9 +522,15 @@ function ApplicationCard({
               isDisabled={actionLoading}
               onPress={async () => {
                 setActionLoading(true);
-                const ok = await rejectOffer(offer.id);
-                setActionLoading(false);
-                if (ok) onOfferRejected(offer.id);
+                setStatusMessage(null);
+                try {
+                  await rejectOffer(offer.id);
+                  onOfferRejected(offer.id);
+                } catch (err) {
+                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
+                } finally {
+                  setActionLoading(false);
+                }
               }}
               accessibilityLabel={t('applications.decline_offer')}
             >
@@ -937,7 +962,7 @@ export default function JobsScreen() {
   );
   // See the tab-bar comment below: four across does not fit a narrow phone.
   const { width: screenWidth } = useWindowDimensions();
-  const tabsPerRow = screenWidth < 380 ? 2 : 4;
+  const tabsPerRow = screenWidth < 600 ? 2 : 4;
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -1163,7 +1188,8 @@ export default function JobsScreen() {
                 style={{
                   flexGrow: 1,
                   flexBasis: tabsPerRow === 2 ? '46%' : '22%',
-                  backgroundColor: selected ? primary : 'transparent',
+                  // Selected: HeroUI's primary fill and its matching label colour. Unselected: ghost.
+                  ...(selected ? {} : { backgroundColor: 'transparent' }),
                 }}
                 onPress={() => setActiveTab(tab)}
                 accessibilityRole="tab"
@@ -1171,7 +1197,7 @@ export default function JobsScreen() {
                 accessibilityLabel={t(`tabs.${tab}`)}
               >
                 <HeroButton.Label
-                  style={{ color: selected ? '#fff' : theme.textSecondary, textAlign: 'center' }}
+                  style={selected ? { textAlign: 'center' } : { color: theme.textSecondary, textAlign: 'center' }}
                   numberOfLines={1}
                 >
                   {t(`tabs.${tab}`)}

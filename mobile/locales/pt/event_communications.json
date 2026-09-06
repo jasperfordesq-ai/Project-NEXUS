@@ -94,5 +94,8 @@
   "variants": { "announcement": "Anúncio", "follow_up": "Acompanhamento após o evento", "review_request": "Pedido de avaliação" },
   "statuses": { "draft": "Rascunho", "scheduled": "Agendada", "sending": "A enviar", "sent": "Enviada", "cancelled": "Cancelada", "failed": "Falhou" },
   "segments": { "registration_confirmed": "Inscrições confirmadas", "waitlist_active": "Lista de espera ativa", "attendance_attended": "Presentes", "attendance_no_show": "Não compareceram" },
-  "channels": { "email": "E-mail", "in_app": "Notificação na aplicação", "push": "Notificação push" }
+  "channels": { "email": "E-mail", "in_app": "Notificação na aplicação", "push": "Notificação push" },
+  "unsaved_title": "Descartar esta mensagem?",
+  "unsaved_message": "Tem texto por guardar. Se fechar agora, vai perdê-lo.",
+  "discard": "Descartar"
 }

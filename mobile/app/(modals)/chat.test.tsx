@@ -6,7 +6,13 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+jest.mock('@/components/ui/AppToast', () => {
+  const show = jest.fn();
+  const hide = jest.fn();
+  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+});
 jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({}),

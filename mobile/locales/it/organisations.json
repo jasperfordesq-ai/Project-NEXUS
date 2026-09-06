@@ -37,7 +37,8 @@
     "organisations": "Partner",
     "verified": "Verificato",
     "opportunities": "Opportunità",
-    "volunteers": "Volontari"
+    "volunteers": "Volontari",
+    "loadedNote": "I conteggi riguardano le organizzazioni caricate finora."
   },
   "register": {
     "title": "Registra organizzazione",
@@ -70,7 +71,10 @@
       "emailInvalid": "Inserisci un indirizzo e-mail valido.",
       "websiteInvalid": "Inserisci l'URL completo del sito web che inizia con http:// o https://.",
       "termsRequired": "Conferma di essere autorizzato a registrare questa organizzazione."
-    }
+    },
+    "unsavedTitle": "Scartare questa registrazione?",
+    "unsavedMessage": "Hai dati non salvati. Se esci ora, andranno perduti.",
+    "discard": "Scarta"
   },
   "detail": {
     "title": "Organizzazione",

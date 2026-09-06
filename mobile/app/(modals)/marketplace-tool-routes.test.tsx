@@ -10,6 +10,8 @@ const mockReplace = jest.fn();
 let mockSearchParams: Record<string, string | undefined> = {};
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { replace: (...args: unknown[]) => mockReplace(...args), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => mockSearchParams,
 }));

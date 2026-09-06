@@ -114,5 +114,8 @@
     "email": "E-mail",
     "in_app": "Notification dans l’application",
     "push": "Notification push"
-  }
+  },
+  "unsaved_title": "Abandonner ce message ?",
+  "unsaved_message": "Vous avez un texte non enregistré. En fermant maintenant, vous le perdrez.",
+  "discard": "Abandonner"
 }

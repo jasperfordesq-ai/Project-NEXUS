@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { downloadAuthenticatedFile, SHARING_UNAVAILABLE } from '@/lib/volunteering/authenticatedFileDownload';
+import { eventIsoToLocalInput, localEventTimeZone } from '@/lib/utils/eventDateTime';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
@@ -13,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { useParamTab } from '@/lib/hooks/useParamTab';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Spinner, Surface } from 'heroui-native';
@@ -204,7 +206,6 @@ function ActionPill({
 }) {
   const theme = useTheme();
   const isPrimary = tone === 'primary';
-  const foreground = isPrimary ? '#fff' : primary;
 
   return (
     <HeroButton
@@ -214,15 +215,18 @@ function ActionPill({
       className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isPrimary ? primary : withAlpha(primary, 0.12),
-        borderWidth: isPrimary ? 0 : 1,
-        borderColor: isPrimary ? 'transparent' : withAlpha(primary, 0.22),
+      // Selected pills let HeroUI's primary variant paint the fill AND pick the label colour
+      // for it: a hardcoded white label is invisible on a pale community colour, and a raw
+      // `primary` fill skips the dark-mode lift every other primary button gets.
+      style={isPrimary ? { opacity: disabled ? 0.55 : 1 } : {
+        backgroundColor: withAlpha(primary, 0.12),
+        borderWidth: 1,
+        borderColor: withAlpha(primary, 0.22),
         opacity: disabled ? 0.55 : 1,
       }}
     >
-      {loading ? <Spinner size="sm" /> : <Ionicons name={icon} size={16} color={foreground} />}
-      <HeroButton.Label className="text-sm font-semibold" style={{ color: isPrimary ? '#fff' : theme.text }} numberOfLines={1}>
+      {loading ? <Spinner size="sm" /> : isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
+      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={1}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -1113,8 +1117,21 @@ function CertificatesPanel({
   }
 
   async function openCertificate(code: string) {
-    const url = `${API_BASE_URL}${API_BASE_URL.endsWith('/') ? '' : '/'}api/v2/volunteering/certificates/${encodeURIComponent(code)}/html`;
-    await Linking.openURL(url);
+    /*
+      🔴 S4-11: this opened an authenticated API URL in the system browser, which carries no
+      bearer token — the member got a JSON "Unauthenticated." page instead of a certificate.
+    */
+    try {
+      await downloadAuthenticatedFile(
+        `/api/v2/volunteering/certificates/${encodeURIComponent(code)}/html`,
+        `${code}.html`,
+      );
+    } catch (err) {
+      const description = (err as Error)?.message === SHARING_UNAVAILABLE
+        ? t('certificates.sharingUnavailable')
+        : describeApiError(err, t('certificates.openFailed'));
+      showToast({ title: t('common:errors.alertTitle'), description, variant: 'danger' });
+    }
   }
 
   if (isLoading) {
@@ -1560,7 +1577,7 @@ function DonationsPanel({
             accessibilityLabel={t('donations.messagePlaceholder')}
           />
           <HeroButton size="sm" variant={anonymous ? 'primary' : 'secondary'} onPress={() => setAnonymous((value) => !value)}>
-            <Ionicons name={anonymous ? 'eye-off-outline' : 'eye-outline'} size={16} color={anonymous ? '#fff' : primary} />
+            {anonymous ? <AccentIcon name="eye-off-outline" size={16} /> : <Ionicons name="eye-outline" size={16} color={primary} />}
             <HeroButton.Label>{anonymous ? t('donations.anonymousOn') : t('donations.anonymousOff')}</HeroButton.Label>
           </HeroButton>
           <HeroButton isDisabled={submitting} onPress={() => void handleSubmit()}>
@@ -1634,7 +1651,10 @@ function HoursPanel({
     try {
       await logVolunteerHours({
         organization_id: selectedOrgId,
-        date: new Date().toISOString().split('T')[0],
+        // 🔴 S4-15: this was the UTC date. A volunteer logging at 00:30 local in UTC+1
+        // recorded YESTERDAY, and the server's "already logged for this date" refusal then
+        // fired on the wrong day.
+        date: eventIsoToLocalInput(new Date().toISOString(), localEventTimeZone()).slice(0, 10),
         hours: parsedHours,
         description: description.trim() || undefined,
       });
@@ -1843,6 +1863,23 @@ function VolunteeringScreenInner() {
   );
 
   const opportunitiesApi = usePaginatedApi<VolunteerOpportunity, VolunteeringResponse>(fetchFn, extractor, [committedSearch]);
+
+  /*
+    🔴 S4-09: applying on the detail screen left this list still offering "Apply" until a
+    pull to refresh. Both the opportunities list and the member's applications are refetched
+    on return; the first mount already fetched.
+  */
+  const hasFocusedOnceRef = useRef(false);
+  const refreshOpportunities = opportunitiesApi.refresh;
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refreshOpportunities();
+    }, [refreshOpportunities]),
+  );
   const applicationsApi = useApi<VolunteerApplicationsResponse>(() => getMyApplications(), [], { enabled: isAuthenticated });
   const shiftsApi = useApi<MyShiftsResponse>(() => getMyShifts(), [], { enabled: isAuthenticated });
   const hoursApi = useApi<{ data: VolunteerHoursSummary }>(() => getHoursSummary(), [], { enabled: isAuthenticated });
@@ -1854,6 +1891,25 @@ function VolunteeringScreenInner() {
   const swapsApi = useApi<VolunteerShiftSwapsResponse>(() => getShiftSwaps(), [], { enabled: isAuthenticated });
 
   const opportunities = opportunitiesApi.items;
+
+  /*
+    🔴 S4-27: the pull indicator followed the Opportunities list on every one of the nine
+    tabs, so a pull on any other tab showed nothing while its ten requests ran. It follows
+    whichever tab is on screen, and only once that tab already has something to redraw.
+  */
+  const activeTabIsLoading = (
+    activeTab === 'opportunities' ? opportunitiesApi.isLoading && opportunities.length > 0
+      : activeTab === 'applications' ? applicationsApi.isLoading && Boolean(applicationsApi.data)
+      : activeTab === 'shifts' ? shiftsApi.isLoading && Boolean(shiftsApi.data)
+      : activeTab === 'hours' ? hoursApi.isLoading && Boolean(hoursApi.data)
+      : activeTab === 'organisations' ? organisationsApi.isLoading && Boolean(organisationsApi.data)
+      : activeTab === 'certificates' ? certificatesApi.isLoading && Boolean(certificatesApi.data)
+      : activeTab === 'expenses' ? expensesApi.isLoading && Boolean(expensesApi.data)
+      : activeTab === 'donations' ? donationsApi.isLoading && Boolean(donationsApi.data)
+      : activeTab === 'swaps' ? swapsApi.isLoading && Boolean(swapsApi.data)
+      : false
+  );
+
   const applicationsPayload = applicationsApi.data?.data;
   const applications = useMemo(() => Array.isArray(applicationsPayload) ? applicationsPayload : [], [applicationsPayload]);
   const shiftsPayload = shiftsApi.data?.data.items;
@@ -1955,7 +2011,9 @@ function VolunteeringScreenInner() {
         onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl
-            refreshing={activeTab === 'opportunities' && opportunitiesApi.isLoading && opportunities.length > 0}
+            // 🔴 S4-27: this was true only on the Opportunities tab, so a pull on any of the
+            // other eight fired ten requests and the indicator vanished at once.
+            refreshing={activeTabIsLoading}
             onRefresh={() => {
               opportunitiesApi.refresh();
               applicationsApi.refresh();

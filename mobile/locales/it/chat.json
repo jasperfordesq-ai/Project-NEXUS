@@ -50,6 +50,7 @@
     "noteTitle": "Che cosa non ha funzionato?",
     "noteDescription": "Aggiungi una breve nota per aiutarci a migliorare le risposte future.",
     "notePlaceholder": "Dicci cosa mancava o cosa era sbagliato",
+    "failed": "Non è stato possibile salvare il tuo feedback. Riprova.",
     "submitNote": "Invia nota",
     "skipNote": "Salta"
   }

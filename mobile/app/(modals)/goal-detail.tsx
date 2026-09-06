@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import ErrorState from '@/components/ui/ErrorState';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -120,6 +122,7 @@ export default function GoalDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
   const load = useCallback(async () => {
     if (!Number.isFinite(goalId) || goalId <= 0) {
       setIsLoading(false);
@@ -135,7 +138,14 @@ export default function GoalDetailScreen() {
         getGoalReminder(goalId),
       ]);
 
-      if (goalResult.status === 'fulfilled') setGoal(goalResult.value.data);
+      if (goalResult.status === 'fulfilled') {
+        setGoal(goalResult.value.data);
+        setLoadError(null);
+      } else {
+        // allSettled never throws, so the catch below never ran and a timeout read as
+        // "Goal not found" with no retry (audit 2026-09-05, S2-07).
+        setLoadError(describeApiError(goalResult.reason, t('detail.loadError')));
+      }
       if (historyResult.status === 'fulfilled') setHistory(historyResult.value.data ?? []);
       if (insightsResult.status === 'fulfilled') setInsights(insightsResult.value.data);
       if (reminderResult.status === 'fulfilled') {
@@ -173,7 +183,7 @@ export default function GoalDetailScreen() {
   }, [completedMilestones, goal, insights, milestones.length, percent, primary, t, theme.success]);
 
   async function handleProgressSave() {
-    const increment = Number(progressIncrement);
+    const increment = parseDecimalInput(progressIncrement) ?? Number.NaN;
     if (!goal || !Number.isFinite(increment) || increment <= 0) return;
     setIsSaving(true);
     try {
@@ -222,7 +232,11 @@ export default function GoalDetailScreen() {
       <ModalErrorBoundary>
         <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
           <AppTopBar title={t('detail.title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/goals" />
-          <EmptyState icon="flag-outline" title={t('detail.notFound')} subtitle={t('detail.notFoundHint')} />
+          {loadError ? (
+            <ErrorState subtitle={loadError} onRetry={() => void load()} isRetrying={isLoading} />
+          ) : (
+            <EmptyState icon="flag-outline" title={t('detail.notFound')} subtitle={t('detail.notFoundHint')} />
+          )}
         </SafeAreaView>
       </ModalErrorBoundary>
     );
@@ -305,7 +319,7 @@ export default function GoalDetailScreen() {
                 <HeroButton
                   variant="primary"
                   onPress={handleProgressSave}
-                  isDisabled={isSaving || !Number.isFinite(Number(progressIncrement)) || Number(progressIncrement) <= 0}
+                  isDisabled={isSaving || !((parseDecimalInput(progressIncrement) ?? Number.NaN) > 0)}
                 >
                   <HeroButton.Label>{isSaving ? t('detail.saving') : t('detail.saveProgress')}</HeroButton.Label>
                 </HeroButton>

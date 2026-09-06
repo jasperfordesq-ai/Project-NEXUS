@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useState } from 'react';
 import {
   FlatList,
@@ -66,16 +67,21 @@ function ActionPill({
       className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: isPrimary ? primary : withAlpha(primary, 0.12),
-        borderWidth: isPrimary ? 0 : 1,
-        borderColor: isPrimary ? 'transparent' : withAlpha(primary, 0.22),
+      // Selected pills let HeroUI's primary variant paint the fill AND pick the label colour
+      // for it: a hardcoded white label is invisible on a pale community colour, and a raw
+      // `primary` fill skips the dark-mode lift every other primary button gets.
+      style={isPrimary ? undefined : {
+        backgroundColor: withAlpha(primary, 0.12),
+        borderWidth: 1,
+        borderColor: withAlpha(primary, 0.22),
       }}
     >
-      <Ionicons name={icon} size={16} color={isPrimary ? '#ffffff' : primary} />
-      <HeroButton.Label className="text-sm font-semibold" style={{ color: isPrimary ? '#ffffff' : theme.text }} numberOfLines={1}>
-        {label}
-      </HeroButton.Label>
+      {isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
+      {isPrimary ? (
+        <HeroButton.Label className="text-sm font-semibold" numberOfLines={1}>{label}</HeroButton.Label>
+      ) : (
+        <HeroButton.Label className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>{label}</HeroButton.Label>
+      )}
     </HeroButton>
   );
 }

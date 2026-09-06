@@ -117,5 +117,6 @@
   "confirm_ack_description": "Ich habe Bereiche, Anzahlen, Konflikte und Wiederholungskennung geprüft.",
   "cancel": "Abbrechen",
   "commit_button": "Unveränderliche Version speichern",
-  "committing": "Version wird gespeichert"
+  "committing": "Version wird gespeichert",
+  "history_refresh_error_description": "Die künftige Einrichtung wurde gespeichert, aber der Verlauf unten konnte nicht aktualisiert werden. Versuche es erneut, um ihn neu zu laden."
 }

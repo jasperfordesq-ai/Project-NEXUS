@@ -12,6 +12,8 @@ import SupportRoute from './support';
 let mockSearchParams: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(),
   router: { push: jest.fn() },
   useLocalSearchParams: () => mockSearchParams,
 }));
@@ -27,6 +29,9 @@ jest.mock('expo-linking', () => ({
   openURL: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' } }),
+}));
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@gorhom/bottom-sheet', () => {
   const { ScrollView } = require('react-native');
@@ -73,7 +78,7 @@ describe('SupportRoute', () => {
 
     fireEvent.press(getAllByText('Open web')[0]);
 
-    expect(Linking.openURL).toHaveBeenCalledWith('https://app.project-nexus.ie/help');
+    expect(Linking.openURL).toHaveBeenCalledWith('https://app.project-nexus.ie/hour-timebank/help');
   });
 
   it('renders native legal summaries in a bottom sheet and keeps canonical web links available', () => {
@@ -94,7 +99,7 @@ describe('SupportRoute', () => {
     const openWebButtons = getAllByText('Open web');
     fireEvent.press(openWebButtons[openWebButtons.length - 1]);
 
-    expect(Linking.openURL).toHaveBeenCalledWith('https://app.project-nexus.ie/privacy');
+    expect(Linking.openURL).toHaveBeenCalledWith('https://app.project-nexus.ie/hour-timebank/privacy');
   });
 
   it('opens a requested legal document from native route params', () => {

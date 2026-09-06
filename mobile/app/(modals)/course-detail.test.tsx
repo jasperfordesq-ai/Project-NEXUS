@@ -8,9 +8,12 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 const mockShow = jest.fn();
-jest.mock('expo-router', () => ({ router: { push: (...args: unknown[]) => mockPush(...args) }, useLocalSearchParams: () => ({ id: 'basics' }) }));
+jest.mock('expo-router', () => ({
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
+  useFocusEffect: jest.fn(), router: { push: (...args: unknown[]) => mockPush(...args) }, useLocalSearchParams: () => ({ id: 'basics' }) }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ 'detail.enroll': 'Enroll', 'detail.enroll_success': "You're enrolled! Time to start learning.", 'detail.enroll_error': 'Could not enroll. Please try again.', 'detail.about': 'About this course', 'detail.syllabus': 'Syllabus', 'detail.free': 'Free', 'common:back': 'Back' } as Record<string, string>)[key] ?? key }) }));
-jest.mock('@/lib/hooks/useTenant', () => ({ usePrimaryColor: () => '#06f' }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textSecondary: '#555', border: '#ddd' }) }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);

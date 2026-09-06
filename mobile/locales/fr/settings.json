@@ -23,7 +23,11 @@
     "device": "Autoriser les notifications sur cet appareil",
     "promotions": "Notifications promotionnelles",
     "permissionNeeded": "Les notifications ne sont pas activées",
-    "permissionNeededHint": "Autorisez les notifications lorsque votre appareil le demande. Vous pourrez modifier ce choix plus tard dans les réglages du système."
+    "permissionNeededHint": "Autorisez les notifications lorsque votre appareil le demande. Vous pourrez modifier ce choix plus tard dans les réglages du système.",
+    "registerFailed": "Les notifications n'ont pas pu être configurées",
+    "registerFailedHint": "Une erreur s'est produite lors de l'enregistrement de cet appareil. Veuillez réessayer.",
+    "unavailable": "Les notifications ne sont pas disponibles ici",
+    "unavailableHint": "Cet appareil ou cette version ne peut pas recevoir de notifications push."
   },
   "email": {
     "messages": "Messages",
@@ -55,6 +59,8 @@
     "saving": "Enregistrement du mot de passe...",
     "reviewTitle": "Prêt à mettre à jour ?",
     "reviewSubtitle": "Enregistrez uniquement lorsque votre nouveau mot de passe et votre confirmation correspondent.",
+    "footerMissing": "Remplissez les trois champs pour continuer.",
+    "footerMismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas encore.",
     "success": "Mot de passe modifie",
     "successMessage": "Votre mot de passe a été mis à jour avec succès.",
     "validation": {
@@ -232,6 +238,8 @@
     "approve": "Approve",
     "decline": "Decline",
     "remove": "Remove",
+    "revokeConfirmTitle": "Supprimer ce compte lié ?",
+    "revokeConfirmMessage": "Le lien et les autorisations qu'il accorde prennent fin immédiatement. Cette action est irréversible.",
     "approveFailed": "Impossible d’approuver cette demande. Réessayez.",
     "revokeFailed": "Impossible de supprimer ce compte associé. Réessayez.",
     "permissionFailed": "Impossible de mettre à jour l’autorisation du compte associé. Réessayez.",

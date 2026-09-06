@@ -14,6 +14,20 @@ const mockSearchParams: { tab?: string; transaction_id?: string } = {};
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockSearchParams,
+  useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn() }),
+  useFocusEffect: jest.fn(),
+}));
+jest.mock('@/components/ui/AppToast', () => {
+  const show = jest.fn();
+  const hide = jest.fn();
+  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+});
+// Confirmations resolve immediately so the guarded action runs in the test.
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirmDialog: null,
+  }),
 }));
 
 jest.mock('@/lib/hooks/useApi', () => ({
@@ -25,6 +39,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 

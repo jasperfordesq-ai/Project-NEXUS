@@ -80,7 +80,9 @@
     "unauthorized": "A sua sessão expirou. Inicie sessão novamente.",
     "sessionEndedTitle": "Sessão terminada",
     "notFound": "Não encontrado.",
-    "alertTitle": "Error"
+    "alertTitle": "Error",
+    "contractDrift": "Este ecrã recebeu informação num formato inesperado. Atualiza a app ou tenta novamente mais tarde.",
+    "uploadIncomplete": "O carregamento terminou, mas o servidor não devolveu o ficheiro."
   },
   "labels": {
     "timeBalance": "Saldo de tempo",

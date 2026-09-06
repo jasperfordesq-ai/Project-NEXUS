@@ -52,6 +52,9 @@
   "newPost": {
     "title": "Criar publicação",
     "placeholder": "Em que está a pensar?",
+    "unsavedTitle": "Descartar esta publicação?",
+    "unsavedMessage": "O que escreveste será perdido.",
+    "discard": "Descartar",
     "submit": "Publicar",
     "created": "Publicação criada!",
     "failed": "Falha ao criar publicação.",
@@ -153,7 +156,9 @@
     "closed": "Enquete encerrada",
     "vote": "Votar",
     "resultsHiddenUntilClose": "Resultados revelados quando a sondagem fechar",
-    "voteToSeeResults": "Vote para ver os resultados"
+    "voteToSeeResults": "Vote para ver os resultados",
+    "voteFailedTitle": "Voto não guardado",
+    "voteFailed": "Não foi possível registar o teu voto. Tenta novamente."
   },
   "pollsScreen": {
     "title": "Enquetes",
