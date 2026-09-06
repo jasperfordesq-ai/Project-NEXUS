@@ -121,7 +121,8 @@
     "marking": "Marcando...",
     "markError": "No se pudieron marcar las notificaciones como leídas.",
     "allCaughtUp": "¡Estás al día!",
-    "justNow": "justo ahora"
+    "justNow": "justo ahora",
+    "titleWithCount": "Notificaciones, {{unread}} sin leer"
   },
   "tenant": {
     "logoLabel": "logotipo {{name}}"

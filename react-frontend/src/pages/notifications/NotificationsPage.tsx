@@ -503,6 +503,19 @@ const NotificationCard = memo(function NotificationCard({ notification, onMarkRe
   const isUnread = !notification.read_at;
   const hasLink = !!notification.link;
   const isGrouped = notification.is_grouped && (notification.group_count ?? 0) > 1;
+  /*
+    🔴 What "expand" actually reveals — and whether there is anything at all.
+
+    This page offered the expand toggle for ANY grouped notification and then rendered only
+    the actor avatars, so a group whose notifications carry no actor (an achievement, a
+    wallet movement, a listing expiry — most types) expanded to nothing: the chevron turned
+    over and not one pixel else changed. Reported against the mobile app on 2026-09-06 and
+    reproduced there; this client had the identical defect. The API now sends the group's
+    own notifications, so there is something real to show.
+  */
+  const groupItems = notification.group_items ?? [];
+  const groupActors = notification.actors ?? [];
+  const canExpand = isGrouped && (groupItems.length > 0 || groupActors.length > 0);
 
   function handleClick() {
     if (!notification.link) return;
@@ -563,13 +576,14 @@ const NotificationCard = memo(function NotificationCard({ notification, onMarkRe
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          {isGrouped && (
+          {canExpand && (
             <Button
               isIconOnly
               variant="flat"
               size="sm"
               className="bg-theme-elevated text-theme-muted hover:text-theme-primary"
               onPress={() => setIsExpanded(!isExpanded)}
+              aria-expanded={isExpanded}
               aria-label={isExpanded ? t('collapse_group') : t('expand_group')}
             >
               {isExpanded ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <ChevronDown className="w-4 h-4" aria-hidden="true" />}
@@ -602,16 +616,29 @@ const NotificationCard = memo(function NotificationCard({ notification, onMarkRe
         </div>
       </div>
 
-      {/* Expanded group: show individual actors */}
+      {/* Expanded group: the notifications it is made of, or its actors when that is all there is. */}
       <AnimatePresence>
-        {isGrouped && isExpanded && notification.actors && (
+        {canExpand && isExpanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="mt-3 pt-3 border-t border-[var(--border-default)] space-y-2 overflow-hidden"
           >
-            {notification.actors.map((actor) => (
+            {groupItems.length > 0
+              ? groupItems.map((entry) => (
+                <div key={entry.id} className="flex items-start gap-2.5 p-1.5 rounded-lg">
+                  <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] flex-shrink-0" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="text-sm text-theme-primary">
+                      {entry.title && entry.title !== notification.title
+                        ? `${entry.title} — ${entry.message}`
+                        : entry.message}
+                    </p>
+                  </div>
+                </div>
+              ))
+              : groupActors.map((actor) => (
               <Link
                 key={actor.id}
                 to={tenantPath(`/profile/${actor.id}`)}

@@ -121,7 +121,8 @@
     "marking": "Marcáil...",
     "markError": "Níorbh fhéidir fógraí a mharcáil mar léite.",
     "allCaughtUp": "Tá tú gafa suas!",
-    "justNow": "díreach anois"
+    "justNow": "díreach anois",
+    "titleWithCount": "Fógraí, {{unread}} gan léamh"
   },
   "tenant": {
     "logoLabel": "{{name}} lógó"

@@ -19,16 +19,23 @@
   "hoursAgo": "há {{count}} h",
   "daysAgo": "há {{count}} d",
   "category": {
-    "message": "Mensagem",
-    "transaction": "Transação",
-    "social": "Sociais",
+    "messages": "Mensagem",
+    "connections": "Ligação",
+    "reviews": "Avaliação",
+    "transactions": "Créditos",
+    "social": "Social",
+    "groups": "Grupo",
+    "listings": "Anúncio",
+    "jobs": "Emprego",
+    "safeguarding": "Proteção",
     "system": "Sistema",
-    "event": "Evento",
-    "group": "Grupo",
-    "listing": "Listagem",
-    "connection": "Conexão",
-    "mention": "Menção",
-    "other": "Notificação"
+    "ideation": "Ideias",
+    "security": "Segurança",
+    "events": "Evento",
+    "exchanges": "Troca",
+    "volunteering": "Voluntariado",
+    "marketplace": "Mercado",
+    "other": "Outro"
   },
   "markRead": "Marcar como lida",
   "delete": "Delete",
@@ -44,5 +51,7 @@
   "markGroupRead": "Marcar o grupo como lido",
   "unknownActor": "Membro da comunidade",
   "andOthers": "E mais {{count}} pessoas",
-  "andOthers_one": "E mais {{count}} pessoa"
+  "andOthers_one": "E mais {{count}} pessoa",
+  "actionsFor": "Ações para {{label}}",
+  "openNotification": "Abrir"
 }

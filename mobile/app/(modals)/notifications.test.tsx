@@ -239,13 +239,87 @@ describe('NotificationsScreen', () => {
    * unread notifications it read "10 unread", because the list is paginated at 20 and then
    * grouped. `/v2/notifications/counts` has the real total. Journey 7.15.
    */
+  /*
+    🔴 Reported by the owner on 2026-09-06: "There are things that say 'Expand', and it
+    expands nothing." Reproduced on the emulator the same day — a row reading "You earned
+    the 'First 5-Star' badge!" with a chip saying "18 notifications" and an "Expand group"
+    button that flipped to "Collapse group" and changed nothing else on the screen.
+
+    Two causes, one visible symptom. The control was offered for ANY grouped notification,
+    and the expanded body rendered only actor avatars — so a group whose notifications carry
+    no `actor_id` (an achievement, a wallet movement, a listing expiry: most types) had
+    nothing to show. The server now sends the group's own notifications, and the control is
+    offered only when there is something behind it.
+  */
+  function groupedNotification(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 900,
+      message: "You earned the 'First 5-Star' badge!",
+      title: 'Achievement',
+      link: null,
+      is_read: false,
+      created_at: '2026-09-01T10:00:00Z',
+      category: 'system',
+      is_grouped: true,
+      group_key: 'achievement:/badges',
+      group_count: 18,
+      remaining_count: 0,
+      actors: [],
+      ...overrides,
+    };
+  }
+
+  it('expands a group that has no actors into the notifications it is made of', async () => {
+    mockUsePaginatedApi.mockReturnValue(pageState([groupedNotification({
+      group_items: [
+          { id: 901, title: 'Achievement', message: "You earned the 'First 5-Star' badge!", link: null, is_read: false, created_at: '2026-09-01T10:00:00Z' },
+          { id: 902, title: 'Achievement', message: "You earned the 'Ten Exchanges' badge!", link: null, is_read: false, created_at: '2026-08-30T10:00:00Z' },
+        ],
+      })]));
+
+    const { getByTestId, queryByTestId, getByText } = render(<NotificationsScreen />);
+
+    // Nothing is expanded to begin with.
+    expect(queryByTestId('notification-group-900')).toBeNull();
+
+    fireEvent.press(getByTestId('notification-expand-900'));
+
+    // The rows the group is actually made of — not a toggled label and an unchanged screen.
+    expect(getByTestId('notification-group-900')).toBeTruthy();
+    // The row reads "<title> — <message>", so match the part that identifies it.
+    expect(getByText(/Ten Exchanges/)).toBeTruthy();
+  });
+
+  it('does not offer to expand a group with nothing behind it', () => {
+    // No actors AND no group items: an older server, or a group whose rows did not survive
+    // the cap. Offering a control that cannot do anything is the bug, so it is not offered.
+    mockUsePaginatedApi.mockReturnValue(pageState([groupedNotification({ group_items: [] })]));
+
+    const { queryByTestId } = render(<NotificationsScreen />);
+
+    expect(queryByTestId('notification-expand-900')).toBeNull();
+  });
+
+  it('still expands to the actors when that is what the group has', () => {
+    // The original behaviour, which was right for "Alice and 4 others liked your post".
+    mockUsePaginatedApi.mockReturnValue(pageState([groupedNotification({
+      actors: [{ id: 5, name: 'Alice Byrne', avatar_url: null }],
+      group_items: [],
+    })]));
+
+    const { getByTestId, getByText } = render(<NotificationsScreen />);
+    fireEvent.press(getByTestId('notification-expand-900'));
+
+    expect(getByText('Alice Byrne')).toBeTruthy();
+  });
+
   it('shows the unread total from the server, not the count on the loaded page', () => {
     mockUsePaginatedApi.mockReturnValue(pageState([mockNotification]));
     mockUseApi.mockReturnValue({ data: { data: { total: 26 } }, isLoading: false, error: null, refresh: jest.fn() });
 
     const { getByText } = render(<NotificationsScreen />);
 
-    expect(getByText('26 unread')).toBeTruthy();
+    expect(getByText('You have 26 unread notifications.')).toBeTruthy();
     expect(getByText('You have 26 unread notifications.')).toBeTruthy();
   });
 
@@ -255,7 +329,7 @@ describe('NotificationsScreen', () => {
 
     const { getByText } = render(<NotificationsScreen />);
 
-    expect(getByText('1 unread')).toBeTruthy();
+    expect(getByText('You have 1 unread notifications.')).toBeTruthy();
   });
 
   it('refreshes both the notification list and the server unread total on pull', () => {

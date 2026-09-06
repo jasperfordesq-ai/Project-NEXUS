@@ -132,6 +132,135 @@ class NotificationsControllerTest extends TestCase
             ->assertJsonPath('errors.0.code', 'INVALID_CATEGORY');
     }
 
+    /**
+     * 🔴 Notifications with no link are DISTINCT events and must not be collapsed.
+     *
+     * The grouping key was `type . ':' . (link ?? 'none')`, so every notification of one
+     * type carrying no link — and most types carry none — collapsed into a single row.
+     * The emulator fixture on 2026-09-06 showed one row reading "You earned the 'First
+     * 5-Star' badge!" with a chip saying "18 notifications": eighteen different
+     * achievements, seventeen of them hidden behind the newest, sharing nothing but a type.
+     */
+    public function test_notifications_without_a_link_are_not_grouped_together(): void
+    {
+        $user = $this->authenticatedUser();
+
+        DB::table('notifications')->insert([
+            [
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $user->id,
+                'type' => 'achievement',
+                'title' => 'Achievement',
+                'message' => "You earned the 'First 5-Star' badge!",
+                'link' => null,
+                'is_read' => false,
+                'created_at' => now()->subMinute(),
+            ],
+            [
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $user->id,
+                'type' => 'achievement',
+                'title' => 'Achievement',
+                'message' => "You earned the 'Ten Exchanges' badge!",
+                'link' => null,
+                'is_read' => false,
+                'created_at' => now(),
+            ],
+        ]);
+
+        $response = $this->apiGet('/v2/notifications/grouped');
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.is_grouped', false)
+            ->assertJsonPath('data.1.is_grouped', false);
+    }
+
+    /**
+     * 🔴 A group must carry the rows it is made of, or "expand" has nothing to show.
+     *
+     * Both clients offered an expand control for any grouped notification and rendered only
+     * the actor avatars inside it — so a group whose notifications have no `actor_id`
+     * expanded to nothing: the button flipped to "Collapse group" and not one pixel else
+     * changed. Reported by the owner and reproduced on the emulator on 2026-09-06.
+     */
+    public function test_a_group_carries_its_own_notifications_so_it_can_be_expanded(): void
+    {
+        $user = $this->authenticatedUser();
+        $link = '/wallet';
+
+        for ($i = 0; $i < 3; $i++) {
+            DB::table('notifications')->insert([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $user->id,
+                // Deliberately NO actor_id: this is the case that used to expand to nothing.
+                'type' => 'credits_received',
+                'title' => 'Credits received',
+                'message' => "You received {$i} credits.",
+                'link' => $link,
+                'is_read' => false,
+                'created_at' => now()->subMinutes(3 - $i),
+            ]);
+        }
+
+        $response = $this->apiGet('/v2/notifications/grouped');
+
+        $response->assertOk()
+            ->assertJsonPath('data.0.is_grouped', true)
+            ->assertJsonPath('data.0.group_count', 3)
+            ->assertJsonCount(3, 'data.0.group_items')
+            // Newest first, matching the row the group collapses to.
+            ->assertJsonPath('data.0.group_items.0.message', 'You received 2 credits.')
+            // There are no actors at all here, which is exactly the case that broke.
+            ->assertJsonCount(0, 'data.0.actors')
+            ->assertJsonPath('data.0.remaining_count', 0);
+    }
+
+    /**
+     * 🔴 Every notification carries the category its icon and colour come from.
+     *
+     * The server has always had this mapping — the unread counts and the category filter
+     * both use it — but never attached it to a notification in the list payload. Mobile's
+     * `Notification` type declares `category` as required and switches on it for the icon,
+     * the tint and the label, so with the field absent every row rendered the same grey
+     * bell and the label "Other".
+     */
+    public function test_every_notification_carries_the_category_its_icon_comes_from(): void
+    {
+        $user = $this->authenticatedUser();
+
+        DB::table('notifications')->insert([
+            [
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $user->id,
+                'type' => 'credits_received',
+                'message' => 'You received 3 credits.',
+                'link' => '/wallet',
+                'is_read' => false,
+                'created_at' => now()->subMinute(),
+            ],
+            [
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $user->id,
+                'type' => 'new_message',
+                'message' => 'You have a new message.',
+                'link' => '/messages/1',
+                'is_read' => false,
+                'created_at' => now(),
+            ],
+        ]);
+
+        $this->apiGet('/v2/notifications')
+            ->assertOk()
+            ->assertJsonPath('data.0.category', 'messages')
+            ->assertJsonPath('data.1.category', 'transactions');
+
+        // And on the grouped endpoint, which builds its rows separately.
+        $this->apiGet('/v2/notifications/grouped')
+            ->assertOk()
+            ->assertJsonPath('data.0.category', 'messages');
+    }
+
     public function test_grouped_notifications_keep_the_latest_recipient_localized_message(): void
     {
         $user = $this->authenticatedUser(['preferred_language' => 'fr']);

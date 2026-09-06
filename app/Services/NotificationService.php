@@ -31,17 +31,82 @@ class NotificationService
             'group_invite', 'group_join', 'group_join_request', 'group_join_rejected',
             'group_post', 'new_topic', 'new_reply', 'federation_group_join',
         ],
-        'listings'     => ['listing', 'listing_interest', 'listing_match', 'listing_expiry', 'hot_match', 'mutual_match'],
+        'listings'     => ['listing', 'listing_interest', 'listing_match', 'listing_expiry', 'listing_saved', 'hot_match', 'mutual_match'],
         'jobs'         => ['job_application', 'job_application_status'],
-        'safeguarding' => ['safeguarding_flag', 'safeguarding_assignment', 'broker_review', 'safeguarding_incident'],
-        'system'       => ['system', 'announcement', 'welcome', 'badge', 'achievement', 'level_up'],
+        'safeguarding' => ['safeguarding_flag', 'safeguarding_assignment', 'broker_review', 'safeguarding_incident', 'social_report_created'],
+        'system'       => [
+            'system', 'announcement', 'welcome', 'badge', 'achievement', 'level_up',
+            'new_user_registered', 'support_action_pending', 'support_action_confirmed',
+            'sub_account_message_access_revoked',
+        ],
+        /*
+         * 🔴 Three categories that did not exist, covering the types this platform
+         * actually produces most.
+         *
+         * Counted on the local database on 2026-09-06: `exchange_disputed` (20 rows),
+         * `vol_application_received` (9), `exchange_request_received` (6),
+         * `exchange_started` (5), `exchange_accepted` (5), `marketplace_order` (4),
+         * `volunteer_shift` (4) and a dozen more all fell through to `other`. Exchanges
+         * are the core of a timebank, so "Other" was the label on the most important
+         * notifications in the product — and the generic bell was their icon.
+         */
+        'exchanges'    => [
+            'exchange', 'exchange_request_received', 'exchange_request_declined',
+            'exchange_accepted', 'exchange_started', 'exchange_completed',
+            'exchange_disputed', 'exchange_ready_confirmation', 'exchange_cancelled',
+        ],
+        'volunteering' => [
+            'volunteering', 'volunteer_shift', 'vol_application_received',
+            'vol_application_approved', 'vol_application_rejected',
+            'vol_swap_requested', 'vol_swap_approved', 'vol_shift_reminder',
+        ],
+        'marketplace'  => ['marketplace_order', 'marketplace_offer', 'marketplace_message'],
         'ideation'     => ['ideation_idea_submitted', 'ideation_idea_voted', 'ideation_idea_commented', 'ideation_idea_status', 'ideation_idea_won'],
         'security'     => ['password_changed', 'email_changed', '2fa_enabled', '2fa_disabled', 'passkey_registered', 'passkey_removed', 'security'],
     ];
 
+    /**
+     * How many of a group's own notifications travel with it so a client can expand it.
+     * `remaining_count` reports the rest.
+     */
+    private const GROUP_ITEM_LIMIT = 10;
+
     public function __construct(
         private readonly Notification $notification,
     ) {}
+
+    /**
+     * The category a notification type belongs to.
+     *
+     * 🔴 This is the same mapping the unread counts and the category filter have always
+     * used; what is new is that it is now ATTACHED TO EACH NOTIFICATION in the list
+     * payload. It never was, and both clients assumed it. The mobile app's `Notification`
+     * type declares `category` as required, and its `categoryIcon()` / `categoryColor()` /
+     * `categoryLabel()` — about sixty lines — switch on it. With the field absent, every
+     * single row fell to the default: the same grey bell, the same neutral tint, the label
+     * "Other". Seen on the emulator on 2026-09-06, where a list of achievements, reviews,
+     * volunteering and wallet notifications was visually indistinguishable row to row.
+     *
+     * Names are the ones `categoryNames()` already publishes (plural: `messages`,
+     * `listings`), so this introduces no second vocabulary — the clients were the ones
+     * guessing at singular forms.
+     */
+    public function categoryFor(?string $type): string
+    {
+        $type = (string) ($type ?? '');
+
+        if (EventNotificationType::matches($type)) {
+            return 'events';
+        }
+
+        foreach (self::TYPE_CATEGORIES as $category => $types) {
+            if (in_array($type, $types, true)) {
+                return $category;
+            }
+        }
+
+        return 'other';
+    }
 
     /**
      * Get notifications with cursor-based pagination.
@@ -80,8 +145,15 @@ class NotificationService
             $items->pop();
         }
 
+        $rows = [];
+        foreach ($items as $item) {
+            $row = $item->toArray();
+            $row['category'] = $this->categoryFor($item->type);
+            $rows[] = $row;
+        }
+
         return [
-            'items'    => $items->toArray(),
+            'items'    => $rows,
             'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode((string) $items->last()->id) : null,
             'has_more' => $hasMore,
         ];
@@ -120,10 +192,31 @@ class NotificationService
         // grouped result down to $limit.
         $raw = $query->orderByDesc('id')->limit(200)->get();
 
+        // 🔴 A group needs a shared LINK, not just a shared type.
+        //
+        // The key used to be `type . ':' . (link ?? 'none')`, so every notification of one
+        // type that carried NO link collapsed into a single row — and most types carry
+        // none. On the 2026-09-06 emulator fixture that produced one row reading "You
+        // earned the 'First 5-Star' badge!" with a chip saying "18 notifications":
+        // eighteen DIFFERENT achievements, seventeen of them hidden behind the newest, with
+        // nothing in common but their type. Grouping is for "Alice and 4 others liked your
+        // post" — several notifications about ONE thing. Without a link there is no one
+        // thing, so those rows stay separate, which is what they always were.
         $groups = [];
+        $ungrouped = [];
         foreach ($raw as $n) {
-            $key = ($n->type ?? 'system') . ':' . ($n->link ?? 'none');
+            $link = trim((string) ($n->link ?? ''));
+            if ($link === '') {
+                $ungrouped[] = $n;
+                continue;
+            }
+            $key = ($n->type ?? 'system') . ':' . $link;
             $groups[$key][] = $n;
+        }
+        // Linkless rows are singles by definition; give each its own key so the loop below
+        // treats them the way it already treats a group of one.
+        foreach ($ungrouped as $n) {
+            $groups['single:' . $n->id] = [$n];
         }
 
         // First pass: precompute each grouped notification's top-3 actor IDs and
@@ -167,6 +260,7 @@ class NotificationService
             if (count($rows) === 1) {
                 $item = $latest->toArray();
                 $item['is_grouped'] = false;
+                $item['category'] = $this->categoryFor($latest->type);
                 $result[] = $item;
                 continue;
             }
@@ -199,7 +293,32 @@ class NotificationService
             $item['group_key'] = $key;
             $item['group_count'] = $count;
             $item['actors'] = $actors;
-            $item['remaining_count'] = max(0, $count - count($actors));
+            $item['category'] = $this->categoryFor($latest->type);
+            /**
+             * 🔴 The rows the group is made of, so "expand" can show something.
+             *
+             * Both clients offered an expand control for any grouped notification and then
+             * rendered ONLY the actor avatars inside it. A group whose notifications have no
+             * `actor_id` — an achievement, a wallet movement, a listing expiry, most system
+             * messages — therefore expanded to nothing at all: the button flipped from
+             * "Expand group" to "Collapse group" and not one pixel else changed. Confirmed
+             * on the emulator on 2026-09-06 and reported by the owner independently.
+             *
+             * Capped: a group of two hundred should not put two hundred rows in a list
+             * payload. `remaining_count` already tells a client how many are not shown.
+             */
+            $item['group_items'] = array_map(
+                static fn ($r) => [
+                    'id' => (int) $r->id,
+                    'title' => $r->title,
+                    'message' => $r->message,
+                    'link' => $r->link,
+                    'is_read' => (bool) $r->is_read,
+                    'created_at' => $r->created_at?->toIso8601String(),
+                ],
+                array_slice($rows, 0, self::GROUP_ITEM_LIMIT),
+            );
+            $item['remaining_count'] = max(0, $count - count($item['group_items']));
             $item['all_read'] = $allRead;
             $item['is_read'] = $allRead;
             $item['read_at'] = $allRead
@@ -282,6 +401,11 @@ class NotificationService
             'safeguarding' => 0,
             'system' => 0,
             'security' => 0,
+            // Added with the categories above; a category missing from this array would
+            // increment an undefined key.
+            'exchanges' => 0,
+            'volunteering' => 0,
+            'marketplace' => 0,
             'other' => 0,
         ];
 

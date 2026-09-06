@@ -121,7 +121,8 @@
     "marking": "Marquage...",
     "markError": "Impossible marquer les notifications comme lues.",
     "allCaughtUp": "Vous êtes à jour !",
-    "justNow": "juste maintenant"
+    "justNow": "juste maintenant",
+    "titleWithCount": "Notifications, {{unread}} non lues"
   },
   "tenant": {
     "logoLabel": "Logo {{name}}"

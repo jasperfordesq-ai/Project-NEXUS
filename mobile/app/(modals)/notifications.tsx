@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Surface, Spinner } from 'heroui-native';
-import { Chip } from '@/components/ui/StatusChip';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -33,6 +32,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import ActionSheet from '@/components/ui/ActionSheet';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -45,6 +45,24 @@ import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import { describeApiError } from '@/lib/api/describeApiError';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+
+/** Matches `ActionSheet`'s own `Action`, which that component does not export. */
+interface NotificationAction {
+  label: string;
+  icon?: string;
+  onPress: () => void;
+  destructive?: boolean;
+}
+
+/** One row inside an expanded group — a notification, or an actor when that is all there is. */
+interface ExpandableEntry {
+  key: string;
+  label: string;
+  meta?: string;
+  avatarName?: string;
+  avatarUrl?: string | null;
+  onPress?: () => void;
+}
 
 /** Stable references so the paginated hook does not refetch on every render. */
 function fetchNotificationsPage(cursor: string | null): Promise<NotificationListResponse> {
@@ -68,6 +86,7 @@ export default function NotificationsScreen() {
   const [markingAll, setMarkingAll] = useState(false);
   const [actingId, setActingId] = useState<number | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [actionSheet, setActionSheet] = useState<{ title: string; options: NotificationAction[] } | null>(null);
 
   /*
     🔴 S3-03: this fetched exactly one page of 25 with no load-more and no footer. A member
@@ -175,51 +194,78 @@ export default function NotificationsScreen() {
     }
   }
 
+  /**
+   * Every action the swipe offers, reachable without a gesture.
+   *
+   * 🔴 The swipe actions are the right primary affordance and they stay — but a swipe
+   * is invisible to a screen reader and undiscoverable to plenty of sighted members too.
+   * Deleting the inline button row (see the card) without this would have removed the only
+   * non-gesture route to Delete, which would be an accessibility regression dressed up as
+   * a tidy-up.
+   */
+  function openActions(item: Notification) {
+    const grouped = isGroupedNotification(item);
+    const options: NotificationAction[] = [];
+
+    if (!item.is_read) {
+      options.push({
+        label: grouped ? t('markGroupRead') : t('markRead'),
+        icon: 'checkmark-outline',
+        onPress: () => void handleMarkRead(item),
+      });
+    }
+    if (item.link) {
+      options.push({
+        label: t('openNotification'),
+        icon: 'open-outline',
+        onPress: () => handleNotificationPress(item),
+      });
+    }
+    if (!grouped) {
+      options.push({
+        label: t('delete'),
+        icon: 'trash-outline',
+        destructive: true,
+        onPress: () => void handleDelete(item),
+      });
+    }
+
+    setActionSheet({ title: item.title ?? item.message, options });
+  }
+
   function renderHeader() {
     return (
-      <View className="px-4 pb-3">
-        <HeroCard className="overflow-hidden rounded-panel p-0">
-          <View className="h-1.5" style={{ backgroundColor: primary }} />
-          <HeroCard.Body className="gap-4 p-4">
-            <View className="flex-row items-start gap-3">
-              <View className="size-12 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
-                <Ionicons name="notifications-outline" size={24} color={primary} />
-              </View>
-              <View className="min-w-0 flex-1 gap-1">
-                <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>
-                  {t('eyebrow')}
-                </Text>
-                <Text className="text-2xl font-bold" style={{ color: theme.text }}>
-                  {t('title')}
-                </Text>
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-                  {unreadCount > 0
-                    ? t('unreadSummary', { count: unreadCount })
-                    : isLoading || countsApi.isLoading
-                      ? t('loadingSummary')
-                      : t('allCaughtUpSub')}
-                </Text>
-              </View>
-              {unreadCount > 0 ? (
-                <Chip size="sm" variant="secondary">
-                  <Chip.Label>{t('unreadCount', { count: unreadCount })}</Chip.Label>
-                </Chip>
-              ) : null}
-            </View>
+      /*
+        🔴 One line, not a hero card.
 
-            {unreadCount > 0 ? (
-              <HeroButton
-                variant="primary"
-                onPress={() => void handleMarkAll()}
-                isDisabled={markingAll}
-                accessibilityLabel={t('markAllRead')}
-              >
-                <AccentIcon name="checkmark-done-outline" size={17} />
-                <HeroButton.Label>{markingAll ? t('marking') : t('markAllRead')}</HeroButton.Label>
-              </HeroButton>
-            ) : null}
-          </HeroCard.Body>
-        </HeroCard>
+        This was a full-width panel carrying an accent bar, a 48px icon, an "ACTIVITY INBOX"
+        eyebrow, a 24pt "Notifications" heading, a sentence saying how many were unread, a
+        chip ALSO saying how many were unread, and a full-width button. The screen's own top
+        bar already says "Notifications", so the word appeared three times above the fold and
+        the panel pushed the actual notifications — the reason for the screen — down past a
+        third of the display.
+      */
+      <View className="flex-row items-center justify-between gap-3 px-4 pb-2 pt-1">
+        <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+          {unreadCount > 0
+            ? t('unreadSummary', { count: unreadCount })
+            : isLoading || countsApi.isLoading
+              ? t('loadingSummary')
+              : t('allCaughtUpSub')}
+        </Text>
+        {unreadCount > 0 ? (
+          <HeroButton
+            size="sm"
+            variant="secondary"
+            className="h-12 rounded-2xl"
+            onPress={() => void handleMarkAll()}
+            isDisabled={markingAll}
+            accessibilityLabel={t('markAllRead')}
+          >
+            <AccentIcon name="checkmark-done-outline" size={15} />
+            <HeroButton.Label>{markingAll ? t('marking') : t('markAllRead')}</HeroButton.Label>
+          </HeroButton>
+        ) : null}
       </View>
     );
   }
@@ -265,163 +311,209 @@ export default function NotificationsScreen() {
     const isGrouped = isGroupedNotification(item);
     const groupKey = item.group_key ?? String(item.id);
     const isExpanded = Boolean(expandedGroups[groupKey]);
+    /*
+      What "expand" actually reveals. The group's own notifications when the server sent
+      them, otherwise the actors — and an EMPTY list when there is neither, which is what
+      stops the control being offered at all.
+    */
+    const expandable: ExpandableEntry[] = isGrouped
+      ? (item.group_items?.length
+          ? item.group_items.map((entry) => ({
+              key: `n-${entry.id}`,
+              /*
+                The child's own title is dropped when it just repeats the group's — every
+                row in an achievements group is titled "Achievement", so prefixing each one
+                added a column of identical words and pushed the part that differs to the
+                right. Kept when it actually says something new.
+              */
+              label: entry.title && entry.title !== item.title
+                ? `${entry.title} — ${entry.message}`
+                : entry.message,
+              meta: entry.created_at ? formatRelativeTime(entry.created_at) : undefined,
+              onPress: entry.link ? () => navigateToLink(entry.link ?? null) : undefined,
+            }))
+          : (item.actors ?? []).map((actor) => ({
+              key: `a-${actor.id}`,
+              label: actor.name ?? t('unknownActor'),
+              avatarName: actor.name ?? '?',
+              avatarUrl: actor.avatar_url ?? null,
+            })))
+      : [];
 
     const card = (
-      <View className="mx-4 mb-3">
-        <HeroCard className={`overflow-hidden rounded-panel p-0 ${!item.is_read ? 'border border-primary/30' : ''}`}>
-          {!item.is_read ? <View className="h-1.5" style={{ backgroundColor: primary }} /> : null}
-          <HeroCard.Body className="gap-3 p-4">
+      <View className="mx-4 mb-2">
+        <HeroCard className="overflow-hidden rounded-panel p-0">
+          <HeroCard.Body className="gap-2 p-3">
             {/*
-              🔴 This was a HeroButton wrapping the whole card body, and a button caps its
-              own height: the notification text was cut through the middle of its third
-              line, so "You have a new order #MKT-… for "Folding wooden drying rack"" ended
-              mid-word with no ellipsis. Measured on a device 2026-08-22. A card-sized tap
-              target belongs in NativePressable, which lets its content decide the height.
+              🔴 One compact row, not a card with its own button bar.
+
+              Every notification used to carry a full-width action row — "Mark read" and a
+              RED "Delete" — duplicating the swipe actions this same component already
+              renders. Three notifications filled a phone screen, so a member with 47 of
+              them (the emulator fixture, 2026-09-06) faced sixteen screens of scrolling,
+              and a destructive red button repeated down the whole list. The swipe actions
+              are unchanged, and the overflow button below keeps every one of them reachable
+              without a gesture — which matters, because a swipe is invisible to a screen
+              reader.
             */}
-            <NativePressable
-              feedback="scale"
-              className="w-full"
-              onPress={() => handleNotificationPress(item)}
-              accessibilityRole="button"
-              accessibilityLabel={item.is_read ? label : t('unreadItem', { label })}
-            >
-              <View className="flex-row items-start gap-3">
+            <View className="flex-row items-start gap-3">
+              <NativePressable
+                feedback="scale"
+                className="min-w-0 flex-1"
+                /*
+                  🔴 `contentClassName`, not just `className`. With `feedback="scale"` this
+                  component wraps its children in an inner `PressableFeedback.Scale` view,
+                  so a `flex-row` on the outer element never reaches them and the icon
+                  stacks ABOVE the text instead of sitting beside it. Caught on the
+                  emulator on 2026-09-06 — it type-checked and passed every unit test,
+                  because neither can see a layout.
+                */
+                contentClassName="flex-row items-start gap-3"
+                onPress={() => handleNotificationPress(item)}
+                accessibilityRole="button"
+                accessibilityLabel={item.is_read ? label : t('unreadItem', { label })}
+              >
                 {isGrouped && item.actors?.length ? (
-                  <View className="w-[58px] flex-row items-center">
+                  <View className="w-[52px] flex-row items-center pt-0.5">
                     {item.actors.slice(0, 3).map((actor, index) => (
                       <View key={actor.id} className={index > 0 ? '-ml-4' : ''} style={{ zIndex: 3 - index }}>
-                        <Avatar uri={actor.avatar_url ?? null} name={actor.name ?? '?'} size={34} />
+                        <Avatar uri={actor.avatar_url ?? null} name={actor.name ?? '?'} size={30} />
                       </View>
                     ))}
                   </View>
                 ) : item.actor ? (
-                  <View className="relative">
-                    <Avatar uri={item.actor.avatar_url ?? null} name={item.actor.name ?? ''} size={44} />
-                    <View
-                      className="absolute bottom-0 right-0 size-3 rounded-full border-[1.5px]"
-                      style={{ backgroundColor: categoryTint, borderColor: theme.surface }}
-                    />
-                  </View>
+                  <Avatar uri={item.actor.avatar_url ?? null} name={item.actor.name ?? ''} size={38} />
                 ) : (
                   /*
-                    A system notification (achievement, approval, reminder) has no actor.
-                    This used to fall through to an Avatar with the name "?", so every
-                    system row wore a question mark. Seen on the emulator 2026-09-05.
+                    The category icon, in the category's own colour. This has always been
+                    written; it never ran, because the API did not send `category` until
+                    2026-09-06 — so every row in the list showed the same grey bell.
                   */
                   <View
-                    className="size-11 items-center justify-center rounded-full"
+                    className="size-[38px] items-center justify-center rounded-2xl"
                     style={{ backgroundColor: withAlpha(categoryTint, 0.14) }}
                   >
-                    <Ionicons name={categoryIcon(item.category)} size={20} color={categoryTint} />
+                    <Ionicons name={categoryIcon(item.category)} size={19} color={categoryTint} />
                   </View>
                 )}
 
-                <View className="min-w-0 flex-1 gap-2">
-                  <View className="flex-row items-start gap-2">
-                    <View className="min-w-0 flex-1">
-                      {/*
-                        🔴 The line height has to be in `style`, not in `leading-5`.
-                        With the class alone the text was cut through the middle of the
-                        third line instead of ending in an ellipsis — a member reading
-                        "You have a new order #MKT-… for "Folding wooden drying rack""
-                        saw the last line sliced in half. Measured on a device 2026-08-22;
-                        the same remedy as `components/ui/ActionSheet.tsx`.
-                      */}
-                      {item.title ? (
-                        <Text
-                          className="text-base font-bold"
-                          style={{ color: theme.text, fontSize: 16, lineHeight: 22 }}
-                          numberOfLines={2}
-                        >
-                          {item.title}
-                        </Text>
-                      ) : null}
-                      <Text
-                        className="text-sm leading-5"
-                        style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}
-                        numberOfLines={3}
-                      >
-                        {item.message}
-                      </Text>
-                    </View>
-                    {!item.is_read ? (
-                      <View className="mt-1 size-2.5 rounded-full" style={{ backgroundColor: primary }} />
-                    ) : null}
-                  </View>
-
-                  <View className="flex-row flex-wrap items-center gap-2">
-                    {/* No chip for an unclassified row: "Notification" on a notification says nothing. */}
-                    {item.category && item.category !== 'other' ? (
-                      <Chip size="sm" variant="secondary">
-                        <Ionicons name={categoryIcon(item.category)} size={12} color={categoryTint} />
-                        <Chip.Label>{categoryLabel(item.category, t)}</Chip.Label>
-                      </Chip>
-                    ) : null}
-                    <Chip size="sm" variant="secondary">
-                      <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
-                      <Chip.Label>
-                        {(Date.now() - new Date(item.latest_at ?? item.created_at).getTime()) < 60_000
-                          ? t('justNow')
-                          : formatRelativeTime(item.latest_at ?? item.created_at)}
-                      </Chip.Label>
-                    </Chip>
+                <View className="min-w-0 flex-1 gap-0.5">
+                  {item.title ? (
+                    <Text
+                      className="text-[15px] font-semibold"
+                      style={{ color: theme.text }}
+                      numberOfLines={1}
+                    >
+                      {item.title}
+                    </Text>
+                  ) : null}
+                  <Text
+                    className="text-sm leading-5"
+                    style={{ color: item.title ? theme.textSecondary : theme.text }}
+                    numberOfLines={2}
+                  >
+                    {item.message}
+                  </Text>
+                  {/*
+                    One quiet meta line replaces two chips. A raw "30/8/2026" told a member
+                    nothing they wanted to know about a notification; the rest of the app
+                    says "3d ago" and so does this now.
+                  */}
+                  <View className="mt-0.5 flex-row items-center gap-1.5">
+                    <Text className="text-xs" style={{ color: theme.textMuted }}>
+                      {formatRelativeTime(item.created_at)}
+                    </Text>
+                    <Text className="text-xs" style={{ color: theme.textMuted }}>·</Text>
+                    <Text className="text-xs" style={{ color: categoryTint }} numberOfLines={1}>
+                      {categoryLabel(item.category, t)}
+                    </Text>
                     {isGrouped ? (
-                      <Chip size="sm" variant="secondary">
-                        <Ionicons name="albums-outline" size={12} color={categoryTint} />
-                        <Chip.Label>{t('groupCount', { count: item.group_count ?? 0 })}</Chip.Label>
-                      </Chip>
+                      <>
+                        <Text className="text-xs" style={{ color: theme.textMuted }}>·</Text>
+                        <Text className="text-xs font-semibold" style={{ color: theme.textMuted }}>
+                          {t('groupCount', { count: item.group_count ?? 0 })}
+                        </Text>
+                      </>
                     ) : null}
                   </View>
                 </View>
-              </View>
-            </NativePressable>
+              </NativePressable>
 
-            <View className="flex-row flex-wrap gap-2 border-t border-border pt-2">
-              {isGrouped ? (
+              <View className="items-center gap-1">
+                {!item.is_read ? (
+                  <View
+                    className="size-2.5 rounded-full"
+                    style={{ backgroundColor: primary }}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
+                  />
+                ) : null}
+                {/*
+                  The accessible route to every action the swipe offers. 44dp square: the
+                  measured minimum, not a guess — see scripts/audit-touch-targets.mjs.
+                */}
                 <HeroButton
+                  isIconOnly
                   size="sm"
-                  variant="secondary"
-                  onPress={() => setExpandedGroups((current) => ({ ...current, [groupKey]: !current[groupKey] }))}
-                  accessibilityLabel={isExpanded ? t('collapseGroup') : t('expandGroup')}
-                >
-                  <Ionicons name={isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'} size={15} color={primary} />
-                  <HeroButton.Label>{isExpanded ? t('collapseGroup') : t('expandGroup')}</HeroButton.Label>
-                </HeroButton>
-              ) : null}
-              {!item.is_read ? (
-                <HeroButton
-                  size="sm"
-                  variant="secondary"
+                  variant="ghost"
+                  testID={`notification-actions-${item.id}`}
+                  className="h-12 w-12 rounded-2xl"
                   isDisabled={actingId === item.id}
-                  onPress={() => void handleMarkRead(item)}
-                  accessibilityLabel={isGrouped ? t('markGroupRead') : t('markRead')}
+                  onPress={() => openActions(item)}
+                  accessibilityLabel={t('actionsFor', { label: item.title ?? item.message })}
                 >
-                  <Ionicons name="checkmark-outline" size={15} color={primary} />
-                  <HeroButton.Label>{isGrouped ? t('markGroupRead') : t('markRead')}</HeroButton.Label>
+                  <Ionicons name="ellipsis-horizontal" size={18} color={theme.textSecondary} />
                 </HeroButton>
-              ) : null}
-              {!isGrouped ? (
-                <HeroButton
-                  size="sm"
-                  variant="danger"
-                  isDisabled={actingId === item.id}
-                  onPress={() => void handleDelete(item)}
-                  accessibilityLabel={t('delete')}
-                >
-                  <Ionicons name="trash-outline" size={15} color="#fff" />
-                  <HeroButton.Label>{t('delete')}</HeroButton.Label>
-                </HeroButton>
-              ) : null}
+              </View>
             </View>
-            {isGrouped && isExpanded && item.actors?.length ? (
-              <View className="gap-2 border-t border-border pt-3">
-                {item.actors.map((actor) => (
-                  <View key={actor.id} className="flex-row items-center gap-2">
-                    <Avatar uri={actor.avatar_url ?? null} name={actor.name ?? '?'} size={28} />
-                    <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
-                      {actor.name ?? t('unknownActor')}
-                    </Text>
-                  </View>
+
+            {/*
+              🔴 Offered ONLY when there is something behind it.
+
+              This control used to appear for every grouped notification and reveal only
+              actor avatars — so a group with no actors (an achievement, a wallet movement,
+              a listing expiry) flipped the label from "Expand group" to "Collapse group"
+              and changed nothing else on screen. Reported by the owner; reproduced on the
+              emulator on 2026-09-06.
+            */}
+            {expandable.length > 0 ? (
+              <HeroButton
+                size="sm"
+                variant="tertiary"
+                testID={`notification-expand-${item.id}`}
+                className="h-12 self-start rounded-2xl"
+                onPress={() => setExpandedGroups((current) => ({ ...current, [groupKey]: !current[groupKey] }))}
+                accessibilityLabel={isExpanded ? t('collapseGroup') : t('expandGroup')}
+              >
+                <Ionicons name={isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'} size={15} color={primary} />
+                <HeroButton.Label>{isExpanded ? t('collapseGroup') : t('expandGroup')}</HeroButton.Label>
+              </HeroButton>
+            ) : null}
+
+            {isExpanded && expandable.length > 0 ? (
+              <View testID={`notification-group-${item.id}`} className="gap-2 border-t border-border pt-2">
+                {expandable.map((entry) => (
+                  <NativePressable
+                    key={entry.key}
+                    className="flex-row items-start gap-2 py-1"
+                    onPress={entry.onPress}
+                    accessibilityRole={entry.onPress ? 'button' : undefined}
+                    accessibilityLabel={entry.label}
+                  >
+                    {entry.avatarName !== undefined ? (
+                      <Avatar uri={entry.avatarUrl ?? null} name={entry.avatarName} size={26} />
+                    ) : (
+                      <View className="mt-1.5 size-1.5 rounded-full" style={{ backgroundColor: theme.textMuted }} />
+                    )}
+                    <View className="min-w-0 flex-1">
+                      <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                        {entry.label}
+                      </Text>
+                      {entry.meta ? (
+                        <Text className="text-xs" style={{ color: theme.textMuted }}>{entry.meta}</Text>
+                      ) : null}
+                    </View>
+                  </NativePressable>
                 ))}
                 {(item.remaining_count ?? 0) > 0 ? (
                   <Text className="text-xs" style={{ color: theme.textMuted }}>
@@ -492,6 +584,12 @@ export default function NotificationsScreen() {
           }
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
         />
+        <ActionSheet
+          visible={actionSheet !== null}
+          title={actionSheet?.title ?? ''}
+          actions={actionSheet?.options ?? []}
+          onClose={() => setActionSheet(null)}
+        />
         {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
@@ -537,50 +635,68 @@ function isGroupedNotification(item: Notification): boolean {
 }
 
 function categoryLabel(category: string | undefined | null, t: (key: string) => string): string {
-  const labels: Record<string, string> = {
-    message: t('category.message'),
-    transaction: t('category.transaction'),
-    social: t('category.social'),
-    system: t('category.system'),
-    event: t('category.event'),
-    group: t('category.group'),
-    listing: t('category.listing'),
-    connection: t('category.connection'),
-    mention: t('category.mention'),
-    other: t('category.other'),
-  };
-  return category ? labels[category] ?? category : labels.other;
+  const known = [
+    'messages', 'connections', 'reviews', 'transactions', 'social', 'groups',
+    'listings', 'jobs', 'safeguarding', 'system', 'ideation', 'security', 'events',
+    'exchanges', 'volunteering', 'marketplace',
+  ];
+  return category && known.includes(category) ? t(`category.${category}`) : t('category.other');
 }
 
+
+/*
+  🔴 These names are the SERVER's, and they are plural.
+
+  Both maps below were keyed on singular guesses — `message`, `listing`, `connection` —
+  that `NotificationService` has never produced; its categories have always been
+  `messages`, `listings`, `connections`. It did not matter until now only because the field
+  was absent from the payload entirely, so every row fell to the default and the whole list
+  rendered as identical grey bells. With the category now sent (2026-09-06), the keys have
+  to be the real ones or the same thing happens with extra steps.
+*/
 function categoryIcon(category: string | undefined | null): React.ComponentProps<typeof Ionicons>['name'] {
   switch (category) {
-    case 'message': return 'chatbubble-outline';
-    case 'transaction': return 'swap-horizontal-outline';
+    case 'messages': return 'chatbubble-outline';
+    case 'connections': return 'person-add-outline';
+    case 'reviews': return 'star-outline';
+    case 'transactions': return 'swap-horizontal-outline';
     case 'social': return 'heart-outline';
+    case 'groups': return 'people-outline';
+    case 'listings': return 'pricetag-outline';
+    case 'jobs': return 'briefcase-outline';
+    case 'safeguarding': return 'shield-checkmark-outline';
     case 'system': return 'settings-outline';
-    case 'event': return 'calendar-outline';
-    case 'group': return 'people-outline';
-    case 'listing': return 'pricetag-outline';
-    case 'connection': return 'person-add-outline';
-    case 'mention': return 'at-outline';
+    case 'ideation': return 'bulb-outline';
+    case 'security': return 'lock-closed-outline';
+    case 'events': return 'calendar-outline';
+    case 'exchanges': return 'swap-horizontal-outline';
+    case 'volunteering': return 'hand-left-outline';
+    case 'marketplace': return 'cart-outline';
     default: return 'notifications-outline';
   }
 }
 
 function categoryColor(category: string | undefined | null, fallback: string, theme: Theme): string {
-  const info = theme.info;
-  const success = theme.success;
-  const warning = theme.warning;
   switch (category) {
-    case 'message': return info;
-    case 'transaction': return success;
+    case 'messages': return theme.info;
+    case 'connections': return '#EC4899';
+    case 'reviews': return '#F59E0B';
+    case 'transactions': return theme.success;
     case 'social': return '#8B5CF6';
-    case 'system': return warning;
-    case 'event': return '#F59E0B';
-    case 'group': return '#06B6D4';
-    case 'listing': return '#10B981';
-    case 'connection': return '#EC4899';
-    case 'mention': return '#6366F1';
+    case 'groups': return '#06B6D4';
+    case 'listings': return '#10B981';
+    case 'jobs': return '#0EA5E9';
+    // Safeguarding and security read as "pay attention to this", so they take the
+    // warning/danger end of the palette rather than a decorative hue.
+    case 'safeguarding': return theme.error;
+    case 'security': return theme.warning;
+    case 'system': return theme.warning;
+    case 'ideation': return '#6366F1';
+    case 'events': return '#F97316';
+    case 'exchanges': return theme.info;
+    case 'volunteering': return '#14B8A6';
+    case 'marketplace': return '#A855F7';
     default: return fallback;
   }
 }
+

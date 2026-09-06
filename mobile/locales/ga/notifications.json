@@ -19,16 +19,23 @@
   "hoursAgo": "{{count}} u. ó shin",
   "daysAgo": "{{count}} lá ó shin",
   "category": {
-    "message": "Teachtaireacht",
-    "transaction": "Idirbheart",
+    "messages": "Teachtaireacht",
+    "connections": "Nasc",
+    "reviews": "Léirmheas",
+    "transactions": "Creidmheasanna",
     "social": "Sóisialta",
+    "groups": "Grúpa",
+    "listings": "Liostáil",
+    "jobs": "Post",
+    "safeguarding": "Cosaint",
     "system": "Córas",
-    "event": "Imeacht",
-    "group": "Grúpa",
-    "listing": "Liostú",
-    "connection": "Ceangal",
-    "mention": "Liostú",
-    "other": "Fógra"
+    "ideation": "Smaointe",
+    "security": "Slándáil",
+    "events": "Imeacht",
+    "exchanges": "Malartú",
+    "volunteering": "Obair dheonach",
+    "marketplace": "Margadh",
+    "other": "Eile"
   },
   "markRead": "Marcáil mar léite",
   "delete": "Scrios",
@@ -44,5 +51,7 @@
   "markGroupRead": "Marcáil an grúpa mar léite",
   "unknownActor": "Ball den phobal",
   "andOthers": "Agus {{count}} duine eile",
-  "andOthers_one": "Agus {{count}} duine eile"
+  "andOthers_one": "Agus {{count}} duine eile",
+  "actionsFor": "Gníomhartha do {{label}}",
+  "openNotification": "Oscail"
 }

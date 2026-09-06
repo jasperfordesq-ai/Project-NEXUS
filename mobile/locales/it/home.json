@@ -121,7 +121,8 @@
     "marking": "Contrassegno...",
     "markError": "Impossibile contrassegnare le notifiche come lette.",
     "allCaughtUp": "Sei tutto preso!",
-    "justNow": "proprio ora"
+    "justNow": "proprio ora",
+    "titleWithCount": "Notifiche, {{unread}} da leggere"
   },
   "tenant": {
     "logoLabel": "logo {{name}}"

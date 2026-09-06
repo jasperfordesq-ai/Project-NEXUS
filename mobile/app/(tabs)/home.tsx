@@ -237,7 +237,7 @@ export default function HomeScreen() {
                   size="sm"
                   variant="secondary"
                   testID="home-hashtags"
-                  className="mr-2 h-10 w-10 rounded-2xl"
+                  className="mr-2 h-12 w-12 rounded-2xl"
                   onPress={() => router.push('/(modals)/feed-hashtags')}
                   accessibilityLabel={t('hashtags.title')}
                   accessibilityRole="button"
@@ -249,17 +249,19 @@ export default function HomeScreen() {
                 >
                   <Ionicons name="pricetags-outline" size={20} color={primary} />
                 </HeroButton>
-                <View className="relative h-10 w-10 items-center justify-center">
+                <View className="relative h-12 w-12 items-center justify-center">
                   <HeroButton
                     isIconOnly
                     size="sm"
                     variant="secondary"
-                    className="h-10 w-10 rounded-2xl"
+                    className="h-12 w-12 rounded-2xl"
                     onPress={() => {
                       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       router.push('/(modals)/notifications');
                     }}
-                    accessibilityLabel={t('notifications.title')}
+                    accessibilityLabel={notificationBadgeText
+                      ? t('notifications.titleWithCount', { unread: notificationBadgeText })
+                      : t('notifications.title')}
                     accessibilityRole="button"
                     style={{
                       backgroundColor: withAlpha(primary, 0.12),
@@ -270,7 +272,27 @@ export default function HomeScreen() {
                     <Ionicons name="notifications-outline" size={20} color={primary} />
                   </HeroButton>
                   {notificationBadgeText ? (
+                    /*
+                      🔴 `pointerEvents="none"`, and it is not decoration.
+
+                      This badge is absolutely positioned INSIDE the bell button and sits on
+                      top of it. React Native hands a touch to the topmost view, so the badge
+                      — which has no press handler — swallowed every tap that landed on it,
+                      and the bell did nothing. Measured on the emulator on 2026-09-06: the
+                      button occupies [910,386]–[1015,491] and the badge [969,396]–[999,428],
+                      about 9% of the button and precisely the corner a right thumb reaches
+                      first. Tapping (984,412) stayed on the feed; tapping the centre opened
+                      Notifications. Reported by the owner as "sometimes you click them and
+                      they do nothing", which is exactly right.
+
+                      `accessibilityElementsHidden` / `importantForAccessibility` keep the
+                      count from being announced as a separate element — the button's own
+                      label carries it.
+                    */
                     <View
+                      pointerEvents="none"
+                      accessibilityElementsHidden
+                      importantForAccessibility="no-hide-descendants"
                       className="absolute right-0 top-0 h-5 min-w-5 items-center justify-center rounded-full border-2 border-background px-1"
                       style={{ backgroundColor: primary }}
                     >
@@ -286,11 +308,17 @@ export default function HomeScreen() {
                 <Tabs value={feedMode} onValueChange={(value) => setFeedMode(value as FeedMode)} variant="secondary" className="flex-1">
                   <Tabs.List>
                     <Tabs.Indicator />
-                    <Tabs.Trigger value="ranking">
+                    {/*
+                      🔴 `h-12`: the two mode tabs measured 36dp tall on the emulator
+                      (scripts/audit-touch-targets.mjs, 420dpi), under Android's 48dp
+                      guidance and part of the same "sometimes a tap does nothing" report
+                      as the filter chips beneath them.
+                    */}
+                    <Tabs.Trigger value="ranking" className="h-12">
                       <Ionicons name="sparkles-outline" size={15} color={primary} />
                       <Tabs.Label>{t('mode.forYou')}</Tabs.Label>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="recent">
+                    <Tabs.Trigger value="recent" className="h-12">
                       <Ionicons name="time-outline" size={15} color={primary} />
                       <Tabs.Label>{t('mode.recent')}</Tabs.Label>
                     </Tabs.Trigger>
@@ -301,7 +329,7 @@ export default function HomeScreen() {
                     isIconOnly
                     size="sm"
                     variant="ghost"
-                    className="h-9 w-9 rounded-2xl"
+                    className="h-12 w-12 rounded-2xl"
                     onPress={() => {
                       setFilter('all');
                       setSubFilter(null);
@@ -339,12 +367,25 @@ export default function HomeScreen() {
                 contentContainerClassName="gap-2 px-4"
               >
                 {FILTER_OPTIONS.map((option) => (
+                  /*
+                    🔴 `h-12` — a measured minimum, not a taste.
+
+                    `size="sm"` gives a chip `px-2 py-0.5`, which measured **24dp tall** on
+                    the emulator (scripts/audit-touch-targets.mjs, 420dpi). That scrapes the
+                    WCAG 2.2 AA floor of 24dp and is half Android's own 48dp guidance, so a
+                    fingertip covering ~100px had a 63px band to land in and a miss did
+                    nothing at all — the owner's "sometimes you click the filters and they
+                    do nothing". The chip keeps its small type; only the target grows.
+                  */
                   <Chip
                     key={option.key}
                     size="sm"
+                    className="h-12 px-3"
                     variant={filter === option.key ? 'secondary' : 'soft'}
                     color={filter === option.key ? 'accent' : 'default'}
                     onPress={() => handleFilterChange(option.key)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: filter === option.key }}
                     accessibilityLabel={t(`filter.${option.key}`)}
                   >
                     <Ionicons name={option.icon} size={13} color={filter === option.key ? primary : theme.textSecondary} />
@@ -359,9 +400,14 @@ export default function HomeScreen() {
                     <Chip
                       key={option}
                       size="sm"
+                      // Same measured 48dp minimum as the filter row above.
+                      className="h-12 px-3"
                       variant={subFilter === option ? 'primary' : 'soft'}
                       color={subFilter === option ? 'accent' : 'default'}
                       onPress={() => setSubFilter(subFilter === option ? null : option)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: subFilter === option }}
+                      accessibilityLabel={t(`subFilter.${option}`)}
                     >
                       <Chip.Label>{t(`subFilter.${option}`)}</Chip.Label>
                     </Chip>

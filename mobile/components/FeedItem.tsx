@@ -871,6 +871,8 @@ function FeedItemInner({
             <HeroButton
               isIconOnly
               size="sm"
+              // 48dp square — Android's guidance, measured rather than eyeballed.
+              className="h-12 w-12"
               variant="ghost"
               onPress={() => setActionSheetVisible(true)}
               accessibilityLabel={t('moreOptions')}
@@ -1035,7 +1037,7 @@ function FeedItemInner({
             ) : null}
 
             {detailTarget ? (
-              <HeroButton size="sm" variant="secondary" onPress={navigateToDetail}>
+              <HeroButton size="sm" className="h-12" variant="secondary" onPress={navigateToDetail}>
                 <Ionicons name={getTypeIcon(item.type)} size={16} color={primary} />
                 <HeroButton.Label>{t(detailTarget.labelKey)}</HeroButton.Label>
                 <Ionicons name="arrow-forward" size={15} color={primary} />
@@ -1134,6 +1136,7 @@ function FeedItemInner({
           {canRespond ? (
             <HeroButton
               size="sm"
+              className="h-12 min-w-12"
               variant={likeButtonActive ? 'secondary' : 'ghost'}
               onPress={handleLikePress}
               onPressIn={handleLikePressIn}
@@ -1174,6 +1177,7 @@ function FeedItemInner({
           {isCommentable ? (
             <HeroButton
               size="sm"
+              className="h-12 min-w-12"
               variant={commentsVisible ? 'secondary' : 'ghost'}
               onPress={handleCommentPress}
               accessibilityLabel={commentsCount > 0 ? t('stats.comments', { count: commentsCount }) : t('comment')}
@@ -1192,7 +1196,7 @@ function FeedItemInner({
             </HeroButton>
           ) : null}
 
-          <HeroButton size="sm" variant="ghost" onPress={() => void handleShare()} accessibilityLabel={t('share')}>
+          <HeroButton size="sm" className="h-12 min-w-12" variant="ghost" onPress={() => void handleShare()} accessibilityLabel={t('share')}>
             <Ionicons name="share-social-outline" size={17} color={theme.textMuted} />
             {compactActions ? null : (
               <HeroButton.Label style={{ color: theme.textMuted }}>{t('share')}</HeroButton.Label>
@@ -1210,6 +1214,7 @@ function FeedItemInner({
             */
             <HeroButton
               size="sm"
+              className="h-12 min-w-12"
               variant={bookmarked ? 'secondary' : 'ghost'}
               onPress={() => void handleSave()}
               accessibilityLabel={bookmarked ? t('unsave') : t('save')}

@@ -118,7 +118,11 @@ describe('the feed card action row cannot drop a button off the edge', () => {
     // 🔴 The label WAS the accessible name. Hiding it without this makes the row an
     // unlabelled icon to a screen reader — a fix that looks right and reads as nothing.
     const source = read('components/FeedItem.tsx');
-    const shareButton = source.match(/<HeroButton size="sm" variant="ghost" onPress=\{\(\) => void handleShare\(\)\}[^>]*>/);
+    // 🔴 Matched on the HANDLER, not on the exact attribute order. The previous pattern
+    // pinned `size="sm" variant="ghost"` as adjacent literals, so adding a `className` to
+    // meet the 48dp touch-target guidance (2026-09-06) made this test fail for a reason
+    // that had nothing to do with accessible names — the thing it exists to protect.
+    const shareButton = source.match(/<HeroButton[^>]*onPress=\{\(\) => void handleShare\(\)\}[^>]*>/);
 
     expect(shareButton?.[0]).toContain('accessibilityLabel');
     expect(source).toMatch(/onPress=\{handleCommentPress\}\s*\n\s*accessibilityLabel=/);

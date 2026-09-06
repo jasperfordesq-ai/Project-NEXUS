@@ -121,7 +121,8 @@
     "marking": "Markierung...",
     "markError": "Benachrichtigungen konnten nicht als gelesen markiert werden.",
     "allCaughtUp": "Sie sind auf dem neuesten Stand!",
-    "justNow": "gerade"
+    "justNow": "gerade",
+    "titleWithCount": "Benachrichtigungen, {{unread}} ungelesen"
   },
   "tenant": {
     "logoLabel": "{{name}}-Logo"

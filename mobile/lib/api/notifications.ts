@@ -6,6 +6,16 @@
 import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 
+/** One notification inside a group, as returned by the grouped endpoint. */
+export interface NotificationGroupItem {
+  id: number;
+  title?: string | null;
+  message: string;
+  link?: string | null;
+  is_read: boolean;
+  created_at?: string | null;
+}
+
 export interface NotificationActor {
   id: number;
   name: string | null;
@@ -15,7 +25,23 @@ export interface NotificationActor {
 export interface Notification {
   id: number;
   type: string;
-  category: 'message' | 'transaction' | 'social' | 'system' | 'event' | 'group' | 'listing' | 'connection' | 'mention' | 'other' | string;
+  /**
+   * The category the row's icon and tint come from.
+   *
+   * 🔴 These names are PLURAL, and that is not a style choice — they are exactly what
+   * `NotificationService::categoryNames()` publishes and what the category filter and the
+   * unread counts already use. This field was previously typed with SINGULAR guesses
+   * (`message`, `listing`, `connection`) that the server has never sent; in fact the server
+   * did not send the field at all until 2026-09-06, so every notification fell to the
+   * default icon and every row in the list rendered the same grey bell.
+   *
+   * Optional, because a build of the app can outlive a server that does not send it yet.
+   */
+  category?:
+    | 'messages' | 'connections' | 'reviews' | 'transactions' | 'social' | 'groups'
+    | 'listings' | 'jobs' | 'safeguarding' | 'system' | 'ideation' | 'security'
+    | 'events' | 'other'
+    | string;
   title: string | null;
   /** Primary display text */
   message: string;
@@ -32,6 +58,16 @@ export interface Notification {
   remaining_count?: number | null;
   is_grouped?: boolean;
   actors?: NotificationActor[];
+  /**
+   * The notifications this group is made of, newest first, capped server-side.
+   *
+   * 🔴 Without this a group could not be expanded into anything. Both clients offered an
+   * expand control for every grouped notification and then rendered only the actor avatars
+   * inside it — so a group whose notifications have no actor (an achievement, a wallet
+   * movement, a listing expiry) expanded to nothing at all. `remaining_count` says how many
+   * are beyond the cap.
+   */
+  group_items?: NotificationGroupItem[];
 }
 
 export interface NotificationListResponse {

@@ -1013,6 +1013,22 @@ export interface Notification {
   group_key?: string;
   group_count?: number;
   actors?: Array<{ id: number; name: string; avatar_url?: string | null }>;
+  /**
+   * The notifications a group is made of, newest first, capped server-side.
+   *
+   * Without this a group could only be expanded into its actor avatars, so a group whose
+   * notifications have no actor expanded into nothing at all (2026-09-06).
+   */
+  group_items?: Array<{
+    id: number;
+    title?: string | null;
+    message: string;
+    link?: string | null;
+    is_read: boolean;
+    created_at?: string | null;
+  }>;
+  /** Category the row's icon and tint come from; plural names, matching the API. */
+  category?: string;
   remaining_count?: number;
   latest_at?: string;
   notification_ids?: number[];

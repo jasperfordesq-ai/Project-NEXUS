@@ -121,7 +121,8 @@
     "marking": "Marking...",
     "markError": "Could not mark notifications as read.",
     "allCaughtUp": "You're all caught up!",
-    "justNow": "just now"
+    "justNow": "just now",
+    "titleWithCount": "Notifications, {{unread}} unread"
   },
   "tenant": {
     "logoLabel": "{{name}} logo"
