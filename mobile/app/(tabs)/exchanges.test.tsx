@@ -7,6 +7,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 const mockShowToast = jest.fn();
+const mockUseFocusEffect = jest.fn();
 
 // --- Mocks ---
 
@@ -16,7 +17,7 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
   useNavigation: () => ({ setOptions: jest.fn() }),
-  useFocusEffect: jest.fn(),
+  useFocusEffect: (cb: () => void) => mockUseFocusEffect(cb),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -30,6 +31,9 @@ jest.mock('react-i18next', () => ({
         'detail.actionFailedTitle': 'Action failed',
         'detail.saveFailed': "We couldn't update your saved listings.",
         'common:buttons.retry': 'Retry',
+        'categoriesRetry': 'Retry categories',
+        'categoriesLoading': 'Loading categories…',
+        'filterAllCategories': 'All categories',
       };
       return map[key] ?? key;
     },
@@ -140,6 +144,8 @@ const defaultPaginatedState = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // By default behave like a screen that is on-screen but has not been navigated back to.
+  mockUseFocusEffect.mockImplementation((cb: () => void) => { cb(); });
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
   (getExchanges as jest.Mock).mockResolvedValue({ data: [], meta: { cursor: null, has_more: false, per_page: 20 } });
   (getExchangeCategories as jest.Mock).mockResolvedValue({ data: [] });
@@ -286,6 +292,105 @@ describe('ExchangesScreen', () => {
     await latestFetch?.(null);
 
     expect(getExchanges).toHaveBeenCalledWith(null, expect.objectContaining({ type: 'offer' }));
+  });
+
+  /**
+   * 🔴 S2-14: the category strip called the API once and, if that call failed, simply
+   * disappeared — the member saw a listings page with no way to filter by category and no
+   * hint that anything had gone wrong. It now offers a retry (audit 2026-09-06).
+   */
+  it('offers a retry when the category list fails, and recovers on the second attempt', async () => {
+    (getExchangeCategories as jest.Mock)
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ data: [{ id: 3, name: 'Gardening', color: '#22aa55' }] });
+
+    const { getByText, queryByText } = render(<ExchangesScreen />);
+    fireEvent.press(getByText('filters'));
+
+    await waitFor(() => expect(getByText('Retry categories')).toBeTruthy());
+    expect(queryByText('Gardening')).toBeNull();
+
+    fireEvent.press(getByText('Retry categories'));
+
+    await waitFor(() => expect(getByText('Gardening')).toBeTruthy());
+    expect(queryByText('Retry categories')).toBeNull();
+  });
+
+  it('filters by a category once one is chosen', async () => {
+    (getExchangeCategories as jest.Mock).mockResolvedValue({
+      data: [{ id: 3, name: 'Gardening', color: '#22aa55' }],
+    });
+
+    const { getByText } = render(<ExchangesScreen />);
+    fireEvent.press(getByText('filters'));
+    await waitFor(() => expect(getByText('Gardening')).toBeTruthy());
+    fireEvent.press(getByText('Gardening'));
+
+    const latestFetch = mockUsePaginatedApi.mock.calls.at(-1)?.[0] as ((cursor: string | null) => Promise<unknown>) | undefined;
+    await latestFetch?.(null);
+
+    expect(getExchanges).toHaveBeenCalledWith(null, expect.objectContaining({ category_id: '3' }));
+  });
+
+  it.each([
+    ['duration.short', { min_hours: '1', max_hours: '3' }],
+    ['duration.halfDay', { min_hours: '3', max_hours: '6' }],
+    ['duration.fullDay', { min_hours: '6' }],
+  ])('translates the %s duration filter into hour bounds', async (label, expected) => {
+    const { getByText } = render(<ExchangesScreen />);
+    fireEvent.press(getByText('filters'));
+    fireEvent.press(getByText(label));
+
+    const latestFetch = mockUsePaginatedApi.mock.calls.at(-1)?.[0] as ((cursor: string | null) => Promise<unknown>) | undefined;
+    await latestFetch?.(null);
+
+    expect(getExchanges).toHaveBeenCalledWith(null, expect.objectContaining(expected));
+  });
+
+  it('sends the in-person service filter as a physical-only search', async () => {
+    const { getByText } = render(<ExchangesScreen />);
+    fireEvent.press(getByText('filters'));
+    fireEvent.press(getByText('service.inPerson'));
+
+    const latestFetch = mockUsePaginatedApi.mock.calls.at(-1)?.[0] as ((cursor: string | null) => Promise<unknown>) | undefined;
+    await latestFetch?.(null);
+
+    expect(getExchanges).toHaveBeenCalledWith(null, expect.objectContaining({ service_type: 'physical_only' }));
+  });
+
+  it('drops a duplicated listing rather than crashing the list on a repeated key', () => {
+    render(<ExchangesScreen />);
+    const extract = mockUsePaginatedApi.mock.calls.at(-1)?.[1] as
+      ((r: unknown) => { items: unknown[]; cursor: string | null; hasMore: boolean }) | undefined;
+    expect(extract).toBeDefined();
+
+    const page = extract?.({
+      data: [mockExchange, { ...mockExchange }, { ...mockExchange, id: 6 }],
+      meta: { cursor: 'next-page', has_more: true, per_page: 20 },
+    });
+
+    expect(page?.items).toHaveLength(2);
+    expect(page?.cursor).toBe('next-page');
+    expect(page?.hasMore).toBe(true);
+  });
+
+  /**
+   * 🔴 S2-10: a listing created, edited or deleted on a child screen was still absent or
+   * present here until a pull to refresh. The first focus must NOT refetch — the initial
+   * load has already done it — but every return must (audit 2026-09-05).
+   */
+  it('refetches when the member returns to the tab, but not on the first render', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, refresh });
+
+    let focusCallback: (() => void) | undefined;
+    mockUseFocusEffect.mockImplementation((cb: () => void) => { focusCallback = cb; cb(); });
+
+    render(<ExchangesScreen />);
+    expect(refresh).not.toHaveBeenCalled();
+
+    focusCallback?.();
+    expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   it('sends advanced filter params to the listings API', async () => {

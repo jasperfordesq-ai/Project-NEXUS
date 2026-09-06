@@ -161,6 +161,105 @@ describe('ExploreScreen', () => {
     expect(queryByText('Global search')).toBeNull();
   });
 
+  /**
+   * 🔴 Every Explore section builds its card title, its subtitle and its destination from the
+   * same three switch statements, keyed by section. A section added without a case there
+   * renders a blank card that goes nowhere — which is silent, so this walks all fourteen.
+   */
+  describe('every section', () => {
+    const fullPayload = {
+      data: {
+        ...explorePayload.data,
+        recommended_listings: [{
+          ...explorePayload.data.popular_listings[0],
+          id: 900, title: 'Recommended for you', category_name: 'DIY', location: 'Bantry',
+        }],
+        near_you_listings: [{
+          ...explorePayload.data.popular_listings[0],
+          id: 901, title: 'Close by', category_name: 'Garden', location: 'Clonakilty',
+        }],
+        active_groups: [{ id: 902, name: 'Gardening Circle', description: 'We grow things', image_url: null }],
+        top_contributors: [{ id: 903, name: 'Top Helper', avatar: null, level: 7 }],
+        trending_posts: [{
+          id: 904, excerpt: '<p>A trending <strong>post</strong></p>', author_name: 'Bea', author_avatar: null,
+        }],
+        volunteering_opportunities: [{
+          id: 905, title: 'Beach clean', org_name: 'Coast Trust', location: 'Inchydoney', image_url: null,
+        }],
+        active_organisations: [{ id: 906, name: 'Coast Trust', description: 'Looks after the coast', logo_url: null }],
+        trending_blog_posts: [{
+          id: 907, title: 'A blog post', slug: 'a-blog-post', excerpt: 'What we did', author_name: 'Cara', image_url: null,
+        }],
+        latest_jobs: [{ id: 908, title: 'Coordinator', org_name: 'Coast Trust', location: 'Cork', org_logo: null }],
+        active_polls: [{ id: 909, question: 'Which night suits?', author_name: 'Dara' }],
+        featured_resources: [{ id: 910, title: 'Tool guide', description: 'How to borrow tools', category_name: 'DIY' }],
+      },
+    };
+
+    beforeEach(() => {
+      mockUseApi.mockReturnValue({ data: fullPayload, isLoading: false, error: null, refresh: mockRefresh });
+    });
+
+    it.each([
+      ['Recommended for you', '/(modals)/exchange-detail', { id: '900' }],
+      ['Close by', '/(modals)/exchange-detail', { id: '901' }],
+      ['Community Meetup', '/(modals)/event-detail', { id: '4' }],
+      ['Gardening Circle', '/(modals)/group-detail', { id: '902' }],
+      ['New Member', '/(modals)/member-profile', { id: '257' }],
+      ['Top Helper', '/(modals)/member-profile', { id: '903' }],
+      ['Beach clean', '/(modals)/volunteering-detail', { id: '905' }],
+      ['Coast Trust', '/(modals)/organisation-detail', { id: '906' }],
+      ['A blog post', '/(modals)/blog-post', { id: 'a-blog-post' }],
+      ['Coordinator', '/(modals)/job-detail', { id: '908' }],
+      ['Which night suits?', '/(modals)/feed-item-detail', { id: '909', type: 'poll' }],
+      ['Tool guide', '/(modals)/feed-item-detail', { id: '910', type: 'resource' }],
+    ])('opens %s at its own detail screen', (label, pathname, params) => {
+      const { getAllByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getAllByText(label as string)[0]);
+
+      expect(mockRouterPush).toHaveBeenCalledWith({ pathname, params });
+    });
+
+    it('strips the markup out of a trending post rather than printing the tags', () => {
+      const { getAllByText, queryByText } = render(<ExploreScreen />);
+
+      expect(getAllByText('A trending post')[0]).toBeTruthy();
+      expect(queryByText(/<strong>/)).toBeNull();
+    });
+
+    it('gives each card a subtitle drawn from its own kind of item', () => {
+      const { getAllByText } = render(<ExploreScreen />);
+
+      expect(getAllByText('DIY • Bantry')[0]).toBeTruthy();          // listing
+      expect(getAllByText('We grow things')[0]).toBeTruthy();        // group
+      expect(getAllByText('Coast Trust • Inchydoney')[0]).toBeTruthy(); // volunteering
+      expect(getAllByText('Coast Trust • Cork')[0]).toBeTruthy();    // job
+      expect(getAllByText('Bea')[0]).toBeTruthy();                   // post author
+      expect(getAllByText('Dara')[0]).toBeTruthy();                  // poll author
+      expect(getAllByText('How to borrow tools')[0]).toBeTruthy();   // resource
+      expect(getAllByText('Level 7')[0]).toBeTruthy();               // contributor with no tagline
+    });
+
+    it('shows the same person once when they are both a suggestion and a new member', () => {
+      mockUseApi.mockReturnValue({
+        data: {
+          data: {
+            ...fullPayload.data,
+            suggested_connections: [{ id: 257, name: 'New Member', avatar: null, tagline: 'Happy to help' }],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refresh: mockRefresh,
+      });
+
+      const { getAllByText } = render(<ExploreScreen />);
+
+      expect(getAllByText('New Member')).toHaveLength(1);
+    });
+  });
+
   it('opens Search as a secondary action from Explore', () => {
     const { getByText } = render(<ExploreScreen />);
 
