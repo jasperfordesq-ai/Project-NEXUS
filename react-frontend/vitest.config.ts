@@ -87,14 +87,28 @@ export default defineConfig({
         'src/main.tsx',
         'src/vite-env.d.ts',
       ],
-      thresholds: {
-        // Raised after adding ~99 new test files (2026-03-22)
-        // Previous baseline: ~40%. New estimated coverage: ~60%+. Target: 80%+
-        statements: 55,
-        branches: 50,
-        functions: 50,
-        lines: 55,
-      },
+      // NO THRESHOLDS, deliberately (2026-09-06).
+      //
+      // This block used to declare statements/lines 55 and branches/functions
+      // 50. Nothing ran the full suite under coverage, so the only thing that
+      // ever evaluated those numbers was a CI step running the 14 smoke suites
+      // from scripts/ci-smoke-suites.txt — which cover 4.47% of src/ and so
+      // could never meet a whole-codebase target. That step failed on every
+      // single run, its failure was swallowed by continue-on-error, and it has
+      // now been deleted along with the PR comment it fed.
+      //
+      // Leaving the numbers here would just move the trap: `npm run
+      // test:coverage` on any subset would fail for the same bad reason.
+      //
+      // 55/50/50/55 was the stated aim and is recorded here as an aim only —
+      // nothing enforces a frontend coverage floor today. If that should
+      // change, copy the pattern that already works in this repo rather than
+      // reinstating a global percentage: mobile/coverage-baseline.json plus
+      // mobile/scripts/check-coverage-ratchet.mjs enforce per-area,
+      // shrink-only floors, which is the only shape that survives a codebase
+      // this size. It would belong on react-tests-full — the one job that runs
+      // the whole suite — which is blocking and in the release gate's needs:
+      // list.
     },
   },
   resolve: {
