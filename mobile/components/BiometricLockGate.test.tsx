@@ -111,6 +111,39 @@ describe('BiometricLockGate', () => {
     expect(mockAuthenticate).toHaveBeenCalledTimes(2);
   });
 
+  /*
+    🔴 The escape hatch has to actually lead somewhere. The test above proves the Sign out
+    BUTTON calls `logout()`; it then retries biometrics and never checks what the member
+    sees once the session has actually ended. That gap hid a real trap: the gate made its
+    lock/open decision once per app start, so an auth change arriving afterwards was
+    ignored and the opaque overlay stayed on top of the login form the member had just been
+    returned to. Cancel the prompt, sign out, and the app was unusable until reinstall — for
+    exactly the member the hatch exists for, the one whose sensor has stopped reading.
+
+    Asserting on the overlay being GONE, not on `logout` having been called.
+  */
+  it('uncovers the login screen when the session ends while the gate is locked', async () => {
+    mockAuthenticate.mockResolvedValue({ ok: false, reason: 'cancelled' });
+
+    const { findByTestId, getByText, queryByTestId, rerender } = render(
+      <BiometricLockGate><Text>Login form</Text></BiometricLockGate>,
+    );
+
+    // Locked, prompt refused, escape hatch on screen.
+    expect(await findByTestId('biometric-lock-error')).toBeTruthy();
+    fireEvent.press(getByText('common:labels.signOut'));
+    expect(mockLogout).toHaveBeenCalledTimes(1);
+
+    // `logout()` ends the session. Re-render with the state the real provider would publish.
+    mockAuthState = { isAuthenticated: false, isLoading: false };
+    await act(async () => {
+      rerender(<BiometricLockGate><Text>Login form</Text></BiometricLockGate>);
+    });
+
+    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
+    expect(getByText('Login form')).toBeTruthy();
+  });
+
   it('fails open when the phone can no longer authenticate', async () => {
     mockCapability.mockResolvedValue({ usable: false });
     const { queryByTestId } = render(

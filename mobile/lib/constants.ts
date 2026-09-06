@@ -114,6 +114,19 @@ export const TIMEOUTS = {
    */
   API_JOB_APPLY: 45_000,
   /**
+   * Silent token refresh.
+   *
+   * 🔴 This request had NO deadline at all. Every other 401 that arrives while it is in
+   * flight waits on the same shared promise, so one stalled refresh — the ordinary case on
+   * a weak mobile connection, where a socket opens and then nothing comes back — parked
+   * every screen and every mutation in the app indefinitely, past the timeout each of them
+   * had advertised, with no error and no way to retry.
+   *
+   * Deliberately shorter than a normal mutation: this runs BEFORE the retry of the member's
+   * actual request, so its budget is spent on top of theirs.
+   */
+  API_TOKEN_REFRESH: 10_000,
+  /**
    * @deprecated Use API_GET, API_MUTATION, or API_UPLOAD instead.
    * Kept for backward compatibility with tests.
    */

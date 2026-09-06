@@ -100,6 +100,55 @@ let onUnauthorizedCallback: (() => void) | null = null;
 // anonymous after the server has already issued a valid session.
 let inProcessAccessToken: string | null = null;
 
+/**
+ * Bumped every time the app INSTALLS or CLEARS a session.
+ *
+ * 🔴 Why a counter and not just nulling the token. `inProcessAccessToken` takes priority
+ * over stored credentials, so anything that can write it after a sign-out can resurrect a
+ * dead identity. Two paths could:
+ *
+ * 1. `AuthContext.logout()` signs out locally even when the server logout request FAILS.
+ *    That path cleared storage and the UI but never reached the `/api/auth/logout` success
+ *    branch below, so the previous account's bearer stayed cached and every subsequent
+ *    request still carried it — including requests made under a newly registered account,
+ *    whose token is written to storage but loses to the cached one.
+ * 2. A refresh already in flight when the session ends resolves afterwards and writes both
+ *    storage and `inProcessAccessToken`, overwriting whatever session replaced it.
+ *
+ * The generation closes both: `installApiSession`/`clearApiSession` bump it, and a refresh
+ * that finishes across a bump discards its result instead of applying it.
+ */
+let sessionGeneration = 0;
+
+function resetRefreshState(): void {
+  if (_refreshGraceTimer) clearTimeout(_refreshGraceTimer);
+  _refreshGraceTimer = null;
+  _refreshPromise = null;
+}
+
+/**
+ * Make `token` the bearer this process sends. Call on EVERY path that establishes a
+ * session — login, registration, restoring one — not only the ones that happen to go
+ * through the login endpoint.
+ */
+export function installApiSession(token: string): void {
+  sessionGeneration += 1;
+  inProcessAccessToken = token;
+  resetRefreshState();
+}
+
+/**
+ * Forget the bearer this process sends, and abandon any refresh in flight.
+ *
+ * Call on EVERY sign-out, including the local-only cleanup that runs when the server
+ * logout request could not be delivered. Clearing storage alone is not a sign-out.
+ */
+export function clearApiSession(): void {
+  sessionGeneration += 1;
+  inProcessAccessToken = null;
+  resetRefreshState();
+}
+
 async function recordIosScreenshotResponse(
   method: RequestMethod,
   endpoint: string,
@@ -218,10 +267,7 @@ let _refreshGraceTimer: ReturnType<typeof setTimeout> | null = null;
  * while the code was correct). Mirrors `themeStore.__resetForTests`.
  */
 export function __resetRefreshStateForTests(): void {
-  if (_refreshGraceTimer) clearTimeout(_refreshGraceTimer);
-  _refreshGraceTimer = null;
-  _refreshPromise = null;
-  inProcessAccessToken = null;
+  clearApiSession();
 }
 
 export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
@@ -229,6 +275,10 @@ export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
   if (_refreshPromise) {
     return _refreshPromise;
   }
+
+  // The session this refresh belongs to. If it is replaced or ended while the request is
+  // in flight, the result below is discarded rather than applied to its successor.
+  const generation = sessionGeneration;
 
   _refreshPromise = (async (): Promise<TokenRefreshResult> => {
     try {
@@ -247,11 +297,23 @@ export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
       };
       headers['X-Tenant-Slug'] = tenantSlug || DEFAULT_TENANT;
 
-      const res = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ refresh_token: storedRefresh }),
-      });
+      // 🔴 Bounded deliberately. Without a deadline a stalled refresh holds the shared
+      // promise for ever and every other 401 in the app waits behind it. An expired
+      // deadline is `unreachable`, NOT `rejected`: nobody is signed out and no offline
+      // queue is purged for a connection that merely went quiet.
+      const refreshController = new AbortController();
+      const refreshTimeoutId = setTimeout(() => refreshController.abort(), TIMEOUTS.API_TOKEN_REFRESH);
+      let res: Response;
+      try {
+        res = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ refresh_token: storedRefresh }),
+          signal: refreshController.signal,
+        });
+      } finally {
+        clearTimeout(refreshTimeoutId);
+      }
 
       // 🔴 Only an AUTH refusal ends the session. A 5xx or a 429 means the server could not
       // answer right now — treating those as expiry signs people out during an incident,
@@ -268,10 +330,18 @@ export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
       // destroy anything.
       if (!newToken) return { status: 'unreachable' };
 
+      // 🔴 The session ended (or was replaced) while this refresh was in flight. Writing
+      // the renewed token now would overwrite the successor's credentials in storage and
+      // put a signed-out member's bearer back in memory. Report it as unreachable: that
+      // leaves every store untouched, signs nobody out, and lets the next request try
+      // again with whatever session is actually current.
+      if (generation !== sessionGeneration) return { status: 'unreachable' };
+
       const saves: Promise<void>[] = [storage.set(STORAGE_KEYS.AUTH_TOKEN, newToken)];
       if (data.refresh_token) saves.push(storage.set(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token));
       await Promise.all(saves);
 
+      if (generation !== sessionGeneration) return { status: 'unreachable' };
       inProcessAccessToken = newToken;
 
       return { status: 'refreshed', token: newToken };
@@ -437,6 +507,7 @@ async function request<T>(
   );
 
   // Handle 401: try silent token refresh, then retry once
+  let retriedSuccessfully = false;
   if (response.status === 401 && endpoint !== '/api/auth/login') {
     const refresh = await attemptTokenRefresh();
     if (refresh.status === 'refreshed') {
@@ -462,47 +533,41 @@ async function request<T>(
       }
       clearTimeout(retryTimeoutId);
 
-      // If the retry succeeded (not another 401), process and return it
+      // 🔴 If the retry settled as anything but another 401, adopt it as THE response and
+      // fall through to the shared tail below. It used to be parsed and thrown right here,
+      // in a second copy of the response handling that knew nothing about the app's central
+      // recovery levers — so a `LEGAL_ACCEPTANCE_REQUIRED` refusal or a 426 force-update that
+      // arrived after a token renewal never opened the acceptance screen or the update
+      // screen. Both worked on a first response and silently stopped working across a
+      // refresh, which is the harder case to notice and the likelier one to hit: a member
+      // whose token expires mid-session is exactly the member being asked to accept new
+      // terms. One response handler, one set of levers.
       if (retryRes.status !== 401) {
-        const retryContentType = retryRes.headers.get('content-type') ?? '';
-        const retryData: unknown =
-          retryContentType.includes('application/json') && retryRes.status !== 204
-            ? await retryRes.json()
-            : null;
-        if (!retryRes.ok) {
-          const eb = retryData as { errors?: Record<string, string[]> } | null;
-          throw new ApiResponseError(
-            retryRes.status,
-            extractErrorMessage(
-              retryData,
-              i18n.t('common:errors.requestFailedWithStatus', { status: retryRes.status }),
-            ),
-            eb?.errors,
-            extractErrorCode(retryData),
-          );
-        }
-        return retryData as T;
+        response = retryRes;
+        retriedSuccessfully = true;
       }
     }
 
-    // 🔴 The server could not be reached to renew the token. NOT an expiry: leave the
-    // stored tokens alone, do not fire the sign-out callback (which purges the offline
-    // check-in queue), and surface it as the network failure it is so the screen can offer
-    // a retry. The next request will attempt the refresh again.
-    if (refresh.status === 'unreachable') {
-      throw new ApiResponseError(0, i18n.t('common:errors.network'));
-    }
+    if (!retriedSuccessfully) {
+      // 🔴 The server could not be reached to renew the token. NOT an expiry: leave the
+      // stored tokens alone, do not fire the sign-out callback (which purges the offline
+      // check-in queue), and surface it as the network failure it is so the screen can offer
+      // a retry. The next request will attempt the refresh again.
+      if (refresh.status === 'unreachable') {
+        throw new ApiResponseError(0, i18n.t('common:errors.network'));
+      }
 
-    // The refresh token was refused, or the retry came back 401 again: the session is
-    // genuinely over. Clear it and tell the app, which signs the member out.
-    await Promise.all([
-      storage.remove(STORAGE_KEYS.AUTH_TOKEN),
-      storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
-      storage.remove(STORAGE_KEYS.USER_DATA),
-    ]);
-    inProcessAccessToken = null;
-    onUnauthorizedCallback?.();
-    throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+      // The refresh token was refused, or the retry came back 401 again: the session is
+      // genuinely over. Clear it and tell the app, which signs the member out.
+      await Promise.all([
+        storage.remove(STORAGE_KEYS.AUTH_TOKEN),
+        storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
+        storage.remove(STORAGE_KEYS.USER_DATA),
+      ]);
+      clearApiSession();
+      onUnauthorizedCallback?.();
+      throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+    }
   }
 
   // Parse response body (some endpoints return no body on 204)
@@ -559,9 +624,9 @@ async function request<T>(
       : typeof authData?.token === 'string'
         ? authData.token
         : null;
-    if (issuedToken) inProcessAccessToken = issuedToken;
+    if (issuedToken) installApiSession(issuedToken);
   } else if (endpoint === '/api/auth/logout') {
-    inProcessAccessToken = null;
+    clearApiSession();
   }
 
   return data as T;

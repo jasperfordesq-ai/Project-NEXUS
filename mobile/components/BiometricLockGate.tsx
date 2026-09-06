@@ -81,15 +81,31 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
     setFailure(result.reason ?? 'failed');
   }, [t]);
 
+  /**
+   * Nothing stored to protect: never stand in the way of signing in.
+   *
+   * 🔴 Deliberately its own effect, and deliberately NOT behind `decided.current`. This
+   * used to be the first branch of the effect below, which returns early once the one-time
+   * decision has been made — so it covered the member who arrives at the app signed out,
+   * and missed the member who becomes signed out. Cancelling the fingerprint prompt and
+   * tapping Sign out did end the session, but `state` stayed `locked` and the opaque
+   * overlay went on covering the login form underneath it. The escape hatch led nowhere:
+   * the one member it exists for — whose sensor has stopped reading — could not reach the
+   * password field, and a reinstall was the only way back in.
+   *
+   * Losing a session must open the gate at ANY point in the app's life, not only at the
+   * start of it.
+   */
   useEffect(() => {
-    if (decided.current || isLoading) return;
+    if (isLoading || isAuthenticated) return;
+    decided.current = true;
+    setIsPrompting(false);
+    setFailure(null);
+    setState('open');
+  }, [isAuthenticated, isLoading]);
 
-    // Nothing stored to protect: never stand in the way of signing in.
-    if (!isAuthenticated) {
-      decided.current = true;
-      setState('open');
-      return;
-    }
+  useEffect(() => {
+    if (decided.current || isLoading || !isAuthenticated) return;
 
     let cancelled = false;
     void (async () => {

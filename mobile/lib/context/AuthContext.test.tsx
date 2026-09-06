@@ -54,8 +54,13 @@ jest.mock('@/lib/api/auth', () => ({
   buildDisplayName: jest.fn((u: { first_name?: string | null }) => u.first_name ?? 'Member'),
 }));
 
+const mockClearApiSession = jest.fn();
+const mockInstallApiSession = jest.fn();
+
 jest.mock('@/lib/api/client', () => ({
   registerUnauthorizedCallback: jest.fn(),
+  clearApiSession: (...args: unknown[]) => mockClearApiSession(...args),
+  installApiSession: (...args: unknown[]) => mockInstallApiSession(...args),
   ApiResponseError: class ApiResponseError extends Error {
     status!: number;
     constructor(status: number, message: string) { super(message); this.status = status; this.name = 'ApiResponseError'; }
@@ -197,6 +202,47 @@ describe('AuthContext', () => {
     expect(result.current.token).toBeNull();
     expect(mockStorageRemove).toHaveBeenCalled();
     expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
+  });
+
+  /*
+    \u{1F534} Whose session the app SENDS, not just the one it shows.
+
+    The API client keeps an in-memory bearer that beats the stored one, so clearing storage
+    is not a sign-out on its own. `logout()` deliberately continues to local cleanup when
+    the server request fails - and that path used to leave the cached bearer in place. The
+    member saw the login screen while the app carried on making requests as them, and a
+    registration performed next sent the OLD account's token under the NEW account's
+    screens. Asserting that the API layer is told, because nothing else can tell it.
+  */
+  it('clears the API session even when the server logout request fails', async () => {
+    mockStorageGet.mockResolvedValue('token-abc');
+    mockStorageGetJson.mockResolvedValue({ id: 1, first_name: 'Ada' });
+    mockGetMe.mockResolvedValue({ data: { id: 1, first_name: 'Ada' } });
+    mockApiLogout.mockRejectedValue(new Error('offline'));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    mockClearApiSession.mockClear();
+    await act(async () => { await result.current.logout(); });
+
+    expect(mockClearApiSession).toHaveBeenCalled();
+    expect(result.current.isAuthenticated).toBe(false);
+  });
+
+  it('installs the API session for a registration that did not go through login()', async () => {
+    // Registration writes its own tokens to storage and calls setSession. Without this the
+    // client's cached bearer - possibly a previous account's - would win over the new one.
+    mockStorageGet.mockResolvedValue(null);
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    mockInstallApiSession.mockClear();
+    act(() => { result.current.setSession('new-account-token', { id: 2, first_name: 'Bea' } as never); });
+
+    expect(mockInstallApiSession).toHaveBeenCalledWith('new-account-token');
+    expect(result.current.token).toBe('new-account-token');
   });
 
   it('refreshUser() updates in-memory user without a network call', async () => {

@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next';
 
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { purgeAllMobileOfflineCheckinData } from '@/lib/eventOfflineCheckinStore';
-import { registerUnauthorizedCallback } from '@/lib/api/client';
+import { clearApiSession, installApiSession, registerUnauthorizedCallback } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 import {
@@ -88,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const handleUnauthorized = useCallback(() => {
     void purgeAllMobileOfflineCheckinData();
+    clearApiSession();
     setUser(null);
     setToken(null);
     // Say what happened. Being returned to the login screen with no message is
@@ -156,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 storage.remove(STORAGE_KEYS.USER_DATA),
                 purgeAllMobileOfflineCheckinData(),
               ]);
+              clearApiSession();
               if (!isMounted) return;
               setToken(null);
               setUser(null);
@@ -181,6 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           storage.remove(STORAGE_KEYS.USER_DATA),
           purgeAllMobileOfflineCheckinData(),
         ]);
+        clearApiSession();
         if (!isMounted) return;
         setToken(null);
         setUser(null);
@@ -208,6 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       storage.setJson<LoginUser>(STORAGE_KEYS.USER_DATA, response.user),
     ]);
 
+    installApiSession(bearerToken);
     setToken(bearerToken);
     setUser(response.user);
 
@@ -219,7 +223,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     registerPushBestEffort();
   }, [registerPushBestEffort]);
 
+  /**
+   * Adopt a session established outside `login()` — registration is the caller that
+   * matters.
+   *
+   * 🔴 It used to set React state only. The API client keeps its own in-memory bearer
+   * that WINS over the stored one, so a registration following a failed sign-out sent the
+   * previous account's token while showing the new account's screens. Installing the
+   * bearer here is what makes "the session the app displays" and "the session the app
+   * sends" the same thing.
+   */
   const setSession = useCallback((newToken: string, newUser: AnyUser) => {
+    installApiSession(newToken);
     setToken(newToken);
     setUser(newUser);
   }, []);
@@ -249,6 +264,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       storage.remove(STORAGE_KEYS.USER_DATA),
       purgeAllMobileOfflineCheckinData(),
     ]);
+
+    // 🔴 Unconditional, and NOT reliant on the server logout above having succeeded.
+    // The `catch` on `apiLogout()` means this function completes a sign-out even when the
+    // request never reached the server — and before this line, that path left the API
+    // client still holding the bearer it had cached, so the app kept making requests as
+    // the member who had just signed out.
+    clearApiSession();
 
     setToken(null);
     setUser(null);

@@ -24,11 +24,12 @@ jest.mock('@/lib/constants', () => ({
     API_GET: 30_000,
     API_MUTATION: 15_000,
     API_UPLOAD: 60_000,
+    API_TOKEN_REFRESH: 10_000,
     API_REQUEST: 15_000,
   },
 }));
 
-import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, attemptTokenRefresh, __resetRefreshStateForTests } from './client';
+import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, attemptTokenRefresh, clearApiSession, installApiSession, __resetRefreshStateForTests } from './client';
 import { storage } from '@/lib/storage';
 import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
 
@@ -970,5 +971,170 @@ describe('a 426 from the version gate', () => {
       currentVersion: '',
       updateUrl: '',
     });
+  });
+});
+
+describe('\u{1F534} whose token the next request actually carries', () => {
+  /*
+    The client keeps an in-memory bearer that WINS over the stored one, so "signed out" is
+    only true if BOTH are cleared. `AuthContext.logout()` signs out locally even when the
+    server logout request fails - and that path used to leave the cached bearer in place, so
+    the app went on making requests as the member who had just signed out, and a
+    registration performed afterwards sent the OLD account's token while displaying the new
+    account's screens. These assert on the Authorization header, which is the only thing
+    that decides who the server thinks is asking.
+  */
+
+  beforeEach(() => {
+    mockStorage.remove.mockClear();
+  });
+
+  it('sends nothing once the session is cleared, even with a token still in storage', async () => {
+    installApiSession('account-A-token');
+    clearApiSession();
+    // Storage lags behind on the failed-logout path - removal is async and can lose a race.
+    // The cleared in-memory session must still win.
+    mockStorage.get.mockImplementation(async () => null);
+    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+
+    await api.get('/api/v2/feed');
+
+    const [, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect((opts.headers as Record<string, string>).Authorization).toBeUndefined();
+  });
+
+  it('sends the NEW session after a sign-out that never reached the server', async () => {
+    installApiSession('account-A-token');
+    clearApiSession();                    // local-only sign-out
+    installApiSession('account-B-token'); // registration establishes a new session
+    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+
+    await api.get('/api/v2/feed');
+
+    const [, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect((opts.headers as Record<string, string>).Authorization).toBe('Bearer account-B-token');
+  });
+
+  it('discards a refresh that lands after the session it was renewing ended', async () => {
+    // A refresh in flight at sign-out used to resolve afterwards and write BOTH storage and
+    // the in-memory bearer - reinstating a dead identity, or overwriting the credentials of
+    // whatever session had replaced it.
+    installApiSession('account-A-token');
+
+    let finishRefresh: ((value: Response) => void) | undefined;
+    fetchMock.mockReturnValueOnce(new Promise((resolve) => { finishRefresh = resolve; }));
+
+    const refreshing = attemptTokenRefresh();
+    clearApiSession();
+    finishRefresh?.(mockResponse({ access_token: 'renewed-A-token' }));
+
+    await expect(refreshing).resolves.toEqual({ status: 'unreachable' });
+    expect(mockStorage.set).not.toHaveBeenCalledWith('nexus_auth_token', 'renewed-A-token');
+
+    mockStorage.get.mockImplementation(async () => null);
+    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+    await api.get('/api/v2/feed');
+    const [, opts] = fetchMock.mock.calls[1] as [string, RequestInit];
+    expect((opts.headers as Record<string, string>).Authorization).toBeUndefined();
+
+    jest.advanceTimersByTime(3000);
+  });
+});
+
+describe('\u{1F534} the refresh request has a deadline of its own', () => {
+  it('aborts a stalled refresh instead of parking every waiting request for ever', async () => {
+    // Ordinary requests carry an AbortController; the refresh did not. Because every other
+    // 401 waits on the SAME shared promise, one stalled refresh held the whole app past the
+    // timeout each screen had advertised, with no error and no retry.
+    fetchMock.mockImplementationOnce((_url: string, opts: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        opts.signal?.addEventListener('abort', () => {
+          const err = new Error('Aborted');
+          err.name = 'AbortError';
+          reject(err);
+        });
+      }),
+    );
+
+    const refreshing = attemptTokenRefresh();
+    // The refresh reads the stored refresh token before it fetches, so let those
+    // already-resolved promises settle rather than assuming fetch fired synchronously.
+    for (let i = 0; i < 10 && fetchMock.mock.calls.length === 0; i += 1) {
+      await Promise.resolve();
+    }
+    const [, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(opts.signal).toBeDefined();
+
+    jest.advanceTimersByTime(10_000);
+
+    // An expired deadline is unreachable, NOT rejected: nobody is signed out and no offline
+    // check-in queue is purged because a connection went quiet.
+    await expect(refreshing).resolves.toEqual({ status: 'unreachable' });
+    expect(mockStorage.remove).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(3000);
+  });
+});
+
+describe('\u{1F534} recovery levers still work AFTER a token renewal', () => {
+  /*
+    The retry following a successful refresh used to be parsed and thrown by a second copy
+    of the response handling that knew nothing about the central levers. So both of these
+    worked on a first response and silently stopped working across a refresh - the harder
+    case to notice and the likelier one to hit, since a member whose token has just expired
+    is exactly the member being asked to accept new terms or update the app.
+  */
+
+  beforeEach(() => {
+    updateRequiredStore.__resetForTests();
+    mockStorage.remove.mockClear();
+  });
+
+  it('opens the legal acceptance screen when the refusal arrives on the retry', async () => {
+    const onGate = jest.fn();
+    registerLegalAcceptanceRequiredCallback(onGate);
+
+    fetchMock.mockResolvedValueOnce(mockResponse({}, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(mockResponse({ access_token: 'renewed' }));
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { errors: [{ code: 'LEGAL_ACCEPTANCE_REQUIRED', message: 'Please accept' }] },
+        { status: 403 },
+      ),
+    );
+
+    await expect(api.post('/api/v2/comments', {})).rejects.toThrow(ApiResponseError);
+    expect(onGate).toHaveBeenCalledTimes(1);
+
+    registerLegalAcceptanceRequiredCallback(() => {});
+    jest.advanceTimersByTime(3000);
+  });
+
+  it('raises the forced update when the 426 arrives on the retry', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({}, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(mockResponse({ access_token: 'renewed' }));
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        {
+          success: false,
+          client_version: '1.1.0',
+          minimum_version: '1.2.0',
+          current_version: '1.3.0',
+          update_url: 'https://mobile.project-nexus.ie',
+        },
+        { status: 426 },
+      ),
+    );
+
+    await expect(api.get('/api/v2/feed')).rejects.toThrow(ApiResponseError);
+
+    expect(updateRequiredStore.getSnapshot()).toEqual({
+      clientVersion: '1.1.0',
+      minimumVersion: '1.2.0',
+      currentVersion: '1.3.0',
+      updateUrl: 'https://mobile.project-nexus.ie',
+    });
+
+    jest.advanceTimersByTime(3000);
   });
 });
