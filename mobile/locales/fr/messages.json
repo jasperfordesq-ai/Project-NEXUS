@@ -48,6 +48,8 @@
     "messagingRestrictedContact": "Veuillez contacter votre equipe communautaire avant d'envoyer d'autres messages.",
     "messageOptions": "Options du message",
     "messageActions": "Actions du message",
+    "loadEarlier": "Charger les messages précédents",
+    "loadEarlierFailed": "Les messages précédents n'ont pas pu être chargés. Veuillez réessayer.",
     "attachmentOpenFailed": "Cette pièce jointe n'a pas pu être ouverte. Veuillez réessayer.",
     "edit": "Modifier",
     "editing": "Modification du message",

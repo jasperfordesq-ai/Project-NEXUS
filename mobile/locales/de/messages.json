@@ -48,6 +48,8 @@
     "messagingRestrictedContact": "Bitte kontaktiere dein Community-Team, bevor du weitere Nachrichten sendest.",
     "messageOptions": "Nachrichtenoptionen",
     "messageActions": "Nachrichtenaktionen",
+    "loadEarlier": "Ältere Nachrichten laden",
+    "loadEarlierFailed": "Ältere Nachrichten konnten nicht geladen werden. Bitte versuche es erneut.",
     "attachmentOpenFailed": "Dieser Anhang konnte nicht geöffnet werden. Bitte versuche es erneut.",
     "edit": "Bearbeiten",
     "editing": "Nachricht bearbeiten",

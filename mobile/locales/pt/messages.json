@@ -48,6 +48,8 @@
     "messagingRestrictedContact": "Contacte a sua equipa da comunidade antes de enviar mais mensagens.",
     "messageOptions": "Opcoes da mensagem",
     "messageActions": "Ações da mensagem",
+    "loadEarlier": "Carregar mensagens anteriores",
+    "loadEarlierFailed": "Não foi possível carregar as mensagens anteriores. Tenta novamente.",
     "attachmentOpenFailed": "Não foi possível abrir este anexo. Tenta novamente.",
     "edit": "Editar",
     "editing": "A editar mensagem",

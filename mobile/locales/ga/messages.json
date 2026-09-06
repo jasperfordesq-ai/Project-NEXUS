@@ -48,6 +48,8 @@
     "messagingRestrictedContact": "Déan teagmháil le d'fhoireann pobail sula seolann tú tuilleadh teachtaireachtaí.",
     "messageOptions": "Roghanna teachtaireachta",
     "messageActions": "Gníomhartha teachtaireachta",
+    "loadEarlier": "Lódáil teachtaireachtaí níos luaithe",
+    "loadEarlierFailed": "Níorbh fhéidir teachtaireachtaí níos luaithe a lódáil. Bain triail eile as.",
     "attachmentOpenFailed": "Níorbh fhéidir an ceangaltán seo a oscailt. Bain triail eile as.",
     "edit": "Cuir in eagar",
     "editing": "Teachtaireacht á cur in eagar",

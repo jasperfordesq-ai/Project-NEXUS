@@ -70,6 +70,8 @@ jest.mock('react-i18next', () => ({
         'thread.messagingRestrictedContact': 'Please contact your community team before sending more messages.',
         'thread.messageOptions': 'Message options',
         'thread.messageActions': 'Message actions',
+        'thread.loadEarlier': 'Load earlier messages',
+        'thread.loadEarlierFailed': 'Earlier messages could not be loaded.',
         'thread.attachments.add': 'Add attachment',
         'thread.attachments.title': 'Add attachment',
         'thread.attachments.photoLibrary': 'Photo library',
@@ -189,8 +191,10 @@ const mockSendVoiceMessage = jest.fn().mockResolvedValue({
   },
 });
 
+const mockGetThread = jest.fn();
+
 jest.mock('@/lib/api/messages', () => ({
-  getThread: jest.fn(),
+  getThread: (...args: unknown[]) => mockGetThread(...args),
   getOrCreateThread: jest.fn(),
   getMessagingRestrictionStatus: (...args: unknown[]) => mockGetMessagingRestrictionStatus(...args),
   markConversationRead: (...args: unknown[]) => mockMarkConversationRead(...args),
@@ -920,6 +924,42 @@ describe('ThreadScreen', () => {
       expect(mockToggleMessageReaction).toHaveBeenCalledWith(1, thumbsUpReaction);
       expect(getByText('1')).toBeTruthy();
     });
+  });
+
+  it('offers a way back to older messages instead of stopping at the first page', async () => {
+    /*
+      🔴 S3-13: the thread fetched one page — the server sends 50 — and offered nothing to
+      say more existed. A long conversation was silently truncated (audit 2026-09-06).
+    */
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages, meta: { per_page: 50, has_more: true, cursor: 'cursor-2' } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    mockGetThread.mockResolvedValueOnce({
+      data: [{
+        id: 40,
+        body: 'A much older message',
+        sender: { id: 5, name: 'Alice', avatar_url: null },
+        created_at: '2026-03-01T09:00:00Z',
+        is_own: false,
+        is_voice: false,
+        audio_url: null,
+        reactions: {},
+        is_read: true,
+      }],
+      meta: { per_page: 50, has_more: false, cursor: null },
+    });
+
+    const { getByText, queryByText } = render(<ThreadScreen />);
+
+    expect(queryByText('A much older message')).toBeNull();
+    fireEvent.press(getByText('Load earlier messages'));
+
+    await waitFor(() => expect(getByText('A much older message')).toBeTruthy());
+    // The server said there is nothing above that page, so the button goes.
+    await waitFor(() => expect(queryByText('Load earlier messages')).toBeNull());
   });
 
   it('gives the voice bubble the length the server stored, so it does not read 0:00', () => {

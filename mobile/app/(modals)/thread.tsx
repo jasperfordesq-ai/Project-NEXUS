@@ -121,6 +121,14 @@ function ThreadScreenInner() {
   );
 
   const [messages, setMessages] = useState<Message[]>([]);
+  /*
+    🔴 S3-13: the thread fetched ONE page (the server sends 50) and offered no way back, so
+    a long conversation was silently truncated with nothing on screen to say so. The API has
+    always accepted a cursor and returned `meta.has_more`; these hold the older pages.
+  */
+  const [olderMessages, setOlderMessages] = useState<Message[]>([]);
+  const [earlierCursor, setEarlierCursor] = useState<string | null>(null);
+  const [isLoadingEarlier, setIsLoadingEarlier] = useState(false);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [messagingRestriction, setMessagingRestriction] = useState<MessagingRestrictionStatus | null>(null);
@@ -164,6 +172,53 @@ function ThreadScreenInner() {
       setMessages(enrichedMessages);
     }
   }, [enrichedMessages]);
+
+  useEffect(() => {
+    // A fresh first page resets the older-history stack; `has_more` is the server's word
+    // for "there is more above this".
+    if (!data?.meta) return;
+    setOlderMessages([]);
+    setEarlierCursor(data.meta.has_more ? data.meta.cursor : null);
+  }, [data?.meta]);
+
+  const loadEarlier = useCallback(async () => {
+    if (!earlierCursor || isLoadingEarlier || !isValidId) return;
+    setIsLoadingEarlier(true);
+    try {
+      const response = await getThread(safeThreadLookupId, earlierCursor);
+      const currentUserId = authUser?.id;
+      const older = (response.data ?? [])
+        .map((message) => ({
+          ...message,
+          is_own: message.is_own ?? (currentUserId != null && message.sender_id === currentUserId),
+          sender: message.sender ?? { id: message.sender_id ?? 0, first_name: null, last_name: null, avatar_url: null },
+        }))
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      setOlderMessages((current) => {
+        const seen = new Set(current.map((message) => message.id));
+        return [...older.filter((message) => !seen.has(message.id)), ...current];
+      });
+      setEarlierCursor(response.meta?.has_more ? response.meta.cursor : null);
+    } catch (err) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('thread.loadEarlierFailed')),
+        variant: 'danger',
+      });
+    } finally {
+      setIsLoadingEarlier(false);
+    }
+  }, [authUser?.id, earlierCursor, isLoadingEarlier, isValidId, safeThreadLookupId, showToast, t]);
+
+  /*
+    Older pages first, then the live page. The live page is the one realtime appends to, so
+    keeping them in separate state means an incoming message cannot be lost behind history.
+  */
+  const visibleMessages = useMemo(() => {
+    if (olderMessages.length === 0) return messages;
+    const seen = new Set(messages.map((message) => message.id));
+    return [...olderMessages.filter((message) => !seen.has(message.id)), ...messages];
+  }, [messages, olderMessages]);
 
   // Fetching a thread marks it read server-side (MessagesController::show calls
   // markAsRead), so the badge is now stale by however many messages this
@@ -637,8 +692,30 @@ function ThreadScreenInner() {
 
         <FlatList<Message>
           ref={flatListRef}
-          data={messages}
+          data={visibleMessages}
           keyExtractor={(item) => String(item.id)}
+          /*
+            🔴 S3-13: a "Load earlier messages" header, because a long conversation used to
+            stop at the server's first page of 50 with nothing to say more existed. It is a
+            deliberate tap, not an onEndReached: this list is inverted in reading order and
+            an automatic fetch at the top fights the scroll position.
+          */
+          ListHeaderComponent={
+            earlierCursor ? (
+              <View className="items-center py-3">
+                <HeroButton
+                  size="sm"
+                  variant="secondary"
+                  isDisabled={isLoadingEarlier}
+                  onPress={() => void loadEarlier()}
+                  accessibilityLabel={t('thread.loadEarlier')}
+                >
+                  {isLoadingEarlier ? <Spinner size="sm" /> : null}
+                  <HeroButton.Label>{t('thread.loadEarlier')}</HeroButton.Label>
+                </HeroButton>
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <MessageBubble
               item={item}
