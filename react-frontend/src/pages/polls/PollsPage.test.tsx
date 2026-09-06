@@ -7,7 +7,7 @@
  * Tests for PollsPage
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -124,6 +124,44 @@ describe('PollsPage', () => {
     render(<PollsPage />);
     await waitFor(() => {
       expect(screen.getByText('My Polls')).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * 🔴 The Create menu (header "+" and the tab-bar sheet) links here as
+   * `/polls?create=1`, because there is no `/polls/create` route — the form is a
+   * collapsed section on this page. Without the flag the menu item would land a
+   * member on a list of other people's polls with no visible way to start one,
+   * which is the "the feature does not exist" failure the menu exists to fix.
+   */
+  describe('?create=1', () => {
+    afterEach(() => {
+      window.history.pushState({}, '', '/polls');
+    });
+
+    it('opens the create form on arrival and clears the flag from the URL', async () => {
+      mockApiGet.mockResolvedValue({ success: true, data: { polls: [], has_more: false, next_cursor: null } });
+      window.history.pushState({}, '', '/polls?create=1');
+
+      render(<PollsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('textbox', { name: 'Option 1' })).toBeInTheDocument();
+      });
+      // Consumed, so closing the form and reloading does not silently reopen it.
+      expect(window.location.search).not.toContain('create=1');
+    });
+
+    it('leaves the form collapsed without the flag', async () => {
+      mockApiGet.mockResolvedValue({ success: true, data: { polls: [], has_more: false, next_cursor: null } });
+      window.history.pushState({}, '', '/polls');
+
+      render(<PollsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Create a poll' })).toBeInTheDocument();
+      });
+      expect(screen.queryByRole('textbox', { name: 'Option 1' })).not.toBeInTheDocument();
     });
   });
 

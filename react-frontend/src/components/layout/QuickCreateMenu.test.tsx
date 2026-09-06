@@ -236,7 +236,7 @@ describe('QuickCreateMenu', () => {
   });
 
   it('getVisibleCreateOptions filters by feature', async () => {
-    const { getVisibleCreateOptions } = await import('./QuickCreateMenu');
+    const { getVisibleCreateOptions } = await import('./createOptions');
     const noFeature = () => false;
     const allModules = () => true;
     const options = getVisibleCreateOptions(noFeature, allModules);
@@ -247,13 +247,13 @@ describe('QuickCreateMenu', () => {
   });
 
   it('getVisibleCreateOptions returns all when all features/modules enabled', async () => {
-    const { getVisibleCreateOptions } = await import('./QuickCreateMenu');
+    const { getVisibleCreateOptions } = await import('./createOptions');
     const options = getVisibleCreateOptions(() => true, () => true);
     expect(options.length).toBeGreaterThanOrEqual(5);
   });
 
   it('getVisibleCreateOptions filters by module', async () => {
-    const { getVisibleCreateOptions } = await import('./QuickCreateMenu');
+    const { getVisibleCreateOptions } = await import('./createOptions');
     const noModule = () => false;
     const allFeatures = () => true;
     const options = getVisibleCreateOptions(allFeatures, noModule);
@@ -272,7 +272,7 @@ describe('QuickCreateMenu', () => {
    * "Community" dropdown, so there was no discoverable route to either builder.
    */
   it('offers Course and Podcast, pointing at the builders rather than the index pages', async () => {
-    const { getVisibleCreateOptions } = await import('./QuickCreateMenu');
+    const { getVisibleCreateOptions } = await import('./createOptions');
     const options = getVisibleCreateOptions(() => true, () => true);
 
     const course = options.find((o) => o.labelKey === 'quick_create.new_course');
@@ -286,7 +286,7 @@ describe('QuickCreateMenu', () => {
   });
 
   it('hides Course and Podcast when those features are off', async () => {
-    const { getVisibleCreateOptions } = await import('./QuickCreateMenu');
+    const { getVisibleCreateOptions } = await import('./createOptions');
     // Both default to FALSE platform-wide and are off (or unset) on 9 of 13
     // communities, so showing them unconditionally would offer most members a
     // builder they cannot reach — the route redirects home.

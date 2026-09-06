@@ -171,7 +171,14 @@
     "new_listing": "إعلان جديد",
     "new_event": "فعالية جديدة",
     "new_course": "دورة جديدة",
-    "new_podcast": "بودكاست جديد"
+    "new_podcast": "بودكاست جديد",
+    "section": {
+      "share": "المشاركة",
+      "timebank": "بنك الوقت",
+      "community": "المجتمع",
+      "opportunities": "الفرص",
+      "learning": "التعلّم"
+    }
   },
   "search": {
     "placeholder": "ابحث عن إعلانات، أعضاء، فعاليات...",
@@ -452,7 +459,23 @@
     "new_course_desc": "تعليم مهارة لمجتمعك",
     "new_podcast_desc": "ابدأ عرضًا أو سجل حلقة",
     "new_course": "دورة جديدة",
-    "new_podcast": "بودكاست جديد"
+    "new_podcast": "بودكاست جديد",
+    "new_post": "منشور جديد",
+    "new_post_desc": "شارك تحديثًا مع مجتمعك",
+    "new_poll": "استطلاع جديد",
+    "new_poll_desc": "اطرح سؤالًا على مجتمعك",
+    "new_message": "رسالة جديدة",
+    "new_message_desc": "ابدأ محادثة مع أحد الأعضاء",
+    "new_marketplace_listing": "إعلان جديد في السوق",
+    "new_marketplace_listing_desc": "بِع غرضًا أو تبرّع به",
+    "new_challenge": "تحدٍّ جديد",
+    "new_challenge_desc": "اجمع الأفكار حول مشكلة مشتركة",
+    "new_job": "وظيفة شاغرة جديدة",
+    "new_job_desc": "أعلن عن وظيفة مدفوعة",
+    "new_volunteering": "فرصة تطوّع جديدة",
+    "new_volunteering_desc": "اطلب مساعدة المتطوعين",
+    "new_organisation": "تسجيل مؤسسة",
+    "new_organisation_desc": "أضف جمعية أو مجموعة أو شركة"
   },
   "caring_community": {
     "meta": {

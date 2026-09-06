@@ -168,7 +168,14 @@
     "new_listing": "Nuevo Anuncio",
     "new_event": "Nuevo Evento",
     "new_course": "Nuevo curso",
-    "new_podcast": "Nuevo podcast"
+    "new_podcast": "Nuevo podcast",
+    "section": {
+      "share": "Compartir",
+      "timebank": "Banco de tiempo",
+      "community": "Comunidad",
+      "opportunities": "Oportunidades",
+      "learning": "Aprendizaje"
+    }
   },
   "search": {
     "placeholder": "Buscar anuncios, miembros, eventos...",
@@ -440,7 +447,23 @@
     "new_course_desc": "Enseña una habilidad a tu comunidad",
     "new_podcast_desc": "Iniciar un programa o grabar un episodio",
     "new_course": "Nuevo curso",
-    "new_podcast": "Nuevo podcast"
+    "new_podcast": "Nuevo podcast",
+    "new_post": "Nueva publicación",
+    "new_post_desc": "Comparte una novedad con tu comunidad",
+    "new_poll": "Nueva encuesta",
+    "new_poll_desc": "Haz una pregunta a tu comunidad",
+    "new_message": "Nuevo mensaje",
+    "new_message_desc": "Inicia una conversación con un miembro",
+    "new_marketplace_listing": "Nuevo anuncio del mercado",
+    "new_marketplace_listing_desc": "Vende o regala un artículo",
+    "new_challenge": "Nuevo reto",
+    "new_challenge_desc": "Reúne ideas sobre un problema común",
+    "new_job": "Nueva oferta de empleo",
+    "new_job_desc": "Publica un puesto remunerado",
+    "new_volunteering": "Nueva oportunidad de voluntariado",
+    "new_volunteering_desc": "Pide ayuda a personas voluntarias",
+    "new_organisation": "Registrar una organización",
+    "new_organisation_desc": "Añade una entidad, un grupo o una empresa"
   },
   "caring_community": {
     "meta": {

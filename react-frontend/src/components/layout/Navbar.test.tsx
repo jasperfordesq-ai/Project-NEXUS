@@ -169,6 +169,28 @@ const i18nMap: Record<string, string> = {
   'create.new_course': 'New Course',
   'create.new_podcast': 'New Podcast',
   'create.new_post': 'New Post',
+  // The "+" menu renders the shared create-option list, which uses the
+  // quick_create.* labels so the header and the tab-bar sheet stay in step.
+  'create.section.share': 'Share',
+  'create.section.timebank': 'Timebanking',
+  'create.section.community': 'Community',
+  'create.section.opportunities': 'Opportunities',
+  'create.section.learning': 'Learning',
+  'quick_create.new_post': 'New Post',
+  'quick_create.new_poll': 'New Poll',
+  'quick_create.new_message': 'New Message',
+  'quick_create.new_listing': 'New Listing',
+  'quick_create.new_marketplace_listing': 'New Marketplace Listing',
+  'quick_create.offer_time': 'Offer Time',
+  'quick_create.new_event': 'New Event',
+  'quick_create.new_group': 'New Group',
+  'quick_create.new_challenge': 'New Challenge',
+  'quick_create.new_goal': 'New Goal',
+  'quick_create.new_job': 'New Job Vacancy',
+  'quick_create.new_volunteering': 'New Volunteering Opportunity',
+  'quick_create.new_organisation': 'Register an Organisation',
+  'quick_create.new_course': 'New Course',
+  'quick_create.new_podcast': 'New Podcast',
   'user_menu.my_profile': 'My Profile',
   'user_menu.wallet': 'Wallet',
   'user_menu.settings': 'Settings',
@@ -868,7 +890,7 @@ describe('Navbar', () => {
           // communities. Offering a builder whose route bounces to the home page
           // would be worse than not offering it.
           hasFeature: vi.fn(() => false),
-          hasModule: vi.fn(() => false),
+          hasModule: vi.fn((module: string) => module === 'listings'),
         },
       });
 
@@ -877,8 +899,62 @@ describe('Navbar', () => {
 
       expect(screen.queryByText('New Course')).not.toBeInTheDocument();
       expect(screen.queryByText('New Podcast')).not.toBeInTheDocument();
-      // The always-available option is still there, so this is not an empty menu.
+      // The listings module is on, so this is not an empty menu.
       expect(screen.getByText('New Listing')).toBeInTheDocument();
+    });
+
+    /**
+     * 🔴 Owner's report, 2026-09-06: this menu should offer at least what the
+     * native app's Create screen offers. It offered four things; the app offered
+     * fourteen, because the two lists were maintained separately.
+     */
+    it('offers every option the native Create screen does when the community has them all on', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
+        tenant: {
+          hasFeature: vi.fn(() => true),
+          hasModule: vi.fn(() => true),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'Create new' }));
+
+      // Every option the native app's quick-create screen lists.
+      for (const label of [
+        'New Post',
+        'New Poll',
+        'New Message',
+        'New Listing',
+        'New Marketplace Listing',
+        'New Event',
+        'New Group',
+        'New Challenge',
+        'New Goal',
+        'New Job Vacancy',
+        'New Volunteering Opportunity',
+        'Register an Organisation',
+        'New Course',
+        'New Podcast',
+      ]) {
+        expect(screen.getByText(label)).toBeInTheDocument();
+      }
+    });
+
+    it('hides the "+" entirely when the community offers nothing to create', () => {
+      setupDefaultMocks({
+        auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
+        tenant: {
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => false),
+        },
+      });
+
+      render(<Navbar />);
+
+      // A "+" that opens an empty menu is worse than no "+".
+      expect(screen.queryByLabelText('Create new')).not.toBeInTheDocument();
     });
   });
 

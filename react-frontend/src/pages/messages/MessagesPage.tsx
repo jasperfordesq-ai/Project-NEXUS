@@ -86,7 +86,7 @@ const itemVariants = {
 export function MessagesPage() {
   const { t } = useTranslation('messages');
   usePageTitle(t('title'));
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user: currentUser } = useAuth();
@@ -130,6 +130,27 @@ export function MessagesPage() {
   // Check for new conversation params
   const toUserId = searchParams.get('to');
   const listingId = searchParams.get('listing');
+
+  /**
+   * `?compose=1` opens the new-message dialog on arrival.
+   *
+   * There is no "compose" route — `/messages/new/:userId` needs a recipient the
+   * member has not chosen yet — so the Create menu links here with the flag.
+   * It is stripped once honoured so a reload does not reopen the dialog, and it
+   * is ignored while messaging is unavailable rather than opening a dialog the
+   * member cannot send from.
+   */
+  useEffect(() => {
+    if (searchParams.get('compose') !== '1') return;
+    if (isDirectMessagingEnabled && !messagingRestricted) {
+      setIsNewMessageOpen(true);
+    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('compose');
+      return next;
+    }, { replace: true });
+  }, [searchParams, setSearchParams, isDirectMessagingEnabled, messagingRestricted]);
 
   // Memoize loadConversations to use in effects and handlers
   const loadConversations = useCallback(async () => {

@@ -33,7 +33,7 @@ import { useDisclosure } from '@/components/ui/useDisclosure';
  */
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from '@/lib/motion';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import Plus from 'lucide-react/icons/plus';
@@ -402,7 +402,29 @@ export function PollsPage() {
   const [tab, setTab] = useState<PollTab>('open');
 
   /* ── Create form ── */
-  const [showCreate, setShowCreate] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  /**
+   * `?create=1` opens the create form on arrival.
+   *
+   * There is no `/polls/create` route — the form is a collapsed section on this
+   * page — so the Create menu links here with the flag, the same shape the
+   * native app uses. Without it the menu item would land a member on a list of
+   * other people's polls with no visible way to start one.
+   *
+   * The flag is stripped once honoured so a reload does not reopen the form.
+   */
+  const [showCreate, setShowCreate] = useState(() => searchParams.get('create') === '1');
+
+  useEffect(() => {
+    if (searchParams.get('create') !== '1') return;
+    setShowCreate(true);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('create');
+      return next;
+    }, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const [newQuestion, setNewQuestion] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newOptions, setNewOptions] = useState<string[]>(['', '']);

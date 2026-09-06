@@ -170,7 +170,14 @@
     "new_listing": "Liostú Nua",
     "new_event": "Imeacht Nua",
     "new_course": "Cúrsa nua",
-    "new_podcast": "Podchraoladh nua"
+    "new_podcast": "Podchraoladh nua",
+    "section": {
+      "share": "Roinnt",
+      "timebank": "Bancáil Ama",
+      "community": "Pobal",
+      "opportunities": "Deiseanna",
+      "learning": "Foghlaim"
+    }
   },
   "search": {
     "placeholder": "Cuardaigh liostuithe, baill, imeachtaí...",
@@ -448,7 +455,23 @@
     "new_course": "Cúrsa nua",
     "new_podcast": "Podchraoladh nua",
     "new_course_desc": "Múin scil do do phobal",
-    "new_podcast_desc": "Tosaigh clár nó taifead eipeasóid"
+    "new_podcast_desc": "Tosaigh clár nó taifead eipeasóid",
+    "new_post": "Postáil Nua",
+    "new_post_desc": "Roinn nuashonrú le do phobal",
+    "new_poll": "Pobalbhreith Nua",
+    "new_poll_desc": "Cuir ceist ar do phobal",
+    "new_message": "Teachtaireacht Nua",
+    "new_message_desc": "Tosaigh comhrá le ball",
+    "new_marketplace_listing": "Liostú Margaidh Nua",
+    "new_marketplace_listing_desc": "Díol nó tabhair earra uait",
+    "new_challenge": "Dúshlán Nua",
+    "new_challenge_desc": "Iarr smaointe ar fhadhb choiteann",
+    "new_job": "Folúntas Nua",
+    "new_job_desc": "Fógair post íoctha",
+    "new_volunteering": "Deis Oibre Deonaí Nua",
+    "new_volunteering_desc": "Iarr cabhair ó oibrithe deonacha",
+    "new_organisation": "Cláraigh Eagraíocht",
+    "new_organisation_desc": "Cuir carthanacht, grúpa nó gnó leis"
   },
   "caring_community": {
     "meta": {

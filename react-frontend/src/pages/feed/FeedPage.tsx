@@ -80,6 +80,8 @@ const FeedSidebar = lazy(() => import('@/components/feed/sidebar/FeedSidebar'));
 
 const SCROLL_THRESHOLD = 200;
 const FEED_MODE_KEY = 'nexus_feed_mode';
+/** Tabs `?compose=` is allowed to open — anything else in the URL is ignored. */
+const COMPOSE_TABS = new Set<ComposeTab>(['post', 'poll', 'listing', 'event', 'goal']);
 /**
  * The feed uses the tenant theme accent, shared with `FeedFilterSheet` through the
  * one accent map every filter primitive reads.
@@ -206,6 +208,32 @@ export function FeedPage() {
   const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure();
   const [composeDefaultTab, setComposeDefaultTab] = useState<ComposeTab>('listing');
   const openCompose = (tab: ComposeTab = 'listing') => { setComposeDefaultTab(tab); onCreateOpen(); };
+
+  /**
+   * `?compose=<tab>` opens the composer straight away.
+   *
+   * The header "+" and the tab-bar Create sheet both offer "New post", and this
+   * page is where a post is written — there is no `/feed/create` route. Without
+   * this the menu item would drop the member on the feed and leave them to spot
+   * the composer for themselves, which is exactly the "the feature does not
+   * exist" failure the Create menu is there to prevent.
+   *
+   * The flag is consumed (stripped from the URL) as soon as it is honoured, so
+   * closing the composer and reloading does not silently reopen it.
+   */
+  useEffect(() => {
+    const requestedTab = searchParams.get('compose');
+    if (!requestedTab) return;
+    if (COMPOSE_TABS.has(requestedTab as ComposeTab)) {
+      setComposeDefaultTab(requestedTab as ComposeTab);
+      onCreateOpen();
+    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('compose');
+      return next;
+    }, { replace: true });
+  }, [searchParams, setSearchParams, onCreateOpen]);
 
   // Report modal
   const { isOpen: isReportOpen, onOpen: onReportOpen, onClose: onReportClose } = useDisclosure();

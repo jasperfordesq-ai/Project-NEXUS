@@ -5,25 +5,21 @@
 
 /**
  * Quick Create Menu
- * Modal overlay triggered by the MobileTabBar Create button
- * Feature/module-gated options for creating new content
+ * Modal overlay triggered by the MobileTabBar Create button.
+ *
+ * The options themselves live in `createOptions.ts` and are shared with the
+ * desktop header "+" dropdown, so the two surfaces can no longer drift apart.
+ * Add an option there, not here.
  */
 
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from '@/lib/motion';
 
-import ListTodo from 'lucide-react/icons/list-todo';
-import Calendar from 'lucide-react/icons/calendar';
-import Users from 'lucide-react/icons/users';
-import Target from 'lucide-react/icons/target';
-import Heart from 'lucide-react/icons/heart';
-import GraduationCap from 'lucide-react/icons/graduation-cap';
-import Podcast from 'lucide-react/icons/podcast';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
 import { useTenant, useAuth } from '@/contexts';
 import { canCreateEvents } from '@/lib/access';
-import type { TenantFeatures, TenantModules } from '@/types/api';
+import { getVisibleCreateOptions } from '@/components/layout/createOptions';
 import { Button } from '@/components/ui/Button';
 import { Modal, ModalContent, ModalBody } from '@/components/ui/Modal';
 
@@ -32,101 +28,6 @@ interface QuickCreateMenuProps {
   onClose: () => void;
 }
 
-export interface CreateOptionDef {
-  labelKey: string;
-  descKey: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  feature?: keyof TenantFeatures;
-  module?: keyof TenantModules;
-}
-
-const createOptionDefs: CreateOptionDef[] = [
-  {
-    labelKey: 'quick_create.new_listing',
-    descKey: 'quick_create.new_listing_desc',
-    href: '/listings/create',
-    icon: ListTodo,
-    color: 'from-emerald-500 to-teal-600',
-    module: 'listings',
-  },
-  {
-    labelKey: 'quick_create.offer_time',
-    descKey: 'quick_create.offer_time_desc',
-    href: '/caring-community',
-    icon: Heart,
-    color: 'from-teal-500 to-emerald-600',
-    feature: 'caring_community',
-  },
-  {
-    labelKey: 'quick_create.new_event',
-    descKey: 'quick_create.new_event_desc',
-    href: '/events/create',
-    icon: Calendar,
-    color: 'from-amber-500 to-orange-600',
-    feature: 'events',
-  },
-  {
-    labelKey: 'quick_create.new_group',
-    descKey: 'quick_create.new_group_desc',
-    href: '/groups/create',
-    icon: Users,
-    color: 'from-accent to-pink-600',
-    feature: 'groups',
-  },
-  {
-    labelKey: 'quick_create.new_goal',
-    descKey: 'quick_create.new_goal_desc',
-    href: '/goals',
-    icon: Target,
-    color: 'from-blue-500 to-cyan-600',
-    feature: 'goals',
-  },
-  // 🔴 Courses and Podcasts were absent from BOTH create menus, so the only way
-  // to reach their builders was the Courses/Podcasts pages themselves — and those
-  // sit last in the right-hand column of the "Community" dropdown, under a
-  // heading that reads as members and events. A member looking for "make a
-  // course" found a Create menu offering only a listing and an event and
-  // reasonably concluded the feature did not exist.
-  //
-  // The hrefs are the builders, not the index pages: the point of this menu is to
-  // start something.
-  {
-    labelKey: 'quick_create.new_course',
-    descKey: 'quick_create.new_course_desc',
-    href: '/courses/instructor/new',
-    icon: GraduationCap,
-    color: 'from-violet-500 to-fuchsia-600',
-    feature: 'courses',
-  },
-  {
-    labelKey: 'quick_create.new_podcast',
-    descKey: 'quick_create.new_podcast_desc',
-    href: '/podcasts/studio',
-    icon: Podcast,
-    color: 'from-rose-500 to-pink-600',
-    feature: 'podcasts',
-  },
-];
-
-/**
- * @param canCreateEvent Server-resolved: a community may restrict Event creation
- *   to brokers/admins even while the `events` feature is on. Defaults to true so
- *   existing callers and tests are unaffected.
- */
-export function getVisibleCreateOptions(
-  hasFeature: (feature: keyof TenantFeatures) => boolean,
-  hasModule: (module: keyof TenantModules) => boolean,
-  canCreateEvent = true,
-): CreateOptionDef[] {
-  return createOptionDefs.filter((option) => {
-    if (option.feature && !hasFeature(option.feature)) return false;
-    if (option.module && !hasModule(option.module)) return false;
-    if (option.href === '/events/create' && !canCreateEvent) return false;
-    return true;
-  });
-}
 
 export function QuickCreateMenu({ isOpen, onClose }: QuickCreateMenuProps) {
   const navigate = useNavigate();

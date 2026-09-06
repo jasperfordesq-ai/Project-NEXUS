@@ -167,7 +167,14 @@
     "new_listing": "Nieuwe advertentie",
     "new_event": "Nieuw evenement",
     "new_course": "Nieuwe cursus",
-    "new_podcast": "Nieuwe podcast"
+    "new_podcast": "Nieuwe podcast",
+    "section": {
+      "share": "Delen",
+      "timebank": "Tijdbank",
+      "community": "Gemeenschap",
+      "opportunities": "Kansen",
+      "learning": "Leren"
+    }
   },
   "search": {
     "placeholder": "Zoek advertenties, leden, evenementen...",
@@ -436,7 +443,23 @@
     "new_course_desc": "Leer een vaardigheid aan uw gemeenschap",
     "new_podcast_desc": "Start een programma of neem een ​​aflevering op",
     "new_course": "Nieuwe cursus",
-    "new_podcast": "Nieuwe podcast"
+    "new_podcast": "Nieuwe podcast",
+    "new_post": "Nieuwe post",
+    "new_post_desc": "Deel een update met uw gemeenschap",
+    "new_poll": "Nieuwe peiling",
+    "new_poll_desc": "Stel uw gemeenschap een vraag",
+    "new_message": "Nieuw bericht",
+    "new_message_desc": "Start een gesprek met een lid",
+    "new_marketplace_listing": "Nieuwe marktplaatsadvertentie",
+    "new_marketplace_listing_desc": "Verkoop of geef een artikel weg",
+    "new_challenge": "Nieuwe uitdaging",
+    "new_challenge_desc": "Verzamel ideeën over een gedeeld probleem",
+    "new_job": "Nieuwe vacature",
+    "new_job_desc": "Plaats een betaalde functie",
+    "new_volunteering": "Nieuwe vrijwilligersklus",
+    "new_volunteering_desc": "Vraag vrijwilligers om hulp",
+    "new_organisation": "Organisatie registreren",
+    "new_organisation_desc": "Voeg een stichting, groep of bedrijf toe"
   },
   "caring_community": {
     "meta": {

@@ -167,7 +167,14 @@
     "new_listing": "New Listing",
     "new_event": "New Event",
     "new_course": "New Course",
-    "new_podcast": "New Podcast"
+    "new_podcast": "New Podcast",
+    "section": {
+      "share": "Share",
+      "timebank": "Timebanking",
+      "community": "Community",
+      "opportunities": "Opportunities",
+      "learning": "Learning"
+    }
   },
   "search": {
     "placeholder": "Search listings, members, events...",
@@ -436,7 +443,23 @@
     "new_course": "New Course",
     "new_course_desc": "Teach a skill to your community",
     "new_podcast": "New Podcast",
-    "new_podcast_desc": "Start a show or record an episode"
+    "new_podcast_desc": "Start a show or record an episode",
+    "new_post": "New Post",
+    "new_post_desc": "Share an update with your community",
+    "new_poll": "New Poll",
+    "new_poll_desc": "Ask your community a question",
+    "new_message": "New Message",
+    "new_message_desc": "Start a conversation with a member",
+    "new_marketplace_listing": "New Marketplace Listing",
+    "new_marketplace_listing_desc": "Sell or give away an item",
+    "new_challenge": "New Challenge",
+    "new_challenge_desc": "Invite ideas on a shared problem",
+    "new_job": "New Job Vacancy",
+    "new_job_desc": "Advertise a paid role",
+    "new_volunteering": "New Volunteering Opportunity",
+    "new_volunteering_desc": "Ask for volunteers to help out",
+    "new_organisation": "Register an Organisation",
+    "new_organisation_desc": "Add a charity, group or business"
   },
   "caring_community": {
     "meta": {

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { getVisibleCreateOptions } from './QuickCreateMenu';
+import { getVisibleCreateOptions } from './createOptions';
 import type { TenantFeatures, TenantModules } from '@/types/api';
 
 describe('getVisibleCreateOptions', () => {

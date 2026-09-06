@@ -167,7 +167,14 @@
     "new_listing": "新しいリスティング",
     "new_event": "新しいイベント",
     "new_course": "新しいコース",
-    "new_podcast": "新しいポッドキャスト"
+    "new_podcast": "新しいポッドキャスト",
+    "section": {
+      "share": "共有",
+      "timebank": "タイムバンキング",
+      "community": "コミュニティ",
+      "opportunities": "機会",
+      "learning": "学び"
+    }
   },
   "search": {
     "placeholder": "リスティング、メンバー、イベントを検索...",
@@ -436,7 +443,23 @@
     "new_course_desc": "コミュニティにスキルを教える",
     "new_podcast_desc": "番組を開始するかエピソードを録画する",
     "new_course": "新しいコース",
-    "new_podcast": "新しいポッドキャスト"
+    "new_podcast": "新しいポッドキャスト",
+    "new_post": "新しい投稿",
+    "new_post_desc": "コミュニティに近況を共有",
+    "new_poll": "新しい投票",
+    "new_poll_desc": "コミュニティに質問する",
+    "new_message": "新しいメッセージ",
+    "new_message_desc": "メンバーと会話を始める",
+    "new_marketplace_listing": "新しいマーケット出品",
+    "new_marketplace_listing_desc": "商品を売るか譲る",
+    "new_challenge": "新しいチャレンジ",
+    "new_challenge_desc": "共通の課題にアイデアを募る",
+    "new_job": "新しい求人",
+    "new_job_desc": "有給の仕事を掲載する",
+    "new_volunteering": "新しいボランティア募集",
+    "new_volunteering_desc": "ボランティアに協力を呼びかける",
+    "new_organisation": "団体を登録",
+    "new_organisation_desc": "非営利団体・グループ・企業を追加"
   },
   "caring_community": {
     "meta": {

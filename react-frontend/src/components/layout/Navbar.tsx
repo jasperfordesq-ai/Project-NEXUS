@@ -13,12 +13,8 @@
 import { lazy, Suspense, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 
-import ListTodo from 'lucide-react/icons/list-todo';
 import Wallet from 'lucide-react/icons/wallet';
 import Users from 'lucide-react/icons/users';
-import Calendar from 'lucide-react/icons/calendar';
-import GraduationCap from 'lucide-react/icons/graduation-cap';
-import Podcast from 'lucide-react/icons/podcast';
 import Settings from 'lucide-react/icons/settings';
 import LogOut from 'lucide-react/icons/log-out';
 import Menu from 'lucide-react/icons/menu';
@@ -52,6 +48,11 @@ import { DesktopMenuItems } from '@/components/navigation';
 import { SearchOverlay } from '@/components/layout/SearchOverlay';
 import { MegaMenu } from '@/components/layout/MegaMenu';
 import { DesktopNavPanel, type DesktopNavPanelSection } from '@/components/layout/DesktopNavPanel';
+import {
+  CREATE_SECTION_LABEL_KEYS,
+  getVisibleCreateOptions,
+  groupCreateOptions,
+} from '@/components/layout/createOptions';
 import { ThemePicker } from '@/components/layout/ThemePicker';
 import { TenantLogo } from '@/components/branding';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
@@ -186,6 +187,16 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const [createOpen, setCreateOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [tenantSwitcherOpen, setTenantSwitcherOpen] = useState(false);
+
+  /**
+   * What the "+" offers, in sections. Empty sections are dropped, and if a
+   * community has switched off everything a member could create the "+" itself
+   * is not rendered — an empty menu is worse than no button.
+   */
+  const createOptionGroups = useMemo(
+    () => groupCreateOptions(getVisibleCreateOptions(hasFeature, hasModule, canCreateEvents(user))),
+    [hasFeature, hasModule, user],
+  );
 
   const closeAllDropdowns = useCallback(() => {
     setTimebankingOpen(false);
@@ -823,7 +834,13 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
 
               {isAuthenticated ? (
                 <>
-                  {/* Create Button */}
+                  {/* Create Button
+                      🔴 The options are NOT declared here any more. They live in
+                      `createOptions.ts` and are shared with the tab-bar sheet,
+                      because the two lists drifted apart until this menu offered
+                      four things and the native app's offered fourteen. Add an
+                      option there and it appears on both. */}
+                  {createOptionGroups.length > 0 ? (
                   <Dropdown placement="bottom-end" isOpen={createOpen} onOpenChange={handleCreateOpenChange} shouldBlockScroll={false}>
                     <DropdownTrigger>
                       <Button
@@ -845,45 +862,30 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                         dropdownNavigate(String(key));
                       }}
                     >
-                      <DropdownItem
-                        key={tenantPath('/listings/create')} id={tenantPath('/listings/create')}
-                        startContent={<ListTodo className="w-4 h-4" aria-hidden="true" />}
-                      >
-                        {t('create.new_listing')}
-                      </DropdownItem>
-                      {hasFeature('events') && canCreateEvents(user) ? (
-                        <DropdownItem
-                          key={tenantPath('/events/create')} id={tenantPath('/events/create')}
-                          startContent={<Calendar className="w-4 h-4" aria-hidden="true" />}
+                      {createOptionGroups.map((group, groupIndex) => (
+                        <DropdownSection
+                          key={group.section}
+                          title={t(CREATE_SECTION_LABEL_KEYS[group.section])}
+                          showDivider={groupIndex < createOptionGroups.length - 1}
                         >
-                          {t('create.new_event')}
-                        </DropdownItem>
-                      ) : null}
-                      {/* 🔴 Both were missing here, which is what made Courses and
-                          Podcasts look unavailable: this "+" is where a member goes
-                          to start something, and it offered only a listing and an
-                          event. The pages themselves have always had working create
-                          buttons — they were just unreachable, sitting last in the
-                          right-hand column of the "Community" dropdown.
-                          Feature-gated, because both default to OFF platform-wide. */}
-                      {hasFeature('courses') ? (
-                        <DropdownItem
-                          key={tenantPath('/courses/instructor/new')} id={tenantPath('/courses/instructor/new')}
-                          startContent={<GraduationCap className="w-4 h-4" aria-hidden="true" />}
-                        >
-                          {t('create.new_course')}
-                        </DropdownItem>
-                      ) : null}
-                      {hasFeature('podcasts') ? (
-                        <DropdownItem
-                          key={tenantPath('/podcasts/studio')} id={tenantPath('/podcasts/studio')}
-                          startContent={<Podcast className="w-4 h-4" aria-hidden="true" />}
-                        >
-                          {t('create.new_podcast')}
-                        </DropdownItem>
-                      ) : null}
+                          {group.options.map((option) => {
+                            const OptionIcon = option.icon;
+                            const href = tenantPath(option.href);
+
+                            return (
+                              <DropdownItem
+                                key={href} id={href}
+                                startContent={<OptionIcon className="w-4 h-4" aria-hidden="true" />}
+                              >
+                                {t(option.labelKey)}
+                              </DropdownItem>
+                            );
+                          })}
+                        </DropdownSection>
+                      ))}
                     </DropdownMenu>
                   </Dropdown>
+                  ) : null}
 
                   {/* Notification Flyout — rich popover instead of simple navigate */}
                   <Suspense fallback={null}>
