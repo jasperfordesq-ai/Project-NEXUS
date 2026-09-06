@@ -46,6 +46,7 @@ import { feedIssueKey } from '@/lib/podcasts/feedIssues';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import {
   archivePodcastEpisode,
   archivePodcastShow,
@@ -203,7 +204,7 @@ function mediaToneStyle(tone: MediaTone, theme: ReturnType<typeof useTheme>): { 
 
 function formatScheduledDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString(dateLocale());
 }
 
 /**
