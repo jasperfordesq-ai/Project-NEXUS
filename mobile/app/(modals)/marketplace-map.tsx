@@ -61,6 +61,8 @@ function MarketplaceMapScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [place, setPlace] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
 
   async function search() {
     const lat = parseCoordinate(latitude);
@@ -138,6 +140,60 @@ function MarketplaceMapScreen() {
     return closest === null ? distance : Math.min(closest, distance);
   }, null);
 
+  /**
+   * Find a place by name and search around it.
+   *
+   * 🔴 Until this, the only ways into the screen were "use my current location" and typing
+   * a latitude and a longitude by hand. That is not an entry method — almost nobody knows
+   * the coordinates of their own town, so a member who wanted to browse listings somewhere
+   * other than where they were standing had no way to say where (audit 2026-09-06, F14).
+   *
+   * `Location.geocodeAsync` is the phone's own geocoder, already available through
+   * `expo-location`, which this screen imports anyway. Deliberately not a new dependency
+   * and not a new API endpoint: a native module would stop this fix reaching anyone who
+   * already has the app.
+   *
+   * The resolved coordinates are written back into the two fields rather than hidden, so
+   * the member can see what the name resolved to, correct it, or share it.
+   */
+  async function searchPlace() {
+    const query = place.trim();
+    if (!query || isLocating) return;
+
+    setIsLocating(true);
+    setIsLoading(true);
+    setHasSearched(true);
+    setError(null);
+    try {
+      const matches = await Location.geocodeAsync(query);
+      const match = matches[0];
+      if (!match) {
+        setItems([]);
+        setError(t('map.placeNotFound'));
+        return;
+      }
+
+      setLatitude(String(match.latitude));
+      setLongitude(String(match.longitude));
+
+      const response = await getNearbyMarketplaceListings({
+        latitude: match.latitude,
+        longitude: match.longitude,
+        radius: Number(radius) || 25,
+        limit: 50,
+      });
+      setItems(response.data);
+    } catch {
+      // A geocoder can be missing entirely (a device with no Google Play services, an
+      // offline phone). Say what to do instead rather than reporting a bare failure.
+      setItems([]);
+      setError(t('map.placeLookupFailed'));
+    } finally {
+      setIsLocating(false);
+      setIsLoading(false);
+    }
+  }
+
   if (!hasFeature('marketplace')) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
@@ -187,6 +243,34 @@ function MarketplaceMapScreen() {
               <View className="gap-1">
                 <Text className="text-base font-bold" style={{ color: theme.text }}>{t('map.searchPanelTitle')}</Text>
                 <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('map.searchPanelSubtitle')}</Text>
+              </View>
+              {/*
+                First, and on its own: this is how nearly everyone will use the screen. The
+                coordinate fields stay underneath for a shared map link or a correction,
+                which is what they were always actually for.
+              */}
+              <View className="gap-2">
+                <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>
+                  {t('map.place')}
+                </Text>
+                <Input
+                  testID="marketplace-map-place"
+                  value={place}
+                  onChangeText={setPlace}
+                  placeholder={t('map.placePlaceholder')}
+                  autoCapitalize="words"
+                  returnKeyType="search"
+                  onSubmitEditing={() => void searchPlace()}
+                />
+                <HeroButton
+                  testID="marketplace-map-place-search"
+                  variant="secondary"
+                  onPress={() => void searchPlace()}
+                  isDisabled={isLoading || place.trim().length === 0}
+                >
+                  <Ionicons name="search-outline" size={16} color={primary} />
+                  <HeroButton.Label>{t('map.searchPlace')}</HeroButton.Label>
+                </HeroButton>
               </View>
               <View className="flex-row gap-2">
                 <CoordinateInput label={t('map.latitude')} value={latitude} onChangeText={setLatitude} placeholder={t('map.latitudePlaceholder')} />

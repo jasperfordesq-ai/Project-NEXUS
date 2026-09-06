@@ -928,7 +928,12 @@
     "startSubtitle": "Entrez les coordonnées ou ouvrez un lien de carte partagée pour parcourir les listes des marchés à proximité.",
     "emptyTitle": "Aucune liste à proximité. trouvé",
     "emptySubtitle": "Essayez un rayon plus large ou un autre emplacement.",
-    "nearestResult": "Résultat le plus proche : à {{distance}} km"
+    "nearestResult": "Résultat le plus proche : à {{distance}} km",
+    "place": "Lieu",
+    "placePlaceholder": "Commune, ville ou code postal",
+    "searchPlace": "Rechercher dans ce lieu",
+    "placeNotFound": "Nous n’avons pas trouvé ce lieu. Essayez une commune proche ou un code postal.",
+    "placeLookupFailed": "Nous n’avons pas pu rechercher ce lieu sur cet appareil. Saisissez plutôt des coordonnées."
   },
   "advancedSearch": {
     "categoriesUnavailable": "Catégories non chargées – touchez pour réessayer",

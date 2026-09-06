@@ -928,7 +928,12 @@
     "startSubtitle": "Inserisci le coordinate o apri un collegamento alla mappa condivisa per esplorare il mercato nelle vicinanze annunci.",
     "emptyTitle": "Nessun annuncio trovato nelle vicinanze",
     "emptySubtitle": "Prova con un raggio più ampio o un'altra posizione.",
-    "nearestResult": "Risultato più vicino: a {{distance}} km"
+    "nearestResult": "Risultato più vicino: a {{distance}} km",
+    "place": "Località",
+    "placePlaceholder": "Paese, città o codice postale",
+    "searchPlace": "Cerca in questa località",
+    "placeNotFound": "Non abbiamo trovato quella località. Prova con un paese vicino o un codice postale.",
+    "placeLookupFailed": "Non è stato possibile cercare quella località su questo dispositivo. Inserisci invece le coordinate."
   },
   "advancedSearch": {
     "categoriesUnavailable": "Categorie non caricate: tocca per riprovare",

@@ -928,7 +928,12 @@
     "startSubtitle": "Geben Sie Koordinaten ein oder öffnen Sie einen freigegebenen Kartenlink, um in der Nähe befindliche Marktplatzeinträge zu durchsuchen.",
     "emptyTitle": "Keine in der Nähe befindlichen Einträge gefunden",
     "emptySubtitle": "Versuchen Sie es mit einem größeren Umkreis oder einem anderen Standort.",
-    "nearestResult": "Nächstes Ergebnis: {{distance}} km entfernt"
+    "nearestResult": "Nächstes Ergebnis: {{distance}} km entfernt",
+    "place": "Ort",
+    "placePlaceholder": "Ort, Stadt oder Postleitzahl",
+    "searchPlace": "Diesen Ort durchsuchen",
+    "placeNotFound": "Wir konnten diesen Ort nicht finden. Versuchen Sie einen Ort in der Nähe oder eine Postleitzahl.",
+    "placeLookupFailed": "Wir konnten diesen Ort auf diesem Gerät nicht nachschlagen. Geben Sie stattdessen Koordinaten ein."
   },
   "advancedSearch": {
     "categoriesUnavailable": "Kategorien nicht geladen – zum Wiederholen tippen",

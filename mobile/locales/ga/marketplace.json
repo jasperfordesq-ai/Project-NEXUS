@@ -928,7 +928,12 @@
     "startSubtitle": "Cuir comhordanáidí isteach nó oscail nasc léarscáile roinnte chun liostaí margaidh in aice láimhe a bhrabhsáil.",
     "emptyTitle": "Níor aimsíodh aon liostaí in aice láimhe",
     "emptySubtitle": "Bain triail as ga níos leithne nó suíomh eile.",
-    "nearestResult": "An toradh is gaire: {{distance}} km ar shiúl"
+    "nearestResult": "An toradh is gaire: {{distance}} km ar shiúl",
+    "place": "Áit",
+    "placePlaceholder": "Baile, cathair nó cód poist",
+    "searchPlace": "Cuardaigh an áit seo",
+    "placeNotFound": "Níorbh fhéidir linn an áit sin a aimsiú. Bain triail as baile in aice láimhe nó as cód poist.",
+    "placeLookupFailed": "Níorbh fhéidir linn an áit sin a chuardach ar an ngléas seo. Cuir comhordanáidí isteach ina ionad."
   },
   "advancedSearch": {
     "categoriesUnavailable": "Níor lódáladh na catagóirí – tapáil chun triail eile a bhaint as",

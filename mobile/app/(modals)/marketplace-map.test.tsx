@@ -33,6 +33,11 @@ jest.mock('react-i18next', () => ({
         'map.radius': 'Radius',
         'map.search': 'Search nearby',
         'map.useCurrentLocation': 'Use current location',
+        'map.place': 'Place',
+        'map.placePlaceholder': 'Town, city, or postcode',
+        'map.searchPlace': 'Search this place',
+        'map.placeNotFound': 'We could not find that place. Try a nearby town or a postcode.',
+        'map.placeLookupFailed': 'We could not look up that place on this device. Enter coordinates instead.',
         'map.invalidCoordinates': 'Enter a valid latitude and longitude.',
         'map.loadFailed': 'Could not load nearby marketplace listings.',
         'map.startTitle': 'Enter a location',
@@ -90,6 +95,8 @@ jest.mock('@/lib/api/marketplace', () => ({
 jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn(),
   getCurrentPositionAsync: jest.fn(),
+  // The phone's own geocoder, behind the place-name search (audit F14).
+  geocodeAsync: jest.fn(),
   Accuracy: { Balanced: 3 },
 }));
 
@@ -135,6 +142,66 @@ describe('MarketplaceMapRoute', () => {
     that corresponded to nothing and told those were their results. The nearby search itself
     is real; only the picture of it was invented.
   */
+  /*
+    🔴 Audit F14, second half: "provide place search / manual-location entry that does
+    not require members to know latitude and longitude."
+
+    Before this the only ways in were "use my current location" and typing a latitude and a
+    longitude by hand. Almost nobody knows the coordinates of their own town, so a member
+    who wanted to browse listings anywhere other than where they were standing had no way to
+    say where. `Location.geocodeAsync` is the phone's own geocoder, already available
+    through `expo-location` — no new native module, so this reaches existing installs.
+  */
+  it('searches by place name and shows what the name resolved to', async () => {
+    jest.mocked(Location.geocodeAsync).mockResolvedValue(
+      [{ latitude: 53.2707, longitude: -9.0568 }] as never,
+    );
+
+    const { getByTestId, getByDisplayValue, unmount } = render(<MarketplaceMapRoute />);
+    fireEvent.changeText(getByTestId('marketplace-map-place'), 'Galway');
+    fireEvent.press(getByTestId('marketplace-map-place-search'));
+
+    await waitFor(() => expect(getNearbyMarketplaceListings).toHaveBeenCalledWith({
+      latitude: 53.2707,
+      longitude: -9.0568,
+      radius: 25,
+      limit: 50,
+    }));
+    // Written back into the fields rather than hidden, so the member can see, correct or
+    // share what the name resolved to.
+    expect(getByDisplayValue('53.2707')).toBeTruthy();
+    expect(getByDisplayValue('-9.0568')).toBeTruthy();
+
+    unmount();
+  });
+
+  it('says a place could not be found instead of searching from nowhere', async () => {
+    jest.mocked(Location.geocodeAsync).mockResolvedValue([] as never);
+
+    const { getByTestId, getByText, unmount } = render(<MarketplaceMapRoute />);
+    fireEvent.changeText(getByTestId('marketplace-map-place'), 'Nowhere at all');
+    fireEvent.press(getByTestId('marketplace-map-place-search'));
+
+    await waitFor(() => expect(getByText(/could not find that place/)).toBeTruthy());
+    expect(getNearbyMarketplaceListings).not.toHaveBeenCalled();
+
+    unmount();
+  });
+
+  it('points at the coordinate fields when the device has no geocoder', async () => {
+    // A device with no Google Play services, or one that is offline, has no geocoder at
+    // all. Saying what to do instead beats a bare failure.
+    jest.mocked(Location.geocodeAsync).mockRejectedValue(new Error('no geocoder'));
+
+    const { getByTestId, getByText, unmount } = render(<MarketplaceMapRoute />);
+    fireEvent.changeText(getByTestId('marketplace-map-place'), 'Galway');
+    fireEvent.press(getByTestId('marketplace-map-place-search'));
+
+    await waitFor(() => expect(getByText(/Enter coordinates instead/)).toBeTruthy());
+
+    unmount();
+  });
+
   it('summarises the search area from real results instead of drawing invented pins', async () => {
     mockSearchParams = { latitude: '53.3498', longitude: '-6.2603', radius: '25' };
     (getNearbyMarketplaceListings as jest.Mock).mockResolvedValue({

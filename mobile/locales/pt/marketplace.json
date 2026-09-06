@@ -928,7 +928,12 @@
     "startSubtitle": "Insira as coordenadas ou abra um link de mapa compartilhado para navegar pelas listagens de mercados próximos.",
     "emptyTitle": "Nenhuma listagem próxima encontrada",
     "emptySubtitle": "Tente um raio mais amplo ou outro local.",
-    "nearestResult": "Resultado mais próximo: a {{distance}} km"
+    "nearestResult": "Resultado mais próximo: a {{distance}} km",
+    "place": "Local",
+    "placePlaceholder": "Vila, cidade ou código postal",
+    "searchPlace": "Pesquisar neste local",
+    "placeNotFound": "Não encontrámos esse local. Experimente uma vila próxima ou um código postal.",
+    "placeLookupFailed": "Não foi possível procurar esse local neste dispositivo. Introduza coordenadas em alternativa."
   },
   "advancedSearch": {
     "categoriesUnavailable": "As categorias não carregaram – toca para tentar novamente",

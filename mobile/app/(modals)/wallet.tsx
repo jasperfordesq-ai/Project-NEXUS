@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { parseDecimalInput , formatDecimal } from '@/lib/utils/decimal';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, RefreshControl, ScrollView, Share, View } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -54,6 +54,20 @@ type DonationTarget = 'community_fund' | 'user';
  * button for minutes with no way out.
  */
 const EXPORT_PAGE_LIMIT = 50;
+
+/**
+ * De-duplicate transactions by id. The first page held in memory and the first page fetched
+ * during an export walk can overlap when the member has already pressed "Load more".
+ */
+function dedupe(rows: TransactionItem[]): TransactionItem[] {
+  const seen = new Set<string>();
+  return rows.filter((tx) => {
+    const key = String(tx.id);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 /**
  * A cursor-paged wallet response. `next_cursor` is accepted alongside `cursor` because the
@@ -156,6 +170,17 @@ function WalletModalInner() {
   const [extraPendingCursor, setExtraPendingCursor] = useState<string | null>(null);
   const [extraPendingHasMore, setExtraPendingHasMore] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  /**
+   * Bumped by every refresh. A page fetch that started before it and lands after it belongs
+   * to a list that no longer exists.
+   *
+   * 🔴 Without this, pulling to refresh while "Load more" is in flight appends the old
+   * page's rows on top of the newly reloaded first page — duplicated rows, and a cursor
+   * pointing into a list that has been replaced. Named in the 2026-09-06 audit's F12 fix
+   * ("refresh during an in-flight next-page request") and easy to miss, because it needs
+   * two gestures a second apart to reproduce and leaves no error behind.
+   */
+  const pageRequestRef = useRef(0);
 
   const balanceQuery = useApi(() => getWalletBalance(), []);
   const transactionsQuery = useApi(() => getWalletTransactions(undefined, 50, 'all'), []);
@@ -244,6 +269,7 @@ function WalletModalInner() {
   }, [filter, pendingTransactions, transactions]);
 
   function refresh() {
+    pageRequestRef.current += 1;
     setExtraTransactions([]);
     setExtraCursor(null);
     setExtraHasMore(false);
@@ -271,9 +297,13 @@ function WalletModalInner() {
     const pending = filter === 'pending';
     const cursor = pending ? nextPendingCursor : nextCursor;
     if (!cursor) return;
+    const request = pageRequestRef.current;
     setIsLoadingMore(true);
     try {
       const response = await getWalletTransactions(cursor, 50, pending ? 'pending' : 'all');
+      // The list was reloaded while this page was in flight: drop it rather than stacking
+      // it on top of a first page it does not follow.
+      if (request !== pageRequestRef.current) return;
       if (pending) {
         setExtraPending((current) => [...current, ...(response.data ?? [])]);
         setExtraPendingCursor(response.meta?.cursor ?? null);
@@ -308,12 +338,16 @@ function WalletModalInner() {
    */
   async function collectAllTransactions(): Promise<{ rows: TransactionItem[]; complete: boolean }> {
     const collected = [...transactions];
+    const request = pageRequestRef.current;
     let cursor = nextCursor;
     let more = hasMoreTransactions;
     let pages = 0;
 
     while (more && cursor && pages < EXPORT_PAGE_LIMIT) {
       const response = await getWalletTransactions(cursor, 100, 'all');
+      // A refresh mid-walk means the rows already collected may no longer be current.
+      // Stop and report what was gathered as partial rather than mixing two lists.
+      if (request !== pageRequestRef.current) return { rows: dedupe(collected), complete: false };
       const page = response.data ?? [];
       collected.push(...page);
       cursor = response.meta?.cursor ?? null;
@@ -321,17 +355,7 @@ function WalletModalInner() {
       pages += 1;
     }
 
-    // De-duplicated by id: the first page in memory and the first page fetched here can
-    // overlap when the member has already pressed "Load more".
-    const seen = new Set<string>();
-    const rows = collected.filter((tx) => {
-      const key = String(tx.id);
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    return { rows, complete: !more };
+    return { rows: dedupe(collected), complete: !more };
   }
 
   async function handleExport() {

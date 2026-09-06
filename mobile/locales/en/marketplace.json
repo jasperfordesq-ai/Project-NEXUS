@@ -928,7 +928,12 @@
     "startSubtitle": "Enter coordinates or open a shared map link to browse nearby marketplace listings.",
     "emptyTitle": "No nearby listings found",
     "emptySubtitle": "Try a wider radius or another location.",
-    "nearestResult": "Closest result: {{distance}} km away"
+    "nearestResult": "Closest result: {{distance}} km away",
+    "place": "Place",
+    "placePlaceholder": "Town, city, or postcode",
+    "searchPlace": "Search this place",
+    "placeNotFound": "We could not find that place. Try a nearby town or a postcode.",
+    "placeLookupFailed": "We could not look up that place on this device. Enter coordinates instead."
   },
   "advancedSearch": {
     "categoriesUnavailable": "Categories didn't load — tap to retry",

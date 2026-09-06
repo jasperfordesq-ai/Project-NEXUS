@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -172,6 +172,41 @@ describe('ConnectionsRoute', () => {
     fireEvent.press(getByTestId('connections-load-more'));
 
     expect(loadMore).toHaveBeenCalled();
+  });
+
+  /*
+    🔴 The paging fix (F11) created a second-order risk the audit's F11 note named:
+    "verify a second page with disjoint IDs, including action/refresh behavior."
+
+    `usePaginatedApi.refresh()` resets to page one, which is what a refresh means. Calling
+    it after an accept/decline cost nothing while the screen fetched one page; now it would
+    throw a member who had loaded four pages back to the first. Every one of these actions
+    removes the row from the tab it is in, so the row is dropped locally instead - the known
+    outcome of a request that already succeeded, not an optimistic guess.
+  */
+  it('removes an accepted request without discarding the pages already loaded', async () => {
+    const { acceptConnection } = require('@/lib/api/connections');
+    acceptConnection.mockClear();
+    acceptConnection.mockResolvedValue({ data: {} });
+    const refresh = jest.fn();
+    const pending = {
+      connection_id: 77,
+      status: 'pending',
+      user: { id: 9, first_name: 'Nina', last_name: 'Ito' },
+      created_at: '2026-09-01T09:00:00Z',
+    };
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [pending], refresh }));
+
+    const { getByText, queryByText } = render(<ConnectionsRoute />);
+    // Accept only appears on the received-requests tab.
+    fireEvent.press(getByText('Received'));
+    fireEvent.press(getByText('Accept'));
+
+    await waitFor(() => expect(acceptConnection).toHaveBeenCalledWith(77));
+    // Gone from the list...
+    await waitFor(() => expect(queryByText('Nina Ito')).toBeNull());
+    // ...without a reload, which would have dropped every page after the first.
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it('does not offer a next page when the server says there is none', () => {
