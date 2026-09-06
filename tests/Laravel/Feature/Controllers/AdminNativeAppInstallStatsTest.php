@@ -140,6 +140,28 @@ class AdminNativeAppInstallStatsTest extends TestCase
             ->assertJsonPath('data.tenant.devices_by_platform.android', 0);
     }
 
+    /**
+     * An ORGANISATION account keeps its trading name in `organization_name`
+     * and a CONTACT PERSON in first_name/last_name. Showing the contact person
+     * as the account's identity is the bug this asserts against.
+     */
+    public function test_recent_list_names_an_organisation_by_its_trading_name(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $org = User::factory()->forTenant($this->testTenantId)->create([
+            'profile_type' => 'organisation',
+            'organization_name' => 'Mallow Menshed CLG',
+            'first_name' => 'Declan',
+            'last_name' => 'Contact',
+        ]);
+        $this->registerDevice($org->id, $this->testTenantId, 'android');
+        Sanctum::actingAs($admin);
+
+        $this->apiGet(self::ENDPOINT)
+            ->assertOk()
+            ->assertJsonPath('data.tenant.recent_devices.0.display_name', 'Mallow Menshed CLG');
+    }
+
     // ================================================================
     // God mode — cross-tenant
     // ================================================================

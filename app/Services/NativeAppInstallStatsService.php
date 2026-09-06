@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Support\UserDisplayName;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -83,6 +84,8 @@ class NativeAppInstallStatsService
                 'u.username',
                 'u.first_name',
                 'u.last_name',
+                'u.profile_type',
+                'u.organization_name',
                 'u.email',
             ]);
 
@@ -165,6 +168,8 @@ class NativeAppInstallStatsService
                 'u.username',
                 'u.first_name',
                 'u.last_name',
+                'u.profile_type',
+                'u.organization_name',
                 't.name as tenant_name',
             ]);
 
@@ -244,17 +249,20 @@ class NativeAppInstallStatsService
         return $key !== '' ? $key : 'android';
     }
 
-    /** Prefer a real name, fall back to username, never to a bare row id. */
+    /**
+     * Prefer a real name, fall back to username, never to a bare row id.
+     *
+     * Must go through {@see UserDisplayName}: an ORGANISATION account holds its
+     * trading name in `organization_name` and a CONTACT PERSON in
+     * first_name/last_name, so concatenating those two shows an admin the wrong
+     * identity. The selects feeding this read `profile_type` and
+     * `organization_name` for exactly that reason.
+     */
     private function displayName(object $row): ?string
     {
-        $full = trim(((string) ($row->first_name ?? '')) . ' ' . ((string) ($row->last_name ?? '')));
-        if ($full !== '') {
-            return $full;
-        }
-
-        $name = trim((string) ($row->name ?? ''));
-        if ($name !== '') {
-            return $name;
+        $resolved = trim(UserDisplayName::resolve($row, ''));
+        if ($resolved !== '') {
+            return $resolved;
         }
 
         $username = trim((string) ($row->username ?? ''));

@@ -28,6 +28,7 @@ import Smartphone from 'lucide-react/icons/smartphone';
 import Users from 'lucide-react/icons/users';
 import { useTranslation } from 'react-i18next';
 import { adminSettings } from '../../api/adminApi';
+import { getFormattingLocale } from '@/lib/helpers';
 
 export interface NativeAppRecentDevice {
   user_id: number;
@@ -79,7 +80,7 @@ export interface NativeAppInstallStatsResponse {
 function StatTile({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
     <div className="rounded-lg border border-divider p-3">
-      <p className="text-2xl font-semibold text-theme-primary">{value.toLocaleString()}</p>
+      <p className="text-2xl font-semibold text-theme-primary">{value.toLocaleString(getFormattingLocale())}</p>
       <p className="text-sm font-medium text-theme-primary">{label}</p>
       {hint ? <p className="mt-1 text-xs text-theme-secondary">{hint}</p> : null}
     </div>
@@ -87,7 +88,7 @@ function StatTile({ label, value, hint }: { label: string; value: number; hint?:
 }
 
 export function NativeAppInstallStats() {
-  const { t, i18n } = useTranslation('admin_system');
+  const { t } = useTranslation('admin_system');
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [stats, setStats] = useState<NativeAppInstallStatsResponse | null>(null);
@@ -112,11 +113,13 @@ export function NativeAppInstallStats() {
 
   // Locale-aware: a bare toLocaleDateString() with no locale silently renders
   // in the browser's language rather than the one the admin chose.
+  // getFormattingLocale() is the platform-wide source of that choice — i18n.language
+  // alone omits the region, which is what the locale-formatting gate enforces.
   const formatDate = (value: string | null): string => {
     if (!value) return t('system.native_app.installs.never');
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return t('system.native_app.installs.never');
-    return new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(parsed);
+    return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium' }).format(parsed);
   };
 
   const memberLabel = (device: NativeAppRecentDevice): string =>
@@ -273,8 +276,8 @@ export function NativeAppInstallStats() {
                         </div>
                         {row.tenant_slug ? <div className="text-xs text-theme-secondary">{row.tenant_slug}</div> : null}
                       </TableCell>
-                      <TableCell>{row.native_devices.toLocaleString()}</TableCell>
-                      <TableCell>{row.native_users.toLocaleString()}</TableCell>
+                      <TableCell>{row.native_devices.toLocaleString(getFormattingLocale())}</TableCell>
+                      <TableCell>{row.native_users.toLocaleString(getFormattingLocale())}</TableCell>
                       <TableCell>{formatDate(row.last_registered_at)}</TableCell>
                     </TableRow>
                   ))}
