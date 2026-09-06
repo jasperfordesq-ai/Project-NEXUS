@@ -37,6 +37,20 @@ jest.mock('react-i18next', () => ({
 
 import BiometricLockGate from './BiometricLockGate';
 
+/*
+  🔴 The gate's async assertions carry an explicit 5s timeout, matching `clubs.test.tsx`.
+  React Native Testing Library's default is 1s of WALL CLOCK, and this suite failed twice on
+  CI (runs 34023091751 and 34023747965) at two different `waitFor`s while passing here every
+  time — the gate is one of the few screens that awaits a real promise chain through several
+  state transitions, and the release gate runs the whole suite `--runInBand --coverage` on a
+  4-vCPU runner. Checked before reaching for the timeout: the suite logs no "not wrapped in
+  act" warnings, so the updates are being flushed; and a component change to stop the
+  decision effect cancelling itself was written, tested and REVERTED because a test driving
+  five re-renders during a pending check passed against the unfixed component. The
+  assertions themselves are unchanged.
+*/
+const SLOW_CI = { timeout: 5000 };
+
 describe('BiometricLockGate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -53,7 +67,7 @@ describe('BiometricLockGate', () => {
     );
 
     expect(getByText('Login form')).toBeTruthy();
-    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull());
+    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
     expect(mockAuthenticate).not.toHaveBeenCalled();
   });
 
@@ -74,7 +88,7 @@ describe('BiometricLockGate', () => {
     await act(async () => {
       finishAuthentication?.({ ok: true });
     });
-    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull());
+    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
   });
 
   it('shows an honest failure, permits retry, and always permits sign out', async () => {
@@ -93,7 +107,7 @@ describe('BiometricLockGate', () => {
     expect(mockLogout).toHaveBeenCalledTimes(1);
 
     fireEvent.press(getByText('settings:biometricLock.unlock'));
-    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull());
+    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
     expect(mockAuthenticate).toHaveBeenCalledTimes(2);
   });
 
@@ -103,7 +117,7 @@ describe('BiometricLockGate', () => {
       <BiometricLockGate><Text>Private account</Text></BiometricLockGate>,
     );
 
-    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull());
+    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
     expect(mockAuthenticate).not.toHaveBeenCalled();
   });
 });
