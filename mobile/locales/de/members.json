@@ -17,7 +17,6 @@
   "connections": {
     "removeConfirmTitle": "Diese Verbindung entfernen?",
     "removeConfirmMessage": "Ihr erscheint dann nicht mehr in den Verbindungen des anderen. Ihr könnt euch später wieder verbinden.",
-    "remove": "Entfernen",
     "title": "Verbindungen",
     "eyebrow": "Mitglieder-Workflows",
     "subtitle": "Verwalten Sie Ihre Mitgliederverbindungen, ausstehenden Anfragen und Direktnachrichtenrouten.",

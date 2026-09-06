@@ -103,8 +103,6 @@
       "delete": "Delete",
       "deleteLabel": "Supprimer{{name}}",
       "deleteTitle": "Supprimer le fichier",
-      "downloadFailed": "Ce fichier n'a pas pu être téléchargé. Veuillez réessayer.",
-      "sharingUnavailable": "Cet appareil ne peut pas ouvrir le fichier. Essayez sur le site web.",
       "deleteMessage": "Supprimer {{name}} de ce groupe ?",
       "deleteError": "Impossible de supprimer le fichier.",
       "downloadFailed": "Impossible de télécharger le fichier.",

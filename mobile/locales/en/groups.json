@@ -103,8 +103,6 @@
       "delete": "Delete",
       "deleteLabel": "Delete {{name}}",
       "deleteTitle": "Delete file",
-      "downloadFailed": "This file could not be downloaded. Please try again.",
-      "sharingUnavailable": "This device cannot open the file. Try the website instead.",
       "deleteMessage": "Delete {{name}} from this group?",
       "deleteError": "Could not delete the file.",
       "downloadFailed": "Could not download the file.",

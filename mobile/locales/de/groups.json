@@ -103,8 +103,6 @@
       "delete": "Delete",
       "deleteLabel": "Löschen Sie{{name}}",
       "deleteTitle": "Datei löschen",
-      "downloadFailed": "Diese Datei konnte nicht heruntergeladen werden. Bitte versuche es erneut.",
-      "sharingUnavailable": "Dieses Gerät kann die Datei nicht öffnen. Versuche es auf der Website.",
       "deleteMessage": "{{name}} aus dieser Gruppe löschen?",
       "deleteError": "Die Datei konnte nicht gelöscht werden.",
       "downloadFailed": "Die Datei konnte nicht heruntergeladen werden.",

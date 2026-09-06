@@ -109,7 +109,6 @@
   },
   "certificates": {
     "openFailed": "Não foi possível abrir este certificado. Tenta novamente.",
-    "sharingUnavailable": "Este dispositivo não consegue abrir o certificado. Experimenta no site.",
     "title": "Certificados de voluntariado",
     "description": "Gere e abra certificados verificados das horas de voluntariado aprovadas.",
     "generate": "Gerar certificado",

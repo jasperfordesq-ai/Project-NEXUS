@@ -17,7 +17,6 @@
   "connections": {
     "removeConfirmTitle": "Supprimer cette relation ?",
     "removeConfirmMessage": "Vous n'apparaîtrez plus dans les relations l'un de l'autre. Vous pourrez vous reconnecter plus tard.",
-    "remove": "Retirer",
     "title": "Connexions",
     "eyebrow": "Flux de travail des membres",
     "subtitle": "Gérez vos connexions de membres, les demandes en attente et les itinéraires de messages directs.",

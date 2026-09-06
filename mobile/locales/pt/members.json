@@ -17,7 +17,6 @@
   "connections": {
     "removeConfirmTitle": "Remover esta ligação?",
     "removeConfirmMessage": "Deixarão de aparecer nas ligações um do outro. Podem voltar a ligar-se mais tarde.",
-    "remove": "Remover",
     "title": "Conexões",
     "eyebrow": "Membro fluxos de trabalho",
     "subtitle": "Gerencie suas conexões de membros, solicitações pendentes e rotas de mensagens diretas.",

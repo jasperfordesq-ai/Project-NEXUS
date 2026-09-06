@@ -17,7 +17,6 @@
   "connections": {
     "removeConfirmTitle": "Remove this connection?",
     "removeConfirmMessage": "You will both stop appearing in each other's connections. You can connect again later.",
-    "remove": "Remove",
     "title": "Connections",
     "eyebrow": "Member workflows",
     "subtitle": "Manage your member connections, pending requests, and direct-message routes.",

@@ -109,7 +109,6 @@
   },
   "certificates": {
     "openFailed": "Níorbh fhéidir an teastas seo a oscailt. Bain triail eile as.",
-    "sharingUnavailable": "Ní féidir leis an ngléas seo an teastas a oscailt. Bain triail as an suíomh gréasáin.",
     "title": "Teastais oibrithe deonacha",
     "description": "Cruthaigh agus oscail teastais dheimhnithe d'uaireanta obair dheonach atá ceadaithe.",
     "generate": "Cruthaigh teastas",

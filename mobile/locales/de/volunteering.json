@@ -109,7 +109,6 @@
   },
   "certificates": {
     "openFailed": "Dieses Zertifikat konnte nicht geöffnet werden. Bitte versuche es erneut.",
-    "sharingUnavailable": "Dieses Gerät kann das Zertifikat nicht öffnen. Versuche es auf der Website.",
     "title": "Bescheinigungen über Freiwilligenarbeit",
     "description": "Erstelle und öffne verifizierte Bescheinigungen für genehmigte Stunden der Freiwilligenarbeit.",
     "generate": "Bescheinigung erstellen",

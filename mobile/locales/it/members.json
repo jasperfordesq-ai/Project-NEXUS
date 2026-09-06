@@ -17,7 +17,6 @@
   "connections": {
     "removeConfirmTitle": "Rimuovere questo collegamento?",
     "removeConfirmMessage": "Non comparirete più nei collegamenti l'uno dell'altro. Potrete ricollegarvi in seguito.",
-    "remove": "Rimuovi",
     "title": "Connessioni",
     "eyebrow": "Flussi di lavoro dei membri",
     "subtitle": "Gestisci le connessioni dei tuoi membri, le richieste in sospeso e i percorsi di messaggi diretti.",

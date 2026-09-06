@@ -17,7 +17,6 @@
   "connections": {
     "removeConfirmTitle": "¿Eliminar esta conexión?",
     "removeConfirmMessage": "Dejaréis de aparecer en las conexiones del otro. Podéis volver a conectar más adelante.",
-    "remove": "Quitar",
     "title": "Conexiones",
     "eyebrow": "Miembro flujos de trabajo",
     "subtitle": "Administre las conexiones de sus miembros, solicitudes pendientes y rutas de mensajes directos.",

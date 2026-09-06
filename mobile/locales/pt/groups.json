@@ -103,8 +103,6 @@
       "delete": "Delete",
       "deleteLabel": "Excluir{{name}}",
       "deleteTitle": "Eliminar ficheiro",
-      "downloadFailed": "Não foi possível transferir este ficheiro. Tenta novamente.",
-      "sharingUnavailable": "Este dispositivo não consegue abrir o ficheiro. Experimenta no site.",
       "deleteMessage": "Eliminar {{name}} deste grupo?",
       "deleteError": "Não foi possível eliminar o ficheiro.",
       "downloadFailed": "Não foi possível transferir o ficheiro.",

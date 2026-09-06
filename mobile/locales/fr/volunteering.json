@@ -109,7 +109,6 @@
   },
   "certificates": {
     "openFailed": "Ce certificat n'a pas pu être ouvert. Veuillez réessayer.",
-    "sharingUnavailable": "Cet appareil ne peut pas ouvrir le certificat. Essayez sur le site web.",
     "title": "Attestations de bénévolat",
     "description": "Créez et ouvrez des attestations vérifiées pour les heures de bénévolat approuvées.",
     "generate": "Créer une attestation",

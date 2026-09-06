@@ -63,8 +63,6 @@
       "delete": "Scrios",
       "deleteLabel": "Scrios {{name}}",
       "deleteTitle": "Scrios an comhad",
-      "downloadFailed": "Níorbh fhéidir an comhad seo a íoslódáil. Bain triail eile as.",
-      "sharingUnavailable": "Ní féidir leis an ngléas seo an comhad a oscailt. Bain triail as an suíomh gréasáin.",
       "deleteMessage": "An bhfuil fonn ort {{name}} a scriosadh ón ngrúpa seo?",
       "deleteError": "Níorbh fhéidir an comhad a scriosadh.",
       "downloadFailed": "Níorbh fhéidir an comhad a íoslódáil.",

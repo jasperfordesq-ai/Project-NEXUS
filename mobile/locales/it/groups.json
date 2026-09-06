@@ -103,8 +103,6 @@
       "delete": "Delete",
       "deleteLabel": "Elimina{{name}}",
       "deleteTitle": "Elimina file",
-      "downloadFailed": "Non è stato possibile scaricare questo file. Riprova.",
-      "sharingUnavailable": "Questo dispositivo non può aprire il file. Prova dal sito web.",
       "deleteMessage": "Eliminare {{name}} da questo gruppo?",
       "deleteError": "Impossibile eliminare il file.",
       "downloadFailed": "Non è stato possibile scaricare il file.",

@@ -109,7 +109,6 @@
   },
   "certificates": {
     "openFailed": "This certificate could not be opened. Please try again.",
-    "sharingUnavailable": "This device cannot open the certificate. Try the website instead.",
     "title": "Volunteer certificates",
     "description": "Generate and open verified certificates for approved volunteering hours.",
     "generate": "Generate certificate",
