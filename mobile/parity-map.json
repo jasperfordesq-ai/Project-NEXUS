@@ -871,24 +871,24 @@
       "reason": "Legal version history; web-first."
     },
     "courses/instructor": {
-      "status": "out-of-scope",
-      "reason": "Course authoring workspace."
+      "status": "native",
+      "mobile": "course-instructor"
     },
     "courses/instructor/:id/analytics": {
       "status": "out-of-scope",
       "reason": "Course authoring workspace."
     },
     "courses/instructor/:id/edit": {
-      "status": "out-of-scope",
-      "reason": "Course authoring workspace."
+      "status": "native",
+      "mobile": "new-course"
     },
     "courses/instructor/:id/grading": {
       "status": "out-of-scope",
       "reason": "Course authoring workspace."
     },
     "courses/instructor/new": {
-      "status": "out-of-scope",
-      "reason": "Course authoring workspace."
+      "status": "native",
+      "mobile": "new-course"
     },
     "developers": {
       "status": "out-of-scope",
@@ -1003,8 +1003,8 @@
       "reason": "Platform legal document; web-first."
     },
     "podcasts/studio": {
-      "status": "out-of-scope",
-      "reason": "Podcast authoring workspace."
+      "status": "native",
+      "mobile": "podcast-studio"
     },
     "pricing": {
       "status": "out-of-scope",

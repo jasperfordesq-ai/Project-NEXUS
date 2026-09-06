@@ -230,7 +230,10 @@
     },
     "chapter_format_warning_few": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00.",
     "chapter_format_warning_many": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00.",
-    "chapter_format_warning_two": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00."
+    "chapter_format_warning_two": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00.",
+    "unsaved_title": "An dréacht podchraolta seo a chaitheamh amach?",
+    "unsaved_message": "Caillfear na sonraí seó agus eipeasóide a chlóscríobh tú.",
+    "discard": "Caith amach"
   },
   "fields": {
     "artwork_file": "Íomhá an phodchraolta",
@@ -264,7 +267,8 @@
     "episode_type": "Cineál eipeasóid",
     "transcript": "Tras-scríbhinn",
     "chapters": "Caibidlí",
-    "chapters_hint": "Caibidil amháin in aghaidh an líne, mar shampla: 00:30 Réamhrá"
+    "chapters_hint": "Caibidil amháin in aghaidh an líne, mar shampla: 00:30 Réamhrá",
+    "scheduled_for_hint": "Formáid: BBBB-MM-LL UU:NN, i do chrios ama féin."
   },
   "visibility": {
     "public": "Poiblí",

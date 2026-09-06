@@ -4,10 +4,10 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 55,
-    "call_sites": 553,
-    "distinct_endpoints": 463,
-    "verified": 463,
+    "api_modules": 56,
+    "call_sites": 584,
+    "distinct_endpoints": 494,
+    "verified": 494,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -686,7 +686,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:109"
+        "courses.ts:243"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:292"
       ]
     },
     {
@@ -695,7 +704,34 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:121"
+        "courses.ts:255"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/courses/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:296"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/courses/{param}/cohorts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:365"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/cohorts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:369"
       ]
     },
     {
@@ -704,7 +740,34 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:133"
+        "courses.ts:267"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/lessons",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:329"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/courses/{param}/lessons/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:344"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/courses/{param}/lessons/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:337"
       ]
     },
     {
@@ -713,7 +776,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:137"
+        "courses.ts:271"
       ]
     },
     {
@@ -722,7 +785,88 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:129"
+        "courses.ts:263"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/publish",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:300"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/quizzes",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:350"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/quizzes/{param}/questions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:358"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/sections",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:308"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/courses/{param}/sections/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:323"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/courses/{param}/sections/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:316"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/{param}/unpublish",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:304"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/courses/categories",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:283"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/courses/mine",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:288"
       ]
     },
     {
@@ -3251,7 +3395,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:125"
+        "courses.ts:259"
       ]
     },
     {
@@ -3612,7 +3756,25 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "podcasts.ts:73"
+        "podcasts.ts:196"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:255"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/podcasts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:271"
       ]
     },
     {
@@ -3621,7 +3783,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "podcasts.ts:80"
+        "podcasts.ts:203"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/podcasts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:259"
       ]
     },
     {
@@ -3630,7 +3801,97 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "podcasts.ts:84"
+        "podcasts.ts:207"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/archive",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:267"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/artwork",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:333"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/episodes",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:275"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/podcasts/{param}/episodes/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:291"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/podcasts/{param}/episodes/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:279"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/episodes/{param}/archive",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:287"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/episodes/{param}/cover",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:339"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/episodes/{param}/publish",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:283"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/podcasts/{param}/publish",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:263"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/podcasts/{param}/stats",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:251"
       ]
     },
     {
@@ -3639,7 +3900,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "podcasts.ts:92"
+        "podcasts.ts:215"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/podcasts/{param}/validate-feed",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:247"
       ]
     },
     {
@@ -3648,7 +3918,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "podcasts.ts:88"
+        "podcasts.ts:211"
       ]
     },
     {
@@ -3657,7 +3927,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "podcasts.ts:96"
+        "podcasts.ts:219"
       ]
     },
     {
@@ -3666,7 +3936,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "podcasts.ts:100"
+        "podcasts.ts:223"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/podcasts/mine",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "podcasts.ts:240"
       ]
     },
     {

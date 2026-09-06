@@ -2,9 +2,9 @@
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
     "react_member_routes": 256,
-    "mobile_routes": 163,
-    "native": 153,
-    "out_of_scope": 103,
+    "mobile_routes": 166,
+    "native": 157,
+    "out_of_scope": 99,
     "gap": 0,
     "needs_review": 0,
     "needs_review_budget": 31,
@@ -578,9 +578,9 @@
     },
     {
       "route": "courses/instructor",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Course authoring workspace.",
+      "status": "native",
+      "mobile": "course-instructor",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -596,9 +596,9 @@
     },
     {
       "route": "courses/instructor/:id/edit",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Course authoring workspace.",
+      "status": "native",
+      "mobile": "new-course",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -614,9 +614,9 @@
     },
     {
       "route": "courses/instructor/new",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Course authoring workspace.",
+      "status": "native",
+      "mobile": "new-course",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -1954,9 +1954,9 @@
     },
     {
       "route": "podcasts/studio",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Podcast authoring workspace.",
+      "status": "native",
+      "mobile": "podcast-studio",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx"
       ]

@@ -18,9 +18,9 @@ when a React member route exists that nobody has classified for mobile.
 | Measure | Count |
 | --- | --- |
 | React member routes | 256 |
-| Mobile routes (Expo Router screens) | 163 |
-| Covered natively | 153 |
-| Deliberately out of scope | 103 |
+| Mobile routes (Expo Router screens) | 166 |
+| Covered natively | 157 |
+| Deliberately out of scope | 99 |
 | **Known gaps** | **0** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
@@ -88,11 +88,11 @@ when a React member route exists that nobody has classified for mobile.
 | `courses` | native | `courses` | — |
 | `courses/:id/learn` | native | `course-player` | — |
 | `courses/:idOrSlug` | native | `course-detail` | — |
-| `courses/instructor` | out-of-scope | — | Course authoring workspace. |
+| `courses/instructor` | native | `course-instructor` | — |
 | `courses/instructor/:id/analytics` | out-of-scope | — | Course authoring workspace. |
-| `courses/instructor/:id/edit` | out-of-scope | — | Course authoring workspace. |
+| `courses/instructor/:id/edit` | native | `new-course` | — |
 | `courses/instructor/:id/grading` | out-of-scope | — | Course authoring workspace. |
-| `courses/instructor/new` | out-of-scope | — | Course authoring workspace. |
+| `courses/instructor/new` | native | `new-course` | — |
 | `courses/my-learning` | native | `courses` | — |
 | `dashboard` | native | `home` | — |
 | `developers` | out-of-scope | — | Developer API documentation; a web reference, not a member journey. |
@@ -238,7 +238,7 @@ when a React member route exists that nobody has classified for mobile.
 | `podcasts` | native | `podcasts` | — |
 | `podcasts/:showSlug` | native | `podcast-show` | — |
 | `podcasts/:showSlug/:episodeSlug` | native | `podcast-episode` | — |
-| `podcasts/studio` | out-of-scope | — | Podcast authoring workspace. |
+| `podcasts/studio` | native | `podcast-studio` | — |
 | `polls` | native | `polls` | — |
 | `premium` | out-of-scope | — | Policy-blocked: native fundraising requires a documented Apple-approved nonprofit and Apple Pay design; do not add an external payment shortcut. |
 | `premium/manage` | out-of-scope | — | Policy-blocked with the member_premium payment design; management cannot ship before the native entitlement and refund lifecycle is approved. |

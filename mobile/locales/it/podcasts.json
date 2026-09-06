@@ -218,7 +218,10 @@
       "listen_count_one": "{{count}} ascolti",
       "listen_count_other": "{{count}} ascolti"
     },
-    "chapter_format_warning_many": "Le righe dei capitoli {{count}} non hanno timestamp e inizieranno alle 0:00."
+    "chapter_format_warning_many": "Le righe dei capitoli {{count}} non hanno timestamp e inizieranno alle 0:00.",
+    "unsaved_title": "Vuoi eliminare questa bozza di podcast?",
+    "unsaved_message": "I dati dello show e dell’episodio che hai inserito andranno persi.",
+    "discard": "Elimina"
   },
   "fields": {
     "artwork_file": "Immagine del podcast",
@@ -252,7 +255,8 @@
     "episode_type": "Tipo di episodio",
     "transcript": "Transcript",
     "chapters": "Chapters",
-    "chapters_hint": "Un capitolo per riga, ad esempio: 00:30 Introduzioni"
+    "chapters_hint": "Un capitolo per riga, ad esempio: 00:30 Introduzioni",
+    "scheduled_for_hint": "Formato: AAAA-MM-GG HH:MM, nel tuo fuso orario."
   },
   "visibility": {
     "public": "Public",

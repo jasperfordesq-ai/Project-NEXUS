@@ -218,7 +218,10 @@
       "listen_count_one": "{{count}} reproduções",
       "listen_count_other": "{{count}} reproduções"
     },
-    "chapter_format_warning_many": "As linhas do capítulo {{count}} não têm carimbo de data/hora e começarão às 0:00."
+    "chapter_format_warning_many": "As linhas do capítulo {{count}} não têm carimbo de data/hora e começarão às 0:00.",
+    "unsaved_title": "Descartar este rascunho de podcast?",
+    "unsaved_message": "Os dados do programa e do episódio que escreveu serão perdidos.",
+    "discard": "Descartar"
   },
   "fields": {
     "artwork_file": "Imagem do podcast",
@@ -252,7 +255,8 @@
     "episode_type": "Tipo de episódio",
     "transcript": "Transcript",
     "chapters": "Chapters",
-    "chapters_hint": "Um capítulo por linha, por exemplo: 00:30 Apresentações"
+    "chapters_hint": "Um capítulo por linha, por exemplo: 00:30 Apresentações",
+    "scheduled_for_hint": "Formato: AAAA-MM-DD HH:MM, no seu próprio fuso horário."
   },
   "visibility": {
     "public": "Public",

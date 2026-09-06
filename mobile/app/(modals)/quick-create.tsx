@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { Linking, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -15,7 +15,6 @@ import EmptyState from '@/components/ui/EmptyState';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
-import { buildWebUrl } from '@/lib/utils/webUrl';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -24,13 +23,8 @@ interface QuickCreateOption {
   labelKey: string;
   descriptionKey: string;
   icon: IoniconName;
-  /**
-   * Either an in-app route, or — when `opensOnWebsite` is set — a path on the
-   * website for the member's community. Two builders exist only on the web today
-   * (courses and podcasts); handing off is how a member reaches them at all.
-   */
+  /** An in-app route. Every option on this menu is built natively — see below. */
   route: string;
-  opensOnWebsite?: boolean;
   tone: string;
   featureGate?: string;
   moduleGate?: string;
@@ -121,9 +115,19 @@ const QUICK_CREATE_OPTIONS: QuickCreateOption[] = [
     can only VIEW — courses and podcasts have no native builder at all. A member
     reasonably concluded those features did not exist.
 
-    The three native builders are added as ordinary options. The two web-only
-    builders hand off to the website for the member's own community, which is the
-    only way to reach them from the app today; the option says so on its face.
+    🔴 The first fix was wrong, and the owner said so on 2026-09-06: courses and
+    podcasts were added here as links that OPENED THE WEBSITE, because
+    `parity-map.json` had both authoring surfaces recorded as "out-of-scope —
+    authoring workspace". Handing a member off to a browser mid-way through a
+    Create menu reads as a broken app, not as a considered boundary, and it
+    quietly made the out-of-scope ruling permanent by removing the pressure to
+    build the real thing. That ruling is reversed; both builders are now native
+    (`new-course`, `podcast-studio`) and `parity-map.json` records them as such.
+
+    Nothing on this menu leaves the app any more, which is why the whole
+    `opensOnWebsite` handoff mechanism has gone with it rather than being left
+    behind unused.
+
     Group exchanges are deliberately absent — that builder needs a group, so it
     belongs inside a group. Care in Community is deliberately absent — it is
     outside native scope by store-audience policy.
@@ -156,8 +160,7 @@ const QUICK_CREATE_OPTIONS: QuickCreateOption[] = [
     labelKey: 'quickCreate.newCourse',
     descriptionKey: 'quickCreate.newCourseDescription',
     icon: 'school-outline',
-    route: '/courses/instructor/new',
-    opensOnWebsite: true,
+    route: '/(modals)/new-course',
     tone: '#7c3aed',
     featureGate: 'courses',
   },
@@ -165,8 +168,7 @@ const QUICK_CREATE_OPTIONS: QuickCreateOption[] = [
     labelKey: 'quickCreate.newPodcast',
     descriptionKey: 'quickCreate.newPodcastDescription',
     icon: 'mic-outline',
-    route: '/podcasts/studio',
-    opensOnWebsite: true,
+    route: '/(modals)/podcast-studio',
     tone: '#db2777',
     featureGate: 'podcasts',
   },
@@ -174,7 +176,7 @@ const QUICK_CREATE_OPTIONS: QuickCreateOption[] = [
 
 function QuickCreateRouteInner() {
   const { t } = useTranslation(['common']);
-  const { hasFeature, hasModule, tenant } = useTenant();
+  const { hasFeature, hasModule } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const visibleOptions = QUICK_CREATE_OPTIONS.filter((option) => {
@@ -184,15 +186,7 @@ function QuickCreateRouteInner() {
   });
 
   function openOption(option: QuickCreateOption) {
-    if (!option.opensOnWebsite) {
-      router.push(option.route as Href);
-      return;
-    }
-    // The slug is load-bearing: on the shared host a slug-less path lands on the
-    // platform page and the builder is never reached. See lib/utils/webUrl.ts.
-    void Linking.openURL(buildWebUrl(tenant?.slug, option.route)).catch(() => {
-      // No browser available. The option stays readable; there is no recovery to offer.
-    });
+    router.push(option.route as Href);
   }
 
   return (
@@ -219,11 +213,7 @@ function QuickCreateRouteInner() {
             {visibleOptions.map((option) => (
               <HeroButton
                 key={option.labelKey}
-                accessibilityLabel={
-                  option.opensOnWebsite
-                    ? `${t(option.labelKey)}. ${t('quickCreate.opensOnWebsite')}`
-                    : t(option.labelKey)
-                }
+                accessibilityLabel={t(option.labelKey)}
                 testID={`quick-create-${option.labelKey.split('.').pop()}`}
                 className="h-auto justify-start rounded-panel p-0"
                 variant="secondary"
@@ -240,19 +230,8 @@ function QuickCreateRouteInner() {
                     <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
                       {t(option.descriptionKey)}
                     </Text>
-                    {option.opensOnWebsite ? (
-                      // A tap that leaves the app must never be a surprise: say so
-                      // before the tap, not after.
-                      <Text className="text-xs" style={{ color: theme.textSecondary }}>
-                        {t('quickCreate.opensOnWebsite')}
-                      </Text>
-                    ) : null}
                   </View>
-                  <Ionicons
-                    name={option.opensOnWebsite ? 'open-outline' : 'chevron-forward-outline'}
-                    size={18}
-                    color={theme.textSecondary}
-                  />
+                  <Ionicons name="chevron-forward-outline" size={18} color={theme.textSecondary} />
                 </View>
               </HeroButton>
             ))}

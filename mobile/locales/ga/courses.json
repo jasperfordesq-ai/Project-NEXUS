@@ -119,7 +119,10 @@
     "section_title": "Teideal ailt",
     "create_error": "Níorbh fhéidir a shábháil. Bain triail eile as.",
     "no_category": "Gan chatagóir",
-    "no_courses": "Níl aon chúrsaí cruthaithe agat fós."
+    "no_courses": "Níl aon chúrsaí cruthaithe agat fós.",
+    "unsaved_title": "An cúrsa seo a chaitheamh i dtraipisí?",
+    "unsaved_message": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
+    "discard": "Cuir i leataobh"
   },
   "grading": {
     "title": "Grádú",

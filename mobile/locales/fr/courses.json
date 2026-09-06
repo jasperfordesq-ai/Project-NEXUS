@@ -115,7 +115,10 @@
     "section_title": "Titre de la section",
     "create_error": "Impossible d'enregistrer. Veuillez réessayer.",
     "no_category": "Aucune catégorie",
-    "no_courses": "Vous n'avez pas encore créé de cours."
+    "no_courses": "Vous n'avez pas encore créé de cours.",
+    "unsaved_title": "Abandonner ce cours ?",
+    "unsaved_message": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
+    "discard": "Abandonner"
   },
   "grading": {
     "title": "Classement",

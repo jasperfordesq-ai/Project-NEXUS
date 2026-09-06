@@ -50,8 +50,7 @@
     "newCourse": "Nuevo curso",
     "newCourseDescription": "Enseña una habilidad a tu comunidad.",
     "newPodcast": "Nuevo podcast",
-    "newPodcastDescription": "Crea un programa o graba un episodio.",
-    "opensOnWebsite": "Se abre en el sitio web"
+    "newPodcastDescription": "Crea un programa o graba un episodio."
   },
   "buttons": {
     "save": "Guardar",

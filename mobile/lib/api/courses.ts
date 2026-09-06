@@ -8,6 +8,52 @@ import { API_V2 } from '@/lib/constants';
 
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export type LessonContentType = 'video' | 'text' | 'pdf' | 'embed' | 'quiz';
+export type CourseVisibility = 'public' | 'members' | 'group';
+export type CourseStatus = 'draft' | 'published' | 'archived';
+export type CourseModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
+export type CourseEnrollmentType = 'self_paced' | 'cohort';
+export type LessonDripType = 'none' | 'days_after_enroll' | 'fixed_date';
+export type QuizQuestionType = 'mcq' | 'multi' | 'truefalse' | 'short' | 'essay';
+
+export interface CourseCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  icon?: string | null;
+  position?: number;
+}
+
+export interface QuizQuestion {
+  id: number;
+  quiz_id?: number;
+  type: QuizQuestionType;
+  prompt: string;
+  options?: { id: string; label: string }[] | null;
+  points?: number;
+  position?: number;
+}
+
+export interface CourseQuiz {
+  id: number;
+  course_id: number;
+  lesson_id: number | null;
+  title: string;
+  description?: string | null;
+  pass_mark_percent?: number;
+  max_attempts?: number;
+  time_limit_minutes?: number | null;
+  questions?: QuizQuestion[];
+}
+
+export interface CourseCohort {
+  id: number;
+  course_id: number;
+  name: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  capacity?: number | null;
+}
 
 export interface CourseLesson {
   id: number;
@@ -22,6 +68,13 @@ export interface CourseLesson {
   embed_url?: string | null;
   position: number;
   is_preview: boolean;
+  /** Percentage of a video a learner must watch before the lesson counts as done. */
+  min_watch_percent?: number;
+  drip_type?: LessonDripType;
+  drip_offset_days?: number | null;
+  drip_date?: string | null;
+  /** Present on a `quiz` lesson once its quiz has been created. */
+  quiz?: CourseQuiz | null;
 }
 
 export interface CourseSection {
@@ -45,6 +98,24 @@ export interface Course {
   author?: { id: number; name: string; avatar_url?: string | null };
   sections?: CourseSection[];
   is_enrolled?: boolean;
+  /**
+   * Authoring fields. Optional because an enrolment embeds only a partial course,
+   * while `/v2/courses/mine` and `/v2/courses/{id}` return the whole model.
+   */
+  author_user_id?: number;
+  category_id?: number | null;
+  category?: CourseCategory | null;
+  visibility?: CourseVisibility;
+  enrollment_type?: CourseEnrollmentType;
+  status?: CourseStatus;
+  moderation_status?: CourseModerationStatus;
+  learner_credit_reward?: string | number;
+  instructor_credit_reward?: string | number;
+  prerequisites?: number[] | null;
+  completion_count?: number;
+  rating_avg?: string | number;
+  rating_count?: number;
+  published_at?: string | null;
 }
 
 export interface CourseEnrollment {
@@ -79,6 +150,69 @@ export interface CoursePage {
   page: number;
   total: number;
   hasMore: boolean;
+}
+
+/** Fields `CourseService::create` / `::update` accept. Everything else is server-set. */
+export interface CourseInput {
+  title: string;
+  summary?: string | null;
+  description?: string | null;
+  level?: CourseLevel;
+  visibility?: CourseVisibility;
+  enrollment_type?: CourseEnrollmentType;
+  category_id?: number | null;
+  credit_cost?: number;
+  prerequisites?: number[];
+}
+
+export interface CourseSectionInput {
+  title?: string;
+  position?: number;
+}
+
+/** Fields `CourseLessonService` accepts; anything omitted is left untouched. */
+export interface CourseLessonInput {
+  section_id?: number | null;
+  title?: string;
+  content_type?: LessonContentType;
+  body?: string | null;
+  transcript?: string | null;
+  video_url?: string | null;
+  attachment_url?: string | null;
+  embed_url?: string | null;
+  position?: number;
+  min_watch_percent?: number;
+  drip_type?: LessonDripType;
+  drip_offset_days?: number | null;
+  drip_date?: string | null;
+  is_preview?: boolean;
+}
+
+export interface CourseQuizInput {
+  lesson_id?: number | null;
+  title: string;
+  description?: string | null;
+  pass_mark_percent?: number;
+  max_attempts?: number;
+  time_limit_minutes?: number | null;
+}
+
+export interface QuizQuestionInput {
+  type?: QuizQuestionType;
+  prompt: string;
+  options?: { id: string; label: string }[] | null;
+  /** The accepted answer id(s). The API never returns this back to a learner. */
+  correct?: unknown;
+  explanation?: string | null;
+  points?: number;
+  position?: number;
+}
+
+export interface CourseCohortInput {
+  name: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  capacity?: number | null;
 }
 
 type DataEnvelope<T> = T | { data: T };
@@ -138,4 +272,99 @@ export async function completeCourseLesson(courseId: number, lessonId: number) {
     `${API_V2}/courses/${courseId}/lessons/${lessonId}/complete`,
     { watch_percent: 100 },
   ));
+}
+
+// ---------------------------------------------------------------------------
+//  Authoring — instructor / admin only. Every call below is refused by the API
+//  for a member who is neither the course's author nor an admin.
+// ---------------------------------------------------------------------------
+
+export async function getCourseCategories(): Promise<CourseCategory[]> {
+  return unwrap(await api.get<DataEnvelope<CourseCategory[]>>(`${API_V2}/courses/categories`));
+}
+
+/** GET /v2/courses/mine — courses the signed-in member authored. */
+export async function getAuthoredCourses(): Promise<Course[]> {
+  return unwrap(await api.get<DataEnvelope<Course[]>>(`${API_V2}/courses/mine`));
+}
+
+export async function createCourse(payload: CourseInput): Promise<Course> {
+  return unwrap(await api.post<DataEnvelope<Course>>(`${API_V2}/courses`, payload));
+}
+
+export async function updateCourse(courseId: number, payload: CourseInput): Promise<Course> {
+  return unwrap(await api.put<DataEnvelope<Course>>(`${API_V2}/courses/${courseId}`, payload));
+}
+
+export async function publishCourse(courseId: number): Promise<Course> {
+  return unwrap(await api.post<DataEnvelope<Course>>(`${API_V2}/courses/${courseId}/publish`, {}));
+}
+
+export async function unpublishCourse(courseId: number): Promise<Course> {
+  return unwrap(await api.post<DataEnvelope<Course>>(`${API_V2}/courses/${courseId}/unpublish`, {}));
+}
+
+export async function createCourseSection(courseId: number, payload: CourseSectionInput): Promise<CourseSection> {
+  return unwrap(await api.post<DataEnvelope<CourseSection>>(`${API_V2}/courses/${courseId}/sections`, payload));
+}
+
+export async function updateCourseSection(
+  courseId: number,
+  sectionId: number,
+  payload: CourseSectionInput,
+): Promise<CourseSection> {
+  return unwrap(await api.put<DataEnvelope<CourseSection>>(
+    `${API_V2}/courses/${courseId}/sections/${sectionId}`,
+    payload,
+  ));
+}
+
+export async function deleteCourseSection(courseId: number, sectionId: number): Promise<{ deleted: boolean }> {
+  return unwrap(await api.delete<DataEnvelope<{ deleted: boolean }>>(
+    `${API_V2}/courses/${courseId}/sections/${sectionId}`,
+  ));
+}
+
+export async function createCourseLesson(courseId: number, payload: CourseLessonInput): Promise<CourseLesson> {
+  return unwrap(await api.post<DataEnvelope<CourseLesson>>(`${API_V2}/courses/${courseId}/lessons`, payload));
+}
+
+export async function updateCourseLesson(
+  courseId: number,
+  lessonId: number,
+  payload: CourseLessonInput,
+): Promise<CourseLesson> {
+  return unwrap(await api.put<DataEnvelope<CourseLesson>>(
+    `${API_V2}/courses/${courseId}/lessons/${lessonId}`,
+    payload,
+  ));
+}
+
+export async function deleteCourseLesson(courseId: number, lessonId: number): Promise<{ deleted: boolean }> {
+  return unwrap(await api.delete<DataEnvelope<{ deleted: boolean }>>(
+    `${API_V2}/courses/${courseId}/lessons/${lessonId}`,
+  ));
+}
+
+export async function createCourseQuiz(courseId: number, payload: CourseQuizInput): Promise<CourseQuiz> {
+  return unwrap(await api.post<DataEnvelope<CourseQuiz>>(`${API_V2}/courses/${courseId}/quizzes`, payload));
+}
+
+export async function createQuizQuestion(
+  courseId: number,
+  quizId: number,
+  payload: QuizQuestionInput,
+): Promise<QuizQuestion> {
+  return unwrap(await api.post<DataEnvelope<QuizQuestion>>(
+    `${API_V2}/courses/${courseId}/quizzes/${quizId}/questions`,
+    payload,
+  ));
+}
+
+export async function getCourseCohorts(courseId: number): Promise<CourseCohort[]> {
+  return unwrap(await api.get<DataEnvelope<CourseCohort[]>>(`${API_V2}/courses/${courseId}/cohorts`));
+}
+
+export async function createCourseCohort(courseId: number, payload: CourseCohortInput): Promise<CourseCohort> {
+  return unwrap(await api.post<DataEnvelope<CourseCohort>>(`${API_V2}/courses/${courseId}/cohorts`, payload));
 }

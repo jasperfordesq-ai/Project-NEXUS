@@ -218,7 +218,10 @@
       "listen_count_one": "{{count}} escuchas",
       "listen_count_other": "{{count}} escuchas"
     },
-    "chapter_format_warning_many": "Las líneas de capítulo {{count}} no tienen marca de tiempo y comenzarán a las 0:00."
+    "chapter_format_warning_many": "Las líneas de capítulo {{count}} no tienen marca de tiempo y comenzarán a las 0:00.",
+    "unsaved_title": "¿Descartar este borrador de pódcast?",
+    "unsaved_message": "Se perderán los datos del programa y del episodio que has escrito.",
+    "discard": "Descartar"
   },
   "fields": {
     "artwork_file": "Imagen del programa",
@@ -252,7 +255,8 @@
     "episode_type": "Tipo de episodio",
     "transcript": "Transcript",
     "chapters": "Chapters",
-    "chapters_hint": "Un capítulo por línea, por ejemplo: 00:30 Introducciones"
+    "chapters_hint": "Un capítulo por línea, por ejemplo: 00:30 Introducciones",
+    "scheduled_for_hint": "Formato: AAAA-MM-DD HH:MM, en tu propia zona horaria."
   },
   "visibility": {
     "public": "Public",

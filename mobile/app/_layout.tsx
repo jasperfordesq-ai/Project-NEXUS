@@ -637,6 +637,14 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('courses:player.course_progress') }}
       />
       <Stack.Screen
+        name="(modals)/course-instructor"
+        options={{ ...modalOptions, headerShown: false, title: t('courses:instructor.dashboard') }}
+      />
+      <Stack.Screen
+        name="(modals)/new-course"
+        options={{ ...modalOptions, headerShown: false, title: t('courses:instructor.new_course') }}
+      />
+      <Stack.Screen
         name="(modals)/podcasts"
         options={{ ...modalOptions, headerShown: false, title: t('podcasts:title') }}
       />
@@ -647,6 +655,10 @@ function RootNavigator() {
       <Stack.Screen
         name="(modals)/podcast-episode"
         options={{ ...modalOptions, headerShown: false, title: t('podcasts:episode.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/podcast-studio"
+        options={{ ...modalOptions, headerShown: false, title: t('podcasts:studio.title') }}
       />
       <Stack.Screen
         name="(modals)/activity"

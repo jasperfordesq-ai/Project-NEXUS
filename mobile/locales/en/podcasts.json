@@ -212,7 +212,10 @@
       "last_days": "Listen activity covers the last {{days}} days.",
       "listen_count_one": "{{count}} listens",
       "listen_count_other": "{{count}} listens"
-    }
+    },
+    "unsaved_title": "Discard this podcast draft?",
+    "unsaved_message": "The show and episode details you have typed will be lost.",
+    "discard": "Discard"
   },
   "fields": {
     "show": "Show",
@@ -246,7 +249,8 @@
     "transcript_language": "Transcript language",
     "explicit_episode": "Mark this episode as explicit",
     "chapters": "Chapters",
-    "chapters_hint": "One chapter per line, for example: 00:30 Introductions"
+    "chapters_hint": "One chapter per line, for example: 00:30 Introductions",
+    "scheduled_for_hint": "Format: YYYY-MM-DD HH:MM, in your own time zone."
   },
   "visibility": {
     "public": "Public",

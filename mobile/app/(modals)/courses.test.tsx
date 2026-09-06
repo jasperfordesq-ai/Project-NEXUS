@@ -26,6 +26,7 @@ jest.mock('react-i18next', () => ({
       'my_learning.browse_cta': 'Browse courses', 'common:buttons.retry': 'Retry',
       'common:errors.alertTitle': 'Error', 'common:back': 'Back',
       'level.beginner': 'Beginner', 'detail.free': 'Free',
+      'instructor.my_courses': 'My courses', 'instructor.create_course': 'Create course',
       'card.by_author': `by ${String(values?.name ?? '')}`,
     } as Record<string, string>)[key] ?? key,
   }),
@@ -75,5 +76,21 @@ describe('CoursesScreen', () => {
     const { getByText } = render(<CoursesScreen />);
     await waitFor(() => expect(getByText("You haven't enrolled in any courses yet.")).toBeTruthy());
     expect(getMyCourses).toHaveBeenCalled();
+  });
+
+  /*
+    🔴 The teaching side must have a door here. Reachable only from the "+" menu,
+    the builder can create a course but never lead back to one already written —
+    which is how a member concludes the feature is not there.
+  */
+  it('offers the teaching entry points and opens them natively', async () => {
+    const { getByText } = render(<CoursesScreen />);
+    await waitFor(() => expect(getByText('Timebanking basics')).toBeTruthy());
+
+    fireEvent.press(getByText('My courses'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/course-instructor');
+
+    fireEvent.press(getByText('Create course'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/new-course');
   });
 });

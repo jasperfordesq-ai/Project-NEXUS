@@ -218,7 +218,10 @@
       "listen_count_one": "{{count}} écoutes",
       "listen_count_other": "{{count}} écoutes"
     },
-    "chapter_format_warning_many": "Les lignes de chapitre {{count}} n'ont pas d'horodatage et commenceront à 0h00."
+    "chapter_format_warning_many": "Les lignes de chapitre {{count}} n'ont pas d'horodatage et commenceront à 0h00.",
+    "unsaved_title": "Abandonner ce brouillon de podcast ?",
+    "unsaved_message": "Les informations de l’émission et de l’épisode que vous avez saisies seront perdues.",
+    "discard": "Abandonner"
   },
   "fields": {
     "artwork_file": "Image du podcast",
@@ -252,7 +255,8 @@
     "episode_type": "Type d'épisode",
     "transcript": "Transcript",
     "chapters": "Chapters",
-    "chapters_hint": "Un chapitre par ligne, par exemple : 00:30 Introductions"
+    "chapters_hint": "Un chapitre par ligne, par exemple : 00:30 Introductions",
+    "scheduled_for_hint": "Format : AAAA-MM-JJ HH:MM, dans votre propre fuseau horaire."
   },
   "visibility": {
     "public": "Public",

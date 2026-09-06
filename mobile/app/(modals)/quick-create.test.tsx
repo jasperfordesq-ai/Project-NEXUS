@@ -142,12 +142,21 @@ describe('QuickCreateRoute', () => {
     showed nothing for either. The audit that followed found three native builders
     that already existed but were never offered here, and two modules with no
     native builder at all. Every module a member can create in must now appear.
+
+    🔴 Owner's report, 2026-09-06 — the second half of the same fault. Courses and
+    podcasts were added, but as links that opened the WEBSITE, which reads as a
+    broken app rather than a considered boundary. Both are now native builders.
+    The assertions below therefore changed from "hands off to the website" to
+    "opens its native builder", and the test that checked the app SAID it was
+    leaving is gone, because it no longer does.
   */
   describe('every creatable module is offered', () => {
     it.each([
       ['New job', '/(modals)/new-job'],
       ['New volunteering opportunity', '/(modals)/new-volunteering'],
       ['Register an organisation', '/(modals)/new-organisation'],
+      ['New course', '/(modals)/new-course'],
+      ['New podcast', '/(modals)/podcast-studio'],
     ])('offers "%s" and opens its native builder', (label, route) => {
       const { getByText } = render(<QuickCreateRoute />);
 
@@ -157,26 +166,21 @@ describe('QuickCreateRoute', () => {
       expect(openURL).not.toHaveBeenCalled();
     });
 
-    it.each([
-      ['New course', 'https://app.example.test/hour-timebank/courses/instructor/new'],
-      ['New podcast', 'https://app.example.test/hour-timebank/podcasts/studio'],
-    ])('offers "%s" and hands off to the website inside the member’s community', (label, url) => {
+    /**
+     * The regression guard for the 2026-09-06 report. Pressing every option on the
+     * menu must keep the member inside the app; a re-introduced web handoff shows
+     * up here rather than in a bug report.
+     */
+    it('never sends the member to a browser, whichever option they press', () => {
       const { getByText } = render(<QuickCreateRoute />);
 
-      fireEvent.press(getByText(label));
+      [
+        'New job', 'New volunteering opportunity', 'Register an organisation',
+        'New course', 'New podcast', 'New event', 'New group', 'New poll',
+      ].forEach((label) => fireEvent.press(getByText(label)));
 
-      // The slug in the URL is load-bearing: slug-less, the shared host renders
-      // the platform landing page and the builder is never reached.
-      expect(openURL).toHaveBeenCalledWith(url);
-      expect(mockRouterPush).not.toHaveBeenCalled();
-    });
-
-    it('says on its face which options leave the app', () => {
-      const { getAllByText, getByLabelText } = render(<QuickCreateRoute />);
-
-      expect(getAllByText('Opens on the website')).toHaveLength(2);
-      expect(getByLabelText('New course. Opens on the website')).toBeTruthy();
-      expect(getByLabelText('New podcast. Opens on the website')).toBeTruthy();
+      expect(openURL).not.toHaveBeenCalled();
+      expect(mockRouterPush).toHaveBeenCalledTimes(8);
     });
 
     it.each([

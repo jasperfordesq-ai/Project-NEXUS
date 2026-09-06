@@ -115,7 +115,10 @@
     "section_title": "Título de la sección",
     "create_error": "No se pudo guardar. Por favor inténtalo de nuevo.",
     "no_category": "Sin categoría",
-    "no_courses": "Aún no has creado ningún curso."
+    "no_courses": "Aún no has creado ningún curso.",
+    "unsaved_title": "¿Descartar este curso?",
+    "unsaved_message": "Tienes datos sin guardar. Si sales ahora, se perderán.",
+    "discard": "Descartar"
   },
   "grading": {
     "title": "Calificación",

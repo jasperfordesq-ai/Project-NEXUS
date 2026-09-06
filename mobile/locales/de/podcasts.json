@@ -212,7 +212,10 @@
       "last_days": "Die Höraktivität umfasst die letzten {{days}} Tage.",
       "listen_count_one": "{{count}} Wiedergaben",
       "listen_count_other": "{{count}} Wiedergaben"
-    }
+    },
+    "unsaved_title": "Diesen Podcast-Entwurf verwerfen?",
+    "unsaved_message": "Die eingegebenen Sendungs- und Episodendaten gehen verloren.",
+    "discard": "Verwerfen"
   },
   "fields": {
     "artwork_file": "Podcastbild",
@@ -246,7 +249,8 @@
     "episode_type": "Episodentyp",
     "transcript": "Transcript",
     "chapters": "Chapters",
-    "chapters_hint": "Ein Kapitel pro Zeile, zum Beispiel: 00:30 Einführungen"
+    "chapters_hint": "Ein Kapitel pro Zeile, zum Beispiel: 00:30 Einführungen",
+    "scheduled_for_hint": "Format: JJJJ-MM-TT HH:MM, in deiner eigenen Zeitzone."
   },
   "visibility": {
     "public": "Public",

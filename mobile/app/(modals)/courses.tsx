@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Card as HeroCard, Tabs } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -15,6 +15,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
+import { Ionicons } from '@/components/ui/Icon';
 import SearchInput from '@/components/ui/SearchInput';
 import { Chip } from '@/components/ui/StatusChip';
 import { getCourses, getMyCourses, type Course, type CourseEnrollment } from '@/lib/api/courses';
@@ -62,6 +63,35 @@ export default function CoursesScreen() {
                 <HeroCard.Body className="gap-1 p-4">
                   <Text className="text-2xl font-bold" style={{ color: theme.text }}>{t('title')}</Text>
                   <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('subtitle')}</Text>
+                  {/*
+                    🔴 The teaching side needs a door on this screen, exactly as
+                    `CoursesPage.tsx` gives it one. Without these two the native
+                    builder is reachable only from the "+" menu, which creates a
+                    course but never leads back to one already written — the same
+                    "the feature must not exist" conclusion the 2026-09-06 report
+                    was about, one level down.
+                  */}
+                  <View className="mt-3 flex-row gap-2">
+                    <HeroButton
+                      className="flex-1"
+                      size="sm"
+                      variant="secondary"
+                      testID="courses-my-courses"
+                      onPress={() => router.push('/(modals)/course-instructor')}
+                    >
+                      <HeroButton.Label>{t('instructor.my_courses')}</HeroButton.Label>
+                    </HeroButton>
+                    <HeroButton
+                      className="flex-1"
+                      size="sm"
+                      variant="primary"
+                      testID="courses-create-course"
+                      onPress={() => router.push('/(modals)/new-course')}
+                    >
+                      <Ionicons name="add-outline" size={16} color={theme.text} />
+                      <HeroButton.Label>{t('instructor.create_course')}</HeroButton.Label>
+                    </HeroButton>
+                  </View>
                 </HeroCard.Body>
               </HeroCard>
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as CourseTab)} variant="secondary">

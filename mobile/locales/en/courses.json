@@ -113,7 +113,10 @@
     "section_title": "Section title",
     "create_error": "Could not save. Please try again.",
     "no_category": "No category",
-    "no_courses": "You haven't created any courses yet."
+    "no_courses": "You haven't created any courses yet.",
+    "unsaved_title": "Discard this course?",
+    "unsaved_message": "You have unsaved details. Leaving now will lose them.",
+    "discard": "Discard"
   },
   "grading": {
     "title": "Grading",

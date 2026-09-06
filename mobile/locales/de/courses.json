@@ -113,7 +113,10 @@
     "section_title": "Abschnittstitel",
     "create_error": "Konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     "no_category": "Keine Kategorie",
-    "no_courses": "Sie haben noch keine Kurse erstellt."
+    "no_courses": "Sie haben noch keine Kurse erstellt.",
+    "unsaved_title": "Diesen Kurs verwerfen?",
+    "unsaved_message": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
+    "discard": "Verwerfen"
   },
   "grading": {
     "title": "Benotung",

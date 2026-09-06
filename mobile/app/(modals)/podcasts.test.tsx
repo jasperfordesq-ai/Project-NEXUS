@@ -10,7 +10,7 @@ const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(), router: { push: (...args: unknown[]) => mockPush(...args) } }));
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ title: 'Podcasts', subtitle: 'Community audio stories', 'browse.search_placeholder': 'Search shows', 'browse.empty': 'No podcast shows yet', 'browse.empty_hint': 'Check back soon', 'browse.retry': 'Try again', 'common:back': 'Back', 'common:actions.clear': 'Clear search' } as Record<string, string>)[key] ?? key }) }));
+jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ title: 'Podcasts', subtitle: 'Community audio stories', 'browse.search_placeholder': 'Search shows', 'browse.empty': 'No podcast shows yet', 'browse.empty_hint': 'Check back soon', 'browse.retry': 'Try again', 'common:back': 'Back', 'common:actions.clear': 'Clear search', 'studio.title': 'Podcast Studio', 'studio.create_show': 'Create show' } as Record<string, string>)[key] ?? key }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textSecondary: '#555', textMuted: '#777' }) }));
@@ -33,5 +33,21 @@ describe('PodcastsScreen', () => {
     await waitFor(() => expect(getByText('Time stories')).toBeTruthy());
     fireEvent.press(getByText('Time stories'));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/podcast-show', params: { slug: 'time-stories' } });
+  });
+
+  /*
+    🔴 The studio must have a door here. Reachable only from the "+" menu, a member
+    who already has a show has no way back to it — which is how a member concludes
+    the feature is not there.
+  */
+  it('offers the studio entry points and opens them natively', async () => {
+    const { getByText } = render(<PodcastsScreen />);
+    await waitFor(() => expect(getByText('Podcast Studio')).toBeTruthy());
+
+    fireEvent.press(getByText('Podcast Studio'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/podcast-studio');
+
+    fireEvent.press(getByText('Create show'));
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/podcast-studio');
   });
 });

@@ -115,7 +115,10 @@
     "section_title": "Titolo della sezione",
     "create_error": "Impossibile salvare. Per favore riprova.",
     "no_category": "Nessuna categoria",
-    "no_courses": "Non hai ancora creato nessun corso."
+    "no_courses": "Non hai ancora creato nessun corso.",
+    "unsaved_title": "Scartare questo corso?",
+    "unsaved_message": "Hai dati non salvati. Se esci ora, andranno perduti.",
+    "discard": "Elimina"
   },
   "grading": {
     "title": "Classificazione",

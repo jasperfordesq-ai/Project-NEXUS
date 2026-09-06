@@ -21,10 +21,10 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2240 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 55 |
-| Call sites | 553 |
-| Distinct method + endpoint pairs | 463 |
-| Verified against openapi.json | 463 |
+| API modules read | 56 |
+| Call sites | 584 |
+| Distinct method + endpoint pairs | 494 |
+| Verified against openapi.json | 494 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 74 |
@@ -148,11 +148,27 @@ and the places a contract test earns the most.
 | POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1177 |
 | POST | `/api/v2/coupons/redeem-qr` | marketplace.ts:1181 |
 | POST | `/api/v2/coupons/validate` | marketplace.ts:860 |
-| GET | `/api/v2/courses` | courses.ts:109 |
-| GET | `/api/v2/courses/{param}` | courses.ts:121 |
-| POST | `/api/v2/courses/{param}/enroll` | courses.ts:133 |
-| POST | `/api/v2/courses/{param}/lessons/{param}/complete` | courses.ts:137 |
-| GET | `/api/v2/courses/{param}/progress` | courses.ts:129 |
+| GET | `/api/v2/courses` | courses.ts:243 |
+| POST | `/api/v2/courses` | courses.ts:292 |
+| GET | `/api/v2/courses/{param}` | courses.ts:255 |
+| PUT | `/api/v2/courses/{param}` | courses.ts:296 |
+| GET | `/api/v2/courses/{param}/cohorts` | courses.ts:365 |
+| POST | `/api/v2/courses/{param}/cohorts` | courses.ts:369 |
+| POST | `/api/v2/courses/{param}/enroll` | courses.ts:267 |
+| POST | `/api/v2/courses/{param}/lessons` | courses.ts:329 |
+| DELETE | `/api/v2/courses/{param}/lessons/{param}` | courses.ts:344 |
+| PUT | `/api/v2/courses/{param}/lessons/{param}` | courses.ts:337 |
+| POST | `/api/v2/courses/{param}/lessons/{param}/complete` | courses.ts:271 |
+| GET | `/api/v2/courses/{param}/progress` | courses.ts:263 |
+| POST | `/api/v2/courses/{param}/publish` | courses.ts:300 |
+| POST | `/api/v2/courses/{param}/quizzes` | courses.ts:350 |
+| POST | `/api/v2/courses/{param}/quizzes/{param}/questions` | courses.ts:358 |
+| POST | `/api/v2/courses/{param}/sections` | courses.ts:308 |
+| DELETE | `/api/v2/courses/{param}/sections/{param}` | courses.ts:323 |
+| PUT | `/api/v2/courses/{param}/sections/{param}` | courses.ts:316 |
+| POST | `/api/v2/courses/{param}/unpublish` | courses.ts:304 |
+| GET | `/api/v2/courses/categories` | courses.ts:283 |
+| GET | `/api/v2/courses/mine` | courses.ts:288 |
 | GET | `/api/v2/donations/{param}/receipt` | donations.ts:23 |
 | GET | `/api/v2/events/{param}/analytics` | eventAnalytics.ts:120 |
 | GET | `/api/v2/events/{param}/lifecycle-history` | eventLifecycleHistory.ts:62 |
@@ -432,7 +448,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/me/collections` | savedCollections.ts:55 |
 | POST | `/api/v2/me/collections` | savedCollections.ts:63 |
 | GET | `/api/v2/me/collections/{param}/items` | savedCollections.ts:67 |
-| GET | `/api/v2/me/courses` | courses.ts:125 |
+| GET | `/api/v2/me/courses` | courses.ts:259 |
 | POST | `/api/v2/me/data-export` | settings.ts:91 |
 | GET | `/api/v2/me/data-export/history` | settings.ts:86 |
 | DELETE | `/api/v2/me/saved-items/{param}` | savedCollections.ts:74 |
@@ -472,13 +488,28 @@ and the places a contract test earns the most.
 | GET | `/api/v2/partner-venues/pass` | venues.ts:60 |
 | POST | `/api/v2/partner-venues/pass/rotate` | venues.ts:64 |
 | POST | `/api/v2/partner-venues/visits/verify/{param}` | venues.ts:73 |
-| GET | `/api/v2/podcasts` | podcasts.ts:73 |
-| GET | `/api/v2/podcasts/{param}` | podcasts.ts:80 |
-| GET | `/api/v2/podcasts/{param}/{param}` | podcasts.ts:84 |
-| POST | `/api/v2/podcasts/{param}/subscribe` | podcasts.ts:92 |
-| POST | `/api/v2/podcasts/episodes/{param}/listen` | podcasts.ts:88 |
-| POST | `/api/v2/podcasts/episodes/{param}/reaction` | podcasts.ts:96 |
-| POST | `/api/v2/podcasts/episodes/{param}/report` | podcasts.ts:100 |
+| GET | `/api/v2/podcasts` | podcasts.ts:196 |
+| POST | `/api/v2/podcasts` | podcasts.ts:255 |
+| DELETE | `/api/v2/podcasts/{param}` | podcasts.ts:271 |
+| GET | `/api/v2/podcasts/{param}` | podcasts.ts:203 |
+| PUT | `/api/v2/podcasts/{param}` | podcasts.ts:259 |
+| GET | `/api/v2/podcasts/{param}/{param}` | podcasts.ts:207 |
+| POST | `/api/v2/podcasts/{param}/archive` | podcasts.ts:267 |
+| POST | `/api/v2/podcasts/{param}/artwork` | podcasts.ts:333 |
+| POST | `/api/v2/podcasts/{param}/episodes` | podcasts.ts:275 |
+| DELETE | `/api/v2/podcasts/{param}/episodes/{param}` | podcasts.ts:291 |
+| PUT | `/api/v2/podcasts/{param}/episodes/{param}` | podcasts.ts:279 |
+| POST | `/api/v2/podcasts/{param}/episodes/{param}/archive` | podcasts.ts:287 |
+| POST | `/api/v2/podcasts/{param}/episodes/{param}/cover` | podcasts.ts:339 |
+| POST | `/api/v2/podcasts/{param}/episodes/{param}/publish` | podcasts.ts:283 |
+| POST | `/api/v2/podcasts/{param}/publish` | podcasts.ts:263 |
+| GET | `/api/v2/podcasts/{param}/stats` | podcasts.ts:251 |
+| POST | `/api/v2/podcasts/{param}/subscribe` | podcasts.ts:215 |
+| GET | `/api/v2/podcasts/{param}/validate-feed` | podcasts.ts:247 |
+| POST | `/api/v2/podcasts/episodes/{param}/listen` | podcasts.ts:211 |
+| POST | `/api/v2/podcasts/episodes/{param}/reaction` | podcasts.ts:219 |
+| POST | `/api/v2/podcasts/episodes/{param}/report` | podcasts.ts:223 |
+| GET | `/api/v2/podcasts/mine` | podcasts.ts:240 |
 | GET | `/api/v2/polls` | events.ts:1262 |
 | POST | `/api/v2/polls` | polls.ts:20 |
 | POST | `/api/v2/polls/{param}/vote` | events.ts:1270 |
