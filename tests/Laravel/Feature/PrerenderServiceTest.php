@@ -984,6 +984,52 @@ HTML;
         $this->assertSame('green', $stuck['status']);
     }
 
+    public function test_health_reports_a_long_lived_authoritative_block_as_red(): void
+    {
+        // The drift sweep stands aside for a platform-wide rebuild by design.
+        // Un-bounded, that pause became a silent 28-day stop in production
+        // (2026-08-11 to 2026-09-06) while the engine reported success every
+        // two minutes. health() is where an operator sees it.
+        config(['prerender.authoritative_block_alert_seconds' => 1800]);
+
+        $service = new PrerenderService();
+        $service->resetBreaker();
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => null,
+            'routes'    => null,
+            'status'    => 'queued',
+            'priority'  => 3,
+            'queued_at' => date('Y-m-d H:i:s', time() - 7200),
+        ]);
+
+        $health = $service->health();
+        $block = collect($health['checks'])->firstWhere('name', 'authoritative_block');
+        $this->assertNotNull($block);
+        $this->assertSame('red', $block['status']);
+        $this->assertSame('red', $health['status']);
+        $this->assertArrayHasKey('action', $block);
+    }
+
+    public function test_health_does_not_flag_a_short_authoritative_block(): void
+    {
+        config(['prerender.authoritative_block_alert_seconds' => 1800]);
+
+        $service = new PrerenderService();
+        $service->resetBreaker();
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => null,
+            'routes'    => null,
+            'status'    => 'queued',
+            'priority'  => 3,
+            'queued_at' => date('Y-m-d H:i:s', time() - 120),
+        ]);
+
+        $health = $service->health();
+        $block = collect($health['checks'])->firstWhere('name', 'authoritative_block');
+        $this->assertNotNull($block);
+        $this->assertSame('green', $block['status']);
+    }
+
     public function test_verify_integrity_matches_sidecar(): void
     {
         $service = new PrerenderService();

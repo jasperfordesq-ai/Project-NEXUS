@@ -720,6 +720,7 @@
           "queue_age": "Âge de la file d'attente",
           "recent_failures": "Échecs récents",
           "stuck_jobs": "Emplois bloqués",
+          "authoritative_block": "Reconstruction de toute la plateforme",
           "last_successful_pass": "Dernière exécution réussie",
           "last_failed_pass": "Dernière exécution échouée",
           "sched_prerender-detect-drift": "Battement de coeur du détecteur de dérive",

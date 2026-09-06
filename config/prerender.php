@@ -59,6 +59,21 @@ return [
     // session fallback still works for the in-app UI.
     'webhook_token' => env('PRERENDER_WEBHOOK_TOKEN', ''),
 
+    // A platform-wide (tenant_id IS NULL) prerender job that has not reached a
+    // terminal state suppresses the 2-minute drift sweep by design: piling
+    // per-tenant recaches on top of an authoritative rebuild fights it. That
+    // guard had no time bound, so a job that could never finish turned the
+    // pause into a permanent, silent stop — three global jobs sat 'queued'
+    // from roughly 2026-08-11 to 2026-09-06 while the sweep reported success
+    // every two minutes and nothing was re-rendered platform-wide.
+    //
+    // This is that bound. A block older than this is stuck, not busy: the
+    // drift sweep exits FAILURE (so its scheduler-liveness stamp goes stale)
+    // and PrerenderService::health() reports it red. A 'running' job that
+    // renewed its worker lease inside the same window is exempt — it really is
+    // rendering snapshots, so a long-but-progressing rebuild never cries wolf.
+    'authoritative_block_alert_seconds' => (int) env('PRERENDER_AUTHORITATIVE_BLOCK_ALERT_SECONDS', 1800),
+
     'auto_recache' => [
         // Cap the work the cron generates so a single tick can't blow up the
         // queue. The cron itself runs at a fixed interval (see deploy notes);

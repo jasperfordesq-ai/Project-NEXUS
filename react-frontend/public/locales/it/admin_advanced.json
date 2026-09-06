@@ -721,6 +721,7 @@
           "queue_age": "Età della coda",
           "recent_failures": "Fallimenti recenti",
           "stuck_jobs": "Lavori bloccati",
+          "authoritative_block": "Ricostruzione dell’intera piattaforma",
           "last_successful_pass": "Ultima corsa riuscita",
           "last_failed_pass": "Ultima esecuzione non riuscita",
           "sched_prerender-detect-drift": "Battito cardiaco del rilevatore di deriva",

@@ -709,6 +709,7 @@
           "queue_age": "キューの経過時間",
           "recent_failures": "最近の失敗",
           "stuck_jobs": "スタックしたジョブ",
+          "authoritative_block": "プラットフォーム全体の再生成",
           "last_successful_pass": "最後に成功した実行",
           "last_failed_pass": "最後に失敗した実行",
           "sched_prerender-detect-drift": "ドリフト検出器のハートビート",

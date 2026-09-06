@@ -797,6 +797,7 @@
           "queue_age": "Queue age",
           "recent_failures": "Recent failures",
           "stuck_jobs": "Stuck jobs",
+          "authoritative_block": "Platform-wide rebuild",
           "last_successful_pass": "Last successful run",
           "last_failed_pass": "Last failed run",
           "sched_prerender-detect-drift": "Drift detector heartbeat",

@@ -75,25 +75,47 @@ class PrerenderDetectDrift extends Command
             return self::FAILURE;
         }
 
-        $globalActive = DB::table('prerender_jobs')
-            ->whereNull('tenant_id')
-            ->where(function ($state): void {
-                $state->whereIn('status', ['queued', 'claimed', 'running']);
-                if (Schema::hasColumn('prerender_jobs', 'fence_state')) {
-                    $state->orWhere('fence_state', 'pending');
-                }
-            });
-        if ($globalActive->exists()) {
+        // Stand aside while an authoritative platform-wide rebuild is in
+        // flight — per-tenant recaches piled on top of it fight the rebuild.
+        //
+        // The guard is right; being unbounded in time was not. A global job
+        // that can never finish converts this pause into a permanent stop, and
+        // reporting SUCCESS keeps stamping the scheduler-liveness key, so the
+        // health endpoint sees a drift sweep running happily every two minutes
+        // while it is in fact doing nothing at all. That is exactly what
+        // happened between roughly 2026-08-11 and 2026-09-06: jobs 4993, 4996
+        // and 5001 sat 'queued' back to back because the host processor could
+        // not claim work, and 972 snapshots went 28 days stale unnoticed.
+        //
+        // So: routine success while the block is young, an explicit failure
+        // once it outlives prerender.authoritative_block_alert_seconds.
+        $block = PrerenderService::blockingGlobalJob();
+        if ($block !== null) {
+            // The human line goes first so the JSON report stays the last
+            // thing on stdout and remains machine-readable as a whole.
+            if ($block['stale']) {
+                $this->error(sprintf(
+                    'Global prerender job #%d has been %s for %ds (limit %ds). Drift detection has been suppressed platform-wide for that whole time and no snapshot is being refreshed.',
+                    $block['job_id'],
+                    $block['status'],
+                    $block['age_seconds'],
+                    $block['threshold_seconds']
+                ));
+            }
             $this->line(json_encode([
                 'dry_run' => $dryRun,
                 'priority' => $priority,
                 'enqueued' => [],
-                'skipped' => ['*' => 'authoritative_global_job_exists'],
+                'skipped' => ['*' => $block['stale']
+                    ? 'authoritative_global_job_stuck'
+                    : 'authoritative_global_job_exists'],
+                'authoritative_block' => $block,
                 'planning_errors' => 0,
                 'inventory_truncated' => false,
                 'snapshot_count' => 0,
             ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-            return self::SUCCESS;
+
+            return $block['stale'] ? self::FAILURE : self::SUCCESS;
         }
 
         if ($this->prerender->authoritativeRepairRequired()) {

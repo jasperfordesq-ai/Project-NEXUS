@@ -739,6 +739,7 @@
           "queue_age": "Aois scuaine",
           "recent_failures": "Teipeanna le déanaí",
           "stuck_jobs": "Poist bhfostú",
+          "authoritative_block": "Atógáil ar fud an ardáin",
           "last_successful_pass": "Rith rathúil deireanach",
           "last_failed_pass": "An rith dheireanach ar theip air",
           "sched_prerender-detect-drift": "Buille croí braite sruth",

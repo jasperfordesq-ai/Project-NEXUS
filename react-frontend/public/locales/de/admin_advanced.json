@@ -707,6 +707,7 @@
           "queue_age": "Alter der Warteschlange",
           "recent_failures": "Aktuelle Misserfolge",
           "stuck_jobs": "Festgefahrene Jobs",
+          "authoritative_block": "Plattformweiter Neuaufbau",
           "last_successful_pass": "Letzter erfolgreicher Lauf",
           "last_failed_pass": "Letzter fehlgeschlagener Lauf",
           "sched_prerender-detect-drift": "Herzschlag des Driftdetektors",

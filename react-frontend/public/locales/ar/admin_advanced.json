@@ -752,6 +752,7 @@
           "queue_age": "عمر قائمة الانتظار",
           "recent_failures": "الإخفاقات الأخيرة",
           "stuck_jobs": "وظائف عالقة",
+          "authoritative_block": "إعادة بناء المنصة بالكامل",
           "last_successful_pass": "آخر تشغيل ناجح",
           "last_failed_pass": "آخر عملية فاشلة",
           "sched_prerender-detect-drift": "كاشف نبضات القلب الانجراف",

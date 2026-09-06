@@ -2322,6 +2322,95 @@ class PrerenderService
             && Schema::hasColumn('prerender_jobs', 'heartbeat_at');
     }
 
+    /**
+     * The oldest platform-wide (tenant_id IS NULL) prerender job that has not
+     * reached a terminal state, or null when nothing is blocking.
+     *
+     * A job in this state deliberately suppresses the 2-minute drift sweep:
+     * piling per-tenant recaches on top of an authoritative platform rebuild
+     * fights the rebuild. That guard is correct, but it is unbounded in time,
+     * so a job that can never finish turns the suppression into a permanent,
+     * silent stop. Between roughly 2026-08-11 and 2026-09-06 three global jobs
+     * sat 'queued' back to back because the job processor could not claim
+     * anything (artisan failed to boot in the container), and the drift sweep
+     * reported routine success for 28 days while nothing was rendered.
+     *
+     * `stale` is that missing time bound: true once the block has outlived
+     * `prerender.authoritative_block_alert_seconds` WITHOUT showing progress.
+     * The carve-out matters — the harm is "nothing is being rendered", not
+     * "this is taking a while". A running job that renewed its worker lease
+     * inside the same window is rendering snapshots right now, so suppressing
+     * the drift sweep for it is exactly what the guard is for. A job that is
+     * still merely 'queued', or whose lease has gone quiet, is not rendering
+     * anything, and every extra minute of suppression is pure loss.
+     *
+     * Static so the drift command shares one definition of "blocking" with
+     * health() without needing a service instance.
+     *
+     * @return array{job_id:int,status:string,fence_state:?string,queued_at:?string,age_seconds:int,lease_age_seconds:?int,threshold_seconds:int,progressing:bool,stale:bool}|null
+     */
+    public static function blockingGlobalJob(): ?array
+    {
+        if (!Schema::hasTable('prerender_jobs')) {
+            return null;
+        }
+
+        $hasFenceState = Schema::hasColumn('prerender_jobs', 'fence_state');
+        $hasHeartbeat = Schema::hasColumn('prerender_jobs', 'heartbeat_at');
+        $columns = ['id', 'status', 'queued_at', 'started_at'];
+        if ($hasFenceState) {
+            $columns[] = 'fence_state';
+        }
+        if ($hasHeartbeat) {
+            $columns[] = 'heartbeat_at';
+        }
+
+        $row = DB::table('prerender_jobs')
+            ->whereNull('tenant_id')
+            ->where(function ($state) use ($hasFenceState): void {
+                $state->whereIn('status', ['queued', 'claimed', 'running']);
+                if ($hasFenceState) {
+                    $state->orWhere('fence_state', self::FENCE_STATE_PENDING);
+                }
+            })
+            // queued_at is NOT NULL, but ordering by the primary key is the
+            // same "oldest first" and cannot be defeated by a clock skew.
+            ->orderBy('id')
+            ->select($columns)
+            ->first();
+        if ($row === null) {
+            return null;
+        }
+
+        $threshold = max(60, (int) config('prerender.authoritative_block_alert_seconds', 1800));
+        $now = time();
+        $queuedAt = $row->queued_at ?? null;
+        $queuedTs = is_string($queuedAt) ? strtotime($queuedAt) : false;
+        $ageSeconds = $queuedTs === false ? 0 : max(0, $now - $queuedTs);
+
+        // COALESCE(heartbeat_at, started_at) is the same renewable-lease
+        // reading the stuck-job check uses, so the two agree about which
+        // running jobs are alive.
+        $leaseAt = ($hasHeartbeat ? ($row->heartbeat_at ?? null) : null) ?? ($row->started_at ?? null);
+        $leaseTs = is_string($leaseAt) ? strtotime($leaseAt) : false;
+        $leaseAgeSeconds = $leaseTs === false ? null : max(0, $now - $leaseTs);
+        $progressing = (string) $row->status === 'running'
+            && $leaseAgeSeconds !== null
+            && $leaseAgeSeconds <= $threshold;
+
+        return [
+            'job_id'            => (int) $row->id,
+            'status'            => (string) $row->status,
+            'fence_state'       => $hasFenceState ? (string) ($row->fence_state ?? '') : null,
+            'queued_at'         => is_string($queuedAt) ? $queuedAt : null,
+            'age_seconds'       => $ageSeconds,
+            'lease_age_seconds' => $leaseAgeSeconds,
+            'threshold_seconds' => $threshold,
+            'progressing'       => $progressing,
+            'stale'             => $ageSeconds > $threshold && !$progressing,
+        ];
+    }
+
     private function hasJobFenceColumn(): bool
     {
         return Schema::hasTable('prerender_jobs')
@@ -4409,7 +4498,50 @@ class PrerenderService
             }
         }
 
-        // 8. Scheduler liveness. Each prerender:* cron stamps a cache key on
+        // 8. Authoritative platform-wide rebuild in flight. The 2-minute
+        // drift sweep steps aside for one of these by design, so a block that
+        // can never finish silently stops drift detection platform-wide. Time
+        // bounds it: routine while it is younger than the configured
+        // threshold, an operator-facing failure once it outlives it.
+        if ($hasJobsTable) {
+            $block = self::blockingGlobalJob();
+            if ($block === null) {
+                $checks[] = [
+                    'name'   => 'authoritative_block',
+                    'status' => 'green',
+                    'detail' => 'No platform-wide rebuild is holding back drift detection',
+                ];
+            } elseif ($block['stale']) {
+                $checks[] = [
+                    'name'   => 'authoritative_block',
+                    'status' => 'red',
+                    'detail' => sprintf(
+                        'Global job #%d has been %s for %ds (limit %ds); drift detection has been suppressed platform-wide for that whole time and no snapshot is being refreshed',
+                        $block['job_id'],
+                        $block['status'],
+                        $block['age_seconds'],
+                        $block['threshold_seconds']
+                    ),
+                    'action' => 'Check the host job processor can still claim work: tail /opt/nexus-php/logs/prerender-job-processor.log (a repeated "FATAL: unsafe routes in claim output" means artisan is not booting in the container). Cancel or finish job #'
+                        . $block['job_id'] . ' to release the drift sweep.',
+                ];
+                $bump('red');
+            } else {
+                $checks[] = [
+                    'name'   => 'authoritative_block',
+                    'status' => 'green',
+                    'detail' => sprintf(
+                        'Global job #%d is %s (%ds old%s); drift detection is paused while it runs',
+                        $block['job_id'],
+                        $block['status'],
+                        $block['age_seconds'],
+                        $block['progressing'] ? ', lease renewed ' . $block['lease_age_seconds'] . 's ago' : ''
+                    ),
+                ];
+            }
+        }
+
+        // 9. Scheduler liveness. Each prerender:* cron stamps a cache key on
         // success; if the gap exceeds 3× the expected interval, the scheduler
         // itself is probably wedged (Laravel queue worker / supervisord
         // problem) and the engine is degrading silently.

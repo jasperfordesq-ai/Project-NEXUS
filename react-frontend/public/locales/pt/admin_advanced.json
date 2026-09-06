@@ -722,6 +722,7 @@
           "queue_age": "Idade da fila",
           "recent_failures": "Falhas recentes",
           "stuck_jobs": "Trabalhos travados",
+          "authoritative_block": "Reconstrução de toda a plataforma",
           "last_successful_pass": "Última execução bem-sucedida",
           "last_failed_pass": "Última execução com falha",
           "sched_prerender-detect-drift": "Batimento cardíaco do detector de deriva",

@@ -735,6 +735,7 @@
           "queue_age": "Wiek kolejki",
           "recent_failures": "Ostatnie awarie",
           "stuck_jobs": "Zablokowane zadania",
+          "authoritative_block": "Przebudowa całej platformy",
           "last_successful_pass": "Ostatni udany bieg",
           "last_failed_pass": "Ostatni nieudany bieg",
           "sched_prerender-detect-drift": "Bicie serca czujnika dryfu",

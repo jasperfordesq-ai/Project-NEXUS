@@ -753,6 +753,105 @@ class PrerenderDetectDriftTest extends TestCase
     }
 
     // =========================================================================
+    // A block that never ends must stop looking like routine success.
+    //
+    // The guard above is correct — per-tenant recaches piled on top of an
+    // authoritative platform rebuild fight the rebuild — but it had no time
+    // bound. In production three global jobs sat 'queued' back to back from
+    // roughly 2026-08-11 to 2026-09-06 because the host job processor could
+    // not claim work. Every two minutes the sweep hit this guard, printed
+    // "authoritative_global_job_exists", exited 0, and so refreshed the
+    // scheduler-liveness stamp the health endpoint watches. For 28 days the
+    // engine looked alive, did nothing, and let 972 snapshots go stale.
+    // =========================================================================
+
+    public function test_long_lived_authoritative_global_job_fails_instead_of_reporting_success(): void
+    {
+        config(['prerender.authoritative_block_alert_seconds' => 1800]);
+
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => null,
+            'force_render' => 1,
+            'dry_run' => 0,
+            'priority' => 1,
+            'status' => 'queued',
+            // Never claimed, never started — exactly the production shape.
+            'queued_at' => date('Y-m-d H:i:s', time() - 7200),
+        ]);
+
+        $this->prerenderMock->shouldNotReceive('loadTenantTargets');
+        $this->prerenderMock->shouldNotReceive('inventory');
+        $this->sitemapMock->shouldNotReceive('generateForTenant');
+        $this->prerenderMock->shouldNotReceive('enqueueJob');
+
+        // A non-zero exit stops bootstrap/app.php's onSuccess() callback from
+        // stamping prerender:sched:prerender-detect-drift:last_ok_at, so the
+        // scheduler-liveness check in PrerenderService::health() goes red on
+        // its own after ~6 minutes.
+        $exitCode = Artisan::call('prerender:detect-drift');
+        $report = $this->decodeReport(Artisan::output());
+
+        $this->assertSame(1, $exitCode);
+        $this->assertSame('authoritative_global_job_stuck', $report['skipped']['*']);
+        $this->assertTrue($report['authoritative_block']['stale']);
+        $this->assertFalse($report['authoritative_block']['progressing']);
+        $this->assertGreaterThan(1800, $report['authoritative_block']['age_seconds']);
+    }
+
+    public function test_authoritative_global_job_inside_the_threshold_is_still_routine_success(): void
+    {
+        config(['prerender.authoritative_block_alert_seconds' => 1800]);
+
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => null,
+            'force_render' => 1,
+            'dry_run' => 0,
+            'priority' => 1,
+            'status' => 'queued',
+            'queued_at' => date('Y-m-d H:i:s', time() - 300),
+        ]);
+
+        $exitCode = Artisan::call('prerender:detect-drift');
+        $report = $this->decodeReport(Artisan::output());
+
+        $this->assertSame(0, $exitCode);
+        $this->assertSame('authoritative_global_job_exists', $report['skipped']['*']);
+        $this->assertFalse($report['authoritative_block']['stale']);
+    }
+
+    public function test_a_long_authoritative_job_that_is_still_rendering_is_not_reported_as_stuck(): void
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('prerender_jobs', 'heartbeat_at')) {
+            $this->markTestSkipped('heartbeat_at migration is not applied.');
+        }
+
+        config(['prerender.authoritative_block_alert_seconds' => 1800]);
+
+        // Older than the threshold, but the worker renewed its lease seconds
+        // ago: this job IS refreshing snapshots, so pausing the drift sweep
+        // for it is the guard working as intended, not a silent stop.
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => null,
+            'force_render' => 1,
+            'dry_run' => 0,
+            'priority' => 1,
+            'status' => 'running',
+            'queued_at' => date('Y-m-d H:i:s', time() - 7200),
+            'claimed_at' => date('Y-m-d H:i:s', time() - 7100),
+            'started_at' => date('Y-m-d H:i:s', time() - 7100),
+            'heartbeat_at' => date('Y-m-d H:i:s', time() - 20),
+        ]);
+
+        $exitCode = Artisan::call('prerender:detect-drift');
+        $report = $this->decodeReport(Artisan::output());
+
+        $this->assertSame(0, $exitCode);
+        $this->assertSame('authoritative_global_job_exists', $report['skipped']['*']);
+        $this->assertTrue($report['authoritative_block']['progressing']);
+        $this->assertFalse($report['authoritative_block']['stale']);
+    }
+
+    // =========================================================================
     // A route the tenant's route plan rejects must not abandon the sweep.
     //
     // A tenant's sitemap and PrerenderService's route plan are two separately

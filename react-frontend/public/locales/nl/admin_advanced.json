@@ -707,6 +707,7 @@
           "queue_age": "Wachtrij leeftijd",
           "recent_failures": "Recente mislukkingen",
           "stuck_jobs": "Vastgelopen banen",
+          "authoritative_block": "Platformbrede herbouw",
           "last_successful_pass": "Laatste succesvolle run",
           "last_failed_pass": "Laatste mislukte run",
           "sched_prerender-detect-drift": "Hartslag van driftdetector",

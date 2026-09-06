@@ -720,6 +720,7 @@
           "queue_age": "Edad de la cola",
           "recent_failures": "Fallos recientes",
           "stuck_jobs": "Trabajos estancados",
+          "authoritative_block": "Reconstrucción de toda la plataforma",
           "last_successful_pass": "Última ejecución exitosa",
           "last_failed_pass": "Última ejecución fallida",
           "sched_prerender-detect-drift": "Latido del corazón del detector de deriva",
