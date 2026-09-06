@@ -8,7 +8,18 @@ import { ApiResponseError } from '@/lib/api/client';
 import i18n from 'i18next';
 
 /** HTTP status codes worth retrying (transient server/network errors). */
-const RETRYABLE_STATUSES = new Set([500, 502, 503, 504]);
+/**
+ * Statuses worth one automatic retry.
+ *
+ * 🔴 `0` is in here for a reason that is easy to lose: `lib/api/client.ts` wraps every
+ * network failure and every timeout as `new ApiResponseError(0, ...)`. The transient test
+ * below reads "a retryable status, OR not an ApiResponseError at all" — and a dropped
+ * mobile connection satisfies neither, because it IS an ApiResponseError and its status
+ * was not in this set. So the one failure the automatic retry most obviously exists for
+ * was the one case it never covered, on every screen using these hooks. Found by the
+ * 2026-09-06 audit (F07).
+ */
+const RETRYABLE_STATUSES = new Set([0, 500, 502, 503, 504]);
 
 /** Delay before a single retry attempt (ms). */
 const RETRY_DELAY_MS = 2000;

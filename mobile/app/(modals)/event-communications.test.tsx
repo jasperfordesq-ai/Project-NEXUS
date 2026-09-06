@@ -145,6 +145,7 @@ jest.mock('react-i18next', () => {
 });
 
 import EventCommunicationsScreen from './event-communications';
+import { isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 function broadcast(overrides: Record<string, unknown> = {}) {
   return {
@@ -271,9 +272,9 @@ describe('EventCommunicationsScreen', () => {
 
     fireEvent.press(screen.getByText('New message'));
     // A pristine composer closes freely and no navigation guard is armed.
-    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    expect(isGuardArmed()).toBe(false);
     fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Half-written notice');
-    expect(mockNavListeners.beforeRemove).toBeDefined();
+    expect(isGuardArmed()).toBe(true);
 
     fireEvent.press(screen.getByText('common:buttons.cancel'));
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this message?', variant: 'danger' }));

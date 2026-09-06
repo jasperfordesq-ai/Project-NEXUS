@@ -189,6 +189,7 @@ jest.mock('heroui-native', () => {
 });
 
 import NewVolunteeringRoute from './new-volunteering';
+import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 describe('NewVolunteeringRoute', () => {
   beforeEach(() => {
@@ -406,13 +407,11 @@ describe('NewVolunteeringRoute', () => {
   /** S4-04. Dirty input is guarded on Back / gestures. */
   it('asks before discarding unsaved input', () => {
     const { getByPlaceholderText } = render(<NewVolunteeringRoute />);
-    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    expect(isGuardArmed()).toBe(false);
     fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Half-typed');
-    expect(mockNavListeners.beforeRemove).toBeDefined();
+    expect(isGuardArmed()).toBe(true);
 
-    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
-    mockNavListeners.beforeRemove?.(e);
-    expect(e.preventDefault).toHaveBeenCalled();
+    firePreventedRemoval();
     expect(mockNavDispatch).not.toHaveBeenCalled();
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this opportunity?' }));
   });

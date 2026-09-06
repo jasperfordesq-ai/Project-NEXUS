@@ -321,6 +321,7 @@ jest.mock('heroui-native', () => {
 
 import NewEventRoute from './new-event';
 import { useAppToast } from '@/components/ui/AppToast';
+import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 const showToast = useAppToast().show as jest.Mock;
 const sharedEvent = require('../../../contracts/events/v2/event-detail.json');
@@ -796,14 +797,12 @@ describe('NewEventRoute', () => {
   /** S4-04. Back, Cancel and gestures pop the screen via `beforeRemove`; dirty input is guarded. */
   it('asks before discarding unsaved input, and lets an untouched form leave freely', () => {
     const screen = render(<NewEventRoute />);
-    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    expect(isGuardArmed()).toBe(false);
 
     fireEvent.changeText(screen.getByPlaceholderText('What is happening?'), 'Half-typed title');
-    expect(mockNavListeners.beforeRemove).toBeDefined();
+    expect(isGuardArmed()).toBe(true);
 
-    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
-    mockNavListeners.beforeRemove?.(e);
-    expect(e.preventDefault).toHaveBeenCalled();
+    firePreventedRemoval();
     expect(mockNavDispatch).not.toHaveBeenCalled();
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this event?', variant: 'danger' }));
   });

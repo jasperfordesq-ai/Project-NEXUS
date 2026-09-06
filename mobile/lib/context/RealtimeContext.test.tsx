@@ -491,8 +491,14 @@ describe('isMessagePayload validation', () => {
 
     await waitFor(() => expect(newMessageHandler).toBeDefined());
 
-    // Subscribe a handler for conversation 42
-    const handler = jest.fn();
+    /*
+      🔴 The handler returns TRUE, meaning "I am on screen and the member has seen
+      this". Being registered is deliberately no longer enough (audit 2026-09-06, F09):
+      a thread screen subscribes in a plain effect and stays mounted underneath the
+      listing or event a member opens from it, so a merely-registered listener used to
+      silence the badge for a message nobody could see.
+    */
+    const handler = jest.fn(() => true);
     act(() => {
       result.current.subscribeToMessages(42, handler);
     });
@@ -506,8 +512,61 @@ describe('isMessagePayload validation', () => {
 
     // Handler should have been called with the message
     expect(handler).toHaveBeenCalledWith(fakeMessage);
-    // Badge should NOT bump because there's an active listener
+    // Badge should NOT bump: a visible thread reported that it showed the member.
     expect(result.current.unreadMessages).toBe(0);
+  });
+
+  it('still bumps unread when the subscribed thread is covered by another screen', async () => {
+    /*
+      🔴 The heart of F09. The thread stays mounted and subscribed while the member
+      reads the listing or event it is about, so it must go on RECEIVING - but a message it
+      cannot show is unread, and the badge is the only thing that will ever tell the member
+      it arrived. A handler that returns anything but `true` is reporting exactly that.
+    */
+    let newMessageHandler: ((data: unknown) => void) | undefined;
+
+    const mockChannel = {
+      bind: jest.fn((event: string, handler: (data: unknown) => void) => {
+        if (event === 'new-message') newMessageHandler = handler;
+      }),
+      unbind_all: jest.fn(),
+      name: 'private-user.1',
+    };
+
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/notifications/counts')) {
+        return Promise.resolve({ data: { messages: 0, notifications: 0 } });
+      }
+      if (url.includes('/pusher/config')) {
+        return Promise.resolve({
+          enabled: true, key: 'test-key', channels: { user: 'private-user.1' },
+        });
+      }
+      return Promise.resolve({});
+    });
+    mockInitRealtime.mockReturnValue({
+      subscribe: jest.fn(() => mockChannel),
+      unsubscribe: jest.fn(),
+      connection: { state: 'connected' },
+    });
+
+    const wrapper3 = ({ children }: { children: React.ReactNode }) => (
+      <RealtimeProvider>{children}</RealtimeProvider>
+    );
+    const { result } = renderHook(() => useRealtimeContext(), { wrapper: wrapper3 });
+    await waitFor(() => expect(newMessageHandler).toBeDefined());
+
+    // Registered, receiving, but not visible.
+    const handler = jest.fn(() => false);
+    act(() => { result.current.subscribeToMessages(42, handler); });
+
+    const fakeMessage = { id: 99, body: 'Hello', sender: { id: 7 } };
+    act(() => { newMessageHandler!({ conversation_id: 42, message: fakeMessage }); });
+
+    // Still delivered — the thread caches it for when the member returns.
+    expect(handler).toHaveBeenCalledWith(fakeMessage);
+    // And still counted, because the member has not seen it.
+    expect(result.current.unreadMessages).toBe(1);
   });
 
   it('bumps unread when valid payload has no active listener', async () => {

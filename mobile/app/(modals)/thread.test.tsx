@@ -32,11 +32,24 @@ type MockThreadMessage = {
   reactions: Record<string, number>;
   is_read: boolean;
 };
-let mockRealtimeCallback: ((message: MockThreadMessage) => void) | null = null;
+let mockRealtimeCallback: ((message: MockThreadMessage) => boolean | void) | null = null;
 const thumbsUpReaction = '\u{1F44D}';
 
+/*
+  Captured so a test can put the screen behind another one and watch what changes.
+
+  🔴 An ARRAY, and the tests use the FIRST entry. `AppTopBar` also registers a focus
+  effect (its Android back handler, audit F10) and it renders inside this screen, so a
+  single slot ends up holding the top bar's callback rather than the thread's — and the
+  test would then be driving the wrong component's focus.
+*/
+const mockFocusCallbacks: (() => (() => void) | void)[] = [];
+const mockFocusCallback = {
+  get current(): (() => (() => void) | void) | undefined { return mockFocusCallbacks[0]; },
+};
+
 jest.mock('expo-router', () => ({
-  useFocusEffect: jest.fn(),
+  useFocusEffect: jest.fn((cb: () => (() => void) | void) => { mockFocusCallbacks.push(cb); }),
   router: { push: (...args: unknown[]) => mockRouterPush(...args), back: jest.fn() },
   useLocalSearchParams: () => mockThreadSearchParams,
   useNavigation: () => ({ setOptions: jest.fn() }),
@@ -147,7 +160,7 @@ const mockRefreshCounts = jest.fn();
 
 jest.mock('@/lib/context/RealtimeContext', () => ({
   useRealtimeContext: () => ({
-    subscribeToMessages: jest.fn((_threadId: number, callback: (message: MockThreadMessage) => void) => {
+    subscribeToMessages: jest.fn((_threadId: number, callback: (message: MockThreadMessage) => boolean | void) => {
       mockRealtimeCallback = callback;
       return jest.fn();
     }),
@@ -332,6 +345,7 @@ beforeEach(() => {
   mockThreadSearchParams = { id: '5', name: 'Alice' };
   mockRouterPush.mockClear();
   mockRealtimeCallback = null;
+  mockFocusCallbacks.length = 0;
   mockMarkConversationRead.mockClear();
   mockToggleMessageReaction.mockClear();
   mockGetMessagingRestrictionStatus.mockClear();
@@ -978,6 +992,88 @@ describe('ThreadScreen', () => {
 
     // 38 seconds, in milliseconds, as the audio component expects.
     expect(getByTestId('voice-bubble-38000')).toBeTruthy();
+  });
+
+  /*
+    🔴 Audit F09. This screen subscribes in a plain effect rather than a focus-scoped
+    one, so following the conversation's "Regarding" card to the listing or event pushes a
+    screen ON TOP of a thread that stays mounted and subscribed. The handler nonetheless
+    marked every incoming message read - locally and on the server - and its existence told
+    the realtime provider a viewer had taken it, so the badge never rose. A member who could
+    not see the message was recorded as having read it, with nothing to tell them otherwise.
+
+    The message must still ARRIVE while the thread is covered; only the acknowledgement
+    waits. Both halves are asserted.
+  */
+  it('receives but does not acknowledge a message while another screen covers the thread', async () => {
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn(),
+    });
+
+    const { getByText } = render(<ThreadScreen />);
+    expect(mockFocusCallback.current).toBeTruthy();
+
+    // Open the linked listing: the thread blurs but stays mounted and subscribed.
+    let cleanup: (() => void) | void;
+    act(() => { cleanup = mockFocusCallback.current?.(); });
+    act(() => { cleanup?.(); });
+
+    mockMarkConversationRead.mockClear();
+    let acknowledged: boolean | void = undefined;
+    act(() => {
+      acknowledged = mockRealtimeCallback?.({
+        id: 4,
+        body: 'Arrived while you were away',
+        sender: { id: 5, name: 'Alice', avatar_url: null },
+        sender_id: 5,
+        created_at: '2026-03-10T10:05:00Z',
+        is_own: false,
+        is_voice: false,
+        audio_url: null,
+        reactions: {},
+        is_read: false,
+      });
+    });
+
+    // Still delivered and cached, so it is there when the member comes back.
+    await waitFor(() => expect(getByText('Arrived while you were away')).toBeTruthy());
+    // But not marked read, and reported to the provider as unseen so the badge rises.
+    expect(mockMarkConversationRead).not.toHaveBeenCalled();
+    expect(acknowledged).toBe(false);
+  });
+
+  it('clears what arrived while it was covered as soon as the member comes back', async () => {
+    // Otherwise a member returns to a thread they are looking at and a stale badge stays up
+    // until they happen to tap something.
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn(),
+    });
+
+    render(<ThreadScreen />);
+
+    let cleanup: (() => void) | void;
+    act(() => { cleanup = mockFocusCallback.current?.(); });
+    act(() => { cleanup?.(); });
+
+    act(() => {
+      mockRealtimeCallback?.({
+        id: 5,
+        body: 'Missed you',
+        sender: { id: 5, name: 'Alice', avatar_url: null },
+        sender_id: 5,
+        created_at: '2026-03-10T10:06:00Z',
+        is_own: false,
+        is_voice: false,
+        audio_url: null,
+        reactions: {},
+        is_read: false,
+      });
+    });
+
+    mockMarkConversationRead.mockClear();
+    act(() => { mockFocusCallback.current?.(); });
+
+    await waitFor(() => expect(mockMarkConversationRead).toHaveBeenCalledWith(5));
   });
 
   it('shows the quick-react row only for the tapped message, not under every bubble', () => {

@@ -149,6 +149,25 @@ jest.mock('expo-router', () => ({
     }
 }));
 
+/*
+ * `usePreventRemove` — used by `useUnsavedChangesGuard`, and through it by registration and
+ * every create/edit form.
+ *
+ * 🔴 Mocked at the setup level for the same reason `expo-router`'s `useNavigation` above is:
+ * the real hook reaches for a NavigationContainer, and a screen test renders one screen, not
+ * a navigator. Without this every form screen's test dies on "Couldn't find a navigation
+ * object" for a reason that has nothing to do with what it is testing.
+ *
+ * `jest.requireActual` keeps everything else in the package real, so this hides one hook
+ * rather than the whole navigation library. The guard's own behaviour is asserted directly
+ * in lib/hooks/useUnsavedChangesGuard.test.tsx, which mocks this deliberately and checks
+ * both what it is asked to protect and what it does when a removal is prevented.
+ */
+jest.mock('@react-navigation/native', () => ({
+    ...jest.requireActual('@react-navigation/native'),
+    usePreventRemove: jest.fn(),
+}));
+
 // Mock secure store
 jest.mock('expo-secure-store', () => ({
     getItemAsync: jest.fn(),

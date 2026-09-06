@@ -8,6 +8,9 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { RefreshControl } from 'react-native';
 
 jest.mock('expo-router', () => ({
+  // AppTopBar registers its Android back handler only while the screen is focused
+  // (audit 2026-09-06, F10), so every screen mock needs this hook to exist.
+  useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({}),

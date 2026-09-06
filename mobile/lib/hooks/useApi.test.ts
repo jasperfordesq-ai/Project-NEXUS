@@ -31,6 +31,41 @@ describe('useApi', () => {
     expect(result.current.error).toBeNull();
   });
 
+  /*
+    🔴 Audit F07. The transient test reads "a retryable status, OR not an
+    ApiResponseError at all" — and `lib/api/client.ts` wraps every network failure and
+    timeout as `ApiResponseError(0, ...)`, which satisfies neither. So the automatic retry
+    never covered the one failure it most obviously exists for, on every screen using this
+    hook. The fixture is the error the CLIENT actually produces, not a bare `Error`: an
+    earlier test using `new Error(...)` passed against the broken predicate.
+  */
+  it('retries a dropped connection, which the API client reports as status 0', async () => {
+    jest.useFakeTimers();
+    const fetchFn = jest.fn()
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'))
+      .mockResolvedValueOnce({ ok: true });
+    const { result } = renderHook(() => useApi(fetchFn));
+
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1));
+    await act(async () => { jest.advanceTimersByTime(2000); });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual({ ok: true });
+    expect(result.current.error).toBeNull();
+  });
+
+  it('still refuses to retry a refusal the server meant', async () => {
+    // The retry is bounded and only for transient failures. A 422 is a decision.
+    jest.useFakeTimers();
+    const fetchFn = jest.fn().mockRejectedValue(new ApiResponseError(422, 'Nope'));
+    const { result } = renderHook(() => useApi(fetchFn));
+
+    await waitFor(() => expect(result.current.error).toBe('Nope'));
+    await act(async () => { jest.advanceTimersByTime(5000); });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
   it('sets ApiResponseError message on API failure', async () => {
     const fetchFn = jest.fn().mockRejectedValue(
       new ApiResponseError(422, 'Unprocessable entity'),

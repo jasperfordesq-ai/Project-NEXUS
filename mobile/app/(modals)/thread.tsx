@@ -6,6 +6,7 @@
 import { formatDecimal } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AppState,
   FlatList,
   Image,
   Keyboard,
@@ -18,7 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
@@ -237,21 +238,80 @@ function ThreadScreenInner() {
     return () => clearTimeout(timer);
   }, [messages.length]);
 
+  /*
+    🔴 RECEIVING and ACKNOWLEDGING are separate things, and were not (audit 2026-09-06,
+    F09).
+
+    This screen subscribes in a plain effect rather than a focus-scoped one, deliberately:
+    a message that arrives while the member is looking at the conversation's linked listing
+    or event should already be in the thread when they come back. But the handler ALSO
+    marked every incoming message read - locally and on the server - and its mere existence
+    told the realtime provider a viewer had taken the message, so the unread badge never
+    rose. Following the "Regarding" card pushes a screen ON TOP of a thread that stays
+    mounted, so a member who could not see the message was recorded as having read it and
+    got no badge to tell them otherwise.
+
+    Receiving now happens whatever is on screen; acknowledging happens only when this
+    screen is focused AND the app is in the foreground. The handler returns whether that
+    was true, which is what now decides the badge - see `MessageHandler` in
+    lib/context/RealtimeContext.tsx.
+  */
+  const [isFocused, setIsFocused] = useState(true);
+  const isFocusedRef = useRef(true);
+  const appActiveRef = useRef(AppState.currentState === 'active');
+
+  useFocusEffect(
+    useCallback(() => {
+      isFocusedRef.current = true;
+      setIsFocused(true);
+      return () => {
+        isFocusedRef.current = false;
+        setIsFocused(false);
+      };
+    }, []),
+  );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next) => {
+      appActiveRef.current = next === 'active';
+    });
+    return () => subscription.remove();
+  }, []);
+
   useEffect(() => {
     if (!isValidId || !safeThreadLookupId) return undefined;
     return subscribeToMessages(safeThreadLookupId, (incoming) => {
+      // Read from refs, not from captured values: this handler is registered once and has
+      // to know whether the member can see the screen NOW, not when it subscribed.
+      const visible = isFocusedRef.current && appActiveRef.current;
       setMessages((prev) => {
         if (prev.some((message) => message.id === incoming.id)) return prev;
-        const acknowledged = incoming.is_own ? incoming : { ...incoming, is_read: true };
-        return [...prev, acknowledged].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        const next = incoming.is_own || visible ? { ...incoming, is_read: true } : incoming;
+        return [...prev, next].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       });
-      if (!incoming.is_own) {
+      if (!incoming.is_own && visible) {
         void markConversationRead(safeThreadLookupId)
           .then(() => refreshCounts(true))
           .catch(() => null);
       }
+      // An own message never counted towards the badge. One from the other side counts
+      // unless a thread the member can actually see has just shown it to them.
+      return incoming.is_own || visible;
     });
   }, [isValidId, refreshCounts, safeThreadLookupId, subscribeToMessages]);
+
+  /*
+    Returning to a thread that took messages while it was covered clears them once, here,
+    rather than leaving the member to shake off a stale badge by tapping something.
+  */
+  useEffect(() => {
+    if (!isFocused || !isValidId || !safeThreadLookupId) return;
+    if (!messages.some((message) => !message.is_own && message.is_read === false)) return;
+    setMessages((prev) => prev.map((message) => (message.is_own ? message : { ...message, is_read: true })));
+    void markConversationRead(safeThreadLookupId)
+      .then(() => refreshCounts(true))
+      .catch(() => null);
+  }, [isFocused, isValidId, messages, refreshCounts, safeThreadLookupId]);
 
   useEffect(() => {
     if (!isValidId) return undefined;

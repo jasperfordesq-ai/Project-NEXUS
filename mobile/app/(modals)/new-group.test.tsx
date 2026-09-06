@@ -202,6 +202,7 @@ jest.mock('heroui-native', () => {
 
 import NewGroupRoute from './new-group';
 import { useAppToast } from '@/components/ui/AppToast';
+import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 const showToast = useAppToast().show as jest.Mock;
 
@@ -479,13 +480,11 @@ describe('NewGroupRoute', () => {
   /** S4-04. Dirty input is guarded on Back / gestures. */
   it('asks before discarding unsaved input', () => {
     const screen = render(<NewGroupRoute />);
-    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    expect(isGuardArmed()).toBe(false);
     fireEvent.changeText(screen.getByPlaceholderText('Name your group'), 'Half-typed');
-    expect(mockNavListeners.beforeRemove).toBeDefined();
+    expect(isGuardArmed()).toBe(true);
 
-    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
-    mockNavListeners.beforeRemove?.(e);
-    expect(e.preventDefault).toHaveBeenCalled();
+    firePreventedRemoval();
     expect(mockNavDispatch).not.toHaveBeenCalled();
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this group?' }));
   });

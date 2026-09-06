@@ -3,7 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect } from 'react';
+import { useCallback } from 'react';
+import { usePreventRemove } from '@react-navigation/native';
 import { useNavigation } from 'expo-router';
 
 import type { ConfirmOptions } from '@/components/ui/useConfirm';
@@ -27,10 +28,25 @@ interface UnsavedChangesGuardOptions {
  * edit-profile.tsx so listing creation (audit 2026-09-05, F05) does not grow a
  * second, slightly different one.
  *
- * `beforeRemove` covers every way a screen can be popped, including gestures, and
- * `navigation.dispatch(e.data.action)` replays the exact navigation the member
- * asked for once they confirm. Pass `isBusy` true from the moment a save succeeds,
- * or the guard will challenge the screen's own `router.replace` to the result.
+ * 🔴 Built on `usePreventRemove`, NOT on `navigation.addListener('beforeRemove')` +
+ * `e.preventDefault()` — which is what this did until the 2026-09-06 audit (F08).
+ *
+ * Expo Router's `Stack` resolves to **native-stack**, and React Navigation states plainly
+ * that preventing removal with a `beforeRemove` listener does not work properly there,
+ * recommending this hook instead; the installed native-stack even ships a warning for a
+ * screen the native side has already removed while JS still holds it via that listener.
+ * The consequence is not cosmetic. The native gesture — an iOS swipe-back, an Android
+ * predictive back — can tear the screen down natively while JS believes it prevented the
+ * removal, which is how a member ends up with either the typed content gone after choosing
+ * "keep editing", or a screen still on the stack that no longer responds. It affected
+ * registration and every create/edit form in the app, not one screen.
+ *
+ * `usePreventRemove` is the supported route to the same behaviour: React Navigation tells
+ * the native stack the screen is protected, and `navigation.dispatch(data.action)` replays
+ * the exact navigation the member asked for once they confirm.
+ *
+ * Pass `isBusy` true from the moment a save succeeds, or the guard will challenge the
+ * screen's own `router.replace` to the result.
  */
 export function useUnsavedChangesGuard({
   isDirty,
@@ -43,19 +59,19 @@ export function useUnsavedChangesGuard({
 }: UnsavedChangesGuardOptions): void {
   const navigation = useNavigation();
 
-  useEffect(() => {
-    if (!isDirty || isBusy) return undefined;
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      e.preventDefault();
+  const onPrevented = useCallback(
+    ({ data }: { data: { action: Parameters<typeof navigation.dispatch>[0] } }) => {
       confirm({
         title,
         message,
         confirmLabel: discardLabel,
         cancelLabel,
         variant: 'danger',
-        onConfirm: () => navigation.dispatch(e.data.action),
+        onConfirm: () => navigation.dispatch(data.action),
       });
-    });
-    return unsubscribe;
-  }, [navigation, isDirty, isBusy, confirm, title, message, discardLabel, cancelLabel]);
+    },
+    [cancelLabel, confirm, discardLabel, message, navigation, title],
+  );
+
+  usePreventRemove(isDirty && !isBusy, onPrevented);
 }

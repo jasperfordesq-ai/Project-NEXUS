@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useNavigation } from 'expo-router';
+import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from '@/lib/haptics';
@@ -25,6 +25,7 @@ import { getMe, type User } from '@/lib/api/auth';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { storage } from '@/lib/storage';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -47,7 +48,6 @@ interface FieldErrors {
 
 function EditProfileScreenInner() {
   const { t } = useTranslation(['profile', 'common']);
-  const navigation = useNavigation();
   const { user, refreshUser } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -178,22 +178,23 @@ function EditProfileScreenInner() {
     };
   }, [hasHydratedFullProfile, refreshUser, user]);
 
-  // Warn the user before navigating away with unsaved changes
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (!isDirty || saving) return;
-      e.preventDefault();
-      confirm({
-        title: t('edit.unsavedTitle'),
-        message: t('edit.unsavedMessage'),
-        confirmLabel: t('edit.discard'),
-        cancelLabel: t('common:buttons.cancel'),
-        variant: 'danger',
-        onConfirm: () => navigation.dispatch(e.data.action),
-      });
-    });
-    return unsubscribe;
-  }, [navigation, isDirty, saving, t, confirm]);
+  /*
+    🔴 This screen kept its own `beforeRemove` + `preventDefault()` copy of the unsaved
+    guard long after the shared hook was extracted FROM it, so the app carried two
+    implementations of the same protection and only one of them was ever corrected. Both
+    were also built on a mechanism React Navigation says does not work properly on a
+    native stack, which is what Expo Router's `Stack` resolves to (audit 2026-09-06, F08).
+    There is now one implementation, and it is the supported one.
+  */
+  useUnsavedChangesGuard({
+    isDirty,
+    isBusy: saving,
+    confirm,
+    title: t('edit.unsavedTitle'),
+    message: t('edit.unsavedMessage'),
+    discardLabel: t('edit.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   function validate(): FieldErrors {
     const errors: FieldErrors = {};

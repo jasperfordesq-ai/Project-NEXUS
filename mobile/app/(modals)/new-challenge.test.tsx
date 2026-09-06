@@ -222,6 +222,7 @@ jest.mock('heroui-native', () => {
 
 import NewChallengeRoute from './new-challenge';
 import { eventIsoToLocalInput, eventLocalInputToIso, localEventTimeZone } from '@/lib/utils/eventDateTime';
+import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 const DEVICE_ZONE = localEventTimeZone();
 
@@ -360,13 +361,11 @@ describe('NewChallengeRoute', () => {
   /** S4-04. Dirty input is guarded on Back / Cancel / gestures. */
   it('asks before discarding unsaved input', () => {
     const { getByPlaceholderText } = render(<NewChallengeRoute />);
-    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    expect(isGuardArmed()).toBe(false);
     fireEvent.changeText(getByPlaceholderText('What should the community solve?'), 'Half-typed');
-    expect(mockNavListeners.beforeRemove).toBeDefined();
+    expect(isGuardArmed()).toBe(true);
 
-    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
-    mockNavListeners.beforeRemove?.(e);
-    expect(e.preventDefault).toHaveBeenCalled();
+    firePreventedRemoval();
     expect(mockNavDispatch).not.toHaveBeenCalled();
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this challenge?' }));
   });

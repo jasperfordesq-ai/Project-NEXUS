@@ -153,6 +153,7 @@ const { show: mockShowToast } = (jest.requireMock('@/components/ui/AppToast') as
 }).useAppToast();
 
 import NewOrganisationScreen from './new-organisation';
+import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 describe('NewOrganisationScreen', () => {
   beforeEach(() => {
@@ -165,18 +166,16 @@ describe('NewOrganisationScreen', () => {
   /** S4-04. Cancel, Back and gestures pop the screen via `beforeRemove`; dirty input is guarded. */
   it('asks before discarding unsaved input, and lets an untouched form leave freely', () => {
     const { getByPlaceholderText, getByText } = render(<NewOrganisationScreen />);
-    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    expect(isGuardArmed()).toBe(false);
 
     fireEvent.changeText(getByPlaceholderText('Community skills network'), 'Half-typed');
-    expect(mockNavListeners.beforeRemove).toBeDefined();
+    expect(isGuardArmed()).toBe(true);
 
     // Cancel still asks the navigator to go back; the guard intercepts that pop.
     fireEvent.press(getByText('Cancel'));
     expect(mockBack).toHaveBeenCalled();
 
-    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
-    mockNavListeners.beforeRemove?.(e);
-    expect(e.preventDefault).toHaveBeenCalled();
+    firePreventedRemoval();
     expect(mockNavDispatch).not.toHaveBeenCalled();
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Discard this registration?', variant: 'danger' }));
   });

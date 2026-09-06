@@ -22,7 +22,18 @@ import { useAuthContext } from '@/lib/context/AuthContext';
 import { getUnreadMessageCount, type Message } from '@/lib/api/messages';
 import type { NotificationCounts } from '@/lib/api/notifications';
 
-type MessageHandler = (msg: Message) => void;
+/**
+ * A handler for an incoming realtime message.
+ *
+ * 🔴 Returning `true` means "I am on screen, the member can see this, and I have
+ * acknowledged it" — and ONLY that suppresses the unread badge. It used to be enough for a
+ * listener merely to be REGISTERED. A thread screen subscribes in a plain effect, not a
+ * focus-scoped one, so following the conversation's linked listing or event pushes another
+ * screen on top while the thread stays mounted and subscribed. The message then arrived
+ * behind that screen, was marked read, and the badge never rose — so a member who never saw
+ * it had no way of knowing it existed. Registered is not the same as watching.
+ */
+type MessageHandler = (msg: Message) => boolean | void;
 
 interface RealtimeContextValue {
   /** Current unread message count (seeded from API, bumped by Pusher). */
@@ -169,29 +180,29 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         ch.bind('new-message', (rawPayload: unknown) => {
           if (!mounted) return;
 
-          let hasActiveListener = false;
+          // 🔴 Set by a handler REPORTING that it showed the member the message, not by
+          // one merely existing. Every registered handler is still called - a covered thread
+          // must keep receiving and caching - but only a visible one silences the badge.
+          let acknowledgedByViewer = false;
           if (isMessagePayload(rawPayload)) {
             const listeners = messageListenersRef.current;
             // Dispatch by conversation ID
             const convListeners = listeners.get(rawPayload.conversation_id);
-            if (convListeners && convListeners.size > 0) {
-              hasActiveListener = true;
-              convListeners.forEach((handler) => handler(rawPayload.message));
-            }
+            convListeners?.forEach((handler) => {
+              if (handler(rawPayload.message) === true) acknowledgedByViewer = true;
+            });
             // Also dispatch by sender's user ID — the thread screen subscribes
             // using the other user's ID (not the conversation row ID)
             const senderId = rawPayload.message.sender?.id;
             if (senderId) {
-              const senderListeners = listeners.get(senderId);
-              if (senderListeners && senderListeners.size > 0) {
-                hasActiveListener = true;
-                senderListeners.forEach((handler) => handler(rawPayload.message));
-              }
+              listeners.get(senderId)?.forEach((handler) => {
+                if (handler(rawPayload.message) === true) acknowledgedByViewer = true;
+              });
             }
           }
 
-          // Only bump badge if no thread screen is actively viewing this conversation
-          if (!hasActiveListener) {
+          // Bump the badge unless a thread screen the member can actually see took it.
+          if (!acknowledgedByViewer) {
             setUnreadMessages((prev) => prev + 1);
           }
         });

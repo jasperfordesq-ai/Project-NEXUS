@@ -180,6 +180,7 @@ jest.mock('expo-image', () => ({ Image: 'View' }));
 jest.mock('@/components/OfflineBanner', () => () => null);
 
 import NewExchangeModal from './new-exchange';
+import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 beforeEach(() => {
   mockUseApi.mockReset().mockReturnValue({
@@ -435,14 +436,12 @@ describe('NewExchangeModal — audit 2026-09-05 regressions', () => {
    */
   it('asks before discarding unsaved input, and lets a clean form leave freely', () => {
     const screen = render(<NewExchangeModal />);
-    expect(mockNavListeners.beforeRemove).toBeUndefined();
+    expect(isGuardArmed()).toBe(false);
 
     fireEvent.changeText(screen.getByPlaceholderText('What are you offering?'), 'Half-typed title');
-    expect(mockNavListeners.beforeRemove).toBeDefined();
+    expect(isGuardArmed()).toBe(true);
 
-    const e = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
-    mockNavListeners.beforeRemove?.(e);
-    expect(e.preventDefault).toHaveBeenCalled();
+    firePreventedRemoval();
     expect(mockNavDispatch).not.toHaveBeenCalled();
   });
 

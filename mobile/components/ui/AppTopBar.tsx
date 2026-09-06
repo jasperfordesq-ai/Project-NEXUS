@@ -3,9 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { BackHandler, Platform, Text, View } from 'react-native';
-import { router, type Href } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Surface } from 'heroui-native';
 
@@ -51,16 +51,30 @@ export default function AppTopBar({
     }
   }, [fallbackHref, onBack]);
 
-  useEffect(() => {
-    if (Platform.OS !== 'android') return undefined;
+  /*
+    Android's hardware/gesture Back.
 
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      goBack();
-      return true;
-    });
+    🔴 `useFocusEffect`, not `useEffect` (audit 2026-09-06, F10). `BackHandler` is a
+    GLOBAL stack and this listener returns `true`, which consumes the press outright. It
+    used to be registered for as long as the bar was MOUNTED — and a tab screen stays
+    mounted when you switch tabs, as does a stack screen that another screen has been
+    pushed on top of. So a bar belonging to a screen the member could not see could swallow
+    Back and run its own fallback instead of the focused screen's, sending them somewhere
+    they had not asked to go. Registering only while focused means at most one bar is ever
+    listening, and it is the one the member is looking at.
+  */
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') return undefined;
 
-    return () => subscription.remove();
-  }, [goBack]);
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        goBack();
+        return true;
+      });
+
+      return () => subscription.remove();
+    }, [goBack]),
+  );
 
   return (
     <Surface variant="default" className="mx-4 mt-2 mb-3 flex-row items-center gap-3 rounded-panel-inner px-3 py-2">

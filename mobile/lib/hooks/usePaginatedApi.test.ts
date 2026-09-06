@@ -222,6 +222,25 @@ describe('usePaginatedApi', () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
+  it('retries a dropped connection on the first page, which the client reports as status 0', async () => {
+    // 🔴 Audit F07, same predicate gap as `useApi`. A timeout or a lost connection is
+    // an `ApiResponseError(0)`, so it matched neither arm of the transient test and the
+    // list gave up on its first page without the retry the hook advertises.
+    jest.useFakeTimers();
+    const fetchFn = jest.fn()
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Request timed out'))
+      .mockResolvedValueOnce(makeResponse(['recovered'], null, false));
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1));
+    await act(async () => { jest.advanceTimersByTime(2000); });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.items).toEqual(['recovered']);
+    expect(result.current.error).toBeNull();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
   it('loadMore is a no-op when hasMore is false', async () => {
     const fetchFn = jest.fn().mockResolvedValue(makeResponse(['a'], null, false));
     const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
