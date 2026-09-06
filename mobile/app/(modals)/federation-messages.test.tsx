@@ -53,6 +53,8 @@ jest.mock('react-i18next', () => ({
         'directory.messages.selectRecipient': `Message ${String(opts?.name ?? '')}`,
         'directory.messages.changeRecipient': 'Change recipient',
         'directory.messages.noRecipientsFound': 'No federated members found.',
+        'directory.messages.recipientSearchFailed': "We couldn't search for members just now.",
+        'directory.messages.recipientSearchRetry': 'Try again',
         'directory.messages.subject': 'Subject',
         'directory.messages.subjectPlaceholder': 'Add a short subject',
         'directory.messages.body': 'Message',
@@ -517,6 +519,33 @@ describe('FederationMessagesScreen', () => {
       });
     });
     expect(getByText('Federated conversation')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 A dropped recipient search left the result list empty, and the empty list renders as
+   * "No federated members found." — so a network failure told the member that the person they
+   * were looking for is not on the federated network at all (audit 2026-09-06).
+   */
+  it('says the search failed rather than that the member does not exist, and retries', async () => {
+    mockSearchParams = { compose: 'true' };
+    mockGetFederationMembers
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({
+        data: [{ id: 272, name: 'Katherine', avatar: null, tenant_id: 5, tenant_name: 'Cork Timebank' }],
+      });
+    mockUseApi.mockImplementation(() => ({ data: { data: [] }, isLoading: false, error: null, refresh: mockRefresh }));
+
+    const { getByPlaceholderText, getByText, queryByText } = render(<FederationMessagesScreen />);
+
+    fireEvent.changeText(getByPlaceholderText('Search federated members...'), 'Kath');
+
+    await waitFor(() => expect(getByText("We couldn't search for members just now.")).toBeTruthy());
+    expect(queryByText('No federated members found.')).toBeNull();
+
+    fireEvent.press(getByText('Try again'));
+
+    await waitFor(() => expect(getByText('Katherine')).toBeTruthy());
+    expect(queryByText("We couldn't search for members just now.")).toBeNull();
   });
 
   it('uses compose deep-link community metadata when recipient lookup is skipped', () => {

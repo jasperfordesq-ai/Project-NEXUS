@@ -239,6 +239,8 @@
       "selectRecipient": "Teachtaireacht chuig {{name}}",
       "changeRecipient": "Athraigh faighteoir",
       "noRecipientsFound": "Níor aimsíodh baill chónasctha.",
+      "recipientSearchFailed": "Níorbh fhéidir cuardach a dhéanamh ar bhaill faoi láthair.",
+      "recipientSearchRetry": "Bain triail eile as",
       "subject": "Ábhar",
       "subjectPlaceholder": "Cuir ábhar gairid leis",
       "body": "Teachtaireacht",

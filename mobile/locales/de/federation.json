@@ -239,6 +239,8 @@
       "selectRecipient": "Nachricht an {{name}}",
       "changeRecipient": "Empfänger ändern",
       "noRecipientsFound": "Keine föderierten Mitglieder gefunden.",
+      "recipientSearchFailed": "Die Mitgliedersuche ist gerade nicht möglich.",
+      "recipientSearchRetry": "Erneut versuchen",
       "subject": "Betreff",
       "subjectPlaceholder": "Kurzbetreff hinzufügen",
       "body": "Nachricht",

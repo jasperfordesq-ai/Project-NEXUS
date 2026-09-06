@@ -239,6 +239,8 @@
       "selectRecipient": "Invia messaggio a {{name}}",
       "changeRecipient": "Cambia destinatario",
       "noRecipientsFound": "Nessun membro federato trovato.",
+      "recipientSearchFailed": "Al momento non è possibile cercare i membri.",
+      "recipientSearchRetry": "Riprova",
       "subject": "Oggetto",
       "subjectPlaceholder": "Aggiungi un breve oggetto",
       "body": "Messaggio",

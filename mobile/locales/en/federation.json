@@ -239,6 +239,8 @@
       "selectRecipient": "Message {{name}}",
       "changeRecipient": "Change recipient",
       "noRecipientsFound": "No federated members found.",
+      "recipientSearchFailed": "We couldn't search for members just now.",
+      "recipientSearchRetry": "Try again",
       "subject": "Subject",
       "subjectPlaceholder": "Add a short subject",
       "body": "Message",

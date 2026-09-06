@@ -239,6 +239,8 @@
       "selectRecipient": "Envoyer un message à {{name}}",
       "changeRecipient": "Changer le destinataire",
       "noRecipientsFound": "Aucun membre fédéré trouvé.",
+      "recipientSearchFailed": "Impossible de rechercher des membres pour l'instant.",
+      "recipientSearchRetry": "Réessayer",
       "subject": "Sujet",
       "subjectPlaceholder": "Ajouter un court sujet",
       "body": "Message",

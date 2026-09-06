@@ -1385,6 +1385,8 @@ function FederationComposeCard({
   const [recipientQuery, setRecipientQuery] = useState('');
   const [recipientResults, setRecipientResults] = useState<FederatedMember[]>([]);
   const [isSearchingRecipients, setIsSearchingRecipients] = useState(false);
+  const [recipientSearchFailed, setRecipientSearchFailed] = useState(false);
+  const [recipientSearchAttempt, setRecipientSearchAttempt] = useState(0);
   const selectedRecipientTenantId = selectedRecipient?.tenant_id ?? selectedRecipient?.timebank?.id;
   const effectiveToUser = selectedRecipient?.id ?? toUser;
   const effectiveToTenant = selectedRecipientTenantId ?? toTenant;
@@ -1405,19 +1407,29 @@ function FederationComposeCard({
     if (hasTarget || !recipientQuery.trim()) {
       setRecipientResults([]);
       setIsSearchingRecipients(false);
+      setRecipientSearchFailed(false);
       return;
     }
 
     let cancelled = false;
     const timer = setTimeout(async () => {
       setIsSearchingRecipients(true);
+      setRecipientSearchFailed(false);
       try {
         const response = await getFederationMembers({ q: recipientQuery.trim(), limit: '8' });
         if (!cancelled) {
           setRecipientResults(unwrapArray<FederatedMember>(response));
         }
       } catch {
-        if (!cancelled) setRecipientResults([]);
+        /*
+          🔴 A failed search used to leave the list empty, which the UI below reads as
+          "No federated members found." — so a dropped request told the member that the
+          person they were looking for is not on the network (audit 2026-09-06).
+        */
+        if (!cancelled) {
+          setRecipientResults([]);
+          setRecipientSearchFailed(true);
+        }
       } finally {
         if (!cancelled) setIsSearchingRecipients(false);
       }
@@ -1427,7 +1439,7 @@ function FederationComposeCard({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [hasTarget, recipientQuery]);
+  }, [hasTarget, recipientQuery, recipientSearchAttempt]);
 
   async function handleSend() {
     if (!effectiveToUser || !effectiveToTenant || !body.trim()) return;
@@ -1540,6 +1552,20 @@ function FederationComposeCard({
                     </HeroButton>
                   );
                 })}
+              </View>
+            ) : recipientSearchFailed ? (
+              <View className="gap-2">
+                <Text className="text-sm" style={{ color: theme.error }}>
+                  {t('directory.messages.recipientSearchFailed')}
+                </Text>
+                <HeroButton
+                  variant="secondary"
+                  onPress={() => setRecipientSearchAttempt((n) => n + 1)}
+                  accessibilityLabel={t('directory.messages.recipientSearchRetry')}
+                  className="self-start"
+                >
+                  <HeroButton.Label>{t('directory.messages.recipientSearchRetry')}</HeroButton.Label>
+                </HeroButton>
               </View>
             ) : recipientQuery.trim() ? (
               <Text className="text-sm" style={{ color: theme.textSecondary }}>

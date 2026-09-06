@@ -14,6 +14,9 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { describeApiError } from '@/lib/api/describeApiError';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { Chip } from '@/components/ui/StatusChip';
 import { enrollInCourse, getCourse } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
@@ -26,6 +29,7 @@ export default function CourseDetailScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [enrolling, setEnrolling] = useState(false);
   const { data: course, isLoading, error, refresh } = useApi(() => getCourse(id || ''), [id], { enabled: Boolean(id) });
 
@@ -36,11 +40,38 @@ export default function CourseDetailScreen() {
       await enrollInCourse(course.id);
       show({ title: t('detail.enroll_success'), variant: 'success' });
       router.push({ pathname: '/(modals)/course-player', params: { id: String(course.id) } });
-    } catch {
-      show({ title: t('detail.enroll_error'), variant: 'danger' });
+    } catch (err) {
+      /*
+        🔴 The reason was discarded, so the most likely failure by far — not enough time
+        credits — reached the member as "Could not enroll. Please try again." Trying again
+        cannot work (audit 2026-09-06).
+      */
+      show({ title: t('detail.enroll_error'), description: describeApiError(err, ''), variant: 'danger' });
     } finally {
       setEnrolling(false);
     }
+  }
+
+  /*
+    🔴 Enrolling on a paid course spent the member's time credits on a single tap, with no
+    confirmation and no statement of the price at the moment of spending. Every other place
+    the app moves credits asks first (audit 2026-09-06). A free course still enrols directly:
+    there is nothing to weigh up.
+  */
+  function requestEnroll() {
+    if (!course) return;
+    const cost = parseDecimalInput(String(course.credit_cost ?? '')) ?? 0;
+    if (cost <= 0) {
+      void enroll();
+      return;
+    }
+    confirm({
+      title: t('detail.enroll_confirm_title'),
+      message: t('detail.enroll_confirm_message', { credits: cost }),
+      confirmLabel: t('detail.enroll_confirm_cta'),
+      cancelLabel: t('common:buttons.cancel'),
+      onConfirm: () => enroll(),
+    });
   }
 
   return (
@@ -59,13 +90,13 @@ export default function CourseDetailScreen() {
               <HeroCard.Body className="gap-3 p-5">
                 <View className="flex-row flex-wrap gap-2">
                   <Chip size="sm" variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip>
-                  <Chip size="sm" variant="secondary"><Chip.Label>{Number(course.credit_cost) === 0 ? t('detail.free') : t('detail.cost', { credits: course.credit_cost })}</Chip.Label></Chip>
+                  <Chip size="sm" variant="secondary"><Chip.Label>{(parseDecimalInput(String(course.credit_cost ?? '')) ?? 0) === 0 ? t('detail.free') : t('detail.cost', { credits: parseDecimalInput(String(course.credit_cost ?? '')) ?? 0 })}</Chip.Label></Chip>
                 </View>
                 <Text className="text-2xl font-bold" style={{ color: theme.text }}>{course.title}</Text>
                 {course.summary ? <Text className="text-base leading-6" style={{ color: theme.textSecondary }}>{course.summary}</Text> : null}
                 <HeroButton
                   isDisabled={enrolling}
-                  onPress={course.is_enrolled ? () => router.push({ pathname: '/(modals)/course-player', params: { id: String(course.id) } }) : () => void enroll()}
+                  onPress={course.is_enrolled ? () => router.push({ pathname: '/(modals)/course-player', params: { id: String(course.id) } }) : () => requestEnroll()}
                 >
                   <HeroButton.Label>{course.is_enrolled ? t('detail.continue') : enrolling ? t('detail.enrolling') : t('detail.enroll')}</HeroButton.Label>
                 </HeroButton>
@@ -88,6 +119,7 @@ export default function CourseDetailScreen() {
             ))}
           </ScrollView>
         )}
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 const mockAuthenticate = jest.fn();
@@ -69,7 +69,11 @@ describe('BiometricLockGate', () => {
     expect(getByTestId('biometric-lock-gate')).toBeTruthy();
     await waitFor(() => expect(mockAuthenticate).toHaveBeenCalledWith('settings:biometricLock.prompt'));
 
-    finishAuthentication?.({ ok: true });
+    // Resolved inside `act` so React has flushed the update before the assertion. Without
+    // it this raced and failed intermittently on CI, which is a slower machine than this one.
+    await act(async () => {
+      finishAuthentication?.({ ok: true });
+    });
     await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull());
   });
 

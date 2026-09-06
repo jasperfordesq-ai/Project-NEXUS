@@ -14,6 +14,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { completeCourseLesson, getCourse, getCourseProgress, type CourseProgress } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -38,7 +39,9 @@ export default function CoursePlayerScreen() {
   useEffect(() => {
     const progress = progressState.data as CourseProgress | null;
     if (!progress) return;
-    setProgressPercent(Number(progress.enrollment.progress_percent));
+    const percent = Number(progress.enrollment.progress_percent);
+    // `progress_percent` is typed `string | number`; a missing one made the bar `NaN%` wide.
+    setProgressPercent(Number.isFinite(percent) ? percent : 0);
     setCompletedIds(new Set(progress.lessons.filter((item) => item.status === 'completed').map((item) => item.lesson_id)));
   }, [progressState.data]);
 
@@ -50,8 +53,10 @@ export default function CoursePlayerScreen() {
       setCompletedIds((current) => new Set(current).add(lesson.id));
       setProgressPercent(result.progress_percent);
       show({ title: t('player.lesson_completed'), variant: 'success' });
-    } catch {
-      show({ title: t('player.action_failed'), variant: 'danger' });
+    } catch (err) {
+      // The server's reason was discarded, so "please try again" was the only thing a member
+      // ever saw — including when trying again could not work (audit 2026-09-06).
+      show({ title: t('player.action_failed'), description: describeApiError(err, ''), variant: 'danger' });
     } finally {
       setSaving(false);
     }
@@ -63,7 +68,14 @@ export default function CoursePlayerScreen() {
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={courseState.data?.title ?? t('title')} backLabel={t('common:back')} fallbackHref="/(modals)/courses" />
         {isLoading ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : !lesson ? (
-          <View className="flex-1 items-center justify-center px-6"><Text style={{ color: theme.textSecondary }}>{courseState.error ?? progressState.error ?? t('detail.no_lessons')}</Text></View>
+          <View className="flex-1 items-center justify-center gap-4 px-6">
+            <Text style={{ color: theme.textSecondary }}>{courseState.error ?? progressState.error ?? t('detail.no_lessons')}</Text>
+            {courseState.error || progressState.error ? (
+              <HeroButton onPress={() => { void courseState.refresh(); void progressState.refresh(); }}>
+                <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+              </HeroButton>
+            ) : null}
+          </View>
         ) : (
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }}>
             <Text className="mb-2 text-sm font-semibold" style={{ color: theme.textSecondary }}>{t('player.course_progress')}: {Math.round(progressPercent)}%</Text>
