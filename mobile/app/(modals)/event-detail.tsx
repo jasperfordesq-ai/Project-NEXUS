@@ -70,10 +70,15 @@ import {
   canUseRecurrenceDefinitionBlueprints,
   isRecurrenceDefinitionBlueprintCandidate,
 } from '@/lib/events/recurrenceBlueprints';
+import {
+  captureEventTemplate,
+  previewEventTemplateCapture,
+  type MobileEventTemplateCapturePreview,
+} from '@/lib/api/eventTemplates';
 
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
 
-function eventMutationKey(action: 'accept-offer' | 'rsvp-going' | 'rsvp-interested', eventId: number): string {
+function eventMutationKey(action: 'accept-offer' | 'rsvp-going' | 'rsvp-interested' | 'capture-template', eventId: number): string {
   return `${action}-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
@@ -670,6 +675,10 @@ function EventDetailScreenInner() {
               </HeroButton>
             </HeroCard.Body>
           </HeroCard>
+        ) : null}
+
+        {event.permissions.manage_agenda ? (
+          <EventTemplateCaptureTool event={event} primary={primary} theme={theme} t={t} />
         ) : null}
 
         {isRecurrenceDefinitionBlueprintCandidate(event) ? (
@@ -1533,6 +1542,154 @@ function ScreenShell({ title, backLabel, children }: { title: string; backLabel:
       <AppTopBar title={title} backLabel={backLabel} fallbackHref="/(tabs)/events" />
       <View className="flex-1 px-4" style={{ flex: 1 }}>{children}</View>
     </SafeAreaView>
+  );
+}
+
+/**
+ * Save this event as a reusable template, without leaving the app.
+ *
+ * 🔴 The gate is `permissions.manage_agenda`, and that is deliberate. The API derives it
+ * from `EventPolicy::manageAgenda()`, which returns `EventPolicy::manage()` unchanged —
+ * exactly the predicate `EventTemplateFoundationSupport::authorizeManager()` enforces on
+ * both `/v2/events/{id}/template-preview` and `/v2/events/{id}/templates`. Gating on
+ * `permissions.edit` instead would hide the action on an event awaiting moderation, where
+ * capture is in fact permitted; gating on anything broader would show a button that 403s.
+ *
+ * The API is deliberately two-step: preview reads what would be captured and writes
+ * nothing, capture persists the reviewed snapshot. The organiser sees the preview first.
+ */
+function EventTemplateCaptureTool({
+  event,
+  primary,
+  theme,
+  t,
+}: {
+  event: CanonicalEvent;
+  primary: string;
+  theme: Theme;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  const { show: showToast } = useAppToast();
+  const [preview, setPreview] = useState<MobileEventTemplateCapturePreview | null>(null);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  // Held across retries so a failed capture replays as the same request, never a duplicate.
+  const captureKeyRef = useRef<string | null>(null);
+
+  async function reviewCapture() {
+    if (isPreviewing || isSaving) return;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsPreviewing(true);
+    try {
+      const result = await previewEventTemplateCapture(event.id);
+      captureKeyRef.current = eventMutationKey('capture-template', event.id);
+      setPreview(result);
+    } catch (err) {
+      showToast({
+        title: t('event_templates:templates.mobile.capturePreviewFailedTitle'),
+        description: describeApiError(
+          err,
+          t('event_templates:templates.mobile.capturePreviewFailedDescription'),
+        ),
+        variant: 'danger',
+      });
+    } finally {
+      setIsPreviewing(false);
+    }
+  }
+
+  function cancelCapture() {
+    if (isSaving) return;
+    captureKeyRef.current = null;
+    setPreview(null);
+  }
+
+  async function saveTemplate() {
+    const idempotencyKey = captureKeyRef.current;
+    if (!preview || !idempotencyKey || isSaving) return;
+    setIsSaving(true);
+    try {
+      const result = await captureEventTemplate(event.id, idempotencyKey);
+      captureKeyRef.current = null;
+      setPreview(null);
+      showToast({
+        title: t('event_templates:templates.mobile.capturedTitle'),
+        description: result.changed
+          ? t('event_templates:templates.mobile.capturedDescription')
+          : t('event_templates:templates.mobile.captureReplayDescription'),
+        variant: 'success',
+      });
+      router.push('/(modals)/event-templates' as Href);
+    } catch (err) {
+      showToast({
+        title: t('event_templates:templates.mobile.captureFailedTitle'),
+        description: describeApiError(
+          err,
+          t('event_templates:templates.mobile.captureFailedDescription'),
+        ),
+        variant: 'danger',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <HeroCard variant="secondary">
+      <HeroCard.Body className="gap-3 px-4 py-4">
+        <SectionTitle
+          icon="bookmark-outline"
+          title={t('event_templates:templates.mobile.captureTitle')}
+          primary={primary}
+          theme={theme}
+        />
+        <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+          {t('event_templates:templates.mobile.captureDescription')}
+        </Text>
+
+        {preview ? (
+          <View className="gap-2" testID="event-template-capture-preview">
+            <Text className="text-base font-semibold" style={{ color: theme.text }}>
+              {preview.configuration.title}
+            </Text>
+            <Text className="text-sm" style={{ color: theme.textMuted }}>
+              {t('event_templates:templates.mobile.captureFieldSummary', {
+                copied: preview.copied_fields.length,
+                skipped: preview.skipped_fields.length,
+              })}
+            </Text>
+            <Text className="text-sm" style={{ color: theme.textMuted }}>
+              {t('event_templates:templates.mobile.captureTimezone', {
+                timezone: preview.configuration.timezone,
+              })}
+            </Text>
+            {preview.checklist.map((item) => (
+              <Text key={item.code} className="text-sm" style={{ color: theme.text }}>
+                {t(`event_templates:templates.checks.${item.code}`)}
+              </Text>
+            ))}
+            <HeroButton isDisabled={isSaving} onPress={() => void saveTemplate()} accessibilityState={{ busy: isSaving }}>
+              {isSaving ? <Spinner size="sm" /> : <AccentIcon name="bookmark-outline" size={18} />}
+              <HeroButton.Label>{t('event_templates:templates.mobile.captureConfirm')}</HeroButton.Label>
+            </HeroButton>
+            <HeroButton variant="secondary" isDisabled={isSaving} onPress={cancelCapture}>
+              <Ionicons name="close-outline" size={18} color={primary} />
+              <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
+            </HeroButton>
+          </View>
+        ) : (
+          <HeroButton
+            variant="secondary"
+            isDisabled={isPreviewing}
+            onPress={() => void reviewCapture()}
+            accessibilityState={{ busy: isPreviewing }}
+          >
+            {isPreviewing ? <Spinner size="sm" /> : <Ionicons name="bookmark-outline" size={18} color={primary} />}
+            <HeroButton.Label>{t('event_templates:templates.mobile.captureButton')}</HeroButton.Label>
+          </HeroButton>
+        )}
+      </HeroCard.Body>
+    </HeroCard>
   );
 }
 

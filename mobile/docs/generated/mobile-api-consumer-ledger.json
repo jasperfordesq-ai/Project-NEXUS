@@ -4,14 +4,14 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 56,
-    "call_sites": 584,
-    "distinct_endpoints": 494,
-    "verified": 494,
+    "api_modules": 58,
+    "call_sites": 592,
+    "distinct_endpoints": 500,
+    "verified": 500,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
-    "dynamic_unverifiable": 74,
+    "dynamic_unverifiable": 76,
     "inline_fetch_offenders": 0
   },
   "missing_from_routes": [],
@@ -194,6 +194,16 @@
     },
     {
       "at": "eventTemplates.ts:192",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTemplates.ts:237",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventTemplates.ts:251",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
@@ -636,6 +646,15 @@
       ]
     },
     {
+      "http": "POST",
+      "endpoint": "/api/v2/contact",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "staticPages.ts:128"
+      ]
+    },
+    {
       "http": "GET",
       "endpoint": "/api/v2/coupons",
       "status": "verified",
@@ -718,6 +737,15 @@
     },
     {
       "http": "GET",
+      "endpoint": "/api/v2/courses/{param}/analytics",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:432"
+      ]
+    },
+    {
+      "http": "GET",
       "endpoint": "/api/v2/courses/{param}/cohorts",
       "status": "verified",
       "matched_via": "exact",
@@ -741,6 +769,15 @@
       "matched_via": "exact",
       "sites": [
         "courses.ts:267"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/courses/{param}/grading",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:416"
       ]
     },
     {
@@ -849,6 +886,15 @@
       "matched_via": "exact",
       "sites": [
         "courses.ts:304"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/attempts/{param}/grade",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:424"
       ]
     },
     {
@@ -2043,6 +2089,15 @@
       "matched_via": "exact",
       "sites": [
         "groups.ts:791"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/help/faqs",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "help.ts:49"
       ]
     },
     {
@@ -3976,6 +4031,15 @@
       ]
     },
     {
+      "http": "GET",
+      "endpoint": "/api/v2/public-page-content/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "staticPages.ts:77"
+      ]
+    },
+    {
       "http": "POST",
       "endpoint": "/api/v2/reactions",
       "status": "verified",
@@ -4153,7 +4217,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "tenant.ts:51"
+        "tenant.ts:66"
       ]
     },
     {
@@ -4162,7 +4226,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "tenant.ts:63"
+        "tenant.ts:78"
       ]
     },
     {

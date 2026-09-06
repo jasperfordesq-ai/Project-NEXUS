@@ -83,7 +83,6 @@
     }
   },
   "player": {
-    "unsupported": "Your browser does not support the audio player.",
     "load_error": "This episode's audio could not be loaded. It may be unavailable or still processing.",
     "duration_unknown": "Duration unknown",
     "progress": "Playback progress",

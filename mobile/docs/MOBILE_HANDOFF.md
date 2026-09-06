@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile hand-off — start here
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-09-06
 
 Status: **Maintained — short entry point; detailed evidence lives in the linked sources.**
 
@@ -33,6 +33,43 @@ feed posting/moderation, the complete timebanking exchange, member messaging, vo
 wallet transfers, events, groups, polls, jobs and marketplace activity have all been walked
 on devices with their effects checked. Public distribution, Sentry, policy pages, signing,
 phone artwork and tablet artwork exist.
+
+## 🔴 Nothing in the app links to the website (2026-09-06)
+
+The owner's instruction is that the member app is finished and self-contained. Two rounds
+of work closed the gaps, and three tests now hold the line — read them before adding any
+`Linking.openURL`:
+
+- `app/quickCreateRoutesAreNative.test.ts` — every "+" Create option opens a screen that
+  exists on disk, and the file may not contain `Linking` or `buildWebUrl` at all.
+- `app/+native-intent.coverage.test.ts` — a route with a native screen that no deep link
+  can reach is a failure. It caught three (`faq`, `acceptable-use`, `community-guidelines`)
+  that would otherwise have shipped unreachable.
+- `app/modalDeclarations.test.ts` — every modal file is declared in `_layout.tsx`.
+
+What changed: course authoring, the podcast studio, course grading and analytics are now
+native (`parity-map.json` had all four recorded `out-of-scope`, which is what made a browser
+hand-off look correct); the support screen's nine items open real native screens fed by real
+server content instead of a browser, and its invented three-section policy summaries are
+gone; event templates can be captured in the app; and `components/FeatureGate.tsx` now gates
+module screens the way React's route gates do, because hiding a menu entry never was a gate.
+
+🔴 `Linking.openURL` is still correct, and still present, for genuinely external
+destinations: a member's or organisation's own website, Stripe checkout and onboarding,
+Stripe Identity, a meeting link on an event, an attachment, the Play Store, the AGPL source
+repository, and `+not-found.tsx`'s escape for a path this build has no screen for. Sharing a
+listing or an event still shares a **web** URL on purpose — the recipient may not have the
+app. Do not "fix" those.
+
+🔴 One gap is deliberately NOT fixed here and needs an owner decision. `courses` and
+`podcasts` default to `false` in `TenantFeatureConfig::FEATURE_DEFAULTS`, and both
+`CourseController` and `PodcastController` carry doc comments claiming they are "gated by
+the per-tenant feature flag" — but neither the routes nor the controllers check it. The API
+therefore serves both modules to communities that never switched them on. Queries stay
+tenant-scoped, so this is a gating bypass rather than a cross-tenant leak. The fix is
+`->middleware('feature:courses')` / `feature:podcasts` on those route blocks, which would
+immediately 403 every community with the flag unset — a production authorisation change,
+not a mobile release change.
 
 The current source is **not yet the public build**. The working tree contains the neutral
 first-install community picker, tablet captures, asset validator and this audit. Existing

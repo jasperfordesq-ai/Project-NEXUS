@@ -91,4 +91,32 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('http://app.project-nexus.ie/messages/123')).toBeNull();
     expect(mapSystemPathToNativeRoute('javascript:alert(1)')).toBeNull();
   });
+
+  /*
+    🔴 Before the native builders existed (2026-09-06), every one of these links was
+    swallowed by the `/courses/:id` and `/podcasts/:slug` arms below them: `instructor`
+    was read as a course id and `studio` as a show slug, so a shared link to a builder
+    opened a detail screen reporting that no such course or show existed. Ordering is
+    the whole fix, so these assertions guard the order, not just the mapping.
+  */
+  it('maps course authoring links to the native builder rather than a course detail', () => {
+    expect(mapSystemPathToNativeRoute('/courses/instructor')).toBe('/(modals)/course-instructor');
+    expect(mapSystemPathToNativeRoute('/courses/instructor/new')).toBe('/(modals)/new-course');
+    expect(mapSystemPathToNativeRoute('/courses/instructor/12/edit')).toBe('/(modals)/new-course?id=12');
+    expect(mapSystemPathToNativeRoute('/courses/instructor/12/analytics')).toBe('/(modals)/course-analytics?id=12');
+    expect(mapSystemPathToNativeRoute('/courses/instructor/12/grading')).toBe('/(modals)/course-grading?id=12');
+  });
+
+  it('still maps ordinary course links, so the instructor arm did not swallow them', () => {
+    expect(mapSystemPathToNativeRoute('/courses/basics')).toBe('/(modals)/course-detail?id=basics');
+    expect(mapSystemPathToNativeRoute('/courses/12/learn')).toBe('/(modals)/course-player?id=12');
+    expect(mapSystemPathToNativeRoute('/courses/my-learning')).toBe('/(modals)/courses?tab=learning');
+  });
+
+  it('maps the podcast studio link to the native studio rather than a show slug', () => {
+    expect(mapSystemPathToNativeRoute('/podcasts/studio')).toBe('/(modals)/podcast-studio');
+    expect(mapSystemPathToNativeRoute('/podcasts/time-stories')).toBe('/(modals)/podcast-show?slug=time-stories');
+    expect(mapSystemPathToNativeRoute('/podcasts/time-stories/first-hour'))
+      .toBe('/(modals)/podcast-episode?showSlug=time-stories&episodeSlug=first-hour');
+  });
 });

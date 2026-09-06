@@ -30,6 +30,7 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import FeatureGate from '@/components/FeatureGate';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import PodcastShowStatsPanel from '@/components/podcasts/PodcastShowStatsPanel';
 import TextArea from '@/components/ui/TextArea';
@@ -283,10 +284,18 @@ function emptyEpisodeForm(language: string): EpisodeFormState {
 }
 
 export default function PodcastStudioRoute() {
+  /*
+    Gated like the React route (`<FeatureGate feature="podcasts">`). Hiding the "+"
+    menu entry was never a gate: a deep link, a notification or a shared URL all
+    reach this screen directly. See components/FeatureGate.tsx.
+  */
+  const { t } = useTranslation('podcasts');
   return (
-    <ModalErrorBoundary>
-      <PodcastStudioScreen />
-    </ModalErrorBoundary>
+    <FeatureGate feature="podcasts" title={t('studio.title')} fallbackHref="/(modals)/podcasts">
+      <ModalErrorBoundary>
+        <PodcastStudioScreen />
+      </ModalErrorBoundary>
+    </FeatureGate>
   );
 }
 

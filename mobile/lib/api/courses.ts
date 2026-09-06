@@ -368,3 +368,66 @@ export async function getCourseCohorts(courseId: number): Promise<CourseCohort[]
 export async function createCourseCohort(courseId: number, payload: CourseCohortInput): Promise<CourseCohort> {
   return unwrap(await api.post<DataEnvelope<CourseCohort>>(`${API_V2}/courses/${courseId}/cohorts`, payload));
 }
+
+// ---------------------------------------------------------------------------
+//  Grading and analytics — instructor / admin only.
+//
+//  `CourseQuizController::gradingQueue` returns the attempts whose
+//  `grading_status` is `pending_review`, each eager-loading its quiz (with the
+//  question prompts and options, never the answer key) and the learner. The
+//  grade endpoint is addressed by ATTEMPT id, not by course — the server
+//  resolves the owning course itself and authorises against it.
+// ---------------------------------------------------------------------------
+
+/** One quiz attempt waiting on a human decision. */
+export interface PendingAttempt {
+  id: number;
+  quiz_id: number;
+  user_id: number;
+  /** Keyed by question id, as submitted. A value may be a scalar or a list of option ids. */
+  answers: Record<string, unknown> | null;
+  score_percent: string | number;
+  grading_status: string;
+  submitted_at?: string | null;
+  quiz?: { id: number; title: string; questions?: QuizQuestion[] };
+  user?: { id: number; name: string; avatar_url?: string | null };
+}
+
+/** Exactly the body `CourseQuizController::gradeAttempt` reads. */
+export interface GradeAttemptPayload {
+  /** 0–100. The server clamps it, but send a sane number. */
+  score_percent: number;
+  passed: boolean;
+  feedback: string;
+}
+
+export interface CourseAnalytics {
+  course: { id: number; title: string };
+  enrollments: { total: number; active: number; completed: number; dropped: number };
+  completion_rate: number;
+  avg_progress: number;
+  avg_quiz_score: number;
+  quiz_attempts: number;
+  per_lesson: { lesson_id: number; title: string; completed: number }[];
+}
+
+/** GET /v2/courses/{courseId}/grading */
+export async function getCourseGradingQueue(courseId: number): Promise<PendingAttempt[]> {
+  return unwrap(await api.get<DataEnvelope<PendingAttempt[]>>(`${API_V2}/courses/${courseId}/grading`));
+}
+
+/** POST /v2/courses/attempts/{attemptId}/grade */
+export async function gradeCourseAttempt(
+  attemptId: number,
+  payload: GradeAttemptPayload,
+): Promise<PendingAttempt> {
+  return unwrap(await api.post<DataEnvelope<PendingAttempt>>(
+    `${API_V2}/courses/attempts/${attemptId}/grade`,
+    payload,
+  ));
+}
+
+/** GET /v2/courses/{courseId}/analytics */
+export async function getCourseAnalytics(courseId: number): Promise<CourseAnalytics> {
+  return unwrap(await api.get<DataEnvelope<CourseAnalytics>>(`${API_V2}/courses/${courseId}/analytics`));
+}

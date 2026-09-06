@@ -87,7 +87,6 @@
   },
   "player": {
     "volume": "Volume",
-    "unsupported": "Seu navegador não suporta o reprodutor de áudio.",
     "load_error": "Não foi possível carregar o áudio deste episódio. Ele pode estar indisponível ou ainda em processamento.",
     "duration_unknown": "Duração desconhecida",
     "progress": "Progresso da reprodução",

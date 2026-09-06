@@ -69,7 +69,6 @@
     "emptyFiltered": "Nenhuma troca de grupo corresponde a esse status ainda.",
     "errorTitle": "Não foi possível carregar trocas de grupo",
     "errorDescription": "Puxe para atualizar ou tente novamente mais tarde.",
-    "moreAvailable": "Mais trocas de grupo estão disponíveis na visualização da web.",
     "loadMore": "Carregar mais",
     "create": {
       "open": "Criar troca em grupo",

@@ -21,9 +21,11 @@ jest.mock('@sentry/react-native', () => ({ captureMessage: jest.fn() }));
 import * as Sentry from '@sentry/react-native';
 import { api } from '@/lib/api/client';
 import {
+  captureEventTemplate,
   getEventTemplateHistory,
   getEventTemplates,
   materializeEventTemplate,
+  previewEventTemplateCapture,
 } from './eventTemplates';
 
 function templateFixture() {
@@ -50,6 +52,24 @@ function templateFixture() {
     },
     usage: { materialization_count: 2, audit_entry_count: 3 },
     capabilities: { materialize: true, view_audit: true },
+  };
+}
+
+function capturePreviewFixture() {
+  return {
+    kind: 'capture',
+    schema_version: 1,
+    source_event_id: 9,
+    source_lifecycle_version: 3,
+    source_calendar_sequence: 0,
+    configuration: templateFixture().version.configuration,
+    snapshot_hash: 'a1b2c3',
+    copied_fields: ['title', 'description', 'timezone'],
+    skipped_fields: ['start_time', 'related.registrations'],
+    checklist: [
+      { code: 'event_template_check_source_manage', passed: true },
+      { code: 'event_template_check_allowlist_exact', passed: true },
+    ],
   };
 }
 
@@ -165,5 +185,66 @@ describe('mobile event templates API', () => {
         extra: { issues: expect.any(Array) },
       }),
     );
+  });
+
+  it('previews a capture without writing anything and keeps the capture kind honest', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: capturePreviewFixture() });
+
+    const preview = await previewEventTemplateCapture(9);
+
+    expect(preview.kind).toBe('capture');
+    expect(preview.copied_fields).toEqual(['title', 'description', 'timezone']);
+    expect(preview.checklist[0]).toEqual({ code: 'event_template_check_source_manage', passed: true });
+    expect(api.post).toHaveBeenCalledWith('/api/v2/events/9/template-preview', {});
+  });
+
+  it('captures with one idempotency key in both the header and the body', async () => {
+    (api.post as jest.Mock).mockResolvedValue({
+      data: { template: templateFixture(), changed: true, idempotent_replay: false },
+    });
+
+    const result = await captureEventTemplate(9, 'mobile-capture-key');
+
+    expect(result.changed).toBe(true);
+    expect(result.template.source_event.id).toBe(9);
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/events/9/templates',
+      { idempotency_key: 'mobile-capture-key' },
+      { headers: { 'Idempotency-Key': 'mobile-capture-key' } },
+    );
+  });
+
+  it('reports an idempotent capture replay instead of claiming a second template', async () => {
+    (api.post as jest.Mock).mockResolvedValue({
+      data: { template: templateFixture(), changed: false, idempotent_replay: true },
+    });
+
+    const result = await captureEventTemplate(9, 'mobile-capture-key');
+
+    expect(result.changed).toBe(false);
+    expect(result.idempotent_replay).toBe(true);
+  });
+
+  it('fails closed when a capture preview answers with the materialization contract', async () => {
+    (api.post as jest.Mock).mockResolvedValue({
+      data: { ...capturePreviewFixture(), kind: 'materialization' },
+    });
+
+    await expect(previewEventTemplateCapture(9)).rejects.toHaveProperty('code', 'EVENTS_CONTRACT_DRIFT');
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'Event templates contract drift',
+      expect.objectContaining({
+        tags: expect.objectContaining({ endpoint: '/api/v2/events/{id}/template-preview' }),
+      }),
+    );
+  });
+
+  it('fails closed when a capture answers without a persisted template', async () => {
+    (api.post as jest.Mock).mockResolvedValue({
+      data: { changed: true, idempotent_replay: false },
+    });
+
+    await expect(captureEventTemplate(9, 'mobile-capture-key'))
+      .rejects.toHaveProperty('code', 'EVENTS_CONTRACT_DRIFT');
   });
 });

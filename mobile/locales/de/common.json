@@ -145,5 +145,9 @@
     "action": "Jetzt neu starten"
   },
   "unreadBadge_one": "{{count}} ungelesene Nachricht",
-  "unreadBadge_other": "{{count}} ungelesene Nachrichten"
+  "unreadBadge_other": "{{count}} ungelesene Nachrichten",
+  "featureUnavailable": {
+    "title": "Hier nicht verfügbar",
+    "subtitle": "Deine Gemeinschaft hat das nicht aktiviert. Frag eine Organisatorin oder einen Organisator, wenn es verfügbar sein sollte."
+  }
 }

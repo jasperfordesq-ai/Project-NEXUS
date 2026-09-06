@@ -11,10 +11,11 @@ const mockUseFocusEffect = jest.fn();
 
 // --- Mocks ---
 
+const mockExchangesPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   useSegments: () => ['(tabs)'],
-  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+  router: { push: (...args: unknown[]) => mockExchangesPush(...args), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
   useNavigation: () => ({ setOptions: jest.fn() }),
   useFocusEffect: (cb: () => void) => mockUseFocusEffect(cb),
@@ -413,5 +414,20 @@ describe('ExchangesScreen', () => {
       sort: 'newest',
       personalised: 'false',
     }));
+  });
+
+  /*
+    🔴 The member's own exchanges had NO door. `exchange-requests` — the list of what
+    you are giving and receiving, and the ONLY route to `exchange-request-detail` —
+    could be reached by deep link alone, so a member could browse listings but never
+    see the exchanges they were already part of.
+  */
+  it('offers a way into the member’s own exchanges', async () => {
+    const view = render(<ExchangesScreen />);
+    await waitFor(() => expect(view.getByTestId('exchanges-my-exchanges')).toBeTruthy());
+
+    fireEvent.press(view.getByTestId('exchanges-my-exchanges'));
+
+    expect(mockExchangesPush).toHaveBeenCalledWith('/(modals)/exchange-requests');
   });
 });

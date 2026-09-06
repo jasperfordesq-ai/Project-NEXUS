@@ -194,3 +194,62 @@ export async function materializeEventTemplate(
   });
   return parseContract(endpoint, materializationEnvelopeSchema, response).data;
 }
+
+export const mobileEventTemplateCapturePreviewSchema = z.object({
+  kind: z.literal('capture'),
+  schema_version: z.number().int().positive(),
+  source_event_id: z.number().int().positive(),
+  source_lifecycle_version: z.number().int().nonnegative(),
+  source_calendar_sequence: z.number().int().nonnegative(),
+  configuration: mobileEventTemplateConfigurationSchema,
+  snapshot_hash: z.string().min(1),
+  copied_fields: z.array(z.string()),
+  skipped_fields: z.array(z.string()),
+  checklist: z.array(z.object({
+    code: z.string(),
+    passed: z.boolean(),
+  }).strict()),
+}).passthrough();
+
+export const mobileEventTemplateCaptureSchema = z.object({
+  template: mobileEventTemplateSchema,
+  changed: z.boolean(),
+  idempotent_replay: z.boolean(),
+}).passthrough();
+
+const capturePreviewEnvelopeSchema = z.object({
+  data: mobileEventTemplateCapturePreviewSchema,
+}).passthrough();
+const captureEnvelopeSchema = z.object({ data: mobileEventTemplateCaptureSchema }).passthrough();
+
+export type MobileEventTemplateCapturePreview = z.infer<typeof mobileEventTemplateCapturePreviewSchema>;
+export type MobileEventTemplateCapture = z.infer<typeof mobileEventTemplateCaptureSchema>;
+
+/**
+ * Step one of the two-step capture: ask the server exactly what a template made from this
+ * event would contain, without writing anything. Nothing is captured until
+ * {@link captureEventTemplate} is called with the key returned alongside this preview.
+ */
+export async function previewEventTemplateCapture(
+  sourceEventId: number,
+): Promise<MobileEventTemplateCapturePreview> {
+  const endpoint = `${API_V2}/events/${sourceEventId}/template-preview`;
+  const response = await api.post<unknown>(endpoint, {});
+  return parseContract(endpoint, capturePreviewEnvelopeSchema, response).data;
+}
+
+/**
+ * Step two: persist the reviewed snapshot as a versioned template. The idempotency key is
+ * sent as a header AND in the body because the server accepts either and refuses a request
+ * that carries two different values — sending one value twice is always consistent.
+ */
+export async function captureEventTemplate(
+  sourceEventId: number,
+  idempotencyKey: string,
+): Promise<MobileEventTemplateCapture> {
+  const endpoint = `${API_V2}/events/${sourceEventId}/templates`;
+  const response = await api.post<unknown>(endpoint, { idempotency_key: idempotencyKey }, {
+    headers: { 'Idempotency-Key': idempotencyKey },
+  });
+  return parseContract(endpoint, captureEnvelopeSchema, response).data;
+}

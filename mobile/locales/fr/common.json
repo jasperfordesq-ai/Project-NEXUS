@@ -145,5 +145,9 @@
     "action": "Redémarrer"
   },
   "unreadBadge_one": "{{count}} message non lu",
-  "unreadBadge_other": "{{count}} messages non lus"
+  "unreadBadge_other": "{{count}} messages non lus",
+  "featureUnavailable": {
+    "title": "Non disponible ici",
+    "subtitle": "Votre communauté n'a pas activé cette fonctionnalité. Demandez à une personne organisatrice si vous pensez qu'elle devrait l'être."
+  }
 }

@@ -484,4 +484,18 @@ describe('HomeScreen', () => {
 
     expect(refresh).toHaveBeenCalledTimes(1);
   });
+
+  /*
+    🔴 Hashtag discovery had NO door. `feed-hashtags`, and through it the single-tag
+    feed, could only be reached by an external deep link — so a tag shown on a post
+    led to a screen the member could never navigate to on purpose. The web feed
+    carries the same entry point.
+  */
+  it('offers hashtag discovery from the feed header', () => {
+    const { getByTestId } = render(<HomeScreen />);
+
+    fireEvent.press(getByTestId('home-hashtags'));
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/(modals)/feed-hashtags');
+  });
 });

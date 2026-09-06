@@ -171,7 +171,7 @@
   "support": {
     "title": "Support & legal",
     "heading": "Help, resources, and policies",
-    "description": "Open the web versions of support and legal pages when you need reference material, policies, or contact routes.",
+    "description": "Read your community's help answers, policies, and contact details without leaving the app.",
     "open": "Open page",
     "items": {
       "help": {
@@ -209,82 +209,55 @@
       "trust": {
         "title": "Trust & safety",
         "description": "Review safety, moderation, and community protection guidance."
+      },
+      "communityGuidelines": {
+        "title": "Community guidelines",
+        "description": "Read what the community expects of members."
+      },
+      "acceptableUse": {
+        "title": "Acceptable use",
+        "description": "Read the rules for using the platform and its services."
       }
     },
-    "openWeb": "Open web",
-    "readInApp": "Read in app",
-    "closeDocument": "Back to support",
-    "docs": {
-      "about": {
-        "title": "About Project NEXUS",
-        "summary": "Project NEXUS is an open-source multi-tenant platform for community workflows, timebanking, and mutual support.",
-        "section1Title": "What it does",
-        "section1Body": "The platform helps members share time, skills, opportunities, resources, events, messages, groups, and community marketplace activity.",
-        "section2Title": "Open source",
-        "section2Body": "Project NEXUS is released under the AGPL-3.0-or-later license with attribution and source-code availability requirements.",
-        "section3Title": "Native app scope",
-        "section3Body": "The mobile app focuses on member workflows. Administrative, broker, and developer operations remain on the web where larger screens fit the work better."
-      },
-      "contact": {
-        "title": "Contact and support",
-        "summary": "Use the support routes that match your question, account issue, or tenant/community request.",
-        "section1Title": "Account help",
-        "section1Body": "For sign-in, profile, notification, privacy, or safety issues, include enough detail for the support team to identify the affected account and tenant.",
-        "section2Title": "Community requests",
-        "section2Body": "Community organisers should use the canonical contact page for tenant-level questions, feature requests, and operational support.",
-        "section3Title": "Urgent concerns",
-        "section3Body": "If a concern involves immediate harm or unlawful activity, contact the relevant local emergency or legal authority first, then report it through the platform."
-      },
-      "terms": {
-        "title": "Terms of use summary",
-        "summary": "These points summarise expected platform use. The web terms remain the canonical legal text.",
-        "section1Title": "Use the platform responsibly",
-        "section1Body": "Members are expected to provide accurate information, respect other users, and use timebanking, marketplace, messaging, and group tools lawfully.",
-        "section2Title": "Community rules",
-        "section2Body": "Tenant and group rules may add workflow-specific expectations, especially for exchanges, volunteering, events, safeguarding, and marketplace activity.",
-        "section3Title": "Canonical terms",
-        "section3Body": "Open the web version for the full, current terms, including legal notices, attribution, liability, and licence information."
-      },
-      "privacy": {
-        "title": "Privacy summary",
-        "summary": "Project NEXUS processes account, community, workflow, and security data to provide the service.",
-        "section1Title": "Data you provide",
-        "section1Body": "Profile details, messages, listings, events, applications, transactions, and settings are used to operate the features you choose to use.",
-        "section2Title": "Controls",
-        "section2Body": "Mobile settings include privacy, notification, blocked-user, translation, and data export workflows where supported by the account and tenant.",
-        "section3Title": "Full policy",
-        "section3Body": "Open the web privacy policy for the complete legal basis, retention, processor, rights, and contact information."
-      },
-      "cookies": {
-        "title": "Cookies and storage summary",
-        "summary": "The mobile app uses local device storage and secure tokens rather than browser cookies for most signed-in workflows.",
-        "section1Title": "App storage",
-        "section1Body": "The app may store authentication state, preferences, cached API data, theme choices, and language settings on the device.",
-        "section2Title": "Web pages",
-        "section2Body": "When you open canonical web pages, browser cookies and similar technologies may apply according to the web cookie policy.",
-        "section3Title": "Your choices",
-        "section3Body": "You can sign out, adjust settings, clear app storage through your device, or open the web cookie policy for the full current text."
-      },
-      "accessibility": {
-        "title": "Accessibility summary",
-        "summary": "The platform aims to support accessible member workflows across web and mobile experiences.",
-        "section1Title": "Native app support",
-        "section1Body": "Mobile screens use translated labels, accessible buttons, visible loading/error states, safe areas, and platform assistive technologies where practical.",
-        "section2Title": "Alternative frontend",
-        "section2Body": "An accessible HTML-first frontend exists for users who benefit from a simpler, highly structured web experience.",
-        "section3Title": "Feedback",
-        "section3Body": "Report barriers through the contact route so accessibility issues can be triaged and fixed with enough device and workflow detail."
-      },
-      "trust": {
-        "title": "Trust and safety summary",
-        "summary": "Trust and safety workflows help protect members while keeping community exchange practical and respectful.",
-        "section1Title": "Member protection",
-        "section1Body": "Profiles, reviews, reports, blocks, identity checks, and moderation workflows support safer exchanges and communication.",
-        "section2Title": "Reporting",
-        "section2Body": "Use report, block, or contact routes when content, messages, listings, events, or member behaviour appear unsafe or inappropriate.",
-        "section3Title": "Limits",
-        "section3Body": "Platform tools do not replace emergency services, legal advice, or safeguarding authorities when immediate or statutory action is needed."
-      }
+    "faqs": {
+      "title": "Help centre",
+      "subtitle": "Answers your community has published to the questions members ask most.",
+      "searchLabel": "Search the help answers",
+      "searchPlaceholder": "Search questions and answers",
+      "emptyTitle": "No help answers yet",
+      "emptySubtitle": "Your community has not published any help answers yet.",
+      "noMatchesTitle": "No matching answers",
+      "noMatchesSubtitle": "Try a different word, or clear the search to see everything."
+    },
+    "page": {
+      "fallbackTitle": "Community information",
+      "unknownTitle": "Page not available",
+      "unknownSubtitle": "That information page is not one this community publishes.",
+      "emptyTitle": "Nothing published here yet",
+      "emptySubtitle": "Your community has not added content to this page yet."
+    },
+    "contactForm": {
+      "title": "Send a message",
+      "name": "Your name",
+      "email": "Your email address",
+      "subject": "What is your message about?",
+      "message": "Message",
+      "messagePlaceholder": "Tell your community's organisers how they can help.",
+      "submit": "Send message",
+      "sending": "Sending your message",
+      "nameRequired": "Enter your name.",
+      "emailRequired": "Enter a valid email address.",
+      "messageRequired": "Write a message before sending.",
+      "successTitle": "Message sent",
+      "successBody": "Your community's organisers have your message and will reply by email.",
+      "errorTitle": "Message not sent",
+      "errorBody": "Your message could not be sent. Please try again.",
+      "blockedTitle": "Message not sent",
+      "blockedBody": "This community's contact form needs a browser security check that the app cannot complete. Please write to the contact details shown above instead.",
+      "detailsTitle": "Contact details",
+      "detailsEmail": "Email address",
+      "detailsPhone": "Phone number",
+      "detailsAddress": "Postal address"
     }
   },
   "skills": "Skills & Endorsements",

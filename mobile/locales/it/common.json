@@ -145,5 +145,9 @@
     "action": "Riavvia ora"
   },
   "unreadBadge_one": "{{count}} messaggio non letto",
-  "unreadBadge_other": "{{count}} messaggi non letti"
+  "unreadBadge_other": "{{count}} messaggi non letti",
+  "featureUnavailable": {
+    "title": "Non disponibile qui",
+    "subtitle": "La tua comunità non ha attivato questa funzione. Chiedi a chi organizza se pensi che dovrebbe essere disponibile."
+  }
 }

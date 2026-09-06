@@ -160,6 +160,34 @@ describe('CourseInstructorRoute', () => {
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/new-course', params: { id: '42' } });
   });
 
+  it('opens the grading queue for a course, carrying its id', async () => {
+    const { getByText } = render(<CourseInstructorRoute />);
+    await waitFor(() => expect(getByText('Repair skills')).toBeTruthy());
+
+    fireEvent.press(getByText('Grading'));
+
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/course-grading', params: { id: '42' } });
+  });
+
+  it('opens analytics for a course, carrying its id', async () => {
+    const { getByText } = render(<CourseInstructorRoute />);
+    await waitFor(() => expect(getByText('Repair skills')).toBeTruthy());
+
+    fireEvent.press(getByText('Analytics'));
+
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/course-analytics', params: { id: '42' } });
+  });
+
+  it('keeps every per-course action available on each row, for every course', async () => {
+    mockGetAuthoredCourses.mockResolvedValue([draft, published]);
+
+    const { getAllByText } = render(<CourseInstructorRoute />);
+
+    await waitFor(() => expect(getAllByText('Edit course')).toHaveLength(2));
+    expect(getAllByText('Grading')).toHaveLength(2);
+    expect(getAllByText('Analytics')).toHaveLength(2);
+  });
+
   it('offers course creation from the empty state', async () => {
     mockGetAuthoredCourses.mockResolvedValue([]);
 

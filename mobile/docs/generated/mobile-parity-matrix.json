@@ -2,9 +2,9 @@
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
     "react_member_routes": 256,
-    "mobile_routes": 166,
-    "native": 157,
-    "out_of_scope": 99,
+    "mobile_routes": 170,
+    "native": 169,
+    "out_of_scope": 87,
     "gap": 0,
     "needs_review": 0,
     "needs_review_budget": 31,
@@ -50,9 +50,9 @@
   "rows": [
     {
       "route": "about",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Marketing page.",
+      "status": "native",
+      "mobile": "static-page",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -60,9 +60,9 @@
     },
     {
       "route": "acceptable-use",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Legal document; mobile uses legal-document.",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -80,9 +80,9 @@
     },
     {
       "route": "accessibility",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Accessibility statement; web-first.",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -472,9 +472,9 @@
     },
     {
       "route": "community-guidelines",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Legal document; mobile uses legal-document.",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -501,9 +501,9 @@
     },
     {
       "route": "contact",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Marketing page.",
+      "status": "native",
+      "mobile": "static-page",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -511,9 +511,9 @@
     },
     {
       "route": "cookies",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Cookie policy is a web-browser concern.",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -587,9 +587,9 @@
     },
     {
       "route": "courses/instructor/:id/analytics",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Course authoring workspace.",
+      "status": "native",
+      "mobile": "course-analytics",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -605,9 +605,9 @@
     },
     {
       "route": "courses/instructor/:id/grading",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Course authoring workspace.",
+      "status": "native",
+      "mobile": "course-grading",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -791,9 +791,9 @@
     },
     {
       "route": "faq",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Marketing page.",
+      "status": "native",
+      "mobile": "help-faqs",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -2008,9 +2008,9 @@
     },
     {
       "route": "privacy",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Legal document; mobile uses legal-document.",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -2185,9 +2185,9 @@
     },
     {
       "route": "terms",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Legal document; mobile reads legal documents through legal-document.",
+      "status": "native",
+      "mobile": "legal-document",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"
@@ -2215,9 +2215,9 @@
     },
     {
       "route": "trust-and-safety",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Long-form editorial page; web-first.",
+      "status": "native",
+      "mobile": "static-page",
+      "reason": null,
       "sources": [
         "AppRoutes.tsx",
         "PublicAppRoutes.tsx"

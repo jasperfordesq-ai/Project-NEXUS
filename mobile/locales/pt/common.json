@@ -145,5 +145,9 @@
     "action": "Reiniciar agora"
   },
   "unreadBadge_one": "{{count}} mensagem por ler",
-  "unreadBadge_other": "{{count}} mensagens por ler"
+  "unreadBadge_other": "{{count}} mensagens por ler",
+  "featureUnavailable": {
+    "title": "Não disponível aqui",
+    "subtitle": "A tua comunidade não ativou esta funcionalidade. Fala com quem organiza se achas que devia estar disponível."
+  }
 }

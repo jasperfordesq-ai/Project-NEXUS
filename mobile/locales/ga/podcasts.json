@@ -93,7 +93,6 @@
   },
   "player": {
     "volume": "Airde fuaime",
-    "unsupported": "Ní thacaíonn do bhrabhsálaí leis an seinnteoir fuaime.",
     "load_error": "Níorbh fhéidir fuaim na heipeasóide seo a lódáil. Seans nach bhfuil sí ar fáil nó go bhfuil sí fós á próiseáil.",
     "duration_unknown": "Fad anaithnid",
     "progress": "Dul chun cinn athsheinm",

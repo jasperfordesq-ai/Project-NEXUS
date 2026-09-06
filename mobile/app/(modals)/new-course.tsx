@@ -23,6 +23,7 @@ import * as Haptics from '@/lib/haptics';
 import AppTopBar from '@/components/ui/AppTopBar';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import FeatureGate from '@/components/FeatureGate';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
 import { Chip } from '@/components/ui/StatusChip';
@@ -61,10 +62,18 @@ const ENROLLMENT_TYPES: CourseEnrollmentType[] = ['self_paced', 'cohort'];
 const NO_CATEGORY = 'none';
 
 export default function NewCourseRoute() {
+  /*
+    Gated like the React route (`<FeatureGate feature="courses">`). Hiding the "+"
+    menu entry was never a gate: a deep link, a notification or a shared URL all
+    reach this screen directly. See components/FeatureGate.tsx.
+  */
+  const { t } = useTranslation('courses');
   return (
-    <ModalErrorBoundary>
-      <NewCourseScreen />
-    </ModalErrorBoundary>
+    <FeatureGate feature="courses" title={t('instructor.new_course')} fallbackHref="/(modals)/course-instructor">
+      <ModalErrorBoundary>
+        <NewCourseScreen />
+      </ModalErrorBoundary>
+    </FeatureGate>
   );
 }
 

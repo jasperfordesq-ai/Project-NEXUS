@@ -69,7 +69,6 @@
     "emptyFiltered": "Aucun échange de groupe ne correspond encore à ce statut.",
     "errorTitle": "Impossible de charger les échanges de groupe",
     "errorDescription": "Tirez pour actualiser ou réessayez plus tard.",
-    "moreAvailable": "D'autres échanges de groupe sont disponibles sur la vue Web.",
     "loadMore": "Charger plus",
     "create": {
       "open": "Créer un échange collectif",

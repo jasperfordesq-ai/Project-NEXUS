@@ -34,6 +34,12 @@ const KNOWN_SECTIONS = new Set([
   'privacy',
   'cookies',
   'accessibility',
+  // Added 2026-09-06 with their native screens. `+native-intent.coverage.test.ts`
+  // fails when a route has a native screen no deep link can reach, which is how
+  // these three were found rather than shipped broken.
+  'acceptable-use',
+  'community-guidelines',
+  'faq',
   'trust-and-safety',
   'platform',
   // Added 2026-08-19. Everything below had a working native screen that no deep
@@ -295,9 +301,21 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
         : appendParams('/(modals)/resources', params);
 
     case 'support':
-    case 'help':
     case 'legal':
       return appendParams('/(modals)/support', params);
+
+    // The FAQ list and the two remaining legal documents have their own native
+    // screens; sending them through the support menu would make a member tap twice
+    // to reach a page the link already named.
+    case 'help':
+    case 'faq':
+      return appendParams('/(modals)/help-faqs', params);
+
+    case 'acceptable-use':
+      return appendParams('/(modals)/legal-document', { ...params, type: 'acceptable_use' });
+
+    case 'community-guidelines':
+      return appendParams('/(modals)/legal-document', { ...params, type: 'community_guidelines' });
 
     case 'about':
     case 'contact':
@@ -486,6 +504,27 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       if (id === 'my-learning') {
         return appendParams('/(modals)/courses', { ...params, tab: 'learning' });
       }
+      /*
+        🔴 The instructor routes must be matched BEFORE the `/courses/:id` arm
+        below, or `instructor` is read as a course id. Until the native builders
+        existed (2026-09-06) that is exactly what happened: every one of these
+        links opened the course-detail screen asking the API for a course called
+        "instructor", so a shared link to a builder showed "not found".
+        `segments` here is everything after `/courses/`, so for
+        `/courses/instructor/12/edit` it is ['instructor', '12', 'edit'].
+      */
+      if (id === 'instructor') {
+        if (detail === undefined) return appendParams('/(modals)/course-instructor', params);
+        if (detail === 'new') return appendParams('/(modals)/new-course', params);
+        // /courses/instructor/:id/edit | /analytics | /grading
+        if (/^\d+$/.test(detail)) {
+          const action = segments[2];
+          if (action === 'analytics') return appendParams('/(modals)/course-analytics', { ...params, id: detail });
+          if (action === 'grading') return appendParams('/(modals)/course-grading', { ...params, id: detail });
+          return appendParams('/(modals)/new-course', { ...params, id: detail });
+        }
+        return appendParams('/(modals)/course-instructor', params);
+      }
       if (id && detail === 'learn') {
         return appendParams('/(modals)/course-player', { ...params, id });
       }
@@ -494,6 +533,11 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
         : appendParams('/(modals)/courses', params);
 
     case 'podcasts':
+      // 🔴 Same trap: before the native studio existed, `/podcasts/studio` was
+      // read as a show SLUG and opened podcast-show, which reported no such show.
+      if (id === 'studio') {
+        return appendParams('/(modals)/podcast-studio', params);
+      }
       if (id && detail) {
         return appendParams('/(modals)/podcast-episode', { ...params, showSlug: id, episodeSlug: detail });
       }

@@ -171,7 +171,7 @@
   "support": {
     "title": "Tacaíocht agus cúrsaí dlí",
     "heading": "Cabhair, acmhainní agus beartais",
-    "description": "Léigh achoimrí ar na príomhbheartais san aip, nó oscail na leathanaigh chanónacha ar an ngréasán chun an téacs iomlán reatha a léamh.",
+    "description": "Léigh freagraí cabhrach, beartais agus sonraí teagmhála do phobail gan an aip a fhágáil.",
     "open": "Oscail an leathanach",
     "items": {
       "help": {
@@ -209,82 +209,55 @@
       "trust": {
         "title": "Muinín agus sábháilteacht",
         "description": "Léigh treoir maidir le sábháilteacht, modhnóireacht agus cosaint an phobail."
+      },
+      "communityGuidelines": {
+        "title": "Treoirlínte an phobail",
+        "description": "Léigh a bhfuil á shúil ag an bpobal óna bhaill."
+      },
+      "acceptableUse": {
+        "title": "Úsáid inghlactha",
+        "description": "Léigh na rialacha maidir leis an ardán agus a sheirbhísí a úsáid."
       }
     },
-    "openWeb": "Oscail ar an ngréasán",
-    "readInApp": "Léigh san aip",
-    "closeDocument": "Ar ais chuig tacaíocht",
-    "docs": {
-      "about": {
-        "title": "Maidir le Tionscadal NEXUS",
-        "summary": "Is ardán iltionónta foinse oscailte é Tionscadal NEXUS do shreafaí oibre pobail, do bhaincéireacht ama agus do thacaíocht fhrithpháirteach.",
-        "section1Title": "An méid a dhéanann sé",
-        "section1Body": "Cuidíonn an t-ardán le baill am, scileanna, deiseanna, acmhainní, imeachtaí, teachtaireachtaí agus gníomhaíocht i ngrúpaí agus in áit mhargaidh an phobail a roinnt.",
-        "section2Title": "Foinse oscailte",
-        "section2Body": "Eisítear Tionscadal NEXUS faoi cheadúnas AGPL-3.0-or-later, lena mbaineann ceanglais maidir le haitheantas agus infhaighteacht an chóid foinse.",
-        "section3Title": "Raon feidhme na haipe dúchasaí",
-        "section3Body": "Díríonn an aip mhóibíleach ar shreafaí oibre na mball. Fanann oibríochtaí riaracháin, bróicéireachta agus forbróra ar an ngréasán, áit a n-oireann scáileáin níos mó don obair níos fearr."
-      },
-      "contact": {
-        "title": "Teagmháil agus tacaíocht",
-        "summary": "Úsáid an bealach tacaíochta a oireann do do cheist, d'fhadhb cuntais nó d'iarratas tionónta nó pobail.",
-        "section1Title": "Cabhair le cuntas",
-        "section1Body": "I gcás fadhbanna le síniú isteach, próifíl, fógraí, príobháideachas nó sábháilteacht, cuir dóthain sonraí ar fáil chun gur féidir leis an bhfoireann tacaíochta an cuntas agus an tionónta lena mbaineann a aithint.",
-        "section2Title": "Iarratais phobail",
-        "section2Body": "Ba cheart d'eagraithe pobail an leathanach teagmhála canónach a úsáid le haghaidh ceisteanna ar leibhéal an tionónta, iarratais ar ghnéithe agus tacaíocht oibríochtúil.",
-        "section3Title": "Ábhair imní phráinneacha",
-        "section3Body": "Má bhaineann ábhar imní le díobháil láithreach nó le gníomhaíocht neamhdhleathach, déan teagmháil ar dtús leis an tseirbhís éigeandála áitiúil nó leis an údarás dlíthiúil ábhartha; ansin tuairiscigh tríd an ardán é."
-      },
-      "terms": {
-        "title": "Achoimre ar théarmaí úsáide",
-        "summary": "Déanann na pointí seo achoimre ar úsáid ionchasach an ardáin. Is iad téarmaí an ghréasáin an téacs dlíthiúil canónach i gcónaí.",
-        "section1Title": "Úsáid an t-ardán go freagrach",
-        "section1Body": "Táthar ag súil go gcuirfidh baill eolas cruinn ar fáil, go léireoidh siad meas ar úsáideoirí eile agus go n-úsáidfidh siad uirlisí baincéireachta ama, áit mhargaidh, teachtaireachtaí agus grúpaí de réir an dlí.",
-        "section2Title": "Rialacha pobail",
-        "section2Body": "Féadfaidh rialacha an tionónta agus an ghrúpa ionchais a bhaineann go sonrach le sreafaí oibre a chur leis, go háirithe maidir le malartuithe, obair dheonach, imeachtaí, cosaint agus gníomhaíocht áit mhargaidh.",
-        "section3Title": "Téarmaí canónacha",
-        "section3Body": "Oscail an leagan gréasáin chun na téarmaí iomlána reatha a léamh, lena n-áirítear fógraí dlíthiúla, aitheantas, dliteanas agus eolas ceadúnais."
-      },
-      "privacy": {
-        "title": "Achoimre ar phríobháideachas",
-        "summary": "Próiseálann Tionscadal NEXUS sonraí cuntais, pobail, sreafa oibre agus slándála chun an tseirbhís a chur ar fáil.",
-        "section1Title": "Sonraí a sholáthraíonn tú",
-        "section1Body": "Úsáidtear sonraí próifíle, teachtaireachtaí, liostuithe, imeachtaí, iarratais, idirbhearta agus socruithe chun na gnéithe a roghnaíonn tú a úsáid a oibriú.",
-        "section2Title": "Rialuithe",
-        "section2Body": "Áirítear i socruithe móibíleacha sreafaí oibre maidir le príobháideachas, fógraí, úsáideoirí blocáilte, aistriúchán agus easpórtáil sonraí, nuair a thacaíonn an cuntas agus an tionónta leo.",
-        "section3Title": "An beartas iomlán",
-        "section3Body": "Oscail beartas príobháideachais an ghréasáin chun eolas iomlán a fháil ar an mbunús dlíthiúil, coinneáil, próiseálaithe, cearta agus sonraí teagmhála."
-      },
-      "cookies": {
-        "title": "Achoimre ar fhianáin agus stóráil",
-        "summary": "Úsáideann an aip mhóibíleach stóráil áitiúil ar an ngléas agus comharthaí slána seachas fianáin bhrabhsálaí don chuid is mó de shreafaí oibre sínithe isteach.",
-        "section1Title": "Stóráil na haipe",
-        "section1Body": "Féadfaidh an aip staid fíordheimhnithe, sainroghanna, sonraí API i dtaisce, roghanna téama agus socruithe teanga a stóráil ar an ngléas.",
-        "section2Title": "Leathanaigh ghréasáin",
-        "section2Body": "Nuair a osclaíonn tú leathanaigh ghréasáin chanónacha, féadfar fianáin bhrabhsálaí agus teicneolaíochtaí comhchosúla a úsáid de réir bheartas fianán an ghréasáin.",
-        "section3Title": "Do roghanna",
-        "section3Body": "Is féidir leat síniú amach, socruithe a athrú, stóráil na haipe a ghlanadh trí do ghléas, nó beartas fianán an ghréasáin a oscailt chun an téacs iomlán reatha a léamh."
-      },
-      "accessibility": {
-        "title": "Achoimre ar inrochtaineacht",
-        "summary": "Tá sé mar aidhm ag an ardán tacú le sreafaí oibre inrochtana do bhaill ar an ngréasán agus san aip mhóibíleach.",
-        "section1Title": "Tacaíocht san aip dhúchasach",
-        "section1Body": "Úsáideann scáileáin mhóibíleacha lipéid aistrithe, cnaipí inrochtana, staideanna luchtaithe agus earráide atá infheicthe, limistéir shábháilte agus teicneolaíochtaí cúnta an ardáin nuair is praiticiúil.",
-        "section2Title": "Comhéadan malartach",
-        "section2Body": "Tá comhéadan inrochtana atá bunaithe ar HTML ar dtús ar fáil d'úsáideoirí a bhaineann tairbhe as eispéireas gréasáin níos simplí agus an-struchtúrtha.",
-        "section3Title": "Aiseolas",
-        "section3Body": "Tuairiscigh bacainní tríd an mbealach teagmhála ionas gur féidir fadhbanna inrochtaineachta a mheas agus a cheartú, agus cuir dóthain sonraí faoin ngléas agus faoin sreabhadh oibre ar fáil."
-      },
-      "trust": {
-        "title": "Achoimre ar mhuinín agus sábháilteacht",
-        "summary": "Cabhraíonn sreafaí oibre muiníne agus sábháilteachta le baill a chosaint agus malartú pobail a choinneáil praiticiúil agus measúil.",
-        "section1Title": "Cosaint na mball",
-        "section1Body": "Tacaíonn próifílí, athbhreithnithe, tuairiscí, blocálacha, seiceálacha aitheantais agus sreafaí oibre modhnóireachta le malartuithe agus cumarsáid níos sábháilte.",
-        "section2Title": "Tuairisciú",
-        "section2Body": "Úsáid bealaí tuairiscithe, blocála nó teagmhála nuair a dhealraíonn sé go bhfuil ábhar, teachtaireachtaí, liostuithe, imeachtaí nó iompar ball neamhshábháilte nó míchuí.",
-        "section3Title": "Teorainneacha",
-        "section3Body": "Ní thagann uirlisí an ardáin in ionad seirbhísí éigeandála, comhairle dlí ná údaráis chosanta nuair a bhíonn gníomh láithreach nó reachtúil de dhíth."
-      }
+    "faqs": {
+      "title": "Ionad cabhrach",
+      "subtitle": "Freagraí a d’fhoilsigh do phobal ar na ceisteanna is coitianta.",
+      "searchLabel": "Cuardaigh na freagraí cabhrach",
+      "searchPlaceholder": "Cuardaigh ceisteanna agus freagraí",
+      "emptyTitle": "Níl aon fhreagra cabhrach ann fós",
+      "emptySubtitle": "Níor fhoilsigh do phobal aon fhreagra cabhrach go fóill.",
+      "noMatchesTitle": "Níl aon fhreagra comhoiriúnach ann",
+      "noMatchesSubtitle": "Bain triail as focal eile, nó glan an cuardach chun gach rud a fheiceáil."
+    },
+    "page": {
+      "fallbackTitle": "Eolas an phobail",
+      "unknownTitle": "Níl an leathanach ar fáil",
+      "unknownSubtitle": "Ní fhoilsíonn an pobal seo an leathanach eolais sin.",
+      "emptyTitle": "Níl aon rud foilsithe anseo fós",
+      "emptySubtitle": "Níor chuir do phobal ábhar leis an leathanach seo go fóill."
+    },
+    "contactForm": {
+      "title": "Seol teachtaireacht",
+      "name": "D’ainm",
+      "email": "Do sheoladh ríomhphoist",
+      "subject": "Cad faoi a bhfuil do theachtaireacht?",
+      "message": "Teachtaireacht",
+      "messagePlaceholder": "Inis d’eagraithe do phobail conas is féidir leo cabhrú leat.",
+      "submit": "Seol an teachtaireacht",
+      "sending": "Do theachtaireacht á seoladh",
+      "nameRequired": "Cuir isteach d’ainm.",
+      "emailRequired": "Cuir isteach seoladh ríomhphoist bailí.",
+      "messageRequired": "Scríobh teachtaireacht sula seolann tú í.",
+      "successTitle": "Teachtaireacht seolta",
+      "successBody": "Fuair eagraithe do phobail do theachtaireacht agus freagróidh siad tríd an ríomhphost.",
+      "errorTitle": "Níor seoladh an teachtaireacht",
+      "errorBody": "Níorbh fhéidir do theachtaireacht a sheoladh. Bain triail eile as.",
+      "blockedTitle": "Níor seoladh an teachtaireacht",
+      "blockedBody": "Teastaíonn seiceáil slándála brabhsálaí ón bhfoirm teagmhála seo nach féidir leis an aip a dhéanamh. Bain úsáid as na sonraí teagmhála thuas ina áit sin.",
+      "detailsTitle": "Sonraí teagmhála",
+      "detailsEmail": "Seoladh ríomhphoist",
+      "detailsPhone": "Uimhir theilefóin",
+      "detailsAddress": "Seoladh poist"
     }
   },
   "skills": "Scileanna agus formhuinithe",

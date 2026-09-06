@@ -45,6 +45,9 @@ describe('mobile event-template locale content', () => {
     'templates.mobile.auditTitle',
     'templates.mobile.auditImmutableTitle',
     'templates.mobile.createDraft',
+    'templates.mobile.captureButton',
+    'templates.mobile.captureDescription',
+    'templates.mobile.emptyDescription',
     'templates.checks.event_template_check_private_records_skipped',
   ] as const;
 
@@ -62,6 +65,35 @@ describe('mobile event-template locale content', () => {
     for (const path of genuinelyTranslated) {
       expect(translated.get(path)).toBeDefined();
       expect(translated.get(path)).not.toBe(englishFlat.get(path));
+    }
+  });
+
+  /**
+   * The empty state used to read "Save an event as a template on the web…", which sent a
+   * member out of the app for something the app can now do. Capture is native, so no
+   * locale may send anyone to a browser again.
+   */
+  it('never sends a member to the website from the empty template library', () => {
+    const allResources: [string, Record<string, unknown>][] = [
+      ['en', english],
+      ...Object.entries(locales) as [string, Record<string, unknown>][],
+    ];
+
+    for (const [locale, resource] of allResources) {
+      const emptyDescription = flatten(resource).get('templates.mobile.emptyDescription') ?? '';
+      expect(emptyDescription).not.toMatch(/\b(web|website|browser|navigateur|navegador|browserul|sitio|site|sito|gr\u00e9as\u00e1n)\b/i);
+      expect(emptyDescription.length).toBeGreaterThan(20);
+      expect(locale).toBeTruthy();
+    }
+  });
+
+  it('names the native capture action everywhere the library is empty', () => {
+    for (const resource of Object.values({ en: english, ...locales })) {
+      const flat = flatten(resource as Record<string, unknown>);
+      const captureButton = flat.get('templates.mobile.captureButton') ?? '';
+      expect(captureButton).not.toBe('');
+      expect((flat.get('templates.mobile.emptyDescription') ?? '').toLowerCase())
+        .toContain(captureButton.toLowerCase());
     }
   });
 });

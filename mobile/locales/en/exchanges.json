@@ -69,7 +69,6 @@
     "emptyFiltered": "No group exchanges match this status yet.",
     "errorTitle": "Could not load group exchanges",
     "errorDescription": "Pull to refresh or try again later.",
-    "moreAvailable": "More group exchanges are available on the web view.",
     "loadMore": "Load more",
     "create": {
       "open": "Create group exchange",

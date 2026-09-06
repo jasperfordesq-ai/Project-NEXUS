@@ -645,6 +645,22 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('courses:instructor.new_course') }}
       />
       <Stack.Screen
+        name="(modals)/help-faqs"
+        options={{ ...modalOptions, headerShown: false, title: t('profile:support.faqs.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/static-page"
+        options={{ ...modalOptions, headerShown: false, title: t('profile:support.page.fallbackTitle') }}
+      />
+      <Stack.Screen
+        name="(modals)/course-grading"
+        options={{ ...modalOptions, headerShown: false, title: t('courses:grading.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/course-analytics"
+        options={{ ...modalOptions, headerShown: false, title: t('courses:analytics.title') }}
+      />
+      <Stack.Screen
         name="(modals)/podcasts"
         options={{ ...modalOptions, headerShown: false, title: t('podcasts:title') }}
       />

@@ -148,5 +148,9 @@
   "unreadBadge_two": "{{count}} theachtaireacht neamhléite",
   "unreadBadge_few": "{{count}} theachtaireacht neamhléite",
   "unreadBadge_many": "{{count}} dteachtaireacht neamhléite",
-  "unreadBadge_other": "{{count}} teachtaireacht neamhléite"
+  "unreadBadge_other": "{{count}} teachtaireacht neamhléite",
+  "featureUnavailable": {
+    "title": "Níl sé seo ar fáil anseo",
+    "subtitle": "Níor chuir do phobal an ghné seo ar siúl. Labhair le heagraí má cheapann tú gur cheart di a bheith ar fáil."
+  }
 }

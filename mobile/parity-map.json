@@ -795,20 +795,20 @@
       "reason": "Authorised coordinators explicitly confirm check-in and check-out; opening the link causes no mutation."
     },
     "about": {
-      "status": "out-of-scope",
-      "reason": "Marketing page."
+      "status": "native",
+      "mobile": "static-page"
     },
     "acceptable-use": {
-      "status": "out-of-scope",
-      "reason": "Legal document; mobile uses legal-document."
+      "status": "native",
+      "mobile": "legal-document"
     },
     "acceptable-use/versions": {
       "status": "out-of-scope",
       "reason": "Legal version history; web-first."
     },
     "accessibility": {
-      "status": "out-of-scope",
-      "reason": "Accessibility statement; web-first."
+      "status": "native",
+      "mobile": "legal-document"
     },
     "accessibility/versions": {
       "status": "out-of-scope",
@@ -851,20 +851,20 @@
       "reason": "Club administration."
     },
     "community-guidelines": {
-      "status": "out-of-scope",
-      "reason": "Legal document; mobile uses legal-document."
+      "status": "native",
+      "mobile": "legal-document"
     },
     "community-guidelines/versions": {
       "status": "out-of-scope",
       "reason": "Legal version history; web-first."
     },
     "contact": {
-      "status": "out-of-scope",
-      "reason": "Marketing page."
+      "status": "native",
+      "mobile": "static-page"
     },
     "cookies": {
-      "status": "out-of-scope",
-      "reason": "Cookie policy is a web-browser concern."
+      "status": "native",
+      "mobile": "legal-document"
     },
     "cookies/versions": {
       "status": "out-of-scope",
@@ -875,16 +875,16 @@
       "mobile": "course-instructor"
     },
     "courses/instructor/:id/analytics": {
-      "status": "out-of-scope",
-      "reason": "Course authoring workspace."
+      "status": "native",
+      "mobile": "course-analytics"
     },
     "courses/instructor/:id/edit": {
       "status": "native",
       "mobile": "new-course"
     },
     "courses/instructor/:id/grading": {
-      "status": "out-of-scope",
-      "reason": "Course authoring workspace."
+      "status": "native",
+      "mobile": "course-grading"
     },
     "courses/instructor/new": {
       "status": "native",
@@ -911,8 +911,8 @@
       "reason": "Marketing/release page."
     },
     "faq": {
-      "status": "out-of-scope",
-      "reason": "Marketing page."
+      "status": "native",
+      "mobile": "help-faqs"
     },
     "features": {
       "status": "out-of-scope",
@@ -1011,8 +1011,8 @@
       "reason": "Marketing page."
     },
     "privacy": {
-      "status": "out-of-scope",
-      "reason": "Legal document; mobile uses legal-document."
+      "status": "native",
+      "mobile": "legal-document"
     },
     "privacy/versions": {
       "status": "out-of-scope",
@@ -1035,8 +1035,8 @@
       "reason": "Platform super-admin workspace."
     },
     "terms": {
-      "status": "out-of-scope",
-      "reason": "Legal document; mobile reads legal documents through legal-document."
+      "status": "native",
+      "mobile": "legal-document"
     },
     "terms/versions": {
       "status": "out-of-scope",
@@ -1047,8 +1047,8 @@
       "reason": "Long-form editorial guide; web-first."
     },
     "trust-and-safety": {
-      "status": "out-of-scope",
-      "reason": "Long-form editorial page; web-first."
+      "status": "native",
+      "mobile": "static-page"
     },
     "verify-identity/callback": {
       "status": "out-of-scope",

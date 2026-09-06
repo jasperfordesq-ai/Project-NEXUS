@@ -21,13 +21,13 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2240 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 56 |
-| Call sites | 584 |
-| Distinct method + endpoint pairs | 494 |
-| Verified against openapi.json | 494 |
+| API modules read | 58 |
+| Call sites | 592 |
+| Distinct method + endpoint pairs | 500 |
+| Verified against openapi.json | 500 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
-| Dynamic, not verifiable | 74 |
+| Dynamic, not verifiable | 76 |
 | Inline `fetch()` bypassing the client | 0 |
 
 ## Not verifiable (endpoint assembled at runtime)
@@ -73,6 +73,8 @@ and the places a contract test earns the most.
 | eventTemplates.ts:173 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTemplates.ts:182 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTemplates.ts:192 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventTemplates.ts:237 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventTemplates.ts:251 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:138 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:149 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:161 | POST | variable "endpoint" is assigned more than one endpoint in this module |
@@ -143,6 +145,7 @@ and the places a contract test earns the most.
 | POST | `/api/v2/connections/{param}/accept` | connections.ts:69 |
 | POST | `/api/v2/connections/request` | connections.ts:64 |
 | GET | `/api/v2/connections/status/{param}` | connections.ts:59 |
+| POST | `/api/v2/contact` | staticPages.ts:128 |
 | GET | `/api/v2/coupons` | marketplace.ts:1169 |
 | GET | `/api/v2/coupons/{param}` | marketplace.ts:1173 |
 | POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1177 |
@@ -152,9 +155,11 @@ and the places a contract test earns the most.
 | POST | `/api/v2/courses` | courses.ts:292 |
 | GET | `/api/v2/courses/{param}` | courses.ts:255 |
 | PUT | `/api/v2/courses/{param}` | courses.ts:296 |
+| GET | `/api/v2/courses/{param}/analytics` | courses.ts:432 |
 | GET | `/api/v2/courses/{param}/cohorts` | courses.ts:365 |
 | POST | `/api/v2/courses/{param}/cohorts` | courses.ts:369 |
 | POST | `/api/v2/courses/{param}/enroll` | courses.ts:267 |
+| GET | `/api/v2/courses/{param}/grading` | courses.ts:416 |
 | POST | `/api/v2/courses/{param}/lessons` | courses.ts:329 |
 | DELETE | `/api/v2/courses/{param}/lessons/{param}` | courses.ts:344 |
 | PUT | `/api/v2/courses/{param}/lessons/{param}` | courses.ts:337 |
@@ -167,6 +172,7 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/courses/{param}/sections/{param}` | courses.ts:323 |
 | PUT | `/api/v2/courses/{param}/sections/{param}` | courses.ts:316 |
 | POST | `/api/v2/courses/{param}/unpublish` | courses.ts:304 |
+| POST | `/api/v2/courses/attempts/{param}/grade` | courses.ts:424 |
 | GET | `/api/v2/courses/categories` | courses.ts:283 |
 | GET | `/api/v2/courses/mine` | courses.ts:288 |
 | GET | `/api/v2/donations/{param}/receipt` | donations.ts:23 |
@@ -299,6 +305,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/groups/{param}/wiki/{param}/revisions` | groups.ts:676 |
 | GET | `/api/v2/groups/invite/{param}` | groups.ts:786 |
 | POST | `/api/v2/groups/invite/{param}/accept` | groups.ts:791 |
+| GET | `/api/v2/help/faqs` | help.ts:49 |
 | GET | `/api/v2/ideation-campaigns` | ideation.ts:238 |
 | GET | `/api/v2/ideation-campaigns/{param}` | ideation.ts:242 |
 | GET | `/api/v2/ideation-categories` | ideation.ts:169 |
@@ -513,6 +520,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/polls` | events.ts:1262 |
 | POST | `/api/v2/polls` | polls.ts:20 |
 | POST | `/api/v2/polls/{param}/vote` | events.ts:1270 |
+| GET | `/api/v2/public-page-content/{param}` | staticPages.ts:77 |
 | POST | `/api/v2/reactions` | feed.ts:332 |
 | GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:357 |
 | GET | `/api/v2/resources` | resources.ts:90 |
@@ -532,8 +540,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/skills/search` | endorsements.ts:223 |
 | DELETE | `/api/v2/team-tasks/{param}` | groups.ts:718 |
 | PUT | `/api/v2/team-tasks/{param}` | groups.ts:714 |
-| GET | `/api/v2/tenant/bootstrap` | tenant.ts:51 |
-| GET | `/api/v2/tenants` | tenant.ts:63 |
+| GET | `/api/v2/tenant/bootstrap` | tenant.ts:66 |
+| GET | `/api/v2/tenants` | tenant.ts:78 |
 | GET | `/api/v2/users` | client.ts:573, members.ts:76 |
 | GET | `/api/v2/users/{param}` | members.ts:81 |
 | GET | `/api/v2/users/{param}/appreciations` | appreciations.ts:46 |

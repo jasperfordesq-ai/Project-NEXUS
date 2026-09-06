@@ -84,7 +84,6 @@
   },
   "player": {
     "volume": "Lautstärke",
-    "unsupported": "Ihr Browser unterstützt den Audioplayer nicht.",
     "load_error": "Der Ton dieser Episode konnte nicht geladen werden. Möglicherweise ist es nicht verfügbar oder wird noch verarbeitet.",
     "duration_unknown": "Dauer unbekannt",
     "progress": "Wiedergabefortschritt",

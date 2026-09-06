@@ -171,7 +171,7 @@
   "support": {
     "title": "Apoio e informações legais",
     "heading": "Ajuda, recursos e políticas",
-    "description": "Read key policy summaries in the app or open the canonical web pages for the full current text.",
+    "description": "Leia as respostas de ajuda, as políticas e os contactos da sua comunidade sem sair da aplicação.",
     "open": "Abrir página",
     "items": {
       "help": {
@@ -209,82 +209,55 @@
       "trust": {
         "title": "Confiança e segurança",
         "description": "Consulte orientações sobre segurança, moderação e proteção da comunidade."
+      },
+      "communityGuidelines": {
+        "title": "Regras da comunidade",
+        "description": "Lê o que a comunidade espera dos seus membros."
+      },
+      "acceptableUse": {
+        "title": "Utilização aceitável",
+        "description": "Lê as regras de utilização da plataforma e dos seus serviços."
       }
     },
-    "openWeb": "Abrir na Web",
-    "readInApp": "Ler na aplicação",
-    "closeDocument": "Voltar ao apoio",
-    "docs": {
-      "about": {
-        "title": "Acerca do Project NEXUS",
-        "summary": "Project NEXUS is an open-source multi-tenant platform for community workflows, timebanking, and mutual support.",
-        "section1Title": "O que faz a plataforma",
-        "section1Body": "A plataforma ajuda os membros a partilhar tempo, competências, oportunidades, recursos, eventos, mensagens, grupos e atividades do mercado comunitário.",
-        "section2Title": "Código aberto",
-        "section2Body": "Project NEXUS is released under the AGPL-3.0-or-later license with attribution and source-code availability requirements.",
-        "section3Title": "Âmbito da aplicação nativa",
-        "section3Body": "A aplicação móvel concentra-se nos percursos dos membros. As operações administrativas, de mediação e de desenvolvimento permanecem na Web, onde os ecrãs maiores são mais adequados ao trabalho."
-      },
-      "contact": {
-        "title": "Contacto e apoio",
-        "summary": "Utilize o canal de apoio adequado à sua pergunta, problema de conta ou pedido relativo à comunidade.",
-        "section1Title": "Ajuda com a conta",
-        "section1Body": "Para problemas de início de sessão, perfil, notificações, privacidade ou segurança, forneça pormenores suficientes para a equipa de apoio identificar a conta e a comunidade afetadas.",
-        "section2Title": "Pedidos da comunidade",
-        "section2Body": "Os organizadores da comunidade devem utilizar a página de contacto oficial para questões sobre o seu espaço, pedidos de funcionalidades e apoio operacional.",
-        "section3Title": "Preocupações urgentes",
-        "section3Body": "Se uma preocupação envolver perigo imediato ou atividade ilegal, contacte primeiro os serviços de emergência ou a autoridade legal local competente e, em seguida, comunique-a através da plataforma."
-      },
-      "terms": {
-        "title": "Resumo dos termos de utilização",
-        "summary": "Estes pontos resumem a utilização esperada da plataforma. Os termos publicados na Web continuam a ser o texto jurídico de referência.",
-        "section1Title": "Utilize a plataforma de forma responsável",
-        "section1Body": "Os membros devem fornecer informações exatas, respeitar os outros utilizadores e usar legalmente as ferramentas de banco de tempo, mercado, mensagens e grupos.",
-        "section2Title": "Regras da comunidade",
-        "section2Body": "As regras da comunidade e dos grupos podem acrescentar requisitos específicos a determinados percursos, sobretudo para trocas, voluntariado, eventos, proteção de pessoas e atividades do mercado.",
-        "section3Title": "Termos de referência",
-        "section3Body": "Abra a versão Web para consultar os termos atuais completos, incluindo avisos legais, atribuição, responsabilidade e informações sobre a licença."
-      },
-      "privacy": {
-        "title": "Resumo da privacidade",
-        "summary": "Project NEXUS processes account, community, workflow, and security data to provide the service.",
-        "section1Title": "Dados que fornece",
-        "section1Body": "Os detalhes do perfil, mensagens, anúncios, eventos, candidaturas, transações e definições são utilizados para disponibilizar as funcionalidades que escolhe usar.",
-        "section2Title": "Controls",
-        "section2Body": "Consoante a conta e a comunidade, as definições móveis incluem percursos de privacidade, notificações, utilizadores bloqueados, tradução e exportação de dados.",
-        "section3Title": "Política completa",
-        "section3Body": "Abra a política de privacidade na Web para consultar todas as bases jurídicas, prazos de conservação, subcontratantes, direitos e informações de contacto."
-      },
-      "cookies": {
-        "title": "Resumo de cookies e armazenamento",
-        "summary": "Na maioria dos percursos com sessão iniciada, a aplicação móvel utiliza armazenamento local do dispositivo e tokens seguros em vez de cookies do navegador.",
-        "section1Title": "Armazenamento da aplicação",
-        "section1Body": "A aplicação pode guardar no dispositivo o estado de autenticação, preferências, dados da API em cache, opções de tema e definições de idioma.",
-        "section2Title": "Páginas Web",
-        "section2Body": "Ao abrir as páginas Web de referência, podem aplicar-se cookies do navegador e tecnologias semelhantes de acordo com a política de cookies do site.",
-        "section3Title": "As suas escolhas",
-        "section3Body": "Pode terminar a sessão, ajustar as definições, limpar o armazenamento da aplicação no dispositivo ou abrir na Web a política de cookies completa e atual."
-      },
-      "accessibility": {
-        "title": "Resumo da acessibilidade",
-        "summary": "A plataforma procura disponibilizar percursos acessíveis aos membros na Web e na aplicação móvel.",
-        "section1Title": "Apoio na aplicação nativa",
-        "section1Body": "Sempre que possível, os ecrãs móveis utilizam etiquetas traduzidas, botões acessíveis, estados visíveis de carregamento e erro, áreas seguras e tecnologias de apoio da plataforma.",
-        "section2Title": "Interface alternativa",
-        "section2Body": "Existe uma interface acessível baseada em HTML para quem beneficia de uma experiência Web mais simples e muito estruturada.",
-        "section3Title": "Feedback",
-        "section3Body": "Comunique barreiras através do canal de contacto, incluindo detalhes suficientes sobre o dispositivo e o percurso para que os problemas de acessibilidade possam ser avaliados e corrigidos."
-      },
-      "trust": {
-        "title": "Resumo de confiança e segurança",
-        "summary": "Os percursos de confiança e segurança ajudam a proteger os membros, mantendo as trocas comunitárias práticas e respeitadoras.",
-        "section1Title": "Proteção dos membros",
-        "section1Body": "Perfis, avaliações, denúncias, bloqueios, verificações de identidade e moderação contribuem para trocas e comunicações mais seguras.",
-        "section2Title": "Reporting",
-        "section2Body": "Utilize as opções de denúncia, bloqueio ou contacto quando conteúdos, mensagens, anúncios, eventos ou o comportamento de um membro parecerem inseguros ou inadequados.",
-        "section3Title": "Limits",
-        "section3Body": "As ferramentas da plataforma não substituem serviços de emergência, aconselhamento jurídico ou autoridades de proteção quando é necessária uma ação imediata ou prevista na lei."
-      }
+    "faqs": {
+      "title": "Centro de ajuda",
+      "subtitle": "Respostas publicadas pela sua comunidade às perguntas mais frequentes.",
+      "searchLabel": "Pesquisar nas respostas de ajuda",
+      "searchPlaceholder": "Pesquisar perguntas e respostas",
+      "emptyTitle": "Ainda não há respostas de ajuda",
+      "emptySubtitle": "A sua comunidade ainda não publicou respostas de ajuda.",
+      "noMatchesTitle": "Sem respostas correspondentes",
+      "noMatchesSubtitle": "Experimente outra palavra ou limpe a pesquisa para ver tudo."
+    },
+    "page": {
+      "fallbackTitle": "Informações da comunidade",
+      "unknownTitle": "Página indisponível",
+      "unknownSubtitle": "Esta comunidade não publica essa página de informação.",
+      "emptyTitle": "Ainda não há nada publicado aqui",
+      "emptySubtitle": "A sua comunidade ainda não adicionou conteúdo a esta página."
+    },
+    "contactForm": {
+      "title": "Enviar uma mensagem",
+      "name": "O seu nome",
+      "email": "O seu endereço de e-mail",
+      "subject": "Sobre o que é a sua mensagem?",
+      "message": "Mensagem",
+      "messagePlaceholder": "Explique a quem organiza a sua comunidade como o podem ajudar.",
+      "submit": "Enviar mensagem",
+      "sending": "A enviar a sua mensagem",
+      "nameRequired": "Introduza o seu nome.",
+      "emailRequired": "Introduza um endereço de e-mail válido.",
+      "messageRequired": "Escreva uma mensagem antes de a enviar.",
+      "successTitle": "Mensagem enviada",
+      "successBody": "Quem organiza a sua comunidade recebeu a mensagem e responderá por e-mail.",
+      "errorTitle": "Mensagem não enviada",
+      "errorBody": "Não foi possível enviar a sua mensagem. Tente novamente.",
+      "blockedTitle": "Mensagem não enviada",
+      "blockedBody": "O formulário de contacto desta comunidade exige uma verificação de segurança do navegador que a aplicação não consegue concluir. Utilize antes os contactos apresentados acima.",
+      "detailsTitle": "Dados de contacto",
+      "detailsEmail": "Endereço de e-mail",
+      "detailsPhone": "Número de telefone",
+      "detailsAddress": "Morada postal"
     }
   },
   "skills": "Competências e recomendações",

@@ -145,5 +145,9 @@
     "action": "Restart now"
   },
   "unreadBadge_one": "{{count}} unread message",
-  "unreadBadge_other": "{{count}} unread messages"
+  "unreadBadge_other": "{{count}} unread messages",
+  "featureUnavailable": {
+    "title": "Not available here",
+    "subtitle": "Your community has not switched this on. Ask an organiser if you think it should be."
+  }
 }

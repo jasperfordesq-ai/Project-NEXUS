@@ -3,22 +3,42 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useTenant } from '@/lib/hooks/useTenant';
-import { buildWebUrl } from '@/lib/utils/webUrl';
+/**
+ * Support and legal — every destination opens inside the app.
+ *
+ * 🔴 This screen used to be the app's last browser hand-off. Eight of its nine
+ * items called `Linking.openURL(buildWebUrl(...))`, and the ninth — "Read in
+ * app" — opened a bottom sheet containing a HAND-WRITTEN three-section summary
+ * assembled from `support.docs.<key>.section1Title` and friends, with a link to
+ * the website for the actual text. A member reading the app's privacy policy was
+ * reading invented filler next to a link to the truth.
+ *
+ * Everything here now has a real source:
+ *   help                            → GET /v2/help/faqs
+ *   resources                       → the existing resources screen
+ *   about / contact / trust         → GET /v2/public-page-content/{pageKey}
+ *   terms / privacy / cookies /
+ *   accessibility                   → GET /v2/legal/{type}, via legal-document
+ *
+ * 🔴 There is deliberately no `Linking` import and no `buildWebUrl` call in this
+ * file. A regression test presses every item and asserts `Linking.openURL` is
+ * never called — that assertion is the point of the change, so do not weaken it
+ * by adding an "open on the web" affordance back.
+ *
+ * 🔴 Trust and safety's page key is `trust-safety`. `/trust-and-safety` is the
+ * web PATH, and asking the content endpoint for it returns RESOURCE_NOT_FOUND.
+ */
+
 import type { ComponentProps } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@/components/ui/Icon';
-import * as Linking from 'expo-linking';
 import { useTranslation } from 'react-i18next';
 import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-
+import { Ionicons } from '@/components/ui/Icon';
 import AppTopBar from '@/components/ui/AppTopBar';
-import BottomSheet from '@/components/ui/BottomSheet';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
@@ -26,74 +46,53 @@ import { contrastText, withAlpha } from '@/lib/utils/color';
 type SupportItem = {
   key: string;
   icon: ComponentProps<typeof Ionicons>['name'];
-  path?: string;
-  route?: Href;
-  documentKey?: string;
+  route: Href;
 };
 
-type SupportDocument = {
-  key: string;
-  icon: ComponentProps<typeof Ionicons>['name'];
-  path: string;
-};
-
-const SUPPORT_ITEMS: SupportItem[] = [
-  { key: 'help', icon: 'help-circle-outline', path: '/help' },
-  { key: 'resources', icon: 'library-outline', route: '/(modals)/resources' as Href },
-  { key: 'about', icon: 'information-circle-outline', path: '/about', documentKey: 'about' },
-  { key: 'contact', icon: 'mail-outline', path: '/contact', documentKey: 'contact' },
-  { key: 'terms', icon: 'document-text-outline', path: '/terms', documentKey: 'terms' },
-  { key: 'privacy', icon: 'shield-checkmark-outline', path: '/privacy', documentKey: 'privacy' },
-  { key: 'cookies', icon: 'settings-outline', path: '/cookies', documentKey: 'cookies' },
-  { key: 'accessibility', icon: 'accessibility-outline', path: '/accessibility', documentKey: 'accessibility' },
-  { key: 'trust', icon: 'shield-outline', path: '/trust-and-safety', documentKey: 'trust' },
-];
-
-const SUPPORT_DOCUMENTS: Record<string, SupportDocument> = SUPPORT_ITEMS.reduce((acc, item) => {
-  if (item.documentKey && item.path) {
-    acc[item.documentKey] = { key: item.documentKey, icon: item.icon, path: item.path };
-  }
-  return acc;
-}, {} as Record<string, SupportDocument>);
-
-function ActionPill({
-  label,
-  icon,
-  onPress,
-  tone,
-  primary = false,
-}: {
-  label: string;
-  icon: ComponentProps<typeof Ionicons>['name'];
-  onPress: () => void;
-  tone: string;
-  primary?: boolean;
-}) {
-  const theme = useTheme();
-
-  return (
-    <HeroButton
-      accessibilityLabel={label}
-      onPress={onPress}
-      className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
-      size="sm"
-      variant={primary ? 'primary' : 'secondary'}
-      style={{
-        backgroundColor: primary ? tone : withAlpha(tone, 0.12),
-        borderWidth: primary ? 0 : 1,
-        borderColor: primary ? 'transparent' : withAlpha(tone, 0.22),
-      }}
-    >
-      <HeroButton.Label className="text-sm font-semibold" style={{ color: primary ? contrastText(tone) : theme.text }} numberOfLines={1}>
-        {label}
-      </HeroButton.Label>
-      <Ionicons name={icon} size={16} color={primary ? contrastText(tone) : tone} />
-    </HeroButton>
-  );
+/** The legal documents this community can publish, as `legal_documents.document_type`. */
+function legalRoute(type: string): Href {
+  return { pathname: '/(modals)/legal-document', params: { type } } as Href;
 }
 
-/** The keys the legal-document screen can actually fetch (`GET /v2/legal/{type}`). */
-const LEGAL_DOCUMENT_TYPES = new Set(['terms', 'privacy', 'cookies']);
+/** About / Contact / Trust and safety, from the public page-content endpoint. */
+function staticPageRoute(key: string): Href {
+  return { pathname: '/(modals)/static-page', params: { key } } as Href;
+}
+
+const SUPPORT_ITEMS: SupportItem[] = [
+  { key: 'help', icon: 'help-circle-outline', route: '/(modals)/help-faqs' as Href },
+  { key: 'resources', icon: 'library-outline', route: '/(modals)/resources' as Href },
+  { key: 'about', icon: 'information-circle-outline', route: staticPageRoute('about') },
+  { key: 'contact', icon: 'mail-outline', route: staticPageRoute('contact') },
+  { key: 'terms', icon: 'document-text-outline', route: legalRoute('terms') },
+  { key: 'privacy', icon: 'shield-checkmark-outline', route: legalRoute('privacy') },
+  { key: 'cookies', icon: 'settings-outline', route: legalRoute('cookies') },
+  { key: 'accessibility', icon: 'accessibility-outline', route: legalRoute('accessibility') },
+  /*
+    🔴 Added 2026-09-06. The web legal hub (`LegalHubPage.tsx`) offers nine documents;
+    this screen offered five, and these two were the gap. Both are valid values of
+    `legal_documents.document_type` and both already rendered in `legal-document` —
+    a member is sent there to ACCEPT them — so they were readable when demanded and
+    unreadable when merely wanted. `document.empty` covers a community that has not
+    published its own version, so listing them cannot produce a dead end.
+  */
+  { key: 'communityGuidelines', icon: 'people-outline', route: legalRoute('community_guidelines') },
+  { key: 'acceptableUse', icon: 'checkmark-circle-outline', route: legalRoute('acceptable_use') },
+  { key: 'trust', icon: 'shield-outline', route: staticPageRoute('trust-safety') },
+];
+
+/**
+ * Deep links land here with `?doc=<key>`.
+ *
+ * 🔴 `app/+native-intent.ts` maps `/privacy`, `/terms`, `/trust-and-safety` and
+ * the rest onto `/(modals)/support?doc=…`. That mapping is owned elsewhere and
+ * still in force, so this screen must keep honouring the parameter — otherwise a
+ * privacy link from an email would open a menu instead of the policy.
+ */
+const DOC_ROUTES: Record<string, Href> = SUPPORT_ITEMS.reduce((acc, item) => {
+  if (item.key !== 'resources' && item.key !== 'help') acc[item.key] = item.route;
+  return acc;
+}, {} as Record<string, Href>);
 
 export default function SupportRoute() {
   return (
@@ -105,32 +104,20 @@ export default function SupportRoute() {
 
 function SupportScreen() {
   const { t } = useTranslation(['profile', 'common']);
-  const { tenant } = useTenant();
   const { doc } = useLocalSearchParams<{ doc?: string | string[] }>();
   const theme = useTheme();
   const tone = theme.info;
-  const initialDocumentKey = normalizeSupportDocumentKey(doc);
-  const [selectedDocumentKey, setSelectedDocumentKey] = useState<string | null>(initialDocumentKey);
 
-  /*
-    🔴 S3-06: "Read in app" showed three fixed translated paragraphs for Terms, Privacy and
-    Cookies — not the community's own legal text, which is the text the acceptance gate
-    actually enforces. A member could believe they had read their community's terms when
-    they had read generic copy. Those three now open the real document; the rest (About,
-    Contact, Accessibility, Trust) have no legal-document type and keep the summary sheet.
-  */
-  function openSupportDocument(key: string | null) {
-    if (key && LEGAL_DOCUMENT_TYPES.has(key)) {
-      router.push({ pathname: '/(modals)/legal-document', params: { type: key } } as Href);
-      return;
-    }
-    setSelectedDocumentKey(key);
-  }
-  const selectedDocument = selectedDocumentKey ? SUPPORT_DOCUMENTS[selectedDocumentKey] : null;
+  const requestedDoc = normalizeSupportDocumentKey(doc);
+  // Follow a deep link once. Without the guard, coming back from the document
+  // would immediately push it again and the member could never reach this list.
+  const followedDoc = useRef<string | null>(null);
 
   useEffect(() => {
-    setSelectedDocumentKey(normalizeSupportDocumentKey(doc));
-  }, [doc]);
+    if (!requestedDoc || followedDoc.current === requestedDoc) return;
+    followedDoc.current = requestedDoc;
+    router.push(DOC_ROUTES[requestedDoc]);
+  }, [requestedDoc]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
@@ -178,20 +165,11 @@ function SupportScreen() {
                   </View>
                 </View>
                 <View className="flex-row flex-wrap gap-2 pl-1">
-                  {item.documentKey ? (
-                    <ActionPill
-                      label={t('support.readInApp')}
-                      icon="reader-outline"
-                      tone={tone}
-                      primary
-                      onPress={() => openSupportDocument(item.documentKey ?? null)}
-                    />
-                  ) : null}
                   <ActionPill
-                    label={t(item.route ? 'support.open' : 'support.openWeb')}
-                    icon={item.route ? 'chevron-forward-outline' : 'open-outline'}
+                    label={t('support.open')}
+                    testID={`support-open-${item.key}`}
                     tone={tone}
-                    onPress={() => item.route ? router.push(item.route) : void Linking.openURL(buildWebUrl(tenant?.slug, item.path ?? '/'))}
+                    onPress={() => router.push(item.route)}
                   />
                 </View>
               </HeroCard.Body>
@@ -199,60 +177,36 @@ function SupportScreen() {
           ))}
         </View>
       </ScrollView>
-
-      {/* Document reader — a bottom sheet so "Read in app" visibly responds from
-          anywhere on the page (it previously rendered at the TOP of the scroll
-          view, off-screen when the user was scrolled down → looked dead). */}
-      <BottomSheet
-        visible={!!selectedDocument}
-        onClose={() => setSelectedDocumentKey(null)}
-        snapPoints={['85%']}
-        title={selectedDocument ? t(`support.docs.${selectedDocument.key}.title`) : undefined}
-      >
-        {selectedDocument ? (
-          <BottomSheetScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
-            <View className="gap-4 pt-2">
-              <View className="flex-row items-start gap-3">
-                <View className="size-11 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(tone, 0.14) }}>
-                  <Ionicons name={selectedDocument.icon} size={21} color={tone} />
-                </View>
-                <Text className="min-w-0 flex-1 text-sm leading-5" style={{ color: theme.textSecondary }}>
-                  {t(`support.docs.${selectedDocument.key}.summary`)}
-                </Text>
-              </View>
-              {[1, 2, 3].map((section) => (
-                <View
-                  key={section}
-                  className="gap-1 rounded-panel-inner p-3"
-                  style={{ backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderSubtle }}
-                >
-                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={2}>
-                    {t(`support.docs.${selectedDocument.key}.section${section}Title`)}
-                  </Text>
-                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-                    {t(`support.docs.${selectedDocument.key}.section${section}Body`)}
-                  </Text>
-                </View>
-              ))}
-              <View className="flex-row flex-wrap gap-2">
-                <ActionPill
-                  label={t('support.openWeb')}
-                  icon="open-outline"
-                  tone={tone}
-                  onPress={() => void Linking.openURL(buildWebUrl(tenant?.slug, selectedDocument.path))}
-                />
-                <ActionPill
-                  label={t('support.closeDocument')}
-                  icon="close-outline"
-                  tone={tone}
-                  onPress={() => setSelectedDocumentKey(null)}
-                />
-              </View>
-            </View>
-          </BottomSheetScrollView>
-        ) : null}
-      </BottomSheet>
     </SafeAreaView>
+  );
+}
+
+function ActionPill({
+  label,
+  onPress,
+  tone,
+  testID,
+}: {
+  label: string;
+  onPress: () => void;
+  tone: string;
+  testID: string;
+}) {
+  return (
+    <HeroButton
+      accessibilityLabel={label}
+      testID={testID}
+      onPress={onPress}
+      className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
+      size="sm"
+      variant="primary"
+      style={{ backgroundColor: tone }}
+    >
+      <HeroButton.Label className="text-sm font-semibold" style={{ color: contrastText(tone) }} numberOfLines={1}>
+        {label}
+      </HeroButton.Label>
+      <Ionicons name="chevron-forward-outline" size={16} color={contrastText(tone)} />
+    </HeroButton>
   );
 }
 
@@ -260,6 +214,5 @@ function normalizeSupportDocumentKey(value: string | string[] | undefined): stri
   const raw = Array.isArray(value) ? value[0] : value;
   if (!raw) return null;
   const normalized = raw === 'trust-and-safety' ? 'trust' : raw;
-  return SUPPORT_DOCUMENTS[normalized] ? normalized : null;
+  return DOC_ROUTES[normalized] ? normalized : null;
 }
-

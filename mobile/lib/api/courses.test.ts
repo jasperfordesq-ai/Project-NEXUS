@@ -18,10 +18,13 @@ import {
   getAuthoredCourses,
   getCourse,
   getCourseCategories,
+  getCourseAnalytics,
   getCourseCohorts,
+  getCourseGradingQueue,
   getCourseProgress,
   getCourses,
   getMyCourses,
+  gradeCourseAttempt,
   publishCourse,
   unpublishCourse,
   updateCourse,
@@ -197,6 +200,61 @@ describe('courses API', () => {
 
       expect(api.get).toHaveBeenCalledWith('/api/v2/courses/42/cohorts');
       expect(api.post).toHaveBeenCalledWith('/api/v2/courses/42/cohorts', { name: 'Winter' });
+    });
+
+    it('reads the grading queue from the course it belongs to', async () => {
+      (api.get as jest.Mock).mockResolvedValueOnce({
+        data: [{
+          id: 900,
+          quiz_id: 11,
+          user_id: 77,
+          grading_status: 'pending_review',
+          answers: { '501': 'An essay answer.' },
+          quiz: { id: 11, title: 'End of course quiz', questions: [{ id: 501, type: 'essay', prompt: 'Why?' }] },
+          user: { id: 77, name: 'Maura Byrne' },
+        }],
+      });
+
+      await expect(getCourseGradingQueue(42)).resolves.toMatchObject([{ id: 900, grading_status: 'pending_review' }]);
+      expect(api.get).toHaveBeenCalledWith('/api/v2/courses/42/grading');
+    });
+
+    it('grades by ATTEMPT id, with the exact body CourseQuizController reads', async () => {
+      (api.post as jest.Mock).mockResolvedValueOnce({ data: { id: 900, grading_status: 'graded', score_percent: 85 } });
+
+      await expect(gradeCourseAttempt(900, { score_percent: 85, passed: true, feedback: 'Well argued.' }))
+        .resolves.toMatchObject({ grading_status: 'graded' });
+
+      // The route is /courses/attempts/{attemptId}/grade — the course is NOT in the path;
+      // the server resolves the owning course from the attempt and authorises against it.
+      expect(api.post).toHaveBeenCalledWith('/api/v2/courses/attempts/900/grade', {
+        score_percent: 85, passed: true, feedback: 'Well argued.',
+      });
+    });
+
+    it('reads per-course analytics without reshaping the server figures', async () => {
+      (api.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          course: { id: 42, title: 'Repair skills' },
+          enrollments: { total: 20, active: 12, completed: 5, dropped: 3 },
+          completion_rate: 25,
+          avg_progress: 61.5,
+          avg_quiz_score: 78.2,
+          quiz_attempts: 31,
+          per_lesson: [{ lesson_id: 90, title: 'Taking things apart', completed: 18 }],
+        },
+      });
+
+      await expect(getCourseAnalytics(42)).resolves.toEqual({
+        course: { id: 42, title: 'Repair skills' },
+        enrollments: { total: 20, active: 12, completed: 5, dropped: 3 },
+        completion_rate: 25,
+        avg_progress: 61.5,
+        avg_quiz_score: 78.2,
+        quiz_attempts: 31,
+        per_lesson: [{ lesson_id: 90, title: 'Taking things apart', completed: 18 }],
+      });
+      expect(api.get).toHaveBeenCalledWith('/api/v2/courses/42/analytics');
     });
 
     it('returns a bare payload unchanged when the API does not wrap it', async () => {

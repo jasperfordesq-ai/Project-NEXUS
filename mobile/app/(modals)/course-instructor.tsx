@@ -23,6 +23,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import FeatureGate from '@/components/FeatureGate';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
@@ -33,10 +34,18 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 
 export default function CourseInstructorRoute() {
+  /*
+    Gated like the React route (`<FeatureGate feature="courses">`). Hiding the "+"
+    menu entry was never a gate: a deep link, a notification or a shared URL all
+    reach this screen directly. See components/FeatureGate.tsx.
+  */
+  const { t } = useTranslation('courses');
   return (
-    <ModalErrorBoundary>
-      <CourseInstructorScreen />
-    </ModalErrorBoundary>
+    <FeatureGate feature="courses" title={t('instructor.dashboard')} fallbackHref="/(modals)/courses">
+      <ModalErrorBoundary>
+        <CourseInstructorScreen />
+      </ModalErrorBoundary>
+    </FeatureGate>
   );
 }
 
@@ -142,6 +151,20 @@ function CourseInstructorScreen() {
                   onPress={() => router.push({ pathname: '/(modals)/new-course', params: { id: String(course.id) } })}
                 >
                   <HeroButton.Label>{t('instructor.edit_course')}</HeroButton.Label>
+                </HeroButton>
+                <HeroButton
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => router.push({ pathname: '/(modals)/course-grading', params: { id: String(course.id) } })}
+                >
+                  <HeroButton.Label>{t('grading.title')}</HeroButton.Label>
+                </HeroButton>
+                <HeroButton
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => router.push({ pathname: '/(modals)/course-analytics', params: { id: String(course.id) } })}
+                >
+                  <HeroButton.Label>{t('analytics.title')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton
                   size="sm"

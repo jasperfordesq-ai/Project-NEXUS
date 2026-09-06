@@ -224,6 +224,31 @@ export default function HomeScreen() {
                     {t('feed.subtitle')}
                   </Text>
                 </View>
+                {/*
+                  🔴 The only in-app door to hashtag discovery. `feed-hashtags` — and
+                  through it `feed-hashtag`, the single-tag feed — was reachable by
+                  deep link alone, so hashtags shown on a post led somewhere a member
+                  could never navigate to deliberately. The web feed carries the same
+                  entry point (`TrendingHashtags` → /feed/hashtags). Found by the
+                  2026-09-06 audit.
+                */}
+                <HeroButton
+                  isIconOnly
+                  size="sm"
+                  variant="secondary"
+                  testID="home-hashtags"
+                  className="mr-2 h-10 w-10 rounded-2xl"
+                  onPress={() => router.push('/(modals)/feed-hashtags')}
+                  accessibilityLabel={t('hashtags.title')}
+                  accessibilityRole="button"
+                  style={{
+                    backgroundColor: withAlpha(primary, 0.12),
+                    borderColor: withAlpha(primary, 0.24),
+                    borderWidth: 1,
+                  }}
+                >
+                  <Ionicons name="pricetags-outline" size={20} color={primary} />
+                </HeroButton>
                 <View className="relative h-10 w-10 items-center justify-center">
                   <HeroButton
                     isIconOnly

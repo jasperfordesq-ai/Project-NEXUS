@@ -69,7 +69,6 @@
     "emptyFiltered": "Ningún intercambio grupal coincide con este estado todavía.",
     "errorTitle": "No se pudieron cargar los intercambios grupales",
     "errorDescription": "Extraiga para actualizar o vuelva a intentarlo más tarde.",
-    "moreAvailable": "Hay más intercambios grupales disponibles en la vista web.",
     "loadMore": "Cargar más",
     "create": {
       "open": "Crear intercambio grupal",

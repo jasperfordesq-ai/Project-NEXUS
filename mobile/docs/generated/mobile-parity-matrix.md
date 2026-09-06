@@ -18,9 +18,9 @@ when a React member route exists that nobody has classified for mobile.
 | Measure | Count |
 | --- | --- |
 | React member routes | 256 |
-| Mobile routes (Expo Router screens) | 166 |
-| Covered natively | 157 |
-| Deliberately out of scope | 99 |
+| Mobile routes (Expo Router screens) | 170 |
+| Covered natively | 169 |
+| Deliberately out of scope | 87 |
 | **Known gaps** | **0** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
@@ -31,10 +31,10 @@ when a React member route exists that nobody has classified for mobile.
 
 | React route | Status | Mobile screen | Reason |
 | --- | --- | --- | --- |
-| `about` | out-of-scope | — | Marketing page. |
-| `acceptable-use` | out-of-scope | — | Legal document; mobile uses legal-document. |
+| `about` | native | `static-page` | — |
+| `acceptable-use` | native | `legal-document` | — |
 | `acceptable-use/versions` | out-of-scope | — | Legal version history; web-first. |
-| `accessibility` | out-of-scope | — | Accessibility statement; web-first. |
+| `accessibility` | native | `legal-document` | — |
 | `accessibility/versions` | out-of-scope | — | Legal version history; web-first. |
 | `account-deletion` | out-of-scope | — | Google Play requires a publicly reachable deletion page; the app itself deletes an account natively in settings-delete-account. |
 | `achievements` | native | `achievements` | — |
@@ -77,11 +77,11 @@ when a React member route exists that nobody has classified for mobile.
 | `clubs` | native | `clubs` | — |
 | `clubs/:id/admin/dues` | out-of-scope | — | Club administration. |
 | `clubs/:id/admin/import` | out-of-scope | — | Club administration. |
-| `community-guidelines` | out-of-scope | — | Legal document; mobile uses legal-document. |
+| `community-guidelines` | native | `legal-document` | — |
 | `community-guidelines/versions` | out-of-scope | — | Legal version history; web-first. |
 | `connections` | native | `connections` | — |
-| `contact` | out-of-scope | — | Marketing page. |
-| `cookies` | out-of-scope | — | Cookie policy is a web-browser concern. |
+| `contact` | native | `static-page` | — |
+| `cookies` | native | `legal-document` | — |
 | `cookies/versions` | out-of-scope | — | Legal version history; web-first. |
 | `coupons` | native | `marketplace-coupons` | — |
 | `coupons/:id` | native | `marketplace-coupon-detail` | — |
@@ -89,9 +89,9 @@ when a React member route exists that nobody has classified for mobile.
 | `courses/:id/learn` | native | `course-player` | — |
 | `courses/:idOrSlug` | native | `course-detail` | — |
 | `courses/instructor` | native | `course-instructor` | — |
-| `courses/instructor/:id/analytics` | out-of-scope | — | Course authoring workspace. |
+| `courses/instructor/:id/analytics` | native | `course-analytics` | — |
 | `courses/instructor/:id/edit` | native | `new-course` | — |
-| `courses/instructor/:id/grading` | out-of-scope | — | Course authoring workspace. |
+| `courses/instructor/:id/grading` | native | `course-grading` | — |
 | `courses/instructor/new` | native | `new-course` | — |
 | `courses/my-learning` | native | `courses` | — |
 | `dashboard` | native | `home` | — |
@@ -111,7 +111,7 @@ when a React member route exists that nobody has classified for mobile.
 | `exchanges` | native | `exchanges` | — |
 | `exchanges/:id` | native | `exchange-detail` | — |
 | `explore` | native | `explore` | — |
-| `faq` | out-of-scope | — | Marketing page. |
+| `faq` | native | `help-faqs` | — |
 | `features` | out-of-scope | — | Marketing page — a platform catalogue, not a tenant inventory. |
 | `federation` | native | `federation` | — |
 | `federation/connections` | native | `federation-connections` | — |
@@ -244,7 +244,7 @@ when a React member route exists that nobody has classified for mobile.
 | `premium/manage` | out-of-scope | — | Policy-blocked with the member_premium payment design; management cannot ship before the native entitlement and refund lifecycle is approved. |
 | `premium/return` | out-of-scope | — | Policy-blocked: no native payment-return route is valid until the approved Apple Pay/fundraising flow exists. |
 | `pricing` | out-of-scope | — | Marketing page. |
-| `privacy` | out-of-scope | — | Legal document; mobile uses legal-document. |
+| `privacy` | native | `legal-document` | — |
 | `privacy/versions` | out-of-scope | — | Legal version history; web-first. |
 | `profile` | native | `profile` | — |
 | `profile/:id` | native | `member-profile` | — |
@@ -263,10 +263,10 @@ when a React member route exists that nobody has classified for mobile.
 | `strategic-plan` | out-of-scope | — | Marketing/organisational page. |
 | `super-admin/*` | out-of-scope | — | Platform super-admin workspace. |
 | `support-actions/confirm/:token` | out-of-scope | — | Public side-effecting linked-account support confirmations remain browser-only; they are not an adults-only native member journey. |
-| `terms` | out-of-scope | — | Legal document; mobile reads legal documents through legal-document. |
+| `terms` | native | `legal-document` | — |
 | `terms/versions` | out-of-scope | — | Legal version history; web-first. |
 | `timebanking-guide` | out-of-scope | — | Long-form editorial guide; web-first. |
-| `trust-and-safety` | out-of-scope | — | Long-form editorial page; web-first. |
+| `trust-and-safety` | native | `static-page` | — |
 | `users/:userId/appreciations` | native | `appreciations` | — |
 | `users/:userId/collections` | native | `profile-collections` | — |
 | `venues` | native | `venues` | — |

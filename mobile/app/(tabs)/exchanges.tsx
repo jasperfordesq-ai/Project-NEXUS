@@ -382,6 +382,24 @@ export default function ExchangesScreen() {
             <Ionicons name="swap-horizontal-outline" size={12} color="#10B981" />
             <Chip.Label>{isLoading ? t('resultsLoading') : t('resultsCount', { count: visibleItems.length })}</Chip.Label>
           </Chip>
+          {/*
+            🔴 The only in-app door to the member's own exchanges. `exchange-requests`
+            — the list of what you are giving and receiving, and the ONLY route to
+            `exchange-request-detail` — was reachable by deep link alone: nothing in
+            the app navigated to it, so a member could browse listings but never see
+            the exchanges they were already part of. Found by the 2026-09-06 audit,
+            same class as the courses/podcasts report.
+          */}
+          <HeroButton
+            isIconOnly
+            size="sm"
+            variant="secondary"
+            testID="exchanges-my-exchanges"
+            onPress={() => router.push('/(modals)/exchange-requests')}
+            accessibilityLabel={t('requests.title')}
+          >
+            <Ionicons name="swap-horizontal-outline" size={18} color={primary} />
+          </HeroButton>
           <HeroButton
             isIconOnly
             size="sm"

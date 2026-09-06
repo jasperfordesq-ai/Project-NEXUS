@@ -171,7 +171,7 @@
   "support": {
     "title": "Assistance et mentions légales",
     "heading": "Aide, ressources et politiques",
-    "description": "Read key policy summaries in the app or open the canonical web pages for the full current text.",
+    "description": "Consultez les réponses d’aide, les politiques et les coordonnées de votre communauté sans quitter l’application.",
     "open": "Ouvrir la page",
     "items": {
       "help": {
@@ -209,82 +209,55 @@
       "trust": {
         "title": "Confiance et sécurité",
         "description": "Consultez les conseils sur la sécurité, la modération et la protection de la communauté."
+      },
+      "communityGuidelines": {
+        "title": "Règles de la communauté",
+        "description": "Découvrez ce que la communauté attend de ses membres."
+      },
+      "acceptableUse": {
+        "title": "Utilisation acceptable",
+        "description": "Consultez les règles d'utilisation de la plateforme et de ses services."
       }
     },
-    "openWeb": "Ouvrir sur le Web",
-    "readInApp": "Lire dans l’application",
-    "closeDocument": "Retour à l’assistance",
-    "docs": {
-      "about": {
-        "title": "À propos de Project NEXUS",
-        "summary": "Project NEXUS is an open-source multi-tenant platform for community workflows, timebanking, and mutual support.",
-        "section1Title": "Fonctionnement de la plateforme",
-        "section1Body": "La plateforme aide les membres à partager du temps, des compétences, des opportunités, des ressources, des événements, des messages, des groupes et des activités sur le marché communautaire.",
-        "section2Title": "Code source ouvert",
-        "section2Body": "Project NEXUS is released under the AGPL-3.0-or-later license with attribution and source-code availability requirements.",
-        "section3Title": "Périmètre de l’application native",
-        "section3Body": "L’application mobile se concentre sur les parcours des membres. Les opérations d’administration, de courtage et de développement restent sur le Web, où les écrans plus grands sont mieux adaptés."
-      },
-      "contact": {
-        "title": "Contact et assistance",
-        "summary": "Utilisez le service d’assistance correspondant à votre question, à votre problème de compte ou à votre demande auprès de la communauté.",
-        "section1Title": "Aide relative au compte",
-        "section1Body": "Pour les problèmes de connexion, de profil, de notification, de confidentialité ou de sécurité, fournissez suffisamment de détails pour permettre à l’équipe d’assistance d’identifier le compte et la communauté concernés.",
-        "section2Title": "Demandes des communautés",
-        "section2Body": "Les responsables de communauté doivent utiliser la page de contact officielle pour les questions concernant leur espace, les demandes de fonctionnalités et l’assistance opérationnelle.",
-        "section3Title": "Préoccupations urgentes",
-        "section3Body": "Si une situation présente un danger immédiat ou une activité illégale, contactez d’abord les services d’urgence ou l’autorité judiciaire locale compétente, puis signalez-la sur la plateforme."
-      },
-      "terms": {
-        "title": "Résumé des conditions d’utilisation",
-        "summary": "Ces points résument l’utilisation attendue de la plateforme. Les conditions publiées sur le Web restent le texte juridique de référence.",
-        "section1Title": "Utiliser la plateforme de manière responsable",
-        "section1Body": "Les membres doivent fournir des informations exactes, respecter les autres utilisateurs et utiliser légalement les outils de banque de temps, de marché, de messagerie et de groupe.",
-        "section2Title": "Règles de la communauté",
-        "section2Body": "Les règles de la communauté et des groupes peuvent ajouter des attentes propres à certains parcours, notamment pour les échanges, le bénévolat, les événements, la protection des personnes et le marché.",
-        "section3Title": "Conditions de référence",
-        "section3Body": "Ouvrez la version Web pour consulter l’intégralité des conditions en vigueur, notamment les mentions légales, l’attribution, la responsabilité et les informations de licence."
-      },
-      "privacy": {
-        "title": "Résumé de la politique de confidentialité",
-        "summary": "Project NEXUS processes account, community, workflow, and security data to provide the service.",
-        "section1Title": "Données que vous fournissez",
-        "section1Body": "Les informations du profil, messages, annonces, événements, candidatures, transactions et réglages servent à fournir les fonctionnalités que vous choisissez d’utiliser.",
-        "section2Title": "Controls",
-        "section2Body": "Selon le compte et la communauté, les réglages mobiles proposent des parcours concernant la confidentialité, les notifications, les membres bloqués, la traduction et l’exportation des données.",
-        "section3Title": "Politique complète",
-        "section3Body": "Ouvrez la politique de confidentialité sur le Web pour consulter l’intégralité des bases juridiques, durées de conservation, sous-traitants, droits et coordonnées."
-      },
-      "cookies": {
-        "title": "Résumé sur les cookies et le stockage",
-        "summary": "Pour la plupart des parcours connectés, l’application mobile utilise le stockage local de l’appareil et des jetons sécurisés plutôt que des cookies de navigateur.",
-        "section1Title": "Stockage de l’application",
-        "section1Body": "L’application peut stocker sur l’appareil l’état de connexion, les préférences, des données d’API en cache, le thème choisi et les réglages de langue.",
-        "section2Title": "Pages Web",
-        "section2Body": "Lorsque vous ouvrez les pages Web de référence, des cookies de navigateur et des technologies similaires peuvent être utilisés conformément à la politique relative aux cookies du site.",
-        "section3Title": "Vos choix",
-        "section3Body": "Vous pouvez vous déconnecter, modifier les réglages, effacer le stockage de l’application depuis votre appareil ou ouvrir la politique complète et actuelle relative aux cookies sur le Web."
-      },
-      "accessibility": {
-        "title": "Résumé sur l’accessibilité",
-        "summary": "La plateforme vise à proposer des parcours accessibles aux membres sur le Web et dans l’application mobile.",
-        "section1Title": "Prise en charge dans l’application native",
-        "section1Body": "Dans la mesure du possible, les écrans mobiles utilisent des libellés traduits, des boutons accessibles, des états de chargement et d’erreur visibles, des zones sûres et les technologies d’assistance de la plateforme.",
-        "section2Title": "Interface alternative",
-        "section2Body": "Une interface accessible fondée sur le HTML est disponible pour les personnes qui préfèrent une expérience Web plus simple et très structurée.",
-        "section3Title": "Feedback",
-        "section3Body": "Signalez les obstacles par le canal de contact en précisant l’appareil et le parcours, afin que les problèmes d’accessibilité puissent être évalués et corrigés."
-      },
-      "trust": {
-        "title": "Résumé sur la confiance et la sécurité",
-        "summary": "Les parcours de confiance et de sécurité contribuent à protéger les membres tout en maintenant des échanges communautaires pratiques et respectueux.",
-        "section1Title": "Protection des membres",
-        "section1Body": "Les profils, avis, signalements, blocages, contrôles d’identité et processus de modération favorisent des échanges et des communications plus sûrs.",
-        "section2Title": "Reporting",
-        "section2Body": "Utilisez les fonctions de signalement, de blocage ou de contact lorsque du contenu, des messages, des annonces, des événements ou le comportement d’un membre semblent dangereux ou inappropriés.",
-        "section3Title": "Limits",
-        "section3Body": "Les outils de la plateforme ne remplacent pas les services d’urgence, les conseils juridiques ni les autorités de protection lorsque des mesures immédiates ou légales sont nécessaires."
-      }
+    "faqs": {
+      "title": "Centre d’aide",
+      "subtitle": "Les réponses publiées par votre communauté aux questions les plus fréquentes.",
+      "searchLabel": "Rechercher dans les réponses d’aide",
+      "searchPlaceholder": "Rechercher des questions et des réponses",
+      "emptyTitle": "Aucune réponse d’aide pour l’instant",
+      "emptySubtitle": "Votre communauté n’a encore publié aucune réponse d’aide.",
+      "noMatchesTitle": "Aucune réponse correspondante",
+      "noMatchesSubtitle": "Essayez un autre mot ou effacez la recherche pour tout afficher."
+    },
+    "page": {
+      "fallbackTitle": "Informations de la communauté",
+      "unknownTitle": "Page indisponible",
+      "unknownSubtitle": "Cette page d’information n’est pas publiée par cette communauté.",
+      "emptyTitle": "Rien n’est encore publié ici",
+      "emptySubtitle": "Votre communauté n’a pas encore ajouté de contenu à cette page."
+    },
+    "contactForm": {
+      "title": "Envoyer un message",
+      "name": "Votre nom",
+      "email": "Votre adresse e-mail",
+      "subject": "Quel est le sujet de votre message ?",
+      "message": "Message",
+      "messagePlaceholder": "Expliquez aux organisateurs de votre communauté comment ils peuvent vous aider.",
+      "submit": "Envoyer le message",
+      "sending": "Envoi de votre message",
+      "nameRequired": "Saisissez votre nom.",
+      "emailRequired": "Saisissez une adresse e-mail valide.",
+      "messageRequired": "Écrivez un message avant de l’envoyer.",
+      "successTitle": "Message envoyé",
+      "successBody": "Les organisateurs de votre communauté ont reçu votre message et vous répondront par e-mail.",
+      "errorTitle": "Message non envoyé",
+      "errorBody": "Votre message n’a pas pu être envoyé. Veuillez réessayer.",
+      "blockedTitle": "Message non envoyé",
+      "blockedBody": "Le formulaire de contact de cette communauté nécessite une vérification de sécurité du navigateur que l’application ne peut pas effectuer. Utilisez plutôt les coordonnées affichées ci-dessus.",
+      "detailsTitle": "Coordonnées",
+      "detailsEmail": "Adresse e-mail",
+      "detailsPhone": "Numéro de téléphone",
+      "detailsAddress": "Adresse postale"
     }
   },
   "skills": "Compétences et recommandations",

@@ -40,6 +40,22 @@ jest.mock('react-i18next', () => ({
         'detail.publicationFailed': 'Publication failed',
         'lifecycleHistory.open': 'Open lifecycle history',
         'event_templates:templates.mobile.title': 'Event templates',
+        'event_templates:templates.mobile.captureTitle': 'Reusable template',
+        'event_templates:templates.mobile.captureDescription': 'Save this event as a reusable template.',
+        'event_templates:templates.mobile.captureButton': 'Save as template',
+        'event_templates:templates.mobile.captureConfirm': 'Save template',
+        'event_templates:templates.mobile.captureFieldSummary': opts
+          ? `${String(opts.copied ?? 0)} copied / ${String(opts.skipped ?? 0)} left out`
+          : '0 copied / 0 left out',
+        'event_templates:templates.mobile.captureTimezone': opts ? `Time zone: ${String(opts.timezone ?? '')}` : 'Time zone',
+        'event_templates:templates.mobile.capturePreviewFailedTitle': 'Unable to prepare the template',
+        'event_templates:templates.mobile.capturePreviewFailedDescription': 'The server could not show what would be saved.',
+        'event_templates:templates.mobile.capturedTitle': 'Template saved',
+        'event_templates:templates.mobile.capturedDescription': 'This event is now a reusable template.',
+        'event_templates:templates.mobile.captureReplayDescription': 'This event was already saved as a template.',
+        'event_templates:templates.mobile.captureFailedTitle': 'Unable to save the template',
+        'event_templates:templates.mobile.captureFailedDescription': 'The template could not be saved.',
+        'event_templates:templates.checks.event_template_check_source_manage': 'You still manage the source event',
         'event_tickets:tickets.mobile.title': 'Event tickets',
         'event_tickets:tickets.mobile.gatewayDisabledDescription': 'Free tickets only. No wallet action is taken.',
         'event_tickets:tickets.mobile.catalogueTitle': 'Available tickets',
@@ -323,6 +339,11 @@ jest.mock('@/lib/api/events', () => ({
   publishEvent: jest.fn().mockResolvedValue({ data: {} }),
 }));
 
+jest.mock('@/lib/api/eventTemplates', () => ({
+  previewEventTemplateCapture: jest.fn(),
+  captureEventTemplate: jest.fn(),
+}));
+
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
@@ -347,6 +368,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
 
 import EventDetailScreen from './event-detail';
 import { acceptEventWaitlistOffer, getEventAgenda, joinEventWaitlist, leaveEventWaitlist, publishEvent, rsvpEvent, submitEventForReview, updateEventReminders, voteEventPoll } from '@/lib/api/events';
+import { captureEventTemplate, previewEventTemplateCapture } from '@/lib/api/eventTemplates';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
@@ -1331,3 +1353,162 @@ describe('EventDetailScreen', () => {
   });
 });
 
+
+/**
+ * Saving an event as a template natively.
+ *
+ * The gate is `permissions.manage_agenda` because that is what the API derives from
+ * `EventPolicy::manage()` — the predicate both capture endpoints enforce. The default
+ * `mockEvent` deliberately leaves it false while `edit` is true, so these tests prove the
+ * action is tied to the capture permission and not merely to owning the event tools card.
+ */
+describe('EventDetailScreen native template capture', () => {
+  function toastMock(): jest.Mock {
+    const { useAppToast } = require('@/components/ui/AppToast');
+    return useAppToast().show as jest.Mock;
+  }
+
+  const capturePreview = {
+    kind: 'capture' as const,
+    schema_version: 1,
+    source_event_id: 7,
+    source_lifecycle_version: 2,
+    source_calendar_sequence: 0,
+    configuration: {
+      title: 'Community Skill Share Workshop',
+      description: 'Skill sharing',
+      location: 'Community Hall, Main Street',
+      max_attendees: 20,
+      timezone: 'Europe/Dublin',
+      all_day: false,
+      is_online: false,
+      allow_remote_attendance: false,
+    },
+    snapshot_hash: 'hash-1',
+    copied_fields: ['title', 'description', 'timezone'],
+    skipped_fields: ['start_time'],
+    checklist: [{ code: 'event_template_check_source_manage', passed: true }],
+  };
+
+  function manageableEventState() {
+    return {
+      data: {
+        data: {
+          ...mockEvent,
+          permissions: { ...mockEvent.permissions, manage_agenda: true },
+        },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+  }
+
+  it('hides the capture action from a member the API would refuse', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { queryByText } = render(<EventDetailScreen />);
+
+    expect(mockEvent.permissions.manage_agenda).toBe(false);
+    expect(queryByText('Save as template')).toBeNull();
+    expect(previewEventTemplateCapture).not.toHaveBeenCalled();
+  });
+
+  it('previews before it captures, and never captures on the first press', async () => {
+    (previewEventTemplateCapture as jest.Mock).mockResolvedValue(capturePreview);
+    mockUseApi.mockReturnValue(manageableEventState());
+
+    const { getByText, queryByText } = render(<EventDetailScreen />);
+    fireEvent.press(getByText('Save as template'));
+
+    await waitFor(() => expect(previewEventTemplateCapture).toHaveBeenCalledWith(7));
+    expect(captureEventTemplate).not.toHaveBeenCalled();
+
+    await waitFor(() => expect(queryByText('3 copied / 1 left out')).toBeTruthy());
+    expect(getByText('Time zone: Europe/Dublin')).toBeTruthy();
+    expect(getByText('You still manage the source event')).toBeTruthy();
+  });
+
+  it('captures the reviewed snapshot with one idempotency key and opens the library', async () => {
+    (previewEventTemplateCapture as jest.Mock).mockResolvedValue(capturePreview);
+    (captureEventTemplate as jest.Mock).mockResolvedValue({
+      template: { id: 12 },
+      changed: true,
+      idempotent_replay: false,
+    });
+    mockUseApi.mockReturnValue(manageableEventState());
+
+    const { getByText } = render(<EventDetailScreen />);
+    fireEvent.press(getByText('Save as template'));
+    await waitFor(() => expect(getByText('Save template')).toBeTruthy());
+
+    fireEvent.press(getByText('Save template'));
+
+    await waitFor(() => expect(captureEventTemplate).toHaveBeenCalledTimes(1));
+    const [eventId, idempotencyKey] = (captureEventTemplate as jest.Mock).mock.calls[0];
+    expect(eventId).toBe(7);
+    expect(typeof idempotencyKey).toBe('string');
+    expect(idempotencyKey.length).toBeGreaterThan(8);
+
+    await waitFor(() => expect(mockRouterPush).toHaveBeenCalledWith('/(modals)/event-templates'));
+    expect(toastMock()).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Template saved',
+      description: 'This event is now a reusable template.',
+      variant: 'success',
+    }));
+  });
+
+  it('says a replayed capture created nothing new instead of claiming a second template', async () => {
+    (previewEventTemplateCapture as jest.Mock).mockResolvedValue(capturePreview);
+    (captureEventTemplate as jest.Mock).mockResolvedValue({
+      template: { id: 12 },
+      changed: false,
+      idempotent_replay: true,
+    });
+    mockUseApi.mockReturnValue(manageableEventState());
+
+    const { getByText } = render(<EventDetailScreen />);
+    fireEvent.press(getByText('Save as template'));
+    await waitFor(() => expect(getByText('Save template')).toBeTruthy());
+    fireEvent.press(getByText('Save template'));
+
+    await waitFor(() => expect(toastMock()).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'This event was already saved as a template.',
+    })));
+  });
+
+  it('surfaces a failed preview instead of failing silently', async () => {
+    (previewEventTemplateCapture as jest.Mock).mockRejectedValue(new Error('boom'));
+    mockUseApi.mockReturnValue(manageableEventState());
+
+    const { getByText, queryByText } = render(<EventDetailScreen />);
+    fireEvent.press(getByText('Save as template'));
+
+    await waitFor(() => expect(toastMock()).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Unable to prepare the template',
+      description: 'The server could not show what would be saved.',
+      variant: 'danger',
+    })));
+    expect(queryByText('Save template')).toBeNull();
+    expect(captureEventTemplate).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a failed capture and leaves the reviewed snapshot on screen to retry', async () => {
+    (previewEventTemplateCapture as jest.Mock).mockResolvedValue(capturePreview);
+    (captureEventTemplate as jest.Mock).mockRejectedValue(new Error('boom'));
+    mockUseApi.mockReturnValue(manageableEventState());
+
+    const { getByText } = render(<EventDetailScreen />);
+    fireEvent.press(getByText('Save as template'));
+    await waitFor(() => expect(getByText('Save template')).toBeTruthy());
+    fireEvent.press(getByText('Save template'));
+
+    await waitFor(() => expect(toastMock()).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Unable to save the template',
+      description: 'The template could not be saved.',
+      variant: 'danger',
+    })));
+    expect(getByText('Save template')).toBeTruthy();
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/(modals)/event-templates');
+  });
+});

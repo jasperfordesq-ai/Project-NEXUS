@@ -35,6 +35,21 @@ export interface TenantConfig {
   settings?: {
     region?: string | null;
   } & Record<string, unknown>;
+  /**
+   * The community's own contact details, when it has published any.
+   *
+   * `TenantBootstrapController::buildContactData()` omits each field it has no
+   * value for, so every one is optional and the whole object can be absent — a
+   * community that has set nothing simply has no contact block. Surfaced on the
+   * Contact screen so a member always has a route to their organisers even when
+   * the form itself is refused.
+   */
+  contact?: {
+    email?: string;
+    phone?: string;
+    address?: string;
+    location?: string;
+  } | null;
   supported_languages: string[];
   default_language: string;
 }

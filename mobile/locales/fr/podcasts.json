@@ -87,7 +87,6 @@
   },
   "player": {
     "volume": "Volume",
-    "unsupported": "Votre navigateur ne prend pas en charge le lecteur audio.",
     "load_error": "L'audio de cet épisode n'a pas pu être chargé. Il est peut-être indisponible ou en cours de traitement.",
     "duration_unknown": "Durée inconnue",
     "progress": "Progression de la lecture",
