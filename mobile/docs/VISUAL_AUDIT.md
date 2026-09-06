@@ -350,12 +350,33 @@ of further findings. It largely was not:
 - **The Create screen wraps cleanly**, all six action descriptions onto two lines.
 - **Tab-bar labels still fit** at 1.3x — "Messages" and "Listings" are not truncated.
 
-🔴 **One observation, NOT yet confirmed as a defect.** At 1.3x the More screen's
-"YOUR TIMEBANK SPACE" eyebrow appeared sliced at the top on a screen that had not been
-scrolled. It is *not* caused by the new status-bar strip — that was checked directly,
-and at normal text size the same screen is unchanged from before the fix. It may be a
-mid-layout capture rather than a real clip. Recorded as something to reproduce
-deliberately rather than asserted as a bug.
+✅ **CONFIRMED and fixed, 2026-09-06.** At 1.3x the profile hub's "YOUR TIMEBANK SPACE"
+eyebrow appeared sliced at the top on a screen that had not been scrolled. It was *not*
+caused by the status-bar strip — that was checked directly — and it was not a mid-layout
+capture. It is arithmetic.
+
+React Native scales `fontSize` by the OS font scale (`allowFontScaling` defaults to true)
+but leaves an explicit `lineHeight` exactly where it was, and Uniwind compiles `leading-7`
+to a literal `lineHeight: 28`. Nothing in the app sets `maxFontSizeMultiplier`, and
+`tailwind.config.js` overrides neither scale. So at the 1.3x setting:
+
+| classes | at 1.0x | at 1.3x | result |
+|---|---|---|---|
+| `text-2xl leading-7` | 24px in a 28px line | 31.2px in a 28px line | clips (already ~1.15x) |
+| `text-3xl leading-9` | 30px in a 36px line | 39.0px in a 36px line | clips |
+| `text-base leading-5` | 16px in a 20px line | 20.8px in a 20px line | clips |
+
+Ten sites measured below a 1.3 ratio and had their `leading-*` removed, which hands the
+line height to the platform, where it scales: an Events day heading, a blog post title,
+three section headings (federation, reviews, listings) and five item titles (marketplace
+×3, settings, profile). `components/textLineHeightScale.test.ts` refuses any new pairing
+that would clip at 1.3x and names the file, line and measurement.
+
+🔴 **Not swept further, on purpose.** The next tier — `text-sm leading-5` (1.43) and
+`text-xs leading-4` (1.33) — is about 350 sites, all of which hold at 1.3x. Changing them
+would alter the app's vertical rhythm everywhere, which is a design decision rather than a
+bug fix. **Android also offers 1.5x and 2.0x, where that tier does give out.** That remains
+untested and is the honest limit of this fix.
 
 Not covered: 1.5x and 2.0x, which Android also offers and where wrapping usually gives
 out.

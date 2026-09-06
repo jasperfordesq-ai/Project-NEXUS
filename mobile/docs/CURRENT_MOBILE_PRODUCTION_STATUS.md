@@ -116,11 +116,41 @@ marketplace price or offer typed with a comma decimal being sent with the comma 
 leaving the screen as if it had worked when the server refused, and every modal route's
 error boundary swallowing crashes without reporting them.
 
+### Follow-up, later on 2026-09-06
+
+The audit's first push failed the Android release gate three times, each on something that
+passes on the development machine, and the work is only complete because those were chased
+down rather than retried:
+
+1. **The per-area coverage ratchet.** Three areas had gained code faster than tests. Fixed by
+   writing the missing tests — the community banner's logo sizing, the trust-badge row's
+   failed-check path, the listings category retry and focus refetch, and all fourteen Explore
+   sections. `app/(tabs)` went 70.45% to 76.06%. 🔴 The banner had no test at all because
+   `jest-setup.ts` mocks that component away for every suite; a file testing it must unmock it.
+2. **A flaky suite.** `BiometricLockGate` failed at two different waits while passing here
+   every time. The cause was the testing library's one-second wall-clock default against a
+   single-threaded instrumented run on a four-processor runner, not a product fault; ruled out
+   first were missing React flushes (the suite logs none) and a re-render race (a fix was
+   written, failed to reproduce the fault, and was reverted rather than shipped unproven into
+   a security gate).
+3. **Steps that had never run.** A job stops at its first failing step, so while the ratchet
+   was red the date-locale, translation-ratchet, drift and bundle-budget steps never ran at
+   all. The date-locale gate then caught a real fault: a duplicated time-zone probe formatting
+   with no locale. All later steps were run locally afterwards and pass.
+
+The same follow-up closed the modules the audit had left outstanding — podcasts, courses and
+federation — finding that a paid course enrolled and spent time credits on a single tap with
+no confirmation, that enrolment and lesson refusals discarded the server's reason, and that a
+failed member search rendered as "No federated members found." It also confirmed the 1.3x
+text-clipping observation as a real arithmetic defect on ten screens (see `VISUAL_AUDIT.md`
+§7) and fixed a failed hashtag search reading as "no hashtags match".
+
 This is source and emulator evidence, not distributed-device evidence: the fixes have not
-been walked on the Play-distributed artefact, so the banked M1 score is unchanged. Two design
-findings from the 5 September audit — the More screen's long directory and hero cards
-repeating the top-bar title on roughly forty screens — are deliberately left for an owner
-decision rather than restyled.
+been walked on the Play-distributed artefact, so the banked M1 score is unchanged. **Larger
+text sizes above 1.3x (Android offers 1.5x and 2.0x) remain untested.** Two design findings
+from the 5 September audit — the More screen's long directory and hero cards repeating the
+top-bar title on roughly forty screens — are deliberately left for an owner decision rather
+than restyled.
 
 ## Source-only critical-journey audit — 2026-08-27
 
