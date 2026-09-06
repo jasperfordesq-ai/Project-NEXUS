@@ -8,7 +8,6 @@ import { eventIsoToLocalInput, localEventTimeZone } from '@/lib/utils/eventDateT
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
-  Linking,
   RefreshControl,
   ScrollView,
   Text,
@@ -75,7 +74,6 @@ import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
-import { API_BASE_URL } from '@/lib/constants';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';

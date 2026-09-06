@@ -28,7 +28,6 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { contrastText } from '@/lib/utils/color';
 import ExchangeCard from '@/components/ExchangeCard';
 import OfflineBanner from '@/components/OfflineBanner';
 import SearchInput from '@/components/ui/SearchInput';

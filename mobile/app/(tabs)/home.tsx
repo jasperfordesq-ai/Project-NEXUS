@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { contrastText } from '@/lib/utils/color';
+import { contrastText , withAlpha } from '@/lib/utils/color';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,7 +30,6 @@ import FAB from '@/components/ui/FAB';
 import * as Haptics from '@/lib/haptics';
 import { feedVersion } from '@/lib/feedRefreshSignal';
 import NativePressable from '@/components/ui/NativePressable';
-import { withAlpha } from '@/lib/utils/color';
 
 function extractFeedPage(response: FeedResponse) {
   if (!response?.data || !response?.meta) {

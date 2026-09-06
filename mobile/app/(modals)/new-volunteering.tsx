@@ -124,7 +124,7 @@ function NewVolunteeringScreen() {
           variant: 'danger',
         });
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [editRetryToken, hasHydratedEdit, isEditing, opportunityId]);
 
   // Everything the member can type, compared with the form as first shown. The organisation

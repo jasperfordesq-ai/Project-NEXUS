@@ -111,7 +111,7 @@ function NewGroupScreen() {
           variant: 'danger',
         });
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [editRetryToken, groupId, hasHydratedEdit, isEditing]);
 
   useEffect(() => {

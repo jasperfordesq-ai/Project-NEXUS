@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { parseDecimalInput } from '@/lib/utils/decimal';
+import { parseDecimalInput , formatDecimal } from '@/lib/utils/decimal';
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, RefreshControl, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,7 +41,6 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 
-import { formatDecimal } from '@/lib/utils/decimal';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
 type WalletAction = 'transfer' | 'donate' | null;

@@ -90,7 +90,7 @@ export default function BlogPostScreen() {
       ? `${sharePost.title}\n\n${sharePost.excerpt}\n\n${url}`
       : `${sharePost.title}\n\n${url}`;
     await Share.share({ message, url });
-  }, []);
+  }, [tenant?.slug]);
 
   const { data, isLoading, error: postError, refresh } = useApi(
     () => getBlogPost(slug),

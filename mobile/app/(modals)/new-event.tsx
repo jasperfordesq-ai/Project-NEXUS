@@ -255,7 +255,7 @@ function NewEventScreen() {
       });
     // hydrateFromEvent is a plain closure over setters; the ref-based reads above are
     // deliberate so the fetch does not restart on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [editRetryToken, eventId, hasHydratedEdit, isEditing]);
 
   useEffect(() => {

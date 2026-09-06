@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { formatDecimal } from '@/lib/utils/decimal';
+import { formatDecimal , parseDecimalInput } from '@/lib/utils/decimal';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -64,7 +64,6 @@ import {
   type GamificationProfile,
 } from '@/lib/api/gamification';
 
-import { parseDecimalInput } from '@/lib/utils/decimal';
 interface MemberProfile {
   id: number | string;
   name?: string;
