@@ -63,7 +63,19 @@
     "back_to_course": "Ar ais go cúrsa",
     "locked": "Níl an ceacht seo ar fáil go fóill.",
     "locked_until": "Ar fáil ó {{date}}",
-    "transcript": "Tras-scríbhinn"
+    "transcript": "Tras-scríbhinn",
+    "watched": "Breathnaithe {{percent}}%",
+    "min_watch_hint": "Iarrann do theagascóir ort {{percent}}% ar a laghad den fhíseán seo a bhreathnú.",
+    "video_unavailable": "Níor cuireadh físeán leis an gceacht seo go fóill.",
+    "document_unavailable": "Níor cuireadh cáipéis leis an gceacht seo go fóill.",
+    "embed_unavailable": "Níor cuireadh ábhar leis an gceacht seo go fóill.",
+    "text_unavailable": "Níor cuireadh ábhar leis an gceacht seo go fóill.",
+    "open_document": "Oscail an cháipéis",
+    "open_document_hint": "Osclaítear é in amharcóir cáipéisí do ghléis.",
+    "open_embed": "Oscail ábhar an cheachta",
+    "open_embed_hint": "Osclaítear é i do bhrabhsálaí.",
+    "open_failed": "Níl aon aip ar do ghléas atá in ann é seo a oscailt. Iarr formáid eile ar do theagascóir.",
+    "progress_unavailable": "Níorbh fhéidir linn do dhul chun cinn don chúrsa seo a lódáil, mar sin níl an méid atá críochnaithe agat á thaispeáint."
   },
   "quiz": {
     "title": "Tráth na gCeist",
@@ -74,7 +86,12 @@
     "score": "Do scór: {{score}}%",
     "pending_review": "Cuireadh do fhreagraí isteach le haghaidh athbhreithnithe.",
     "retry": "Bain triail eile as",
-    "unavailable": "Níl an trath na gceist seo réidh fós."
+    "unavailable": "Níl an trath na gceist seo réidh fós.",
+    "question_position": "Ceist {{index}} as {{total}}",
+    "answer_placeholder": "Clóscríobh do fhreagra",
+    "pass_mark": "Marc pasála: {{percent}}%",
+    "true": "Fíor",
+    "false": "Bréagach"
   },
   "my_learning": {
     "title": "Mo chuid foghlama",

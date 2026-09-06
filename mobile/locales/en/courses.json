@@ -57,7 +57,19 @@
     "back_to_course": "Back to course",
     "locked": "This lesson isn't available yet.",
     "locked_until": "Available from {{date}}",
-    "transcript": "Transcript"
+    "transcript": "Transcript",
+    "watched": "Watched {{percent}}%",
+    "min_watch_hint": "Your instructor asks you to watch at least {{percent}}% of this video.",
+    "video_unavailable": "No video has been added to this lesson yet.",
+    "document_unavailable": "No document has been added to this lesson yet.",
+    "embed_unavailable": "No content has been added to this lesson yet.",
+    "text_unavailable": "No content has been added to this lesson yet.",
+    "open_document": "Open document",
+    "open_document_hint": "Opens in your device’s document viewer.",
+    "open_embed": "Open lesson content",
+    "open_embed_hint": "Opens in your browser.",
+    "open_failed": "Your device has no app that can open this. Ask your instructor for another format.",
+    "progress_unavailable": "We could not load your progress for this course, so what you have already completed is not shown."
   },
   "quiz": {
     "title": "Quiz",
@@ -68,7 +80,12 @@
     "score": "Your score: {{score}}%",
     "pending_review": "Your answers were submitted for review.",
     "retry": "Try again",
-    "unavailable": "This quiz is not ready yet."
+    "unavailable": "This quiz is not ready yet.",
+    "question_position": "Question {{index}} of {{total}}",
+    "answer_placeholder": "Type your answer",
+    "pass_mark": "Pass mark: {{percent}}%",
+    "true": "True",
+    "false": "False"
   },
   "my_learning": {
     "title": "My learning",

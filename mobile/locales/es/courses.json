@@ -59,7 +59,19 @@
     "back_to_course": "volver al curso",
     "locked": "Esta lección aún no está disponible.",
     "locked_until": "Disponible desde {{date}}",
-    "transcript": "Transcripción"
+    "transcript": "Transcripción",
+    "watched": "Visto el {{percent}}%",
+    "min_watch_hint": "Tu profesorado te pide que veas al menos el {{percent}}% de este vídeo.",
+    "video_unavailable": "Todavía no se ha añadido ningún vídeo a esta lección.",
+    "document_unavailable": "Todavía no se ha añadido ningún documento a esta lección.",
+    "embed_unavailable": "Todavía no se ha añadido contenido a esta lección.",
+    "text_unavailable": "Todavía no se ha añadido contenido a esta lección.",
+    "open_document": "Abrir documento",
+    "open_document_hint": "Se abre en el visor de documentos de tu dispositivo.",
+    "open_embed": "Abrir el contenido de la lección",
+    "open_embed_hint": "Se abre en tu navegador.",
+    "open_failed": "Tu dispositivo no tiene ninguna aplicación que pueda abrir esto. Pide otro formato a tu profesorado.",
+    "progress_unavailable": "No hemos podido cargar tu progreso en este curso, así que no se muestra lo que ya has completado."
   },
   "quiz": {
     "title": "Prueba",
@@ -70,7 +82,12 @@
     "score": "Tu puntuación: {{score}}%",
     "pending_review": "Sus respuestas fueron enviadas para su revisión.",
     "retry": "Intentar otra vez",
-    "unavailable": "Este cuestionario aun no esta listo."
+    "unavailable": "Este cuestionario aun no esta listo.",
+    "question_position": "Pregunta {{index}} de {{total}}",
+    "answer_placeholder": "Escribe tu respuesta",
+    "pass_mark": "Nota de aprobado: {{percent}}%",
+    "true": "Verdadero",
+    "false": "Falso"
   },
   "my_learning": {
     "title": "mi aprendizaje",

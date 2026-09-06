@@ -59,7 +59,19 @@
     "back_to_course": "Retour au cours",
     "locked": "Cette leçon n'est pas encore disponible.",
     "locked_until": "Disponible sur {{date}}",
-    "transcript": "Transcription"
+    "transcript": "Transcription",
+    "watched": "Regardé à {{percent}} %",
+    "min_watch_hint": "Votre formateur vous demande de regarder au moins {{percent}} % de cette vidéo.",
+    "video_unavailable": "Aucune vidéo n’a encore été ajoutée à cette leçon.",
+    "document_unavailable": "Aucun document n’a encore été ajouté à cette leçon.",
+    "embed_unavailable": "Aucun contenu n’a encore été ajouté à cette leçon.",
+    "text_unavailable": "Aucun contenu n’a encore été ajouté à cette leçon.",
+    "open_document": "Ouvrir le document",
+    "open_document_hint": "S’ouvre dans la visionneuse de documents de votre appareil.",
+    "open_embed": "Ouvrir le contenu de la leçon",
+    "open_embed_hint": "S’ouvre dans votre navigateur.",
+    "open_failed": "Votre appareil ne dispose d’aucune application capable d’ouvrir ceci. Demandez un autre format à votre formateur.",
+    "progress_unavailable": "Nous n’avons pas pu charger votre progression pour ce cours ; ce que vous avez déjà terminé n’est donc pas affiché."
   },
   "quiz": {
     "title": "Questionnaire",
@@ -70,7 +82,12 @@
     "score": "Votre score : {{score}}%",
     "pending_review": "Vos réponses ont été soumises pour examen.",
     "retry": "Essayer à nouveau",
-    "unavailable": "Ce quiz n'est pas encore pret."
+    "unavailable": "Ce quiz n'est pas encore pret.",
+    "question_position": "Question {{index}} sur {{total}}",
+    "answer_placeholder": "Saisissez votre réponse",
+    "pass_mark": "Note de passage : {{percent}} %",
+    "true": "Vrai",
+    "false": "Faux"
   },
   "my_learning": {
     "title": "Mon apprentissage",

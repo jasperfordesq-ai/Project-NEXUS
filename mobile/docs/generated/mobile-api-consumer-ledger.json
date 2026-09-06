@@ -5,9 +5,9 @@
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 58,
-    "call_sites": 592,
-    "distinct_endpoints": 500,
-    "verified": 500,
+    "call_sites": 594,
+    "distinct_endpoints": 502,
+    "verified": 502,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -714,7 +714,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:292"
+        "courses.ts:343"
       ]
     },
     {
@@ -732,7 +732,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:296"
+        "courses.ts:347"
       ]
     },
     {
@@ -741,7 +741,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:432"
+        "courses.ts:483"
       ]
     },
     {
@@ -750,7 +750,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:365"
+        "courses.ts:416"
       ]
     },
     {
@@ -759,7 +759,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:369"
+        "courses.ts:420"
       ]
     },
     {
@@ -777,7 +777,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:416"
+        "courses.ts:467"
       ]
     },
     {
@@ -786,7 +786,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:329"
+        "courses.ts:380"
       ]
     },
     {
@@ -795,7 +795,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:344"
+        "courses.ts:395"
       ]
     },
     {
@@ -804,7 +804,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:337"
+        "courses.ts:388"
       ]
     },
     {
@@ -813,7 +813,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:271"
+        "courses.ts:282"
       ]
     },
     {
@@ -831,7 +831,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:300"
+        "courses.ts:351"
       ]
     },
     {
@@ -840,7 +840,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:350"
+        "courses.ts:401"
       ]
     },
     {
@@ -849,7 +849,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:358"
+        "courses.ts:409"
       ]
     },
     {
@@ -858,7 +858,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:308"
+        "courses.ts:359"
       ]
     },
     {
@@ -867,7 +867,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:323"
+        "courses.ts:374"
       ]
     },
     {
@@ -876,7 +876,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:316"
+        "courses.ts:367"
       ]
     },
     {
@@ -885,7 +885,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:304"
+        "courses.ts:355"
       ]
     },
     {
@@ -894,7 +894,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:424"
+        "courses.ts:475"
       ]
     },
     {
@@ -903,7 +903,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:283"
+        "courses.ts:334"
       ]
     },
     {
@@ -912,7 +912,25 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:288"
+        "courses.ts:339"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/courses/quizzes/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:306"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/courses/quizzes/{param}/attempt",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:322"
       ]
     },
     {
@@ -984,7 +1002,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:574",
+        "client.ts:639",
         "exchanges.ts:213"
       ]
     },
@@ -4235,7 +4253,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:573",
+        "client.ts:638",
         "members.ts:76"
       ]
     },

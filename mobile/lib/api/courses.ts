@@ -267,10 +267,61 @@ export async function enrollInCourse(courseId: number): Promise<CourseEnrollment
   return unwrap(await api.post<DataEnvelope<CourseEnrollment>>(`${API_V2}/courses/${courseId}/enroll`, {}));
 }
 
-export async function completeCourseLesson(courseId: number, lessonId: number) {
+/**
+ * Mark a lesson complete.
+ *
+ * 🔴 `watchPercent` is a real measurement, not a formality. It used to be hardcoded
+ * to 100 here with no way for a caller to say otherwise — while the native player had no
+ * video player at all — so the app reported every lesson as fully watched on the strength
+ * of a button press. `CourseProgressService::completeLesson` persists whatever it is sent
+ * (clamped 0-100) to `course_lesson_progress.watch_percent`, which is what an instructor's
+ * analytics then read. A video lesson must pass what was actually played; a lesson with no
+ * playback of its own has no watch metric and correctly reports 100.
+ */
+export async function completeCourseLesson(courseId: number, lessonId: number, watchPercent = 100) {
   return unwrap(await api.post<DataEnvelope<{ progress_percent: number; course_completed: boolean }>>(
     `${API_V2}/courses/${courseId}/lessons/${lessonId}/complete`,
-    { watch_percent: 100 },
+    { watch_percent: Math.max(0, Math.min(100, Math.round(watchPercent))) },
+  ));
+}
+
+/** The result `CourseQuizController::attempt` returns for a submitted attempt. */
+export interface QuizAttemptResult {
+  score_percent: number;
+  passed: boolean;
+  /** True when the attempt contains free-text answers a human has still to mark. */
+  needs_review: boolean;
+  attempt_id: number;
+}
+
+/**
+ * GET /v2/courses/quizzes/{quizId} - the learner's view of a quiz.
+ *
+ * Deliberately a separate request rather than trusting the copy embedded in the lesson:
+ * `CourseQuizService::forLearner` is the shape that omits the answer key, and it is the
+ * only shape a learner may see. The endpoint also re-checks enrolment and drip
+ * availability, so a locked quiz refuses here as well as at completion.
+ */
+export async function getCourseQuiz(quizId: number): Promise<CourseQuiz> {
+  return unwrap(await api.get<DataEnvelope<CourseQuiz>>(`${API_V2}/courses/quizzes/${quizId}`));
+}
+
+/**
+ * POST /v2/courses/quizzes/{quizId}/attempt - submit answers for auto-grading.
+ *
+ * Answers are keyed by question id. A single-choice question sends the chosen option id, a
+ * `multi` question an array of them, and `short`/`essay` the typed text - matching what
+ * `CourseQuizService::submitAttempt` reads. The attempt ceiling is enforced server-side
+ * inside a row-locked transaction, so a refusal here (`MAX_ATTEMPTS_REACHED`) is
+ * authoritative and must be shown rather than retried.
+ */
+export async function submitCourseQuizAttempt(
+  quizId: number,
+  answers: Record<string, string | string[]>,
+): Promise<QuizAttemptResult> {
+  return unwrap(await api.post<DataEnvelope<QuizAttemptResult>>(
+    `${API_V2}/courses/quizzes/${quizId}/attempt`,
+    { answers },
   ));
 }
 

@@ -57,7 +57,19 @@
     "back_to_course": "Zurück zum Kurs",
     "locked": "Diese Lektion ist noch nicht verfügbar.",
     "locked_until": "Verfügbar von {{date}}",
-    "transcript": "Transkript"
+    "transcript": "Transkript",
+    "watched": "{{percent}}% angesehen",
+    "min_watch_hint": "Ihre Kursleitung bittet Sie, mindestens {{percent}}% dieses Videos anzusehen.",
+    "video_unavailable": "Zu dieser Lektion wurde noch kein Video hinzugefügt.",
+    "document_unavailable": "Zu dieser Lektion wurde noch kein Dokument hinzugefügt.",
+    "embed_unavailable": "Zu dieser Lektion wurden noch keine Inhalte hinzugefügt.",
+    "text_unavailable": "Zu dieser Lektion wurden noch keine Inhalte hinzugefügt.",
+    "open_document": "Dokument öffnen",
+    "open_document_hint": "Wird im Dokumentenbetrachter Ihres Geräts geöffnet.",
+    "open_embed": "Lektionsinhalt öffnen",
+    "open_embed_hint": "Wird in Ihrem Browser geöffnet.",
+    "open_failed": "Auf Ihrem Gerät gibt es keine App, die dies öffnen kann. Bitten Sie Ihre Kursleitung um ein anderes Format.",
+    "progress_unavailable": "Ihr Fortschritt für diesen Kurs konnte nicht geladen werden, daher wird nicht angezeigt, was Sie bereits abgeschlossen haben."
   },
   "quiz": {
     "title": "Quiz",
@@ -68,7 +80,12 @@
     "score": "Ihr Punktestand: {{score}} %",
     "pending_review": "Ihre Antworten wurden zur Überprüfung eingereicht.",
     "retry": "Versuchen Sie es erneut",
-    "unavailable": "Dieses Quiz ist noch nicht bereit."
+    "unavailable": "Dieses Quiz ist noch nicht bereit.",
+    "question_position": "Frage {{index}} von {{total}}",
+    "answer_placeholder": "Geben Sie Ihre Antwort ein",
+    "pass_mark": "Bestehensgrenze: {{percent}}%",
+    "true": "Wahr",
+    "false": "Falsch"
   },
   "my_learning": {
     "title": "Mein Lernen",
