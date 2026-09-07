@@ -29,6 +29,7 @@ vi.mock('@/contexts', () => ({
     tenant: { id: 2, slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
   })),
   useToast: vi.fn(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() })),
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,

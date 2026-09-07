@@ -72,7 +72,9 @@ export const UserHoverCard = memo(function UserHoverCard({
   openOnMount = false,
 }: UserHoverCardProps) {
   const { t } = useTranslation('social');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const hasConnections = hasFeature('connections');
+  const canMessage = hasModule('messages') && hasFeature('direct_messaging');
   const { isAuthenticated } = useAuth();
   // Don't render hover card on touch devices
   const isTouch = useRef(isTouchDevice());
@@ -333,8 +335,8 @@ export const UserHoverCard = memo(function UserHoverCard({
             )}
 
             {/* Actions */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              {userData.connection_status === 'connected' ? (
+            {(hasConnections || canMessage) && <div className="grid grid-cols-2 gap-2 pt-1">
+              {hasConnections && (userData.connection_status === 'connected' ? (
                 <Button
                   size="sm"
                   variant="flat"
@@ -364,8 +366,8 @@ export const UserHoverCard = memo(function UserHoverCard({
                 >
                   <span className="min-w-0 truncate text-xs">{t('hover_card.connect')}</span>
                 </Button>
-              )}
-              <Button
+              ))}
+              {canMessage && <Button
                 as={Link}
                 to={tenantPath(`/messages?to=${userData.id}`)}
                 size="sm"
@@ -374,8 +376,8 @@ export const UserHoverCard = memo(function UserHoverCard({
                 startContent={<MessageCircle className="w-3.5 h-3.5 shrink-0" />}
               >
                 <span className="min-w-0 truncate text-xs">{t('hover_card.message')}</span>
-              </Button>
-            </div>
+              </Button>}
+            </div>}
           </div>
         ) : null}
       </PopoverContent>

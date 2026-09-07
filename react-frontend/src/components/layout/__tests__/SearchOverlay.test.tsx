@@ -63,6 +63,7 @@ vi.mock('@/contexts', () => ({
   useTenant: () => ({
     tenantPath: (p: string) => p,
     hasFeature: mockHasFeature,
+    hasModule: () => true,
   }),
   useAuth: () => ({
     isAuthenticated: false,

@@ -360,8 +360,8 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     detailPageUrl: '/caring',
     stage: 'alpha',
     configOptions: [
-      { key: 'caring_community.dashboard_enabled', type: 'boolean', defaultValue: true, category: 'visibility' },
-      { key: 'caring_community.show_municipal_reporting', type: 'boolean', defaultValue: true, category: 'reporting' },
+      { key: 'caring_community.dashboard_enabled', type: 'boolean', defaultValue: true, category: 'visibility', comingSoon: true },
+      { key: 'caring_community.show_municipal_reporting', type: 'boolean', defaultValue: true, category: 'reporting', comingSoon: true },
       { key: 'caring_community.show_trust_pack', type: 'boolean', defaultValue: true, category: 'trust_safety', comingSoon: true },
     ],
   },
@@ -683,7 +683,7 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     configOptions: [
       { key: 'courses.allow_member_authoring', type: 'boolean', defaultValue: true, category: 'authoring' },
       { key: 'courses.moderation_enabled', type: 'boolean', defaultValue: false, category: 'moderation' },
-      { key: 'courses.award_xp', type: 'boolean', defaultValue: true, category: 'gamification' },
+      { key: 'courses.award_xp', type: 'boolean', defaultValue: true, category: 'gamification', comingSoon: true },
       { key: 'courses.post_completions_to_feed', type: 'boolean', defaultValue: true, category: 'social', comingSoon: true },
     ],
   },

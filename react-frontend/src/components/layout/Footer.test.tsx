@@ -59,6 +59,7 @@ function setupDefaultMocks(overrides: {
   blogEnabled?: boolean;
 } = {}) {
   mockUseTenant.mockReturnValue({
+    hasModule: () => true,
     tenant: {
       id: 2,
       name: 'Test Tenant',

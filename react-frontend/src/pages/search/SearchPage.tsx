@@ -186,7 +186,7 @@ export function SearchPage() {
   const isPhone = useMediaQuery('(max-width: 639px)');
   const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const toast = useToast();
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const podcastsEnabled = hasFeature('podcasts');
   const [searchParams, setSearchParams] = useSearchParams();
   // `query` is the COMMITTED search — it mirrors `?q=` and is the only value the
@@ -200,14 +200,23 @@ export function SearchPage() {
   // Native-app search: phones type into a full-screen overlay with recents
   // instead of the inline form, which is hidden on phones.
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<SearchTab>('all');
-  const [results, setResults] = useState<SearchResults>({
+  const [requestedTab, setActiveTab] = useState<SearchTab>('all');
+  const enabledTabs = { all: true, listings: hasModule('listings'), users: hasFeature('connections'), events: hasFeature('events'), groups: hasFeature('groups'), podcasts: podcastsEnabled };
+  const activeTab = enabledTabs[requestedTab] ? requestedTab : 'all';
+  const [rawResults, setResults] = useState<SearchResults>({
     listings: [],
     users: [],
     events: [],
     groups: [],
     podcasts: [],
   });
+  const results: SearchResults = {
+    listings: enabledTabs.listings ? rawResults.listings : [],
+    users: enabledTabs.users ? rawResults.users : [],
+    events: enabledTabs.events ? rawResults.events : [],
+    groups: enabledTabs.groups ? rawResults.groups : [],
+    podcasts: enabledTabs.podcasts ? rawResults.podcasts : [],
+  };
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -608,10 +617,10 @@ export function SearchPage() {
             }}
           >
             <Tab key="all" title={t('tab_all', { count: totalResults })} />
-            <Tab key="listings" title={t('tab_listings', { count: results.listings.length })} />
-            <Tab key="users" title={t('tab_members', { count: results.users.length })} />
-            <Tab key="events" title={t('tab_events', { count: results.events.length })} />
-            <Tab key="groups" title={t('tab_groups', { count: results.groups.length })} />
+            {enabledTabs.listings && <Tab key="listings" title={t('tab_listings', { count: results.listings.length })} />}
+            {enabledTabs.users && <Tab key="users" title={t('tab_members', { count: results.users.length })} />}
+            {enabledTabs.events && <Tab key="events" title={t('tab_events', { count: results.events.length })} />}
+            {enabledTabs.groups && <Tab key="groups" title={t('tab_groups', { count: results.groups.length })} />}
             {podcastsEnabled && <Tab key="podcasts" title={t('tab_podcasts', { count: results.podcasts.length })} />}
           </Tabs>
 

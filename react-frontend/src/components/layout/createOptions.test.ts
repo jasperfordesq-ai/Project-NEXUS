@@ -116,6 +116,13 @@ describe('createOptions', () => {
     }
   });
 
+  it('places Marketplace in Community independently of Timebanking', () => {
+    const groups = groupCreateOptions(getVisibleCreateOptions(all, none));
+    expect(groups.find(g => g.section === 'community')?.options.map(o => o.href)).toContain('/marketplace/sell');
+    expect(groups.find(g => g.section === 'timebank')?.options.map(o => o.href) ?? []).not.toContain('/marketplace/sell');
+    expect(getVisibleCreateOptions(f => f !== 'marketplace', all).map(o => o.href)).not.toContain('/marketplace/sell');
+  });
+
   it('drops sections with nothing left in them', () => {
     // Courses and Podcasts are the whole "learning" section. With them off, the
     // heading must not render above an empty gap.

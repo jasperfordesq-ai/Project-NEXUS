@@ -276,14 +276,14 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   // Keyboard shortcut: Ctrl/Cmd+K opens search
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if (hasFeature('search') && (e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setIsSearchOpen(true);
       }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [setIsSearchOpen]);
+  }, [setIsSearchOpen, hasFeature]);
 
   // Check if current path matches any in a group
   const isActiveGroup = (paths: string[]) => {
@@ -615,7 +615,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
               <ThemePicker triggerSize="sm" placement="bottom-end" triggerClassName={utilityBarIconActionClass} />
               <span className={utilityBarDividerClass}>|</span>
               {/* Search — in utility bar on desktop */}
-              <Button
+              {hasFeature('search') && <Button
                 variant="light"
                 size="sm"
                 onPress={() => setIsSearchOpen(true)}
@@ -627,7 +627,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                 <Kbd className="hidden lg:inline-flex items-center gap-0.5 ms-0.5 px-0 py-0 text-[10px] font-medium !bg-transparent !border-transparent !shadow-none text-theme-subtle">
                   <span className="text-xs">{t('keyboard.command_symbol')}</span>{t('keyboard.k_key')}
                 </Kbd>
-              </Button>
+              </Button>}
             </div>
           </div>
         </div>
@@ -821,7 +821,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
             {/* User Actions */}
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Search — visible on mobile/tablet where utility bar is hidden */}
-              <Button
+              {hasFeature('search') && <Button
                 isIconOnly
                 variant="light"
                 size="sm"
@@ -830,7 +830,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                 className="sm:hidden text-theme-muted hover:text-theme-primary min-w-[44px] min-h-[44px]"
               >
                 <Search className="w-5 h-5" aria-hidden="true" />
-              </Button>
+              </Button>}
 
               {isAuthenticated ? (
                 <>
@@ -888,9 +888,9 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                   ) : null}
 
                   {/* Notification Flyout — rich popover instead of simple navigate */}
-                  <Suspense fallback={null}>
+                  {hasModule('notifications') && <Suspense fallback={null}>
                     <NotificationFlyout />
-                  </Suspense>
+                  </Suspense>}
 
                   {/* Status Selector (small dot button) */}
                   <div className="hidden min-[390px]:block">
@@ -954,12 +954,12 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                       </DropdownSection>
 
                       <DropdownSection showDivider>
-                        <DropdownItem
+                        {hasModule('profile') ? <DropdownItem
                           key={tenantPath('/profile')} id={tenantPath('/profile')}
                           startContent={<UserCircle className="w-4 h-4" aria-hidden="true" />}
                         >
                           {t('user_menu.my_profile')}
-                        </DropdownItem>
+                        </DropdownItem> : null}
                         {hasModule('wallet') ? (
                           <DropdownItem
                             key={tenantPath('/wallet')} id={tenantPath('/wallet')}
@@ -973,12 +973,12 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                             {t('user_menu.wallet')}
                           </DropdownItem>
                         ) : null}
-                        <DropdownItem
+                        {hasModule('settings') ? <DropdownItem
                           key={tenantPath('/settings')} id={tenantPath('/settings')}
                           startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
                         >
                           {t('user_menu.settings')}
-                        </DropdownItem>
+                        </DropdownItem> : null}
                       </DropdownSection>
 
                       <DropdownSection showDivider>
@@ -1045,10 +1045,10 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
         </div>
 
         {/* Search Overlay */}
-        <SearchOverlay
+        {hasFeature('search') && <SearchOverlay
           isOpen={isSearchOpen}
           onClose={() => setIsSearchOpen(false)}
-        />
+        />}
       </header>
 
     </>

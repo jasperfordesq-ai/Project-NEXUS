@@ -38,11 +38,12 @@ export interface FooterProps {
  */
 export function Footer({ children, copyright }: FooterProps) {
   const { t } = useTranslation('common');
-  const { tenant, branding, tenantPath } = useTenant();
+  const { tenant, branding, tenantPath, hasModule } = useTenant();
   const { resolvedTheme } = useTheme();
   const hasConnections = useFeature('connections');
   const hasEvents = useFeature('events');
   const hasBlog = useFeature('blog');
+  const hasResources = useFeature('resources');
   const { resetConsent } = useCookieConsent();
   const year = new Date().getFullYear();
 
@@ -161,7 +162,7 @@ export function Footer({ children, copyright }: FooterProps) {
               <nav aria-label={t('footer.platform')}>
                 <h3 className="text-sm font-semibold text-theme-primary mb-3">{t('footer.platform')}</h3>
                 <ul className="space-y-2">
-                  <li><FooterLink href={tenantPath('/listings')}>{t('nav.listings')}</FooterLink></li>
+                  {hasModule('listings') && <li><FooterLink href={tenantPath('/listings')}>{t('nav.listings')}</FooterLink></li>}
                   {hasConnections && <li><FooterLink href={tenantPath('/members')}>{t('nav.members')}</FooterLink></li>}
                   {hasEvents && <li><FooterLink href={tenantPath('/events')}>{t('nav.events')}</FooterLink></li>}
                   {hasBlog && <li><FooterLink href={tenantPath('/blog')}>{t('nav.blog')}</FooterLink></li>}
@@ -173,7 +174,7 @@ export function Footer({ children, copyright }: FooterProps) {
                 <h3 className="text-sm font-semibold text-theme-primary mb-3">{t('footer.support')}</h3>
                 <ul className="space-y-2">
                   <li><FooterLink href={tenantPath('/help')}>{t('footer.help_center')}</FooterLink></li>
-                  <li><FooterLink href={tenantPath('/kb')}>{t('nav.knowledge_base')}</FooterLink></li>
+                  {hasResources && <li><FooterLink href={tenantPath('/kb')}>{t('nav.knowledge_base')}</FooterLink></li>}
                   <li><FooterLink href={tenantPath('/trust-and-safety')}>{t('footer.trust_safety')}</FooterLink></li>
                   <li><FooterLink href={tenantPath('/contact')}>{t('footer.contact_us')}</FooterLink></li>
                   <li><FooterLink href={tenantPath('/about')}>{t('footer.about')}</FooterLink></li>

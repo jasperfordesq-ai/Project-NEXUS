@@ -62,6 +62,16 @@ class VolunteerController extends BaseApiController
         }
     }
 
+    private function ensureOrganisationFeature(): void
+    {
+        $this->ensureFeature();
+        if (!TenantContext::hasFeature('organisations')) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                $this->respondWithError('FEATURE_DISABLED', __('api.module_disabled_for_community'), null, 403)
+            );
+        }
+    }
+
     private function getErrorStatus(array $errors): int
     {
         foreach ($errors as $error) {
@@ -576,7 +586,7 @@ class VolunteerController extends BaseApiController
 
     public function organisations(): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('volunteering_orgs', 60, 60);
         $filters = ['limit' => $this->queryInt('per_page', 20, 1, 50)];
         if ($this->query('search')) $filters['search'] = $this->query('search');
@@ -623,7 +633,7 @@ class VolunteerController extends BaseApiController
 
     public function showOrganisation($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('volunteering_org_show', 120, 60);
         $org = $this->volunteerService->getOrganisationById((int) $id);
         if (!$org) return $this->respondWithError('NOT_FOUND', __('api.organization_not_found'), null, 404);
@@ -636,7 +646,7 @@ class VolunteerController extends BaseApiController
 
     public function myOrganisations(): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_my_orgs', 60, 60);
         $filters = ['limit' => $this->queryInt('per_page', 20, 1, 50)];
@@ -648,7 +658,7 @@ class VolunteerController extends BaseApiController
 
     public function createOrganisation(CreateOrganisationRequest $request): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_org_create', 5, 60);
 
@@ -682,6 +692,7 @@ class VolunteerController extends BaseApiController
         $this->rateLimit('volunteering_review', 10, 60);
 
         $targetType = $this->input('target_type');
+        if ($targetType === 'organization') $this->ensureOrganisationFeature();
         $targetId = $this->inputInt('target_id');
         $rating = $this->inputInt('rating');
         $comment = trim($this->input('comment', ''));
@@ -705,6 +716,7 @@ class VolunteerController extends BaseApiController
             return $this->respondWithError('FEATURE_DISABLED', __('api.module_disabled_for_community'), null, 403);
         }
         $this->rateLimit('volunteering_reviews', 60, 60);
+        if ($type === 'organization') $this->ensureOrganisationFeature();
         if (!in_array($type, ['organization', 'user'])) return $this->respondWithError('VALIDATION_ERROR', __('api.type_must_be_org_or_user'), 'type', 400);
         $reviews = $this->volunteerService->getReviews($type, (int) $id);
         return $this->respondWithData(['reviews' => $reviews]);
@@ -791,7 +803,7 @@ class VolunteerController extends BaseApiController
 
     public function orgStats($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('vol_org_stats', 60, 60);
         $org = $this->ensureOrgAccess((int) $id);
         if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
@@ -829,7 +841,7 @@ class VolunteerController extends BaseApiController
 
     public function orgWalletBalance($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('vol_org_wallet', 60, 60);
         $org = $this->ensureOrgAccess((int) $id);
         if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
@@ -840,7 +852,7 @@ class VolunteerController extends BaseApiController
 
     public function orgWalletTransactions($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('vol_org_wallet_txns', 60, 60);
         $org = $this->ensureOrgAccess((int) $id);
         if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
@@ -857,7 +869,7 @@ class VolunteerController extends BaseApiController
 
     public function orgWalletDeposit($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $userId = $this->getUserId();
         $this->rateLimit('vol_org_wallet_deposit', 10, 60);
         $org = $this->ensureOrgAccess((int) $id);
@@ -897,7 +909,7 @@ class VolunteerController extends BaseApiController
 
     public function orgVolunteers($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('vol_org_volunteers', 60, 60);
         $org = $this->ensureOrgAccess((int) $id);
         if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
@@ -955,7 +967,7 @@ class VolunteerController extends BaseApiController
 
     public function orgApplications($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('vol_org_applications', 60, 60);
         $org = $this->ensureOrgAccess((int) $id);
         if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
@@ -1026,7 +1038,7 @@ class VolunteerController extends BaseApiController
 
     public function orgHoursPending($id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('vol_org_hours_pending', 60, 60);
         $org = $this->ensureOrgAccess((int) $id);
         if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
@@ -1085,7 +1097,7 @@ class VolunteerController extends BaseApiController
 
     public function updateOrganisation(UpdateOrganisationRequest $request, $id): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureOrganisationFeature();
         $this->rateLimit('vol_org_update', 10, 60);
         $org = $this->ensureOrgAccess((int) $id);
         if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);

@@ -24,6 +24,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import type { Notification } from '@/types';
 import { useAuth } from './AuthContext';
+import { useTenant } from './TenantContext';
 import {
   usePusherOptional,
   type NewMessageEvent,
@@ -87,6 +88,10 @@ const emptyNotificationsContext: NotificationsContextValue = {
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
+  const { hasModule } = useTenant();
+  const notificationsEnabled = hasModule('notifications');
+  const messagesEnabled = hasModule('messages');
+  const walletEnabled = hasModule('wallet');
   const realtime = usePusherOptional();
   const toast = useToast();
   const toastRef = useRef(toast);
@@ -102,13 +107,13 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
     try {
       const [notificationResponse, messagesResponse] = await Promise.all([
-        api.get<NotificationCounts>('/v2/notifications/counts'),
-        api.get<{ count: number }>('/v2/messages/unread-count').catch(() => null),
+        notificationsEnabled ? api.get<NotificationCounts>('/v2/notifications/counts') : Promise.resolve(null),
+        messagesEnabled ? api.get<{ count: number }>('/v2/messages/unread-count').catch(() => null) : Promise.resolve(null),
       ]);
 
-      if (!notificationResponse.success || !notificationResponse.data) return;
+      if (notificationsEnabled && (!notificationResponse?.success || !notificationResponse.data)) return;
 
-      const counts = notificationResponse.data;
+      const counts = notificationResponse?.data ?? emptyCounts;
       const unreadMessages = messagesResponse?.success
         ? messagesResponse.data?.count ?? 0
         : 0;
@@ -130,7 +135,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       logError('Failed to fetch notification counts', error);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, notificationsEnabled, messagesEnabled]);
 
   const refreshCountsRef = useRef(refreshCounts);
   useEffect(() => {
@@ -138,6 +143,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, [refreshCounts]);
 
   const markAsRead = useCallback(async (id: number): Promise<boolean> => {
+    if (!notificationsEnabled) return false;
     try {
       const response = await api.post(`/v2/notifications/${id}/read`);
       if (!response.success) return false;
@@ -151,9 +157,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       logError('Failed to mark notification as read', error);
       return false;
     }
-  }, []);
+  }, [notificationsEnabled]);
 
   const markAllAsRead = useCallback(async (): Promise<boolean> => {
+    if (!notificationsEnabled) return false;
     try {
       const response = await api.post('/v2/notifications/read-all');
       if (!response.success) return false;
@@ -171,9 +178,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       logError('Failed to mark all notifications as read', error);
       return false;
     }
-  }, []);
+  }, [notificationsEnabled]);
 
   const handleNewNotification = useCallback((data: Notification) => {
+    if (!notificationsEnabled) return;
     setState((previous) => ({
       ...previous,
       unreadCount: previous.unreadCount + 1,
@@ -184,9 +192,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       toastConfig.title,
       data.message || data.body || data.title
     );
-  }, []);
+  }, [notificationsEnabled]);
 
   const handleNewMessage = useCallback((data: NewMessageEvent) => {
+    if (!messagesEnabled) return;
     setState((previous) => ({
       ...previous,
       unreadCount: previous.unreadCount + 1,
@@ -202,9 +211,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       text.substring(0, 50) ||
         i18n.t('realtime.new_message_fallback', { ns: 'notifications' })
     );
-  }, []);
+  }, [messagesEnabled]);
 
   const handleTransaction = useCallback((data: TransactionEvent) => {
+    if (!walletEnabled) return;
     void refreshCountsRef.current();
     toastRef.current.success(
       i18n.t('realtime.transaction_complete', { ns: 'notifications' }),
@@ -214,7 +224,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         amount: data.amount,
       })
     );
-  }, []);
+  }, [walletEnabled]);
 
   // Fetch once per authenticated tenant/user identity and clear tenant-scoped
   // notification state on logout before another identity can be rendered.
@@ -225,7 +235,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     }
 
     void refreshCountsRef.current();
-  }, [isAuthenticated, user?.id, user?.tenant_id]);
+  }, [isAuthenticated, user?.id, user?.tenant_id, notificationsEnabled, messagesEnabled]);
 
   const onNotification = realtime?.onNotification;
   const onUserMessage = realtime?.onUserMessage;
@@ -271,14 +281,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   // Polling is a fallback, never a parallel primary transport. It pauses as
   // soon as the private user channel is healthy and resumes on degradation.
   useEffect(() => {
-    if (!isAuthenticated || !user?.id || isRealtimeHealthy) return;
+    if (!isAuthenticated || !user?.id || isRealtimeHealthy || (!notificationsEnabled && !messagesEnabled)) return;
 
     const interval = setInterval(() => {
       void refreshCountsRef.current();
     }, POLLING_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, user?.id, user?.tenant_id, isRealtimeHealthy]);
+  }, [isAuthenticated, user?.id, user?.tenant_id, isRealtimeHealthy, notificationsEnabled, messagesEnabled]);
 
   const value = useMemo<NotificationsContextValue>(
     () => ({

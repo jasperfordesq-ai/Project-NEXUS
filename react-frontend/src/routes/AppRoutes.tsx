@@ -910,14 +910,14 @@ export function AppRoutes() {
             </FeatureGate>
           } />
           <Route path="organisations" element={
-            <FeatureGate feature="volunteering" fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
+            <FeatureGate feature="volunteering" features={['organisations']} fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
               <FeatureErrorBoundary featureName="Organisations">
                 <OrganisationsPage />
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
           <Route path="organisations/:id" element={
-            <FeatureGate feature="volunteering" redirect="/">
+            <FeatureGate feature="volunteering" features={['organisations']} redirect="/">
               <FeatureErrorBoundary featureName="Organisations">
                 <OrganisationDetailPage />
               </FeatureErrorBoundary>
@@ -1619,7 +1619,7 @@ export function AppRoutes() {
 
           {/* Feature-gated: Organisations (register only â€” view routes are public) */}
           <Route path="organisations/register" element={
-            <FeatureGate feature="volunteering" fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
+            <FeatureGate feature="volunteering" features={['organisations']} fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
               <FeatureErrorBoundary featureName="Organisations">
                 <RegisterOrganisationPage />
               </FeatureErrorBoundary>

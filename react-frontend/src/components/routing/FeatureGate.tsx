@@ -11,7 +11,7 @@
  * - feature: checks TenantFeatures (optional add-ons like gamification, goals)
  * - module: checks TenantModules (core modules like listings, wallet, messages)
  *
- * Provide one of feature or module (not both).
+ * When both are provided, both must be enabled.
  */
 
 import type { ReactNode } from 'react';
@@ -24,6 +24,8 @@ interface FeatureGateProps {
    * The feature flag to check (optional add-on features)
    */
   feature?: keyof TenantFeatures;
+  /** Additional feature switches; all must be enabled. */
+  features?: readonly (keyof TenantFeatures)[];
 
   /**
    * The module flag to check (core platform modules)
@@ -50,6 +52,7 @@ interface FeatureGateProps {
 
 export function FeatureGate({
   feature,
+  features,
   module,
   children,
   fallback = null,
@@ -57,18 +60,15 @@ export function FeatureGate({
 }: FeatureGateProps) {
   const { hasFeature, hasModule, isLoading, tenantPath } = useTenant();
 
-  // While loading tenant config, show children (assume enabled by default)
-  // to avoid layout flash — the gate will re-evaluate once config loads
+  // Do not mount protected pages or start their effects before config resolves.
   if (isLoading) {
-    return <>{children}</>;
+    return null;
   }
 
   // Check if feature or module is enabled
-  const isEnabled = feature
-    ? hasFeature(feature)
-    : module
-      ? hasModule(module)
-      : true;
+  const isEnabled = (!feature || hasFeature(feature))
+    && (!features || features.every(hasFeature))
+    && (!module || hasModule(module));
 
   if (!isEnabled) {
     if (redirect) {

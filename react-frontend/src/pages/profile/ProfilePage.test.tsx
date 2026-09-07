@@ -10,8 +10,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 
-const { mockApiGet, mockUseFeature, routeState, AUTH_STATE } = vi.hoisted(() => ({
+const { mockApiGet, mockUseFeature, mockHasModule, routeState, AUTH_STATE } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
+  mockHasModule: vi.fn(() => true),
   mockUseFeature: vi.fn(() => true),
   // Mutable route id so a test can simulate navigating from one profile to another
   // (the stale-data regression needs the :id param to change mid-component-life).
@@ -108,7 +109,7 @@ vi.mock('@/contexts', () => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasModule: mockHasModule,
   })),
   useFeature: mockUseFeature,
   useToast: vi.fn(() => ({
@@ -200,7 +201,28 @@ describe('ProfilePage', () => {
     vi.clearAllMocks();
     routeState.id = '42';
     mockUseFeature.mockReturnValue(true);
+    mockHasModule.mockReturnValue(true);
     installDefaultApiMocks();
+  });
+
+  it('suppresses disabled profile requests, tabs, and message actions', async () => {
+    mockHasModule.mockImplementation((module: string) => !['listings', 'feed', 'messages'].includes(module));
+    mockUseFeature.mockImplementation((feature: string) => feature !== 'connections');
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+    expect(mockApiGet).not.toHaveBeenCalledWith(expect.stringContaining('/listings'));
+    expect(mockApiGet).not.toHaveBeenCalledWith(expect.stringContaining('/connections/status'));
+    expect(screen.queryByRole('tab', { name: /listings/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /activity/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /send message/i })).not.toBeInTheDocument();
+    expect(mockApiGet).toHaveBeenCalledWith('/v2/users/42/block-status');
+  });
+
+  it('hides direct message creation when direct messaging is disabled', async () => {
+    mockUseFeature.mockImplementation((feature: string) => feature !== 'direct_messaging');
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+    expect(screen.queryByRole('link', { name: /send message/i })).not.toBeInTheDocument();
   });
 
   it('renders without crashing', () => {

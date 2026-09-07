@@ -9,6 +9,7 @@ import {
   MOBILE_ONLY_NAVIGATION_DESTINATION_IDS,
   NAVIGATION_DESTINATIONS,
   getNavigationItems,
+  isNavigationPathEnabled,
   type DesktopNavigationSection,
   type MobileNavigationSection,
   type NavigationGateContext,
@@ -45,6 +46,27 @@ const allEnabledContext = (overrides: Partial<NavigationGateContext> = {}): Navi
   hasFeature: () => true,
   hasModule: () => true,
   ...overrides,
+});
+
+describe('custom and discovery destination switches', () => {
+  it.each([
+    ['/listings/create', 'listings', 'module'], ['/matches/preferences', 'listings', 'module'],
+    ['/profile/42', 'profile', 'module'], ['/settings', 'settings', 'module'],
+    ['/notifications', 'notifications', 'module'], ['/search?q=test', 'search', 'feature'],
+    ['/marketplace/sell', 'marketplace', 'feature'], ['/events/42', 'events', 'feature'],
+    ['/organisations/register', 'organisations', 'feature'], ['/organisations/1', 'volunteering', 'feature'],
+  ])('re-evaluates %s when %s changes', (path, flag, kind) => {
+    const context = allEnabledContext();
+    expect(isNavigationPathEnabled(`/test${path}`, context, '/test/')).toBe(true);
+    if (kind === 'module') context.hasModule = key => key !== flag;
+    else context.hasFeature = key => key !== flag;
+    expect(isNavigationPathEnabled(`/test${path}`, context, '/test/')).toBe(false);
+  });
+  it('keeps merchant coupons independent of Marketplace', () => {
+    const context = allEnabledContext({ hasFeature: f => f === 'merchant_coupons' });
+    expect(isNavigationPathEnabled('/marketplace/seller/coupons/new', context)).toBe(true);
+    expect(isNavigationPathEnabled('/marketplace/sell', context)).toBe(false);
+  });
 });
 
 function desktopItems(context: NavigationGateContext) {

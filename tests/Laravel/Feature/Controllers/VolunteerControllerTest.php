@@ -34,6 +34,49 @@ class VolunteerControllerTest extends TestCase
         return $user;
     }
 
+    public function test_organisation_switch_blocks_reads_and_writes_without_disabling_volunteering(): void
+    {
+        $owner = $this->authenticatedUser();
+        $orgId = $this->createPublicOrganisation($owner);
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'features' => json_encode(['volunteering' => true, 'organisations' => false]),
+        ]);
+        TenantContext::setById($this->testTenantId);
+
+        foreach ([
+            '/v2/volunteering/organisations',
+            '/v2/volunteering/my-organisations',
+            "/v2/volunteering/organisations/{$orgId}",
+            "/v2/volunteering/organisations/{$orgId}/stats",
+            "/v2/volunteering/organisations/{$orgId}/wallet",
+            "/v2/volunteering/organisations/{$orgId}/wallet/transactions",
+            "/v2/volunteering/organisations/{$orgId}/volunteers",
+            "/v2/volunteering/organisations/{$orgId}/applications",
+            "/v2/volunteering/organisations/{$orgId}/hours/pending",
+            "/v2/volunteering/reviews/organization/{$orgId}",
+        ] as $path) {
+            $this->apiGet($path)->assertStatus(403);
+        }
+        $count = DB::table('vol_organizations')->where('tenant_id', $this->testTenantId)->count();
+        $this->apiPost('/v2/volunteering/organisations', [
+            'name' => 'Disabled organisation creation',
+            'description' => 'This valid organisation must never be created.',
+            'contact_email' => 'disabled@example.test',
+        ])->assertStatus(403);
+        $this->apiPut("/v2/volunteering/organisations/{$orgId}", ['description' => 'Disabled update'])->assertStatus(403);
+        $this->apiPost("/v2/volunteering/organisations/{$orgId}/wallet/deposit", ['amount' => 1])->assertStatus(403);
+        $this->assertSame($count, DB::table('vol_organizations')->where('tenant_id', $this->testTenantId)->count());
+        $this->assertDatabaseHas('vol_organizations', [
+            'id' => $orgId,
+            'description' => 'A public organisation profile for local care and volunteering.',
+            'balance' => 42.50,
+        ]);
+        $this->apiGet('/v2/volunteering/opportunities')->assertOk();
+
+        $this->enableVolunteeringFeature();
+        $this->apiGet("/v2/volunteering/organisations/{$orgId}")->assertOk();
+    }
+
     private function createVolunteerOrganisation(int $ownerId, float $balance, bool $autoPayEnabled): int
     {
         return (int) DB::table('vol_organizations')->insertGetId([

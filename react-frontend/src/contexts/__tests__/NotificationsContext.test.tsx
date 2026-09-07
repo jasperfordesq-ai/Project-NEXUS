@@ -102,6 +102,10 @@ vi.mock('@/lib/logger', () => ({
 // ─────────────────────────────────────────────────────────────────────────────
 
 const mockUseAuth = vi.fn();
+const disabledModules = new Set<string>();
+vi.mock('../TenantContext', () => ({
+  useTenant: () => ({ hasModule: (module: string) => !disabledModules.has(module) }),
+}));
 
 vi.mock('../AuthContext', () => ({
   useAuth: () => mockUseAuth(),
@@ -192,6 +196,7 @@ function notificationsWrapper({ children }: { children: ReactNode }) {
 
 describe('NotificationsContext', () => {
   beforeEach(() => {
+    disabledModules.clear();
     vi.clearAllMocks();
     // Reset channel handlers
     Object.keys(channelEventHandlers).forEach((k) => delete channelEventHandlers[k]);
@@ -279,6 +284,18 @@ describe('NotificationsContext', () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   describe('initial state', () => {
+    it('does not request counts or write notifications when both modules are off', async () => {
+      disabledModules.add('notifications');
+      disabledModules.add('messages');
+      const { result } = renderHook(() => useNotifications(), { wrapper: notificationsWrapper });
+      await act(async () => { await result.current.refreshCounts(); });
+      expect(mockApiGet).not.toHaveBeenCalled();
+      await act(async () => {
+        expect(await result.current.markAsRead(1)).toBe(false);
+        expect(await result.current.markAllAsRead()).toBe(false);
+      });
+      expect(mockApiPost).not.toHaveBeenCalled();
+    });
     it('starts with unreadCount 0 and empty counts', () => {
       // Prevent API from resolving during this test
       mockApiGet.mockReturnValue(new Promise(() => {}));

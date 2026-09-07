@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useAuth, useFeature } from '@/contexts';
+import { useAuth, useFeature, useModule } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { WidgetSkeleton } from './WidgetSkeleton';
@@ -47,6 +47,10 @@ interface SidebarApiResponse {
 export function FeedSidebar() {
   const { isAuthenticated } = useAuth();
   const hasConnections = useFeature('connections');
+  const hasListings = useModule('listings');
+  const hasProfile = useModule('profile');
+  const hasEvents = useFeature('events');
+  const hasGroups = useFeature('groups');
   const [data, setData] = useState<SidebarApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -79,25 +83,25 @@ export function FeedSidebar() {
 
   return (
     <div className="space-y-4">
-      {isAuthenticated && <ProfileCardWidget />}
+      {isAuthenticated && hasProfile && <ProfileCardWidget />}
       {isAuthenticated && <QuickActionsWidget />}
-      {data?.friends && data.friends.length > 0 && (
+      {hasConnections && data?.friends && data.friends.length > 0 && (
         <FriendsWidget friends={data.friends} />
       )}
       {hasConnections && data?.community_stats && (
         <CommunityPulseWidget stats={data.community_stats} />
       )}
-      {data?.suggested_listings && data.suggested_listings.length > 0 && (
+      {hasListings && data?.suggested_listings && data.suggested_listings.length > 0 && (
         <SuggestedListingsWidget listings={data.suggested_listings} />
       )}
-      {data?.top_categories && data.top_categories.length > 0 && (
+      {hasListings && data?.top_categories && data.top_categories.length > 0 && (
         <TopCategoriesWidget categories={data.top_categories} />
       )}
       {isAuthenticated && hasConnections && <ConnectionSuggestionsWidget layout="sidebar" />}
-      {data?.upcoming_events && data.upcoming_events.length > 0 && (
+      {hasEvents && data?.upcoming_events && data.upcoming_events.length > 0 && (
         <UpcomingEventsWidget events={data.upcoming_events} />
       )}
-      {data?.popular_groups && data.popular_groups.length > 0 && (
+      {hasGroups && data?.popular_groups && data.popular_groups.length > 0 && (
         <PopularGroupsWidget groups={data.popular_groups} />
       )}
       <TrendingHashtags limit={8} />

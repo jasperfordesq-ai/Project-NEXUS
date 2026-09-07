@@ -217,7 +217,7 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'groups', href: '/groups', labelKey: 'nav.groups', descriptionKey: 'nav_desc.groups', icon: Users, feature: 'groups', placements: both('community-local', 'community') },
   { id: 'volunteering', href: '/volunteering', labelKey: 'nav.volunteering', descriptionKey: 'nav_desc.volunteering', icon: Heart, feature: 'volunteering', placements: both('community-local', 'community') },
   { id: 'venues', href: '/venues', labelKey: 'nav.venues', descriptionKey: 'nav_desc.venues', icon: Store, auth: 'authenticated', feature: 'partner_venues', placements: both('community-local', 'community') },
-  { id: 'organisations', href: '/organisations', labelKey: 'nav.organisations', descriptionKey: 'nav_desc.organisations', icon: Building2, feature: 'volunteering', placements: both('community-local', 'community') },
+  { id: 'organisations', features: ['organisations'], href: '/organisations', labelKey: 'nav.organisations', descriptionKey: 'nav_desc.organisations', icon: Building2, feature: 'volunteering', placements: both('community-local', 'community') },
   {
     id: 'federation-hub', href: '/federation', labelKey: 'nav.federation_hub', descriptionKey: 'nav_desc.federation_hub', icon: Globe,
     auth: 'authenticated', feature: 'federation',
@@ -243,7 +243,7 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'achievements', href: '/achievements', labelKey: 'nav.achievements', descriptionKey: 'nav_desc.achievements', icon: Trophy, feature: 'gamification', placements: both('progress', 'explore') },
   { id: 'leaderboard', href: '/leaderboard', labelKey: 'nav.leaderboard', descriptionKey: 'nav_desc.leaderboard', icon: Medal, feature: 'gamification', placements: both('progress', 'explore') },
   { id: 'nexus-score', href: '/nexus-score', labelKey: 'nav.nexus_score', descriptionKey: 'nav_desc.nexus_score', icon: BarChart3, feature: 'gamification', placements: both('progress', 'explore') },
-  { id: 'matches', href: '/matches', labelKey: 'nav.matches', descriptionKey: 'nav_desc.matches', icon: Handshake, placements: both('tools', 'explore') },
+  { id: 'matches', href: '/matches', labelKey: 'nav.matches', descriptionKey: 'nav_desc.matches', icon: Handshake, module: 'listings', placements: both('tools', 'explore') },
   { id: 'skills', href: '/skills', labelKey: 'nav.skills', descriptionKey: 'nav_desc.skills', icon: GraduationCap, placements: both('tools', 'explore') },
   { id: 'ai-chat', href: '/chat', labelKey: 'nav.ai_chat', descriptionKey: 'nav_desc.ai_chat', icon: Bot, feature: 'ai_chat', placements: both('tools', 'explore') },
 
@@ -307,6 +307,34 @@ export interface NavigationGateContext {
   tenantSlug?: string | null;
   hasFeature: (feature: keyof TenantFeatures) => boolean;
   hasModule: (module: keyof TenantModules) => boolean;
+}
+
+/** Apply destination switches to custom links and aggregate discovery cards too. */
+export function isNavigationPathEnabled(
+  url: string,
+  context: Pick<NavigationGateContext, 'hasFeature' | 'hasModule'>,
+  tenantPrefix = '',
+): boolean {
+  // External links do not describe a route on this tenant.
+  if (!url.startsWith('/') || url.startsWith('//')) return true;
+  let path = (url.split(/[?#]/)[0] ?? '/').replace(/\/$/, '') || '/';
+  const prefix = tenantPrefix.replace(/\/$/, '');
+  if (prefix && path.startsWith(`${prefix}/`)) path = path.slice(prefix.length);
+  const matches = (root: string) => path === root || path.startsWith(`${root}/`);
+  for (const module of ['profile', 'settings', 'notifications'] as const) {
+    if (matches(`/${module}`)) return context.hasModule(module);
+  }
+  if (matches('/search')) return context.hasFeature('search');
+  // Coupons have their own switch and intentionally work without Marketplace.
+  if (matches('/coupons') || matches('/marketplace/seller/coupons')) return context.hasFeature('merchant_coupons');
+  if (matches('/kb')) return context.hasFeature('resources');
+  const destination = [...NAVIGATION_DESTINATIONS]
+    .filter(d => d.href !== '/' && matches(d.href))
+    .sort((a, b) => b.href.length - a.href.length)[0];
+  if (!destination) return true;
+  return (!('module' in destination) || context.hasModule(destination.module))
+    && (!('feature' in destination) || context.hasFeature(destination.feature))
+    && (!('features' in destination) || destination.features.every(f => context.hasFeature(f)));
 }
 
 export interface NavigationItemPolicy {

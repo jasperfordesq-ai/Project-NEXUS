@@ -277,33 +277,15 @@ describe('DashboardPage', () => {
     expect(screen.queryByText('NaN%')).not.toBeInTheDocument();
   });
 
-  it('keeps core dashboard sections available when optional modules are disabled', async () => {
-    Object.assign(featureFlags, {
-      connections: false,
-      events: false,
-      gamification: false,
-      groups: false,
-    });
-    Object.assign(moduleFlags, {
-      feed: false,
-      listings: false,
-      messages: false,
-      profile: false,
-      wallet: false,
-    });
-
+  it('hides disabled modules and does not request their data', async () => {
+    Object.assign(featureFlags, { connections: false, events: false, gamification: false, groups: false });
+    Object.assign(moduleFlags, { feed: false, listings: false, messages: false, profile: false, wallet: false });
     render(<DashboardPage />);
-
-    await waitFor(() => {
-      expect(mockApiGet).toHaveBeenCalledWith('/v2/wallet/balance');
-    });
-
-    expect(screen.getByText('Balance')).toBeInTheDocument();
-    expect(screen.getByText('Active Listings')).toBeInTheDocument();
-    expect(screen.getByText('Recent Listings')).toBeInTheDocument();
-    expect(screen.getByText('New Listing')).toBeInTheDocument();
-    expect(screen.getByText('Create Listing')).toBeInTheDocument();
-    expect(screen.getByText('View Wallet')).toBeInTheDocument();
-    expect(screen.queryByText('Find Members')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('Balance')).not.toBeInTheDocument());
+    expect(mockApiGet).not.toHaveBeenCalledWith('/v2/wallet/balance');
+    expect(mockApiGet.mock.calls.some(([url]) => String(url).startsWith('/v2/listings'))).toBe(false);
+    for (const label of ['Active Listings', 'Recent Listings', 'New Listing', 'Create Listing', 'View Wallet', 'Find Members']) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
+    }
   });
 });

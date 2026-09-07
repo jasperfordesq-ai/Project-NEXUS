@@ -33,6 +33,7 @@ vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: mockUseMediaQuery }));
 // ─── Toast / Auth / Tenant / Notifications ────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() };
 const mockNavigate = vi.fn();
+const mockHasModule = vi.fn(() => true);
 const mockMarkAsRead = vi.fn().mockResolvedValue(undefined);
 const mockMarkAllAsRead = vi.fn().mockResolvedValue(undefined);
 
@@ -62,7 +63,7 @@ vi.mock('@/contexts', () =>
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasModule: mockHasModule,
     }),
     useNotifications: () => ({
       unreadCount: 0,
@@ -84,7 +85,7 @@ vi.mock('@/contexts/TenantContext', () => ({
     tenant: { id: 2, name: 'Test', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasModule: mockHasModule,
   }),
 }));
 
@@ -315,6 +316,17 @@ describe('NotificationFlyout', () => {
     // Component renders without error, which means the handler is set up correctly
     expect(screen.getByTestId('popover')).toBeInTheDocument();
     expect(mockMarkAllAsRead).not.toHaveBeenCalled(); // no auto-call
+  });
+
+  it('opens notifications instead of a disabled destination', async () => {
+    mockHasModule.mockImplementation((module: string) => module !== 'messages');
+    mockApi.get.mockResolvedValue({ success: true, data: [makeNotification()] });
+    const { NotificationFlyout } = await import('./NotificationFlyout');
+    render(<NotificationFlyout />);
+    fireEvent.click(screen.getByTestId('popover'));
+    fireEvent.click(await screen.findByText('New message from Alice'));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/notifications');
+    expect(mockNavigate).not.toHaveBeenCalledWith('/test/messages/1');
   });
 
   it('navigates when a notification item is clicked', async () => {

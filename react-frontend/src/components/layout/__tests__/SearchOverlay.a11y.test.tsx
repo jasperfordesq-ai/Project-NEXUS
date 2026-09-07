@@ -38,7 +38,7 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('@/contexts', () => ({
   useAuth: () => ({ isAuthenticated: true }),
-  useTenant: () => ({ tenantPath: (p: string) => p, hasFeature: () => true }),
+  useTenant: () => ({ tenantPath: (p: string) => p, hasModule: () => true, hasFeature: () => true }),
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn() }),
 }));
 

@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
+const disabled = vi.hoisted(() => new Set<string>());
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -29,8 +30,8 @@ vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasFeature: (key: string) => !disabled.has(key),
+    hasModule: (key: string) => !disabled.has(key),
   })),
   useToast: vi.fn(() => ({
     success: vi.fn(),
@@ -111,6 +112,7 @@ import { api } from '@/lib/api';
 
 describe('SearchPage', () => {
   beforeEach(() => {
+    disabled.clear();
     vi.clearAllMocks();
     isPhoneViewport = false;
     // The phone tests seed ?q=… to drive a search through the URL-sync effect
@@ -128,6 +130,24 @@ describe('SearchPage', () => {
   it('shows search input', () => {
     render(<SearchPage />);
     expect(screen.getByPlaceholderText('Search for anything...')).toBeInTheDocument();
+  });
+
+  it('removes already-loaded results and tabs when their modules are disabled', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [
+      { type: 'listing', id: 1, title: 'Hidden listing', description: 'Example', listing_type: 'offer' },
+    ] });
+    const { rerender } = render(<SearchPage />);
+    const input = screen.getByPlaceholderText('Search for anything...');
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.submit(input.closest('form')!);
+    await waitFor(() => expect(screen.getByText('Hidden listing')).toBeInTheDocument());
+    disabled.add('listings');
+    rerender(<SearchPage />);
+    expect(screen.queryByText('Hidden listing')).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Listings/ })).not.toBeInTheDocument();
+    disabled.delete('listings');
+    rerender(<SearchPage />);
+    expect(screen.getByText('Hidden listing')).toBeInTheDocument();
   });
 
   it('shows initial state prompt before searching', () => {

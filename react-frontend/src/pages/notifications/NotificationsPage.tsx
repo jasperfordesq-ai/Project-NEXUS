@@ -43,6 +43,7 @@ import { api } from '@/lib/api';
 import { formatRelativeTime, resolveAvatarUrl } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { getNotificationDisplayText } from '@/lib/notificationText';
+import { isNavigationPathEnabled } from '@/components/navigation/navigationRegistry';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import type { Notification } from '@/types/api';
@@ -498,10 +499,10 @@ const colorClasses: Record<string, string> = {
 const NotificationCard = memo(function NotificationCard({ notification, onMarkRead, onDelete }: NotificationCardProps) {
   const { t } = useTranslation('notifications');
   const navigate = useNavigate();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const [isExpanded, setIsExpanded] = useState(false);
   const isUnread = !notification.read_at;
-  const hasLink = !!notification.link;
+  const hasLink = !!notification.link && isNavigationPathEnabled(notification.link, { hasFeature, hasModule }, tenantPath(''));
   const isGrouped = notification.is_grouped && (notification.group_count ?? 0) > 1;
   /*
     🔴 What "expand" actually reveals — and whether there is anything at all.
@@ -518,7 +519,7 @@ const NotificationCard = memo(function NotificationCard({ notification, onMarkRe
   const canExpand = isGrouped && (groupItems.length > 0 || groupActors.length > 0);
 
   function handleClick() {
-    if (!notification.link) return;
+    if (!hasLink || !notification.link) return;
     // Mark as read when navigating
     if (isUnread) onMarkRead();
     // The link from the API is a relative path like "/messages/123" — scope it to the tenant

@@ -44,25 +44,25 @@ export default async function globalSetup(_config: FullConfig) {
     }
   }
 
-  const email = process.env.E2E_EMAIL ?? 'e2e-test@project-nexus.ie';
-  const password = process.env.E2E_PASSWORD ?? 'E2eTestPass123!';
+  const email = process.env.E2E_EMAIL ?? 'e2e.user.a@project-nexus.local';
+  const password = process.env.E2E_PASSWORD ?? 'TestPassword123!';
 
   const browser = await chromium.launch();
   const context = await browser.newContext({ baseURL: BASE_URL });
   const page = await context.newPage();
 
-  // Navigate to the tenant-prefixed login page
-  await page.goto(`/t/${TENANT_SLUG}/login`);
+  // Tenant routes use /{tenantSlug}/..., matching TenantShell and tenantPath().
+  await page.goto(`/${TENANT_SLUG}/login`);
 
   // Wait for the login form to render
   await page.getByLabel('Email').waitFor({ state: 'visible', timeout: 15000 });
 
   // Fill credentials
   await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(password);
+  await page.locator('input[name="password"]').fill(password);
 
   // Submit
-  await page.getByRole('button', { name: /sign in|log in/i }).click();
+  await page.locator('button[type="submit"]').click();
 
   // Wait for redirect away from login (dashboard or feed)
   await page.waitForURL((url) => !url.pathname.endsWith('/login'), { timeout: 15000 });

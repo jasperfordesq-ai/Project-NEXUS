@@ -144,6 +144,10 @@ export function ProfilePage() {
   const hasGamification = useFeature('gamification');
   const hasReviews = useFeature('reviews');
   const hasWallet = hasModule('wallet');
+  const hasListings = hasModule('listings');
+  const hasFeed = hasModule('feed');
+  const hasDirectMessaging = useFeature('direct_messaging');
+  const hasMessages = hasModule('messages') && hasDirectMessaging;
   const toast = useToast();
 
   const [profile, setProfile] = useState<ProfileApiUser | null>(null);
@@ -152,7 +156,11 @@ export function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('about');
+  const [requestedTab, setActiveTab] = useState('about');
+  const activeTab = ((requestedTab === 'listings' && !hasListings)
+    || (requestedTab === 'activity' && !hasFeed)
+    || (requestedTab === 'reviews' && !hasReviews)
+    || (requestedTab === 'achievements' && !hasGamification)) ? 'about' : requestedTab;
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('none');
   const [connectionId, setConnectionId] = useState<number | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -222,14 +230,14 @@ export function ProfilePage() {
       setIsLoadingEndorsements(true);
 
       const profileReq = api.get<UserType>(`/v2/users/${profileId}`);
-      const listingsReq = api.get<Listing[]>(`/v2/users/${profileId}/listings?limit=6`);
+      const listingsReq = hasListings ? api.get<Listing[]>(`/v2/users/${profileId}/listings?limit=6`) : Promise.resolve({ success: true, data: [] });
       const gamProfileReq = hasGamification
         ? api.get<GamificationProfileResponse>(`/v2/gamification/profile?user_id=${profileId}`)
         : null;
       const gamBadgesReq = hasGamification
         ? api.get<GamificationBadgeResponse[]>(`/v2/gamification/badges?user_id=${profileId}`)
         : null;
-      const connectionReq = (isAuthenticated && currentUserId && profileId !== currentUserId)
+      const connectionReq = (hasConnections && isAuthenticated && currentUserId && profileId !== currentUserId)
         ? api.get<{ status: ConnectionStatus; connection_id?: number }>(`/v2/connections/status/${profileId}`)
         : null;
       const blockStatusReq = (isAuthenticated && currentUserId && profileId !== currentUserId)
@@ -362,7 +370,7 @@ export function ProfilePage() {
       setIsLoading(false);
       setIsLoadingEndorsements(false);
     }
-  }, [profileId, isAuthenticated, currentUserId, hasGamification]);
+  }, [profileId, isAuthenticated, currentUserId, hasGamification, hasListings, hasConnections]);
 
   useEffect(() => {
     loadProfile();
@@ -745,7 +753,7 @@ export function ProfilePage() {
                   </>
                 ) : (
                   <>
-                    {isAuthenticated && (
+                    {hasMessages && isAuthenticated && (
                       <Button
                         as={Link}
                         to={tenantPath(`/messages/new/${profile.id}`)}
@@ -756,7 +764,7 @@ export function ProfilePage() {
                         {t('send_message')}
                       </Button>
                     )}
-                    {!isAuthenticated && (
+                    {hasMessages && !isAuthenticated && (
                       <Button
                         as={Link}
                         to={tenantPath('/login')}
@@ -902,7 +910,7 @@ export function ProfilePage() {
       </motion.div>
 
       {/* Story Highlights */}
-      {profile && (
+      {hasFeed && profile && (
         <motion.div variants={itemVariants}>
           <StoryHighlights
             userId={profile.id}
@@ -917,8 +925,8 @@ export function ProfilePage() {
         {(() => {
           const tabs: Array<{ key: string; icon: typeof User; label: string; count?: number }> = [
             { key: 'about', icon: User, label: t('tabs.about') },
-            { key: 'listings', icon: ListTodo, label: t('tabs.listings'), count: profile.stats?.listings_count ?? listings.length },
-            { key: 'activity', icon: Rss, label: t('tabs.activity') },
+            ...(hasListings ? [{ key: 'listings', icon: ListTodo, label: t('tabs.listings'), count: profile.stats?.listings_count ?? listings.length }] : []),
+            ...(hasFeed ? [{ key: 'activity', icon: Rss, label: t('tabs.activity') }] : []),
             { key: 'availability', icon: Calendar, label: t('tabs.availability') },
             ...(hasReviews && reviewsAvailable ? [{ key: 'reviews', icon: Star, label: t('tabs.reviews'), count: reviewsLoaded ? reviews.length : undefined }] : []),
             ...(hasGamification ? [{ key: 'achievements', icon: Award, label: t('tabs.achievements'), count: earnedBadgeCount }] : []),

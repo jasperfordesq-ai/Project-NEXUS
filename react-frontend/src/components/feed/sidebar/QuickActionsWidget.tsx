@@ -20,7 +20,7 @@ import { canCreateEvents } from '@/lib/access';
 
 export function QuickActionsWidget() {
   const { isAuthenticated, user } = useAuth();
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const { t } = useTranslation('feed');
 
   if (!isAuthenticated) return null;
@@ -70,14 +70,14 @@ export function QuickActionsWidget() {
   return (
     <GlassCard className="p-4">
       {/* Primary CTA */}
-      <Button
+      {hasModule('listings') && <Button
         as={Link}
         to={tenantPath('/listings/create')}
         className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-shadow font-medium"
         startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
       >
         {t('sidebar.actions.create_listing')}
-      </Button>
+      </Button>}
 
       {/* Secondary actions grid */}
       {enabledActions.length > 0 && (

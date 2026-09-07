@@ -26,7 +26,7 @@
  *
  * 🔴 Every gate below matches the gate on the DESTINATION ROUTE in
  * `AppRoutes.tsx`, not the one that reads best. Two are easy to get wrong:
- *   - `organisations/register` is gated on `volunteering`, NOT `organisations`.
+ *   - `organisations/register` requires both volunteering and organisations.
  *   - `listings/create` is a MODULE gate, not a feature gate.
  * An option whose gate is looser than its route's sends the member to a
  * "coming soon" page or bounces them to the dashboard, which reads as broken.
@@ -81,6 +81,7 @@ export interface CreateOptionDef {
   color: string;
   section: CreateOptionSection;
   feature?: keyof TenantFeatures;
+  features?: readonly (keyof TenantFeatures)[];
   module?: keyof TenantModules;
   /**
    * Server-resolved capability beyond the feature switch. Only Events has one:
@@ -138,7 +139,7 @@ const createOptionDefs: CreateOptionDef[] = [
     href: '/marketplace/sell',
     icon: ShoppingBag,
     color: 'from-green-500 to-emerald-600',
-    section: 'timebank',
+    section: 'community',
     feature: 'marketplace',
   },
   {
@@ -206,9 +207,9 @@ const createOptionDefs: CreateOptionDef[] = [
     feature: 'volunteering',
   },
   {
-    // 🔴 Gated on `volunteering`, deliberately — see the file header. There is an
-    // `organisations` feature flag and it is NOT what guards this route.
+    // Organisation pages consume volunteering APIs, so both switches apply.
     labelKey: 'quick_create.new_organisation',
+    features: ['organisations'],
     descKey: 'quick_create.new_organisation_desc',
     href: '/organisations/register',
     icon: Building2,
@@ -248,6 +249,7 @@ export function getVisibleCreateOptions(
 ): CreateOptionDef[] {
   return createOptionDefs.filter((option) => {
     if (option.feature && !hasFeature(option.feature)) return false;
+    if (option.features && !option.features.every(hasFeature)) return false;
     if (option.module && !hasModule(option.module)) return false;
     if (option.requiresEventPermission && !canCreateEvent) return false;
     return true;

@@ -202,7 +202,7 @@ function setupDefaultMocks(overrides: {
   mockUseTenant.mockReturnValue({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test-tenant' },
     branding: { name: 'Test Community', logo: null, tagline: 'A test community' },
-    hasFeature: vi.fn(() => false),
+    hasFeature: vi.fn((feature: string) => feature === 'search'),
     hasModule: vi.fn(() => true),
     tenantPath: (p: string) => p,
     ...overrides.tenant,
@@ -590,10 +590,10 @@ describe('MobileDrawer', () => {
       expect(screen.queryByText('Events')).not.toBeInTheDocument();
     });
 
-    it('shows Organisations when the volunteering module feature is enabled', () => {
+    it('shows Organisations when both organisation and volunteering features are enabled', () => {
       setupDefaultMocks({
         tenant: {
-          hasFeature: vi.fn((feature: string) => feature === 'volunteering'),
+          hasFeature: vi.fn((feature: string) => feature === 'volunteering' || feature === 'organisations'),
           hasModule: vi.fn(() => false),
         },
       });

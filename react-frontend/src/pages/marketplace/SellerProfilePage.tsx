@@ -101,7 +101,8 @@ export function SellerProfilePage() {
   const { t } = useTranslation('marketplace');
   usePageTitle(t('seller.page_title'));
   const { isAuthenticated } = useAuth();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const canMessage = hasModule('messages') && hasFeature('direct_messaging');
   const toast = useToast();
 
   // State
@@ -337,7 +338,7 @@ export function SellerProfilePage() {
 
             {/* Actions */}
             <div className="flex w-full gap-2 sm:w-auto sm:shrink-0">
-              {isAuthenticated && (
+              {canMessage && isAuthenticated && (
                 <Button
                   variant="secondary"
                   startContent={<MessageCircle className="w-4 h-4" />}

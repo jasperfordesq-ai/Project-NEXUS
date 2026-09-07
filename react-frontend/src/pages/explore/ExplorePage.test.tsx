@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+const disabled = vi.hoisted(() => new Set<string>());
 import { render, screen, waitFor, fireEvent, userEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
@@ -57,8 +58,8 @@ vi.mock('@/contexts', () =>
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasFeature: (key: string) => !disabled.has(key),
+      hasModule: (key: string) => !disabled.has(key),
     }),
   })
 );
@@ -207,6 +208,7 @@ const makeExploreData = () => ({
 // ─────────────────────────────────────────────────────────────────────────────
 describe('ExplorePage', () => {
   beforeEach(() => {
+    disabled.clear();
     vi.resetAllMocks();
 
     // api.get is called by both useApi (for /v2/explore, /v2/categories)
@@ -224,6 +226,19 @@ describe('ExplorePage', () => {
       return Promise.resolve({ success: true, data: null });
     });
     mockApi.post.mockResolvedValue({ success: true, data: null });
+  });
+
+  it('removes listing cards and their tab after the module is disabled', async () => {
+    const { default: ExplorePage } = await import('./ExplorePage');
+    const { rerender } = render(<ExplorePage />);
+    await waitFor(() => expect(screen.getByText('Popular Listing One')).toBeInTheDocument());
+    disabled.add('listings');
+    rerender(<ExplorePage />);
+    expect(screen.queryByText('Popular Listing One')).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Listings/ })).not.toBeInTheDocument();
+    disabled.delete('listings');
+    rerender(<ExplorePage />);
+    expect(screen.getByText('Popular Listing One')).toBeInTheDocument();
   });
 
   it('shows a loading spinner initially', async () => {

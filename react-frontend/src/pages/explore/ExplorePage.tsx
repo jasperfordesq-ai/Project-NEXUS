@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { isNavigationPathEnabled } from '@/components/navigation/navigationRegistry';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -412,7 +413,8 @@ export default function ExplorePage() {
   usePageTitle(t('page_title'));
 
   const navigate = useNavigate();
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const hasListings = hasModule('listings');
   const { isAuthenticated, user } = useAuth();
   const hasConnections = hasFeature('connections');
   const hasEvents = hasFeature('events');
@@ -425,6 +427,7 @@ export default function ExplorePage() {
   const tabFromUrl = searchParams.get('tab');
   const requestedTab: ExploreTab = isValidTab(tabFromUrl) ? tabFromUrl : 'all';
   const activeTab: ExploreTab =
+    (!hasListings && requestedTab === 'listings') ||
     (!hasConnections && requestedTab === 'people') ||
     (!hasEvents && requestedTab === 'events') ||
     (!hasGroups && requestedTab === 'groups')
@@ -572,7 +575,7 @@ export default function ExplorePage() {
           {t('subtitle')}
         </p>
 
-        <form
+        {hasFeature('search') && <form
           onSubmit={(e) => { e.preventDefault(); handleSearch(); }}
           className="max-w-2xl mx-auto mb-4 flex gap-2"
         >
@@ -598,10 +601,10 @@ export default function ExplorePage() {
           >
             <Search className="w-5 h-5" aria-hidden="true" />
           </Button>
-        </form>
+        </form>}
 
         {/* Category quick-filter chips */}
-        {effectiveCategories && effectiveCategories.length > 0 && (
+        {hasListings && effectiveCategories && effectiveCategories.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2">
             {effectiveCategories.slice(0, 8).map((cat) => (
               <Button
@@ -635,7 +638,7 @@ export default function ExplorePage() {
         >
           <Tab key="all" title={t('tabs.all')} />
           <Tab key="for_you" title={t('tabs.for_you')} />
-          <Tab key="listings" title={t('tabs.listings')} />
+          {hasListings && <Tab key="listings" title={t('tabs.listings')} />}
           {hasConnections && <Tab key="people" title={t('tabs.people')} />}
           {hasEvents && <Tab key="events" title={t('tabs.events')} />}
           {hasGroups && <Tab key="groups" title={t('tabs.groups')} />}
@@ -663,7 +666,7 @@ export default function ExplorePage() {
         <div className="mb-10">
           {forYouItems.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {forYouItems.map((item, idx) => (
+              {forYouItems.filter(item => isNavigationPathEnabled(item.url, { hasFeature, hasModule }, tenantPath('/'))).map((item, idx) => (
                 <Link
                   key={`${item.content_type}-${item.id}-${idx}`}
                   to={tenantPath(item.url)}
@@ -773,7 +776,7 @@ export default function ExplorePage() {
       </motion.div>}
 
       {/* ─── Trending Posts ────────────────────────────────────────────────── */}
-      {showSection('all') && (isLoading || (data?.trending_posts && data.trending_posts.length > 0)) && (
+      {hasModule('feed') && showSection('all') && (isLoading || (data?.trending_posts && data.trending_posts.length > 0)) && (
         <ExploreSection
           title={t('trending_posts.title')}
           subtitle={t('trending_posts.subtitle')}
@@ -843,7 +846,7 @@ export default function ExplorePage() {
       )}
 
       {/* ─── Popular Listings Grid ────────────────────────────────────────── */}
-      {showSection('all', 'listings') && (isLoading || (data?.popular_listings && data.popular_listings.length > 0)) && (
+      {hasListings && showSection('all', 'listings') && (isLoading || (data?.popular_listings && data.popular_listings.length > 0)) && (
         <ExploreSection
           title={t('popular_listings.title')}
           subtitle={t('popular_listings.subtitle')}
@@ -1127,7 +1130,7 @@ export default function ExplorePage() {
       )}
 
       {/* ─── Trending Hashtags ────────────────────────────────────────────── */}
-      {showSection('all') && (isLoading || (data?.trending_hashtags && data.trending_hashtags.length > 0)) && (
+      {hasModule('feed') && showSection('all') && (isLoading || (data?.trending_hashtags && data.trending_hashtags.length > 0)) && (
         <ExploreSection
           title={t('trending_hashtags.title')}
           subtitle={t('trending_hashtags.subtitle')}
@@ -1162,7 +1165,7 @@ export default function ExplorePage() {
       )}
 
       {/* ─── Recommended For You ──────────────────────────────────────────── */}
-      {showSection('all', 'for_you', 'listings') && isAuthenticated && data?.recommended_listings && data.recommended_listings.length > 0 && (
+      {hasListings && showSection('all', 'for_you', 'listings') && isAuthenticated && data?.recommended_listings && data.recommended_listings.length > 0 && (
         <ExploreSection
           title={t('recommended.title')}
           subtitle={t('recommended.subtitle')}
@@ -1242,7 +1245,7 @@ export default function ExplorePage() {
       )}
 
       {/* ─── Near You (Phase 1) ──────────────────────────────────────────── */}
-      {showSection('all', 'for_you') && isAuthenticated && data?.near_you_listings && data.near_you_listings.length > 0 && (
+      {hasListings && showSection('all', 'for_you') && isAuthenticated && data?.near_you_listings && data.near_you_listings.length > 0 && (
         <ExploreSection
           title={t('near_you.title')}
           subtitle={t('near_you.subtitle')}
@@ -1512,7 +1515,7 @@ export default function ExplorePage() {
       )}
 
       {/* ─── Organisations (Phase 2) ───────────────────────────────────── */}
-      {showSection('all') && hasFeature('volunteering') && data?.active_organisations && data.active_organisations.length > 0 && (
+      {showSection('all') && hasFeature('volunteering') && hasFeature('organisations') && data?.active_organisations && data.active_organisations.length > 0 && (
         <ExploreSection
           title={t('organisations.title')}
           subtitle={t('organisations.subtitle')}
@@ -1646,7 +1649,7 @@ export default function ExplorePage() {
             </Button>
           </div>
           <HorizontalScroll>
-            {recentlyViewed.map((item) => (
+            {recentlyViewed.filter(item => isNavigationPathEnabled(item.url, { hasFeature, hasModule }, tenantPath('/'))).map((item) => (
               <Link
                 key={`${item.type}-${item.id}`}
                 to={item.url}

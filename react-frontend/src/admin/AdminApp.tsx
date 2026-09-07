@@ -14,6 +14,7 @@
 
 import { Routes, Route } from 'react-router-dom';
 import { AdminRoute } from './AdminRoute';
+import { AdminModuleGate } from './AdminModuleGate';
 import { AdminLayout } from './AdminLayout';
 import { AdminRoutes } from './routes';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
@@ -23,8 +24,10 @@ export default function AdminApp() {
     <ErrorBoundary>
       <Routes>
         <Route element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
-            {AdminRoutes()}
+          <Route element={<AdminModuleGate />}>
+            <Route element={<AdminLayout />}>
+              {AdminRoutes()}
+            </Route>
           </Route>
         </Route>
       </Routes>

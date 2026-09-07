@@ -93,7 +93,7 @@ function ComboboxOption({
 export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const { isAuthenticated, user } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
 
@@ -156,10 +156,10 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         if (isCurrentRequest && response.success && response.data) {
           const all: SearchSuggestion[] = [];
           const d = response.data;
-          if (d.listings) all.push(...d.listings.map(s => ({ ...s, type: 'listing' as const })));
-          if (d.users) all.push(...d.users.map(s => ({ ...s, type: 'user' as const })));
-          if (d.events) all.push(...d.events.map(s => ({ ...s, type: 'event' as const })));
-          if (d.groups) all.push(...d.groups.map(s => ({ ...s, type: 'group' as const })));
+          if (hasModule('listings') && d.listings) all.push(...d.listings.map(s => ({ ...s, type: 'listing' as const })));
+          if (hasFeature('connections') && d.users) all.push(...d.users.map(s => ({ ...s, type: 'user' as const })));
+          if (hasFeature('events') && d.events) all.push(...d.events.map(s => ({ ...s, type: 'event' as const })));
+          if (hasFeature('groups') && d.groups) all.push(...d.groups.map(s => ({ ...s, type: 'group' as const })));
           setSelectedIndex(-1);
           setSuggestions(all.slice(0, 8));
         }
@@ -177,7 +177,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [queryIsSearchable, trimmedQuery]);
+  }, [queryIsSearchable, trimmedQuery, hasFeature, hasModule]);
 
   // ─── Recent searches helpers ───────────────────────────────────────────
   const saveRecent = useCallback((q: string) => {
@@ -199,22 +199,20 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const quickActions = useMemo(() => {
     const actions: { label: string; icon: typeof Search; action: () => void }[] = [];
     if (isAuthenticated) {
-      actions.push({ label: t('create.new_listing'), icon: ListTodo, action: () => navigate(tenantPath('/listings/create')) });
+      if (hasModule('listings')) actions.push({ label: t('create.new_listing'), icon: ListTodo, action: () => navigate(tenantPath('/listings/create')) });
       // Creation can be restricted to brokers/admins even with events enabled.
       if (hasFeature('events') && canCreateEvents(user)) {
         actions.push({ label: t('create.new_event'), icon: Calendar, action: () => navigate(tenantPath('/events/create')) });
       }
-      actions.push(
-        { label: t('user_menu.my_profile'), icon: UserCircle, action: () => navigate(tenantPath('/profile')) },
-        { label: t('user_menu.settings'), icon: Settings, action: () => navigate(tenantPath('/settings')) }
-      );
+      if (hasModule('profile')) actions.push({ label: t('user_menu.my_profile'), icon: UserCircle, action: () => navigate(tenantPath('/profile')) });
+      if (hasModule('settings')) actions.push({ label: t('user_menu.settings'), icon: Settings, action: () => navigate(tenantPath('/settings')) });
     }
     actions.push(
       { label: resolvedTheme === 'dark' ? t('user_menu.light_mode') : t('user_menu.dark_mode'), icon: resolvedTheme === 'dark' ? Sun : Moon, action: toggleTheme },
       { label: t('support.help_center'), icon: HelpCircle, action: () => navigate(tenantPath('/help')) }
     );
     return actions;
-  }, [isAuthenticated, user, t, navigate, tenantPath, hasFeature, resolvedTheme, toggleTheme]);
+  }, [isAuthenticated, user, t, navigate, tenantPath, hasFeature, hasModule, resolvedTheme, toggleTheme]);
 
   const isActionMode = query.startsWith('>');
   const filteredActions = useMemo(() => {
@@ -510,9 +508,9 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 <p className="mb-2 text-xs text-muted">{t('search.quick_links')}</p>
                 <div className="mb-4 flex flex-wrap gap-2">
                   {[
-                    { label: t('nav.listings'), path: tenantPath('/listings') },
+                    ...(hasModule('listings') ? [{ label: t('nav.listings'), path: tenantPath('/listings') }] : []),
                     ...(hasFeature('connections') ? [{ label: t('nav.members'), path: tenantPath('/members') }] : []),
-                    { label: t('nav.events'), path: tenantPath('/events') },
+                    ...(hasFeature('events') ? [{ label: t('nav.events'), path: tenantPath('/events') }] : []),
                     { label: t('support.help_center'), path: tenantPath('/help') },
                   ].map(link => (
                     <Button

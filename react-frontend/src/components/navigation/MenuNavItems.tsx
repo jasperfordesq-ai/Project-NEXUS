@@ -17,6 +17,7 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/compone
 import { DynamicIcon } from '@/components/ui/DynamicIcon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
+import { isNavigationPathEnabled } from './navigationRegistry';
 import type { ApiMenu, ApiMenuItem } from '@/types/menu';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,8 +33,10 @@ function isItemVisible(
   isAuthenticated: boolean,
   userRole: string | undefined,
   hasFeature: (f: string) => boolean,
+  pathEnabled: (url: string) => boolean,
 ): boolean {
   if (!item.is_active) return false;
+  if (item.url && !pathEnabled(item.url)) return false;
 
   const rules = item.visibility_rules;
   if (!rules) return true;
@@ -83,7 +86,8 @@ interface DesktopMenuItemsProps {
  * Items with children (type=dropdown) are rendered as HeroUI Dropdowns.
  */
 export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const pathEnabled = (url: string) => isNavigationPathEnabled(url, { hasFeature, hasModule }, tenantPath('/'));
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -102,7 +106,7 @@ export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
 
   // Filter visible items
   const visibleItems = allItems.filter((item) =>
-    isItemVisible(item, isAuthenticated, user?.role, (f) => hasFeature(f as never))
+    isItemVisible(item, isAuthenticated, user?.role, (f) => hasFeature(f as never), pathEnabled)
   );
 
   return (
@@ -114,7 +118,7 @@ export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
         // Dropdown type with children
         if ((item.type === 'dropdown' || hasChildren) && item.children?.length) {
           const visibleChildren = item.children.filter((child) =>
-            isItemVisible(child, isAuthenticated, user?.role, (f) => hasFeature(f as never))
+            isItemVisible(child, isAuthenticated, user?.role, (f) => hasFeature(f as never), pathEnabled)
           );
 
           if (visibleChildren.length === 0) return null;
@@ -219,13 +223,14 @@ interface MobileMenuItemsProps {
  * Dropdown items render their children directly (flat, no nesting on mobile).
  */
 export function MobileMenuItems({ menus }: MobileMenuItemsProps) {
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const pathEnabled = (url: string) => isNavigationPathEnabled(url, { hasFeature, hasModule }, tenantPath('/'));
   const { isAuthenticated, user } = useAuth();
 
   const allItems = menus.flatMap((menu) => menu.items ?? []);
 
   const renderItem = (item: ApiMenuItem) => {
-    if (!isItemVisible(item, isAuthenticated, user?.role, (f) => hasFeature(f as never))) {
+    if (!isItemVisible(item, isAuthenticated, user?.role, (f) => hasFeature(f as never), pathEnabled)) {
       return null;
     }
 
@@ -236,7 +241,7 @@ export function MobileMenuItems({ menus }: MobileMenuItemsProps) {
     // Dropdown items: render children directly on mobile (no nested dropdown)
     if ((item.type === 'dropdown' || (item.children && item.children.length > 0)) && item.children?.length) {
       const visibleChildren = item.children.filter((child) =>
-        isItemVisible(child, isAuthenticated, user?.role, (f) => hasFeature(f as never))
+        isItemVisible(child, isAuthenticated, user?.role, (f) => hasFeature(f as never), pathEnabled)
       );
       if (visibleChildren.length === 0) return null;
 

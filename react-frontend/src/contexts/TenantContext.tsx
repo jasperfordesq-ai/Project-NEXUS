@@ -604,15 +604,15 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
    * Check if feature is enabled
    */
   const hasFeature = useCallback((feature: keyof TenantFeatures): boolean => {
-    return features[feature] ?? false;
-  }, [features]);
+    return !state.isLoading && !state.error && !!state.tenant && (features[feature] ?? false);
+  }, [features, state.isLoading, state.error, state.tenant]);
 
   /**
    * Check if module is enabled
    */
   const hasModule = useCallback((module: keyof TenantModules): boolean => {
-    return modules[module] ?? false;
-  }, [modules]);
+    return !state.isLoading && !state.error && !!state.tenant && (modules[module] ?? false);
+  }, [modules, state.isLoading, state.error, state.tenant]);
 
   /**
    * Check if a group tab is enabled

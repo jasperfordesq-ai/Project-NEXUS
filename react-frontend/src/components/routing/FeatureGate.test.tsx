@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi } from 'vitest';
+import { useEffect } from 'react';
 import { render, screen } from '@/test/test-utils';
 import { FeatureGate } from './FeatureGate';
 import { useTenant } from '@/contexts/TenantContext';
@@ -83,7 +84,7 @@ describe('FeatureGate', () => {
     expect(screen.getByText('Feature unavailable')).toBeInTheDocument();
   });
 
-  it('renders children while loading (assumes enabled)', () => {
+  it('does not mount protected children or start effects while loading', () => {
     vi.mocked(useTenant).mockReturnValue({
       hasFeature: vi.fn(() => false),
       hasModule: vi.fn(() => false),
@@ -91,13 +92,30 @@ describe('FeatureGate', () => {
       tenantPath: vi.fn((p: string) => `/test${p}`),
     } as ReturnType<typeof useTenant>);
 
+    const effect = vi.fn();
+    function ProtectedContent() {
+      useEffect(effect, []);
+      return <div>Events Content</div>;
+    }
     render(
       <FeatureGate feature="events">
-        <div>Events Content</div>
+        <ProtectedContent />
       </FeatureGate>
     );
-    expect(screen.getByText('Events Content')).toBeInTheDocument();
+    expect(screen.queryByText('Events Content')).not.toBeInTheDocument();
+    expect(effect).not.toHaveBeenCalled();
   });
+
+  it.each([[true, false], [false, true], [false, false], [true, true]])(
+    'requires both flags: feature=%s module=%s', (featureEnabled, moduleEnabled) => {
+      vi.mocked(useTenant).mockReturnValue({
+        hasFeature: () => featureEnabled, hasModule: () => moduleEnabled,
+        isLoading: false, tenantPath: (p: string) => `/test${p}`,
+      } as ReturnType<typeof useTenant>);
+      render(<FeatureGate feature="direct_messaging" module="messages"><div>Protected content</div></FeatureGate>);
+      expect(screen.queryByText('Protected content') !== null).toBe(featureEnabled && moduleEnabled);
+    },
+  );
 
   it('renders children when neither feature nor module specified', () => {
     vi.mocked(useTenant).mockReturnValue({

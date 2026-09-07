@@ -142,7 +142,8 @@ export function ExchangeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const canMessage = hasModule('messages') && hasFeature('direct_messaging');
   const toast = useToast();
 
   const [exchange, setExchange] = useState<Exchange | null>(null);
@@ -511,7 +512,7 @@ export function ExchangeDetailPage() {
         </div>
 
         {/* Message Other Party */}
-        {isActive && otherParty && otherPartyId && (
+        {canMessage && isActive && otherParty && otherPartyId && (
           <div className="mb-6">
             <Button as={Link} to={tenantPath(`/messages/new/${otherPartyId}`)}
               variant="flat"

@@ -246,7 +246,7 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
 
         <DrawerBody>
           {/* Search Button */}
-          {onSearchOpen && (
+          {onSearchOpen && hasFeature('search') && (
             <div className="px-4 pt-3 pb-1 min-w-0">
               <Button
                 variant="flat"
@@ -267,6 +267,7 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
               <Button
                 variant="light"
                 onPress={() => navigateAndClose('/profile')}
+                isDisabled={!hasModule('profile')}
                 className="flex items-center gap-3 w-full text-start min-h-9 p-2 min-h-[56px] justify-start rounded-xl hover:bg-theme-hover"
               >
                 <Avatar
@@ -521,14 +522,14 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
             {isAuthenticated && (
               <div className="px-4 py-3 border-t border-[var(--border-default)]">
                 <div className="flex items-center gap-2">
-                  <Button
+                  {hasModule('settings') && <Button
                     variant="light"
                     onPress={() => navigateAndClose('/settings')}
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-3 min-h-[48px] rounded-xl text-base font-medium text-theme-muted hover:text-theme-primary hover:bg-theme-hover border border-[var(--border-default)] transition-all min-h-9"
                   >
                     <Settings className="w-5 h-5" aria-hidden="true" />
                     <span>{t('account.settings')}</span>
-                  </Button>
+                  </Button>}
                   <Button
                     variant="light"
                     onPress={handleLogout}

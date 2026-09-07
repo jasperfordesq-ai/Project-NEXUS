@@ -157,7 +157,8 @@ export function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const canMessage = hasModule('messages') && hasFeature('direct_messaging');
   const toast = useToast();
 
   const [listing, setListing] = useState<Listing | null>(null);
@@ -834,14 +835,14 @@ export function ListingDetailPage() {
                   {t('detail_request_exchange')}
                 </Button>
               )
-            ) : (
+            ) : canMessage ? (
               <Button as={Link} to={tenantPath(`/messages?to=${listing.user_id}&listing=${listing.id}`)}
                 className="w-full bg-linear-to-r from-accent to-accent-gradient-end text-white"
                 startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
               >
                 {t('detail_send_message')}
               </Button>
-            )}
+            ) : null}
             <Button
               variant="secondary"
               className={`w-full ${social.isLiked ? 'bg-rose-500/20 text-rose-500' : 'bg-theme-elevated text-theme-primary'}`}

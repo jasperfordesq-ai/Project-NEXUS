@@ -244,6 +244,10 @@ export function DashboardPage() {
   const hasFeedModule = useModule('feed');
   const hasListingsModule = useModule('listings');
   const hasProfileModule = useModule('profile');
+  const hasWalletModule = useModule('wallet');
+  const hasNotificationsModule = useModule('notifications');
+  const hasMessagesModule = useModule('messages');
+  const hasVolunteering = useFeature('volunteering');
 
   const [stats, setStats] = useState<DashboardStats>({
     walletBalance: null, recentListings: [], activeListingsCount: 0,
@@ -267,8 +271,8 @@ export function DashboardPage() {
       setSuggestedLoading(true); setGroupsLoading(true); setEventsLoading(true);
 
       const coreRequests = [
-        api.get<WalletBalance>('/v2/wallet/balance').catch(() => null),
-        api.get<Listing[]>(`/v2/listings?user_id=${user?.id}&per_page=5`).catch(() => null),
+        hasWalletModule ? api.get<WalletBalance>('/v2/wallet/balance').catch(() => null) : Promise.resolve(null),
+        hasListingsModule ? api.get<Listing[]>(`/v2/listings?user_id=${user?.id}&per_page=5`).catch(() => null) : Promise.resolve(null),
       ];
 
       const optionalRequests: Array<{ key: string; promise: Promise<unknown> }> = [];
@@ -343,7 +347,7 @@ export function DashboardPage() {
       setIsLoading(false); setActivityLoading(false); setSuggestedLoading(false);
       setGroupsLoading(false); setEventsLoading(false);
     }
-  }, [hasEvents, hasFeedModule, hasGamification, hasGroups, hasListingsModule, hasProfileModule, user?.id]);
+  }, [hasEvents, hasFeedModule, hasGamification, hasGroups, hasListingsModule, hasProfileModule, hasWalletModule, user?.id]);
 
   useEffect(() => { loadDashboardData(); }, [loadDashboardData]);
 
@@ -411,7 +415,7 @@ export function DashboardPage() {
                 <p className="mt-1 max-w-2xl text-sm leading-6 text-theme-muted sm:text-base">{t('community_activity', { community: branding.name })}</p>
               </div>
               <div className="flex shrink-0 gap-3">
-                <Button as={Link} to={tenantPath('/listings/create')} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto" startContent={<Plus className="w-4 h-4" aria-hidden="true" />}>{t('new_listing')}</Button>
+                {hasListingsModule && <Button as={Link} to={tenantPath('/listings/create')} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto" startContent={<Plus className="w-4 h-4" aria-hidden="true" />}>{t('new_listing')}</Button>}
               </div>
             </div>
           </GlassCard>
@@ -436,12 +440,12 @@ export function DashboardPage() {
                   <Button as={Link} to={tenantPath(CARING_COMMUNITY_ROUTE.href)} className="w-full justify-start bg-theme-elevated text-theme-primary" variant="tertiary" startContent={<Heart className="w-4 h-4" aria-hidden="true" />}>
                     {t('caring_community.actions.open_hub')}
                   </Button>
-                  <Button as={Link} to={tenantPath('/listings/create?type=request')} className="w-full justify-start bg-theme-elevated text-theme-primary" variant="tertiary" startContent={<ListTodo className="w-4 h-4" aria-hidden="true" />}>
+                  {hasListingsModule && <Button as={Link} to={tenantPath('/listings/create?type=request')} className="w-full justify-start bg-theme-elevated text-theme-primary" variant="tertiary" startContent={<ListTodo className="w-4 h-4" aria-hidden="true" />}>
                     {t('caring_community.actions.request_help')}
-                  </Button>
-                  <Button as={Link} to={tenantPath('/volunteering?tab=hours')} className="w-full justify-start bg-theme-elevated text-theme-primary" variant="tertiary" startContent={<Clock className="w-4 h-4" aria-hidden="true" />}>
+                  </Button>}
+                  {hasVolunteering && <Button as={Link} to={tenantPath('/volunteering?tab=hours')} className="w-full justify-start bg-theme-elevated text-theme-primary" variant="tertiary" startContent={<Clock className="w-4 h-4" aria-hidden="true" />}>
                     {t('caring_community.actions.log_hours')}
-                  </Button>
+                  </Button>}
                 </div>
               </div>
             </GlassCard>
@@ -450,16 +454,16 @@ export function DashboardPage() {
 
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-          <StatCard icon={<Wallet className="w-5 h-5" aria-hidden="true" />} label={t('stats.balance')} value={walletBalanceValue} color="indigo" href="/wallet" isLoading={isLoading} />
-          <StatCard icon={<ListTodo className="w-5 h-5" aria-hidden="true" />} label={t('stats.active_listings')} value={stats.activeListingsCount.toString()} color="emerald" href="/listings" isLoading={isLoading} />
-          <StatCard icon={<MessageSquare className="w-5 h-5" aria-hidden="true" />} label={t('stats.messages')} value={notificationCounts.messages.toString()} color="amber" href="/messages" isLoading={isLoading} />
+          {hasWalletModule && <StatCard icon={<Wallet className="w-5 h-5" aria-hidden="true" />} label={t('stats.balance')} value={walletBalanceValue} color="indigo" href="/wallet" isLoading={isLoading} />}
+          {hasListingsModule && <StatCard icon={<ListTodo className="w-5 h-5" aria-hidden="true" />} label={t('stats.active_listings')} value={stats.activeListingsCount.toString()} color="emerald" href="/listings" isLoading={isLoading} />}
+          {hasMessagesModule && <StatCard icon={<MessageSquare className="w-5 h-5" aria-hidden="true" />} label={t('stats.messages')} value={notificationCounts.messages.toString()} color="amber" href="/messages" isLoading={isLoading} />}
         </motion.div>
 
         {/* FLAT 2-COLUMN GRID — V2 layout (no sidebar) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
 
           {/* Recent Listings (span 2) */}
-          <motion.div variants={itemVariants} className="md:col-span-2">
+          {hasListingsModule && <motion.div variants={itemVariants} className="md:col-span-2">
             <GlassCard className="h-full p-5 sm:p-6">
               <SectionHeader icon={<ListTodo className="w-4 h-4 text-accent dark:text-accent" aria-hidden="true" />} iconColor="indigo" title={t('sections.recent_listings')} linkTo={tenantPath('/listings')} linkText={t('view_all')} linkAriaLabel={t('aria.view_all_listings')} />
               {isLoading ? (
@@ -493,7 +497,7 @@ export function DashboardPage() {
                 />
               )}
             </GlassCard>
-          </motion.div>
+          </motion.div>}
 
           {/* Recent Activity Feed (span 2) */}
           {hasFeedModule && (
@@ -752,13 +756,13 @@ export function DashboardPage() {
             <GlassCard className="p-5 sm:p-6">
               <SectionHeader icon={<Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" aria-hidden="true" />} iconColor="emerald" title={t('sections.quick_actions')} />
               <div className="grid grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))] gap-3">
-                <QuickActionLink to={tenantPath('/listings/create')} icon={<Plus aria-hidden="true" />} label={t('quick_actions.create_listing')} />
-                <QuickActionLink to={tenantPath('/messages')} icon={<MessageSquare aria-hidden="true" />} label={t('quick_actions.messages')} />
-                <QuickActionLink to={tenantPath('/wallet')} icon={<Wallet aria-hidden="true" />} label={t('quick_actions.view_wallet')} />
+                {hasListingsModule && <QuickActionLink to={tenantPath('/listings/create')} icon={<Plus aria-hidden="true" />} label={t('quick_actions.create_listing')} />}
+                {hasMessagesModule && <QuickActionLink to={tenantPath('/messages')} icon={<MessageSquare aria-hidden="true" />} label={t('quick_actions.messages')} />}
+                {hasWalletModule && <QuickActionLink to={tenantPath('/wallet')} icon={<Wallet aria-hidden="true" />} label={t('quick_actions.view_wallet')} />}
                 {hasConnections && <QuickActionLink to={tenantPath('/members')} icon={<Users aria-hidden="true" />} label={t('quick_actions.find_members')} />}
                 {hasEvents && (<QuickActionLink to={tenantPath('/events')} icon={<Calendar aria-hidden="true" />} label={t('quick_actions.browse_events')} />)}
                 {hasCaringCommunity && <QuickActionLink to={tenantPath(CARING_COMMUNITY_ROUTE.href)} icon={<Heart aria-hidden="true" />} label={t('quick_actions.caring_community')} />}
-                <QuickActionLink to={tenantPath('/notifications')} icon={<Bell aria-hidden="true" />} label={t('quick_actions.notifications')} />
+                {hasNotificationsModule && <QuickActionLink to={tenantPath('/notifications')} icon={<Bell aria-hidden="true" />} label={t('quick_actions.notifications')} />}
               </div>
             </GlassCard>
           </motion.div>

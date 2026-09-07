@@ -31,6 +31,7 @@ import { api } from '@/lib/api';
 import { formatRelativeTime, resolveAvatarUrl } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { getNotificationDisplayText } from '@/lib/notificationText';
+import { isNavigationPathEnabled } from '@/components/navigation/navigationRegistry';
 import type { Notification } from '@/types/api';
 import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -57,7 +58,7 @@ export function NotificationFlyout() {
   const { t } = useTranslation('notifications');
   const navigate = useNavigate();
   const { unreadCount, markAsRead, markAllAsRead } = useNotificationsOptional();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const isMobile = useMediaQuery('(max-width: 767px)');
 
   const [isOpen, setIsOpen] = useState(false);
@@ -118,8 +119,10 @@ export function NotificationFlyout() {
         n.id === notification.id ? { ...n, read_at: new Date().toISOString() } : n
       ));
     }
-    navigate(notification.link ? tenantPath(notification.link) : tenantPath('/notifications'));
-  }, [navigate, tenantPath, markAsRead]);
+    const link = notification.link && isNavigationPathEnabled(notification.link, { hasFeature, hasModule }, tenantPath(''))
+      ? notification.link : '/notifications';
+    navigate(tenantPath(link));
+  }, [navigate, tenantPath, markAsRead, hasFeature, hasModule]);
 
   const handleViewAll = useCallback(() => {
     setIsOpen(false);
