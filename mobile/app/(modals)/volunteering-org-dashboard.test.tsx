@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 let mockRouteParams: Record<string, string> = { id: '5' };
@@ -107,6 +107,28 @@ jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
+/*
+  The real ConfirmDialog renders inside a HeroUI portal that the test renderer cannot see
+  into, so it is stood in for by plain views. It still requires the second tap, which is
+  the whole point of the change being tested.
+*/
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, message, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Text>{message as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ui/Avatar', () => 'View');
 
@@ -132,6 +154,7 @@ jest.mock('@/lib/api/volunteering', () => ({
   verifyVolunteerHours: jest.fn().mockResolvedValue({ data: {} }),
 }));
 
+import { depositOrganisationWallet } from '@/lib/api/volunteering';
 import VolunteeringOrgDashboard from './volunteering-org-dashboard';
 
 function mockDashboardApis() {
@@ -222,5 +245,61 @@ describe('VolunteeringOrgDashboard', () => {
     fireEvent.press(getAllByText('Wallet')[0]);
     expect(getByText('Top-up')).toBeTruthy();
     expect(getByText('Deposit credits')).toBeTruthy();
+  });
+  it('🔴 does not move credits until the deposit is confirmed', async () => {
+    mockRouteParams = { id: '5', tab: 'wallet' };
+    const { getByPlaceholderText, getByTestId } = render(<VolunteeringOrgDashboard />);
+
+    fireEvent.changeText(getByPlaceholderText('Amount'), '5');
+    fireEvent.press(getByTestId('org-wallet-deposit'));
+
+    // Credits leave the member’s OWN wallet — one tap used to be enough.
+    expect(depositOrganisationWallet).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('org-wallet-confirm-deposit'));
+
+    await waitFor(() => expect(depositOrganisationWallet).toHaveBeenCalledTimes(1));
+  });
+
+  it('🔴 sends an idempotency key, and reuses it when a failed deposit is retried', async () => {
+    (depositOrganisationWallet as jest.Mock)
+      .mockRejectedValueOnce(new Error('timeout'))
+      .mockResolvedValueOnce({ data: {} });
+
+    mockRouteParams = { id: '5', tab: 'wallet' };
+    const { getByPlaceholderText, getByTestId, queryByTestId } = render(<VolunteeringOrgDashboard />);
+
+    fireEvent.changeText(getByPlaceholderText('Amount'), '5');
+    fireEvent.press(getByTestId('org-wallet-deposit'));
+    fireEvent.press(getByTestId('org-wallet-confirm-deposit'));
+    await waitFor(() => expect(depositOrganisationWallet).toHaveBeenCalledTimes(1));
+    // Wait for the failure to land: the dialog closes and the button re-enables only
+    // after the catch has run, so pressing before that would hit a disabled button.
+    await waitFor(() => expect(queryByTestId('org-wallet-confirm-deposit')).toBeNull());
+
+    fireEvent.press(getByTestId('org-wallet-deposit'));
+    fireEvent.press(getByTestId('org-wallet-confirm-deposit'));
+    await waitFor(() => expect(depositOrganisationWallet).toHaveBeenCalledTimes(2));
+
+    const first = (depositOrganisationWallet as jest.Mock).mock.calls[0];
+    const second = (depositOrganisationWallet as jest.Mock).mock.calls[1];
+    expect(first[3]).toEqual(expect.any(String));
+    expect(first[3]).not.toEqual('');
+    // The SAME key both times: the server collapses the retry into one movement of
+    // credits instead of taking them twice.
+    expect(second[3]).toBe(first[3]);
+  });
+
+  it('🔴 accepts a comma decimal, which the amount field used to reject outright', async () => {
+    mockRouteParams = { id: '5', tab: 'wallet' };
+    const { getByPlaceholderText, getByTestId } = render(<VolunteeringOrgDashboard />);
+
+    fireEvent.changeText(getByPlaceholderText('Amount'), '1,5');
+    fireEvent.press(getByTestId('org-wallet-deposit'));
+    fireEvent.press(getByTestId('org-wallet-confirm-deposit'));
+
+    await waitFor(() =>
+      expect(depositOrganisationWallet).toHaveBeenCalledWith(5, 1.5, undefined, expect.any(String)),
+    );
   });
 });

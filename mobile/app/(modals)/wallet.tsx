@@ -40,6 +40,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { getMember } from '@/lib/api/members';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -582,12 +583,11 @@ function WalletModalInner() {
 }
 
 /**
- * One id per transfer the member confirms. Random rather than derived, so two transfers
- * that happen to look identical are never mistaken for one another.
+ * One id per transfer the member confirms. Now shared with the organisation wallet
+ * deposit, which had no key at all until 2026-09-07 — see `lib/utils/idempotencyKey.ts`.
  */
 function walletMutationKey(): string {
-  if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
-  return `mobile-wallet-transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return mutationIdempotencyKey('mobile-wallet-transfer');
 }
 
 function WalletActionPanel({

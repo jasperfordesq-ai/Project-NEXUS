@@ -439,7 +439,11 @@
       "transactions": "Idirbhearta",
       "empty": "Níl aon idirbheart sparáin ann fós.",
       "transactionFallback": "Idirbheart sparáin",
-      "autoPayAlways": "Cuirtear uaireanta ceadaithe chun sochair do shaorálaithe i gcónaí agus gearrtar ar an sparán seo."
+      "autoPayAlways": "Cuirtear uaireanta ceadaithe chun sochair do shaorálaithe i gcónaí agus gearrtar ar an sparán seo.",
+      "confirmTitle": "Aistrigh creidmheasanna chuig an eagraíocht seo?",
+      "confirmMessage": "Fágfaidh {{amount}} uair an chloig do sparán féin agus rachaidh siad chuig {{organisation}}. Ní féidir é seo a chur ar ceal san aip.",
+      "depositDoneTitle": "Creidmheasanna aistrithe",
+      "depositDoneMessage": "Tá {{amount}} uair an chloig i sparán {{organisation}} anois."
     },
     "settings": {
       "heading": "Socruithe na heagraíochta",

@@ -301,6 +301,7 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // --- Tests ---
 
+import { logVolunteerHours } from '@/lib/api/volunteering';
 import VolunteeringScreen from './volunteering';
 import { useAppToast } from '@/components/ui/AppToast';
 
@@ -672,6 +673,53 @@ describe('VolunteeringScreen', () => {
 
     expect(getByText('Green Spaces')).toBeTruthy();
     expect(getByText('Log your hours.')).toBeTruthy();
+  });
+
+  it('🔴 logs a comma decimal as the number the member meant', async () => {
+    // "1,5" is what a German, French, Spanish, Italian or Portuguese keypad produces.
+    // `Number("1,5")` is NaN, so the form answered "Enter hours." for input the member
+    // could see was valid, and the journey simply could not be completed (E/F-7).
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const responses = [
+        {
+          data: {
+            data: [{
+              id: 21,
+              status: 'approved',
+              message: null,
+              opportunity: { id: 10, title: 'Garden Helper' },
+              organization: { id: 5, name: 'Green Spaces', logo_url: null },
+              created_at: '2026-05-01T00:00:00Z',
+            }],
+          },
+          isLoading: false,
+          error: null,
+          refresh: jest.fn(),
+        },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      const response = responses[apiCall % responses.length];
+      apiCall += 1;
+      return response;
+    });
+
+    const { getByPlaceholderText, getByText } = render(<VolunteeringScreen />);
+
+    fireEvent.press(getByText('My Hours'));
+    fireEvent.changeText(getByPlaceholderText('Hours'), '1,5');
+    fireEvent.press(getByText('Submit hours'));
+
+    await waitFor(() =>
+      expect(logVolunteerHours).toHaveBeenCalledWith(expect.objectContaining({ hours: 1.5 })),
+    );
   });
 
   it('renders confirmed volunteer shifts and cancel actions', () => {

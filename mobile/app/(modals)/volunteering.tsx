@@ -85,6 +85,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SearchInput from '@/components/ui/SearchInput';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
@@ -1241,7 +1242,8 @@ function ExpensesPanel({
   }, [organisations, selectedOrgId]);
 
   async function handleSubmit() {
-    const parsedAmount = Number(amount);
+    // The shared parser: "1,5" from a German or French keypad used to be rejected outright (E/F-7).
+    const parsedAmount = parseDecimalInput(amount) ?? Number.NaN;
     if (!selectedOrgId || !Number.isFinite(parsedAmount) || parsedAmount <= 0 || description.trim().length === 0) {
       showToast({ title: t('common:errors.alertTitle'), description: t('expenses.validation'), variant: 'warning' });
       return;
@@ -1438,7 +1440,8 @@ function DonationsPanel({
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit() {
-    const parsedAmount = Number(amount);
+    // The shared parser: "1,5" from a German or French keypad used to be rejected outright (E/F-7).
+    const parsedAmount = parseDecimalInput(amount) ?? Number.NaN;
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       showToast({ title: t('common:errors.alertTitle'), description: t('donations.validation'), variant: 'warning' });
       return;
@@ -1640,7 +1643,8 @@ function HoursPanel({
   }, [organisations, selectedOrgId]);
 
   async function handleLogHours() {
-    const parsedHours = Number(hours);
+    // The shared parser: "1,5" from a German or French keypad used to be rejected outright (E/F-7).
+    const parsedHours = parseDecimalInput(hours) ?? Number.NaN;
     if (!selectedOrgId || !Number.isFinite(parsedHours) || parsedHours <= 0) {
       showToast({ title: t('common:errors.alertTitle'), description: t('hoursRequired'), variant: 'warning' });
       return;

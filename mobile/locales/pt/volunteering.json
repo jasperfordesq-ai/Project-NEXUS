@@ -437,7 +437,11 @@
       "transactions": "Transactions",
       "empty": "Ainda não há transações na carteira.",
       "transactionFallback": "Transação da carteira",
-      "autoPayAlways": "As horas aprovadas são sempre creditadas aos voluntários e debitadas desta carteira."
+      "autoPayAlways": "As horas aprovadas são sempre creditadas aos voluntários e debitadas desta carteira.",
+      "confirmTitle": "Transferir créditos para esta organização?",
+      "confirmMessage": "{{amount}} horas vão sair da sua própria carteira e passar para {{organisation}}. Não é possível anular esta operação na aplicação.",
+      "depositDoneTitle": "Créditos transferidos",
+      "depositDoneMessage": "{{amount}} horas estão agora na carteira de {{organisation}}."
     },
     "settings": {
       "heading": "Definições da organização",

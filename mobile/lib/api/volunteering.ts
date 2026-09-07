@@ -545,11 +545,31 @@ export function getOrganisationWalletTransactions(id: number): Promise<Organisat
   });
 }
 
-export function depositOrganisationWallet(id: number, amount: number, note?: string): Promise<{ data: { message: string; new_balance: number } }> {
-  return api.post<{ data: { message: string; new_balance: number } }>(`${API_V2}/volunteering/organisations/${id}/wallet/deposit`, {
-    amount,
-    ...(note ? { note } : {}),
-  });
+/**
+ * Move time credits from the signed-in member's OWN wallet into the organisation's.
+ *
+ * 🔴 `idempotencyKey` is not optional in spirit. `VolunteerController::walletDeposit` has
+ * read an `Idempotency-Key` header (or an `idempotency_key` body field) since it was
+ * written, and the app sent neither — so a deposit that timed out and was tapped again
+ * took the credits twice. Pass a key generated once per intended deposit, not per tap.
+ * It stays optional in the signature only so an existing caller cannot silently break.
+ */
+export function depositOrganisationWallet(
+  id: number,
+  amount: number,
+  note?: string,
+  idempotencyKey?: string,
+): Promise<{ data: { message: string; new_balance: number } }> {
+  const options = idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined;
+  return api.post<{ data: { message: string; new_balance: number } }>(
+    `${API_V2}/volunteering/organisations/${id}/wallet/deposit`,
+    {
+      amount,
+      ...(note ? { note } : {}),
+      ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}),
+    },
+    options,
+  );
 }
 
 export function updateOrganisation(id: number, payload: {

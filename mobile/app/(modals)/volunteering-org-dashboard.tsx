@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -42,7 +42,10 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useParamTab } from '@/lib/hooks/useParamTab';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -363,12 +366,14 @@ function VolunteersPanel({ volunteers, loading }: { volunteers: OrganisationVolu
 
 function WalletPanel({
   orgId,
+  orgName,
   stats,
   transactions,
   loading,
   onRefresh,
 }: {
   orgId: number;
+  orgName: string;
   stats: VolunteerOrganisationStats | null;
   transactions: OrganisationWalletTransaction[];
   loading: boolean;
@@ -377,29 +382,82 @@ function WalletPanel({
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  /*
+    🔴 One id per deposit the member confirms, NOT per button press.
 
-  async function deposit() {
-    const parsed = Number(amount);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      showToast({ title: t('common:errors.alertTitle'), description: t('org.wallet.validation'), variant: 'warning' });
-      return;
+    This endpoint has read an `Idempotency-Key` since it was written
+    (`VolunteerController::walletDeposit`), and the app sent none. A deposit that timed out
+    — the app's own mutation timeout, or a dropped mobile signal — left the admin with no
+    way to know whether it had gone through, and tapping Deposit again took the credits a
+    SECOND time out of their personal wallet. Found by the 2026-09-07 audit (E/F-1).
+
+    The key is thrown away once the deposit is confirmed saved, and whenever the amount or
+    note changes, because that is a different deposit and must go through on its own.
+  */
+  const depositKeyRef = useRef<string | null>(null);
+  const depositIntentRef = useRef<string>('');
+
+  async function runDeposit(parsed: number, trimmedNote: string) {
+    const intent = JSON.stringify([orgId, parsed, trimmedNote]);
+    if (depositIntentRef.current !== intent) {
+      depositIntentRef.current = intent;
+      depositKeyRef.current = null;
     }
+    depositKeyRef.current ??= mutationIdempotencyKey('mobile-org-wallet-deposit');
+
     setSaving(true);
     try {
-      await depositOrganisationWallet(orgId, parsed, note.trim() || undefined);
+      await depositOrganisationWallet(
+        orgId,
+        parsed,
+        trimmedNote || undefined,
+        depositKeyRef.current,
+      );
+      depositKeyRef.current = null;
+      depositIntentRef.current = '';
       setAmount('');
       setNote('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showToast({
+        title: t('org.wallet.depositDoneTitle'),
+        description: t('org.wallet.depositDoneMessage', {
+          amount: formatDecimal(parsed, 1),
+          organisation: orgName,
+        }),
+        variant: 'success',
+      });
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.wallet.depositError')), variant: 'danger' });
     } finally {
       setSaving(false);
     }
+  }
+
+  function deposit() {
+    // The shared parser: a German or French keypad produces "1,5", which `Number()`
+    // rejected outright, so the journey simply could not be completed (E/F-7).
+    const parsed = parseDecimalInput(amount);
+    if (parsed === null || !Number.isFinite(parsed) || parsed <= 0) {
+      showToast({ title: t('common:errors.alertTitle'), description: t('org.wallet.validation'), variant: 'warning' });
+      return;
+    }
+    const trimmedNote = note.trim();
+    // 🔴 Credits leave the member's OWN wallet. One tap used to be enough (E/F-2).
+    confirm({
+      title: t('org.wallet.confirmTitle'),
+      message: t('org.wallet.confirmMessage', { amount: formatDecimal(parsed, 1), organisation: orgName }),
+      confirmLabel: t('org.wallet.deposit'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'primary',
+      confirmTestID: 'org-wallet-confirm-deposit',
+      onConfirm: () => runDeposit(parsed, trimmedNote),
+    });
   }
 
   return (
@@ -449,7 +507,7 @@ function WalletPanel({
             placeholderTextColor={theme.textMuted}
             leftIcon={<Ionicons name="document-text-outline" size={18} color={theme.textMuted} />}
           />
-          <HeroButton isDisabled={saving} onPress={() => void deposit()}>
+          <HeroButton isDisabled={saving} onPress={deposit} testID="org-wallet-deposit">
             {saving ? <Spinner size="sm" /> : <AccentIcon name="wallet-outline" size={16} />}
             <HeroButton.Label>{t('org.wallet.deposit')}</HeroButton.Label>
           </HeroButton>
@@ -478,6 +536,7 @@ function WalletPanel({
           </HeroCard.Body>
         </HeroCard>
       ))}
+      {confirmDialog}
     </View>
   );
 }
@@ -633,7 +692,7 @@ function VolunteeringOrgDashboardInner() {
         {tab === 'applications' ? <ApplicationsPanel applications={applications} loading={applicationsApi.isLoading} onRefresh={refreshAll} /> : null}
         {tab === 'hours' ? <HoursPanel entries={pendingHours} loading={hoursApi.isLoading} onRefresh={refreshAll} /> : null}
         {tab === 'volunteers' ? <VolunteersPanel volunteers={volunteers} loading={volunteersApi.isLoading} /> : null}
-        {tab === 'wallet' ? <WalletPanel orgId={orgId} stats={stats} transactions={transactions} loading={walletApi.isLoading} onRefresh={refreshAll} /> : null}
+        {tab === 'wallet' ? <WalletPanel orgId={orgId} orgName={org?.name ?? stats?.org_name ?? ''} stats={stats} transactions={transactions} loading={walletApi.isLoading} onRefresh={refreshAll} /> : null}
         {tab === 'settings' ? <SettingsPanel org={org} onRefresh={refreshAll} /> : null}
       </ScrollView>
     </SafeAreaView>

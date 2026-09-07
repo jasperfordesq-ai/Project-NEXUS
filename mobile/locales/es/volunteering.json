@@ -437,7 +437,11 @@
       "transactions": "Transactions",
       "empty": "Todavía no hay transacciones en la cartera.",
       "transactionFallback": "Transacción de cartera",
-      "autoPayAlways": "Las horas aprobadas siempre se abonan a los voluntarios y se cargan a esta cartera."
+      "autoPayAlways": "Las horas aprobadas siempre se abonan a los voluntarios y se cargan a esta cartera.",
+      "confirmTitle": "¿Transferir créditos a esta organización?",
+      "confirmMessage": "{{amount}} horas saldrán de tu propio monedero y pasarán a {{organisation}}. No se puede deshacer desde la aplicación.",
+      "depositDoneTitle": "Créditos transferidos",
+      "depositDoneMessage": "{{amount}} horas están ahora en el monedero de {{organisation}}."
     },
     "settings": {
       "heading": "Ajustes de la organización",

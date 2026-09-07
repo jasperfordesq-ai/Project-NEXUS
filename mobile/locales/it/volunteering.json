@@ -437,7 +437,11 @@
       "transactions": "Transactions",
       "empty": "Ancora nessuna transazione del portafoglio.",
       "transactionFallback": "Transazione del portafoglio",
-      "autoPayAlways": "Le ore approvate vengono sempre accreditate ai volontari e addebitate a questo portafoglio."
+      "autoPayAlways": "Le ore approvate vengono sempre accreditate ai volontari e addebitate a questo portafoglio.",
+      "confirmTitle": "Trasferire crediti a questa organizzazione?",
+      "confirmMessage": "{{amount}} ore usciranno dal tuo portafoglio e andranno a {{organisation}}. Non è possibile annullare l’operazione dall’app.",
+      "depositDoneTitle": "Crediti trasferiti",
+      "depositDoneMessage": "{{amount}} ore sono ora nel portafoglio di {{organisation}}."
     },
     "settings": {
       "heading": "Impostazioni dell’organizzazione",

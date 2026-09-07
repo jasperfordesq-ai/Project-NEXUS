@@ -436,7 +436,11 @@
       "transactions": "Transactions",
       "empty": "Noch keine Wallet-Transaktionen.",
       "transactionFallback": "Wallet-Transaktion",
-      "autoPayAlways": "Genehmigte Stunden werden Freiwilligen immer gutgeschrieben und diesem Wallet belastet."
+      "autoPayAlways": "Genehmigte Stunden werden Freiwilligen immer gutgeschrieben und diesem Wallet belastet.",
+      "confirmTitle": "Guthaben an diese Organisation überweisen?",
+      "confirmMessage": "{{amount}} Stunden werden von deinem eigenen Guthaben abgebucht und an {{organisation}} überwiesen. Das lässt sich in der App nicht rückgängig machen.",
+      "depositDoneTitle": "Guthaben überwiesen",
+      "depositDoneMessage": "{{amount}} Stunden sind jetzt im Guthaben von {{organisation}}."
     },
     "settings": {
       "heading": "Organisationseinstellungen",

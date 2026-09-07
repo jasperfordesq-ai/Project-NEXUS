@@ -25,6 +25,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type JobType = CreateJobPayload['type'];
@@ -37,11 +38,18 @@ const commitments: Commitment[] = ['flexible', 'part_time', 'full_time', 'one_of
 const salaryTypes: SalaryType[] = ['hourly', 'monthly', 'annual'];
 const companySizes: CompanySize[] = ['1-10', '11-50', '51-200', '201-500', '500+'];
 
+/**
+ * A number the employer typed, or null when they left the field empty.
+ *
+ * 🔴 This used to STRIP the comma before parsing, so an employer offering "1,5" time
+ * credits published a vacancy offering **15**, and a salary of "50,5" was posted as 505.
+ * Nothing warned them; the number was simply wrong. Half the app's locales write decimals
+ * with a comma and Android's decimal keypad emits the device locale's mark. Found by the
+ * 2026-09-07 audit (E/F-3). `parseDecimalInput` is the shared parser that gets this right,
+ * including the "1.000,50" thousands-separator case.
+ */
 function optionalNumber(value: string): number | null {
-  const normalized = value.replace(/[,\s]/g, '').trim();
-  if (!normalized) return null;
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
+  return parseDecimalInput(value);
 }
 
 function NewJobRoute() {

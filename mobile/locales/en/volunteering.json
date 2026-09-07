@@ -436,7 +436,11 @@
       "transactions": "Transactions",
       "empty": "No wallet transactions yet.",
       "transactionFallback": "Wallet transaction",
-      "autoPayAlways": "Approved hours are always credited to volunteers and charged to this wallet."
+      "autoPayAlways": "Approved hours are always credited to volunteers and charged to this wallet.",
+      "confirmTitle": "Move credits to this organisation?",
+      "confirmMessage": "{{amount}} hours will leave your own wallet and go to {{organisation}}. This cannot be undone from the app.",
+      "depositDoneTitle": "Credits moved",
+      "depositDoneMessage": "{{amount}} hours are now in the {{organisation}} wallet."
     },
     "settings": {
       "heading": "Organisation settings",

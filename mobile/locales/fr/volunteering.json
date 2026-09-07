@@ -437,7 +437,11 @@
       "transactions": "Transactions",
       "empty": "Aucune transaction de portefeuille pour le moment.",
       "transactionFallback": "Transaction du portefeuille",
-      "autoPayAlways": "Les heures approuvées sont toujours créditées aux bénévoles et débitées de ce portefeuille."
+      "autoPayAlways": "Les heures approuvées sont toujours créditées aux bénévoles et débitées de ce portefeuille.",
+      "confirmTitle": "Transférer des crédits à cette organisation ?",
+      "confirmMessage": "{{amount}} heures seront retirées de votre propre portefeuille et versées à {{organisation}}. Cette opération est irréversible depuis l’application.",
+      "depositDoneTitle": "Crédits transférés",
+      "depositDoneMessage": "{{amount}} heures se trouvent maintenant dans le portefeuille de {{organisation}}."
     },
     "settings": {
       "heading": "Réglages de l’organisation",

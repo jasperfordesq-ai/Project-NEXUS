@@ -405,4 +405,30 @@ describe('NewJobRoute', () => {
       expect((updateJob as jest.Mock).mock.calls[0]?.[1]).not.toHaveProperty('status');
     });
   });
+  it('🔴 no longer multiplies a comma decimal by ten', async () => {
+    // An employer offering 1,5 time credits published a vacancy offering 15, and a
+    // salary of 50,5 was posted as 505. Half the app’s locales write decimals with a
+    // comma and Android’s keypad emits the device locale’s mark.
+    const { getAllByPlaceholderText, getByPlaceholderText, getByText } = render(<NewJobRoute />);
+
+    fireEvent.changeText(getByPlaceholderText('Role title'), 'Community coordinator');
+    fireEvent.changeText(getByPlaceholderText('Describe the role, expectations, and next steps.'), 'Coordinate local sessions and support volunteers.');
+    fireEvent.changeText(getByPlaceholderText('Optional credits'), '1,5');
+    fireEvent.changeText(getByPlaceholderText('Optional hours'), '7,5');
+    fireEvent.press(getByText('Paid'));
+    fireEvent.changeText(getByPlaceholderText('name@example.org'), 'jobs@example.org');
+    const salaryInputs = getAllByPlaceholderText('Optional amount');
+    fireEvent.changeText(salaryInputs[0], '1.500,50');
+    fireEvent.changeText(salaryInputs[1], '2000');
+    fireEvent.press(getByText('Create job'));
+
+    await waitFor(() => {
+      expect(mockCreateJob).toHaveBeenCalledWith(expect.objectContaining({
+        time_credits: 1.5,
+        hours_per_week: 7.5,
+        salary_min: 1500.5,
+        salary_max: 2000,
+      }));
+    });
+  });
 });
