@@ -258,10 +258,38 @@ the gate now **asserts that bound still exists** — remove `MAX_DEEP_LINK_LENGT
 - Every release-relevant change updates `CHANGELOG.md`, refreshes the bundled changelog, and
   updates the affected ledger row in the same commit.
 
+## 🔴 Every screen is gated by the community's switches (2026-09-07)
+
+Until 2026-09-07 the app hid MENU entries for modules a community had turned off and gated
+five authoring screens; every other screen opened from a deep link, a push notification, a
+shared URL or another screen regardless. React gates ~150 routes.
+
+- `lib/navigation/routeRequirements.ts` is the one table: screen name → required feature
+  and/or module. `UNGATED_ROUTES` lists, with a reason, every screen that deliberately has
+  none. **A new screen must be added to one or the other**, or `app/routeGating.test.ts`
+  fails.
+- `components/withRouteGate.tsx` wraps each screen's default export
+  (`export default withRouteGate(Screen, 'event-detail')`) and shows "Not available here"
+  with a way back when the switch is off. It reads the tenant context directly, not
+  `useTenant()`, so the ~130 screen tests that mock the hook without `hasFeature` are
+  untouched, and it treats an unknown configuration (cold start, offline, no provider) as
+  allowed — refusing then would make a slow network look like "every module is off".
+- `app/(tabs)/_layout.tsx` hides a tab whose module is off (Messages, Listings…). Home is
+  never hidden or refused: it is the anchor every redirect lands on, and gates its own
+  feed section instead.
+- The deep-link store consults the same table first, and
+  `lib/navigation/routeRequirements.test.ts` proves the two agree for every gated route.
+
+This is a client-side courtesy, not authorisation; the API still does not enforce `courses`
+or `podcasts` (see above). The full audit that found this is in
+[`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md); its open items are in the
+status document's backlog.
+
 ## Supporting guides
 
 | Need | Source |
 | --- | --- |
+| The 2026-09-07 audit — what was read, fixed and left open | [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md) |
 | Two-account emulator/device procedure | [`MOBILE_TEST_HARNESS.md`](MOBILE_TEST_HARNESS.md) |
 | Automated suites and gates | [`TESTING.md`](TESTING.md) |
 | Build, OTA and rollback mechanics | [`DISTRIBUTION.md`](DISTRIBUTION.md) |

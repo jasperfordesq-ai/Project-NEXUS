@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Current Mobile Production Status
 
-Last reviewed: 2026-09-06
+Last reviewed: 2026-09-07
 
 Status: **Maintained — the only document that states the mobile app's current score**
 
@@ -102,6 +102,32 @@ Most tests still run in Node against mocks. The ledger deliberately gives journe
 only when a device walk verifies the effect, and only gives full credit when an automated
 guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
 size of the test suite or the fact that the app has reached production distribution.
+
+## Source audit — 2026-09-07
+
+A second full pass the day after the emulator audit, source-only, recorded in
+[`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md). Three areas were read in
+full by independent auditors (tabs and auth; messaging, wallet, exchanges and account;
+events and groups — about 60 screens and 40 supporting files); the marketplace auditor was
+cut off by the session usage limit before writing anything, and the volunteering/jobs and
+gamification clusters were not read. Forty-eight member-visible defects were fixed, each
+with a Jest test observed failing first; the full list is in `CHANGELOG.md` under
+`[Unreleased]`.
+
+The one structural finding: **the app gated its menus, not its screens.** React wraps ~150
+routes in a feature gate; the native app wrapped five. Every screen now goes through
+`withRouteGate`, driven by one table in `lib/navigation/routeRequirements.ts` that the tab
+bar and the deep-link store read too, and a test fails when a new screen has no recorded
+decision. The findings that mattered most for money: a time-credit transfer went through on
+one tap with a recipient name taken from the URL; a donation retry after a timeout donated
+twice (server now replays on a key); confirming exchange hours pre-filled the wrong figure
+and could send an agreed exchange to dispute; completing a group exchange moved credits on
+one tap. For trust: the GDPR data export never delivered a file; a private-group join
+request showed "Joined" and silently reverted; a 403 during offline check-in sync destroyed
+never-synced check-ins.
+
+This is source evidence only. Nothing was walked on a device, so the banked M1 score is
+unchanged. The open findings are listed in the backlog below.
 
 ## Emulator and source audit — 2026-09-05/06
 
@@ -291,6 +317,25 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    Android Hermes startup bundle is 14.87 MB, leaving 1.49 MB below its 16.35 MB blocking
    ceiling. This is an internal JavaScript regression budget, not an App Store download-size
    limit; no Play artefact was built or uploaded while the release is under review.
+8. **Finish the 2026-09-07 audit.** Forty-eight findings were fixed in source; these were
+   not, and four whole module clusters were never read (see
+   [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md)):
+   - Group discussions cannot be opened or replied to from the app (the API has the routes;
+     the client and screen do not). Group admins cannot approve join requests or manage
+     members. Every group-detail tab shows its first page only.
+   - Message attachments upload with no progress and no cancel (`uploadWithProgress` exists
+     and is unused there).
+   - No in-app way to resend the verification e-mail; a closed-registration community still
+     advertises "Create account"; registration validation arrives as one sentence, never on
+     the field it belongs to (the server sends only the first error).
+   - A failed signed-in community switch signs the member out first; broken images render as
+     blank blocks (no `onError` anywhere); the attendance, tickets, communications, history
+     and blueprint screens still show "could not load" with Retry on a 403.
+   - **Unread:** marketplace (Stripe — the auditor was cut off), volunteering/jobs/
+     organisations, the gamification cluster (goals, polls, reviews, endorsements, blog,
+     resources, ideation, clubs, venues). Courses, podcasts and federation were last read on
+     2026-09-06. Run one auditor at a time; two concurrent exhausted the session limit.
+   - Nothing from this audit has been walked on a device.
 
 ## The blockers, in the order they hurt
 
