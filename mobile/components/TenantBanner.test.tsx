@@ -11,6 +11,11 @@
  * unreadable 30dp smear at the top of the feed, which is where the audit found it on the
  * emulator (2026-09-05). The box is now sized from the image's own aspect ratio, capped so a
  * banner-shaped asset cannot push the community's name off the row.
+ *
+ * 🔴 Owner instruction, 2026-09-07: the strip is the LOGO and nothing else. The name and
+ * tagline that used to sit beside it are gone and the logo is twice the height, so the
+ * expected sizes below are 60dp with a 260dp cap, and the community's name now reaches a
+ * screen reader only through the logo's accessibility label.
  */
 
 import React from 'react';
@@ -89,8 +94,8 @@ describe('TenantBanner', () => {
     const { getByLabelText } = render(<TenantBanner />);
     const logo = getByLabelText('Hour Timebank logo');
 
-    // 600 x 100 at a 30dp height wants 180dp, which the 120dp cap trims to 120.
-    await waitFor(() => expect(logo.props.style).toMatchObject({ width: 120, height: 30 }));
+    // 600 x 100 at a 60dp height wants 360dp, which the 260dp cap trims to 260.
+    await waitFor(() => expect(logo.props.style).toMatchObject({ width: 260, height: 60 }));
   });
 
   it('leaves a square emblem square', async () => {
@@ -99,7 +104,7 @@ describe('TenantBanner', () => {
     const { getByLabelText } = render(<TenantBanner />);
 
     await waitFor(() =>
-      expect(getByLabelText('Hour Timebank logo').props.style).toMatchObject({ width: 30, height: 30 }));
+      expect(getByLabelText('Hour Timebank logo').props.style).toMatchObject({ width: 60, height: 60 }));
   });
 
   it('never draws a tall logo narrower than the row is high', async () => {
@@ -107,9 +112,9 @@ describe('TenantBanner', () => {
 
     const { getByLabelText } = render(<TenantBanner />);
 
-    // 40 x 400 wants 3dp; the floor keeps it at the row height so it stays visible.
+    // 40 x 400 wants 6dp; the floor keeps it at the row height so it stays visible.
     await waitFor(() =>
-      expect(getByLabelText('Hour Timebank logo').props.style).toMatchObject({ width: 30 }));
+      expect(getByLabelText('Hour Timebank logo').props.style).toMatchObject({ width: 60 }));
   });
 
   it('falls back to the row height when the image cannot be measured', async () => {
@@ -118,29 +123,43 @@ describe('TenantBanner', () => {
     const { getByLabelText } = render(<TenantBanner />);
 
     await waitFor(() =>
-      expect(getByLabelText('Hour Timebank logo').props.style).toMatchObject({ width: 30, height: 30 }));
+      expect(getByLabelText('Hour Timebank logo').props.style).toMatchObject({ width: 60, height: 60 }));
   });
 
   it('shows the community initial when it has no logo at all', () => {
     mockTenant.mockReturnValue(tenantWith({ branding: { logo_url: null, primary_color: '#006FEE' } }));
 
-    const { getByText, queryByLabelText } = render(<TenantBanner />);
+    const { getByText, getByTestId, queryByTestId } = render(<TenantBanner />);
 
     expect(getByText('H')).toBeTruthy();
-    expect(queryByLabelText('Hour Timebank logo')).toBeNull();
+    expect(queryByTestId('tenant-banner-logo')).toBeNull();
+    // Still labelled: with the community's name no longer on screen, this square is the
+    // only thing a screen reader has to identify the community (2026-09-07).
+    expect(getByTestId('tenant-banner-initial').props.accessibilityLabel).toBe('Hour Timebank logo');
   });
 
-  it('renders the community name and tagline, and drops the tagline when there is none', () => {
+  /**
+   * 🔴 Owner instruction, 2026-09-07. The strip showed the logo, the community name AND the
+   * tagline — three ways of saying who you are, in a band across the top of the feed. Only
+   * the brand mark stays; the name and tagline are on the More screen, the community picker
+   * and the sign-in screen.
+   */
+  it('shows the logo alone — no community name, no tagline', () => {
     withLogoSize(SQUARE_LOGO);
-    const { getByText, queryByText, rerender } = render(<TenantBanner />);
 
-    expect(getByText('Hour Timebank')).toBeTruthy();
-    expect(getByText('Local development tenant')).toBeTruthy();
+    const { getByLabelText, queryByText } = render(<TenantBanner />);
 
-    mockTenant.mockReturnValue(tenantWith({ tagline: null }));
-    rerender(<TenantBanner />);
-
+    expect(getByLabelText('Hour Timebank logo')).toBeTruthy();
+    expect(queryByText('Hour Timebank')).toBeNull();
     expect(queryByText('Local development tenant')).toBeNull();
+  });
+
+  it('keeps the community reachable by a screen reader now that the name is not on screen', () => {
+    withLogoSize(SQUARE_LOGO);
+
+    const { getByLabelText } = render(<TenantBanner />);
+
+    expect(getByLabelText('Hour Timebank logo')).toBeTruthy();
   });
 
   it('renders nothing at all before a community is chosen', () => {
