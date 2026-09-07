@@ -198,6 +198,52 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 🔴 The pinned Stripe SDK cannot be compiled by Xcode 26.
+      #
+      # `@stripe/stripe-react-native@0.50.3` contradicts itself: its Swift-generated
+      # header forward-declares `STPPaymentStatus` as `NSInteger` while its
+      # hand-written `StripeSwiftInterop.h` declares the same type as `NSUInteger`.
+      # Earlier compilers tolerated the conflicting redeclaration; Xcode 26.6 — what
+      # `macos-latest` carries as of 2026-09-07 — treats it as an error, and the build
+      # fails inside node_modules rather than in this app's code.
+      #
+      # 🔴 This is a REAL constraint on the app, not a CI quirk: iOS release builds
+      # will fail the moment the build service moves to Xcode 26. Pinning here buys
+      # the launch smoke its signal; it does not resolve the incompatibility, which
+      # needs the SDK upgraded (0.50.3 -> 0.76.0 upstream) as its own piece of work
+      # with its own testing, because it is a payments library.
+      #
+      # Selected rather than hardcoded, for the same reason the simulator UDID is:
+      # a version that is not on the image is a job that fails for a reason having
+      # nothing to do with the app. If GitHub ever drops every pre-26 Xcode this step
+      # fails loudly — which is exactly the signal that the SDK upgrade has stopped
+      # being optional.
+      - name: Select an Xcode the pinned Stripe SDK can compile with
+        run: |
+          set -euo pipefail
+          echo "Xcode versions on this runner:"
+          BEST=""; BEST_V=""
+          for app in /Applications/Xcode*.app; do
+            [ -x "$app/Contents/Developer/usr/bin/xcodebuild" ] || continue
+            V="$("$app/Contents/Developer/usr/bin/xcodebuild" -version | head -1 | awk '{print $2}')"
+            echo "  $app -> $V"
+            MAJOR="${V%%.*}"
+            case "$MAJOR" in ''|*[!0-9]*) continue;; esac
+            [ "$MAJOR" -lt 26 ] || continue
+            if [ -z "$BEST_V" ] \
+              || [ "$(printf '%s\n%s\n' "$BEST_V" "$V" | sort -t. -k1,1n -k2,2n | tail -1)" = "$V" ]; then
+              BEST="$app"; BEST_V="$V"
+            fi
+          done
+          if [ -z "$BEST" ]; then
+            echo "no Xcode below 26 on this runner; @stripe/stripe-react-native@0.50.3 cannot be built here." >&2
+            echo "The SDK upgrade is no longer optional — see this step's comment." >&2
+            exit 1
+          fi
+          echo "selected $BEST (Xcode $BEST_V)"
+          sudo xcode-select -s "$BEST/Contents/Developer"
+          xcodebuild -version
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
