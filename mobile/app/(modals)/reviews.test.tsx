@@ -114,6 +114,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/api/reviews', () => ({
   getUserReviews: jest.fn(),
+  getGivenReviews: jest.fn(),
   getPendingReviews: jest.fn(),
   createReview: (...args: unknown[]) => mockCreateReview(...args),
   deleteReview: (...args: unknown[]) => mockDeleteReview(...args),
@@ -123,6 +124,7 @@ import ReviewsScreen from './reviews';
 
 describe('ReviewsScreen', () => {
   const refreshReceived = jest.fn();
+  const refreshGiven = jest.fn();
   const refreshPending = jest.fn();
   let useApiCall = 0;
 
@@ -143,14 +145,6 @@ describe('ReviewsScreen', () => {
               comment: 'Thoughtful exchange.',
               reviewer: { id: 2, name: 'Niamh' },
               created_at: '2026-05-29T10:00:00Z',
-            },
-            {
-              id: 2,
-              rating: 4,
-              comment: 'I shared a lift.',
-              reviewer: { id: 7, name: 'Me' },
-              created_at: '2026-05-28T10:00:00Z',
-              direction: 'given',
             },
           ],
           cursor: null,
@@ -175,9 +169,39 @@ describe('ReviewsScreen', () => {
         error: null,
         refresh: refreshPending,
       };
+    /*
+      🔴 Three loads now, in this order: received, GIVEN, pending.
+
+      The reviews a member has written come from their own endpoint. Both tabs used to
+      be filtered out of the received list, and the server scopes that query to
+      `receiver_id` — so the Given tab could only ever be empty (F/F-2). The fixture
+      below reflects that: the received page holds only a review the member RECEIVED.
+    */
+    const givenState = {
+      data: {
+        items: [
+          {
+            id: 2,
+            rating: 4,
+            comment: 'I shared a lift.',
+            reviewer: { id: 7, name: 'Me' },
+            receiver: { id: 8, name: 'Sam' },
+            created_at: '2026-05-28T10:00:00Z',
+            direction: 'given',
+          },
+        ],
+        cursor: null,
+        hasMore: false,
+      },
+      isLoading: false,
+      error: null,
+      refresh: refreshGiven,
+    };
     mockUseApi.mockImplementation(() => {
+      const states = [reviewsState, givenState, pendingState];
+      const state = states[useApiCall % 3];
       useApiCall += 1;
-      return useApiCall % 2 === 1 ? reviewsState : pendingState;
+      return state;
     });
   });
 
@@ -227,6 +251,17 @@ describe('ReviewsScreen', () => {
     fireEvent.press(getByText('Delete'));
 
     await waitFor(() => expect(mockDeleteReview).toHaveBeenCalledWith(2));
-    expect(refreshReceived).toHaveBeenCalled();
+    expect(refreshGiven).toHaveBeenCalled();
+  });
+  it('🔴 shows the reviews the member has written, from the endpoint that returns them', () => {
+    const { getByText, queryByText } = render(<ReviewsScreen />);
+
+    // Not on Received: the server only ever sends reviews the member was given.
+    expect(queryByText('I shared a lift.')).toBeNull();
+
+    fireEvent.press(getByText('Given'));
+
+    expect(getByText('I shared a lift.')).toBeTruthy();
+    expect(getByText('Delete')).toBeTruthy();
   });
 });

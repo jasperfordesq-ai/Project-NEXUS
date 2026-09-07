@@ -28,6 +28,13 @@ jest.mock('react-i18next', () => ({
         'owner.unknownApplicant': 'Applicant',
         'owner.updateError': 'Could not update application.',
         'owner.moveToInterview': 'Interview',
+        'owner.reject': 'Reject',
+        'owner.rejectConfirmTitle': 'Reject this applicant?',
+        'owner.rejectConfirmMessage': 'They will be told.',
+        'owner.notYoursTitle': 'This is not your vacancy',
+        'owner.notYoursHint': 'Only the person who posted it can see this.',
+        'detail.notFound': 'Job not found.',
+        'common:buttons.cancel': 'Cancel',
         'applications.status.pending': 'Pending',
         'applications.status.screening': 'Screening',
         'applications.status.reviewed': 'Reviewed',
@@ -96,6 +103,22 @@ jest.mock('@/components/ui/AppToast', () => {
   return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
 });
 
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 import JobPipelineScreen from './job-pipeline';
 import { updateJobApplication } from '@/lib/api/jobs';
 
@@ -146,5 +169,62 @@ describe('JobPipelineScreen', () => {
     await waitFor(() => {
       expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'screening' });
     });
+  });
+  it('🔴 can make an offer, accept and reject once a candidate reaches interview', () => {
+    // The card rendered `PIPELINE_COLUMNS.filter(…).slice(0, 4)`, which always takes the
+    // four LOWEST-indexed remaining stages — so Offer, Accepted and Rejected were
+    // unreachable for anyone past Shortlisted, and an employer had no way to progress a
+    // candidate they had moved to Interview (E/F-4).
+    const { getByTestId } = render(<JobPipelineScreen />);
+
+    fireEvent.press(getByTestId('pipeline-stage-interview'));
+
+    expect(getByTestId('pipeline-advance-45')).toBeTruthy();
+    expect(getByTestId('pipeline-move-accepted-45')).toBeTruthy();
+    expect(getByTestId('pipeline-reject-45')).toBeTruthy();
+  });
+
+  it('🔴 asks before rejecting an applicant', async () => {
+    const { getByTestId } = render(<JobPipelineScreen />);
+
+    fireEvent.press(getByTestId('pipeline-reject-44'));
+    expect(updateJobApplication).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('pipeline-confirm-reject-44'));
+    await waitFor(() =>
+      expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'rejected' }),
+    );
+  });
+
+  it('🔴 says the vacancy is not yours rather than offering a Retry that cannot work', () => {
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Forbidden',
+      errorStatus: 403,
+      errorCode: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId, queryByText } = render(<JobPipelineScreen />);
+
+    expect(getByTestId('job-pipeline-refused')).toBeTruthy();
+    expect(queryByText('Retry')).toBeNull();
+  });
+
+  it('still offers a Retry when the failure really is transient', () => {
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Server error',
+      errorStatus: 500,
+      errorCode: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId, getByText } = render(<JobPipelineScreen />);
+
+    expect(getByTestId('job-pipeline-error')).toBeTruthy();
+    expect(getByText('Retry')).toBeTruthy();
   });
 });

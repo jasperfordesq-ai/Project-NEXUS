@@ -454,7 +454,12 @@
       "save": "Sábháil an eagraíocht",
       "validation": "Tá ainm na heagraíochta ag teastáil.",
       "saveError": "Níorbh fhéidir sonraí na heagraíochta a shábháil."
-    }
+    },
+    "notYoursTitle": "Ní tusa a bhainistíonn an eagraíocht seo",
+    "notYoursHint": "Ní fheiceann ach na daoine a stiúrann í na hiarratais, na huaireanta agus an sparán.",
+    "backToVolunteering": "Ar ais chuig an obair dheonach",
+    "declinedHeading": "Gan cheadú",
+    "declinedDescription": "Níor ceadaíodh an clárú seo, mar sin ní féidir leat deiseanna a fhógairt dó. Déan teagmháil le heagraí do phobail má cheapann tú gur botún é seo."
   },
   "swaps": {
     "heading": "Malartuithe sealanna oibre",

@@ -21,6 +21,9 @@ jest.mock('react-i18next', () => ({
         'analytics.eyebrow': 'Owner analytics',
         'analytics.subtitle': 'Track role performance.',
         'analytics.no_data': 'No analytics available.',
+        'owner.notYoursTitle': 'This is not your vacancy',
+        'owner.notYoursHint': 'Only the person who posted it can see this.',
+        'detail.notFound': 'Job not found.',
         'analytics.no_data_hint': 'Analytics appear later.',
         'analytics.total_views': 'Total views',
         'analytics.unique_viewers': 'Unique viewers',
@@ -164,5 +167,39 @@ describe('JobAnalyticsScreen', () => {
     fireEvent.press(getByLabelText('Retry'));
 
     expect(refresh).toHaveBeenCalled();
+  });
+  it('🔴 says the vacancy is not yours rather than offering a Retry that cannot work', () => {
+    // A 403 was rendered as "could not load" with a Retry that would fail identically
+    // for ever (E/F-9).
+    mockUseApi.mockReset();
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Forbidden',
+      errorStatus: 403,
+      errorCode: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId, queryByText } = render(<JobAnalyticsScreen />);
+
+    expect(getByTestId('job-analytics-refused')).toBeTruthy();
+    expect(queryByText('Retry')).toBeNull();
+  });
+
+  it('still offers a Retry when the failure really is transient', () => {
+    mockUseApi.mockReset();
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Server error',
+      errorStatus: 500,
+      errorCode: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<JobAnalyticsScreen />);
+
+    expect(getByTestId('job-analytics-error')).toBeTruthy();
   });
 });

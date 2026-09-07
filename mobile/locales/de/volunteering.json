@@ -451,7 +451,12 @@
       "save": "Organisation speichern",
       "validation": "Der Name der Organisation ist erforderlich.",
       "saveError": "Die Organisationsdaten konnten nicht gespeichert werden."
-    }
+    },
+    "notYoursTitle": "Du verwaltest diese Organisation nicht",
+    "notYoursHint": "Bewerbungen, Stunden und das Guthaben sehen nur die Personen, die sie leiten.",
+    "backToVolunteering": "Zurück zum Ehrenamt",
+    "declinedHeading": "Nicht genehmigt",
+    "declinedDescription": "Diese Registrierung wurde nicht genehmigt, daher kannst du dafür keine Einsätze ausschreiben. Wende dich an die Organisation deiner Gemeinschaft, wenn du das für einen Fehler hältst."
   },
   "swaps": {
     "heading": "Schichttausch",

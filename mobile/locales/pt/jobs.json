@@ -201,7 +201,11 @@
     "shortlist": "Pré-selecionar",
     "reject": "Rejeitar",
     "moveToInterview": "Entrevista",
-    "updateError": "Não foi possível atualizar esta candidatura."
+    "updateError": "Não foi possível atualizar esta candidatura.",
+    "notYoursTitle": "Esta vaga não é sua",
+    "notYoursHint": "Só quem publica uma vaga pode ver as candidaturas e os respetivos números.",
+    "rejectConfirmTitle": "Recusar esta candidatura?",
+    "rejectConfirmMessage": "{{name}} será informado de que a candidatura não teve êxito."
   },
   "postings": {
     "empty": "Ainda não há anúncios",

@@ -62,6 +62,9 @@ jest.mock('react-i18next', () => ({
         'org.emptyDescription': 'Register or join an approved organisation before using organiser tools.',
         'org.register': 'Browse organisations',
         'org.pendingHeading': 'Pending approval',
+        'org.declinedHeading': 'Not approved',
+        'org.declinedDescription': 'This registration was not approved.',
+        'org.status.declined': 'Declined',
         'org.pendingDescription': 'This organisation is waiting for approval.',
         'org.walletBalance': opts ? `${String(opts.count ?? 0)}h available` : '0h available',
         'org.managerTools': 'Manager tools',
@@ -1154,5 +1157,52 @@ describe('VolunteeringScreen', () => {
     expect(getByTestId('swap-own-detail-77').props.children.join('')).toContain('Green Spaces');
     expect(getByTestId('swap-other-label-77').props.children).toBe('Proposed shift');
     expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Care Hub');
+  });
+  it('🔴 tells a member their organisation registration was refused', () => {
+    // A declined registration used to slide out of the amber "awaiting approval" block
+    // and into the ordinary managed list with a Manage button and no sign of the
+    // refusal, while the Create-opportunity pill stayed hidden with no explanation
+    // (E/F-5).
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const responses = [
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+        {
+          data: {
+            data: [{
+              id: 6,
+              name: 'Riverbank Trust',
+              description: 'Riverside clean-ups.',
+              status: 'declined',
+              member_role: 'owner',
+              balance: null,
+              logo_url: null,
+            }],
+          },
+          isLoading: false,
+          error: null,
+          refresh: jest.fn(),
+        },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      const response = responses[apiCall % responses.length];
+      apiCall += 1;
+      return response;
+    });
+
+    const { getByTestId, getByText, queryByText } = render(<VolunteeringScreen />);
+
+    fireEvent.press(getByText('Organisations'));
+
+    expect(getByTestId('volunteering-declined-organisations')).toBeTruthy();
+    expect(getByText('This registration was not approved.')).toBeTruthy();
+    // It must NOT sit in the managed list looking approved.
+    expect(queryByText('Manage')).toBeNull();
   });
 });

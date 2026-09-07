@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import {
   createReview,
   deleteReview,
+  getGivenReviews,
   getPendingReviews,
   getUserReviews,
   type PendingReview,
@@ -71,6 +72,23 @@ function ReviewsScreen() {
     error: reviewsError,
     refresh: refreshReviews,
   } = useApi(() => getUserReviews(userId), [userId], { enabled: userId > 0 });
+  /*
+    🔴 The reviews a member has WRITTEN come from their own endpoint.
+
+    Both tabs used to be filtered out of ONE list, and `ReviewService::getForUser()` scopes
+    that query to `receiver_id` — so every row in it is a review the member RECEIVED and
+    `isOwnReview` could never be true. A member who had written twenty reviews opened
+    "Given" and was told they had written none; and because Delete only renders on that
+    tab, they could never remove one either. Found by the 2026-09-07 audit (F/F-2).
+
+    Fetched only while the tab is open, so the ordinary case still makes one request.
+  */
+  const {
+    data: givenPage,
+    isLoading: givenLoading,
+    error: givenError,
+    refresh: refreshGiven,
+  } = useApi(() => getGivenReviews(), [activeTab], { enabled: activeTab === 'given' });
   const {
     data: pendingReviews,
     isLoading: pendingLoading,
@@ -79,21 +97,16 @@ function ReviewsScreen() {
   } = useApi(() => getPendingReviews(), []);
 
   const reviews = useMemo(() => reviewsPage?.items ?? [], [reviewsPage?.items]);
-  const receivedReviews = useMemo(
-    () => reviews.filter((review) => !isOwnReview(review, userId)),
-    [reviews, userId],
-  );
-  const givenReviews = useMemo(
-    () => reviews.filter((review) => isOwnReview(review, userId)),
-    [reviews, userId],
-  );
+  const receivedReviews = reviews;
+  const givenReviews = useMemo(() => givenPage?.items ?? [], [givenPage?.items]);
   const pending = useMemo(() => pendingReviews ?? [], [pendingReviews]);
   const visibleReviews = activeTab === 'given' ? givenReviews : receivedReviews;
+  // The average is about reviews the member has RECEIVED, so it stays on that list.
   const averageRating = reviews.length
     ? reviews.reduce((total, review) => total + Number(review.rating || 0), 0) / reviews.length
     : 0;
-  const isLoading = activeTab === 'pending' ? pendingLoading : reviewsLoading;
-  const error = activeTab === 'pending' ? pendingError : reviewsError;
+  const isLoading = activeTab === 'pending' ? pendingLoading : activeTab === 'given' ? givenLoading : reviewsLoading;
+  const error = activeTab === 'pending' ? pendingError : activeTab === 'given' ? givenError : reviewsError;
 
   useEffect(() => {
     const requestedTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
@@ -141,6 +154,8 @@ function ReviewsScreen() {
       resetForm();
       refreshPending();
       refreshReviews();
+      // A review just written belongs on the Given tab.
+      refreshGiven();
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('reviews.submitFailed')), variant: 'danger' });
@@ -163,6 +178,7 @@ function ReviewsScreen() {
         try {
           await deleteReview(review.id);
           refreshReviews();
+          refreshGiven();
         } catch (err) {
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('reviews.deleteFailed')), variant: 'danger' });
         } finally {
@@ -175,6 +191,8 @@ function ReviewsScreen() {
   function handleRefresh() {
     if (activeTab === 'pending') {
       refreshPending();
+    } else if (activeTab === 'given') {
+      refreshGiven();
     } else {
       refreshReviews();
     }
@@ -572,11 +590,6 @@ function StatTile({
       </Text>
     </Surface>
   );
-}
-
-function isOwnReview(review: ReviewItem, userId: number): boolean {
-  if (review.direction === 'given') return true;
-  return Number(review.reviewer_id ?? review.reviewer?.id ?? 0) === userId;
 }
 
 function userName(user?: ReviewUser | null): string {

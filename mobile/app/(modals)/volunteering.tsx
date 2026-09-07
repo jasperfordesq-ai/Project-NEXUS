@@ -386,14 +386,30 @@ function OrganisationsPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const managed = organisations.filter((org) => ['owner', 'admin'].includes(org.member_role ?? '') && org.status !== 'pending');
+  /*
+    🔴 A declined registration used to look approved.
+
+    There were two buckets: `pending`, and everything else. So when an admin DECLINED a
+    registration, the card slid quietly out of the amber "awaiting approval" block and into
+    the ordinary managed list with a "Manage" button — no red chip, no sentence, nothing.
+    The "Create opportunity" pill stayed hidden (`canPostForOrganisation` refuses a
+    non-approved status) with no explanation, so the member was looking at an organisation
+    they apparently managed but could not post for, and was never told it had been refused.
+    `organisation-detail.tsx` already knows `declined` is a real status. Found by the
+    2026-09-07 audit (E/F-5).
+  */
+  const isDeclined = (org: VolunteeringOrganisation) => org.status === 'declined' || org.status === 'rejected';
+  const managed = organisations.filter(
+    (org) => ['owner', 'admin'].includes(org.member_role ?? '') && org.status !== 'pending' && !isDeclined(org),
+  );
   const pending = organisations.filter((org) => org.status === 'pending');
+  const declined = organisations.filter(isDeclined);
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (managed.length === 0 && pending.length === 0) {
+  if (managed.length === 0 && pending.length === 0 && declined.length === 0) {
     return (
       <EmptyState
         icon="business-outline"
@@ -436,6 +452,47 @@ function OrganisationsPanel({
                 </View>
                 <Chip size="sm" variant="secondary" color="default">
                   <Chip.Label>{t('org.status.pending')}</Chip.Label>
+                </Chip>
+              </View>
+            ))}
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
+
+      {declined.length > 0 ? (
+        <HeroCard
+          className="overflow-hidden rounded-panel p-0"
+          style={{ borderWidth: 1, borderColor: withAlpha(theme.error, 0.14) }}
+          testID="volunteering-declined-organisations"
+        >
+          <View className="h-1" style={{ backgroundColor: theme.error }} />
+          <HeroCard.Body className="gap-3 p-4">
+            <View className="flex-row items-center gap-2">
+              <View className="size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(theme.error, 0.12) }}>
+                <Ionicons name="close-circle-outline" size={16} color={theme.error} />
+              </View>
+              <Text className="text-sm font-semibold" style={{ color: theme.text }}>
+                {t('org.declinedHeading')}
+              </Text>
+            </View>
+            {declined.map((org) => (
+              <View
+                key={org.id}
+                className="flex-row items-center gap-3 rounded-panel-inner p-3"
+                style={{ backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderSubtle }}
+              >
+                <Avatar uri={org.logo_url ?? org.avatar ?? undefined} name={org.name} size={38} />
+                <View className="min-w-0 flex-1">
+                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+                    {org.name}
+                  </Text>
+                  <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                    {t('org.declinedDescription')}
+                  </Text>
+                </View>
+                <Chip size="sm" variant="secondary" color="default">
+                  <Ionicons name="ellipse" size={9} color={theme.error} />
+                  <Chip.Label>{t('org.status.declined', { defaultValue: org.status ?? '' })}</Chip.Label>
                 </Chip>
               </View>
             ))}

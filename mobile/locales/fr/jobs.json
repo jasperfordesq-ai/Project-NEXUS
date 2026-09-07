@@ -201,7 +201,11 @@
     "shortlist": "Retenir",
     "reject": "Refuser",
     "moveToInterview": "Entretien",
-    "updateError": "Impossible de mettre à jour cette candidature."
+    "updateError": "Impossible de mettre à jour cette candidature.",
+    "notYoursTitle": "Cette offre n'est pas la vôtre",
+    "notYoursHint": "Seule la personne qui a publié une offre peut voir ses candidatures et ses chiffres.",
+    "rejectConfirmTitle": "Refuser cette candidature ?",
+    "rejectConfirmMessage": "{{name}} sera informé que sa candidature n’a pas été retenue."
   },
   "postings": {
     "empty": "Aucune annonce pour le moment",

@@ -26,6 +26,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
 
 const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected'] as const;
@@ -83,6 +84,34 @@ function JobPipelineScreen() {
     );
   }
 
+  /*
+    🔴 A refusal is not a failure.
+
+    This screen belongs to the vacancy's owner. Anyone else — including an owner who has
+    transferred the vacancy — gets 403 or 404, and that was rendered as "could not load"
+    with a Retry the member could press for ever without it ever succeeding. Found by the
+    2026-09-07 audit (E/F-9); the same fault was fixed for hidden profiles and deleted
+    conversations the day before, and these two screens were not in that pass.
+  */
+  const refused = applicationsApi.error
+    && (applicationsApi.errorStatus === 401 || applicationsApi.errorStatus === 403 || applicationsApi.errorStatus === 404);
+
+  if (refused) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+        <AppTopBar title={t('kanban.pipeline_title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
+        <EmptyState
+          icon="lock-closed-outline"
+          title={t('owner.notYoursTitle')}
+          subtitle={applicationsApi.errorStatus === 404 ? t('detail.notFound') : t('owner.notYoursHint')}
+          actionLabel={t('detail.browseJobs')}
+          onAction={() => router.replace('/(modals)/jobs')}
+          testID="job-pipeline-refused"
+        />
+      </SafeAreaView>
+    );
+  }
+
   if (applicationsApi.error) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
@@ -93,6 +122,7 @@ function JobPipelineScreen() {
           subtitle={t('kanban.load_error_hint')}
           actionLabel={t('retry')}
           onAction={applicationsApi.refresh}
+          testID="job-pipeline-error"
         />
       </SafeAreaView>
     );
@@ -221,6 +251,7 @@ function StageSummary({
       className="min-w-[46%] flex-1"
       variant={active ? 'primary' : 'secondary'}
       onPress={onPress}
+      testID={`pipeline-stage-${status}`}
     >
       <HeroButton.Label>{t(`applications.status.${status}`)}</HeroButton.Label>
       <Chip size="sm" variant="secondary">
@@ -244,9 +275,40 @@ function PipelineApplicationCard({
   onUpdated: () => void;
 }) {
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [isUpdating, setIsUpdating] = useState(false);
   const applicantName = application.applicant?.name?.trim() || t('owner.unknownApplicant');
   const currentStatus = normalizeStatus(application.status);
+
+  /**
+   * The stage that follows this one, or null at the end of the run.
+   *
+   * `rejected` is last in `PIPELINE_COLUMNS` but it is not what follows `accepted`, so an
+   * accepted candidate is offered no "next".
+   */
+  const nextStatus: PipelineStatus | null = (() => {
+    if (currentStatus === 'accepted' || currentStatus === 'rejected') return null;
+    const index = PIPELINE_COLUMNS.indexOf(currentStatus);
+    const candidate = PIPELINE_COLUMNS[index + 1];
+    return candidate && candidate !== 'rejected' ? candidate : null;
+  })();
+
+  /** Every other stage they could be moved to. Rejecting has its own confirmed button. */
+  const otherStatuses = PIPELINE_COLUMNS.filter(
+    (status) => status !== currentStatus && status !== nextStatus && status !== 'rejected',
+  );
+
+  function confirmReject() {
+    confirm({
+      title: t('owner.rejectConfirmTitle'),
+      message: t('owner.rejectConfirmMessage', { name: applicantName }),
+      confirmLabel: t('owner.reject'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `pipeline-confirm-reject-${application.id}`,
+      onConfirm: () => moveTo('rejected'),
+    });
+  }
 
   async function moveTo(status: PipelineStatus) {
     if (isUpdating || status === currentStatus) return;
@@ -284,17 +346,38 @@ function PipelineApplicationCard({
             </Text>
           </Surface>
         ) : null}
+        {/*
+          🔴 Every stage is reachable now.
+
+          This used to render `PIPELINE_COLUMNS.filter(…).slice(0, 4)`, which always takes
+          the four LOWEST-indexed remaining stages — so Offer, Accepted and Rejected were
+          unreachable for anyone past Shortlisted, and an employer who moved a candidate to
+          Interview had no way to progress them at all. The fixed "Interview" button beside
+          it did nothing once they were already there (`moveTo` returns early, silently),
+          and for a pending applicant it rendered Interview twice. Found by the 2026-09-07
+          audit (E/F-4).
+
+          Rejecting is the one step that sends bad news, so it confirms first.
+        */}
         <View className="flex-row flex-wrap gap-2">
-          {PIPELINE_COLUMNS.filter((status) => status !== currentStatus).slice(0, 4).map((status) => (
-            <HeroButton key={status} size="sm" variant="secondary" isDisabled={isUpdating} onPress={() => void moveTo(status)}>
+          {nextStatus ? (
+            <HeroButton size="sm" variant="primary" isDisabled={isUpdating} onPress={() => void moveTo(nextStatus)} testID={`pipeline-advance-${application.id}`}>
+              <AccentIcon name="arrow-forward-outline" size={14} />
+              <HeroButton.Label>{t(`applications.status.${nextStatus}`)}</HeroButton.Label>
+            </HeroButton>
+          ) : null}
+          {otherStatuses.map((status) => (
+            <HeroButton key={status} size="sm" variant="secondary" isDisabled={isUpdating} onPress={() => void moveTo(status)} testID={`pipeline-move-${status}-${application.id}`}>
               <HeroButton.Label>{t(`applications.status.${status}`)}</HeroButton.Label>
             </HeroButton>
           ))}
-          <HeroButton size="sm" variant="primary" isDisabled={isUpdating} onPress={() => void moveTo('interview')}>
-            <AccentIcon name="calendar-outline" size={14} />
-            <HeroButton.Label>{t('owner.moveToInterview')}</HeroButton.Label>
-          </HeroButton>
+          {currentStatus === 'rejected' ? null : (
+            <HeroButton size="sm" variant="danger" isDisabled={isUpdating} onPress={confirmReject} testID={`pipeline-reject-${application.id}`}>
+              <HeroButton.Label>{t('owner.reject')}</HeroButton.Label>
+            </HeroButton>
+          )}
         </View>
+        {confirmDialog}
       </HeroCard.Body>
     </HeroCard>
   );

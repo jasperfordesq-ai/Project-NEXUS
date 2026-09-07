@@ -452,7 +452,12 @@
       "save": "Enregistrer l’organisation",
       "validation": "Le nom de l’organisation est obligatoire.",
       "saveError": "Impossible d’enregistrer les informations de l’organisation."
-    }
+    },
+    "notYoursTitle": "Vous ne gérez pas cette organisation",
+    "notYoursHint": "Les candidatures, les heures et le portefeuille ne sont visibles que par les personnes qui la dirigent.",
+    "backToVolunteering": "Retour au bénévolat",
+    "declinedHeading": "Non approuvée",
+    "declinedDescription": "Cette inscription n'a pas été approuvée, vous ne pouvez donc pas publier de missions pour elle. Contactez la personne qui anime votre communauté si vous pensez qu'il s'agit d'une erreur."
   },
   "swaps": {
     "heading": "Échanges de créneaux",

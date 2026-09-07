@@ -201,7 +201,11 @@
     "shortlist": "Seleziona",
     "reject": "Rifiuta",
     "moveToInterview": "Colloquio",
-    "updateError": "Impossibile aggiornare questa candidatura."
+    "updateError": "Impossibile aggiornare questa candidatura.",
+    "notYoursTitle": "Questa offerta non è tua",
+    "notYoursHint": "Solo chi ha pubblicato un annuncio può vederne le candidature e i dati.",
+    "rejectConfirmTitle": "Rifiutare questa candidatura?",
+    "rejectConfirmMessage": "A {{name}} verrà comunicato che la candidatura non è andata a buon fine."
   },
   "postings": {
     "empty": "Nessun annuncio ancora",

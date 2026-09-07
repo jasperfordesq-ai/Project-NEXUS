@@ -83,6 +83,28 @@ function JobAnalyticsScreen() {
     );
   }
 
+  /*
+    🔴 A refusal is not a failure — the same fix as `job-pipeline.tsx` (audit 2026-09-07,
+    E/F-9). This screen belongs to the vacancy's owner; anybody else was shown "could not
+    load" with a Retry that could never succeed.
+  */
+  if (analyticsApi.error
+    && (analyticsApi.errorStatus === 401 || analyticsApi.errorStatus === 403 || analyticsApi.errorStatus === 404)) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+        <AppTopBar title={t('analytics.title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
+        <EmptyState
+          icon="lock-closed-outline"
+          title={t('owner.notYoursTitle')}
+          subtitle={analyticsApi.errorStatus === 404 ? t('detail.notFound') : t('owner.notYoursHint')}
+          actionLabel={t('detail.browseJobs')}
+          onAction={() => router.replace('/(modals)/jobs')}
+          testID="job-analytics-refused"
+        />
+      </SafeAreaView>
+    );
+  }
+
   if (analyticsApi.error || !analytics) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
@@ -93,6 +115,7 @@ function JobAnalyticsScreen() {
           subtitle={t('analytics.no_data_hint')}
           actionLabel={t('retry')}
           onAction={analyticsApi.refresh}
+          testID="job-analytics-error"
         />
       </SafeAreaView>
     );

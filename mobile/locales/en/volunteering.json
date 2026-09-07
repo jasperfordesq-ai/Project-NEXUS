@@ -451,7 +451,12 @@
       "save": "Save organisation",
       "validation": "Organisation name is required.",
       "saveError": "Could not save organisation details."
-    }
+    },
+    "notYoursTitle": "You do not manage this organisation",
+    "notYoursHint": "Applications, hours and the wallet are only visible to the people who run it.",
+    "backToVolunteering": "Back to volunteering",
+    "declinedHeading": "Not approved",
+    "declinedDescription": "This registration was not approved, so you cannot post opportunities for it. Contact your community organiser if you think this is a mistake."
   },
   "swaps": {
     "heading": "Shift swaps",

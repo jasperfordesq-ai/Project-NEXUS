@@ -640,6 +640,36 @@ function VolunteeringOrgDashboardInner() {
     );
   }
 
+  /*
+    🔴 "No pending applications" was not true — access had been refused.
+
+    `getOrganisation` succeeds for anybody, because it is the public organisation record.
+    The five organiser calls behind it all answer 403 to a member who does not manage the
+    organisation (`VolunteerController::ensureOrgAccess`). The screen showed a generic
+    "could not load" card with a Retry that could never succeed, AND below it every tab
+    rendered a cheerful empty state — "No pending applications", "No hours to review",
+    "No transactions" — each of which is a factual claim the app could not support.
+    Found by the 2026-09-07 audit (E/F-8).
+  */
+  const accessRefused = statsApi.errorStatus === 401 || statsApi.errorStatus === 403
+    || applicationsApi.errorStatus === 401 || applicationsApi.errorStatus === 403;
+
+  if (accessRefused) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+        <AppTopBar title={org?.name ?? t('org.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
+        <EmptyState
+          icon="lock-closed-outline"
+          title={t('org.notYoursTitle')}
+          subtitle={t('org.notYoursHint')}
+          actionLabel={t('org.backToVolunteering')}
+          onAction={() => router.replace('/(modals)/volunteering')}
+          testID="org-dashboard-refused"
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={org?.name ?? t('org.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />

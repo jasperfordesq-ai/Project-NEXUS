@@ -201,7 +201,11 @@
     "shortlist": "Preseleccionar",
     "reject": "Rechazar",
     "moveToInterview": "Entrevista",
-    "updateError": "No se pudo actualizar esta solicitud."
+    "updateError": "No se pudo actualizar esta solicitud.",
+    "notYoursTitle": "Esta oferta no es tuya",
+    "notYoursHint": "Solo quien publica una oferta puede ver sus candidaturas y sus cifras.",
+    "rejectConfirmTitle": "¿Rechazar esta candidatura?",
+    "rejectConfirmMessage": "Se informará a {{name}} de que su candidatura no ha prosperado."
   },
   "postings": {
     "empty": "Aún no hay anuncios",

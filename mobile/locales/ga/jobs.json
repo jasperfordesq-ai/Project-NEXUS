@@ -201,7 +201,11 @@
     "shortlist": "Gearrliosta",
     "reject": "Diúltaigh",
     "moveToInterview": "Agallamh",
-    "updateError": "Níorbh fhéidir an t-iarratas seo a nuashonrú."
+    "updateError": "Níorbh fhéidir an t-iarratas seo a nuashonrú.",
+    "notYoursTitle": "Ní leatsa an folúntas seo",
+    "notYoursHint": "Ní fheiceann ach an duine a d’fhógair folúntas na hiarratais agus na figiúirí atá air.",
+    "rejectConfirmTitle": "Diúltaigh don iarratas seo?",
+    "rejectConfirmMessage": "Cuirfear in iúl do {{name}} nár éirigh lena n-iarratas."
   },
   "postings": {
     "empty": "Níl aon fhógraí fós",

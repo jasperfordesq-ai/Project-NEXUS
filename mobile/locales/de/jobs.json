@@ -201,7 +201,11 @@
     "shortlist": "Vorauswählen",
     "reject": "Ablehnen",
     "moveToInterview": "Interview",
-    "updateError": "Diese Bewerbung konnte nicht aktualisiert werden."
+    "updateError": "Diese Bewerbung konnte nicht aktualisiert werden.",
+    "notYoursTitle": "Das ist nicht deine Stellenanzeige",
+    "notYoursHint": "Nur wer eine Stelle ausgeschrieben hat, sieht die Bewerbungen und die Zahlen dazu.",
+    "rejectConfirmTitle": "Bewerbung ablehnen?",
+    "rejectConfirmMessage": "{{name}} wird mitgeteilt, dass die Bewerbung nicht erfolgreich war."
   },
   "postings": {
     "empty": "Noch keine Anzeigen",

@@ -83,6 +83,35 @@ export async function getUserReviews(
   };
 }
 
+/**
+ * GET /api/v2/reviews/given — the reviews the signed-in member has WRITTEN.
+ *
+ * 🔴 The Reviews screen used to derive its "Given" tab by filtering the received list, and
+ * `ReviewService::getForUser()` scopes that query to `receiver_id` — so every row in it is
+ * a review the member RECEIVED and the filter could never match. A member who had written
+ * twenty reviews was told they had written none, and because Delete only renders on that
+ * tab, they could never remove one either. This is the endpoint that answers the other
+ * direction; it is registered ahead of `/v2/reviews/{id}` specifically so it resolves.
+ * Found by the 2026-09-07 audit (F/F-2).
+ */
+export async function getGivenReviews(
+  options: { cursor?: string | null; perPage?: number } = {},
+): Promise<ReviewsPage> {
+  const params: Record<string, string> = { per_page: String(options.perPage ?? 20) };
+  if (options.cursor) params.cursor = options.cursor;
+
+  const response = await api.get<CollectionEnvelope>(`${API_V2}/reviews/given`, params);
+  const payload = response.data;
+  const dataObject = !Array.isArray(payload) && payload ? payload : response;
+  const items = Array.isArray(payload) ? payload : dataObject.items ?? [];
+
+  return {
+    items,
+    cursor: dataObject.cursor ?? response.meta?.next_cursor ?? response.meta?.cursor ?? null,
+    hasMore: dataObject.has_more ?? response.meta?.has_more ?? false,
+  };
+}
+
 export async function getPendingReviews(): Promise<PendingReview[]> {
   const response = await api.get<PendingEnvelope>(`${API_V2}/reviews/pending`);
   const payload = Array.isArray(response) ? response : response.data ?? response.items ?? [];

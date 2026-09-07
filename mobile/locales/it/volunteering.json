@@ -452,7 +452,12 @@
       "save": "Salva organizzazione",
       "validation": "Il nome dell’organizzazione è obbligatorio.",
       "saveError": "Impossibile salvare i dettagli dell’organizzazione."
-    }
+    },
+    "notYoursTitle": "Non gestisci questa organizzazione",
+    "notYoursHint": "Le candidature, le ore e il portafoglio sono visibili solo a chi la gestisce.",
+    "backToVolunteering": "Torna al volontariato",
+    "declinedHeading": "Non approvata",
+    "declinedDescription": "Questa registrazione non è stata approvata, quindi non puoi pubblicare opportunità per essa. Contatta chi coordina la tua comunità se pensi che sia un errore."
   },
   "swaps": {
     "heading": "Scambi di turno",

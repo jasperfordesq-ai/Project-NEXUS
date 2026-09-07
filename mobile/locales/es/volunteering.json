@@ -452,7 +452,12 @@
       "save": "Guardar organización",
       "validation": "El nombre de la organización es obligatorio.",
       "saveError": "No se pudieron guardar los datos de la organización."
-    }
+    },
+    "notYoursTitle": "No gestionas esta organización",
+    "notYoursHint": "Las candidaturas, las horas y el monedero solo los ven las personas que la dirigen.",
+    "backToVolunteering": "Volver a voluntariado",
+    "declinedHeading": "No aprobada",
+    "declinedDescription": "Este registro no se aprobó, así que no puedes publicar oportunidades para él. Habla con la persona que coordina tu comunidad si crees que es un error."
   },
   "swaps": {
     "heading": "Intercambios de turnos",

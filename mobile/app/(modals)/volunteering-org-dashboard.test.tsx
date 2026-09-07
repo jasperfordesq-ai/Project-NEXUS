@@ -24,6 +24,16 @@ jest.mock('react-i18next', () => ({
         'org.dashboardEyebrow': 'Organiser tools',
         'org.invalid': 'Organisation not found.',
         'org.loadError': 'Could not load this organisation dashboard.',
+        'org.notYoursTitle': 'You do not manage this organisation',
+        'org.notYoursHint': 'Applications, hours and the wallet are only visible to the people who run it.',
+        'org.backToVolunteering': 'Back to volunteering',
+        'org.wallet.confirmTitle': 'Move credits to this organisation?',
+        'org.wallet.confirmMessage': 'Confirm this deposit.',
+        'org.wallet.depositDoneTitle': 'Credits moved',
+        'org.wallet.depositDoneMessage': 'Deposit complete.',
+        'org.wallet.validation': 'Enter an amount greater than zero.',
+        'org.wallet.depositError': 'Could not deposit credits.',
+        'common:buttons.cancel': 'Cancel',
         'org.statsUnavailable': 'Organisation stats are unavailable.',
         'org.reviewApplications': 'Review applications',
         'org.reviewHours': 'Review hours',
@@ -301,5 +311,34 @@ describe('VolunteeringOrgDashboard', () => {
     await waitFor(() =>
       expect(depositOrganisationWallet).toHaveBeenCalledWith(5, 1.5, undefined, expect.any(String)),
     );
+  });
+  it('🔴 says access was refused rather than claiming every list is empty', () => {
+    // `getOrganisation` succeeds for anybody — it is the public record — while the five
+    // organiser calls answer 403. The screen used to show a Retry that could never
+    // succeed, and under it "No pending applications", "No hours to review" and
+    // "No transactions", none of which was true (E/F-8).
+    const refresh = jest.fn();
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      const org = {
+        data: { data: { id: 5, name: 'Green Spaces', description: null, status: 'approved' } },
+        isLoading: false,
+        error: null,
+        errorStatus: null,
+        errorCode: null,
+        refresh,
+      };
+      const forbidden = { data: null, isLoading: false, error: 'Forbidden', errorStatus: 403, errorCode: 'FORBIDDEN', refresh };
+      const state = call === 0 ? org : forbidden;
+      call += 1;
+      return state;
+    });
+
+    const { getByTestId, queryByText } = render(<VolunteeringOrgDashboard />);
+
+    expect(getByTestId('org-dashboard-refused')).toBeTruthy();
+    expect(queryByText('Try again')).toBeNull();
+    expect(queryByText('No applications to review.')).toBeNull();
+    expect(queryByText('No wallet transactions yet.')).toBeNull();
   });
 });

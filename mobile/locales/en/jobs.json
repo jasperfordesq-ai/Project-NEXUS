@@ -201,7 +201,11 @@
     "shortlist": "Shortlist",
     "reject": "Reject",
     "moveToInterview": "Interview",
-    "updateError": "We could not update this application."
+    "updateError": "We could not update this application.",
+    "notYoursTitle": "This is not your vacancy",
+    "notYoursHint": "Only the person who posted a vacancy can see its applicants and figures.",
+    "rejectConfirmTitle": "Reject this applicant?",
+    "rejectConfirmMessage": "{{name}} will be told their application was not successful."
   },
   "postings": {
     "empty": "No postings yet",
