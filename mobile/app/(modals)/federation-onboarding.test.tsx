@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -85,9 +85,15 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
+const mockGetFederationSettings = jest.fn();
 jest.mock('@/lib/api/federation', () => ({
   setupFederation: jest.fn().mockResolvedValue({ success: true }),
+  getFederationSettings: (...args: unknown[]) => mockGetFederationSettings(...args),
 }));
+
+beforeEach(() => {
+  mockGetFederationSettings.mockResolvedValue({ data: { settings: null, enabled: false } });
+});
 
 jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn().mockResolvedValue(undefined),
@@ -104,6 +110,7 @@ jest.mock('@/components/ui/AppToast', () => {
   return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
 });
 
+import { setupFederation } from '@/lib/api/federation';
 import FederationOnboardingRoute from './federation-onboarding';
 
 describe('FederationOnboardingRoute', () => {
@@ -113,13 +120,54 @@ describe('FederationOnboardingRoute', () => {
     expect(getByText('Discover partner members')).toBeTruthy();
   });
 
-  it('reaches the final review step before enabling federation', () => {
-    const { getByText } = render(<FederationOnboardingRoute />);
+  it('reaches the final review step before enabling federation', async () => {
+    const { getByTestId, getByText } = render(<FederationOnboardingRoute />);
+    await waitFor(() => expect(getByTestId('federation-onboarding-next').props.accessibilityState?.disabled).toBeFalsy());
     fireEvent.press(getByText('Next'));
     fireEvent.press(getByText('Next'));
     fireEvent.press(getByText('Next'));
     expect(getByText('Review your federation setup')).toBeTruthy();
     expect(getByText('Enable federation')).toBeTruthy();
     expect(getByText('Local only')).toBeTruthy();
+  });
+  it('🔴 does not switch a member’s privacy choices back on', async () => {
+    /*
+      The hub shows a "Setup" tile at all times. A member who had already opted in and
+      turned two switches off could open it out of curiosity, press Next four times and
+      Finish — and the all-on defaults were posted over their choices, including how
+      visible they are to other communities (audit 2026-09-07, G/F-13).
+    */
+    mockGetFederationSettings.mockResolvedValue({
+      data: {
+        settings: {
+          federation_optin: true,
+          profile_visible_federated: true,
+          appear_in_federated_search: false,
+          show_skills_federated: true,
+          show_location_federated: false,
+          show_reviews_federated: true,
+          messaging_enabled_federated: true,
+          transactions_enabled_federated: false,
+          email_notifications: true,
+          service_reach: 'local_only',
+          travel_radius_km: 25,
+        },
+        enabled: true,
+      },
+    });
+
+    const { getByTestId, getByText } = render(<FederationOnboardingRoute />);
+    await waitFor(() => expect(getByTestId('federation-onboarding-next').props.accessibilityState?.disabled).toBeFalsy());
+
+    fireEvent.press(getByText('Next'));
+    fireEvent.press(getByText('Next'));
+    fireEvent.press(getByText('Next'));
+    fireEvent.press(getByText('Enable federation'));
+
+    await waitFor(() => expect(setupFederation).toHaveBeenCalledWith(expect.objectContaining({
+      appear_in_federated_search: false,
+      show_location_federated: false,
+      transactions_enabled_federated: false,
+    })));
   });
 });

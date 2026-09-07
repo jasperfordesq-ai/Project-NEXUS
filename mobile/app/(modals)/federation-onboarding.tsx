@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -12,7 +12,7 @@ import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface, Text } 
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
-import { setupFederation, type FederationSettings } from '@/lib/api/federation';
+import { getFederationSettings, setupFederation, type FederationSettings } from '@/lib/api/federation';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -70,6 +70,37 @@ function FederationOnboardingScreen() {
   const [step, setStep] = useState<Step>(0);
   const [settings, setSettings] = useState<FederationSettings>(defaultSettings);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  /*
+    🔴 Re-opening this wizard used to silently switch every privacy control back ON.
+
+    The hub shows a "Setup" tile at all times. A member who had already opted in and turned
+    off, say, "show my location" and "allow cross-community transactions" could tap it out
+    of curiosity, press Next four times and Finish — and `setupFederation(settings)` would
+    post the all-on defaults over their choices. Nothing warned them, and two of the
+    switches govern how visible they are to other communities. Found by the 2026-09-07
+    audit (G/F-13).
+
+    The wizard now starts from what the member has already chosen, and only falls back to
+    the defaults for someone setting this up for the first time.
+  */
+  useEffect(() => {
+    let cancelled = false;
+    getFederationSettings()
+      .then((response) => {
+        if (cancelled) return;
+        const existing = 'data' in response ? response.data?.settings : response.settings;
+        if (existing) setSettings((current) => ({ ...current, ...existing }));
+      })
+      .catch(() => {
+        // Absent settings mean a first-time set-up; the defaults above are the right start.
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingSettings(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   function updateSetting(key: keyof FederationSettings, value: boolean | FederationSettings['service_reach']) {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -199,7 +230,9 @@ function FederationOnboardingScreen() {
             <Ionicons name="arrow-back-outline" size={16} color={primary} />
             <HeroButton.Label>{t('common:back')}</HeroButton.Label>
           </HeroButton>
-          <HeroButton className="flex-1" variant="primary" onPress={step === 3 ? finish : () => setStep((value) => Math.min(3, value + 1) as Step)} isDisabled={isSaving}>
+          {/* Held until the member's existing choices have arrived, so a fast Finish cannot
+              post the all-on defaults over them (G/F-13). */}
+          <HeroButton className="flex-1" variant="primary" onPress={step === 3 ? finish : () => setStep((value) => Math.min(3, value + 1) as Step)} isDisabled={isSaving || isLoadingSettings} testID="federation-onboarding-next">
             {isSaving ? <Spinner size="sm" /> : <AccentIcon name={step === 3 ? 'checkmark-outline' : 'arrow-forward-outline'} size={16} />}
             <HeroButton.Label>{step === 3 ? t('directory.onboarding.finish') : t('directory.onboarding.next')}</HeroButton.Label>
           </HeroButton>
