@@ -194,6 +194,12 @@ jest.mock('react-i18next', () => ({
         'logHoursHint': 'Log your hours.',
         'noLoggableOrganisations': 'No organisations.',
         'hoursPlaceholder': 'Hours',
+        'hoursDateLabel': 'Date you volunteered',
+        'hoursDatePlaceholder': 'Date, for example 2026-06-30',
+        'hoursDateInvalid': 'Enter the date as YYYY-MM-DD.',
+        'hoursDateFuture': 'You cannot log hours for a date in the future.',
+        'hoursLoggedTitle': 'Hours sent for checking',
+        'hoursLoggedMessage': 'The organisation has to confirm your hours.',
         'hoursDescriptionPlaceholder': 'Description',
         'submitHours': 'Submit hours',
         'hoursRequired': 'Enter hours.',
@@ -744,6 +750,104 @@ describe('VolunteeringScreen', () => {
     await waitFor(() =>
       expect(logVolunteerHours).toHaveBeenCalledWith(expect.objectContaining({ hours: 1.5 })),
     );
+  });
+
+  it('🔴 records the day the work was actually done, and says it needs checking', async () => {
+    // The date was hard-coded to today with no field to change it, so a volunteer who
+    // worked yesterday evening could not record it at all. And a successful log said
+    // nothing — not that it worked, and not that the organisation has to confirm the
+    // hours before they become time credits (E/F-6).
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const responses = [
+        {
+          data: {
+            data: [{
+              id: 21,
+              status: 'approved',
+              message: null,
+              opportunity: { id: 10, title: 'Garden Helper' },
+              organization: { id: 5, name: 'Green Spaces', logo_url: null },
+              created_at: '2026-05-01T00:00:00Z',
+            }],
+          },
+          isLoading: false,
+          error: null,
+          refresh: jest.fn(),
+        },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      const response = responses[apiCall % responses.length];
+      apiCall += 1;
+      return response;
+    });
+
+    const { getByPlaceholderText, getByTestId, getByText } = render(<VolunteeringScreen />);
+
+    fireEvent.press(getByText('My Hours'));
+    fireEvent.changeText(getByTestId('volunteering-hours-date'), '2020-03-04');
+    fireEvent.changeText(getByPlaceholderText('Hours'), '2');
+    fireEvent.press(getByText('Submit hours'));
+
+    await waitFor(() =>
+      expect(logVolunteerHours).toHaveBeenCalledWith(expect.objectContaining({ date: '2020-03-04', hours: 2 })),
+    );
+    await waitFor(() =>
+      expect((useAppToast() as unknown as { show: jest.Mock }).show).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Hours sent for checking', variant: 'success' }),
+      ),
+    );
+  });
+
+  it('🔴 refuses a date in the future rather than sending it', async () => {
+    (logVolunteerHours as jest.Mock).mockClear();
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const responses = [
+        {
+          data: {
+            data: [{
+              id: 21,
+              status: 'approved',
+              message: null,
+              opportunity: { id: 10, title: 'Garden Helper' },
+              organization: { id: 5, name: 'Green Spaces', logo_url: null },
+              created_at: '2026-05-01T00:00:00Z',
+            }],
+          },
+          isLoading: false,
+          error: null,
+          refresh: jest.fn(),
+        },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      const response = responses[apiCall % responses.length];
+      apiCall += 1;
+      return response;
+    });
+
+    const { getByPlaceholderText, getByTestId, getByText } = render(<VolunteeringScreen />);
+
+    fireEvent.press(getByText('My Hours'));
+    fireEvent.changeText(getByTestId('volunteering-hours-date'), '2099-01-01');
+    fireEvent.changeText(getByPlaceholderText('Hours'), '2');
+    fireEvent.press(getByText('Submit hours'));
+
+    expect(logVolunteerHours).not.toHaveBeenCalled();
   });
 
   it('renders confirmed volunteer shifts and cancel actions', () => {

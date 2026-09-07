@@ -1735,6 +1735,18 @@ function HoursPanel({
   const [hours, setHours] = useState('');
   const [description, setDescription] = useState('');
   const [logging, setLogging] = useState(false);
+  /*
+    🔴 The date the work was done, not the date it is being recorded.
+
+    This was hard-coded to today, so a volunteer who worked yesterday evening and opened
+    the app the next morning could not record it AT ALL — there was no field to change.
+    The website's form has had an editable date, defaulting to today, all along. Found by
+    the 2026-09-07 audit (E/F-6). Typed as `YYYY-MM-DD`, matching the other date fields in
+    this module; a future date is refused before the request is sent.
+  */
+  const [workedOn, setWorkedOn] = useState(() =>
+    eventIsoToLocalInput(new Date().toISOString(), localEventTimeZone()).slice(0, 10),
+  );
 
   useEffect(() => {
     if (selectedOrgId === null && organisations.length > 0) {
@@ -1750,21 +1762,46 @@ function HoursPanel({
       return;
     }
 
+    // 🔴 S4-15: the default is the LOCAL date. A volunteer logging at 00:30 local in UTC+1
+    // used to record YESTERDAY, and the server's "already logged for this date" refusal
+    // then fired on the wrong day. The member can now change it, so it is validated.
+    const today = eventIsoToLocalInput(new Date().toISOString(), localEventTimeZone()).slice(0, 10);
+    const date = workedOn.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(new Date(`${date}T00:00:00`).getTime())) {
+      showToast({ title: t('common:errors.alertTitle'), description: t('hoursDateInvalid'), variant: 'warning' });
+      return;
+    }
+    if (date > today) {
+      showToast({ title: t('common:errors.alertTitle'), description: t('hoursDateFuture'), variant: 'warning' });
+      return;
+    }
+
     setLogging(true);
     try {
       await logVolunteerHours({
         organization_id: selectedOrgId,
-        // 🔴 S4-15: this was the UTC date. A volunteer logging at 00:30 local in UTC+1
-        // recorded YESTERDAY, and the server's "already logged for this date" refusal then
-        // fired on the wrong day.
-        date: eventIsoToLocalInput(new Date().toISOString(), localEventTimeZone()).slice(0, 10),
+        date,
         hours: parsedHours,
         description: description.trim() || undefined,
       });
       setHours('');
       setDescription('');
+      setWorkedOn(today);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      /*
+        🔴 Say what happened, and say that it is not credits yet.
+
+        The fields cleared, a haptic fired, and nothing was said. The only signal was the
+        "Pending" tile quietly incrementing after eight parallel refetches, and nothing
+        anywhere told the member the organisation has to verify the hours before they
+        become time credits (E/F-6). The website has said so all along.
+      */
+      showToast({
+        title: t('hoursLoggedTitle'),
+        description: t('hoursLoggedMessage'),
+        variant: 'success',
+      });
     } catch (error) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       // 🔴 Show the server's reason. It answers this one precisely — "You have already
@@ -1827,6 +1864,17 @@ function HoursPanel({
                   );
                 })}
               </ScrollView>
+              <Input
+                value={workedOn}
+                onChangeText={setWorkedOn}
+                placeholder={t('hoursDatePlaceholder')}
+                placeholderTextColor={theme.textMuted}
+                keyboardType="numbers-and-punctuation"
+                className="text-base"
+                style={{ color: theme.text }}
+                accessibilityLabel={t('hoursDateLabel')}
+                testID="volunteering-hours-date"
+              />
               <Input
                 value={hours}
                 onChangeText={setHours}

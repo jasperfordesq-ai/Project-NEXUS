@@ -536,5 +536,11 @@
   "confirmWithdrawTitle": "An t-iarratas seo a tharraingt siar?",
   "confirmWithdrawMessage": "Ní fheicfidh an eagraíocht d'iarratas a thuilleadh.",
   "withdrawConfirmTitle": "Tarraing siar an t-iarratas seo?",
-  "withdrawConfirmMessage": "Tarraingeofar siar d’iarratas ar {{title}} agus ní féidir é a chur ar ais."
+  "withdrawConfirmMessage": "Tarraingeofar siar d’iarratas ar {{title}} agus ní féidir é a chur ar ais.",
+  "hoursDateLabel": "An lá a rinne tú obair dheonach",
+  "hoursDatePlaceholder": "Dáta, mar shampla 2026-06-30",
+  "hoursDateInvalid": "Cuir isteach an dáta mar BBBB-MM-LL, mar shampla 2026-06-30.",
+  "hoursDateFuture": "Ní féidir leat uaireanta a chlárú do dháta sa todhchaí.",
+  "hoursLoggedTitle": "Uaireanta seolta lena seiceáil",
+  "hoursLoggedMessage": "Caithfidh an eagraíocht do chuid uaireanta a dhearbhú sula n-éiríonn siad ina gcreidmheasanna ama."
 }

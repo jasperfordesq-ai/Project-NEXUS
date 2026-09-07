@@ -533,5 +533,11 @@
   "confirmWithdrawTitle": "Diese Bewerbung zurückziehen?",
   "confirmWithdrawMessage": "Die Organisation sieht deine Bewerbung dann nicht mehr.",
   "withdrawConfirmTitle": "Bewerbung zurückziehen?",
-  "withdrawConfirmMessage": "Deine Bewerbung für {{title}} wird zurückgezogen und lässt sich nicht wiederherstellen."
+  "withdrawConfirmMessage": "Deine Bewerbung für {{title}} wird zurückgezogen und lässt sich nicht wiederherstellen.",
+  "hoursDateLabel": "Tag deines Einsatzes",
+  "hoursDatePlaceholder": "Datum, zum Beispiel 2026-06-30",
+  "hoursDateInvalid": "Gib das Datum als JJJJ-MM-TT an, zum Beispiel 2026-06-30.",
+  "hoursDateFuture": "Für ein Datum in der Zukunft kannst du keine Stunden eintragen.",
+  "hoursLoggedTitle": "Stunden zur Prüfung geschickt",
+  "hoursLoggedMessage": "Die Organisation muss deine Stunden bestätigen, bevor daraus Zeitguthaben wird."
 }

@@ -534,5 +534,11 @@
   "confirmWithdrawTitle": "Ritirare questa candidatura?",
   "confirmWithdrawMessage": "L'organizzazione non vedrà più la tua candidatura.",
   "withdrawConfirmTitle": "Ritirare questa candidatura?",
-  "withdrawConfirmMessage": "La tua candidatura per {{title}} verrà ritirata e non potrà essere ripristinata."
+  "withdrawConfirmMessage": "La tua candidatura per {{title}} verrà ritirata e non potrà essere ripristinata.",
+  "hoursDateLabel": "Giorno in cui hai fatto volontariato",
+  "hoursDatePlaceholder": "Data, per esempio 2026-06-30",
+  "hoursDateInvalid": "Inserisci la data come AAAA-MM-GG, per esempio 2026-06-30.",
+  "hoursDateFuture": "Non puoi registrare ore per una data futura.",
+  "hoursLoggedTitle": "Ore inviate per la verifica",
+  "hoursLoggedMessage": "L'organizzazione deve confermare le tue ore prima che diventino crediti di tempo."
 }

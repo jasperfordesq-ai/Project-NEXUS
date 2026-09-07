@@ -533,5 +533,11 @@
   "confirmWithdrawTitle": "Withdraw this application?",
   "confirmWithdrawMessage": "The organisation will no longer see your application.",
   "withdrawConfirmTitle": "Withdraw this application?",
-  "withdrawConfirmMessage": "Your application for {{title}} will be pulled and cannot be put back."
+  "withdrawConfirmMessage": "Your application for {{title}} will be pulled and cannot be put back.",
+  "hoursDateLabel": "Date you volunteered",
+  "hoursDatePlaceholder": "Date, for example 2026-06-30",
+  "hoursDateInvalid": "Enter the date as YYYY-MM-DD, for example 2026-06-30.",
+  "hoursDateFuture": "You cannot log hours for a date in the future.",
+  "hoursLoggedTitle": "Hours sent for checking",
+  "hoursLoggedMessage": "The organisation has to confirm your hours before they become time credits."
 }
