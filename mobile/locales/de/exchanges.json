@@ -258,7 +258,12 @@
     "categoriesEmpty": "Diese Gemeinschaft hat noch keine Kategorien, daher können keine Angebote veröffentlicht werden. Bitte wende dich an deine Koordination.",
     "unsavedTitle": "Dieses Angebot verwerfen?",
     "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
-    "discard": "Verwerfen"
+    "discard": "Verwerfen",
+    "partialSaveTitle": "Dein Angebot ist gespeichert, aber nicht alles dazu",
+    "partialSaveTags": "Die Fähigkeiten konnten nicht gespeichert werden.",
+    "partialSaveImage": "Das Foto konnte nicht gespeichert werden.",
+    "partialSaveRetry": "Den Rest erneut versuchen",
+    "partialSaveContinue": "Ohne sie fortfahren"
   },
   "serviceType": {
     "physical_only": "Persönlich",

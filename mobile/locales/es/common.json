@@ -149,5 +149,17 @@
   "featureUnavailable": {
     "title": "No disponible aquí",
     "subtitle": "Tu comunidad no ha activado esto. Pregunta a quien organiza si crees que debería estar disponible."
+  },
+  "unsavedSaving": {
+    "title": "Guardando todavía",
+    "message": "Tus cambios aún se están guardando. Si sales ahora, puede que no se conserven.",
+    "leave": "Salir de todos modos",
+    "wait": "Seguir esperando"
+  },
+  "sessionRestore": {
+    "title": "No pudimos comprobar tu inicio de sesión",
+    "subtitle": "Tu cuenta sigue en este dispositivo, pero no pudimos conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+    "retry": "Inténtalo de nuevo",
+    "signOut": "Cerrar sesión en su lugar"
   }
 }

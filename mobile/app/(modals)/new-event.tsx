@@ -397,7 +397,8 @@ function NewEventScreen() {
   // 🔴 A mistaken Back used to drop a whole event description without a word (S4-04).
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: isSubmitting || hasSaved,
+    isSaving: isSubmitting,
+    hasSaved,
     confirm,
     title: t('create.unsavedTitle'),
     message: t('create.unsavedMessage'),

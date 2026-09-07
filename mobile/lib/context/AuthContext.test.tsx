@@ -152,10 +152,10 @@ describe('AuthContext', () => {
     await waitFor(() => expect(mockRegisterForPushNotifications).toHaveBeenCalledTimes(1));
   });
 
-  it('clears session when stored token is invalid (getMe rejects)', async () => {
+  it('clears session when the stored token is rejected and there is no cache', async () => {
     mockStorageGet.mockResolvedValue('bad-token');
     mockStorageGetJson.mockResolvedValue(null);
-    mockGetMe.mockRejectedValue(new Error('Unauthorized'));
+    mockGetMe.mockRejectedValue(Object.assign(new Error('Unauthorized'), { status: 401 }));
 
     const { result } = renderHook(() => useAuthContext(), { wrapper });
 
@@ -164,6 +164,62 @@ describe('AuthContext', () => {
     expect(result.current.token).toBeNull();
     expect(mockStorageRemove).toHaveBeenCalled();
     expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * 🔴 Audit 2026-09-06, F09. The cached-user branch already told a revoked token apart
+   * from a flat network; the no-cache branch did not, and signed the member out for any
+   * error at all. Cached user data can be missing for ordinary reasons — a cleared app
+   * cache, an eviction — so an offline launch could throw away a perfectly good session
+   * and make the member sign in again with no connection to do it on.
+   */
+  it.each([
+    ['a network failure', new Error('Network request failed')],
+    ['a timeout', Object.assign(new Error('timeout of 15000ms exceeded'), { code: 'ECONNABORTED' })],
+    ['a server outage', Object.assign(new Error('Service Unavailable'), { status: 503 })],
+  ])('keeps a stored token through %s when nothing is cached', async (_label, error) => {
+    mockStorageGet.mockResolvedValue('good-token');
+    mockStorageGetJson.mockResolvedValue(null);
+    mockGetMe.mockRejectedValue(error);
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(mockStorageRemove).not.toHaveBeenCalled();
+    expect(mockPurgeOfflineCheckin).not.toHaveBeenCalled();
+    // Not signed in — there is no profile to work with — but not signed OUT either.
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.sessionRestoreFailed).toBe(true);
+  });
+
+  it('recovers the session when the member retries after the network returns', async () => {
+    mockStorageGet.mockResolvedValue('good-token');
+    mockStorageGetJson.mockResolvedValue(null);
+    mockGetMe.mockRejectedValue(new Error('Network request failed'));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.sessionRestoreFailed).toBe(true));
+
+    mockGetMe.mockResolvedValue({ data: mockFullUser });
+    await act(async () => { await result.current.retrySessionRestore(); });
+
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+    expect(result.current.sessionRestoreFailed).toBe(false);
+    expect(result.current.token).toBe('good-token');
+  });
+
+  /** Failing to WRITE the cache is not the server rejecting the token. */
+  it('keeps the restored session when caching the fetched user fails', async () => {
+    mockStorageGet.mockResolvedValue('good-token');
+    mockStorageGetJson.mockResolvedValue(null);
+    mockGetMe.mockResolvedValue({ data: mockFullUser });
+    mockStorageSetJson.mockRejectedValueOnce(new Error('disk full'));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(mockStorageRemove).not.toHaveBeenCalled();
   });
 
   it('login() sets user and token', async () => {

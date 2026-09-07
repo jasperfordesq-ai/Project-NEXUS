@@ -152,5 +152,17 @@
   "featureUnavailable": {
     "title": "Níl sé seo ar fáil anseo",
     "subtitle": "Níor chuir do phobal an ghné seo ar siúl. Labhair le heagraí má cheapann tú gur cheart di a bheith ar fáil."
+  },
+  "unsavedSaving": {
+    "title": "Á shábháil fós",
+    "message": "Tá do chuid athruithe á sábháil fós. Má fhágann tú anois, seans nach gcoinneofar iad.",
+    "leave": "Fág mar sin féin",
+    "wait": "Fan nóiméad"
+  },
+  "sessionRestore": {
+    "title": "Níorbh fhéidir linn do shíniú isteach a sheiceáil",
+    "subtitle": "Tá do chuntas ar an ngléas seo fós, ach níorbh fhéidir linn an freastalaí a bhaint amach. Seiceáil do cheangal agus bain triail eile as.",
+    "retry": "Bain triail eile as",
+    "signOut": "Sínigh amach ina ionad sin"
   }
 }

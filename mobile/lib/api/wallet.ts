@@ -145,6 +145,18 @@ export interface WalletTransferPayload {
   recipient: number | string;
   amount: number;
   description: string;
+  /**
+   * One id per transfer the member CONFIRMED, reused verbatim on every retry of that
+   * same transfer (audit 2026-09-06, F07).
+   *
+   * 🔴 Without it `WalletService::transfer` falls back to a 120-second fingerprint of
+   * the request content. That window is both too short and too blunt: a retry after a
+   * timeout that outlives it debits a second time, while two transfers a member really
+   * did mean to send twice inside it collapse into one. With this key the server holds
+   * the claim for 24 hours and replays the ORIGINAL transaction on a duplicate, so an
+   * uncertain retry settles itself instead of risking a second debit.
+   */
+  idempotency_key?: string;
 }
 
 export interface WalletDonatePayload {
@@ -222,7 +234,12 @@ export function searchWalletUsers(query: string, limit = 10): Promise<WalletUser
  * Sends time credits to another member.
  */
 export function transferWalletCredits(payload: WalletTransferPayload): Promise<WalletMutationResponse> {
-  return api.post<WalletMutationResponse>(`${API_V2}/wallet/transfer`, payload);
+  // Sent as a header as well as in the body: `WalletController::transfer` reads either,
+  // and the header is what the rest of this app's idempotent endpoints use.
+  const options = payload.idempotency_key
+    ? { headers: { 'Idempotency-Key': payload.idempotency_key } }
+    : undefined;
+  return api.post<WalletMutationResponse>(`${API_V2}/wallet/transfer`, payload, options);
 }
 
 /**

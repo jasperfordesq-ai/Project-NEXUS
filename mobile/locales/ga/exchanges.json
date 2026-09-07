@@ -258,7 +258,12 @@
     "categoriesEmpty": "Níl aon chatagóirí ag an bpobal seo go fóill, mar sin ní féidir fógraí a fhoilsiú. Déan teagmháil le do chomhordaitheoir.",
     "unsavedTitle": "An fógra seo a chaitheamh i dtraipisí?",
     "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
-    "discard": "Caith i dtraipisí"
+    "discard": "Caith i dtraipisí",
+    "partialSaveTitle": "Tá do liosta sábháilte, ach níl gach rud leis",
+    "partialSaveTags": "Níorbh fhéidir na scileanna a shábháil.",
+    "partialSaveImage": "Níorbh fhéidir an grianghraf a shábháil.",
+    "partialSaveRetry": "Bain triail as an gcuid eile arís",
+    "partialSaveContinue": "Lean ar aghaidh gan iad"
   },
   "serviceType": {
     "physical_only": "Go pearsanta",

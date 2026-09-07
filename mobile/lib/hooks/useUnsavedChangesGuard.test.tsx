@@ -75,22 +75,82 @@ describe('useUnsavedChangesGuard', () => {
   });
 
   /**
-   * 🔴 After a successful save the screen leaves on purpose with `router.replace`.
-   * Without `isBusy` the guard would challenge that very navigation.
+   * 🔴 After a CONFIRMED save the screen leaves on purpose with `router.replace`.
+   * Without `hasSaved` the guard would challenge that very navigation.
    */
-  it('stands down while busy or after a save', () => {
+  it('stands down once a save is confirmed', () => {
     const confirm = jest.fn();
     const { rerender, unmount } = renderHook(
-      (props: { isBusy: boolean }) => useUnsavedChangesGuard({
-        isDirty: true, isBusy: props.isBusy, confirm, ...labels,
+      (props: { hasSaved: boolean }) => useUnsavedChangesGuard({
+        isDirty: true, hasSaved: props.hasSaved, confirm, ...labels,
       }),
-      { initialProps: { isBusy: false } },
+      { initialProps: { hasSaved: false } },
     );
     expect(mockPreventRemove).toHaveBeenLastCalledWith(true, expect.any(Function));
 
-    rerender({ isBusy: true });
+    rerender({ hasSaved: true });
     expect(mockPreventRemove).toHaveBeenLastCalledWith(false, expect.any(Function));
 
     unmount();
+  });
+
+  /**
+   * 🔴 Audit 2026-09-06, F03. A pending write used to disarm the guard, so a member could
+   * walk out of a form mid-save — losing the draft if the request then failed, or being
+   * yanked forward if it succeeded. A save that has been STARTED is not a save that has
+   * been KEPT, so the screen stays protected until the write is confirmed.
+   */
+  it('keeps protecting a dirty screen while a save is still in flight', () => {
+    renderHook(() => useUnsavedChangesGuard({
+      isDirty: true, isSaving: true, confirm: jest.fn(), ...labels,
+    }));
+    expect(mockPreventRemove).toHaveBeenLastCalledWith(true, expect.any(Function));
+  });
+
+  it('offers to wait rather than to discard while a save is in flight', () => {
+    const confirm = jest.fn();
+    renderHook(() => useUnsavedChangesGuard({
+      isDirty: true, isSaving: true, confirm, ...labels,
+    }));
+
+    firePrevented();
+
+    const options = confirm.mock.calls[0][0] as { title: string; message: string; confirmLabel: string; cancelLabel: string };
+    // Not the discard wording: nothing is being thrown away yet, a request is running.
+    expect(options.title).not.toBe(labels.title);
+    expect(options.message).not.toBe(labels.message);
+    expect(options.confirmLabel).not.toBe(labels.discardLabel);
+    expect(mockDispatch).not.toHaveBeenCalled();
+
+    // Leaving anyway is still the member's call.
+    (confirm.mock.calls[0][0] as { onConfirm: () => void }).onConfirm();
+    expect(mockDispatch).toHaveBeenCalledWith({ type: 'GO_BACK' });
+  });
+
+  it('protects a dirty screen again when a save fails', () => {
+    const { rerender } = renderHook(
+      (props: { isSaving: boolean }) => useUnsavedChangesGuard({
+        isDirty: true, isSaving: props.isSaving, confirm: jest.fn(), ...labels,
+      }),
+      { initialProps: { isSaving: true } },
+    );
+
+    // The request rejects: still dirty, no longer saving.
+    rerender({ isSaving: false });
+
+    expect(mockPreventRemove).toHaveBeenLastCalledWith(true, expect.any(Function));
+  });
+
+  it('does not navigate after the screen has been unmounted', () => {
+    const confirm = jest.fn();
+    const { unmount } = renderHook(() => useUnsavedChangesGuard({
+      isDirty: true, confirm, ...labels,
+    }));
+
+    firePrevented();
+    unmount();
+    (confirm.mock.calls[0][0] as { onConfirm: () => void }).onConfirm();
+
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 });

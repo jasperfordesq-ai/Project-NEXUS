@@ -480,6 +480,7 @@ function WalletModalInner() {
                   setActiveAction(null);
                   refresh();
                 }}
+                onRefresh={refresh}
                 initialRecipientId={params.to}
                 initialRecipientName={params.name}
               />
@@ -577,6 +578,15 @@ function WalletModalInner() {
   );
 }
 
+/**
+ * One id per transfer the member confirms. Random rather than derived, so two transfers
+ * that happen to look identical are never mistaken for one another.
+ */
+function walletMutationKey(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
+  return `mobile-wallet-transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 function WalletActionPanel({
   action,
   balance,
@@ -585,6 +595,7 @@ function WalletActionPanel({
   t,
   onClose,
   onComplete,
+  onRefresh,
   initialRecipientId,
   initialRecipientName,
 }: {
@@ -595,6 +606,8 @@ function WalletActionPanel({
   t: (key: string, opts?: Record<string, unknown>) => string;
   onClose: () => void;
   onComplete: () => void;
+  /** Re-read the wallet without closing the panel, after an outcome we cannot read. */
+  onRefresh: () => void;
   initialRecipientId?: string | string[];
   initialRecipientName?: string | string[];
 }) {
@@ -618,6 +631,15 @@ function WalletActionPanel({
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const needsRecipient = action === 'transfer' || donationTarget === 'user';
+  /**
+   * 🔴 Audit 2026-09-06, F07. The id below belongs to the transfer the member CONFIRMED,
+   * not to the button press. It survives a retry of that same transfer — which is what
+   * makes an uncertain outcome safe to retry — and is thrown away the moment either the
+   * transfer is confirmed saved or the member changes what they are sending, because that
+   * is a different transfer and must be able to go through on its own.
+   */
+  const transferKeyRef = useRef<string | null>(null);
+  const transferIntentRef = useRef<string>('');
 
   async function runSearch() {
     if (query.trim().length < 2) return;
@@ -654,11 +676,23 @@ function WalletActionPanel({
     setIsSubmitting(true);
     try {
       if (action === 'transfer') {
+        const description = note.trim() || t('actions.defaultTransferDescription');
+        const intent = JSON.stringify([selectedUser?.id ?? '', parsedAmount, description]);
+        if (transferIntentRef.current !== intent) {
+          transferIntentRef.current = intent;
+          transferKeyRef.current = null;
+        }
+        transferKeyRef.current ??= walletMutationKey();
+
         await transferWalletCredits({
           recipient: selectedUser?.id ?? '',
           amount: parsedAmount,
-          description: note.trim() || t('actions.defaultTransferDescription'),
+          description,
+          idempotency_key: transferKeyRef.current,
         });
+        // Confirmed. The next transfer is a new one and must claim its own id.
+        transferKeyRef.current = null;
+        transferIntentRef.current = '';
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({ title: t('actions.transferSuccessTitle'), description: t('actions.transferSuccessMessage'), variant: 'success' });
       } else {
@@ -675,6 +709,11 @@ function WalletActionPanel({
     } catch (error) {
       const message = error instanceof Error ? error.message : t('actions.mutationFailedMessage');
       showToast({ title: t('actions.mutationFailedTitle'), description: message, variant: 'danger' });
+      // A failed transfer does not say whether the credits moved — a request can fail
+      // after the server committed it. Re-read the wallet so the member is looking at
+      // the truth rather than guessing, and leave the panel open: retrying reuses the
+      // same operation id, so the server replays the original rather than debiting again.
+      onRefresh();
     } finally {
       setIsSubmitting(false);
     }

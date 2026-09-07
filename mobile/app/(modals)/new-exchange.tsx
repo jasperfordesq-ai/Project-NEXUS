@@ -19,8 +19,6 @@ import {
   createExchange,
   generateExchangeDescription,
   getExchangeCategories,
-  setExchangeTags,
-  uploadExchangeImage,
   type ExchangeCategory,
   type ExchangeType,
 } from '@/lib/api/exchanges';
@@ -38,12 +36,27 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Input from '@/components/ui/Input';
 import AccentIcon from '@/components/ui/AccentIcon';
 
+import ListingPartialSaveNotice from '@/components/exchanges/ListingPartialSaveNotice';
+import {
+  listingExtrasFailed,
+  remainingListingExtras,
+  saveListingExtras,
+  type ListingExtras,
+  type ListingExtrasResult,
+} from '@/lib/exchanges/listingExtras';
+import {
+  buildListingDescription,
+  equipmentLabelKeys,
+  equipmentOptions,
+  experienceLabelKeys,
+  experienceOptions,
+  type EquipmentOption,
+  type ExperienceOption,
+} from '@/lib/exchanges/serviceDetails';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
-type ExperienceOption = (typeof experienceOptions)[number];
-type EquipmentOption = (typeof equipmentOptions)[number];
 
 interface FieldErrors {
   title?: string;
@@ -53,24 +66,10 @@ interface FieldErrors {
 }
 
 const serviceTypes: ServiceType[] = ['hybrid', 'physical_only', 'remote_only', 'location_dependent'];
-const experienceOptions = ['beginner_friendly', 'some_experience', 'experienced', 'professional'] as const;
-const equipmentOptions = ['provided', 'partial', 'bring_own', 'not_applicable'] as const;
 const MIN_LISTING_TITLE_LENGTH = 5;
 const MIN_LISTING_DESCRIPTION_LENGTH = 20;
 const MIN_LISTING_HOURS = 0.5;
 const MAX_LISTING_HOURS = 100;
-const experienceLabelKeys: Record<ExperienceOption, string> = {
-  beginner_friendly: 'experienceBeginner',
-  some_experience: 'experienceSome',
-  experienced: 'experienceExperienced',
-  professional: 'experienceProfessional',
-};
-const equipmentLabelKeys: Record<EquipmentOption, string> = {
-  provided: 'equipmentProvidedOption',
-  partial: 'equipmentPartial',
-  bring_own: 'equipmentBringOwn',
-  not_applicable: 'equipmentNa',
-};
 
 export default function NewExchangeModal() {
   return (
@@ -114,6 +113,16 @@ function NewExchangeModalInner() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [serviceType, setServiceType] = useState<ServiceType>('hybrid');
   const [skillTags, setSkillTags] = useState('');
+  /**
+   * 🔴 Audit 2026-09-06, F06. Set when the listing was CREATED but its skills or photo
+   * were not saved. The screen stays put, holding the input that failed, and retries only
+   * the failed write against `listingId` — never `createExchange`, which would post a
+   * second listing.
+   */
+  const [partialSave, setPartialSave] = useState<
+    { listingId: number; extras: ListingExtras; result: ListingExtrasResult } | null
+  >(null);
+  const [retryingExtras, setRetryingExtras] = useState(false);
   const [experienceLevel, setExperienceLevel] = useState<ExperienceOption | ''>('');
   const [equipmentProvided, setEquipmentProvided] = useState<EquipmentOption | ''>('');
   const [accessibilityNotes, setAccessibilityNotes] = useState('');
@@ -141,7 +150,8 @@ function NewExchangeModalInner() {
   // image without a word (audit 2026-09-05, F05). Same guard as edit-profile.
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: submitting || hasSaved,
+    isSaving: submitting,
+    hasSaved,
     confirm,
     title: t('form.unsavedTitle'),
     message: t('form.unsavedMessage'),
@@ -245,7 +255,7 @@ function NewExchangeModalInner() {
     try {
       const createdResponse = await createExchange({
         title: trimmedTitle,
-        description: buildEnrichedDescription(trimmedDescription, {
+        description: buildListingDescription(trimmedDescription, {
           experience: experienceLevel,
           equipment: equipmentProvided,
           accessibility: accessibilityNotes,
@@ -258,32 +268,26 @@ function NewExchangeModalInner() {
       });
       created = true;
       const listingId = createdResponse.data?.id;
-      const tags = skillTags.split(',').map((tag) => tag.trim()).filter(Boolean);
       if (listingId) {
-        if (tags.length > 0) {
-          // Partial success must be reported, like the image below: the listing exists,
-          // the tags do not, and the member would otherwise never know (audit F04). Do
-          // not retry the whole creation — that is how duplicates are made.
-          try {
-            await setExchangeTags(listingId, tags);
-          } catch (err) {
-            showToast({ title: t('detail.tagsSaveFailedTitle'), description: describeApiError(err, t('detail.tagsSaveFailedMessage')), variant: 'danger' });
-          }
+        // The listing exists from here on. Its skills and photo are separate requests,
+        // and this screen is the only place the member's input still lives if one fails.
+        const extras: ListingExtras = {
+          tags: skillTags.split(',').map((tag) => tag.trim()).filter(Boolean),
+          imageUri: selectedImageUri,
+          removeImage: false,
+        };
+        const result = await saveListingExtras(listingId, extras);
+        if (listingExtrasFailed(result)) {
+          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          setPartialSave({ listingId, extras, result });
+          setSubmitting(false);
+          return;
         }
-        if (selectedImageUri) {
-          try {
-            await uploadExchangeImage(listingId, selectedImageUri);
-          } catch (err) {
-            showToast({ title: t('detail.imageUploadFailedTitle'), description: describeApiError(err, t('detail.imageUploadFailedMessage')), variant: 'danger' });
-          }
-        }
-      }
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      if (listingId) {
         successDestination = { pathname: '/(modals)/exchange-detail', params: { id: String(listingId) } };
       } else {
         // No id came back, so there is nothing to land on — the else branch below leaves the form.
       }
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(err instanceof ApiResponseError ? err.message : t('createError'));
@@ -314,6 +318,33 @@ function NewExchangeModalInner() {
         if (typeof router.canGoBack === 'function' && router.canGoBack()) router.back();
         else router.replace('/(tabs)/exchanges');
       }, 0);
+    }
+  }
+
+  /** Open the listing that already exists. Nothing here re-posts it. */
+  function leaveForListing(listingId: number) {
+    setPartialSave(null);
+    setHasSaved(true);
+    setTimeout(() => router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(listingId) } }), 0);
+  }
+
+  /**
+   * Retry ONLY what failed, against the listing that was already created.
+   * 🔴 `createExchange` must never appear here.
+   */
+  async function handleRetryExtras() {
+    if (!partialSave || retryingExtras) return;
+    setRetryingExtras(true);
+    try {
+      const outstanding = remainingListingExtras(partialSave.extras, partialSave.result);
+      const result = await saveListingExtras(partialSave.listingId, outstanding);
+      if (listingExtrasFailed(result)) {
+        setPartialSave({ listingId: partialSave.listingId, extras: outstanding, result });
+        return;
+      }
+      leaveForListing(partialSave.listingId);
+    } finally {
+      setRetryingExtras(false);
     }
   }
 
@@ -600,6 +631,26 @@ function NewExchangeModalInner() {
           className="border-t px-4 pt-3"
           style={{ paddingBottom: Math.max(12, bottomInset + 12), backgroundColor: theme.surface, borderColor: theme.border }}
         >
+          {/*
+            In the footer, above the buttons, so it cannot be scrolled past: the listing
+            exists and the member has a decision to make about what did not save with it.
+          */}
+          {partialSave ? (
+            <View className="mb-3">
+              <ListingPartialSaveNotice
+                tagsFailed={partialSave.result.tagsFailed}
+                imageFailed={partialSave.result.imageFailed}
+                isRetrying={retryingExtras}
+                onRetry={() => void handleRetryExtras()}
+                onContinue={() => leaveForListing(partialSave.listingId)}
+                title={t('form.partialSaveTitle')}
+                tags={t('form.partialSaveTags')}
+                image={t('form.partialSaveImage')}
+                retry={t('form.partialSaveRetry')}
+                continueLabel={t('form.partialSaveContinue')}
+              />
+            </View>
+          ) : null}
           <View className="flex-row gap-3">
             <HeroButton className="flex-1" variant="secondary" isDisabled={submitting} onPress={() => router.back()}>
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
@@ -712,33 +763,6 @@ function inputStyle(theme: ReturnType<typeof useTheme>, invalid = false) {
     paddingHorizontal: 14,
     paddingVertical: 13,
   };
-}
-
-function buildEnrichedDescription(
-  baseDescription: string,
-  details: { experience: string; equipment: string; accessibility: string },
-  t: (key: string) => string,
-) {
-  const detailLines = [
-    details.experience.trim() ? `${t('form.experienceLabel')}: ${formatExperienceDetail(details.experience.trim(), t)}` : '',
-    details.equipment.trim() ? `${t('form.equipmentLabel')}: ${formatEquipmentDetail(details.equipment.trim(), t)}` : '',
-    details.accessibility.trim() ? `${t('form.accessibilityLabel')}: ${details.accessibility.trim()}` : '',
-  ].filter(Boolean);
-
-  if (detailLines.length === 0) return baseDescription;
-  return `${baseDescription}\n\n---\n${detailLines.join('\n')}`.trim();
-}
-
-function formatExperienceDetail(value: string, t: (key: string) => string): string {
-  return experienceOptions.includes(value as ExperienceOption)
-    ? t(`form.${experienceLabelKeys[value as ExperienceOption]}`)
-    : value;
-}
-
-function formatEquipmentDetail(value: string, t: (key: string) => string): string {
-  return equipmentOptions.includes(value as EquipmentOption)
-    ? t(`form.${equipmentLabelKeys[value as EquipmentOption]}`)
-    : value;
 }
 
 function isGenericListingTitle(title: string, categoryName: string): boolean {

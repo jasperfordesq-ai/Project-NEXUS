@@ -180,7 +180,7 @@ function EventCommunicationsScreenInner() {
   // 🔴 Back, a swipe or the composer's own Cancel used to drop organiser wording silently.
   useUnsavedChangesGuard({
     isDirty: composerDirty,
-    isBusy: isSaving,
+    isSaving,
     confirm,
     title: t('unsaved_title'),
     message: t('unsaved_message'),

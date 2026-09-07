@@ -258,7 +258,12 @@
     "categoriesEmpty": "This community has no listing categories yet, so listings can’t be published. Please contact your coordinator.",
     "unsavedTitle": "Discard this listing?",
     "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
-    "discard": "Discard"
+    "discard": "Discard",
+    "partialSaveTitle": "Your listing is saved, but not everything with it",
+    "partialSaveTags": "The skills could not be saved.",
+    "partialSaveImage": "The photo could not be saved.",
+    "partialSaveRetry": "Try the rest again",
+    "partialSaveContinue": "Continue without them"
   },
   "serviceType": {
     "physical_only": "In person",

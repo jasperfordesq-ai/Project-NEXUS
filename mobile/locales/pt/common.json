@@ -149,5 +149,17 @@
   "featureUnavailable": {
     "title": "Não disponível aqui",
     "subtitle": "A tua comunidade não ativou esta funcionalidade. Fala com quem organiza se achas que devia estar disponível."
+  },
+  "unsavedSaving": {
+    "title": "Ainda a guardar",
+    "message": "As suas alterações ainda estão a ser guardadas. Se sair agora, podem não ser mantidas.",
+    "leave": "Sair mesmo assim",
+    "wait": "Continuar à espera"
+  },
+  "sessionRestore": {
+    "title": "Não conseguimos verificar a sua sessão",
+    "subtitle": "A sua conta continua neste dispositivo, mas não conseguimos contactar o servidor. Verifique a ligação e tente novamente.",
+    "retry": "Tentar novamente",
+    "signOut": "Terminar sessão em vez disso"
   }
 }

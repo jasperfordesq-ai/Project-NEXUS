@@ -10,13 +10,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  *
  * Inside Android `presentation: 'modal'` screens, useSafeAreaInsets()
  * reports bottom: 0, so bottom sheets and form footers rendered in modal
- * routes sat underneath the system navigation bar. The root layout records
- * the real inset here once; consumers take max(hookValue, root value).
+ * routes sat underneath the system navigation bar. The root layout keeps
+ * the real inset here; consumers take max(hookValue, root value).
  */
 let rootBottomInset = 0;
 
+/**
+ * Record the bottom inset measured at the ROOT of the app.
+ *
+ * 🔴 Only `RootInsetRecorder` in `app/_layout.tsx` may call this, and it passes the live
+ * root value on every render — so the latest reading is the truth and simply replaces the
+ * last one. It used to be a ratchet that could only grow (audit 2026-09-06, F08). That
+ * survived a real decrease: switching Android from 3-button to gesture navigation removes
+ * the 48dp bar, but every modal went on reserving space for it until the process
+ * restarted. The modal-reports-zero case this module exists for is handled where it
+ * belongs — in `useBottomInset`, which floors the screen's own value with this one.
+ */
 export function setRootBottomInset(value: number): void {
-  if (Number.isFinite(value) && value > rootBottomInset) {
+  if (Number.isFinite(value) && value >= 0) {
     rootBottomInset = value;
   }
 }

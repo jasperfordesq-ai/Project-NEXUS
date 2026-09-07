@@ -139,7 +139,8 @@ function NewChallengeScreen() {
   const isDirty = baselineRef.current !== null && formFingerprint !== baselineRef.current;
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: isSubmitting || hasSaved,
+    isSaving: isSubmitting,
+    hasSaved,
     confirm,
     title: t('ideation:create.unsavedTitle'),
     message: t('ideation:create.unsavedMessage'),

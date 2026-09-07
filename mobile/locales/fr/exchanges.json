@@ -258,7 +258,12 @@
     "categoriesEmpty": "Cette communauté n’a pas encore de catégories ; aucune annonce ne peut donc être publiée. Contactez votre coordination.",
     "unsavedTitle": "Abandonner cette annonce ?",
     "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
-    "discard": "Abandonner"
+    "discard": "Abandonner",
+    "partialSaveTitle": "Votre annonce est enregistrée, mais pas tout ce qui l'accompagne",
+    "partialSaveTags": "Les compétences n'ont pas pu être enregistrées.",
+    "partialSaveImage": "La photo n'a pas pu être enregistrée.",
+    "partialSaveRetry": "Réessayer le reste",
+    "partialSaveContinue": "Continuer sans elles"
   },
   "serviceType": {
     "physical_only": "En personne",

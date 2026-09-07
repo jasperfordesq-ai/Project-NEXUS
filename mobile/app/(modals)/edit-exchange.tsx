@@ -16,17 +16,30 @@ import { useTranslation } from 'react-i18next';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, TagGroup } from 'heroui-native';
 
 import {
-  deleteExchangeImage,
   generateExchangeDescription,
   getExchangeCategories,
   getExchange,
-  setExchangeTags,
   updateExchange,
-  uploadExchangeImage,
   type Exchange,
   type ExchangeCategory,
   type ExchangeType,
 } from '@/lib/api/exchanges';
+import ListingPartialSaveNotice from '@/components/exchanges/ListingPartialSaveNotice';
+import {
+  listingExtrasFailed,
+  remainingListingExtras,
+  saveListingExtras,
+  type ListingExtras,
+  type ListingExtrasResult,
+} from '@/lib/exchanges/listingExtras';
+import {
+  buildListingDescription,
+  equipmentLabelKeys,
+  equipmentOptions,
+  experienceLabelKeys,
+  experienceOptions,
+  parseListingDescription,
+} from '@/lib/exchanges/serviceDetails';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -93,6 +106,9 @@ function EditExchangeModalInner() {
   const [experienceLevel, setExperienceLevel] = useState('');
   const [equipmentProvided, setEquipmentProvided] = useState('');
   const [accessibilityNotes, setAccessibilityNotes] = useState('');
+  // Detail lines this build does not understand — a field the web client added, or a
+  // locale we do not bundle. Held so an edit here re-emits them instead of erasing them.
+  const [unknownDetailLines, setUnknownDetailLines] = useState<string[]>([]);
   const [showServiceDetails, setShowServiceDetails] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -101,6 +117,13 @@ function EditExchangeModalInner() {
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [saving, setSaving] = useState(false);
   const [hydratedListingId, setHydratedListingId] = useState<number | null>(null);
+  /**
+   * 🔴 Audit 2026-09-06, F06. Set when the LISTING saved but its skills or photo did not.
+   * The screen then stays where it is, holding the input that failed, and offers to retry
+   * only the failed part. Navigating away here is what used to destroy that input.
+   */
+  const [partialSave, setPartialSave] = useState<{ extras: ListingExtras; result: ListingExtrasResult } | null>(null);
+  const [retryingExtras, setRetryingExtras] = useState(false);
 
   const { data, isLoading, error, refresh } = useApi(
     () => getExchange(safeListingId),
@@ -120,12 +143,13 @@ function EditExchangeModalInner() {
   useEffect(() => {
     if (!listing) return;
     if (hydratedListingId === listing.id) return;
-    const parsedDescription = parseEnrichedDescription(listing.description ?? '', t);
+    const parsedDescription = parseListingDescription(listing.description ?? '', t);
     setTitle(listing.title ?? '');
     setDescription(parsedDescription.description);
     setExperienceLevel(parsedDescription.experience);
     setEquipmentProvided(parsedDescription.equipment);
     setAccessibilityNotes(parsedDescription.accessibility);
+    setUnknownDetailLines(parsedDescription.unknownDetailLines);
     setType(listing.type ?? 'offer');
     setHours(String(listing.hours_estimate ?? listing.estimated_hours ?? 1));
     setServiceType((listing.service_type ?? 'hybrid') as ServiceType);
@@ -161,7 +185,8 @@ function EditExchangeModalInner() {
   // 🔴 Same guard as new-exchange and edit-profile (audit 2026-09-05, F05).
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: saving || hasSaved,
+    isSaving: saving,
+    hasSaved,
     confirm,
     title: t('form.unsavedTitle'),
     message: t('form.unsavedMessage'),
@@ -249,11 +274,11 @@ function EditExchangeModalInner() {
     try {
       await updateExchange(safeListingId, {
         title: trimmedTitle,
-        description: buildEnrichedDescription(trimmedDescription, {
+        description: buildListingDescription(trimmedDescription, {
           experience: experienceLevel,
           equipment: equipmentProvided,
           accessibility: accessibilityNotes,
-        }, t),
+        }, t, unknownDetailLines),
         type,
         hours_estimate: parsedHours,
         // 🔴 `?? 1` used to re-file the listing under category 1 whenever the picker had
@@ -262,34 +287,57 @@ function EditExchangeModalInner() {
         location: listingLocation,
         service_type: serviceType,
       });
-      const tags = skillTags.split(',').map((tag) => tag.trim()).filter(Boolean);
-      // Partial success is reported, not swallowed: the listing is saved, the tags are
-      // not, and the member needs to know (audit 2026-09-05, F04).
-      try {
-        await setExchangeTags(safeListingId, tags);
-      } catch (err) {
-        showToast({ title: t('detail.tagsSaveFailedTitle'), description: describeApiError(err, t('detail.tagsSaveFailedMessage')), variant: 'danger' });
+      // The listing itself is saved from here on. Its skills and photo are separate
+      // requests, each of which can fail on its own — and if one does, this screen is the
+      // only place the member's failed input still exists.
+      const extras: ListingExtras = {
+        tags: skillTags.split(',').map((tag) => tag.trim()).filter(Boolean),
+        imageUri: selectedImageUri,
+        removeImage: removeExistingImage && Boolean(listing?.image_url),
+      };
+      const result = await saveListingExtras(safeListingId, extras);
+      if (listingExtrasFailed(result)) {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        setPartialSave({ extras, result });
+        return;
       }
-      // Same rule as the tags: the listing IS saved by now, so an image failure is reported
-      // as partial success rather than as "could not save changes" (audit 2026-09-05, S2-04).
-      try {
-        if (selectedImageUri) {
-          await uploadExchangeImage(safeListingId, selectedImageUri);
-        } else if (removeExistingImage && listing?.image_url) {
-          await deleteExchangeImage(safeListingId);
-        }
-      } catch (err) {
-        showToast({ title: t('detail.imageSaveFailedTitle'), description: describeApiError(err, t('detail.imageSaveFailedMessage')), variant: 'warning' });
-      }
+
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.editSavedTitle'), description: t('detail.editSavedMessage'), variant: 'success' });
-      setHasSaved(true);
-      router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } });
+      leaveForListing();
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.editSaveFailed')), variant: 'danger' });
     } finally {
       setSaving(false);
+    }
+  }
+
+  /** The listing is saved either way; this is only about how the member leaves. */
+  function leaveForListing() {
+    setPartialSave(null);
+    setHasSaved(true);
+    router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } });
+  }
+
+  /**
+   * Retry ONLY what failed, against the listing that already exists.
+   * 🔴 The listing must never be part of a retry — it saved the first time.
+   */
+  async function handleRetryExtras() {
+    if (!partialSave || retryingExtras) return;
+    setRetryingExtras(true);
+    try {
+      const outstanding = remainingListingExtras(partialSave.extras, partialSave.result);
+      const result = await saveListingExtras(safeListingId, outstanding);
+      if (listingExtrasFailed(result)) {
+        setPartialSave({ extras: outstanding, result });
+        return;
+      }
+      showToast({ title: t('detail.editSavedTitle'), description: t('detail.editSavedMessage'), variant: 'success' });
+      leaveForListing();
+    } finally {
+      setRetryingExtras(false);
     }
   }
 
@@ -610,6 +658,26 @@ function EditExchangeModalInner() {
           className="border-t px-4 pt-3"
           style={{ paddingBottom: Math.max(12, bottomInset + 12), backgroundColor: theme.surface, borderColor: theme.border }}
         >
+          {/*
+            Sits above the buttons, in the footer, so it cannot be scrolled past: the
+            listing is saved and the member has a decision to make about the rest.
+          */}
+          {partialSave ? (
+            <View className="mb-3">
+              <ListingPartialSaveNotice
+                tagsFailed={partialSave.result.tagsFailed}
+                imageFailed={partialSave.result.imageFailed}
+                isRetrying={retryingExtras}
+                onRetry={() => void handleRetryExtras()}
+                onContinue={leaveForListing}
+                title={t('form.partialSaveTitle')}
+                tags={t('form.partialSaveTags')}
+                image={t('form.partialSaveImage')}
+                retry={t('form.partialSaveRetry')}
+                continueLabel={t('form.partialSaveContinue')}
+              />
+            </View>
+          ) : null}
           <View className="flex-row gap-3">
             <HeroButton className="flex-1" variant="secondary" isDisabled={saving} onPress={() => router.back()}>
               <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
@@ -731,59 +799,6 @@ function inputStyle(theme: ReturnType<typeof useTheme>, invalid = false) {
   };
 }
 
-function stripHtml(value: string): string {
-  return value
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
-    .replace(/<\/(?:div|p|li|h[1-6])>/gi, '\n')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n[ \t]+/g, '\n')
-    .replace(/[ \t]+\n/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
-function parseEnrichedDescription(value: string, t: (key: string) => string) {
-  const plain = stripHtml(value);
-  const [main, detailsBlock = ''] = plain.split(/\n\s*---\s*\n/);
-  const details = detailsBlock.split('\n').map((line) => line.trim()).filter(Boolean);
-  return {
-    description: main.trim(),
-    experience: findDetail(details, [t('form.experienceLabel'), 'Experience']),
-    equipment: findDetail(details, [t('form.equipmentLabel'), 'Equipment']),
-    accessibility: findDetail(details, [t('form.accessibilityLabel'), 'Accessibility']),
-  };
-}
-
-function findDetail(lines: string[], labels: string[]): string {
-  const value = labels
-    .map((label) => {
-      const prefix = `${label}:`;
-      return lines.find((line) => line.toLowerCase().startsWith(prefix.toLowerCase()))
-        ?.slice(prefix.length)
-        .trim() ?? '';
-    })
-    .find(Boolean) ?? '';
-  return normalizeServiceDetailValue(value);
-}
-
-function buildEnrichedDescription(
-  baseDescription: string,
-  details: { experience: string; equipment: string; accessibility: string },
-  t: (key: string) => string,
-) {
-  const detailLines = [
-    details.experience.trim() ? `${t('form.experienceLabel')}: ${formatExperienceDetail(details.experience.trim(), t)}` : '',
-    details.equipment.trim() ? `${t('form.equipmentLabel')}: ${formatEquipmentDetail(details.equipment.trim(), t)}` : '',
-    details.accessibility.trim() ? `${t('form.accessibilityLabel')}: ${details.accessibility.trim()}` : '',
-  ].filter(Boolean);
-
-  if (detailLines.length === 0) return baseDescription;
-  return `${baseDescription}\n\n---\n${detailLines.join('\n')}`.trim();
-}
-
 function isGenericListingTitle(title: string, categoryName: string): boolean {
   const normalizedTitle = title.trim().toLowerCase();
   const normalizedCategory = categoryName.trim().toLowerCase();
@@ -792,63 +807,6 @@ function isGenericListingTitle(title: string, categoryName: string): boolean {
     .replace(/^(i can help with|help with|looking for help with|need help with)\s+/i, '')
     .trim();
   return normalizedTitle === normalizedCategory || stripped === normalizedCategory;
-}
-
-const experienceOptions = ['beginner_friendly', 'some_experience', 'experienced', 'professional'] as const;
-const equipmentOptions = ['provided', 'partial', 'bring_own', 'not_applicable'] as const;
-
-const experienceLabelKeys: Record<(typeof experienceOptions)[number], string> = {
-  beginner_friendly: 'experienceBeginner',
-  some_experience: 'experienceSome',
-  experienced: 'experienceExperienced',
-  professional: 'experienceProfessional',
-};
-
-const equipmentLabelKeys: Record<(typeof equipmentOptions)[number], string> = {
-  provided: 'equipmentProvidedOption',
-  partial: 'equipmentPartial',
-  bring_own: 'equipmentBringOwn',
-  not_applicable: 'equipmentNa',
-};
-
-function normalizeServiceDetailValue(value: string): string {
-  const normalized = value.trim().toLowerCase();
-  const experienceMatch = experienceOptions.find((option) => (
-    option === normalized
-    || option.replace(/_/g, ' ') === normalized
-    || webDetailAliases[option]?.includes(normalized)
-  ));
-  if (experienceMatch) return experienceMatch;
-
-  const equipmentMatch = equipmentOptions.find((option) => (
-    option === normalized
-    || option.replace(/_/g, ' ') === normalized
-    || webDetailAliases[option]?.includes(normalized)
-  ));
-  return equipmentMatch ?? value;
-}
-
-const webDetailAliases: Record<string, string[]> = {
-  beginner_friendly: ['beginner-friendly'],
-  some_experience: ['some experience helpful'],
-  experienced: ['experienced practitioner'],
-  professional: ['professional / certified', 'professional/certified'],
-  provided: ["i'll provide everything needed", 'i will provide everything needed'],
-  partial: ['some things needed from you'],
-  bring_own: ["you'll need to provide your own", 'you will need to provide your own'],
-  not_applicable: ['not applicable'],
-};
-
-function formatExperienceDetail(value: string, t: (key: string) => string): string {
-  return experienceOptions.includes(value as (typeof experienceOptions)[number])
-    ? t(`form.${experienceLabelKeys[value as (typeof experienceOptions)[number]]}`)
-    : value;
-}
-
-function formatEquipmentDetail(value: string, t: (key: string) => string): string {
-  return equipmentOptions.includes(value as (typeof equipmentOptions)[number])
-    ? t(`form.${equipmentLabelKeys[value as (typeof equipmentOptions)[number]]}`)
-    : value;
 }
 
 function getProfileLocation(user: unknown): string {

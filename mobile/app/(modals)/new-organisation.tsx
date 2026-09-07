@@ -74,7 +74,8 @@ function NewOrganisationInner() {
   const isDirty = form.name !== '' || form.description !== '' || form.contact_email !== '' || form.website !== '' || agreedTerms;
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: isSubmitting || hasSaved,
+    isSaving: isSubmitting,
+    hasSaved,
     confirm,
     title: t('register.unsavedTitle'),
     message: t('register.unsavedMessage'),

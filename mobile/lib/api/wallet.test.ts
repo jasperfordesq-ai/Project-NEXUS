@@ -144,7 +144,16 @@ describe('wallet mutations and search', () => {
     const payload = { recipient: 12, amount: 2, description: 'Garden help' };
     (api.post as jest.Mock).mockResolvedValue({ success: true });
     await transferWalletCredits(payload);
-    expect(api.post).toHaveBeenCalledWith('/api/v2/wallet/transfer', payload);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/wallet/transfer', payload, undefined);
+  });
+
+  it('carries a transfer operation id in the header as well as the body', async () => {
+    const payload = { recipient: 12, amount: 2, description: 'Garden help', idempotency_key: 'op-1' };
+    (api.post as jest.Mock).mockResolvedValue({ success: true });
+    await transferWalletCredits(payload);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/wallet/transfer', payload, {
+      headers: { 'Idempotency-Key': 'op-1' },
+    });
   });
 
   it('posts donation payload to the v2 wallet donation endpoint', async () => {

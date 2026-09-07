@@ -57,6 +57,11 @@ jest.mock('react-i18next', () => ({
       requestPlaceholder: 'What do you need?',
       descriptionPlaceholder: 'Add more details...',
       postOffer: 'Post Offer',
+      'form.partialSaveTitle': 'Your listing is saved, but not everything with it',
+      'form.partialSaveTags': 'The skills could not be saved.',
+      'form.partialSaveImage': 'The photo could not be saved.',
+      'form.partialSaveRetry': 'Try the rest again',
+      'form.partialSaveContinue': 'Continue without them',
       postRequest: 'Post Request',
       categoryLabel: String(opts?.name ?? ''),
       createError: 'Failed to create exchange.',
@@ -156,7 +161,7 @@ jest.mock('@/lib/api/client', () => ({
 
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn(),
-  NotificationFeedbackType: { Success: 'success', Error: 'error' },
+  NotificationFeedbackType: { Success: 'success', Error: 'error', Warning: 'warning' },
 }));
 
 // Stable AppToast mock — fns created inside the factory closure.
@@ -284,9 +289,14 @@ describe('NewExchangeModal', () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: '9' } }));
   });
 
-  it('warns when the listing is saved but the image upload fails', async () => {
+  /**
+   * Audit 2026-09-06, F06. The photo is the harder half of a partial save: a member who
+   * picked one from their library has to pick it again if the screen navigates away, and
+   * the notice must say the PHOTO failed rather than blaming the skills.
+   */
+  it('holds the form and names the photo when only the image upload fails', async () => {
     mockUploadExchangeImage.mockRejectedValue(new Error('Upload failed'));
-    const { getByPlaceholderText, getByText } = render(<NewExchangeModal />);
+    const { getByPlaceholderText, getByText, getByTestId, queryByText } = render(<NewExchangeModal />);
     fireEvent.changeText(getByPlaceholderText('What are you offering?'), 'Gardening help');
     fireEvent.changeText(getByPlaceholderText('Add more details...'), 'I can help with weeding and pruning.');
     fireEvent.press(getByText('Teaching'));
@@ -295,8 +305,35 @@ describe('NewExchangeModal', () => {
     fireEvent.press(getByText('Post Offer'));
 
     await waitFor(() => expect(mockUploadExchangeImage).toHaveBeenCalledWith(9, 'file:///tmp/listing.jpg'));
-    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Listing saved', description: 'Image upload failed', variant: 'danger' }));
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: '9' } }));
+    await waitFor(() => expect(getByTestId('listing-partial-save')).toBeTruthy());
+    expect(getByText('The photo could not be saved.')).toBeTruthy();
+    expect(queryByText('The skills could not be saved.')).toBeNull();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('retries only the image, and opens the listing once it lands', async () => {
+    mockUploadExchangeImage
+      .mockRejectedValueOnce(new Error('Upload failed'))
+      .mockResolvedValueOnce({ data: { image_url: '/uploads/listing.jpg' } });
+    const { getByPlaceholderText, getByText, getByTestId } = render(<NewExchangeModal />);
+    fireEvent.changeText(getByPlaceholderText('What are you offering?'), 'Gardening help');
+    fireEvent.changeText(getByPlaceholderText('Add more details...'), 'I can help with weeding and pruning.');
+    fireEvent.press(getByText('Teaching'));
+    fireEvent.press(getByText('Add image'));
+    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
+    fireEvent.press(getByText('Post Offer'));
+    await waitFor(() => expect(getByTestId('listing-partial-save')).toBeTruthy());
+
+    const tagCallsBeforeRetry = mockSetExchangeTags.mock.calls.length;
+    fireEvent.press(getByTestId('listing-partial-save-retry'));
+
+    await waitFor(() => expect(mockUploadExchangeImage).toHaveBeenCalledTimes(2));
+    // The tags already landed; re-sending them would apply the same write twice.
+    expect(mockSetExchangeTags).toHaveBeenCalledTimes(tagCallsBeforeRetry);
+    expect(mockCreateExchange).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/(modals)/exchange-detail', params: { id: '9' },
+    }));
   });
 
   it('generates a description from the listing context', async () => {
@@ -409,11 +446,12 @@ describe('NewExchangeModal — audit 2026-09-05 regressions', () => {
   });
 
   /**
-   * F04. Tags used to fail silently (`.catch(() => null)`): the listing existed, the
-   * tags did not, and the member never knew. The listing is still opened — retrying
-   * the whole creation is how duplicates are made.
+   * F04, then audit 2026-09-06 F06. Tags used to fail silently; then they were reported
+   * in a toast and the screen navigated to the listing anyway, taking the failed skills
+   * with it. Now the screen holds its ground so the member can retry just the skills —
+   * never the creation, which is how duplicate listings are made.
    */
-  it('reports that the listing was saved but its tags were not', async () => {
+  it('holds the form when the listing saved but its skills did not', async () => {
     mockSetExchangeTags.mockRejectedValue(new Error('tags down'));
     const screen = render(<NewExchangeModal />);
     fillValidListing(screen);
@@ -422,11 +460,50 @@ describe('NewExchangeModal — audit 2026-09-05 regressions', () => {
 
     fireEvent.press(screen.getByText('Post Offer'));
 
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
-      title: expect.stringMatching(/tagsSaveFailedTitle|Listing saved/),
-      variant: 'danger',
-    })));
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: '9' } }));
+    await waitFor(() => expect(screen.getByTestId('listing-partial-save')).toBeTruthy());
+    expect(screen.getByText('The skills could not be saved.')).toBeTruthy();
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockCreateExchange).toHaveBeenCalledTimes(1);
+    // The failed skills are still in the form to retry with.
+    expect(screen.getByDisplayValue('gardening, pruning')).toBeTruthy();
+  });
+
+  it('retries only the skills against the listing it already created', async () => {
+    mockSetExchangeTags
+      .mockRejectedValueOnce(new Error('tags down'))
+      .mockResolvedValueOnce({ data: {} });
+    const screen = render(<NewExchangeModal />);
+    fillValidListing(screen);
+    fireEvent.changeText(screen.getByPlaceholderText('gardening, mentoring'), 'gardening, pruning');
+    fireEvent.press(screen.getByText('Teaching'));
+    fireEvent.press(screen.getByText('Post Offer'));
+    await waitFor(() => expect(screen.getByTestId('listing-partial-save')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('listing-partial-save-retry'));
+
+    await waitFor(() => expect(mockSetExchangeTags).toHaveBeenCalledTimes(2));
+    // 🔴 The listing exists. A retry that posted it again would create a second one.
+    expect(mockCreateExchange).toHaveBeenCalledTimes(1);
+    expect(mockSetExchangeTags).toHaveBeenLastCalledWith(9, ['gardening', 'pruning']);
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/(modals)/exchange-detail', params: { id: '9' },
+    }));
+  });
+
+  it('lets the member open the new listing without the parts that failed', async () => {
+    mockSetExchangeTags.mockRejectedValue(new Error('tags down'));
+    const screen = render(<NewExchangeModal />);
+    fillValidListing(screen);
+    fireEvent.changeText(screen.getByPlaceholderText('gardening, mentoring'), 'gardening, pruning');
+    fireEvent.press(screen.getByText('Teaching'));
+    fireEvent.press(screen.getByText('Post Offer'));
+    await waitFor(() => expect(screen.getByTestId('listing-partial-save')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('listing-partial-save-continue'));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/(modals)/exchange-detail', params: { id: '9' },
+    }));
     expect(mockCreateExchange).toHaveBeenCalledTimes(1);
   });
 

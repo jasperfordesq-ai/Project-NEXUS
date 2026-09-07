@@ -126,6 +126,52 @@ const expiry = network.match(/<pin-set expiration="([0-9-]+)"/)?.[1];
 assert(Boolean(expiry) && Date.parse(expiry) > Date.now() + 90 * 86400_000, 'certificate pins must remain valid for at least 90 days');
 assert(app.android?.intentFilters?.every((filter) => filter.data?.every((entry) => entry.scheme === 'nexus' || (entry.scheme === 'https' && entry.host === 'app.project-nexus.ie'))), 'Android app links must allow only the trusted host or nexus scheme');
 
+/**
+ * The other half of `autoVerify`.
+ *
+ * 🔴 Declaring `autoVerify: true` for app.project-nexus.ie only asks Android to check; what
+ * it checks is `https://app.project-nexus.ie/.well-known/assetlinks.json`, served by the
+ * React frontend. Found on 2026-09-06 naming the WRONG package (`com.nexus.timebank`, which
+ * is not this app) with a literal `REPLACE_WITH_...` fingerprint — so verification could
+ * only ever fail, and every https deep link opened the browser or a chooser instead of the
+ * app. The app.json half looked correct the whole time, which is why nothing caught it.
+ *
+ * 🔴 The fingerprint below is the LOCAL upload key. If Play App Signing is enabled — it is
+ * mandatory for apps published since 2021 — Google re-signs the app with its own
+ * certificate, and THAT SHA-256 (Play Console -> Test and release -> App integrity -> App
+ * signing key certificate) must be listed here too, or links stay unverified for every
+ * member who installed from Play. Listing several fingerprints is supported and expected.
+ * Adding it needs the owner's Play Console; until then this file is correct for locally
+ * installed builds only.
+ */
+const assetLinksUrl = new URL('../../react-frontend/public/.well-known/assetlinks.json', import.meta.url);
+if (!fs.existsSync(assetLinksUrl)) {
+  assert(false, 'assetlinks.json must exist for Android App Links autoVerify to succeed');
+} else {
+  const raw = fs.readFileSync(assetLinksUrl, 'utf8');
+  assert(!/REPLACE_WITH/i.test(raw), 'assetlinks.json still contains a placeholder fingerprint');
+  let assetLinks = null;
+  try {
+    assetLinks = JSON.parse(raw);
+  } catch {
+    assert(false, 'assetlinks.json must be valid JSON');
+  }
+  if (Array.isArray(assetLinks)) {
+    const target = assetLinks.find((entry) => entry?.target?.namespace === 'android_app');
+    assert(Boolean(target), 'assetlinks.json must declare an android_app target');
+    assert(
+      target?.target?.package_name === app.android?.package,
+      `assetlinks.json package must be ${app.android?.package}, the package Android verifies`,
+    );
+    const fingerprints = target?.target?.sha256_cert_fingerprints ?? [];
+    assert(
+      fingerprints.length > 0
+        && fingerprints.every((value) => /^(?:[A-F0-9]{2}:){31}[A-F0-9]{2}$/.test(value)),
+      'assetlinks.json fingerprints must be upper-case colon-separated SHA-256 values',
+    );
+  }
+}
+
 if (failures.length) {
   failures.forEach((failure) => console.error(`release gate: ${failure}`));
   process.exit(1);

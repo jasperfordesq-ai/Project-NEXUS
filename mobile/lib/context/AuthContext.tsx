@@ -9,6 +9,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { router } from 'expo-router';
@@ -50,6 +51,11 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  /**
+   * A stored token exists but could not be checked because the server was unreachable.
+   * The member is not signed in and not signed out — offer them a retry, not a login form.
+   */
+  sessionRestoreFailed: boolean;
 }
 
 interface AuthContextValue extends AuthState {
@@ -61,15 +67,49 @@ interface AuthContextValue extends AuthState {
   refreshUser: (updated: AnyUser) => void;
   /** Display-ready name for the current user */
   displayName: string;
+  /** Try a failed start-up validation again, once the member has a connection. */
+  retrySessionRestore: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+/**
+ * Did the SERVER refuse these credentials, or could we simply not reach it?
+ *
+ * 🔴 Only a 401 answers "refused". A timeout, a dropped connection, a 5xx or a DNS
+ * failure prove nothing about the token, and treating them as a refusal is how a member
+ * gets signed out for being on a train (audit 2026-09-06, F09).
+ */
+function isCredentialRejection(error: unknown): boolean {
+  const status = (error as { status?: number })?.status
+    ?? (error as { response?: { status?: number } })?.response?.status;
+  return status === 401;
+}
+
+/**
+ * Write the profile to the local cache. Best effort on purpose: a full disk or a
+ * storage fault is not the server rejecting the session, and must not end it.
+ */
+async function cacheUserBestEffort(profile: AnyUser): Promise<void> {
+  try {
+    await storage.setJson(STORAGE_KEYS.USER_DATA, profile);
+  } catch {
+    /* the session is valid either way; the next launch simply re-fetches */
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation(['common']);
   const [user, setUser] = useState<AnyUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  /**
+   * True when a stored token could not be validated because the SERVER could not be
+   * reached — not because it refused the token. The credentials are still on the device
+   * and a retry may well succeed (audit 2026-09-06, F09).
+   */
+  const [sessionRestoreFailed, setSessionRestoreFailed] = useState(false);
+  const isMountedRef = useRef(true);
   /** Track whether push notifications were successfully registered */
 
   /**
@@ -116,90 +156,102 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .catch(() => { /* best-effort */ });
   }, []);
 
-  // On app start: restore cached user immediately, then re-validate in background.
-  // This avoids blocking the UI on a slow network — the app renders from cache first.
-  useEffect(() => {
-    let isMounted = true;
+  /** Throw the session away. Only ever correct when the server REFUSED the credentials. */
+  const discardStoredSession = useCallback(async () => {
+    await Promise.all([
+      storage.remove(STORAGE_KEYS.AUTH_TOKEN),
+      storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
+      storage.remove(STORAGE_KEYS.USER_DATA),
+      purgeAllMobileOfflineCheckinData(),
+    ]);
+    clearApiSession();
+    if (!isMountedRef.current) return;
+    setToken(null);
+    setUser(null);
+  }, []);
 
-    async function restoreSession() {
-      if (!isMounted) return;
-      setIsLoading(true);
-      try {
-        const storedToken = await storage.get(STORAGE_KEYS.AUTH_TOKEN);
-        if (!storedToken) return;
+  /**
+   * On app start: restore the cached user immediately, then re-validate in the background,
+   * so the app renders from cache rather than blocking on the network.
+   *
+   * 🔴 The two branches below must agree about one thing (audit 2026-09-06, F09): a server
+   * that REFUSES the token ends the session; a server that cannot be REACHED does not. The
+   * cached-user branch already did that. The no-cache branch wrapped everything in one
+   * `catch` and signed the member out for any failure at all — including a flat network on
+   * a launch where the cached profile happened to be missing, which is an ordinary thing
+   * for a phone to do to an app cache. The member was then asked to sign in again with no
+   * connection to sign in over, and the offline check-in queue was purged with it.
+   */
+  const restoreSession = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const storedToken = await storage.get(STORAGE_KEYS.AUTH_TOKEN);
+      if (!storedToken) return;
 
-        // Show cached user data immediately so the app doesn't block on network
-        const cachedUser = await storage.getJson<AnyUser>(STORAGE_KEYS.USER_DATA);
-        if (cachedUser) {
-          if (!isMounted) return;
-          setToken(storedToken);
-          setUser(cachedUser);
-          setIsLoading(false);
-          registerPushBestEffort();
+      const cachedUser = await storage.getJson<AnyUser>(STORAGE_KEYS.USER_DATA);
+      if (cachedUser) {
+        if (!isMountedRef.current) return;
+        setToken(storedToken);
+        setUser(cachedUser);
+        setSessionRestoreFailed(false);
+        setIsLoading(false);
+        registerPushBestEffort();
 
-          // Re-validate token with /users/me in the background
-          try {
-            const response = await getMe();
-            if (!isMounted) return;
-            setUser(response.data);
-            await storage.setJson(STORAGE_KEYS.USER_DATA, response.data);
-          } catch (err: unknown) {
-            if (!isMounted) return;
-            // Only clear session on 401 (token revoked). For network errors,
-            // timeouts, or any other failure, keep the cached user so the app
-            // remains usable offline.
-            const status = (err as { status?: number })?.status
-              ?? (err as { response?: { status?: number } })?.response?.status;
-            if (status === 401) {
-              await Promise.all([
-                storage.remove(STORAGE_KEYS.AUTH_TOKEN),
-                storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
-                storage.remove(STORAGE_KEYS.USER_DATA),
-                purgeAllMobileOfflineCheckinData(),
-              ]);
-              clearApiSession();
-              if (!isMounted) return;
-              setToken(null);
-              setUser(null);
-            }
-            // Non-401 errors (network down, timeout, etc.) — keep cached user
-          }
-          return;
+        try {
+          const response = await getMe();
+          if (!isMountedRef.current) return;
+          setUser(response.data);
+          await cacheUserBestEffort(response.data);
+        } catch (err: unknown) {
+          if (!isMountedRef.current) return;
+          // Refused, not unreachable. Anything else keeps the cached user so the app
+          // stays usable offline.
+          if (isCredentialRejection(err)) await discardStoredSession();
         }
+        return;
+      }
 
-        // No cached user — must validate with network before proceeding
+      // No cached user: there is no profile to render, so this call has to succeed
+      // before the app can treat the member as signed in.
+      try {
         const response = await getMe();
-        if (!isMounted) return;
+        if (!isMountedRef.current) return;
         setToken(storedToken);
         setUser(response.data);
-        await storage.setJson(STORAGE_KEYS.USER_DATA, response.data);
+        setSessionRestoreFailed(false);
+        await cacheUserBestEffort(response.data);
         registerPushBestEffort();
-      } catch {
-        if (!isMounted) return;
-        // Token invalid and no cache — clear everything
-        await Promise.all([
-          storage.remove(STORAGE_KEYS.AUTH_TOKEN),
-          storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
-          storage.remove(STORAGE_KEYS.USER_DATA),
-          purgeAllMobileOfflineCheckinData(),
-        ]);
-        clearApiSession();
-        if (!isMounted) return;
-        setToken(null);
-        setUser(null);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
+      } catch (err: unknown) {
+        if (isCredentialRejection(err)) {
+          await discardStoredSession();
+          if (isMountedRef.current) setSessionRestoreFailed(false);
+          return;
         }
+        // Unreachable, timed out, or a server fault. The credentials stay on the device
+        // and `retrySessionRestore` can pick them up again.
+        if (isMountedRef.current) setSessionRestoreFailed(true);
       }
+    } catch {
+      // Reading local storage failed. Nothing has been proven about the token, so
+      // nothing is thrown away.
+      if (isMountedRef.current) setSessionRestoreFailed(true);
+    } finally {
+      if (isMountedRef.current) setIsLoading(false);
     }
+  }, [discardStoredSession, registerPushBestEffort]);
 
+  /** Offered to the member when start-up could not reach the server. */
+  const retrySessionRestore = useCallback(async () => {
+    await restoreSession();
+  }, [restoreSession]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
     void restoreSession();
-
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
-  }, [registerPushBestEffort]);
+  }, [restoreSession]);
 
   const login = useCallback(async (payload: LoginPayload) => {
     const response = await apiLogin(payload);
@@ -288,13 +340,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token,
       isLoading,
       isAuthenticated: !!token && !!user,
+      sessionRestoreFailed,
       login,
       logout,
       setSession,
       refreshUser,
       displayName,
+      retrySessionRestore,
     }),
-    [user, token, isLoading, login, logout, setSession, refreshUser, displayName],
+    [
+      user, token, isLoading, sessionRestoreFailed, login, logout, setSession,
+      refreshUser, displayName, retrySessionRestore,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -149,5 +149,17 @@
   "featureUnavailable": {
     "title": "Not available here",
     "subtitle": "Your community has not switched this on. Ask an organiser if you think it should be."
+  },
+  "unsavedSaving": {
+    "title": "Still saving",
+    "message": "Your changes are still being saved. If you leave now they may not be kept.",
+    "leave": "Leave anyway",
+    "wait": "Keep waiting"
+  },
+  "sessionRestore": {
+    "title": "We could not check your sign-in",
+    "subtitle": "Your account is still on this device, but we could not reach the server. Check your connection and try again.",
+    "retry": "Try again",
+    "signOut": "Sign out instead"
   }
 }

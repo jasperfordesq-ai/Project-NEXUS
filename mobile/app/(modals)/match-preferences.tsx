@@ -77,7 +77,7 @@ export default function MatchPreferencesScreen() {
   const isDirty = Boolean(draft && data?.preferences && JSON.stringify(draft) !== JSON.stringify(data.preferences));
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: isSaving,
+    isSaving,
     confirm,
     title: t('matchPreferences.unsavedTitle'),
     message: t('matchPreferences.unsavedMessage'),

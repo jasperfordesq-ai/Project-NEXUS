@@ -188,7 +188,7 @@ function EditProfileScreenInner() {
   */
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: saving,
+    isSaving: saving,
     confirm,
     title: t('edit.unsavedTitle'),
     message: t('edit.unsavedMessage'),

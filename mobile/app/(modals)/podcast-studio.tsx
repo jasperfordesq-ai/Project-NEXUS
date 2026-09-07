@@ -371,7 +371,7 @@ function PodcastStudioScreen() {
   // stray Back has already destroyed elsewhere in this app (audit 2026-09-06).
   useUnsavedChangesGuard({
     isDirty: Boolean(showForm.title.trim() || episodeForm.title.trim()),
-    isBusy: savingShow || savingEpisode,
+    isSaving: savingShow || savingEpisode,
     confirm,
     title: t('studio.unsaved_title'),
     message: t('studio.unsaved_message'),

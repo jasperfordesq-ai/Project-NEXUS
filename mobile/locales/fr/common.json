@@ -149,5 +149,17 @@
   "featureUnavailable": {
     "title": "Non disponible ici",
     "subtitle": "Votre communauté n'a pas activé cette fonctionnalité. Demandez à une personne organisatrice si vous pensez qu'elle devrait l'être."
+  },
+  "unsavedSaving": {
+    "title": "Enregistrement en cours",
+    "message": "Vos modifications sont encore en cours d'enregistrement. Si vous partez maintenant, elles risquent d'être perdues.",
+    "leave": "Partir quand même",
+    "wait": "Continuer à attendre"
+  },
+  "sessionRestore": {
+    "title": "Nous n'avons pas pu vérifier votre connexion",
+    "subtitle": "Votre compte est toujours sur cet appareil, mais nous n'avons pas pu joindre le serveur. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer",
+    "signOut": "Se déconnecter à la place"
   }
 }

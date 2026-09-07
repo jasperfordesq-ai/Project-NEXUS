@@ -149,5 +149,17 @@
   "featureUnavailable": {
     "title": "Non disponibile qui",
     "subtitle": "La tua comunità non ha attivato questa funzione. Chiedi a chi organizza se pensi che dovrebbe essere disponibile."
+  },
+  "unsavedSaving": {
+    "title": "Salvataggio in corso",
+    "message": "Le tue modifiche sono ancora in fase di salvataggio. Se esci ora, potrebbero non essere conservate.",
+    "leave": "Esci comunque",
+    "wait": "Continua ad aspettare"
+  },
+  "sessionRestore": {
+    "title": "Non siamo riusciti a verificare il tuo accesso",
+    "subtitle": "Il tuo account è ancora su questo dispositivo, ma non siamo riusciti a raggiungere il server. Controlla la connessione e riprova.",
+    "retry": "Riprova",
+    "signOut": "Esci invece"
   }
 }

@@ -137,7 +137,8 @@ export function MarketplaceListingForm() {
   */
   useUnsavedChangesGuard({
     isDirty: Boolean(title.trim() || description.trim() || price.trim() || imageUris.length > 0),
-    isBusy: isSubmitting || hasSubmitted,
+    isSaving: isSubmitting,
+    hasSaved: hasSubmitted,
     confirm,
     title: t('forms.unsavedTitle'),
     message: t('forms.unsavedMessage'),

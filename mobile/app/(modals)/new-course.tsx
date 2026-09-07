@@ -119,7 +119,8 @@ function NewCourseScreen() {
   */
   useUnsavedChangesGuard({
     isDirty: !isEditing && Boolean(title.trim() || summary.trim() || description.trim()),
-    isBusy: isSaving || hasSubmitted,
+    isSaving,
+    hasSaved: hasSubmitted,
     confirm,
     title: t('instructor.unsaved_title'),
     message: t('instructor.unsaved_message'),

@@ -66,7 +66,8 @@ function NewGroupExchangeScreen() {
   const { confirm, confirmDialog } = useConfirm();
   useUnsavedChangesGuard({
     isDirty: Boolean(title.trim() || description.trim() || totalHours.trim() || participants.length > 0),
-    isBusy: isSubmitting || hasSubmitted,
+    isSaving: isSubmitting,
+    hasSaved: hasSubmitted,
     confirm,
     title: t('form.unsavedTitle'),
     message: t('form.unsavedMessage'),

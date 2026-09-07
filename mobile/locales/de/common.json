@@ -149,5 +149,17 @@
   "featureUnavailable": {
     "title": "Hier nicht verfügbar",
     "subtitle": "Deine Gemeinschaft hat das nicht aktiviert. Frag eine Organisatorin oder einen Organisator, wenn es verfügbar sein sollte."
+  },
+  "unsavedSaving": {
+    "title": "Wird noch gespeichert",
+    "message": "Deine Änderungen werden noch gespeichert. Wenn du jetzt gehst, gehen sie möglicherweise verloren.",
+    "leave": "Trotzdem verlassen",
+    "wait": "Weiter warten"
+  },
+  "sessionRestore": {
+    "title": "Wir konnten deine Anmeldung nicht prüfen",
+    "subtitle": "Dein Konto ist weiterhin auf diesem Gerät, aber wir konnten den Server nicht erreichen. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "signOut": "Stattdessen abmelden"
   }
 }

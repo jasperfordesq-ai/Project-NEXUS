@@ -91,7 +91,8 @@ function NewJobScreen() {
   */
   useUnsavedChangesGuard({
     isDirty: Boolean(title.trim() || description.trim()),
-    isBusy: isSubmitting || hasSubmitted,
+    isSaving: isSubmitting,
+    hasSaved: hasSubmitted,
     confirm,
     title: t('create.unsavedTitle'),
     message: t('create.unsavedMessage'),

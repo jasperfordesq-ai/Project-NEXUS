@@ -137,7 +137,8 @@ export default function RegisterScreen() {
   // Eight fields of typing should not vanish on a stray Back or swipe (audit 2026-09-05).
   useUnsavedChangesGuard({
     isDirty,
-    isBusy: isLoading || Boolean(pendingMessage),
+    isSaving: isLoading,
+    hasSaved: Boolean(pendingMessage),
     confirm,
     title: t('register.unsavedTitle'),
     message: t('register.unsavedMessage'),

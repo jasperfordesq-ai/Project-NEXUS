@@ -48,11 +48,35 @@ describe('useBottomInset', () => {
     expect(renderHook(() => useBottomInset()).result.current).toBe(0);
   });
 
-  it('never lets the root inset shrink or go non-finite', () => {
+  /**
+   * 🔴 Audit 2026-09-06, F08. The recorded value used to be a ratchet that could only
+   * grow, so a root inset that genuinely fell — switching Android from 3-button to
+   * gesture navigation, where the 48dp bar really does go away — left every modal
+   * padding the bottom of the screen for a bar that was no longer there, for the rest
+   * of the process. The root layout is the only writer and reports the live value, so
+   * the latest root reading is the truth.
+   */
+  it('follows the root inset down when the navigation bar really goes away', () => {
     const { setRootBottomInset, getRootBottomInset } = load();
     setRootBottomInset(48);
-    setRootBottomInset(20);
+    setRootBottomInset(0);
+
+    expect(getRootBottomInset()).toBe(0);
+  });
+
+  it('does not let a modal screen reporting zero clear the root reading', () => {
+    // The floor is applied by the hook, not by the setter: a modal never writes here.
+    const { useBottomInset, setRootBottomInset } = load();
+    setRootBottomInset(48);
+
+    expect(renderHook(() => useBottomInset()).result.current).toBe(48);
+  });
+
+  it('ignores a non-finite or negative reading', () => {
+    const { setRootBottomInset, getRootBottomInset } = load();
+    setRootBottomInset(48);
     setRootBottomInset(Number.NaN);
+    setRootBottomInset(-10);
 
     expect(getRootBottomInset()).toBe(48);
   });

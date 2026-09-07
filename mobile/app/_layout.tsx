@@ -28,6 +28,7 @@ import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import BiometricLockGate from '@/components/BiometricLockGate';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SessionNoticeHost from '@/components/ui/SessionNoticeHost';
+import SessionRestoreGate from '@/components/SessionRestoreGate';
 import UpdateReadyHost from '@/components/ui/UpdateReadyHost';
 import UpdateRequiredGate from '@/components/UpdateRequiredGate';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
@@ -173,7 +174,15 @@ function RootLayout() {
             <ErrorBoundary>
               <TenantProvider>
                 <AuthProvider>
-                  <RealtimeProvider>
+                  {/*
+                    Holds the app back when start-up could NOT reach the server to check a
+                    stored session — offering a retry rather than a login form the member
+                    has no connection to use. Inside AuthProvider because that is where the
+                    state lives, and above everything else because a half-rendered
+                    signed-out app is the fault being fixed. Audit 2026-09-06, F09.
+                  */}
+                  <SessionRestoreGate>
+                    <RealtimeProvider>
                     {/*
                       Inside AuthProvider, because it only has anything to protect once a
                       stored session exists — and above the screens, because a locked app
@@ -182,7 +191,8 @@ function RootLayout() {
                     <BiometricLockGate>
                       <ThemedShell />
                     </BiometricLockGate>
-                  </RealtimeProvider>
+                    </RealtimeProvider>
+                  </SessionRestoreGate>
                 </AuthProvider>
               </TenantProvider>
             </ErrorBoundary>

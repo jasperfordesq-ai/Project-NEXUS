@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { RefreshControl } from 'react-native';
 
 // --- Mocks ---
@@ -175,7 +175,7 @@ jest.mock('@/components/ui/BottomSheet', () => {
 // --- Tests ---
 
 import WalletModal from './wallet';
-import { searchWalletUsers } from '@/lib/api/wallet';
+import { searchWalletUsers, transferWalletCredits } from '@/lib/api/wallet';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
@@ -537,6 +537,105 @@ describe('WalletModal', () => {
 
     expect(await findByText('Selected recipient')).toBeTruthy();
     expect(searchWalletUsers).toHaveBeenCalledWith('Alice', 10);
+  });
+
+  /**
+   * 🔴 Audit 2026-09-06, F07. A transfer that times out tells the member nothing about
+   * whether the credits moved. Without a key the member carries, the server only has its
+   * own 120-second content fingerprint to fall back on, so a retry after that window
+   * debits a second time — and two deliberately identical transfers inside it collapse
+   * into one. `WalletService::transfer` honours a client `idempotency_key` for 24 hours
+   * and replays the ORIGINAL transaction on a duplicate, so the retry reconciles itself.
+   */
+  describe('transfer idempotency', () => {
+    let mockRefreshWallet: jest.Mock;
+
+    beforeEach(() => {
+      jest.mocked(transferWalletCredits).mockReset();
+    });
+
+    function renderTransferPanel() {
+      mockSearchParams.mockReturnValue({ to: '260', name: 'Jasper Ford' });
+      mockRefreshWallet = jest.fn();
+      const walletState = { data: { data: { balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' } }, isLoading: false, error: null, refresh: mockRefreshWallet };
+      const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+      const fundState = { data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() };
+      const pendingState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+      let apiCall = 0;
+      mockUseApi.mockReset().mockImplementation(() => {
+        const states = [walletState, transactionsState, fundState, pendingState];
+        const state = states[apiCall % states.length];
+        apiCall += 1;
+        return state;
+      });
+      return render(<WalletModal />);
+    }
+
+    function keysSent(): (string | undefined)[] {
+      return jest.mocked(transferWalletCredits).mock.calls
+        .map((call) => (call[0] as { idempotency_key?: string }).idempotency_key);
+    }
+
+    it('reuses one operation id when an uncertain transfer is retried', async () => {
+      jest.mocked(transferWalletCredits)
+        .mockRejectedValueOnce(new Error('Network request failed'))
+        .mockResolvedValueOnce({ success: true } as never);
+
+      const { getByPlaceholderText, getAllByText } = renderTransferPanel();
+      fireEvent.changeText(getByPlaceholderText('Hours to send'), '2');
+      fireEvent.changeText(getByPlaceholderText('What is this transfer for?'), 'Garden help');
+
+      const send = () => fireEvent.press(getAllByText('Send credits').at(-1)!);
+
+      send();
+      // The retry has to wait for the first attempt to finish failing, or the button is
+      // still disabled and the second press does nothing.
+      await waitFor(() => expect(mockRefreshWallet).toHaveBeenCalledTimes(1));
+      await act(async () => {});
+      send();
+      await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(2));
+
+      const [first, second] = keysSent();
+      expect(typeof first).toBe('string');
+      expect(first).not.toBe('');
+      expect(second).toBe(first);
+    });
+
+    it('starts a new operation id once the member changes what they are sending', async () => {
+      jest.mocked(transferWalletCredits)
+        .mockRejectedValueOnce(new Error('Network request failed'))
+        .mockRejectedValueOnce(new Error('Network request failed'));
+
+      const { getByPlaceholderText, getAllByText } = renderTransferPanel();
+      fireEvent.changeText(getByPlaceholderText('Hours to send'), '2');
+      fireEvent.changeText(getByPlaceholderText('What is this transfer for?'), 'Garden help');
+
+      const send = () => fireEvent.press(getAllByText('Send credits').at(-1)!);
+
+      send();
+      await waitFor(() => expect(mockRefreshWallet).toHaveBeenCalledTimes(1));
+      await act(async () => {});
+
+      // A different amount is a different transfer, not a retry of the last one.
+      fireEvent.changeText(getByPlaceholderText('Hours to send'), '3');
+      send();
+      await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(2));
+
+      const [first, second] = keysSent();
+      expect(second).not.toBe(first);
+    });
+
+    it('re-reads the balance after a transfer whose outcome is unknown', async () => {
+      jest.mocked(transferWalletCredits).mockRejectedValueOnce(new Error('Network request failed'));
+
+      const { getByPlaceholderText, getAllByText } = renderTransferPanel();
+      fireEvent.changeText(getByPlaceholderText('Hours to send'), '2');
+      fireEvent.press(getAllByText('Send credits').at(-1)!);
+
+      // The member is told nothing useful by the error alone: what settles it is the
+      // balance. The panel stays open so they can retry with the same operation id.
+      await waitFor(() => expect(mockRefreshWallet).toHaveBeenCalled());
+    });
   });
 
   it('loads the next transaction page when more history is available', async () => {

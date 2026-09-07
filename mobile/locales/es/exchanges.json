@@ -258,7 +258,12 @@
     "categoriesEmpty": "Esta comunidad aún no tiene categorías, por lo que no se pueden publicar anuncios. Contacta con tu coordinación.",
     "unsavedTitle": "¿Descartar este anuncio?",
     "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "partialSaveTitle": "Tu anuncio está guardado, pero no todo lo que lo acompaña",
+    "partialSaveTags": "No se pudieron guardar las habilidades.",
+    "partialSaveImage": "No se pudo guardar la foto.",
+    "partialSaveRetry": "Reintentar el resto",
+    "partialSaveContinue": "Continuar sin ellas"
   },
   "serviceType": {
     "physical_only": "En persona",

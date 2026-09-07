@@ -76,7 +76,8 @@ function NewPostScreen() {
   // away everything typed with no prompt.
   useUnsavedChangesGuard({
     isDirty: trimmed.length > 0,
-    isBusy: isSubmitting || hasPosted,
+    isSaving: isSubmitting,
+    hasSaved: hasPosted,
     confirm,
     title: t('newPost.unsavedTitle'),
     message: t('newPost.unsavedMessage'),

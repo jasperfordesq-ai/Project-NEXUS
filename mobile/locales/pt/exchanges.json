@@ -258,7 +258,12 @@
     "categoriesEmpty": "Esta comunidade ainda não tem categorias, por isso não é possível publicar anúncios. Contacte a sua coordenação.",
     "unsavedTitle": "Descartar este anúncio?",
     "unsavedMessage": "Tem dados por guardar. Se sair agora, perde-os.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "partialSaveTitle": "O seu anúncio está guardado, mas não tudo o que o acompanha",
+    "partialSaveTags": "Não foi possível guardar as competências.",
+    "partialSaveImage": "Não foi possível guardar a fotografia.",
+    "partialSaveRetry": "Tentar o resto novamente",
+    "partialSaveContinue": "Continuar sem elas"
   },
   "serviceType": {
     "physical_only": "Pessoalmente",

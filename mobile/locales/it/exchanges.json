@@ -258,7 +258,12 @@
     "categoriesEmpty": "Questa comunità non ha ancora categorie, quindi non è possibile pubblicare annunci. Contatta il tuo coordinamento.",
     "unsavedTitle": "Eliminare questo annuncio?",
     "unsavedMessage": "Hai dati non salvati. Se esci ora, andranno persi.",
-    "discard": "Elimina"
+    "discard": "Elimina",
+    "partialSaveTitle": "Il tuo annuncio è salvato, ma non tutto ciò che lo accompagna",
+    "partialSaveTags": "Non è stato possibile salvare le competenze.",
+    "partialSaveImage": "Non è stato possibile salvare la foto.",
+    "partialSaveRetry": "Riprova il resto",
+    "partialSaveContinue": "Continua senza"
   },
   "serviceType": {
     "physical_only": "Di persona",

@@ -613,10 +613,10 @@ and the places a contract test earns the most.
 | POST | `/api/v2/volunteering/swaps` | volunteering.ts:617 |
 | DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:625 |
 | PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:621 |
-| GET | `/api/v2/wallet/balance` | wallet.ts:170 |
-| GET | `/api/v2/wallet/community-fund` | wallet.ts:206 |
-| POST | `/api/v2/wallet/donate` | wallet.ts:233 |
-| GET | `/api/v2/wallet/transactions` | wallet.ts:198 |
-| GET | `/api/v2/wallet/transactions/{param}` | wallet.ts:183 |
-| POST | `/api/v2/wallet/transfer` | wallet.ts:225 |
-| GET | `/api/v2/wallet/user-search` | wallet.ts:214 |
+| GET | `/api/v2/wallet/balance` | wallet.ts:182 |
+| GET | `/api/v2/wallet/community-fund` | wallet.ts:218 |
+| POST | `/api/v2/wallet/donate` | wallet.ts:250 |
+| GET | `/api/v2/wallet/transactions` | wallet.ts:210 |
+| GET | `/api/v2/wallet/transactions/{param}` | wallet.ts:195 |
+| POST | `/api/v2/wallet/transfer` | wallet.ts:242 |
+| GET | `/api/v2/wallet/user-search` | wallet.ts:226 |
