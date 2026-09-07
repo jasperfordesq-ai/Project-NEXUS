@@ -1,7 +1,7 @@
 # Copyright © 2024–2026 Jasper Ford
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Does the native Android app actually start?
+# Do the native Android and iOS apps actually start?
 #
 # 🔴 Why this is its OWN workflow, and not a job in ci.yml.
 #
@@ -28,7 +28,10 @@
 #   - it does not check anything VISUAL. Emulator screenshots are not stable
 #     enough across API levels and renderers to gate on, which is why
 #     `mobile/scripts/screenshots.mjs` is a local tool;
-#   - it does not run TalkBack, and it never touches iOS.
+#   - it does not run TalkBack;
+#   - it proves nothing about a SIGNED build. The iOS job compiles unsigned for a
+#     simulator, which is what lets it run without Apple credentials at all; release
+#     builds go through EAS and are a separate path.
 # The audit's visual, accessibility and signed-binary gap (F10) stays open.
 
 name: Mobile Emulator
@@ -45,9 +48,13 @@ on:
         required: false
         default: '.maestro/00-launch-smoke.yaml'
 
+# 🔴 `cancel-in-progress: false`, unlike ci.yml. A dispatched emulator run that kills
+# the run already in flight destroys 15-25 minutes of work and, worse, reads as a
+# failure in the run list. It happened three times while this workflow was being
+# built. Nothing here gates a push, so there is nothing to gain by racing.
 concurrency:
   group: mobile-emulator-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -192,7 +199,24 @@ jobs:
   # ---------------------------------------------------------------------------
   ios-launch-smoke:
     name: iOS Launch Smoke
-    runs-on: macos-latest
+    # 🔴 `macos-15`, NOT `macos-latest`, and the label IS the pin.
+    #
+    # `macos-latest` carries Xcode 26.0-26.5 and nothing older, and Xcode 26 cannot
+    # compile `@stripe/stripe-react-native@0.50.3` — its Swift-generated header
+    # declares STPPaymentStatus signed while its own interop header declares it
+    # unsigned, which Xcode 26 treats as an error. Proven on this runner: the
+    # selector below listed twelve Xcodes, every one of them 26.x.
+    #
+    # 🔴 0.50.3 is NOT a stale pin. `npx expo install --check` reports dependencies
+    # up to date: it is the version Expo SDK 54 specifies. So the mismatch is
+    # GitHub's runner image having moved ahead of Expo 54's toolchain, not a
+    # neglected dependency — and EAS, which is what actually builds releases, built
+    # this app for iOS successfully on 2026-08-27. Upgrading Stripe on its own would
+    # move the app off Expo's supported matrix; it belongs with an Expo SDK upgrade.
+    #
+    # When Expo SDK and Stripe do move to an Xcode-26-compatible pairing, drop this
+    # label back to `macos-latest` and delete the selector step.
+    runs-on: macos-15
     timeout-minutes: 60
 
     steps:
