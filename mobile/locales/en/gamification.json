@@ -111,5 +111,6 @@
     "updated": "Showcase updated",
     "updatedDescription": "Your profile showcase was updated.",
     "saveError": "Could not save showcase."
-  }
+  },
+  "sectionLoadFailed": "This part could not be loaded."
 }

@@ -111,5 +111,6 @@
     "updated": "Vitrine mise à jour",
     "updatedDescription": "La vitrine de votre profil a été mise à jour.",
     "saveError": "Impossible d’enregistrer la vitrine."
-  }
+  },
+  "sectionLoadFailed": "Cette partie n'a pas pu être chargée."
 }

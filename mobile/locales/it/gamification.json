@@ -111,5 +111,6 @@
     "updated": "Vetrina aggiornata",
     "updatedDescription": "La vetrina del tuo profilo è stata aggiornata.",
     "saveError": "Impossibile salvare la vetrina."
-  }
+  },
+  "sectionLoadFailed": "Non è stato possibile caricare questa parte."
 }

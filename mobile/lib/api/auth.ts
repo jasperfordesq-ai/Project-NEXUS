@@ -25,6 +25,18 @@ export interface User {
   /** Time credit balance in hours */
   balance: number;
   role: string;
+  /**
+   * Whether this member is an admin of the current community.
+   *
+   * 🔴 Read this, never `role`. `super_admin`, `god`, `tenant_admin` and `coordinator` are
+   * NEVER written to `users.role` — they are boolean flags — so a check against the role
+   * string under-authorises every real platform admin. `GET /v2/users/me` already computes
+   * the right answer (`UserService::formatProfile`, own-profile branch) and the app was
+   * throwing it away. Found by the 2026-09-07 audit (F/F-13).
+   *
+   * A client courtesy only: the API is the real gate. Absent means "assume not".
+   */
+  is_admin?: boolean;
   tenant_id: number;
   created_at: string | null;
   onboarding_completed?: boolean;

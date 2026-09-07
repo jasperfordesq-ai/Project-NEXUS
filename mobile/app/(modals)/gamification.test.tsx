@@ -110,6 +110,7 @@ jest.mock('react-i18next', () => ({
         'shop.owned': 'Owned',
         'shop.unavailable': 'Unavailable',
         'shop.purchase': 'Purchase',
+        'sectionLoadFailed': 'This part could not be loaded.',
         'shop.confirmTitle': 'Spend your XP?',
         'shop.confirmMessage': 'Confirm this purchase.',
         'common:buttons.cancel': 'Cancel',
@@ -687,5 +688,25 @@ describe('GamificationScreen', () => {
     const { getByText } = render(<GamificationScreen />);
 
     expect(getByText('5')).toBeTruthy();
+  });
+  it('🔴 says a badge load failed instead of claiming the member has no badges', () => {
+    // Seven of the eight loads threw their error away, so a failed badges call was
+    // rendered as "No badges yet" — to a member who had earned ten (F/F-9).
+    mockLoadedGamification({ badges: [] });
+    const original = mockUseApi.getMockImplementation();
+    let call = 0;
+    mockUseApi.mockImplementation((...args) => {
+      call += 1;
+      // The badges load is the second of the eight.
+      if (call === 2) {
+        return { data: null, isLoading: false, error: 'offline', refresh: jest.fn() };
+      }
+      return original ? original(...args) : { data: null, isLoading: false, error: null, refresh: jest.fn() };
+    });
+
+    const { getByTestId, queryByText } = render(<GamificationScreen />);
+
+    expect(getByTestId('gamification-section-failed')).toBeTruthy();
+    expect(queryByText('No badges yet.')).toBeNull();
   });
 });

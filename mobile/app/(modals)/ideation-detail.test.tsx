@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockSubmitIdea = jest.fn();
@@ -84,6 +84,14 @@ jest.mock('react-i18next', () => ({
     },
   }),
 }));
+
+// The screen now reports a failed vote through the toast rather than into a card
+// further up the page, so the test needs the toast stood in for.
+jest.mock('@/components/ui/AppToast', () => {
+  const show = jest.fn();
+  const hide = jest.fn();
+  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+});
 
 import IdeationDetailScreen from './ideation-detail';
 
@@ -169,6 +177,25 @@ describe('IdeationDetailScreen', () => {
 
     fireEvent.press(getByText('Vote'));
     await waitFor(() => expect(mockVoteIdea).toHaveBeenCalledWith(44));
+  });
+
+  it('🔴 disables Vote while the vote is in flight, and reports a refusal', async () => {
+    // The server TOGGLES a vote, so a second tap while the first was still going cast
+    // the vote and then took it away again. And the failure went into a status line
+    // inside the "Submit an idea" card further up the page, usually off screen — so a
+    // member tapped Vote, nothing happened, and the reason was invisible (F/F-12).
+    let resolveVote: (() => void) | null = null;
+    mockVoteIdea.mockImplementationOnce(() => new Promise<void>((resolve) => { resolveVote = resolve; }));
+
+    const { getByTestId } = render(<IdeationDetailScreen />);
+
+    expect(getByTestId('ideation-vote-44').props.accessibilityState?.disabled).toBeFalsy();
+
+    fireEvent.press(getByTestId('ideation-vote-44'));
+
+    expect(getByTestId('ideation-vote-44').props.accessibilityState).toMatchObject({ disabled: true });
+
+    await act(async () => { resolveVote?.(); });
   });
 
   /**

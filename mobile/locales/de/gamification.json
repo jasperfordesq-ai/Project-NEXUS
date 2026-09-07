@@ -111,5 +111,6 @@
     "updated": "Showcase aktualisiert",
     "updatedDescription": "Dein Profil-Schaukasten wurde aktualisiert.",
     "saveError": "Der Profil-Schaukasten konnte nicht gespeichert werden."
-  }
+  },
+  "sectionLoadFailed": "Dieser Teil konnte nicht geladen werden."
 }

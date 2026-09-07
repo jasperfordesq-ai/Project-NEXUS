@@ -111,5 +111,6 @@
     "updated": "Escaparate actualizado",
     "updatedDescription": "Se ha actualizado el escaparate de tu perfil.",
     "saveError": "No se pudo guardar el escaparate."
-  }
+  },
+  "sectionLoadFailed": "No se ha podido cargar esta parte."
 }

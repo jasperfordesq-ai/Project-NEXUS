@@ -29,6 +29,8 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { useAppToast } from '@/components/ui/AppToast';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function IdeationDetailScreen() {
@@ -44,6 +46,8 @@ function IdeationDetailScreen() {
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [votingId, setVotingId] = useState<number | null>(null);
+  const { show: showToast } = useAppToast();
   const challengeState = useApi(() => getIdeationChallenge(challengeId), [challengeId], {
     enabled: hasFeature('ideation_challenges') && challengeId > 0,
   });
@@ -69,12 +73,34 @@ function IdeationDetailScreen() {
     }
   }
 
+  /*
+    🔴 A failed vote was invisible, and a double tap undid the vote.
+
+    The failure went into `statusMessage`, which is rendered as plain grey text inside the
+    "Submit an idea" card further UP the page — usually off screen when you are voting on
+    an idea near the bottom. So a member tapped Vote, nothing appeared to happen, and the
+    reason was somewhere they could not see. The success message had the mirror problem: it
+    never cleared, so "Idea submitted" sat there while they voted on other things.
+
+    And the button stayed live during the round trip. The server TOGGLES a vote, so a second
+    tap while the first was in flight cast the vote and then took it away again. Found by
+    the 2026-09-07 audit (F/F-12). The sibling screen `ideation-idea.tsx` already does both
+    of these correctly.
+  */
   async function vote(idea: IdeationIdea) {
+    if (votingId !== null) return;
+    setVotingId(idea.id);
     try {
       await voteIdeationIdea(idea.id);
       ideasState.refresh();
     } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : t('ideation:voteFailed'));
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(error, t('ideation:voteFailed')),
+        variant: 'danger',
+      });
+    } finally {
+      setVotingId(null);
     }
   }
 
@@ -93,7 +119,16 @@ function IdeationDetailScreen() {
 
   const challenge = challengeState.data;
   const ideas = ideasState.data?.items ?? [];
-  const isAdmin = Boolean(user?.role && ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin'].includes(user.role));
+  /*
+    🔴 `is_admin`, not the role string.
+
+    This matched `user.role` against four names, but `super_admin`, `tenant_admin` and
+    `coordinator` are never written to `users.role` — they are boolean flags — so only the
+    literal 'admin' could ever match and real platform admins never saw Edit. The server
+    computes the answer and sends it on `/v2/users/me`; the app was discarding it.
+    Found by the 2026-09-07 audit (F/F-13).
+  */
+  const isAdmin = user?.is_admin === true || user?.role === 'admin';
   /**
    * 🔴 Only the FIRST load gets the full-page spinner.
    *
@@ -201,7 +236,7 @@ function IdeationDetailScreen() {
               </Surface>
 
               {ideas.length > 0 ? (
-                ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} challengeId={challengeId} onVote={vote} />)
+                ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} challengeId={challengeId} onVote={vote} isVoting={votingId === idea.id} />)
               ) : (
                 <EmptyState icon="chatbubble-ellipses-outline" title={t('ideation:noIdeasTitle')} subtitle={t('ideation:noIdeasSubtitle')} />
               )}
@@ -214,7 +249,7 @@ function IdeationDetailScreen() {
   );
 }
 
-function IdeaCard({ idea, challengeId, onVote }: { idea: IdeationIdea; challengeId: number; onVote: (idea: IdeationIdea) => void }) {
+function IdeaCard({ idea, challengeId, onVote, isVoting }: { idea: IdeationIdea; challengeId: number; onVote: (idea: IdeationIdea) => void; isVoting: boolean }) {
   const { t } = useTranslation(['ideation']);
   const theme = useTheme();
   return (
@@ -241,7 +276,7 @@ function IdeaCard({ idea, challengeId, onVote }: { idea: IdeationIdea; challenge
             </View>
           </View>
         </View>
-        <HeroButton variant={idea.has_voted ? 'primary' : 'secondary'} onPress={() => void onVote(idea)}>
+        <HeroButton variant={idea.has_voted ? 'primary' : 'secondary'} isDisabled={isVoting} onPress={() => void onVote(idea)} testID={`ideation-vote-${idea.id}`}>
           <Ionicons name="arrow-up-circle-outline" size={16} color={theme.info} />
           <HeroButton.Label>{idea.has_voted ? t('ideation:voted') : t('ideation:vote')}</HeroButton.Label>
         </HeroButton>

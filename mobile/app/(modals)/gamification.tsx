@@ -1186,15 +1186,24 @@ function GamificationScreen() {
     () => getGamificationProfile(),
     [],
   );
-  const { data: badgesData, isLoading: badgesLoading, refresh: refreshBadges } = useApi(
+  /*
+    🔴 Seven of the eight loads used to throw their error away.
+
+    Only the profile read `error`. So if `/gamification/badges` failed while the profile
+    succeeded, the Badges tab said "No badges yet" — to a member who had earned ten. Same
+    for challenges, journeys, the shop and the Nexus score: a failure was presented as
+    "you have nothing", with no message and no way to retry. Found by the 2026-09-07 audit
+    (F/F-9). Each tab now shows its own failure, and its own retry.
+  */
+  const { data: badgesData, isLoading: badgesLoading, error: badgesError, refresh: refreshBadges } = useApi(
     () => getBadges(),
     [],
   );
-  const { data: leaderboardData, isLoading: lbLoading, refresh: refreshLb } = useApi(
+  const { data: leaderboardData, isLoading: lbLoading, error: lbError, refresh: refreshLb } = useApi(
     () => getLeaderboard(period),
     [period],
   );
-  const { data: nexusScoreData, isLoading: scoreLoading, refresh: refreshScore } = useApi(
+  const { data: nexusScoreData, isLoading: scoreLoading, error: scoreError, refresh: refreshScore } = useApi(
     () => getNexusScore(),
     [],
   );
@@ -1202,15 +1211,15 @@ function GamificationScreen() {
     () => getDailyRewardStatus(),
     [],
   );
-  const { data: challengesData, isLoading: challengesLoading, refresh: refreshChallenges } = useApi(
+  const { data: challengesData, isLoading: challengesLoading, error: challengesError, refresh: refreshChallenges } = useApi(
     () => getChallenges(),
     [],
   );
-  const { data: collectionsData, isLoading: collectionsLoading, refresh: refreshCollections } = useApi(
+  const { data: collectionsData, isLoading: collectionsLoading, error: collectionsError, refresh: refreshCollections } = useApi(
     () => getBadgeCollections(),
     [],
   );
-  const { data: shopData, isLoading: shopLoading, refresh: refreshShop } = useApi(
+  const { data: shopData, isLoading: shopLoading, error: shopError, refresh: refreshShop } = useApi(
     () => getShopItems(),
     [],
   );
@@ -1220,6 +1229,35 @@ function GamificationScreen() {
       setIsRefreshing(false);
     }
   }, [isRefreshing, profileLoading, badgesLoading, lbLoading, scoreLoading, rewardLoading, challengesLoading, collectionsLoading, shopLoading]);
+
+  /** Whichever tab is open, its own load failure and its own retry. */
+  const sectionFailure: { error: string | null; refresh: () => void } =
+    activeTab === 'score' ? { error: scoreError, refresh: refreshScore }
+      : activeTab === 'challenges' ? { error: challengesError, refresh: refreshChallenges }
+        : activeTab === 'journeys' ? { error: collectionsError, refresh: refreshCollections }
+          : activeTab === 'shop' ? { error: shopError, refresh: refreshShop }
+            : activeTab === 'badges' ? { error: badgesError, refresh: refreshBadges }
+              : { error: lbError, refresh: refreshLb };
+
+  /*
+    🔴 The optimistic guesses are a BRIDGE, not a replacement.
+
+    After a purchase the screen stored a locally-computed balance and item state so the
+    card would update at once — and then never cleared them, while the reads preferred them
+    over anything the server sent. So a member who bought something and then claimed their
+    daily reward saw the hero XP go up and the shop's own "Your balance" stay frozen, with
+    items they could now afford still marked unaffordable. Cleared the moment a fresh shop
+    response lands. Found by the 2026-09-07 audit (F/F-11).
+  */
+  useEffect(() => {
+    if (!shopData) return;
+    // Return the SAME reference when there is nothing to clear. Writing a fresh `{}`
+    // unconditionally re-renders, and a re-render can hand back a new `shopData`
+    // reference, which re-runs this effect — an endless loop that took the test
+    // runner out of memory before it was caught.
+    setShopBalanceOverride((current) => (current === null ? current : null));
+    setShopItemOverrides((current) => (Object.keys(current).length === 0 ? current : {}));
+  }, [shopData]);
 
   function handleRefresh() {
     setIsRefreshing(true);
@@ -1542,7 +1580,14 @@ function GamificationScreen() {
               ) : null}
             </Surface>
 
-            {activeTab === 'score' ? (
+            {sectionFailure.error ? (
+              <ErrorState
+                testID="gamification-section-failed"
+                title={t('sectionLoadFailed')}
+                subtitle={sectionFailure.error}
+                onRetry={sectionFailure.refresh}
+              />
+            ) : activeTab === 'score' ? (
               <NexusScoreSection score={nexusScore} primary={primary} theme={theme} t={t} />
             ) : activeTab === 'challenges' ? (
               <ChallengesSection challenges={challenges} claimingId={claimingChallengeId} onClaim={handleClaimChallengeReward} primary={primary} theme={theme} t={t} />

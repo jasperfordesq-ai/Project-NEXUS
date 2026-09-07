@@ -111,5 +111,6 @@
     "updated": "Nuashonraíodh an taispeántas",
     "updatedDescription": "Nuashonraíodh taispeántas do phróifíle.",
     "saveError": "Níorbh fhéidir an taispeántas a shábháil."
-  }
+  },
+  "sectionLoadFailed": "Níorbh fhéidir an chuid seo a lódáil."
 }

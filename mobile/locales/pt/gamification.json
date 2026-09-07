@@ -111,5 +111,6 @@
     "updated": "Montra atualizada",
     "updatedDescription": "A montra do seu perfil foi atualizada.",
     "saveError": "Não foi possível guardar a montra."
-  }
+  },
+  "sectionLoadFailed": "Não foi possível carregar esta parte."
 }
