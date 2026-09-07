@@ -110,6 +110,9 @@ jest.mock('react-i18next', () => ({
         'shop.owned': 'Owned',
         'shop.unavailable': 'Unavailable',
         'shop.purchase': 'Purchase',
+        'shop.confirmTitle': 'Spend your XP?',
+        'shop.confirmMessage': 'Confirm this purchase.',
+        'common:buttons.cancel': 'Cancel',
         'shop.buying': 'Buying',
         'shop.purchaseItem': opts ? `Purchase ${String(opts.name ?? '')}` : 'Purchase item',
         'shop.purchaseComplete': 'Purchase complete',
@@ -232,6 +235,23 @@ const mockProfile = {
  * member's earned badges rendered as "Locked" behind a padlock. Measured on a device
  * 2026-08-23. Fourth fixture today written from the client's type instead of the response.
  */
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, message, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Text>{message as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 const realAwardedBadge = {
   id: 2855,
   name: 'Team Player',
@@ -533,7 +553,7 @@ describe('GamificationScreen', () => {
   it('renders XP shop items and purchases an affordable item', async () => {
     mockLoadedGamification({ shopItems: mockShopItems, shopXp: 250 });
 
-    const { getByText } = render(<GamificationScreen />);
+    const { getByTestId, getByText } = render(<GamificationScreen />);
     fireEvent.press(getByText('Shop'));
 
     expect(getByText('Balance: 250 XP')).toBeTruthy();
@@ -544,6 +564,11 @@ describe('GamificationScreen', () => {
     expect(getByText('Owned')).toBeTruthy();
 
     fireEvent.press(getByText('Purchase'));
+
+    // 🔴 Spending XP asks first — one tap used to take it, with nothing in the API to
+    // reverse it (F/F-1).
+    expect(purchaseShopItem).not.toHaveBeenCalled();
+    fireEvent.press(getByTestId('gamification-confirm-purchase'));
 
     expect(purchaseShopItem).toHaveBeenCalledWith(12);
     await Promise.resolve();
@@ -616,5 +641,51 @@ describe('GamificationScreen', () => {
 
     expect(getAllByText('Locked').length).toBeGreaterThan(0);
     expect(queryByText('Earned')).toBeNull();
+  });
+  it('🔴 does not spend XP until the purchase is confirmed', () => {
+    mockLoadedGamification({ shopItems: mockShopItems, shopXp: 250 });
+
+    const { getByTestId, getByText } = render(<GamificationScreen />);
+    fireEvent.press(getByText('Shop'));
+    fireEvent.press(getByText('Purchase'));
+
+    expect(getByText('Spend your XP?')).toBeTruthy();
+    expect(purchaseShopItem).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('gamification-confirm-purchase'));
+    expect(purchaseShopItem).toHaveBeenCalledTimes(1);
+  });
+
+  it('🔴 shows the date a badge was awarded', () => {
+    // This read `earned_at`, the one column the server leaves null, so no badge ever
+    // showed its date on any member’s profile (F/F-10).
+    mockLoadedGamification({ badges: [realAwardedBadge] });
+
+    const { getByText } = render(<GamificationScreen />);
+
+    expect(getByText('23 Aug 2026')).toBeTruthy();
+  });
+
+  it('🔴 counts locked badges from the journeys, not from a list that holds only earned ones', () => {
+    // `/gamification/badges` returns rows from `user_badges`, which exist only once a
+    // badge is awarded — so "earned minus total" was structurally always 0 and the hero
+    // told every member they had none left to collect (F/F-10).
+    mockLoadedGamification({
+      badges: [realAwardedBadge],
+      collections: [{
+        id: 1,
+        name: 'Getting started',
+        description: 'First steps',
+        badges: [],
+        earned_count: 1,
+        total_count: 6,
+        reward_xp: 50,
+        completed: false,
+      }],
+    });
+
+    const { getByText } = render(<GamificationScreen />);
+
+    expect(getByText('5')).toBeTruthy();
   });
 });

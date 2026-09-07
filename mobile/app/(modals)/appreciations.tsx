@@ -206,7 +206,15 @@ function AppreciationCard({
   isReacting: boolean;
   onReact: (reaction: AppreciationReactionType) => void;
 }) {
-  const { t } = useTranslation('profile');
+  /*
+    🔴 This asked for the `profile` namespace, which has no `appreciations` block — the keys
+    live in `members`, which the parent screen already uses. `lib/i18n.ts` sets a `defaultNS`
+    but no `fallbackNS`, so i18next returned each key verbatim: every card's three reaction
+    buttons read literally "appreciations.react.heart", "appreciations.react.clap" and
+    "appreciations.react.star", and a note from a deleted sender was attributed to
+    "appreciations.someone". Found by the 2026-09-07 audit (F/F-5).
+  */
+  const { t } = useTranslation('members');
   const theme = useTheme();
   const senderName = item.sender?.name ?? t('appreciations.someone');
 

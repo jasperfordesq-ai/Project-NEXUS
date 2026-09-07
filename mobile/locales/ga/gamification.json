@@ -95,7 +95,9 @@
     "purchaseCompleteDescription": "Is leatsa {{name}}.",
     "notEnoughXp": "Níl go leor XP agat",
     "notEnoughXpDescription": "Tá {{xp}} XP eile de dhíth ort.",
-    "purchaseError": "Níorbh fhéidir an mhír a cheannach."
+    "purchaseError": "Níorbh fhéidir an mhír a cheannach.",
+    "confirmTitle": "Caith do XP?",
+    "confirmMessage": "Cosnaíonn {{name}} {{xp}} XP. Nuair a bheidh siad caite, ní féidir an XP a fháil ar ais."
   },
   "showcase": {
     "title": "Taispeántas próifíle",

@@ -50,9 +50,21 @@ jest.mock('@/components/ui/AppTopBar', () => {
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
+/*
+  🔴 A namespace-aware stand-in, deliberately.
+
+  The old mock served every key from one map whatever namespace was asked for, so it
+  could not see that `AppreciationCard` asked for `profile` — a namespace with no
+  `appreciations` block — and that i18next was therefore returning each key verbatim.
+  Every card on the wall showed the literal text "appreciations.react.heart" on its
+  buttons. This mock resolves keys only for the namespace that actually holds them.
+*/
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
+  useTranslation: (ns?: string | string[]) => ({
     t: (key: string, opts?: Record<string, unknown>) => {
+      const namespaces = Array.isArray(ns) ? ns : [ns ?? 'common'];
+      const servedHere = namespaces.includes('members') || key.startsWith('common:');
+      if (!servedHere) return key;
       const map: Record<string, string> = {
         'common:back': 'Back',
         'common:buttons.retry': 'Retry',
@@ -130,5 +142,13 @@ describe('AppreciationsScreen', () => {
     await waitFor(() => {
       expect(mockReactToAppreciation).toHaveBeenCalledWith(12, 'heart');
     });
+  });
+  it('🔴 labels the reaction buttons instead of printing raw translation keys', async () => {
+    const { findByText, queryByText } = render(<AppreciationsScreen />);
+
+    expect(await findByText('Heart')).toBeTruthy();
+    expect(queryByText('appreciations.react.heart')).toBeNull();
+    expect(queryByText('appreciations.react.clap')).toBeNull();
+    expect(queryByText('appreciations.react.star')).toBeNull();
   });
 });

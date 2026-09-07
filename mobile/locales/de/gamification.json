@@ -95,7 +95,9 @@
     "purchaseCompleteDescription": "{{name}} gehört jetzt dir.",
     "notEnoughXp": "Nicht genügend XP",
     "notEnoughXpDescription": "Du benötigst noch {{xp}} XP.",
-    "purchaseError": "Der Artikel konnte nicht gekauft werden."
+    "purchaseError": "Der Artikel konnte nicht gekauft werden.",
+    "confirmTitle": "XP ausgeben?",
+    "confirmMessage": "{{name}} kostet {{xp}} XP. Einmal ausgegeben, lassen sich die XP nicht zurückholen."
   },
   "showcase": {
     "title": "Profil-Schaukasten",

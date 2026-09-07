@@ -95,7 +95,9 @@
     "purchaseCompleteDescription": "{{name}} agora é seu.",
     "notEnoughXp": "XP insuficientes",
     "notEnoughXpDescription": "Precisa de mais {{xp}} XP.",
-    "purchaseError": "Não foi possível comprar o artigo."
+    "purchaseError": "Não foi possível comprar o artigo.",
+    "confirmTitle": "Gastar os seus XP?",
+    "confirmMessage": "{{name}} custa {{xp}} XP. Depois de gastos, os XP não podem ser recuperados."
   },
   "showcase": {
     "title": "Montra do perfil",

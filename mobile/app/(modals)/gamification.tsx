@@ -48,6 +48,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorState from '@/components/ui/ErrorState';
@@ -465,8 +466,16 @@ function BadgeCard({
   theme: ReturnType<typeof useTheme>;
   t: (key: string) => string;
 }) {
-  const earnedDate = badge.earned_at
-    ? new Date(badge.earned_at).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
+  /*
+    🔴 `awarded_at` first. This read `earned_at` alone, which is the one column the server
+    leaves null — `user_badges.awarded_at` is `NOT NULL DEFAULT current_timestamp()` while
+    `earned_at` is nullable and unset. So no badge ever showed the date it was earned, on
+    any member's profile. `isBadgeEarned` a few lines up already knew this. Found by the
+    2026-09-07 audit (F/F-10).
+  */
+  const earnedAt = badge.awarded_at ?? badge.earned_at ?? null;
+  const earnedDate = earnedAt
+    ? new Date(earnedAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
     : null;
   const iconName = normalizeBadgeIcon(badge.icon);
   const earned = isBadgeEarned(badge);
@@ -842,7 +851,7 @@ function ShopItemCard({
   item: ShopItem;
   balance: number;
   purchasingId: number | null;
-  onPurchase: (item: ShopItem) => Promise<void>;
+  onPurchase: (item: ShopItem) => void;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
@@ -885,7 +894,7 @@ function ShopItemCard({
             size="sm"
             variant="primary"
             isDisabled={!canAfford || purchasingId === item.id}
-            onPress={() => void onPurchase(item)}
+            onPress={() => onPurchase(item)}
             accessibilityLabel={t('shop.purchaseItem', { name: item.name })}
             style={{ backgroundColor: !canAfford || purchasingId === item.id ? theme.border : primary }}
           >
@@ -910,7 +919,7 @@ function ShopSection({
   items: ShopItem[];
   balance: number;
   purchasingId: number | null;
-  onPurchase: (item: ShopItem) => Promise<void>;
+  onPurchase: (item: ShopItem) => void;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
@@ -1128,6 +1137,7 @@ function GamificationScreen() {
   const pathname = usePathname();
   const params = useLocalSearchParams<{ tab?: string }>();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
 
   /*
     🔴 `useParamTab`, not `useState(() => …)` — same reason as `volunteering.tsx`: a link
@@ -1276,7 +1286,18 @@ function GamificationScreen() {
     }
   }
 
-  async function handlePurchaseShopItem(item: ShopItem) {
+  /**
+   * 🔴 Spending XP asks first.
+   *
+   * A single tap on Buy used to take the XP, with no confirmation and nothing in the API to
+   * reverse it — while merely rotating a venue QR code, which costs nothing, has been
+   * behind a confirmation for months. Found by the 2026-09-07 audit (F/F-1).
+   *
+   * Deliberately NO idempotency key: `GamificationV2Controller::purchase()` reads only
+   * `item_id` and has no `Idempotency-Key` handling, so sending one would be theatre. The
+   * double tap is blocked by `purchasingShopItemId`.
+   */
+  function handlePurchaseShopItem(item: ShopItem) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const cost = getShopItemCost(item);
     const currentBalance = shopBalanceOverride ?? shopData?.meta?.user_xp ?? getProfileXp((profileData?.data ?? {}) as ApiProfile);
@@ -1285,6 +1306,18 @@ function GamificationScreen() {
       return;
     }
 
+    confirm({
+      title: t('shop.confirmTitle'),
+      message: t('shop.confirmMessage', { name: item.name, xp: cost }),
+      confirmLabel: t('shop.purchase'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'primary',
+      confirmTestID: 'gamification-confirm-purchase',
+      onConfirm: () => runPurchaseShopItem(item, cost, currentBalance),
+    });
+  }
+
+  async function runPurchaseShopItem(item: ShopItem, cost: number, currentBalance: number) {
     setPurchasingShopItemId(item.id);
     try {
       await purchaseShopItem(item.id);
@@ -1343,7 +1376,7 @@ function GamificationScreen() {
     ...challenge,
     ...(challengeOverrides[challenge.id] ?? {}),
   }));
-  const collections = (collectionsData?.data ?? []) as BadgeCollection[];
+  const collections = useMemo(() => (collectionsData?.data ?? []) as BadgeCollection[], [collectionsData]);
   const shopItems = ((shopData?.data ?? []) as ShopItem[]).map((item) => ({
     ...item,
     ...(shopItemOverrides[item.id] ?? {}),
@@ -1351,7 +1384,23 @@ function GamificationScreen() {
   const shopBalance = shopBalanceOverride ?? shopData?.meta?.user_xp ?? (profile ? getProfileXp(profile) : 0);
   const userRank = leaderboardData?.meta?.user_rank ?? leaderboardData?.meta?.your_position ?? null;
   const earnedCount = useMemo(() => badges.filter((badge) => isBadgeEarned(badge)).length, [badges]);
-  const lockedCount = Math.max(0, badges.length - earnedCount);
+  /*
+    🔴 "Locked badges" read 0 for everyone, for ever.
+
+    It was `badges.length - earnedCount`, and `/v2/gamification/badges` returns rows from
+    `user_badges` — which only exist once a badge has been AWARDED. So every row in that
+    list is earned by construction and the subtraction could only ever be zero: the hero
+    said "10 earned, 0 locked" to a member with dozens still to collect.
+
+    Badge collections are the one response that does carry unearned badges, with a per-badge
+    `earned` flag and `earned_count` / `total_count` per journey, so the tile is now fed
+    from there. It reads 0 only when the member genuinely has every badge in every journey,
+    or when no journeys are configured. Found by the 2026-09-07 audit (F/F-10).
+  */
+  const lockedCount = useMemo(
+    () => collections.reduce((total, collection) => total + Math.max(0, (collection.total_count ?? 0) - (collection.earned_count ?? 0)), 0),
+    [collections],
+  );
   const selectedShowcaseKeys = getSelectedShowcaseKeys(badges);
 
   const periods: { key: LeaderboardPeriod; label: string }[] = [
@@ -1547,6 +1596,7 @@ function GamificationScreen() {
             ) : null}
           </ScrollView>
         )}
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );

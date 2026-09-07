@@ -95,7 +95,9 @@
     "purchaseCompleteDescription": "{{name}} is yours.",
     "notEnoughXp": "Not enough XP",
     "notEnoughXpDescription": "You need {{xp}} more XP.",
-    "purchaseError": "Could not purchase item."
+    "purchaseError": "Could not purchase item.",
+    "confirmTitle": "Spend your XP?",
+    "confirmMessage": "{{name}} costs {{xp}} XP. Once spent, the XP cannot be returned."
   },
   "showcase": {
     "title": "Profile showcase",
