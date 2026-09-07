@@ -80,6 +80,11 @@ jest.mock('react-i18next', () => ({
         'myShifts.timeRange': opts ? `${String(opts.start ?? '')}-${String(opts.end ?? '')}` : 'Time',
         'myShifts.confirmed': 'Confirmed',
         'myShifts.cancel': 'Cancel shift',
+        'myShifts.cancelConfirmTitle': 'Cancel this shift?',
+        'myShifts.cancelConfirmMessage': 'Your place will be released.',
+        'withdrawConfirmTitle': 'Withdraw this application?',
+        'withdrawConfirmMessage': 'It cannot be put back.',
+        'common:buttons.cancel': 'Cancel',
         'myShifts.cancelError': 'Could not cancel this shift.',
         'myShifts.openOpportunityLabel': opts ? `Open opportunity for ${String(opts.title ?? '')}` : 'Open opportunity',
         'myShifts.cancelLabel': opts ? `Cancel shift for ${String(opts.title ?? '')}` : 'Cancel shift',
@@ -304,7 +309,23 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // --- Tests ---
 
-import { logVolunteerHours } from '@/lib/api/volunteering';
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
+import { cancelShiftSignup, logVolunteerHours } from '@/lib/api/volunteering';
 import VolunteeringScreen from './volunteering';
 import { useAppToast } from '@/components/ui/AppToast';
 
@@ -813,6 +834,61 @@ describe('VolunteeringScreen', () => {
     expect(getByText('Garden Helper')).toBeTruthy();
     expect(getByText('Confirmed')).toBeTruthy();
     expect(getByText('Cancel shift')).toBeTruthy();
+  });
+
+  it('🔴 releases a shift place only after a confirmation', async () => {
+    // The DETAIL screen has confirmed this same call since S4-16 — "one tap used to
+    // release the place with no way back" — and the hub was never brought along, so the
+    // identical action a tap away was still unguarded (E/F-12).
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const responses = [
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        {
+          data: {
+            data: {
+              items: [{
+                id: 77,
+                opportunity_id: 10,
+                opportunity_title: 'Garden Helper',
+                location: 'Dublin',
+                application_id: 21,
+                start_time: '2099-06-01T09:00:00Z',
+                end_time: '2099-06-01T12:00:00Z',
+                capacity: 8,
+                signup_count: 3,
+                spots_available: 5,
+              }],
+              cursor: null,
+              has_more: false,
+            },
+          },
+          isLoading: false,
+          error: null,
+          refresh: jest.fn(),
+        },
+        { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      const response = responses[apiCall % responses.length];
+      apiCall += 1;
+      return response;
+    });
+
+    const { getByTestId, getByText } = render(<VolunteeringScreen />);
+
+    fireEvent.press(getByText('My Shifts'));
+    fireEvent.press(getByTestId('volunteering-cancel-shift-77'));
+
+    expect(cancelShiftSignup).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('volunteering-confirm-cancel-shift-77'));
+    await waitFor(() => expect(cancelShiftSignup).toHaveBeenCalledWith(77));
   });
 
   it('renders native volunteer shift swaps and received actions', () => {

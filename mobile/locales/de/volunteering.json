@@ -531,5 +531,7 @@
   },
   "panelLoadError": "Dieser Bereich konnte nicht geladen werden.",
   "confirmWithdrawTitle": "Diese Bewerbung zurückziehen?",
-  "confirmWithdrawMessage": "Die Organisation sieht deine Bewerbung dann nicht mehr."
+  "confirmWithdrawMessage": "Die Organisation sieht deine Bewerbung dann nicht mehr.",
+  "withdrawConfirmTitle": "Bewerbung zurückziehen?",
+  "withdrawConfirmMessage": "Deine Bewerbung für {{title}} wird zurückgezogen und lässt sich nicht wiederherstellen."
 }

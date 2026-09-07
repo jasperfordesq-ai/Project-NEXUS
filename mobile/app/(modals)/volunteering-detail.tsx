@@ -441,7 +441,9 @@ function VolunteeringDetailScreenInner() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: t('common:errors.alertTitle'),
-        description: err instanceof Error && err.message ? err.message : t('interestError'),
+        //  rather than the raw message: it keeps the guards for a 500's
+        // internal text, an HTML error page and codes the app answers itself (E/F-16).
+        description: describeApiError(err, t('interestError')),
         variant: 'danger',
       });
     } finally {

@@ -532,5 +532,7 @@
   },
   "panelLoadError": "Cette section n'a pas pu être chargée.",
   "confirmWithdrawTitle": "Retirer cette candidature ?",
-  "confirmWithdrawMessage": "L'organisation ne verra plus votre candidature."
+  "confirmWithdrawMessage": "L'organisation ne verra plus votre candidature.",
+  "withdrawConfirmTitle": "Retirer cette candidature ?",
+  "withdrawConfirmMessage": "Votre candidature pour {{title}} sera retirée et ne pourra pas être rétablie."
 }

@@ -86,6 +86,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { parseDecimalInput } from '@/lib/utils/decimal';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
@@ -660,9 +661,26 @@ function ApplicationsPanel({
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
 
-  async function handleWithdraw(id: number) {
+  /*
+    🔴 Withdrawing asks first. One tap on this list used to pull the application with no way
+    back and no question (audit 2026-09-07, E/F-12).
+  */
+  function handleWithdraw(id: number, title: string) {
+    confirm({
+      title: t('withdrawConfirmTitle'),
+      message: t('withdrawConfirmMessage', { title }),
+      confirmLabel: t('withdraw'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `volunteering-confirm-withdraw-${id}`,
+      onConfirm: () => runWithdraw(id),
+    });
+  }
+
+  async function runWithdraw(id: number) {
     setWithdrawingId(id);
     try {
       await withdrawApplication(id);
@@ -715,7 +733,8 @@ function ApplicationsPanel({
                   size="sm"
                   variant="secondary"
                   isDisabled={withdrawingId === application.id}
-                  onPress={() => void handleWithdraw(application.id)}
+                  onPress={() => handleWithdraw(application.id, application.opportunity?.title ?? '')}
+                  testID={`volunteering-withdraw-${application.id}`}
                 >
                   {withdrawingId === application.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('withdraw')}</HeroButton.Label>}
                 </HeroButton>
@@ -724,6 +743,7 @@ function ApplicationsPanel({
           </HeroCard>
         );
       })}
+      {confirmDialog}
     </View>
   );
 }
@@ -741,6 +761,7 @@ function ShiftsPanel({
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [cancellingId, setCancellingId] = useState<number | null>(null);
 
   /**
@@ -803,7 +824,27 @@ function ShiftsPanel({
     }
   }
 
-  async function handleCancel(id: number) {
+  /*
+    🔴 Cancelling asks first, releasing a place is not undoable.
+
+    The DETAIL screen has confirmed this same `cancelShiftSignup` call since S4-16 — "one
+    tap used to release the place with no way back" — and the hub was never brought along,
+    so the identical action a tap away was still unguarded (audit 2026-09-07, E/F-12).
+    It reuses the detail screen's own wording.
+  */
+  function handleCancel(id: number) {
+    confirm({
+      title: t('myShifts.cancelConfirmTitle'),
+      message: t('myShifts.cancelConfirmMessage'),
+      confirmLabel: t('myShifts.cancel'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `volunteering-confirm-cancel-shift-${id}`,
+      onConfirm: () => runCancel(id),
+    });
+  }
+
+  async function runCancel(id: number) {
     setCancellingId(id);
     try {
       await cancelShiftSignup(id);
@@ -874,8 +915,9 @@ function ShiftsPanel({
                   size="sm"
                   variant="danger-soft"
                   isDisabled={cancellingId === shift.id}
-                  onPress={() => void handleCancel(shift.id)}
+                  onPress={() => handleCancel(shift.id)}
                   accessibilityLabel={t('myShifts.cancelLabel', { title: shift.opportunity_title })}
+                  testID={`volunteering-cancel-shift-${shift.id}`}
                 >
                   {cancellingId === shift.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('myShifts.cancel')}</HeroButton.Label>}
                 </HeroButton>
@@ -938,6 +980,7 @@ function ShiftsPanel({
           )}
         </View>
       </BottomSheet>
+      {confirmDialog}
     </View>
   );
 }

@@ -24,6 +24,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type FormField = 'name' | 'description' | 'contact_email' | 'website' | 'terms';
@@ -149,7 +150,7 @@ function NewOrganisationInner() {
         params: { tab: 'organisations', submitted: String(organisation.id) },
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('register.saveFailedMessage');
+      const message = describeApiError(error, t('register.saveFailedMessage'));
       showToast({ title: t('register.saveFailedTitle'), description: message, variant: 'danger' });
     } finally {
       setIsSubmitting(false);

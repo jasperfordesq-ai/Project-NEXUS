@@ -28,6 +28,7 @@ import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function unwrapOrgs(response: { data?: VolunteeringOrganisation[]; items?: VolunteeringOrganisation[] } | null | undefined): VolunteeringOrganisation[] {
@@ -235,7 +236,7 @@ function NewVolunteeringScreen() {
     } catch (error) {
       showToast({
         title: isEditing ? t('create.editFailedTitle') : t('create.failedTitle'),
-        description: error instanceof Error ? error.message : (isEditing ? t('create.editFailedDescription') : t('create.failedDescription')),
+        description: describeApiError(error, isEditing ? t('create.editFailedDescription') : t('create.failedDescription')),
         variant: 'danger',
       });
     } finally {

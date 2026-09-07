@@ -45,6 +45,12 @@ jest.mock('react-i18next', () => ({
         'applications.historyStart': 'Started',
         'applications.historyTransition': opts ? `${String(opts.from ?? '')} to ${String(opts.to ?? '')}` : 'transition',
         'applications.withdraw': 'Withdraw',
+        'applications.withdrawConfirmTitle': 'Withdraw this application?',
+        'applications.withdrawConfirmMessage': 'It cannot be put back.',
+        'common:buttons.cancel': 'Cancel',
+        'detail.salaryAnnual': 'year',
+        'detail.salaryMonthly': 'month',
+        'detail.salaryHourly': 'hour',
         'applications.withdrawSuccess': 'Application withdrawn.',
         'applications.status.applied': 'Applied',
         'applications.status.pending': 'Pending',
@@ -158,6 +164,22 @@ jest.mock('@/lib/api/jobs', () => ({
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
 // --- Tests ---
+
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
 
 import JobsScreen from './jobs';
 import { createJobAlert, deleteJobAlert, getJobApplicationHistory, pauseJobAlert, withdrawJobApplication } from '@/lib/api/jobs';
@@ -414,7 +436,7 @@ describe('JobsScreen', () => {
       return { items: [], isLoading: false, isLoadingMore: false, error: null, hasMore: false, loadMore: jest.fn(), refresh: jest.fn() };
     });
 
-    const { getByText } = render(<JobsScreen />);
+    const { getByTestId, getByText } = render(<JobsScreen />);
     fireEvent.press(getByText('My Applications'));
     fireEvent.press(getByText('Show cover message'));
     expect(getByText('I am a great fit.')).toBeTruthy();
@@ -423,6 +445,9 @@ describe('JobsScreen', () => {
     await waitFor(() => expect(getJobApplicationHistory).toHaveBeenCalledWith(10));
 
     fireEvent.press(getByText('Withdraw'));
+    // 🔴 Withdrawing is irreversible and used to happen on ONE tap (E/F-11).
+    expect(withdrawJobApplication).not.toHaveBeenCalled();
+    fireEvent.press(getByTestId('application-confirm-withdraw-10'));
     await waitFor(() => expect(withdrawJobApplication).toHaveBeenCalledWith(10));
     expect(refresh).toHaveBeenCalled();
   });

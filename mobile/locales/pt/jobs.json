@@ -174,7 +174,9 @@
     "historyError": "Não foi possível carregar o histórico da candidatura.",
     "withdraw": "Withdraw",
     "withdrawSuccess": "Candidatura retirada.",
-    "withdrawError": "Não foi possível retirar esta candidatura."
+    "withdrawError": "Não foi possível retirar esta candidatura.",
+    "withdrawConfirmTitle": "Retirar esta candidatura?",
+    "withdrawConfirmMessage": "A sua candidatura a {{title}} será retirada e não poderá ser reposta."
   },
   "owner": {
     "toolsTitle": "Ferramentas do proprietário",

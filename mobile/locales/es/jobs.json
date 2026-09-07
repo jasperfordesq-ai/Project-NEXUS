@@ -174,7 +174,9 @@
     "historyError": "No se pudo cargar el historial de la solicitud.",
     "withdraw": "Withdraw",
     "withdrawSuccess": "Solicitud retirada.",
-    "withdrawError": "No se pudo retirar esta solicitud."
+    "withdrawError": "No se pudo retirar esta solicitud.",
+    "withdrawConfirmTitle": "¿Retirar esta candidatura?",
+    "withdrawConfirmMessage": "Tu candidatura para {{title}} se retirará y no se podrá recuperar."
   },
   "owner": {
     "toolsTitle": "Herramientas del propietario",

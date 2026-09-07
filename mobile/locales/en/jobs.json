@@ -174,7 +174,9 @@
     "historyError": "Could not load application history.",
     "withdraw": "Withdraw",
     "withdrawSuccess": "Application withdrawn.",
-    "withdrawError": "Could not withdraw this application."
+    "withdrawError": "Could not withdraw this application.",
+    "withdrawConfirmTitle": "Withdraw this application?",
+    "withdrawConfirmMessage": "Your application for {{title}} will be pulled and cannot be put back."
   },
   "owner": {
     "toolsTitle": "Owner tools",

@@ -174,7 +174,9 @@
     "historyError": "Níorbh fhéidir stair an iarratais a lódáil.",
     "withdraw": "Tarraing siar",
     "withdrawSuccess": "Tarraingíodh an t-iarratas siar.",
-    "withdrawError": "Níorbh fhéidir an t-iarratas seo a tharraingt siar."
+    "withdrawError": "Níorbh fhéidir an t-iarratas seo a tharraingt siar.",
+    "withdrawConfirmTitle": "Tarraing siar an t-iarratas seo?",
+    "withdrawConfirmMessage": "Tarraingeofar siar d’iarratas ar {{title}} agus ní féidir é a chur ar ais."
   },
   "owner": {
     "toolsTitle": "Uirlisí úinéara",

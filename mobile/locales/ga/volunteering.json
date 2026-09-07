@@ -534,5 +534,7 @@
   },
   "panelLoadError": "Níorbh fhéidir an chuid seo a lódáil.",
   "confirmWithdrawTitle": "An t-iarratas seo a tharraingt siar?",
-  "confirmWithdrawMessage": "Ní fheicfidh an eagraíocht d'iarratas a thuilleadh."
+  "confirmWithdrawMessage": "Ní fheicfidh an eagraíocht d'iarratas a thuilleadh.",
+  "withdrawConfirmTitle": "Tarraing siar an t-iarratas seo?",
+  "withdrawConfirmMessage": "Tarraingeofar siar d’iarratas ar {{title}} agus ní féidir é a chur ar ais."
 }

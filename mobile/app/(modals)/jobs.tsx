@@ -14,7 +14,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -60,6 +60,7 @@ import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { useParamTab } from '@/lib/hooks/useParamTab';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
 
 // ---------------------------------------------------------------------------
@@ -139,13 +140,16 @@ function JobCard({
       const currency = item.salary_currency ?? '€';
       const fmt = (n: number) =>
         n >= 1000 ? `${currency}${Math.round(n / 1000)}k` : `${currency}${n}`;
-      const typeKey =
+      // 🔴 These three were hardcoded English — "yr", "mo", "hr" — on a card where every
+      // other label goes through `t()`. The detail screen already had the words
+      // (audit 2026-09-07, polish note).
+      const period =
         item.salary_type === 'annual'
-          ? 'yr'
+          ? t('detail.salaryAnnual')
           : item.salary_type === 'monthly'
-            ? 'mo'
-            : 'hr';
-      return `${fmt(item.salary_min)} – ${fmt(item.salary_max)} / ${typeKey}`;
+            ? t('detail.salaryMonthly')
+            : t('detail.salaryHourly');
+      return `${fmt(item.salary_min)} – ${fmt(item.salary_max)} / ${period}`;
     }
     return null;
   })();
@@ -326,6 +330,7 @@ function ApplicationCard({
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<JobApplicationHistoryEntry[]>([]);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   const statusColor: Record<JobApplication['status'], string> = {
     pending: theme.warning,
@@ -370,18 +375,38 @@ function ApplicationCard({
     }
   };
 
-  const handleWithdraw = async () => {
+  /*
+    🔴 Withdrawing asks first, and says why it was refused.
+
+    One tap on the red Withdraw button used to pull an application permanently, with no
+    "are you sure". And the catch was bare, so when the server refused — already withdrawn,
+    past the offer stage, vacancy closed — the member saw one fixed sentence and no
+    explanation of which had happened. Found by the 2026-09-07 audit (E/F-11).
+  */
+  const runWithdraw = async () => {
     setActionLoading(true);
     setStatusMessage(null);
     try {
       await withdrawJobApplication(item.id);
       setStatusMessage(t('applications.withdrawSuccess'));
       onApplicationChanged();
-    } catch {
-      setStatusMessage(t('applications.withdrawError'));
+    } catch (err) {
+      setStatusMessage(describeApiError(err, t('applications.withdrawError')));
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleWithdraw = () => {
+    confirm({
+      title: t('applications.withdrawConfirmTitle'),
+      message: t('applications.withdrawConfirmMessage', { title: jobTitle }),
+      confirmLabel: t('applications.withdraw'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `application-confirm-withdraw-${item.id}`,
+      onConfirm: runWithdraw,
+    });
   };
 
   return (
@@ -605,6 +630,7 @@ function ApplicationCard({
           )}
         </Surface>
       ) : null}
+      {confirmDialog}
     </View>
   );
 }
@@ -1069,6 +1095,29 @@ function JobsScreen() {
 
   const alertsApi = useApi(() => getJobAlerts(), []);
   const alerts = alertsApi.data?.data ?? [];
+
+  /*
+    🔴 A new vacancy did not appear until the member pulled to refresh.
+
+    Creating a job lands on its detail screen; pressing Back returned here to a list that
+    had never been refetched, so the posting they had just created was missing. The same
+    went for an edited posting (the card still showed the old title) and for an application
+    just sent. The volunteering hub and the organisations list both added this refetch in
+    August; this screen was not brought along. Found by the 2026-09-07 audit (E/F-14).
+
+    The first focus is skipped because the initial fetch has already run.
+  */
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      void refreshPostings();
+      void refreshApps();
+    }, [refreshPostings, refreshApps]),
+  );
 
   const renderJob = useCallback(
     ({ item }: { item: JobVacancy }) => (

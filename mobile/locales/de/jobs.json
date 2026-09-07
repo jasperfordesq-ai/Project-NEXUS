@@ -174,7 +174,9 @@
     "historyError": "Der Bewerbungsverlauf konnte nicht geladen werden.",
     "withdraw": "Withdraw",
     "withdrawSuccess": "Bewerbung zurückgezogen.",
-    "withdrawError": "Diese Bewerbung konnte nicht zurückgezogen werden."
+    "withdrawError": "Diese Bewerbung konnte nicht zurückgezogen werden.",
+    "withdrawConfirmTitle": "Bewerbung zurückziehen?",
+    "withdrawConfirmMessage": "Deine Bewerbung für {{title}} wird zurückgezogen und lässt sich nicht wiederherstellen."
   },
   "owner": {
     "toolsTitle": "Eigentümer-Werkzeuge",

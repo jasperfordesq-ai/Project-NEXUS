@@ -174,7 +174,9 @@
     "historyError": "Impossibile caricare la cronologia della candidatura.",
     "withdraw": "Withdraw",
     "withdrawSuccess": "Candidatura ritirata.",
-    "withdrawError": "Impossibile ritirare questa candidatura."
+    "withdrawError": "Impossibile ritirare questa candidatura.",
+    "withdrawConfirmTitle": "Ritirare questa candidatura?",
+    "withdrawConfirmMessage": "La tua candidatura per {{title}} verrà ritirata e non potrà essere ripristinata."
   },
   "owner": {
     "toolsTitle": "Strumenti proprietario",

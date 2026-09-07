@@ -531,5 +531,7 @@
   },
   "panelLoadError": "This section could not be loaded.",
   "confirmWithdrawTitle": "Withdraw this application?",
-  "confirmWithdrawMessage": "The organisation will no longer see your application."
+  "confirmWithdrawMessage": "The organisation will no longer see your application.",
+  "withdrawConfirmTitle": "Withdraw this application?",
+  "withdrawConfirmMessage": "Your application for {{title}} will be pulled and cannot be put back."
 }

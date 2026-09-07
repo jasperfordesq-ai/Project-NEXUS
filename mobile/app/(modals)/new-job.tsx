@@ -252,7 +252,7 @@ function NewJobScreen() {
     } catch (error) {
       showToast({
         title: t('common:errors.alertTitle'),
-        description: error instanceof Error ? error.message : t('create.generateDescriptionFailed'),
+        description: describeApiError(error, t('create.generateDescriptionFailed')),
         variant: 'danger',
       });
     } finally {
