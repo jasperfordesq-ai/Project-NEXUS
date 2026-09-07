@@ -81,6 +81,16 @@ function MarketplaceCouponsScreen() {
             <View className="py-16">
               <LoadingSpinner />
             </View>
+          ) : coupons.error ? (
+            /* A failed request read as "No coupons" (audit 2026-09-07, D/F-15). */
+            <EmptyState
+              icon="cloud-offline-outline"
+              title={t('common:errors.generic')}
+              subtitle={coupons.error}
+              actionLabel={t('common:buttons.retry')}
+              onAction={coupons.refresh}
+              testID="marketplace-coupons-error"
+            />
           ) : (
             <EmptyState
               icon="ticket-outline"

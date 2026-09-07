@@ -5,6 +5,7 @@
 
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import QRCode from 'react-native-qrcode-svg';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Text } from 'heroui-native';
@@ -159,16 +160,18 @@ function PickupReservationCard({ item }: { item: MarketplacePickupReservation })
         </View>
 
         {item.status === 'reserved' && item.qr_code ? (
-          <Surface variant="secondary" className="rounded-2xl p-3">
-            <View className="flex-row items-center gap-3">
-              <View className="size-12 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.16) }}>
-                <Ionicons name="qr-code-outline" size={26} color={primary} />
-              </View>
-              <View className="min-w-0 flex-1 gap-1">
-                <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('pickup.showCode')}</Text>
-                <Text className="font-mono text-sm font-bold" style={{ color: theme.text }}>{item.qr_code}</Text>
-              </View>
+          /*
+            🔴 "Show this code" printed the token as text while the seller's own tools tab
+            offers a camera scanner, so the seller had to type it in (audit 2026-09-07,
+            D/F-16). The code is now scannable; the text stays underneath for the case where
+            a scanner will not focus.
+          */
+          <Surface variant="secondary" className="items-center gap-2 rounded-2xl p-3">
+            <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('pickup.showCode')}</Text>
+            <View className="rounded-2xl bg-white p-3" testID={`pickup-qr-${item.id}`}>
+              <QRCode value={item.qr_code} size={168} backgroundColor="#ffffff" color="#000000" />
             </View>
+            <Text className="font-mono text-sm font-bold" style={{ color: theme.text }} selectable>{item.qr_code}</Text>
           </Surface>
         ) : null}
       </HeroCard.Body>

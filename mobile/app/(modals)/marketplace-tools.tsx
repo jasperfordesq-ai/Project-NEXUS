@@ -1245,6 +1245,12 @@ function CouponToolCard({
   );
 }
 
+/** A whole number from a decimal-pad field, comma separators included. Null when unusable. */
+function roundedOrNull(value: string): number | null {
+  const parsed = parseDecimalInput(value);
+  return parsed === null || !Number.isFinite(parsed) ? null : Math.round(parsed);
+}
+
 function couponPayload(form: CouponFormState) {
   return {
     code: form.code.trim() || null,
@@ -1252,9 +1258,15 @@ function couponPayload(form: CouponFormState) {
     description: form.description.trim() || null,
     discount_type: form.discountType,
     discount_value: form.discountType === 'bogo' ? null : parseDecimalInput(form.discountValue) ?? 0,
-    min_order_cents: form.minOrderCents ? Number(form.minOrderCents) : null,
-    max_uses: form.maxUses ? Number(form.maxUses) : null,
-    max_uses_per_member: form.maxUsesPerMember ? Number(form.maxUsesPerMember) : 1,
+    /*
+      🔴 These three read a decimal-pad field, which types a COMMA on half the app's
+      locales, and `Number('2,500')` is NaN — which JSON-serialises to null, so a seller
+      who set a minimum order got a coupon with no minimum and no error (audit 2026-09-07,
+      D/F-14). `discount_value` above was fixed in September; these were missed.
+    */
+    min_order_cents: form.minOrderCents ? roundedOrNull(form.minOrderCents) : null,
+    max_uses: form.maxUses ? roundedOrNull(form.maxUses) : null,
+    max_uses_per_member: form.maxUsesPerMember ? roundedOrNull(form.maxUsesPerMember) ?? 1 : 1,
     valid_from: form.validFrom.trim() || null,
     valid_until: form.validUntil.trim() || null,
     status: form.status,

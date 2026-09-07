@@ -17,14 +17,29 @@ import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 
+/**
+ * The price a member sees on a card and at the top of a listing.
+ *
+ * 🔴 "Free" used to be returned for ANY empty price. A "contact seller" listing and one
+ * priced only in time credits therefore both showed a green Free chip everywhere — while
+ * the detail screen offered "Pay with 3 time credits" underneath it (audit 2026-09-07,
+ * D/F-5). Only `price_type: 'free'` is free.
+ */
 export function formatMarketplacePrice(
   price: number | null | undefined,
   priceType: string | undefined,
   currency: string | undefined,
   freeLabel: string,
   fallbackCurrency?: string,
+  options?: { timeCreditPrice?: number | null; contactLabel?: string; timeCreditsLabel?: string },
 ): string {
-  if (priceType === 'free' || price === null || price === undefined || Number(price) === 0) {
+  if (priceType === 'free') return freeLabel;
+  if (priceType === 'contact' && options?.contactLabel) return options.contactLabel;
+
+  if (price === null || price === undefined || Number(price) === 0) {
+    const credits = Number(options?.timeCreditPrice ?? 0);
+    if (credits > 0 && options?.timeCreditsLabel) return options.timeCreditsLabel;
+    if (priceType === 'contact' || options?.contactLabel === undefined) return freeLabel;
     return freeLabel;
   }
 
@@ -57,6 +72,11 @@ export default function MarketplaceListingCard({
     item.price_currency,
     t('common.free'),
     tenant?.currency,
+    {
+      timeCreditPrice: item.time_credit_price,
+      contactLabel: t('priceType.contact'),
+      timeCreditsLabel: t('common.timeCreditsPrice', { count: Number(item.time_credit_price ?? 0) }),
+    },
   );
   const inventory = inventoryChip(item);
 

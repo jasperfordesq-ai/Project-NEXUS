@@ -50,7 +50,9 @@
   "common": {
     "free": "Gratis",
     "seller": "Vendedor",
-    "save_failed": "No se pudieron actualizar los listados guardados."
+    "save_failed": "No se pudieron actualizar los listados guardados.",
+    "timeCreditsPrice": "{{count}} créditos de tiempo",
+    "timeCreditsPrice_one": "{{count}} crédito de tiempo"
   },
   "priceType": {
     "fixed": "Precio fijo",
@@ -330,6 +332,16 @@
       "countered": "Contraoferta enviada",
       "expired": "Caducado",
       "withdrawn": "Retirado"
+    },
+    "confirm": {
+      "acceptTitle": "¿Aceptar esta oferta?",
+      "acceptMessage": "El anuncio se reserva para esta persona al precio ofrecido y se le pide que pague.",
+      "declineTitle": "¿Rechazar esta oferta?",
+      "declineMessage": "Se avisa a la persona de que su oferta no fue aceptada. Puede hacer otra.",
+      "withdrawTitle": "¿Retirar tu oferta?",
+      "withdrawMessage": "La persona vendedora dejará de verla. Puedes ofertar de nuevo más tarde.",
+      "acceptCounterTitle": "¿Aceptar la contraoferta?",
+      "acceptCounterMessage": "Aceptas el precio de la persona vendedora. El anuncio queda reservado para ti y se te pedirá pagar."
     }
   },
   "orders": {
@@ -481,7 +493,14 @@
         "refunded": "Esta venta fue reembolsada."
       },
       "unknown": "Este pedido se encuentra en un estado que la aplicación aún no reconoce."
-    }
+    },
+    "confirmDeliveryTitle": "¿Confirmas que lo recibiste?",
+    "confirmDeliveryMessage": "Esto libera el pago del pedido {{order}} a la persona vendedora y finaliza tu protección de comprador. Confirma solo cuando tengas el artículo y sea lo que esperabas.",
+    "confirmDeliveryAction": "Confirmar recepción",
+    "paymentTakenTitle": "Tu pago se realizó",
+    "paymentTakenHint": "Todavía estamos confirmando el pedido {{order}}. No pagues otra vez: actualiza en un minuto.",
+    "paymentCancelledTitle": "Pago cancelado",
+    "paymentCancelledHint": "El pedido sigue aquí, sin pagar. Puedes pagarlo o cancelarlo cuando quieras."
   },
   "checkout": {
     "paymentMethodLabel": "Elige cómo pagar",
@@ -514,7 +533,20 @@
     "timeCreditUnsupportedHint": "El pago con crédito de tiempo aún no está conectado en la aplicación móvil. No se ha creado ningún pedido ni débito de billetera.",
     "freeUnsupportedHint": "El pago de artículos gratuitos aún no está conectado en la aplicación móvil. No se ha creado ningún pedido.",
     "pickupRecoveryTitle": "Recogida no reservada",
-    "pickupRecoveryHint": "Se creó la orden {{order}}, pero no se pudo reservar el espacio de recogida. Revíselo o cancélelo desde Pedidos antes de volver a intentarlo."
+    "pickupRecoveryHint": "Se creó la orden {{order}}, pero no se pudo reservar el espacio de recogida. Revíselo o cancélelo desde Pedidos antes de volver a intentarlo.",
+    "summaryItem": "Artículo",
+    "summaryShipping": "Envío",
+    "summaryDiscount": "Descuento",
+    "summaryTotal": "Total a pagar",
+    "buyForAmount": "Comprar por {{amount}}",
+    "confirmPurchaseTitle": "¿Confirmar esta compra?",
+    "confirmTimeCredits": "Se descontarán ahora {{count}} créditos de tiempo de tu monedero por «{{title}}». Esta acción no se puede deshacer.",
+    "confirmFree": "¿Reclamar «{{title}}»? Se avisará a la persona vendedora de que es tuyo.",
+    "paymentTakenTitle": "Tu pago se realizó",
+    "paymentTakenHint": "Todavía estamos confirmando el pedido {{order}}. No pagues otra vez: revisa Pedidos en un minuto.",
+    "paymentCancelledTitle": "Pago cancelado",
+    "paymentCancelledHint": "El pedido {{order}} se guardó como no pagado. Complétalo o cancélalo desde Pedidos.",
+    "confirmTimeCredits_one": "Se descontará ahora {{count}} crédito de tiempo de tu monedero por «{{title}}». Esta acción no se puede deshacer."
   },
   "communityDelivery": {
     "eyebrow": "Entrega impulsada por la comunidad",

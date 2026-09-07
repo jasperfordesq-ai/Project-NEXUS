@@ -27,6 +27,14 @@ jest.mock('react-i18next', () => ({
     t: (key: string, opts?: Record<string, unknown>) => {
       const map: Record<string, string> = {
         'common:back': 'Back',
+        'orders.confirmDelivery': 'Confirm delivery',
+        'orders.confirmDeliveryTitle': 'Confirm you received this?',
+        'orders.confirmDeliveryMessage': 'This releases payment and ends buyer protection.',
+        'orders.confirmDeliveryAction': 'Confirm receipt',
+        'orders.paymentTakenTitle': 'Your payment went through',
+        'orders.paymentTakenHint': 'We are still confirming it.',
+        'orders.paymentCancelledTitle': 'Payment cancelled',
+        'orders.paymentCancelledHint': 'Still unpaid.',
         'orders.eyebrow': 'Marketplace orders',
         'orders.title': 'Orders',
         'orders.subtitle': 'Track purchases and sales from marketplace checkout.',
@@ -158,6 +166,29 @@ jest.mock('@/lib/payments/marketplacePayment', () => ({
 
 // Stable references so screens that put `show` in a useCallback/useEffect
 // dependency array don't re-run their effects on every render.
+/*
+  🔴 Confirming delivery releases the seller's money and ends buyer protection, and it used
+  to happen on one untitled tap beside "Dispute" (audit 2026-09-07, D/F-6). The real dialog
+  renders in a portal the test renderer cannot see into; this stand-in keeps the second tap.
+*/
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, message, confirmLabel, confirmTestID, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Text>{message as string}</Text>
+          <Pressable testID={(confirmTestID as string) ?? 'confirm'} onPress={onConfirm as () => void}>
+            <Text>{confirmLabel as string}</Text>
+          </Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 jest.mock('@/components/ui/AppToast', () => {
   const show = jest.fn();
   const hide = jest.fn();
@@ -167,6 +198,7 @@ jest.mock('@/components/ui/AppToast', () => {
 import MarketplaceOrdersRoute from './marketplace-orders';
 import { useAppToast } from '@/components/ui/AppToast';
 import {
+  confirmMarketplaceOrderDelivery,
   confirmMarketplacePayment,
   createMarketplacePaymentIntent,
   getMarketplaceDeliveryOffers,
@@ -533,6 +565,39 @@ describe('MarketplaceOrdersRoute', () => {
     expect(getAllByText('Rate order')).toHaveLength(1);
     expect(getByText('Rated')).toBeTruthy();
     unmount();
+  });
+
+  /**
+   * 🔴 D/F-6. "Confirm delivery" releases the seller's payment and ends the buyer's
+   * protection. It fired on a single tap, next to "Dispute".
+   */
+  it('asks before confirming delivery, because that releases the seller\'s money', async () => {
+    (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({
+      data: [
+        {
+          id: 51,
+          order_number: 'MKT-000051',
+          quantity: 1,
+          unit_price: 30,
+          total_price: 30,
+          currency: 'EUR',
+          status: 'shipped',
+          created_at: '2026-05-25T10:00:00Z',
+          listing: { id: 81, title: 'Shipped lamp', image: null, delivery_method: 'shipping' },
+          seller: { id: 2, name: 'Pat Seller', avatar_url: null },
+          ratings: [],
+        },
+      ],
+      meta: { cursor: null, has_more: false },
+    });
+
+    const { findByText, getByTestId } = render(<MarketplaceOrdersRoute />);
+
+    fireEvent.press(await findByText('Confirm delivery'));
+    expect(confirmMarketplaceOrderDelivery).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('marketplace-confirm-delivery'));
+    await waitFor(() => expect(confirmMarketplaceOrderDelivery).toHaveBeenCalledWith(51));
   });
 
   it('shows seller-side payment and delivery status actions', async () => {

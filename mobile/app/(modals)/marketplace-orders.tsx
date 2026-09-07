@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
-import { FlatList, Image, Linking, ScrollView, View } from 'react-native';
+import { FlatList, Image, Linking, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import BottomSheet from '@/components/ui/BottomSheet';
 import EmptyState from '@/components/ui/EmptyState';
@@ -37,6 +38,7 @@ import {
   type MarketplaceDeliveryOffer,
   type MarketplaceOrder,
 } from '@/lib/api/marketplace';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
@@ -135,6 +137,7 @@ function MarketplaceOrdersScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { tenant } = useTenant();
   const params = useLocalSearchParams<{ mode?: string | string[]; order_id?: string | string[] }>();
@@ -225,7 +228,7 @@ function MarketplaceOrdersScreen() {
       const response = await getMarketplaceDeliveryOffers(order.id);
       setDeliveryOffers(response.data);
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.deliveryOffersLoadFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.deliveryOffersLoadFailed')), variant: 'danger' });
     } finally {
       setIsLoadingDeliveryOffers(false);
     }
@@ -243,19 +246,34 @@ function MarketplaceOrdersScreen() {
       setShipOrder(null);
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.actionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function confirmDelivery(order: MarketplaceOrder) {
+  /*
+    🔴 The irreversible one: it moves the order to delivered and releases the seller's
+    money, and it sat next to "Dispute" with no dialog (audit 2026-09-07, D/F-6).
+  */
+  function confirmDelivery(order: MarketplaceOrder) {
+    confirm({
+      title: t('orders.confirmDeliveryTitle'),
+      message: t('orders.confirmDeliveryMessage', { order: order.order_number }),
+      confirmLabel: t('orders.confirmDeliveryAction'),
+      cancelLabel: t('common:buttons.cancel'),
+      confirmTestID: 'marketplace-confirm-delivery',
+      onConfirm: () => void runConfirmDelivery(order),
+    });
+  }
+
+  async function runConfirmDelivery(order: MarketplaceOrder) {
     setIsSubmitting(true);
     try {
       await confirmMarketplaceOrderDelivery(order.id);
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.actionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -274,9 +292,19 @@ function MarketplaceOrdersScreen() {
           tenantSlug: tenant?.slug,
         });
         if (paymentResult.status === 'completed' && payment.data.payment_intent_id) {
-          await confirmMarketplacePayment(payment.data.payment_intent_id);
-          showToast({ title: t('orders.paymentCompleteTitle'), description: t('orders.paymentCompleteHint'), variant: 'success' });
+          // The card has been charged by now. A failure in OUR confirm call is not a failed
+          // payment, and saying so invited a second one (audit 2026-09-07, D/F-3).
+          try {
+            await confirmMarketplacePayment(payment.data.payment_intent_id);
+            showToast({ title: t('orders.paymentCompleteTitle'), description: t('orders.paymentCompleteHint'), variant: 'success' });
+          } catch {
+            showToast({ title: t('orders.paymentTakenTitle'), description: t('orders.paymentTakenHint', { order: order.order_number }), variant: 'warning' });
+          }
           orders.refresh();
+          return;
+        }
+        if (paymentResult.status === 'canceled') {
+          showToast({ title: t('orders.paymentCancelledTitle'), description: t('orders.paymentCancelledHint'), variant: 'default' });
           return;
         }
         if (paymentResult.status === 'failed') {
@@ -289,7 +317,7 @@ function MarketplaceOrdersScreen() {
       }
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.paymentFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.paymentFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -307,7 +335,7 @@ function MarketplaceOrdersScreen() {
       setCancelReason('');
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.actionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -329,7 +357,7 @@ function MarketplaceOrdersScreen() {
       setRatingComment('');
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.actionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -350,7 +378,7 @@ function MarketplaceOrdersScreen() {
       setDisputeDescription('');
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.actionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -369,7 +397,7 @@ function MarketplaceOrdersScreen() {
       setDeliveryOffers(response.data);
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('orders.actionFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
       setIsSubmitting(false);
     }
@@ -407,6 +435,9 @@ function MarketplaceOrdersScreen() {
       <FlatList
         data={visibleOrders}
         keyExtractor={(item) => String(item.id)}
+        // A payment hand-off (Stripe browser checkout, a bank app) returns here, and a
+        // seller can act from the web, so this list went stale where it matters (D/F-10).
+        refreshControl={<RefreshControl refreshing={orders.isLoading && orders.items.length > 0} onRefresh={orders.refresh} tintColor={primary} colors={[primary]} />}
         contentContainerStyle={{ gap: 12, paddingHorizontal: 16, paddingBottom: 132 }}
         ListHeaderComponent={
           <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.border }}>
@@ -638,6 +669,7 @@ function MarketplaceOrdersScreen() {
             )}
         </Surface>
       </BottomSheet>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

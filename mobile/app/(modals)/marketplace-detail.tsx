@@ -56,6 +56,8 @@ import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -80,6 +82,7 @@ function MarketplaceDetailScreen() {
   const theme = useTheme();
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const listingId = Number(params.id);
   const safeId = Number.isFinite(listingId) && listingId > 0 ? listingId : 0;
   const parsedOfferId = Number(params.offer_id);
@@ -107,6 +110,13 @@ function MarketplaceDetailScreen() {
   const [fulfilmentChoice, setFulfilmentChoice] = useState<FulfilmentChoice | null>(null);
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
+  /*
+    🔴 The server tells us what the coupon is worth and the app threw it away, so a member
+    saw "Applied" and no figure, and never saw what they were about to pay (audit
+    2026-09-07, D/F-1). Cleared whenever the code, the delivery choice or the payment method
+    changes, because the discount was validated against those.
+  */
+  const [couponDiscount, setCouponDiscount] = useState<number | null>(null);
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState<'cash' | 'time_credits'>('cash');
   const [offerAmount, setOfferAmount] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
@@ -284,6 +294,11 @@ function MarketplaceDetailScreen() {
     listing.price_currency,
     t('common.free'),
     tenant?.currency,
+    isAcceptedOfferCheckout ? undefined : {
+      timeCreditPrice: listing.time_credit_price,
+      contactLabel: t('priceType.contact'),
+      timeCreditsLabel: t('common.timeCreditsPrice', { count: Number(listing.time_credit_price ?? 0) }),
+    },
   );
   const isOwner = Boolean(listing.is_own || (user?.id && listing.user?.id === user.id));
   const isActiveNonOwner = !isOwner && (
@@ -317,6 +332,25 @@ function MarketplaceDetailScreen() {
     || pickupSlots.length === 0
     || selectedSlotId !== null;
   const couponsEnabled = !isAcceptedOfferCheckout && hasFeature('merchant_coupons');
+  /*
+    🔴 What the member is actually about to pay. Until 2026-09-07 the screen showed the item
+    price at the top, each delivery option's price separately, and "Applied" for a coupon
+    with no figure — the first place a total appeared was the Stripe sheet, and for a
+    time-credit purchase there was no sheet at all (audit D/F-1).
+  */
+  const selectedShippingOption = selectedShippingOptionId !== null
+    ? shippingOptions.find((option) => option.id === selectedShippingOptionId) ?? null
+    : null;
+  const shippingCost = selectedShippingOption ? Number(selectedShippingOption.price) || 0 : 0;
+  const appliedDiscount = couponApplied && couponDiscount !== null ? couponDiscount : 0;
+  const checkoutCurrency = listing.price_currency || tenant?.currency || undefined;
+  const checkoutTotal = Math.max(0, checkoutMoneyPrice + shippingCost - appliedDiscount);
+  const timeCreditCost = Number(listing.time_credit_price ?? 0);
+  const checkoutTotalLabel = effectivePaymentMethod === 'free'
+    ? t('common.free')
+    : effectivePaymentMethod === 'time_credits'
+      ? t('common.timeCredits', { count: timeCreditCost })
+      : formatMarketplaceCurrency(checkoutTotal, checkoutCurrency);
   const templateEntries = getListingTemplateEntries(listing.template_data);
 
   async function handleToggleSave() {
@@ -333,12 +367,38 @@ function MarketplaceDetailScreen() {
     }
   }
 
-  async function handleBuyNow() {
+  /*
+    🔴 A time-credit or free checkout has no payment sheet, so the tap on "Buy" WAS the
+    purchase: the server debits the wallet as the order is created
+    (`MarketplaceOrderService::settleTimeCreditOrder`). One mis-tap spent a member's credits
+    with nothing to confirm and nothing to undo (audit 2026-09-07, D/F-2). A card purchase
+    keeps its single tap, because the Stripe sheet is itself the confirmation — and now
+    shows the total before it opens.
+  */
+  function handleBuyNow() {
     if (!listing || isActionLoading || !canBuy) return;
     if (!fulfilmentReady || !pickupSlotReady) {
       showToast({ title: t('common:errors.alertTitle'), description: t('checkout.deliveryRequired'), variant: 'warning' });
       return;
     }
+    if (effectivePaymentMethod === 'cash') {
+      void completePurchase();
+      return;
+    }
+    confirm({
+      title: t('checkout.confirmPurchaseTitle'),
+      message: effectivePaymentMethod === 'time_credits'
+        ? t('checkout.confirmTimeCredits', { count: timeCreditCost, title: listing.title })
+        : t('checkout.confirmFree', { title: listing.title }),
+      confirmLabel: t('detail.buyNow'),
+      cancelLabel: t('common:buttons.cancel'),
+      confirmTestID: 'marketplace-confirm-purchase',
+      onConfirm: () => void completePurchase(),
+    });
+  }
+
+  async function completePurchase() {
+    if (!listing) return;
     setIsActionLoading(true);
     try {
       const idempotencyKey = checkoutIdempotencyKeyRef.current ?? `mobile-marketplace-${randomUUID()}`;
@@ -369,6 +429,9 @@ function MarketplaceDetailScreen() {
         return;
       }
       if (response.data.requires_payment === false || response.data.status === 'paid') {
+        // This purchase is finished; the next one is a different purchase and must claim its
+        // own key, or the server replays this order instead of creating one (D/F-4).
+        checkoutIdempotencyKeyRef.current = null;
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({
           title: t('detail.orderCreated'),
@@ -403,13 +466,35 @@ function MarketplaceDetailScreen() {
           tenantSlug: tenant?.slug,
         });
         if (paymentResult.status === 'completed' && payment.data.payment_intent_id) {
-          await confirmMarketplacePayment(payment.data.payment_intent_id);
-          showToast({ title: t('checkout.paymentCompleteTitle'), description: t('checkout.paymentCompleteHint'), variant: 'success' });
+          /*
+            🔴 The card has been charged by this point. If our confirm call then fails —
+            dropped connection, timeout, 5xx — the member used to be told "Payment failed"
+            and could pay a second time (audit 2026-09-07, D/F-3). The webhook completes the
+            order either way, so say what is true: the money went, we are still catching up.
+          */
+          try {
+            await confirmMarketplacePayment(payment.data.payment_intent_id);
+            showToast({ title: t('checkout.paymentCompleteTitle'), description: t('checkout.paymentCompleteHint'), variant: 'success' });
+          } catch {
+            checkoutIdempotencyKeyRef.current = null;
+            showToast({ title: t('checkout.paymentTakenTitle'), description: t('checkout.paymentTakenHint', { order: orderNumber }), variant: 'warning' });
+          }
+          checkoutIdempotencyKeyRef.current = null;
           router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
           return;
         }
         if (paymentResult.status === 'failed') {
           showToast({ title: t('common:errors.alertTitle'), description: paymentResult.message || t('checkout.paymentSheetFailed'), variant: 'danger' });
+          return;
+        }
+        if (paymentResult.status === 'canceled') {
+          /*
+            🔴 The member closed the sheet. They used to be told "Complete payment from the
+            web checkout if the payment sheet does not open on this device" — which did open
+            — and left on the listing with no route to the unpaid order (D/F-4).
+          */
+          showToast({ title: t('checkout.paymentCancelledTitle'), description: t('checkout.paymentCancelledHint', { order: orderNumber }), variant: 'default' });
+          router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases', order_id: String(orderId) } } as unknown as Href);
           return;
         }
         showToast({ title: t('checkout.openedTitle'), description: t('checkout.clientSecretHint'), variant: 'default' });
@@ -418,7 +503,7 @@ function MarketplaceDetailScreen() {
       showToast({ title: t('checkout.paymentRecoveryTitle'), description: t('checkout.paymentRecoveryHint', { order: orderNumber }), variant: 'danger' });
       router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('detail.orderFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.orderFailed')), variant: 'danger' });
     } finally {
       setIsActionLoading(false);
     }
@@ -428,15 +513,18 @@ function MarketplaceDetailScreen() {
     if (!listing || !couponCode.trim()) return;
     setIsActionLoading(true);
     try {
-      await validateMarketplaceCoupon({
+      const validated = await validateMarketplaceCoupon({
         code: couponCode.trim().toUpperCase(),
         listing_id: listing.id,
         ...(selectedShippingOptionId !== null ? { shipping_option_id: selectedShippingOptionId } : {}),
       });
+      const discount = Number(validated.data?.discount_amount ?? 0);
+      setCouponDiscount(Number.isFinite(discount) && discount > 0 ? discount : null);
       setCouponApplied(true);
       showToast({ title: t('checkout.couponAppliedTitle'), description: t('checkout.couponAppliedHint'), variant: 'success' });
     } catch (err) {
       setCouponApplied(false);
+      setCouponDiscount(null);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('checkout.invalidCoupon')), variant: 'danger' });
     } finally {
       setIsActionLoading(false);
@@ -451,6 +539,9 @@ function MarketplaceDetailScreen() {
   function chooseFulfilment(choice: FulfilmentChoice) {
     setFulfilmentChoice(choice);
     if (choice !== 'pickup') setSelectedSlotId(null);
+    // The coupon was validated against the previous delivery choice.
+    setCouponApplied(false);
+    setCouponDiscount(null);
   }
 
   async function handleSubmitOffer() {
@@ -812,6 +903,26 @@ function MarketplaceDetailScreen() {
                   </ScrollView>
                 </View>
               ) : null}
+              {/*
+                🔴 What the member is about to pay, before they pay it (audit 2026-09-07,
+                D/F-1). The item price was at the top of the screen, each delivery option
+                carried its own price, and a coupon said only "Applied".
+              */}
+              <View className="gap-1 rounded-panel-inner p-3" style={{ backgroundColor: theme.borderSubtle }} testID="marketplace-checkout-summary">
+                {effectivePaymentMethod === 'cash' ? (
+                  <>
+                    <SummaryRow label={t('checkout.summaryItem')} value={formatMarketplaceCurrency(checkoutMoneyPrice, checkoutCurrency)} theme={theme} />
+                    {shippingCost > 0 ? (
+                      <SummaryRow label={t('checkout.summaryShipping')} value={formatMarketplaceCurrency(shippingCost, checkoutCurrency)} theme={theme} />
+                    ) : null}
+                    {appliedDiscount > 0 ? (
+                      <SummaryRow label={t('checkout.summaryDiscount')} value={`-${formatMarketplaceCurrency(appliedDiscount, checkoutCurrency)}`} theme={theme} />
+                    ) : null}
+                  </>
+                ) : null}
+                <SummaryRow label={t('checkout.summaryTotal')} value={checkoutTotalLabel} theme={theme} emphasis testID="marketplace-checkout-total" />
+              </View>
+
               {couponsEnabled && effectivePaymentMethod === 'cash' ? (
                 <View className="flex-row gap-2">
                   <View className="min-w-0 flex-1">
@@ -855,9 +966,9 @@ function MarketplaceDetailScreen() {
                 </HeroButton>
               ) : null}
               {canBuy ? (
-                <HeroButton className="flex-1" variant="primary" onPress={handleBuyNow} isDisabled={isActionLoading || !fulfilmentReady || !pickupSlotReady}>
+                <HeroButton className="flex-1" variant="primary" onPress={handleBuyNow} isDisabled={isActionLoading || !fulfilmentReady || !pickupSlotReady} testID="marketplace-buy-now">
                   <AccentIcon name="card-outline" size={17} />
-                  <HeroButton.Label>{t('detail.buyNow')}</HeroButton.Label>
+                  <HeroButton.Label numberOfLines={1}>{t('checkout.buyForAmount', { amount: checkoutTotalLabel })}</HeroButton.Label>
                 </HeroButton>
               ) : null}
             </View>
@@ -947,6 +1058,8 @@ function MarketplaceDetailScreen() {
             </ScrollView>
         </Surface>
       </BottomSheet>
+      {/* The purchase confirmation for a time-credit or free checkout (D/F-2). */}
+      {confirmDialog}
     </SafeAreaView>
   );
 }
@@ -1048,21 +1161,23 @@ function formatPickupSlot(slot: MarketplacePickupSlotOption, fallback: string) {
   }
 }
 
+function SummaryRow({ label, value, theme, emphasis = false, testID }: { label: string; value: string; theme: ReturnType<typeof useTheme>; emphasis?: boolean; testID?: string }) {
+  return (
+    <View className="flex-row items-center justify-between gap-3" testID={testID}>
+      <Text className={emphasis ? 'text-sm font-bold' : 'text-sm'} style={{ color: emphasis ? theme.text : theme.textSecondary }}>{label}</Text>
+      <Text className={emphasis ? 'text-base font-bold' : 'text-sm'} style={{ color: emphasis ? theme.text : theme.textSecondary }}>{value}</Text>
+    </View>
+  );
+}
+
 function formatShippingOption(option: MarketplaceShippingOption): string {
   const amount = Number(option.price);
   if (!Number.isFinite(amount)) {
     return `${option.courier_name} · ${option.currency} ${String(option.price)}`;
   }
-  try {
-    const formattedAmount = new Intl.NumberFormat(dateLocale(), {
-      style: 'currency',
-      currency: option.currency,
-      currencyDisplay: 'code',
-    }).format(amount).replace(/\s+/g, ' ');
-    return `${option.courier_name} · ${formattedAmount}`;
-  } catch {
-    return `${option.courier_name} · ${option.currency} ${amount}`;
-  }
+  // The same symbol style as the item price and the total; this printed "EUR 5.00" beside
+  // an item priced "€20.00" (audit 2026-09-07, D/F-18).
+  return `${option.courier_name} · ${formatMarketplaceCurrency(amount, option.currency)}`;
 }
 
 function getListingTemplateEntries(templateData?: Record<string, unknown> | null): { key: string; label: string; value: string }[] {

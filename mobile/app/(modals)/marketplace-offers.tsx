@@ -5,7 +5,7 @@
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useState } from 'react';
-import { FlatList, Image, View } from 'react-native';
+import { FlatList, Image, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { describeApiError } from '@/lib/api/describeApiError';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
@@ -58,6 +60,9 @@ function MarketplaceOffersScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
+  // The offer whose accept/decline/withdraw is in flight (audit 2026-09-07, D/F-8).
+  const [busyOfferId, setBusyOfferId] = useState<number | null>(null);
   const [mode, setMode] = useState<OfferMode>(normalizeOfferMode(firstParam(params.mode)));
   const canLoadOffers = !isAuthLoading && isAuthenticated;
   const offers = usePaginatedApi<MarketplaceOffer, Awaited<ReturnType<typeof getMarketplaceOffers>>>(
@@ -106,7 +111,27 @@ function MarketplaceOffersScreen() {
     );
   }
 
+  /*
+    🔴 These four all change what someone else can do — accepting an offer reserves the
+    listing for that buyer — and they had no busy state and no confirmation (audit
+    2026-09-07, D/F-8). A second tap during the request produced "this offer is not
+    pending", which reads as if the first tap had failed.
+  */
+  function requestAction(kind: 'accept' | 'decline' | 'withdraw' | 'acceptCounter', offer: MarketplaceOffer) {
+    if (busyOfferId !== null) return;
+    confirm({
+      title: t(`offers.confirm.${kind}Title`),
+      message: t(`offers.confirm.${kind}Message`),
+      confirmLabel: t(`offers.${kind}`),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: kind === 'accept' || kind === 'acceptCounter' ? 'primary' : 'danger',
+      confirmTestID: `marketplace-offer-confirm-${kind}`,
+      onConfirm: () => void action(kind, offer),
+    });
+  }
+
   async function action(kind: 'accept' | 'decline' | 'withdraw' | 'acceptCounter', offer: MarketplaceOffer) {
+    setBusyOfferId(offer.id);
     try {
       if (kind === 'accept') await acceptMarketplaceOffer(offer.id);
       if (kind === 'decline') await declineMarketplaceOffer(offer.id);
@@ -116,22 +141,28 @@ function MarketplaceOffersScreen() {
     } catch (err) {
       showToast({
         title: t('common:errors.alertTitle'),
-        description: err instanceof Error ? err.message : t('offers.actionFailed'),
+        description: describeApiError(err, t('offers.actionFailed')),
         variant: 'danger',
       });
+    } finally {
+      setBusyOfferId(null);
     }
   }
 
   async function counter(offer: MarketplaceOffer, amount: number, message?: string | null) {
+    if (busyOfferId !== null) return;
+    setBusyOfferId(offer.id);
     try {
       await counterMarketplaceOffer(offer.id, { amount, message });
       offers.refresh();
     } catch (err) {
       showToast({
         title: t('common:errors.alertTitle'),
-        description: err instanceof Error ? err.message : t('offers.counterFailed'),
+        description: describeApiError(err, t('offers.counterFailed')),
         variant: 'danger',
       });
+    } finally {
+      setBusyOfferId(null);
     }
   }
 
@@ -141,6 +172,7 @@ function MarketplaceOffersScreen() {
       <FlatList
         data={offers.items}
         keyExtractor={(item) => String(item.id)}
+        refreshControl={<RefreshControl refreshing={offers.isLoading && offers.items.length > 0} onRefresh={offers.refresh} tintColor={primary} colors={[primary]} />}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132 }}
         ListHeaderComponent={
           <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
@@ -168,7 +200,7 @@ function MarketplaceOffersScreen() {
           </HeroCard>
         }
         renderItem={({ item }) => (
-          <OfferCard offer={item} mode={mode} onAction={action} onCounter={counter} />
+          <OfferCard offer={item} mode={mode} onAction={requestAction} onCounter={counter} busy={busyOfferId === item.id} />
         )}
         ListEmptyComponent={
           offers.isLoading ? (
@@ -195,6 +227,7 @@ function MarketplaceOffersScreen() {
         onEndReached={offers.loadMore}
         onEndReachedThreshold={0.35}
       />
+      {confirmDialog}
     </SafeAreaView>
   );
 }
@@ -224,11 +257,14 @@ function OfferCard({
   offer,
   mode,
   onAction,
+  busy = false,
   onCounter,
 }: {
   offer: MarketplaceOffer;
   mode: OfferMode;
   onAction: (kind: 'accept' | 'decline' | 'withdraw' | 'acceptCounter', offer: MarketplaceOffer) => void;
+  /** True while this offer's own request is in flight — a second tap used to look like a failure. */
+  busy?: boolean;
   onCounter: (offer: MarketplaceOffer, amount: number, message?: string | null) => void;
 }) {
   const { t } = useTranslation('marketplace');
@@ -364,10 +400,10 @@ function OfferCard({
           ) : null}
           {mode === 'received' && offer.status === 'pending' ? (
             <>
-              <HeroButton className="flex-1" size="sm" variant="primary" onPress={() => onAction('accept', offer)} style={{ minWidth: '46%', backgroundColor: theme.success }}>
+              <HeroButton className="flex-1" size="sm" variant="primary" onPress={() => onAction('accept', offer)} isDisabled={busy} style={{ minWidth: '46%', backgroundColor: theme.success }}>
                 <HeroButton.Label>{t('offers.accept')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" size="sm" variant="danger" onPress={() => onAction('decline', offer)} style={{ minWidth: '46%' }}>
+              <HeroButton className="flex-1" size="sm" variant="danger" onPress={() => onAction('decline', offer)} isDisabled={busy} style={{ minWidth: '46%' }}>
                 <HeroButton.Label>{t('offers.decline')}</HeroButton.Label>
               </HeroButton>
               <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => setIsCountering(true)} style={{ minWidth: '46%' }}>
@@ -376,16 +412,16 @@ function OfferCard({
             </>
           ) : null}
           {mode === 'sent' && offer.status === 'pending' ? (
-            <HeroButton className="flex-1" size="sm" variant="danger" onPress={() => onAction('withdraw', offer)} style={{ minWidth: '46%' }}>
+            <HeroButton className="flex-1" size="sm" variant="danger" onPress={() => onAction('withdraw', offer)} isDisabled={busy} style={{ minWidth: '46%' }}>
               <HeroButton.Label>{t('offers.withdraw')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {mode === 'sent' && offer.status === 'countered' ? (
             <>
-              <HeroButton className="flex-1" size="sm" variant="primary" onPress={() => onAction('acceptCounter', offer)} style={{ minWidth: '46%', backgroundColor: theme.success }}>
+              <HeroButton className="flex-1" size="sm" variant="primary" onPress={() => onAction('acceptCounter', offer)} isDisabled={busy} style={{ minWidth: '46%', backgroundColor: theme.success }}>
                 <HeroButton.Label>{t('offers.acceptCounter')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" size="sm" variant="danger" onPress={() => onAction('withdraw', offer)} style={{ minWidth: '46%' }}>
+              <HeroButton className="flex-1" size="sm" variant="danger" onPress={() => onAction('withdraw', offer)} isDisabled={busy} style={{ minWidth: '46%' }}>
                 <HeroButton.Label>{t('offers.withdraw')}</HeroButton.Label>
               </HeroButton>
             </>

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { ApiResponseError } from '@/lib/api/client';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockFeatures = new Set(['merchant_coupons']);
@@ -67,6 +68,20 @@ jest.mock('react-i18next', () => ({
         'checkout.merchantDisplayName': 'Project NEXUS marketplace',
         'pickup.chooseSlot': 'Pickup slot',
         'pickup.slotFallback': `Slot ${String(opts?.id ?? '')}`,
+        'checkout.buyForAmount': `Buy for ${String(opts?.amount ?? '')}`,
+        'checkout.summaryItem': 'Item',
+        'checkout.summaryShipping': 'Delivery',
+        'checkout.summaryDiscount': 'Discount',
+        'checkout.summaryTotal': 'Total to pay',
+        'checkout.confirmPurchaseTitle': 'Confirm this purchase?',
+        'checkout.confirmTimeCredits': `${String(opts?.count ?? '')} time credits will leave your wallet`,
+        'checkout.confirmFree': 'Claim this item?',
+        'checkout.paymentTakenTitle': 'Your payment went through',
+        'checkout.paymentTakenHint': 'We are still confirming it.',
+        'checkout.paymentCancelledTitle': 'Payment cancelled',
+        'checkout.paymentCancelledHint': 'Saved as unpaid.',
+        'common.timeCreditsPrice': `${String(opts?.count ?? '')} time credits`,
+        'priceType.contact': 'Contact seller',
         'checkout.openedTitle': 'Checkout started',
         'checkout.clientSecretHint': 'The order was created. Complete payment from the web checkout if the payment sheet does not open on this device.',
         'checkout.paymentCompleteTitle': 'Payment complete',
@@ -169,6 +184,30 @@ jest.mock('@/lib/payments/marketplacePayment', () => ({
 
 // Stable references so screens that put `show` in a useCallback/useEffect
 // dependency array don't re-run their effects on every render.
+/*
+  🔴 A time-credit or free purchase now asks first (audit 2026-09-07, D/F-2) — the server
+  debits the wallet as the order is created, so the tap on Buy WAS the purchase. The real
+  dialog renders in a portal the test renderer cannot see into, so it is stood in for by
+  plain views; it still takes the second press, which is the point of the change.
+*/
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, message, confirmLabel, confirmTestID, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Text>{message as string}</Text>
+          <Pressable testID={(confirmTestID as string) ?? 'confirm'} onPress={onConfirm as () => void}>
+            <Text>{confirmLabel as string}</Text>
+          </Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 jest.mock('@/components/ui/AppToast', () => {
   const show = jest.fn();
   const hide = jest.fn();
@@ -292,10 +331,10 @@ describe('MarketplaceDetailRoute', () => {
     const { getByText } = render(<MarketplaceDetailRoute />);
 
     await waitFor(() => {
-      expect(getByText('Buy now')).toBeTruthy();
+      expect(getByText(/^Buy for /)).toBeTruthy();
     });
 
-    const buyNow = await waitFor(() => getByText('Buy now'));
+    const buyNow = await waitFor(() => getByText(/^Buy for /));
     fireEvent.press(buyNow);
 
     await waitFor(() => {
@@ -329,7 +368,7 @@ describe('MarketplaceDetailRoute', () => {
     expect(queryByText(/time credits/i)).toBeNull();
     expect(queryByPlaceholderText('COMMUNITY10')).toBeNull();
 
-    fireEvent.press(getByText('Buy now'));
+    fireEvent.press(getByText(/^Buy for /));
     await waitFor(() => {
       expect(createMarketplaceOrder).toHaveBeenCalledWith(expect.objectContaining({
         listing_id: 9,
@@ -353,7 +392,13 @@ describe('MarketplaceDetailRoute', () => {
         },
       ],
     });
-    (createMarketplaceOrder as jest.Mock).mockRejectedValue(new Error('Slot is full'));
+    /*
+      🔴 An ApiResponseError, not a bare Error: the screen now filters refusals through
+      `describeApiError` (audit 2026-09-07, D/F-17), which shows the SERVER's sentence and
+      hides an internal JavaScript message. A 422 with the server's wording is what the API
+      actually returns when a pickup slot has filled up.
+    */
+    (createMarketplaceOrder as jest.Mock).mockRejectedValue(new ApiResponseError(422, 'Slot is full'));
 
     const { getByText, findByText, findByTestId } = render(<MarketplaceDetailRoute />);
 
@@ -363,7 +408,7 @@ describe('MarketplaceDetailRoute', () => {
       const slotButton = await findByTestId('marketplace-pickup-slot-12');
       expect(slotButton.props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
     });
-    const buyNow = await waitFor(() => getByText('Buy now'));
+    const buyNow = await waitFor(() => getByText(/^Buy for /));
     fireEvent.press(buyNow);
 
     await waitFor(() => {
@@ -391,7 +436,8 @@ describe('MarketplaceDetailRoute', () => {
     });
 
     const freeListing = render(<MarketplaceDetailRoute />);
-    fireEvent.press(await waitFor(() => freeListing.getByText('Buy now')));
+    fireEvent.press(await waitFor(() => freeListing.getByText(/^Buy for /)));
+    fireEvent.press(await freeListing.findByTestId('marketplace-confirm-purchase'));
     await waitFor(() => {
       expect(createMarketplaceOrder).toHaveBeenCalledWith(expect.objectContaining({
         listing_id: 9,
@@ -417,7 +463,8 @@ describe('MarketplaceDetailRoute', () => {
       data: { id: 49, order_number: 'MKT-CREDITS', status: 'paid', requires_payment: false },
     });
     const creditListing = render(<MarketplaceDetailRoute />);
-    fireEvent.press(await waitFor(() => creditListing.getByText('Buy now')));
+    fireEvent.press(await waitFor(() => creditListing.getByText(/^Buy for /)));
+    fireEvent.press(await creditListing.findByTestId('marketplace-confirm-purchase'));
     await waitFor(() => expect(createMarketplaceOrder).toHaveBeenCalledWith(expect.objectContaining({
       listing_id: 9,
       payment_method: 'time_credits',
@@ -446,7 +493,8 @@ describe('MarketplaceDetailRoute', () => {
         .toEqual(expect.objectContaining({ checked: true }));
     });
 
-    fireEvent.press(screen.getByText('Buy now'));
+    fireEvent.press(screen.getByText(/^Buy for /));
+    fireEvent.press(await screen.findByTestId('marketplace-confirm-purchase'));
     await waitFor(() => expect(createMarketplaceOrder).toHaveBeenCalledWith(expect.objectContaining({
       listing_id: 9,
       payment_method: 'time_credits',
@@ -473,9 +521,9 @@ describe('MarketplaceDetailRoute', () => {
 
     const { getByText } = render(<MarketplaceDetailRoute />);
     await waitFor(() => {
-      expect(getByText('An Post · EUR 6.50')).toBeTruthy();
+      expect(getByText(/^An Post · .*6[.,]50$/)).toBeTruthy();
     });
-    fireEvent.press(getByText('Buy now'));
+    fireEvent.press(getByText(/^Buy for /));
 
     await waitFor(() => {
       expect(createMarketplaceOrder).toHaveBeenCalledWith({
@@ -507,7 +555,7 @@ describe('MarketplaceDetailRoute', () => {
     await waitFor(() => {
       expect(getByText('This seller has no active shipping options.')).toBeTruthy();
     });
-    fireEvent.press(getByText('Buy now'));
+    fireEvent.press(getByText(/^Buy for /));
     expect(createMarketplaceOrder).not.toHaveBeenCalled();
   });
 
@@ -515,7 +563,7 @@ describe('MarketplaceDetailRoute', () => {
     (createMarketplaceOrder as jest.Mock).mockResolvedValue({ data: {} });
 
     const { getByText } = render(<MarketplaceDetailRoute />);
-    fireEvent.press(await waitFor(() => getByText('Buy now')));
+    fireEvent.press(await waitFor(() => getByText(/^Buy for /)));
 
     await waitFor(() => {
       expect(showToast).toHaveBeenCalledWith({
@@ -525,6 +573,19 @@ describe('MarketplaceDetailRoute', () => {
       });
     });
     expect(createMarketplacePaymentIntent).not.toHaveBeenCalled();
+  });
+
+  /**
+   * 🔴 D/F-1. The item price was at the top of the screen, delivery options each carried
+   * their own price, and a coupon said only "Applied" — the first place a total appeared
+   * was the Stripe sheet, and a time-credit purchase never saw one at all.
+   */
+  it('shows what the purchase costs before the member commits to it', async () => {
+    const { findByTestId, getByTestId } = render(<MarketplaceDetailRoute />);
+
+    expect(await findByTestId('marketplace-checkout-summary')).toBeTruthy();
+    // The total row and the button agree, and both name a real amount.
+    expect(getByTestId('marketplace-checkout-total')).toBeTruthy();
   });
 
   it('confirms marketplace payment after the native payment sheet completes', async () => {
@@ -541,7 +602,7 @@ describe('MarketplaceDetailRoute', () => {
 
     const { getByText } = render(<MarketplaceDetailRoute />);
 
-    const buyNow = await waitFor(() => getByText('Buy now'));
+    const buyNow = await waitFor(() => getByText(/^Buy for /));
     fireEvent.press(buyNow);
 
     await waitFor(() => {

@@ -50,7 +50,9 @@
   "common": {
     "free": "Gratuit",
     "seller": "Vendeur",
-    "save_failed": "Impossible de mettre à jour les annonces enregistrées."
+    "save_failed": "Impossible de mettre à jour les annonces enregistrées.",
+    "timeCreditsPrice": "{{count}} crédits-temps",
+    "timeCreditsPrice_one": "{{count}} crédit-temps"
   },
   "priceType": {
     "fixed": "Prix fixe",
@@ -330,6 +332,16 @@
       "countered": "Contre-offre envoyée",
       "expired": "Expirées",
       "withdrawn": "Retirées"
+    },
+    "confirm": {
+      "acceptTitle": "Accepter cette offre ?",
+      "acceptMessage": "L’annonce est réservée à cet acheteur au prix proposé, et il est invité à payer.",
+      "declineTitle": "Refuser cette offre ?",
+      "declineMessage": "L’acheteur est informé que son offre n’a pas été acceptée. Il peut en faire une autre.",
+      "withdrawTitle": "Retirer votre offre ?",
+      "withdrawMessage": "Le vendeur ne la verra plus. Vous pourrez proposer à nouveau plus tard.",
+      "acceptCounterTitle": "Accepter la contre-offre ?",
+      "acceptCounterMessage": "Vous acceptez le prix du vendeur. L’annonce vous est réservée et il vous sera demandé de payer."
     }
   },
   "orders": {
@@ -481,7 +493,14 @@
         "refunded": "Cette vente a été remboursé."
       },
       "unknown": "Cette commande est dans un statut que l'application ne reconnaît pas encore."
-    }
+    },
+    "confirmDeliveryTitle": "Confirmer la réception ?",
+    "confirmDeliveryMessage": "Cela verse le paiement de la commande {{order}} au vendeur et met fin à votre protection acheteur. Ne confirmez qu’une fois l’article reçu et conforme.",
+    "confirmDeliveryAction": "Confirmer la réception",
+    "paymentTakenTitle": "Votre paiement est passé",
+    "paymentTakenHint": "Nous confirmons encore la commande {{order}}. Ne payez pas à nouveau — actualisez dans une minute.",
+    "paymentCancelledTitle": "Paiement annulé",
+    "paymentCancelledHint": "La commande reste ici, impayée. Vous pouvez la payer ou l’annuler quand vous voulez."
   },
   "checkout": {
     "paymentMethodLabel": "Choisissez votre mode de paiement",
@@ -514,7 +533,20 @@
     "timeCreditUnsupportedHint": "Le paiement avec crédit de temps n'est pas encore connecté dans l'application mobile. Aucune commande ou débit de portefeuille n'a été créé.",
     "freeUnsupportedHint": "Le paiement des articles gratuits n'est pas encore connecté dans l'application mobile. Aucune commande n'a été créée.",
     "pickupRecoveryTitle": "Retrait non réservé",
-    "pickupRecoveryHint": "La commande {{order}} a été créée, mais le créneau de retrait n'a pas pu être réservé. Vérifiez-la ou annulez-la dans Commandes avant de réessayer."
+    "pickupRecoveryHint": "La commande {{order}} a été créée, mais le créneau de retrait n'a pas pu être réservé. Vérifiez-la ou annulez-la dans Commandes avant de réessayer.",
+    "summaryItem": "Article",
+    "summaryShipping": "Livraison",
+    "summaryDiscount": "Remise",
+    "summaryTotal": "Total à payer",
+    "buyForAmount": "Acheter pour {{amount}}",
+    "confirmPurchaseTitle": "Confirmer cet achat ?",
+    "confirmTimeCredits": "{{count}} crédits-temps vont quitter votre portefeuille pour « {{title}} ». Cette action est irréversible.",
+    "confirmFree": "Réclamer « {{title}} » ? Le vendeur sera informé qu’il vous revient.",
+    "paymentTakenTitle": "Votre paiement est passé",
+    "paymentTakenHint": "Nous confirmons encore la commande {{order}}. Ne payez pas à nouveau — vérifiez Commandes dans une minute.",
+    "paymentCancelledTitle": "Paiement annulé",
+    "paymentCancelledHint": "La commande {{order}} est enregistrée comme impayée. Terminez-la ou annulez-la depuis Commandes.",
+    "confirmTimeCredits_one": "{{count}} crédit-temps va quitter votre portefeuille pour « {{title}} ». Cette action est irréversible."
   },
   "communityDelivery": {
     "eyebrow": "Livraison assurée par la communauté",

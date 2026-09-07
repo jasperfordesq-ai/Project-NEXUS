@@ -50,7 +50,9 @@
   "common": {
     "free": "Kostenlos",
     "seller": "Verkäufer",
-    "save_failed": "Gespeicherte Einträge konnten nicht aktualisiert werden."
+    "save_failed": "Gespeicherte Einträge konnten nicht aktualisiert werden.",
+    "timeCreditsPrice": "{{count}} Zeitgutschriften",
+    "timeCreditsPrice_one": "{{count}} Zeitgutschrift"
   },
   "priceType": {
     "fixed": "Behoben Preis",
@@ -330,6 +332,16 @@
       "countered": "Gegenangebot",
       "expired": "Abgelaufen",
       "withdrawn": "Zurückgezogen"
+    },
+    "confirm": {
+      "acceptTitle": "Dieses Angebot annehmen?",
+      "acceptMessage": "Der Artikel wird für diese kaufende Person zum angebotenen Preis reserviert und sie wird zur Zahlung aufgefordert.",
+      "declineTitle": "Dieses Angebot ablehnen?",
+      "declineMessage": "Die kaufende Person erfährt, dass ihr Angebot nicht angenommen wurde. Sie kann ein neues machen.",
+      "withdrawTitle": "Dein Angebot zurückziehen?",
+      "withdrawMessage": "Die verkaufende Person sieht es dann nicht mehr. Du kannst später erneut bieten.",
+      "acceptCounterTitle": "Gegenangebot annehmen?",
+      "acceptCounterMessage": "Du stimmst dem Preis der verkaufenden Person zu. Der Artikel wird für dich reserviert und du wirst zur Zahlung aufgefordert."
     }
   },
   "orders": {
@@ -481,7 +493,14 @@
         "refunded": "Dieser Verkauf war erstattet."
       },
       "unknown": "Diese Bestellung hat einen Status, den die App noch nicht erkennt."
-    }
+    },
+    "confirmDeliveryTitle": "Bestätigen, dass du das erhalten hast?",
+    "confirmDeliveryMessage": "Damit wird die Zahlung für Bestellung {{order}} an die verkaufende Person freigegeben und dein Käuferschutz endet. Bestätige erst, wenn der Artikel bei dir ist und deinen Erwartungen entspricht.",
+    "confirmDeliveryAction": "Erhalt bestätigen",
+    "paymentTakenTitle": "Deine Zahlung war erfolgreich",
+    "paymentTakenHint": "Wir bestätigen Bestellung {{order}} noch. Zahle nicht erneut — aktualisiere in einer Minute.",
+    "paymentCancelledTitle": "Zahlung abgebrochen",
+    "paymentCancelledHint": "Die Bestellung bleibt unbezahlt bestehen. Du kannst sie jederzeit bezahlen oder stornieren."
   },
   "checkout": {
     "paymentMethodLabel": "Zahlungsart wählen",
@@ -514,7 +533,20 @@
     "timeCreditUnsupportedHint": "Zeitguthaben-Checkout ist in der mobilen App noch nicht verbunden. Es wurde keine Bestellung oder Kontoabbuchung erstellt.",
     "freeUnsupportedHint": "Kostenloser Artikel-Checkout ist in der mobilen App noch nicht verbunden. Es wurde keine Bestellung erstellt.",
     "pickupRecoveryTitle": "Abholung nicht reserviert",
-    "pickupRecoveryHint": "Bestellung {{order}} wurde erstellt, aber der Abholplatz konnte nicht reserviert werden. Überprüfen oder stornieren Sie es unter „Bestellungen“, bevor Sie es erneut versuchen."
+    "pickupRecoveryHint": "Bestellung {{order}} wurde erstellt, aber der Abholplatz konnte nicht reserviert werden. Überprüfen oder stornieren Sie es unter „Bestellungen“, bevor Sie es erneut versuchen.",
+    "summaryItem": "Artikel",
+    "summaryShipping": "Lieferung",
+    "summaryDiscount": "Rabatt",
+    "summaryTotal": "Gesamtbetrag",
+    "buyForAmount": "Für {{amount}} kaufen",
+    "confirmPurchaseTitle": "Diesen Kauf bestätigen?",
+    "confirmTimeCredits": "{{count}} Zeitgutschriften werden jetzt für „{{title}}“ von deinem Konto abgebucht. Das kann nicht rückgängig gemacht werden.",
+    "confirmFree": "„{{title}}“ beanspruchen? Die verkaufende Person wird informiert, dass es dir gehört.",
+    "paymentTakenTitle": "Deine Zahlung war erfolgreich",
+    "paymentTakenHint": "Wir bestätigen Bestellung {{order}} noch. Zahle nicht erneut — sieh in einer Minute unter Bestellungen nach.",
+    "paymentCancelledTitle": "Zahlung abgebrochen",
+    "paymentCancelledHint": "Bestellung {{order}} ist als unbezahlt gespeichert. Schließe sie unter Bestellungen ab oder storniere sie.",
+    "confirmTimeCredits_one": "{{count}} Zeitgutschrift wird jetzt für „{{title}}“ von deinem Konto abgebucht. Das kann nicht rückgängig gemacht werden."
   },
   "communityDelivery": {
     "eyebrow": "Community-gestützte Lieferung",

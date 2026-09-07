@@ -50,7 +50,9 @@
   "common": {
     "free": "Free",
     "seller": "Seller",
-    "save_failed": "Could not update saved listings."
+    "save_failed": "Could not update saved listings.",
+    "timeCreditsPrice": "{{count}} time credits",
+    "timeCreditsPrice_one": "{{count}} time credit"
   },
   "priceType": {
     "fixed": "Fixed price",
@@ -330,6 +332,16 @@
       "countered": "Countered",
       "expired": "Expired",
       "withdrawn": "Withdrawn"
+    },
+    "confirm": {
+      "acceptTitle": "Accept this offer?",
+      "acceptMessage": "The listing is reserved for this buyer at the offered price, and they are asked to pay.",
+      "declineTitle": "Decline this offer?",
+      "declineMessage": "The buyer is told their offer was not accepted. They can make another one.",
+      "withdrawTitle": "Withdraw your offer?",
+      "withdrawMessage": "The seller will no longer see it. You can offer again later.",
+      "acceptCounterTitle": "Accept the counter-offer?",
+      "acceptCounterMessage": "You agree to the seller’s price. The listing is reserved for you and you are asked to pay."
     }
   },
   "orders": {
@@ -481,7 +493,14 @@
         "refunded": "This sale was refunded."
       },
       "unknown": "This order is in a status the app does not recognise yet."
-    }
+    },
+    "confirmDeliveryTitle": "Confirm you received this?",
+    "confirmDeliveryMessage": "This releases payment for order {{order}} to the seller and ends your buyer protection. Only confirm once the item is in your hands and is what you expected.",
+    "confirmDeliveryAction": "Confirm receipt",
+    "paymentTakenTitle": "Your payment went through",
+    "paymentTakenHint": "We are still confirming order {{order}}. Do not pay again — pull to refresh in a minute.",
+    "paymentCancelledTitle": "Payment cancelled",
+    "paymentCancelledHint": "The order is still here, unpaid. You can pay or cancel it whenever you are ready."
   },
   "checkout": {
     "paymentMethodLabel": "Choose how to pay",
@@ -514,7 +533,20 @@
     "timeCreditUnsupportedHint": "Time-credit checkout is not connected in the mobile app yet. No order or wallet debit has been created.",
     "freeUnsupportedHint": "Free-item checkout is not connected in the mobile app yet. No order has been created.",
     "pickupRecoveryTitle": "Pickup not reserved",
-    "pickupRecoveryHint": "Order {{order}} was created, but the pickup slot could not be reserved. Review or cancel it from Orders before trying again."
+    "pickupRecoveryHint": "Order {{order}} was created, but the pickup slot could not be reserved. Review or cancel it from Orders before trying again.",
+    "summaryItem": "Item",
+    "summaryShipping": "Delivery",
+    "summaryDiscount": "Discount",
+    "summaryTotal": "Total to pay",
+    "buyForAmount": "Buy for {{amount}}",
+    "confirmPurchaseTitle": "Confirm this purchase?",
+    "confirmTimeCredits": "{{count}} time credits will leave your wallet now for “{{title}}”. This cannot be undone.",
+    "confirmFree": "Claim “{{title}}”? The seller will be told it is yours.",
+    "paymentTakenTitle": "Your payment went through",
+    "paymentTakenHint": "We are still confirming order {{order}}. Do not pay again — check Orders in a minute.",
+    "paymentCancelledTitle": "Payment cancelled",
+    "paymentCancelledHint": "Order {{order}} is saved as unpaid. Finish or cancel it from Orders.",
+    "confirmTimeCredits_one": "{{count}} time credit will leave your wallet now for “{{title}}”. This cannot be undone."
   },
   "communityDelivery": {
     "eyebrow": "Community-powered delivery",

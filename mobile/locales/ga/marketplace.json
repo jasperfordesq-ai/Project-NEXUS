@@ -50,7 +50,9 @@
   "common": {
     "free": "Saor",
     "seller": "Díoltóir",
-    "save_failed": "Níorbh fhéidir na liostaí sábháilte a nuashonrú."
+    "save_failed": "Níorbh fhéidir na liostaí sábháilte a nuashonrú.",
+    "timeCreditsPrice": "{{count}} creidmheas ama",
+    "timeCreditsPrice_one": "{{count}} chreidmheas ama"
   },
   "priceType": {
     "fixed": "Praghas seasta",
@@ -330,6 +332,16 @@
       "countered": "Rinneadh friththairiscint",
       "expired": "Imithe in éag",
       "withdrawn": "Tarraingthe siar"
+    },
+    "confirm": {
+      "acceptTitle": "Glac leis an tairiscint seo?",
+      "acceptMessage": "Cuirtear an liosta in áirithe don cheannaitheoir seo ar an bpraghas a tairgeadh, agus iarrtar air íoc.",
+      "declineTitle": "Diúltaigh don tairiscint seo?",
+      "declineMessage": "Cuirtear in iúl don cheannaitheoir nár glacadh lena thairiscint. Is féidir leis ceann eile a dhéanamh.",
+      "withdrawTitle": "Do thairiscint a tharraingt siar?",
+      "withdrawMessage": "Ní fheicfidh an díoltóir a thuilleadh é. Is féidir leat tairiscint arís níos déanaí.",
+      "acceptCounterTitle": "Glac leis an bhfrithairiscint?",
+      "acceptCounterMessage": "Aontaíonn tú le praghas an díoltóra. Cuirtear an liosta in áirithe duitse agus iarrtar ort íoc."
     }
   },
   "orders": {
@@ -481,7 +493,14 @@
         "refunded": "Aisíocadh an díolachán seo."
       },
       "unknown": "Tá an t-ordú seo i stádas nach n-aithníonn an aip fós."
-    }
+    },
+    "confirmDeliveryTitle": "Deimhnigh gur bhfuair tú é seo?",
+    "confirmDeliveryMessage": "Scaoileann sé seo an íocaíocht as ordú {{order}} chuig an díoltóir agus cuireann sé deireadh le do chosaint ceannaitheora. Ná deimhnigh ach nuair atá an mhír agat agus í mar a bhí súil agat.",
+    "confirmDeliveryAction": "Deimhnigh an fháltas",
+    "paymentTakenTitle": "D’éirigh le d’íocaíocht",
+    "paymentTakenHint": "Táimid fós ag deimhniú ordú {{order}}. Ná híoc arís — athnuaigh i gceann nóiméid.",
+    "paymentCancelledTitle": "Cealaíodh an íocaíocht",
+    "paymentCancelledHint": "Tá an t-ordú anseo fós, gan íoc. Is féidir leat é a íoc nó a chealú nuair atá tú réidh."
   },
   "checkout": {
     "paymentMethodLabel": "Roghnaigh conas íoc",
@@ -514,7 +533,20 @@
     "timeCreditUnsupportedHint": "Níl an tseiceáil amach creidmheasa ama ceangailte go fóill san aip shoghluaiste. Níor cruthaíodh aon ordú ná dochair sparán.",
     "freeUnsupportedHint": "Níl an tseiceáil amach earraí in aisce ceangailte san aip shoghluaiste fós. Níor cruthaíodh aon ordú.",
     "pickupRecoveryTitle": "Piocadh gan chur in áirithe",
-    "pickupRecoveryHint": "Cruthaíodh an t-ordú {{order}}, ach níorbh fhéidir an sliotán bailithe a chur in áirithe. Déan é a athbhreithniú nó a chealú ó Orduithe sula ndéanfaidh tú iarracht eile."
+    "pickupRecoveryHint": "Cruthaíodh an t-ordú {{order}}, ach níorbh fhéidir an sliotán bailithe a chur in áirithe. Déan é a athbhreithniú nó a chealú ó Orduithe sula ndéanfaidh tú iarracht eile.",
+    "summaryItem": "Mír",
+    "summaryShipping": "Seachadadh",
+    "summaryDiscount": "Lascaine",
+    "summaryTotal": "Iomlán le híoc",
+    "buyForAmount": "Ceannaigh ar {{amount}}",
+    "confirmPurchaseTitle": "An ceannach seo a dheimhniú?",
+    "confirmTimeCredits": "Fágfaidh {{count}} creidmheas ama do sparán anois le haghaidh “{{title}}”. Ní féidir é seo a chealú.",
+    "confirmFree": "“{{title}}” a éileamh? Cuirfear in iúl don díoltóir gur leatsa é.",
+    "paymentTakenTitle": "D’éirigh le d’íocaíocht",
+    "paymentTakenHint": "Táimid fós ag deimhniú ordú {{order}}. Ná híoc arís — féach ar Orduithe i gceann nóiméid.",
+    "paymentCancelledTitle": "Cealaíodh an íocaíocht",
+    "paymentCancelledHint": "Tá ordú {{order}} sábháilte gan íoc. Críochnaigh nó cealaigh é ó Orduithe.",
+    "confirmTimeCredits_one": "Fágfaidh {{count}} chreidmheas ama do sparán anois le haghaidh “{{title}}”. Ní féidir é seo a chealú."
   },
   "communityDelivery": {
     "eyebrow": "Seachadadh faoi thiomáint an Chomhphobail",
