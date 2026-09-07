@@ -7,10 +7,10 @@
   ],
   "summary": {
     "api_modules": 58,
-    "call_sites": 596,
-    "distinct_endpoints": 504,
+    "call_sites": 598,
+    "distinct_endpoints": 506,
     "verified": 0,
-    "unverified": 504,
+    "unverified": 506,
     "missing_from_routes": 0,
     "method_mismatch": 0,
     "dynamic_unverifiable": 76,
@@ -484,10 +484,18 @@
     },
     {
       "http": "POST",
+      "endpoint": "/api/v2/appreciations",
+      "status": "unverified",
+      "sites": [
+        "appreciations.ts:70"
+      ]
+    },
+    {
+      "http": "POST",
       "endpoint": "/api/v2/appreciations/{param}/react",
       "status": "unverified",
       "sites": [
-        "appreciations.ts:53"
+        "appreciations.ts:80"
       ]
     },
     {
@@ -3166,11 +3174,19 @@
       ]
     },
     {
+      "http": "DELETE",
+      "endpoint": "/api/v2/members/{param}/endorse",
+      "status": "unverified",
+      "sites": [
+        "endorsements.ts:215"
+      ]
+    },
+    {
       "http": "POST",
       "endpoint": "/api/v2/members/{param}/endorse",
       "status": "unverified",
       "sites": [
-        "endorsements.ts:188"
+        "endorsements.ts:197"
       ]
     },
     {
@@ -3780,7 +3796,7 @@
       "endpoint": "/api/v2/skills/categories",
       "status": "unverified",
       "sites": [
-        "endorsements.ts:228"
+        "endorsements.ts:255"
       ]
     },
     {
@@ -3788,7 +3804,7 @@
       "endpoint": "/api/v2/skills/categories/{param}",
       "status": "unverified",
       "sites": [
-        "endorsements.ts:232"
+        "endorsements.ts:259"
       ]
     },
     {
@@ -3796,7 +3812,7 @@
       "endpoint": "/api/v2/skills/members",
       "status": "unverified",
       "sites": [
-        "endorsements.ts:236"
+        "endorsements.ts:263"
       ]
     },
     {
@@ -3804,7 +3820,7 @@
       "endpoint": "/api/v2/skills/search",
       "status": "unverified",
       "sites": [
-        "endorsements.ts:223"
+        "endorsements.ts:250"
       ]
     },
     {
@@ -4013,7 +4029,7 @@
       "endpoint": "/api/v2/users/me/skills",
       "status": "unverified",
       "sites": [
-        "endorsements.ts:198"
+        "endorsements.ts:225"
       ]
     },
     {
@@ -4021,7 +4037,7 @@
       "endpoint": "/api/v2/users/me/skills/{param}",
       "status": "unverified",
       "sites": [
-        "endorsements.ts:211"
+        "endorsements.ts:238"
       ]
     },
     {

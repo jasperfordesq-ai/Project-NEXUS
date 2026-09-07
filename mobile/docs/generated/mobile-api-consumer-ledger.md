@@ -22,8 +22,8 @@ Verified against: `nothing — inventory stale`
 | Measure | Count |
 | --- | --- |
 | API modules read | 58 |
-| Call sites | 596 |
-| Distinct method + endpoint pairs | 504 |
+| Call sites | 598 |
+| Distinct method + endpoint pairs | 506 |
 | Verified against openapi.json | 0 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
@@ -128,7 +128,8 @@ and the places a contract test earns the most.
 | POST | `/api/auth/refresh-token` | auth.ts:201 |
 | POST | `/api/auth/reset-password` | auth.ts:181 |
 | POST | `/api/auth/verify-email` | auth.ts:186 |
-| POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:53 |
+| POST | `/api/v2/appreciations` | appreciations.ts:70 |
+| POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:80 |
 | POST | `/api/v2/auth/register` | auth.ts:165 |
 | GET | `/api/v2/blog` | blog.ts:43 |
 | GET | `/api/v2/blog/{param}` | blog.ts:54 |
@@ -462,7 +463,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/me/courses` | courses.ts:259 |
 | GET | `/api/v2/me/data-export/history` | settings.ts:87 |
 | DELETE | `/api/v2/me/saved-items/{param}` | savedCollections.ts:74 |
-| POST | `/api/v2/members/{param}/endorse` | endorsements.ts:188 |
+| DELETE | `/api/v2/members/{param}/endorse` | endorsements.ts:215 |
+| POST | `/api/v2/members/{param}/endorse` | endorsements.ts:197 |
 | GET | `/api/v2/members/{param}/endorsements` | endorsements.ts:152 |
 | POST | `/api/v2/merchant-onboarding/complete` | marketplace.ts:896 |
 | GET | `/api/v2/merchant-onboarding/status` | marketplace.ts:868 |
@@ -538,10 +540,10 @@ and the places a contract test earns the most.
 | POST | `/api/v2/search/saved` | search.ts:71 |
 | DELETE | `/api/v2/search/saved/{param}` | search.ts:78 |
 | POST | `/api/v2/search/saved/{param}/run` | search.ts:82 |
-| GET | `/api/v2/skills/categories` | endorsements.ts:228 |
-| GET | `/api/v2/skills/categories/{param}` | endorsements.ts:232 |
-| GET | `/api/v2/skills/members` | endorsements.ts:236 |
-| GET | `/api/v2/skills/search` | endorsements.ts:223 |
+| GET | `/api/v2/skills/categories` | endorsements.ts:255 |
+| GET | `/api/v2/skills/categories/{param}` | endorsements.ts:259 |
+| GET | `/api/v2/skills/members` | endorsements.ts:263 |
+| GET | `/api/v2/skills/search` | endorsements.ts:250 |
 | DELETE | `/api/v2/team-tasks/{param}` | groups.ts:765 |
 | PUT | `/api/v2/team-tasks/{param}` | groups.ts:761 |
 | GET | `/api/v2/tenant/bootstrap` | tenant.ts:66 |
@@ -567,8 +569,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users/me/preferences` | settings.ts:147 |
 | PUT | `/api/v2/users/me/preferences` | settings.ts:152 |
 | GET | `/api/v2/users/me/skills` | endorsements.ts:171 |
-| POST | `/api/v2/users/me/skills` | endorsements.ts:198 |
-| DELETE | `/api/v2/users/me/skills/{param}` | endorsements.ts:211 |
+| POST | `/api/v2/users/me/skills` | endorsements.ts:225 |
+| DELETE | `/api/v2/users/me/skills/{param}` | endorsements.ts:238 |
 | GET | `/api/v2/users/me/sub-accounts` | settings.ts:156 |
 | POST | `/api/v2/users/me/sub-accounts` | settings.ts:166 |
 | DELETE | `/api/v2/users/me/sub-accounts/{param}` | settings.ts:233 |

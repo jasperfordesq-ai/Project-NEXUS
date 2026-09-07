@@ -328,10 +328,26 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    Android Hermes startup bundle is 14.87 MB, leaving 1.49 MB below its 16.35 MB blocking
    ceiling. This is an internal JavaScript regression budget, not an App Store download-size
    limit; no Play artefact was built or uploaded while the release is under review.
-8. **Finish the 2026-09-07 audit.** Two passes ran on 2026-09-07. The first fixed 48
-   findings; the **second pass on the same day** read the two largest unread modules
-   (volunteering/jobs/organisations, and the gamification cluster) and worked the open
-   list. Full record: [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md).
+8. **Finish the 2026-09-07 audit.** Three passes ran on 2026-09-07 and **every module of
+   the app has now been read.** The first fixed 48 findings; the second read
+   volunteering/jobs/organisations and the gamification cluster; the third read the last
+   three — courses, podcasts and federation — and closed the biggest gaps left over.
+   Full record: [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md).
+
+   **Closed in the third pass:** members can now endorse a skill and send a thank-you
+   (both features existed on the server and could never be used from the app); a
+   cross-community credit transfer of up to 100 hours now confirms; a grade typed as
+   "82,5" is no longer recorded as 0%; the federation hub no longer draws a failed load
+   as "0 partners, 0 messages, 0 exchanges"; a video nobody played is no longer reported
+   as fully watched; the federation setup wizard no longer switches a member’s privacy
+   choices back on; unpublishing a course asks first; the instructor dashboard refetches;
+   three more screens stop showing a refusal as a Retry loop; two live searches are
+   debounced.
+
+   🔴 **A test can hide a one-tap money path.** `member-profile.test.tsx` mocked
+   `useConfirm` so that asking to confirm ran the action immediately, which made every
+   confirmation on that screen unobservable — and is why the cross-community transfer
+   went unnoticed. Do not write a confirm mock that auto-confirms.
 
    **Closed in the second pass:** group discussions are now reachable and answerable; an
    organisation wallet deposit can no longer be taken twice; four decimal fields accept a
@@ -369,8 +385,20 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      progress can only go up; voting on a poll discards every page loaded; four screens
      have no pull-to-refresh; a member cannot withdraw an idea or delete their own
      comment; a failed refresh is silent whenever the list already has rows.
-   - **Still unread:** courses, podcasts and federation, last read on 2026-09-06. Run one
-     auditor at a time; two concurrent exhausted the session limit.
+   - Courses and podcasts remainder: the **podcast player has no background audio** (the
+     phone locking stops a 45-minute episode) and **no resume or seek** — the strings for
+     both already exist, unused, in all seven languages; this one needs `app.json`
+     changes and therefore a new store build. An empty quiz can be submitted and spends
+     one of a limited number of attempts; the catalogues stop at 20; the player always
+     opens at lesson 1; a double tap creates two cohorts; editing a course is not
+     protected against a stray Back; `expo-av` is deprecated for SDK 54 and removed in
+     SDK 55, so both media players will need porting.
+   - Federation remainder: the directory screens detect a refusal with an **English-only
+     regular expression**, so a German or Irish member gets a Retry that can never work.
+     `usePaginatedApi` must expose `errorCode` before that can be fixed. The directory
+     also searches on every keystroke.
+   - **Nothing is unread now.** Run one auditor at a time; two concurrent exhausted the
+     session limit.
    - Nothing from either pass has been walked on a device.
 
 ## The blockers, in the order they hurt
