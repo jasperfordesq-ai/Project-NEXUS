@@ -10,9 +10,26 @@
 # containers and restarts any that have exited. Skips containers that were
 # intentionally stopped by the deploy script (restart policy = "no").
 #
+# The installed cron entry runs this file DIRECTLY, with no interpreter, so it
+# only works while the file is executable. Git therefore tracks it as mode
+# 100755, and scripts/check-host-cron-scripts.mjs keeps it that way.
+#
+# Do NOT "fix" a permission problem here with a chmod on the server.
+# /opt/nexus-php is a git checkout with core.filemode=true, so the next deploy
+# reverts it. That is exactly how this script came to be non-executable, and
+# therefore silently dead, from 2026-05-22 to 2026-09-07: cron ran it every
+# five minutes and got "Permission denied" roughly 31,000 times. Nothing
+# noticed, because a watchdog that never runs reports nothing. On 2026-09-06 an
+# apt upgrade of docker-ce restarted the container engine, the queue container
+# did not come back, and with no watchdog the queue processed no jobs for
+# almost five hours (Sentry NEXUS-PHP-2F / NEXUS-PHP-3J).
+#
+# Verify it is genuinely running — the log must hold something other than
+# "Permission denied":
+#   sudo tail -5 /opt/nexus-php/logs/watchdog-queue.log
+#
 # Install:
 #   sudo cp scripts/watchdog-queue.sh /opt/nexus-php/scripts/watchdog-queue.sh
-#   sudo chmod +x /opt/nexus-php/scripts/watchdog-queue.sh
 #   echo "*/5 * * * * root /opt/nexus-php/scripts/watchdog-queue.sh >> /opt/nexus-php/logs/watchdog-queue.log 2>&1" \
 #     | sudo tee /etc/cron.d/nexus-watchdog-queue
 #   sudo chmod 644 /etc/cron.d/nexus-watchdog-queue

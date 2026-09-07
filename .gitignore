@@ -77,6 +77,7 @@ CLAUDE.md
 !/scripts/uptime-targets.json
 !/scripts/backup-aspnet-db.sh
 !/scripts/check-compose-bootstrap-cache.mjs
+!/scripts/check-host-cron-scripts.mjs
 !/scripts/verify-feature.sh
 !/scripts/add-spdx-headers.mjs
 !/scripts/check-spdx.mjs

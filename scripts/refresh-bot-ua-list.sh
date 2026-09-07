@@ -15,7 +15,7 @@
 # before editing the nginx map.
 #
 # Cron entry (monthly):
-#   0 5 1 * *  root /opt/nexus-php/scripts/refresh-bot-ua-list.sh \
+#   0 5 1 * *  root bash /opt/nexus-php/scripts/refresh-bot-ua-list.sh \
 #                  >> /opt/nexus-php/logs/refresh-bot-ua-list.log 2>&1
 # =============================================================================
 

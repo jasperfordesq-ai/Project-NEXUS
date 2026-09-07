@@ -906,6 +906,18 @@ jobs:
       - name: "BLOCKING: bootstrap/cache is never shared between containers"
         run: node scripts/check-compose-bootstrap-cache.mjs
 
+      # The queue watchdog is installed on the host as a cron entry that runs
+      # the script DIRECTLY, so it only works while the file is executable.
+      # Git tracked it as 100644 and /opt/nexus-php is a checkout with
+      # core.filemode=true, so every deploy wrote it back non-executable: cron
+      # got "Permission denied" ~31,000 times between 2026-05-22 and
+      # 2026-09-07 and the watchdog never ran once. That is why a docker-ce
+      # upgrade on 2026-09-06 turned a four-minute container-engine restart
+      # into five hours with no queue workers. Lives in this always-on job so
+      # a path filter can never let it sleep.
+      - name: "BLOCKING: cron-invoked host scripts are executable"
+        run: node scripts/check-host-cron-scripts.mjs
+
   # ─────────────────────────────────────────────────────────────────
   # Stage 5: Migration Safety Gate
   # ─────────────────────────────────────────────────────────────────

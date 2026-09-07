@@ -13,7 +13,7 @@
 # crawlers, or IPv6 transitions can all produce false positives.
 #
 # Cron entry (weekly):
-#   0 4 * * 1  root /opt/nexus-php/scripts/refresh-bot-ip-ranges.sh \
+#   0 4 * * 1  root bash /opt/nexus-php/scripts/refresh-bot-ip-ranges.sh \
 #                  >> /opt/nexus-php/logs/refresh-bot-ip-ranges.log 2>&1
 #
 # Output:

@@ -19,7 +19,7 @@
 #   - start / success  : informational only
 #
 # Cron wiring (every 5 min; stays silent unless something fires):
-#   */5 * * * * /opt/nexus-php/scripts/prerender-events-check.sh > /tmp/nexus-prerender-alert 2>&1 || \
+#   */5 * * * * bash /opt/nexus-php/scripts/prerender-events-check.sh > /tmp/nexus-prerender-alert 2>&1 || \
 #       cat /tmp/nexus-prerender-alert | curl -X POST -H 'Content-Type: text/plain' --data-binary @- "$SLACK_WEBHOOK"
 #
 # Run manually:

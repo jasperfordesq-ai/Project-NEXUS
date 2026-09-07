@@ -16,7 +16,7 @@
 #       counters from the log and writes them back to the row + broadcasts.
 #
 # Cron entry (every minute):
-#   * * * * * root /opt/nexus-php/scripts/prerender-job-processor.sh \
+#   * * * * * root /bin/bash /opt/nexus-php/scripts/prerender-job-processor.sh \
 #               >> /opt/nexus-php/logs/prerender-job-processor.log 2>&1
 # =============================================================================
 
