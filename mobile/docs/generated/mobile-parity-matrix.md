@@ -18,13 +18,13 @@ when a React member route exists that nobody has classified for mobile.
 | Measure | Count |
 | --- | --- |
 | React member routes | 256 |
-| Mobile routes (Expo Router screens) | 170 |
+| Mobile routes (Expo Router screens) | 171 |
 | Covered natively | 169 |
 | Deliberately out of scope | 87 |
 | **Known gaps** | **0** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
-| Mobile routes not claimed by a React route | 29 |
+| Mobile routes not claimed by a React route | 30 |
 | Broken declarations | 0 |
 
 ## Full matrix
@@ -322,3 +322,4 @@ A surprise here can also mean a `native` declaration names the wrong screen.
 - `wallet-transaction`
 - `create`
 - `index`
+- `marketplace-payment-return`

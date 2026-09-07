@@ -108,11 +108,11 @@ size of the test suite or the fact that the app has reached production distribut
 A second full pass the day after the emulator audit, source-only, recorded in
 [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md). Three areas were read in
 full by independent auditors (tabs and auth; messaging, wallet, exchanges and account;
-events and groups — about 60 screens and 40 supporting files); the marketplace auditor was
-cut off by the session usage limit before writing anything, and the volunteering/jobs and
-gamification clusters were not read. Forty-eight member-visible defects were fixed, each
-with a Jest test observed failing first; the full list is in `CHANGELOG.md` under
-`[Unreleased]`.
+events and groups), and the marketplace was audited separately after the first attempt was
+killed by the session usage limit — about 90 screens and 45 supporting files in all. The
+volunteering/jobs and gamification clusters were not read. Around seventy member-visible
+defects were fixed, each with a Jest test observed failing first; the full list is in
+`CHANGELOG.md` under `[Unreleased]`.
 
 The one structural finding: **the app gated its menus, not its screens.** React wraps ~150
 routes in a feature gate; the native app wrapped five. Every screen now goes through
@@ -125,6 +125,17 @@ and could send an agreed exchange to dispute; completing a group exchange moved 
 one tap. For trust: the GDPR data export never delivered a file; a private-group join
 request showed "Joined" and silently reverted; a 403 during offline check-in sync destroyed
 never-synced check-ins.
+
+**The marketplace was the worst of it**, because it moves real money as well as credits.
+Checkout never showed a total anywhere before the member paid. A time-credit purchase spent
+the wallet on one tap. A payment that Stripe had taken could be reported as "Payment
+failed", inviting a second one. "Confirm delivery" — which releases the seller's money and
+ends buyer protection — fired on one untitled tap next to "Dispute". And "Free" was printed
+on any listing with an empty price, including "contact seller" and time-credit-only items.
+All six are fixed and tested.
+
+**The owner also asked for the community strip at the top of the feed to be the logo alone.**
+The name and tagline beside it are gone and the logo is twice the size.
 
 This is source evidence only. Nothing was walked on a device, so the banked M1 score is
 unchanged. The open findings are listed in the backlog below.
@@ -331,10 +342,13 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    - A failed signed-in community switch signs the member out first; broken images render as
      blank blocks (no `onError` anywhere); the attendance, tickets, communications, history
      and blueprint screens still show "could not load" with Retry on a 403.
-   - **Unread:** marketplace (Stripe — the auditor was cut off), volunteering/jobs/
-     organisations, the gamification cluster (goals, polls, reviews, endorsements, blog,
-     resources, ideation, clubs, venues). Courses, podcasts and federation were last read on
-     2026-09-06. Run one auditor at a time; two concurrent exhausted the session limit.
+   - Marketplace remainder: pickup-slot and coupon dates are typed by hand; collections,
+     saved searches and pickup slots delete with no confirmation; the Stripe payments screen
+     shows 0.00 balances when its request failed; an accepted offer never says "pay now".
+   - **Unread:** volunteering/jobs/organisations, and the gamification cluster (goals,
+     polls, reviews, endorsements, blog, resources, ideation, clubs, venues). Courses,
+     podcasts and federation were last read on 2026-09-06. Run one auditor at a time; two
+     concurrent exhausted the session limit.
    - Nothing from this audit has been walked on a device.
 
 ## The blockers, in the order they hurt

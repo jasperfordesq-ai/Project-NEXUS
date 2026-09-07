@@ -185,6 +185,7 @@ Full detail and the traps in [docs/TESTING.md](docs/TESTING.md).
 | [MOBILE_JOURNEY_LEDGER.md](docs/MOBILE_JOURNEY_LEDGER.md) | The work list and the fixed 140-row denominator. Pick work up here. |
 | [MOBILE_ROADMAP.md](docs/MOBILE_ROADMAP.md) | The phased plan to production, with exit criteria per phase. |
 | [MOBILE_TEST_HARNESS.md](docs/MOBILE_TEST_HARNESS.md) | How to walk a journey: two emulators, two accounts, and every trap that cost time. |
+| [HISTORY/AUDIT_2026-09-07.md](docs/HISTORY/AUDIT_2026-09-07.md) | HISTORICAL. The 2026-09-07 audit: what was read, what was fixed, what is still open, and which modules were never reached. The live backlog is in the status document. |
 | [HISTORY/PRODUCTION_READINESS_2026-08-21.md](docs/HISTORY/PRODUCTION_READINESS_2026-08-21.md) | HISTORICAL. The superseded readiness document, kept for its measurements. Not current state. |
 | [TESTING.md](docs/TESTING.md) | How to verify a change, what each check proves, and what cannot be tested here. |
 | [DISTRIBUTION.md](docs/DISTRIBUTION.md) | Package identity, release channels, stores, and distribution policy. |
