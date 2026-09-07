@@ -1,0 +1,51 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Flow 00 — Launch smoke: does the app actually start?
+#
+# 🔴 The one thing the Jest suite structurally cannot tell us. 413 suites pass with
+# the HTTP client mocked, the native modules mocked, and heroui-native mocked — and
+# that mock drops `testID`/`accessibilityLabel` entirely. So a broken native module,
+# a construct Hermes will not run, a bad root-layout change, or a missing polyfill
+# passes every gate in CI and then crashes on launch. This flow is the guard for
+# exactly that, and nothing else.
+#
+# 🔴 Deliberately needs NO backend. It asserts only that the app reaches one of its
+# two legitimate first screens, and both render their heading before any network
+# call resolves — the tenant PICKER's heading appears while its list is still
+# loading, and a device with a stored session goes straight to "Welcome back".
+# Tapping a tenant would need the API, so this flow stops short of that. That is
+# what keeps it fast and non-flaky enough to run unattended.
+#
+# The journey flows (01-13) do need a live API and an account. They are not part of
+# the CI emulator job; see .github/workflows/mobile-emulator.yml.
+#
+# Run:
+#   maestro test .maestro/00-launch-smoke.yaml
+
+appId: ie.project.nexus
+---
+- launchApp:
+    clearState: true
+
+# The same wait the login subflow uses, and for the same reasons: a debug client
+# can leave the native root view up while Metro attaches, and a headless emulator
+# can put its own ANR sheet over a correctly rendered screen.
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back|(System UI|Process system) isn.t responding"
+    timeout: 90000
+
+- runFlow:
+    when:
+      visible: "(System UI|Process system) isn.t responding"
+    commands:
+      - tapOn: "^Wait$"
+
+# 🔴 The actual assertion. Reaching either heading proves the APK installed and
+# launched, the JavaScript bundle loaded, React mounted, the root layout and its
+# providers rendered, and routing resolved to a real screen rather than a redbox.
+- extendedWaitUntil:
+    visible: "Select your timebank|Welcome back"
+    timeout: 90000
+
+- takeScreenshot: launch-smoke

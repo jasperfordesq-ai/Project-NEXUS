@@ -1,0 +1,174 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Does the native Android app actually start?
+#
+# 🔴 Why this is its OWN workflow, and not a job in ci.yml.
+#
+# 1. It runs on a SCHEDULE, never on push. An emulator job is the slowest and by
+#    far the flakiest tier of testing available — AVD boot, Metro attach, Gradle,
+#    an ANR sheet the platform puts up on its own — and most of its failures are
+#    not the change under test. `main` going red for reasons nobody caused is how
+#    a team learns to ignore CI, which this repository has already paid for once.
+#    Nightly detection of a launch crash is worth far more than a red tick on a
+#    push that a developer will simply re-run.
+#
+# 2. `scripts/predeploy-ci-verify.mjs` reads ci.yml and platform-contracts.yml
+#    only. Anything defined here is therefore outside the deploy verifier's scope
+#    by construction: it cannot trip the unknown-job rule, and it cannot block a
+#    deploy. That is deliberate — a job whose infrastructure is this involved
+#    should not be able to hold a release hostage until it has earned trust.
+#    Promoting it into ci.yml later means adding it to REQUIRED_JOBS in the same
+#    commit; read the note above that list first.
+#
+# 🔴 What this does NOT do, so nobody reads a green tick here as more than it is:
+#   - it does not run the 01-13 journey flows. Those need a live API and a real
+#     account, and `compose.ci.yml` publishes no port for the app service, so the
+#     emulator cannot reach it without wiring that does not exist yet;
+#   - it does not check anything VISUAL. Emulator screenshots are not stable
+#     enough across API levels and renderers to gate on, which is why
+#     `mobile/scripts/screenshots.mjs` is a local tool;
+#   - it does not run TalkBack, and it never touches iOS.
+# The audit's visual, accessibility and signed-binary gap (F10) stays open.
+
+name: Mobile Emulator
+
+on:
+  # 04:40 UTC — an hour after ci.yml's nightly sweep at 03:30, so the two do not
+  # compete for runners.
+  schedule:
+    - cron: '40 4 * * *'
+  workflow_dispatch:
+    inputs:
+      flow:
+        description: 'Maestro flow to run, relative to mobile/. Journey flows need a live API.'
+        required: false
+        default: '.maestro/00-launch-smoke.yaml'
+
+concurrency:
+  group: mobile-emulator-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+  ANDROID_API_LEVEL: '34'
+
+jobs:
+  launch-smoke:
+    name: Android Launch Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Hardware acceleration. Without it the AVD falls back to software
+      # rendering and a cold boot goes from ~2 minutes to well past the timeout.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      # Gradle needs a JDK; the runner's default is not guaranteed to be 17.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      # `--no-install` because npm ci above already did it, and --clean so the
+      # generated project cannot inherit stale native config from a cached run.
+      - name: Generate the native Android project
+        working-directory: mobile
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Cache Gradle
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-emulator-${{ runner.os }}-${{ hashFiles('mobile/android/**/*.gradle*', 'mobile/package-lock.json') }}
+          restore-keys: gradle-emulator-${{ runner.os }}-
+
+      # A DEBUG build on purpose. A release build needs the signing key, which is
+      # not on this runner and should not be — and the debug variant is the one
+      # whose network-security config permits the local hosts these flows use.
+      - name: Build the debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Install Maestro
+        run: |
+          curl -Ls https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # A debug build fetches its JavaScript from Metro at runtime, so Metro has
+      # to be up BEFORE the app launches. `adb reverse` is set inside the emulator
+      # step below, because it is device state and needs a booted device.
+      - name: Start Metro
+        working-directory: mobile
+        run: |
+          npx expo start --port 8081 > "${RUNNER_TEMP}/metro.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf --max-time 2 http://127.0.0.1:8081/status >/dev/null; then
+              echo "Metro is serving"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Metro did not come up within 120s"; cat "${RUNNER_TEMP}/metro.log"; exit 1
+
+      - name: Boot the emulator and run the flow
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: x86_64
+          profile: pixel_6
+          # No window, no audio, no boot animation: this runner has no display and
+          # each of them is a source of delay or of a spurious system dialog.
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -camera-back none
+          disable-animations: true
+          script: |
+            adb wait-for-device
+            # Suppress the platform's own crash/ANR sheets — they sit over a
+            # correctly rendered screen and read as a failure that is not ours.
+            adb shell settings put global hide_error_dialogs 1 || true
+            adb reverse tcp:8081 tcp:8081
+            adb install -r mobile/android/app/build/outputs/apk/debug/app-debug.apk
+            cd mobile
+            maestro test --format junit --output "${RUNNER_TEMP}/maestro-report.xml" \
+              "${{ github.event.inputs.flow || '.maestro/00-launch-smoke.yaml' }}"
+
+      # 🔴 On failure the artefacts are the whole point: a launch crash is
+      # unreadable without the device log and the screenshot Maestro captured.
+      - name: Collect diagnostics
+        if: failure()
+        run: |
+          mkdir -p "${RUNNER_TEMP}/diagnostics"
+          cp "${RUNNER_TEMP}/metro.log" "${RUNNER_TEMP}/diagnostics/" 2>/dev/null || true
+          cp "${RUNNER_TEMP}/maestro-report.xml" "${RUNNER_TEMP}/diagnostics/" 2>/dev/null || true
+          cp -r "$HOME/.maestro/tests" "${RUNNER_TEMP}/diagnostics/maestro-tests" 2>/dev/null || true
+          adb logcat -d > "${RUNNER_TEMP}/diagnostics/logcat.txt" 2>/dev/null || true
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-emulator-diagnostics
+          path: ${{ runner.temp }}/diagnostics
+          retention-days: 14
+          if-no-files-found: warn
