@@ -135,7 +135,10 @@
     "no_courses": "Você ainda não criou nenhum curso.",
     "unsaved_title": "Descartar este curso?",
     "unsaved_message": "Tem dados por guardar. Se sair agora, vai perdê-los.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "loadError": "Não foi possível carregar os seus cursos.",
+    "unpublishConfirmTitle": "Retirar este curso?",
+    "unpublishConfirmMessage": "{{title}} deixará de estar visível para quem está inscrito até o publicar novamente."
   },
   "grading": {
     "title": "Classificação",
@@ -147,7 +150,9 @@
     "graded": "Nota salva",
     "error": "Não foi possível salvar a nota.",
     "answer": "Resposta",
-    "no_answer": "Sem resposta"
+    "no_answer": "Sem resposta",
+    "scoreInvalidTitle": "Verifique a pontuação",
+    "scoreInvalidMessage": "Introduza uma pontuação entre 0 e 100."
   },
   "analytics": {
     "title": "Análise",

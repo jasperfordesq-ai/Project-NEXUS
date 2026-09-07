@@ -133,7 +133,10 @@
     "no_courses": "You haven't created any courses yet.",
     "unsaved_title": "Discard this course?",
     "unsaved_message": "You have unsaved details. Leaving now will lose them.",
-    "discard": "Discard"
+    "discard": "Discard",
+    "loadError": "Could not load your courses.",
+    "unpublishConfirmTitle": "Take this course down?",
+    "unpublishConfirmMessage": "{{title}} will stop being visible to everyone enrolled until you publish it again."
   },
   "grading": {
     "title": "Grading",
@@ -145,7 +148,9 @@
     "graded": "Grade saved",
     "error": "Could not save the grade.",
     "answer": "Answer",
-    "no_answer": "No answer"
+    "no_answer": "No answer",
+    "scoreInvalidTitle": "Check the score",
+    "scoreInvalidMessage": "Enter a score between 0 and 100."
   },
   "analytics": {
     "title": "Analytics",

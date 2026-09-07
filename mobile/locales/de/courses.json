@@ -133,7 +133,10 @@
     "no_courses": "Sie haben noch keine Kurse erstellt.",
     "unsaved_title": "Diesen Kurs verwerfen?",
     "unsaved_message": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
-    "discard": "Verwerfen"
+    "discard": "Verwerfen",
+    "loadError": "Deine Kurse konnten nicht geladen werden.",
+    "unpublishConfirmTitle": "Kurs offline nehmen?",
+    "unpublishConfirmMessage": "{{title}} ist für alle Teilnehmenden nicht mehr sichtbar, bis du ihn wieder veröffentlichst."
   },
   "grading": {
     "title": "Benotung",
@@ -145,7 +148,9 @@
     "graded": "Note gespeichert",
     "error": "Die Note konnte nicht gespeichert werden.",
     "answer": "Antwort",
-    "no_answer": "Keine Antwort"
+    "no_answer": "Keine Antwort",
+    "scoreInvalidTitle": "Bewertung prüfen",
+    "scoreInvalidMessage": "Gib eine Bewertung zwischen 0 und 100 ein."
   },
   "analytics": {
     "title": "Analytik",

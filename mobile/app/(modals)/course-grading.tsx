@@ -34,6 +34,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
 import Toggle from '@/components/ui/Toggle';
 import { useAppToast } from '@/components/ui/AppToast';
+import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import {
   gradeCourseAttempt,
@@ -208,10 +209,28 @@ function GradeCard({
 
   async function submit() {
     if (isSaving) return;
+    /*
+      🔴 `Number(score) || 0` recorded a mistyped grade as ZERO, silently.
+
+      An instructor in a comma-decimal locale (de, es, fr, it, pt) types "82,5", taps
+      Submit, sees a success toast — and the learner is recorded at 0%. Any other slip did
+      the same, because `|| 0` turns NaN into a real, wrong mark. Found by the 2026-09-07
+      audit (G/F-9). The grade is now parsed properly and refused if it is not a number
+      between 0 and 100, rather than coerced into one.
+    */
+    const parsedScore = parseDecimalInput(score);
+    if (parsedScore === null || !Number.isFinite(parsedScore) || parsedScore < 0 || parsedScore > 100) {
+      showToast({
+        title: t('grading.scoreInvalidTitle'),
+        description: t('grading.scoreInvalidMessage'),
+        variant: 'warning',
+      });
+      return;
+    }
     setIsSaving(true);
     try {
       await gradeCourseAttempt(attempt.id, {
-        score_percent: Number(score) || 0,
+        score_percent: parsedScore,
         passed,
         feedback: feedback.trim(),
       });

@@ -139,7 +139,10 @@
     "no_courses": "Níl aon chúrsaí cruthaithe agat fós.",
     "unsaved_title": "An cúrsa seo a chaitheamh i dtraipisí?",
     "unsaved_message": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
-    "discard": "Cuir i leataobh"
+    "discard": "Cuir i leataobh",
+    "loadError": "Níorbh fhéidir do chúrsaí a lódáil.",
+    "unpublishConfirmTitle": "Bain an cúrsa seo anuas?",
+    "unpublishConfirmMessage": "Ní bheidh {{title}} le feiceáil ag aon duine atá cláraithe go dtí go bhfoilseoidh tú arís é."
   },
   "grading": {
     "title": "Grádú",
@@ -151,7 +154,9 @@
     "graded": "Sábháladh an grád",
     "error": "Níorbh fhéidir an grád a shábháil.",
     "answer": "Freagra",
-    "no_answer": "Gan freagra"
+    "no_answer": "Gan freagra",
+    "scoreInvalidTitle": "Seiceáil an scór",
+    "scoreInvalidMessage": "Cuir isteach scór idir 0 agus 100."
   },
   "analytics": {
     "title": "Anailísíocht",

@@ -177,6 +177,34 @@ describe('CourseGradingRoute', () => {
     expect(getByText('Nothing to grade right now.')).toBeTruthy();
   });
 
+  it('🔴 records a comma decimal as the mark the instructor meant, not zero', async () => {
+    /*
+      `Number(score) || 0` turned "82,5" into a real, wrong mark of ZERO — silently, with
+      a success toast, on any device in a comma-decimal locale (de, es, fr, it, pt). Any
+      other typo did the same. Found by the 2026-09-07 audit (G/F-9).
+    */
+    const { getByLabelText, getByText } = render(<CourseGradingRoute />);
+    await waitFor(() => expect(getByText('Maura Byrne')).toBeTruthy());
+
+    fireEvent.changeText(getByLabelText('Score (%)'), '82,5');
+    fireEvent.press(getByText('Submit grade'));
+
+    await waitFor(() => expect(mockGradeCourseAttempt).toHaveBeenCalledWith(
+      900,
+      expect.objectContaining({ score_percent: 82.5 }),
+    ));
+  });
+
+  it('🔴 refuses a grade that is not a number, rather than recording zero', async () => {
+    const { getByLabelText, getByText } = render(<CourseGradingRoute />);
+    await waitFor(() => expect(getByText('Maura Byrne')).toBeTruthy());
+
+    fireEvent.changeText(getByLabelText('Score (%)'), 'abc');
+    fireEvent.press(getByText('Submit grade'));
+
+    expect(mockGradeCourseAttempt).not.toHaveBeenCalled();
+  });
+
   it('sends passed:false once the grader marks the attempt as a fail', async () => {
     const { getByLabelText, getByText } = render(<CourseGradingRoute />);
     await waitFor(() => expect(getByText('Maura Byrne')).toBeTruthy());

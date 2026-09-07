@@ -94,9 +94,20 @@ function CoursePlayerScreen() {
     ));
   }, [progressState.data]);
 
+  /*
+    🔴 A video nobody played is not a video that was watched.
+
+    This reset to 100 for EVERY lesson type, and `LessonContent` only reports a real figure
+    once playback actually starts. So a learner who opened a video lesson, never pressed
+    play, and tapped "Mark as complete" was recorded in the instructor's analytics as having
+    watched all of it. The comment above says the reset exists to stop exactly that, and it
+    was only doing half the job. Found by the 2026-09-07 audit (G/F-5).
+
+    Non-video lessons — text, files, a link — have nothing to play, so 100 is right there.
+  */
   useEffect(() => {
-    setWatchPercent(100);
-  }, [lesson?.id]);
+    setWatchPercent(lesson?.content_type === 'video' ? 0 : 100);
+  }, [lesson?.id, lesson?.content_type]);
 
   const lessonAvailability = lesson ? availability[lesson.id] : undefined;
   // Absent availability means the server did not express an opinion — treat as available,

@@ -12,10 +12,10 @@
  * all. This screen and `new-course.tsx` are that builder.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -27,6 +27,7 @@ import FeatureGate from '@/components/FeatureGate';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { getAuthoredCourses, publishCourse, unpublishCourse, type Course } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
@@ -55,6 +56,7 @@ function CourseInstructorScreen() {
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const { data, isLoading, error, refresh } = useApi(() => getAuthoredCourses(), []);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -68,8 +70,48 @@ function CourseInstructorScreen() {
     setIsRefreshing(false);
   }, [refresh]);
 
-  async function togglePublish(course: Course) {
+  /*
+    🔴 The list never refetched, so a course an instructor had just built was missing.
+
+    They tap "Create course", finish the builder, press Back — and the dashboard still shows
+    the list it fetched on mount. Same after editing: the card kept the old title. Found by
+    the 2026-09-07 audit (G/F-14). The first focus is skipped; the initial fetch has run.
+  */
+  const hasFocusedOnceRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedOnceRef.current) {
+        hasFocusedOnceRef.current = true;
+        return;
+      }
+      refresh();
+    }, [refresh]),
+  );
+
+  /*
+    🔴 Unpublishing takes a live course away from everyone enrolled, and it happened on one
+    tap. The course BUILDER already confirms every section and lesson deletion, so this was
+    inconsistent inside the same feature. Publishing stays one tap — it is not destructive.
+    Found by the 2026-09-07 audit (G/F-11).
+  */
+  function togglePublish(course: Course) {
     if (togglingId !== null) return;
+    if (course.status !== 'published') {
+      void runTogglePublish(course);
+      return;
+    }
+    confirm({
+      title: t('instructor.unpublishConfirmTitle'),
+      message: t('instructor.unpublishConfirmMessage', { title: course.title }),
+      confirmLabel: t('instructor.unpublish'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `course-confirm-unpublish-${course.id}`,
+      onConfirm: () => runTogglePublish(course),
+    });
+  }
+
+  async function runTogglePublish(course: Course) {
     setTogglingId(course.id);
     try {
       const updated = course.status === 'published'
@@ -170,7 +212,8 @@ function CourseInstructorScreen() {
                 <HeroButton
                   size="sm"
                   isDisabled={togglingId === course.id}
-                  onPress={() => void togglePublish(course)}
+                  onPress={() => togglePublish(course)}
+                  testID={`course-toggle-publish-${course.id}`}
                 >
                   <HeroButton.Label>
                     {course.status === 'published' ? t('instructor.unpublish') : t('instructor.publish')}
@@ -185,7 +228,7 @@ function CourseInstructorScreen() {
             <View className="py-12"><LoadingSpinner /></View>
           ) : error ? (
             <ErrorState
-              title={t('instructor.create_error')}
+              title={t('instructor.loadError')}
               subtitle={error}
               retryLabel={t('common:buttons.retry')}
               onRetry={() => refresh()}
@@ -202,6 +245,7 @@ function CourseInstructorScreen() {
           )
         }
       />
+      {confirmDialog}
     </SafeAreaView>
   );
 }

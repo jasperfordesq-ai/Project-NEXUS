@@ -64,6 +64,22 @@ jest.mock('@/lib/api/courses', () => ({
   unpublishCourse: (...args: unknown[]) => mockUnpublishCourse(...args),
 }));
 
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 import CourseInstructorRoute from './course-instructor';
 import { ApiResponseError } from '@/lib/api/client';
 
@@ -122,10 +138,14 @@ describe('CourseInstructorRoute', () => {
     mockGetAuthoredCourses.mockResolvedValue([published]);
     mockUnpublishCourse.mockResolvedValue({ ...published, status: 'draft', moderation_status: 'pending' });
 
-    const { getByText } = render(<CourseInstructorRoute />);
+    const { getByTestId, getByText } = render(<CourseInstructorRoute />);
     await waitFor(() => expect(getByText('Timebanking basics')).toBeTruthy());
 
     fireEvent.press(getByText('Unpublish'));
+    // 🔴 Unpublishing takes a live course away from everyone enrolled, and it used to
+    // happen on one tap (G/F-11).
+    expect(mockUnpublishCourse).not.toHaveBeenCalled();
+    fireEvent.press(getByTestId('course-confirm-unpublish-43'));
 
     await waitFor(() => expect(mockUnpublishCourse).toHaveBeenCalledWith(43));
     expect(mockPublishCourse).not.toHaveBeenCalled();

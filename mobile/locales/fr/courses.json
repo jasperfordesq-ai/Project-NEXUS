@@ -135,7 +135,10 @@
     "no_courses": "Vous n'avez pas encore créé de cours.",
     "unsaved_title": "Abandonner ce cours ?",
     "unsaved_message": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
-    "discard": "Abandonner"
+    "discard": "Abandonner",
+    "loadError": "Impossible de charger vos cours.",
+    "unpublishConfirmTitle": "Retirer ce cours ?",
+    "unpublishConfirmMessage": "{{title}} ne sera plus visible pour les personnes inscrites tant que vous ne le republierez pas."
   },
   "grading": {
     "title": "Classement",
@@ -147,7 +150,9 @@
     "graded": "Note enregistrée",
     "error": "Impossible d'enregistrer la note.",
     "answer": "Réponse",
-    "no_answer": "Aucune réponse"
+    "no_answer": "Aucune réponse",
+    "scoreInvalidTitle": "Vérifiez la note",
+    "scoreInvalidMessage": "Saisissez une note comprise entre 0 et 100."
   },
   "analytics": {
     "title": "Analytique",

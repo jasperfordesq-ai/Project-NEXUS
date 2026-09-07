@@ -182,4 +182,45 @@ describe('CoursePlayerScreen', () => {
 
     await waitFor(() => expect(getByLabelText('Course progress').props.accessibilityValue.now).toBe(0));
   });
+  it('🔴 does not report a video nobody played as watched', async () => {
+    /*
+      The watch figure reset to 100 for EVERY lesson type, and the player only reports a
+      real figure once playback starts. So a learner who opened a video lesson, never
+      pressed play, and tapped "Mark as complete" was recorded in the instructor’s
+      analytics as having watched all of it. Found by the 2026-09-07 audit (G/F-5).
+    */
+    jest.mocked(getCourse).mockResolvedValue({
+      id: 7,
+      slug: 'basics',
+      title: 'Timebanking basics',
+      level: 'beginner',
+      credit_cost: 0,
+      enrollment_count: 1,
+      sections: [{
+        id: 2,
+        course_id: 7,
+        title: 'Start',
+        position: 1,
+        lessons: [{
+          id: 12,
+          course_id: 7,
+          section_id: 2,
+          title: 'Watch this first',
+          content_type: 'video',
+          body: null,
+          video_url: 'https://example.org/lesson.mp4',
+          transcript: null,
+          position: 1,
+          is_preview: false,
+        }],
+      }],
+    } as never);
+
+    const { getByText } = render(<CoursePlayerScreen />);
+    await waitFor(() => expect(getByText('Mark as complete')).toBeTruthy());
+
+    fireEvent.press(getByText('Mark as complete'));
+
+    await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 12, 0));
+  });
 });
