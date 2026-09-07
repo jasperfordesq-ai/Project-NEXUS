@@ -385,7 +385,16 @@ jobs:
           if [ -z "${APP}" ]; then echo "no .app was produced by the build"; exit 1; fi
           echo "installing ${APP}"
           xcrun simctl install "${UDID}" "${APP}"
-          maestro test --format junit --output "${RUNNER_TEMP}/maestro-report-ios.xml" \
+          # 🔴 Maestro drives iOS through an XCUITest runner it installs onto the
+          # simulator on first use, and on a cold CI simulator that install takes
+          # longer than its default startup timeout — the run failed with
+          # `IOSDriverTimeoutException: iOS driver not ready in time` after the app
+          # itself had built and installed cleanly. Five minutes is generous rather
+          # than tuned: the cost of it being too low is a false failure on the one
+          # platform that has no other coverage, and the cost of it being too high is
+          # nothing, because a working driver starts in seconds.
+          MAESTRO_DRIVER_STARTUP_TIMEOUT=300000 \
+            maestro test --format junit --output "${RUNNER_TEMP}/maestro-report-ios.xml" \
             .maestro/00-launch-smoke.yaml
 
       - name: Collect diagnostics
