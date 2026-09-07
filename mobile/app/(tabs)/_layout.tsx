@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
+import { useOptionalTenantCapabilities } from '@/lib/context/TenantContext';
+import { isRouteAllowed } from '@/lib/navigation/routeRequirements';
 
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import { contrastText } from '@/lib/utils/color';
@@ -86,6 +88,12 @@ export default function TabsLayout() {
   const { unreadMessages, refreshCounts } = useRealtimeContext();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  // 🔴 A tab for a module the community has switched off must not be in the bar at all.
+  // React hides Messages when the `messages` module is off and Listings when `listings`
+  // is off; the native bar showed both regardless (audit 2026-09-07). The requirement per
+  // tab lives in `lib/navigation/routeRequirements.ts`, and an unknown configuration
+  // (cold start, offline with no cache) keeps every tab — see `isRouteAllowed`.
+  const capabilities = useOptionalTenantCapabilities();
 
   // Single source of truth from RealtimeContext — no duplicate API call
   const messagesBadgeCount = unreadMessages;
@@ -140,6 +148,8 @@ export default function TabsLayout() {
           } : undefined}
           options={{
             title: t(i18nKey),
+            // `href: null` removes the tab from the bar; `undefined` leaves the default.
+            ...(isRouteAllowed(capabilities, name) ? {} : { href: null }),
             tabBarIcon: ({ focused, color, size }) => (
               <View style={{ position: 'relative' }}>
                 <Ionicons

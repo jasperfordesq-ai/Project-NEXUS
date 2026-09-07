@@ -27,6 +27,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function extractPollsPage(response: FeedResponse) {
   if (!response?.data || !response?.meta) {
@@ -47,7 +48,7 @@ function extractPollsPage(response: FeedResponse) {
   };
 }
 
-export default function PollsScreen() {
+function PollsScreen() {
   const { t } = useTranslation(['home', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -354,3 +355,5 @@ function PollFeedCard({
     </HeroCard>
   );
 }
+
+export default withRouteGate(PollsScreen, 'polls');

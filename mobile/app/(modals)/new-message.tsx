@@ -24,6 +24,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type TFunction = (key: string, options?: Record<string, unknown>) => string;
 
@@ -317,10 +318,12 @@ function getMemberDisplayName(member: Member, fallback: string): string {
   return member.name?.trim() || fullName || fallback;
 }
 
-export default function NewMessageRoute() {
+function NewMessageRoute() {
   return (
     <ModalErrorBoundary>
       <NewMessageRouteInner />
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(NewMessageRoute, 'new-message');

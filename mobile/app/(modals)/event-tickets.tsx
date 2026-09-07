@@ -31,6 +31,7 @@ import {
 } from '@/lib/api/eventTickets';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function idempotencyKey(action: 'allocate' | 'cancel'): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
@@ -59,7 +60,7 @@ function canAllocate(
     && allocatableUnits(ticket) > 0;
 }
 
-export default function EventTicketsScreen() {
+function EventTicketsScreen() {
   return (
     <ModalErrorBoundary>
       <EventTicketsScreenInner />
@@ -384,3 +385,5 @@ function EventTicketsScreenInner() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(EventTicketsScreen, 'event-tickets');

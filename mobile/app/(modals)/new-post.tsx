@@ -47,11 +47,12 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withAlpha } from '@/lib/utils/color';
+import { withRouteGate } from '@/components/withRouteGate';
 
 /** The counter is noise until a post is genuinely long, so it appears near the limit. */
 const COUNTER_VISIBLE_FROM = Math.floor(MAX_POST_LENGTH * 0.9);
 
-export default function NewPostRoute() {
+function NewPostRoute() {
   return (
     <ModalErrorBoundary>
       <NewPostScreen />
@@ -235,3 +236,5 @@ function NewPostScreen() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(NewPostRoute, 'new-post');

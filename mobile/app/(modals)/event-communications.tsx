@@ -44,6 +44,7 @@ import {
   type MobileEventBroadcastVariant,
 } from '@/lib/api/eventCommunications';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const SEGMENTS: MobileEventBroadcastSegment[] = [
   'registration_confirmed',
@@ -77,7 +78,7 @@ function statusColor(status: MobileEventBroadcast['status']): 'accent' | 'succes
   return 'accent';
 }
 
-export default function EventCommunicationsScreen() {
+function EventCommunicationsScreen() {
   return (
     <ModalErrorBoundary>
       <EventCommunicationsScreenInner />
@@ -913,3 +914,5 @@ function EventCommunicationsScreenInner() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(EventCommunicationsScreen, 'event-communications');

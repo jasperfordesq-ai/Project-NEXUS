@@ -4,7 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import FederationDirectoryScreen from '@/components/federation/FederationDirectoryScreen';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function FederationGroupsRoute() {
+function FederationGroupsRoute() {
   return <FederationDirectoryScreen mode="groups" />;
 }
+
+export default withRouteGate(FederationGroupsRoute, 'federation-groups');

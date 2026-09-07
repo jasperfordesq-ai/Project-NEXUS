@@ -33,6 +33,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const CURRENCIES = ['EUR', 'GBP', 'USD', 'CAD', 'AUD', 'NZD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'JPY'] as const;
 
@@ -67,7 +68,7 @@ function formatCurrencyAmount(amount: number, currency: string): string {
   }
 }
 
-export default function MarketplaceShippingOptionsRoute() {
+function MarketplaceShippingOptionsRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceShippingOptionsScreen />
@@ -384,3 +385,5 @@ function FormInput({
     </View>
   );
 }
+
+export default withRouteGate(MarketplaceShippingOptionsRoute, 'marketplace-shipping-options');

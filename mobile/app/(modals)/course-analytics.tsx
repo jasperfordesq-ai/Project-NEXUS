@@ -35,8 +35,9 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function CourseAnalyticsRoute() {
+function CourseAnalyticsRoute() {
   /*
     Gated like the React route (`<FeatureGate feature="courses">`). Hiding the "+"
     menu entry was never a gate: a deep link, a notification or a shared URL all
@@ -206,3 +207,5 @@ function CourseAnalyticsScreen() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(CourseAnalyticsRoute, 'course-analytics');

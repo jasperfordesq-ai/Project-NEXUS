@@ -12,8 +12,9 @@ import { useTranslation } from 'react-i18next';
 import AppTopBar from '@/components/ui/AppTopBar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplaceSalesOrdersRoute() {
+function MarketplaceSalesOrdersRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceSalesOrdersRedirect />
@@ -40,3 +41,5 @@ function MarketplaceSalesOrdersRedirect() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(MarketplaceSalesOrdersRoute, 'marketplace-sales-orders');

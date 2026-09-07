@@ -14,10 +14,11 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { checkOutVolunteer, verifyVolunteerCheckIn } from '@/lib/api/volunteering';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type State = 'confirm' | 'submitting' | 'checked_in' | 'checking_out' | 'checked_out' | 'error';
 
-export default function VolunteerCheckInScreen() {
+function VolunteerCheckInScreen() {
   const { t } = useTranslation(['volunteering', 'common']);
   const { token = '' } = useLocalSearchParams<{ token?: string }>();
   const theme = useTheme();
@@ -38,3 +39,5 @@ export default function VolunteerCheckInScreen() {
 
   return <ModalErrorBoundary><SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}><AppTopBar title={t('volunteering:check_in.verify_title')} backLabel={t('common:back')} fallbackHref={'/(modals)/volunteering' as Href} /><ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}><HeroCard className="rounded-panel"><HeroCard.Body className="items-center gap-4 p-6"><Text accessibilityRole="header" className="text-center text-2xl font-bold" style={{ color: theme.text }}>{state === 'checked_in' ? t('volunteering:check_in.success', { name }) : state === 'checked_out' ? t('volunteering:check_in.checkout_success', { name }) : t('volunteering:check_in.verify_title')}</Text>{state === 'confirm' ? <><Text className="text-center text-base leading-6" style={{ color: theme.textSecondary }}>{t('volunteering:check_in.verify_intro')}</Text><HeroButton className="w-full" onPress={() => void checkIn()}><HeroButton.Label>{t('volunteering:check_in.confirm_button')}</HeroButton.Label></HeroButton></> : null}{state === 'checked_in' ? <HeroButton className="w-full" variant="secondary" onPress={() => void checkOut()}><HeroButton.Label>{t('volunteering:check_in.checkout_button')}</HeroButton.Label></HeroButton> : null}{state === 'submitting' || state === 'checking_out' ? <Text accessibilityRole="alert" style={{ color: theme.textSecondary }}>{t('volunteering:loading')}</Text> : null}{state === 'error' ? <Text accessibilityRole="alert" className="text-center text-danger">{error}</Text> : null}</HeroCard.Body></HeroCard></ScrollView></SafeAreaView></ModalErrorBoundary>;
 }
+
+export default withRouteGate(VolunteerCheckInScreen, 'volunteer-checkin');

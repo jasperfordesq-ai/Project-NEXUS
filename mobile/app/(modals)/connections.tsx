@@ -34,6 +34,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ConnectionTab = ConnectionListStatus;
 
@@ -56,7 +57,7 @@ function formatDate(value?: string | null) {
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function ConnectionsRoute() {
+function ConnectionsRoute() {
   return (
     <ModalErrorBoundary>
       <ConnectionsScreen />
@@ -501,3 +502,5 @@ function ActionPill({
     </HeroButton>
   );
 }
+
+export default withRouteGate(ConnectionsRoute, 'connections');

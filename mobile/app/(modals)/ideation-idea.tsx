@@ -28,8 +28,9 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function IdeationIdeaScreen() {
+function IdeationIdeaScreen() {
   const { t } = useTranslation(['ideation', 'common']);
   const { id, challengeId: routeChallengeId } = useLocalSearchParams<{ id?: string; challengeId?: string }>();
   const ideaId = Number(id ?? 0);
@@ -157,3 +158,5 @@ export default function IdeationIdeaScreen() {
 function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
+
+export default withRouteGate(IdeationIdeaScreen, 'ideation-idea');

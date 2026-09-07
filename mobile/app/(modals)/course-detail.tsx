@@ -22,8 +22,9 @@ import { enrollInCourse, getCourse } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function CourseDetailScreen() {
+function CourseDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation(['courses', 'common']);
   const primary = usePrimaryColor();
@@ -124,3 +125,5 @@ export default function CourseDetailScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(CourseDetailScreen, 'course-detail');

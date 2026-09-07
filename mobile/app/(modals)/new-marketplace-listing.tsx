@@ -47,6 +47,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const PRICE_TYPES: MarketplacePriceType[] = ['fixed', 'negotiable', 'free', 'contact'];
 const CURRENCIES = ['EUR', 'GBP', 'USD', 'CAD', 'AUD', 'NZD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'JPY'] as const;
@@ -79,7 +80,7 @@ function normalizeExistingCurrency(value?: string | null): string {
   return /^[A-Z]{3}$/.test(candidate) ? candidate : '';
 }
 
-export default function NewMarketplaceListingRoute() {
+function NewMarketplaceListingRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceListingForm />
@@ -909,3 +910,5 @@ function FormField({
     </View>
   );
 }
+
+export default withRouteGate(NewMarketplaceListingRoute, 'new-marketplace-listing');

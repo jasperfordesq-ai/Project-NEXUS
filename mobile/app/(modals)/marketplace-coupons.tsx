@@ -21,8 +21,9 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatLegacyCouponMinorAmount } from '@/lib/utils/marketplaceCurrency';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplaceCouponsRoute() {
+function MarketplaceCouponsRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceCouponsScreen />
@@ -169,3 +170,5 @@ function couponTerms(
   }
   return terms;
 }
+
+export default withRouteGate(MarketplaceCouponsRoute, 'marketplace-coupons');

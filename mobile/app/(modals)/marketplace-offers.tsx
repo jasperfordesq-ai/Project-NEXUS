@@ -38,10 +38,11 @@ import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type OfferMode = 'sent' | 'received';
 
-export default function MarketplaceOffersRoute() {
+function MarketplaceOffersRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceOffersScreen />
@@ -394,3 +395,5 @@ function OfferCard({
     </HeroCard>
   );
 }
+
+export default withRouteGate(MarketplaceOffersRoute, 'marketplace-offers');

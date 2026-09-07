@@ -32,6 +32,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const TRANSLATABLE_STATUSES = new Set(['approved', 'active', 'pending', 'declined']);
 
@@ -90,7 +91,7 @@ function ActionPill({
   );
 }
 
-export default function OrganisationDetailScreen() {
+function OrganisationDetailScreen() {
   const { t } = useTranslation(['organisations', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { tenant } = useTenant();
@@ -365,3 +366,5 @@ function InfoRow({
     </View>
   );
 }
+
+export default withRouteGate(OrganisationDetailScreen, 'organisation-detail');

@@ -60,6 +60,7 @@ import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { useParamTab } from '@/lib/hooks/useParamTab';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 // ---------------------------------------------------------------------------
 // Type filter options
@@ -941,7 +942,7 @@ function JobAlertsPanel({
 // Screen
 // ---------------------------------------------------------------------------
 
-export default function JobsScreen() {
+function JobsScreen() {
   const { t } = useTranslation(['jobs', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -1402,3 +1403,5 @@ export default function JobsScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(JobsScreen, 'jobs');

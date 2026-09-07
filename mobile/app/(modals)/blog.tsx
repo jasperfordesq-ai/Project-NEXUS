@@ -33,6 +33,7 @@ import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function extractBlogPage(response: BlogListResponse) {
   return {
@@ -86,7 +87,7 @@ function ActionPill({
   );
 }
 
-export default function BlogScreen() {
+function BlogScreen() {
   const { t } = useTranslation(['blog', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -297,3 +298,5 @@ export default function BlogScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(BlogScreen, 'blog');

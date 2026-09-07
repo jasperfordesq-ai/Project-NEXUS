@@ -37,10 +37,11 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const PRICE_FILTERS: (MarketplacePriceType | '')[] = ['', 'free', 'fixed', 'negotiable', 'contact'];
 
-export default function MarketplaceRoute() {
+function MarketplaceRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceScreen />
@@ -409,3 +410,5 @@ function ShortcutButton({
     </HeroButton>
   );
 }
+
+export default withRouteGate(MarketplaceRoute, 'marketplace');

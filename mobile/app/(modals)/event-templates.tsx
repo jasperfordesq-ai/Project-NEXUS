@@ -35,6 +35,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/utils/eventDateTime';
+import { withRouteGate } from '@/components/withRouteGate';
 
 /**
  * Tomorrow, on the hour, as a wall-clock value IN THE TEMPLATE'S ZONE.
@@ -55,7 +56,7 @@ function idempotencyKey(): string {
   return `mobile-event-template-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export default function EventTemplatesScreen() {
+function EventTemplatesScreen() {
   return (
     <ModalErrorBoundary>
       <EventTemplatesScreenInner />
@@ -554,3 +555,5 @@ function EventTemplatesScreenInner() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(EventTemplatesScreen, 'event-templates');

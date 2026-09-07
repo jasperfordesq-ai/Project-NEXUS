@@ -33,6 +33,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { Chip } from '@/components/ui/StatusChip';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -370,7 +371,7 @@ function SectionCard({
   );
 }
 
-export default function FederationScreen() {
+function FederationScreen() {
   const { t } = useTranslation(['federation', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -482,3 +483,5 @@ export default function FederationScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(FederationScreen, 'federation');

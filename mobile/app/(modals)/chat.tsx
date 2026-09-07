@@ -40,6 +40,7 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type DisplayMessage = ChatMessage | { id: string; role: 'thinking'; content: string; created_at: string };
 type FeedbackState = Record<string, ChatFeedbackVote>;
@@ -432,7 +433,7 @@ function ChatHeader({
   );
 }
 
-export default function ChatScreen() {
+function ChatScreen() {
   return (
     <ModalErrorBoundary>
       <ChatScreenInner />
@@ -765,3 +766,5 @@ function ChatScreenInner() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(ChatScreen, 'chat');

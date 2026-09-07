@@ -29,8 +29,9 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function IdeationDetailScreen() {
+function IdeationDetailScreen() {
   const { t } = useTranslation(['ideation', 'common']);
   const { hasFeature } = useTenant();
   const { user } = useAuth();
@@ -255,3 +256,5 @@ function IdeaCard({ idea, challengeId, onVote }: { idea: IdeationIdea; challenge
 function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
+
+export default withRouteGate(IdeationDetailScreen, 'ideation-detail');

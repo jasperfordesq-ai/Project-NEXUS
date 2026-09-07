@@ -46,6 +46,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type ApiGoal = Goal & {
@@ -648,7 +649,7 @@ function GoalTemplatesPanel({
   );
 }
 
-export default function GoalsScreen() {
+function GoalsScreen() {
   const { t } = useTranslation(['goals', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -833,3 +834,5 @@ export default function GoalsScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(GoalsScreen, 'goals');

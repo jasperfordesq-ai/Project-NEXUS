@@ -68,6 +68,7 @@ import {
   formatLegacyCouponMinorAmount,
   formatMarketplaceMinorAmount,
 } from '@/lib/utils/marketplaceCurrency';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ToolTab = 'collections' | 'savedSearches' | 'promotions' | 'pickups' | 'coupons';
 type CouponDiscountType = 'percent' | 'fixed' | 'bogo';
@@ -131,7 +132,7 @@ function routeCouponId(value: string | string[] | undefined): number | null {
   return Number.isFinite(id) && id > 0 ? id : null;
 }
 
-export default function MarketplaceToolsRoute() {
+function MarketplaceToolsRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceToolsScreen />
@@ -1478,3 +1479,5 @@ function formatDateTime(value: string): string {
     minute: '2-digit',
   });
 }
+
+export default withRouteGate(MarketplaceToolsRoute, 'marketplace-tools');

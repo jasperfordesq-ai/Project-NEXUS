@@ -56,6 +56,7 @@ import {
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
+import { withRouteGate } from '@/components/withRouteGate';
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
 
 interface FieldErrors {
@@ -71,7 +72,7 @@ const MIN_LISTING_DESCRIPTION_LENGTH = 20;
 const MIN_LISTING_HOURS = 0.5;
 const MAX_LISTING_HOURS = 100;
 
-export default function NewExchangeModal() {
+function NewExchangeModal() {
   return (
     <ModalErrorBoundary>
       <NewExchangeModalInner />
@@ -781,3 +782,5 @@ function getProfileLocation(user: unknown): string {
   }
   return '';
 }
+
+export default withRouteGate(NewExchangeModal, 'new-exchange');

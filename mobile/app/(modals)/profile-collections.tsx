@@ -35,6 +35,7 @@ import Toggle from '@/components/ui/Toggle';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function formatDate(value?: string | null): string {
   if (!value) return '';
@@ -47,7 +48,7 @@ function isPublicScope(value: unknown): boolean {
   return value === 'public';
 }
 
-export default function ProfileCollectionsScreen() {
+function ProfileCollectionsScreen() {
   return (
     <ModalErrorBoundary>
       <ProfileCollectionsInner />
@@ -445,3 +446,5 @@ function getSavedItemTarget(item: SavedItem): Href | null {
       return null;
   }
 }
+
+export default withRouteGate(ProfileCollectionsScreen, 'profile-collections');

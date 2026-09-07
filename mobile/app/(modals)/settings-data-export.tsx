@@ -87,7 +87,7 @@ export default function SettingsDataExportScreen() {
     setIsRequesting(true);
     try {
       await requestDataExport(format);
-      showToast({ title: t('dataExport.requested'), description: t('dataExport.requestedBody'), variant: 'success' });
+      showToast({ title: t('dataExport.downloaded'), description: t('dataExport.downloadedBody'), variant: 'success' });
       await loadHistory();
     } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.requestError')), variant: 'danger' });

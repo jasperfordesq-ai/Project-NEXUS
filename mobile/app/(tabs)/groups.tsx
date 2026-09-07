@@ -26,6 +26,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type FilterValue = 'all' | 'public' | 'private';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -263,7 +264,7 @@ function GroupCard({
   );
 }
 
-export default function GroupsScreen() {
+function GroupsScreen() {
   const { t } = useTranslation(['groups', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -414,3 +415,5 @@ export default function GroupsScreen() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(GroupsScreen, 'groups');

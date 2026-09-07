@@ -51,6 +51,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ApiOpportunity = VolunteerOpportunity & {
   organization?: VolunteeringOrganisation | null;
@@ -328,7 +329,7 @@ function ApplicationCard({
   );
 }
 
-export default function VolunteeringDetailScreen() {
+function VolunteeringDetailScreen() {
   return (
     <ModalErrorBoundary>
       <VolunteeringDetailScreenInner />
@@ -859,3 +860,5 @@ function VolunteeringDetailScreenInner() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(VolunteeringDetailScreen, 'volunteering-detail');

@@ -34,6 +34,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const CONDITIONS: MarketplaceCondition[] = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY_METHODS: (MarketplaceDeliveryMethod | '')[] = ['', 'pickup', 'shipping', 'both', 'community_delivery'];
@@ -41,7 +42,7 @@ const SELLER_TYPES: ('private' | 'business' | '')[] = ['', 'private', 'business'
 const SORTS: ('newest' | 'price_asc' | 'price_desc' | 'popular')[] = ['newest', 'price_asc', 'price_desc', 'popular'];
 const POSTED_WITHIN = ['', '1', '3', '7', '30'];
 
-export default function MarketplaceSearchRoute() {
+function MarketplaceSearchRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceSearchScreen />
@@ -415,3 +416,5 @@ function normalizeDeliveryMethod(value?: string): MarketplaceDeliveryMethod | ''
 function normalizeSort(value?: string): 'newest' | 'price_asc' | 'price_desc' | 'popular' {
   return value === 'price_asc' || value === 'price_desc' || value === 'popular' ? value : 'newest';
 }
+
+export default withRouteGate(MarketplaceSearchRoute, 'marketplace-search');

@@ -38,13 +38,14 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import * as Haptics from '@/lib/haptics';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ReviewTab = 'received' | 'given' | 'pending';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const TABS: ReviewTab[] = ['received', 'given', 'pending'];
 
-export default function ReviewsScreen() {
+function ReviewsScreen() {
   const { t } = useTranslation(['profile', 'common']);
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -583,3 +584,5 @@ function userName(user?: ReviewUser | null): string {
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
   return user.name?.trim() || fullName;
 }
+
+export default withRouteGate(ReviewsScreen, 'reviews');

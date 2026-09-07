@@ -74,6 +74,7 @@ import {
   type PodcastStudioCapabilities,
   type PodcastVisibility,
 } from '@/lib/api/podcasts';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const EPISODE_TYPES: PodcastEpisodeType[] = ['full', 'trailer', 'bonus'];
@@ -284,7 +285,7 @@ function emptyEpisodeForm(language: string): EpisodeFormState {
   };
 }
 
-export default function PodcastStudioRoute() {
+function PodcastStudioRoute() {
   /*
     Gated like the React route (`<FeatureGate feature="podcasts">`). Hiding the "+"
     menu entry was never a gate: a deep link, a notification or a shared URL all
@@ -1452,3 +1453,5 @@ function OptionGroup<T extends string>({
     </View>
   );
 }
+
+export default withRouteGate(PodcastStudioRoute, 'podcast-studio');

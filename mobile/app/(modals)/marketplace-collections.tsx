@@ -37,6 +37,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type TabKey = 'collections' | 'saved';
 
@@ -44,7 +45,7 @@ function routeTab(value: string | string[] | undefined): TabKey {
   return value === 'saved' || value === 'searches' ? 'saved' : 'collections';
 }
 
-export default function MarketplaceCollectionsRoute() {
+function MarketplaceCollectionsRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceCollectionsScreen />
@@ -518,3 +519,5 @@ function FormInput({
     </View>
   );
 }
+
+export default withRouteGate(MarketplaceCollectionsRoute, 'marketplace-collections');

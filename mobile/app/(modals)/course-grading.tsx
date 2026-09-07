@@ -44,6 +44,7 @@ import {
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 /**
  * A learner's answer in words: an objective answer arrives as option id(s) and has to be
@@ -61,7 +62,7 @@ export function formatAnswer(question: QuizQuestion, answers: PendingAttempt['an
   return Array.isArray(raw) ? raw.map(String).join(', ') : String(raw);
 }
 
-export default function CourseGradingRoute() {
+function CourseGradingRoute() {
   /*
     Gated like the React route (`<FeatureGate feature="courses">`). Hiding the "+"
     menu entry was never a gate: a deep link, a notification or a shared URL all
@@ -305,3 +306,5 @@ function GradeCard({
     </HeroCard>
   );
 }
+
+export default withRouteGate(CourseGradingRoute, 'course-grading');

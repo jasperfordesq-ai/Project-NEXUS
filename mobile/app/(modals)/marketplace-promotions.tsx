@@ -12,8 +12,9 @@ import { useTranslation } from 'react-i18next';
 import AppTopBar from '@/components/ui/AppTopBar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplacePromotionsRoute() {
+function MarketplacePromotionsRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplacePromotionsRedirect />
@@ -40,3 +41,5 @@ function MarketplacePromotionsRedirect() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(MarketplacePromotionsRoute, 'marketplace-promotions');

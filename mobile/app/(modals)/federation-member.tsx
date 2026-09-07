@@ -4,5 +4,6 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import MemberProfileScreen from './member-profile';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default MemberProfileScreen;
+export default withRouteGate(MemberProfileScreen, 'federation-member');

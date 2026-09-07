@@ -28,6 +28,7 @@ import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function unwrapOrgs(response: { data?: VolunteeringOrganisation[]; items?: VolunteeringOrganisation[] } | null | undefined): VolunteeringOrganisation[] {
   if (Array.isArray(response?.data)) {
@@ -56,7 +57,7 @@ function parseDateOnly(value: string): number | null {
   return timestamp;
 }
 
-export default function NewVolunteeringRoute() {
+function NewVolunteeringRoute() {
   return (
     <ModalErrorBoundary>
       <NewVolunteeringScreen />
@@ -403,3 +404,5 @@ function FormField({
     </View>
   );
 }
+
+export default withRouteGate(NewVolunteeringRoute, 'new-volunteering');

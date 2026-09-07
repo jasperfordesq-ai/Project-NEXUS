@@ -36,11 +36,12 @@ import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type SellerTab = 'listings' | 'reviews';
 type SellerListItem = MarketplaceListingItem | ReviewItem;
 
-export default function MarketplaceSellerRoute() {
+function MarketplaceSellerRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceSellerScreen />
@@ -320,3 +321,5 @@ function SellerStat({ icon, label, value, tone }: { icon: React.ComponentProps<t
     </Surface>
   );
 }
+
+export default withRouteGate(MarketplaceSellerRoute, 'marketplace-seller');

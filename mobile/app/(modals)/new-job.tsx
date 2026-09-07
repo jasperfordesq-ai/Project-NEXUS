@@ -25,6 +25,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type JobType = CreateJobPayload['type'];
 type Commitment = CreateJobPayload['commitment'];
@@ -43,7 +44,7 @@ function optionalNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export default function NewJobRoute() {
+function NewJobRoute() {
   return (
     <ModalErrorBoundary>
       <NewJobScreen />
@@ -436,3 +437,5 @@ function FormField({
     </View>
   );
 }
+
+export default withRouteGate(NewJobRoute, 'new-job');

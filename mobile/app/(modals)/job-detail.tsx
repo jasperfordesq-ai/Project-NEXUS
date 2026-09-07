@@ -39,9 +39,10 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 
-export default function JobDetailScreen() {
+function JobDetailScreen() {
   const { t } = useTranslation(['jobs', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
@@ -835,3 +836,5 @@ function OwnerApplicationCard({
     </Surface>
   );
 }
+
+export default withRouteGate(JobDetailScreen, 'job-detail');

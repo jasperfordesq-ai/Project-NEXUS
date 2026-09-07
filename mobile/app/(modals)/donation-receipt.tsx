@@ -17,8 +17,9 @@ import { getDonationReceipt } from '@/lib/api/donations';
 import { useApi } from '@/lib/hooks/useApi';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import { formatDate } from '@/lib/utils/formatRelativeTime';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function DonationReceiptScreen() {
+function DonationReceiptScreen() {
   const { t } = useTranslation(['volunteering', 'common']);
   const { id } = useLocalSearchParams<{ id?: string }>();
   const donationId = Number(id ?? 0);
@@ -61,3 +62,5 @@ export default function DonationReceiptScreen() {
 function ReceiptRow({ label, value }: { label: string; value: string }) {
   return <View className="flex-row justify-between gap-4"><Text className="text-sm text-muted-foreground">{label}</Text><Text className="min-w-0 flex-1 text-right text-sm font-medium text-foreground">{value}</Text></View>;
 }
+
+export default withRouteGate(DonationReceiptScreen, 'donation-receipt');

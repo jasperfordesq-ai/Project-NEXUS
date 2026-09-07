@@ -30,6 +30,7 @@ import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type PageState = 'loading' | 'dob_collection' | 'payment_required' | 'start' | 'in_progress' | 'verified' | 'failed' | 'error';
 type TFunction = (key: string, options?: Record<string, unknown>) => string;
@@ -41,7 +42,7 @@ type TFunction = (key: string, options?: Record<string, unknown>) => string;
  */
 const ACTION_STATES: readonly PageState[] = ['dob_collection', 'payment_required', 'start', 'failed'];
 
-export default function VerifyIdentityScreen() {
+function VerifyIdentityScreen() {
   return (
     <ModalErrorBoundary>
       <VerifyIdentityScreenInner />
@@ -417,3 +418,5 @@ function formatFee(cents: number, currency: string): string {
     return `${formatDecimal((cents || 0) / 100, 2, 2)} ${currency || 'EUR'}`;
   }
 }
+
+export default withRouteGate(VerifyIdentityScreen, 'verify-identity');

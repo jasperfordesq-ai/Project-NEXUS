@@ -32,11 +32,12 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const CONDITION_FILTERS: (MarketplaceCondition | '')[] = ['', 'new', 'like_new', 'good', 'fair', 'poor'];
 const SORTS: ('newest' | 'price_asc' | 'price_desc' | 'popular')[] = ['newest', 'price_asc', 'price_desc', 'popular'];
 
-export default function MarketplaceCategoryRoute() {
+function MarketplaceCategoryRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceCategoryScreen />
@@ -403,3 +404,5 @@ function parseConditions(value?: string): MarketplaceCondition[] {
 function normalizeSort(value?: string): 'newest' | 'price_asc' | 'price_desc' | 'popular' {
   return value === 'price_asc' || value === 'price_desc' || value === 'popular' ? value : 'newest';
 }
+
+export default withRouteGate(MarketplaceCategoryRoute, 'marketplace-category');

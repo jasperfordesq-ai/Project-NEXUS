@@ -28,6 +28,7 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const FREQUENCIES: MatchNotificationFrequency[] = [
   'daily',
@@ -46,7 +47,7 @@ function sliderValue(value: number | number[], fallback: number): number {
   return typeof next === 'number' && Number.isFinite(next) ? next : fallback;
 }
 
-export default function MatchPreferencesScreen() {
+function MatchPreferencesScreen() {
   const { t } = useTranslation(['profile', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -318,3 +319,5 @@ function ValueRow({ label, value, primary, text }: {
     </View>
   );
 }
+
+export default withRouteGate(MatchPreferencesScreen, 'match-preferences');

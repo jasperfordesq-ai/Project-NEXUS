@@ -30,6 +30,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const REACTIONS: { key: AppreciationReactionType; icon: keyof typeof Ionicons.glyphMap }[] = [
   { key: 'heart', icon: 'heart-outline' },
@@ -43,7 +44,7 @@ function formatDate(value: string): string {
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function AppreciationsScreen() {
+function AppreciationsScreen() {
   return (
     <ModalErrorBoundary>
       <AppreciationsScreenInner />
@@ -256,3 +257,5 @@ function AppreciationCard({
     </HeroCard>
   );
 }
+
+export default withRouteGate(AppreciationsScreen, 'appreciations');

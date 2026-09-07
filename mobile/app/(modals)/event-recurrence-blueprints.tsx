@@ -44,6 +44,7 @@ import {
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const SECTION_KEYS: readonly EventRecurrenceDefinitionSection[] = [
   'agenda',
@@ -86,7 +87,7 @@ function appendUnique(
   return [...current, ...incoming.filter((item) => !seen.has(item.blueprint_id))];
 }
 
-export default function EventRecurrenceBlueprintsScreen() {
+function EventRecurrenceBlueprintsScreen() {
   return (
     <ModalErrorBoundary>
       <EventRecurrenceBlueprintsScreenInner />
@@ -620,3 +621,5 @@ function EventRecurrenceBlueprintsScreenInner() {
     );
   }
 }
+
+export default withRouteGate(EventRecurrenceBlueprintsScreen, 'event-recurrence-blueprints');

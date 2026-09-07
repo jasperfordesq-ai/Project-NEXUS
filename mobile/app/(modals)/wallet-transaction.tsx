@@ -37,6 +37,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withAlpha } from '@/lib/utils/color';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function formatWhen(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -215,10 +216,12 @@ function WalletTransactionScreenInner() {
   );
 }
 
-export default function WalletTransactionScreen() {
+function WalletTransactionScreen() {
   return (
     <ModalErrorBoundary>
       <WalletTransactionScreenInner />
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(WalletTransactionScreen, 'wallet-transaction');

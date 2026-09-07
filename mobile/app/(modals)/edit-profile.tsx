@@ -37,6 +37,7 @@ import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import OfflineBanner from '@/components/OfflineBanner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 // E.164-ish: optional + then digits, spaces, dashes — at least 7 digits total
 const PHONE_RE = /^\+?[\d\s\-().]{7,20}$/;
@@ -475,10 +476,12 @@ function SectionTitle({ icon, title, primary }: { icon: React.ComponentProps<typ
   );
 }
 
-export default function EditProfileScreen() {
+function EditProfileScreen() {
   return (
     <ModalErrorBoundary>
       <EditProfileScreenInner />
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(EditProfileScreen, 'edit-profile');

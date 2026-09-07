@@ -21,8 +21,9 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplacePickupsRoute() {
+function MarketplacePickupsRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplacePickupsScreen />
@@ -188,3 +189,5 @@ function pickupStatusTone(status: string, theme: ReturnType<typeof useTheme>, pr
   if (status === 'no_show') return theme.warning;
   return primary;
 }
+
+export default withRouteGate(MarketplacePickupsRoute, 'marketplace-pickups');

@@ -40,6 +40,7 @@ import Input from '@/components/ui/Input';
 import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
 import OfflineBanner from '@/components/OfflineBanner';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type FilterOption = SearchResultType | 'all';
 
@@ -117,7 +118,7 @@ function SearchResultSkeleton() {
   );
 }
 
-export default function SearchScreen() {
+function SearchScreen() {
   const { t } = useTranslation(['search', 'common']);
   const params = useLocalSearchParams<{ q?: string; type?: string }>();
   const primary = usePrimaryColor();
@@ -558,3 +559,5 @@ function SearchHeader({
     </View>
   );
 }
+
+export default withRouteGate(SearchScreen, 'search');

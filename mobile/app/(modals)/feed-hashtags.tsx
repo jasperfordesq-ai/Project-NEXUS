@@ -19,12 +19,13 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function normalizeHashtags(response: { data?: HashtagItem[] } | HashtagItem[]): HashtagItem[] {
   return Array.isArray(response) ? response : response.data ?? [];
 }
 
-export default function FeedHashtagsScreen() {
+function FeedHashtagsScreen() {
   const { t } = useTranslation(['home', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -212,3 +213,5 @@ export default function FeedHashtagsScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(FeedHashtagsScreen, 'feed-hashtags');

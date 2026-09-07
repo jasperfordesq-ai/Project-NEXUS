@@ -24,6 +24,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const statusFilters = ['all', 'active', 'pending_confirmation', 'completed', 'cancelled'] as const;
 type StatusFilter = (typeof statusFilters)[number];
@@ -79,7 +80,7 @@ function formatDate(value?: string | null) {
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function GroupExchangesScreen() {
+function GroupExchangesScreen() {
   return (
     <ModalErrorBoundary>
       <GroupExchangesScreenInner />
@@ -240,3 +241,5 @@ function GroupExchangesScreenInner() {
     );
   }
 }
+
+export default withRouteGate(GroupExchangesScreen, 'group-exchanges');

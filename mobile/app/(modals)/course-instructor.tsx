@@ -32,8 +32,9 @@ import { getAuthoredCourses, publishCourse, unpublishCourse, type Course } from 
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function CourseInstructorRoute() {
+function CourseInstructorRoute() {
   /*
     Gated like the React route (`<FeatureGate feature="courses">`). Hiding the "+"
     menu entry was never a gate: a deep link, a notification or a shared URL all
@@ -204,3 +205,5 @@ function CourseInstructorScreen() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(CourseInstructorRoute, 'course-instructor');

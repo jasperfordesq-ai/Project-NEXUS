@@ -12,8 +12,9 @@ import { useTranslation } from 'react-i18next';
 import AppTopBar from '@/components/ui/AppTopBar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplaceCouponEditRoute() {
+function MarketplaceCouponEditRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceCouponEditRedirect />
@@ -45,3 +46,5 @@ function MarketplaceCouponEditRedirect() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(MarketplaceCouponEditRoute, 'marketplace-coupon-edit');

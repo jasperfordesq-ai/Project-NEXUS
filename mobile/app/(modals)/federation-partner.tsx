@@ -34,6 +34,7 @@ import Avatar from '@/components/ui/Avatar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -218,7 +219,7 @@ function EmptyPartnerState({
   );
 }
 
-export default function FederationPartnerScreen() {
+function FederationPartnerScreen() {
   const { t } = useTranslation(['federation', 'common']);
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const primary = usePrimaryColor();
@@ -423,3 +424,5 @@ export default function FederationPartnerScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(FederationPartnerScreen, 'federation-partner');

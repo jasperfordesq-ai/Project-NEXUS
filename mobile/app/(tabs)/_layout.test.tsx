@@ -45,6 +45,11 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
+let mockCapabilities: { features: Record<string, boolean>; modules: Record<string, boolean> } | null = null;
+jest.mock('@/lib/context/TenantContext', () => ({
+  useOptionalTenantCapabilities: () => mockCapabilities,
+}));
+
 jest.mock('@/lib/context/RealtimeContext', () => ({
   useRealtimeContext: () => ({
     unreadMessages: 0,
@@ -58,6 +63,7 @@ describe('TabsLayout', () => {
   beforeEach(() => {
     tabScreens.length = 0;
     mockPathname = '/home';
+    mockCapabilities = null;
     jest.clearAllMocks();
   });
 
@@ -105,5 +111,29 @@ describe('TabsLayout', () => {
 
     expect(preventDefault).toHaveBeenCalled();
     expect(mockRouterPush).toHaveBeenCalledWith('/(modals)/quick-create');
+  });
+
+  /**
+   * 🔴 React hides the Messages tab when the `messages` module is off and the Listings tab
+   * when `listings` is off. The native bar showed both regardless (audit 2026-09-07).
+   */
+  it('removes a tab whose module the community has switched off', () => {
+    mockCapabilities = { features: {}, modules: { messages: false, listings: true, dashboard: true } };
+
+    render(<TabsLayout />);
+
+    expect(tabScreens.find((screen) => screen.name === 'messages')?.options?.href).toBeNull();
+    expect(tabScreens.find((screen) => screen.name === 'exchanges')?.options).not.toHaveProperty('href');
+    expect(tabScreens.find((screen) => screen.name === 'home')?.options).not.toHaveProperty('href');
+  });
+
+  it('keeps every tab while the community configuration is unknown', () => {
+    mockCapabilities = null;
+
+    render(<TabsLayout />);
+
+    for (const name of ['home', 'exchanges', 'messages', 'profile']) {
+      expect(tabScreens.find((screen) => screen.name === name)?.options).not.toHaveProperty('href');
+    }
   });
 });

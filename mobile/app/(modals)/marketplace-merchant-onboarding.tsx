@@ -33,6 +33,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type Step = 1 | 2 | 3 | 4;
 type SellerType = 'private' | 'business';
@@ -54,7 +55,7 @@ function defaultOpeningHours(): Record<DayKey, DayHours | null> {
   };
 }
 
-export default function MarketplaceMerchantOnboardingRoute() {
+function MarketplaceMerchantOnboardingRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceMerchantOnboardingScreen />
@@ -544,3 +545,5 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
     </Surface>
   );
 }
+
+export default withRouteGate(MarketplaceMerchantOnboardingRoute, 'marketplace-merchant-onboarding');

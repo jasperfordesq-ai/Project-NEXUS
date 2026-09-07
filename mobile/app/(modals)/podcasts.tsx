@@ -22,8 +22,9 @@ import { getPodcastShows, type PodcastShow } from '@/lib/api/podcasts';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function PodcastsScreen() {
+function PodcastsScreen() {
   const { t } = useTranslation(['podcasts', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -64,3 +65,5 @@ export default function PodcastsScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(PodcastsScreen, 'podcasts');

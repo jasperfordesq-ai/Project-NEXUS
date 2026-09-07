@@ -22,6 +22,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type Step = 0 | 1 | 2 | 3;
 
@@ -53,7 +54,7 @@ const communicationKeys: (keyof FederationSettings)[] = [
   'email_notifications',
 ];
 
-export default function FederationOnboardingRoute() {
+function FederationOnboardingRoute() {
   return (
     <ModalErrorBoundary>
       <FederationOnboardingScreen />
@@ -268,3 +269,5 @@ function SettingsList({
     </HeroCard>
   );
 }
+
+export default withRouteGate(FederationOnboardingRoute, 'federation-onboarding');

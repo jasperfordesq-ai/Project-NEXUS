@@ -17,12 +17,13 @@ import { getMarketplaceOrder } from '@/lib/api/marketplace';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export default function MarketplaceOrderRoute() {
+function MarketplaceOrderRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceOrderResolver />
@@ -84,3 +85,5 @@ function MarketplaceOrderResolver() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(MarketplaceOrderRoute, 'marketplace-order');

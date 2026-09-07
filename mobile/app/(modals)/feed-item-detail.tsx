@@ -21,6 +21,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import FeedItem, { type FeedReactorsTarget } from '@/components/FeedItem';
 import { useTranslation } from 'react-i18next';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const SUPPORTED_TYPES = new Set<FeedType>([
   'post',
@@ -160,6 +161,8 @@ function FeedItemDetailScreenInner() {
   );
 }
 
-export default function FeedItemDetailScreen() {
+function FeedItemDetailScreen() {
   return <FeedItemDetailScreenInner />;
 }
+
+export default withRouteGate(FeedItemDetailScreen, 'feed-item-detail');

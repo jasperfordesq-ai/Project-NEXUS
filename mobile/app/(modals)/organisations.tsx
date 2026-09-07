@@ -29,6 +29,7 @@ import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import SearchInput from '@/components/ui/SearchInput';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -343,7 +344,7 @@ function OrganisationCardSkeleton() {
   );
 }
 
-export default function OrganisationsScreen() {
+function OrganisationsScreen() {
   const { t } = useTranslation(['organisations', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -478,3 +479,5 @@ export default function OrganisationsScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(OrganisationsScreen, 'organisations');

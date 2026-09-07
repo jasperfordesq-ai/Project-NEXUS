@@ -27,6 +27,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { withAlpha } from '@/lib/utils/color';
 import { eventIsoToLocalInput, eventLocalInputToIso, localEventTimeZone } from '@/lib/utils/eventDateTime';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ChallengeCreateStatus = Extract<IdeationStatus, 'draft' | 'open'>;
 
@@ -52,7 +53,7 @@ function deadlineIsoToInput(value: string | null | undefined): string {
   return eventIsoToLocalInput(value, DEADLINE_TIME_ZONE).replace('T', ' ');
 }
 
-export default function NewChallengeRoute() {
+function NewChallengeRoute() {
   return (
     <ModalErrorBoundary>
       <NewChallengeScreen />
@@ -393,3 +394,5 @@ function NewChallengeScreen() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(NewChallengeRoute, 'new-challenge');

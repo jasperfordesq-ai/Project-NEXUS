@@ -85,6 +85,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SearchInput from '@/components/ui/SearchInput';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
 
@@ -1773,7 +1774,7 @@ function HoursPanel({
   );
 }
 
-export default function VolunteeringScreen() {
+function VolunteeringScreen() {
   return (
     <ModalErrorBoundary>
       <VolunteeringScreenInner />
@@ -2197,3 +2198,5 @@ function VolunteeringScreenInner() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(VolunteeringScreen, 'volunteering');

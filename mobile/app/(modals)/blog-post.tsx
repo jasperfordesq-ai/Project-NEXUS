@@ -33,6 +33,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import CommentSheet from '@/components/comments/CommentSheet';
+import { withRouteGate } from '@/components/withRouteGate';
 
 
 function ActionPill({
@@ -71,7 +72,7 @@ function ActionPill({
   );
 }
 
-export default function BlogPostScreen() {
+function BlogPostScreen() {
   const { t } = useTranslation(['blog', 'home', 'exchanges', 'common']);
   const { id, openComments, commentId } = useLocalSearchParams<{ id: string; openComments?: string; commentId?: string }>();
   const primary = usePrimaryColor();
@@ -352,3 +353,5 @@ function stripHtml(value: string): string {
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
+
+export default withRouteGate(BlogPostScreen, 'blog-post');

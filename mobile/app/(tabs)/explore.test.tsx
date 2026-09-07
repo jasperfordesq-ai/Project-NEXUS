@@ -10,6 +10,7 @@ import { RefreshControl } from 'react-native';
 const mockRouterPush = jest.fn();
 const mockRefresh = jest.fn();
 const mockHasFeature = jest.fn<boolean, [string]>(() => true);
+const mockHasModule = jest.fn<boolean, [string]>(() => true);
 const mockUseApi = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -66,7 +67,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ hasFeature: (feature: string) => mockHasFeature(feature) }),
+  useTenant: () => ({ hasFeature: (feature: string) => mockHasFeature(feature), hasModule: (module: string) => mockHasModule(module) }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({

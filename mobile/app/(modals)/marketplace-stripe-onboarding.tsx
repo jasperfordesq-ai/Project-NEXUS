@@ -30,8 +30,9 @@ import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplaceStripeOnboardingRoute() {
+function MarketplaceStripeOnboardingRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceStripeOnboardingScreen />
@@ -339,3 +340,5 @@ function ChecklistRow({ icon, title, subtitle }: { icon: React.ComponentProps<ty
     </Surface>
   );
 }
+
+export default withRouteGate(MarketplaceStripeOnboardingRoute, 'marketplace-stripe-onboarding');

@@ -22,10 +22,11 @@ import { getCourses, getMyCourses, type Course, type CourseEnrollment } from '@/
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type CourseTab = 'browse' | 'learning';
 
-export default function CoursesScreen() {
+function CoursesScreen() {
   const { tab } = useLocalSearchParams<{ tab?: string }>();
   const { t } = useTranslation(['courses', 'common']);
   const primary = usePrimaryColor();
@@ -150,3 +151,5 @@ export default function CoursesScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(CoursesScreen, 'courses');

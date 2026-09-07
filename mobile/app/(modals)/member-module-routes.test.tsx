@@ -24,7 +24,9 @@ describe('adult member module route wiring', () => {
   it.each(Object.entries(routeContracts))('%s keeps its API and resilient native screen boundary', (filename, tokens) => {
     const source = fs.readFileSync(path.join(__dirname, filename), 'utf8');
 
-    expect(source).toMatch(/export default function /);
+    // A module screen's default export is wrapped by `withRouteGate` (see
+    // lib/navigation/routeRequirements.ts); the screen function itself stays in the file.
+    expect(source).toMatch(/export default (?:function |withRouteGate\()/);
     for (const token of tokens) expect(source).toContain(token);
   });
 });

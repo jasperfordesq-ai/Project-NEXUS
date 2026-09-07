@@ -20,13 +20,14 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import FeedItem, { type FeedReactorsTarget } from '@/components/FeedItem';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function normalizeTag(value: string | string[] | undefined): string {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw ? decodeURIComponent(raw).replace(/^#/, '').trim() : '';
 }
 
-export default function FeedHashtagScreen() {
+function FeedHashtagScreen() {
   const { t } = useTranslation(['home', 'common']);
   const params = useLocalSearchParams<{ tag?: string }>();
   const tag = useMemo(() => normalizeTag(params.tag), [params.tag]);
@@ -171,3 +172,5 @@ export default function FeedHashtagScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(FeedHashtagScreen, 'feed-hashtag');

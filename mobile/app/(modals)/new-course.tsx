@@ -54,6 +54,7 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { parseDecimalInput } from '@/lib/utils/decimal';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const LEVELS: CourseLevel[] = ['beginner', 'intermediate', 'advanced'];
 /** `group` visibility is set by the group that owns a course, never here — as on the web. */
@@ -61,7 +62,7 @@ const VISIBILITIES: Exclude<CourseVisibility, 'group'>[] = ['public', 'members']
 const ENROLLMENT_TYPES: CourseEnrollmentType[] = ['self_paced', 'cohort'];
 const NO_CATEGORY = 'none';
 
-export default function NewCourseRoute() {
+function NewCourseRoute() {
   /*
     Gated like the React route (`<FeatureGate feature="courses">`). Hiding the "+"
     menu entry was never a gate: a deep link, a notification or a shared URL all
@@ -449,3 +450,5 @@ function NewCourseScreen() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(NewCourseRoute, 'new-course');

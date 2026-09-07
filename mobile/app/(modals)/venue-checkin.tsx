@@ -14,10 +14,11 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { recordPartnerVenueVisit, type PartnerVenueVisitResult } from '@/lib/api/venues';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type State = 'confirm' | 'submitting' | 'choose' | 'recorded' | 'already' | 'error';
 
-export default function VenueCheckInScreen() {
+function VenueCheckInScreen() {
   const { t } = useTranslation(['venues', 'common']);
   const { token = '' } = useLocalSearchParams<{ token?: string }>();
   const theme = useTheme();
@@ -45,3 +46,5 @@ export default function VenueCheckInScreen() {
     {state === 'error' ? <Text accessibilityRole="alert" className="text-center text-danger">{error}</Text> : null}
   </HeroCard.Body></HeroCard></ScrollView></SafeAreaView></ModalErrorBoundary>;
 }
+
+export default withRouteGate(VenueCheckInScreen, 'venue-checkin');

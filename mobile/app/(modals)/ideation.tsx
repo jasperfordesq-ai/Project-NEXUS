@@ -29,12 +29,13 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type FilterStatus = 'all' | IdeationStatus;
 
 const STATUS_FILTERS: FilterStatus[] = ['all', 'open', 'voting', 'evaluating', 'closed'];
 
-export default function IdeationScreen() {
+function IdeationScreen() {
   const { t } = useTranslation(['ideation', 'common']);
   const { hasFeature } = useTenant();
   const primary = usePrimaryColor();
@@ -338,3 +339,5 @@ function truncateText(value: string, maxLength: number): string {
   if (value.length <= maxLength) return value;
   return `${value.slice(0, maxLength).trimEnd()}...`;
 }
+
+export default withRouteGate(IdeationScreen, 'ideation');

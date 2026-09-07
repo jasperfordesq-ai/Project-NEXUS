@@ -54,6 +54,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type Tab = 'badges' | 'challenges' | 'journeys' | 'leaderboard' | 'score' | 'shop';
 type LeaderboardPeriod = 'weekly' | 'monthly' | 'all_time';
@@ -1120,7 +1121,7 @@ function SegmentButton({
   );
 }
 
-export default function GamificationScreen() {
+function GamificationScreen() {
   const { t } = useTranslation(['gamification', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -1550,3 +1551,5 @@ export default function GamificationScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(GamificationScreen, 'gamification');

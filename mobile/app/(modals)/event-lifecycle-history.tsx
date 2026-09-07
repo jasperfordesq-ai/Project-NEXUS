@@ -20,6 +20,7 @@ import {
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function appendUnique(
   current: MobileEventLifecycleHistoryEntry[],
@@ -29,7 +30,7 @@ function appendUnique(
   return [...current, ...incoming.filter((entry) => !seen.has(entry.id))];
 }
 
-export default function EventLifecycleHistoryScreen() {
+function EventLifecycleHistoryScreen() {
   return (
     <ModalErrorBoundary>
       <EventLifecycleHistoryScreenInner />
@@ -263,3 +264,5 @@ function EventLifecycleHistoryScreenInner() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(EventLifecycleHistoryScreen, 'event-lifecycle-history');

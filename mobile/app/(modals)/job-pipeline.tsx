@@ -26,11 +26,12 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected'] as const;
 type PipelineStatus = (typeof PIPELINE_COLUMNS)[number];
 
-export default function JobPipelineScreen() {
+function JobPipelineScreen() {
   const { t } = useTranslation(['jobs', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
@@ -304,3 +305,5 @@ function normalizeStatus(status: JobOwnerApplication['status']): PipelineStatus 
   if (PIPELINE_COLUMNS.includes(status as PipelineStatus)) return status as PipelineStatus;
   return 'pending';
 }
+
+export default withRouteGate(JobPipelineScreen, 'job-pipeline');

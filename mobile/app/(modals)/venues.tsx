@@ -19,8 +19,9 @@ import { getPartnerVenues, type PartnerVenue } from '@/lib/api/venues';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function VenuesScreen() {
+function VenuesScreen() {
   const { t } = useTranslation(['venues', 'common']);
   const { hasFeature } = useTenant();
   const primary = usePrimaryColor();
@@ -79,3 +80,5 @@ function VenueCard({ venue }: { venue: PartnerVenue }) {
   );
   return venue.website ? <NativePressable accessibilityLabel={`${t('directory.visit_website')}: ${venue.name}`} onPress={() => void Linking.openURL(venue.website!)} feedback="highlight">{content}</NativePressable> : content;
 }
+
+export default withRouteGate(VenuesScreen, 'venues');

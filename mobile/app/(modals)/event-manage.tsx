@@ -18,6 +18,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import { getEvent } from '@/lib/api/events';
 import { useApi } from '@/lib/hooks/useApi';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ManagementSection = 'overview' | 'people' | 'check-in' | 'agenda' | 'safety' | 'analytics' | 'tickets' | 'communications' | 'registration' | 'templates' | 'series-definitions' | 'team' | 'federation';
 
@@ -43,7 +44,7 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
   }
 }
 
-export default function EventManageScreen() {
+function EventManageScreen() {
   const { t } = useTranslation(['events', 'common', 'event_templates', 'event_tickets', 'event_communications', 'event_recurrence_blueprints']);
   const { id, section } = useLocalSearchParams<{ id?: string; section?: string }>();
   const eventId = Number(id ?? 0);
@@ -99,3 +100,5 @@ export default function EventManageScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(EventManageScreen, 'event-manage');

@@ -4,9 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import type { TenantConfig } from '@/lib/api/tenant';
+import { requirementForRoute, routeNameFromHref, type RouteRequirement } from '@/lib/navigation/routeRequirements';
 
 type CapabilitySnapshot = Pick<TenantConfig, 'features' | 'modules'>;
-type Requirement = { features?: string[]; modules?: string[] };
+type Requirement = RouteRequirement;
 
 let current: CapabilitySnapshot | null = null;
 
@@ -35,6 +36,15 @@ function requirementForHref(href: string): Requirement | null {
     const type = new URLSearchParams(query).get('type');
     const feature = type === 'poll' ? 'polls' : type === 'resource' ? 'resources' : null;
     return feature ? { features: [feature], modules: ['feed'] } : { modules: ['feed'] };
+  }
+  // A native href names its screen, and the screen's requirement is recorded once in
+  // `routeRequirements.ts` — the same table `withRouteGate` refuses with. Consulting it
+  // first means a deep link can never be let through to a screen that will then refuse.
+  // The patterns below remain for web-shaped paths that have not been mapped yet.
+  const routeName = routeNameFromHref(path);
+  if (routeName) {
+    const fromTable = requirementForRoute(routeName);
+    if (fromTable) return fromTable;
   }
   if (/\/(?:group-exchange|group-exchanges)/.test(path)) return { features: ['groups', 'group_exchanges'] };
   if (/\/(?:group|groups)/.test(path)) return { features: ['groups'] };

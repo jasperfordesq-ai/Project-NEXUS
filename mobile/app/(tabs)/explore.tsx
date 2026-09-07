@@ -36,6 +36,8 @@ import EmptyState from '@/components/ui/EmptyState';
 import NativePressable from '@/components/ui/NativePressable';
 import OfflineBanner from '@/components/OfflineBanner';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
+import { formatDecimal } from '@/lib/utils/decimal';
 
 type ExploreTab = 'all' | 'forYou' | 'listings' | 'people' | 'events' | 'groups';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -50,18 +52,20 @@ interface SectionMeta {
   tone: string;
   tab: ExploreTab;
   featureGate?: string;
+  /** Core module the section's content comes from; hidden when the community has it off. */
+  moduleGate?: string;
   seeAllRoute?: Href;
 }
 
 const SECTION_META: SectionMeta[] = [
-  { key: 'recommended', titleKey: 'sections.recommended.title', subtitleKey: 'sections.recommended.subtitle', icon: 'sparkles-outline', tone: '#8b5cf6', tab: 'forYou', seeAllRoute: '/(modals)/matches' as Href },
-  { key: 'popularListings', titleKey: 'sections.popularListings.title', subtitleKey: 'sections.popularListings.subtitle', icon: 'storefront-outline', tone: '#0f766e', tab: 'listings', seeAllRoute: '/(tabs)/exchanges' as Href },
-  { key: 'nearYou', titleKey: 'sections.nearYou.title', subtitleKey: 'sections.nearYou.subtitle', icon: 'navigate-outline', tone: '#14b8a6', tab: 'listings', seeAllRoute: '/(tabs)/exchanges' as Href },
+  { key: 'recommended', titleKey: 'sections.recommended.title', subtitleKey: 'sections.recommended.subtitle', icon: 'sparkles-outline', tone: '#8b5cf6', tab: 'forYou', moduleGate: 'listings', seeAllRoute: '/(modals)/matches' as Href },
+  { key: 'popularListings', titleKey: 'sections.popularListings.title', subtitleKey: 'sections.popularListings.subtitle', icon: 'storefront-outline', tone: '#0f766e', tab: 'listings', moduleGate: 'listings', seeAllRoute: '/(tabs)/exchanges' as Href },
+  { key: 'nearYou', titleKey: 'sections.nearYou.title', subtitleKey: 'sections.nearYou.subtitle', icon: 'navigate-outline', tone: '#14b8a6', tab: 'listings', moduleGate: 'listings', seeAllRoute: '/(tabs)/exchanges' as Href },
   { key: 'events', titleKey: 'sections.events.title', subtitleKey: 'sections.events.subtitle', icon: 'calendar-outline', tone: '#f43f5e', tab: 'events', featureGate: 'events', seeAllRoute: '/(tabs)/events' as Href },
   { key: 'groups', titleKey: 'sections.groups.title', subtitleKey: 'sections.groups.subtitle', icon: 'people-outline', tone: '#06b6d4', tab: 'groups', featureGate: 'groups', seeAllRoute: '/(tabs)/groups' as Href },
   { key: 'people', titleKey: 'sections.people.title', subtitleKey: 'sections.people.subtitle', icon: 'person-add-outline', tone: '#6366f1', tab: 'people', featureGate: 'connections', seeAllRoute: '/(tabs)/members' as Href },
   { key: 'contributors', titleKey: 'sections.contributors.title', subtitleKey: 'sections.contributors.subtitle', icon: 'trophy-outline', tone: '#f59e0b', tab: 'people', featureGate: 'gamification', seeAllRoute: '/(modals)/gamification' as Href },
-  { key: 'posts', titleKey: 'sections.posts.title', subtitleKey: 'sections.posts.subtitle', icon: 'chatbubble-ellipses-outline', tone: '#22c55e', tab: 'forYou', seeAllRoute: '/(tabs)/home' as Href },
+  { key: 'posts', titleKey: 'sections.posts.title', subtitleKey: 'sections.posts.subtitle', icon: 'chatbubble-ellipses-outline', tone: '#22c55e', tab: 'forYou', moduleGate: 'feed', seeAllRoute: '/(tabs)/home' as Href },
   { key: 'volunteering', titleKey: 'sections.volunteering.title', subtitleKey: 'sections.volunteering.subtitle', icon: 'heart-outline', tone: '#e11d48', tab: 'all', featureGate: 'volunteering', seeAllRoute: '/(modals)/volunteering' as Href },
   { key: 'organisations', titleKey: 'sections.organisations.title', subtitleKey: 'sections.organisations.subtitle', icon: 'business-outline', tone: '#6366f1', tab: 'all', featureGate: 'organisations', seeAllRoute: '/(modals)/organisations' as Href },
   { key: 'blog', titleKey: 'sections.blog.title', subtitleKey: 'sections.blog.subtitle', icon: 'newspaper-outline', tone: '#f97316', tab: 'all', featureGate: 'blog', seeAllRoute: '/(modals)/blog' as Href },
@@ -120,20 +124,22 @@ function formatExploreEventStart(startAt: string | null | undefined): string {
   }
 }
 
-export default function ExploreScreen() {
+function ExploreScreen() {
   const { t } = useTranslation(['explore', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const { hasFeature } = useTenant();
+  const { hasFeature, hasModule } = useTenant();
   const [activeTab, setActiveTab] = useState<ExploreTab>('all');
   const { data: response, isLoading, error, refresh } = useApi(() => getExplore(), []);
   const data = response?.data ?? null;
 
   const sections = useMemo(
     () => SECTION_META
-      .filter((section) => (!section.featureGate || hasFeature(section.featureGate)) && countItems(data, section.key) > 0)
+      .filter((section) => (!section.featureGate || hasFeature(section.featureGate))
+        && (!section.moduleGate || hasModule(section.moduleGate))
+        && countItems(data, section.key) > 0)
       .filter((section) => visibleForTab(section, activeTab)),
-    [activeTab, data, hasFeature],
+    [activeTab, data, hasFeature, hasModule],
   );
 
   const stats = data?.community_stats;
@@ -220,7 +226,7 @@ function StatCard({ icon, label, value, suffix = '', tone, theme }: { icon: Ioni
           <Ionicons name={icon} size={17} color={tone} />
         </View>
         <Text className="text-xl font-bold" style={{ color: theme.text }}>
-          {typeof value === 'number' ? `${value}${suffix}` : '—'}
+          {typeof value === 'number' ? `${formatDecimal(value)}${suffix}` : '—'}
         </Text>
         <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>{label}</Text>
       </HeroCard.Body>
@@ -450,3 +456,5 @@ function getItemRoute(sectionKey: string, item: Record<string, unknown> & { id: 
       return null;
   }
 }
+
+export default withRouteGate(ExploreScreen, 'explore');

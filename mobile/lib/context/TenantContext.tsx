@@ -311,3 +311,21 @@ export function useOptionalPrimaryColor(): string {
   const ctx = useContext(TenantContext);
   return ctx?.tenant?.branding.primary_color ?? FALLBACK_PRIMARY;
 }
+
+/**
+ * The community's feature/module switches, or `null` when they are not known yet.
+ *
+ * 🔴 Also deliberately non-throwing, and deliberately NOT built on `hasFeature`. It exists
+ * for `withRouteGate`, which wraps every screen's default export — so it runs inside all
+ * ~145 screen tests, 130 of which mock `@/lib/hooks/useTenant` with only the fields their
+ * screen reads. Reading the context directly means a screen test needs no new mock, and a
+ * render with no provider (or a provider that has not loaded) reports "unknown", which the
+ * gate treats as allowed. Refusing on unknown would turn a slow cold start into "every
+ * module is switched off".
+ */
+export function useOptionalTenantCapabilities(): Pick<TenantConfig, 'features' | 'modules'> | null {
+  const ctx = useContext(TenantContext);
+  const tenant = ctx?.tenant;
+  if (!tenant) return null;
+  return { features: tenant.features ?? {}, modules: tenant.modules ?? {} };
+}

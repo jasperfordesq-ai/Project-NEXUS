@@ -19,8 +19,9 @@ import { getIdeationCampaigns } from '@/lib/api/ideation';
 import { useApi } from '@/lib/hooks/useApi';
 import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function IdeationCampaignsScreen() {
+function IdeationCampaignsScreen() {
   const { t } = useTranslation(['ideation', 'common']);
   const { hasFeature } = useTenant();
   const theme = useTheme();
@@ -38,3 +39,5 @@ export default function IdeationCampaignsScreen() {
     </ScrollView>
   </SafeAreaView></ModalErrorBoundary>;
 }
+
+export default withRouteGate(IdeationCampaignsScreen, 'ideation-campaigns');

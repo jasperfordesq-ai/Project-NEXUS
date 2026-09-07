@@ -58,6 +58,7 @@ import AccentIcon from '@/components/ui/AccentIcon';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
+import { withRouteGate } from '@/components/withRouteGate';
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
 
 const serviceTypes: ServiceType[] = ['hybrid', 'physical_only', 'remote_only', 'location_dependent'];
@@ -73,7 +74,7 @@ interface FieldErrors {
   hours?: string;
 }
 
-export default function EditExchangeModal() {
+function EditExchangeModal() {
   return (
     <ModalErrorBoundary>
       <EditExchangeModalInner />
@@ -815,3 +816,5 @@ function getProfileLocation(user: unknown): string {
   }
   return '';
 }
+
+export default withRouteGate(EditExchangeModal, 'edit-exchange');

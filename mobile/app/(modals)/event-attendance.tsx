@@ -31,6 +31,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import EventOfflineCheckinCard from '@/components/events/EventOfflineCheckinCard';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type AttendanceFilter = 'all' | 'not_checked_in' | 'checked_in' | 'checked_out' | 'no_show';
 
@@ -46,7 +47,7 @@ function newMutationKey(eventId: number, memberId: number, action: EventAttendan
   return `mobile-attendance-${eventId}-${memberId}-${action}-v${version}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export default function EventAttendanceScreen() {
+function EventAttendanceScreen() {
   return (
     <ModalErrorBoundary>
       <EventAttendanceScreenInner />
@@ -418,3 +419,5 @@ function AttendancePersonCard({
     </HeroCard>
   );
 }
+
+export default withRouteGate(EventAttendanceScreen, 'event-attendance');

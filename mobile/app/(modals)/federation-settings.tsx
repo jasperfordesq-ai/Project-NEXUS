@@ -4,8 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import FederationDirectoryScreen from '@/components/federation/FederationDirectoryScreen';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function FederationSettingsScreen() {
+function FederationSettingsScreen() {
   return <FederationDirectoryScreen mode="settings" />;
 }
 
+export default withRouteGate(FederationSettingsScreen, 'federation-settings');

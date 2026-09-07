@@ -29,10 +29,11 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const RADIUS_OPTIONS = ['5', '10', '25', '50', '100'];
 
-export default function MarketplaceMapRoute() {
+function MarketplaceMapRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceMapScreen />
@@ -474,3 +475,5 @@ function parseCoordinate(value: string): number | null {
   const coordinate = Number(value);
   return Number.isFinite(coordinate) ? coordinate : null;
 }
+
+export default withRouteGate(MarketplaceMapRoute, 'marketplace-map');

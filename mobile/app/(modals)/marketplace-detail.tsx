@@ -57,8 +57,9 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplaceDetailRoute() {
+function MarketplaceDetailRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceDetailScreen />
@@ -1115,3 +1116,5 @@ function FormInput({
     </View>
   );
 }
+
+export default withRouteGate(MarketplaceDetailRoute, 'marketplace-detail');

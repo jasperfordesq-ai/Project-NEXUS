@@ -37,13 +37,14 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ListingTab = 'active' | 'draft' | 'sold' | 'expired';
 
 const LISTING_TABS: ListingTab[] = ['active', 'draft', 'sold', 'expired'];
 const ONBOARDING_DISMISS_KEY = 'nx_merchant_onboarding_dismissed';
 
-export default function MarketplaceMyListingsRoute() {
+function MarketplaceMyListingsRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceMyListingsScreen />
@@ -370,3 +371,5 @@ function listingTabCount(stats: MarketplaceDashboard, tab: ListingTab): number {
   if (tab === 'sold') return stats.sold_listings ?? 0;
   return stats.expired_listings ?? 0;
 }
+
+export default withRouteGate(MarketplaceMyListingsRoute, 'marketplace-my-listings');

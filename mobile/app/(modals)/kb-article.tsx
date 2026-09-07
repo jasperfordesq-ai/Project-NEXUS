@@ -17,8 +17,9 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function KbArticleScreen() {
+function KbArticleScreen() {
   const { t } = useTranslation(['resources', 'common']);
   const params = useLocalSearchParams<{ id?: string }>();
   const id = Number(params.id ?? 0);
@@ -82,3 +83,5 @@ export default function KbArticleScreen() {
 function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
+
+export default withRouteGate(KbArticleScreen, 'kb-article');

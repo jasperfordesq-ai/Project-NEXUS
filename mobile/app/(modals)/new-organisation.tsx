@@ -24,6 +24,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type FormField = 'name' | 'description' | 'contact_email' | 'website' | 'terms';
 type FormErrors = Partial<Record<FormField, string>>;
@@ -50,7 +51,7 @@ function isValidWebsite(value: string) {
   return value.trim() === '' || /^https?:\/\/.+/i.test(value.trim());
 }
 
-export default function NewOrganisationScreen() {
+function NewOrganisationScreen() {
   return (
     <ModalErrorBoundary>
       <NewOrganisationInner />
@@ -343,3 +344,5 @@ function TermsCard({
     </Surface>
   );
 }
+
+export default withRouteGate(NewOrganisationScreen, 'new-organisation');

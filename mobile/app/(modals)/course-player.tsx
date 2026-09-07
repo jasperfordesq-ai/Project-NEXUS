@@ -47,8 +47,9 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function CoursePlayerScreen() {
+function CoursePlayerScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const courseId = Number(id);
   const { t } = useTranslation(['courses', 'common']);
@@ -270,3 +271,5 @@ export default function CoursePlayerScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(CoursePlayerScreen, 'course-player');

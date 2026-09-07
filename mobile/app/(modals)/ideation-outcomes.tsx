@@ -19,8 +19,9 @@ import { getIdeationOutcomes } from '@/lib/api/ideation';
 import { useApi } from '@/lib/hooks/useApi';
 import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function IdeationOutcomesScreen() {
+function IdeationOutcomesScreen() {
   const { t } = useTranslation(['ideation', 'common']);
   const { hasFeature } = useTenant();
   const theme = useTheme();
@@ -43,3 +44,5 @@ export default function IdeationOutcomesScreen() {
     </ScrollView>
   </SafeAreaView></ModalErrorBoundary>;
 }
+
+export default withRouteGate(IdeationOutcomesScreen, 'ideation-outcomes');

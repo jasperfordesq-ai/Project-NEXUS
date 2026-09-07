@@ -21,8 +21,9 @@ import { getPartnerVenuePass, getPartnerVenueVisits, rotatePartnerVenuePass } fr
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTenant } from '@/lib/hooks/useTenant';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function VenuePassScreen() {
+function VenuePassScreen() {
   const { t } = useTranslation(['venues', 'common']);
   const { hasFeature } = useTenant();
   const { displayName } = useAuth();
@@ -89,3 +90,5 @@ export default function VenuePassScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(VenuePassScreen, 'venue-pass');

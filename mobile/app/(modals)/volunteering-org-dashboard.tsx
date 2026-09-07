@@ -45,6 +45,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useParamTab } from '@/lib/hooks/useParamTab';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type OrgTab = 'overview' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -639,10 +640,12 @@ function VolunteeringOrgDashboardInner() {
   );
 }
 
-export default function VolunteeringOrgDashboard() {
+function VolunteeringOrgDashboard() {
   return (
     <ModalErrorBoundary>
       <VolunteeringOrgDashboardInner />
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(VolunteeringOrgDashboard, 'volunteering-org-dashboard');

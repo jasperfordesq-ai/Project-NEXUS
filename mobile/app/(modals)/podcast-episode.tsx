@@ -22,11 +22,12 @@ import { getPodcastEpisode, reportPodcastEpisode, togglePodcastReaction } from '
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ReportReason = 'safety' | 'spam' | 'rights' | 'other';
 const REPORT_REASONS: ReportReason[] = ['safety', 'spam', 'rights', 'other'];
 
-export default function PodcastEpisodeScreen() {
+function PodcastEpisodeScreen() {
   const { showSlug, episodeSlug } = useLocalSearchParams<{ showSlug?: string; episodeSlug?: string }>();
   const { t } = useTranslation(['podcasts', 'common']);
   const primary = usePrimaryColor();
@@ -84,3 +85,5 @@ export default function PodcastEpisodeScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(PodcastEpisodeScreen, 'podcast-episode');

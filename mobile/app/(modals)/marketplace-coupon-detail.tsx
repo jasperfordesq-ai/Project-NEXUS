@@ -32,8 +32,9 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatLegacyCouponMinorAmount } from '@/lib/utils/marketplaceCurrency';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
-export default function MarketplaceCouponDetailRoute() {
+function MarketplaceCouponDetailRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceCouponDetailScreen />
@@ -250,3 +251,5 @@ function couponTerms(
   }
   return terms;
 }
+
+export default withRouteGate(MarketplaceCouponDetailRoute, 'marketplace-coupon-detail');

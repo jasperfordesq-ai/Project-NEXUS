@@ -29,6 +29,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import * as Haptics from '@/lib/haptics';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type Filter = 'all' | MatchSourceType;
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -71,7 +72,7 @@ const SOURCE_CONFIG: Record<MatchSourceType, { icon: IoniconName; tone: string; 
   },
 };
 
-export default function MatchesScreen() {
+function MatchesScreen() {
   const { t } = useTranslation(['profile', 'common']);
   const { show: showToast } = useAppToast();
   const primary = usePrimaryColor();
@@ -412,3 +413,5 @@ function StatTile({
     </Surface>
   );
 }
+
+export default withRouteGate(MatchesScreen, 'matches');

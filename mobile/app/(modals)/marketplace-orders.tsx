@@ -48,6 +48,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type OrderMode = 'purchases' | 'sales';
 type OrderStatusTab = 'all' | 'active' | 'completed' | 'cancelled';
@@ -121,7 +122,7 @@ function orderHasRating(item: MarketplaceOrder, role: 'buyer' | 'seller'): boole
   return item.ratings?.some((rating) => rating.rater_role === role) ?? false;
 }
 
-export default function MarketplaceOrdersRoute() {
+function MarketplaceOrdersRoute() {
   return (
     <ModalErrorBoundary>
       <MarketplaceOrdersScreen />
@@ -977,3 +978,5 @@ function OrderInput({
     </View>
   );
 }
+
+export default withRouteGate(MarketplaceOrdersRoute, 'marketplace-orders');

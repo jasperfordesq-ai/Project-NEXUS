@@ -30,6 +30,7 @@ import Avatar from '@/components/ui/Avatar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ConnectionTab = 'accepted' | 'pending_received' | 'pending_sent';
 
@@ -48,7 +49,7 @@ function formatDate(value?: string | null) {
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function FederationConnectionsRoute() {
+function FederationConnectionsRoute() {
   return (
     <ModalErrorBoundary>
       <FederationConnectionsScreen />
@@ -404,3 +405,5 @@ function ActionPill({
     </HeroButton>
   );
 }
+
+export default withRouteGate(FederationConnectionsRoute, 'federation-connections');

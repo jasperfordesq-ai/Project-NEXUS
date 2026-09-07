@@ -21,6 +21,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const APPLICATION_STATUSES = new Set([
   'applied',
@@ -34,7 +35,7 @@ const APPLICATION_STATUSES = new Set([
   'withdrawn',
 ]);
 
-export default function JobAnalyticsScreen() {
+function JobAnalyticsScreen() {
   const { t } = useTranslation(['jobs', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
@@ -448,3 +449,5 @@ function formatShortDate(value: string) {
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
 }
+
+export default withRouteGate(JobAnalyticsScreen, 'job-analytics');

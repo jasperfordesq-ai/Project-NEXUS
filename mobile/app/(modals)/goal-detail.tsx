@@ -40,6 +40,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -106,7 +107,7 @@ function InsightTile({
   );
 }
 
-export default function GoalDetailScreen() {
+function GoalDetailScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const goalId = Number(Array.isArray(params.id) ? params.id[0] : params.id);
   const { t } = useTranslation(['goals', 'common']);
@@ -407,3 +408,5 @@ export default function GoalDetailScreen() {
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(GoalDetailScreen, 'goal-detail');
