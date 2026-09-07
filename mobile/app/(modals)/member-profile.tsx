@@ -219,8 +219,8 @@ function MemberProfileScreenInner() {
         setConnId(res.data.connection_id);
       }
       setConnStatus('pending_sent');
-    } catch {
-      showToast({ title: t('profile.connectionError'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('profile.connectionError'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setConnActionLoading(false);
     }
@@ -237,8 +237,8 @@ function MemberProfileScreenInner() {
         await acceptConnection(connId);
       }
       setConnStatus('connected');
-    } catch {
-      showToast({ title: t('profile.connectionError'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('profile.connectionError'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setConnActionLoading(false);
     }
@@ -256,8 +256,8 @@ function MemberProfileScreenInner() {
       }
       setConnStatus('none');
       setConnId(null);
-    } catch {
-      showToast({ title: t('profile.connectionError'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('profile.connectionError'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setConnActionLoading(false);
     }
@@ -282,8 +282,8 @@ function MemberProfileScreenInner() {
           }
           setConnStatus('none');
           setConnId(null);
-        } catch {
-          showToast({ title: t('profile.connectionError'), variant: 'danger' });
+        } catch (error) {
+          showToast({ title: t('profile.connectionError'), description: describeApiError(error, ''), variant: 'danger' });
         } finally {
           setConnActionLoading(false);
         }

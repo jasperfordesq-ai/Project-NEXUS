@@ -18,6 +18,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { getPodcastShow, togglePodcastSubscription, type PodcastEpisode } from '@/lib/api/podcasts';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -39,8 +40,8 @@ function PodcastShowScreen() {
       const result = await togglePodcastSubscription(state.data.id);
       setSubscribed(result.subscribed);
       showToast({ title: t(result.subscribed ? 'show.subscribed' : 'show.unsubscribed'), variant: 'success' });
-    } catch {
-      showToast({ title: t('show.subscribe_failed'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('show.subscribe_failed'), description: describeApiError(error, ''), variant: 'danger' });
     } finally { setSaving(false); }
   }
 

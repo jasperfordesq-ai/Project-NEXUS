@@ -19,6 +19,7 @@ import PodcastAudioPlayer from '@/components/podcasts/PodcastAudioPlayer';
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { getPodcastEpisode, reportPodcastEpisode, togglePodcastReaction } from '@/lib/api/podcasts';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -45,8 +46,8 @@ function PodcastEpisodeScreen() {
     try {
       const result = await togglePodcastReaction(state.data.id);
       setReacted(result.active);
-    } catch {
-      showToast({ title: t('episode.reaction_failed'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('episode.reaction_failed'), description: describeApiError(error, ''), variant: 'danger' });
     } finally { setSavingReaction(false); }
   }
 
@@ -55,8 +56,8 @@ function PodcastEpisodeScreen() {
     try {
       await reportPodcastEpisode(state.data.id, reason);
       showToast({ title: t('episode.reported'), variant: 'success' });
-    } catch {
-      showToast({ title: t('episode.report_failed'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('episode.report_failed'), description: describeApiError(error, ''), variant: 'danger' });
     }
   }
 

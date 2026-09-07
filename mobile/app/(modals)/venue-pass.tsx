@@ -18,6 +18,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { getPartnerVenuePass, getPartnerVenueVisits, rotatePartnerVenuePass } from '@/lib/api/venues';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTenant } from '@/lib/hooks/useTenant';
@@ -43,8 +44,8 @@ function VenuePassScreen() {
         await rotatePartnerVenuePass();
         await pass.refresh();
         showToast({ title: t('pass.rotated'), variant: 'success' });
-      } catch {
-        showToast({ title: t('pass.rotate_failed'), variant: 'danger' });
+      } catch (error) {
+        showToast({ title: t('pass.rotate_failed'), description: describeApiError(error, ''), variant: 'danger' });
       }
     },
   });

@@ -20,6 +20,7 @@
  */
 
 import { useState } from 'react';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { View } from 'react-native';
 import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -383,8 +384,8 @@ function LessonRow({
       setDraft(next);
       onChange(next);
       showToast({ title: t('builder.lesson_saved'), variant: 'success' });
-    } catch {
-      showToast({ title: t('builder.save_error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('builder.save_error'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -415,8 +416,8 @@ function LessonRow({
       setQuestionOptions('');
       setQuestionCorrect('');
       showToast({ title: t('builder.question_added'), variant: 'success' });
-    } catch {
-      showToast({ title: t('builder.save_error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('builder.save_error'), description: describeApiError(error, ''), variant: 'danger' });
     }
   }
 
