@@ -41,7 +41,7 @@ on:
   workflow_dispatch:
     inputs:
       flow:
-        description: 'Maestro flow to run, relative to mobile/. Journey flows need a live API.'
+        description: 'Maestro flow to run, relative to mobile/. Journey flows need a live API. Applies to the Android job; the iOS job always runs the launch smoke.'
         required: false
         default: '.maestro/00-launch-smoke.yaml'
 
@@ -170,5 +170,146 @@ jobs:
         with:
           name: mobile-emulator-diagnostics
           path: ${{ runner.temp }}/diagnostics
+          retention-days: 14
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------------
+  # iOS is the platform with NO evidence at all, which is why this job exists
+  # despite costing more than the Android one.
+  #
+  # 🔴 Two of the fixes in this repository are specifically about iOS behaviour
+  # and have never been run on it. `useUnsavedChangesGuard` is built on
+  # `usePreventRemove` precisely because a `beforeRemove` listener does not work
+  # on a native stack — and the case that breaks is the iOS SWIPE-BACK gesture.
+  # The bottom-inset work is the same shape: the home indicator is an iOS
+  # concern. Android passing says nothing about either.
+  #
+  # 🔴 A simulator build needs NO signing key, which is the only reason this is
+  # possible here at all — `CODE_SIGNING_ALLOWED=NO` below is what makes it work
+  # on a runner with no certificates, and it is why this job can exist while
+  # `verify:ios-release` is still blocked on owner-held Apple identifiers.
+  #
+  # macOS runners are free on public repositories, so this costs queue time
+  # rather than money. It is slower and more fragile than the Android job:
+  # CocoaPods and xcodebuild are the least forgiving part of this toolchain.
+  # ---------------------------------------------------------------------------
+  ios-launch-smoke:
+    name: iOS Launch Smoke
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      # --no-install skips BOTH npm and pod install; npm ci above did the first
+      # and the cached pod install below does the second.
+      - name: Generate the native iOS project
+        working-directory: mobile
+        run: npx expo prebuild --platform ios --no-install --clean
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            mobile/ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('mobile/ios/Podfile.lock', 'mobile/package-lock.json') }}
+          restore-keys: pods-${{ runner.os }}-
+
+      - name: Install pods
+        working-directory: mobile/ios
+        run: pod install --repo-update
+
+      # 🔴 The scheme name is DISCOVERED, not assumed. Expo derives it from the
+      # app name ("Timebank Global"), and a rename would silently break a
+      # hardcoded value — with an xcodebuild error that does not say so.
+      - name: Build for the simulator
+        working-directory: mobile/ios
+        run: |
+          set -euo pipefail
+          WORKSPACE="$(ls -d *.xcworkspace | head -1)"
+          SCHEME="$(xcodebuild -workspace "$WORKSPACE" -list -json | python3 -c 'import json,sys; print(json.load(sys.stdin)["workspace"]["schemes"][0])')"
+          echo "workspace=$WORKSPACE scheme=$SCHEME"
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "${RUNNER_TEMP}/ios-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            build | tail -40
+
+      - name: Install Maestro
+        run: |
+          curl -Ls https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # A Debug build fetches its JavaScript from Metro at runtime, exactly as on
+      # Android. A simulator reaches the host's localhost directly, so no
+      # equivalent of `adb reverse` is needed here.
+      - name: Start Metro
+        working-directory: mobile
+        run: |
+          npx expo start --port 8081 > "${RUNNER_TEMP}/metro.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf --max-time 2 http://127.0.0.1:8081/status >/dev/null; then
+              echo "Metro is serving"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Metro did not come up within 120s"; cat "${RUNNER_TEMP}/metro.log"; exit 1
+
+      # 🔴 The device is CHOSEN from what the runner actually has. Runner images
+      # change their preinstalled simulators without notice, so a hardcoded
+      # "iPhone 16" is a job that breaks on an image bump for no real reason.
+      # 🔴 The device is CHOSEN from what the runner actually has. Runner images
+      # change their preinstalled simulators without notice, so a hardcoded
+      # "iPhone 16" is a job that breaks on an image bump for no real reason.
+      # `simctl list` prints "iPhone 16 (UDID) (Shutdown)", so the UDID is the
+      # first parenthesised field of the first iPhone line.
+      - name: Boot a simulator and run the flow
+        working-directory: mobile
+        run: |
+          set -euo pipefail
+          xcrun simctl list devices available | sed -n '1,40p'
+          UDID="$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/ {print $2; exit}')"
+          if [ -z "${UDID}" ]; then echo "no available iPhone simulator on this runner"; exit 1; fi
+          echo "booting ${UDID}"
+          xcrun simctl boot "${UDID}" || true
+          xcrun simctl bootstatus "${UDID}" -b
+          APP="$(find "${RUNNER_TEMP}/ios-build/Build/Products" -maxdepth 3 -name '*.app' | head -1)"
+          if [ -z "${APP}" ]; then echo "no .app was produced by the build"; exit 1; fi
+          echo "installing ${APP}"
+          xcrun simctl install "${UDID}" "${APP}"
+          maestro test --format junit --output "${RUNNER_TEMP}/maestro-report-ios.xml" \
+            .maestro/00-launch-smoke.yaml
+
+      - name: Collect diagnostics
+        if: failure()
+        run: |
+          mkdir -p "${RUNNER_TEMP}/diagnostics-ios"
+          cp "${RUNNER_TEMP}/metro.log" "${RUNNER_TEMP}/diagnostics-ios/" 2>/dev/null || true
+          cp "${RUNNER_TEMP}/maestro-report-ios.xml" "${RUNNER_TEMP}/diagnostics-ios/" 2>/dev/null || true
+          cp -r "$HOME/.maestro/tests" "${RUNNER_TEMP}/diagnostics-ios/maestro-tests" 2>/dev/null || true
+          xcrun simctl spawn booted log collect --output "${RUNNER_TEMP}/diagnostics-ios/sim.logarchive" 2>/dev/null || true
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-emulator-diagnostics
+          path: ${{ runner.temp }}/diagnostics-ios
           retention-days: 14
           if-no-files-found: warn
