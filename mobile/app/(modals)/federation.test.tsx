@@ -225,4 +225,44 @@ describe('FederationScreen', () => {
     expect(getByText('Cork, Ireland')).toBeTruthy();
     expect(getByText('View community')).toBeTruthy();
   });
+  it('🔴 does not draw zeros and empty states when nothing loaded', () => {
+    /*
+      All four of the hub’s requests threw their error away, so a 500 or an offline phone
+      still rendered "0 partners / 0 messages / 0 exchanges", an "Inactive" chip and two
+      friendly empty states — every one a factual claim the app could not support
+      (audit 2026-09-07, G/F-3).
+    */
+    mockUseApi.mockReset();
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Server error',
+      errorStatus: 500,
+      errorCode: null,
+      refresh: jest.fn(),
+    });
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [] });
+
+    const { getByTestId, queryByText } = render(<FederationScreen />);
+
+    expect(getByTestId('federation-hub-error')).toBeTruthy();
+    expect(queryByText('0')).toBeNull();
+  });
+
+  it('🔴 explains that federation is switched off, rather than showing an empty hub', () => {
+    mockUseApi.mockReset();
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Federation is not enabled for your community.',
+      errorStatus: 403,
+      errorCode: 'FEDERATION_NOT_ENABLED',
+      refresh: jest.fn(),
+    });
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [] });
+
+    const { getByTestId } = render(<FederationScreen />);
+
+    expect(getByTestId('federation-hub-unavailable')).toBeTruthy();
+  });
 });

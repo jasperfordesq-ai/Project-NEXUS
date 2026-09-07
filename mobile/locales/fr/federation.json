@@ -74,7 +74,10 @@
         "title": "Paramètres",
         "description": "Gérer la visibilité de la fédération"
       }
-    }
+    },
+    "unavailableTitle": "La connexion avec d'autres communautés n'est pas activée",
+    "unavailableHint": "Votre communauté ne l'a pas activée, ou vous n'y avez pas encore adhéré.",
+    "setUpFederation": "La configurer"
   },
   "partners": "Communautés partenaires",
   "connectedSince": "Connecté depuis {{date}}",

@@ -74,7 +74,10 @@
         "title": "Configurações",
         "description": "Gerenciar a visibilidade da federação"
       }
-    }
+    },
+    "unavailableTitle": "A ligação a outras comunidades não está ativada",
+    "unavailableHint": "A sua comunidade não a ativou, ou ainda não aderiu.",
+    "setUpFederation": "Configurar"
   },
   "partners": "Comunidades parceiras",
   "connectedSince": "Conectado desde {{date}}",

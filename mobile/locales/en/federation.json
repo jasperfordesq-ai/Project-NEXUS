@@ -74,7 +74,10 @@
         "title": "Settings",
         "description": "Manage federation visibility"
       }
-    }
+    },
+    "unavailableTitle": "Connecting with other communities is not switched on",
+    "unavailableHint": "Your community has not enabled it, or you have not opted in yet.",
+    "setUpFederation": "Set it up"
   },
   "partners": "Partner Communities",
   "connectedSince": "Connected since {{date}}",

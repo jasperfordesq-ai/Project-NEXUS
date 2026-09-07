@@ -74,7 +74,10 @@
         "title": "Einstellungen",
         "description": "Sichtbarkeit im Verbund verwalten"
       }
-    }
+    },
+    "unavailableTitle": "Die Verbindung zu anderen Gemeinschaften ist nicht aktiviert",
+    "unavailableHint": "Deine Gemeinschaft hat sie nicht freigeschaltet, oder du hast noch nicht zugestimmt.",
+    "setUpFederation": "Jetzt einrichten"
   },
   "partners": "Partner-Gemeinschaften",
   "connectedSince": "Verbunden seit {{date}}",

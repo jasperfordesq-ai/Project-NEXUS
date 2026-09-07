@@ -74,7 +74,10 @@
         "title": "Impostazioni",
         "description": "Gestisci visibilità federazione"
       }
-    }
+    },
+    "unavailableTitle": "Il collegamento con altre comunità non è attivo",
+    "unavailableHint": "La tua comunità non lo ha abilitato, oppure non hai ancora aderito.",
+    "setUpFederation": "Configuralo"
   },
   "partners": "Comunità partner",
   "connectedSince": "Connesso dal {{date}}",

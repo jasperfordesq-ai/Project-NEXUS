@@ -74,7 +74,10 @@
         "title": "Socruithe",
         "description": "Bainistigh infheictheacht an chónaidhm"
       }
-    }
+    },
+    "unavailableTitle": "Níl an nasc le pobail eile casta air",
+    "unavailableHint": "Níor chumasaigh do phobal é, nó níor roghnaigh tú isteach fós.",
+    "setUpFederation": "Cuir ar bun é"
   },
   "partners": "Pobail Chomhpháirtíochta",
   "connectedSince": "Ceangailte ó {{date}}",

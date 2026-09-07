@@ -74,7 +74,10 @@
         "title": "Configuración",
         "description": "Administrar visibilidad de la federación"
       }
-    }
+    },
+    "unavailableTitle": "La conexión con otras comunidades no está activada",
+    "unavailableHint": "Tu comunidad no la ha habilitado, o todavía no te has dado de alta.",
+    "setUpFederation": "Configurarla"
   },
   "partners": "Comunidades asociadas",
   "connectedSince": "Conectado desde {{date}}",

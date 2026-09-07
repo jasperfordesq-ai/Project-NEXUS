@@ -29,6 +29,7 @@ import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { Chip } from '@/components/ui/StatusChip';
@@ -376,9 +377,19 @@ function FederationScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
 
-  const { data: statsResponse, refresh: refreshStats } = useApi(() => getFederationStats(), []);
-  const { data: statusResponse, refresh: refreshStatus } = useApi(() => getFederationStatus(), []);
-  const { data: activityResponse, refresh: refreshActivity } = useApi(() => getFederationActivity(), []);
+  /*
+    🔴 A failed load was drawn as fact: "0 partners, 0 messages, 0 exchanges".
+
+    All four of this hub's requests threw their error away — `grep -n "error"` on this file
+    matched nothing. So when they failed (a 403 while external federation is off, a 500, or
+    simply being offline) the screen still rendered zero stat tiles, an "Inactive" chip and
+    two friendly empty states: "no partners yet", "no activity yet". Every one of those is a
+    factual claim the app could not support, and there was no way to retry beyond a pull the
+    member had no reason to try. Found by the 2026-09-07 audit (G/F-3).
+  */
+  const { data: statsResponse, error: statsError, errorStatus: statsErrorStatus, refresh: refreshStats } = useApi(() => getFederationStats(), []);
+  const { data: statusResponse, error: statusError, refresh: refreshStatus } = useApi(() => getFederationStatus(), []);
+  const { data: activityResponse, error: activityError, refresh: refreshActivity } = useApi(() => getFederationActivity(), []);
 
   const stats = unwrapData<FederationStats | null>(statsResponse, null);
   const status = unwrapData<FederationStatus | null>(statusResponse, null);
@@ -409,6 +420,52 @@ function FederationScreen() {
     refreshActivity();
     refresh();
   }, [refresh, refreshActivity, refreshStats, refreshStatus]);
+
+  /**
+   * Nothing loaded at all. Drawing zeros from absent data is the fault this guards.
+   *
+   * A 403 here means the community has federation switched off, or the member has not
+   * opted in — that is a state to explain, not an error to retry. Anything else is a
+   * genuine failure and keeps its retry.
+   */
+  const nothingLoaded = !stats && !status && activity.length === 0 && partners.length === 0;
+  const hubError = statsError ?? statusError ?? activityError;
+  const hubUnavailable = nothingLoaded && Boolean(hubError)
+    && (statsErrorStatus === 401 || statsErrorStatus === 403);
+  const hubFailed = nothingLoaded && Boolean(hubError) && !hubUnavailable && !partnersLoading;
+
+  if (hubUnavailable) {
+    return (
+      <ModalErrorBoundary>
+        <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+          <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/home" />
+          <EmptyState
+            icon="globe-outline"
+            title={t('hub.unavailableTitle')}
+            subtitle={t('hub.unavailableHint')}
+            actionLabel={t('hub.setUpFederation')}
+            onAction={() => router.push('/(modals)/federation-onboarding' as Href)}
+            testID="federation-hub-unavailable"
+          />
+        </SafeAreaView>
+      </ModalErrorBoundary>
+    );
+  }
+
+  if (hubFailed) {
+    return (
+      <ModalErrorBoundary>
+        <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+          <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/home" />
+          <ErrorState
+            subtitle={hubError ?? undefined}
+            onRetry={refreshAll}
+            testID="federation-hub-error"
+          />
+        </SafeAreaView>
+      </ModalErrorBoundary>
+    );
+  }
 
   return (
     <ModalErrorBoundary>
