@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { FlatList, Text, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -151,6 +151,9 @@ function FeedHashtagsScreen() {
             keyExtractor={(item) => item.tag}
             renderItem={renderHashtag}
             keyboardShouldPersistTaps="handled"
+            refreshControl={
+              <RefreshControl refreshing={isLoading} onRefresh={() => void loadTrending()} tintColor={primary} colors={[primary]} />
+            }
             ListHeaderComponent={
               <View className="mx-4 mb-4 gap-3">
                 <HeroCard variant="secondary">

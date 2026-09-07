@@ -260,7 +260,8 @@
     "pollTotalVotes_one": "{{count}} Stimme",
     "pollTotalVotes_other": "{{count}} Stimmen",
     "communityMember": "Community-Mitglied",
-    "shareMessage": "{{title}} – {{url}}"
+    "shareMessage": "{{title}} – {{url}}",
+    "linkOpenFailed": "Dieser Link konnte auf diesem Gerät nicht geöffnet werden."
   },
   "agenda": {
     "title": "Tagesordnung",

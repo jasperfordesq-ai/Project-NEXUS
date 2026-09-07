@@ -82,7 +82,7 @@ export default function EventSafetyCard({
     } catch (error) {
       showToast({
         title: t('safety.attendee.action_error'),
-        description: describeApiError(error, ''),
+        description: describeApiError(error, '') || undefined,
         variant: 'danger',
       });
       return false;

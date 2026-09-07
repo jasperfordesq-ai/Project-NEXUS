@@ -385,7 +385,7 @@ function LessonRow({
       onChange(next);
       showToast({ title: t('builder.lesson_saved'), variant: 'success' });
     } catch (error) {
-      showToast({ title: t('builder.save_error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('builder.save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       setIsSaving(false);
     }
@@ -417,7 +417,7 @@ function LessonRow({
       setQuestionCorrect('');
       showToast({ title: t('builder.question_added'), variant: 'success' });
     } catch (error) {
-      showToast({ title: t('builder.save_error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('builder.save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     }
   }
 

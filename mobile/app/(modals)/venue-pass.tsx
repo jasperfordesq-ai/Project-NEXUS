@@ -45,7 +45,7 @@ function VenuePassScreen() {
         await pass.refresh();
         showToast({ title: t('pass.rotated'), variant: 'success' });
       } catch (error) {
-        showToast({ title: t('pass.rotate_failed'), description: describeApiError(error, ''), variant: 'danger' });
+        showToast({ title: t('pass.rotate_failed'), description: describeApiError(error, '') || undefined, variant: 'danger' });
       }
     },
   });

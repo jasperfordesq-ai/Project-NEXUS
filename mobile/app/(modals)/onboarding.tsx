@@ -496,6 +496,7 @@ function CategoryStep({
   primary: string;
   emptyText: string;
 }) {
+  const theme = useTheme();
   return (
     <HeroCard className="rounded-panel">
       <HeroCard.Body className="gap-3 p-5">
@@ -511,7 +512,7 @@ function CategoryStep({
               accessibilityState={{ checked: isSelected }}
               onPress={() => setSelected(toggleId(selected, category.id))}
               className="rounded-panel-inner border p-3"
-              style={{ borderColor: isSelected ? primary : '#94A3B8' }}
+              style={{ borderColor: isSelected ? primary : theme.border }}
             >
               <Text className="font-medium text-foreground">{isSelected ? '✓ ' : ''}{category.name}</Text>
             </NativePressable>

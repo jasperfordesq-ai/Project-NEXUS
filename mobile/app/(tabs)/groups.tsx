@@ -173,7 +173,7 @@ function GroupImage({
 }) {
   const image = groupCover(group);
   if (image) {
-    return <Image source={{ uri: image }} className="size-16 rounded-2xl bg-default-200" resizeMode="cover" />;
+    return <Image source={{ uri: image }} className="size-16 rounded-2xl bg-surface-secondary" resizeMode="cover" />;
   }
 
   return (
@@ -365,7 +365,7 @@ function GroupsScreen() {
                 returnKeyType="search"
                 accessibilityLabel={t('searchPlaceholder')}
                 containerClassName="mb-0"
-                groupClassName="min-h-12 rounded-full bg-content2"
+                groupClassName="min-h-12 rounded-full bg-surface-secondary"
               />
 
               <View className="flex-row gap-2">

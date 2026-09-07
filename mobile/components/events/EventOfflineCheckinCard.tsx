@@ -154,7 +154,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       setDeviceLabel('');
       showToast({ title: t('workspace.ready'), variant: 'success' });
     } catch (error) {
-      showToast({ title: t('errors.generic'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('errors.generic'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       setBusy(false);
     }
@@ -187,7 +187,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
           showToast({ title: t('device.revoked'), variant: 'success' });
           await load();
         } catch (error) {
-          showToast({ title: t('errors.generic'), description: describeApiError(error, ''), variant: 'danger' });
+          showToast({ title: t('errors.generic'), description: describeApiError(error, '') || undefined, variant: 'danger' });
         } finally {
           setBusy(false);
         }
@@ -263,7 +263,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
         showToast({ title: t('errors.revoked'), description: describeApiError(error, t('queue.syncError')), variant: 'danger' });
       } else {
         // The server's reason, not a blanket sentence (audit 2026-09-07, C/F-13).
-        showToast({ title: t('queue.syncError'), description: describeApiError(error, ''), variant: 'danger' });
+        showToast({ title: t('queue.syncError'), description: describeApiError(error, '') || undefined, variant: 'danger' });
       }
     } finally {
       setBusy(false);
@@ -292,7 +292,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       setResolutionReasons((current) => ({ ...current, [item.item_id]: '' }));
       showToast({ title: t('conflicts.resolved'), variant: 'success' });
     } catch (error) {
-      showToast({ title: t('conflicts.error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('conflicts.error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
       await loadConflicts();
     } finally {
       setBusy(false);

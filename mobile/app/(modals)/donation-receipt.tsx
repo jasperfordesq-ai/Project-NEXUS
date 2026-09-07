@@ -38,7 +38,7 @@ function DonationReceiptScreen() {
                 {receipt.data.reference ? <Text className="text-right text-xs text-muted-foreground">{t('donations.receipt_ref', { ref: receipt.data.reference })}</Text> : null}
                 <View className="items-center gap-2 border-b border-default-100 pb-5">
                   <Text className="text-3xl font-bold text-foreground">{formatMarketplaceCurrency(Number(receipt.data.amount), receipt.data.currency)}</Text>
-                  <Text className="text-sm font-semibold text-success">{t(`donations.status.${receipt.data.status}`)}</Text>
+                  <Text className={`text-sm font-semibold ${['refunded', 'failed', 'cancelled', 'disputed'].includes(String(receipt.data.status)) ? 'text-danger' : ['pending', 'processing', 'requires_action'].includes(String(receipt.data.status)) ? 'text-muted-foreground' : 'text-success'}`}>{t(`donations.status.${receipt.data.status}`)}</Text>
                 </View>
                 <ReceiptRow label={t('donations.receipt_donor')} value={receipt.data.donor_name} />
                 <ReceiptRow label={t('donations.receipt_date')} value={formatDate(receipt.data.date)} />

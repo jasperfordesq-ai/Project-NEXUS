@@ -88,7 +88,7 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
       applyResponse(response);
       issueKey.current = null;
     } catch (error) {
-      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, '') || undefined, variant: 'danger' });
       await load();
     } finally {
       setBusy(false);
@@ -110,7 +110,7 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
       rotateKey.current = null;
       setReason('');
     } catch (error) {
-      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, '') || undefined, variant: 'danger' });
       await load();
     } finally {
       setBusy(false);
@@ -135,7 +135,7 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
       setReason('');
       showToast({ title: t('eventOfflineCheckin:credential.revoked'), variant: 'success' });
     } catch (error) {
-      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, '') || undefined, variant: 'danger' });
       await load();
     } finally {
       setBusy(false);

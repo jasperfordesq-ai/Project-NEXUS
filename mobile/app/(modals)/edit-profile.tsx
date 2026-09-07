@@ -248,7 +248,7 @@ function EditProfileScreenInner() {
       router.back();
     } catch (err: unknown) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      const msg = err instanceof Error ? err.message : t('edit.saveError');
+      const msg = describeApiError(err, t('edit.saveError'));
       showToast({ title: t('common:errors.generic'), description: msg, variant: 'danger' });
     } finally {
       setSaving(false);

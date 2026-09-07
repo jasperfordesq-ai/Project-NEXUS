@@ -260,7 +260,8 @@
     "pollTotalVotes_one": "{{count}} vóta",
     "pollTotalVotes_other": "{{count}} vótaí",
     "communityMember": "Ball pobail",
-    "shareMessage": "{{title}} — {{url}}"
+    "shareMessage": "{{title}} — {{url}}",
+    "linkOpenFailed": "Níorbh fhéidir an nasc sin a oscailt ar an ngléas seo."
   },
   "agenda": {
     "title": "Clár",

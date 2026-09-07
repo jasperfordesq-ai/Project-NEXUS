@@ -260,7 +260,8 @@
     "pollTotalVotes_one": "{{count}} voto",
     "pollTotalVotes_other": "{{count}} votos",
     "communityMember": "Miembro de la comunidad",
-    "shareMessage": "{{title}} — {{url}}"
+    "shareMessage": "{{title}} — {{url}}",
+    "linkOpenFailed": "No se pudo abrir ese enlace en este dispositivo."
   },
   "agenda": {
     "title": "Programa",

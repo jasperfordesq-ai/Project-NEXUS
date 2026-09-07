@@ -664,7 +664,7 @@ function GroupDetailScreenInner() {
       >
         <HeroCard className="overflow-hidden rounded-panel p-0">
           {image ? (
-            <Image source={{ uri: image }} className="h-44 w-full bg-default-200" resizeMode="cover" />
+            <Image source={{ uri: image }} className="h-44 w-full bg-surface-secondary" resizeMode="cover" />
           ) : (
             <View className="h-28 items-center justify-center" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
               <Ionicons name="people-outline" size={42} color={primary} />

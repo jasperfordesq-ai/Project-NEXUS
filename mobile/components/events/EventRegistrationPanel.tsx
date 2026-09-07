@@ -117,7 +117,7 @@ export default function EventRegistrationPanel({
       showToast({ title: t('messages.invitation_accepted'), variant: 'success' });
       registrationApi.refresh();
     } catch (error) {
-      showToast({ title: t('messages.invitation_accept_error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('messages.invitation_accept_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -155,7 +155,7 @@ export default function EventRegistrationPanel({
         showToast({ title: t('messages.draft_saved'), variant: 'success' });
       }
     } catch (error) {
-      showToast({ title: t('messages.form_save_error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('messages.form_save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -175,7 +175,7 @@ export default function EventRegistrationPanel({
       setAnswers({});
       showToast({ title: t('messages.amendment_started'), variant: 'success' });
     } catch (error) {
-      showToast({ title: t('messages.amendment_error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('messages.amendment_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -209,7 +209,7 @@ export default function EventRegistrationPanel({
       showToast({ title: t('messages.guest_added'), variant: 'success' });
       registrationApi.refresh();
     } catch (error) {
-      showToast({ title: t('messages.guest_add_error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('messages.guest_add_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -227,7 +227,7 @@ export default function EventRegistrationPanel({
       showToast({ title: t('messages.guest_cancelled'), variant: 'success' });
       registrationApi.refresh();
     } catch (error) {
-      showToast({ title: t('messages.guest_cancel_error'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('messages.guest_cancel_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       setPendingAction(null);
     }

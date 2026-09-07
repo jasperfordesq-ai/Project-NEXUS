@@ -5,7 +5,7 @@
 
 import { formatDecimal } from '@/lib/utils/decimal';
 import { Text, View } from 'react-native';
-import { Image } from 'expo-image';
+import RemoteImage from '@/components/ui/RemoteImage';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@/components/ui/Icon';
@@ -72,7 +72,7 @@ export default function ExchangeCard({ exchange, onToggleSave }: ExchangeCardPro
       <HeroCard variant="default" className="w-full overflow-hidden">
         <View className="h-1 w-full" style={{ backgroundColor: accent }} />
         {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={{ width: '100%', height: 150 }} contentFit="cover" />
+          <RemoteImage uri={imageUrl} style={{ width: '100%', height: 150 }} fallbackIcon="pricetag-outline" testID="exchange-card-image" />
         ) : null}
 
         <HeroCard.Header className="flex-row items-start justify-between gap-3 px-4 pb-2 pt-4">

@@ -47,7 +47,7 @@ function PodcastEpisodeScreen() {
       const result = await togglePodcastReaction(state.data.id);
       setReacted(result.active);
     } catch (error) {
-      showToast({ title: t('episode.reaction_failed'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('episode.reaction_failed'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally { setSavingReaction(false); }
   }
 
@@ -57,7 +57,7 @@ function PodcastEpisodeScreen() {
       await reportPodcastEpisode(state.data.id, reason);
       showToast({ title: t('episode.reported'), variant: 'success' });
     } catch (error) {
-      showToast({ title: t('episode.report_failed'), description: describeApiError(error, ''), variant: 'danger' });
+      showToast({ title: t('episode.report_failed'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     }
   }
 

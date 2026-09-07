@@ -6,7 +6,7 @@
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Linking, Platform, Pressable, Share, Text, useWindowDimensions, View } from 'react-native';
-import { Image } from 'expo-image';
+import RemoteImage from '@/components/ui/RemoteImage';
 import { Ionicons } from '@/components/ui/Icon';
 import { router } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard, Separator, Surface } from 'heroui-native';
@@ -938,7 +938,7 @@ function FeedItemInner({
                 accessibilityLabel={t('feedTypes.post')}
                 accessibilityRole="imagebutton"
               >
-                <Image source={{ uri: imageUrl }} style={{ width: '100%', height: 210, borderRadius: 14 }} contentFit="cover" />
+                <RemoteImage uri={imageUrl} style={{ width: '100%', height: 210, borderRadius: 14 }} testID="feed-item-image" />
               </Pressable>
             ) : null}
 
@@ -972,7 +972,7 @@ function FeedItemInner({
                 <Surface variant="secondary" className="overflow-hidden rounded-panel-inner">
                   {linkPreviewImageUrl ? (
                     <View style={{ position: 'relative' }}>
-                      <Image source={{ uri: linkPreviewImageUrl }} style={{ width: '100%', height: 120 }} contentFit="cover" />
+                      <RemoteImage uri={linkPreviewImageUrl} style={{ width: '100%', height: 120 }} fallbackIcon="link-outline" />
                       {/* A video thumbnail with no play mark is what made this
                           look broken rather than external. */}
                       {linkPreviewIsVideo ? (

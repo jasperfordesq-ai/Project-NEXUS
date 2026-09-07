@@ -19,6 +19,7 @@ import { Card as HeroCard, Description, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { updatePassword } from '@/lib/api/profile';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -77,7 +78,7 @@ function ChangePasswordScreenInner() {
     } catch (err: unknown) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const message =
-        err instanceof Error ? err.message : t('password.changeError');
+        describeApiError(err, t('password.changeError'));
       showToast({ title: t('common:errors.generic'), description: message, variant: 'danger' });
     } finally {
       setIsLoading(false);

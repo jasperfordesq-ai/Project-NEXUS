@@ -567,7 +567,7 @@ function EventDetailScreenInner() {
             <HeroCard.Body className="gap-3 px-4 py-4">
               <SectionTitle icon="videocam-outline" title={onlineLink ? t('onlineTapToJoin') : t('onlineEvent')} primary={primary} theme={theme} />
               {onlineLink ? (
-                <HeroButton variant="secondary" onPress={() => void Linking.openURL(onlineLink)}>
+                <HeroButton variant="secondary" onPress={() => void Linking.openURL(onlineLink).catch(() => showToast({ title: t('detail.linkOpenFailed'), variant: 'danger' }))}>
                   <Ionicons name="open-outline" size={18} color={primary} />
                   <HeroButton.Label>{t('detail.joinOnline')}</HeroButton.Label>
                 </HeroButton>
