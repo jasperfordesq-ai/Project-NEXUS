@@ -139,6 +139,26 @@ jobs:
           done
           echo "Metro did not come up within 120s"; cat "${RUNNER_TEMP}/metro.log"; exit 1
 
+      # 🔴 Build the bundle BEFORE the app asks for it.
+      #
+      # Metro serves on demand and this app is ~660 modules, so the first request
+      # after a cold start takes minutes on a CI runner. The app gives up long
+      # before that and shows "Could not connect to development server" — which
+      # reads as a network fault and is nothing of the kind. Proven from the failing
+      # run's own artefacts: metro.log showed `android ./index.js 25.0%
+      # (281/664)` still climbing while the flow's 90-second wait expired.
+      #
+      # The URL is the one the app itself requests, copied from the redbox in that
+      # screenshot, so this warms the same transform-cache entry rather than a
+      # neighbouring one. Ten minutes is a ceiling, not an expectation.
+      - name: Pre-build the JavaScript bundle
+        run: |
+          set -euo pipefail
+          echo "warming the android bundle; this is the slow part, not the app"
+          time curl -sS -o /dev/null --max-time 600 \
+            "http://localhost:8081/.expo/.virtual-metro-entry.bundle?platform=android&dev=true&lazy=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&excludeSource=true&sourcePaths=url-server&app=ie.project.nexus"
+          echo "bundle ready"
+
       # 🔴 `script:` is ONE LINE, calling a committed file. This action runs each
       # line of the script input in its own `sh -c`, so a `cd` does not persist and
       # a trailing `\` is passed through as an argument rather than continuing the
@@ -362,6 +382,26 @@ jobs:
             sleep 2
           done
           echo "Metro did not come up within 120s"; cat "${RUNNER_TEMP}/metro.log"; exit 1
+
+      # 🔴 Build the bundle BEFORE the app asks for it.
+      #
+      # Metro serves on demand and this app is ~660 modules, so the first request
+      # after a cold start takes minutes on a CI runner. The app gives up long
+      # before that and shows "Could not connect to development server" — which
+      # reads as a network fault and is nothing of the kind. Proven from the failing
+      # run's own artefacts: metro.log showed `ios ./index.js 25.0%
+      # (281/664)` still climbing while the flow's 90-second wait expired.
+      #
+      # The URL is the one the app itself requests, copied from the redbox in that
+      # screenshot, so this warms the same transform-cache entry rather than a
+      # neighbouring one. Ten minutes is a ceiling, not an expectation.
+      - name: Pre-build the JavaScript bundle
+        run: |
+          set -euo pipefail
+          echo "warming the ios bundle; this is the slow part, not the app"
+          time curl -sS -o /dev/null --max-time 600 \
+            "http://localhost:8081/.expo/.virtual-metro-entry.bundle?platform=ios&dev=true&lazy=true&minify=false&inlineSourceMap=false&modulesOnly=false&runModule=true&excludeSource=true&sourcePaths=url-server&app=ie.project.nexus"
+          echo "bundle ready"
 
       # 🔴 The device is CHOSEN from what the runner actually has. Runner images
       # change their preinstalled simulators without notice, so a hardcoded
