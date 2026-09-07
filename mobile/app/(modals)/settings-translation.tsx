@@ -17,7 +17,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import Toggle from '@/components/ui/Toggle';
-import { changeLanguage, SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { getUserPreferences, saveUserPreferences } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -92,11 +92,10 @@ export default function SettingsTranslationScreen() {
         },
       });
       /*
-        🔴 S3-29: this ran even with auto-translate OFF, so choosing a translation target
-        silently changed the app's own language. The target is what other members' words get
-        translated INTO; it is not the interface language.
+        🔴 S3-29 made this conditional on auto-translate; the audit of 2026-09-07 (B/F-16)
+        removed it entirely. The target is what other members' words get translated INTO;
+        the interface language has its own picker in Settings → App language.
       */
-      if (autoTranslate) await changeLanguage(targetLocale);
       showToast({ title: t('translation.saved'), description: t('translation.savedBody'), variant: 'success' });
     } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.saveError')), variant: 'danger' });

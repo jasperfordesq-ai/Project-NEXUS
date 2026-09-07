@@ -59,7 +59,11 @@
         "cancelDescription": "Cealóidh sé seo an malartú grúpa do gach rannpháirtí.",
         "confirmFailed": "Níorbh fhéidir linn d'uaireanta a dhearbhú. Bain triail eile as.",
         "completeFailed": "Níorbh fhéidir linn an malartú seo a chur i gcrích. Bain triail eile as.",
-        "cancelFailed": "Níorbh fhéidir linn an malartú seo a chealú. Bain triail eile as."
+        "cancelFailed": "Níorbh fhéidir linn an malartú seo a chealú. Bain triail eile as.",
+        "completeTitle": "An malartú grúpa seo a chur i gcrích?",
+        "completeDescription": "Aistreofar creidmheasanna ama chuig gach rannpháirtí anois. Ní féidir é seo a chealú.",
+        "confirmTitle": "Do chuid uaireanta a dheimhniú?",
+        "confirmDescription": "Trí dheimhniú, insíonn tú don eagraí gur ghlac tú páirt ar feadh na n-uaireanta a thaispeántar. Bogann na creidmheasanna nuair a chuirtear an malartú i gcrích."
       },
       "splitShare": "{{name}} — {{hours}} uair",
       "splitUnknownMember": "Ball #{{id}}"
@@ -116,7 +120,9 @@
       "summaryParticipants_one": "{{count}} rannpháirtí roghnaithe",
       "summaryParticipants_other": "{{count}} rannpháirtithe roghnaithe",
       "remove": "Bain",
-      "removeParticipant": "Bain {{name}}"
+      "removeParticipant": "Bain {{name}}",
+      "participantHoursInvalid": "Cuir isteach na huaireanta do gach rannpháirtí mar uimhir, mar shampla 1,5.",
+      "participantWeightInvalid": "Cuir isteach ualach níos mó ná nialas do gach rannpháirtí."
     }
   },
   "newExchange": "Liostú Nua",
@@ -509,7 +515,9 @@
         "other": "Rud eile",
         "quality": "Ní hé a aontaíomar"
       }
-    }
+    },
+    "confirmSheetOtherConfirmed": "Tá {{hours}} uair deimhnithe ag an gcomhalta eile. Má tá difríocht níos mó ná ceathrú uaire ann, seoltar an malartú seo le hathbhreithniú in ionad é a chur i gcrích.",
+    "loadMore": "Taispeáin tuilleadh malartuithe"
   },
   "unknownMember": "Ball anaithnid"
 }

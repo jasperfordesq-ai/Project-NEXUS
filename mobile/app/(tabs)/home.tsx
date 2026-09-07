@@ -27,6 +27,7 @@ import OfflineBanner from '@/components/OfflineBanner';
 import TenantBanner from '@/components/TenantBanner';
 import { FeedItemSkeleton } from '@/components/ui/Skeleton';
 import FAB from '@/components/ui/FAB';
+import EmptyState from '@/components/ui/EmptyState';
 import * as Haptics from '@/lib/haptics';
 import { feedVersion } from '@/lib/feedRefreshSignal';
 import NativePressable from '@/components/ui/NativePressable';
@@ -71,7 +72,13 @@ const LISTING_SUBFILTERS = ['offer', 'request'] as const;
 export default function HomeScreen() {
   const { t } = useTranslation(['home', 'common', 'exchanges']);
   const { displayName } = useAuth();
-  const { hasModule } = useTenant();
+  const { hasModule, tenant } = useTenant();
+  /*
+    A community with the feed module OFF still had its whole feed fetched and rendered here —
+    only the composer was hidden (audit 2026-09-07, A/F-10). Unknown configuration (tenant
+    still loading, offline cold start) keeps the feed, like every other gate in the app.
+  */
+  const feedUnavailable = tenant !== null && !hasModule('feed');
   const primary = usePrimaryColor();
   const theme = useTheme();
   const [feedMode, setFeedMode] = useState<FeedMode>('ranking');
@@ -91,7 +98,7 @@ export default function HomeScreen() {
   );
 
   const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
-    usePaginatedApi<FeedItemType, FeedResponse>(fetchFeed, extractFeedPage, [feedMode, filter, subFilter]);
+    usePaginatedApi<FeedItemType, FeedResponse>(fetchFeed, extractFeedPage, [feedMode, filter, subFilter], { enabled: !feedUnavailable });
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const wasRefreshingRef = useRef(false);
@@ -188,7 +195,7 @@ export default function HomeScreen() {
 
       <FlatList<FeedItemType>
         testID="feed-list"
-        data={items}
+        data={feedUnavailable ? [] : items}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         refreshControl={
@@ -456,7 +463,14 @@ export default function HomeScreen() {
           </View>
         }
         ListEmptyComponent={
-          isLoading ? (
+          feedUnavailable ? (
+            <EmptyState
+              icon="lock-closed-outline"
+              title={t('common:featureUnavailable.title')}
+              subtitle={t('common:featureUnavailable.subtitle')}
+              testID="feed-unavailable"
+            />
+          ) : isLoading ? (
             <>
               <FeedItemSkeleton />
               <FeedItemSkeleton />

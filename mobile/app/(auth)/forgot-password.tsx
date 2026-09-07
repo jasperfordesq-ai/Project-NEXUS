@@ -73,7 +73,7 @@ export default function ForgotPasswordScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
         className="flex-grow"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -137,7 +137,7 @@ export default function ForgotPasswordScreen() {
                         autoCapitalize="none"
                         autoComplete="email"
                         returnKeyType="send"
-                        onSubmitEditing={handleSubmit(onSubmit)}
+                        onSubmitEditing={isLoading ? undefined : handleSubmit(onSubmit)}
                         leftIcon={<Ionicons name="mail-outline" size={18} color={theme.textMuted} />}
                       />
                     )}

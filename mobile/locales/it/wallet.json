@@ -93,7 +93,13 @@
     "exportFailedTitle": "Esportazione non riuscita",
     "exportFailedMessage": "Non siamo riusciti a preparare l’esportazione delle tue transazioni. Riprova.",
     "exportSuccessCount_one": "L’esportazione contiene {{count}} transazione.",
-    "exportPartial_one": "L’esportazione contiene {{count}} transazione. La tua cronologia è più lunga di quanto una singola esportazione possa coprire, quindi le voci più vecchie non sono incluse."
+    "exportPartial_one": "L’esportazione contiene {{count}} transazione. La tua cronologia è più lunga di quanto una singola esportazione possa coprire, quindi le voci più vecchie non sono incluse.",
+    "confirmTransferTitle": "Inviare queste ore?",
+    "confirmTransferMessage": "Stai per inviare {{amount}} ore a {{name}}. L’operazione non può essere annullata.",
+    "confirmDonationTitle": "Donare queste ore?",
+    "confirmDonationMessage": "Stai per donare {{amount}} ore a {{name}}. L’operazione non può essere annullata.",
+    "recipientResolving": "Verifica del destinatario…",
+    "recipientUnresolved": "Membro non trovato. Cerca il destinatario."
   },
   "status": {
     "completed": "Completato",

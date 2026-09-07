@@ -31,6 +31,7 @@ import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const GROUP_NAME_MIN_LENGTH = 3;
 const GROUP_NAME_MAX_LENGTH = 100;
@@ -39,7 +40,7 @@ const GROUP_DESCRIPTION_MAX_LENGTH = 2000;
 const MAX_GROUP_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_GROUP_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-export default function NewGroupRoute() {
+function NewGroupRoute() {
   return (
     <ModalErrorBoundary>
       <NewGroupScreen />
@@ -63,6 +64,7 @@ function NewGroupScreen() {
   const [longitude, setLongitude] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [isFederated, setIsFederated] = useState(false);
+  const hydratedFederatedVisibilityRef = useRef<string | null>(null);
   const [templates, setTemplates] = useState<GroupTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -141,6 +143,9 @@ function NewGroupScreen() {
     setLongitude(group.longitude !== null && group.longitude !== undefined ? String(group.longitude) : '');
     setVisibility(group.visibility === 'private' ? 'private' : 'public');
     setIsFederated(group.federated_visibility === 'listed' || group.federated_visibility === 'joinable');
+    // Remember the exact level so an unrelated edit does not turn "joinable" into "listed"
+    // (audit 2026-09-07, C/F-10). The toggle only decides between federated and not.
+    hydratedFederatedVisibilityRef.current = group.federated_visibility ?? null;
     setExistingImage(group.image_url ?? group.cover_image ?? null);
     setSelectedImageUri(null);
   }
@@ -252,7 +257,9 @@ function NewGroupScreen() {
         latitude: latitudeValue,
         longitude: longitudeValue,
         visibility,
-        federated_visibility: isFederated ? 'listed' : 'none',
+        federated_visibility: isFederated
+          ? (hydratedFederatedVisibilityRef.current === 'joinable' ? 'joinable' : 'listed')
+          : 'none',
       } as const;
       const result = isEditing ? await updateGroup(groupId, payload) : await createGroup(payload);
       saved = true;
@@ -543,3 +550,5 @@ function FormField({
     </View>
   );
 }
+
+export default withRouteGate(NewGroupRoute, 'new-group');

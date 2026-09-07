@@ -160,6 +160,32 @@ jest.mock('@/lib/api/wallet', () => ({
   transferWalletCredits: jest.fn(),
 }));
 
+jest.mock('@/lib/api/members', () => ({
+  getMember: jest.fn().mockResolvedValue({ data: { id: 260, name: 'Jasper Ford', first_name: 'Jasper', avatar_url: null } }),
+}));
+
+/*
+  The real ConfirmDialog renders inside a HeroUI portal that the test renderer cannot see
+  into, so the dialog is stood in for by plain views — the same stand-in the community
+  picker test uses. It still requires the second tap, which is what the audit added.
+*/
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, message, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Text>{message as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ui/AppToast', () => ({
@@ -410,7 +436,7 @@ describe('WalletModal', () => {
     expect(getByText('Garden help')).toBeTruthy();
   });
 
-  it('opens the transfer panel with a recipient from query params', () => {
+  it('opens the transfer panel with a recipient from query params', async () => {
     mockSearchParams.mockReturnValue({ to: '260', name: 'Jasper Ford' });
     mockUseApi
       .mockReset()
@@ -418,12 +444,13 @@ describe('WalletModal', () => {
       .mockReturnValueOnce({ data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() })
       .mockReturnValueOnce({ data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() });
 
-    const { getByText } = render(<WalletModal />);
-    expect(getByText('Jasper Ford')).toBeTruthy();
+    const { findByText, getByText } = render(<WalletModal />);
+    // 🔴 The name comes from the server, never from the URL (audit 2026-09-07, B/F-02).
+    expect(await findByText('Jasper Ford')).toBeTruthy();
     expect(getByText('Selected recipient')).toBeTruthy();
   });
 
-  it('opens the transfer panel when recipient query params arrive on a mounted wallet', () => {
+  it('opens the transfer panel when recipient query params arrive on a mounted wallet', async () => {
     const walletState = { data: { data: { balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' } }, isLoading: false, error: null, refresh: jest.fn() };
     const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     const fundState = { data: { data: { balance: 3, total_deposited: 5, total_donated: 2 } }, isLoading: false, error: null, refresh: jest.fn() };
@@ -446,13 +473,16 @@ describe('WalletModal', () => {
         return state;
       });
 
-    const { queryByText, rerender, getByText } = render(<WalletModal />);
+    const { queryByText, rerender, getByText, findByText } = render(<WalletModal />);
     expect(queryByText('Recipient search')).toBeNull();
 
-    routeParams.current = { to: '260', name: 'Jasper Ford' };
+    routeParams.current = { to: '260', name: 'Mallory' };
     rerender(<WalletModal />);
 
-    expect(getByText('Jasper Ford')).toBeTruthy();
+    // The URL said "Mallory"; the server says member 260 is Jasper Ford. Only the server's
+    // word is shown.
+    expect(await findByText('Jasper Ford')).toBeTruthy();
+    expect(queryByText('Mallory')).toBeNull();
     expect(getByText('Selected recipient')).toBeTruthy();
   });
 
@@ -581,18 +611,25 @@ describe('WalletModal', () => {
         .mockRejectedValueOnce(new Error('Network request failed'))
         .mockResolvedValueOnce({ success: true } as never);
 
-      const { getByPlaceholderText, getAllByText } = renderTransferPanel();
+      const { getByPlaceholderText, getAllByText, findByText, findByTestId } = renderTransferPanel();
       fireEvent.changeText(getByPlaceholderText('Hours to send'), '2');
       fireEvent.changeText(getByPlaceholderText('What is this transfer for?'), 'Garden help');
 
-      const send = () => fireEvent.press(getAllByText('Send credits').at(-1)!);
+      // Two taps: the button, then the confirmation dialog naming recipient and amount
+      // (audit 2026-09-07, B/F-02). The button is pressed through its label because the
+      // heroui-native test mock drops testID props; the dialog keeps its testIDs.
+      const send = async () => {
+        await findByText('Jasper Ford');
+        fireEvent.press(getAllByText('Send credits').at(-1)!);
+        fireEvent.press(await findByTestId('wallet-confirm-submit'));
+      };
 
-      send();
+      await send();
       // The retry has to wait for the first attempt to finish failing, or the button is
       // still disabled and the second press does nothing.
       await waitFor(() => expect(mockRefreshWallet).toHaveBeenCalledTimes(1));
       await act(async () => {});
-      send();
+      await send();
       await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(2));
 
       const [first, second] = keysSent();
@@ -606,19 +643,26 @@ describe('WalletModal', () => {
         .mockRejectedValueOnce(new Error('Network request failed'))
         .mockRejectedValueOnce(new Error('Network request failed'));
 
-      const { getByPlaceholderText, getAllByText } = renderTransferPanel();
+      const { getByPlaceholderText, getAllByText, findByText, findByTestId } = renderTransferPanel();
       fireEvent.changeText(getByPlaceholderText('Hours to send'), '2');
       fireEvent.changeText(getByPlaceholderText('What is this transfer for?'), 'Garden help');
 
-      const send = () => fireEvent.press(getAllByText('Send credits').at(-1)!);
+      // Two taps: the button, then the confirmation dialog naming recipient and amount
+      // (audit 2026-09-07, B/F-02). The button is pressed through its label because the
+      // heroui-native test mock drops testID props; the dialog keeps its testIDs.
+      const send = async () => {
+        await findByText('Jasper Ford');
+        fireEvent.press(getAllByText('Send credits').at(-1)!);
+        fireEvent.press(await findByTestId('wallet-confirm-submit'));
+      };
 
-      send();
+      await send();
       await waitFor(() => expect(mockRefreshWallet).toHaveBeenCalledTimes(1));
       await act(async () => {});
 
       // A different amount is a different transfer, not a retry of the last one.
       fireEvent.changeText(getByPlaceholderText('Hours to send'), '3');
-      send();
+      await send();
       await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(2));
 
       const [first, second] = keysSent();
@@ -628,9 +672,11 @@ describe('WalletModal', () => {
     it('re-reads the balance after a transfer whose outcome is unknown', async () => {
       jest.mocked(transferWalletCredits).mockRejectedValueOnce(new Error('Network request failed'));
 
-      const { getByPlaceholderText, getAllByText } = renderTransferPanel();
+      const { getByPlaceholderText, getAllByText, findByText, findByTestId } = renderTransferPanel();
       fireEvent.changeText(getByPlaceholderText('Hours to send'), '2');
+      await findByText('Jasper Ford');
       fireEvent.press(getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await findByTestId('wallet-confirm-submit'));
 
       // The member is told nothing useful by the error alone: what settles it is the
       // balance. The panel stays open so they can retry with the same operation id.

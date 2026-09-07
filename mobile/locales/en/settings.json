@@ -181,7 +181,9 @@
       "count_one": "{{count}} export",
       "empty": "No exports yet",
       "emptyDesc": "Your completed export requests will appear here."
-    }
+    },
+    "downloaded": "Your export is ready",
+    "downloadedBody": "The archive has been downloaded and opened in the share sheet, so you can save it or send it to another app."
   },
   "translation": {
     "preferencesTitle": "Content preferences",
@@ -335,5 +337,11 @@
     "confirmRequired": "Confirmation needed",
     "confirmRequiredBody": "Type {{keyword}} and enter your password to continue.",
     "alternativeHint": "If you only want a break, you can turn off notifications, or limit who can see your profile under Privacy."
+  },
+  "language": {
+    "title": "App language",
+    "hint": "Choose the language the app uses on this device.",
+    "optionHint": "Interface language",
+    "current": "Currently selected"
   }
 }

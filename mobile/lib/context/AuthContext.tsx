@@ -186,7 +186,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const storedToken = await storage.get(STORAGE_KEYS.AUTH_TOKEN);
-      if (!storedToken) return;
+      if (!storedToken) {
+        // Nothing to restore, so nothing can have failed. Without this a member who signed
+        // out FROM the "could not check your session" screen stayed on it for ever (audit
+        // 2026-09-07, A/F-01).
+        setSessionRestoreFailed(false);
+        return;
+      }
 
       const cachedUser = await storage.getJson<AnyUser>(STORAGE_KEYS.USER_DATA);
       if (cachedUser) {
@@ -326,6 +332,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setToken(null);
     setUser(null);
+    // The session-restore failure screen renders INSTEAD of the navigator, so a sign-out
+    // from it must clear the flag or the screen stays and `router.replace` below has no
+    // navigator to act on (audit 2026-09-07, A/F-01).
+    setSessionRestoreFailed(false);
     router.replace('/(auth)/login');
   }, []);
 

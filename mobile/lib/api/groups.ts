@@ -759,8 +759,24 @@ export function deleteGroupAnnouncement(id: number, announcementId: number): Pro
 /**
  * POST /api/v2/groups/{id}/join — join a group.
  */
-export function joinGroup(id: number): Promise<{ message: string }> {
-  return api.post<{ message: string }>(`${API_V2}/groups/${id}/join`, {});
+/**
+ * POST /api/v2/groups/{id}/join.
+ *
+ * A public group answers `status: 'active'` (joined); a private one answers
+ * `status: 'pending'` with `action: 'requested'` and a message for the member. The app used
+ * to type this as `{ message }` and treat every 2xx as "joined" (audit 2026-09-07, C/F-2).
+ */
+export interface JoinGroupResult {
+  data?: {
+    status?: 'active' | 'pending' | string;
+    action?: 'joined' | 'requested' | string;
+    message?: string;
+  };
+  message?: string;
+}
+
+export function joinGroup(id: number): Promise<JoinGroupResult> {
+  return api.post<JoinGroupResult>(`${API_V2}/groups/${id}/join`, {});
 }
 
 /**

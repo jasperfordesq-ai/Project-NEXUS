@@ -591,6 +591,49 @@ describe('EventDetailScreen', () => {
     expect(getByText('Postponed')).toBeTruthy();
   });
 
+  /** 🔴 C/F-7. The organiser's reason travelled in the payload and was never shown. */
+  it('shows the organiser reason when an event is postponed', () => {
+    mockUseApi.mockReturnValue({
+      data: {
+        data: {
+          ...mockEvent,
+          schedule: {
+            ...mockEvent.schedule,
+            state: 'postponed',
+            operational_state: 'postponed',
+            cancellation_reason: 'The hall flooded overnight.',
+            lifecycle_version: 2,
+          },
+        },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId, getByText } = render(<EventDetailScreen />);
+    expect(getByTestId('event-cancellation-reason')).toBeTruthy();
+    expect(getByText('The hall flooded overnight.')).toBeTruthy();
+  });
+
+  /** 🔴 C/F-6. A 14:00–16:00 workshop used to show only "14:00". */
+  it('shows the end time as well as the start', () => {
+    mockUseApi.mockReturnValue({
+      data: {
+        data: {
+          ...mockEvent,
+          schedule: { ...mockEvent.schedule, start_at: '2026-05-15T14:00:00Z', end_at: '2026-05-15T16:00:00Z', timezone: 'UTC', all_day: false },
+        },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText } = render(<EventDetailScreen />);
+    expect(getByText(/14:00.*–.*16:00/)).toBeTruthy();
+  });
+
   /** 🔴 S4-06. A network failure used to read as "Event not found" with no way to retry. */
   it('shows a load error with a retry instead of "not found" when the request fails', () => {
     const refresh = jest.fn();

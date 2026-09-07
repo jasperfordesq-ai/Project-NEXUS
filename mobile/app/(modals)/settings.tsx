@@ -25,6 +25,7 @@ import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
 import type { ThemeMode } from '@/lib/theme/themeStore';
 import { API_V2, IDENTITY_VERIFICATION_AVAILABLE_IN_APP } from '@/lib/constants';
 import { withAlpha } from '@/lib/utils/color';
+import { SUPPORTED_LANGUAGES, changeLanguage } from '@/lib/i18n';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
@@ -41,6 +42,7 @@ import {
   registerForPushNotifications,
   unregisterPushNotifications,
 } from '@/lib/notifications';
+import { withRouteGate } from '@/components/withRouteGate';
 
 interface NotificationPrefs {
   email_messages: boolean;
@@ -78,8 +80,19 @@ function savePrivacyPrefs(prefs: PrivacyPrefs): Promise<void> {
   return api.put<void>(`${API_V2}/users/me/preferences`, { privacy: prefs });
 }
 
-export default function SettingsScreen() {
-  const { t } = useTranslation(['settings', 'common']);
+function SettingsScreen() {
+  const { t, i18n } = useTranslation(['settings', 'common']);
+  /*
+    The interface language. Seven locales ship and the device locale picks one at boot, but
+    until 2026-09-07 there was no way to choose a different one — the only call to
+    `changeLanguage` was a side effect of the translation-target setting (B/F-16).
+  */
+  const currentLanguage = (i18n?.language ?? 'en').split('-')[0];
+  async function selectLanguage(code: string) {
+    if (code === currentLanguage) return;
+    void Haptics.selectionAsync();
+    await changeLanguage(code);
+  }
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -390,6 +403,27 @@ export default function SettingsScreen() {
           </Section>
 
           <Section
+            title={t('language.title')}
+            subtitle={t('language.hint')}
+            icon="language-outline"
+            primary={primary}
+            theme={theme}
+          >
+            {SUPPORTED_LANGUAGES.map((code) => (
+              <ThemeModeRow
+                key={code}
+                label={LANGUAGE_LABELS[code] ?? code}
+                subtitle={code === currentLanguage ? t('language.current') : t('language.optionHint')}
+                icon="globe-outline"
+                selected={code === currentLanguage}
+                primary={primary}
+                onPress={() => void selectLanguage(code)}
+                testID={`settings-language-${code}`}
+              />
+            ))}
+          </Section>
+
+          <Section
             title={t('privacy.title')}
             subtitle={t('privacy.hint')}
             icon="lock-closed-outline"
@@ -656,6 +690,17 @@ function ActionRow({
   );
 }
 
+/** Each language named in itself — an endonym is the one label every speaker can read. */
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: 'English',
+  ga: 'Gaeilge',
+  de: 'Deutsch',
+  fr: 'Français',
+  it: 'Italiano',
+  pt: 'Português',
+  es: 'Español',
+};
+
 function ThemeModeRow({
   label,
   subtitle,
@@ -663,6 +708,7 @@ function ThemeModeRow({
   selected,
   primary,
   onPress,
+  testID,
 }: {
   label: string;
   subtitle: string;
@@ -670,10 +716,12 @@ function ThemeModeRow({
   selected: boolean;
   primary: string;
   onPress: () => void;
+  testID?: string;
 }) {
   return (
     <ListGroup.Item
       onPress={onPress}
+      testID={testID}
       accessibilityRole="radio"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
@@ -761,3 +809,5 @@ function SettingRow({
     </ListGroup.Item>
   );
 }
+
+export default withRouteGate(SettingsScreen, 'settings');

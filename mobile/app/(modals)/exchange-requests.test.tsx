@@ -33,8 +33,8 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-jest.mock('@/lib/hooks/useApi', () => ({
-  useApi: (...args: unknown[]) => mockUseApi(...args),
+jest.mock('@/lib/hooks/usePaginatedApi', () => ({
+  usePaginatedApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
@@ -110,13 +110,13 @@ const AS_PROVIDER = {
 
 const FINISHED = { ...AS_PROVIDER, id: 62, status: 'completed', final_hours: 2 };
 
+const mockLoadMore = jest.fn();
+function paged(items: unknown[], overrides: Record<string, unknown> = {}) {
+  return { items, isLoading: false, isLoadingMore: false, error: null, hasMore: false, loadMore: mockLoadMore, refresh: mockRefresh, ...overrides };
+}
+
 beforeEach(() => {
-  mockUseApi.mockReset().mockReturnValue({
-    data: { data: [AS_PROVIDER, FINISHED] },
-    isLoading: false,
-    error: null,
-    refresh: mockRefresh,
-  });
+  mockUseApi.mockReset().mockReturnValue(paged([AS_PROVIDER, FINISHED]));
   mockRouterPush.mockReset();
 });
 
@@ -154,12 +154,7 @@ describe('ExchangeRequestsScreen', () => {
   });
 
   it('shows the empty state rather than bare sections when there is nothing', () => {
-    mockUseApi.mockReturnValue({
-      data: { data: [] },
-      isLoading: false,
-      error: null,
-      refresh: mockRefresh,
-    });
+    mockUseApi.mockReturnValue(paged([]));
 
     const { getByText, queryByText } = render(<ExchangeRequestsScreen />);
 
@@ -170,12 +165,7 @@ describe('ExchangeRequestsScreen', () => {
   it('survives a response whose data is not an array', () => {
     // The envelope has changed shape before on this platform; a screen that throws here
     // takes the whole modal down instead of showing an empty list.
-    mockUseApi.mockReturnValue({
-      data: { data: null },
-      isLoading: false,
-      error: null,
-      refresh: mockRefresh,
-    });
+    mockUseApi.mockReturnValue(paged([]));
 
     const { getByText } = render(<ExchangeRequestsScreen />);
     expect(getByText('No exchanges yet')).toBeTruthy();

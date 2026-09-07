@@ -23,6 +23,7 @@ jest.mock('@sentry/react-native', () => ({
 
 import { navigateToLink } from './navigateToLink';
 import { setNavigationTenantCapabilities } from '@/lib/navigation/tenantCapabilityStore';
+import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 
 describe('navigateToLink', () => {
   beforeEach(() => {
@@ -70,16 +71,24 @@ describe('navigateToLink', () => {
     ['/resources/5', 'resources', 'feature'],
     ['/wallet', 'wallet', 'module'],
     ['/feed/posts/12', 'feed', 'module'],
-  ] as const)('falls back to the notification centre when %s belongs to a disabled tenant capability', (link, key, kind) => {
+  ] as const)('tells the member the module is off, and stays put, when %s belongs to a disabled tenant capability', (link, key, kind) => {
+    // 🔴 This used to push the notifications screen — from the notifications screen, that
+    // stacked a second copy on the first (audit 2026-09-07, B/F-11).
+    const published: unknown[] = [];
+    const unsubscribe = sessionNoticeStore.subscribe(() => published.push(sessionNoticeStore.getSnapshot()));
     setNavigationTenantCapabilities({
       features: kind === 'feature' ? { [key]: false } : {},
       modules: kind === 'module' ? { [key]: false } : {},
     });
 
     navigateToLink(link);
+    unsubscribe();
 
-    expect(mockPush).toHaveBeenCalledWith('/(modals)/notifications');
+    expect(mockPush).not.toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(published).toHaveLength(1);
+    expect(published[0]).toEqual(expect.objectContaining({ variant: 'warning', title: expect.any(String) }));
+    sessionNoticeStore.consume();
   });
 
   it('does not reject a valid route when tenant capabilities are unavailable offline', () => {

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useState } from 'react';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Alert, Button, Card, Chip, Spinner } from 'heroui-native';
@@ -115,8 +116,8 @@ export default function EventRegistrationPanel({
       await acceptRegistrationInvitation(eventId, invitationId, mutationKey('event-invitation-accept'));
       showToast({ title: t('messages.invitation_accepted'), variant: 'success' });
       registrationApi.refresh();
-    } catch {
-      showToast({ title: t('messages.invitation_accept_error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('messages.invitation_accept_error'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -153,8 +154,8 @@ export default function EventRegistrationPanel({
       } else {
         showToast({ title: t('messages.draft_saved'), variant: 'success' });
       }
-    } catch {
-      showToast({ title: t('messages.form_save_error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('messages.form_save_error'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -173,8 +174,8 @@ export default function EventRegistrationPanel({
       setSubmissionOverride(result.data.submission);
       setAnswers({});
       showToast({ title: t('messages.amendment_started'), variant: 'success' });
-    } catch {
-      showToast({ title: t('messages.amendment_error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('messages.amendment_error'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -207,8 +208,8 @@ export default function EventRegistrationPanel({
       setGuestNotificationConsent(false);
       showToast({ title: t('messages.guest_added'), variant: 'success' });
       registrationApi.refresh();
-    } catch {
-      showToast({ title: t('messages.guest_add_error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('messages.guest_add_error'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setPendingAction(null);
     }
@@ -225,8 +226,8 @@ export default function EventRegistrationPanel({
       );
       showToast({ title: t('messages.guest_cancelled'), variant: 'success' });
       registrationApi.refresh();
-    } catch {
-      showToast({ title: t('messages.guest_cancel_error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('messages.guest_cancel_error'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setPendingAction(null);
     }

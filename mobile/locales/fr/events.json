@@ -173,7 +173,9 @@
     "loadFailedTitle": "Impossible d'ouvrir cet événement",
     "unsavedTitle": "Abandonner cet événement ?",
     "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
-    "discard": "Abandonner"
+    "discard": "Abandonner",
+    "notAllowedTitle": "Vous ne pouvez pas modifier cet événement",
+    "notAllowed": "Seuls l’organisateur et l’équipe de l’événement peuvent le modifier. Si vous pensez que vous devriez pouvoir le faire, demandez à l’organisateur."
   },
   "category": {
     "workshop": "Atelier",
@@ -943,5 +945,16 @@
       "revoke_success": "L'accès de {{name}} a été révoqué.",
       "revoke_error": "Le rôle d'événement n'a pas pu être révoqué."
     }
+  },
+  "queue": {
+    "readOnlyRevoked": "Cet appareil n’est plus autorisé à enregistrer les arrivées. Tout ce qui a été scanné ici est conservé en lecture seule jusqu’à ce que vous le supprimiez."
+  },
+  "scan": {
+    "alreadyQueued": "Ce badge est déjà dans la file pour cette action.",
+    "expired": "Ce badge a expiré. Demandez au membre de l’actualiser.",
+    "wrongEvent": "Ce badge appartient à un autre événement.",
+    "revoked": "Ce badge a été révoqué ou remplacé.",
+    "signingKeyUnknown": "Ce badge a été émis après la dernière synchronisation de cet appareil. Synchronisez, puis scannez de nouveau.",
+    "queueFull": "La file hors ligne est pleine. Synchronisez avant de continuer."
   }
 }

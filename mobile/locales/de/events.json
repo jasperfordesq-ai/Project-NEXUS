@@ -173,7 +173,9 @@
     "loadFailedTitle": "Diese Veranstaltung konnte nicht geöffnet werden",
     "unsavedTitle": "Diese Veranstaltung verwerfen?",
     "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
-    "discard": "Verwerfen"
+    "discard": "Verwerfen",
+    "notAllowedTitle": "Du kannst diese Veranstaltung nicht bearbeiten",
+    "notAllowed": "Nur die Organisation und das Veranstaltungsteam können sie ändern. Wenn du meinst, dass du das können solltest, frag die Organisation."
   },
   "category": {
     "workshop": "Werkstatt",
@@ -943,5 +945,16 @@
       "revoke_success": "Der Zugriff für {{name}} wurde widerrufen.",
       "revoke_error": "Die Ereignisrolle konnte nicht widerrufen werden."
     }
+  },
+  "queue": {
+    "readOnlyRevoked": "Dieses Gerät darf keine Personen mehr einchecken. Alles, was hier gescannt wurde, bleibt schreibgeschützt erhalten, bis du es entfernst."
+  },
+  "scan": {
+    "alreadyQueued": "Dieser Ausweis steht für diese Aktion bereits in der Warteschlange.",
+    "expired": "Dieser Ausweis ist abgelaufen. Bitte das Mitglied, ihn zu erneuern.",
+    "wrongEvent": "Dieser Ausweis gehört zu einer anderen Veranstaltung.",
+    "revoked": "Dieser Ausweis wurde widerrufen oder ersetzt.",
+    "signingKeyUnknown": "Dieser Ausweis wurde ausgestellt, nachdem dieses Gerät zuletzt synchronisiert hat. Synchronisiere und scanne erneut.",
+    "queueFull": "Die Offline-Warteschlange ist voll. Synchronisiere, bevor du weiter scannst."
   }
 }

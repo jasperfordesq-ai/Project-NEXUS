@@ -36,6 +36,7 @@ import ActionSheet from '@/components/ui/ActionSheet';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
+import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -45,6 +46,7 @@ import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import { describeApiError } from '@/lib/api/describeApiError';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 /** Matches `ActionSheet`'s own `Action`, which that component does not export. */
 interface NotificationAction {
@@ -77,7 +79,7 @@ function extractNotificationsPage(response: NotificationListResponse) {
   };
 }
 
-export default function NotificationsScreen() {
+function NotificationsScreen() {
   const { t } = useTranslation(['notifications', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -128,10 +130,14 @@ export default function NotificationsScreen() {
    * Marking or deleting changes BOTH the list and the count, so both are refetched. Before
    * this, refreshing the list alone would have left a stale total in the header.
    */
+  const { refreshCounts } = useRealtimeContext();
   const refreshAll = useCallback(() => {
     refresh();
     countsApi.refresh();
-  }, [refresh, countsApi]);
+    // The tab-bar badge reads the shared realtime counts, not this screen's — marking
+    // read here used to leave the badge where it was (audit 2026-09-07, B/F-10).
+    refreshCounts(true);
+  }, [refresh, countsApi, refreshCounts]);
 
   function handleMarkAll() {
     confirm({
@@ -700,3 +706,4 @@ function categoryColor(category: string | undefined | null, fallback: string, th
   }
 }
 
+export default withRouteGate(NotificationsScreen, 'notifications');

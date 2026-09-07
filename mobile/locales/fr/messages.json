@@ -90,7 +90,8 @@
       "startFailed": "Impossible de démarrer l’enregistrement. Réessayez.",
       "stopFailed": "Impossible d’enregistrer cet enregistrement. Réessayez.",
       "sendFailed": "Impossible d’envoyer le message vocal. Réessayez."
-    }
+    },
+    "notFound": "Cette conversation n’est plus disponible."
   },
   "context": {
     "regarding": "Concernant",

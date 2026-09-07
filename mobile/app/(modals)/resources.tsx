@@ -6,7 +6,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect, type Href } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Linking from 'expo-linking';
 import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
@@ -30,14 +30,21 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type ResourcesTab = 'resources' | 'kb';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
-export default function ResourcesScreen() {
+function ResourcesScreen() {
   const { t } = useTranslation(['resources', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  // A saved collection opens a resource by id (`profile-collections.tsx`). Until 2026-09-07
+  // this screen ignored the parameter, so "open saved resource" landed on the plain list and
+  // the member had to find the file again. The named item is pinned first and highlighted.
+  const params = useLocalSearchParams<{ item?: string | string[] }>();
+  const rawItem = Array.isArray(params.item) ? params.item[0] : params.item;
+  const highlightedId = /^\d+$/.test(rawItem ?? '') ? Number(rawItem) : null;
   const [tab, setTab] = useState<ResourcesTab>('resources');
   const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -58,7 +65,12 @@ export default function ResourcesScreen() {
     refresh: refreshKb,
   } = useApi(() => getKbArticles());
 
-  const resources = resourcesPage?.items ?? [];
+  const resources = useMemo(() => {
+    const items = resourcesPage?.items ?? [];
+    if (highlightedId === null) return items;
+    const pinned = items.find((item) => item.id === highlightedId);
+    return pinned ? [pinned, ...items.filter((item) => item.id !== highlightedId)] : items;
+  }, [highlightedId, resourcesPage?.items]);
   const kbArticles = useMemo(() => kbPage?.items ?? [], [kbPage?.items]);
   const filteredKb = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -164,7 +176,7 @@ export default function ResourcesScreen() {
             ) : tab === 'resources' ? (
               resources.length > 0 ? (
                 <View className="gap-3 px-4">
-                  {resources.map((item) => <ResourceCard key={item.id} item={item} />)}
+                  {resources.map((item) => <ResourceCard key={item.id} item={item} highlighted={item.id === highlightedId} />)}
                 </View>
               ) : (
                 <View className="px-4 py-8">
@@ -214,12 +226,19 @@ function CategoryStrip({
   );
 }
 
-function ResourceCard({ item }: { item: ResourceItem }) {
+function ResourceCard({ item, highlighted = false }: { item: ResourceItem; highlighted?: boolean }) {
   const { t } = useTranslation(['resources']);
   const theme = useTheme();
+  const primary = usePrimaryColor();
   const icon = fileIcon(item.file_path ?? item.file_url ?? '');
   return (
-    <HeroCard variant="default" className="overflow-hidden rounded-panel p-0">
+    <HeroCard
+      variant="default"
+      className="overflow-hidden rounded-panel p-0"
+      style={highlighted ? { borderWidth: 2, borderColor: primary } : undefined}
+      testID={highlighted ? `resource-card-highlighted-${item.id}` : `resource-card-${item.id}`}
+      accessibilityLabel={highlighted ? t('resources:savedItemHighlighted', { title: item.title }) : undefined}
+    >
       <HeroCard.Body className="gap-3 p-4">
         <View className="flex-row items-start gap-3">
           <View className="size-11 items-center justify-center rounded-panel-inner bg-surface-secondary">
@@ -281,3 +300,5 @@ function fileIcon(path: string): IoniconName {
 function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
+
+export default withRouteGate(ResourcesScreen, 'resources');

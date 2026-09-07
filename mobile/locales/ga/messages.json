@@ -90,7 +90,8 @@
       "startFailed": "Níorbh fhéidir an taifeadadh a thosú. Bain triail eile as.",
       "stopFailed": "Níorbh fhéidir an taifeadadh seo a shábháil. Bain triail eile as.",
       "sendFailed": "Níorbh fhéidir an teachtaireacht ghutha a sheoladh. Bain triail eile as."
-    }
+    },
+    "notFound": "Níl an comhrá seo ar fáil a thuilleadh."
   },
   "context": {
     "regarding": "Maidir Le",

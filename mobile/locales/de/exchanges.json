@@ -59,7 +59,11 @@
         "cancelDescription": "Dadurch wird der Gruppenaustausch für alle Teilnehmer abgesagt.",
         "confirmFailed": "Wir konnten Ihre Stunden nicht bestätigen. Bitte versuchen Sie es erneut.",
         "completeFailed": "Wir konnten diesen Austausch nicht abschließen. Bitte versuchen Sie es erneut.",
-        "cancelFailed": "Wir konnten diesen Austausch nicht stornieren. Bitte versuchen Sie es erneut."
+        "cancelFailed": "Wir konnten diesen Austausch nicht stornieren. Bitte versuchen Sie es erneut.",
+        "completeTitle": "Diesen Gruppenaustausch abschließen?",
+        "completeDescription": "Die Zeitgutschriften werden jetzt an alle Teilnehmenden übertragen. Das kann nicht rückgängig gemacht werden.",
+        "confirmTitle": "Deine Stunden bestätigen?",
+        "confirmDescription": "Mit der Bestätigung teilst du der Organisation mit, dass du für die angezeigten Stunden teilgenommen hast. Die Gutschriften werden übertragen, wenn der Austausch abgeschlossen wird."
       },
       "splitShare": "{{name}} — {{hours}} Stunden",
       "splitUnknownMember": "Mitglied #{{id}}"
@@ -116,7 +120,9 @@
       "summaryParticipants_one": "{{count}} teilnehmende Person ausgewählt",
       "summaryParticipants_other": "{{count}} teilnehmende Personen ausgewählt",
       "remove": "Remove",
-      "removeParticipant": "{{name}} entfernen"
+      "removeParticipant": "{{name}} entfernen",
+      "participantHoursInvalid": "Gib die Stunden für jede teilnehmende Person als Zahl ein, zum Beispiel 1,5.",
+      "participantWeightInvalid": "Gib für jede teilnehmende Person eine Gewichtung größer als null ein."
     }
   },
   "newExchange": "Neues Inserat",
@@ -509,7 +515,9 @@
         "other": "Etwas anderes",
         "quality": "Nicht wie vereinbart"
       }
-    }
+    },
+    "confirmSheetOtherConfirmed": "Das andere Mitglied hat {{hours}} Stunden bestätigt. Eine Abweichung von mehr als einer Viertelstunde schickt diesen Austausch zur Prüfung, statt ihn abzuschließen.",
+    "loadMore": "Weitere Austausche anzeigen"
   },
   "unknownMember": "Unbekanntes Mitglied"
 }

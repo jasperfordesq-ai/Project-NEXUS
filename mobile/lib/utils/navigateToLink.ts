@@ -9,6 +9,9 @@ import { mapSystemPathToNativeRoute } from '@/app/+native-intent';
 import { reportException, reportMessage, safeLinkSummary } from '@/lib/observability/report';
 import { isSafeExternalBrowserLink } from '@/lib/utils/safeExternalLink';
 import { isNativeHrefDisabled } from '@/lib/navigation/tenantCapabilityStore';
+import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
+// The i18next singleton, not '@/lib/i18n' — same reason as lib/utils/dateLocale.ts.
+import i18n from 'i18next';
 
 /**
  * Navigate a platform web/custom-scheme link through the same canonical mapper used by
@@ -35,7 +38,17 @@ export function navigateToLink(link: string | null): void {
     return;
   }
   if (isNativeHrefDisabled(mappedHref)) {
-    router.push('/(modals)/notifications');
+    /*
+      The community has switched this module off. This used to push the notifications
+      list — which, tapped FROM the notifications list, stacked a second copy of the same
+      screen on top of the first (audit 2026-09-07, B/F-11). Say so where the member is
+      instead; nothing about a disabled module is improved by moving them.
+    */
+    sessionNoticeStore.publish({
+      title: i18n.t('common:featureUnavailable.title'),
+      description: i18n.t('common:featureUnavailable.subtitle'),
+      variant: 'warning',
+    });
     return;
   }
 

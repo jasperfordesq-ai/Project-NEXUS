@@ -181,7 +181,9 @@
       "count_one": "{{count}} Export",
       "empty": "Noch keine Exporte",
       "emptyDesc": "Deine abgeschlossenen Exportanfragen werden hier angezeigt."
-    }
+    },
+    "downloaded": "Dein Export ist bereit",
+    "downloadedBody": "Das Archiv wurde heruntergeladen und im Teilen-Menü geöffnet, damit du es speichern oder an eine andere App senden kannst."
   },
   "translation": {
     "preferencesTitle": "Inhaltseinstellungen",
@@ -335,5 +337,11 @@
     "confirmRequired": "Bestätigung erforderlich",
     "confirmRequiredBody": "Geben Sie {{keyword}} und Ihr Passwort ein, um fortzufahren.",
     "alternativeHint": "Wenn Sie nur eine Pause möchten, können Sie stattdessen Benachrichtigungen ausschalten oder unter Datenschutz einschränken, wer Ihr Profil sieht."
+  },
+  "language": {
+    "title": "App-Sprache",
+    "hint": "Wähle die Sprache, die die App auf diesem Gerät verwendet.",
+    "optionHint": "Sprache der Oberfläche",
+    "current": "Derzeit ausgewählt"
   }
 }

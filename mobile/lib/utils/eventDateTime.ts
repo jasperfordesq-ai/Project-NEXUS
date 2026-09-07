@@ -18,6 +18,12 @@ export interface FormattedEventSchedule {
   startDateLabel: string | null;
   endDateLabel: string | null;
   timeLabel: string | null;
+  /**
+   * The end time in the event's zone, or null for an all-day event or one with no end.
+   * Detail screens showed only the start until 2026-09-07 (audit C/F-6): a 10:00–16:00
+   * workshop read "10:00 GMT+1".
+   */
+  endTimeLabel: string | null;
   monthLabel: string | null;
   dayLabel: string | null;
   weekdayLabel: string | null;
@@ -198,6 +204,7 @@ export function formatEventSchedule(
       startDateLabel: null,
       endDateLabel: null,
       timeLabel: null,
+      endTimeLabel: null,
       monthLabel: null,
       dayLabel: null,
       weekdayLabel: null,
@@ -241,6 +248,7 @@ export function formatEventSchedule(
       startDateLabel,
       endDateLabel: visibleEnd,
       timeLabel: null,
+      endTimeLabel: null,
       monthLabel: part('month'),
       dayLabel: part('day'),
       weekdayLabel: part('weekday'),
@@ -248,12 +256,14 @@ export function formatEventSchedule(
   }
 
   // locale-exempt: see the dateFormatter above.
-  const timeLabel = new Intl.DateTimeFormat(locale, {
+  const timeFormatter = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
     timeZoneName: 'short',
     timeZone,
-  }).format(start);
+  });
+  const timeLabel = timeFormatter.format(start);
+  const endTimeLabel = end && end.getTime() > start.getTime() ? timeFormatter.format(end) : null;
 
   return {
     allDay: false,
@@ -261,6 +271,7 @@ export function formatEventSchedule(
     startDateLabel,
     endDateLabel: end ? dateFormatter.format(end) : null,
     timeLabel,
+    endTimeLabel,
     monthLabel: part('month'),
     dayLabel: part('day'),
     weekdayLabel: part('weekday'),

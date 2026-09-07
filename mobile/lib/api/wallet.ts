@@ -164,6 +164,8 @@ export interface WalletDonatePayload {
   recipient_id?: number | string;
   amount: number;
   message: string;
+  /** Client-generated once per intended donation; the server replays a duplicate instead of debiting twice. */
+  idempotency_key?: string;
 }
 
 export interface WalletMutationResponse {

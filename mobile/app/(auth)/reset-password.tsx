@@ -87,7 +87,7 @@ export default function ResetPasswordScreen() {
   if (!token) {
     return (
       <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className="flex-grow">
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }} className="flex-grow">
           <View className="flex-1 justify-center px-5 py-10">
             <HeroCard className="overflow-hidden">
               <HeroCard.Header className="items-center px-6 pt-8 pb-4">
@@ -112,7 +112,7 @@ export default function ResetPasswordScreen() {
   return (
     <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
         className="flex-grow"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -169,7 +169,7 @@ export default function ResetPasswordScreen() {
                         returnKeyType="next"
                         leftIcon={<Ionicons name="lock-closed-outline" size={18} color={theme.textMuted} />}
                         rightIcon={(
-                          <HeroButton isIconOnly variant="secondary" accessibilityLabel={t('login.togglePassword')} onPress={() => setShowPassword((current) => !current)}>
+                          <HeroButton isIconOnly variant="secondary" accessibilityLabel={showPassword ? t('login.hidePassword') : t('login.showPassword')} onPress={() => setShowPassword((current) => !current)}>
                             <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color={theme.textMuted} />
                           </HeroButton>
                         )}
@@ -194,7 +194,7 @@ export default function ResetPasswordScreen() {
                         secureTextEntry={!showPassword}
                         autoComplete="new-password"
                         returnKeyType="send"
-                        onSubmitEditing={handleSubmit(onSubmit)}
+                        onSubmitEditing={isLoading ? undefined : handleSubmit(onSubmit)}
                         leftIcon={<Ionicons name="lock-closed-outline" size={18} color={theme.textMuted} />}
                       />
                     )}

@@ -780,6 +780,11 @@ Route::get('/v2/users/me/insurance', [\App\Http\Controllers\Api\UserInsuranceCon
 Route::post('/v2/users/me/insurance', [\App\Http\Controllers\Api\UserInsuranceController::class, 'store']);
 // GDPR / FADP — member personal-data export (R3)
 Route::post('/v2/me/data-export', [\App\Http\Controllers\Api\MemberDataExportController::class, 'create']);
+// GET twin of the same download. The native app cannot stream a POST response to a file
+// (expo-file-system downloads are GET-only), so until 2026-09-07 it requested the export,
+// received the archive bytes and discarded them — the member saw "Export requested" and
+// nothing ever arrived (mobile audit, B/F-01). Same handler, same rate limit, same audit row.
+Route::get('/v2/me/data-export', [\App\Http\Controllers\Api\MemberDataExportController::class, 'create']);
 Route::get('/v2/me/data-export/history', [\App\Http\Controllers\Api\MemberDataExportController::class, 'history']);
 // Block users
 Route::get('/v2/users/blocked', [\App\Http\Controllers\Api\BlockUserController::class, 'index']);

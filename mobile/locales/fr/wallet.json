@@ -93,7 +93,13 @@
     "exportFailedTitle": "Échec de l’export",
     "exportFailedMessage": "Nous n’avons pas pu préparer l’export de vos transactions. Veuillez réessayer.",
     "exportSuccessCount_one": "Votre export contient {{count}} transaction.",
-    "exportPartial_one": "Votre export contient {{count}} transaction. Votre historique est plus long qu’un export ne peut le couvrir : les entrées les plus anciennes ne sont donc pas incluses."
+    "exportPartial_one": "Votre export contient {{count}} transaction. Votre historique est plus long qu’un export ne peut le couvrir : les entrées les plus anciennes ne sont donc pas incluses.",
+    "confirmTransferTitle": "Envoyer ces heures ?",
+    "confirmTransferMessage": "Vous êtes sur le point d’envoyer {{amount}} heures à {{name}}. Cette action est irréversible.",
+    "confirmDonationTitle": "Faire don de ces heures ?",
+    "confirmDonationMessage": "Vous êtes sur le point de donner {{amount}} heures à {{name}}. Cette action est irréversible.",
+    "recipientResolving": "Vérification du destinataire…",
+    "recipientUnresolved": "Ce membre n’a pas été trouvé. Recherchez plutôt le destinataire."
   },
   "status": {
     "completed": "Terminé",

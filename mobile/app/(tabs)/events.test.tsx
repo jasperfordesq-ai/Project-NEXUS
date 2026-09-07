@@ -288,7 +288,7 @@ describe('EventsScreen', () => {
       items: [],
       isLoading: false,
       isLoadingMore: false,
-      error: 'Could not load events.',
+      error: 'The events service is unavailable right now.',
       hasMore: false,
       loadMore: jest.fn(),
       refresh: jest.fn(),
@@ -296,7 +296,35 @@ describe('EventsScreen', () => {
 
     const { getByText } = render(<EventsScreen />);
     expect(getByText('Could not load events.')).toBeTruthy();
+    // The server's own reason is shown too, like every other list screen (A/F-21).
+    expect(getByText('The events service is unavailable right now.')).toBeTruthy();
     expect(getByText('Retry')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 A failed LATER page used to swap the whole list for the error card, and Retry
+   * restarted from page one (audit 2026-09-07, C/F-5).
+   */
+  it('keeps the loaded events on screen when a later page fails, and retries just that page', () => {
+    const loadMore = jest.fn();
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValueOnce({
+      items: [mockEvent],
+      isLoading: false,
+      isLoadingMore: false,
+      error: 'Page two failed.',
+      hasMore: true,
+      loadMore,
+      refresh,
+    });
+
+    const { getByText, getByTestId } = render(<EventsScreen />);
+
+    expect(getByText('Community Bake Sale')).toBeTruthy();
+    expect(getByTestId('events-load-more-error')).toBeTruthy();
+    fireEvent.press(getByText('Retry'));
+    expect(loadMore).toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it('switches to Past tab when tapped', () => {

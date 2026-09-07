@@ -90,7 +90,8 @@
       "startFailed": "Não foi possível iniciar a gravação. Tente novamente.",
       "stopFailed": "Não foi possível guardar esta gravação. Tente novamente.",
       "sendFailed": "Não foi possível enviar a mensagem de voz. Tente novamente."
-    }
+    },
+    "notFound": "Esta conversa já não está disponível."
   },
   "context": {
     "regarding": "Referente a",

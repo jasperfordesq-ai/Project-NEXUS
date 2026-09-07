@@ -89,6 +89,18 @@ export interface AuthRedirectInput {
  *     and replacing here would make every refreshed page look like Home.
  *  5. A signed-out member is sent to login unless already on a public auth screen.
  */
+/**
+ * A password-reset or e-mail-verification link only makes sense while signed out. Replaying
+ * one after sign-in pushed the reset screen with a used token, re-POSTed the verification
+ * token, then bounced home (audit 2026-09-07, A/F-12). Matched on the path, whatever the
+ * scheme or host: `nexus://reset-password?token=…`, `https://…/hour-timebank/verify-email`.
+ */
+export function isSignedOutOnlyLink(url: string): boolean {
+  const withoutScheme = url.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/?#]*/i, '');
+  const path = withoutScheme.split(/[?#]/)[0].toLowerCase();
+  return /(?:^|\/)(?:reset-password|verify-email|forgot-password)(?:\/|$)/.test(path) || /^\/?(?:reset-password|verify-email|forgot-password)$/.test(url.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').split(/[?#]/)[0].toLowerCase());
+}
+
 export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
   const {
     isLoading,
@@ -115,7 +127,7 @@ export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
       return { action: 'replace', href: '/(modals)/onboarding' };
     }
 
-    if (pendingDeepLink) {
+    if (pendingDeepLink && !isSignedOutOnlyLink(pendingDeepLink)) {
       return { action: 'deep-link', url: pendingDeepLink };
     }
 

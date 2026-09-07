@@ -59,7 +59,11 @@
         "cancelDescription": "Isso cancelará a troca de grupo para todos os participantes.",
         "confirmFailed": "Não foi possível confirmar seu horário. Tente novamente.",
         "completeFailed": "Não foi possível concluir esta troca. Por favor, tente novamente.",
-        "cancelFailed": "Não foi possível cancelar esta troca. Tente novamente."
+        "cancelFailed": "Não foi possível cancelar esta troca. Tente novamente.",
+        "completeTitle": "Concluir esta troca de grupo?",
+        "completeDescription": "Os créditos de tempo serão transferidos para todos os participantes agora. Esta ação não pode ser anulada.",
+        "confirmTitle": "Confirmar as suas horas?",
+        "confirmDescription": "Ao confirmar, indica ao organizador que participou durante as horas indicadas. Os créditos movem-se quando a troca for concluída."
       },
       "splitShare": "{{name}} — {{hours}} horas",
       "splitUnknownMember": "Membro #{{id}}"
@@ -116,7 +120,9 @@
       "summaryParticipants_one": "{{count}} participante selecionado",
       "summaryParticipants_other": "{{count}} participantes selecionados",
       "remove": "Remove",
-      "removeParticipant": "Remover {{name}}"
+      "removeParticipant": "Remover {{name}}",
+      "participantHoursInvalid": "Introduza as horas de cada participante como um número, por exemplo 1,5.",
+      "participantWeightInvalid": "Introduza um peso maior que zero para cada participante."
     }
   },
   "newExchange": "Novo Listagem",
@@ -509,7 +515,9 @@
         "other": "Outra coisa",
         "quality": "Não foi o combinado"
       }
-    }
+    },
+    "confirmSheetOtherConfirmed": "O outro membro confirmou {{hours}} horas. Uma diferença superior a um quarto de hora envia esta troca para revisão em vez de a concluir.",
+    "loadMore": "Mostrar mais trocas"
   },
   "unknownMember": "Membro desconhecido"
 }

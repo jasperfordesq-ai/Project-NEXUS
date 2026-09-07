@@ -174,7 +174,9 @@
     "collectionsPublicHint": "Parcourez les collections publiques partagées par {{name}}.",
     "viewMyCollections": "Voir mes collections",
     "viewCollections": "Voir les collections",
-    "viewCollectionsFor": "Voir les collections de {{name}}"
+    "viewCollectionsFor": "Voir les collections de {{name}}",
+    "notAvailable": "Ce profil n’est pas disponible. Le membre n’a peut-être pas terminé la configuration de son compte.",
+    "notVisible": "Vous ne pouvez pas consulter le profil de ce membre."
   },
   "collections": {
     "removeConfirmTitle": "Retirer cet élément enregistré ?",

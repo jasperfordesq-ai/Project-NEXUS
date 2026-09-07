@@ -221,6 +221,11 @@ export function usePaginatedApi<TItem, TResponse>(
       return;
     }
 
+    // The previous dependency set's rows are not this one's. Leaving them on screen until
+    // the response arrived made a tab switch look like nothing had happened, then jump
+    // (audit 2026-09-07, C/F-18). `refresh()` deliberately does NOT do this: a pull to
+    // refresh keeps what is loaded until the new page replaces it.
+    setItems([]);
     void fetchPage(null, true);
 
     return () => {

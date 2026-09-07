@@ -139,6 +139,7 @@ describe('SettingsTranslationScreen', () => {
         auto_translate_target_locale: 'ga',
       },
     }));
-    expect(mockChangeLanguage).toHaveBeenCalledWith('ga');
+    // The translation target is not the interface language (audit 2026-09-07, B/F-16).
+    expect(mockChangeLanguage).not.toHaveBeenCalled();
   });
 });

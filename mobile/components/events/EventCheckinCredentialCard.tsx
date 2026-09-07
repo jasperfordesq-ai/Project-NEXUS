@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { AppState, Share, Text, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import AccentIcon from '@/components/ui/AccentIcon';
@@ -86,8 +87,8 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
       const response = await issueMyEventCheckinCredential(eventId, issueKey.current);
       applyResponse(response);
       issueKey.current = null;
-    } catch {
-      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, ''), variant: 'danger' });
       await load();
     } finally {
       setBusy(false);
@@ -108,8 +109,8 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
       applyResponse(response);
       rotateKey.current = null;
       setReason('');
-    } catch {
-      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, ''), variant: 'danger' });
       await load();
     } finally {
       setBusy(false);
@@ -133,8 +134,8 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
       ));
       setReason('');
       showToast({ title: t('eventOfflineCheckin:credential.revoked'), variant: 'success' });
-    } catch {
-      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('eventOfflineCheckin:credential.unavailable'), description: describeApiError(error, ''), variant: 'danger' });
       await load();
     } finally {
       setBusy(false);

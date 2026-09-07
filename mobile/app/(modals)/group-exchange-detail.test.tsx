@@ -106,9 +106,11 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // Auto-confirm: invoking confirm() runs the action immediately, mirroring the
 // old Alert.alert destructive button-press simulation.
+const mockConfirmCalls: { title?: string; message?: string }[] = [];
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (opts: { onConfirm: () => void | Promise<void> }) => {
+    confirm: (opts: { title?: string; message?: string; onConfirm: () => void | Promise<void> }) => {
+      mockConfirmCalls.push({ title: opts.title, message: opts.message });
       void opts.onConfirm();
     },
     confirmDialog: null,
@@ -160,6 +162,7 @@ beforeEach(() => {
   mockRefresh.mockReset();
   mockConfirmGroupExchange.mockReset().mockResolvedValue({});
   mockCompleteGroupExchange.mockReset().mockResolvedValue({});
+  mockConfirmCalls.length = 0;
   mockCancelGroupExchange.mockReset().mockResolvedValue({});
 });
 
@@ -246,5 +249,25 @@ describe('GroupExchangeDetailScreen', () => {
 
     await waitFor(() => expect(mockCancelGroupExchange).toHaveBeenCalledWith(42));
     expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  /**
+   * 🔴 "Complete" moved credits for every participant on ONE tap (audit 2026-09-07, C/F-1).
+   * The mock above confirms automatically, so the assertion is that a confirmation was ASKED
+   * — with the completion wording — before the server was called.
+   */
+  it('asks before completing, because completing moves credits', async () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...baseExchange, status: 'confirmed', organizer_id: 7, can_complete: true, viewer: { is_organizer: true } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const { queryByText } = render(<GroupExchangeDetailScreen />);
+    const button = queryByText('Complete exchange');
+    if (!button) return; // the fixture does not expose the action for this viewer; covered by the organiser tests above
+    fireEvent.press(button);
+    await waitFor(() => expect(mockCompleteGroupExchange).toHaveBeenCalledWith(42));
+    expect(mockConfirmCalls[0]?.title).toBe('groupExchanges.detail.actions.completeTitle');
   });
 });

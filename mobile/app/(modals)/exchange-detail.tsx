@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
-import { useLocalSearchParams, router, type Href } from 'expo-router';
+import { useLocalSearchParams, router, useFocusEffect, type Href } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +56,7 @@ import CommentSheet from '@/components/comments/CommentSheet';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 interface DetailStateProps {
   title: string;
@@ -83,7 +84,7 @@ function DetailState({ title, backLabel, message, onAction }: DetailStateProps) 
   );
 }
 
-export default function ExchangeDetailModal() {
+function ExchangeDetailModal() {
   return (
     <ModalErrorBoundary>
       <ExchangeDetailModalInner />
@@ -109,6 +110,18 @@ function ExchangeDetailModalInner() {
   const [isSaved, setIsSaved] = useState(false);
   const [workflowEnabled, setWorkflowEnabled] = useState(false);
   const [activeExchange, setActiveExchange] = useState<ActiveExchange | null>(null);
+  /*
+    🔴 Bumped on every focus so the two checks below re-run. They used to run once per
+    listing id: after the member cancelled the exchange on its own screen and came back,
+    this screen still said "Exchange active" and refused a new request (audit 2026-09-07,
+    B/F-09). Deep-linking to the same id never remounts, so the id alone cannot do it.
+  */
+  const [workflowCheckVersion, setWorkflowCheckVersion] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      setWorkflowCheckVersion((version) => version + 1);
+    }, []),
+  );
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
   const [requestHours, setRequestHours] = useState('');
@@ -163,7 +176,7 @@ function ExchangeDetailModalInner() {
     return () => {
       cancelled = true;
     };
-  }, [safeExchangeId]);
+  }, [safeExchangeId, workflowCheckVersion]);
 
   useEffect(() => {
     if (exchange) {
@@ -176,6 +189,15 @@ function ExchangeDetailModalInner() {
       setActiveImageIndex(0);
     }
   }, [exchange]);
+
+  /*
+    The member already has an exchange open for this listing. Take them to it — the toast
+    that used to sit here named the problem and offered no way to it (B/F-09).
+  */
+  const openActiveExchange = useCallback(() => {
+    if (!activeExchange) return;
+    router.push({ pathname: '/(modals)/exchange-request-detail', params: { id: String(activeExchange.id) } } as unknown as Href);
+  }, [activeExchange]);
 
   const handleAction = useCallback(
     (recipientId: number, recipientName: string) => {
@@ -395,7 +417,7 @@ function ExchangeDetailModalInner() {
   async function handleRequestExchange() {
     if (isSubmitting || activeExchange) {
       if (activeExchange) {
-        showToast({ title: t('detail.exchangeActiveTitle'), description: t('detail.exchangeActiveMessage'), variant: 'warning' });
+        openActiveExchange();
       }
       return;
     }
@@ -924,7 +946,7 @@ function ExchangeDetailModalInner() {
             onPress={() => {
               if (workflowEnabled) {
                 if (activeExchange) {
-                  showToast({ title: t('detail.exchangeActiveTitle'), description: t('detail.exchangeActiveMessage'), variant: 'warning' });
+                  openActiveExchange();
                   return;
                 }
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1056,3 +1078,5 @@ function uniqueRelatedListings(items: RelatedExchange[], currentId: number, curr
 function normalizeRelatedTitle(title: string): string {
   return title.trim().toLowerCase().replace(/\s+/g, ' ');
 }
+
+export default withRouteGate(ExchangeDetailModal, 'exchange-detail');

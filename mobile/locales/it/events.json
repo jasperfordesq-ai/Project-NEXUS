@@ -173,7 +173,9 @@
     "loadFailedTitle": "Impossibile aprire questo evento",
     "unsavedTitle": "Scartare questo evento?",
     "unsavedMessage": "Hai dati non salvati. Se esci ora, andranno perduti.",
-    "discard": "Scarta"
+    "discard": "Scarta",
+    "notAllowedTitle": "Non puoi modificare questo evento",
+    "notAllowed": "Solo l’organizzatore e il team dell’evento possono modificarlo. Se pensi di doverlo poter fare, chiedi all’organizzatore."
   },
   "category": {
     "workshop": "Laboratorio",
@@ -943,5 +945,16 @@
       "revoke_success": "L'accesso per {{name}} è stato revocato.",
       "revoke_error": "Non è stato possibile revocare il ruolo dell'evento."
     }
+  },
+  "queue": {
+    "readOnlyRevoked": "Questo dispositivo non è più autorizzato a registrare le presenze. Tutto ciò che è stato scansionato qui resta conservato in sola lettura finché non lo rimuovi."
+  },
+  "scan": {
+    "alreadyQueued": "Questo badge è già in coda per quell’azione.",
+    "expired": "Questo badge è scaduto. Chiedi al membro di aggiornarlo.",
+    "wrongEvent": "Questo badge appartiene a un altro evento.",
+    "revoked": "Questo badge è stato revocato o sostituito.",
+    "signingKeyUnknown": "Questo badge è stato emesso dopo l’ultima sincronizzazione di questo dispositivo. Sincronizza e riprova.",
+    "queueFull": "La coda offline è piena. Sincronizza prima di continuare."
   }
 }

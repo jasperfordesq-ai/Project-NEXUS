@@ -173,7 +173,9 @@
     "loadFailedTitle": "Couldn't open this event",
     "unsavedTitle": "Discard this event?",
     "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
-    "discard": "Discard"
+    "discard": "Discard",
+    "notAllowedTitle": "You cannot edit this event",
+    "notAllowed": "Only the organiser and the event team can change it. If you think you should be able to, ask the organiser."
   },
   "category": {
     "workshop": "Workshop",
@@ -943,5 +945,16 @@
       "revoke_success": "Access for {{name}} was revoked.",
       "revoke_error": "The event role could not be revoked."
     }
+  },
+  "queue": {
+    "readOnlyRevoked": "This device is no longer allowed to check people in. Anything scanned here is kept, read-only, until you remove it."
+  },
+  "scan": {
+    "alreadyQueued": "This badge is already in the queue for that action.",
+    "expired": "This badge has expired. Ask the member to refresh it.",
+    "wrongEvent": "This badge belongs to a different event.",
+    "revoked": "This badge has been revoked or replaced.",
+    "signingKeyUnknown": "This badge was issued after this device last synced. Sync, then scan again.",
+    "queueFull": "The offline queue is full. Sync before scanning more."
   }
 }

@@ -86,7 +86,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
         className="flex-grow"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -166,14 +166,14 @@ export default function LoginScreen() {
                       autoComplete="password"
                       textContentType="password"
                       returnKeyType="done"
-                      onSubmitEditing={handleSubmit(onSubmit)}
+                      onSubmitEditing={isLoading ? undefined : handleSubmit(onSubmit)}
                       rightIcon={
                         <HeroButton
                           isIconOnly
-                          size="sm"
+                          size="md"
                           variant="ghost"
                           onPress={() => setShowPassword((p) => !p)}
-                          accessibilityLabel={t('login.togglePassword')}
+                          accessibilityLabel={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                         >
                           <Ionicons
                             name={showPassword ? 'eye-off-outline' : 'eye-outline'}

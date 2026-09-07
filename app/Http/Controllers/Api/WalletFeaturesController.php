@@ -358,6 +358,37 @@ class WalletFeaturesController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.amount_out_of_range'), 'amount', 400);
         }
 
+        // Anti-double-submit across time, not just across concurrent requests. The lock
+        // below stops two donations landing in the same ten seconds; it cannot stop the
+        // mobile app's "the request timed out, tap Donate again" case a minute later,
+        // which used to donate twice (mobile audit 2026-09-07, B/F-03). The client sends
+        // one `idempotency_key` per intended donation (header or body, like transfer);
+        // the key is bound to the donation's content so a reused key with a different
+        // amount or recipient is still treated as a new donation. A replay returns the
+        // original success without moving credits again. Fails OPEN on cache trouble —
+        // never block a legitimate donation on cache flakiness.
+        $recipientType = $data['recipient_type'] ?? 'community_fund';
+        $idemKey = trim((string) ($data['idempotency_key'] ?? request()->header('Idempotency-Key', '')));
+        $idemCacheKey = null;
+        if ($idemKey !== '') {
+            $fingerprint = sha1(implode('|', [
+                $idemKey,
+                (string) $recipientType,
+                (string) ($data['recipient_id'] ?? ''),
+                (string) (float) $data['amount'],
+                (string) ($data['message'] ?? ''),
+            ]));
+            $idemCacheKey = sprintf('wallet_donate:idem:%d:%d:%s', TenantContext::getId(), $userId, $fingerprint);
+            try {
+                $replay = \Illuminate\Support\Facades\Cache::get($idemCacheKey);
+                if (is_array($replay) && ($replay['status'] ?? null) === 'completed') {
+                    return $this->respondWithData(['message' => __('api_controllers_2.wallet.donation_successful'), 'replayed' => true], null, 201);
+                }
+            } catch (\Throwable $e) {
+                $idemCacheKey = null;
+            }
+        }
+
         $lock = \Illuminate\Support\Facades\Cache::lock(
             sprintf('wallet_donate:%d:%d', TenantContext::getId(), $userId),
             10
@@ -367,7 +398,6 @@ class WalletFeaturesController extends BaseApiController
         }
 
         try {
-            $recipientType = $data['recipient_type'] ?? 'community_fund';
 
             if ($recipientType === 'user') {
                 if (empty($data['recipient_id'])) {
@@ -395,6 +425,15 @@ class WalletFeaturesController extends BaseApiController
 
         if (!$result['success']) {
             return $this->respondWithError('DONATION_FAILED', $result['error'], null, 400);
+        }
+
+        if ($idemCacheKey !== null) {
+            try {
+                // 24 hours, matching the transfer path's explicit-key window.
+                \Illuminate\Support\Facades\Cache::put($idemCacheKey, ['status' => 'completed'], 86400);
+            } catch (\Throwable $e) {
+                // best-effort — a failed cache write only weakens replay protection
+            }
         }
 
         return $this->respondWithData(['message' => __('api_controllers_2.wallet.donation_successful')], null, 201);

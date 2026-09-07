@@ -173,7 +173,9 @@
     "loadFailedTitle": "Não foi possível abrir este evento",
     "unsavedTitle": "Descartar este evento?",
     "unsavedMessage": "Tem dados por guardar. Se sair agora, vai perdê-los.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "notAllowedTitle": "Não pode editar este evento",
+    "notAllowed": "Só o organizador e a equipa do evento o podem alterar. Se acha que devia poder, fale com o organizador."
   },
   "category": {
     "workshop": "Oficina",
@@ -943,5 +945,16 @@
       "revoke_success": "O acesso para {{name}} foi revogado.",
       "revoke_error": "A função do evento não pôde ser revogada."
     }
+  },
+  "queue": {
+    "readOnlyRevoked": "Este dispositivo já não está autorizado a registar entradas. Tudo o que foi digitalizado aqui fica guardado, apenas para leitura, até o remover."
+  },
+  "scan": {
+    "alreadyQueued": "Este cartão já está na fila para essa ação.",
+    "expired": "Este cartão expirou. Peça ao membro para o atualizar.",
+    "wrongEvent": "Este cartão pertence a outro evento.",
+    "revoked": "Este cartão foi revogado ou substituído.",
+    "signingKeyUnknown": "Este cartão foi emitido depois da última sincronização deste dispositivo. Sincronize e digitalize novamente.",
+    "queueFull": "A fila offline está cheia. Sincronize antes de digitalizar mais."
   }
 }

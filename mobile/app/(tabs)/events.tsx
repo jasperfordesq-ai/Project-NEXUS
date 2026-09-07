@@ -29,6 +29,8 @@ import { EventCardSkeleton } from '@/components/ui/Skeleton';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatEventSchedule } from '@/lib/utils/eventDateTime';
+import OfflineBanner from '@/components/OfflineBanner';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function extractEventsPage(r: CanonicalEventsResponse) {
   return {
@@ -47,7 +49,7 @@ function isStepFreeSelection(value: unknown): value is StepFreeSelection {
   return typeof value === 'string' && STEP_FREE_OPTIONS.includes(value as StepFreeSelection);
 }
 
-export default function EventsScreen() {
+function EventsScreen() {
   const { t } = useTranslation(['events', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -90,13 +92,16 @@ export default function EventsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-      {error ? (
+      <OfflineBanner />
+      {error && items.length === 0 ? (
         <View className="flex-1">
           <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={items.length} isLoading={isLoading} />
           <HeroCard variant="secondary" className="mx-4 my-8">
             <HeroCard.Body className="items-center gap-4">
               <Ionicons name="warning-outline" size={30} color={primary} />
               <Text className="text-center text-sm leading-5" style={{ color: theme.textSecondary }}>{t('loadError')}</Text>
+              {/* The server's own reason, like every other list screen (audit 2026-09-07, A/F-21). */}
+              <Text className="text-center text-xs leading-4" style={{ color: theme.textMuted }}>{error}</Text>
               <HeroButton variant="primary" onPress={() => void refresh()}>
                 <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
               </HeroButton>
@@ -150,6 +155,18 @@ export default function EventsScreen() {
           ListFooterComponent={
             isLoadingMore ? (
               <View className="py-4 items-center"><Spinner size="sm" /></View>
+            ) : error && items.length > 0 ? (
+              /*
+                🔴 A failed LATER page used to swap the whole list for the error card and
+                Retry restarted from page one (audit 2026-09-07, C/F-5). Keep what loaded;
+                offer to fetch the missing page.
+              */
+              <View className="items-center gap-2 px-4 py-4" testID="events-load-more-error">
+                <Text className="text-center text-xs" style={{ color: theme.textSecondary }}>{error}</Text>
+                <HeroButton size="sm" variant="secondary" onPress={() => void loadMore()}>
+                  <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+                </HeroButton>
+              </View>
             ) : !hasMore && items.length > 0 && !isLoading ? (
               <View className="py-4 items-center">
                 <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('common:endOfList')}</Text>
@@ -423,3 +440,5 @@ function EventCard({
     </NativePressable>
   );
 }
+
+export default withRouteGate(EventsScreen, 'events');

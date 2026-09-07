@@ -21,5 +21,6 @@
   "errorTitle": "Could not load resources",
   "categoryCount": "{{count}} items",
   "categoryCount_one": "{{count}} item",
-  "uncategorized": "General"
+  "uncategorized": "General",
+  "savedItemHighlighted": "Saved resource: {{title}}"
 }

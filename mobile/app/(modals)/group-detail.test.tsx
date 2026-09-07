@@ -620,6 +620,28 @@ describe('GroupDetailScreen', () => {
     });
   });
 
+  /**
+   * 🔴 A private group answers a join with status "pending". The screen used to show
+   * "Joined" and then silently flip back to "Join" (audit 2026-09-07, C/F-2).
+   */
+  it('shows a private group join as requested, not joined', async () => {
+    jest.mocked(joinGroup).mockResolvedValueOnce({ data: { status: 'pending', action: 'requested', message: 'Request sent to the organisers.' } });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: false, visibility: 'private' } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText, queryByText, getByTestId } = render(<GroupDetailScreen />);
+
+    fireEvent.press(getByText('Join'));
+
+    await waitFor(() => expect(joinGroup).toHaveBeenCalledWith(1));
+    await waitFor(() => expect(getByTestId('group-join-requested')).toBeTruthy());
+    expect(queryByText('Leave')).toBeNull();
+  });
+
   it('shows an edit action for group admins', () => {
     mockUseApi.mockReturnValue({
       data: {

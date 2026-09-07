@@ -90,7 +90,8 @@
       "startFailed": "Impossibile avviare la registrazione. Riprova.",
       "stopFailed": "Impossibile salvare questa registrazione. Riprova.",
       "sendFailed": "Impossibile inviare il messaggio vocale. Riprova."
-    }
+    },
+    "notFound": "Questa conversazione non è più disponibile."
   },
   "context": {
     "regarding": "Riguardante",

@@ -35,6 +35,7 @@ import { ExchangeCardSkeleton } from '@/components/ui/Skeleton';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function extractExchangePage(response: ExchangeListResponse) {
   const seen = new Set<number>();
@@ -100,7 +101,7 @@ function getHoursParams(value: HoursRange): Record<string, string> {
   }
 }
 
-export default function ExchangesScreen() {
+function ExchangesScreen() {
   const { t } = useTranslation(['exchanges', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -324,7 +325,13 @@ export default function ExchangesScreen() {
     setRadiusKm(value);
   }, []);
 
+  // Listings with a save/unsave request in flight. A second tap while the first is still
+  // travelling used to race the two requests and could leave the icon and the server
+  // disagreeing (audit 2026-09-07, A/F-19).
+  const savingListingsRef = useRef(new Set<number>());
   const handleToggleSave = useCallback(async (listingId: number, currentlySaved: boolean) => {
+    if (savingListingsRef.current.has(listingId)) return;
+    savingListingsRef.current.add(listingId);
     const nextSaved = !currentlySaved;
     setSavedOverrides((current) => ({ ...current, [listingId]: nextSaved }));
 
@@ -343,6 +350,8 @@ export default function ExchangesScreen() {
         description: describeApiError(error, t('detail.saveFailed')),
         variant: 'danger',
       });
+    } finally {
+      savingListingsRef.current.delete(listingId);
     }
   }, [showToast, t]);
 
@@ -392,7 +401,7 @@ export default function ExchangesScreen() {
           */}
           <HeroButton
             isIconOnly
-            size="sm"
+            size="md"
             variant="secondary"
             testID="exchanges-my-exchanges"
             onPress={() => router.push('/(modals)/exchange-requests')}
@@ -402,7 +411,7 @@ export default function ExchangesScreen() {
           </HeroButton>
           <HeroButton
             isIconOnly
-            size="sm"
+            size="md"
             variant="primary"
             onPress={() => {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -784,3 +793,5 @@ function NearMeFilter({
     </Surface>
   );
 }
+
+export default withRouteGate(ExchangesScreen, 'exchanges');

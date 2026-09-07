@@ -12,7 +12,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Alert, Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 
 import {
   acceptEventWaitlistOffer,
@@ -75,6 +75,7 @@ import {
   previewEventTemplateCapture,
   type MobileEventTemplateCapturePreview,
 } from '@/lib/api/eventTemplates';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
 
@@ -84,7 +85,7 @@ function eventMutationKey(action: 'accept-offer' | 'rsvp-going' | 'rsvp-interest
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
-export default function EventDetailScreen() {
+function EventDetailScreen() {
   return (
     <ModalErrorBoundary>
       <EventDetailScreenInner />
@@ -192,10 +193,22 @@ function EventDetailScreenInner() {
     interested: currentMetrics.interested_count,
   };
   const formattedSchedule = formatEventSchedule(event.schedule, dateLocale());
-  const dateStr = formattedSchedule.dateLabel ?? '-';
+  // Start – end, and the end date when it differs (a two-day timed event used to show only
+  // its first day; a 10:00–16:00 workshop only "10:00") — audit 2026-09-07, C/F-6.
+  const spansDays = !formattedSchedule.allDay
+    && formattedSchedule.endDateLabel
+    && formattedSchedule.endDateLabel !== formattedSchedule.startDateLabel;
+  const dateStr = spansDays
+    ? `${formattedSchedule.startDateLabel} – ${formattedSchedule.endDateLabel}`
+    : formattedSchedule.dateLabel ?? '-';
   const timeStr = formattedSchedule.allDay
     ? t('allDay')
-    : formattedSchedule.timeLabel ?? '-';
+    : formattedSchedule.endTimeLabel
+      ? `${formattedSchedule.timeLabel} – ${formattedSchedule.endTimeLabel}`
+      : formattedSchedule.timeLabel ?? '-';
+  const cancellationReason = (event.schedule.operational_state === 'cancelled' || event.schedule.operational_state === 'postponed')
+    ? (event.schedule.cancellation_reason?.trim() || null)
+    : null;
   const accent = event.category?.colour ?? '#F59E0B';
   const coverImage = resolveImageUrl(event.primary_image?.url);
   const lifecycleChip = event.schedule.publication_state === 'archived'
@@ -537,6 +550,16 @@ function EventDetailScreenInner() {
         <View className="flex-row gap-3">
           <DetailMetric icon="calendar-outline" label={t('detail.date')} value={dateStr} primary={primary} />
           <DetailMetric icon="time-outline" label={t('detail.time')} value={timeStr} primary={primary} />
+          {cancellationReason ? (
+            /* The organiser's reason travelled in the payload and was never shown (C/F-7). */
+            <Alert status="warning" className="mt-2" testID="event-cancellation-reason">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>{lifecycleChip?.label ?? t('cancelled')}</Alert.Title>
+                <Alert.Description>{cancellationReason}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+          ) : null}
         </View>
 
         {event.online_access.mode !== 'in_person' ? (
@@ -1822,3 +1845,5 @@ function getAttendeeStatusLabel(attendee: EventAttendee, t: (key: string, opts?:
   if (attendee.engagement.state === 'interested') return t('detail.attendeeInterested');
   return t('detail.attendeeGoing');
 }
+
+export default withRouteGate(EventDetailScreen, 'event-detail');

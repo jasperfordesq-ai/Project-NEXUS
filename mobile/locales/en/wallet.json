@@ -93,7 +93,13 @@
     "exportFailedTitle": "Export failed",
     "exportFailedMessage": "We could not prepare your transaction export. Please try again.",
     "exportSuccessCount_one": "Your export contains {{count}} transaction.",
-    "exportPartial_one": "Your export contains {{count}} transaction. Your history is longer than one export can cover, so the oldest entries are not included."
+    "exportPartial_one": "Your export contains {{count}} transaction. Your history is longer than one export can cover, so the oldest entries are not included.",
+    "confirmTransferTitle": "Send these credits?",
+    "confirmTransferMessage": "You are about to send {{amount}} hours to {{name}}. This cannot be undone.",
+    "confirmDonationTitle": "Donate these credits?",
+    "confirmDonationMessage": "You are about to donate {{amount}} hours to {{name}}. This cannot be undone.",
+    "recipientResolving": "Checking the recipient…",
+    "recipientUnresolved": "That member could not be found. Search for the recipient instead."
   },
   "status": {
     "completed": "Completed",

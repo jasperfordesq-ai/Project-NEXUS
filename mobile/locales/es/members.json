@@ -174,7 +174,9 @@
     "collectionsPublicHint": "Explora las colecciones públicas compartidas por {{name}}.",
     "viewMyCollections": "Ver mis colecciones",
     "viewCollections": "Ver colecciones",
-    "viewCollectionsFor": "Ver las colecciones de {{name}}"
+    "viewCollectionsFor": "Ver las colecciones de {{name}}",
+    "notAvailable": "Este perfil no está disponible. Es posible que la persona aún no haya terminado de configurar su cuenta.",
+    "notVisible": "No puedes ver el perfil de esta persona."
   },
   "collections": {
     "removeConfirmTitle": "¿Quitar este elemento guardado?",

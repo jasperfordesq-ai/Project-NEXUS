@@ -93,7 +93,13 @@
     "exportFailedTitle": "Theip ar an easpórtáil",
     "exportFailedMessage": "Níorbh fhéidir linn easpórtáil do chuid idirbheart a ullmhú. Bain triail eile as.",
     "exportSuccessCount_one": "Tá {{count}} idirbheart amháin san easpórtáil.",
-    "exportPartial_one": "Tá {{count}} idirbheart amháin san easpórtáil. Tá do stair níos faide ná mar is féidir le heaspórtáil amháin a chlúdach, mar sin níl na hiontrálacha is sine san áireamh."
+    "exportPartial_one": "Tá {{count}} idirbheart amháin san easpórtáil. Tá do stair níos faide ná mar is féidir le heaspórtáil amháin a chlúdach, mar sin níl na hiontrálacha is sine san áireamh.",
+    "confirmTransferTitle": "An uaireanta seo a sheoladh?",
+    "confirmTransferMessage": "Tá tú ar tí {{amount}} uair a sheoladh chuig {{name}}. Ní féidir é seo a chealú.",
+    "confirmDonationTitle": "An uaireanta seo a bhronnadh?",
+    "confirmDonationMessage": "Tá tú ar tí {{amount}} uair a bhronnadh ar {{name}}. Ní féidir é seo a chealú.",
+    "recipientResolving": "Ag seiceáil an fhaighteora…",
+    "recipientUnresolved": "Níorbh fhéidir an comhalta sin a aimsiú. Cuardaigh an faighteoir ina ionad."
   },
   "status": {
     "completed": "Críochnaithe",

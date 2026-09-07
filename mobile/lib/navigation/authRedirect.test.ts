@@ -9,7 +9,7 @@
  * until this was extracted from `app/_layout.tsx` none of them had a test.
  */
 
-import { decideAuthRedirect, isPublicAuthPath, isTenantSelectionPath } from './authRedirect';
+import { decideAuthRedirect, isPublicAuthPath, isTenantSelectionPath, isSignedOutOnlyLink } from './authRedirect';
 
 const LOADING = {
   isLoading: true,
@@ -239,5 +239,42 @@ describe('path classification', () => {
   it('treats an ordinary member route as private', () => {
     expect(isPublicAuthPath('/members')).toBe(false);
     expect(isPublicAuthPath('/')).toBe(false);
+  });
+});
+
+/**
+ * 🔴 A reset or verification link only makes sense while signed out. Replaying it after
+ * sign-in pushed the reset screen with a used token and re-POSTed the verification token
+ * before bouncing home (audit 2026-09-07, A/F-12).
+ */
+describe('signed-out-only links', () => {
+  it.each([
+    'nexus://reset-password?token=abc',
+    'https://app.project-nexus.ie/reset-password?token=abc',
+    'https://app.project-nexus.ie/hour-timebank/verify-email?token=abc',
+    'nexus://verify-email?token=abc',
+    '/forgot-password',
+  ])('recognises %s', (url) => {
+    expect(isSignedOutOnlyLink(url)).toBe(true);
+  });
+
+  it.each([
+    'nexus://events/44',
+    'https://app.project-nexus.ie/hour-timebank/listings/9',
+    'https://app.project-nexus.ie/settings?tab=notifications',
+  ])('leaves %s alone', (url) => {
+    expect(isSignedOutOnlyLink(url)).toBe(false);
+  });
+
+  it('drops a queued reset link once the member is signed in, and goes home', () => {
+    const decision = decideAuthRedirect({
+      isLoading: false,
+      isAuthenticated: true,
+      onboardingCompleted: true,
+      hasSelectedTenant: true,
+      pathname: '/',
+      pendingDeepLink: 'nexus://reset-password?token=used',
+    });
+    expect(decision).toEqual({ action: 'replace', href: '/(tabs)/home' });
   });
 });

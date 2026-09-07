@@ -92,7 +92,7 @@ export default function VerifyEmailScreen() {
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className="flex-grow">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }} className="flex-grow">
         <View className="flex-1 justify-center px-5 py-10">
           <HeroCard className="overflow-hidden">
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">

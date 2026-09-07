@@ -90,7 +90,8 @@
       "startFailed": "Die Aufnahme konnte nicht gestartet werden. Versuche es erneut.",
       "stopFailed": "Diese Aufnahme konnte nicht gespeichert werden. Versuche es erneut.",
       "sendFailed": "Die Sprachnachricht konnte nicht gesendet werden. Versuche es erneut."
-    }
+    },
+    "notFound": "Diese Unterhaltung ist nicht mehr verfügbar."
   },
   "context": {
     "regarding": "Bezüglich",

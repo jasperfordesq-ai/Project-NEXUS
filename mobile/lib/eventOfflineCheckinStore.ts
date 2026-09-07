@@ -306,7 +306,7 @@ export async function refreshMobileOfflineManifest(
   return next;
 }
 
-export type MobileOfflineInactiveReason = 'manifest_expired' | 'device_rotated';
+export type MobileOfflineInactiveReason = 'manifest_expired' | 'device_rotated' | 'device_revoked';
 
 export interface MobileOfflineSessionReview {
   session: MobileOfflineSession | null;

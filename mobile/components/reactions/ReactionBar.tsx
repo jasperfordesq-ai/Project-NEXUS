@@ -42,6 +42,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { ReactionType } from '@/lib/api/feed';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import { withAlpha } from '@/lib/utils/color';
 
 export const REACTION_CONFIGS: { type: ReactionType; emoji: string; labelKey: string }[] = [
@@ -89,6 +90,7 @@ export default function ReactionBar({
   const theme = useTheme();
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.8)).current;
+  const reducedMotion = useReducedMotion();
 
   // How many 44dp targets fit one row here, and therefore how the pill is capped. Whole
   // rows only: a row of 5 and a row of 3 reads as a mistake, so the count is halved rather
@@ -101,13 +103,21 @@ export default function ReactionBar({
 
   useEffect(() => {
     if (!visible) return;
+    // Hand-written Animated code sits outside HeroUI's reduced-motion handling (the tab
+    // badge had the same fault, audit 2026-09-05 F09). With the OS setting on, the bar
+    // simply appears.
+    if (reducedMotion) {
+      opacity.setValue(1);
+      scale.setValue(1);
+      return;
+    }
     opacity.setValue(0);
     scale.setValue(0.8);
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: 120, useNativeDriver: true }),
       Animated.spring(scale, { toValue: 1, friction: 6, tension: 160, useNativeDriver: true }),
     ]).start();
-  }, [opacity, scale, visible]);
+  }, [opacity, reducedMotion, scale, visible]);
 
   if (!visible) return null;
 

@@ -10,7 +10,9 @@ import * as Linking from 'expo-linking';
 const mockUseApi = jest.fn();
 const mockPush = jest.fn();
 
+let mockParams: Record<string, string> = {};
 jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => mockParams,
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   router: { push: (...args: unknown[]) => mockPush(...args) },
   // The screen re-reads on focus, so the effect runs its callback once here — the same as

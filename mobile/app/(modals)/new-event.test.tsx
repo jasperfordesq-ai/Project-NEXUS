@@ -699,6 +699,24 @@ describe('NewEventRoute', () => {
       },
     });
 
+    const { findByTestId, queryByText } = render(<NewEventRoute />);
+
+    /*
+      🔴 C/F-11 (2026-09-07). A denied edit is an ANSWER: it gets its own screen with the way
+      back, not "Could not load event" with a Retry that can never succeed. S4-03 still
+      holds — no form and no live submit over blank fields.
+    */
+    expect(await findByTestId('new-event-not-allowed')).toBeTruthy();
+    expect(queryByText('Update event')).toBeNull();
+    expect(queryByText('Retry')).toBeNull();
+    expect(mockUpdateEvent).not.toHaveBeenCalled();
+    expect(mockGetEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a retry when the event genuinely fails to load in edit mode', async () => {
+    mockSearchParams = { id: '7' };
+    mockGetEvent.mockRejectedValueOnce(new Error('Network request failed'));
+
     const { getByText, queryByText } = render(<NewEventRoute />);
 
     await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({

@@ -59,7 +59,11 @@
         "cancelDescription": "Questo annullerà lo scambio di gruppo per tutti i partecipanti.",
         "confirmFailed": "Non è stato possibile confermare i tuoi orari. Riprova.",
         "completeFailed": "Non è stato possibile completare questo scambio. Riprova.",
-        "cancelFailed": "Non è stato possibile annullare questo scambio. Riprova."
+        "cancelFailed": "Non è stato possibile annullare questo scambio. Riprova.",
+        "completeTitle": "Completare questo scambio di gruppo?",
+        "completeDescription": "I crediti tempo saranno trasferiti a tutti i partecipanti ora. L’operazione non può essere annullata.",
+        "confirmTitle": "Confermare le tue ore?",
+        "confirmDescription": "Confermando comunichi all’organizzatore di aver partecipato per le ore indicate. I crediti si spostano al completamento dello scambio."
       },
       "splitShare": "{{name}} — {{hours}} ore",
       "splitUnknownMember": "Membro #{{id}}"
@@ -116,7 +120,9 @@
       "summaryParticipants_one": "{{count}} partecipante selezionato",
       "summaryParticipants_other": "{{count}} partecipanti selezionati",
       "remove": "Remove",
-      "removeParticipant": "Rimuovi {{name}}"
+      "removeParticipant": "Rimuovi {{name}}",
+      "participantHoursInvalid": "Inserisci le ore di ogni partecipante come numero, ad esempio 1,5.",
+      "participantWeightInvalid": "Inserisci un peso maggiore di zero per ogni partecipante."
     }
   },
   "newExchange": "Nuovo annuncio",
@@ -509,7 +515,9 @@
         "other": "Qualcos’altro",
         "quality": "Non è quanto concordato"
       }
-    }
+    },
+    "confirmSheetOtherConfirmed": "L’altro membro ha confermato {{hours}} ore. Una differenza superiore a un quarto d’ora invia questo scambio in revisione invece di completarlo.",
+    "loadMore": "Mostra altri scambi"
   },
   "unknownMember": "Membro sconosciuto"
 }

@@ -26,6 +26,7 @@ import {
   type OfflineAttendanceOperation,
 } from '@/lib/api/eventOfflineCheckin';
 import { ApiResponseError } from '@/lib/api/client';
+import { describeApiError } from '@/lib/api/describeApiError';
 import {
   activateMobileOfflineSession,
   enqueueMobileOfflineCredential,
@@ -152,8 +153,8 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       setSessionInactive(null);
       setDeviceLabel('');
       showToast({ title: t('workspace.ready'), variant: 'success' });
-    } catch {
-      showToast({ title: t('errors.generic'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('errors.generic'), description: describeApiError(error, ''), variant: 'danger' });
     } finally {
       setBusy(false);
     }
@@ -185,8 +186,8 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
           setRevocationReason('');
           showToast({ title: t('device.revoked'), variant: 'success' });
           await load();
-        } catch {
-          showToast({ title: t('errors.generic'), variant: 'danger' });
+        } catch (error) {
+          showToast({ title: t('errors.generic'), description: describeApiError(error, ''), variant: 'danger' });
         } finally {
           setBusy(false);
         }
@@ -216,12 +217,24 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       showToast({ title: t('scan.queued'), variant: 'success' });
     } catch (error) {
       const code = error instanceof Error ? error.message : 'generic';
+      /*
+        🔴 Every refusal the store can make used to read as "This code is invalid, copied,
+        rotated, revoked, expired or belongs to another event" — so staff scanning the same
+        badge twice could not tell "already queued" from "wrong event" (audit 2026-09-07,
+        C/F-12). One sentence per reason.
+      */
+      const SCAN_MESSAGES: Record<string, string> = {
+        reason_required: 'scan.reasonRequired',
+        transition_invalid: 'scan.transitionInvalid',
+        credential_copied: 'scan.alreadyQueued',
+        credential_expired: 'scan.expired',
+        credential_wrong_event: 'scan.wrongEvent',
+        credential_revoked_or_rotated: 'scan.revoked',
+        credential_signing_key_unknown: 'scan.signingKeyUnknown',
+        queue_full: 'scan.queueFull',
+      };
       showToast({
-        title: t(code === 'reason_required'
-          ? 'scan.reasonRequired'
-          : code === 'transition_invalid'
-            ? 'scan.transitionInvalid'
-            : 'scan.invalid'),
+        title: t(SCAN_MESSAGES[code] ?? 'scan.invalid'),
         variant: 'danger',
       });
     } finally {
@@ -239,11 +252,18 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       await loadConflicts();
     } catch (error) {
       if (error instanceof ApiResponseError && error.status === 403) {
-        await purgeMobileOfflineSession(session.eventId, session.deviceId);
-        setSession(null);
-        showToast({ title: t('errors.revoked'), variant: 'danger' });
+        /*
+          🔴 This used to purge the encrypted queue on the spot — twenty attendees scanned
+          offline, gone on any 403, with a toast (audit 2026-09-07, C/F-4). A revoked device
+          is the same situation as an expired manifest: the queue is kept read-only, the
+          pending count stays visible, and only the confirmed "Remove offline data" button
+          discards it.
+        */
+        setSessionInactive('device_revoked');
+        showToast({ title: t('errors.revoked'), description: describeApiError(error, t('queue.syncError')), variant: 'danger' });
       } else {
-        showToast({ title: t('queue.syncError'), variant: 'danger' });
+        // The server's reason, not a blanket sentence (audit 2026-09-07, C/F-13).
+        showToast({ title: t('queue.syncError'), description: describeApiError(error, ''), variant: 'danger' });
       }
     } finally {
       setBusy(false);
@@ -271,8 +291,8 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       setConflicts(next);
       setResolutionReasons((current) => ({ ...current, [item.item_id]: '' }));
       showToast({ title: t('conflicts.resolved'), variant: 'success' });
-    } catch {
-      showToast({ title: t('conflicts.error'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('conflicts.error'), description: describeApiError(error, ''), variant: 'danger' });
       await loadConflicts();
     } finally {
       setBusy(false);
@@ -359,7 +379,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
               <Alert.Content>
                 <Alert.Title>{t('queue.readOnlyTitle')}</Alert.Title>
                 <Alert.Description>
-                  {t(sessionInactive === 'manifest_expired' ? 'queue.readOnlyExpired' : 'queue.readOnlyRotated')}
+                  {t(sessionInactive === 'manifest_expired' ? 'queue.readOnlyExpired' : sessionInactive === 'device_revoked' ? 'queue.readOnlyRevoked' : 'queue.readOnlyRotated')}
                 </Alert.Description>
               </Alert.Content>
             </Alert>

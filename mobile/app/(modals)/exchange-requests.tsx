@@ -20,7 +20,7 @@ import { useCallback, useMemo } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { Surface } from 'heroui-native';
+import { Button as HeroButton, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
@@ -29,7 +29,7 @@ import {
   listExchangeRequests,
   type ExchangeRequest,
 } from '@/lib/api/exchangeRequests';
-import { useApi } from '@/lib/hooks/useApi';
+import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -39,6 +39,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function formatDate(value?: string | null) {
   if (!value) return null;
@@ -67,7 +68,28 @@ function ExchangeRequestsScreen() {
   const { user } = useAuth();
   const viewerId = user?.id ?? null;
 
-  const { data, isLoading, error, refresh } = useApi(() => listExchangeRequests({ perPage: 50 }), []);
+  /*
+    🔴 This fetched ONE page of 50 and read neither `meta.has_more` nor `meta.cursor`, so a
+    member with more than fifty exchanges could never see the rest (audit 2026-09-07,
+    B/F-08). Paged now, with a deliberate "Show more" tap rather than an automatic fetch:
+    the list is grouped into two sections, so an auto-fetch would reshuffle what the member
+    is looking at.
+  */
+  const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } = usePaginatedApi<
+    ExchangeRequest,
+    Awaited<ReturnType<typeof listExchangeRequests>>
+  >(
+    (cursor) => listExchangeRequests({ perPage: 50, cursor: cursor ?? undefined }),
+    (response) => {
+      const rows = response?.data;
+      return {
+        items: Array.isArray(rows) ? rows : [],
+        cursor: response?.meta?.cursor ?? null,
+        hasMore: Boolean(response?.meta?.has_more),
+      };
+    },
+    [],
+  );
 
   // Re-read on focus, for the same reason as the detail screen: the other member acts on
   // their own phone, and a stale list hides an exchange that now needs this member.
@@ -77,11 +99,6 @@ function ExchangeRequestsScreen() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
-
-  const items = useMemo<ExchangeRequest[]>(() => {
-    const rows = data?.data;
-    return Array.isArray(rows) ? rows : [];
-  }, [data]);
 
   const { waiting, rest } = useMemo(() => {
     const needsMe: ExchangeRequest[] = [];
@@ -171,7 +188,7 @@ function ExchangeRequestsScreen() {
         <ScrollView
           className="flex-1 px-4"
           contentContainerStyle={{ paddingBottom: 32 }}
-          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+          refreshControl={<RefreshControl refreshing={isLoading && items.length > 0} onRefresh={refresh} />}
         >
           {items.length === 0 ? (
             <EmptyState
@@ -198,6 +215,22 @@ function ExchangeRequestsScreen() {
                   {rest.map(renderRow)}
                 </>
               ) : null}
+
+              {hasMore ? (
+                <View className="items-center py-3">
+                  <HeroButton
+                    size="sm"
+                    variant="secondary"
+                    isDisabled={isLoadingMore}
+                    onPress={loadMore}
+                    accessibilityLabel={t('requests.loadMore')}
+                    testID="exchange-requests-load-more"
+                  >
+                    {isLoadingMore ? <Spinner size="sm" /> : null}
+                    <HeroButton.Label>{t('requests.loadMore')}</HeroButton.Label>
+                  </HeroButton>
+                </View>
+              ) : null}
             </>
           )}
         </ScrollView>
@@ -206,10 +239,12 @@ function ExchangeRequestsScreen() {
   );
 }
 
-export default function ExchangeRequestsModal() {
+function ExchangeRequestsModal() {
   return (
     <ModalErrorBoundary>
       <ExchangeRequestsScreen />
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(ExchangeRequestsModal, 'exchange-requests');

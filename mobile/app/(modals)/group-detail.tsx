@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@/components/ui/Icon';
+import { formatEventSchedule } from '@/lib/utils/eventDateTime';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
@@ -116,6 +117,7 @@ import { useParamTab } from '@/lib/hooks/useParamTab';
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const CARD_MIN_HEIGHT = 118;
 
@@ -136,6 +138,10 @@ function isGroupMember(group: ApiGroupDetail) {
   return group.is_member === true || group.viewer_membership?.status === 'active';
 }
 
+function hasPendingJoinRequest(group: ApiGroupDetail) {
+  return group.viewer_membership?.status === 'pending';
+}
+
 function groupImage(group: ApiGroupDetail) {
   return resolveImageUrl(group.cover_image ?? group.image_url ?? group.avatar_url ?? null);
 }
@@ -149,23 +155,6 @@ function formatDate(value?: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   return new Intl.DateTimeFormat(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
-}
-
-function formatTime(value?: string | null) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat(dateLocale(), { hour: '2-digit', minute: '2-digit' }).format(date);
-}
-
-function formatDateParts(value?: string | null) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return {
-    day: new Intl.DateTimeFormat(dateLocale(), { day: 'numeric' }).format(date),
-    month: new Intl.DateTimeFormat(dateLocale(), { month: 'short' }).format(date),
-  };
 }
 
 function formatFileSize(bytes?: number | null) {
@@ -277,7 +266,7 @@ function StateMessage({
   );
 }
 
-export default function GroupDetailScreen() {
+function GroupDetailScreen() {
   return (
     <ModalErrorBoundary>
       <GroupDetailScreenInner />
@@ -310,6 +299,9 @@ function GroupDetailScreenInner() {
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [memberCount, setMemberCount] = useState<number | null>(null);
   const [joining, setJoining] = useState(false);
+  // Set when the server answers a join with "pending": a private group's organisers
+  // decide. It used to be shown as "Joined" and then silently revert (audit 2026-09-07, C/F-2).
+  const [joinRequested, setJoinRequested] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showDiscussionComposer, setShowDiscussionComposer] = useState(false);
@@ -335,6 +327,7 @@ function GroupDetailScreenInner() {
   }, [group]);
 
   const currentIsMember = group ? (isMember ?? isGroupMember(group)) : false;
+  const joinPending = !currentIsMember && Boolean(group && (joinRequested || hasPendingJoinRequest(group)));
   const membersApi = useApi(() => getGroupMembers(safeGroupId), [safeGroupId, currentIsMember], {
     enabled: safeGroupId > 0 && currentIsMember,
   });
@@ -447,7 +440,18 @@ function GroupDetailScreenInner() {
     setIsMember(true);
     setMemberCount(prevMemberCount + 1);
     try {
-      await joinGroup(loadedGroup.id);
+      const result = await joinGroup(loadedGroup.id);
+      const status = result?.data?.status;
+      if (status === 'pending' || result?.data?.action === 'requested') {
+        // Not a member yet. Undo the optimistic "Joined" and say what actually happened.
+        setIsMember(prevIsMember);
+        setMemberCount(prevMemberCount);
+        setJoinRequested(true);
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        showToast({ title: t('joinRequestedTitle'), description: result?.data?.message || t('joinRequestedBody'), variant: 'success' });
+        refresh();
+        return;
+      }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refresh();
       membersApi.refresh();
@@ -710,7 +714,8 @@ function GroupDetailScreenInner() {
             <HeroButton
               variant={currentIsMember ? 'secondary' : 'primary'}
               onPress={currentIsMember ? () => void handleLeave() : () => void handleJoin()}
-              isDisabled={isUpdating}
+              isDisabled={isUpdating || joinPending}
+              testID={joinPending ? 'group-join-requested' : undefined}
             >
               {isUpdating ? (
                 <Spinner size="sm" />
@@ -721,7 +726,7 @@ function GroupDetailScreenInner() {
                   ) : (
                     <AccentIcon name="add-outline" size={18} />
                   )}
-                  <HeroButton.Label>{currentIsMember ? t('leave') : t('join')}</HeroButton.Label>
+                  <HeroButton.Label>{currentIsMember ? t('leave') : joinPending ? t('joinRequestedLabel') : t('join')}</HeroButton.Label>
                 </>
               )}
             </HeroButton>
@@ -1241,9 +1246,17 @@ function GroupEventsPanel({
         <EmptyCard icon="calendar-outline" message={t('detail.emptyEvents')} />
       ) : (
         events.map((event) => {
-          const eventDate = formatDate(event.start_date) ?? t('detail.eventDateFallback');
-          const eventDateParts = formatDateParts(event.start_date);
-          const eventTime = formatTime(event.start_date);
+          // The event's own zone, like the Events tab and detail (audit 2026-09-07, C/F-16):
+          // this panel formatted in the device zone and showed "00:00" for all-day events.
+          const schedule = formatEventSchedule({
+            start_at: event.start_date,
+            end_at: event.end_date ?? null,
+            timezone: event.timezone ?? 'UTC',
+            all_day: Boolean(event.all_day),
+          });
+          const eventDate = schedule.dateLabel ?? t('detail.eventDateFallback');
+          const eventDateParts = schedule.dayLabel && schedule.monthLabel ? { day: schedule.dayLabel, month: schedule.monthLabel } : null;
+          const eventTime = schedule.allDay ? null : schedule.timeLabel;
           const eventLocation = event.is_online ? t('detail.eventOnline') : event.location;
           const attendeeCount = event.attendees_count ?? event.rsvp_counts?.going ?? 0;
           return (
@@ -3067,3 +3080,5 @@ function GroupMarketplacePanel({ groupId, canView }: { groupId: number; canView:
     </View>
   );
 }
+
+export default withRouteGate(GroupDetailScreen, 'group-detail');

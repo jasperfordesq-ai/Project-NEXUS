@@ -133,12 +133,17 @@ export default function RegisterScreen() {
     if (globalError) scrollRef.current?.scrollTo({ y: 0, animated: true });
   }, [globalError]);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  // Set the moment the server has created the account, so the guard below stands down
+  // BEFORE the redirect home. Without it a community that signs members in at
+  // registration got "Discard your registration?" for an account that already existed
+  // (audit 2026-09-07, A/F-02). Same pattern as new-post.tsx.
+  const [registered, setRegistered] = useState(false);
   const { confirm, confirmDialog } = useConfirm();
   // Eight fields of typing should not vanish on a stray Back or swipe (audit 2026-09-05).
   useUnsavedChangesGuard({
     isDirty,
     isSaving: isLoading,
-    hasSaved: Boolean(pendingMessage),
+    hasSaved: Boolean(pendingMessage) || registered,
     confirm,
     title: t('register.unsavedTitle'),
     message: t('register.unsavedMessage'),
@@ -186,10 +191,13 @@ export default function RegisterScreen() {
         storage.setJson(STORAGE_KEYS.USER_DATA, result.user),
       ]);
 
+      setRegistered(true);
       setSession(token, result.user);
-      router.replace(result.user.onboarding_completed === false
+      const destination = result.user.onboarding_completed === false
         ? '/(modals)/onboarding'
-        : '/(tabs)/home');
+        : '/(tabs)/home';
+      // Deferred one tick so the guard has re-rendered with hasSaved before the screen goes.
+      setTimeout(() => router.replace(destination), 0);
       void registerForPushNotifications();
     } catch (err) {
       /**
@@ -220,7 +228,7 @@ export default function RegisterScreen() {
   const EyeToggle = ({ show, onToggle }: { show: boolean; onToggle: () => void }) => (
     <HeroButton
       isIconOnly
-      size="sm"
+      size="md"
       variant="ghost"
       onPress={onToggle}
       accessibilityLabel={t('register.togglePassword')}
@@ -236,7 +244,7 @@ export default function RegisterScreen() {
   if (pendingMessage) {
     return (
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
         className="flex-1 bg-background"
       >
         <View className="px-5 py-10">
@@ -288,7 +296,7 @@ export default function RegisterScreen() {
     >
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
         className="flex-grow"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -463,7 +471,7 @@ export default function RegisterScreen() {
                       autoComplete="new-password"
                       textContentType="newPassword"
                       returnKeyType="done"
-                      onSubmitEditing={handleSubmit(onSubmit)}
+                      onSubmitEditing={isLoading ? undefined : handleSubmit(onSubmit)}
                       rightIcon={
                         <EyeToggle
                           show={showConfirmPassword}

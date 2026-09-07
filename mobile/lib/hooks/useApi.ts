@@ -33,6 +33,18 @@ interface UseApiState<T> {
   data: T | null;
   isLoading: boolean;
   error: string | null;
+  /**
+   * HTTP status behind `error`, or null for a network failure / no error.
+   *
+   * 🔴 `error` is a sentence for the member; it cannot tell a screen WHAT failed. A profile
+   * that answers 404 (hidden, unfinished onboarding) and a thread that answers 404 (deleted)
+   * were both rendered as "Could not load — Retry", and Retry can never succeed on a 4xx.
+   * Screens branch on this to show "not available" with a way back instead (audit
+   * 2026-09-07, B/F-06 and B/F-14).
+   */
+  errorStatus: number | null;
+  /** The API's machine-readable error code, when it sent one (`PROFILE_PRIVATE`, …). */
+  errorCode: string | null;
   /** Re-trigger the API call */
   refresh: () => void;
 }
@@ -58,6 +70,8 @@ export function useApi<T>(
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const isMountedRef = useRef(true);
 
@@ -88,6 +102,8 @@ export function useApi<T>(
       if (!isRetry) {
         setIsLoading(true);
         setError(null);
+        setErrorStatus(null);
+        setErrorCode(null);
       }
       try {
         const result = await fetchFnRef.current();
@@ -118,8 +134,12 @@ export function useApi<T>(
         // screens, and it used to be English in every locale (audit 2026-09-05, F07).
         if (err instanceof ApiResponseError) {
           setError(err.message);
+          setErrorStatus(err.status);
+          setErrorCode(err.code ?? null);
         } else {
           setError(i18n.t('common:errors.generic'));
+          setErrorStatus(null);
+          setErrorCode(null);
         }
         setIsLoading(false);
       }
@@ -136,5 +156,5 @@ export function useApi<T>(
 
   const refresh = useCallback(() => setRefreshToken((n) => n + 1), []);
 
-  return { data, isLoading, error, refresh };
+  return { data, isLoading, error, errorStatus, errorCode, refresh };
 }

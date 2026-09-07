@@ -25,6 +25,7 @@ import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
+import { withRouteGate } from '@/components/withRouteGate';
 const splitTypes: GroupExchange['split_type'][] = ['equal', 'custom', 'weighted'];
 
 type ParticipantDraft = {
@@ -40,7 +41,7 @@ function memberName(member: Member) {
   return member.name || [member.first_name, member.last_name].filter(Boolean).join(' ') || String(member.id);
 }
 
-export default function NewGroupExchangeRoute() {
+function NewGroupExchangeRoute() {
   return (
     <ModalErrorBoundary>
       <NewGroupExchangeScreen />
@@ -124,6 +125,25 @@ function NewGroupExchangeScreen() {
 
   async function handleSubmit() {
     if (!canSubmit) return;
+    /*
+      🔴 An unparseable participant figure was silently sent as 0 hours or weight 1 (audit
+      2026-09-07, C/F-14). Only the split types that use the field are checked.
+    */
+    if (splitType === 'custom') {
+      const bad = participants.find((participant) => (parseDecimalInput(participant.hours) ?? -1) < 0);
+      if (bad) {
+        showToast({ title: t('common:errors.alertTitle'), description: t('groupExchanges.create.participantHoursInvalid'), variant: 'warning' });
+        return;
+      }
+    }
+    if (splitType === 'weighted') {
+      const bad = participants.find((participant) => !((parseDecimalInput(participant.weight) ?? 0) > 0));
+      if (bad) {
+        showToast({ title: t('common:errors.alertTitle'), description: t('groupExchanges.create.participantWeightInvalid'), variant: 'warning' });
+        return;
+      }
+    }
+
     try {
       setIsSubmitting(true);
       const payload: CreateGroupExchangePayload = {
@@ -363,3 +383,5 @@ function NewGroupExchangeScreen() {
     </SafeAreaView>
   );
 }
+
+export default withRouteGate(NewGroupExchangeRoute, 'new-group-exchange');

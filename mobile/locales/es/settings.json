@@ -181,7 +181,9 @@
       "count_one": "{{count}} exportación",
       "empty": "Todavía no hay exportaciones",
       "emptyDesc": "Tus solicitudes de exportación completadas aparecerán aquí."
-    }
+    },
+    "downloaded": "Tu exportación está lista",
+    "downloadedBody": "El archivo se ha descargado y abierto en el menú de compartir para que puedas guardarlo o enviarlo a otra aplicación."
   },
   "translation": {
     "preferencesTitle": "Preferencias de contenido",
@@ -335,5 +337,11 @@
     "confirmRequired": "Hace falta confirmación",
     "confirmRequiredBody": "Escribe {{keyword}} e introduce tu contraseña para continuar.",
     "alternativeHint": "Si solo quieres una pausa, puedes desactivar las notificaciones o limitar quién ve tu perfil en Privacidad."
+  },
+  "language": {
+    "title": "Idioma de la aplicación",
+    "hint": "Elige el idioma que usa la aplicación en este dispositivo.",
+    "optionHint": "Idioma de la interfaz",
+    "current": "Seleccionado actualmente"
   }
 }

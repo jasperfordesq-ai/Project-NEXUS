@@ -420,5 +420,8 @@
     "error_limit": "Hai raggiunto il numero massimo di gruppi a cui puoi aderire.",
     "error_group_unavailable": "Questo gruppo al momento non accetta membri.",
     "go_to_group": "Vai al gruppo"
-  }
+  },
+  "joinRequestedTitle": "Richiesta inviata",
+  "joinRequestedBody": "Questo è un gruppo privato. Un organizzatore esaminerà la tua richiesta.",
+  "joinRequestedLabel": "Richiesto"
 }

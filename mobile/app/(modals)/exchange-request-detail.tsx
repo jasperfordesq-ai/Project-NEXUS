@@ -56,7 +56,9 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 
-import { parseDecimalInput } from '@/lib/utils/decimal';
+import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
+import { ApiResponseError } from '@/lib/api/client';
+import { withRouteGate } from '@/components/withRouteGate';
 function formatDateTime(value?: string | null) {
   if (!value) return null;
   const date = new Date(value);
@@ -159,6 +161,14 @@ function ExchangeRequestDetailScreen() {
         // 🔴 Resolving here used to look exactly like success to the caller, whose
         // `.then(() => router.back())` then popped the member back to the list with the
         // exchange still open (audit 2026-09-05, S2-01).
+        //
+        // A refusal (409 the other member moved first, 422 no longer allowed, 404 gone)
+        // means the screen is showing a state the server no longer has — so the buttons
+        // that just failed would stay on screen, inviting the same tap again. Re-read
+        // (audit 2026-09-07, B/F-07).
+        if (err instanceof ApiResponseError && [404, 409, 422].includes(err.status)) {
+          refresh();
+        }
         return false;
       } finally {
         setBusy(null);
@@ -183,12 +193,32 @@ function ExchangeRequestDetailScreen() {
     );
   }, [exchange, reportReason, reportDetails, run, t]);
 
+  /*
+    Which hours the OTHER member has already confirmed, if they went first. The server
+    (`ExchangeWorkflowService::processConfirmations`) completes the exchange when both
+    figures match, averages them when they differ by 0.25 h or less, and otherwise marks
+    the exchange DISPUTED — no credits move and a broker has to step in.
+  */
+  const otherPartyConfirmedHours = useMemo(() => {
+    if (!exchange || !viewerId) return null;
+    const viewerIsRequester = exchange.requester?.id === viewerId;
+    const value = viewerIsRequester ? exchange.provider_confirmed_hours : exchange.requester_confirmed_hours;
+    return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+  }, [exchange, viewerId]);
+
   const openConfirmSheet = useCallback(() => {
     if (!exchange) return;
-    const suggested = exchange.final_hours ?? exchange.proposed_hours;
-    setHoursInput(suggested ? String(suggested) : '');
+    /*
+      🔴 The pre-fill used to be the PROPOSED figure even when the other member had already
+      confirmed a different one. Requester confirms 2.5 h, provider's sheet says "2",
+      provider taps Confirm → Disputed, although both agreed (audit 2026-09-07, B/F-04).
+      The other member's confirmed figure comes first, then the agreed final figure, then
+      the proposal — and it is written the way this member's locale writes decimals.
+    */
+    const suggested = otherPartyConfirmedHours ?? exchange.final_hours ?? exchange.proposed_hours;
+    setHoursInput(typeof suggested === 'number' && suggested > 0 ? formatDecimal(suggested, 2) : '');
     setConfirmSheetOpen(true);
-  }, [exchange]);
+  }, [exchange, otherPartyConfirmedHours]);
 
   const submitConfirmation = useCallback(async () => {
     if (!exchange) return;
@@ -244,7 +274,8 @@ function ExchangeRequestDetailScreen() {
           onPress={() =>
             router.push({
               pathname: '/(modals)/thread',
-              params: { recipientId: String(otherParty.id) },
+              // The name too, or the thread opens titled "Conversation" (B/F-28).
+              params: { recipientId: String(otherParty.id), ...(otherParty.name ? { name: otherParty.name } : {}) },
             } as never)
           }
           accessibilityLabel={t('requests.messageOtherParty', {
@@ -575,6 +606,11 @@ function ExchangeRequestDetailScreen() {
       >
         <View className="gap-3 pt-2">
           <Text className="text-sm text-muted-foreground">{t('requests.confirmSheetBody')}</Text>
+          {otherPartyConfirmedHours !== null ? (
+            <Text className="text-sm font-medium" style={{ color: theme.warning }} testID="exchange-confirm-other-hours">
+              {t('requests.confirmSheetOtherConfirmed', { hours: formatDecimal(otherPartyConfirmedHours, 2) })}
+            </Text>
+          ) : null}
           <Input
             value={hoursInput}
             onChangeText={setHoursInput}
@@ -607,10 +643,12 @@ function ExchangeRequestDetailScreen() {
   );
 }
 
-export default function ExchangeRequestDetailModal() {
+function ExchangeRequestDetailModal() {
   return (
     <ModalErrorBoundary>
       <ExchangeRequestDetailScreen />
     </ModalErrorBoundary>
   );
 }
+
+export default withRouteGate(ExchangeRequestDetailModal, 'exchange-request-detail');

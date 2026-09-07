@@ -420,5 +420,8 @@
     "error_limit": "Tá an líon uasta grúpaí ar féidir leat dul isteach iontu bainte amach agat.",
     "error_group_unavailable": "Níl an grúpa seo ag glacadh le baill faoi láthair.",
     "go_to_group": "Téigh chuig an ngrúpa"
-  }
+  },
+  "joinRequestedTitle": "Iarratas seolta",
+  "joinRequestedBody": "Grúpa príobháideach é seo. Déanfaidh eagraí athbhreithniú ar d’iarratas.",
+  "joinRequestedLabel": "Iarrtha"
 }

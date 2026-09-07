@@ -21,5 +21,6 @@
   "errorTitle": "Ressourcen konnten nicht geladen werden",
   "categoryCount": "{{count}} Einträge",
   "categoryCount_one": "{{count}} Eintrag",
-  "uncategorized": "Allgemein"
+  "uncategorized": "Allgemein",
+  "savedItemHighlighted": "Gespeicherte Ressource: {{title}}"
 }

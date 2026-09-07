@@ -27,7 +27,7 @@ import * as Haptics from '@/lib/haptics';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 
 import { useTranslation } from 'react-i18next';
-import { deleteMessage, displayName, getMessagingRestrictionStatus, getOrCreateThread, getThread, markConversationRead, sendMessage, sendMessageWithAttachments, sendVoiceMessage as sendVoiceMessageApi, toggleMessageReaction, updateMessage, type Message, type MessageAttachmentUpload, type MessagingRestrictionStatus, type SendMessageOptions } from '@/lib/api/messages';
+import { deleteMessage, displayName, getMessagingRestrictionStatus, getOrCreateThread, getThread, markConversationRead, sendMessage, sendMessageWithAttachments, sendVoiceMessage as sendVoiceMessageApi, toggleMessageReaction, updateMessage, type Message, type ConversationOtherUser, type MessageAttachmentUpload, type MessagingRestrictionStatus, type SendMessageOptions } from '@/lib/api/messages';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -44,13 +44,13 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import OfflineBanner from '@/components/OfflineBanner';
-import TypingIndicator from '@/components/TypingIndicator';
 import VoiceMessageBubble from '@/components/VoiceMessageBubble';
 import { resolveMediaUrl } from '@/lib/utils/resolveImageUrl';
 import { ApiResponseError, authenticatedMediaRequest } from '@/lib/api/client';
 import { openAuthenticatedMessageMedia } from '@/lib/messageMedia';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const REACTION_EMOJIS = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
@@ -68,7 +68,7 @@ type ThreadContextType = keyof typeof THREAD_CONTEXT_CONFIG;
 type ThreadContext = { type: ThreadContextType; id: number };
 type PendingAttachment = MessageAttachmentUpload & { id: string; width?: number | null; height?: number | null; size?: number | null };
 
-export default function ThreadScreen() {
+function ThreadScreen() {
   return (
     <ModalErrorBoundary>
       <ThreadScreenInner />
@@ -104,16 +104,25 @@ function ThreadScreenInner() {
   const isValidId = Number.isFinite(threadLookupId) && threadLookupId > 0;
   const safeThreadLookupId = isValidId ? threadLookupId : 0;
   const recipientName = firstParam(name);
-  const threadTitle = recipientName?.trim() ? recipientName.trim() : t('threadTitle');
+  const [resolvedTitle, setResolvedTitle] = useState<string | null>(null);
+  const threadTitle = recipientName?.trim() ? recipientName.trim() : (resolvedTitle || t('threadTitle'));
   const listingId = parsePositiveInt(firstParam(listing));
   const contextType = firstParam(context_type);
   const contextId = parsePositiveInt(firstParam(context_id));
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => (isNewConversation ? getOrCreateThread(safeThreadLookupId) : getThread(safeThreadLookupId)),
     [safeThreadLookupId, isNewConversation],
     { enabled: isValidId },
   );
+  // The other member, as the server describes them — the deep link may have carried no
+  // name, and never carries an avatar (B/F-20).
+  const otherUser = (data?.meta as { conversation?: { other_user?: ConversationOtherUser } } | undefined)?.conversation?.other_user;
+  useEffect(() => {
+    if (!otherUser) return;
+    const name = displayName(otherUser, '');
+    if (name) setResolvedTitle(name);
+  }, [otherUser]);
 
   const messageThreadContext = useMemo(() => resolveMessageThreadContext(data?.data), [data?.data]);
   const threadContext = useMemo(
@@ -230,13 +239,23 @@ function ThreadScreenInner() {
     refreshCounts(true);
   }, [data, isValidId, refreshCounts]);
 
+  /*
+    Follow the conversation only when the member is already at the bottom, or when the new
+    message is their own. A member reading something older used to be yanked to the end by
+    every incoming message (audit 2026-09-07, B/F-12). `maintainVisibleContentPosition` on
+    the list handles the other direction — older messages loading above the first visible
+    one no longer move it.
+  */
+  const isNearBottomRef = useRef(true);
+  const lastMessage = messages[messages.length - 1];
   useEffect(() => {
     if (messages.length === 0) return;
+    if (!isNearBottomRef.current && !lastMessage?.is_own) return;
     const timer = setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
     }, 80);
     return () => clearTimeout(timer);
-  }, [messages.length]);
+  }, [messages.length, lastMessage?.id, lastMessage?.is_own]);
 
   /*
     🔴 RECEIVING and ACKNOWLEDGING are separate things, and were not (audit 2026-09-06,
@@ -457,7 +476,26 @@ function ThreadScreenInner() {
       );
 
       if (!refusedPendingAcceptance) {
-        showToast({ title: t('errors.sendFailed'), description: t('thread.sendFailed'), variant: 'danger' });
+        /*
+          🔴 A 403 is a policy answer, not a fault: this member is blocked, needs vetting, is
+          under a safeguarding restriction, or messaging is switched off for them. It used
+          to be shown as "Message could not be sent. Please try again" — and retried forever
+          (audit 2026-09-07, B/F-05). Show the server's sentence, and close the composer the
+          way a known restriction does, so the next tap is not another refusal.
+        */
+        const refusedByPolicy = err instanceof ApiResponseError && err.status === 403;
+        if (refusedByPolicy) {
+          setMessagingRestriction((previous) => ({
+            messaging_disabled: true,
+            under_monitoring: previous?.under_monitoring ?? false,
+            restriction_reason: err.message,
+          }));
+        }
+        showToast({
+          title: t('errors.sendFailed'),
+          description: describeApiError(err, t('thread.sendFailed')),
+          variant: 'danger',
+        });
       }
     } finally {
       setIsSending(false);
@@ -707,6 +745,20 @@ function ThreadScreenInner() {
     );
   }
 
+  if (error && !data && errorStatus === 404) {
+    // A stale notification for a conversation that no longer exists. Retry can never
+    // succeed on a 404, so offer the way back instead (B/F-14).
+    return (
+      <ThreadShell title={threadTitle} backLabel={t('common:back')}>
+        <CenteredState icon="chatbubble-ellipses-outline" text={t('thread.notFound')} primary={primary} testID="thread-not-found">
+          <HeroButton variant="secondary" onPress={() => router.back()}>
+            <HeroButton.Label>{t('common:back')}</HeroButton.Label>
+          </HeroButton>
+        </CenteredState>
+      </ThreadShell>
+    );
+  }
+
   if (error && !data) {
     return (
       <ThreadShell title={threadTitle} backLabel={t('common:back')}>
@@ -730,7 +782,7 @@ function ThreadScreenInner() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <Surface variant="secondary" className="mx-4 mb-2 mt-3 flex-row items-center gap-3 rounded-panel-inner p-3">
-          <Avatar uri={null} name={threadTitle} size={42} />
+          <Avatar uri={otherUser?.avatar_url ?? null} name={threadTitle} size={42} />
           <View className="min-w-0 flex-1">
             <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
               {threadTitle}
@@ -754,6 +806,12 @@ function ThreadScreenInner() {
           ref={flatListRef}
           data={visibleMessages}
           keyExtractor={(item) => String(item.id)}
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          onScroll={({ nativeEvent }) => {
+            const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
+            isNearBottomRef.current = contentSize.height - layoutMeasurement.height - contentOffset.y < 120;
+          }}
+          scrollEventThrottle={100}
           /*
             🔴 S3-13: a "Load earlier messages" header, because a long conversation used to
             stop at the server's first page of 50 with nothing to say more existed. It is a
@@ -809,8 +867,6 @@ function ThreadScreenInner() {
           }
           showsVerticalScrollIndicator={false}
         />
-
-        <TypingIndicator visible={false} />
 
         {editingMessage ? (
           <Surface variant="secondary" className="mx-3 mb-2 flex-row items-center gap-3 rounded-panel-inner px-3 py-2">
@@ -1068,12 +1124,14 @@ function buildMessageActions(
       destructive: true,
       onPress: () => handleDeleteMessage(message, 'self'),
     },
-    {
+    // Only the author can unsend for both sides; the server refuses it for anyone else
+    // (B/F-15 — the option was offered on every message and then failed).
+    ...(message.is_own ? [{
       label: t('thread.deleteForEveryone'),
       icon: 'trash-bin-outline',
       destructive: true,
       onPress: () => handleDeleteMessage(message, 'everyone'),
-    },
+    }] : []),
   ];
 }
 
@@ -1285,14 +1343,16 @@ function CenteredState({
   text,
   primary,
   children,
+  testID,
 }: {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   text: string;
   primary: string;
   children?: React.ReactNode;
+  testID?: string;
 }) {
   return (
-    <HeroCard variant="secondary" className="w-full">
+    <HeroCard variant="secondary" className="w-full" testID={testID}>
       <HeroCard.Body className="items-center gap-4 px-5 py-6">
         <Ionicons name={icon} size={34} color={primary} />
         <Text className="text-center text-sm leading-5 text-muted-foreground">{text}</Text>
@@ -1356,3 +1416,5 @@ function formatRecordingTime(seconds: number): string {
   const remainingSeconds = seconds % 60;
   return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
 }
+
+export default withRouteGate(ThreadScreen, 'thread');

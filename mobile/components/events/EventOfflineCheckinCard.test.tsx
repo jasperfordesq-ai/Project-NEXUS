@@ -145,4 +145,42 @@ describe('EventOfflineCheckinCard', () => {
     await options.onConfirm();
     expect(mockPurgeSession).toHaveBeenCalledWith(77, 5);
   });
+
+  /**
+   * 🔴 A 403 during sync used to purge the encrypted queue on the spot — every never-synced
+   * check-in gone (audit 2026-09-07, C/F-4). The session is now kept read-only and only the
+   * confirmed purge removes it.
+   */
+  it('keeps the queue when the server refuses a sync with 403', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    const { syncMobileOfflineSession } = require('@/lib/eventOfflineCheckinStore');
+    mockGetWorkspace.mockResolvedValue({
+      ...emptyWorkspace,
+      devices: [{ id: 5, label: 'Door tablet', version: 1, status: 'active' }],
+    });
+    const pendingItem = {
+      clientNonce: 'n1', registrationId: 1, userId: 9, displayName: 'Ada', operation: 'check_in',
+      observedAt: '2026-09-01T18:05:00Z', expectedAttendanceVersion: 1, credentialFingerprint: 'abcdef0123456789',
+      credentialHashReference: 'a'.repeat(64), reason: null, state: 'pending', code: null, decisionVersion: null,
+    };
+    mockLoadSessionForReview.mockResolvedValue({
+      inactive: null,
+      session: {
+        eventId: 77, deviceId: 5, deviceVersion: 1, deviceSecret: 'nxd1_secret', replayWindowMinutes: 1440,
+        batchMaxItems: 500, manifest: { manifest_version: 3, device: { id: 5, version: 1 }, expires_at: '2099-01-01T00:00:00Z' },
+        queue: [pendingItem],
+        activeBatchId: null, activeBatchNonces: [], updatedAt: '2026-09-01T18:05:00Z',
+      },
+    });
+    jest.mocked(syncMobileOfflineSession).mockRejectedValueOnce(new ApiResponseError(403, 'Device revoked'));
+
+    const { findByText, getByText, findByTestId } = render(<EventOfflineCheckinCard eventId={77} />);
+
+    fireEvent.press(await findByText('queue.sync'));
+
+    expect(await findByTestId('event-offline-checkin-read-only')).toBeTruthy();
+    expect(getByText('queue.readOnlyRevoked')).toBeTruthy();
+    expect(getByText('Ada')).toBeTruthy();
+    expect(mockPurgeSession).not.toHaveBeenCalled();
+  });
 });

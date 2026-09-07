@@ -59,7 +59,11 @@
         "cancelDescription": "This will cancel the group exchange for all participants.",
         "confirmFailed": "We could not confirm your hours. Please try again.",
         "completeFailed": "We could not complete this exchange. Please try again.",
-        "cancelFailed": "We could not cancel this exchange. Please try again."
+        "cancelFailed": "We could not cancel this exchange. Please try again.",
+        "completeTitle": "Complete this group exchange?",
+        "completeDescription": "Time credits will be transferred to every participant now. This cannot be undone.",
+        "confirmTitle": "Confirm your hours?",
+        "confirmDescription": "Confirming tells the organiser you took part for the hours shown. The credits move when the exchange is completed."
       },
       "splitShare": "{{name}} — {{hours}} hours",
       "splitUnknownMember": "Member #{{id}}"
@@ -116,7 +120,9 @@
       "summaryParticipants_one": "{{count}} participant selected",
       "summaryParticipants_other": "{{count}} participants selected",
       "remove": "Remove",
-      "removeParticipant": "Remove {{name}}"
+      "removeParticipant": "Remove {{name}}",
+      "participantHoursInvalid": "Enter the hours for each participant as a number, for example 1.5.",
+      "participantWeightInvalid": "Enter a weight greater than zero for each participant."
     }
   },
   "newExchange": "New Listing",
@@ -509,7 +515,9 @@
         "other": "Something else",
         "quality": "Not what we agreed"
       }
-    }
+    },
+    "confirmSheetOtherConfirmed": "The other member has confirmed {{hours}} hours. A difference of more than a quarter of an hour sends this exchange for review instead of completing it.",
+    "loadMore": "Show more exchanges"
   },
   "unknownMember": "Unknown member"
 }

@@ -18,6 +18,12 @@ jest.mock('expo-router', () => ({
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
+const mockChangeLanguage = jest.fn(async (_code: string) => undefined);
+jest.mock('@/lib/i18n', () => ({
+  SUPPORTED_LANGUAGES: ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es'],
+  changeLanguage: (code: string) => mockChangeLanguage(code),
+}));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -316,6 +322,21 @@ describe('SettingsScreen', () => {
 
     fireEvent.press(getByText('Translation preferences'));
     expect(router.push).toHaveBeenCalledWith('/(modals)/settings-translation');
+  });
+
+  /**
+   * Seven locales ship and there was no way to pick one (audit 2026-09-07, B/F-16): the only
+   * language change in the app was a side effect of the translation-target setting.
+   */
+  it('lets the member choose the interface language', async () => {
+    const { getByText, getByTestId } = render(<SettingsScreen />);
+
+    expect(getByText('Gaeilge')).toBeTruthy();
+    expect(getByTestId('settings-language-en').props.accessibilityState).toEqual({ selected: true });
+
+    fireEvent.press(getByTestId('settings-language-ga'));
+
+    await waitFor(() => expect(mockChangeLanguage).toHaveBeenCalledWith('ga'));
   });
 
   it('renders the Appearance section with theme mode options', () => {

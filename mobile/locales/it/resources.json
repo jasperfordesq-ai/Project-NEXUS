@@ -21,5 +21,6 @@
   "errorTitle": "Impossibile caricare le risorse",
   "categoryCount": "{{count}} elementi",
   "categoryCount_one": "{{count}} elemento",
-  "uncategorized": "Generale"
+  "uncategorized": "Generale",
+  "savedItemHighlighted": "Risorsa salvata: {{title}}"
 }

@@ -24,6 +24,13 @@ describe('formatEventSchedule', () => {
     // for why that is the wrong output for this platform's members.
     expect(result.dateLabel).toContain('10 August 2026');
     expect(result.timeLabel).toContain('11:30');
+    // The end time, in the same zone — detail screens showed only the start (C/F-6).
+    expect(result.endTimeLabel).toContain('12:30');
+  });
+
+  it('has no end time when the event has no end, or ends before it starts', () => {
+    expect(formatEventSchedule({ start_at: '2026-08-09T23:30:00Z', end_at: null, timezone: 'UTC', all_day: false }, 'en-IE').endTimeLabel).toBeNull();
+    expect(formatEventSchedule({ start_at: '2026-08-09T23:30:00Z', end_at: '2026-08-09T22:00:00Z', timezone: 'UTC', all_day: false }, 'en-IE').endTimeLabel).toBeNull();
   });
 
   it('uses the exclusive all-day end boundary across a DST offset change', () => {

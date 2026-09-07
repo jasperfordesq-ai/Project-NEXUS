@@ -59,7 +59,11 @@
         "cancelDescription": "Cela annulera l'échange de groupe pour tous les participants.",
         "confirmFailed": "Nous n'avons pas pu confirmer vos horaires. Veuillez réessayer.",
         "completeFailed": "Nous n'avons pas pu finaliser cet échange. Veuillez réessayer.",
-        "cancelFailed": "Nous n'avons pas pu annuler cet échange. Veuillez réessayer."
+        "cancelFailed": "Nous n'avons pas pu annuler cet échange. Veuillez réessayer.",
+        "completeTitle": "Clôturer cet échange de groupe ?",
+        "completeDescription": "Les crédits-temps seront transférés à chaque participant maintenant. Cette action est irréversible.",
+        "confirmTitle": "Confirmer vos heures ?",
+        "confirmDescription": "Confirmer indique à l’organisateur que vous avez participé pour les heures affichées. Les crédits sont transférés à la clôture de l’échange."
       },
       "splitShare": "{{name}} — {{hours}} heures",
       "splitUnknownMember": "Membre #{{id}}"
@@ -116,7 +120,9 @@
       "summaryParticipants_one": "{{count}} participant sélectionné",
       "summaryParticipants_other": "{{count}} participants sélectionnés",
       "remove": "Remove",
-      "removeParticipant": "Retirer {{name}}"
+      "removeParticipant": "Retirer {{name}}",
+      "participantHoursInvalid": "Saisissez les heures de chaque participant sous forme de nombre, par exemple 1,5.",
+      "participantWeightInvalid": "Saisissez une pondération supérieure à zéro pour chaque participant."
     }
   },
   "newExchange": "Nouvelle annonce",
@@ -509,7 +515,9 @@
         "other": "Autre chose",
         "quality": "Pas ce qui était convenu"
       }
-    }
+    },
+    "confirmSheetOtherConfirmed": "L’autre membre a confirmé {{hours}} heures. Un écart de plus d’un quart d’heure envoie cet échange en révision au lieu de le clôturer.",
+    "loadMore": "Afficher plus d’échanges"
   },
   "unknownMember": "Membre inconnu"
 }

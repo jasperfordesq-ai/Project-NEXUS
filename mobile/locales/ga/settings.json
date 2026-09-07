@@ -181,7 +181,9 @@
       "count_one": "{{count}} easpórtáil",
       "empty": "Níl aon easpórtáil ann fós",
       "emptyDesc": "Beidh d'iarratais easpórtála chríochnaithe le feiceáil anseo."
-    }
+    },
+    "downloaded": "Tá d’easpórtáil réidh",
+    "downloadedBody": "Íoslódáladh an chartlann agus osclaíodh í sa bhileog chomhroinnte, le go bhféadfá í a shábháil nó a sheoladh chuig aip eile."
   },
   "translation": {
     "preferencesTitle": "Roghanna ábhair",
@@ -335,5 +337,11 @@
     "confirmRequired": "Deimhniú de dhíth",
     "confirmRequiredBody": "Clóscríobh {{keyword}} agus cuir isteach do phasfhocal chun leanúint ar aghaidh.",
     "alternativeHint": "Más sos atá uait amháin, is féidir leat fógraí a mhúchadh, nó teorainn a chur ar cé a fheiceann do phróifíl faoi Phríobháideachas."
+  },
+  "language": {
+    "title": "Teanga na haipe",
+    "hint": "Roghnaigh an teanga a úsáideann an aip ar an ngléas seo.",
+    "optionHint": "Teanga an chomhéadain",
+    "current": "Roghnaithe faoi láthair"
   }
 }

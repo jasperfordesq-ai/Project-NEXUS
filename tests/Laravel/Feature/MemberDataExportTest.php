@@ -358,6 +358,33 @@ class MemberDataExportTest extends TestCase
         $this->assertSame('My report details', $archive['podcasts']['reports_filed'][0]['details']);
     }
 
+    /**
+     * 🔴 The native app can only stream a GET to disk (expo-file-system), so the same
+     * download is served on GET. Until 2026-09-07 the app POSTed, received the archive
+     * bytes and discarded them — the member saw "Export requested" and nothing arrived
+     * (mobile audit, B/F-01). This pins the GET twin: same attachment, same audit row.
+     */
+    public function test_get_serves_the_same_download_as_post_and_logs_it(): void
+    {
+        $userId = $this->makeUser(self::PRIMARY_TENANT_ID);
+        Sanctum::actingAs(User::query()->findOrFail($userId));
+
+        $before = DB::table('member_data_exports')->where('user_id', $userId)->count();
+
+        $response = $this->get('/api/v2/me/data-export?format=json', $this->withTenantHeader([]));
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('attachment', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('.json', (string) $response->headers->get('Content-Disposition'));
+        $this->assertSame($before + 1, DB::table('member_data_exports')->where('user_id', $userId)->count());
+    }
+
+    public function test_unauthenticated_get_returns_401(): void
+    {
+        $this->get('/api/v2/me/data-export?format=json', $this->withTenantHeader(['Accept' => 'application/json']))
+            ->assertStatus(401);
+    }
+
     public function test_unauthenticated_request_returns_401(): void
     {
         // No Sanctum::actingAs — must be rejected

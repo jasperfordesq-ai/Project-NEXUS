@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { archiveConversation, getConversations, restoreConversation, displayName, type Conversation, type ConversationListResponse } from '@/lib/api/messages';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -28,6 +29,8 @@ import { ConversationSkeleton } from '@/components/ui/Skeleton';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import OfflineBanner from '@/components/OfflineBanner';
+import { withRouteGate } from '@/components/withRouteGate';
 
 function extractConversationsPage(response: ConversationListResponse) {
   return {
@@ -40,7 +43,7 @@ function extractConversationsPage(response: ConversationListResponse) {
 type TFunction = (key: string, options?: Record<string, unknown>) => string;
 type MessagesTab = 'inbox' | 'archived';
 
-export default function MessagesScreen() {
+function MessagesScreen() {
   const { t } = useTranslation(['messages', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -98,10 +101,32 @@ export default function MessagesScreen() {
     refresh,
   } = activePage;
 
-  const totalUnread = useMemo(
+  /*
+    🔴 The "N unread" chip summed the loaded page (about 20 rows) while the tab badge showed
+    the server total, so the two disagreed whenever the inbox was longer than a page. The
+    server total is the truth; the page sum only fills in before it arrives (audit
+    2026-09-07, A/F-06).
+  */
+  const { unreadMessages: serverUnread } = useRealtimeContext();
+  const loadedUnread = useMemo(
     () => conversations.reduce((sum, conversation) => sum + (conversation.unread_count ?? 0), 0),
     [conversations],
   );
+  const totalUnread = serverUnread > 0 || conversations.length === 0 ? serverUnread : loadedUnread;
+
+  /*
+    A message arriving while the member is looking at the inbox bumped the badge and left
+    the list, its previews and its counts stale until they left and came back. The badge
+    changing is the signal that something in the inbox changed, so re-read it.
+  */
+  const previousServerUnreadRef = useRef(serverUnread);
+  useEffect(() => {
+    if (previousServerUnreadRef.current === serverUnread) return;
+    previousServerUnreadRef.current = serverUnread;
+    void inboxPage.refresh();
+    // `inboxPage.refresh` is stable per hook instance.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverUnread]);
 
   const filteredConversations = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -228,6 +253,7 @@ export default function MessagesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+      <OfflineBanner />
       <FlatList<Conversation>
         data={filteredConversations}
         keyExtractor={(item) => String(item.id)}
@@ -466,7 +492,7 @@ function MessagesHeader({
           accessibilityLabel={t('searchPlaceholder')}
           leftIcon={<Ionicons name="search-outline" size={18} color={theme.textMuted} />}
           rightIcon={searchQuery ? (
-            <HeroButton isIconOnly size="sm" variant="ghost" accessibilityLabel={t('clearSearch')} onPress={() => setSearchQuery('')}>
+            <HeroButton isIconOnly size="md" variant="ghost" accessibilityLabel={t('clearSearch')} onPress={() => setSearchQuery('')}>
               <Ionicons name="close-circle" size={18} color={theme.textMuted} />
             </HeroButton>
           ) : null}
@@ -516,7 +542,6 @@ function ConversationCard({
       )}
       overshootRight={false}
       onSwipeableWillOpen={() => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-      onSwipeableOpen={() => onArchive(conversation)}
     >
       <NativePressable
         className="mx-4 my-2 rounded-panel"
@@ -652,7 +677,7 @@ function ArchivedConversationCard({
         </View>
         <HeroButton
           isIconOnly
-          size="sm"
+          size="md"
           variant="secondary"
           accessibilityLabel={t('restoreConversationWithName', { name: otherName })}
           onPress={() => onRestore(conversation)}
@@ -668,3 +693,5 @@ function formatOwnMessagePrefix(label: string): string {
   const trimmed = label.trim();
   return trimmed.endsWith(':') ? `${trimmed} ` : `${trimmed}: `;
 }
+
+export default withRouteGate(MessagesScreen, 'messages');

@@ -25,6 +25,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const statusTones: Record<GroupExchangeStatus, string> = {
   draft: '#64748b',
@@ -44,7 +45,7 @@ function formatDate(value?: string | null) {
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function GroupExchangeDetailScreen() {
+function GroupExchangeDetailScreen() {
   return (
     <ModalErrorBoundary>
       <GroupExchangeDetailScreenInner />
@@ -86,6 +87,32 @@ function GroupExchangeDetailScreenInner() {
     }
   }
 
+  /*
+    🔴 "Complete" moved credits for every participant on ONE tap, and "Confirm" committed a
+    participant's hours the same way; only Cancel asked first (audit 2026-09-07, C/F-1).
+  */
+  function confirmComplete() {
+    confirm({
+      title: t('groupExchanges.detail.actions.completeTitle'),
+      message: t('groupExchanges.detail.actions.completeDescription'),
+      confirmLabel: t('groupExchanges.detail.actions.complete'),
+      cancelLabel: t('common:buttons.cancel'),
+      confirmTestID: 'group-exchange-complete-confirm',
+      onConfirm: () => runAction('complete'),
+    });
+  }
+
+  function confirmConfirm() {
+    confirm({
+      title: t('groupExchanges.detail.actions.confirmTitle'),
+      message: t('groupExchanges.detail.actions.confirmDescription'),
+      confirmLabel: t('groupExchanges.detail.actions.confirm'),
+      cancelLabel: t('common:buttons.cancel'),
+      confirmTestID: 'group-exchange-confirm-confirm',
+      onConfirm: () => runAction('confirm'),
+    });
+  }
+
   function confirmCancel() {
     confirm({
       title: t('groupExchanges.detail.actions.cancelTitle'),
@@ -113,7 +140,16 @@ function GroupExchangeDetailScreenInner() {
     );
   }
 
-  if (error || !exchange) {
+  if (error) {
+    // A load failure with a Retry, not "not found" (audit 2026-09-07, C/F-15).
+    return (
+      <ScreenShell title={t('groupExchanges.detail.title')} backLabel={t('common:buttons.back')}>
+        <EmptyState icon="cloud-offline-outline" title={t('common:errors.generic')} subtitle={error} actionLabel={t('common:buttons.retry')} onAction={refresh} testID="group-exchange-load-error" />
+      </ScreenShell>
+    );
+  }
+
+  if (!exchange) {
     return (
       <ScreenShell title={t('groupExchanges.detail.title')} backLabel={t('common:buttons.back')}>
         <EmptyState icon="warning-outline" title={t('groupExchanges.detail.notFoundTitle')} subtitle={t('groupExchanges.detail.notFoundDescription')} />
@@ -176,12 +212,12 @@ function GroupExchangeDetailScreenInner() {
             <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.detail.actions.title')}</Text>
             <View className="flex-row flex-wrap gap-2">
               {canConfirm ? (
-                <HeroButton variant="primary" onPress={() => void runAction('confirm')} isDisabled={submitting}>
+                <HeroButton variant="primary" onPress={confirmConfirm} isDisabled={submitting}>
                   <HeroButton.Label>{t('groupExchanges.detail.actions.confirm')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
               {canComplete ? (
-                <HeroButton variant="primary" onPress={() => void runAction('complete')} isDisabled={submitting}>
+                <HeroButton variant="primary" onPress={confirmComplete} isDisabled={submitting}>
                   <HeroButton.Label>{t('groupExchanges.detail.actions.complete')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
@@ -292,3 +328,5 @@ function ParticipantRow({ participant, tone }: { participant: GroupExchangeParti
     </Surface>
   );
 }
+
+export default withRouteGate(GroupExchangeDetailScreen, 'group-exchange-detail');

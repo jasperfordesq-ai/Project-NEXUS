@@ -90,7 +90,8 @@
       "startFailed": "Could not start recording. Please try again.",
       "stopFailed": "Could not save this recording. Please try again.",
       "sendFailed": "Voice message could not be sent. Please try again."
-    }
+    },
+    "notFound": "This conversation is no longer available."
   },
   "context": {
     "regarding": "Regarding",

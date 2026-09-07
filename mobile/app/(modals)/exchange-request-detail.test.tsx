@@ -73,7 +73,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: mockViewerId } }),
 }));
 jest.mock('@/lib/hooks/useTheme', () => ({
-  useTheme: () => ({ bg: '#fff', surface: '#f8f9fa', text: '#000', border: '#ddd' }),
+  useTheme: () => ({ bg: '#fff', surface: '#f8f9fa', text: '#000', border: '#ddd', warning: '#aa4c00' }),
 }));
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn(),

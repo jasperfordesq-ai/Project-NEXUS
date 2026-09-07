@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useState } from 'react';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Alert, Button, Card, Chip, Spinner } from 'heroui-native';
@@ -78,9 +79,10 @@ export default function EventSafetyCard({
         variant: 'success',
       });
       return true;
-    } catch {
+    } catch (error) {
       showToast({
         title: t('safety.attendee.action_error'),
+        description: describeApiError(error, ''),
         variant: 'danger',
       });
       return false;

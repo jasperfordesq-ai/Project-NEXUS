@@ -174,7 +174,9 @@
     "collectionsPublicHint": "Browse public collections shared by {{name}}.",
     "viewMyCollections": "View my collections",
     "viewCollections": "View collections",
-    "viewCollectionsFor": "View collections for {{name}}"
+    "viewCollectionsFor": "View collections for {{name}}",
+    "notAvailable": "This profile is not available. The member may not have finished setting up their account.",
+    "notVisible": "You cannot view this member’s profile."
   },
   "collections": {
     "removeConfirmTitle": "Remove this saved item?",

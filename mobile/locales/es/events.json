@@ -173,7 +173,9 @@
     "loadFailedTitle": "No se pudo abrir este evento",
     "unsavedTitle": "¿Descartar este evento?",
     "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "notAllowedTitle": "No puedes editar este evento",
+    "notAllowed": "Solo la organización y el equipo del evento pueden cambiarlo. Si crees que deberías poder hacerlo, pregunta a la organización."
   },
   "category": {
     "workshop": "Taller",
@@ -943,5 +945,16 @@
       "revoke_success": "Se revocó el acceso de {{name}}.",
       "revoke_error": "No se pudo revocar la función del evento."
     }
+  },
+  "queue": {
+    "readOnlyRevoked": "Este dispositivo ya no puede registrar la entrada de personas. Todo lo escaneado aquí se conserva en modo de solo lectura hasta que lo elimines."
+  },
+  "scan": {
+    "alreadyQueued": "Esta credencial ya está en la cola para esa acción.",
+    "expired": "Esta credencial ha caducado. Pide a la persona que la actualice.",
+    "wrongEvent": "Esta credencial pertenece a otro evento.",
+    "revoked": "Esta credencial ha sido revocada o sustituida.",
+    "signingKeyUnknown": "Esta credencial se emitió después de la última sincronización de este dispositivo. Sincroniza y vuelve a escanear.",
+    "queueFull": "La cola sin conexión está llena. Sincroniza antes de escanear más."
   }
 }

@@ -21,5 +21,6 @@
   "errorTitle": "Não foi possível carregar os recursos",
   "categoryCount": "{{count}} elementos",
   "categoryCount_one": "{{count}} elemento",
-  "uncategorized": "Geral"
+  "uncategorized": "Geral",
+  "savedItemHighlighted": "Recurso guardado: {{title}}"
 }

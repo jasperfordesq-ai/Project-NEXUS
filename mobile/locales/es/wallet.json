@@ -93,7 +93,13 @@
     "exportFailedTitle": "La exportación ha fallado",
     "exportFailedMessage": "No hemos podido preparar la exportación de tus transacciones. Inténtalo de nuevo.",
     "exportSuccessCount_one": "Tu exportación contiene {{count}} transacción.",
-    "exportPartial_one": "Tu exportación contiene {{count}} transacción. Tu historial es más largo de lo que puede abarcar una exportación, así que no se incluyen las entradas más antiguas."
+    "exportPartial_one": "Tu exportación contiene {{count}} transacción. Tu historial es más largo de lo que puede abarcar una exportación, así que no se incluyen las entradas más antiguas.",
+    "confirmTransferTitle": "¿Enviar estas horas?",
+    "confirmTransferMessage": "Vas a enviar {{amount}} horas a {{name}}. Esta acción no se puede deshacer.",
+    "confirmDonationTitle": "¿Donar estas horas?",
+    "confirmDonationMessage": "Vas a donar {{amount}} horas a {{name}}. Esta acción no se puede deshacer.",
+    "recipientResolving": "Comprobando el destinatario…",
+    "recipientUnresolved": "No se encontró a esa persona. Busca al destinatario en su lugar."
   },
   "status": {
     "completed": "Completado",

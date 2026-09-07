@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { ApiResponseError } from '@/lib/api/client';
 import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
@@ -56,6 +57,7 @@ import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { withRouteGate } from '@/components/withRouteGate';
 
 const eventCategoryIds = ['workshop', 'social', 'outdoor', 'online', 'meeting', 'training', 'other'] as const;
 const MAX_COVER_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -126,7 +128,7 @@ function resolveEventCategory(event: CanonicalEvent): string {
   return event.category?.slug?.trim().toLowerCase() ?? '';
 }
 
-export default function NewEventRoute() {
+function NewEventRoute() {
   return (
     <ModalErrorBoundary>
       <NewEventScreen />
@@ -194,6 +196,7 @@ function NewEventScreen() {
   const [hasSaved, setHasSaved] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
   const [editLoadFailed, setEditLoadFailed] = useState(false);
+  const [editNotAllowed, setEditNotAllowed] = useState(false);
   const [editRetryToken, setEditRetryToken] = useState(0);
   const attemptedEditRetryRef = useRef<number | null>(null);
   const parsedSeriesId = Number(params.series_id);
@@ -232,8 +235,20 @@ function NewEventScreen() {
         hydrateFromEvent(response.data);
         setHasHydratedEdit(true);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (!isMountedRef.current) return;
+        /*
+          🔴 "You may not edit this event" is an answer, not a fault. A shared or stale link
+          to someone else's event used to show "Could not load event" with a Retry that
+          failed for ever (audit 2026-09-07, C/F-11). Refusals get their own screen with
+          the way back; only genuine failures get a Retry.
+        */
+        const refused = (err instanceof Error && err.message === 'EVENT_EDIT_NOT_ALLOWED')
+          || (err instanceof ApiResponseError && (err.status === 403 || err.status === 404));
+        if (refused) {
+          setEditNotAllowed(true);
+          return;
+        }
         // 🔴 Not a dead form. A failed hydration used to leave the empty fields on screen
         // with a live "Update event" button — one tap would have overwritten the server
         // record with blanks (audit 2026-09-05, S4-03). The form is withheld until the
@@ -763,7 +778,17 @@ function NewEventScreen() {
         backLabel={t('common:back')}
         fallbackHref={fallbackHref}
       />
-      {isEditing && editLoadFailed ? (
+      {isEditing && editNotAllowed ? (
+        <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-event-not-allowed">
+          <EmptyState
+            icon="lock-closed-outline"
+            title={t('create.notAllowedTitle')}
+            subtitle={t('create.notAllowed')}
+            actionLabel={t('common:buttons.back')}
+            onAction={() => router.back()}
+          />
+        </View>
+      ) : isEditing && editLoadFailed ? (
         <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-event-load-failed">
           <EmptyState
             icon="calendar-outline"
@@ -1184,3 +1209,5 @@ function AccessibilityChoice({
     </View>
   );
 }
+
+export default withRouteGate(NewEventRoute, 'new-event');

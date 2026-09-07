@@ -174,7 +174,9 @@
     "collectionsPublicHint": "Brabhsáil na bailiúcháin phoiblí a roinn {{name}}.",
     "viewMyCollections": "Féach ar mo bhailiúcháin",
     "viewCollections": "Féach ar na bailiúcháin",
-    "viewCollectionsFor": "Féach ar bhailiúcháin {{name}}"
+    "viewCollectionsFor": "Féach ar bhailiúcháin {{name}}",
+    "notAvailable": "Níl an phróifíl seo ar fáil. Seans nach bhfuil an comhalta críochnaithe ag socrú a chuntais.",
+    "notVisible": "Ní féidir leat próifíl an chomhalta seo a fheiceáil."
   },
   "collections": {
     "removeConfirmTitle": "An mír shábháilte seo a bhaint?",

@@ -174,7 +174,9 @@
     "collectionsPublicHint": "Durchsuche öffentliche Sammlungen von {{name}}.",
     "viewMyCollections": "Meine Sammlungen ansehen",
     "viewCollections": "Sammlungen ansehen",
-    "viewCollectionsFor": "Sammlungen von {{name}} ansehen"
+    "viewCollectionsFor": "Sammlungen von {{name}} ansehen",
+    "notAvailable": "Dieses Profil ist nicht verfügbar. Das Mitglied hat sein Konto möglicherweise noch nicht fertig eingerichtet.",
+    "notVisible": "Du kannst das Profil dieses Mitglieds nicht ansehen."
   },
   "collections": {
     "removeConfirmTitle": "Dieses gespeicherte Element entfernen?",

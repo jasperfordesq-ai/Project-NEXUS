@@ -59,7 +59,11 @@
         "cancelDescription": "Esto cancelará el intercambio de grupo para todos los participantes.",
         "confirmFailed": "No pudimos Confirma tu horario. Inténtelo de nuevo.",
         "completeFailed": "No pudimos completar este intercambio. Inténtelo de nuevo.",
-        "cancelFailed": "No pudimos cancelar este intercambio. Inténtalo de nuevo."
+        "cancelFailed": "No pudimos cancelar este intercambio. Inténtalo de nuevo.",
+        "completeTitle": "¿Completar este intercambio de grupo?",
+        "completeDescription": "Los créditos de tiempo se transferirán ahora a todos los participantes. Esta acción no se puede deshacer.",
+        "confirmTitle": "¿Confirmar tus horas?",
+        "confirmDescription": "Al confirmar, indicas a la organización que participaste durante las horas indicadas. Los créditos se mueven cuando se completa el intercambio."
       },
       "splitShare": "{{name}} — {{hours}} horas",
       "splitUnknownMember": "Miembro #{{id}}"
@@ -116,7 +120,9 @@
       "summaryParticipants_one": "{{count}} participante seleccionado",
       "summaryParticipants_other": "{{count}} participantes seleccionados",
       "remove": "Remove",
-      "removeParticipant": "Eliminar a {{name}}"
+      "removeParticipant": "Eliminar a {{name}}",
+      "participantHoursInvalid": "Introduce las horas de cada participante como un número, por ejemplo 1,5.",
+      "participantWeightInvalid": "Introduce un peso mayor que cero para cada participante."
     }
   },
   "newExchange": "Nuevo listado",
@@ -509,7 +515,9 @@
         "other": "Otra cosa",
         "quality": "No es lo acordado"
       }
-    }
+    },
+    "confirmSheetOtherConfirmed": "La otra persona ha confirmado {{hours}} horas. Una diferencia de más de un cuarto de hora envía este intercambio a revisión en lugar de completarlo.",
+    "loadMore": "Mostrar más intercambios"
   },
   "unknownMember": "Miembro desconocido"
 }

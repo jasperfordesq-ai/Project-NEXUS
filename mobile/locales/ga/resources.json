@@ -21,5 +21,6 @@
   "errorTitle": "Níorbh fhéidir na hacmhainní a lódáil",
   "categoryCount": "Líon míreanna: {{count}}",
   "categoryCount_one": "Líon míreanna: {{count}}",
-  "uncategorized": "Ginearálta"
+  "uncategorized": "Ginearálta",
+  "savedItemHighlighted": "Acmhainn shábháilte: {{title}}"
 }

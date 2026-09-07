@@ -21,5 +21,6 @@
   "errorTitle": "Impossible de charger les ressources",
   "categoryCount": "{{count}} éléments",
   "categoryCount_one": "{{count}} élément",
-  "uncategorized": "Général"
+  "uncategorized": "Général",
+  "savedItemHighlighted": "Ressource enregistrée : {{title}}"
 }

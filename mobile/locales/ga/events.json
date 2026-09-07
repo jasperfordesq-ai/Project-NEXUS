@@ -173,7 +173,9 @@
     "loadFailedTitle": "Níorbh fhéidir an imeacht seo a oscailt",
     "unsavedTitle": "An imeacht seo a chaitheamh i dtraipisí?",
     "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
-    "discard": "Caith i dtraipisí"
+    "discard": "Caith i dtraipisí",
+    "notAllowedTitle": "Ní féidir leat an imeacht seo a chur in eagar",
+    "notAllowed": "Ní féidir ach leis an eagraí agus le foireann an imeachta é a athrú. Má cheapann tú gur cheart go mbeifeá in ann, iarr ar an eagraí."
   },
   "category": {
     "workshop": "Ceardlann",
@@ -943,5 +945,16 @@
       "revoke_success": "Cúlghairmeadh rochtain ar {{name}}.",
       "revoke_error": "Níorbh fhéidir ról an imeachta a chúlghairm."
     }
+  },
+  "queue": {
+    "readOnlyRevoked": "Ní cheadaítear don ghléas seo daoine a sheiceáil isteach a thuilleadh. Coinnítear gach rud a scanadh anseo, inléite amháin, go dtí go mbainfidh tú é."
+  },
+  "scan": {
+    "alreadyQueued": "Tá an suaitheantas seo sa scuaine don ghníomh sin cheana.",
+    "expired": "Tá an suaitheantas seo imithe in éag. Iarr ar an gcomhalta é a athnuachan.",
+    "wrongEvent": "Baineann an suaitheantas seo le himeacht eile.",
+    "revoked": "Cúlghaireadh nó athsholáthraíodh an suaitheantas seo.",
+    "signingKeyUnknown": "Eisíodh an suaitheantas seo tar éis an tsioncrónaithe is déanaí ar an ngléas seo. Sioncrónaigh, ansin scan arís.",
+    "queueFull": "Tá an scuaine as líne lán. Sioncrónaigh sula scanann tú tuilleadh."
   }
 }

@@ -41,7 +41,10 @@ import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { getMember } from '@/lib/api/members';
+import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
+import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
@@ -140,7 +143,7 @@ function csvCell(value: string | number | null | undefined): string {
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
-export default function WalletModal() {
+function WalletModal() {
   return (
     <ModalErrorBoundary>
       <WalletModalInner />
@@ -611,21 +614,59 @@ function WalletActionPanel({
   initialRecipientId?: string | string[];
   initialRecipientName?: string | string[];
 }) {
+  /*
+    🔴 A deep link (nexus://wallet?to=999&name=Alice, or the equivalent web URL) names the
+    recipient. The NAME in that URL is whatever the link's author typed — it used to be
+    shown as the recipient, unverified, and a transfer went through on one tap (audit
+    2026-09-07, B/F-02). The id is now resolved against the server and only the server's
+    name is shown; until it answers, the recipient is a placeholder and Send is disabled.
+    The URL's name is deliberately not read at all.
+  */
+  const initialRecipientIdValue = Array.isArray(initialRecipientId) ? initialRecipientId[0] : initialRecipientId;
+  void initialRecipientName;
   const initialRecipient = useMemo<WalletUserSearchResult | null>(() => {
-    const id = Array.isArray(initialRecipientId) ? initialRecipientId[0] : initialRecipientId;
-    if (!id) return null;
-    const name = Array.isArray(initialRecipientName) ? initialRecipientName[0] : initialRecipientName;
-    return {
-      id,
-      name: name || t('actions.memberFallback'),
-      avatar_url: null,
-    };
-  }, [initialRecipientId, initialRecipientName, t]);
+    if (!initialRecipientIdValue) return null;
+    return { id: initialRecipientIdValue, name: t('actions.recipientResolving'), avatar_url: null };
+  }, [initialRecipientIdValue, t]);
+  const [isResolvingRecipient, setIsResolvingRecipient] = useState(Boolean(initialRecipientIdValue));
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [donationTarget, setDonationTarget] = useState<DonationTarget>('community_fund');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<WalletUserSearchResult[]>([]);
   const [selectedUser, setSelectedUser] = useState<WalletUserSearchResult | null>(initialRecipient);
+  useEffect(() => {
+    const numericId = Number(initialRecipientIdValue);
+    if (!initialRecipientIdValue || !Number.isFinite(numericId) || numericId <= 0) {
+      setIsResolvingRecipient(false);
+      if (initialRecipientIdValue) setSelectedUser(null);
+      return;
+    }
+    let cancelled = false;
+    setIsResolvingRecipient(true);
+    getMember(numericId)
+      .then((response) => {
+        if (cancelled) return;
+        const member = response.data;
+        const resolvedName = member.name?.trim() || member.first_name?.trim() || t('actions.memberFallback');
+        // Both in the same tick, so there is no render in which the recipient is known but
+        // Send is still disabled.
+        setSelectedUser({ id: member.id, name: resolvedName, avatar_url: member.avatar_url ?? member.avatar ?? null });
+        setIsResolvingRecipient(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setSelectedUser(null);
+        setIsResolvingRecipient(false);
+        showToast({ title: t('actions.validationTitle'), description: t('actions.recipientUnresolved'), variant: 'warning' });
+      });
+    return () => {
+      cancelled = true;
+    };
+    // The URL's recipient is read once; a member who then searches for someone else must
+    // not be overwritten by a late answer, hence the cancel flag.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRecipientIdValue]);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -640,6 +681,10 @@ function WalletActionPanel({
    */
   const transferKeyRef = useRef<string | null>(null);
   const transferIntentRef = useRef<string>('');
+  // Same discipline for donations. A donation that timed out and was tapped again used to
+  // send a second, unrelated request (audit 2026-09-07, B/F-03).
+  const donationKeyRef = useRef<string | null>(null);
+  const donationIntentRef = useRef<string>('');
 
   async function runSearch() {
     if (query.trim().length < 2) return;
@@ -658,7 +703,12 @@ function WalletActionPanel({
     }
   }
 
-  async function submit() {
+  /*
+    🔴 Moving credits is irreversible, so it takes two taps: the button, then a dialog that
+    names the recipient and the amount (B/F-02). The dialog reads the server-confirmed
+    recipient name, never the URL's.
+  */
+  function submit() {
     const parsedAmount = normaliseAmount(amount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       showToast({ title: t('actions.validationTitle'), description: t('actions.validationAmount'), variant: 'warning' });
@@ -668,11 +718,24 @@ function WalletActionPanel({
       showToast({ title: t('actions.validationTitle'), description: t('actions.validationInsufficient'), variant: 'warning' });
       return;
     }
-    if (needsRecipient && !selectedUser) {
+    if (needsRecipient && (!selectedUser || isResolvingRecipient)) {
       showToast({ title: t('actions.validationTitle'), description: t('actions.validationRecipient'), variant: 'warning' });
       return;
     }
 
+    const targetName = needsRecipient ? (selectedUser?.name ?? t('actions.memberFallback')) : t('actions.communityFundOption');
+    const amountLabel = formatDecimal(parsedAmount, 2);
+    confirm({
+      title: t(action === 'transfer' ? 'actions.confirmTransferTitle' : 'actions.confirmDonationTitle'),
+      message: t(action === 'transfer' ? 'actions.confirmTransferMessage' : 'actions.confirmDonationMessage', { amount: amountLabel, name: targetName }),
+      confirmLabel: t(action === 'transfer' ? 'actions.sendNow' : 'actions.donateNow'),
+      cancelLabel: t('common:buttons.cancel'),
+      confirmTestID: 'wallet-confirm-submit',
+      onConfirm: () => void performSubmit(parsedAmount),
+    });
+  }
+
+  async function performSubmit(parsedAmount: number) {
     setIsSubmitting(true);
     try {
       if (action === 'transfer') {
@@ -696,19 +759,29 @@ function WalletActionPanel({
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({ title: t('actions.transferSuccessTitle'), description: t('actions.transferSuccessMessage'), variant: 'success' });
       } else {
+        const donationIntent = JSON.stringify([donationTarget, donationTarget === 'user' ? selectedUser?.id ?? '' : '', parsedAmount, note.trim()]);
+        if (donationIntentRef.current !== donationIntent) {
+          donationIntentRef.current = donationIntent;
+          donationKeyRef.current = null;
+        }
+        donationKeyRef.current ??= walletMutationKey();
         await donateWalletCredits({
           recipient_type: donationTarget,
           recipient_id: donationTarget === 'user' ? selectedUser?.id : undefined,
           amount: parsedAmount,
           message: note.trim(),
+          idempotency_key: donationKeyRef.current,
         });
+        donationKeyRef.current = null;
+        donationIntentRef.current = '';
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({ title: t('actions.donationSuccessTitle'), description: t('actions.donationSuccessMessage'), variant: 'success' });
       }
       onComplete();
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('actions.mutationFailedMessage');
-      showToast({ title: t('actions.mutationFailedTitle'), description: message, variant: 'danger' });
+      // The server's own reason when it is fit to show — "not enough credits" beats a raw
+      // message or "Action failed" (B/F-17).
+      showToast({ title: t('actions.mutationFailedTitle'), description: describeApiError(error, t('actions.mutationFailedMessage')), variant: 'danger' });
       // A failed transfer does not say whether the credits moved — a request can fail
       // after the server committed it. Re-read the wallet so the member is looking at
       // the truth rather than guessing, and leave the panel open: retrying reuses the
@@ -837,11 +910,12 @@ function WalletActionPanel({
           />
         </View>
 
-        <HeroButton variant="primary" onPress={submit} isDisabled={isSubmitting}>
+        <HeroButton variant="primary" onPress={submit} isDisabled={isSubmitting || (needsRecipient && isResolvingRecipient)} testID="wallet-action-submit">
           {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name={action === 'transfer' ? 'send-outline' : 'heart-outline'} size={16} />}
           <HeroButton.Label>{t(action === 'transfer' ? 'actions.sendNow' : 'actions.donateNow')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>
+      {confirmDialog}
     </HeroCard>
   );
 }
@@ -1138,3 +1212,5 @@ function ErrorCard({
     </HeroCard>
   );
 }
+
+export default withRouteGate(WalletModal, 'wallet');

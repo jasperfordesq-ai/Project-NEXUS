@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
+import { downloadAuthenticatedFile } from '@/lib/volunteering/authenticatedFileDownload';
 import { API_V2 } from '@/lib/constants';
 
 type ApiEnvelope<T> = { success?: boolean; data?: T } | T;
@@ -87,8 +88,20 @@ export async function getDataExportHistory(): Promise<DataExportHistoryRow[]> {
   return unwrap(response, {}).exports ?? [];
 }
 
-export function requestDataExport(format: DataExportFormat): Promise<unknown> {
-  return api.post<unknown>(`${API_V2}/me/data-export`, { format });
+/**
+ * Build the member's personal-data archive and hand it to the share sheet.
+ *
+ * 🔴 This used to POST and resolve. The server answers that POST with the archive itself
+ * (a streamed `attachment`), and `api.post` turns a non-JSON body into `data = null` —
+ * so the member saw "Export requested", the history gained a row, and no file ever
+ * reached the phone. The GDPR right of access could not be completed from the app
+ * (audit 2026-09-07, B/F-01). The API now serves the same download on GET, which is the
+ * only verb `expo-file-system` can stream to disk; the file is then offered to the share
+ * sheet so it can be saved or sent on.
+ */
+export function requestDataExport(format: DataExportFormat): Promise<void> {
+  const stamp = new Date().toISOString().slice(0, 10);
+  return downloadAuthenticatedFile(`${API_V2}/me/data-export?format=${format}`, `nexus-data-export-${stamp}.${format}`);
 }
 
 /**

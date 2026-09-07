@@ -63,6 +63,7 @@ import {
   type Badge,
   type GamificationProfile,
 } from '@/lib/api/gamification';
+import { withRouteGate } from '@/components/withRouteGate';
 
 interface MemberProfile {
   id: number | string;
@@ -124,7 +125,7 @@ interface MemberAchievements {
   badges: MemberBadge[];
 }
 
-export default function MemberProfileScreen() {
+function MemberProfileScreen() {
   return (
     <ModalErrorBoundary>
       <MemberProfileScreenInner />
@@ -156,7 +157,7 @@ function MemberProfileScreenInner() {
   const isOwnProfile = !isFederatedProfile && user?.id === safeMemberId;
   const sameTenantCanSendCredits = !isOwnProfile && !isFederatedProfile && (hasModule('wallet') || hasFeature('wallet'));
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => loadMemberProfileData(safeMemberId, safeTenantId, isFederatedProfile),
     [safeMemberId, safeTenantId, isFederatedProfile],
     { enabled: safeMemberId > 0 && !isExternalFederatedProfile },
@@ -365,6 +366,24 @@ function MemberProfileScreenInner() {
         <View className="flex-1 items-center justify-center">
           <LoadingSpinner />
         </View>
+      </ScreenShell>
+    );
+  }
+
+  /*
+    🔴 404 (profile hidden — unfinished onboarding, private, or gone) and 403 (blocked) are
+    answers, not faults. They rendered as "Could not load member profile — Retry", and a
+    retry can never succeed on a 4xx (audit 2026-09-07, B/F-06). Say what it is and offer
+    the way back.
+  */
+  if (!member && (errorStatus === 404 || errorStatus === 403)) {
+    return (
+      <ScreenShell t={t} title={t('profileTitle')}>
+        <CenteredState icon="person-circle-outline" color={theme.textMuted} text={t(errorStatus === 403 ? 'profile.notVisible' : 'profile.notAvailable')} testID="member-profile-unavailable">
+          <HeroButton variant="secondary" onPress={() => router.back()}>
+            <HeroButton.Label>{t('common:buttons.back')}</HeroButton.Label>
+          </HeroButton>
+        </CenteredState>
       </ScreenShell>
     );
   }
@@ -1041,9 +1060,9 @@ function ScreenShell({ t, title, children }: { t: TFunction; title: string; chil
   );
 }
 
-function CenteredState({ icon, color, text, children }: { icon: IoniconName; color: string; text: string; children?: React.ReactNode }) {
+function CenteredState({ icon, color, text, children, testID }: { icon: IoniconName; color: string; text: string; children?: React.ReactNode; testID?: string }) {
   return (
-    <HeroCard variant="secondary" className="my-8">
+    <HeroCard variant="secondary" className="my-8" testID={testID}>
       <HeroCard.Body className="items-center gap-4">
         <Ionicons name={icon} size={34} color={color} />
         <Text className="text-center text-sm font-medium text-muted-foreground">{text}</Text>
@@ -1709,3 +1728,5 @@ function formatDate(iso: string): string {
     return iso;
   }
 }
+
+export default withRouteGate(MemberProfileScreen, 'member-profile');

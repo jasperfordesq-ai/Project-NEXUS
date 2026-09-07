@@ -108,7 +108,7 @@ describe('SettingsDataExportScreen', () => {
 
   it('requests a data export using the selected format', async () => {
     mockGetDataExportHistory.mockResolvedValue([]);
-    mockRequestDataExport.mockResolvedValue({});
+    mockRequestDataExport.mockResolvedValue(undefined);
 
     const { getByText } = render(<SettingsDataExportScreen />);
     await waitFor(() => expect(getByText('Request export')).toBeTruthy());
