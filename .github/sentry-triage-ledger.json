@@ -1,7 +1,16 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-09-05T16:16:33.429Z",
+  "lastRunAt": "2026-09-07T12:43:15.588Z",
   "issues": {
+    "120262618": {
+      "title": "ErrorException: Warning: require(/var/www/html/bootstrap/cache/routes-v7.php): Failed to open stream: No such file or directory",
+      "culprit": "/artisan in ?",
+      "decision": "needs-owner",
+      "note": "Not a code bug. All 100+ events land inside one hour on 2026-09-06 and stop 8 seconds after Redis came back. Proven from the host: apt upgraded containerd.io/docker-ce/docker-ce-cli/docker-compose-plugin between 06:27:37 and 06:31:19, which stopped and restarted containerd and dockerd; nexus-php-redis/db/meilisearch all restarted at 06:31:17. The routes-v7.php fatal is collateral of the restart loop re-running 'artisan optimize' while a lingering child artisan still reads the file, exactly as diagnosed on 2026-08-07. 0 members affected (all sapi:cli). OWNER ACTION: production Docker is being upgraded unattended - pin/hold docker-ce and containerd.io, or schedule engine upgrades into a window, because the restart takes every container down for about four minutes. Note this was NOT Ubuntu unattended-upgrades (which found nothing at 06:08); the Docker repo is outside its allowed origins, so something else (likely the Plesk update task) ran apt at 06:27:37.",
+      "sha": null,
+      "decidedAt": "2026-09-07T13:06:35.028Z",
+      "decidedAtRelease": "nexus-php@d7db2fad466c"
+    },
     "123575422": {
       "title": "Support report submitted",
       "culprit": "/admin/enterprise",
@@ -10,6 +19,24 @@
       "sha": null,
       "decidedAt": "2026-08-28T11:12:02.835Z",
       "decidedAtRelease": "nexus-react@489c627e13b9"
+    },
+    "128022136": {
+      "title": "Exception: Scheduled command ['/usr/local/bin/php' 'artisan' queue:verify-liveness] failed with exit code [1].",
+      "culprit": "/vendor/laravel/framework/src/Illuminate/Console/Scheduling/ScheduleRunCommand.php in Illuminate\\Console\\Scheduling\\ScheduleRunCommand::Illuminate\\Console\\Scheduling\\{closure}",
+      "decision": "fixed",
+      "note": "The scheduler's wrapper around queue:verify-liveness, which exits non-zero by design when workers are dead. Same root cause and fix as NEXUS-PHP-2F (dead queue watchdog, 6b198eb27).",
+      "sha": "6b198eb27",
+      "decidedAt": "2026-09-07T13:06:18.239Z",
+      "decidedAtRelease": "nexus-php@b43e68ccdb4c"
+    },
+    "129111072": {
+      "title": "RuntimeException: Queue workers are not processing jobs: heartbeat dispatched at 2026-09-06T11:20:30+00:00 but last processed at 2026-09-06T06:25:54+00:00. Check `ps aux | grep horizon:work` in the queue container.",
+      "culprit": "/app/Console/Commands/VerifyQueueLiveness.php in App\\Console\\Commands\\VerifyQueueLiveness::handle",
+      "decision": "fixed",
+      "note": "Correct alarm for a real outage: production queue workers processed no jobs between 06:25:54 and 11:18 UTC on 2026-09-06. Trigger was an apt upgrade of docker-ce/containerd.io restarting the container engine at 06:27:37-06:31:19; the queue container did not come back. It stayed down for five hours because scripts/watchdog-queue.sh was tracked mode 100644 while cron invokes it directly, so cron had got 'Permission denied' on every run since 2026-05-22 and the watchdog had never run once. Fixed by tracking it 100755 plus a new BLOCKING gate (check-host-cron-scripts.mjs). The trigger itself is host config and is owner-held - see NEXUS-PHP-10.",
+      "sha": "6b198eb27",
+      "decidedAt": "2026-09-07T13:06:14.492Z",
+      "decidedAtRelease": "nexus-php@b43e68ccdb4c"
     },
     "130353163": {
       "title": "Geocoding exception",
@@ -28,6 +55,15 @@
       "sha": null,
       "decidedAt": "2026-09-02T09:18:43.731Z",
       "decidedAtRelease": "nexus-php@489c627e13b9"
+    },
+    "136097019": {
+      "title": "QUEUE LIVENESS FAILED: heartbeats dispatched but not processed — workers are dead or stuck.",
+      "culprit": null,
+      "decision": "fixed",
+      "note": "Same 2026-09-06 five-hour queue outage as NEXUS-PHP-2F. The alarm behaved correctly; what failed was recovery, because the queue watchdog was installed non-executable and had never run. Fixed in 6b198eb27.",
+      "sha": "6b198eb27",
+      "decidedAt": "2026-09-07T13:06:16.329Z",
+      "decidedAtRelease": "nexus-php@b43e68ccdb4c"
     },
     "138843429": {
       "title": "Sentry\\Exception\\FatalErrorException: Error: Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'legal_document_id' in 'SELECT' in /var/www/html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:420",
@@ -609,10 +645,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "Recurred, but recurrence is expected: this is a nightly health-check alarm, not a regression. SafeguardingPolicyHealthCheck reports that tenant 2 (hour-timebank) has at least one live member safeguarding selection requiring vetted interaction while no safeguarding jurisdiction is configured, so the contact gate cannot work. The command's own docblock states the fix is configuration, not code: broker panel, Vetting -> Jurisdiction, for tenant 2. It will fire every night until that is set. Probably the same root cause as the parked NEXUS-PHP-39 'Safeguarding interaction policy unavailable'. Safeguarding-sensitive, so no code was touched.",
+      "note": "SENSITIVE (safeguarding) - diagnosed only, no code touched. This is a working daily pager (SafeguardingPolicyHealthCheck), and its own docblock says the fix is an admin action, not code. It came back after the 2026-09-04 needs-owner because nobody has done that action. Context on the 2026-09-07 08:05 event names exactly one community: tenant_id 2 (hour-timebank), jurisdiction 'unconfigured'. Consequence: a member there has asked that only vetted people may contact them, and because the jurisdiction is unset the contact gate fails closed - that member is dropped from everyone's matches and cannot be contacted, and is not told. OWNER ACTION: broker panel -> Vetting -> Jurisdiction for hour-timebank. Related: NEXUS-PHP-39 (134069538), parked needs-owner for the same gap.",
       "sha": null,
-      "decidedAt": "2026-09-04T20:11:48.055Z",
-      "decidedAtRelease": "nexus-php@f7a71cc5f7ed"
+      "decidedAt": "2026-09-07T13:06:50.400Z",
+      "decidedAtRelease": "nexus-php@db249f98208e"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -649,6 +685,33 @@
       "sha": null,
       "decidedAt": "2026-09-04T20:11:40.712Z",
       "decidedAtRelease": "nexus-php@f7a71cc5f7ed"
+    },
+    "145144532": {
+      "title": "ApplicationNotResponding: Background ANR",
+      "culprit": "android.util.SparseArray in get",
+      "decision": "watching",
+      "note": "One event, one member, no code-level action available. Background ANR reported after the fact via Android AppExitInfo on a Galaxy S23 Ultra (SM-S918B, Android 16), release 1.3.0+6. The stack is entirely React Native framework internals - ReactChoreographer -> FabricUIManager.doFrameGuarded -> MountItemDispatcher -> ReactAccessibilityDelegate.setDelegate -> View.getTag - with no app frame in it, during a mount while the app was backgrounded. Nothing to fix from a single occurrence; revisit if it recurs or reaches more than one device.",
+      "sha": null,
+      "decidedAt": "2026-09-07T13:06:51.767Z",
+      "decidedAtRelease": "ie.project.nexus@1.3.0+6"
+    },
+    "145256332": {
+      "title": "InvalidArgumentException: Route is not available for tenant in enqueueJob: /install-app",
+      "culprit": "/app/Services/PrerenderService.php in App\\Services\\PrerenderService::enqueueJob",
+      "decision": "fixed",
+      "note": "Already fixed by an earlier session, not by tonight's run. PrerenderDetectDrift handed enqueueJob a route the tenant plan rejects (/install-app), and the sweep aborted for every tenant after it. Commit 693168144 asks the plan first and keeps going; it IS in the live release db249f982 and the issue has been silent since 2026-09-06T15:01 despite the sweep running every two minutes. Deliberately not resolved in Sentry, because this run neither made nor tested the fix.",
+      "sha": "693168144",
+      "decidedAt": "2026-09-07T13:06:36.779Z",
+      "decidedAtRelease": "nexus-php@2296b54ff71f"
+    },
+    "145306975": {
+      "title": "N+1 Query",
+      "culprit": "nexus:run-all",
+      "decision": "watching",
+      "note": "Real but negligible, and the fix is riskier than the problem. CronJobRunner::forEachTenant already has each tenant's id and slug, then calls TenantContext::setById(), which re-reads 'select * from tenants where id = ?' - 13 rows, 7ms total across the whole hourly nexus:run-all. Avoiding it means adding a seed-from-row path to TenantContext, the tenant-isolation boundary, and a mistake there is a cross-tenant bug. Not worth that for 7ms. Revisit only if tenant count grows enough to matter.",
+      "sha": null,
+      "decidedAt": "2026-09-07T13:06:38.102Z",
+      "decidedAtRelease": "nexus-php@db249f98208e"
     }
   }
 }
