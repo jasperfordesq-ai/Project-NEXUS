@@ -221,11 +221,19 @@ jobs:
       - name: Select an Xcode the pinned Stripe SDK can compile with
         run: |
           set -euo pipefail
+          # 🔴 The version comes from the DIRECTORY NAME, and xcodebuild is not run to
+          # discover it. `xcodebuild -version | head -1` aborts xcodebuild: `head`
+          # closes the pipe after one line, xcodebuild throws
+          # NSFileHandleOperationException on the broken pipe and dies with exit 134,
+          # which took this whole step down before it had listed anything. That
+          # pipeline is a very common idiom and it is unsafe with this particular
+          # tool. GitHub names these directories Xcode_<version>.app, so the name is
+          # both cheaper and more reliable than asking the binary.
           echo "Xcode versions on this runner:"
           BEST=""; BEST_V=""
-          for app in /Applications/Xcode*.app; do
-            [ -x "$app/Contents/Developer/usr/bin/xcodebuild" ] || continue
-            V="$("$app/Contents/Developer/usr/bin/xcodebuild" -version | head -1 | awk '{print $2}')"
+          for app in /Applications/Xcode_*.app; do
+            [ -d "$app" ] || continue
+            V="$(basename "$app" .app)"; V="${V#Xcode_}"
             echo "  $app -> $V"
             MAJOR="${V%%.*}"
             case "$MAJOR" in ''|*[!0-9]*) continue;; esac
@@ -242,6 +250,7 @@ jobs:
           fi
           echo "selected $BEST (Xcode $BEST_V)"
           sudo xcode-select -s "$BEST/Contents/Developer"
+          # Unpiped on purpose, for the reason above.
           xcodebuild -version
 
       - uses: actions/setup-node@v4
