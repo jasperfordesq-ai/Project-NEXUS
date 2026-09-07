@@ -178,17 +178,44 @@ export function getMySkills(): Promise<UserSkillsResponse> {
 }
 
 /**
- * POST /api/v2/members/{userId}/endorse — endorse a skill on another user's profile.
+ * POST /api/v2/members/{userId}/endorse — endorse a skill on another member's profile.
+ *
+ * 🔴 This function had ZERO callers app-wide, so no member could endorse anyone from the
+ * app: endorsements could only ever arrive from the website. Worse, it would not have
+ * worked if it had been called — it sent `skill_id` alone, and `EndorsementService::endorse`
+ * requires `skill_name` and refuses without it (`skill_id` is optional and only stored).
+ * A profile's skills come back as plain strings, so the name is what the caller has.
+ * Found by the 2026-09-07 audit (F/F-3).
+ *
+ * Refusals worth passing on: 409 `ALREADY_ENDORSED`, and 422 `SELF_ENDORSEMENT`.
  */
 export function endorseSkill(
   userId: number,
-  skillId: number,
-  message?: string,
-): Promise<{ data: Endorsement }> {
-  return api.post<{ data: Endorsement }>(`${API_V2}/members/${userId}/endorse`, {
-    skill_id: skillId,
-    comment: message,
-  });
+  skillName: string,
+  comment?: string,
+): Promise<{ data: { endorsement_id: number; message: string } }> {
+  return api.post<{ data: { endorsement_id: number; message: string } }>(
+    `${API_V2}/members/${userId}/endorse`,
+    {
+      skill_name: skillName,
+      ...(comment ? { comment } : {}),
+    },
+  );
+}
+
+/**
+ * DELETE /api/v2/members/{userId}/endorse — take back an endorsement you gave.
+ */
+export function removeSkillEndorsement(
+  userId: number,
+  skillName: string,
+): Promise<{ data: { message: string } }> {
+  // Sent as a query parameter: `api.delete` carries no body, and the controller reads
+  // `input('skill_name') ?? query('skill_name')` for exactly this reason.
+  return api.delete<{ data: { message: string } }>(
+    `${API_V2}/members/${userId}/endorse`,
+    { params: { skill_name: skillName } },
+  );
 }
 
 /**

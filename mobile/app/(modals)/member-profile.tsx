@@ -41,6 +41,8 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
+import BottomSheet from '@/components/ui/BottomSheet';
+import TextArea from '@/components/ui/TextArea';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -55,6 +57,8 @@ import {
 import type { Exchange } from '@/lib/api/exchanges';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { endorseSkill } from '@/lib/api/endorsements';
+import { sendAppreciation } from '@/lib/api/appreciations';
 import { blockUser } from '@/lib/api/settings';
 import AccentIcon from '@/components/ui/AccentIcon';
 import {
@@ -143,6 +147,12 @@ function MemberProfileScreenInner() {
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
+  /** The skill currently being endorsed, so the chips disable while one is in flight. */
+  const [endorsingSkill, setEndorsingSkill] = useState<string | null>(null);
+  const [thanksOpen, setThanksOpen] = useState(false);
+  const [thanksMessage, setThanksMessage] = useState('');
+  const [thanksPublic, setThanksPublic] = useState(true);
+  const [sendingThanks, setSendingThanks] = useState(false);
 
   const rawMemberId = typeof id === 'string' ? id.trim() : '';
   const isExternalFederatedProfile = rawMemberId.startsWith('ext-');
@@ -402,6 +412,66 @@ function MemberProfileScreenInner() {
 
   const bio = stripHtml(member.bio);
   const displayName = getMemberDisplayName(member) || t('federation:directory.members.memberFallback');
+  /**
+   * Endorsing is offered only where the server would accept it: not your own profile
+   * (`SELF_ENDORSEMENT`) and not a member of another community (the service scopes the
+   * lookup to the current tenant, so it would answer NOT_FOUND).
+   */
+  const canEndorse = !isOwnProfile && !isFederatedProfile;
+
+  async function handleEndorse(skill: string) {
+    if (endorsingSkill !== null) return;
+    setEndorsingSkill(skill);
+    try {
+      await endorseSkill(safeMemberId, skill);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showToast({
+        title: t('profile.endorsedTitle'),
+        description: t('profile.endorsedMessage', { skill, name: displayName }),
+        variant: 'success',
+      });
+    } catch (err) {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      // The server distinguishes "you already endorsed this" (409) from everything else,
+      // and that is exactly what the member needs to hear.
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('profile.endorseError')),
+        variant: 'danger',
+      });
+    } finally {
+      setEndorsingSkill(null);
+    }
+  }
+
+  async function handleSendThanks() {
+    if (sendingThanks) return;
+    const message = thanksMessage.trim();
+    if (!message) return;
+    setSendingThanks(true);
+    try {
+      await sendAppreciation({ receiver_id: safeMemberId, message, is_public: thanksPublic });
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setThanksMessage('');
+      setThanksOpen(false);
+      showToast({
+        title: t('profile.thanksSentTitle'),
+        description: t('profile.thanksSentMessage', { name: displayName }),
+        variant: 'success',
+      });
+    } catch (err) {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      // The server rate-limits this and refuses with its own code, so the member is told
+      // which refusal it was rather than a fixed sentence.
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('profile.thanksError')),
+        variant: 'danger',
+      });
+    } finally {
+      setSendingThanks(false);
+    }
+  }
   const communityName = member.timebank?.name ?? member.tenant_name;
   const totalGiven = member.total_hours_given ?? member.time_balance ?? 0;
   const totalReceived = member.total_hours_received ?? 0;
@@ -579,13 +649,45 @@ function MemberProfileScreenInner() {
             <HeroCard.Body className="gap-3 px-4 py-4">
               <SectionTitle icon="sparkles-outline" title={t('profile.skills')} primary={primary} theme={theme} />
               {(member.skills?.length ?? 0) > 0 ? (
-                <View className="flex-row flex-wrap gap-2">
-                  {(member.skills ?? []).map((skill) => (
-                    <Chip key={skill} size="sm" variant="soft" color="accent">
-                      <Chip.Label>{skill}</Chip.Label>
-                    </Chip>
-                  ))}
-                </View>
+                <>
+                  {/*
+                    🔴 A member could not endorse anyone from the app — at all.
+
+                    `endorseSkill` existed in the client with zero callers, these chips were
+                    inert grey text, and there was no other route to it anywhere, so
+                    endorsements could only ever arrive from the website. Found by the
+                    2026-09-07 audit (F/F-3). Not offered on your own profile (the server
+                    refuses self-endorsement) or on a member from another community.
+                  */}
+                  <View className="flex-row flex-wrap gap-2">
+                    {(member.skills ?? []).map((skill) => (
+                      canEndorse ? (
+                        <NativePressable
+                          key={skill}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('profile.endorseLabel', { skill, name: displayName })}
+                          disabled={endorsingSkill !== null}
+                          testID={`profile-endorse-${skill}`}
+                          onPress={() => handleEndorse(skill)}
+                        >
+                          <Chip size="sm" variant="soft" color="accent">
+                            <Ionicons name="add-circle-outline" size={12} color={primary} />
+                            <Chip.Label>{skill}</Chip.Label>
+                          </Chip>
+                        </NativePressable>
+                      ) : (
+                        <Chip key={skill} size="sm" variant="soft" color="accent">
+                          <Chip.Label>{skill}</Chip.Label>
+                        </Chip>
+                      )
+                    ))}
+                  </View>
+                  {canEndorse ? (
+                    <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                      {t('profile.endorseHint')}
+                    </Text>
+                  ) : null}
+                </>
               ) : (
                 <Text className="text-sm italic" style={{ color: theme.textSecondary }}>{t('profile.noSkills')}</Text>
               )}
@@ -738,8 +840,73 @@ function MemberProfileScreenInner() {
               <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendMessage')}</HeroButton.Label>
             </HeroButton>
           ) : null}
+          {/*
+            🔴 The appreciations wall was read-only. A member could read other people's
+            thank-you notes and react with a heart, and there was no way anywhere in the
+            app to WRITE one, though `POST /v2/appreciations` has been live all along.
+            Found by the 2026-09-07 audit (F/F-4). This is the entry point.
+          */}
+          {canEndorse ? (
+            <HeroButton
+              className="min-w-0 flex-1"
+              variant="secondary"
+              style={{ minHeight: 48, paddingHorizontal: 8 }}
+              accessibilityLabel={t('profile.sayThanks')}
+              testID="profile-say-thanks"
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setThanksOpen(true);
+              }}
+            >
+              <Ionicons name="heart-outline" size={16} color={primary} />
+              <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sayThanks')}</HeroButton.Label>
+            </HeroButton>
+          ) : null}
         </View>
       </Surface>
+
+      <BottomSheet visible={thanksOpen} onClose={() => setThanksOpen(false)}>
+        <View className="gap-3 p-4" testID="profile-thanks-sheet">
+          <Text className="text-lg font-bold" style={{ color: theme.text }}>
+            {t('profile.thanksTitle', { name: displayName })}
+          </Text>
+          <Text className="text-sm" style={{ color: theme.textSecondary }}>
+            {thanksPublic ? t('profile.thanksPublicHint') : t('profile.thanksPrivateHint')}
+          </Text>
+          <TextArea
+            value={thanksMessage}
+            onChangeText={setThanksMessage}
+            placeholder={t('profile.thanksPlaceholder')}
+            numberOfLines={4}
+            editable={!sendingThanks}
+            containerClassName="mb-0"
+            testID="profile-thanks-input"
+          />
+          <HeroButton
+            size="sm"
+            variant={thanksPublic ? 'primary' : 'secondary'}
+            isDisabled={sendingThanks}
+            onPress={() => setThanksPublic((value) => !value)}
+            testID="profile-thanks-visibility"
+          >
+            <Ionicons
+              name={thanksPublic ? 'earth-outline' : 'lock-closed-outline'}
+              size={16}
+              color={thanksPublic ? theme.onPrimary : primary}
+            />
+            <HeroButton.Label>{thanksPublic ? t('profile.thanksPublic') : t('profile.thanksPrivate')}</HeroButton.Label>
+          </HeroButton>
+          <HeroButton
+            isDisabled={sendingThanks || thanksMessage.trim().length === 0}
+            onPress={() => void handleSendThanks()}
+            testID="profile-thanks-send"
+          >
+            <HeroButton.Label>
+              {sendingThanks ? t('profile.thanksSending') : t('profile.thanksSend')}
+            </HeroButton.Label>
+          </HeroButton>
+        </View>
+      </BottomSheet>
       {confirmDialog}
     </SafeAreaView>
   );

@@ -26,6 +26,23 @@ jest.mock('react-i18next', () => ({
       const map: Record<string, string> = {
         'profile.loadError': 'Failed to load member profile.',
         'profile.verified': 'Verified',
+        'profile.endorseLabel': 'Endorse',
+        'profile.endorseHint': 'Tap a skill to endorse it.',
+        'profile.endorsedTitle': 'Endorsement added',
+        'profile.endorsedMessage': 'Done.',
+        'profile.endorseError': 'Could not add that endorsement.',
+        'profile.sayThanks': 'Say thanks',
+        'profile.thanksTitle': 'Thank them',
+        'profile.thanksPlaceholder': 'What are you thanking them for?',
+        'profile.thanksPublic': 'Everyone can see this',
+        'profile.thanksPrivate': 'Only they can see this',
+        'profile.thanksPublicHint': 'Public.',
+        'profile.thanksPrivateHint': 'Private.',
+        'profile.thanksSend': 'Send thanks',
+        'profile.thanksSending': 'Sending…',
+        'profile.thanksSentTitle': 'Thanks sent',
+        'profile.thanksSentMessage': 'Done.',
+        'profile.thanksError': 'Could not send that thank-you.',
         'profile.federatedMember': 'Federated member',
         'profile.federatedProfile': 'Federated profile',
         'profile.federatedProfileHint': opts ? `This profile is shared from ${String(opts.community ?? '')}.` : 'This profile is federated.',
@@ -179,6 +196,21 @@ jest.mock('@/lib/api/verification', () => ({
   getUserVerificationBadges: jest.fn().mockResolvedValue([]),
 }));
 
+jest.mock('@/lib/api/endorsements', () => ({
+  endorseSkill: jest.fn().mockResolvedValue({ data: { endorsement_id: 1, message: "ok" } }),
+}));
+
+jest.mock('@/lib/api/appreciations', () => ({
+  sendAppreciation: jest.fn().mockResolvedValue({ data: { id: 9 } }),
+}));
+
+jest.mock('@/components/ui/BottomSheet', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return ({ children, visible }: { children: React.ReactNode; visible: boolean }) =>
+    visible ? <View>{children}</View> : null;
+});
+
 jest.mock('@/lib/api/gamification', () => ({
   getGamificationProfile: jest.fn().mockResolvedValue({ data: null }),
   getBadges: jest.fn().mockResolvedValue({ data: [] }),
@@ -221,6 +253,8 @@ jest.mock('@/lib/ui/rootInsets', () => ({
 }));
 
 import { StyleSheet } from 'react-native';
+import { endorseSkill } from '@/lib/api/endorsements';
+import { sendAppreciation } from '@/lib/api/appreciations';
 import MemberProfileScreen from './member-profile';
 import {
   acceptFederationConnection,
@@ -635,5 +669,53 @@ describe('MemberProfileScreen', () => {
     expect(getByText('Partner-provided reviews appear here.')).toBeTruthy();
     expect(getByText('Reliable cross-network helper.')).toBeTruthy();
     expect(getByText('via Remote partner')).toBeTruthy();
+  });
+  it('🔴 lets a member endorse a skill, which nothing in the app could do', async () => {
+    // `endorseSkill` had zero callers app-wide and these chips were inert grey text, so
+    // endorsements could only ever arrive from the website. The client also sent
+    // `skill_id` alone, which the server refuses — it requires the NAME (F/F-3).
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId } = render(<MemberProfileScreen />);
+
+    fireEvent.press(getByTestId('profile-endorse-Gardening'));
+
+    await waitFor(() => expect(endorseSkill).toHaveBeenCalledWith(mockMember.id, 'Gardening'));
+  });
+
+  it('🔴 lets a member write a thank-you, on a wall that was read-only', async () => {
+    // The appreciations wall could be read and reacted to, and there was no way anywhere
+    // in the app to write one, though `POST /v2/appreciations` has been live all along
+    // (F/F-4).
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId, queryByTestId } = render(<MemberProfileScreen />);
+
+    expect(queryByTestId('profile-thanks-sheet')).toBeNull();
+    fireEvent.press(getByTestId('profile-say-thanks'));
+
+    fireEvent.changeText(getByTestId('profile-thanks-input'), 'You fixed my bike, thank you.');
+    fireEvent.press(getByTestId('profile-thanks-send'));
+
+    await waitFor(() => expect(sendAppreciation).toHaveBeenCalledWith({
+      receiver_id: mockMember.id,
+      message: 'You fixed my bike, thank you.',
+      is_public: true,
+    }));
+  });
+
+  it('sends a thank-you privately when the member chooses that', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId } = render(<MemberProfileScreen />);
+
+    fireEvent.press(getByTestId('profile-say-thanks'));
+    fireEvent.press(getByTestId('profile-thanks-visibility'));
+    fireEvent.changeText(getByTestId('profile-thanks-input'), 'Quietly grateful.');
+    fireEvent.press(getByTestId('profile-thanks-send'));
+
+    await waitFor(() => expect(sendAppreciation).toHaveBeenCalledWith(
+      expect.objectContaining({ is_public: false }),
+    ));
   });
 });

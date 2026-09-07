@@ -49,6 +49,33 @@ export function getUserAppreciations(userId: number | string, page = 1, perPage 
   });
 }
 
+/**
+ * POST /api/v2/appreciations — write a thank-you note to another member.
+ *
+ * 🔴 The wall was read-only. A member could read other people's thank-you notes and react
+ * with a heart, and there was no way anywhere in the app to write one — `POST
+ * /v2/appreciations` has been live all along (`routes/api.php:4384`). Found by the
+ * 2026-09-07 audit (F/F-4).
+ *
+ * The server rate-limits this and refuses with a `DomainException` code such as
+ * `RATE_LIMIT_EXCEEDED`, so the caller must show its reason rather than a fixed sentence.
+ */
+export function sendAppreciation(payload: {
+  receiver_id: number;
+  message: string;
+  is_public?: boolean;
+  context_type?: string;
+  context_id?: number;
+}): Promise<{ data: Appreciation }> {
+  return api.post<{ data: Appreciation }>(`${API_V2}/appreciations`, {
+    receiver_id: payload.receiver_id,
+    message: payload.message,
+    is_public: payload.is_public ?? true,
+    ...(payload.context_type ? { context_type: payload.context_type } : {}),
+    ...(payload.context_id ? { context_id: payload.context_id } : {}),
+  });
+}
+
 export function reactToAppreciation(id: number | string, reactionType: AppreciationReactionType): Promise<AppreciationReactionResponse> {
   return api.post<AppreciationReactionResponse>(`${API_V2}/appreciations/${id}/react`, {
     reaction_type: reactionType,

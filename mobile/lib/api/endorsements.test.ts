@@ -24,6 +24,7 @@ import {
   getUserEndorsements,
   getMySkills,
   endorseSkill,
+  removeSkillEndorsement,
   addSkill,
   removeSkill,
   getAvailableSkills,
@@ -110,22 +111,50 @@ describe('getMySkills', () => {
 describe('endorseSkill', () => {
   beforeEach(() => { jest.clearAllMocks(); });
 
-  it('sends POST with skill_id and message to the correct endpoint', async () => {
-    (api.post as jest.Mock).mockResolvedValue({ data: mockEndorsement });
-    const result = await endorseSkill(5, 10, 'Great help!');
+  /*
+    🔴 These two used to pin the WRONG payload.
+
+    The function sent `skill_id` alone, and `EndorsementService::endorse` requires
+    `skill_name` and refuses without it — `skill_id` is optional and only stored. So the
+    test proved the app sent something the server would reject. It never showed up
+    because the function had no callers anywhere in the app: a member could not endorse
+    anyone at all, and endorsements could only ever arrive from the website. Found by the
+    2026-09-07 audit (F/F-3).
+  */
+  it('🔴 sends the skill NAME, which is the field the server requires', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { endorsement_id: 1, message: 'Endorsement added' } });
+
+    const result = await endorseSkill(5, 'Gardening', 'Great help!');
+
     expect(api.post).toHaveBeenCalledWith('/api/v2/members/5/endorse', {
-      skill_id: 10,
+      skill_name: 'Gardening',
       comment: 'Great help!',
     });
-    expect(result.data.id).toBe(1);
+    expect(result.data.endorsement_id).toBe(1);
   });
 
-  it('sends POST with undefined message when not provided', async () => {
-    (api.post as jest.Mock).mockResolvedValue({ data: mockEndorsement });
-    await endorseSkill(5, 10);
+  it('omits the comment entirely when none was written', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { endorsement_id: 2, message: 'Endorsement added' } });
+
+    await endorseSkill(5, 'Gardening');
+
     const body = (api.post as jest.Mock).mock.calls[0][1] as Record<string, unknown>;
-    expect(body.skill_id).toBe(10);
-    expect(body.comment).toBeUndefined();
+    expect(body.skill_name).toBe('Gardening');
+    expect('comment' in body).toBe(false);
+  });
+});
+
+describe('removeSkillEndorsement', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('sends the skill name as a query parameter, because DELETE carries no body', async () => {
+    (api.delete as jest.Mock).mockResolvedValue({ data: { message: 'Removed' } });
+
+    await removeSkillEndorsement(5, 'Gardening');
+
+    expect(api.delete).toHaveBeenCalledWith('/api/v2/members/5/endorse', {
+      params: { skill_name: 'Gardening' },
+    });
   });
 });
 
