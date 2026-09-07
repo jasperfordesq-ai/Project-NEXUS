@@ -344,7 +344,11 @@
       "loadError": "Die Antworten konnten nicht geladen werden.",
       "postError": "Die Antwort konnte nicht gesendet werden.",
       "validation": "Schreibe eine Antwort, bevor du sie sendest.",
-      "openLabel": "Diskussion {{title}} öffnen"
+      "openLabel": "Diskussion {{title}} öffnen",
+      "showEarlier": "Frühere Antworten anzeigen",
+      "posting": "Wird gesendet…",
+      "unavailable": "Diese Diskussion ist nicht mehr verfügbar.",
+      "noAccess": "Du hast keinen Zugriff auf diese Diskussion."
     }
   },
   "filter": {

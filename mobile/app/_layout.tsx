@@ -571,6 +571,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('groups:detailTitle') }}
       />
       <Stack.Screen
+        name="(modals)/group-discussion"
+        options={{ ...modalOptions, headerShown: false, title: t('groups:detail.discussionReplies.title') }}
+      />
+      <Stack.Screen
         name="(modals)/group-exchanges"
         options={{ ...modalOptions, headerShown: false, title: t('exchanges:groupExchanges.title') }}
       />

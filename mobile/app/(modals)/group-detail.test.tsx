@@ -1827,4 +1827,52 @@ describe('GroupDetailScreen', () => {
       expect(getGroupAnalytics).toHaveBeenCalledWith(1, 90);
     });
   });
+  it('🔴 opens a discussion so a member can read the answers to it', async () => {
+    // The cards listed a title and a reply count and went nowhere, so a member could
+    // start a discussion and never read a single answer — including their own.
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyAnnouncementsState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyFilesState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const discussionsState = {
+      data: {
+        data: [{
+          id: 42,
+          title: 'Can anyone help with a lift on Tuesday?',
+          reply_count: 3,
+          is_pinned: false,
+          author: { id: 10, name: 'Alice Admin', avatar_url: null },
+          created_at: '2026-06-01T00:00:00Z',
+          last_reply_at: '2026-06-02T00:00:00Z',
+        }],
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyListState, discussionsState, emptyAnnouncementsState, emptyFilesState, emptyListState, emptyListState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+
+    const { getByTestId, getByText } = render(<GroupDetailScreen />);
+
+    fireEvent.press(getByText('Discussions'));
+    expect(getByText('Can anyone help with a lift on Tuesday?')).toBeTruthy();
+
+    fireEvent.press(getByTestId('group-discussion-42'));
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      pathname: '/(modals)/group-discussion',
+      params: { id: '1', discussionId: '42' },
+    });
+  });
 });

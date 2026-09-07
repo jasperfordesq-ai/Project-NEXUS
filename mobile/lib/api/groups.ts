@@ -68,6 +68,33 @@ export interface GroupDiscussion {
   last_reply_at: string | null;
 }
 
+/** One reply inside a discussion thread. */
+export interface GroupDiscussionMessage {
+  id: number;
+  content: string;
+  author: GroupMember;
+  is_own: boolean;
+  created_at: string | null;
+}
+
+/**
+ * A discussion opened for reading: the opening post plus a page of replies.
+ *
+ * The opening post's body lives on `discussion.content` — the list endpoint does not
+ * return it, which is why the thread has to be fetched separately.
+ */
+export interface GroupDiscussionThreadResponse {
+  data: {
+    discussion: GroupDiscussion & { content: string };
+    messages: GroupDiscussionMessage[];
+  };
+  meta: {
+    cursor: string | null;
+    per_page?: number;
+    has_more: boolean;
+  };
+}
+
 export interface GroupAnnouncement {
   id: number;
   title: string;
@@ -523,6 +550,26 @@ export function getGroupDiscussions(
 }
 
 /**
+ * GET /api/v2/groups/{id}/discussions/{discussionId} — open one discussion.
+ *
+ * Replies come back oldest-first within a page, and the cursor walks BACKWARDS: each
+ * further page holds replies older than the ones already shown. A caller paging through
+ * therefore prepends, it does not append.
+ */
+export function getGroupDiscussionThread(
+  id: number,
+  discussionId: number,
+  cursor: string | null = null,
+): Promise<GroupDiscussionThreadResponse> {
+  const query: Record<string, string> = { per_page: '30' };
+  if (cursor) query['cursor'] = cursor;
+  return api.get<GroupDiscussionThreadResponse>(
+    `${API_V2}/groups/${id}/discussions/${discussionId}`,
+    query,
+  );
+}
+
+/**
  * GET /api/v2/groups/{id}/announcements — list member-only announcements.
  */
 export function getGroupAnnouncements(
@@ -726,6 +773,24 @@ export function createGroupDiscussion(
   payload: { title: string; content: string },
 ): Promise<{ data: GroupDiscussion }> {
   return api.post<{ data: GroupDiscussion }>(`${API_V2}/groups/${id}/discussions`, payload);
+}
+
+/**
+ * POST /api/v2/groups/{id}/discussions/{discussionId}/messages — reply to a discussion.
+ *
+ * Refusals the member has to be told about, rather than shown a generic failure:
+ * 403 (not a member any more), 404 (the discussion was deleted) and 409
+ * `DISCUSSION_LOCKED` (an admin closed it). All arrive as `ApiResponseError`.
+ */
+export function postGroupDiscussionMessage(
+  id: number,
+  discussionId: number,
+  payload: { content: string },
+): Promise<{ data: GroupDiscussionMessage }> {
+  return api.post<{ data: GroupDiscussionMessage }>(
+    `${API_V2}/groups/${id}/discussions/${discussionId}/messages`,
+    payload,
+  );
 }
 
 /**

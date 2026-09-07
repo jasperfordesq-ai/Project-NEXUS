@@ -108,6 +108,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
+import NativePressable from '@/components/ui/NativePressable';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Input from '@/components/ui/Input';
 import TextArea from '@/components/ui/TextArea';
@@ -866,7 +867,22 @@ function GroupDetailScreenInner() {
               <EmptyCard icon="chatbubble-ellipses-outline" message={t('detail.emptyDiscussions')} />
             ) : (
               discussions.map((discussion) => (
-                <HeroCard key={discussion.id} className="rounded-panel p-0">
+                // 🔴 These cards were not pressable and there was no screen behind them, so a
+                // member could start a discussion and never read a single answer to it. The
+                // thread now opens on `group-discussion` (audit 2026-09-07).
+                <NativePressable
+                  key={discussion.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('detail.discussionReplies.openLabel', { title: discussion.title })}
+                  testID={`group-discussion-${discussion.id}`}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/(modals)/group-discussion',
+                      params: { id: String(loadedGroup?.id ?? safeGroupId), discussionId: String(discussion.id) },
+                    })
+                  }
+                >
+                <HeroCard className="rounded-panel p-0">
                   <HeroCard.Body className="gap-3 p-4" style={{ minHeight: CARD_MIN_HEIGHT }}>
                     <View className="flex-row items-start justify-between gap-3">
                       <Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>
@@ -894,6 +910,7 @@ function GroupDetailScreenInner() {
                     </View>
                   </HeroCard.Body>
                 </HeroCard>
+                </NativePressable>
               ))
             )}
               </>

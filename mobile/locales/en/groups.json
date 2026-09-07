@@ -344,7 +344,11 @@
       "loadError": "Could not load the replies.",
       "postError": "Could not post the reply.",
       "validation": "Write a reply before posting.",
-      "openLabel": "Open discussion {{title}}"
+      "openLabel": "Open discussion {{title}}",
+      "showEarlier": "Show earlier replies",
+      "posting": "Posting…",
+      "unavailable": "This discussion is no longer available.",
+      "noAccess": "You do not have access to this discussion."
     }
   },
   "filter": {

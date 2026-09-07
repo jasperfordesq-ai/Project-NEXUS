@@ -344,7 +344,11 @@
       "loadError": "Non è stato possibile caricare le risposte.",
       "postError": "Non è stato possibile pubblicare la risposta.",
       "validation": "Scrivi una risposta prima di pubblicare.",
-      "openLabel": "Apri la discussione {{title}}"
+      "openLabel": "Apri la discussione {{title}}",
+      "showEarlier": "Mostra le risposte precedenti",
+      "posting": "Pubblicazione in corso…",
+      "unavailable": "Questa discussione non è più disponibile.",
+      "noAccess": "Non hai accesso a questa discussione."
     }
   },
   "filter": {

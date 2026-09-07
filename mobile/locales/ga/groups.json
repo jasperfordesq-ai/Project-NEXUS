@@ -335,7 +335,11 @@
       "loadError": "Níorbh fhéidir na freagraí a lódáil.",
       "postError": "Níorbh fhéidir an freagra a phostáil.",
       "validation": "Scríobh freagra roimh phostáil.",
-      "openLabel": "Oscail an plé {{title}}"
+      "openLabel": "Oscail an plé {{title}}",
+      "showEarlier": "Taispeáin freagraí níos luaithe",
+      "posting": "Á phostáil…",
+      "unavailable": "Níl an plé seo ar fáil a thuilleadh.",
+      "noAccess": "Níl rochtain agat ar an bplé seo."
     }
   },
   "create": {
