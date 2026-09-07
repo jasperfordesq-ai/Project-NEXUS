@@ -317,6 +317,27 @@ describe('organisation dashboard helpers', () => {
 
     expect(api.put).toHaveBeenNthCalledWith(1, '/api/v2/volunteering/hours/4/verify', { action: 'approve' });
     expect(api.put).toHaveBeenNthCalledWith(2, '/api/v2/volunteering/organisations/9', { name: 'Garden Team' });
-    expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/organisations/9/wallet/deposit', { amount: 3, note: 'Top-up' });
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/organisations/9/wallet/deposit',
+      { amount: 3, note: 'Top-up' },
+      undefined,
+    );
+  });
+
+  it('🔴 sends an idempotency key with an organisation wallet deposit', async () => {
+    /*
+      The endpoint has read an `Idempotency-Key` since it was written
+      (`VolunteerController::walletDeposit`) and the app sent none, so a deposit that timed
+      out and was tapped again took the credits a SECOND time out of the member's own
+      wallet. Sent as a header AND in the body, because the controller accepts either.
+      Found by the 2026-09-07 audit (E/F-1).
+    */
+    await depositOrganisationWallet(9, 3, 'Top-up', 'key-abc');
+
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/organisations/9/wallet/deposit',
+      { amount: 3, note: 'Top-up', idempotency_key: 'key-abc' },
+      { headers: { 'Idempotency-Key': 'key-abc' } },
+    );
   });
 });

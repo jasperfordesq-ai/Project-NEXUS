@@ -328,28 +328,50 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    Android Hermes startup bundle is 14.87 MB, leaving 1.49 MB below its 16.35 MB blocking
    ceiling. This is an internal JavaScript regression budget, not an App Store download-size
    limit; no Play artefact was built or uploaded while the release is under review.
-8. **Finish the 2026-09-07 audit.** Forty-eight findings were fixed in source; these were
-   not, and four whole module clusters were never read (see
-   [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md)):
-   - Group discussions cannot be opened or replied to from the app (the API has the routes;
-     the client and screen do not). Group admins cannot approve join requests or manage
-     members. Every group-detail tab shows its first page only.
-   - Message attachments upload with no progress and no cancel (`uploadWithProgress` exists
-     and is unused there).
-   - No in-app way to resend the verification e-mail; a closed-registration community still
-     advertises "Create account"; registration validation arrives as one sentence, never on
-     the field it belongs to (the server sends only the first error).
-   - A failed signed-in community switch signs the member out first; broken images render as
-     blank blocks (no `onError` anywhere); the attendance, tickets, communications, history
-     and blueprint screens still show "could not load" with Retry on a 403.
+8. **Finish the 2026-09-07 audit.** Two passes ran on 2026-09-07. The first fixed 48
+   findings; the **second pass on the same day** read the two largest unread modules
+   (volunteering/jobs/organisations, and the gamification cluster) and worked the open
+   list. Full record: [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md).
+
+   **Closed in the second pass:** group discussions are now reachable and answerable; an
+   organisation wallet deposit can no longer be taken twice; four decimal fields accept a
+   comma; the hiring pipeline can reach every stage; the "Given" reviews tab works; a
+   declined organisation says so; volunteer hours can be dated and confirm what happens
+   next; the XP shop and three destructive taps now ask first; appreciation cards no
+   longer print raw translation keys; badge dates and the locked count are right; three
+   owner-only screens say "not yours" instead of offering an endless Retry; seven
+   gamification loads surface their failure instead of reading as "you have nothing".
+
+   **Still open:**
+   - Group admins cannot approve join requests or manage members. Every group-detail tab
+     shows its first page only.
+   - Message attachments upload with no progress and no cancel (`uploadWithProgress`
+     exists and is unused there).
+   - No in-app way to resend the verification e-mail; a closed-registration community
+     still advertises "Create account"; registration validation arrives as one sentence,
+     never on the field it belongs to (the server sends only the first error).
+   - A failed signed-in community switch signs the member out first; the attendance,
+     tickets, communications, history and blueprint screens still show "could not load"
+     with Retry on a 403.
    - Marketplace remainder: pickup-slot and coupon dates are typed by hand; collections,
-     saved searches and pickup slots delete with no confirmation; the Stripe payments screen
-     shows 0.00 balances when its request failed; an accepted offer never says "pay now".
-   - **Unread:** volunteering/jobs/organisations, and the gamification cluster (goals,
-     polls, reviews, endorsements, blog, resources, ideation, clubs, venues). Courses,
-     podcasts and federation were last read on 2026-09-06. Run one auditor at a time; two
-     concurrent exhausted the session limit.
-   - Nothing from this audit has been walked on a device.
+     saved searches and pickup slots delete with no confirmation; the Stripe payments
+     screen shows 0.00 balances when its request failed; an accepted offer never says
+     "pay now".
+   - Volunteering remainder: the apply sheet never mentions the saved CV; six lists stop
+     at twenty rows; registering an organisation lands on a hub that may not show it; an
+     organisation website link can reject unhandled; a failed load in job edit mode leaves
+     a permanently dead form.
+   - Gamification remainder: a member can never endorse anyone and can never send an
+     appreciation (both endpoints exist, neither is called); six more lists stop at their
+     first page; the leaderboard only ever shows the top 20; seven content screens still
+     show a 4xx refusal as a failure with a Retry; two live searches fire a request per
+     keystroke; knowledge-base search only filters what is already on screen; logged goal
+     progress can only go up; voting on a poll discards every page loaded; four screens
+     have no pull-to-refresh; a member cannot withdraw an idea or delete their own
+     comment; a failed refresh is silent whenever the list already has rows.
+   - **Still unread:** courses, podcasts and federation, last read on 2026-09-06. Run one
+     auditor at a time; two concurrent exhausted the session limit.
+   - Nothing from either pass has been walked on a device.
 
 ## The blockers, in the order they hurt
 
