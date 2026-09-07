@@ -132,6 +132,11 @@ jobs:
           done
           echo "Metro did not come up within 120s"; cat "${RUNNER_TEMP}/metro.log"; exit 1
 
+      # 🔴 `script:` is ONE LINE, calling a committed file. This action runs each
+      # line of the script input in its own `sh -c`, so a `cd` does not persist and
+      # a trailing `\` is passed through as an argument rather than continuing the
+      # line. The first version hit both and invoked Maestro from the repo root with
+      # a single backslash as its flow path. See the script's own header.
       - name: Boot the emulator and run the flow
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -142,16 +147,7 @@ jobs:
           # each of them is a source of delay or of a spurious system dialog.
           emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -camera-back none
           disable-animations: true
-          script: |
-            adb wait-for-device
-            # Suppress the platform's own crash/ANR sheets — they sit over a
-            # correctly rendered screen and read as a failure that is not ours.
-            adb shell settings put global hide_error_dialogs 1 || true
-            adb reverse tcp:8081 tcp:8081
-            adb install -r mobile/android/app/build/outputs/apk/debug/app-debug.apk
-            cd mobile
-            maestro test --format junit --output "${RUNNER_TEMP}/maestro-report.xml" \
-              "${{ github.event.inputs.flow || '.maestro/00-launch-smoke.yaml' }}"
+          script: bash mobile/scripts/ci-launch-smoke-android.sh "${{ github.event.inputs.flow || '.maestro/00-launch-smoke.yaml' }}"
 
       # 🔴 On failure the artefacts are the whole point: a launch crash is
       # unreadable without the device log and the screenshot Maestro captured.
@@ -162,7 +158,8 @@ jobs:
           cp "${RUNNER_TEMP}/metro.log" "${RUNNER_TEMP}/diagnostics/" 2>/dev/null || true
           cp "${RUNNER_TEMP}/maestro-report.xml" "${RUNNER_TEMP}/diagnostics/" 2>/dev/null || true
           cp -r "$HOME/.maestro/tests" "${RUNNER_TEMP}/diagnostics/maestro-tests" 2>/dev/null || true
-          adb logcat -d > "${RUNNER_TEMP}/diagnostics/logcat.txt" 2>/dev/null || true
+          # Written by the trap inside the emulator step, while a device still existed.
+          cp "${RUNNER_TEMP}/logcat.txt" "${RUNNER_TEMP}/diagnostics/" 2>/dev/null || true
 
       - name: Upload diagnostics
         if: failure()
@@ -230,16 +227,29 @@ jobs:
         working-directory: mobile/ios
         run: pod install --repo-update
 
-      # 🔴 The scheme name is DISCOVERED, not assumed. Expo derives it from the
-      # app name ("Timebank Global"), and a rename would silently break a
-      # hardcoded value — with an xcodebuild error that does not say so.
+      # 🔴 The scheme is derived from the WORKSPACE NAME, and the run fails if that
+      # scheme is missing. The first version took `schemes[0]` and picked
+      # `EASClient` — the expo-dev-client helper that arrives as a pod, not the
+      # app — so xcodebuild built a helper, produced no .app, and the next step
+      # reported it. Expo names both the workspace and the app scheme from the app
+      # name ("Timebank Global" -> TimebankGlobal), so they always agree.
+      #
+      # Failing loudly beats falling back to a list position: falling back is what
+      # built the wrong target in the first place. The available schemes are
+      # printed either way, because that one line is what diagnosed it.
       - name: Build for the simulator
         working-directory: mobile/ios
         run: |
           set -euo pipefail
           WORKSPACE="$(ls -d *.xcworkspace | head -1)"
-          SCHEME="$(xcodebuild -workspace "$WORKSPACE" -list -json | python3 -c 'import json,sys; print(json.load(sys.stdin)["workspace"]["schemes"][0])')"
-          echo "workspace=$WORKSPACE scheme=$SCHEME"
+          SCHEME="${WORKSPACE%.xcworkspace}"
+          echo "workspace=$WORKSPACE  expected scheme=$SCHEME"
+          echo "schemes in this workspace:"
+          xcodebuild -workspace "$WORKSPACE" -list -json \
+            | python3 -c 'import json,sys; print("\n".join("  " + x for x in json.load(sys.stdin)["workspace"]["schemes"]))'
+          xcodebuild -workspace "$WORKSPACE" -list -json \
+            | python3 -c 'import json,sys; sys.exit(0 if "'"$SCHEME"'" in json.load(sys.stdin)["workspace"]["schemes"] else 1)' \
+            || { echo "scheme $SCHEME is not in $WORKSPACE — see the list above"; exit 1; }
           xcodebuild \
             -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
@@ -249,7 +259,10 @@ jobs:
             -derivedDataPath "${RUNNER_TEMP}/ios-build" \
             CODE_SIGNING_ALLOWED=NO \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            build | tail -40
+            -quiet \
+            build
+          echo "products:"
+          find "${RUNNER_TEMP}/ios-build/Build/Products" -maxdepth 2 -name '*.app' -print
 
       - name: Install Maestro
         run: |
