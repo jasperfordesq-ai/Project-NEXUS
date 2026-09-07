@@ -193,7 +193,9 @@
     "thanksSending": "Wird gesendet…",
     "thanksSentTitle": "Dank gesendet",
     "thanksSentMessage": "{{name}} wurde benachrichtigt.",
-    "thanksError": "Der Dank konnte nicht gesendet werden."
+    "thanksError": "Der Dank konnte nicht gesendet werden.",
+    "transferConfirmTitle": "Guthaben an eine andere Gemeinschaft senden?",
+    "transferConfirmMessage": "{{amount}} Stunden verlassen dein Guthaben und gehen an {{name}} in {{community}}. Das lässt sich in der App nicht rückgängig machen."
   },
   "collections": {
     "removeConfirmTitle": "Dieses gespeicherte Element entfernen?",

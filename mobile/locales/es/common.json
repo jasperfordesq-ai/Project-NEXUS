@@ -81,7 +81,9 @@
     "notFound": "No encontrado.",
     "alertTitle": "Error",
     "contractDrift": "Esta pantalla recibió información en un formato inesperado. Actualiza la app o inténtalo más tarde.",
-    "uploadIncomplete": "La subida terminó, pero el servidor no devolvió el archivo."
+    "uploadIncomplete": "La subida terminó, pero el servidor no devolvió el archivo.",
+    "notAvailableTitle": "No disponible para ti",
+    "notAvailableHint": "Puede que se haya eliminado o que no se comparta contigo."
   },
   "labels": {
     "timeBalance": "Saldo de tiempo",

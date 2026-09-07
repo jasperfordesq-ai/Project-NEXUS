@@ -193,7 +193,9 @@
     "thanksSending": "Envoi en cours…",
     "thanksSentTitle": "Merci envoyé",
     "thanksSentMessage": "{{name}} a été prévenu.",
-    "thanksError": "Impossible d'envoyer ce merci."
+    "thanksError": "Impossible d'envoyer ce merci.",
+    "transferConfirmTitle": "Envoyer des crédits à une autre communauté ?",
+    "transferConfirmMessage": "{{amount}} heures quitteront votre portefeuille pour {{name}} dans {{community}}. Cette opération est irréversible depuis l’application."
   },
   "collections": {
     "removeConfirmTitle": "Retirer cet élément enregistré ?",

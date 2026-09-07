@@ -81,7 +81,9 @@
     "notFound": "Nicht gefunden.",
     "alertTitle": "Error",
     "contractDrift": "Dieser Bildschirm hat Daten in einer unerwarteten Form erhalten. Bitte aktualisiere die App oder versuche es später erneut.",
-    "uploadIncomplete": "Der Upload ist abgeschlossen, aber der Server hat die Datei nicht zurückgegeben."
+    "uploadIncomplete": "Der Upload ist abgeschlossen, aber der Server hat die Datei nicht zurückgegeben.",
+    "notAvailableTitle": "Für dich nicht verfügbar",
+    "notAvailableHint": "Das wurde vielleicht entfernt, oder es ist nicht für dich freigegeben."
   },
   "labels": {
     "timeBalance": "Zeitsaldo",

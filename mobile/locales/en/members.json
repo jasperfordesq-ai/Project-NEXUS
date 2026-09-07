@@ -193,7 +193,9 @@
     "thanksSending": "Sending…",
     "thanksSentTitle": "Thanks sent",
     "thanksSentMessage": "{{name}} has been told.",
-    "thanksError": "Could not send that thank-you."
+    "thanksError": "Could not send that thank-you.",
+    "transferConfirmTitle": "Send credits to another community?",
+    "transferConfirmMessage": "{{amount}} hours will leave your wallet and go to {{name}} in {{community}}. This cannot be undone from the app."
   },
   "collections": {
     "removeConfirmTitle": "Remove this saved item?",

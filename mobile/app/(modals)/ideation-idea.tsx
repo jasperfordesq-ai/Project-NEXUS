@@ -102,6 +102,9 @@ function IdeationIdeaScreen() {
     }
   }
 
+  const ideaRefused = Boolean(ideaState.error)
+    && (ideaState.errorStatus === 401 || ideaState.errorStatus === 403 || ideaState.errorStatus === 404);
+
   const fallback = challengeId > 0
     ? ({ pathname: '/(modals)/ideation-detail', params: { id: String(challengeId) } } as unknown as Href)
     : ('/(modals)/ideation' as Href);
@@ -114,8 +117,20 @@ function IdeationIdeaScreen() {
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
             {!hasFeature('ideation_challenges') ? (
               <EmptyState icon="bulb-outline" title={t('ideation:disabledTitle')} subtitle={t('ideation:disabledSubtitle')} />
-            ) : ideaState.isLoading && !idea ? <LoadingSpinner /> : ideaState.error || !idea ? (
-              <EmptyState icon="warning-outline" title={t('ideation:ideas.load_error')} subtitle={ideaState.error ?? undefined} actionLabel={t('ideation:actions.retry')} onAction={ideaState.refresh} />
+            ) : ideaState.isLoading && !idea ? <LoadingSpinner /> : ideaRefused ? (
+              /*
+                🔴 A refusal is not a failure. A withdrawn idea, or one in a challenge this
+                member cannot see, answers 404 or 403 — and that was rendered as
+                "could not load" with a Retry that could never succeed (F/F-8).
+              */
+              <EmptyState
+                icon="lock-closed-outline"
+                title={t('common:errors.notAvailableTitle')}
+                subtitle={t('common:errors.notAvailableHint')}
+                testID="ideation-idea-refused"
+              />
+            ) : ideaState.error || !idea ? (
+              <EmptyState icon="warning-outline" title={t('ideation:ideas.load_error')} subtitle={ideaState.error ?? undefined} actionLabel={t('ideation:actions.retry')} onAction={ideaState.refresh} testID="ideation-idea-error" />
             ) : (
               <View className="gap-4">
                 <HeroCard className="rounded-panel"><HeroCard.Body className="gap-3 p-5">

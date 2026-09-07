@@ -24,7 +24,13 @@ function KbArticleScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = Number(params.id ?? 0);
   const theme = useTheme();
-  const { data: article, isLoading, error, refresh } = useApi(() => getKbArticle(id), [id], { enabled: id > 0 });
+  const { data: article, isLoading, error, errorStatus, refresh } = useApi(() => getKbArticle(id), [id], { enabled: id > 0 });
+  /*
+    🔴 A refusal is not a failure. An article that was removed, or one this community does
+    not share, answers 404 or 403 — and that was rendered as "could not load" with a Retry
+    the member could press for ever. Found by the 2026-09-07 audit (F/F-8).
+  */
+  const refused = Boolean(error) && (errorStatus === 401 || errorStatus === 403 || errorStatus === 404);
 
   return (
     <ModalErrorBoundary>
@@ -38,6 +44,13 @@ function KbArticleScreen() {
             <View className="items-center justify-center py-14">
               <LoadingSpinner />
             </View>
+          ) : refused ? (
+            <EmptyState
+              icon="lock-closed-outline"
+              title={t('common:errors.notAvailableTitle')}
+              subtitle={t('common:errors.notAvailableHint')}
+              testID="kb-article-refused"
+            />
           ) : error || !article ? (
             <EmptyState
               icon={error ? 'warning-outline' : 'book-outline'}
@@ -45,6 +58,7 @@ function KbArticleScreen() {
               subtitle={error ? String(error) : undefined}
               actionLabel={error ? t('common:buttons.retry') : undefined}
               onAction={error ? refresh : undefined}
+              testID="kb-article-error"
             />
           ) : (
             <HeroCard variant="default" className="overflow-hidden rounded-panel p-0">

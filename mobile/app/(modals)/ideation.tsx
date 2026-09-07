@@ -26,6 +26,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { useApi } from '@/lib/hooks/useApi';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -42,13 +43,19 @@ function IdeationScreen() {
   const theme = useTheme();
   const [status, setStatus] = useState<FilterStatus>('all');
   const [search, setSearch] = useState('');
+  /*
+    🔴 One request per keystroke — typing "gardening" fired nine, and the list flickered
+    through nine loading states on a poor connection. `useDebounce` already existed and
+    neither of the app's two live searches used it (audit 2026-09-07, F/F-14).
+  */
+  const debouncedSearch = useDebounce(search, 350);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const {
     data: challengesPage,
     isLoading,
     error,
     refresh: refreshChallenges,
-  } = useApi(() => getIdeationChallenges({ status, search, categoryId }), [status, search, categoryId], {
+  } = useApi(() => getIdeationChallenges({ status, search: debouncedSearch, categoryId }), [status, debouncedSearch, categoryId], {
     enabled: hasFeature('ideation_challenges'),
   });
   const {

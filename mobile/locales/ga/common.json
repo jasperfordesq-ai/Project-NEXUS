@@ -81,7 +81,9 @@
     "notFound": "Gan aimsiú.",
     "alertTitle": "Error",
     "contractDrift": "Fuair an scáileán seo eolas i gcruth nach raibh súil leis. Nuashonraigh an aip, nó bain triail eile as ar ball.",
-    "uploadIncomplete": "Críochnaíodh an uaslódáil, ach níor sheol an freastalaí an comhad ar ais."
+    "uploadIncomplete": "Críochnaíodh an uaslódáil, ach níor sheol an freastalaí an comhad ar ais.",
+    "notAvailableTitle": "Níl sé seo ar fáil duit",
+    "notAvailableHint": "B'fhéidir gur baineadh é, nó nach bhfuil sé roinnte leat."
   },
   "labels": {
     "timeBalance": "Iarmhéid ama",

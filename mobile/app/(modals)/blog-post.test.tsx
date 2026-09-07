@@ -195,4 +195,37 @@ describe('BlogPostScreen', () => {
     expect(getByText('Post not found.')).toBeTruthy();
     expect(getByText('Back to blog')).toBeTruthy();
   });
+  it('🔴 says an unpublished or removed post is not available, rather than offering a Retry', async () => {
+    // A 4xx is a REFUSAL. An unpublished post, a deleted one, or one this member is
+    // not allowed to read all answered 404 or 403, and all three were rendered as
+    // "could not load" with a Retry that could never succeed (F/F-8).
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Not found',
+      errorStatus: 404,
+      errorCode: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId, queryByTestId } = render(<BlogPostScreen />);
+
+    expect(getByTestId('blog-post-refused')).toBeTruthy();
+    expect(queryByTestId('blog-post-error')).toBeNull();
+  });
+
+  it('still shows a retry when the failure really is transient', async () => {
+    mockUseApi.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: 'Server error',
+      errorStatus: 500,
+      errorCode: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<BlogPostScreen />);
+
+    expect(getByTestId('blog-post-error')).toBeTruthy();
+  });
 });

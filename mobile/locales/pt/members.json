@@ -193,7 +193,9 @@
     "thanksSending": "A enviar…",
     "thanksSentTitle": "Agradecimento enviado",
     "thanksSentMessage": "{{name}} foi avisado.",
-    "thanksError": "Não foi possível enviar esse agradecimento."
+    "thanksError": "Não foi possível enviar esse agradecimento.",
+    "transferConfirmTitle": "Enviar créditos para outra comunidade?",
+    "transferConfirmMessage": "{{amount}} horas vão sair da sua carteira e passar para {{name}} em {{community}}. Não é possível anular esta operação na aplicação."
   },
   "collections": {
     "removeConfirmTitle": "Remover este item guardado?",

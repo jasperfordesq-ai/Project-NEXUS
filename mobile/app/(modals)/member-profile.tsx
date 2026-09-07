@@ -1036,12 +1036,21 @@ function FederatedTransferCard({
   onComplete: () => void;
 }) {
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const tenantId = member.timebank?.id ?? member.tenant_id;
 
-  async function submit() {
+  /*
+    🔴 Up to 100 hours left the member's wallet on ONE tap.
+
+    This is a CROSS-COMMUNITY transfer and it is not reversible from the app. Every
+    comparable movement of credits — the personal wallet transfer, the group exchange, the
+    organisation wallet deposit, a paid course enrolment — has been behind a confirmation
+    since 2026-09-06/07; this one was missed. Found by the 2026-09-07 audit (G/F-4).
+  */
+  function submit() {
     const parsedAmount = parseDecimalInput(amount) ?? Number.NaN;
     if (!Number.isInteger(parsedAmount) || parsedAmount < 1 || parsedAmount > 100) {
       showToast({ title: t('profile.transferValidationTitle'), description: t('profile.transferAmountRequired'), variant: 'warning' });
@@ -1056,11 +1065,27 @@ function FederatedTransferCard({
       return;
     }
 
+    confirm({
+      title: t('profile.transferConfirmTitle'),
+      message: t('profile.transferConfirmMessage', {
+        amount: formatDecimal(parsedAmount, 1),
+        name: displayName,
+        community: member.timebank?.name ?? member.tenant_name ?? '',
+      }),
+      confirmLabel: t('profile.sendCredits'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'primary',
+      confirmTestID: 'federation-confirm-transfer',
+      onConfirm: () => runTransfer(parsedAmount, tenantId),
+    });
+  }
+
+  async function runTransfer(parsedAmount: number, receiverTenantId: number | string) {
     setIsSubmitting(true);
     try {
       await sendFederationTransaction({
         receiver_id: member.id,
-        receiver_tenant_id: tenantId,
+        receiver_tenant_id: receiverTenantId,
         amount: parsedAmount,
         description: description.trim(),
       });
@@ -1120,10 +1145,11 @@ function FederatedTransferCard({
           />
         </View>
 
-        <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submit()}>
+        <HeroButton variant="primary" isDisabled={isSubmitting} onPress={submit} testID="federation-send-credits">
           {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={16} />}
           <HeroButton.Label>{t('profile.sendCredits')}</HeroButton.Label>
         </HeroButton>
+        {confirmDialog}
       </HeroCard.Body>
     </HeroCard>
   );

@@ -81,7 +81,9 @@
     "notFound": "Non trovato.",
     "alertTitle": "Error",
     "contractDrift": "Questa schermata ha ricevuto informazioni in un formato inatteso. Aggiorna l'app o riprova più tardi.",
-    "uploadIncomplete": "Il caricamento è terminato, ma il server non ha restituito il file."
+    "uploadIncomplete": "Il caricamento è terminato, ma il server non ha restituito il file.",
+    "notAvailableTitle": "Non disponibile per te",
+    "notAvailableHint": "Potrebbe essere stato rimosso, oppure non è condiviso con te."
   },
   "labels": {
     "timeBalance": "Saldo ore",

@@ -196,11 +196,28 @@ describe('IdeationIdeaScreen', () => {
     expect(getIdeationIdea).not.toHaveBeenCalled();
   });
 
-  it('offers a retry when the idea cannot be loaded', async () => {
+  it('🔴 says a withdrawn idea is not available, rather than offering an impossible Retry', async () => {
+    /*
+      This test used to assert the opposite: that a 404 rendered the error text with a
+      Retry, and that pressing it fetched again. Retry can never turn a 404 into an idea —
+      a withdrawn idea, or one in a challenge this member cannot see, is a REFUSAL. So the
+      test was pinning the fault rather than catching it (audit 2026-09-07, F/F-8).
+    */
     jest.mocked(getIdeationIdea).mockRejectedValue(new ApiResponseError(404, 'Idea not found'));
-    const { getByText } = render(<IdeationIdeaScreen />);
-    await waitFor(() => expect(getByText('Idea not found')).toBeTruthy());
-    fireEvent.press(getByText('Retry'));
-    await waitFor(() => expect(getIdeationIdea).toHaveBeenCalledTimes(2));
+
+    const { getByTestId, queryByText } = render(<IdeationIdeaScreen />);
+
+    await waitFor(() => expect(getByTestId('ideation-idea-refused')).toBeTruthy());
+    expect(queryByText('Retry')).toBeNull();
   });
+
+  it('still offers a retry when the failure really is transient', async () => {
+    jest.mocked(getIdeationIdea).mockRejectedValue(new ApiResponseError(500, 'Server error'));
+
+    const { getByTestId, getByText } = render(<IdeationIdeaScreen />);
+
+    await waitFor(() => expect(getByTestId('ideation-idea-error')).toBeTruthy(), { timeout: 6000 });
+    fireEvent.press(getByText('Retry'));
+    await waitFor(() => expect(getIdeationIdea).toHaveBeenCalled());
+  }, 12000);
 });

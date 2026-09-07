@@ -93,7 +93,7 @@ function BlogPostScreen() {
     await Share.share({ message, url });
   }, [tenant?.slug]);
 
-  const { data, isLoading, error: postError, refresh } = useApi(
+  const { data, isLoading, error: postError, errorStatus: postErrorStatus, refresh } = useApi(
     () => getBlogPost(slug),
     [slug],
     { enabled: slug.length > 0 },
@@ -132,6 +132,30 @@ function BlogPostScreen() {
     bad signal was told the post no longer exists — with a button that navigates away from
     it (audit 2026-09-06).
   */
+  /*
+    🔴 …and the other half of that fix, done on 2026-09-07.
+
+    A 4xx is a REFUSAL, not a failure: an unpublished post, one that was deleted, or one a
+    member is not allowed to read all answered 404 or 403, and all three were rendered as
+    "could not load" with a Retry the member could press for ever. `useApi` returns
+    `errorStatus` for exactly this (F/F-8).
+  */
+  if (!post && postError && (postErrorStatus === 401 || postErrorStatus === 403 || postErrorStatus === 404)) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/blog" />
+        <EmptyState
+          icon="lock-closed-outline"
+          title={t('common:errors.notAvailableTitle')}
+          subtitle={t('common:errors.notAvailableHint')}
+          actionLabel={t('detail.backToBlog')}
+          onAction={() => router.replace('/(modals)/blog')}
+          testID="blog-post-refused"
+        />
+      </SafeAreaView>
+    );
+  }
+
   if (!post && postError) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>

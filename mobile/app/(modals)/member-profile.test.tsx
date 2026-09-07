@@ -32,6 +32,9 @@ jest.mock('react-i18next', () => ({
         'profile.endorsedMessage': 'Done.',
         'profile.endorseError': 'Could not add that endorsement.',
         'profile.sayThanks': 'Say thanks',
+        'profile.transferConfirmTitle': 'Send credits to another community?',
+        'profile.transferConfirmMessage': 'This cannot be undone.',
+        'common:buttons.cancel': 'Cancel',
         'profile.thanksTitle': 'Thank them',
         'profile.thanksPlaceholder': 'What are you thanking them for?',
         'profile.thanksPublic': 'Everyone can see this',
@@ -196,6 +199,22 @@ jest.mock('@/lib/api/verification', () => ({
   getUserVerificationBadges: jest.fn().mockResolvedValue([]),
 }));
 
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 jest.mock('@/lib/api/endorsements', () => ({
   endorseSkill: jest.fn().mockResolvedValue({ data: { endorsement_id: 1, message: "ok" } }),
 }));
@@ -233,14 +252,45 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // Auto-confirm: triggering the confirm runs the action immediately,
 // mirroring the old Alert.alert button-press simulation.
-jest.mock('@/components/ui/useConfirm', () => ({
-  useConfirm: () => ({
-    confirm: (opts: { onConfirm: () => void | Promise<void> }) => {
-      void opts.onConfirm();
+/*
+  🔴 A stand-in that still REQUIRES the second tap.
+
+  This used to be `confirm: (opts) => void opts.onConfirm()` — it ran the action the
+  instant it was asked to confirm. That made the block-member test easy to write and it
+  made every confirmation on this screen unobservable: a new one-tap money path could be
+  added and no test here could tell. A cross-community transfer of up to 100 hours was
+  exactly that (audit 2026-09-07, G/F-4).
+
+  It now records the options and exposes a pressable confirm, so a test must press it.
+  A dialog with no `confirmTestID` of its own gets `member-profile-confirm`.
+*/
+jest.mock('@/components/ui/useConfirm', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    useConfirm: () => {
+      const [options, setOptions] = React.useState(null);
+      return {
+        confirm: (opts: Record<string, unknown>) => setOptions(opts as never),
+        confirmDialog: options ? (
+          <View>
+            <Text>{options.title as string}</Text>
+            <Pressable
+              testID={(options.confirmTestID as string) ?? 'member-profile-confirm'}
+              onPress={() => {
+                const action = options.onConfirm as () => void | Promise<void>;
+                setOptions(null);
+                void action();
+              }}
+            >
+              <Text>{options.confirmLabel as string}</Text>
+            </Pressable>
+          </View>
+        ) : null,
+      };
     },
-    confirmDialog: null,
-  }),
-}));
+  };
+});
 
 // --- Tests ---
 
@@ -391,9 +441,12 @@ describe('MemberProfileScreen', () => {
   it('blocks a same-community member from their profile and leaves the hidden profile', async () => {
     mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
     const { router } = require('expo-router');
-    const { getByText } = render(<MemberProfileScreen />);
+    const { getByTestId, getByText } = render(<MemberProfileScreen />);
 
     fireEvent.press(getByText('Block member'));
+    // Blocking is irreversible from here, so it asks first.
+    expect(blockUser).not.toHaveBeenCalled();
+    fireEvent.press(getByTestId('member-profile-confirm'));
 
     await waitFor(() => {
       expect(blockUser).toHaveBeenCalledWith(7);
@@ -600,12 +653,53 @@ describe('MemberProfileScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { getAllByText, getByPlaceholderText } = render(<MemberProfileScreen />);
+    const { getAllByText, getByPlaceholderText, getByTestId } = render(<MemberProfileScreen />);
 
     fireEvent.press(getAllByText('Send credits')[0]);
     fireEvent.changeText(getByPlaceholderText('1-100'), '2');
     fireEvent.changeText(getByPlaceholderText('What are these credits for?'), 'Repair help');
+    fireEvent.press(getByTestId('federation-send-credits'));
+    fireEvent.press(getByTestId('federation-confirm-transfer'));
+
+    await waitFor(() => {
+      expect(sendFederationTransaction).toHaveBeenCalledWith({
+        receiver_id: 272,
+        receiver_tenant_id: 5,
+        amount: 2,
+        description: 'Repair help',
+      });
+    });
+  });
+  it('🔴 does not send cross-community credits until the transfer is confirmed', async () => {
+    (sendFederationTransaction as jest.Mock).mockClear();
+    mockParams = { id: '272', tenant_id: '5' };
+    mockUseApi.mockReturnValue({
+      data: {
+        data: {
+          ...mockMember,
+          id: 272,
+          tenant_id: 5,
+          timebank: { id: 5, name: 'Partner Demo' },
+          transactions_enabled: true,
+        },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getAllByText, getByPlaceholderText, getByTestId } = render(<MemberProfileScreen />);
+
     fireEvent.press(getAllByText('Send credits')[0]);
+    fireEvent.changeText(getByPlaceholderText('1-100'), '2');
+    fireEvent.changeText(getByPlaceholderText('What are these credits for?'), 'Repair help');
+    fireEvent.press(getByTestId('federation-send-credits'));
+
+    // 🔴 Up to 100 hours used to leave the wallet on ONE tap, cross-community and not
+    // reversible from the app (G/F-4).
+    expect(sendFederationTransaction).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('federation-confirm-transfer'));
 
     await waitFor(() => {
       expect(sendFederationTransaction).toHaveBeenCalledWith({

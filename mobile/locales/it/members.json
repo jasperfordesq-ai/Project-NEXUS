@@ -193,7 +193,9 @@
     "thanksSending": "Invio in corso…",
     "thanksSentTitle": "Ringraziamento inviato",
     "thanksSentMessage": "{{name}} è stato avvisato.",
-    "thanksError": "Non è stato possibile inviare il ringraziamento."
+    "thanksError": "Non è stato possibile inviare il ringraziamento.",
+    "transferConfirmTitle": "Inviare crediti a un’altra comunità?",
+    "transferConfirmMessage": "{{amount}} ore usciranno dal tuo portafoglio e andranno a {{name}} in {{community}}. Non è possibile annullare l’operazione dall’app."
   },
   "collections": {
     "removeConfirmTitle": "Rimuovere questo elemento salvato?",

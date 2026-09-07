@@ -22,6 +22,7 @@ import {
   type ResourceItem,
 } from '@/lib/api/resources';
 import { useApi } from '@/lib/hooks/useApi';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -47,13 +48,20 @@ function ResourcesScreen() {
   const highlightedId = /^\d+$/.test(rawItem ?? '') ? Number(rawItem) : null;
   const [tab, setTab] = useState<ResourcesTab>('resources');
   const [search, setSearch] = useState('');
+  /*
+    🔴 One request per keystroke. Typing "gardening" fired nine, so on a poor connection
+    the list flickered through nine loading states and the endpoint's own rate limit
+    started refusing. `useDebounce` already existed and neither live search used it
+    (audit 2026-09-07, F/F-14).
+  */
+  const debouncedSearch = useDebounce(search, 350);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const {
     data: resourcesPage,
     isLoading: resourcesLoading,
     error: resourcesError,
     refresh: refreshResources,
-  } = useApi(() => getResources({ search, categoryId }), [search, categoryId]);
+  } = useApi(() => getResources({ search: debouncedSearch, categoryId }), [debouncedSearch, categoryId]);
   const {
     data: categories,
     refresh: refreshCategories,
