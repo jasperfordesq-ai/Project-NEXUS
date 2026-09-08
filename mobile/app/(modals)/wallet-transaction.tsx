@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
 import { Chip } from '@/components/ui/StatusChip';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -94,12 +95,20 @@ function WalletTransactionScreenInner() {
   const parsed = Number.parseInt(String(id ?? ''), 10);
   const safeId = Number.isFinite(parsed) && parsed !== 0 ? parsed : 0;
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getWalletTransaction(safeId),
     [safeId],
     { enabled: safeId !== 0 },
   );
   const transaction = data?.data ?? null;
+
+  /*
+    🔴 A refusal is not a failure. Somebody else's transaction — a mistyped id, a
+    stale link, a federated row the member's community can no longer see — answered
+    401/403/404, and this screen offered Retry for it. Retrying somebody else's
+    receipt returns the same refusal for ever. Audit 2026-09-07 F-8, fixed 2026-09-08.
+  */
+  const refused = isRefusalStatus(errorStatus);
 
   const isCredit = transaction?.type === 'credit';
   const amount = useMemo(() => {
@@ -123,10 +132,12 @@ function WalletTransactionScreenInner() {
       ) : !transaction ? (
         <View className="flex-1 items-center justify-center px-6" style={{ flex: 1 }}>
           <EmptyState
-            icon="receipt-outline"
-            title={t('transactionDetail.notFound')}
-            actionLabel={error ? t('common:actions.retry') : undefined}
-            onAction={error ? refresh : undefined}
+            icon={refused ? 'lock-closed-outline' : 'receipt-outline'}
+            title={refused ? t('common:errors.notAvailableTitle') : t('transactionDetail.notFound')}
+            subtitle={refused ? t('common:errors.notAvailableHint') : undefined}
+            actionLabel={error && !refused ? t('common:actions.retry') : undefined}
+            onAction={error && !refused ? refresh : undefined}
+            testID={refused ? 'wallet-transaction-refused' : undefined}
           />
         </View>
       ) : (

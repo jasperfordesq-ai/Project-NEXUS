@@ -10,6 +10,7 @@ import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -30,7 +31,18 @@ function DonationReceiptScreen() {
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('donations.receipt_title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-          {receipt.isLoading ? <LoadingSpinner /> : receipt.error || !receipt.data ? (
+          {receipt.isLoading ? <LoadingSpinner /> : isRefusalStatus(receipt.errorStatus) ? (
+            /*
+              🔴 A refusal is not a failure. A receipt belongs to one member; anybody
+              else was offered a Retry that could never work. F-8, fixed 2026-09-08.
+            */
+            <EmptyState
+              icon="lock-closed-outline"
+              title={t('common:errors.notAvailableTitle')}
+              subtitle={t('common:errors.notAvailableHint')}
+              testID="donation-receipt-refused"
+            />
+          ) : receipt.error || !receipt.data ? (
             <EmptyState icon="warning-outline" title={receipt.error ?? t('donations.receipt_not_found')} actionLabel={t('common:buttons.retry')} onAction={receipt.refresh} />
           ) : (
             <HeroCard className="rounded-panel">

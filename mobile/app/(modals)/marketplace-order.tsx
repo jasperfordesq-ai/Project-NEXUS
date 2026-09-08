@@ -10,6 +10,7 @@ import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -69,6 +70,17 @@ function MarketplaceOrderResolver() {
       <View className="flex-1 items-center justify-center px-4">
         {isLoading && !invalid ? (
           <LoadingSpinner />
+        ) : isRefusalStatus(orderState.errorStatus) ? (
+          /*
+            🔴 A refusal is not a failure. An order belongs to its buyer and its seller;
+            anyone else was offered a Retry that could never work. F-8, fixed 2026-09-08.
+          */
+          <EmptyState
+            icon="lock-closed-outline"
+            title={t('common:errors.notAvailableTitle')}
+            subtitle={t('common:errors.notAvailableHint')}
+            testID="marketplace-order-refused"
+          />
         ) : invalid || orderState.error || !orderState.data ? (
           <EmptyState
             icon="receipt-outline"

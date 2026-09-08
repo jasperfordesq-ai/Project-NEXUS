@@ -169,4 +169,33 @@ describe('WalletTransactionScreen', () => {
       expect(getByText('That transaction could not be found.')).toBeTruthy();
     });
   });
+
+  /*
+    🔴 A refusal is not a failure. Somebody else's transaction — a mistyped id, an old
+    link, a federated row this community can no longer see — answers 403 or 404, and
+    the screen offered a Retry that could never work. Audit F-8, fixed 2026-09-08.
+  */
+  it('says a transaction that is not theirs is unavailable, with no dead Retry', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({
+      data: null, isLoading: false, error: 'Forbidden', errorStatus: 403, errorCode: null, refresh,
+    });
+
+    const { getByTestId, queryByText } = render(<WalletTransactionScreen />);
+
+    expect(getByTestId('wallet-transaction-refused')).toBeTruthy();
+    expect(queryByText('Retry')).toBeNull();
+  });
+
+  it('still offers a retry for a server failure, which retrying can fix', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({
+      data: null, isLoading: false, error: 'Server error', errorStatus: 500, errorCode: null, refresh,
+    });
+
+    const { getByText, queryByTestId } = render(<WalletTransactionScreen />);
+
+    expect(queryByTestId('wallet-transaction-refused')).toBeNull();
+    expect(getByText('Retry')).toBeTruthy();
+  });
 });

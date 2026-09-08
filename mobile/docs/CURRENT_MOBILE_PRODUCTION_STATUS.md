@@ -358,6 +358,35 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    owner-only screens say "not yours" instead of offering an endless Retry; seven
    gamification loads surface their failure instead of reading as "you have nothing".
 
+   **Closed in a fourth pass, 2026-09-08.** No new reading — these are named items from
+   the list below, worked to completion with a regression test each and a control run
+   proving the test fails against the old code.
+
+   - The federated directory decided whether it had been refused by matching English
+     words in the server's reply, so members in the other six languages got a Try again
+     button that could never work. It now reads the machine code, which is the same in
+     every language. A member who simply has not joined federation is told how to join
+     rather than that the feature is off. `usePaginatedApi` now exposes
+     `errorStatus`/`errorCode`, which is what had blocked this. The directory's two
+     free-text filters are debounced.
+   - A stray tap on a course quiz could spend one of a limited number of attempts on a
+     blank answer sheet. Nothing answered is refused; a partly finished quiz asks first
+     and says what it costs.
+   - Switching community signed the member out and only then found out whether the new
+     community could be loaded, so a failure cost them their session for nothing. The
+     target is now checked first, and the sign-out still runs before the switch, which is
+     separately load-bearing.
+   - Nine screens showed a refusal as a failure with a dead Retry: the five organiser-only
+     event screens (attendance, tickets, communications, lifecycle history, recurrence
+     blueprints) plus a wallet transaction, a donation receipt, a marketplace order and a
+     group invite that are not the member's. `lib/api/refusal.ts` names the distinction
+     once — 401/403/404 mean "no", 5xx and a dropped connection mean "try again".
+
+   🔴 **Two more tests were pinning the fault.** `donation-receipt.test.tsx` and
+   `group-invite.test.tsx` each asserted that a 404 offers a Retry, and passed. Three
+   `LessonQuiz` cases pressed Submit on a blank quiz and passed for the same reason.
+   Assume a green suite proves the behaviour it describes, not that the behaviour is right.
+
    **Still open:**
    - Group admins cannot approve join requests or manage members. Every group-detail tab
      shows its first page only.
@@ -366,9 +395,7 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    - No in-app way to resend the verification e-mail; a closed-registration community
      still advertises "Create account"; registration validation arrives as one sentence,
      never on the field it belongs to (the server sends only the first error).
-   - A failed signed-in community switch signs the member out first; the attendance,
-     tickets, communications, history and blueprint screens still show "could not load"
-     with Retry on a 403.
+   - Registration and verification: see the entry above; nothing there is fixed yet.
    - Marketplace remainder: pickup-slot and coupon dates are typed by hand; collections,
      saved searches and pickup slots delete with no confirmation; the Stripe payments
      screen shows 0.00 balances when its request failed; an accepted offer never says
@@ -379,8 +406,9 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      a permanently dead form.
    - Gamification remainder: a member can never endorse anyone and can never send an
      appreciation (both endpoints exist, neither is called); six more lists stop at their
-     first page; the leaderboard only ever shows the top 20; seven content screens still
-     show a 4xx refusal as a failure with a Retry; two live searches fire a request per
+     first page; the leaderboard only ever shows the top 20; roughly a dozen more record
+     screens still show a 4xx refusal as a failure with a Retry — `lib/api/refusal.ts`
+     and the sweep in the fourth-pass commit list them; two live searches fire a request per
      keystroke; knowledge-base search only filters what is already on screen; logged goal
      progress can only go up; voting on a poll discards every page loaded; four screens
      have no pull-to-refresh; a member cannot withdraw an idea or delete their own
@@ -388,18 +416,16 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    - Courses and podcasts remainder: the **podcast player has no background audio** (the
      phone locking stops a 45-minute episode) and **no resume or seek** — the strings for
      both already exist, unused, in all seven languages; this one needs `app.json`
-     changes and therefore a new store build. An empty quiz can be submitted and spends
-     one of a limited number of attempts; the catalogues stop at 20; the player always
+     changes and therefore a new store build. The catalogues stop at 20; the player always
      opens at lesson 1; a double tap creates two cohorts; editing a course is not
      protected against a stray Back; `expo-av` is deprecated for SDK 54 and removed in
      SDK 55, so both media players will need porting.
-   - Federation remainder: the directory screens detect a refusal with an **English-only
-     regular expression**, so a German or Irish member gets a Retry that can never work.
-     `usePaginatedApi` must expose `errorCode` before that can be fixed. The directory
-     also searches on every keystroke.
+   - Federation remainder: nothing from the third-pass list. The English-only refusal
+     check and the per-keystroke search were both closed in the fourth pass above.
    - **Nothing is unread now.** Run one auditor at a time; two concurrent exhausted the
      session limit.
-   - Nothing from either pass has been walked on a device.
+   - 🔴 **Nothing from any of the four passes has been walked on a device.** That has not
+     changed and is the reason the readiness score has not moved.
 
 ## The blockers, in the order they hurt
 

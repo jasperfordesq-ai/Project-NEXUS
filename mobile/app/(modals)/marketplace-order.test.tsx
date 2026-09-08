@@ -81,4 +81,18 @@ describe('MarketplaceOrderRoute', () => {
     expect(mockReplace).not.toHaveBeenCalled();
     expect(getByTestId('marketplace-order-unavailable')).toBeTruthy();
   });
+
+  /*
+    🔴 A refusal is not a failure. An order belongs to its buyer and its seller;
+    anybody else got a Retry that could never work. Audit F-8, fixed 2026-09-08.
+  */
+  it('says an order that is not theirs is unavailable, with no dead Retry', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    jest.mocked(getMarketplaceOrder).mockRejectedValue(new ApiResponseError(403, 'Forbidden'));
+
+    const screen = render(<MarketplaceOrderRoute />);
+
+    expect(await screen.findByTestId('marketplace-order-refused')).toBeTruthy();
+    expect(screen.queryByText('Retry')).toBeNull();
+  });
 });

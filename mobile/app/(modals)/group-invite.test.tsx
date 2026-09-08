@@ -103,11 +103,23 @@ describe('GroupInviteScreen', () => {
     expect(getGroupInvitePreview).not.toHaveBeenCalled();
   });
 
-  it('offers a retry when the preview cannot be loaded', async () => {
+  /*
+    🔴 This case USED to assert that a 404 offers a Try again, and passed — pinning
+    the defect. An invite link that the server does not recognise is spent, revoked
+    or mistyped; none of those change on a retry. Corrected 2026-09-08.
+  */
+  it('says an unrecognised invitation is not valid, with no dead Try again', async () => {
     jest.mocked(getGroupInvitePreview).mockRejectedValue(new ApiResponseError(404, 'Invitation not found'));
-    const { getByText } = render(<GroupInviteScreen />);
-    await waitFor(() => expect(getByText('Invitation not found')).toBeTruthy());
-    fireEvent.press(getByText('Try again'));
-    await waitFor(() => expect(getGroupInvitePreview).toHaveBeenCalledTimes(2));
+    const { getByTestId, queryByText } = render(<GroupInviteScreen />);
+    await waitFor(() => expect(getByTestId('group-invite-refused')).toBeTruthy());
+    expect(queryByText('Try again')).toBeNull();
+    expect(getGroupInvitePreview).toHaveBeenCalledTimes(1);
   });
+
+  it('still offers a retry for a server failure, which retrying can fix', async () => {
+    jest.mocked(getGroupInvitePreview).mockRejectedValue(new ApiResponseError(500, 'Server error'));
+    const { getByText, queryByTestId } = render(<GroupInviteScreen />);
+    await waitFor(() => expect(getByText('Try again')).toBeTruthy(), { timeout: 8000 });
+    expect(queryByTestId('group-invite-refused')).toBeNull();
+  }, 15000);
 });

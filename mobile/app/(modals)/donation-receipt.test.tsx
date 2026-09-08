@@ -70,13 +70,28 @@ describe('DonationReceiptScreen', () => {
     expect(getByText('Keep up the good work')).toBeTruthy();
   });
 
-  it('offers a retry when the receipt cannot be loaded', async () => {
+  /*
+    🔴 This case USED to assert that a 404 offers a Retry, and passed — pinning the
+    defect in place. A receipt belongs to one member; 404 from that endpoint means
+    "not yours" as often as it means "gone", and retrying it returns the same answer
+    for ever. Audit 2026-09-07 F-8, corrected 2026-09-08.
+  */
+  it('says a receipt that is not theirs is unavailable, with no dead Retry', async () => {
     jest.mocked(getDonationReceipt).mockRejectedValue(new ApiResponseError(404, 'Receipt unavailable'));
-    const { getByText } = render(<DonationReceiptScreen />);
-    await waitFor(() => expect(getByText('Receipt unavailable')).toBeTruthy());
-    fireEvent.press(getByText('Retry'));
-    await waitFor(() => expect(getDonationReceipt).toHaveBeenCalledTimes(2));
+    const { getByTestId, queryByText } = render(<DonationReceiptScreen />);
+    await waitFor(() => expect(getByTestId('donation-receipt-refused')).toBeTruthy());
+    expect(queryByText('Retry')).toBeNull();
+    expect(getDonationReceipt).toHaveBeenCalledTimes(1);
   });
+
+  it('still offers a retry for a server failure, which retrying can fix', async () => {
+    jest.mocked(getDonationReceipt).mockRejectedValue(new ApiResponseError(500, 'Server error'));
+    const { getByText, queryByTestId } = render(<DonationReceiptScreen />);
+    await waitFor(() => expect(getByText('Retry')).toBeTruthy(), { timeout: 8000 });
+    expect(queryByTestId('donation-receipt-refused')).toBeNull();
+    fireEvent.press(getByText('Retry'));
+    await waitFor(() => expect(jest.mocked(getDonationReceipt).mock.calls.length).toBeGreaterThan(1));
+  }, 15000);
 
   it('does not call the API without a donation id', async () => {
     mockParams = {};
