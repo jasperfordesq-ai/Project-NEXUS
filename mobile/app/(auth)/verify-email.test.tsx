@@ -5,7 +5,7 @@
 
 import { ApiResponseError } from '@/lib/api/client';
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockVerifyEmail = jest.fn();
 const mockReplace = jest.fn();
@@ -23,8 +23,10 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
 }));
 
+const mockResendVerification = jest.fn();
 jest.mock('@/lib/api/auth', () => ({
   verifyEmail: (...args: unknown[]) => mockVerifyEmail(...args),
+  resendVerificationByEmail: (...args: unknown[]) => mockResendVerification(...args),
 }));
 
 import VerifyEmailScreen from './verify-email';
@@ -32,6 +34,7 @@ import VerifyEmailScreen from './verify-email';
 describe('VerifyEmailScreen', () => {
   beforeEach(() => {
     mockVerifyEmail.mockReset();
+    mockResendVerification.mockReset();
     mockReplace.mockReset();
     mockParams = { token: 'verify-token' };
   });
@@ -70,5 +73,36 @@ describe('VerifyEmailScreen', () => {
 
     expect(await findByText('Could not verify email')).toBeTruthy();
     expect(queryByText(/Cannot read properties/)).toBeNull();
+  });
+
+  /*
+    🔴 The advice on the failure state used to be "sign in to request another
+    verification email from your account settings" — advice the member cannot follow,
+    because signing in is exactly what the unverified address blocks. An expired or
+    already-used link was a dead end pointing back at itself. Fixed 2026-09-08.
+  */
+  it('lets a member with an expired link send themselves a new one', async () => {
+    mockVerifyEmail.mockRejectedValue(new Error('expired'));
+    mockResendVerification.mockResolvedValue({});
+
+    const screen = render(<VerifyEmailScreen />);
+
+    const input = await screen.findByTestId('verify-email-resend-input');
+    fireEvent.changeText(input, '  Mobile.Pending@Example.com  ');
+    fireEvent.press(screen.getByTestId('verify-email-resend'));
+
+    await waitFor(() => expect(mockResendVerification).toHaveBeenCalledWith('mobile.pending@example.com'));
+    expect(await screen.findByText(/If that address can be verified/)).toBeTruthy();
+  });
+
+  it('will not send without an address', async () => {
+    mockVerifyEmail.mockRejectedValue(new Error('expired'));
+
+    const screen = render(<VerifyEmailScreen />);
+    await screen.findByTestId('verify-email-resend-input');
+
+    fireEvent.press(screen.getByTestId('verify-email-resend'));
+
+    expect(mockResendVerification).not.toHaveBeenCalled();
   });
 });

@@ -33,10 +33,12 @@ const mockRouter = jest.requireMock('expo-router').router as {
   push: jest.Mock; replace: jest.Mock; back: jest.Mock;
 };
 
+const mockResendVerification = jest.fn();
 jest.mock('@/lib/api/auth', () => ({
   register: (...args: any[]) => mockApiRegister(...args),
   extractToken: (...args: any[]) => mockExtractToken(...args),
   getRegistrationResult: (response: any) => ('data' in response ? response.data : response),
+  resendVerificationByEmail: (...args: any[]) => mockResendVerification(...args),
 }));
 
 jest.mock('@/lib/api/client', () => ({
@@ -380,5 +382,70 @@ describe('RegisterScreen', () => {
     fireEvent.press(getByLabelText('Sign in'));
 
     expect(mockRouter.push).toHaveBeenCalledWith('/login');
+  });
+
+  /*
+    🔴 "Check your email" used to offer only "Sign in" — which cannot work until the
+    address is verified. A member whose email went to spam, bounced, or was typed
+    wrongly had no route forward from inside the app at all. The endpoint had existed
+    the whole time with no caller. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  async function reachPendingVerification(screen: ReturnType<typeof render>) {
+    mockApiRegister.mockResolvedValue({
+      data: {
+        user: { id: 2, email: 'mobile.pending@example.com', first_name: 'Mobile', last_name: 'Member' },
+        requires_verification: true,
+        message: 'Check your email before signing in.',
+      },
+    });
+
+    fireEvent.changeText(screen.getByTestId('register-first-name'), 'Mobile');
+    fireEvent.changeText(screen.getByTestId('register-last-name'), 'Member');
+    fireEvent.changeText(screen.getByTestId('register-phone'), '+1 555 123 4567');
+    fireEvent.changeText(screen.getByTestId('register-location'), 'Toronto, Canada');
+    fireEvent.changeText(screen.getByTestId('register-email'), 'Mobile.Pending@Example.com');
+    fireEvent.changeText(screen.getByTestId('register-password'), 'TestPassword123!');
+    fireEvent.changeText(screen.getByTestId('register-confirm-password'), 'TestPassword123!');
+    fireEvent.press(screen.getByTestId('register-terms'));
+    pressSubmit(screen.getAllByText);
+
+    await screen.findByText('Check your email before signing in.');
+  }
+
+  it('offers to send the verification email again, using the address just registered', async () => {
+    mockResendVerification.mockResolvedValue({});
+    const screen = render(<RegisterScreen />);
+    await reachPendingVerification(screen);
+
+    fireEvent.press(screen.getByTestId('register-resend-verification'));
+
+    // Lowercased and trimmed, exactly as it was sent to register().
+    await waitFor(() => expect(mockResendVerification).toHaveBeenCalledWith('mobile.pending@example.com'));
+  });
+
+  it('confirms without revealing whether the address is registered', async () => {
+    mockResendVerification.mockResolvedValue({});
+    const screen = render(<RegisterScreen />);
+    await reachPendingVerification(screen);
+
+    fireEvent.press(screen.getByTestId('register-resend-verification'));
+
+    /*
+      🔴 The endpoint answers identically whether or not the address exists, on
+      purpose, so that it cannot be used to discover who is a member. The wording
+      here has to keep that promise — "If that address can be verified…", never
+      "We have sent it to your account".
+    */
+    expect(await screen.findByText(/If that address can be verified/)).toBeTruthy();
+  });
+
+  it('says so when the email could not be sent, rather than pretending it was', async () => {
+    mockResendVerification.mockRejectedValue(new ApiResponseError(429, 'Too many requests'));
+    const screen = render(<RegisterScreen />);
+    await reachPendingVerification(screen);
+
+    fireEvent.press(screen.getByTestId('register-resend-verification'));
+
+    expect(await screen.findByText('Too many requests')).toBeTruthy();
   });
 });

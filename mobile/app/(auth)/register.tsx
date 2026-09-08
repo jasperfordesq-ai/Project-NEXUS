@@ -22,7 +22,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert, Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 
-import { extractToken, getRegistrationResult, register as apiRegister, type LoginUser, type RegisterResult } from '@/lib/api/auth';
+import { extractToken, getRegistrationResult, register as apiRegister, resendVerificationByEmail, type LoginUser, type RegisterResult } from '@/lib/api/auth';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { ApiResponseError } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
@@ -133,6 +134,38 @@ export default function RegisterScreen() {
     if (globalError) scrollRef.current?.scrollTo({ y: 0, animated: true });
   }, [globalError]);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  /*
+    🔴 "Check your email" with nothing but a Sign in button was a dead end. Sign in
+    cannot work until the address is verified, so a member whose email went to spam,
+    bounced, or simply never arrived had no route forward from inside the app at all —
+    and no way to notice they had typed the address wrong. The endpoint
+    (`/auth/resend-verification-by-email`) has existed the whole time and had no
+    caller. Audit 2026-09-07, fixed 2026-09-08.
+
+    The address is kept from the form so the member does not have to retype it, and
+    the button reports only that a message was sent — the endpoint deliberately answers
+    identically whether or not the address is registered, so that nobody can use it to
+    discover who is a member.
+  */
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [isResending, setIsResending] = useState(false);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  async function resendVerification() {
+    if (isResending || !pendingEmail) return;
+    setIsResending(true);
+    setResendError(null);
+    setResendNotice(null);
+    try {
+      await resendVerificationByEmail(pendingEmail);
+      setResendNotice(t('register.resendSent'));
+    } catch (err) {
+      setResendError(describeApiError(err, t('register.resendFailed')));
+    } finally {
+      setIsResending(false);
+    }
+  }
   // Set the moment the server has created the account, so the guard below stands down
   // BEFORE the redirect home. Without it a community that signs members in at
   // registration got "Discard your registration?" for an account that already existed
@@ -173,6 +206,7 @@ export default function RegisterScreen() {
       const result = getRegistrationResult(response);
 
       if (!hasAuthSession(result)) {
+        setPendingEmail(data.email.trim().toLowerCase());
         setPendingMessage(result.message ?? t('register.successDefaultMessage'));
         return;
       }
@@ -272,7 +306,37 @@ export default function RegisterScreen() {
                   <Alert.Description>{pendingMessage}</Alert.Description>
                 </Alert.Content>
               </Alert>
-              <View className="mt-6">
+              {resendNotice ? (
+                <Alert status="success" accessibilityRole="alert" className="mt-4">
+                  <Alert.Indicator />
+                  <Alert.Content>
+                    <Alert.Description>{resendNotice}</Alert.Description>
+                  </Alert.Content>
+                </Alert>
+              ) : null}
+              {resendError ? (
+                <Alert status="danger" accessibilityRole="alert" className="mt-4">
+                  <Alert.Indicator />
+                  <Alert.Content>
+                    <Alert.Description>{resendError}</Alert.Description>
+                  </Alert.Content>
+                </Alert>
+              ) : null}
+
+              <View className="mt-6 gap-3">
+                <Text className="text-muted-foreground text-sm text-center">
+                  {t('register.resendPrompt')}
+                </Text>
+                <Button
+                  variant="outline"
+                  fullWidth
+                  disabled={isResending}
+                  onPress={() => void resendVerification()}
+                  accessibilityLabel={t('register.resendAction')}
+                  testID="register-resend-verification"
+                >
+                  {isResending ? t('register.resendSending') : t('register.resendAction')}
+                </Button>
                 <Button
                   variant="outline"
                   fullWidth

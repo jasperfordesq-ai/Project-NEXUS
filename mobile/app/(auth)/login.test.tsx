@@ -62,6 +62,11 @@ jest.mock('expo-haptics', () => ({
 
 jest.mock('@/components/ui/Icon', () => ({ Ionicons: () => null }));
 
+const mockGetRegistrationInfo = jest.fn();
+jest.mock('@/lib/api/auth', () => ({
+  getRegistrationInfo: (...args: unknown[]) => mockGetRegistrationInfo(...args),
+}));
+
 // --- Tests ---
 
 import LoginScreen from './login';
@@ -178,5 +183,48 @@ describe('LoginScreen', () => {
     fireEvent.press(getByLabelText('Switch community'));
 
     expect(mockRouterPush).toHaveBeenCalledWith('/select-tenant');
+  });
+
+  /*
+    🔴 A community with registration closed still offered "Create account", and the
+    member could fill in the whole form before the server turned them away.
+    `/v2/auth/registration-info` has always answered this; nothing asked.
+    Audit 2026-09-07, fixed 2026-09-08.
+  */
+  describe('when the community is not taking new members', () => {
+    it('does not offer to create an account', async () => {
+      mockGetRegistrationInfo.mockResolvedValue({
+        data: { registration_mode: 'closed', can_register: false, is_closed: true, message: null,
+          requires_invite_code: false, requires_verification: false, is_waitlist: false },
+      });
+
+      const screen = render(<LoginScreen />);
+
+      expect(await screen.findByTestId('login-registration-closed')).toBeTruthy();
+      expect(screen.queryByText('Create account')).toBeNull();
+    });
+
+    it('prefers the community\'s own wording when it set one', async () => {
+      mockGetRegistrationInfo.mockResolvedValue({
+        data: { registration_mode: 'closed', can_register: false, is_closed: true,
+          message: 'We reopen in September.', requires_invite_code: false,
+          requires_verification: false, is_waitlist: false },
+      });
+
+      const screen = render(<LoginScreen />);
+
+      expect(await screen.findByText('We reopen in September.')).toBeTruthy();
+    });
+  });
+
+  it('still offers to create an account when the policy cannot be read', async () => {
+    // 🔴 Failing closed here would be the worse mistake: one unanswered request
+    // must not remove the only route into a community that IS open.
+    mockGetRegistrationInfo.mockRejectedValue(new Error('offline'));
+
+    const screen = render(<LoginScreen />);
+
+    await waitFor(() => expect(screen.getByText('Create account')).toBeTruthy());
+    expect(screen.queryByTestId('login-registration-closed')).toBeNull();
   });
 });

@@ -23,6 +23,8 @@ import { Alert, Button as HeroButton, Card as HeroCard } from 'heroui-native';
 
 import * as Haptics from '@/lib/haptics';
 import { ApiResponseError } from '@/lib/api/client';
+import { getRegistrationInfo } from '@/lib/api/auth';
+import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -45,6 +47,14 @@ export default function LoginScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+
+  const registrationInfo = useApi(() => getRegistrationInfo(), []);
+  const registrationPolicy = registrationInfo.data?.data ?? null;
+  // Default to showing the way in. Only an explicit "closed" hides it — see the
+  // comment at the footer.
+  const canRegister = registrationPolicy ? registrationPolicy.can_register : true;
+  const registrationClosedMessage = registrationPolicy?.message?.trim()
+    || t('login.registrationClosed');
 
   const loginSchema = useMemo(() => makeLoginSchema(t), [t]);
 
@@ -212,19 +222,38 @@ export default function LoginScreen() {
 
             <HeroCard.Footer className="px-6 pb-6 pt-0">
               <View className="w-full gap-3">
-                <View className="items-center gap-2">
-                  <Text className="text-muted-foreground text-sm text-center">
-                    {t('login.noAccount')}
-                  </Text>
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    onPress={() => router.push('/register')}
-                    accessibilityLabel={t('login.register')}
-                  >
-                    {t('login.register')}
-                  </Button>
-                </View>
+                {/*
+                  🔴 A community with registration closed still offered "Create account",
+                  and the member could fill in the whole form before the server turned
+                  them away. `/v2/auth/registration-info` has always said whether this
+                  community is taking members; nothing in the app asked.
+
+                  Shown while the answer is still unknown, and shown if the request
+                  fails: hiding the only route to joining because one call did not come
+                  back would be the worse mistake of the two. Only an explicit "closed"
+                  takes it away.
+                */}
+                {canRegister ? (
+                  <View className="items-center gap-2">
+                    <Text className="text-muted-foreground text-sm text-center">
+                      {t('login.noAccount')}
+                    </Text>
+                    <Button
+                      variant="outline"
+                      fullWidth
+                      onPress={() => router.push('/register')}
+                      accessibilityLabel={t('login.register')}
+                    >
+                      {t('login.register')}
+                    </Button>
+                  </View>
+                ) : (
+                  <View className="items-center gap-2" testID="login-registration-closed">
+                    <Text className="text-muted-foreground text-sm text-center">
+                      {registrationClosedMessage}
+                    </Text>
+                  </View>
+                )}
 
                 <View className="items-center gap-2">
                   <Text className="text-muted-foreground text-sm text-center">

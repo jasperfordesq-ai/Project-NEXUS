@@ -12,11 +12,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Card as HeroCard, Spinner } from 'heroui-native';
 
-import { verifyEmail } from '@/lib/api/auth';
+import { resendVerificationByEmail, verifyEmail } from '@/lib/api/auth';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 type VerifyState = 'loading' | 'success' | 'error' | 'invalid';
 
@@ -30,6 +31,40 @@ export default function VerifyEmailScreen() {
   const insets = useSafeAreaInsets();
   const [state, setState] = useState<VerifyState>(token ? 'loading' : 'invalid');
   const [message, setMessage] = useState<string | null>(null);
+
+  /*
+    🔴 The advice on this screen used to be "sign in to request another verification
+    email from your account settings" — advice the member cannot follow, because signing
+    in is the thing the unverified address is blocking. An expired or already-used link
+    left them with a dead end and a suggestion that leads back to it.
+
+    `/auth/resend-verification-by-email` is public precisely so it can be used from
+    here. It is asked for the address because this screen arrives from a deep link and
+    knows nothing about who opened it. The reply is the same whether or not the address
+    is registered, deliberately, so this cannot be used to find out who is a member —
+    which is also why the confirmation below says a message was sent rather than
+    claiming the account exists.
+  */
+  const [resendEmail, setResendEmail] = useState('');
+  const [isResending, setIsResending] = useState(false);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  async function resend() {
+    const address = resendEmail.trim().toLowerCase();
+    if (isResending || !address) return;
+    setIsResending(true);
+    setResendError(null);
+    setResendNotice(null);
+    try {
+      await resendVerificationByEmail(address);
+      setResendNotice(t('verifyEmail.resendSent'));
+    } catch (err) {
+      setResendError(describeApiError(err, t('verifyEmail.resendFailed')));
+    } finally {
+      setIsResending(false);
+    }
+  }
 
   useEffect(() => {
     if (!token) {
@@ -115,12 +150,41 @@ export default function VerifyEmailScreen() {
               ) : null}
               {state === 'error' || state === 'invalid' ? (
                 <>
-                  <Button fullWidth onPress={() => router.replace('/login')}>
-                    {t('verifyEmail.backToLogin')}
-                  </Button>
-                  <Text className="text-center text-xs leading-5 text-muted-foreground">
+                  <Text className="text-center text-sm leading-5 text-muted-foreground">
                     {t('verifyEmail.resendHint')}
                   </Text>
+                  <Input
+                    value={resendEmail}
+                    onChangeText={setResendEmail}
+                    placeholder={t('verifyEmail.resendEmailPlaceholder')}
+                    accessibilityLabel={t('verifyEmail.resendEmailLabel')}
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    testID="verify-email-resend-input"
+                  />
+                  {resendNotice ? (
+                    <Text accessibilityRole="alert" className="text-center text-sm" style={{ color: theme.success }}>
+                      {resendNotice}
+                    </Text>
+                  ) : null}
+                  {resendError ? (
+                    <Text accessibilityRole="alert" className="text-center text-sm" style={{ color: theme.error }}>
+                      {resendError}
+                    </Text>
+                  ) : null}
+                  <Button
+                    fullWidth
+                    disabled={isResending || resendEmail.trim().length === 0}
+                    onPress={() => void resend()}
+                    accessibilityLabel={t('verifyEmail.resendAction')}
+                    testID="verify-email-resend"
+                  >
+                    {isResending ? t('verifyEmail.resendSending') : t('verifyEmail.resendAction')}
+                  </Button>
+                  <Button variant="outline" fullWidth onPress={() => router.replace('/login')}>
+                    {t('verifyEmail.backToLogin')}
+                  </Button>
                 </>
               ) : null}
             </HeroCard.Body>

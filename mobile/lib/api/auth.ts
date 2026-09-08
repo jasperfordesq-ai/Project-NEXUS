@@ -186,6 +186,50 @@ export function verifyEmail(token: string): Promise<VerifyEmailResponse> {
   return api.post<VerifyEmailResponse>('/api/auth/verify-email', { token });
 }
 
+/**
+ * POST /api/auth/resend-verification-by-email — send the verification email again.
+ *
+ * 🔴 The app had no way to do this at all. A member whose verification email went to
+ * spam, arrived at a typo'd address, or simply never turned up had no route forward
+ * from inside the app: the sign-up screen said "check your email" and offered only
+ * "Sign in", which cannot work until the address is verified. The endpoint has been
+ * there the whole time.
+ *
+ * Public and unauthenticated by design, and it answers the SAME message whether or
+ * not the address exists — that is deliberate, so nobody can use it to discover who
+ * is a member. Do not "improve" the wording into something that distinguishes the
+ * two. Rate limited to 3 per 5 minutes per IP by the server.
+ */
+export function resendVerificationByEmail(email: string): Promise<{ data?: { message?: string }; message?: string }> {
+  return api.post<{ data?: { message?: string }; message?: string }>(
+    '/api/auth/resend-verification-by-email',
+    { email },
+  );
+}
+
+export interface RegistrationInfo {
+  registration_mode: string;
+  requires_invite_code: boolean;
+  requires_verification: boolean;
+  is_waitlist: boolean;
+  is_closed: boolean;
+  can_register: boolean;
+  message: string | null;
+}
+
+/**
+ * GET /api/v2/auth/registration-info — whether this community is taking new members.
+ *
+ * 🔴 Also never called by the app. A community with registration closed still had
+ * "Create account" on its sign-in screen, and the member could fill in the whole
+ * form before the server turned them away. Public, rate limited 30/minute per IP.
+ */
+export function getRegistrationInfo(): Promise<{ data: RegistrationInfo }> {
+  return api.get<{ data: RegistrationInfo }>(`${API_V2}/auth/registration-info`, undefined, {
+    anonymous: true,
+  });
+}
+
 /** POST /api/auth/logout */
 export function logout(): Promise<void> {
   return api.post<void>('/api/auth/logout');
