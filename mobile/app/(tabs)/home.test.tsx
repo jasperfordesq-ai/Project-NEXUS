@@ -10,7 +10,10 @@ import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/components/reactions/ReactorsSheet', () => 'View');
 const mockRouterPush = jest.fn();
-const mockHasModule = jest.fn(() => true);
+// Answers per module key, and carries a tenant, because the screen distinguishes
+// "this community switched the feed off" from "we do not know yet".
+const mockHasModule = jest.fn((_module: string) => true);
+let mockTenant: { id: number; slug: string } | null = { id: 2, slug: 'hour-timebank' };
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
@@ -61,7 +64,11 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ hasFeature: () => true, hasModule: () => mockHasModule() }),
+  useTenant: () => ({
+    hasFeature: () => true,
+    hasModule: (module: string) => mockHasModule(module),
+    tenant: mockTenant,
+  }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -212,6 +219,12 @@ beforeEach(() => {
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
   mockRealtimeContext.unreadNotifications = 0;
   mockRealtimeContext.unreadMessages = 0;
+  // 🔴 `clearAllMocks` clears calls, NOT return values, so a `mockReturnValue(false)`
+  // in a feed-switched-off case leaked into every test after it. That was invisible
+  // while only the composer was gated on the module; now that the header is too, the
+  // leak would have failed the hashtag-door case purely on test order.
+  mockHasModule.mockReturnValue(true);
+  mockTenant = { id: 2, slug: 'hour-timebank' };
 });
 
 const mockFeedItem = {
@@ -387,6 +400,57 @@ describe('HomeScreen', () => {
     const { queryByTestId } = render(<HomeScreen />);
 
     expect(queryByTestId('feed-composer-trigger')).toBeNull();
+  });
+
+  /*
+    🔴 The feed's furniture must go with the feed.
+
+    Switching the module off blanked only the LIST. The "Community Feed" heading, the
+    "here's what's happening in your timebank" subtitle, the hashtag door, the For You /
+    Recent tabs and the filter chips all stayed, sitting above a padlock that said the
+    feature was off — a working-looking feed screen with a hole in the middle, and
+    controls that filtered nothing. The hashtag button was worse than cosmetic: its
+    destination requires the same module, so it bounced the member straight back.
+
+    Two things deliberately survive, and this case pins them so a later tidy-up cannot
+    take them: the greeting, which is true either way and keeps the panel from becoming
+    a lone icon, and the notification bell, which is the only door to notifications on
+    this screen.
+  */
+  it('hides the feed heading, subtitle, hashtag door and filters when the feed is switched off', () => {
+    mockHasModule.mockReturnValue(false);
+
+    const { queryByTestId, queryByText, queryByLabelText } = render(<HomeScreen />);
+
+    expect(queryByTestId('feed-unavailable')).toBeTruthy();
+    expect(queryByText('feed.title')).toBeNull();
+    expect(queryByText("Here's what's happening in your timebank")).toBeNull();
+    expect(queryByTestId('home-hashtags')).toBeNull();
+    expect(queryByText('mode.forYou')).toBeNull();
+    expect(queryByText('mode.recent')).toBeNull();
+    expect(queryByText('filter.all')).toBeNull();
+    expect(queryByText('filter.listings')).toBeNull();
+
+    expect(queryByText('Hello, Alice', { exact: false })).toBeTruthy();
+    expect(queryByLabelText('Notifications')).toBeTruthy();
+  });
+
+  /*
+    The other half of the same rule: an unknown configuration keeps the feed. `hasModule`
+    returns false while the tenant config is still being read (cold start, offline first
+    paint), so gating on it alone blinked the whole feed out for every member for as long
+    as that lasted.
+  */
+  it('keeps the feed and its controls while the community configuration is still unknown', () => {
+    mockTenant = null;
+    mockHasModule.mockReturnValue(false);
+
+    const { queryByTestId, queryByText } = render(<HomeScreen />);
+
+    expect(queryByTestId('feed-unavailable')).toBeNull();
+    expect(queryByTestId('feed-composer-trigger')).toBeTruthy();
+    expect(queryByTestId('home-hashtags')).toBeTruthy();
+    expect(queryByText("Here's what's happening in your timebank")).toBeTruthy();
   });
 
   /*

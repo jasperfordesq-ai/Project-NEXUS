@@ -34,7 +34,7 @@ const scrollToSection = () => {
 
 export function HeroSection({ content }: HeroSectionProps) {
   const { t } = useTranslation('public');
-  const { branding, tenantPath } = useTenant();
+  const { branding, tenantPath, hasModule } = useTenant();
   const { isAuthenticated } = useAuth();
 
   const badgeText = content?.badge_text || t('home.badge');
@@ -45,7 +45,22 @@ export function HeroSection({ content }: HeroSectionProps) {
   const ctaPrimaryLink = content?.cta_primary_link || '/register';
   const ctaSecondaryText = content?.cta_secondary_text || t('home.cta_learn_more');
   const ctaSecondaryLink = content?.cta_secondary_link || '/about';
-  const ctaFeedText = t('home.cta_feed');
+  /**
+   * 🔴 The signed-in call to action must respect the community's module switches.
+   *
+   * It pointed at `/feed` unconditionally. A member of a community that has switched
+   * the feed off pressed the biggest button on their own front page and the route
+   * guard bounced them to the dashboard — the button named a place they cannot go.
+   * `cta_dashboard` was already translated in all eleven locales and unused.
+   *
+   * With both modules off there is nowhere sensible to send them, so the button is
+   * dropped rather than pointed at a third page that also redirects.
+   */
+  const signedInCta = hasModule('feed')
+    ? { link: '/feed', text: t('home.cta_feed') }
+    : hasModule('dashboard')
+      ? { link: '/dashboard', text: t('home.cta_dashboard') }
+      : null;
 
   return (
     <section aria-labelledby="hero-heading" className="relative py-20 sm:py-32 px-4 sm:px-6 lg:px-8">
@@ -89,15 +104,17 @@ export function HeroSection({ content }: HeroSectionProps) {
             className="mt-10 flex flex-col sm:flex-row gap-4 justify-center"
           >
             {isAuthenticated ? (
-              <Button
-                as={Link}
-                to={tenantPath('/feed')}
-                size="lg"
-                className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8 shadow-lg shadow-accent/25 hover:shadow-accent/50 transition-shadow"
-                endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
-              >
-                {ctaFeedText}
-              </Button>
+              signedInCta && (
+                <Button
+                  as={Link}
+                  to={tenantPath(signedInCta.link)}
+                  size="lg"
+                  className="w-full sm:w-auto bg-gradient-to-r from-accent to-accent-gradient-end text-white font-semibold px-8 shadow-lg shadow-accent/25 hover:shadow-accent/50 transition-shadow"
+                  endContent={<ArrowRight className="w-5 h-5" aria-hidden="true" />}
+                >
+                  {signedInCta.text}
+                </Button>
+              )
             ) : (
               <>
                 <Button

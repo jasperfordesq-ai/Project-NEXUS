@@ -154,7 +154,8 @@ describe('HeroSection — unauthenticated user', () => {
 });
 
 describe('HeroSection — authenticated user', () => {
-  it('shows a feed CTA instead of register/about for authenticated users', async () => {
+  /** Sign the member in, and switch the named modules off for their community. */
+  async function signInWith(disabledModules: string[] = []) {
     const contexts = await import('@/contexts');
     vi.mocked(contexts.useAuth).mockReturnValue({
       user: { id: 1, email: 'u@test.com' } as never,
@@ -167,6 +168,19 @@ describe('HeroSection — authenticated user', () => {
       status: 'idle',
       error: null,
     });
+    vi.mocked(contexts.useTenant).mockReturnValue({
+      tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+      branding: { name: 'Test Community', logo_url: null },
+      tenantPath: (p: string) => `/test${p}`,
+      hasFeature: vi.fn(() => true),
+      // Per key: a mock that ignores the key cannot tell "feed off, dashboard on"
+      // from "both off", which is exactly what these cases separate.
+      hasModule: vi.fn((key: string) => !disabledModules.includes(key)),
+    } as unknown as ReturnType<typeof contexts.useTenant>);
+  }
+
+  it('shows a feed CTA instead of register/about for authenticated users', async () => {
+    await signInWith();
     render(<HeroSection />);
     // The authenticated CTA links to /feed (via tenantPath)
     const links = screen.getAllByRole('link');
@@ -175,5 +189,32 @@ describe('HeroSection — authenticated user', () => {
     // Should NOT show a /register link
     const registerLink = links.find((l) => /register/.test(l.getAttribute('href') ?? ''));
     expect(registerLink).toBeUndefined();
+  });
+
+  /*
+    🔴 The signed-in call to action pointed at /feed no matter what the community had
+    switched on. It is the biggest button on a community's own front page, so a member
+    of a community with the feed off pressed it and the route guard bounced them to the
+    dashboard — the button named a place they could not go.
+  */
+  it('points the signed-in CTA at the dashboard when the community has no feed', async () => {
+    await signInWith(['feed']);
+    render(<HeroSection />);
+
+    const links = screen.getAllByRole('link');
+    expect(links.find((l) => /dashboard/.test(l.getAttribute('href') ?? ''))).toBeDefined();
+    expect(links.find((l) => /feed/.test(l.getAttribute('href') ?? ''))).toBeUndefined();
+  });
+
+  it('offers no signed-in CTA when neither the feed nor the dashboard is available', async () => {
+    await signInWith(['feed', 'dashboard']);
+    render(<HeroSection />);
+
+    // queryAllByRole, not getAllByRole: with no CTA the section has no links at
+    // all, which is the point — there is no landing page left to offer.
+    const links = screen.queryAllByRole('link');
+    expect(links.find((l) => /feed|dashboard/.test(l.getAttribute('href') ?? ''))).toBeUndefined();
+    // The section still renders — no CTA is not a broken page.
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 });

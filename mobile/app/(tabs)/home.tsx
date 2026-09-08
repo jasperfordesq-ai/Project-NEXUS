@@ -215,21 +215,39 @@ export default function HomeScreen() {
             >
               <View className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: primary }} />
               <View className="flex-row items-center justify-between gap-2 pl-1">
+                {/*
+                  🔴 The feed's own furniture goes when the module goes.
+
+                  `feedUnavailable` used to blank only the LIST. Everything framing it
+                  stayed: the "Community Feed" heading, "here's what's happening in your
+                  timebank", the hashtag door, the For You / Recent tabs and the filter
+                  chips — all of it above a padlock saying the feature is off. A member of
+                  a community with the feed switched off got a working-looking feed screen
+                  with a hole in the middle, and controls that filtered nothing.
+
+                  The greeting stays: "Hello, Nuala" is true either way, and it keeps the
+                  panel from collapsing to a lone notification bell. The bell itself is NOT
+                  gated — it is the only door to notifications on this screen.
+                */}
                 <View className="min-w-0 flex-1 gap-1">
-                  <View className="flex-row items-center gap-2">
-                    <View className="h-7 w-7 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
-                      <Ionicons name="albums-outline" size={15} color={primary} />
+                  {!feedUnavailable ? (
+                    <View className="flex-row items-center gap-2">
+                      <View className="h-7 w-7 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
+                        <Ionicons name="albums-outline" size={15} color={primary} />
+                      </View>
+                      <Text className="min-w-0 flex-1 text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>
+                        {t('feed.title')}
+                      </Text>
                     </View>
-                    <Text className="min-w-0 flex-1 text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>
-                      {t('feed.title')}
-                    </Text>
-                  </View>
+                  ) : null}
                   <Text className="text-xs font-semibold" style={{ color: primary }} numberOfLines={1}>
                     {t('feed.greeting', { name: (displayName || '').split(' ')[0] || t('common:labels.friend') })}
                   </Text>
-                  <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={1}>
-                    {t('feed.subtitle')}
-                  </Text>
+                  {!feedUnavailable ? (
+                    <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                      {t('feed.subtitle')}
+                    </Text>
+                  ) : null}
                 </View>
                 {/*
                   🔴 The only in-app door to hashtag discovery. `feed-hashtags` — and
@@ -239,23 +257,30 @@ export default function HomeScreen() {
                   entry point (`TrendingHashtags` → /feed/hashtags). Found by the
                   2026-09-06 audit.
                 */}
-                <HeroButton
-                  isIconOnly
-                  size="sm"
-                  variant="secondary"
-                  testID="home-hashtags"
-                  className="mr-2 h-12 w-12 rounded-2xl"
-                  onPress={() => router.push('/(modals)/feed-hashtags')}
-                  accessibilityLabel={t('hashtags.title')}
-                  accessibilityRole="button"
-                  style={{
-                    backgroundColor: withAlpha(primary, 0.12),
-                    borderColor: withAlpha(primary, 0.24),
-                    borderWidth: 1,
-                  }}
-                >
-                  <Ionicons name="pricetags-outline" size={20} color={primary} />
-                </HeroButton>
+                {/*
+                  Gated on the module too: `feed-hashtags` requires M('feed') in
+                  routeRequirements, so with the feed off this button led straight to a
+                  blocked screen and bounced the member back here.
+                */}
+                {!feedUnavailable ? (
+                  <HeroButton
+                    isIconOnly
+                    size="sm"
+                    variant="secondary"
+                    testID="home-hashtags"
+                    className="mr-2 h-12 w-12 rounded-2xl"
+                    onPress={() => router.push('/(modals)/feed-hashtags')}
+                    accessibilityLabel={t('hashtags.title')}
+                    accessibilityRole="button"
+                    style={{
+                      backgroundColor: withAlpha(primary, 0.12),
+                      borderColor: withAlpha(primary, 0.24),
+                      borderWidth: 1,
+                    }}
+                  >
+                    <Ionicons name="pricetags-outline" size={20} color={primary} />
+                  </HeroButton>
+                ) : null}
                 <View className="relative h-12 w-12 items-center justify-center">
                   <HeroButton
                     isIconOnly
@@ -311,115 +336,120 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              <View className="flex-row items-center justify-between gap-3">
-                <Tabs value={feedMode} onValueChange={(value) => setFeedMode(value as FeedMode)} variant="secondary" className="flex-1">
-                  <Tabs.List>
-                    <Tabs.Indicator />
-                    {/*
-                      🔴 `h-12`: the two mode tabs measured 36dp tall on the emulator
-                      (scripts/audit-touch-targets.mjs, 420dpi), under Android's 48dp
-                      guidance and part of the same "sometimes a tap does nothing" report
-                      as the filter chips beneath them.
-                    */}
-                    <Tabs.Trigger value="ranking" className="h-12">
-                      <Ionicons name="sparkles-outline" size={15} color={primary} />
-                      <Tabs.Label>{t('mode.forYou')}</Tabs.Label>
-                    </Tabs.Trigger>
-                    <Tabs.Trigger value="recent" className="h-12">
-                      <Ionicons name="time-outline" size={15} color={primary} />
-                      <Tabs.Label>{t('mode.recent')}</Tabs.Label>
-                    </Tabs.Trigger>
-                  </Tabs.List>
-                </Tabs>
-                {filter !== 'all' || subFilter ? (
-                  <HeroButton
-                    isIconOnly
-                    size="sm"
-                    variant="ghost"
-                    className="h-12 w-12 rounded-2xl"
-                    onPress={() => {
-                      setFilter('all');
-                      setSubFilter(null);
-                    }}
-                    accessibilityLabel={t('filter.clear')}
-                    style={{ backgroundColor: withAlpha(primary, 0.08) }}
+              {/* Controls for a feed that is not there: gated with the list itself. */}
+              {!feedUnavailable ? (
+                <>
+                  <View className="flex-row items-center justify-between gap-3">
+                    <Tabs value={feedMode} onValueChange={(value) => setFeedMode(value as FeedMode)} variant="secondary" className="flex-1">
+                      <Tabs.List>
+                        <Tabs.Indicator />
+                        {/*
+                          🔴 `h-12`: the two mode tabs measured 36dp tall on the emulator
+                          (scripts/audit-touch-targets.mjs, 420dpi), under Android's 48dp
+                          guidance and part of the same "sometimes a tap does nothing" report
+                          as the filter chips beneath them.
+                        */}
+                        <Tabs.Trigger value="ranking" className="h-12">
+                          <Ionicons name="sparkles-outline" size={15} color={primary} />
+                          <Tabs.Label>{t('mode.forYou')}</Tabs.Label>
+                        </Tabs.Trigger>
+                        <Tabs.Trigger value="recent" className="h-12">
+                          <Ionicons name="time-outline" size={15} color={primary} />
+                          <Tabs.Label>{t('mode.recent')}</Tabs.Label>
+                        </Tabs.Trigger>
+                      </Tabs.List>
+                    </Tabs>
+                    {filter !== 'all' || subFilter ? (
+                      <HeroButton
+                        isIconOnly
+                        size="sm"
+                        variant="ghost"
+                        className="h-12 w-12 rounded-2xl"
+                        onPress={() => {
+                          setFilter('all');
+                          setSubFilter(null);
+                        }}
+                        accessibilityLabel={t('filter.clear')}
+                        style={{ backgroundColor: withAlpha(primary, 0.08) }}
+                      >
+                        <Ionicons name="close-circle-outline" size={20} color={primary} />
+                      </HeroButton>
+                    ) : null}
+                  </View>
+
+                  {/*
+                    The filter row scrolls, and it has to LOOK like it scrolls. It was
+                    laid out inside the Surface's padding, so the last visible chip was
+                    sliced mid-word ("Exchan") with a gap after it — which reads as broken
+                    text rather than as more content to the right.
+
+                    `-mx-4` cancels the Surface's base `p-4` so the row bleeds to the
+                    card's own edge, and `px-4` inside the content container keeps the
+                    first chip aligned with the heading above it. A chip cut at the card
+                    boundary is the conventional "scroll for more" cue.
+
+                    🔴 A gradient fade would be better still, and `heroui-native` ships
+                    `ScrollShadow` for exactly this — but it requires
+                    `LinearGradientComponent`, and `expo-linear-gradient` is not a
+                    dependency of this app. Adding a native module and a rebuild for a
+                    fade was not worth it here; revisit if that dependency arrives for
+                    another reason.
+                  */}
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    className="-mx-4"
+                    contentContainerClassName="gap-2 px-4"
                   >
-                    <Ionicons name="close-circle-outline" size={20} color={primary} />
-                  </HeroButton>
-                ) : null}
-              </View>
+                    {FILTER_OPTIONS.map((option) => (
+                      /*
+                        🔴 `h-12` — a measured minimum, not a taste.
 
-              {/*
-                The filter row scrolls, and it has to LOOK like it scrolls. It was
-                laid out inside the Surface's padding, so the last visible chip was
-                sliced mid-word ("Exchan") with a gap after it — which reads as broken
-                text rather than as more content to the right.
+                        `size="sm"` gives a chip `px-2 py-0.5`, which measured **24dp tall** on
+                        the emulator (scripts/audit-touch-targets.mjs, 420dpi). That scrapes the
+                        WCAG 2.2 AA floor of 24dp and is half Android's own 48dp guidance, so a
+                        fingertip covering ~100px had a 63px band to land in and a miss did
+                        nothing at all — the owner's "sometimes you click the filters and they
+                        do nothing". The chip keeps its small type; only the target grows.
+                      */
+                      <Chip
+                        key={option.key}
+                        size="sm"
+                        className="h-12 px-3"
+                        variant={filter === option.key ? 'secondary' : 'soft'}
+                        color={filter === option.key ? 'accent' : 'default'}
+                        onPress={() => handleFilterChange(option.key)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: filter === option.key }}
+                        accessibilityLabel={t(`filter.${option.key}`)}
+                      >
+                        <Ionicons name={option.icon} size={13} color={filter === option.key ? primary : theme.textSecondary} />
+                        <Chip.Label>{t(`filter.${option.key}`)}</Chip.Label>
+                      </Chip>
+                    ))}
+                  </ScrollView>
 
-                `-mx-4` cancels the Surface's base `p-4` so the row bleeds to the
-                card's own edge, and `px-4` inside the content container keeps the
-                first chip aligned with the heading above it. A chip cut at the card
-                boundary is the conventional "scroll for more" cue.
-
-                🔴 A gradient fade would be better still, and `heroui-native` ships
-                `ScrollShadow` for exactly this — but it requires
-                `LinearGradientComponent`, and `expo-linear-gradient` is not a
-                dependency of this app. Adding a native module and a rebuild for a
-                fade was not worth it here; revisit if that dependency arrives for
-                another reason.
-              */}
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="-mx-4"
-                contentContainerClassName="gap-2 px-4"
-              >
-                {FILTER_OPTIONS.map((option) => (
-                  /*
-                    🔴 `h-12` — a measured minimum, not a taste.
-
-                    `size="sm"` gives a chip `px-2 py-0.5`, which measured **24dp tall** on
-                    the emulator (scripts/audit-touch-targets.mjs, 420dpi). That scrapes the
-                    WCAG 2.2 AA floor of 24dp and is half Android's own 48dp guidance, so a
-                    fingertip covering ~100px had a 63px band to land in and a miss did
-                    nothing at all — the owner's "sometimes you click the filters and they
-                    do nothing". The chip keeps its small type; only the target grows.
-                  */
-                  <Chip
-                    key={option.key}
-                    size="sm"
-                    className="h-12 px-3"
-                    variant={filter === option.key ? 'secondary' : 'soft'}
-                    color={filter === option.key ? 'accent' : 'default'}
-                    onPress={() => handleFilterChange(option.key)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: filter === option.key }}
-                    accessibilityLabel={t(`filter.${option.key}`)}
-                  >
-                    <Ionicons name={option.icon} size={13} color={filter === option.key ? primary : theme.textSecondary} />
-                    <Chip.Label>{t(`filter.${option.key}`)}</Chip.Label>
-                  </Chip>
-                ))}
-              </ScrollView>
-
-              {filter === 'listings' ? (
-                <View className="flex-row flex-wrap gap-2">
-                  {LISTING_SUBFILTERS.map((option) => (
-                    <Chip
-                      key={option}
-                      size="sm"
-                      // Same measured 48dp minimum as the filter row above.
-                      className="h-12 px-3"
-                      variant={subFilter === option ? 'primary' : 'soft'}
-                      color={subFilter === option ? 'accent' : 'default'}
-                      onPress={() => setSubFilter(subFilter === option ? null : option)}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: subFilter === option }}
-                      accessibilityLabel={t(`subFilter.${option}`)}
-                    >
-                      <Chip.Label>{t(`subFilter.${option}`)}</Chip.Label>
-                    </Chip>
-                  ))}
-                </View>
+                  {filter === 'listings' ? (
+                    <View className="flex-row flex-wrap gap-2">
+                      {LISTING_SUBFILTERS.map((option) => (
+                        <Chip
+                          key={option}
+                          size="sm"
+                          // Same measured 48dp minimum as the filter row above.
+                          className="h-12 px-3"
+                          variant={subFilter === option ? 'primary' : 'soft'}
+                          color={subFilter === option ? 'accent' : 'default'}
+                          onPress={() => setSubFilter(subFilter === option ? null : option)}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: subFilter === option }}
+                          accessibilityLabel={t(`subFilter.${option}`)}
+                        >
+                          <Chip.Label>{t(`subFilter.${option}`)}</Chip.Label>
+                        </Chip>
+                      ))}
+                    </View>
+                  ) : null}
+                </>
               ) : null}
             </Surface>
 
@@ -430,7 +460,13 @@ export default function HomeScreen() {
               height and crops row-shaped content, which cost two other screens their
               contents in the same week.
             */}
-            {hasModule('feed') ? (
+            {/*
+              `!feedUnavailable`, not `hasModule('feed')`: the latter is false while the
+              tenant config is still unknown (cold start, offline first paint), so the
+              composer blinked out for every member for as long as that lasted. Unknown
+              configuration keeps the feed and its composer, as above.
+            */}
+            {!feedUnavailable ? (
               <NativePressable
                 feedback="scale"
                 testID="feed-composer-trigger"
