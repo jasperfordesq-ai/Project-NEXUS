@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useTenant } from '@/contexts/TenantContext';
+import { useTenant } from '@/contexts';
 import type { TenantFeatures, TenantModules } from '@/types/api';
 
 /** Operational pages mirror the sidebar gates; setup and recovery stay reachable. */

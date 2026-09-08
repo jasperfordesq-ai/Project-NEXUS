@@ -119,6 +119,24 @@ const authMock = vi.hoisted(() => ({
 
 vi.mock('./AuthContext', () => ({ useAuth: () => authMock.current }));
 
+/*
+ * NotificationsContext began calling `useTenant()` when module gating landed, so this
+ * suite — which renders the real provider tree without a TenantProvider — started failing
+ * with "useTenant must be used within a TenantProvider". Everything is on: this test is
+ * about realtime client ownership, not about which modules a community has switched off.
+ */
+vi.mock('./TenantContext', () => ({
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
+    isLoading: false,
+  }),
+  useFeature: vi.fn((_key: string) => true),
+  useModule: vi.fn((_key: string) => true),
+}));
+
 const toastMock = vi.hoisted(() => ({
   info: vi.fn(),
   success: vi.fn(),
