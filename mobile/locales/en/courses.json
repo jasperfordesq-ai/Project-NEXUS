@@ -282,7 +282,8 @@
     "publish_hint": "Your course is a draft. Publish it to make it visible to members and open for enrolment.",
     "url_placeholder": "Example: https://example.com/file",
     "transcript": "Transcript",
-    "transcript_hint": "A written version of what is said. Learners who cannot hear or watch the video rely on this."
+    "transcript_hint": "A written version of what is said. Learners who cannot hear or watch the video rely on this.",
+    "cohort_adding": "Adding…"
   },
   "lesson_content": {
     "text": "Text",

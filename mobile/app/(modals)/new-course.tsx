@@ -103,6 +103,11 @@ function NewCourseScreen() {
   const [sections, setSections] = useState<CourseSection[]>([]);
   const [cohorts, setCohorts] = useState<CourseCohort[]>([]);
   const [cohortName, setCohortName] = useState('');
+  const [isAddingCohort, setIsAddingCohort] = useState(false);
+
+  // What the server sent, captured once the form is populated. null until then, so a
+  // form that has not finished loading can never be judged "changed".
+  const [loadedSnapshot, setLoadedSnapshot] = useState<string | null>(null);
 
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
@@ -117,9 +122,25 @@ function NewCourseScreen() {
   /*
     🔴 A course description is long-form writing. Losing it to a stray Back is the same
     fault the listing and job forms had before the 5 September audit.
+
+    🔴 EDITING was excluded from this guard until 2026-09-08, so rewriting the
+    description of a published course and swiping back threw the rewrite away without
+    a word. The exclusion was not laziness — in edit mode every field is pre-filled
+    from the server, so the "is anything typed?" test above is true the moment the
+    course loads and would have challenged every single Back press, including one
+    where nothing had been touched. The fix is to compare against what was loaded
+    rather than against empty. `loadedSnapshot` is set once, from the server's own
+    values, at the point the form is populated.
   */
+  const editedSnapshot = JSON.stringify({
+    title, summary, description, level, visibility, enrollmentType, categoryId, creditCost, prerequisites,
+  });
+  const isDirtyForEdit = loadedSnapshot !== null && editedSnapshot !== loadedSnapshot;
+
   useUnsavedChangesGuard({
-    isDirty: !isEditing && Boolean(title.trim() || summary.trim() || description.trim()),
+    isDirty: isEditing
+      ? isDirtyForEdit
+      : Boolean(title.trim() || summary.trim() || description.trim()),
     isSaving,
     hasSaved: hasSubmitted,
     confirm,
@@ -156,6 +177,19 @@ function NewCourseScreen() {
         setSections(course.sections ?? []);
         setStatus(course.status ?? 'draft');
         setModerationStatus(course.moderation_status ?? 'pending');
+        // Built from the same values just written to state, in the same order as the
+        // comparison above, so an untouched form compares equal.
+        setLoadedSnapshot(JSON.stringify({
+          title: course.title ?? '',
+          summary: course.summary ?? '',
+          description: course.description ?? '',
+          level: course.level ?? 'beginner',
+          visibility: course.visibility === 'group' ? 'members' : (course.visibility ?? 'members'),
+          enrollmentType: course.enrollment_type ?? 'self_paced',
+          categoryId: course.category_id ? String(course.category_id) : '',
+          creditCost: String(course.credit_cost ?? 0),
+          prerequisites: Array.isArray(course.prerequisites) ? course.prerequisites.join(', ') : '',
+        }));
         return getCourseCohorts(paramCourseId)
           .then((list) => { if (isMounted) setCohorts(list ?? []); })
           .catch(() => { /* A course with no cohort list still edits fine. */ });
@@ -190,6 +224,13 @@ function NewCourseScreen() {
     };
   }
 
+  /** After a successful save the form on screen IS what the server holds. */
+  function rebaseSnapshot() {
+    setLoadedSnapshot(JSON.stringify({
+      title, summary, description, level, visibility, enrollmentType, categoryId, creditCost, prerequisites,
+    }));
+  }
+
   async function saveDetails() {
     if (!title.trim()) {
       showToast({ title: t('form.required'), variant: 'warning' });
@@ -201,6 +242,9 @@ function NewCourseScreen() {
       const saved = isEditing ? await updateCourse(courseId, payload) : await createCourse(payload);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('instructor.saved'), variant: 'success' });
+      // What is on screen is now what the server holds, so leaving straight after
+      // saving must not be challenged as unsaved work.
+      rebaseSnapshot();
       if (!isEditing && saved?.id) {
         setHasSubmitted(true);
         setCreatedCourseId(saved.id);
@@ -247,8 +291,15 @@ function NewCourseScreen() {
     }
   }
 
+  /*
+    🔴 Two taps made two cohorts. There was no in-flight guard and no disabled state, and
+    the request takes long enough on a phone connection that a second tap lands before
+    the first returns — so an instructor got "September Intake" twice and had to go and
+    delete one. Nothing in the request is idempotent, so the guard has to be here.
+  */
   async function addCohort() {
-    if (!isEditing || !cohortName.trim()) return;
+    if (isAddingCohort || !isEditing || !cohortName.trim()) return;
+    setIsAddingCohort(true);
     try {
       await createCourseCohort(courseId, { name: cohortName.trim() });
       const list = await getCourseCohorts(courseId);
@@ -257,6 +308,8 @@ function NewCourseScreen() {
       showToast({ title: t('builder.cohort_added'), variant: 'success' });
     } catch (err) {
       showToast({ title: t('builder.save_error'), description: describeApiError(err, ''), variant: 'danger' });
+    } finally {
+      setIsAddingCohort(false);
     }
   }
 
@@ -422,8 +475,16 @@ function NewCourseScreen() {
                         style={{ color: theme.text }}
                         containerClassName="mb-0"
                       />
-                      <HeroButton size="sm" variant="secondary" onPress={() => void addCohort()}>
-                        <HeroButton.Label>{t('builder.add_cohort')}</HeroButton.Label>
+                      <HeroButton
+                        size="sm"
+                        variant="secondary"
+                        isDisabled={isAddingCohort || !cohortName.trim()}
+                        testID="course-add-cohort"
+                        onPress={() => void addCohort()}
+                      >
+                        <HeroButton.Label>
+                          {isAddingCohort ? t('builder.cohort_adding') : t('builder.add_cohort')}
+                        </HeroButton.Label>
                       </HeroButton>
                     </HeroCard.Body>
                   </HeroCard>

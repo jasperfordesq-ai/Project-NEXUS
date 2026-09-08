@@ -282,7 +282,8 @@
     "publish_hint": "Ihr Kurs ist ein Entwurf. Veröffentlichen Sie es, um es für Mitglieder sichtbar zu machen und für die Anmeldung freizugeben.",
     "url_placeholder": "Beispiel: https://example.com/file",
     "transcript": "Transkript",
-    "transcript_hint": "Eine schriftliche Fassung des Gesagten. Lernende, die das Video nicht hören oder sehen können, sind darauf angewiesen."
+    "transcript_hint": "Eine schriftliche Fassung des Gesagten. Lernende, die das Video nicht hören oder sehen können, sind darauf angewiesen.",
+    "cohort_adding": "Wird hinzugefügt …"
   },
   "lesson_content": {
     "text": "Text",

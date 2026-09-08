@@ -294,7 +294,8 @@
     "publish_hint": "Is dréacht é do chúrsa. Foilsigh é le go mbeidh sé infheicthe ag baill agus oscailte le haghaidh clárúcháin.",
     "url_placeholder": "Sampla: https://example.com/file",
     "transcript": "Tras-scríbhinn",
-    "transcript_hint": "Leagan scríofa de na rudaí a deirtear. Bíonn foghlaimeoirí nach féidir leo an físeán a chloisteáil nó a fheiceáil ag brath air seo."
+    "transcript_hint": "Leagan scríofa de na rudaí a deirtear. Bíonn foghlaimeoirí nach féidir leo an físeán a chloisteáil nó a fheiceáil ag brath air seo.",
+    "cohort_adding": "Á chur leis…"
   },
   "lesson_content": {
     "text": "Téacs",

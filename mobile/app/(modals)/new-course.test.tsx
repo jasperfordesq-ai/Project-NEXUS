@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateCourse = jest.fn();
 const mockUpdateCourse = jest.fn();
@@ -30,6 +30,19 @@ jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => mockSearchParams,
 }));
+
+/*
+  The guard's own behaviour is covered by the hook's tests. What the cases below check
+  is the ANSWER this screen gives it — "is there unsaved work?" — because that is the
+  part that was wrong: edit mode always answered no.
+*/
+const guardCalls: { isDirty: boolean }[] = [];
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
+  useUnsavedChangesGuard: (options: { isDirty: boolean }) => { guardCalls.push(options); },
+}));
+
+/** What the screen last told the guard. */
+const lastIsDirty = () => guardCalls[guardCalls.length - 1]?.isDirty;
 
 // The unsaved-changes guard is inert here; it has its own coverage in the hook's tests.
 jest.mock('@/components/ui/useConfirm', () => ({
@@ -100,8 +113,10 @@ jest.mock('heroui-native', () => {
   const ReactLib = require('react');
   const { Pressable, Text, TextInput, View } = require('react-native');
 
-  const Button = ({ children, onPress, isDisabled }: { children: React.ReactNode; onPress?: () => void; isDisabled?: boolean }) => (
-    <Pressable onPress={isDisabled ? undefined : onPress}><View>{children}</View></Pressable>
+  // testID is forwarded: a disabled button renders the same label text, so a case about
+  // double-tapping cannot address it by label alone.
+  const Button = ({ children, onPress, isDisabled, testID }: { children: React.ReactNode; onPress?: () => void; isDisabled?: boolean; testID?: string }) => (
+    <Pressable testID={testID} onPress={isDisabled ? undefined : onPress}><View>{children}</View></Pressable>
   );
   Button.Label = ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>;
 
@@ -334,5 +349,71 @@ describe('NewCourseRoute', () => {
     await waitFor(() => expect(getByDisplayValue('Repair skills')).toBeTruthy());
     expect(getByText('Course builder')).toBeTruthy();
     expect(queryByText('Cohorts')).toBeNull();
+  });
+
+  /*
+    🔴 Editing a course was excluded from the unsaved-changes guard, so rewriting the
+    description of a published course and swiping back threw the rewrite away without a
+    word. The exclusion existed because in edit mode every field is pre-filled, so the
+    create-mode test ("is anything typed?") is true from the moment it loads and would
+    have challenged every Back press. The screen now compares against what was loaded.
+    Audit 2026-09-07, fixed 2026-09-08.
+  */
+  describe('unsaved work in edit mode', () => {
+    it('does not treat a freshly loaded course as changed', async () => {
+      mockSearchParams = { id: '42' };
+      const { getByDisplayValue } = render(<NewCourseRoute />);
+
+      await waitFor(() => expect(getByDisplayValue('Repair skills')).toBeTruthy());
+
+      expect(lastIsDirty()).toBe(false);
+    });
+
+    it('treats an edited field as unsaved work', async () => {
+      mockSearchParams = { id: '42' };
+      const { getByDisplayValue, getByLabelText } = render(<NewCourseRoute />);
+      await waitFor(() => expect(getByDisplayValue('Repair skills')).toBeTruthy());
+
+      fireEvent.changeText(getByLabelText('Title'), 'Repair skills II');
+
+      await waitFor(() => expect(lastIsDirty()).toBe(true));
+    });
+
+    it('stops treating it as unsaved once it has been saved', async () => {
+      mockSearchParams = { id: '42' };
+      const { getByDisplayValue, getByLabelText, getByText } = render(<NewCourseRoute />);
+      await waitFor(() => expect(getByDisplayValue('Repair skills')).toBeTruthy());
+
+      fireEvent.changeText(getByLabelText('Title'), 'Repair skills II');
+      await waitFor(() => expect(lastIsDirty()).toBe(true));
+
+      fireEvent.press(getByText('Save'));
+
+      await waitFor(() => expect(mockUpdateCourse).toHaveBeenCalled());
+      await waitFor(() => expect(lastIsDirty()).toBe(false));
+    });
+  });
+
+  /*
+    🔴 Two taps made two cohorts. The request is not idempotent and takes long enough on
+    a phone connection that the second tap lands before the first returns, so an
+    instructor got "September Intake" twice and had to delete one.
+  */
+  it('creates one cohort however many times the button is pressed', async () => {
+    mockSearchParams = { id: '42' };
+    let release: (value: unknown) => void = () => {};
+    mockCreateCourseCohort.mockImplementation(() => new Promise((resolve) => { release = resolve; }));
+
+    const { getByDisplayValue, getByLabelText, getByTestId } = render(<NewCourseRoute />);
+    await waitFor(() => expect(getByDisplayValue('Repair skills')).toBeTruthy());
+
+    fireEvent.changeText(getByLabelText('Cohort name'), 'September Intake');
+    fireEvent.press(getByTestId('course-add-cohort'));
+    fireEvent.press(getByTestId('course-add-cohort'));
+    fireEvent.press(getByTestId('course-add-cohort'));
+
+    expect(mockCreateCourseCohort).toHaveBeenCalledTimes(1);
+
+    await act(async () => { release({ id: 1, name: 'September Intake' }); });
   });
 });

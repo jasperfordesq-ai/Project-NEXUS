@@ -286,7 +286,8 @@
     "publish_hint": "Seu curso é um rascunho. Publique-o para torná-lo visível aos membros e aberto para inscrição.",
     "url_placeholder": "Exemplo: https://example.com/file",
     "transcript": "Transcrição",
-    "transcript_hint": "Uma versão escrita do que é dito. Os alunos que não conseguem ouvir ou ver o vídeo dependem disto."
+    "transcript_hint": "Uma versão escrita do que é dito. Os alunos que não conseguem ouvir ou ver o vídeo dependem disto.",
+    "cohort_adding": "A adicionar…"
   },
   "lesson_content": {
     "text": "Texto",

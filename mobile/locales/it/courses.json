@@ -286,7 +286,8 @@
     "publish_hint": "Il tuo corso è una bozza. Pubblicalo per renderlo visibile ai membri e aprire le iscrizioni.",
     "url_placeholder": "Esempio: https://example.com/file",
     "transcript": "Trascrizione",
-    "transcript_hint": "Una versione scritta di ciò che viene detto. Gli studenti che non possono sentire o vedere il video ne hanno bisogno."
+    "transcript_hint": "Una versione scritta di ciò che viene detto. Gli studenti che non possono sentire o vedere il video ne hanno bisogno.",
+    "cohort_adding": "Aggiunta in corso…"
   },
   "lesson_content": {
     "text": "Testo",
