@@ -6,7 +6,15 @@
 jest.mock('@/lib/api/client', () => ({
   ApiResponseError: class ApiResponseError extends Error {
     status!: number;
-    constructor(status: number, message: string) { super(message); this.status = status; this.name = 'ApiResponseError'; }
+    // `code` mirrors the real class in lib/api/client.ts. It was missing from this
+    // fake, which is part of why nothing noticed that the hook dropped it.
+    code?: string;
+    constructor(status: number, message: string, _errors?: unknown, code?: string) {
+      super(message);
+      this.status = status;
+      this.code = code;
+      this.name = 'ApiResponseError';
+    }
   },
 }));
 
@@ -252,6 +260,76 @@ describe('usePaginatedApi', () => {
 
     // Still only the initial call — loadMore is a no-op
     expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// errorStatus / errorCode
+//
+// A screen cannot branch on `error`: that is the server's sentence in the
+// member's own language. Every screen that tried ended up matching English words
+// and behaving differently in the other six locales. These pin the machine-
+// readable pair that replaces that.
+// ---------------------------------------------------------------------------
+
+describe('usePaginatedApi — machine-readable failure detail', () => {
+  it('reports the status and the code the API sent', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(
+        new ApiResponseError(403, 'Federation feature disabled for this tenant', undefined, 'FORBIDDEN'),
+      );
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.error).toBe('Federation feature disabled for this tenant');
+    expect(result.current.errorStatus).toBe(403);
+    expect(result.current.errorCode).toBe('FORBIDDEN');
+    // A 403 is not retryable, so the hook must not have burned its one retry on it.
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('still reports the status when the API sent no code', async () => {
+    const fetchFn = jest.fn().mockRejectedValue(new ApiResponseError(404, 'Not found'));
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.errorStatus).toBe(404);
+    expect(result.current.errorCode).toBeNull();
+  });
+
+  it('reports no status or code for a dropped connection', async () => {
+    const fetchFn = jest.fn().mockRejectedValue(new TypeError('Network request failed'));
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+
+    // One automatic retry, then the generic message.
+    await waitFor(() => expect(result.current.error).not.toBeNull(), { timeout: 8000 });
+
+    expect(result.current.errorStatus).toBeNull();
+    expect(result.current.errorCode).toBeNull();
+  });
+
+  it('clears the status and code once a later attempt succeeds', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValueOnce(new ApiResponseError(403, 'Refused', undefined, 'FORBIDDEN'))
+      .mockResolvedValue(makeResponse(['a'], null, false));
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+
+    await waitFor(() => expect(result.current.errorCode).toBe('FORBIDDEN'));
+
+    act(() => { result.current.refresh(); });
+
+    await waitFor(() => expect(result.current.items).toEqual(['a']));
+    expect(result.current.error).toBeNull();
+    expect(result.current.errorStatus).toBeNull();
+    expect(result.current.errorCode).toBeNull();
   });
 });
 

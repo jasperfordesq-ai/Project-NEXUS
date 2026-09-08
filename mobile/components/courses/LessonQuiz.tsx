@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useConfirm } from '@/components/ui/useConfirm';
 import {
   getCourseQuiz,
   submitCourseQuizAttempt,
@@ -54,6 +55,18 @@ function isChoiceSelected(answer: string | string[] | undefined, optionId: strin
   return answer === optionId;
 }
 
+/**
+ * Whether a question has actually been answered.
+ *
+ * An untouched multi-choice question can still hold `[]`, and a free-text one can
+ * hold whitespace the learner typed and deleted. Both used to count as answered,
+ * which is part of why the submit button looked live on a blank quiz.
+ */
+function hasAnswer(answer: string | string[] | undefined): boolean {
+  if (Array.isArray(answer)) return answer.length > 0;
+  return typeof answer === 'string' && answer.trim().length > 0;
+}
+
 export default function LessonQuiz({ quizId }: { quizId: number }) {
   const { t } = useTranslation(['courses', 'common']);
   const theme = useTheme();
@@ -62,6 +75,7 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
   const [result, setResult] = useState<QuizAttemptResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   const quizState = useApi(() => getCourseQuiz(quizId), [quizId], { enabled: quizId > 0 });
   const quiz = quizState.data as CourseQuiz | null;
@@ -81,6 +95,11 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
     });
   }, []);
 
+  const answeredCount = useMemo(
+    () => questions.filter((question) => hasAnswer(answers[String(question.id)])).length,
+    [answers, questions],
+  );
+
   const submit = useCallback(async () => {
     if (submitting) return;
     setSubmitting(true);
@@ -96,6 +115,41 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
       setSubmitting(false);
     }
   }, [answers, quizId, submitting, t]);
+
+  /**
+   * 🔴 An attempt is a limited resource, and this button used to spend one on
+   * anything — including a completely empty quiz. A stray tap while scrolling, or
+   * pressing Submit before reading the questions, sent `{}`, scored 0%, and burned
+   * one of (often) three tries. The learner had no way to get it back.
+   *
+   * So: nothing to submit is refused outright, and a partly-finished quiz asks
+   * first and says plainly what it will cost. A complete quiz submits as before —
+   * the point is to stop accidents, not to add a step to normal use.
+   */
+  const requestSubmit = useCallback(() => {
+    if (submitting || answeredCount === 0) return;
+
+    if (answeredCount < questions.length) {
+      confirm({
+        title: t('quiz.incomplete_title'),
+        message: quiz?.max_attempts
+          ? t('quiz.incomplete_message_attempts', {
+              answered: answeredCount,
+              total: questions.length,
+              max: quiz.max_attempts,
+            })
+          : t('quiz.incomplete_message', { answered: answeredCount, total: questions.length }),
+        confirmLabel: t('quiz.incomplete_confirm'),
+        cancelLabel: t('common:buttons.cancel'),
+        variant: 'primary',
+        confirmTestID: 'quiz-submit-incomplete-confirm',
+        onConfirm: () => submit(),
+      });
+      return;
+    }
+
+    void submit();
+  }, [answeredCount, confirm, questions.length, quiz?.max_attempts, submit, submitting, t]);
 
   if (quizState.isLoading) {
     return <View className="items-center py-8"><LoadingSpinner /></View>;
@@ -228,7 +282,17 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
         <Text testID="quiz-error" style={{ color: theme.error }}>{submitError}</Text>
       ) : null}
 
-      <HeroButton isDisabled={submitting || questions.length === 0} onPress={() => void submit()}>
+      {questions.length > 0 && answeredCount === 0 ? (
+        <Text testID="quiz-nothing-answered" className="text-sm" style={{ color: theme.textSecondary }}>
+          {t('quiz.nothing_answered')}
+        </Text>
+      ) : null}
+
+      <HeroButton
+        isDisabled={submitting || questions.length === 0 || answeredCount === 0}
+        testID="quiz-submit"
+        onPress={requestSubmit}
+      >
         <HeroButton.Label>
           {submitting
             ? t('quiz.submitting')
@@ -237,6 +301,7 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
               : t('quiz.submit')}
         </HeroButton.Label>
       </HeroButton>
+      {confirmDialog}
     </View>
   );
 }

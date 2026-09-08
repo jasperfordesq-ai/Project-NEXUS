@@ -91,7 +91,12 @@
     "answer_placeholder": "Clóscríobh do fhreagra",
     "pass_mark": "Marc pasála: {{percent}}%",
     "true": "Fíor",
-    "false": "Bréagach"
+    "false": "Bréagach",
+    "nothing_answered": "Freagair ceist amháin ar a laghad sula seolann tú isteach é. Úsáideann gach seoladh ceann de na hiarrachtaí atá agat.",
+    "incomplete_title": "Tráth na gCeist neamhchríochnaithe a sheoladh isteach?",
+    "incomplete_message": "D’fhreagair tú {{answered}} as {{total}} ceist. Má sheolann tú isteach anois é, úsáidfear ceann de na hiarrachtaí atá agat.",
+    "incomplete_message_attempts": "D’fhreagair tú {{answered}} as {{total}} ceist. Má sheolann tú isteach anois é, úsáidfear ceann de na {{max}} iarracht atá agat.",
+    "incomplete_confirm": "Seol isteach mar sin féin"
   },
   "my_learning": {
     "title": "Mo chuid foghlama",

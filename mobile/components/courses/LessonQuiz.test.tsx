@@ -25,6 +25,17 @@ jest.mock('@/lib/api/courses', () => ({
   submitCourseQuizAttempt: jest.fn(),
 }));
 
+// 🔴 This mock records the question and does NOT answer it. A confirm mock that
+// runs `onConfirm` itself makes every confirmation on the screen invisible: the
+// tests still pass with the dialog deleted, which is exactly how a one-tap money
+// path survived a full suite on member-profile. Each test below runs `onConfirm`
+// by hand, so "was the learner asked?" and "what happens if they say yes?" stay
+// separate questions.
+const mockConfirm = jest.fn<void, [{ title: string; message?: string; onConfirm: () => void }]>();
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...(args as [never])), confirmDialog: null }),
+}));
+
 import LessonQuiz from './LessonQuiz';
 import { getCourseQuiz, submitCourseQuizAttempt } from '@/lib/api/courses';
 import { ApiResponseError } from '@/lib/api/client';
@@ -84,11 +95,15 @@ describe('LessonQuiz', () => {
   });
 
   it('replaces a selection on a single-choice question rather than accumulating', async () => {
-    const { getByText } = render(<LessonQuiz quizId={44} />);
+    const { getByLabelText, getByText } = render(<LessonQuiz quizId={44} />);
     await waitFor(() => expect(getByText('An hour of help')).toBeTruthy());
 
     fireEvent.press(getByText('An hour of help'));
     fireEvent.press(getByText('A discount'));
+    // Answer the rest so this stays a test about single-choice replacement rather
+    // than about the unfinished-quiz confirmation.
+    fireEvent.press(getByText('Events'));
+    fireEvent.changeText(getByLabelText('Describe one exchange.'), 'A repair.');
     fireEvent.press(getByText('quiz.submit'));
 
     await waitFor(() => expect(submitCourseQuizAttempt).toHaveBeenCalledWith(
@@ -97,9 +112,12 @@ describe('LessonQuiz', () => {
   });
 
   it('shows the score once graded', async () => {
-    const { getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
+    const { getByLabelText, getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
     await waitFor(() => expect(getByText('quiz.submit')).toBeTruthy());
 
+    fireEvent.press(getByText('An hour of help'));
+    fireEvent.press(getByText('Events'));
+    fireEvent.changeText(getByLabelText('Describe one exchange.'), 'A repair.');
     await act(async () => { fireEvent.press(getByText('quiz.submit')); });
 
     expect(getByTestId('quiz-result')).toHaveTextContent(/quiz\.passed/);
@@ -112,9 +130,12 @@ describe('LessonQuiz', () => {
       score_percent: 0, passed: false, needs_review: true, attempt_id: 6,
     });
 
-    const { getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
+    const { getByLabelText, getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
     await waitFor(() => expect(getByText('quiz.submit')).toBeTruthy());
 
+    fireEvent.press(getByText('An hour of help'));
+    fireEvent.press(getByText('Events'));
+    fireEvent.changeText(getByLabelText('Describe one exchange.'), 'A repair.');
     await act(async () => { fireEvent.press(getByText('quiz.submit')); });
 
     expect(getByTestId('quiz-result')).toHaveTextContent('quiz.pending_review');
@@ -128,9 +149,12 @@ describe('LessonQuiz', () => {
       new ApiResponseError(422, 'You have used all your attempts.'),
     );
 
-    const { getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
+    const { getByLabelText, getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
     await waitFor(() => expect(getByText('quiz.submit')).toBeTruthy());
 
+    fireEvent.press(getByText('An hour of help'));
+    fireEvent.press(getByText('Events'));
+    fireEvent.changeText(getByLabelText('Describe one exchange.'), 'A repair.');
     await act(async () => { fireEvent.press(getByText('quiz.submit')); });
 
     expect(getByTestId('quiz-error')).toHaveTextContent('You have used all your attempts.');
@@ -144,5 +168,85 @@ describe('LessonQuiz', () => {
     await waitFor(() => expect(getByText('This lesson is locked.')).toBeTruthy());
     fireEvent.press(getByText('common:buttons.retry'));
     await waitFor(() => expect(jest.mocked(getCourseQuiz).mock.calls.length).toBeGreaterThan(1));
+  });
+
+  // ─── An attempt is a limited resource ──────────────────────────────────────
+  //
+  // 🔴 Submit used to send whatever was in the answer map, including nothing at
+  // all. One stray tap scored 0% and spent one of (often) three tries, with no
+  // way to get it back. Audit 2026-09-07, still open until 2026-09-08.
+
+  it('refuses to spend an attempt on a quiz with nothing answered', async () => {
+    const { getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
+    await waitFor(() => expect(getByText('quiz.submit')).toBeTruthy());
+
+    await act(async () => { fireEvent.press(getByTestId('quiz-submit')); });
+
+    expect(submitCourseQuizAttempt).not.toHaveBeenCalled();
+    expect(mockConfirm).not.toHaveBeenCalled();
+    // …and says why, rather than leaving a dead button with no explanation.
+    expect(getByTestId('quiz-nothing-answered')).toHaveTextContent('quiz.nothing_answered');
+  });
+
+  it('does not count whitespace or an emptied multi-choice as an answer', async () => {
+    const { getByLabelText, getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
+    await waitFor(() => expect(getByText('Events')).toBeTruthy());
+
+    // Tick then untick: the answer map now holds [], which is not an answer.
+    fireEvent.press(getByText('Events'));
+    fireEvent.press(getByText('Events'));
+    fireEvent.changeText(getByLabelText('Describe one exchange.'), '   ');
+
+    await act(async () => { fireEvent.press(getByTestId('quiz-submit')); });
+
+    expect(submitCourseQuizAttempt).not.toHaveBeenCalled();
+    expect(getByTestId('quiz-nothing-answered')).toBeTruthy();
+  });
+
+  it('asks before spending an attempt on a partly answered quiz, and says what it costs', async () => {
+    jest.mocked(getCourseQuiz).mockResolvedValue({ ...QUIZ, max_attempts: 3 } as never);
+
+    const { getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
+    await waitFor(() => expect(getByText('An hour of help')).toBeTruthy());
+
+    fireEvent.press(getByText('An hour of help'));
+    await act(async () => { fireEvent.press(getByTestId('quiz-submit')); });
+
+    // Asked, not sent.
+    expect(submitCourseQuizAttempt).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'quiz.incomplete_title',
+      message: 'quiz.incomplete_message_attempts',
+    }));
+
+    // Saying yes sends it.
+    await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
+    expect(submitCourseQuizAttempt).toHaveBeenCalledWith(44, { '1': 'a' });
+  });
+
+  it('leaves the attempt unspent when the learner backs out', async () => {
+    const { getByTestId, getByText } = render(<LessonQuiz quizId={44} />);
+    await waitFor(() => expect(getByText('An hour of help')).toBeTruthy());
+
+    fireEvent.press(getByText('An hour of help'));
+    await act(async () => { fireEvent.press(getByTestId('quiz-submit')); });
+
+    expect(mockConfirm).toHaveBeenCalled();
+    // The learner never confirms — nothing must reach the server.
+    expect(submitCourseQuizAttempt).not.toHaveBeenCalled();
+  });
+
+  it('does not interrupt a learner who answered everything', async () => {
+    const { getByLabelText, getByText } = render(<LessonQuiz quizId={44} />);
+    await waitFor(() => expect(getByText('An hour of help')).toBeTruthy());
+
+    fireEvent.press(getByText('An hour of help'));
+    fireEvent.press(getByText('Events'));
+    fireEvent.changeText(getByLabelText('Describe one exchange.'), 'A repair.');
+
+    await act(async () => { fireEvent.press(getByText('quiz.submit')); });
+
+    expect(mockConfirm).not.toHaveBeenCalled();
+    expect(submitCourseQuizAttempt).toHaveBeenCalled();
   });
 });

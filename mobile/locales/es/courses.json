@@ -87,7 +87,12 @@
     "answer_placeholder": "Escribe tu respuesta",
     "pass_mark": "Nota de aprobado: {{percent}}%",
     "true": "Verdadero",
-    "false": "Falso"
+    "false": "Falso",
+    "nothing_answered": "Responde al menos una pregunta antes de enviar. Cada envío consume uno de tus intentos.",
+    "incomplete_title": "¿Enviar un cuestionario sin terminar?",
+    "incomplete_message": "Has respondido {{answered}} de {{total}} preguntas. Si envías ahora, se consumirá uno de tus intentos.",
+    "incomplete_message_attempts": "Has respondido {{answered}} de {{total}} preguntas. Si envías ahora, se consumirá uno de tus {{max}} intentos.",
+    "incomplete_confirm": "Enviar de todos modos"
   },
   "my_learning": {
     "title": "mi aprendizaje",

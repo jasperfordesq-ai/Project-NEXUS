@@ -36,6 +36,7 @@ import {
   type FederationSettings,
 } from '@/lib/api/federation';
 import { useApi } from '@/lib/hooks/useApi';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -145,8 +146,64 @@ function externalTenantIdFromFederatedId(id?: number | string | null): string | 
   return partnerId ? `ext-${partnerId}` : null;
 }
 
-function isFeatureDisabledError(error: string | null) {
-  return !!error && /feature disabled|disabled for this tenant|cross-tenant/i.test(error);
+/**
+ * How the directory was refused, if it was.
+ *
+ * 🔴 Decide this from the machine code the API sends, never from the sentence.
+ * Until 2026-09-08 this file asked `/feature disabled|disabled for this tenant|
+ * cross-tenant/i.test(error)` — a regular expression over `error`, which is the
+ * server's message rendered in the MEMBER'S OWN LANGUAGE. In English it matched
+ * and the member got an explanation. In German the same refusal reads "Die
+ * Verbundfunktion ist für diesen Mandanten deaktiviert", matches nothing, and
+ * fell through to the generic error card with a Try again button — a button that
+ * could never work, because nothing about a switched-off feature changes when you
+ * press it. Irish, Spanish, French, Italian and Portuguese members were in the
+ * same position. It also never matched "You must opt in to federation first",
+ * so even an English member who simply had not joined yet got the dead Retry.
+ *
+ * `FederationV2Controller` answers every one of these with `{errors:[{code,…}]}`,
+ * and `lib/api/client.ts` already keeps the code — the paginated hook just was not
+ * passing it on until now.
+ */
+type RefusalKind = 'featureDisabled' | 'optInRequired';
+
+/** The community (or its administrator) has this switched off. Nothing the member can do here. */
+const FEATURE_DISABLED_CODES = new Set([
+  'FORBIDDEN',
+  'FEATURE_DISABLED',
+  'FEDERATION_NOT_AVAILABLE',
+  'MEMBERS_NOT_ALLOWED',
+  'LISTINGS_NOT_ALLOWED',
+  'GROUPS_NOT_ALLOWED',
+  'EVENTS_NOT_ALLOWED',
+  'MESSAGING_NOT_ALLOWED',
+  'MESSAGING_DISABLED',
+  'SENDER_MESSAGING_DISABLED',
+]);
+
+/** Federation works here; this member has not joined it yet. There IS something they can do. */
+const OPT_IN_REQUIRED_CODES = new Set(['FEDERATION_NOT_ENABLED', 'SENDER_NOT_OPTED_IN']);
+
+function classifyRefusal(
+  errorCode: string | null,
+  errorStatus: number | null,
+  error: string | null,
+): RefusalKind | null {
+  if (errorCode && OPT_IN_REQUIRED_CODES.has(errorCode)) return 'optInRequired';
+  if (errorCode && FEATURE_DISABLED_CODES.has(errorCode)) return 'featureDisabled';
+
+  // No code, but the server did answer 403. A directory read is not a write and
+  // carries no preconditions, so a refusal is a refusal in any language — and
+  // offering Retry for one is worse than saying plainly that it is unavailable.
+  if (errorStatus === 403) return 'featureDisabled';
+
+  // Last resort, for a server old enough to send no machine code at all. English
+  // only by nature, which is exactly why it is the fallback and not the test.
+  if (error && /feature disabled|disabled for this tenant|cross-tenant/i.test(error)) {
+    return 'featureDisabled';
+  }
+
+  return null;
 }
 
 function getMessagePartner(message: FederatedMessage) {
@@ -310,6 +367,47 @@ function FeatureUnavailableCard({
         </View>
         <HeroButton variant="secondary" onPress={() => router.replace('/(modals)/federation')}>
           <Ionicons name="git-network-outline" size={16} color={primary} />
+          <HeroButton.Label>{t('directory.backToHub')}</HeroButton.Label>
+        </HeroButton>
+      </HeroCard.Body>
+    </HeroCard>
+  );
+}
+
+/**
+ * Shown when federation is available here but this member has not joined it.
+ *
+ * Deliberately NOT the same card as `FeatureUnavailableCard`: that one says the
+ * capability is switched off, which is untrue here and leaves the member with
+ * nothing to do. This one names the actual remedy and opens the setup wizard.
+ */
+function OptInRequiredCard({
+  t,
+  theme,
+  primary,
+}: {
+  t: (key: string, opts?: Record<string, unknown>) => string;
+  theme: ReturnType<typeof useTheme>;
+  primary: string;
+}) {
+  return (
+    <HeroCard className="rounded-panel p-0">
+      <HeroCard.Body className="items-center gap-4 p-6">
+        <View className="size-14 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
+          <Ionicons name="git-network-outline" size={28} color={primary} />
+        </View>
+        <View className="gap-2">
+          <Text className="text-center text-lg font-bold" style={{ color: theme.text }}>
+            {t('directory.optIn.title')}
+          </Text>
+          <Text className="text-center text-sm leading-5" style={{ color: theme.textSecondary }}>
+            {t('directory.optIn.description')}
+          </Text>
+        </View>
+        <HeroButton onPress={() => router.push('/(modals)/federation-onboarding')}>
+          <HeroButton.Label>{t('directory.optIn.action')}</HeroButton.Label>
+        </HeroButton>
+        <HeroButton variant="secondary" onPress={() => router.replace('/(modals)/federation')}>
           <HeroButton.Label>{t('directory.backToHub')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>
@@ -1826,16 +1924,26 @@ export default function FederationDirectoryScreen({ mode }: { mode: DirectoryMod
     setActiveEvent(null);
   }, [mode, params.partner_id, params.q]);
 
+  // 🔴 The two free-text filters are debounced; the box itself stays instant.
+  // Typing "gardening" used to send nine federated directory requests, each of
+  // which fans out across partner communities, and the answer to the eighth could
+  // arrive after the ninth. `federation/members|listings|groups|events` are rate
+  // limited to 60 a minute, so a member searching properly could exhaust their own
+  // allowance and start getting refusals. Same fix as resources/ideation
+  // (audit 2026-09-07, F/F-14); this screen was the one left over.
+  const debouncedSearch = useDebounce(search, 350);
+  const debouncedSkills = useDebounce(skills, 350);
+
   const queryParams = useMemo(() => {
     const result: Record<string, string> = { per_page: '30' };
-    if (search.trim()) result.q = search.trim();
+    if (debouncedSearch.trim()) result.q = debouncedSearch.trim();
     if (selectedPartner) result.partner_id = selectedPartner;
     if (mode === 'members' && serviceReach !== 'all') result.service_reach = serviceReach;
-    if (mode === 'members' && skills.trim()) result.skills = skills.trim();
+    if (mode === 'members' && debouncedSkills.trim()) result.skills = debouncedSkills.trim();
     if (mode === 'listings' && listingType !== 'all') result.type = listingType;
     if (mode === 'events' && upcomingOnly) result.upcoming = 'true';
     return result;
-  }, [listingType, mode, search, selectedPartner, serviceReach, skills, upcomingOnly]);
+  }, [listingType, mode, debouncedSearch, selectedPartner, serviceReach, debouncedSkills, upcomingOnly]);
 
   const { data: partnerFilterData } = useApi<unknown>(
     () => getFederationPartners(null),
@@ -1865,7 +1973,14 @@ export default function FederationDirectoryScreen({ mode }: { mode: DirectoryMod
     [mode, JSON.stringify(queryParams)],
   );
 
-  const { data: messageData, isLoading: isLoadingMessages, error: messageError, refresh: refreshMessages } = useApi<unknown>(
+  const {
+    data: messageData,
+    isLoading: isLoadingMessages,
+    error: messageError,
+    errorStatus: messageErrorStatus,
+    errorCode: messageErrorCode,
+    refresh: refreshMessages,
+  } = useApi<unknown>(
     () => getFederationMessages(),
     [mode],
     { enabled: mode === 'messages' },
@@ -1879,6 +1994,8 @@ export default function FederationDirectoryScreen({ mode }: { mode: DirectoryMod
     : remoteItems;
   const isLoading = mode === 'messages' ? isLoadingMessages : directoryPage.isLoading;
   const error = mode === 'messages' ? messageError : directoryPage.error;
+  const errorStatus = mode === 'messages' ? messageErrorStatus : directoryPage.errorStatus;
+  const errorCode = mode === 'messages' ? messageErrorCode : directoryPage.errorCode;
   const refresh = mode === 'messages' ? refreshMessages : directoryPage.refresh;
   const hasMore = mode !== 'messages' && mode !== 'settings' && directoryPage.hasMore;
   const isLoadingMore = mode !== 'messages' && mode !== 'settings' && directoryPage.isLoadingMore;
@@ -1892,7 +2009,7 @@ export default function FederationDirectoryScreen({ mode }: { mode: DirectoryMod
   );
   const activeThread = useMemo(() => visibleMessageThreads.find((thread) => thread.key === activeThreadKey) ?? null, [visibleMessageThreads, activeThreadKey]);
   const showSearch = (mode === 'members' || mode === 'listings' || mode === 'groups' || mode === 'events') && !activeListing && !activeGroup && !activeEvent;
-  const disabledFeature = isFeatureDisabledError(error);
+  const refusal = classifyRefusal(errorCode, errorStatus, error);
   const isComposeRequested = mode === 'messages' && params.compose === 'true';
   const isEmpty = mode === 'messages' ? visibleMessageThreads.length === 0 : items.length === 0;
 
@@ -2083,7 +2200,9 @@ export default function FederationDirectoryScreen({ mode }: { mode: DirectoryMod
             />
           ) : isLoading ? (
             <View className="items-center py-8"><Spinner size="lg" /></View>
-          ) : disabledFeature ? (
+          ) : refusal === 'optInRequired' ? (
+            <OptInRequiredCard t={t} theme={theme} primary={primary} />
+          ) : refusal === 'featureDisabled' ? (
             <FeatureUnavailableCard mode={mode} t={t} theme={theme} primary={primary} />
           ) : error ? (
             <Surface variant="secondary" className="items-center gap-3 rounded-panel p-5">

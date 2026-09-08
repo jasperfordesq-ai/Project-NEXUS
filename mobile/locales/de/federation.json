@@ -142,6 +142,11 @@
   "directory": {
     "tryAgain": "Erneut versuchen",
     "backToHub": "Zurück zum Föderations-Hub",
+    "optIn": {
+      "title": "Sie nehmen noch nicht an der Föderation teil",
+      "description": "Die Föderation ist in Ihrer Community verfügbar, Ihr Profil gehört aber noch nicht dazu. Richten Sie sie ein, um Partner-Communities zu durchsuchen und von deren Mitgliedern gefunden zu werden.",
+      "action": "Föderation einrichten"
+    },
     "resultsCount": "{{count}} Ergebnis",
     "resultsCount_one": "{{count}} Ergebnis",
     "resultsCount_other": "{{count}} Ergebnisse",

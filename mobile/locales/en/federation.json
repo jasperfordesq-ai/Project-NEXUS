@@ -142,6 +142,11 @@
   "directory": {
     "tryAgain": "Try again",
     "backToHub": "Back to federation hub",
+    "optIn": {
+      "title": "You have not joined federation yet",
+      "description": "Federation is available in your community, but your profile is not part of it yet. Set it up to browse partner communities and be found by their members.",
+      "action": "Set up federation"
+    },
     "resultsCount": "{{count}} result",
     "resultsCount_one": "{{count}} result",
     "resultsCount_other": "{{count}} results",

@@ -87,7 +87,12 @@
     "answer_placeholder": "Escreva a sua resposta",
     "pass_mark": "Nota mínima: {{percent}}%",
     "true": "Verdadeiro",
-    "false": "Falso"
+    "false": "Falso",
+    "nothing_answered": "Responda pelo menos a uma pergunta antes de enviar. Cada envio consome uma das suas tentativas.",
+    "incomplete_title": "Enviar um questionário incompleto?",
+    "incomplete_message": "Respondeu a {{answered}} de {{total}} perguntas. Se enviar agora, será consumida uma das suas tentativas.",
+    "incomplete_message_attempts": "Respondeu a {{answered}} de {{total}} perguntas. Se enviar agora, será consumida uma das suas {{max}} tentativas.",
+    "incomplete_confirm": "Enviar mesmo assim"
   },
   "my_learning": {
     "title": "Meu aprendizado",

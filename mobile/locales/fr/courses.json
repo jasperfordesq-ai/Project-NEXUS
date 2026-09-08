@@ -87,7 +87,12 @@
     "answer_placeholder": "Saisissez votre réponse",
     "pass_mark": "Note de passage : {{percent}} %",
     "true": "Vrai",
-    "false": "Faux"
+    "false": "Faux",
+    "nothing_answered": "Répondez à au moins une question avant de soumettre. Chaque envoi consomme une de vos tentatives.",
+    "incomplete_title": "Soumettre un questionnaire incomplet ?",
+    "incomplete_message": "Vous avez répondu à {{answered}} question(s) sur {{total}}. Soumettre maintenant consomme une de vos tentatives.",
+    "incomplete_message_attempts": "Vous avez répondu à {{answered}} question(s) sur {{total}}. Soumettre maintenant consomme une de vos {{max}} tentatives.",
+    "incomplete_confirm": "Soumettre quand même"
   },
   "my_learning": {
     "title": "Mon apprentissage",

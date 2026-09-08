@@ -142,6 +142,11 @@
   "directory": {
     "tryAgain": "Déan iarracht eile",
     "backToHub": "Ar ais chuig mol an chónaidhm",
+    "optIn": {
+      "title": "Níl tú páirteach sa chónaidhm go fóill",
+      "description": "Tá an chónaidhm ar fáil i do phobal, ach níl do phróifíl mar chuid di go fóill. Socraigh í chun pobail chomhpháirtíochta a bhrabhsáil agus le go bhfaighidh a mbaill thú.",
+      "action": "Socraigh an chónaidhm"
+    },
     "resultsCount": "{{count}} toradh",
     "resultsCount_one": "{{count}} toradh",
     "resultsCount_other": "{{count}} toradh",

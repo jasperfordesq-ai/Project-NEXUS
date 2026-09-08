@@ -85,7 +85,12 @@
     "answer_placeholder": "Geben Sie Ihre Antwort ein",
     "pass_mark": "Bestehensgrenze: {{percent}}%",
     "true": "Wahr",
-    "false": "Falsch"
+    "false": "Falsch",
+    "nothing_answered": "Beantworten Sie mindestens eine Frage, bevor Sie abgeben. Jede Abgabe verbraucht einen Ihrer Versuche.",
+    "incomplete_title": "Unvollständiges Quiz abgeben?",
+    "incomplete_message": "Sie haben {{answered}} von {{total}} Fragen beantwortet. Wenn Sie jetzt abgeben, wird einer Ihrer Versuche verbraucht.",
+    "incomplete_message_attempts": "Sie haben {{answered}} von {{total}} Fragen beantwortet. Wenn Sie jetzt abgeben, wird einer Ihrer {{max}} Versuche verbraucht.",
+    "incomplete_confirm": "Trotzdem abgeben"
   },
   "my_learning": {
     "title": "Mein Lernen",

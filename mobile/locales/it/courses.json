@@ -87,7 +87,12 @@
     "answer_placeholder": "Scrivi la tua risposta",
     "pass_mark": "Punteggio minimo: {{percent}}%",
     "true": "Vero",
-    "false": "Falso"
+    "false": "Falso",
+    "nothing_answered": "Rispondi ad almeno una domanda prima di inviare. Ogni invio consuma uno dei tuoi tentativi.",
+    "incomplete_title": "Inviare un quiz incompleto?",
+    "incomplete_message": "Hai risposto a {{answered}} domande su {{total}}. Inviando ora consumi uno dei tuoi tentativi.",
+    "incomplete_message_attempts": "Hai risposto a {{answered}} domande su {{total}}. Inviando ora consumi uno dei tuoi {{max}} tentativi.",
+    "incomplete_confirm": "Invia comunque"
   },
   "my_learning": {
     "title": "Il mio apprendimento",

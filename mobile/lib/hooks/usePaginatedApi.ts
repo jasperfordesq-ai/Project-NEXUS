@@ -29,6 +29,23 @@ export interface PaginatedApiState<TItem> {
   isLoading: boolean;
   isLoadingMore: boolean;
   error: string | null;
+  /**
+   * HTTP status of the failure, when the server answered at all. `null` for a
+   * network error or timeout, which carry no status the caller can reason about.
+   */
+  errorStatus: number | null;
+  /**
+   * The API's machine-readable code (`FORBIDDEN`, `FEDERATION_NOT_ENABLED`, …).
+   *
+   * 🔴 Added 2026-09-08 because `error` alone is not something a screen can branch
+   * on. `error` is the SERVER'S TRANSLATED SENTENCE, so any screen deciding what to
+   * show by matching words in it only works in the language that screen was written
+   * in. The federation directory did exactly that and offered a German member a
+   * Retry button for a refusal no amount of retrying could clear. `useApi` has
+   * carried both of these for a while; this hook did not, which is the only reason
+   * the paginated screens were still reading sentences.
+   */
+  errorCode: string | null;
   hasMore: boolean;
   loadMore: () => void;
   refresh: () => void;
@@ -91,6 +108,8 @@ export function usePaginatedApi<TItem, TResponse>(
   const [isLoading, setIsLoading] = useState(enabled);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
 
   // Tracks the cursor for the next page. null means "start from the beginning".
@@ -131,6 +150,8 @@ export function usePaginatedApi<TItem, TResponse>(
       if (isInitial) {
         setIsLoading(true);
         setError(null);
+        setErrorStatus(null);
+        setErrorCode(null);
       } else {
         setIsLoadingMore(true);
       }
@@ -152,6 +173,8 @@ export function usePaginatedApi<TItem, TResponse>(
 
         setHasMore(more);
         setError(null);
+        setErrorStatus(null);
+        setErrorCode(null);
       } catch (err) {
         if (!isMountedRef.current || requestVersion !== requestVersionRef.current) return;
 
@@ -176,10 +199,14 @@ export function usePaginatedApi<TItem, TResponse>(
 
         if (err instanceof ApiResponseError) {
           setError(err.message);
+          setErrorStatus(err.status);
+          setErrorCode(err.code ?? null);
         } else {
           // Translated at the moment it is set, like useApi and lib/api/client.ts
           // (audit 2026-09-05, F07: this was English in every locale).
           setError(i18n.t('common:errors.generic'));
+          setErrorStatus(null);
+          setErrorCode(null);
         }
       } finally {
         const isCurrentRequest = requestVersion === requestVersionRef.current;
@@ -217,6 +244,8 @@ export function usePaginatedApi<TItem, TResponse>(
       setIsLoading(false);
       setIsLoadingMore(false);
       setError(null);
+      setErrorStatus(null);
+      setErrorCode(null);
       setHasMore(false);
       return;
     }
@@ -258,5 +287,5 @@ export function usePaginatedApi<TItem, TResponse>(
     void fetchPage(null, true);
   }, [enabled, fetchPage]);
 
-  return { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh };
+  return { items, isLoading, isLoadingMore, error, errorStatus, errorCode, hasMore, loadMore, refresh };
 }

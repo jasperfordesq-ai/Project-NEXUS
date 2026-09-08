@@ -85,7 +85,12 @@
     "answer_placeholder": "Type your answer",
     "pass_mark": "Pass mark: {{percent}}%",
     "true": "True",
-    "false": "False"
+    "false": "False",
+    "nothing_answered": "Answer at least one question before submitting. Every submission uses one of your attempts.",
+    "incomplete_title": "Submit an unfinished quiz?",
+    "incomplete_message": "You have answered {{answered}} of {{total}} questions. Submitting now uses one of your attempts.",
+    "incomplete_message_attempts": "You have answered {{answered}} of {{total}} questions. Submitting now uses one of your {{max}} attempts.",
+    "incomplete_confirm": "Submit anyway"
   },
   "my_learning": {
     "title": "My learning",

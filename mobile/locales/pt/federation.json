@@ -142,6 +142,11 @@
   "directory": {
     "tryAgain": "Tente novamente",
     "backToHub": "Voltar ao hub da federação",
+    "optIn": {
+      "title": "Ainda não aderiu à federação",
+      "description": "A federação está disponível na sua comunidade, mas o seu perfil ainda não faz parte dela. Configure-a para explorar as comunidades parceiras e ser encontrado pelos seus membros.",
+      "action": "Configurar a federação"
+    },
     "resultsCount": "{{count}} resultado",
     "resultsCount_one": "{{count}} resultado",
     "resultsCount_other": "{{count}} resultados",

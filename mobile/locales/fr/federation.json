@@ -142,6 +142,11 @@
   "directory": {
     "tryAgain": "Réessayez",
     "backToHub": "Retour au hub de la fédération",
+    "optIn": {
+      "title": "Vous n'avez pas encore rejoint la fédération",
+      "description": "La fédération est disponible dans votre communauté, mais votre profil n'en fait pas encore partie. Configurez-la pour parcourir les communautés partenaires et être trouvé par leurs membres.",
+      "action": "Configurer la fédération"
+    },
     "resultsCount": "{{count}} résultat",
     "resultsCount_one": "{{count}} résultat",
     "resultsCount_other": "{{count}} résultats",
