@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
+import { uploadWithProgress } from '@/lib/api/uploadWithProgress';
 import { API_V2 } from '@/lib/constants';
 import { Platform } from 'react-native';
 
@@ -222,11 +223,35 @@ export function sendMessage(recipientId: number, body: string, options: SendMess
   });
 }
 
+/**
+ * 🔴 Sending photos went out through `api.upload()`, which is built on `fetch` — and
+ * React Native's `fetch` reports NOTHING while a request body is uploading. So a
+ * member attaching three photos on a train saw a spinner with no number, no estimate
+ * and no way to stop it, for as long as it took. If it took longer than the shared
+ * client's 60-second upload timeout it simply failed, having given no sign of progress
+ * to suggest waiting would have helped.
+ *
+ * `uploadWithProgress` exists precisely for this — real byte progress and a real
+ * abort, on `XMLHttpRequest` — and had exactly one caller (the podcast studio). It
+ * carries the same Authorization and X-Tenant-Slug handling as the shared client.
+ *
+ * The signature stays backward compatible: with no `onProgress` and no `signal` the
+ * behaviour is unchanged apart from the longer timeout, which is the right timeout for
+ * an upload. Audit 2026-09-07, fixed 2026-09-08.
+ */
+export interface SendAttachmentOptions {
+  /** 0–100, integral and monotonic. */
+  onProgress?: (percent: number) => void;
+  /** Abort handle; rejects with an `UPLOAD_ABORTED` `ApiResponseError` when fired. */
+  signal?: AbortSignal;
+}
+
 export async function sendMessageWithAttachments(
   recipientId: number,
   body: string,
   attachments: MessageAttachmentUpload[],
   options: SendMessageOptions = {},
+  upload: SendAttachmentOptions = {},
 ): Promise<{ data: Message }> {
   const formData = new FormData();
   formData.append('recipient_id', String(recipientId));
@@ -241,7 +266,10 @@ export async function sendMessageWithAttachments(
     await appendMessageAttachmentFile(formData, attachment);
   }
 
-  return api.upload<{ data: Message }>(`${API_V2}/messages`, formData);
+  return uploadWithProgress<{ data: Message }>(`${API_V2}/messages`, formData, {
+    onProgress: upload.onProgress,
+    signal: upload.signal,
+  });
 }
 
 /**

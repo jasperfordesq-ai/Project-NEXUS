@@ -75,7 +75,9 @@
       "open": "Oscail {{name}}",
       "file": "Ceangaltán",
       "permissionTitle": "Tá rochtain ar ghrianghraif de dhíth",
-      "permissionMessage": "Ceadaigh rochtain ar ghrianghraif chun íomhánna a cheangal."
+      "permissionMessage": "Ceadaigh rochtain ar ghrianghraif chun íomhánna a cheangal.",
+      "uploading": "Grianghraif á seoladh… {{percent}}%",
+      "cancelUpload": "Cealaigh"
     },
     "voice": {
       "record": "Taifead teachtaireacht ghutha",

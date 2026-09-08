@@ -75,7 +75,9 @@
       "open": "Abra {{name}}",
       "file": "Attachment",
       "permissionTitle": "É necessário acesso às fotografias",
-      "permissionMessage": "Permita o acesso às fotografias para anexar imagens."
+      "permissionMessage": "Permita o acesso às fotografias para anexar imagens.",
+      "uploading": "A enviar fotografias… {{percent}}%",
+      "cancelUpload": "Cancelar"
     },
     "voice": {
       "record": "Gravar mensagem de voz",

@@ -20,6 +20,7 @@ jest.mock('@/lib/constants', () => ({
 }));
 
 import { api } from '@/lib/api/client';
+import { uploadWithProgress } from '@/lib/api/uploadWithProgress';
 import {
   getConversations,
   getThread,
@@ -218,12 +219,22 @@ describe('sendMessage', () => {
   });
 });
 
+jest.mock('@/lib/api/uploadWithProgress', () => ({ uploadWithProgress: jest.fn() }));
+
 describe('sendMessageWithAttachments', () => {
-  beforeEach(() => { jest.clearAllMocks(); });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.mocked(uploadWithProgress).mockResolvedValue({ data: mockMessage } as never);
+  });
 
-  it('uploads multipart message attachments', async () => {
-    (api.upload as jest.Mock).mockResolvedValue({ data: mockMessage });
-
+  /*
+    🔴 This used to assert `api.upload`, the fetch-based client — which reports NOTHING
+    while a body is uploading. A member attaching photos on a slow connection saw a
+    spinner with no number and no way to stop, and the shared 60-second upload timeout
+    could kill the send having shown no sign that waiting would help.
+    Audit 2026-09-07, fixed 2026-09-08.
+  */
+  it('uploads multipart message attachments through the progress-capable path', async () => {
     await sendMessageWithAttachments(2, 'Photo update', [{
       uri: 'file:///tmp/photo.jpg',
       name: 'photo.jpg',
@@ -233,7 +244,40 @@ describe('sendMessageWithAttachments', () => {
       context_id: 44,
     });
 
-    expect(api.upload).toHaveBeenCalledWith('/api/v2/messages', expect.any(FormData));
+    expect(uploadWithProgress).toHaveBeenCalledWith(
+      '/api/v2/messages',
+      expect.any(FormData),
+      expect.anything(),
+    );
+    // The fetch client cannot report progress, so it must not be the path any more.
+    expect(api.upload).not.toHaveBeenCalled();
+  });
+
+  it("passes the caller's progress callback and abort handle straight through", async () => {
+    const onProgress = jest.fn();
+    const controller = new AbortController();
+
+    await sendMessageWithAttachments(2, 'Photo update', [{
+      uri: 'file:///tmp/photo.jpg', name: 'photo.jpg', mimeType: 'image/jpeg',
+    }], {}, { onProgress, signal: controller.signal });
+
+    expect(uploadWithProgress).toHaveBeenCalledWith(
+      '/api/v2/messages',
+      expect.any(FormData),
+      { onProgress, signal: controller.signal },
+    );
+  });
+
+  it('still works for a caller that asks for neither', async () => {
+    await sendMessageWithAttachments(2, 'Photo update', [{
+      uri: 'file:///tmp/photo.jpg', name: 'photo.jpg', mimeType: 'image/jpeg',
+    }]);
+
+    expect(uploadWithProgress).toHaveBeenCalledWith(
+      '/api/v2/messages',
+      expect.any(FormData),
+      { onProgress: undefined, signal: undefined },
+    );
   });
 });
 

@@ -89,6 +89,8 @@ jest.mock('react-i18next', () => ({
         'thread.attachments.title': 'Add attachment',
         'thread.attachments.photoLibrary': 'Photo library',
         'thread.attachments.remove': `Remove ${String(options?.name ?? '')}`,
+        'thread.attachments.uploading': `Sending photos… ${String(options?.percent ?? '')}%`,
+        'thread.attachments.cancelUpload': 'Cancel upload',
         'thread.attachments.removeLabel': 'Remove',
         'thread.attachments.open': `Open ${String(options?.name ?? '')}`,
         'thread.attachments.file': 'Attachment',
@@ -639,6 +641,36 @@ describe('ThreadScreen', () => {
     });
   });
 
+  /** Opens the thread, picks one photo from the library, and returns the screen. */
+  async function attachAPhoto() {
+    mockLaunchImageLibraryAsync.mockResolvedValue({
+      canceled: false,
+      assets: [{
+        uri: 'file:///tmp/photo.jpg',
+        fileName: 'photo.jpg',
+        mimeType: 'image/jpeg',
+        width: 800,
+        height: 600,
+        fileSize: 2048,
+      }],
+    });
+    mockUseApi.mockReturnValue({
+      data: {
+        data: mockMessages,
+        meta: { conversation: { other_user: { id: 42, name: 'Alice' } } },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<ThreadScreen />);
+    fireEvent.press(screen.getByLabelText('Add attachment'));
+    fireEvent.press(screen.getByLabelText('Photo library'));
+    await waitFor(() => expect(screen.getByText('photo.jpg')).toBeTruthy());
+    return screen;
+  }
+
   it('attaches images and sends them through the multipart message helper', async () => {
     mockLaunchImageLibraryAsync.mockResolvedValue({
       canceled: false,
@@ -679,9 +711,65 @@ describe('ThreadScreen', () => {
     fireEvent.press(getByLabelText('Send'));
 
     await waitFor(() => {
-      expect(mockSendMessageWithAttachments).toHaveBeenCalledWith(42, 'Photo update', expect.arrayContaining([
-        expect.objectContaining({ uri: 'file:///tmp/photo.jpg', name: 'photo.jpg', mimeType: 'image/jpeg' }),
-      ]), undefined);
+      expect(mockSendMessageWithAttachments).toHaveBeenCalledWith(
+        42,
+        'Photo update',
+        expect.arrayContaining([
+          expect.objectContaining({ uri: 'file:///tmp/photo.jpg', name: 'photo.jpg', mimeType: 'image/jpeg' }),
+        ]),
+        undefined,
+        // 🔴 The fifth argument is what makes the upload observable and stoppable.
+        expect.objectContaining({ onProgress: expect.any(Function), signal: expect.anything() }),
+      );
+    });
+  });
+
+  /*
+    🔴 A photo upload used to show a spinner with no number and no way out. React
+    Native's fetch reports nothing at all while a body is going out, so on a slow
+    connection the only escape was force-quitting the app. Audit 2026-09-07, fixed
+    2026-09-08.
+  */
+  describe('sending photos shows progress and can be stopped', () => {
+    async function startAnUpload() {
+      let reportProgress: ((percent: number) => void) | undefined;
+      let abortSignal: AbortSignal | undefined;
+      mockSendMessageWithAttachments.mockImplementation(
+        (
+          _id: number,
+          _body: string,
+          _attachments: unknown[],
+          _options: unknown,
+          upload?: { onProgress?: (p: number) => void; signal?: AbortSignal },
+        ) => {
+          reportProgress = upload?.onProgress;
+          abortSignal = upload?.signal;
+          return new Promise(() => { /* held open, like a real upload in flight */ });
+        },
+      );
+
+      const screen = await attachAPhoto();
+      fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Photo update');
+      fireEvent.press(screen.getByLabelText('Send'));
+      await waitFor(() => expect(mockSendMessageWithAttachments).toHaveBeenCalled());
+      return { screen, reportProgress: () => reportProgress, abortSignal: () => abortSignal };
+    }
+
+    it('shows how far along the upload is', async () => {
+      const { screen, reportProgress } = await startAnUpload();
+
+      expect(screen.getByTestId('thread-upload-progress')).toBeTruthy();
+
+      await act(async () => { reportProgress()?.(42); });
+      expect(screen.getByTestId('thread-upload-progress')).toHaveTextContent(/42%/);
+    });
+
+    it('gives the member a way to stop it', async () => {
+      const { screen, abortSignal } = await startAnUpload();
+
+      fireEvent.press(screen.getByTestId('thread-upload-cancel'));
+
+      expect(abortSignal()?.aborted).toBe(true);
     });
   });
 

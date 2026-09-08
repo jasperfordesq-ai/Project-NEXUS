@@ -49,6 +49,7 @@ import { resolveMediaUrl } from '@/lib/utils/resolveImageUrl';
 import { ApiResponseError, authenticatedMediaRequest } from '@/lib/api/client';
 import { openAuthenticatedMessageMedia } from '@/lib/messageMedia';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isUploadAborted } from '@/lib/api/uploadWithProgress';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -155,6 +156,19 @@ function ThreadScreenInner() {
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false);
+  /*
+    🔴 A photo upload showed a spinner with no number, no estimate and no way out: the
+    shared client is built on `fetch`, which reports nothing at all while a body is
+    going out. On a train that is minutes of "is this working?" with force-quitting the
+    app as the only escape. `uploadWithProgress` gives real byte progress and a real
+    abort; it existed with one caller. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
+  const uploadAbortRef = useRef<AbortController | null>(null);
+
+  const cancelUpload = useCallback(() => {
+    uploadAbortRef.current?.abort();
+  }, []);
   const [optionsMessage, setOptionsMessage] = useState<Message | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -435,9 +449,19 @@ function ThreadScreenInner() {
     Keyboard.dismiss();
     setIsSending(true);
 
+    const controller = pendingAttachments.length > 0 ? new AbortController() : null;
+    uploadAbortRef.current = controller;
+    if (controller) setUploadPercent(0);
+
     try {
       const res = pendingAttachments.length > 0
-        ? await sendMessageWithAttachments(resolvedRecipientId, body, pendingAttachments, newConversationOptions)
+        ? await sendMessageWithAttachments(
+            resolvedRecipientId,
+            body,
+            pendingAttachments,
+            newConversationOptions,
+            { onProgress: setUploadPercent, signal: controller?.signal },
+          )
         : newConversationOptions
           ? await sendMessage(resolvedRecipientId, body, newConversationOptions)
           : await sendMessage(resolvedRecipientId, body);
@@ -466,6 +490,16 @@ function ThreadScreenInner() {
        * The message body is still restored above, so accepting and pressing send loses
        * nothing.
        */
+      /*
+        🔴 The member stopping their own upload is not a failure and must not be
+        reported as one. The composer has already been restored above, so cancelling
+        leaves the photos and the text exactly where they were.
+      */
+      if (isUploadAborted(err)) {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        return;
+      }
+
       const refusedPendingAcceptance =
         err instanceof ApiResponseError && err.code === 'LEGAL_ACCEPTANCE_REQUIRED';
 
@@ -499,6 +533,8 @@ function ThreadScreenInner() {
       }
     } finally {
       setIsSending(false);
+      setUploadPercent(null);
+      uploadAbortRef.current = null;
     }
   }, [editingMessage, isSending, messagingRestriction?.messaging_disabled, newConversationOptions, pendingAttachments, resolvedRecipientId, showToast, t]);
 
@@ -914,6 +950,36 @@ function ThreadScreenInner() {
           className="border-t border-border/50 px-3 py-2.5"
           style={{ paddingBottom: Math.max(10, bottomInset) }}
         >
+          {/*
+            Shown only while photos are actually going out. A percentage AND a way to
+            stop: the number alone still leaves someone on a slow connection with no
+            choice but to force-quit the app.
+          */}
+          {uploadPercent !== null ? (
+            <View className="mb-2 gap-1.5" testID="thread-upload-progress">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                  {t('thread.attachments.uploading', { percent: uploadPercent })}
+                </Text>
+                <HeroButton
+                  size="sm"
+                  variant="ghost"
+                  className="min-h-0 px-0 py-0"
+                  testID="thread-upload-cancel"
+                  accessibilityLabel={t('thread.attachments.cancelUpload')}
+                  onPress={cancelUpload}
+                >
+                  <HeroButton.Label className="text-xs">{t('thread.attachments.cancelUpload')}</HeroButton.Label>
+                </HeroButton>
+              </View>
+              <View className="h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: theme.borderSubtle }}>
+                <View
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: primary, width: `${Math.min(100, Math.max(0, uploadPercent))}%` }}
+                />
+              </View>
+            </View>
+          ) : null}
           {pendingAttachments.length > 0 ? (
             <View className="mb-2 flex-row flex-wrap gap-2">
               {pendingAttachments.map((attachment) => (

@@ -53,11 +53,19 @@ const mockAddEventListener = jest.fn((_type: string, handler: (state: string) =>
   return { remove: jest.fn() };
 });
 
+/*
+  🔴 `Platform` must be here even though this suite never touches it. `lib/storage.ts`
+  reads `Platform.OS` at MODULE LOAD, so anything this context transitively imports that
+  reaches storage throws "Cannot read properties of undefined" before a single test runs.
+  Adding an import three modules away is enough to trigger it, which is exactly what
+  happened on 2026-09-08.
+*/
 jest.mock('react-native', () => ({
   AppState: {
     currentState: 'active',
     addEventListener: (...args: [string, (state: string) => void]) => mockAddEventListener(...args),
   },
+  Platform: { OS: 'ios', select: (spec: Record<string, unknown>) => spec.ios ?? spec.default },
 }));
 
 // --- Tests ---

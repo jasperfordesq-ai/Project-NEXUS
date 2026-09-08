@@ -75,7 +75,9 @@
       "open": "Ouvrir {{name}}",
       "file": "Attachment",
       "permissionTitle": "Accès aux photos nécessaire",
-      "permissionMessage": "Autorisez l’accès aux photos pour joindre des images."
+      "permissionMessage": "Autorisez l’accès aux photos pour joindre des images.",
+      "uploading": "Envoi des photos… {{percent}} %",
+      "cancelUpload": "Annuler"
     },
     "voice": {
       "record": "Enregistrer un message vocal",

@@ -75,7 +75,9 @@
       "open": "Open {{name}}",
       "file": "Attachment",
       "permissionTitle": "Photo access needed",
-      "permissionMessage": "Allow photo access to attach images."
+      "permissionMessage": "Allow photo access to attach images.",
+      "uploading": "Sending photos… {{percent}}%",
+      "cancelUpload": "Cancel"
     },
     "voice": {
       "record": "Record voice message",
