@@ -34,7 +34,7 @@ const stableTenant = {
   branding: { name: 'Test Community' },
   tenantPath: (p: string) => `/test${p}`,
   hasFeature: vi.fn(() => true),
-  hasModule: vi.fn(() => true),
+  hasModule: vi.fn((_module: string) => true),
   isLoading: false,
 };
 

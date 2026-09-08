@@ -25,7 +25,7 @@ const webPushMocks = vi.hoisted(() => ({
 
 const tenantGateMocks = vi.hoisted(() => ({
   hasFeature: vi.fn(() => true),
-  hasModule: vi.fn(() => true),
+  hasModule: vi.fn((_module: string) => true),
 }));
 
 vi.mock('@/hooks/useWebPush', () => ({

@@ -35,7 +35,7 @@ vi.mock('@/lib/api', () => ({
   tokenManager: { getTenantId: vi.fn(), getToken: vi.fn() },
 }));
 
-const mockHasModule = vi.fn(() => true);
+const mockHasModule = vi.fn((_module: string) => true);
 
 const mockTenant = {
   tenant: { id: 2, name: 'Test Tenant', slug: 'test' },

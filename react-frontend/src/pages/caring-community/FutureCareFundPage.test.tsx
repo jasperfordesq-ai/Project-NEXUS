@@ -56,7 +56,8 @@ vi.mock('@/contexts', () =>
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn((f: string) => f === 'caring_community' || true),
-      hasModule: (module: string) => !disabledModules.has(module),
+      // A Mock, not a plain function — see AdminHeader.test.tsx for the same fix.
+      hasModule: vi.fn((module: string) => !disabledModules.has(module)),
     }),
   }),
 );

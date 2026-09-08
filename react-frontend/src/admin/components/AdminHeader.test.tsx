@@ -66,8 +66,10 @@ vi.mock('@/contexts', () =>
     useTenant: () => ({
       tenant: { id: 2, name: 'Hour Timebank', slug: 'hour-timebank' },
       tenantPath: (p: string) => `/hour-timebank${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: (module: string) => !disabledModules.has(module),
+      hasFeature: vi.fn((_feature: string) => true),
+      // 🔴 A Mock, not a plain function: createMockContexts types these as vi.fn, and a
+      // bare arrow is missing every mock method the contract names.
+      hasModule: vi.fn((module: string) => !disabledModules.has(module)),
     }),
   })
 );

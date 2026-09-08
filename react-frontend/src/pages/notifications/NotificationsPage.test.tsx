@@ -26,7 +26,7 @@ const notifMocks = vi.hoisted(() => ({
   markAllAsRead: vi.fn(),
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
-const mockHasModule = vi.hoisted(() => vi.fn(() => true));
+const mockHasModule = vi.hoisted(() => vi.fn((_module: string) => true));
 
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(() => ({
