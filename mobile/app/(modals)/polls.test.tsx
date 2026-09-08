@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 let mockPollSearchParams: Record<string, string | string[]> = {};
 
@@ -84,11 +84,21 @@ jest.mock('@/lib/hooks/usePaginatedApi', () => ({
 
 jest.mock('@/components/PollCard', () => {
   const React = require('react');
-  const { Text, View } = require('react-native');
-  return ({ pollData }: { pollData: { question: string; total_votes?: number } }) => (
+  const { Pressable, Text, View } = require('react-native');
+  return ({ pollData, itemId, onVoted }: {
+    pollData: { question: string; total_votes?: number };
+    itemId: number;
+    onVoted?: (updated: unknown) => void;
+  }) => (
     <View>
       <Text>{pollData.question}</Text>
       <Text>{`${String(pollData.total_votes ?? 0)} votes`}</Text>
+      <Pressable
+        testID={`vote-${itemId}`}
+        onPress={() => onVoted?.({ ...pollData, total_votes: (pollData.total_votes ?? 0) + 1 })}
+      >
+        <Text>Vote</Text>
+      </Pressable>
     </View>
   );
 });
@@ -236,5 +246,57 @@ describe('PollsScreen', () => {
 
     expect(getByText('Create a poll')).toBeTruthy();
     expect(getByPlaceholderText('Ask a question')).toBeTruthy();
+  });
+
+  /*
+    🔴 Voting used to call `refresh()`, which resets the paginated list to page one. A
+    member who had scrolled through several pages, voted on one poll, and was thrown
+    back to the top with everything below page one gone. Refreshing was never needed:
+    the vote endpoint returns the poll's new state and the card renders from it.
+    Audit 2026-09-07 F-17, fixed 2026-09-08.
+  */
+  describe('voting does not throw away the loaded list', () => {
+    const twoPolls = [
+      { id: 1, poll_data: { question: 'Bike shelter?', total_votes: 3, options: [] } },
+      { id: 2, poll_data: { question: 'Tool library?', total_votes: 8, options: [] } },
+    ];
+
+    it('does not reload the list when a vote lands', () => {
+      const refresh = jest.fn();
+      mockUsePaginatedApi.mockReturnValue({ ...defaultState, items: twoPolls, refresh });
+
+      const screen = render(<PollsScreen />);
+      fireEvent.press(screen.getByTestId('vote-1'));
+
+      expect(refresh).not.toHaveBeenCalled();
+    });
+
+    it('keeps the new count on screen without re-fetching', () => {
+      mockUsePaginatedApi.mockReturnValue({ ...defaultState, items: twoPolls, refresh: jest.fn() });
+
+      const screen = render(<PollsScreen />);
+      expect(screen.getByText('3 votes')).toBeTruthy();
+
+      fireEvent.press(screen.getByTestId('vote-1'));
+
+      // The voted poll shows its new count; the other one is untouched.
+      expect(screen.getByText('4 votes')).toBeTruthy();
+      expect(screen.getByText('8 votes')).toBeTruthy();
+    });
+
+    it('still starts over on a deliberate pull to refresh', () => {
+      const refresh = jest.fn();
+      mockUsePaginatedApi.mockReturnValue({ ...defaultState, items: twoPolls, refresh });
+
+      const screen = render(<PollsScreen />);
+      fireEvent.press(screen.getByTestId('vote-1'));
+      expect(screen.getByText('4 votes')).toBeTruthy();
+
+      const list = screen.getByTestId('polls-list');
+      act(() => { list.props.refreshControl.props.onRefresh(); });
+
+      // Pulling to refresh is the member asking for the server's counts again.
+      expect(refresh).toHaveBeenCalled();
+    });
   });
 });

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import AccentIcon from '@/components/ui/AccentIcon';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -72,9 +72,32 @@ function PollsScreen() {
   const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
     usePaginatedApi<FeedItem, FeedResponse>(fetchPolls, extractPollsPage, []);
 
+  /*
+    🔴 Voting used to call `refresh()`, which resets the paginated list to page one.
+    A member who had scrolled through four pages of polls, voted on one, and was thrown
+    back to the top with everything below page one gone — and their place in the list
+    lost. Audit 2026-09-07 F-17, fixed 2026-09-08.
+
+    Refreshing was never needed: the vote endpoint returns the poll's new state and
+    `PollCard` already renders from it. This keeps that authoritative copy, so the
+    result survives any later re-render of the list, without discarding a single page.
+  */
+  const [votedPolls, setVotedPolls] = useState<Record<number, NonNullable<FeedItem['poll_data']>>>({});
+
+  const visibleItems = useMemo(
+    () => items.map((item) => (votedPolls[item.id] ? { ...item, poll_data: votedPolls[item.id] } : item)),
+    [items, votedPolls],
+  );
+
+  const handleVoted = useCallback((itemId: number, updated: NonNullable<FeedItem['poll_data']>) => {
+    setVotedPolls((current) => ({ ...current, [itemId]: updated }));
+  }, []);
+
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     wasRefreshingRef.current = true;
+    // A deliberate pull-to-refresh DOES start over, so the server's counts win again.
+    setVotedPolls({});
     refresh();
   }, [refresh]);
 
@@ -140,9 +163,9 @@ function PollsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: FeedItem }) => (
-      <PollFeedCard item={item} primary={primary} t={t} onVoted={() => void refresh()} />
+      <PollFeedCard item={item} primary={primary} t={t} onVoted={(updated) => handleVoted(item.id, updated)} />
     ),
-    [primary, refresh, t],
+    [handleVoted, primary, t],
   );
 
   return (
@@ -156,7 +179,7 @@ function PollsScreen() {
         >
         <FlatList
           testID="polls-list"
-          data={items}
+          data={visibleItems}
           keyExtractor={(item) => `poll-${item.id}`}
           renderItem={renderItem}
           style={{ flex: 1, backgroundColor: theme.bg }}
