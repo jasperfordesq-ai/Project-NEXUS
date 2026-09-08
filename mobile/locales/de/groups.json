@@ -349,6 +349,26 @@
       "posting": "Wird gesendet…",
       "unavailable": "Diese Diskussion ist nicht mehr verfügbar.",
       "noAccess": "Du hast keinen Zugriff auf diese Diskussion."
+    },
+    "manage": {
+      "requestsTitle": "{{count}} Personen warten auf Aufnahme",
+      "requestsTitle_one": "{{count}} Person wartet auf Aufnahme",
+      "requestsTitle_other": "{{count}} Personen warten auf Aufnahme",
+      "accept": "Aufnehmen",
+      "decline": "Ablehnen",
+      "working": "Wird ausgeführt …",
+      "accepted": "Die Person wurde der Gruppe hinzugefügt",
+      "declined": "Anfrage abgelehnt",
+      "declineTitle": "Diese Anfrage ablehnen?",
+      "declineMessage": "{{name}} erfährt keinen Grund und müsste erneut anfragen.",
+      "promote": "Zum Admin machen",
+      "demote": "Adminrechte entziehen",
+      "roleChanged": "Rolle aktualisiert",
+      "remove": "Entfernen",
+      "removeTitle": "Aus der Gruppe entfernen?",
+      "removeMessage": "{{name}} verliert den Zugang zu dieser Gruppe und zu allem, was dort geteilt wird.",
+      "removed": "Aus der Gruppe entfernt",
+      "actionFailed": "Das hat nicht funktioniert. Bitte versuchen Sie es erneut."
     }
   },
   "filter": {

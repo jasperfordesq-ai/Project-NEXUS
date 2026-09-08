@@ -349,6 +349,26 @@
       "posting": "Publicando…",
       "unavailable": "Esta discusión ya no está disponible.",
       "noAccess": "No tienes acceso a esta discusión."
+    },
+    "manage": {
+      "requestsTitle": "{{count}} personas esperan para unirse",
+      "requestsTitle_one": "{{count}} persona espera para unirse",
+      "requestsTitle_other": "{{count}} personas esperan para unirse",
+      "accept": "Admitir",
+      "decline": "Rechazar",
+      "working": "Procesando…",
+      "accepted": "Se ha añadido al grupo",
+      "declined": "Solicitud rechazada",
+      "declineTitle": "¿Rechazar esta solicitud?",
+      "declineMessage": "No se le dirá a {{name}} por qué, y tendría que solicitarlo de nuevo.",
+      "promote": "Hacer administrador",
+      "demote": "Quitar administrador",
+      "roleChanged": "Rol actualizado",
+      "remove": "Expulsar",
+      "removeTitle": "¿Expulsar del grupo?",
+      "removeMessage": "{{name}} perderá el acceso a este grupo y a todo lo compartido en él.",
+      "removed": "Expulsado del grupo",
+      "actionFailed": "No ha funcionado. Inténtalo de nuevo."
     }
   },
   "filter": {

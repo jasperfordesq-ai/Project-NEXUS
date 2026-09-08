@@ -86,6 +86,8 @@ import {
   type GroupWikiPage,
   type GroupWikiPageDetail,
   type GroupWikiRevision,
+  removeGroupMember,
+  updateGroupMemberRole,
 } from '@/lib/api/groups';
 import {
   getGroupMarketplaceListings,
@@ -98,6 +100,7 @@ import {
   type MarketplaceListingItem,
 } from '@/lib/api/marketplace';
 import { useApi } from '@/lib/hooks/useApi';
+import GroupJoinRequestsCard from '@/components/groups/GroupJoinRequestsCard';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -319,6 +322,10 @@ function GroupDetailScreenInner() {
   const [questionTitle, setQuestionTitle] = useState('');
   const [questionBody, setQuestionBody] = useState('');
   const [creatingQuestion, setCreatingQuestion] = useState(false);
+  // 🔴 Deliberately NOT another useApi in this screen. group-detail.test.tsx stubs
+  // useApi positionally, so a seventh call shifts every later result by one on each
+  // re-render. The join-request queue loads inside its own component for that reason.
+  const [busyMemberId, setBusyMemberId] = useState<number | null>(null);
 
   useEffect(() => {
     if (group) {
@@ -371,6 +378,60 @@ function GroupDetailScreenInner() {
       setRefreshing(false);
     }
   }, [announcementsApi.isLoading, discussionsApi.isLoading, eventsApi.isLoading, filesApi.isLoading, isLoading, membersApi.isLoading, questionsApi.isLoading]);
+
+  /*
+    🔴 A group admin on the phone could see the member list and change nothing about
+    it. Promotion, demotion and removal all existed on the server with no caller.
+    Audit 2026-09-07, fixed 2026-09-08.
+  */
+  async function applyMemberRole(member: GroupMemberListItem, role: 'admin' | 'member') {
+    if (busyMemberId !== null) return;
+    setBusyMemberId(member.id);
+    try {
+      await updateGroupMemberRole(safeGroupId, member.id, role);
+      showToast({ title: t('detail.manage.roleChanged'), variant: 'success' });
+      membersApi.refresh();
+    } catch (err) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('detail.manage.actionFailed')),
+        variant: 'danger',
+      });
+    } finally {
+      setBusyMemberId(null);
+    }
+  }
+
+  async function applyMemberRemoval(member: GroupMemberListItem) {
+    if (busyMemberId !== null) return;
+    setBusyMemberId(member.id);
+    try {
+      await removeGroupMember(safeGroupId, member.id);
+      showToast({ title: t('detail.manage.removed'), variant: 'success' });
+      membersApi.refresh();
+      refresh();
+    } catch (err) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('detail.manage.actionFailed')),
+        variant: 'danger',
+      });
+    } finally {
+      setBusyMemberId(null);
+    }
+  }
+
+  function confirmRemoveMember(member: GroupMemberListItem) {
+    confirm({
+      title: t('detail.manage.removeTitle'),
+      message: t('detail.manage.removeMessage', { name: member.name || t('common:unknown') }),
+      confirmLabel: t('detail.manage.remove'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'group-remove-member-confirm',
+      onConfirm: () => applyMemberRemoval(member),
+    });
+  }
 
   async function handleShare() {
     if (!group) return;
@@ -751,6 +812,7 @@ function GroupDetailScreenInner() {
               return (
                 <HeroButton
                   key={tab.key}
+                  testID={`group-tab-${tab.key}`}
                   size="sm"
                   variant={selected ? 'primary' : 'ghost'}
                   onPress={() => {
@@ -920,6 +982,11 @@ function GroupDetailScreenInner() {
 
         {activeTab === 'members' ? (
           <View className="gap-3">
+            <GroupJoinRequestsCard
+              groupId={loadedGroup.id}
+              canManage={canManageGroup}
+              onAccepted={() => { membersApi.refresh(); refresh(); }}
+            />
             {!userCanSeeMemberContent ? (
               <EmptyCard icon="lock-closed-outline" message={t('detail.joinToSeeMembers')} />
             ) : membersApi.isLoading ? (
@@ -946,6 +1013,35 @@ function GroupDetailScreenInner() {
                         ].filter(Boolean).join(' • ')}
                       </Text>
                     </View>
+                    {/*
+                      🔴 Never offered against the group's owner or against yourself. The
+                      server refuses both, and an admin who demoted themselves would lock
+                      themselves out of the screen they are standing on.
+                    */}
+                    {canManageGroup && member.role !== 'owner' && member.id !== user?.id ? (
+                      <View className="gap-2">
+                        <HeroButton
+                          size="sm"
+                          variant="secondary"
+                          isDisabled={busyMemberId !== null}
+                          testID={`group-member-role-${member.id}`}
+                          onPress={() => void applyMemberRole(member, member.role === 'admin' ? 'member' : 'admin')}
+                        >
+                          <HeroButton.Label>
+                            {member.role === 'admin' ? t('detail.manage.demote') : t('detail.manage.promote')}
+                          </HeroButton.Label>
+                        </HeroButton>
+                        <HeroButton
+                          size="sm"
+                          variant="danger"
+                          isDisabled={busyMemberId !== null}
+                          testID={`group-member-remove-${member.id}`}
+                          onPress={() => confirmRemoveMember(member)}
+                        >
+                          <HeroButton.Label>{t('detail.manage.remove')}</HeroButton.Label>
+                        </HeroButton>
+                      </View>
+                    ) : null}
                   </HeroCard.Body>
                 </HeroCard>
               ))

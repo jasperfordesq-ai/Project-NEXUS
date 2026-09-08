@@ -340,6 +340,26 @@
       "posting": "Á phostáil…",
       "unavailable": "Níl an plé seo ar fáil a thuilleadh.",
       "noAccess": "Níl rochtain agat ar an bplé seo."
+    },
+    "manage": {
+      "requestsTitle": "Tá {{count}} duine ag fanacht le dul isteach",
+      "requestsTitle_one": "Tá {{count}} duine ag fanacht le dul isteach",
+      "requestsTitle_other": "Tá {{count}} duine ag fanacht le dul isteach",
+      "accept": "Lig isteach",
+      "decline": "Diúltaigh",
+      "working": "Á dhéanamh…",
+      "accepted": "Cuireadh leis an ngrúpa iad",
+      "declined": "Diúltaíodh don iarratas",
+      "declineTitle": "Diúltaigh don iarratas seo?",
+      "declineMessage": "Ní inseofar an fáth do {{name}}, agus bheadh orthu iarratas a dhéanamh arís.",
+      "promote": "Déan riarthóir de",
+      "demote": "Bain cearta riarthóra",
+      "roleChanged": "Ról nuashonraithe",
+      "remove": "Bain amach",
+      "removeTitle": "Bain amach as an ngrúpa?",
+      "removeMessage": "Caillfidh {{name}} rochtain ar an ngrúpa seo agus ar gach rud a roinntear ann.",
+      "removed": "Baineadh amach as an ngrúpa é",
+      "actionFailed": "Níor éirigh leis sin. Bain triail eile as."
     }
   },
   "create": {

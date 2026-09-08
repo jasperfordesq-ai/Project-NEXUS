@@ -538,6 +538,72 @@ export function getGroupMembers(
 }
 
 /**
+ * Someone waiting at the door of a group.
+ *
+ * The server sends the same person twice over, flat and nested, for backward
+ * compatibility with an older React contract. Both are typed here so neither shape
+ * can be read by accident: `user` is the one to prefer.
+ */
+export interface GroupJoinRequest {
+  id: number;
+  user_id: number;
+  name: string;
+  avatar_url: string | null;
+  user: { id: number; name: string; avatar: string | null };
+  requested_at: string | null;
+  created_at?: string | null;
+}
+
+/**
+ * GET /api/v2/groups/{id}/requests — people waiting to be let into a group.
+ *
+ * 🔴 Neither this nor the two calls below had a caller in the app. A group admin
+ * using the phone could see that people had asked to join — the count is on the
+ * overview — and could do absolutely nothing about it. Requests sat there until
+ * somebody opened the website. Audit 2026-09-07, fixed 2026-09-08.
+ *
+ * Answers 403 when the viewer cannot administer the group, so the caller must treat
+ * a refusal as "not yours", not as a failure.
+ */
+export function getGroupJoinRequests(id: number): Promise<{ data: GroupJoinRequest[] }> {
+  return api.get<{ data: GroupJoinRequest[] }>(`${API_V2}/groups/${id}/requests`);
+}
+
+/**
+ * POST /api/v2/groups/{id}/requests/{userId} — let someone in, or turn them away.
+ *
+ * The server accepts exactly `accept` and `reject`; anything else is a 400. It can
+ * also answer 409 when the group is full or the member has hit a membership limit,
+ * which is a real answer and not something to retry.
+ */
+export function handleGroupJoinRequest(
+  id: number,
+  userId: number,
+  action: 'accept' | 'reject',
+): Promise<unknown> {
+  return api.post<unknown>(`${API_V2}/groups/${id}/requests/${userId}`, { action });
+}
+
+/**
+ * PUT /api/v2/groups/{id}/members/{userId} — change what a member may do.
+ *
+ * 🔴 The server accepts only `admin` and `member`. `owner` is NOT settable: it is a
+ * property of who created the group, and sending it is a 422.
+ */
+export function updateGroupMemberRole(
+  id: number,
+  userId: number,
+  role: 'admin' | 'member',
+): Promise<unknown> {
+  return api.put<unknown>(`${API_V2}/groups/${id}/members/${userId}`, { role });
+}
+
+/** DELETE /api/v2/groups/{id}/members/{userId} — remove somebody from the group. */
+export function removeGroupMember(id: number, userId: number): Promise<unknown> {
+  return api.delete<unknown>(`${API_V2}/groups/${id}/members/${userId}`);
+}
+
+/**
  * GET /api/v2/groups/{id}/discussions — list member-only discussions.
  */
 export function getGroupDiscussions(

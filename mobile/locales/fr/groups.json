@@ -349,6 +349,26 @@
       "posting": "Publication en cours…",
       "unavailable": "Cette discussion n'est plus disponible.",
       "noAccess": "Vous n'avez pas accès à cette discussion."
+    },
+    "manage": {
+      "requestsTitle": "{{count}} personnes attendent de rejoindre le groupe",
+      "requestsTitle_one": "{{count}} personne attend de rejoindre le groupe",
+      "requestsTitle_other": "{{count}} personnes attendent de rejoindre le groupe",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "working": "En cours…",
+      "accepted": "La personne a été ajoutée au groupe",
+      "declined": "Demande refusée",
+      "declineTitle": "Refuser cette demande ?",
+      "declineMessage": "{{name}} n'en connaîtra pas la raison et devrait redemander.",
+      "promote": "Nommer administrateur",
+      "demote": "Retirer les droits d’administrateur",
+      "roleChanged": "Rôle mis à jour",
+      "remove": "Retirer",
+      "removeTitle": "Retirer du groupe ?",
+      "removeMessage": "{{name}} perdra l'accès à ce groupe et à tout ce qui y est partagé.",
+      "removed": "Retiré du groupe",
+      "actionFailed": "Cela n'a pas fonctionné. Veuillez réessayer."
     }
   },
   "filter": {

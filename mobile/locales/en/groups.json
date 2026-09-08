@@ -349,6 +349,26 @@
       "posting": "Posting…",
       "unavailable": "This discussion is no longer available.",
       "noAccess": "You do not have access to this discussion."
+    },
+    "manage": {
+      "requestsTitle": "{{count}} people are waiting to join",
+      "requestsTitle_one": "{{count}} person is waiting to join",
+      "requestsTitle_other": "{{count}} people are waiting to join",
+      "accept": "Let in",
+      "decline": "Decline",
+      "working": "Working…",
+      "accepted": "They have been added to the group",
+      "declined": "Request declined",
+      "declineTitle": "Decline this request?",
+      "declineMessage": "{{name}} will not be told why, and would have to ask again.",
+      "promote": "Make admin",
+      "demote": "Remove admin",
+      "roleChanged": "Role updated",
+      "remove": "Remove",
+      "removeTitle": "Remove from the group?",
+      "removeMessage": "{{name}} will lose access to this group and everything shared in it.",
+      "removed": "Removed from the group",
+      "actionFailed": "That did not work. Please try again."
     }
   },
   "filter": {

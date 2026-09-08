@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -329,6 +329,10 @@ jest.mock('@expo/vector-icons', () => ({
 
 jest.mock('@/lib/api/groups', () => ({
   getGroup: jest.fn(),
+  getGroupJoinRequests: jest.fn().mockResolvedValue({ data: [] }),
+  handleGroupJoinRequest: jest.fn().mockResolvedValue({}),
+  updateGroupMemberRole: jest.fn().mockResolvedValue({}),
+  removeGroupMember: jest.fn().mockResolvedValue({}),
   createGroupDiscussion: jest.fn().mockResolvedValue({ data: {} }),
   getGroupMembers: jest.fn(),
   getGroupDiscussions: jest.fn(),
@@ -396,14 +400,28 @@ jest.mock('@/components/ui/BottomSheet', () => {
 
 // Auto-confirm: pressing a destructive button runs the action immediately,
 // mirroring the old Alert.alert destructive button-press simulation.
+/*
+  🔴 This mock RECORDS the question and does not answer it. It used to run `onConfirm`
+  itself, which made every confirmation on this screen unobservable — the delete cases
+  below passed identically with the dialog deleted. That is the same shape that hid a
+  one-tap cross-community transfer on member-profile. Each case now runs `onConfirm`
+  by hand, so "was the member asked?" and "what happens when they say yes?" stay two
+  separate questions.
+*/
+const mockConfirm = jest.fn<void, [{ title: string; message?: string; variant?: string; onConfirm: () => void | Promise<void> }]>();
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (opts: { onConfirm: () => void | Promise<void> }) => {
-      void opts.onConfirm();
-    },
+    confirm: (...args: unknown[]) => mockConfirm(...(args as [never])),
     confirmDialog: null,
   }),
 }));
+
+/** Answer the confirmation the screen just raised. */
+async function sayYesToTheDialog() {
+  const call = mockConfirm.mock.calls[mockConfirm.mock.calls.length - 1];
+  if (!call) throw new Error('nothing asked for confirmation');
+  await call[0].onConfirm();
+}
 
 // --- Tests ---
 
@@ -979,6 +997,10 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Files'));
     fireEvent.press(getByText('Delete'));
 
+    // Asked, not done.
+    expect(deleteGroupFile).not.toHaveBeenCalled();
+    await act(async () => { await sayYesToTheDialog(); });
+
     await waitFor(() => {
       expect(deleteGroupFile).toHaveBeenCalledWith(1, 31);
       expect(refreshFiles).toHaveBeenCalled();
@@ -1060,6 +1082,9 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Media'));
     expect(await findByText('Spring garden')).toBeTruthy();
     fireEvent.press(getByText('Delete'));
+
+    expect(deleteGroupMedia).not.toHaveBeenCalled();
+    await act(async () => { await sayYesToTheDialog(); });
 
     await waitFor(() => {
       expect(deleteGroupMedia).toHaveBeenCalledWith(1, 81);
@@ -1493,6 +1518,9 @@ describe('GroupDetailScreen', () => {
     await findAllByText('Compost guide');
     fireEvent.press(getByText('Delete'));
 
+    expect(deleteGroupWikiPage).not.toHaveBeenCalled();
+    await act(async () => { await sayYesToTheDialog(); });
+
     await waitFor(() => {
       expect(deleteGroupWikiPage).toHaveBeenCalledWith(1, 61);
     });
@@ -1874,5 +1902,91 @@ describe('GroupDetailScreen', () => {
       pathname: '/(modals)/group-discussion',
       params: { id: '1', discussionId: '42' },
     });
+  });
+
+  /*
+    🔴 A group admin on the phone could see the member list and change nothing about it.
+    Promotion, demotion and removal all existed on the server with no caller in the app.
+    Audit 2026-09-07, fixed 2026-09-08.
+
+    🔴 `mockUseApi` hands out results BY CALL ORDER, so the array below must have one
+    entry per useApi call per render — including the one inside GroupJoinRequestsCard,
+    which mounts with the members tab. Get the length wrong and every result shifts by
+    one on the second render, which is how twelve unrelated cases went red once.
+  */
+  function renderMembersTabAsAdmin(members: Record<string, unknown>[]) {
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } },
+      isLoading: false, error: null, refresh: jest.fn(),
+    };
+    const membersState = { data: { data: members }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyList = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyPaged = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const joinRequestsState = { data: { data: [] }, isLoading: false, error: null, errorStatus: null, errorCode: null, refresh: jest.fn() };
+
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, membersState, emptyList, emptyPaged, emptyPaged, emptyPaged, emptyList, joinRequestsState];
+      const state = states[call % states.length];
+      call += 1;
+      return state;
+    });
+
+    // Open ON the members tab rather than switching to it. The card's own useApi only
+    // exists while that tab is mounted, so switching mid-test would give the first
+    // render seven calls and later renders eight — and the positional stub would then
+    // hand every result to the wrong hook.
+    mockRouteParams = { id: '1', tab: 'members' };
+    const screen = render(<GroupDetailScreen />);
+    return { screen, membersState, groupState };
+  }
+
+  const otherMember = { id: 21, name: 'Bea Member', avatar_url: null, role: 'member', joined_at: '2026-05-01T00:00:00Z' };
+
+  it('lets a group admin promote a member', async () => {
+    const { updateGroupMemberRole } = require('@/lib/api/groups');
+    const { screen } = renderMembersTabAsAdmin([otherMember]);
+
+    fireEvent.press(screen.getByTestId('group-member-role-21'));
+
+    await waitFor(() => expect(updateGroupMemberRole).toHaveBeenCalledWith(1, 21, 'admin'));
+  });
+
+  it('demotes an admin rather than promoting them again', async () => {
+    const { updateGroupMemberRole } = require('@/lib/api/groups');
+    const { screen } = renderMembersTabAsAdmin([{ ...otherMember, role: 'admin' }]);
+
+    fireEvent.press(screen.getByTestId('group-member-role-21'));
+
+    await waitFor(() => expect(updateGroupMemberRole).toHaveBeenCalledWith(1, 21, 'member'));
+  });
+
+  it('asks before removing somebody from the group', async () => {
+    const { removeGroupMember } = require('@/lib/api/groups');
+    const { screen } = renderMembersTabAsAdmin([otherMember]);
+
+    fireEvent.press(screen.getByTestId('group-member-remove-21'));
+
+    // Asked, not done. Removal takes away everything shared with them in the group.
+    expect(removeGroupMember).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+
+    await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
+    expect(removeGroupMember).toHaveBeenCalledWith(1, 21);
+  });
+
+  it('offers no member actions against the owner or against yourself', () => {
+    // The server refuses both, and an admin who demoted themselves would lock
+    // themselves out of the screen they are standing on.
+    const owner = { id: 5, name: 'Olive Owner', avatar_url: null, role: 'owner', joined_at: null };
+    const self = { id: 99, name: 'Current User', avatar_url: null, role: 'admin', joined_at: null };
+    const { screen } = renderMembersTabAsAdmin([owner, self, otherMember]);
+
+    expect(screen.queryByTestId('group-member-role-5')).toBeNull();
+    expect(screen.queryByTestId('group-member-remove-5')).toBeNull();
+    expect(screen.queryByTestId('group-member-role-99')).toBeNull();
+    expect(screen.queryByTestId('group-member-remove-99')).toBeNull();
+    // …but the ordinary member still has them.
+    expect(screen.getByTestId('group-member-role-21')).toBeTruthy();
   });
 });
