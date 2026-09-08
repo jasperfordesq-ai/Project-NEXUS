@@ -44,6 +44,21 @@ php:
   # changed — same blind-spot class as contracts/** before 2026-08-03.
   - 'Dockerfile.bluegreen'
   - 'compose.bluegreen.yml'
+  # 🔴 Three files under mobile/ are READ BY THE PHP SUITE, and none of them woke it —
+  # same blind-spot class as contracts/** and phpstan.neon above. Proven on 2026-09-08:
+  # `NativePushProducerInventoryTest` failed on a stale inventory, the fix was committed
+  # to mobile/config/native-push-producer-inventory.json, and the next four CI runs all
+  # reported "PHP Tests: skipped" behind a green tick. The repair was never re-verified
+  # by CI at all — it had to be proven by hand in the container.
+  #
+  # Note `scripts/**` above does NOT cover mobile/scripts/: these globs are matched from
+  # the repository root, so the audit script the test SHELLS OUT TO needs naming here in
+  # its own right. Change what that script emits and the assertion changes with it.
+  - 'mobile/config/**'
+  - 'mobile/scripts/audit-native-push-producers.php'
+  # Read by MobileVersionGateRegistrationTest, which asserts the version gate agrees with
+  # the shipped app manifest.
+  - 'mobile/app.json'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 
