@@ -21,10 +21,10 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2240 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 58 |
-| Call sites | 598 |
-| Distinct method + endpoint pairs | 506 |
-| Verified against openapi.json | 506 |
+| API modules read | 59 |
+| Call sites | 604 |
+| Distinct method + endpoint pairs | 512 |
+| Verified against openapi.json | 512 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 76 |
@@ -124,13 +124,15 @@ and the places a contract test earns the most.
 | GET | `/api/ai/conversations/{param}` | chat.ts:117 |
 | POST | `/api/auth/forgot-password` | auth.ts:176 |
 | POST | `/api/auth/login` | auth.ts:153 |
-| POST | `/api/auth/logout` | auth.ts:191 |
-| POST | `/api/auth/refresh-token` | auth.ts:201 |
+| POST | `/api/auth/logout` | auth.ts:235 |
+| POST | `/api/auth/refresh-token` | auth.ts:245 |
+| POST | `/api/auth/resend-verification-by-email` | auth.ts:204 |
 | POST | `/api/auth/reset-password` | auth.ts:181 |
 | POST | `/api/auth/verify-email` | auth.ts:186 |
 | POST | `/api/v2/appreciations` | appreciations.ts:70 |
 | POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:80 |
 | POST | `/api/v2/auth/register` | auth.ts:165 |
+| GET | `/api/v2/auth/registration-info` | auth.ts:228 |
 | GET | `/api/v2/blog` | blog.ts:43 |
 | GET | `/api/v2/blog/{param}` | blog.ts:54 |
 | POST | `/api/v2/bookmarks` | feed.ts:391 |
@@ -185,7 +187,7 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1244 |
 | GET | `/api/v2/events/{param}/waitlist` | events.ts:1230 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
-| POST | `/api/v2/exchanges` | client.ts:639, exchanges.ts:213 |
+| POST | `/api/v2/exchanges` | client.ts:657, exchanges.ts:213 |
 | DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:199 |
 | GET | `/api/v2/exchanges/{param}` | exchangeRequests.ts:122 |
 | POST | `/api/v2/exchanges/{param}/accept` | exchangeRequests.ts:141 |
@@ -238,17 +240,17 @@ and the places a contract test earns the most.
 | POST | `/api/v2/feed/posts/{param}/report` | feedModeration.ts:69 |
 | POST | `/api/v2/feed/users/{param}/mute` | feedModeration.ts:77 |
 | GET | `/api/v2/gamification/badges` | gamification.ts:195, gamification.ts:197 |
-| GET | `/api/v2/gamification/challenges` | gamification.ts:245 |
-| POST | `/api/v2/gamification/challenges/{param}/claim` | gamification.ts:253 |
-| GET | `/api/v2/gamification/collections` | gamification.ts:261 |
-| GET | `/api/v2/gamification/daily-reward` | gamification.ts:229 |
-| POST | `/api/v2/gamification/daily-reward` | gamification.ts:237 |
-| GET | `/api/v2/gamification/leaderboard` | gamification.ts:210 |
-| GET | `/api/v2/gamification/nexus-score` | gamification.ts:219, gamification.ts:221 |
+| GET | `/api/v2/gamification/challenges` | gamification.ts:262 |
+| POST | `/api/v2/gamification/challenges/{param}/claim` | gamification.ts:270 |
+| GET | `/api/v2/gamification/collections` | gamification.ts:278 |
+| GET | `/api/v2/gamification/daily-reward` | gamification.ts:246 |
+| POST | `/api/v2/gamification/daily-reward` | gamification.ts:254 |
+| GET | `/api/v2/gamification/leaderboard` | gamification.ts:224 |
+| GET | `/api/v2/gamification/nexus-score` | gamification.ts:236, gamification.ts:238 |
 | GET | `/api/v2/gamification/profile` | gamification.ts:184, gamification.ts:186 |
-| GET | `/api/v2/gamification/shop` | gamification.ts:269 |
-| POST | `/api/v2/gamification/shop/purchase` | gamification.ts:277 |
-| PUT | `/api/v2/gamification/showcase` | gamification.ts:285 |
+| GET | `/api/v2/gamification/shop` | gamification.ts:286 |
+| POST | `/api/v2/gamification/shop/purchase` | gamification.ts:294 |
+| PUT | `/api/v2/gamification/showcase` | gamification.ts:302 |
 | GET | `/api/v2/goals` | goals.ts:131 |
 | POST | `/api/v2/goals` | goals.ts:150 |
 | GET | `/api/v2/goals/{param}` | goals.ts:135 |
@@ -273,43 +275,47 @@ and the places a contract test earns the most.
 | POST | `/api/v2/groups` | groups.ts:426 |
 | GET | `/api/v2/groups/{param}` | groups.ts:419 |
 | PUT | `/api/v2/groups/{param}` | groups.ts:430 |
-| GET | `/api/v2/groups/{param}/analytics` | groups.ts:631 |
-| GET | `/api/v2/groups/{param}/analytics/comparative` | groups.ts:643 |
-| GET | `/api/v2/groups/{param}/analytics/retention` | groups.ts:637 |
-| GET | `/api/v2/groups/{param}/announcements` | groups.ts:581 |
-| POST | `/api/v2/groups/{param}/announcements` | groups.ts:803 |
-| DELETE | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:821 |
-| PUT | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:814 |
-| POST | `/api/v2/groups/{param}/answers/{param}/accept` | groups.ts:689 |
-| GET | `/api/v2/groups/{param}/discussions` | groups.ts:549 |
-| POST | `/api/v2/groups/{param}/discussions` | groups.ts:775 |
-| GET | `/api/v2/groups/{param}/discussions/{param}` | groups.ts:566 |
-| POST | `/api/v2/groups/{param}/discussions/{param}/messages` | groups.ts:790 |
-| GET | `/api/v2/groups/{param}/files` | groups.ts:593 |
-| DELETE | `/api/v2/groups/{param}/files/{param}` | groups.ts:597 |
+| GET | `/api/v2/groups/{param}/analytics` | groups.ts:697 |
+| GET | `/api/v2/groups/{param}/analytics/comparative` | groups.ts:709 |
+| GET | `/api/v2/groups/{param}/analytics/retention` | groups.ts:703 |
+| GET | `/api/v2/groups/{param}/announcements` | groups.ts:647 |
+| POST | `/api/v2/groups/{param}/announcements` | groups.ts:869 |
+| DELETE | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:887 |
+| PUT | `/api/v2/groups/{param}/announcements/{param}` | groups.ts:880 |
+| POST | `/api/v2/groups/{param}/answers/{param}/accept` | groups.ts:755 |
+| GET | `/api/v2/groups/{param}/discussions` | groups.ts:615 |
+| POST | `/api/v2/groups/{param}/discussions` | groups.ts:841 |
+| GET | `/api/v2/groups/{param}/discussions/{param}` | groups.ts:632 |
+| POST | `/api/v2/groups/{param}/discussions/{param}/messages` | groups.ts:856 |
+| GET | `/api/v2/groups/{param}/files` | groups.ts:659 |
+| DELETE | `/api/v2/groups/{param}/files/{param}` | groups.ts:663 |
 | POST | `/api/v2/groups/{param}/image` | groups.ts:519 |
-| POST | `/api/v2/groups/{param}/join` | groups.ts:844 |
-| GET | `/api/v2/groups/{param}/media` | groups.ts:610 |
-| POST | `/api/v2/groups/{param}/media` | groups.ts:620 |
-| DELETE | `/api/v2/groups/{param}/media/{param}` | groups.ts:614 |
+| POST | `/api/v2/groups/{param}/join` | groups.ts:910 |
+| GET | `/api/v2/groups/{param}/media` | groups.ts:676 |
+| POST | `/api/v2/groups/{param}/media` | groups.ts:686 |
+| DELETE | `/api/v2/groups/{param}/media/{param}` | groups.ts:680 |
 | GET | `/api/v2/groups/{param}/members` | groups.ts:537 |
-| DELETE | `/api/v2/groups/{param}/membership` | groups.ts:851 |
-| POST | `/api/v2/groups/{param}/qa/vote` | groups.ts:685 |
-| GET | `/api/v2/groups/{param}/questions` | groups.ts:656 |
-| POST | `/api/v2/groups/{param}/questions` | groups.ts:667 |
-| GET | `/api/v2/groups/{param}/questions/{param}` | groups.ts:660 |
-| POST | `/api/v2/groups/{param}/questions/{param}/answers` | groups.ts:675 |
-| GET | `/api/v2/groups/{param}/task-stats` | groups.ts:740 |
-| GET | `/api/v2/groups/{param}/tasks` | groups.ts:736 |
-| POST | `/api/v2/groups/{param}/tasks` | groups.ts:754 |
-| GET | `/api/v2/groups/{param}/wiki` | groups.ts:696 |
-| POST | `/api/v2/groups/{param}/wiki` | groups.ts:707 |
-| DELETE | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:719 |
-| GET | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:700 |
-| PUT | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:715 |
-| GET | `/api/v2/groups/{param}/wiki/{param}/revisions` | groups.ts:723 |
-| GET | `/api/v2/groups/invite/{param}` | groups.ts:867 |
-| POST | `/api/v2/groups/invite/{param}/accept` | groups.ts:872 |
+| DELETE | `/api/v2/groups/{param}/members/{param}` | groups.ts:603 |
+| PUT | `/api/v2/groups/{param}/members/{param}` | groups.ts:598 |
+| DELETE | `/api/v2/groups/{param}/membership` | groups.ts:917 |
+| POST | `/api/v2/groups/{param}/qa/vote` | groups.ts:751 |
+| GET | `/api/v2/groups/{param}/questions` | groups.ts:722 |
+| POST | `/api/v2/groups/{param}/questions` | groups.ts:733 |
+| GET | `/api/v2/groups/{param}/questions/{param}` | groups.ts:726 |
+| POST | `/api/v2/groups/{param}/questions/{param}/answers` | groups.ts:741 |
+| GET | `/api/v2/groups/{param}/requests` | groups.ts:569 |
+| POST | `/api/v2/groups/{param}/requests/{param}` | groups.ts:584 |
+| GET | `/api/v2/groups/{param}/task-stats` | groups.ts:806 |
+| GET | `/api/v2/groups/{param}/tasks` | groups.ts:802 |
+| POST | `/api/v2/groups/{param}/tasks` | groups.ts:820 |
+| GET | `/api/v2/groups/{param}/wiki` | groups.ts:762 |
+| POST | `/api/v2/groups/{param}/wiki` | groups.ts:773 |
+| DELETE | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:785 |
+| GET | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:766 |
+| PUT | `/api/v2/groups/{param}/wiki/{param}` | groups.ts:781 |
+| GET | `/api/v2/groups/{param}/wiki/{param}/revisions` | groups.ts:789 |
+| GET | `/api/v2/groups/invite/{param}` | groups.ts:933 |
+| POST | `/api/v2/groups/invite/{param}/accept` | groups.ts:938 |
 | GET | `/api/v2/help/faqs` | help.ts:49 |
 | GET | `/api/v2/ideation-campaigns` | ideation.ts:238 |
 | GET | `/api/v2/ideation-campaigns/{param}` | ideation.ts:242 |
@@ -471,18 +477,18 @@ and the places a contract test earns the most.
 | POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:878 |
 | POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:885 |
 | POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:892 |
-| GET | `/api/v2/messages` | messages.ts:144 |
-| POST | `/api/v2/messages` | messages.ts:218, messages.ts:244 |
-| DELETE | `/api/v2/messages/{param}` | messages.ts:213 |
-| GET | `/api/v2/messages/{param}` | messages.ts:151 |
-| PUT | `/api/v2/messages/{param}` | messages.ts:209 |
-| POST | `/api/v2/messages/{param}/reactions` | messages.ts:205 |
-| PUT | `/api/v2/messages/{param}/read` | messages.ts:197 |
-| DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:177 |
-| POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:181 |
-| GET | `/api/v2/messages/restriction-status` | messages.ts:201 |
-| GET | `/api/v2/messages/unread-count` | messages.ts:193 |
-| POST | `/api/v2/messages/voice` | messages.ts:276 |
+| GET | `/api/v2/messages` | messages.ts:145 |
+| POST | `/api/v2/messages` | messages.ts:219 |
+| DELETE | `/api/v2/messages/{param}` | messages.ts:214 |
+| GET | `/api/v2/messages/{param}` | messages.ts:152 |
+| PUT | `/api/v2/messages/{param}` | messages.ts:210 |
+| POST | `/api/v2/messages/{param}/reactions` | messages.ts:206 |
+| PUT | `/api/v2/messages/{param}/read` | messages.ts:198 |
+| DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:178 |
+| POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:182 |
+| GET | `/api/v2/messages/restriction-status` | messages.ts:202 |
+| GET | `/api/v2/messages/unread-count` | messages.ts:194 |
+| POST | `/api/v2/messages/voice` | messages.ts:304 |
 | DELETE | `/api/v2/notifications/{param}` | notifications.ts:119 |
 | POST | `/api/v2/notifications/{param}/read` | notifications.ts:105 |
 | GET | `/api/v2/notifications/counts` | notifications.ts:100 |
@@ -544,11 +550,11 @@ and the places a contract test earns the most.
 | GET | `/api/v2/skills/categories/{param}` | endorsements.ts:259 |
 | GET | `/api/v2/skills/members` | endorsements.ts:263 |
 | GET | `/api/v2/skills/search` | endorsements.ts:250 |
-| DELETE | `/api/v2/team-tasks/{param}` | groups.ts:765 |
-| PUT | `/api/v2/team-tasks/{param}` | groups.ts:761 |
-| GET | `/api/v2/tenant/bootstrap` | tenant.ts:66 |
-| GET | `/api/v2/tenants` | tenant.ts:78 |
-| GET | `/api/v2/users` | client.ts:638, members.ts:76 |
+| DELETE | `/api/v2/team-tasks/{param}` | groups.ts:831 |
+| PUT | `/api/v2/team-tasks/{param}` | groups.ts:827 |
+| GET | `/api/v2/tenant/bootstrap` | tenant.ts:66, tenant.ts:86 |
+| GET | `/api/v2/tenants` | tenant.ts:101 |
+| GET | `/api/v2/users` | client.ts:656, members.ts:76 |
 | GET | `/api/v2/users/{param}` | members.ts:81 |
 | GET | `/api/v2/users/{param}/appreciations` | appreciations.ts:46 |
 | DELETE | `/api/v2/users/{param}/block` | settings.ts:143 |
@@ -557,7 +563,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users/{param}/public-collections` | savedCollections.ts:59 |
 | GET | `/api/v2/users/blocked` | settings.ts:127 |
 | DELETE | `/api/v2/users/me` | settings.ts:123 |
-| GET | `/api/v2/users/me` | auth.ts:196 |
+| GET | `/api/v2/users/me` | auth.ts:240 |
 | PUT | `/api/v2/users/me` | profile.ts:25 |
 | GET | `/api/v2/users/me/activity/dashboard` | activity.ts:72 |
 | POST | `/api/v2/users/me/avatar` | profile.ts:95 |
