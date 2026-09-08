@@ -692,7 +692,6 @@
       "TS2556": 1
     },
     "src/components/caring-community/EmergencyAlertBanner.test.tsx": {
-      "TS2322": 1,
       "TS2352": 1
     },
     "src/components/caring-community/OnboardingChoiceModal.test.tsx": {
@@ -700,9 +699,6 @@
     },
     "src/components/caring-community/ProximityFilter.test.tsx": {
       "TS2345": 2
-    },
-    "src/components/caring-community/ReciprocalBalanceWidget.test.tsx": {
-      "TS2322": 1
     },
     "src/components/caring-community/SubRegionFilter.test.tsx": {
       "TS2345": 4
@@ -1025,7 +1021,6 @@
       "TS2345": 1
     },
     "src/components/marketplace/MapSearchView.test.tsx": {
-      "TS2322": 1,
       "TS2345": 1
     },
     "src/components/marketplace/MarketplaceFacetedSearch.test.tsx": {
@@ -1071,9 +1066,6 @@
     "src/components/pwa/InstallBanner.test.tsx": {
       "TS2322": 2,
       "TS2367": 1
-    },
-    "src/components/routing/FeatureGate.test.tsx": {
-      "TS2352": 4
     },
     "src/components/routing/TenantShell.test.tsx": {
       "TS2322": 22,
@@ -1349,9 +1341,6 @@
     "src/pages/caring-community/CoverCarePage.test.tsx": {
       "TS2345": 1
     },
-    "src/pages/caring-community/FutureCareFundPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/caring-community/InviteRedemptionPage.test.tsx": {
       "TS2345": 5
     },
@@ -1366,7 +1355,6 @@
       "TS2345": 2
     },
     "src/pages/caring-community/MyDataExportPage.test.tsx": {
-      "TS2322": 1,
       "TS2352": 1
     },
     "src/pages/caring-community/MyTrustTierPage.test.tsx": {
@@ -1676,7 +1664,6 @@
       "TS2532": 1
     },
     "src/pages/marketplace/FreeItemsPage.test.tsx": {
-      "TS2322": 1,
       "TS2741": 7
     },
     "src/pages/marketplace/MarketplaceMapSearchPage.test.tsx": {
@@ -1788,8 +1775,7 @@
       "TS2345": 4
     },
     "src/pages/profile/ProfilePage.test.tsx": {
-      "TS2322": 3,
-      "TS2345": 1
+      "TS2322": 3
     },
     "src/pages/public/AboutPage.test.tsx": {
       "TS2769": 1
@@ -1966,7 +1952,7 @@
     }
   },
   "totals": {
-    "fileCount": 579,
-    "errorCount": 1784
+    "fileCount": 576,
+    "errorCount": 1773
   }
 }

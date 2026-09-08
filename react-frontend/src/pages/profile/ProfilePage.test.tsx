@@ -12,8 +12,8 @@ import { render, screen, waitFor } from '@/test/test-utils';
 
 const { mockApiGet, mockUseFeature, mockHasModule, routeState, AUTH_STATE } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
-  mockHasModule: vi.fn(() => true),
-  mockUseFeature: vi.fn(() => true),
+  mockHasModule: vi.fn((_module: string) => true),
+  mockUseFeature: vi.fn((_feature: string) => true),
   // Mutable route id so a test can simulate navigating from one profile to another
   // (the stale-data regression needs the :id param to change mid-component-life).
   routeState: { id: '42' },

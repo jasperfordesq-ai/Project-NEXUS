@@ -11,8 +11,8 @@ import { useTenant } from '@/contexts/TenantContext';
 
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: vi.fn(() => ({
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     isLoading: false,
     tenantPath: vi.fn((p: string) => `/test${p}`),
   })),
@@ -53,11 +53,11 @@ describe('FeatureGate', () => {
 
   it('hides children when feature is disabled', () => {
     vi.mocked(useTenant).mockReturnValue({
-      hasFeature: vi.fn(() => false),
-      hasModule: vi.fn(() => true),
+      hasFeature: vi.fn((_key: string) => false),
+      hasModule: vi.fn((_key: string) => true),
       isLoading: false,
       tenantPath: vi.fn((p: string) => `/test${p}`),
-    } as ReturnType<typeof useTenant>);
+    } as unknown as ReturnType<typeof useTenant>);
 
     render(
       <FeatureGate feature="events">
@@ -69,11 +69,11 @@ describe('FeatureGate', () => {
 
   it('renders fallback when feature is disabled', () => {
     vi.mocked(useTenant).mockReturnValue({
-      hasFeature: vi.fn(() => false),
-      hasModule: vi.fn(() => true),
+      hasFeature: vi.fn((_key: string) => false),
+      hasModule: vi.fn((_key: string) => true),
       isLoading: false,
       tenantPath: vi.fn((p: string) => `/test${p}`),
-    } as ReturnType<typeof useTenant>);
+    } as unknown as ReturnType<typeof useTenant>);
 
     render(
       <FeatureGate feature="events" fallback={<div>Feature unavailable</div>}>
@@ -86,11 +86,11 @@ describe('FeatureGate', () => {
 
   it('does not mount protected children or start effects while loading', () => {
     vi.mocked(useTenant).mockReturnValue({
-      hasFeature: vi.fn(() => false),
-      hasModule: vi.fn(() => false),
+      hasFeature: vi.fn((_key: string) => false),
+      hasModule: vi.fn((_key: string) => false),
       isLoading: true,
       tenantPath: vi.fn((p: string) => `/test${p}`),
-    } as ReturnType<typeof useTenant>);
+    } as unknown as ReturnType<typeof useTenant>);
 
     const effect = vi.fn();
     function ProtectedContent() {
@@ -111,7 +111,7 @@ describe('FeatureGate', () => {
       vi.mocked(useTenant).mockReturnValue({
         hasFeature: () => featureEnabled, hasModule: () => moduleEnabled,
         isLoading: false, tenantPath: (p: string) => `/test${p}`,
-      } as ReturnType<typeof useTenant>);
+      } as unknown as ReturnType<typeof useTenant>);
       render(<FeatureGate feature="direct_messaging" module="messages"><div>Protected content</div></FeatureGate>);
       expect(screen.queryByText('Protected content') !== null).toBe(featureEnabled && moduleEnabled);
     },
@@ -119,11 +119,11 @@ describe('FeatureGate', () => {
 
   it('renders children when neither feature nor module specified', () => {
     vi.mocked(useTenant).mockReturnValue({
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasFeature: vi.fn((_key: string) => true),
+      hasModule: vi.fn((_key: string) => true),
       isLoading: false,
       tenantPath: vi.fn((p: string) => `/test${p}`),
-    } as ReturnType<typeof useTenant>);
+    } as unknown as ReturnType<typeof useTenant>);
 
     render(
       <FeatureGate>

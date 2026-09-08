@@ -33,7 +33,7 @@ vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: mockUseMediaQuery }));
 // ─── Toast / Auth / Tenant / Notifications ────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() };
 const mockNavigate = vi.fn();
-const mockHasModule = vi.fn(() => true);
+const mockHasModule = vi.fn((_module: string) => true);
 const mockMarkAsRead = vi.fn().mockResolvedValue(undefined);
 const mockMarkAllAsRead = vi.fn().mockResolvedValue(undefined);
 

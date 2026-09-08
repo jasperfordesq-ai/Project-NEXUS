@@ -58,8 +58,8 @@ vi.mock('@/contexts', () =>
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
-      hasFeature: (key: string) => !disabled.has(key),
-      hasModule: (key: string) => !disabled.has(key),
+      hasFeature: vi.fn((key: string) => !disabled.has(key)),
+      hasModule: vi.fn((key: string) => !disabled.has(key)),
     }),
   })
 );

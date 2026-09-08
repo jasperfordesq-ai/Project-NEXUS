@@ -55,14 +55,20 @@ const DEFAULTS = {
   }),
 
   // TenantContext
+  //
+  // 🔴 These four take the key they are asked about. Declared as `vi.fn(() => true)` they
+  // infer `Mock<() => boolean>`, so any test that overrides one to answer per key —
+  // `hasModule.mockImplementation((m) => m !== 'messages')`, the whole point of a module
+  // switch — fails to type-check against this helper. That surfaced as six new errors on
+  // the test-type ratchet when module gating landed on 2026-09-07.
   useTenant: () => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
   }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
+  useFeature: vi.fn((_key: string) => true),
+  useModule: vi.fn((_key: string) => true),
 
   // ToastContext
   useToast: () => ({
