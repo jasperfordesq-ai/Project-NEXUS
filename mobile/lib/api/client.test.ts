@@ -210,6 +210,34 @@ describe('api.get', () => {
     expect(options.headers.Authorization).toBeUndefined();
   });
 
+  /**
+   * 🔴 Deliberately the ONLY way to ask about another community. A caller-supplied
+   * `X-Tenant-Slug` header is still ignored (see the merge test above), because
+   * smuggling one in should not work; `tenantSlug` states the intent instead.
+   *
+   * Needed by the community picker, which must find out whether the community a
+   * signed-in member picked can be loaded BEFORE it signs them out for it.
+   */
+  it('addresses one request to a different community without changing what is stored', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ data: {} }));
+
+    await api.get('/api/v2/tenant/bootstrap', undefined, {
+      anonymous: true,
+      tenantSlug: 'west-cork',
+    });
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers['X-Tenant-Slug']).toBe('west-cork');
+    // Anonymous, so the current community's token cannot make the other one refuse.
+    expect(options.headers.Authorization).toBeUndefined();
+
+    // Nothing was written — the next ordinary request is still the stored community.
+    fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
+    await api.get('/api/v2/listings');
+    expect(fetchMock.mock.calls[1][1].headers['X-Tenant-Slug']).toBe('hour-timebank');
+    expect(mockStorage.set).not.toHaveBeenCalled();
+  });
+
   it('omits X-Tenant-Slug header when no tenant is stored', async () => {
     mockStorage.get.mockImplementation(async (key: string) => {
       if (key === 'nexus_auth_token') return 'test-token';

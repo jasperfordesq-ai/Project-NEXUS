@@ -411,6 +411,24 @@ export interface RequestOptions {
    * outcome: it would be silently ignored.
    */
   body?: unknown;
+  /**
+   * Send this ONE request as if a different community were selected, without
+   * changing what is stored. `options.headers` cannot do this — the tenant header
+   * is applied last and is authoritative — and that is deliberate, so this is the
+   * single explicit way to ask about a community other than the current one.
+   *
+   * 🔴 The case that forced it: switching community while signed in has to sign
+   * the member out, because a token issued by one community is refused by another.
+   * The picker did that first and only then tried to load the new community — so
+   * if the new one could not be reached, the member had been signed out for
+   * nothing and was back where they started with their session gone. Checking
+   * first requires asking about a community that is not the stored one.
+   *
+   * Use it with `anonymous: true` for genuinely public endpoints. It does not
+   * grant access to anything: a token issued elsewhere is refused by the server
+   * exactly as before.
+   */
+  tenantSlug?: string;
 }
 
 async function request<T>(
@@ -465,7 +483,7 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const resolvedTenantSlug = tenantSlug?.trim() || DEFAULT_TENANT;
+  const resolvedTenantSlug = options.tenantSlug?.trim() || tenantSlug?.trim() || DEFAULT_TENANT;
   if (resolvedTenantSlug) {
     // The PHP API resolves the tenant from this header on non-subdomain routes
     headers['X-Tenant-Slug'] = resolvedTenantSlug;

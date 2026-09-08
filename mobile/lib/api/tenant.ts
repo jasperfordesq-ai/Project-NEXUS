@@ -67,6 +67,29 @@ export function getTenantConfig(): Promise<{ data: TenantConfig }> {
 }
 
 /**
+ * The same bootstrap, for a community that is NOT the selected one, and without
+ * changing anything that is stored.
+ *
+ * 🔴 This exists so the community picker can find out whether a community can be
+ * loaded BEFORE it signs the member out. Switching community necessarily ends the
+ * session — a token issued by one community is refused by another — and the picker
+ * used to sign out first and discover the new community was unreachable second,
+ * which cost the member their session and gave them nothing for it.
+ *
+ * Sent anonymously on purpose. Bootstrap is what the app calls on a fresh install
+ * before anyone has signed in, so it needs no token; and sending the CURRENT
+ * community's token while asking about a DIFFERENT one is the exact thing the
+ * server answers with `403 "Token tenant does not match requested tenant"` — the
+ * same trap that once made the community picker itself unloadable.
+ */
+export function getTenantConfigFor(slug: string): Promise<{ data: TenantConfig }> {
+  return api.get<{ data: TenantConfig }>(`${API_V2}/tenant/bootstrap`, undefined, {
+    anonymous: true,
+    tenantSlug: slug,
+  });
+}
+
+/**
  * GET /api/v2/tenants — public list of available tenants (for tenant picker)
  *
  * 🔴 Deliberately sent WITHOUT the stored token. This list is public, and sending a token

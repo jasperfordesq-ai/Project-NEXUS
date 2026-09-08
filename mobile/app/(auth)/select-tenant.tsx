@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button as HeroButton, Card as HeroCard, Separator, Spinner } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 
-import { listTenants, type TenantListItem } from '@/lib/api/tenant';
+import { getTenantConfigFor, listTenants, type TenantListItem } from '@/lib/api/tenant';
 import { useAuthContext } from '@/lib/context/AuthContext';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
@@ -58,9 +58,21 @@ export default function SelectTenantScreen() {
    * out while the stored slug is still the community that issued the token — swap the slug
    * first and the logout request itself is refused with the same 403, leaving a live session
    * on the server. Sign out first, change the community second.
+   *
+   * 🔴 Which is exactly why the target community is checked FIRST, before anything is
+   * given up. Until 2026-09-08 this was `logout()` then `setTenantSlug()`, and
+   * `setTenantSlug` throws when the new community's bootstrap cannot be loaded — a
+   * flaky connection, a community taken offline, a slug the API no longer knows. The
+   * member was then signed out, still in their old community, with a toast and nothing
+   * to show for it: the switch had not happened AND the session was gone. Asking the
+   * question while it is still free costs one request and makes the failure harmless.
    */
   const applySwitch = useCallback(
     async (tenant: TenantListItem) => {
+      // Anonymous, and explicitly addressed to the target community, so it neither
+      // needs nor disturbs the current session. Nothing is stored by this call.
+      await getTenantConfigFor(tenant.slug);
+
       await logout();
       await setTenantSlug(tenant.slug);
       router.replace('/login');
@@ -97,16 +109,27 @@ export default function SelectTenantScreen() {
     try {
       await applySwitch(pendingSwitch);
     } catch (error) {
+      // Two things the member needs, in this order: why it failed, and that nothing
+      // was given up. The reason comes from the server through `describeApiError`
+      // (which withholds anything not fit to show); the reassurance is only true
+      // because the pre-flight above runs before the sign-out, so state it plainly
+      // rather than leaving them wondering whether they are still signed in.
       showToast({
-        title: t('common:errors.alertTitle'),
-        description: describeApiError(error, t('common:errors.generic')),
+        title: t('selectTenant.switchFailedTitle'),
+        description: t('selectTenant.switchFailed', {
+          reason: describeApiError(
+            error,
+            t('selectTenant.switchUnreachable', { next: pendingSwitch.name }),
+          ),
+          current: activeTenant?.name ?? t('selectTenant.switchCurrentFallback'),
+        }),
         variant: 'danger',
       });
     } finally {
       setIsSwitching(false);
       setPendingSwitch(null);
     }
-  }, [pendingSwitch, applySwitch, showToast, t]);
+  }, [pendingSwitch, applySwitch, showToast, t, activeTenant?.name]);
 
   const ItemSeparator = useCallback(() => <View className="h-3" />, []);
 

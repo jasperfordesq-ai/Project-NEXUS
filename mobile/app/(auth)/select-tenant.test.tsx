@@ -11,6 +11,7 @@ const mockReplace = jest.fn();
 const mockSetTenantSlug = jest.fn().mockResolvedValue(undefined);
 const mockRefresh = jest.fn();
 const mockLogout = jest.fn().mockResolvedValue(undefined);
+const mockGetTenantConfigFor = jest.fn<Promise<unknown>, [string]>();
 const mockShowToast = jest.fn();
 /** Order matters in one of the cases below, so record the sequence, not just the calls. */
 const callOrder: string[] = [];
@@ -60,6 +61,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
 
 jest.mock('@/lib/api/tenant', () => ({
   listTenants: jest.fn(),
+  getTenantConfigFor: (...args: unknown[]) => mockGetTenantConfigFor(...(args as [string])),
 }));
 
 jest.mock('@/components/ui/AppToast', () => ({
@@ -109,6 +111,10 @@ describe('SelectTenantScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     callOrder.length = 0;
+    mockGetTenantConfigFor.mockImplementation(async () => {
+      callOrder.push('checkTargetCommunity');
+      return { data: { slug: 'west-cork' } };
+    });
     mockLogout.mockImplementation(async () => {
       callOrder.push('logout');
     });
@@ -224,7 +230,7 @@ describe('SelectTenantScreen', () => {
       community first and the sign-out itself is refused with the same 403, leaving a live
       session behind on the server.
     */
-    expect(callOrder).toEqual(['logout', 'setTenantSlug']);
+    expect(callOrder).toEqual(['checkTargetCommunity', 'logout', 'setTenantSlug']);
   });
 
   it('keeps the chosen community unchanged and explains when sign-out fails', async () => {
@@ -283,5 +289,60 @@ describe('SelectTenantScreen', () => {
     expect(UNSAFE_getAllByType(ExpoImage)[0].props.source.uri).toBe(
       'https://api.project-nexus.ie/uploads/tenants/west-cork.png',
     );
+  });
+
+  /**
+   * 🔴 The switch has to end the session, so the question "can the new community
+   * actually be loaded?" must be asked while the answer is still free. Until
+   * 2026-09-08 it was asked afterwards: `logout()` ran, `setTenantSlug()` then
+   * threw on an unreachable community and put the old slug back, and the member was
+   * left signed out, in the community they started in, with nothing gained.
+   */
+  it('does not sign anyone out when the community they picked cannot be reached', async () => {
+    mockIsAuthenticated = true;
+    mockGetTenantConfigFor.mockRejectedValueOnce(new Error('offline'));
+    const { getByLabelText, getByTestId } = render(<SelectTenantScreen />);
+
+    fireEvent.press(getByLabelText('West Cork Timebank'));
+    await waitFor(() => expect(getByTestId('tenant-switch-confirm')).toBeTruthy());
+    fireEvent.press(getByTestId('tenant-switch-confirm'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+
+    // The session survives, the community is unchanged, and nobody is navigated away.
+    expect(mockLogout).not.toHaveBeenCalled();
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('tells the member their session is intact rather than showing a bare error', async () => {
+    mockIsAuthenticated = true;
+    mockGetTenantConfigFor.mockRejectedValueOnce(new Error('offline'));
+    const { getByLabelText, getByTestId } = render(<SelectTenantScreen />);
+
+    fireEvent.press(getByLabelText('West Cork Timebank'));
+    await waitFor(() => expect(getByTestId('tenant-switch-confirm')).toBeTruthy());
+    fireEvent.press(getByTestId('tenant-switch-confirm'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      variant: 'danger',
+      // Names the community that failed AND the one they are still in — a generic
+      // "something went wrong" leaves them unsure whether they are still signed in.
+      description: expect.stringContaining('West Cork Timebank'),
+    })));
+    expect(mockShowToast.mock.calls[0][0].description).toContain('hOUR Timebank');
+  });
+
+  it('asks the target community anonymously, so the current session cannot refuse it', async () => {
+    // Sending the CURRENT community's token while asking about a DIFFERENT one is what
+    // the server answers with "Token tenant does not match requested tenant".
+    mockIsAuthenticated = true;
+    const { getByLabelText, getByTestId } = render(<SelectTenantScreen />);
+
+    fireEvent.press(getByLabelText('West Cork Timebank'));
+    await waitFor(() => expect(getByTestId('tenant-switch-confirm')).toBeTruthy());
+    fireEvent.press(getByTestId('tenant-switch-confirm'));
+
+    await waitFor(() => expect(mockGetTenantConfigFor).toHaveBeenCalledWith('west-cork'));
   });
 });
