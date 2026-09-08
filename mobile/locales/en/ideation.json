@@ -100,7 +100,12 @@
     "back_to_challenge": "Back to Challenge",
     "submitted_by": "Submitted by {{name}}",
     "submitted_on": "Submitted on {{date}}",
-    "actions": "Idea actions"
+    "actions": "Idea actions",
+    "withdraw": "Withdraw this idea",
+    "withdraw_title": "Withdraw this idea?",
+    "withdraw_message": "It will be removed from the challenge along with its votes and comments. This cannot be undone.",
+    "withdrawn": "Idea withdrawn",
+    "withdraw_failed": "Could not withdraw the idea. Please try again."
   },
   "comments": {
     "title": "Comments",
@@ -113,7 +118,10 @@
     "delete_confirm": "Are you sure you want to delete this comment?",
     "load_more": "Load More Comments",
     "load_error": "Unable to load comments",
-    "loading": "Loading comments..."
+    "loading": "Loading comments...",
+    "delete_title": "Delete this comment?",
+    "delete_message": "Your comment will be removed from this idea.",
+    "delete_failed": "Could not delete the comment. Please try again."
   },
   "form": {
     "title_label": "Title",

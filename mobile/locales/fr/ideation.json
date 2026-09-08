@@ -104,7 +104,12 @@
     "back_to_challenge": "Retour au defi",
     "submitted_by": "Soumise par {{name}}",
     "submitted_on": "Soumise le {{date}}",
-    "actions": "Actions de l idee"
+    "actions": "Actions de l idee",
+    "withdraw": "Retirer cette idée",
+    "withdraw_title": "Retirer cette idée ?",
+    "withdraw_message": "Elle sera supprimée du défi avec ses votes et ses commentaires. Cette action est irréversible.",
+    "withdrawn": "Idée retirée",
+    "withdraw_failed": "Impossible de retirer l'idée. Veuillez réessayer."
   },
   "comments": {
     "title": "Commentaires",
@@ -117,7 +122,10 @@
     "delete_confirm": "Etes-vous sur de vouloir supprimer ce commentaire ?",
     "load_more": "Charger plus de commentaires",
     "load_error": "Impossible de charger les commentaires",
-    "loading": "Chargement des commentaires..."
+    "loading": "Chargement des commentaires...",
+    "delete_title": "Supprimer ce commentaire ?",
+    "delete_message": "Votre commentaire sera supprimé de cette idée.",
+    "delete_failed": "Impossible de supprimer le commentaire. Veuillez réessayer."
   },
   "form": {
     "title_label": "Titre",

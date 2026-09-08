@@ -104,7 +104,12 @@
     "back_to_challenge": "Volver al Reto",
     "submitted_by": "Enviado por {{name}}",
     "submitted_on": "Enviado el {{date}}",
-    "actions": "Acciones de idea"
+    "actions": "Acciones de idea",
+    "withdraw": "Retirar esta idea",
+    "withdraw_title": "¿Retirar esta idea?",
+    "withdraw_message": "Se eliminará del reto junto con sus votos y comentarios. Esto no se puede deshacer.",
+    "withdrawn": "Idea retirada",
+    "withdraw_failed": "No se pudo retirar la idea. Inténtalo de nuevo."
   },
   "comments": {
     "title": "Comentarios",
@@ -117,7 +122,10 @@
     "delete_confirm": "¿Estás seguro de que quieres eliminar este comentario?",
     "load_more": "Cargar Más Comentarios",
     "load_error": "No se pudieron cargar los comentarios",
-    "loading": "Cargando comentarios..."
+    "loading": "Cargando comentarios...",
+    "delete_title": "¿Eliminar este comentario?",
+    "delete_message": "Tu comentario se eliminará de esta idea.",
+    "delete_failed": "No se pudo eliminar el comentario. Inténtalo de nuevo."
   },
   "form": {
     "title_label": "Título",

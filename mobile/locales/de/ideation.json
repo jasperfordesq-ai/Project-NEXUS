@@ -100,7 +100,12 @@
     "back_to_challenge": "Zurück zum Wettbewerb",
     "submitted_by": "Eingereicht von {{name}}",
     "submitted_on": "Eingereicht am {{date}}",
-    "actions": "Ideenaktionen"
+    "actions": "Ideenaktionen",
+    "withdraw": "Diese Idee zurückziehen",
+    "withdraw_title": "Diese Idee zurückziehen?",
+    "withdraw_message": "Sie wird zusammen mit ihren Stimmen und Kommentaren aus der Challenge entfernt. Das lässt sich nicht rückgängig machen.",
+    "withdrawn": "Idee zurückgezogen",
+    "withdraw_failed": "Die Idee konnte nicht zurückgezogen werden. Bitte versuchen Sie es erneut."
   },
   "comments": {
     "title": "Kommentare",
@@ -113,7 +118,10 @@
     "delete_confirm": "Möchten Sie diesen Kommentar wirklich löschen?",
     "load_more": "Mehr Kommentare laden",
     "load_error": "Kommentare konnten nicht geladen werden",
-    "loading": "Kommentare werden geladen..."
+    "loading": "Kommentare werden geladen...",
+    "delete_title": "Diesen Kommentar löschen?",
+    "delete_message": "Ihr Kommentar wird von dieser Idee entfernt.",
+    "delete_failed": "Der Kommentar konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
   },
   "form": {
     "title_label": "Titel",

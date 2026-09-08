@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockToast = jest.fn();
 let mockParams: Record<string, string> = {};
@@ -72,6 +72,19 @@ jest.mock('@/lib/api/ideation', () => ({
   addIdeationComment: jest.fn(),
   voteIdeationIdea: jest.fn(),
   updateIdeationIdea: jest.fn(),
+  deleteIdeationIdea: jest.fn(),
+  deleteIdeationComment: jest.fn(),
+}));
+
+/*
+  🔴 Records the question, does not answer it. A confirm mock that runs `onConfirm`
+  itself makes every confirmation on the screen invisible — the cases below would pass
+  with the dialog deleted, which is the shape that hid a one-tap cross-community
+  transfer on member-profile.
+*/
+const mockConfirm = jest.fn<void, [{ title: string; message?: string; variant?: string; onConfirm: () => void | Promise<void> }]>();
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...(args as [never])), confirmDialog: null }),
 }));
 
 import IdeationIdeaScreen from './ideation-idea';
@@ -220,4 +233,68 @@ describe('IdeationIdeaScreen', () => {
     fireEvent.press(getByText('Retry'));
     await waitFor(() => expect(getIdeationIdea).toHaveBeenCalled());
   }, 12000);
+
+  /*
+    🔴 A member could post an idea to their whole community and had no way to take it
+    back — a typo in public, a duplicate, or something they thought better of, all
+    permanent from the phone. Same for their own comment. Both endpoints allow the
+    author and had no caller in the app. Audit 2026-09-07 F-19, fixed 2026-09-08.
+  */
+  describe('taking your own words back', () => {
+    it('asks before withdrawing an idea, and withdraws only on yes', async () => {
+      const { deleteIdeationIdea } = require('@/lib/api/ideation');
+      jest.mocked(deleteIdeationIdea).mockResolvedValue({});
+      const screen = render(<IdeationIdeaScreen />);
+      await waitFor(() => expect(screen.getByTestId('idea-withdraw')).toBeTruthy());
+
+      fireEvent.press(screen.getByTestId('idea-withdraw'));
+
+      expect(deleteIdeationIdea).not.toHaveBeenCalled();
+      expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+
+      await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
+      expect(deleteIdeationIdea).toHaveBeenCalledWith(31);
+    });
+
+    it('offers no withdraw button to somebody else', async () => {
+      mockUser = { id: 999 };
+      const screen = render(<IdeationIdeaScreen />);
+      await waitFor(() => expect(screen.getByText('Orchard on the green')).toBeTruthy());
+
+      // The server refuses anyone but the author; an offer that is always refused is
+      // worse than no offer.
+      expect(screen.queryByTestId('idea-withdraw')).toBeNull();
+    });
+
+    it('offers delete only on your own comment', async () => {
+      // This comment belongs to user 8; the viewer is user 7.
+      jest.mocked(getIdeationComments).mockResolvedValue({
+        items: [{ id: 1, idea_id: 31, user_id: 8, body: 'Love this', author: { id: 8, name: 'Bram' } }],
+        nextCursor: null, hasMore: false,
+      } as never);
+      const screen = render(<IdeationIdeaScreen />);
+      await waitFor(() => expect(screen.getByText('Love this')).toBeTruthy());
+
+      expect(screen.queryByTestId('idea-comment-delete-1')).toBeNull();
+    });
+
+    it('asks before deleting your own comment, and reloads the list after', async () => {
+      const { deleteIdeationComment } = require('@/lib/api/ideation');
+      jest.mocked(deleteIdeationComment).mockResolvedValue({});
+      mockUser = { id: 8 };
+      jest.mocked(getIdeationComments).mockResolvedValue({
+        items: [{ id: 1, idea_id: 31, user_id: 8, body: 'Love this', author: { id: 8, name: 'Bram' } }],
+        nextCursor: null, hasMore: false,
+      } as never);
+
+      const screen = render(<IdeationIdeaScreen />);
+      await waitFor(() => expect(screen.getByTestId('idea-comment-delete-1')).toBeTruthy());
+
+      fireEvent.press(screen.getByTestId('idea-comment-delete-1'));
+      expect(deleteIdeationComment).not.toHaveBeenCalled();
+
+      await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
+      expect(deleteIdeationComment).toHaveBeenCalledWith(1);
+    });
+  });
 });

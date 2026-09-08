@@ -104,7 +104,12 @@
     "back_to_challenge": "Torna alla Sfida",
     "submitted_by": "Inviata da {{name}}",
     "submitted_on": "Inviata il {{date}}",
-    "actions": "Azioni idea"
+    "actions": "Azioni idea",
+    "withdraw": "Ritira questa idea",
+    "withdraw_title": "Ritirare questa idea?",
+    "withdraw_message": "Verrà rimossa dalla sfida insieme ai suoi voti e commenti. Non è possibile annullare.",
+    "withdrawn": "Idea ritirata",
+    "withdraw_failed": "Non è stato possibile ritirare l'idea. Riprova."
   },
   "comments": {
     "title": "Commenti",
@@ -117,7 +122,10 @@
     "delete_confirm": "Sei sicuro di voler eliminare questo commento?",
     "load_more": "Carica Altri Commenti",
     "load_error": "Impossibile caricare i commenti",
-    "loading": "Caricamento commenti..."
+    "loading": "Caricamento commenti...",
+    "delete_title": "Eliminare questo commento?",
+    "delete_message": "Il tuo commento verrà rimosso da questa idea.",
+    "delete_failed": "Non è stato possibile eliminare il commento. Riprova."
   },
   "form": {
     "title_label": "Titolo",

@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { type Href, useLocalSearchParams } from 'expo-router';
+import { type Href, router, useLocalSearchParams } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -19,11 +19,15 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { Chip } from '@/components/ui/StatusChip';
 import {
   addIdeationComment,
+  deleteIdeationComment,
+  deleteIdeationIdea,
   getIdeationComments,
   getIdeationIdea,
   updateIdeationIdea,
   voteIdeationIdea,
 } from '@/lib/api/ideation';
+import { describeApiError } from '@/lib/api/describeApiError';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { useTenant } from '@/lib/hooks/useTenant';
@@ -38,11 +42,81 @@ function IdeationIdeaScreen() {
   const { hasFeature } = useTenant();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const ideaState = useApi(() => getIdeationIdea(ideaId), [ideaId], { enabled: hasFeature('ideation_challenges') && ideaId > 0 });
   const commentsState = useApi(() => getIdeationComments(ideaId), [ideaId], { enabled: hasFeature('ideation_challenges') && ideaId > 0 });
   const idea = ideaState.data;
   const challengeId = Number(routeChallengeId ?? idea?.challenge_id ?? 0);
   const isOwner = Boolean(user && idea?.user_id === user.id);
+
+  /*
+    🔴 A member could post an idea to their whole community and then had no way to take
+    it back: a typo in public, a duplicate, or something they thought better of, all
+    permanent from the phone. Same for their own comment. Both endpoints allow the
+    author (or an admin) and had no caller in the app at all.
+    Audit 2026-09-07 F-19, fixed 2026-09-08.
+  */
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function removeIdea() {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await deleteIdeationIdea(ideaId);
+      showToast({ title: t('ideation:idea_detail.withdrawn'), variant: 'success' });
+      // Back to the list: the screen they are standing on no longer describes anything.
+      router.replace('/(modals)/ideation');
+    } catch (err) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('ideation:idea_detail.withdraw_failed')),
+        variant: 'danger',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function confirmRemoveIdea() {
+    confirm({
+      title: t('ideation:idea_detail.withdraw_title'),
+      message: t('ideation:idea_detail.withdraw_message'),
+      confirmLabel: t('ideation:idea_detail.withdraw'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'idea-withdraw-confirm',
+      onConfirm: () => removeIdea(),
+    });
+  }
+
+  async function removeComment(commentId: number) {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await deleteIdeationComment(commentId);
+      commentsState.refresh();
+    } catch (err) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('ideation:comments.delete_failed')),
+        variant: 'danger',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function confirmRemoveComment(commentId: number) {
+    confirm({
+      title: t('ideation:comments.delete_title'),
+      message: t('ideation:comments.delete_message'),
+      confirmLabel: t('common:buttons.delete'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'idea-comment-delete-confirm',
+      onConfirm: () => removeComment(commentId),
+    });
+  }
   const [comment, setComment] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
@@ -150,6 +224,16 @@ function IdeationIdeaScreen() {
                       <HeroButton className="flex-1" variant={idea.has_voted ? 'primary' : 'secondary'} isDisabled={isVoting} onPress={() => void vote()}><HeroButton.Label>{idea.has_voted ? t('ideation:voted') : t('ideation:vote')}</HeroButton.Label></HeroButton>
                       {isOwner ? <HeroButton className="flex-1" variant="secondary" onPress={() => setIsEditing(true)}><HeroButton.Label>{t('ideation:ideas.edit')}</HeroButton.Label></HeroButton> : null}
                     </View>
+                    {isOwner ? (
+                      <HeroButton
+                        variant="danger"
+                        isDisabled={isDeleting}
+                        testID="idea-withdraw"
+                        onPress={confirmRemoveIdea}
+                      >
+                        <HeroButton.Label>{t('ideation:idea_detail.withdraw')}</HeroButton.Label>
+                      </HeroButton>
+                    ) : null}
                   </>}
                 </HeroCard.Body></HeroCard>
 
@@ -158,13 +242,31 @@ function IdeationIdeaScreen() {
                   <Input label={t('ideation:comments.add_label')} value={comment} onChangeText={setComment} placeholder={t('ideation:comments.add_placeholder')} multiline numberOfLines={3} />
                   <HeroButton isDisabled={!comment.trim() || isPosting} onPress={() => void postComment()}><HeroButton.Label>{isPosting ? t('ideation:form.saving') : t('ideation:comments.add_button')}</HeroButton.Label></HeroButton>
                   {commentsState.isLoading && !commentsState.data ? <LoadingSpinner /> : commentsState.error ? <EmptyState icon="warning-outline" title={t('ideation:comments.load_error')} subtitle={commentsState.error} actionLabel={t('ideation:actions.retry')} onAction={commentsState.refresh} /> : (commentsState.data?.items.length ?? 0) === 0 ? <EmptyState icon="chatbubble-outline" title={t('ideation:comments.empty_title')} subtitle={t('ideation:comments.empty_description')} /> : commentsState.data?.items.map((item) => (
-                    <View key={item.id} className="gap-1 border-t border-divider py-3"><Text className="text-sm font-semibold" style={{ color: theme.text }}>{item.author?.name ?? t('common:unknown')}</Text><Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{item.body}</Text></View>
+                    <View key={item.id} className="gap-1 border-t border-divider py-3">
+                      <Text className="text-sm font-semibold" style={{ color: theme.text }}>{item.author?.name ?? t('common:unknown')}</Text>
+                      <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{item.body}</Text>
+                      {/* Their own comment only. The server refuses anyone else, and an
+                          offer that is always refused is worse than no offer. */}
+                      {user && item.user_id === user.id ? (
+                        <HeroButton
+                          size="sm"
+                          variant="ghost"
+                          className="min-h-0 items-start px-0 py-0"
+                          isDisabled={isDeleting}
+                          testID={`idea-comment-delete-${item.id}`}
+                          onPress={() => confirmRemoveComment(item.id)}
+                        >
+                          <HeroButton.Label className="text-xs">{t('common:buttons.delete')}</HeroButton.Label>
+                        </HeroButton>
+                      ) : null}
+                    </View>
                   ))}
                 </HeroCard.Body></HeroCard>
               </View>
             )}
           </ScrollView>
         </KeyboardAvoidingView>
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );

@@ -22,9 +22,9 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2240 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 59 |
-| Call sites | 604 |
-| Distinct method + endpoint pairs | 512 |
-| Verified against openapi.json | 512 |
+| Call sites | 606 |
+| Distinct method + endpoint pairs | 514 |
+| Verified against openapi.json | 514 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 76 |
@@ -317,8 +317,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/groups/invite/{param}` | groups.ts:933 |
 | POST | `/api/v2/groups/invite/{param}/accept` | groups.ts:938 |
 | GET | `/api/v2/help/faqs` | help.ts:49 |
-| GET | `/api/v2/ideation-campaigns` | ideation.ts:238 |
-| GET | `/api/v2/ideation-campaigns/{param}` | ideation.ts:242 |
+| GET | `/api/v2/ideation-campaigns` | ideation.ts:259 |
+| GET | `/api/v2/ideation-campaigns/{param}` | ideation.ts:263 |
 | GET | `/api/v2/ideation-categories` | ideation.ts:169 |
 | GET | `/api/v2/ideation-challenges` | ideation.ts:164 |
 | POST | `/api/v2/ideation-challenges` | ideation.ts:182 |
@@ -326,12 +326,14 @@ and the places a contract test earns the most.
 | PUT | `/api/v2/ideation-challenges/{param}` | ideation.ts:190 |
 | GET | `/api/v2/ideation-challenges/{param}/ideas` | ideation.ts:194 |
 | POST | `/api/v2/ideation-challenges/{param}/ideas` | ideation.ts:202 |
+| DELETE | `/api/v2/ideation-comments/{param}` | ideation.ts:253 |
+| DELETE | `/api/v2/ideation-ideas/{param}` | ideation.ts:248 |
 | GET | `/api/v2/ideation-ideas/{param}` | ideation.ts:218 |
 | PUT | `/api/v2/ideation-ideas/{param}` | ideation.ts:222 |
 | GET | `/api/v2/ideation-ideas/{param}/comments` | ideation.ts:228 |
 | POST | `/api/v2/ideation-ideas/{param}/comments` | ideation.ts:232 |
 | POST | `/api/v2/ideation-ideas/{param}/vote` | ideation.ts:210 |
-| GET | `/api/v2/ideation-outcomes/dashboard` | ideation.ts:246 |
+| GET | `/api/v2/ideation-outcomes/dashboard` | ideation.ts:267 |
 | POST | `/api/v2/identity/create-payment` | verification.ts:112 |
 | POST | `/api/v2/identity/save-dob` | verification.ts:102 |
 | POST | `/api/v2/identity/start` | verification.ts:108 |

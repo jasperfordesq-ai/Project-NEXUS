@@ -112,7 +112,12 @@
     "back_to_challenge": "Ar Ais chuig an Dúshlán",
     "submitted_by": "Curtha isteach ag {{name}}",
     "submitted_on": "Curtha isteach ar {{date}}",
-    "actions": "Gníomhartha an Smaoinimh"
+    "actions": "Gníomhartha an Smaoinimh",
+    "withdraw": "Tarraing an smaoineamh seo siar",
+    "withdraw_title": "An smaoineamh seo a tharraingt siar?",
+    "withdraw_message": "Bainfear den dúshlán é mar aon lena vótaí agus a nótaí tráchta. Ní féidir é seo a chur ar ais.",
+    "withdrawn": "Smaoineamh tarraingthe siar",
+    "withdraw_failed": "Níorbh fhéidir an smaoineamh a tharraingt siar. Bain triail eile as."
   },
   "comments": {
     "title": "Tráchtanna",
@@ -125,7 +130,10 @@
     "delete_confirm": "An bhfuil tú cinnte gur mhaith leat an trácht seo a scriosadh?",
     "load_more": "Luchtaigh Tuilleadh Tráchtanna",
     "load_error": "Níorbh fhéidir na tráchtanna a luchtú",
-    "loading": "Tráchtanna á lódáil..."
+    "loading": "Tráchtanna á lódáil...",
+    "delete_title": "An nóta tráchta seo a scriosadh?",
+    "delete_message": "Bainfear do nóta tráchta den smaoineamh seo.",
+    "delete_failed": "Níorbh fhéidir an nóta tráchta a scriosadh. Bain triail eile as."
   },
   "form": {
     "title_label": "Teideal",

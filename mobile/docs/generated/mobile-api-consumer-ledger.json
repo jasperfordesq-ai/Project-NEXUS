@@ -5,9 +5,9 @@
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 59,
-    "call_sites": 604,
-    "distinct_endpoints": 512,
-    "verified": 512,
+    "call_sites": 606,
+    "distinct_endpoints": 514,
+    "verified": 514,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -2205,7 +2205,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:238"
+        "ideation.ts:259"
       ]
     },
     {
@@ -2214,7 +2214,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:242"
+        "ideation.ts:263"
       ]
     },
     {
@@ -2281,6 +2281,24 @@
       ]
     },
     {
+      "http": "DELETE",
+      "endpoint": "/api/v2/ideation-comments/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:253"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/ideation-ideas/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "ideation.ts:248"
+      ]
+    },
+    {
       "http": "GET",
       "endpoint": "/api/v2/ideation-ideas/{param}",
       "status": "verified",
@@ -2331,7 +2349,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "ideation.ts:246"
+        "ideation.ts:267"
       ]
     },
     {

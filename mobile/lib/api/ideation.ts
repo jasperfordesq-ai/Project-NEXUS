@@ -232,6 +232,27 @@ export async function addIdeationComment(ideaId: number, body: string): Promise<
   return unwrapData(await api.post<{ data?: IdeationComment } | IdeationComment>(`${API_V2}/ideation-ideas/${ideaId}/comments`, { body }));
 }
 
+/**
+ * DELETE /api/v2/ideation-ideas/{id} — withdraw an idea.
+ *
+ * 🔴 Neither this nor the comment delete below had a caller in the app. A member could
+ * post an idea to their whole community and then had no way to take it back — a typo in
+ * public, a duplicate, or something they thought better of, all permanent from the
+ * phone. `IdeationChallengeService::deleteIdea` allows the author or an admin and has
+ * done all along. Audit 2026-09-07 F-19, fixed 2026-09-08.
+ *
+ * Answers 403 for anyone else and 404 for an idea in another community, so the caller
+ * must treat a refusal as final rather than as something to retry.
+ */
+export function deleteIdeationIdea(ideaId: number): Promise<unknown> {
+  return api.delete<unknown>(`${API_V2}/ideation-ideas/${ideaId}`);
+}
+
+/** DELETE /api/v2/ideation-comments/{id} — remove your own comment on an idea. */
+export function deleteIdeationComment(commentId: number): Promise<unknown> {
+  return api.delete<unknown>(`${API_V2}/ideation-comments/${commentId}`);
+}
+
 export async function getIdeationCampaigns(cursor?: string | null): Promise<CursorPage<IdeationCampaign>> {
   const params: Record<string, string> = { per_page: '20' };
   if (cursor) params.cursor = cursor;
