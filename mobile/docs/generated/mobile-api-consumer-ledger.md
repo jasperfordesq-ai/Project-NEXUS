@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-09-07
+Last reviewed: 2026-09-08
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -14,7 +14,7 @@ Every Laravel endpoint the Expo client calls, and whether the API still exposes 
 The Jest suite mocks the HTTP client, so it cannot detect a renamed or deleted route.
 This ledger is the compensating control.
 
-Verified against: `nothing — inventory stale`
+Verified against: `docs/generated/laravel-api-route-inventory.json (2240 distinct API paths)`
 
 > Not verified against `openapi.json`. That file documents only a subset of the
 > application routes and has produced false drift findings for working endpoints.
@@ -24,7 +24,7 @@ Verified against: `nothing — inventory stale`
 | API modules read | 58 |
 | Call sites | 598 |
 | Distinct method + endpoint pairs | 506 |
-| Verified against openapi.json | 0 |
+| Verified against openapi.json | 506 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 76 |
