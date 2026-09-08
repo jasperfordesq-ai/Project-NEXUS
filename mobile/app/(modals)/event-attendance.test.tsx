@@ -103,8 +103,19 @@ const mockRoster = {
   },
 };
 
+// Overridable so the refusal case below can be expressed. It was a fixed literal,
+// which is why no test could reach the error branch at all.
+let mockApiOverride: Record<string, unknown> | null = null;
 jest.mock('@/lib/hooks/useApi', () => ({
-  useApi: () => ({ data: mockRoster, isLoading: false, error: null, refresh: mockRefresh }),
+  useApi: () => ({
+    data: mockRoster,
+    isLoading: false,
+    error: null,
+    errorStatus: null,
+    errorCode: null,
+    refresh: mockRefresh,
+    ...(mockApiOverride ?? {}),
+  }),
 }));
 
 jest.mock('@/lib/api/client', () => ({
@@ -127,6 +138,7 @@ import { ApiResponseError } from '@/lib/api/client';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockApiOverride = null;
   mockTransitionAttendance.mockReset();
   mockTransitionAttendance.mockResolvedValue({
     data: {
@@ -221,5 +233,28 @@ describe('EventAttendanceScreen', () => {
     await waitFor(() => {
       expect(mockTransitionAttendance).toHaveBeenCalledWith(7, 44, expect.objectContaining({ action: 'no_show' }));
     });
+  });
+
+  /*
+    🔴 A refusal is not a failure. A member who is not the organiser — or was removed
+    as one — used to be told "we could not load the attendance list" beside a Try
+    again button that could never work. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  it('says the roster is not theirs on a 403, with no dead Try again', () => {
+    mockApiOverride = { data: null, error: 'Forbidden', errorStatus: 403 };
+
+    const screen = render(<EventAttendanceScreen />);
+
+    expect(screen.getByTestId('event-attendance-refused')).toBeTruthy();
+    expect(screen.queryByText('Retry')).toBeNull();
+  });
+
+  it('still offers Retry for a server failure, which retrying can fix', () => {
+    mockApiOverride = { data: null, error: 'Server error', errorStatus: 500 };
+
+    const screen = render(<EventAttendanceScreen />);
+
+    expect(screen.queryByTestId('event-attendance-refused')).toBeNull();
+    expect(screen.getByText('Retry')).toBeTruthy();
   });
 });

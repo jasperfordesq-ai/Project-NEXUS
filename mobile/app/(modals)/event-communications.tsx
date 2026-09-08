@@ -26,6 +26,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { eventLocalInputToIso, localEventTimeZone } from '@/lib/utils/eventDateTime';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { refusalStatus } from '@/lib/api/refusal';
 import {
   cancelEventCommunication,
   createEventCommunication,
@@ -100,6 +101,7 @@ function EventCommunicationsScreenInner() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [refusedStatus, setRefusedStatus] = useState<number | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [editing, setEditing] = useState<MobileEventBroadcast | null>(null);
   const [openingDraftId, setOpeningDraftId] = useState<number | null>(null);
@@ -131,12 +133,14 @@ function EventCommunicationsScreenInner() {
     }
     setIsLoading(true);
     setLoadFailed(false);
+    setRefusedStatus(null);
     try {
       const response = await getEventCommunications(safeEventId);
       setBroadcasts(response.data);
       setPage(response.meta.current_page);
       setHasMore(response.meta.has_more);
-    } catch {
+    } catch (error) {
+      setRefusedStatus(refusalStatus(error));
       setLoadFailed(true);
     } finally {
       setIsLoading(false);
@@ -806,6 +810,19 @@ function EventCommunicationsScreenInner() {
           <View className="items-center py-16" accessibilityLabel={t('loading')}>
             <Spinner size="lg" />
           </View>
+        ) : refusedStatus !== null ? (
+        /*
+          🔴 A refusal is not a failure. This organiser-only screen answered a 403 with
+          "could not load" and a Try again button that can never work: the member is
+          not the organiser, or no longer is. Same treatment as job-analytics and
+          job-pipeline (audit 2026-09-07, E/F-9), applied here 2026-09-08.
+        */
+          <Card testID="event-communications-refused">
+            <Card.Body>
+              <Card.Title>{t('common:errors.notAvailableTitle')}</Card.Title>
+              <Card.Description>{t('common:errors.notAvailableHint')}</Card.Description>
+            </Card.Body>
+          </Card>
         ) : loadFailed ? (
           <Alert status="danger">
             <Alert.Indicator />

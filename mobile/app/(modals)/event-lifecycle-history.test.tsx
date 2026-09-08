@@ -30,11 +30,18 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#4f46e5' }));
+jest.mock('@/lib/api/client', () => ({
+  ApiResponseError: class ApiResponseError extends Error {
+    status: number;
+    constructor(status: number, message: string) { super(message); this.status = status; this.name = 'ApiResponseError'; }
+  },
+}));
 jest.mock('@/lib/api/eventLifecycleHistory', () => ({
   getEventLifecycleHistory: (...args: unknown[]) => mockGetHistory(...args),
 }));
 
 import EventLifecycleHistoryScreen from './event-lifecycle-history';
+import { ApiResponseError } from '@/lib/api/client';
 
 function entry(id: number, version = id) {
   return {
@@ -117,5 +124,29 @@ describe('EventLifecycleHistoryScreen', () => {
 
     expect(await screen.findByText('No lifecycle changes yet')).toBeTruthy();
     expect(mockGetHistory).toHaveBeenCalledTimes(2);
+  });
+
+  /*
+    🔴 A refusal is not a failure. Opened by someone who is not the organiser — or who
+    was one and no longer is — this screen used to say "could not load" and offer Try
+    again, a button that can never work. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  it('says the history is not theirs on a 403, with no dead Try again', async () => {
+    mockGetHistory.mockRejectedValue(new ApiResponseError(403, 'Forbidden'));
+
+    const screen = render(<EventLifecycleHistoryScreen />);
+
+    expect(await screen.findByTestId('event-lifecycle-history-refused')).toBeTruthy();
+    expect(screen.queryByText('Try again')).toBeNull();
+    expect(screen.queryByTestId('event-lifecycle-history-error')).toBeNull();
+  });
+
+  it('still offers Try again for a server failure, which retrying can fix', async () => {
+    mockGetHistory.mockRejectedValue(new ApiResponseError(500, 'Server error'));
+
+    const screen = render(<EventLifecycleHistoryScreen />);
+
+    expect(await screen.findByTestId('event-lifecycle-history-error')).toBeTruthy();
+    expect(screen.getByText('Try again')).toBeTruthy();
   });
 });

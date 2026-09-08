@@ -348,4 +348,19 @@ describe('EventRecurrenceBlueprintsScreen', () => {
     expect(mockGetHistory).not.toHaveBeenCalled();
     expect(screen.queryByText('Preview future setup')).toBeNull();
   });
+
+  /*
+    🔴 A refusal is not a failure. Opened by someone who is not the organiser — or who
+    was one and no longer is — this screen used to say "could not load" and offer Try
+    again, a button that can never work. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  it('says the blueprint is not theirs on a 403, with no dead Try again', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    mockGetEvent.mockRejectedValue(new ApiResponseError(403, 'Forbidden'));
+
+    const screen = render(<EventRecurrenceBlueprintsScreen />);
+
+    expect(await screen.findByTestId('event-recurrence-blueprints-refused')).toBeTruthy();
+    expect(screen.queryByTestId('event-recurrence-blueprints-unavailable')).toBeNull();
+  });
 });

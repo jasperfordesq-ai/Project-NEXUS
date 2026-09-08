@@ -31,6 +31,8 @@ import {
 } from '@/lib/api/eventTickets';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { refusalStatus } from '@/lib/api/refusal';
+import EmptyState from '@/components/ui/EmptyState';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function idempotencyKey(action: 'allocate' | 'cancel'): string {
@@ -78,6 +80,7 @@ function EventTicketsScreenInner() {
   const [catalogue, setCatalogue] = useState<MobileEventTicketCatalogue | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [refusedStatus, setRefusedStatus] = useState<number | null>(null);
   const [units, setUnits] = useState<Record<number, string>>({});
   const [allocatingId, setAllocatingId] = useState<number | null>(null);
   const [cancelTarget, setCancelTarget] = useState<MobileEventTicketEntitlement | null>(null);
@@ -97,6 +100,7 @@ function EventTicketsScreenInner() {
     }
     setIsLoading(true);
     setLoadFailed(false);
+    setRefusedStatus(null);
     try {
       const result = await getEventTickets(safeEventId);
       setCatalogue(result);
@@ -107,7 +111,8 @@ function EventTicketsScreenInner() {
         });
         return next;
       });
-    } catch {
+    } catch (error) {
+      setRefusedStatus(refusalStatus(error));
       setLoadFailed(true);
     } finally {
       setIsLoading(false);
@@ -216,6 +221,13 @@ function EventTicketsScreenInner() {
           <View className="items-center py-16" accessibilityLabel={t('tickets.mobile.loading')}>
             <Spinner size="lg" />
           </View>
+        ) : refusedStatus !== null ? (
+          <EmptyState
+            icon="lock-closed-outline"
+            title={t('common:errors.notAvailableTitle')}
+            subtitle={t('common:errors.notAvailableHint')}
+            testID="event-tickets-refused"
+          />
         ) : loadFailed || !catalogue ? (
           <Alert status="danger">
             <Alert.Indicator />

@@ -17,6 +17,7 @@ import {
   getEventLifecycleHistory,
   type MobileEventLifecycleHistoryEntry,
 } from '@/lib/api/eventLifecycleHistory';
+import { refusalStatus } from '@/lib/api/refusal';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -51,6 +52,7 @@ function EventLifecycleHistoryScreenInner() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [refusedStatus, setRefusedStatus] = useState<number | null>(null);
   const [loadMoreFailed, setLoadMoreFailed] = useState(false);
   const [retryToken, setRetryToken] = useState(0);
 
@@ -59,6 +61,7 @@ function EventLifecycleHistoryScreenInner() {
     setEntries([]);
     setNextCursor(null);
     setLoadFailed(false);
+    setRefusedStatus(null);
     setLoadMoreFailed(false);
     setIsLoadingMore(false);
     if (eventId <= 0) {
@@ -74,8 +77,10 @@ function EventLifecycleHistoryScreenInner() {
         setEntries(response.data);
         setNextCursor(response.meta.has_more ? response.meta.next_cursor : null);
       })
-      .catch(() => {
-        if (generation === generationRef.current) setLoadFailed(true);
+      .catch((error: unknown) => {
+        if (generation !== generationRef.current) return;
+        setRefusedStatus(refusalStatus(error));
+        setLoadFailed(true);
       })
       .finally(() => {
         if (generation === generationRef.current) setIsLoading(false);
@@ -142,6 +147,20 @@ function EventLifecycleHistoryScreenInner() {
               {t('lifecycleHistory.loading')}
             </Text>
           </View>
+        ) : refusedStatus !== null ? (
+  /*
+    🔴 A refusal is not a failure. These organiser-only screens answered a 403 with
+    "could not load" and a Try again button — a button that can never work, because
+    the member is not the organiser (or no longer is). Same treatment as job-analytics
+    and job-pipeline: say plainly that it is not theirs, and give them a way out.
+    Audit 2026-09-07, still open until 2026-09-08.
+  */
+          <Card variant="secondary" testID="event-lifecycle-history-refused">
+            <Card.Body className="gap-2 px-4 py-4">
+              <Card.Title>{t('common:errors.notAvailableTitle')}</Card.Title>
+              <Card.Description>{t('common:errors.notAvailableHint')}</Card.Description>
+            </Card.Body>
+          </Card>
         ) : loadFailed ? (
           <Card variant="secondary" testID="event-lifecycle-history-error">
             <Card.Body className="gap-3 px-4 py-4">

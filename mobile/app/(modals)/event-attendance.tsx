@@ -31,6 +31,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import EventOfflineCheckinCard from '@/components/events/EventOfflineCheckinCard';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type AttendanceFilter = 'all' | 'not_checked_in' | 'checked_in' | 'checked_out' | 'no_show';
@@ -268,6 +269,24 @@ function EventAttendanceScreenInner() {
 
         {rosterApi.isLoading && !roster ? (
           <View className="items-center py-10"><LoadingSpinner /></View>
+        ) : rosterApi.error && isRefusalStatus(rosterApi.errorStatus) ? (
+        /*
+          🔴 A refusal is not a failure. This organiser-only screen answered a 403 with
+          "could not load" and a Try again button that can never work: the member is
+          not the organiser, or no longer is. Same treatment as job-analytics and
+          job-pipeline (audit 2026-09-07, E/F-9), applied here 2026-09-08.
+        */
+          <HeroCard variant="secondary" testID="event-attendance-refused">
+            <HeroCard.Body className="items-center gap-2 px-4 py-6">
+              <Ionicons name="lock-closed-outline" size={30} color={theme.textMuted} />
+              <Text className="text-center text-base font-semibold" style={{ color: theme.text }}>
+                {t('common:errors.notAvailableTitle')}
+              </Text>
+              <Text className="text-center text-sm" style={{ color: theme.textSecondary }}>
+                {t('common:errors.notAvailableHint')}
+              </Text>
+            </HeroCard.Body>
+          </HeroCard>
         ) : rosterApi.error ? (
           <Alert status="danger">
             <Alert.Indicator />

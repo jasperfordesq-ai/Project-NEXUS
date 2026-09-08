@@ -425,4 +425,19 @@ describe('EventCommunicationsScreen', () => {
     await waitFor(() => expect(mockGet).toHaveBeenLastCalledWith(42, 2));
     expect(await screen.findByText('3 recipients across Confirmed registrations')).toBeTruthy();
   });
+
+  /*
+    🔴 A refusal is not a failure. Opened by someone who is not the organiser — or who
+    was one and no longer is — this screen used to say "could not load" and offer Try
+    again, a button that can never work. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  it('says the broadcasts are not theirs on a 403, with no dead Try again', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    mockGet.mockRejectedValue(new ApiResponseError(403, 'Forbidden'));
+
+    const screen = render(<EventCommunicationsScreen />);
+
+    expect(await screen.findByTestId('event-communications-refused')).toBeTruthy();
+    expect(screen.queryByText('Try again')).toBeNull();
+  });
 });

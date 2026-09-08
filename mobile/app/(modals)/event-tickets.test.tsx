@@ -60,6 +60,12 @@ jest.mock('react-i18next', () => {
     }),
   };
 });
+jest.mock('@/lib/api/client', () => ({
+  ApiResponseError: class ApiResponseError extends Error {
+    status: number;
+    constructor(status: number, message: string) { super(message); this.status = status; this.name = 'ApiResponseError'; }
+  },
+}));
 jest.mock('@/lib/api/eventTickets', () => ({
   getEventTickets: (...args: unknown[]) => mockGetTickets(...args),
   allocateFreeEventTicket: (...args: unknown[]) => mockAllocate(...args),
@@ -165,5 +171,20 @@ describe('EventTicketsScreen', () => {
     });
 
     expect(screen.queryByText('Buy with time credits')).toBeNull();
+  });
+
+  /*
+    🔴 A refusal is not a failure. Opened by someone who is not the organiser — or who
+    was one and no longer is — this screen used to say "could not load" and offer Try
+    again, a button that can never work. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  it('says the tickets are not theirs on a 403, with no dead Try again', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    mockGetTickets.mockRejectedValue(new ApiResponseError(403, 'Forbidden'));
+
+    const screen = render(<EventTicketsScreen />);
+
+    expect(await screen.findByTestId('event-tickets-refused')).toBeTruthy();
+    expect(screen.queryByText('Try again')).toBeNull();
   });
 });

@@ -41,6 +41,7 @@ import {
   canUseRecurrenceDefinitionBlueprints,
   recurrenceDefinitionPermissions,
 } from '@/lib/events/recurrenceBlueprints';
+import { refusalStatus } from '@/lib/api/refusal';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -121,6 +122,7 @@ function EventRecurrenceBlueprintsScreenInner() {
   const [workflowError, setWorkflowError] = useState<WorkflowError | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [refusedStatus, setRefusedStatus] = useState<number | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadMoreFailed, setLoadMoreFailed] = useState(false);
   /** The commit succeeded but the history list could not be refreshed afterwards (S4-17). */
@@ -147,6 +149,7 @@ function EventRecurrenceBlueprintsScreenInner() {
     setIsLoading(true);
     subjectIdentityRef.current = null;
     setLoadFailed(false);
+    setRefusedStatus(null);
     setEvent(null);
     setAllowedSections(null);
     setHistory([]);
@@ -193,8 +196,10 @@ function EventRecurrenceBlueprintsScreenInner() {
         setHistory(historyResponse.data.items);
         setNextBeforeVersion(historyResponse.data.next_before_version);
       })
-      .catch(() => {
-        if (generation === generationRef.current) setLoadFailed(true);
+      .catch((error: unknown) => {
+        if (generation !== generationRef.current) return;
+        setRefusedStatus(refusalStatus(error));
+        setLoadFailed(true);
       })
       .finally(() => {
         if (generation === generationRef.current) setIsLoading(false);
@@ -351,6 +356,19 @@ function EventRecurrenceBlueprintsScreenInner() {
             <Spinner size="lg" />
             <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('history_loading')}</Text>
           </View>
+        ) : refusedStatus !== null ? (
+        /*
+          🔴 A refusal is not a failure. This organiser-only screen answered a 403 with
+          "could not load" and a Try again button that can never work: the member is
+          not the organiser, or no longer is. Same treatment as job-analytics and
+          job-pipeline (audit 2026-09-07, E/F-9), applied here 2026-09-08.
+        */
+          <Card variant="secondary" testID="event-recurrence-blueprints-refused">
+            <Card.Body className="gap-2 px-4 py-4">
+              <Card.Title>{t('common:errors.notAvailableTitle')}</Card.Title>
+              <Card.Description>{t('common:errors.notAvailableHint')}</Card.Description>
+            </Card.Body>
+          </Card>
         ) : loadFailed || !event || !allowedSections || !recurrenceId ? (
           <Card variant="secondary" testID="event-recurrence-blueprints-unavailable">
             <Card.Body className="gap-3 px-4 py-4">
