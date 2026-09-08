@@ -1272,29 +1272,31 @@ Route::post('/v2/volunteering/hours', [\App\Http\Controllers\Api\VolunteerContro
 Route::get('/v2/volunteering/hours/summary', [\App\Http\Controllers\Api\VolunteerController::class, 'hoursSummary']);
 Route::get('/v2/volunteering/hours/pending-review', [\App\Http\Controllers\Api\VolunteerController::class, 'pendingHoursReview']);
 Route::put('/v2/volunteering/hours/{id}/verify', [\App\Http\Controllers\Api\VolunteerController::class, 'verifyHours']);
-Route::get('/v2/volunteering/my-organisations', [\App\Http\Controllers\Api\VolunteerController::class, 'myOrganisations']);
-Route::get('/v2/volunteering/organisations', [\App\Http\Controllers\Api\VolunteerController::class, 'organisations']);
-Route::post('/v2/volunteering/organisations', [\App\Http\Controllers\Api\VolunteerController::class, 'createOrganisation']);
-Route::get('/v2/volunteering/organisations/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'showOrganisation']);
-// Organisation dashboard & wallet endpoints (org owner/admin only)
-//
-// Authorization enforced via VolunteerController::ensureOrgAccess() per-org
-// ownership check (tenant scope + org.user_id creator OR org_members.role IN
-// ('owner','admin') OR platform super_admin/god). This is NOT the platform
-// `admin` middleware — that would gate by platform role, which is a different
-// scope. Per-org gating must live in the controller so non-admin org owners
-// retain access to their own org dashboards. Returns 403 when access denied.
-// See app/Http/Controllers/Api/VolunteerController.php :: ensureOrgAccess().
-Route::get('/v2/volunteering/organisations/{id}/stats', [\App\Http\Controllers\Api\VolunteerController::class, 'orgStats']);
-Route::get('/v2/volunteering/organisations/{id}/wallet', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletBalance']);
-Route::get('/v2/volunteering/organisations/{id}/wallet/transactions', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletTransactions']);
-Route::post('/v2/volunteering/organisations/{id}/wallet/deposit', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletDeposit']);
-Route::get('/v2/volunteering/organisations/{id}/volunteers', [\App\Http\Controllers\Api\VolunteerController::class, 'orgVolunteers']);
-Route::get('/v2/volunteering/organisations/{id}/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'orgApplications']);
-Route::get('/v2/volunteering/organisations/{id}/hours/pending', [\App\Http\Controllers\Api\VolunteerController::class, 'orgHoursPending']);
-Route::put('/v2/volunteering/organisations/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'updateOrganisation']);
+Route::middleware(['feature:volunteering', 'feature:organisations'])->group(function () {
+    Route::get('/v2/volunteering/my-organisations', [\App\Http\Controllers\Api\VolunteerController::class, 'myOrganisations']);
+    Route::get('/v2/volunteering/organisations', [\App\Http\Controllers\Api\VolunteerController::class, 'organisations']);
+    Route::post('/v2/volunteering/organisations', [\App\Http\Controllers\Api\VolunteerController::class, 'createOrganisation']);
+    Route::get('/v2/volunteering/organisations/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'showOrganisation']);
+    // Organisation dashboard & wallet endpoints (org owner/admin only)
+    //
+    // Authorization enforced via VolunteerController::ensureOrgAccess() per-org
+    // ownership check (tenant scope + org.user_id creator OR org_members.role IN
+    // ('owner','admin') OR platform super_admin/god). This is NOT the platform
+    // `admin` middleware — that would gate by platform role, which is a different
+    // scope. Per-org gating must live in the controller so non-admin org owners
+    // retain access to their own org dashboards. Returns 403 when access denied.
+    // See app/Http/Controllers/Api/VolunteerController.php :: ensureOrgAccess().
+    Route::get('/v2/volunteering/organisations/{id}/stats', [\App\Http\Controllers\Api\VolunteerController::class, 'orgStats']);
+    Route::get('/v2/volunteering/organisations/{id}/wallet', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletBalance']);
+    Route::get('/v2/volunteering/organisations/{id}/wallet/transactions', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletTransactions']);
+    Route::post('/v2/volunteering/organisations/{id}/wallet/deposit', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletDeposit']);
+    Route::get('/v2/volunteering/organisations/{id}/volunteers', [\App\Http\Controllers\Api\VolunteerController::class, 'orgVolunteers']);
+    Route::get('/v2/volunteering/organisations/{id}/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'orgApplications']);
+    Route::get('/v2/volunteering/organisations/{id}/hours/pending', [\App\Http\Controllers\Api\VolunteerController::class, 'orgHoursPending']);
+    Route::put('/v2/volunteering/organisations/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'updateOrganisation']);
+    Route::get('/v2/volunteering/reviews/organization/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getOrganizationReviews']);
+});
 Route::post('/v2/volunteering/reviews', [\App\Http\Controllers\Api\VolunteerController::class, 'createReview']);
-Route::get('/v2/volunteering/reviews/organization/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getOrganizationReviews']);
 Route::get('/v2/volunteering/reviews/{type}/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getReviews']);
 Route::get('/v2/comments', [\App\Http\Controllers\Api\CommentsController::class, 'index']);
 Route::post('/v2/comments', [\App\Http\Controllers\Api\CommentsController::class, 'store'])->middleware('legal-acceptance');

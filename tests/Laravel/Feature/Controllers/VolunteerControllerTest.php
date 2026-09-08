@@ -58,6 +58,10 @@ class VolunteerControllerTest extends TestCase
             $this->apiGet($path)->assertStatus(403);
         }
         $count = DB::table('vol_organizations')->where('tenant_id', $this->testTenantId)->count();
+        // The route boundary must run before CreateOrganisationRequest. An
+        // empty payload would otherwise leak a 422 validation response while
+        // the entire feature is disabled.
+        $this->apiPost('/v2/volunteering/organisations')->assertStatus(403);
         $this->apiPost('/v2/volunteering/organisations', [
             'name' => 'Disabled organisation creation',
             'description' => 'This valid organisation must never be created.',
