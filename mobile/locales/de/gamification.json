@@ -31,7 +31,11 @@
     "empty": "Noch keine Platzierungen.",
     "badgesCount": "{{count}} Abzeichen",
     "badgesCount_one": "{{count}} Abzeichen",
-    "badgesCount_other": "{{count}} Abzeichen"
+    "badgesCount_other": "{{count}} Abzeichen",
+    "showMore": "Mehr anzeigen",
+    "showingTop": "Die besten {{count}} werden angezeigt",
+    "showingTop_one": "Die besten {{count}} werden angezeigt",
+    "showingTop_other": "Die besten {{count}} werden angezeigt"
   },
   "nexusScore": {
     "title": "Nexus-Score",

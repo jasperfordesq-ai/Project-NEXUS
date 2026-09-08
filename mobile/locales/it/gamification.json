@@ -31,7 +31,11 @@
     "empty": "Nessuna classifica ancora.",
     "badgesCount": "{{count}} distintivo",
     "badgesCount_one": "{{count}} distintivo",
-    "badgesCount_other": "{{count}} distintivi"
+    "badgesCount_other": "{{count}} distintivi",
+    "showMore": "Mostra altri",
+    "showingTop": "Vengono mostrati i primi {{count}}",
+    "showingTop_one": "Vengono mostrati i primi {{count}}",
+    "showingTop_other": "Vengono mostrati i primi {{count}}"
   },
   "nexusScore": {
     "title": "Punteggio Nexus",

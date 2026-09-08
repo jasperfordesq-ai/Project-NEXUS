@@ -181,6 +181,10 @@ jest.mock('@/lib/api/gamification', () => ({
   getChallenges: jest.fn(),
   getDailyRewardStatus: jest.fn(),
   getLeaderboard: jest.fn(),
+  // 🔴 A CONSTANT, not a function. Leaving it out of this whole-module mock makes it
+  // undefined in the screen, and `limit < undefined` is false — so the Show more
+  // button silently never renders and the case fails with no clue why.
+  LEADERBOARD_MAX: 100,
   getNexusScore: jest.fn(),
   getShopItems: jest.fn(),
   purchaseShopItem: jest.fn().mockResolvedValue({ data: {} }),
@@ -201,7 +205,7 @@ jest.mock('@/components/ui/AppToast', () => {
 // --- Tests ---
 
 import GamificationScreen from './gamification';
-import { claimChallengeReward, claimDailyReward, purchaseShopItem, updateBadgeShowcase } from '@/lib/api/gamification';
+import { claimChallengeReward, claimDailyReward, getLeaderboard, purchaseShopItem, updateBadgeShowcase } from '@/lib/api/gamification';
 import { useAppToast } from '@/components/ui/AppToast';
 
 // Grab the stable toast `show` mock to assert on branded toasts.
@@ -398,6 +402,7 @@ function mockLoadedGamification({
       return { data: { data: badges }, isLoading: false, error: null, refresh: jest.fn() };
     }
     if (source.includes('getLeaderboard')) {
+      lastLeaderboardLoader = loader as () => unknown;
       return { data: { data: leaderboard, meta: { user_rank: null } }, isLoading: false, error: null, refresh: jest.fn() };
     }
     if (source.includes('getNexusScore')) {
@@ -415,6 +420,9 @@ function mockLoadedGamification({
     return { data: { data: reward }, isLoading: false, error: null, refresh: jest.fn() };
   });
 }
+
+/** The most recent leaderboard fetcher the screen handed to useApi. */
+let lastLeaderboardLoader: (() => unknown) | null = null;
 
 describe('GamificationScreen', () => {
   it('renders loading state (no content visible) when APIs are loading', () => {
@@ -708,5 +716,68 @@ describe('GamificationScreen', () => {
 
     expect(getByTestId('gamification-section-failed')).toBeTruthy();
     expect(queryByText('No badges yet.')).toBeNull();
+  });
+
+  /*
+    🔴 The leaderboard showed the top twenty and stopped, with nothing to press. In any
+    community bigger than that, most members could never find themselves on it — which
+    is the one thing a leaderboard is for. The endpoint has always taken a limit up to
+    100 and the app never sent one. Audit 2026-09-07 F-7, fixed 2026-09-08.
+  */
+  describe('leaderboard depth', () => {
+    const twenty = Array.from({ length: 20 }, (_, i) => ({
+      rank: i + 1,
+      user: { id: i + 1, name: `Member ${i + 1}`, avatar_url: null },
+      level: 2,
+      xp: 500 - i,
+      badges_count: 0,
+    }));
+
+    function openLeaderboard(entries: unknown[]) {
+      lastLeaderboardLoader = null;
+      mockLoadedGamification({ leaderboard: entries });
+      const screen = render(<GamificationScreen />);
+      fireEvent.press(screen.getByText('Leaderboard'));
+      return screen;
+    }
+
+    it('asks for more when the member wants to see further down', () => {
+      const screen = openLeaderboard(twenty);
+
+      // The first request is the server's default depth.
+      lastLeaderboardLoader?.();
+      expect(getLeaderboard).toHaveBeenLastCalledWith('monthly', 20);
+
+      fireEvent.press(screen.getByTestId('leaderboard-show-more'));
+
+      lastLeaderboardLoader?.();
+      expect(getLeaderboard).toHaveBeenLastCalledWith('monthly', 60);
+    });
+
+    it('offers nothing more when the community is smaller than the page', () => {
+      // A short answer means there is nobody else to show; a button that returns the
+      // same list is worse than no button.
+      const screen = openLeaderboard(twenty.slice(0, 4));
+
+      expect(screen.queryByTestId('leaderboard-show-more')).toBeNull();
+    });
+
+    it('says it is showing the top hundred rather than just stopping', () => {
+      const hundred = Array.from({ length: 100 }, (_, i) => ({
+        rank: i + 1,
+        user: { id: i + 1, name: `Member ${i + 1}`, avatar_url: null },
+        level: 2,
+        xp: 500 - i,
+        badges_count: 0,
+      }));
+      const screen = openLeaderboard(hundred);
+
+      // 20 -> 60 -> 100, then the server's ceiling.
+      fireEvent.press(screen.getByTestId('leaderboard-show-more'));
+      fireEvent.press(screen.getByTestId('leaderboard-show-more'));
+
+      expect(screen.queryByTestId('leaderboard-show-more')).toBeNull();
+      expect(screen.getByTestId('leaderboard-cap')).toBeTruthy();
+    });
   });
 });

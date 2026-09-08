@@ -170,7 +170,7 @@ describe('getLeaderboard', () => {
   it('calls the correct endpoint with default period (monthly)', async () => {
     (api.get as jest.Mock).mockResolvedValue(mockLeaderboardResponse);
     const result = await getLeaderboard();
-    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'month' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'month', limit: '20' });
     expect(result.data).toHaveLength(1);
     expect(result.meta.user_rank).toBe(12);
   });
@@ -178,13 +178,44 @@ describe('getLeaderboard', () => {
   it('passes weekly period when specified', async () => {
     (api.get as jest.Mock).mockResolvedValue(mockLeaderboardResponse);
     await getLeaderboard('weekly');
-    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'week' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'week', limit: '20' });
   });
 
   it('passes all_time period when specified', async () => {
     (api.get as jest.Mock).mockResolvedValue(mockLeaderboardResponse);
     await getLeaderboard('all_time');
-    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'all' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'all', limit: '20' });
+  });
+
+  /*
+    🔴 The app never sent a limit, so it always got the server's default of 20 and a
+    member below that could never find themselves. The endpoint has always accepted up
+    to 100. Audit 2026-09-07 F-7, fixed 2026-09-08.
+  */
+  it('asks for as many entries as the caller wants', async () => {
+    (api.get as jest.Mock).mockResolvedValue(mockLeaderboardResponse);
+    await getLeaderboard('monthly', 60);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'month', limit: '60' });
+  });
+
+  it('never asks for more than the server will give', async () => {
+    // The controller clamps to 100 anyway; asking for 5,000 would just be a lie in the
+    // request log, and would make a "did we get everything?" check meaningless.
+    (api.get as jest.Mock).mockResolvedValue(mockLeaderboardResponse);
+    await getLeaderboard('monthly', 5000);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'month', limit: '100' });
+  });
+
+  it('falls back to 20 for a nonsense limit rather than sending NaN', async () => {
+    (api.get as jest.Mock).mockResolvedValue(mockLeaderboardResponse);
+    await getLeaderboard('monthly', Number.NaN);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'month', limit: '20' });
+  });
+
+  it('never asks for fewer than one', async () => {
+    (api.get as jest.Mock).mockResolvedValue(mockLeaderboardResponse);
+    await getLeaderboard('monthly', -5);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/gamification/leaderboard', { period: 'month', limit: '1' });
   });
 });
 

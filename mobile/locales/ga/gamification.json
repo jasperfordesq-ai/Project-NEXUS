@@ -31,7 +31,11 @@
     "empty": "Níl aon rangú ann fós.",
     "badgesCount": "{{count}} suaitheantas",
     "badgesCount_one": "{{count}} suaitheantas",
-    "badgesCount_other": "{{count}} suaitheantas"
+    "badgesCount_other": "{{count}} suaitheantas",
+    "showMore": "Taispeáin tuilleadh",
+    "showingTop": "Na {{count}} is airde á dtaispeáint",
+    "showingTop_one": "Na {{count}} is airde á dtaispeáint",
+    "showingTop_other": "Na {{count}} is airde á dtaispeáint"
   },
   "nexusScore": {
     "title": "Scór Nexus",

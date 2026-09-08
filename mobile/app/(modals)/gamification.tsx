@@ -26,6 +26,7 @@ import {
   getChallenges,
   getDailyRewardStatus,
   getLeaderboard,
+  LEADERBOARD_MAX,
   getNexusScore,
   getShopItems,
   purchaseShopItem,
@@ -1199,10 +1200,25 @@ function GamificationScreen() {
     () => getBadges(),
     [],
   );
+  /*
+    🔴 The leaderboard showed the top twenty and stopped, with nothing to press. In any
+    community larger than that, most members could never find themselves on it — which
+    is the one thing a leaderboard is for. The endpoint has always taken a `limit` up
+    to 100; the app never sent one. Audit 2026-09-07 F-7, fixed 2026-09-08.
+
+    There is no cursor here, so "show more" re-asks with a larger limit rather than
+    fetching a next page. 100 is the server's ceiling and the screen says so when it
+    gets there, instead of letting the list appear to stop for no reason.
+  */
+  const [leaderboardLimit, setLeaderboardLimit] = useState(20);
   const { data: leaderboardData, isLoading: lbLoading, error: lbError, refresh: refreshLb } = useApi(
-    () => getLeaderboard(period),
-    [period],
+    () => getLeaderboard(period, leaderboardLimit),
+    [period, leaderboardLimit],
   );
+
+  // Changing the period starts the list over; keeping a raised limit across a switch
+  // would make a fresh tab load a hundred rows nobody asked for.
+  useEffect(() => { setLeaderboardLimit(20); }, [period]);
   const { data: nexusScoreData, isLoading: scoreLoading, error: scoreError, refresh: refreshScore } = useApi(
     () => getNexusScore(),
     [],
@@ -1629,6 +1645,33 @@ function GamificationScreen() {
                     t={t}
                   />
                 ))}
+                {/*
+                  Offered only while the server filled the last request completely —
+                  a short answer means there is nobody else to show, and a button that
+                  returns the same list is worse than none.
+                */}
+                {leaderboardEntries.length >= leaderboardLimit && leaderboardLimit < LEADERBOARD_MAX ? (
+                  <HeroButton
+                    variant="secondary"
+                    className="mt-3"
+                    isDisabled={lbLoading}
+                    testID="leaderboard-show-more"
+                    onPress={() => setLeaderboardLimit((current) => Math.min(current + 40, LEADERBOARD_MAX))}
+                  >
+                    <HeroButton.Label>
+                      {lbLoading ? t('common:loading') : t('leaderboard.showMore')}
+                    </HeroButton.Label>
+                  </HeroButton>
+                ) : null}
+                {leaderboardLimit >= LEADERBOARD_MAX && leaderboardEntries.length >= LEADERBOARD_MAX ? (
+                  <Text
+                    className="mt-3 text-center text-xs"
+                    style={{ color: theme.textSecondary }}
+                    testID="leaderboard-cap"
+                  >
+                    {t('leaderboard.showingTop', { count: LEADERBOARD_MAX })}
+                  </Text>
+                ) : null}
               </View>
             ) : (
               <EmptyState icon="podium-outline" message={t('leaderboard.empty')} primary={primary} />

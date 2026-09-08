@@ -31,7 +31,11 @@
     "empty": "Aucun classement pour le moment.",
     "badgesCount": "{{count}} insigne",
     "badgesCount_one": "{{count}} insigne",
-    "badgesCount_other": "{{count}} insignes"
+    "badgesCount_other": "{{count}} insignes",
+    "showMore": "Afficher plus",
+    "showingTop": "Affichage des {{count}} premiers",
+    "showingTop_one": "Affichage des {{count}} premiers",
+    "showingTop_other": "Affichage des {{count}} premiers"
   },
   "nexusScore": {
     "title": "Score Nexus",

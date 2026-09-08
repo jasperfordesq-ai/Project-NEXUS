@@ -203,11 +203,28 @@ export function getBadges(userId?: number): Promise<{ data: Badge[] }> {
  *
  * @param period  'weekly' | 'monthly' | 'all_time' (default: 'monthly')
  */
+/**
+ * 🔴 The server takes a `limit`, defaulting to 20 and capped at 100
+ * (`GamificationV2Controller::leaderboard`). The app never sent one, so a member could
+ * only ever see the top twenty of their community and had no way to find themselves
+ * below that — which is most people in any community larger than twenty.
+ *
+ * There is no cursor on this endpoint: asking for more means re-asking with a larger
+ * limit, so `LEADERBOARD_MAX` is a real ceiling, not a page size. Say so on screen
+ * rather than letting the list appear to stop for no reason.
+ */
+export const LEADERBOARD_MAX = 100;
+
 export function getLeaderboard(
   period: 'weekly' | 'monthly' | 'all_time' = 'monthly',
+  limit = 20,
 ): Promise<LeaderboardResponse> {
   const apiPeriod = period === 'weekly' ? 'week' : period === 'monthly' ? 'month' : 'all';
-  return api.get<LeaderboardResponse>(`${API_V2}/gamification/leaderboard`, { period: apiPeriod });
+  const safeLimit = String(Math.min(Math.max(Math.trunc(limit) || 20, 1), LEADERBOARD_MAX));
+  return api.get<LeaderboardResponse>(`${API_V2}/gamification/leaderboard`, {
+    period: apiPeriod,
+    limit: safeLimit,
+  });
 }
 
 /**

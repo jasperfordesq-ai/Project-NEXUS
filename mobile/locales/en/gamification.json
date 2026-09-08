@@ -31,7 +31,11 @@
     "empty": "No rankings yet.",
     "badgesCount": "{{count}} badge",
     "badgesCount_one": "{{count}} badge",
-    "badgesCount_other": "{{count}} badges"
+    "badgesCount_other": "{{count}} badges",
+    "showMore": "Show more",
+    "showingTop": "Showing the top {{count}}",
+    "showingTop_one": "Showing the top {{count}}",
+    "showingTop_other": "Showing the top {{count}}"
   },
   "nexusScore": {
     "title": "Nexus Score",
