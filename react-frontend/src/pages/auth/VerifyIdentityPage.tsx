@@ -72,7 +72,8 @@ export function VerifyIdentityPage() {
   const { t } = useTranslation('auth');
   usePageTitle(t('page_meta.verify_identity.title'));
   const navigate = useNavigate();
-  const { branding, tenantPath } = useTenant();
+  const { branding, tenantPath, hasModule } = useTenant();
+  const dashboardEnabled = hasModule('dashboard');
   const { isAuthenticated } = useAuth();
 
   const [pageState, setPageState] = useState<PageState>('loading');
@@ -250,8 +251,8 @@ export function VerifyIdentityPage() {
             <p className="text-theme-muted mb-6">
               {t('verify_identity.active_subtitle')}
             </p>
-            <Button as={Link} to={tenantPath('/dashboard')} color="primary" className="w-full">
-              {t('verify_identity.go_to_dashboard')}
+            <Button as={Link} to={tenantPath(dashboardEnabled ? '/dashboard' : '/')} color="primary" className="w-full">
+              {dashboardEnabled ? t('verify_identity.go_to_dashboard') : t('not_found.go_home', { ns: 'utility' })}
             </Button>
           </GlassCard>
           <p className="text-center text-theme-subtle text-sm mt-6">{branding.name}</p>

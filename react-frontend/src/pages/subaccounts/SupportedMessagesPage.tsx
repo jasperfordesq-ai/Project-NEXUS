@@ -85,7 +85,7 @@ export function SupportedMessagesPage() {
   const { t } = useTranslation('settings');
   const { childId = '', partnerId } = useParams<{ childId: string; partnerId?: string }>();
   const navigate = useNavigate();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   usePageTitle(t('supported_messages.page_title'));
 
   // Purpose: session-scoped per supported member. Nothing fetches without it.
@@ -205,7 +205,7 @@ export function SupportedMessagesPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <Breadcrumbs items={[
-        { label: t('tabs.linked'), href: tenantPath('/settings?tab=linked-accounts') },
+        { label: t('tabs.linked'), href: '/settings?tab=linked-accounts' },
         { label: t('supported_messages.page_title') },
       ]} />
 
@@ -249,7 +249,7 @@ export function SupportedMessagesPage() {
             />
           </ModalBody>
           <ModalFooter>
-            <Button variant="tertiary" onPress={() => navigate(tenantPath('/settings?tab=linked-accounts'))}>
+            <Button variant="tertiary" onPress={() => navigate(tenantPath(hasModule('settings') ? '/settings?tab=linked-accounts' : '/messages'))}>
               {t('supported_messages.purpose_cancel')}
             </Button>
             <Button color="primary" onPress={submitPurpose}>

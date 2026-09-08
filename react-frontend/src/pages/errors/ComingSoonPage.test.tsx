@@ -24,8 +24,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@/test/test-utils';
 
+const hasModule = vi.hoisted(() => vi.fn(() => true));
+
 vi.mock('@/contexts/TenantContext', () => ({
-  useTenant: () => ({ tenantPath: (p: string) => `/test${p}` }),
+  useTenant: () => ({ tenantPath: (p: string) => `/test${p}`, hasModule }),
 }));
 
 vi.mock('@/lib/motion', () => ({
@@ -45,6 +47,7 @@ import { ComingSoonPage } from './ComingSoonPage';
 describe('ComingSoonPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    hasModule.mockReturnValue(true);
   });
 
   it('renders the heading', () => {
@@ -61,6 +64,13 @@ describe('ComingSoonPage', () => {
       'href',
       '/test/dashboard'
     );
+  });
+
+  it('uses the home page when the dashboard module is disabled', () => {
+    hasModule.mockReturnValue(false);
+    render(<ComingSoonPage />);
+    expect(screen.queryByRole('link', { name: /dashboard/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /go home/i })).toHaveAttribute('href', '/test/');
   });
 
   it('renders a go back button', () => {

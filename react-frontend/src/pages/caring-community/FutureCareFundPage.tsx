@@ -240,7 +240,8 @@ function ByYearChart({ rows, t }: ByYearChartProps) {
 
 export function FutureCareFundPage() {
   const { t } = useTranslation('common');
-  const { hasFeature, tenantPath } = useTenant();
+  const { hasFeature, hasModule, tenantPath } = useTenant();
+  const listingsEnabled = hasModule('listings');
   const navigate = useNavigate();
   usePageTitle(t('future_care_fund.meta.title'));
 
@@ -430,21 +431,25 @@ export function FutureCareFundPage() {
               </ol>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button
-                  as={Link}
-                  to={tenantPath('/listings/create')}
-                  color="primary"
-                  startContent={<Sparkles className="h-4 w-4" aria-hidden="true" />}
-                >
-                  {t('future_care_fund.how_it_works.cta_offer')}
-                </Button>
-                <Button
-                  as={Link}
-                  to={tenantPath('/listings')}
-                  variant="bordered"
-                >
-                  {t('future_care_fund.how_it_works.cta_browse')}
-                </Button>
+                {listingsEnabled && (
+                  <>
+                    <Button
+                      as={Link}
+                      to={tenantPath('/listings/create')}
+                      color="primary"
+                      startContent={<Sparkles className="h-4 w-4" aria-hidden="true" />}
+                    >
+                      {t('future_care_fund.how_it_works.cta_offer')}
+                    </Button>
+                    <Button
+                      as={Link}
+                      to={tenantPath('/listings')}
+                      variant="bordered"
+                    >
+                      {t('future_care_fund.how_it_works.cta_browse')}
+                    </Button>
+                  </>
+                )}
                 <Button
                   as={Link}
                   to={tenantPath('/caring-community/my-relationships')}

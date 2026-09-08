@@ -29,7 +29,7 @@ interface PartnersHeaderProps {
 export function PartnersHeader({ sidebarCollapsed, onSidebarToggle }: PartnersHeaderProps) {
   const { t } = useTranslation('partners');
   const { user, logout } = useAuth();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, hasModule } = useTenant();
   const navigate = useNavigate();
 
   return (
@@ -70,7 +70,7 @@ export function PartnersHeader({ sidebarCollapsed, onSidebarToggle }: PartnersHe
 
       {/* Right: notifications + user menu */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-        <Button
+        {hasModule('notifications') && <Button
           isIconOnly
           variant="tertiary"
           size="sm"
@@ -78,7 +78,7 @@ export function PartnersHeader({ sidebarCollapsed, onSidebarToggle }: PartnersHe
           aria-label={t('header.notifications')}
         >
           <Bell size={18} />
-        </Button>
+        </Button>}
 
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -101,9 +101,9 @@ export function PartnersHeader({ sidebarCollapsed, onSidebarToggle }: PartnersHe
               if (key === 'logout') logout();
             }}
           >
-            <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
+            {hasModule('profile') ? <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
               {t('header.my_profile')}
-            </DropdownItem>
+            </DropdownItem> : null}
             <DropdownItem
               key="logout" id="logout"
               startContent={<LogOut size={16} />}

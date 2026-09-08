@@ -2332,9 +2332,11 @@ export function ConversationPage() {
       {messagingRestriction?.own_messages_shared === true && (
         <p className="shrink-0 text-center text-xs text-theme-muted" data-testid="own-messages-shared-reminder">
           {t('own_messages_shared_reminder')}{' '}
-          <Link to={tenantPath('/settings?tab=linked-accounts')} className="underline">
-            {t('own_messages_shared_manage')}
-          </Link>
+          {hasModule('settings') && (
+            <Link to={tenantPath('/settings?tab=linked-accounts')} className="underline">
+              {t('own_messages_shared_manage')}
+            </Link>
+          )}
         </p>
       )}
 

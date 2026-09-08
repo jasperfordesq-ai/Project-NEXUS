@@ -35,12 +35,14 @@ vi.mock('@/lib/api', () => ({
   tokenManager: { getTenantId: vi.fn(), getToken: vi.fn() },
 }));
 
+const mockHasModule = vi.fn(() => true);
+
 const mockTenant = {
   tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
   branding: { name: 'Test Community', logo_url: null, tagline: 'A test community' },
   tenantPath: (p: string) => `/test${p}`,
   hasFeature: () => true,
-  hasModule: () => true,
+  hasModule: mockHasModule,
   isLoading: false,
   error: null,
 };
@@ -76,7 +78,10 @@ vi.mock('@/lib/motion', () => ({
 import { FaqPage } from './FaqPage';
 
 describe('FaqPage', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockHasModule.mockReturnValue(true);
+  });
 
   it('renders without crashing', () => {
     render(<FaqPage />);
@@ -105,5 +110,15 @@ describe('FaqPage', () => {
     expect(
       screen.queryByText('No matching questions found. Try a different search term.')
     ).not.toBeInTheDocument();
+  });
+
+  it('does not advertise Settings when the module is disabled', () => {
+    mockHasModule.mockImplementation((module: string) => module !== 'settings');
+
+    render(<FaqPage />);
+
+    expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Can I hide my badges or opt out of leaderboards?')).not.toBeInTheDocument();
+    expect(screen.queryByText('How do I change my password?')).not.toBeInTheDocument();
   });
 });

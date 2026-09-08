@@ -146,6 +146,7 @@ export function ProfilePage() {
   const hasWallet = hasModule('wallet');
   const hasListings = hasModule('listings');
   const hasFeed = hasModule('feed');
+  const hasSettings = hasModule('settings');
   const hasDirectMessaging = useFeature('direct_messaging');
   const hasMessages = hasModule('messages') && hasDirectMessaging;
   const toast = useToast();
@@ -725,7 +726,7 @@ export function ProfilePage() {
 
               {/* Actions */}
               <div className="mt-6 grid w-full grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:justify-start sm:gap-3">
-                {isOwnProfile ? (
+                {isOwnProfile ? (hasSettings ? (
                   <Button
                     as={Link}
                     to={tenantPath('/settings')}
@@ -735,7 +736,7 @@ export function ProfilePage() {
                   >
                     {t('settings')}
                   </Button>
-                ) : isBlocked ? (
+                ) : null) : isBlocked ? (
                   // Blocked state — show only unblock option and a notice
                   <>
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-rose-500/10 text-theme-danger text-sm">

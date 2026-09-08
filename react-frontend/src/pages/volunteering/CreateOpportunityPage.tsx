@@ -238,9 +238,11 @@ export default function CreateOpportunityPage() {
             {t('no_approved_orgs_description')}
           </p>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            <Button as={Link} to={tenantPath('/organisations/register')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
-              {t('register_org_link')}
-            </Button>
+            {hasFeature('organisations') && (
+              <Button as={Link} to={tenantPath('/organisations/register')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+                {t('register_org_link')}
+              </Button>
+            )}
             <Button as={Link} to={tenantPath('/volunteering')} variant="tertiary">
               {t('form_cancel')}
             </Button>

@@ -21,7 +21,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 
 export function NotFoundPage() {
   const { t } = useTranslation('utility');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature } = useTenant();
   usePageTitle(t('not_found.page_title'));
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -54,13 +54,15 @@ export function NotFoundPage() {
             >
               {t('not_found.go_home')}
             </Button>
-            <Button as={Link} to={tenantPath('/search')}
-              variant="flat"
-              className="flex-1 w-full bg-theme-elevated text-theme-muted"
-              startContent={<Search className="w-4 h-4" />}
-            >
-              {t('not_found.search')}
-            </Button>
+            {hasFeature('search') && (
+              <Button as={Link} to={tenantPath('/search')}
+                variant="flat"
+                className="flex-1 w-full bg-theme-elevated text-theme-muted"
+                startContent={<Search className="w-4 h-4" />}
+              >
+                {t('not_found.search')}
+              </Button>
+            )}
           </div>
 
           <Button

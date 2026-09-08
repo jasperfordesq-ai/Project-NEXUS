@@ -13,6 +13,7 @@ import { render, screen } from '@/test/test-utils';
 vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => ({
     tenantPath: (p: string) => `/test${p}`,
+    hasModule: vi.fn(() => true),
   })),
   useAuth: vi.fn(() => ({
     isAuthenticated: false,
@@ -76,14 +77,19 @@ vi.mock('@/lib/motion', () => ({
 }));
 
 import { TimebankingGuidePage } from './TimebankingGuidePage';
-import { useAuth } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
 
 const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
+const mockUseTenant = useTenant as ReturnType<typeof vi.fn>;
 
 describe('TimebankingGuidePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
+    mockUseTenant.mockReturnValue({
+      tenantPath: (p: string) => `/test${p}`,
+      hasModule: vi.fn(() => true),
+    });
   });
 
   it('renders without crashing', () => {
@@ -140,6 +146,17 @@ describe('TimebankingGuidePage', () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
     render(<TimebankingGuidePage />);
     expect(ctaLinksTo('/listings').length).toBeGreaterThan(0);
+  });
+
+  it('does not show the listings CTA to a signed-in member when listings are disabled', () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
+    mockUseTenant.mockReturnValue({
+      tenantPath: (p: string) => `/test${p}`,
+      hasModule: vi.fn(() => false),
+    });
+    render(<TimebankingGuidePage />);
+    expect(screen.queryByRole('link', { name: /browse listings/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /join/i })).not.toBeInTheDocument();
   });
 
   it('renders the partner CTA', () => {

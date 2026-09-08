@@ -238,6 +238,7 @@ export function VolunteeringPage() {
   const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasFeature, volunteeringConfig } = useTenant();
+  const hasOrganisations = hasFeature('organisations');
   const [searchParams, setSearchParams] = useSearchParams();
   // Check if a volunteering tab is enabled via config
   // Config keys use underscores (tab_group_signups), frontend tab keys use hyphens (group-signups)
@@ -309,7 +310,7 @@ export function VolunteeringPage() {
   useEffect(() => {
     if (!hasFeature('volunteering')) return;
     let cancelled = false;
-    if (isAuthenticated) {
+    if (isAuthenticated && hasOrganisations) {
       api.get<unknown>('/v2/volunteering/my-organisations')
         .then((res) => {
           if (!cancelled && res.success && res.data) {
@@ -320,7 +321,7 @@ export function VolunteeringPage() {
         .catch(() => { /* silent — org tools just won't show */ });
     }
     return () => { cancelled = true; };
-  }, [isAuthenticated, hasFeature]);
+  }, [isAuthenticated, hasFeature, hasOrganisations]);
 
   // Feature gate
   if (!hasFeature('volunteering')) {
@@ -382,7 +383,7 @@ export function VolunteeringPage() {
                 {t('log_hours')}
               </Button>
             )}
-            <Button
+            {hasOrganisations && <Button
               as={Link}
               to={tenantPath('/organisations')}
               variant="secondary"
@@ -390,7 +391,7 @@ export function VolunteeringPage() {
               startContent={<Globe className="w-4 h-4" aria-hidden="true" />}
             >
               {t('browse_organisations')}
-            </Button>
+            </Button>}
           </div>
         }
       />
@@ -444,7 +445,7 @@ export function VolunteeringPage() {
           these are two different modes: "I volunteer" vs "I run an organisation".
           Previously the only entry was a button hidden behind hasApprovedOrg, so
           owners with a pending org saw nothing at all. */}
-      {!isPhone && isAuthenticated && hasApprovedOrg && (
+      {hasOrganisations && !isPhone && isAuthenticated && hasApprovedOrg && (
         <GlassCard className="p-4 sm:p-5 border border-rose-500/20">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3 min-w-0">
@@ -504,7 +505,7 @@ export function VolunteeringPage() {
 
       {/* No org yet — a quiet nudge that explains the second hat exists.
           Phone-hidden; its "Register organisation" CTA is re-homed below. */}
-      {!isPhone && isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
+      {hasOrganisations && !isPhone && isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
         <GlassCard className="p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3 min-w-0">
@@ -550,7 +551,7 @@ export function VolunteeringPage() {
               {t('log_hours')}
             </Button>
           )}
-          <Button
+          {hasOrganisations && <Button
             as={Link}
             to={tenantPath('/organisations')}
             size="sm"
@@ -559,8 +560,8 @@ export function VolunteeringPage() {
             startContent={<Globe className="w-4 h-4" aria-hidden="true" />}
           >
             {t('browse_organisations')}
-          </Button>
-          {isAuthenticated && hasApprovedOrg && (
+          </Button>}
+          {hasOrganisations && isAuthenticated && hasApprovedOrg && (
             <>
               <Button
                 as={Link}
@@ -584,7 +585,7 @@ export function VolunteeringPage() {
               </Button>
             </>
           )}
-          {isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
+          {hasOrganisations && isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
             <Button
               as={Link}
               to={tenantPath('/organisations/register')}
@@ -1175,7 +1176,8 @@ interface OpportunityCardProps {
 
 function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
   const { t } = useTranslation('volunteering');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature } = useTenant();
+  const hasOrganisations = hasFeature('organisations');
   const navigate = useNavigate();
   const startDate = opportunity.start_date ? new Date(opportunity.start_date) : null;
   const endDate = opportunity.end_date ? new Date(opportunity.end_date) : null;
@@ -1186,14 +1188,19 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
-            <Link to={tenantPath(`/organisations/${opportunity.organization.id}`)}>
+            {hasOrganisations ? <Link to={tenantPath(`/organisations/${opportunity.organization.id}`)}>
               <Avatar
                 name={opportunity.organization.name}
                 src={opportunity.organization.logo_url ?? undefined}
                 size="sm"
                 className="flex-shrink-0"
               />
-            </Link>
+            </Link> : <Avatar
+              name={opportunity.organization.name}
+              src={opportunity.organization.logo_url ?? undefined}
+              size="sm"
+              className="flex-shrink-0"
+            />}
             <div className="min-w-0">
               <Link
                 to={tenantPath(`/volunteering/opportunities/${opportunity.id}`)}
@@ -1201,12 +1208,12 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
               >
                 {opportunity.title}
               </Link>
-              <Link
+              {hasOrganisations ? <Link
                 to={tenantPath(`/organisations/${opportunity.organization.id}`)}
                 className="text-sm text-theme-muted hover:text-accent hover:underline transition-colors"
               >
                 {opportunity.organization.name}
-              </Link>
+              </Link> : <span className="text-sm text-theme-muted">{opportunity.organization.name}</span>}
             </div>
           </div>
 
@@ -1293,7 +1300,8 @@ function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) {
 function ApplicationsTab() {
   const { t } = useTranslation('volunteering');
   const toast = useToast();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature } = useTenant();
+  const hasOrganisations = hasFeature('organisations');
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -1479,13 +1487,18 @@ function ApplicationsTab() {
                           </Chip>
                         </div>
 
-                        <Link
+                        {hasOrganisations ? <Link
                           to={tenantPath(`/organisations/${app.organization.id}`)}
                           className="text-sm text-theme-muted hover:text-accent hover:underline transition-colors mb-2 inline-flex items-center gap-1"
                         >
                           <Building2 className="w-3 h-3" aria-hidden="true" />
                           {app.organization.name}
-                        </Link>
+                        </Link> : (
+                          <span className="mb-2 inline-flex items-center gap-1 text-sm text-theme-muted">
+                            <Building2 className="w-3 h-3" aria-hidden="true" />
+                            {app.organization.name}
+                          </span>
+                        )}
 
                         {app.opportunity.location && (
                           <p className="text-xs text-theme-subtle flex items-center gap-1 mb-1">

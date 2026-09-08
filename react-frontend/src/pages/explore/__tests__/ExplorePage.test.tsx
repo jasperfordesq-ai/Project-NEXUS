@@ -412,13 +412,13 @@ describe('ExplorePage', () => {
     expect(screen.getByText('Community Org')).toBeInTheDocument();
   });
 
-  it('renders organisations section when volunteering is enabled', () => {
+  it('hides organisations when its own switch is disabled', () => {
     mockHasFeature.mockImplementation((feature?: string) => feature !== 'organisations');
 
     render(<ExplorePage />);
 
-    expect(screen.getByText('organisations.title')).toBeInTheDocument();
-    expect(screen.getByText('Community Org')).toBeInTheDocument();
+    expect(screen.queryByText('organisations.title')).not.toBeInTheDocument();
+    expect(screen.queryByText('Community Org')).not.toBeInTheDocument();
   });
 
   it('renders job opportunities section', () => {

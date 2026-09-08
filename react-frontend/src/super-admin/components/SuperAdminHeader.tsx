@@ -27,7 +27,7 @@ interface SuperAdminHeaderProps {
 export function SuperAdminHeader({ sidebarCollapsed, onSidebarToggle }: SuperAdminHeaderProps) {
   const { t } = useTranslation('super_admin');
   const { user, logout } = useAuth();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, hasModule } = useTenant();
   const navigate = useNavigate();
 
   return (
@@ -67,7 +67,7 @@ export function SuperAdminHeader({ sidebarCollapsed, onSidebarToggle }: SuperAdm
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-        <Button
+        {hasModule('notifications') && <Button
           isIconOnly
           variant="tertiary"
           size="sm"
@@ -76,7 +76,7 @@ export function SuperAdminHeader({ sidebarCollapsed, onSidebarToggle }: SuperAdm
           className="bg-surface-secondary/70 text-muted hover:bg-surface-tertiary/70"
         >
           <Bell size={18} />
-        </Button>
+        </Button>}
 
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -99,9 +99,9 @@ export function SuperAdminHeader({ sidebarCollapsed, onSidebarToggle }: SuperAdm
               if (key === 'logout') logout();
             }}
           >
-            <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
+            {hasModule('profile') ? <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
               {t('header.my_profile')}
-            </DropdownItem>
+            </DropdownItem> : null}
             <DropdownItem key="logout" id="logout" startContent={<LogOut size={16} />} className="text-danger">
               {t('header.sign_out')}
             </DropdownItem>

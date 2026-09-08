@@ -3,9 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { Breadcrumbs } from './Breadcrumbs';
+
+const disabledModules = vi.hoisted(() => new Set<string>());
 
 // Breadcrumbs imports useTenant from '@/contexts/TenantContext' by its DIRECT
 // path, so the override has to live on that specifier — a '@/contexts' barrel
@@ -15,10 +17,14 @@ vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
   useTenant: vi.fn(() => ({
     tenantPath: vi.fn((p: string) => `/test${p}`),
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn((module: string) => !disabledModules.has(module)),
   })),
 }));
 
 describe('Breadcrumbs', () => {
+  beforeEach(() => disabledModules.clear());
+
   it('renders nothing when items array is empty', () => {
     const { container } = render(<Breadcrumbs items={[]} />);
     expect(container.querySelector('nav')).not.toBeInTheDocument();
@@ -76,5 +82,17 @@ describe('Breadcrumbs', () => {
       <Breadcrumbs items={[{ label: 'Page' }]} />
     );
     expect(screen.getByLabelText('Breadcrumb')).toBeInTheDocument();
+  });
+
+  it('removes breadcrumb links to disabled modules', () => {
+    disabledModules.add('listings');
+    render(
+      <Breadcrumbs items={[
+        { label: 'Listings', href: '/listings' },
+        { label: 'Detail' },
+      ]} />
+    );
+    expect(screen.queryByText('Listings')).not.toBeInTheDocument();
+    expect(screen.getByText('Detail')).toBeInTheDocument();
   });
 });

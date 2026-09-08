@@ -30,6 +30,7 @@ import { SearchField } from '@/components/ui/SearchField';
 interface FaqItem {
   question: string;
   answer: React.ReactNode;
+  hidden?: boolean;
 }
 
 interface FaqCategory {
@@ -49,7 +50,7 @@ const itemVariants = {
 
 export function FaqPage() {
   const { t } = useTranslation('public');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   usePageTitle(t('faq.title'));
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,7 +149,7 @@ export function FaqPage() {
                 <li>{t('faq.categories.time_credits.q3.option1')}</li>
                 <li>{t('faq.categories.time_credits.q3.option2')}</li>
               </ul>
-              <p>{t('faq.categories.time_credits.q3.answer_link_before')}<Link to={tenantPath('/wallet')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.time_credits.q3.wallet_link')}</Link>{t('faq.categories.time_credits.q3.answer_link_after')}</p>
+              <p>{t('faq.categories.time_credits.q3.answer_link_before')}{hasModule('wallet') && <Link to={tenantPath('/wallet')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.time_credits.q3.wallet_link')}</Link>}{t('faq.categories.time_credits.q3.answer_link_after')}</p>
             </>
           ),
         },
@@ -268,6 +269,7 @@ export function FaqPage() {
         },
         {
           question: t('faq.categories.badges_rewards.q3.question'),
+          hidden: !hasModule('settings'),
           answer: (
             <p>{t('faq.categories.badges_rewards.q3.answer_before_link')}<Link to={tenantPath('/settings')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.badges_rewards.q3.settings_link')}</Link>{t('faq.categories.badges_rewards.q3.answer_after_link')}</p>
           ),
@@ -280,6 +282,7 @@ export function FaqPage() {
       items: [
         {
           question: t('faq.categories.account_privacy.q1.question'),
+          hidden: !hasModule('settings'),
           answer: (
             <p>{t('faq.categories.account_privacy.q1.answer_before_link')}<Link to={tenantPath('/settings')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.account_privacy.q1.settings_link')}</Link>{t('faq.categories.account_privacy.q1.answer_after_link')}</p>
           ),
@@ -294,7 +297,7 @@ export function FaqPage() {
                 <li>{t('faq.categories.account_privacy.q2.item2')}</li>
                 <li>{t('faq.categories.account_privacy.q2.item3')}</li>
               </ul>
-              <p>{t('faq.categories.account_privacy.q2.answer_link_before')}<Link to={tenantPath('/settings')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.account_privacy.q2.settings_link')}</Link>{t('faq.categories.account_privacy.q2.answer_link_after')}</p>
+              {hasModule('settings') && <p>{t('faq.categories.account_privacy.q2.answer_link_before')}<Link to={tenantPath('/settings')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.account_privacy.q2.settings_link')}</Link>{t('faq.categories.account_privacy.q2.answer_link_after')}</p>}
             </>
           ),
         },
@@ -328,7 +331,7 @@ export function FaqPage() {
         },
       ],
     },
-  ], [tenantPath, t]);
+  ], [hasModule, tenantPath, t]);
 
   // Build FAQPage JSON-LD schema from categories
   // Questions are plain strings from t(). Answers use the first paragraph translation.
@@ -343,7 +346,9 @@ export function FaqPage() {
     const catKeys = ['getting_started', 'time_credits', 'exchanges_safety', 'badges_rewards', 'account_privacy'];
 
     const mainEntity = catKeys.flatMap((catKey, ci) =>
-      (categories[ci]?.items || []).map((item, qi) => ({
+      (categories[ci]?.items || []).map((item, qi) => ({ item, qi }))
+        .filter(({ item }) => !item.hidden)
+        .map(({ item, qi }) => ({
         '@type': 'Question' as const,
         name: item.question,
         acceptedAnswer: {
@@ -446,7 +451,7 @@ export function FaqPage() {
                       indicator: 'text-theme-subtle',
                     }}
                   >
-                    {cat.items.map((item) => (
+                    {cat.items.filter((item) => !item.hidden).map((item) => (
                       <AccordionItem
                         key={`${cat.title}-${item.question}`} id={`${cat.title}-${item.question}`}
                         aria-label={item.question}

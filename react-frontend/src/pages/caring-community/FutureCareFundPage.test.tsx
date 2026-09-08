@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── stable mock data (vi.hoisted so vi.mock factories can reference it) ──
-const { SUMMARY } = vi.hoisted(() => ({
+const { SUMMARY, disabledModules } = vi.hoisted(() => ({
   SUMMARY: {
     total_banked_hours: 120,
     hours_received: 30,
@@ -28,6 +28,7 @@ const { SUMMARY } = vi.hoisted(() => ({
       { year: 2025, hours_given: 40, hours_received: 10 },
     ],
   },
+  disabledModules: new Set<string>(),
 }));
 
 // ─── api mock ────────────────────────────────────────────────────────────────
@@ -55,12 +56,14 @@ vi.mock('@/contexts', () =>
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn((f: string) => f === 'caring_community' || true),
-      hasModule: vi.fn(() => true),
+      hasModule: (module: string) => !disabledModules.has(module),
     }),
   }),
 );
 
 import { FutureCareFundPage } from './FutureCareFundPage';
+
+beforeEach(() => disabledModules.clear());
 
 // ─── tests ──────────────────────────────────────────────────────────────────
 
@@ -173,6 +176,17 @@ describe('FutureCareFundPage — populated state', () => {
       expect(hrefs).toContain('/test/listings/create');
       expect(hrefs).not.toContain('/test/listings/new');
     });
+  });
+
+  it('hides listing actions when the listings module is disabled', async () => {
+    disabledModules.add('listings');
+    render(<FutureCareFundPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
+    expect(hrefs).not.toContain('/test/listings');
+    expect(hrefs).not.toContain('/test/listings/create');
+    expect(hrefs).toContain('/test/caring-community/my-relationships');
   });
 
   it('shows active_months count', async () => {

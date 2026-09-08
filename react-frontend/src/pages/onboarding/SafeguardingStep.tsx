@@ -72,7 +72,7 @@ interface SafeguardingStepProps {
 export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText }: SafeguardingStepProps) {
   const { t } = useTranslation('onboarding');
   const toast = useToast();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
 
   const [options, setOptions] = useState<SafeguardingOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -420,13 +420,13 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
                 <p className="text-xs text-theme-secondary leading-relaxed mb-2">
                   {t('safeguarding.confirmation.revoke_body')}
                 </p>
-                <a
+                {hasModule('settings') && <a
                   href={tenantPath('/settings?tab=safeguarding')}
                   className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   {t('safeguarding.confirmation.revoke_cta')}
                   <ExternalLink className="w-3 h-3" />
-                </a>
+                </a>}
               </div>
             </div>
           </section>

@@ -1563,14 +1563,14 @@ export function AppRoutes() {
             </FeatureGate>
           } />
           <Route path="volunteering/org/:orgId/dashboard" element={
-            <FeatureGate feature="volunteering" fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
+            <FeatureGate feature="volunteering" features={['organisations']} fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
               <FeatureErrorBoundary featureName="Volunteering">
                 <VolOrgDashboardPage />
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
           <Route path="volunteering/my-organisations" element={
-            <FeatureGate feature="volunteering" fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
+            <FeatureGate feature="volunteering" features={['organisations']} fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
               <FeatureErrorBoundary featureName="Volunteering">
                 <MyOrganisationsPage />
               </FeatureErrorBoundary>

@@ -26,6 +26,7 @@ vi.mock('@/contexts', () => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
   })),
   useAuth: vi.fn(() => ({
     isAuthenticated: true,

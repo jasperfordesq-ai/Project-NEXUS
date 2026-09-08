@@ -53,11 +53,11 @@ function renderPage() {
 
 describe('CaringCommunityPage', () => {
   beforeEach(() => {
-    tenantState.features = new Set(['caring_community', 'volunteering']);
+    tenantState.features = new Set(['caring_community', 'volunteering', 'organisations']);
     tenantState.modules = new Set(['listings', 'messages']);
   });
 
-  it('shows the organisations shortcut when volunteering is enabled', () => {
+  it('shows the organisations shortcut when volunteering and organisations are enabled', () => {
     renderPage();
 
     const organisationsLink = screen.getByRole('link', {
@@ -65,5 +65,24 @@ describe('CaringCommunityPage', () => {
     });
 
     expect(organisationsLink).toHaveAttribute('href', '/test-timebank/organisations');
+  });
+
+  it('hides organisation shortcuts when organisations are disabled', () => {
+    tenantState.features.delete('organisations');
+    renderPage();
+
+    expect(screen.queryByRole('link', {
+      name: 'caring_community.modules.organisations.title',
+    })).not.toBeInTheDocument();
+    expect(screen.queryByText('caring_community.actions.coordinate_org')).not.toBeInTheDocument();
+  });
+
+  it('does not show volunteering actions when volunteering is disabled', () => {
+    tenantState.features.delete('volunteering');
+    renderPage();
+
+    expect(screen.queryByRole('link', { name: 'caring_community.hero.cta_give_help' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'caring_community.modules.volunteering.title' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'caring_community.recruit.cta' })).not.toBeInTheDocument();
   });
 });

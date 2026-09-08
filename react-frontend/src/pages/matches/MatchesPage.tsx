@@ -83,7 +83,7 @@ export function MatchesPage() {
   const { t } = useTranslation('matches');
   usePageTitle(t('page_title'));
   useAuth(); // ensure authenticated
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -237,11 +237,11 @@ export function MatchesPage() {
           icon={<MapPin className="w-5 h-5" aria-hidden="true" />}
           title={t('banner.no_coords_title')}
           description={t('banner.no_coords_desc')}
-          endContent={
+          endContent={hasModule('settings') ? (
             <Button as={Link} to={tenantPath('/settings?tab=profile')} size="sm" className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
               {t('empty.set_location_cta')}
             </Button>
-          }
+          ) : undefined}
         />
       )}
 

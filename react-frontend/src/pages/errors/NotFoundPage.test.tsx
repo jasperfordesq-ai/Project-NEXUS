@@ -24,8 +24,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@/test/test-utils';
 
+const hasFeature = vi.hoisted(() => vi.fn(() => true));
+
 vi.mock('@/contexts/TenantContext', () => ({
-  useTenant: () => ({ tenantPath: (p: string) => `/test${p}` }),
+  useTenant: () => ({ tenantPath: (p: string) => `/test${p}`, hasFeature }),
 }));
 
 vi.mock('@/lib/motion', () => ({
@@ -45,6 +47,7 @@ import { NotFoundPage } from './NotFoundPage';
 describe('NotFoundPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    hasFeature.mockReturnValue(true);
   });
 
   it('renders the 404 text', () => {
@@ -68,6 +71,12 @@ describe('NotFoundPage', () => {
   it('renders a link to the search page', () => {
     render(<NotFoundPage />);
     expect(screen.getByRole('link', { name: /search/i })).toHaveAttribute('href', '/test/search');
+  });
+
+  it('does not advertise search when the search feature is disabled', () => {
+    hasFeature.mockReturnValue(false);
+    render(<NotFoundPage />);
+    expect(screen.queryByRole('link', { name: /search/i })).not.toBeInTheDocument();
   });
 
   it('renders a go back button', () => {

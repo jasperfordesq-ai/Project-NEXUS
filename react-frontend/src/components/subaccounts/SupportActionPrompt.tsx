@@ -26,7 +26,7 @@ import { useTenant } from '@/contexts';
 
 export function SupportActionPrompt() {
   const { t } = useTranslation('settings');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const [pending, setPending] = useState(0);
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export function SupportActionPrompt() {
             {t('support_actions.prompt_message')}
           </p>
         </div>
-        <Button
+        {hasModule('settings') && <Button
           as={Link}
           to={tenantPath('/settings?tab=linked-accounts')}
           size="sm"
@@ -73,7 +73,7 @@ export function SupportActionPrompt() {
           className="w-full sm:w-auto"
         >
           {t('support_actions.prompt_action')}
-        </Button>
+        </Button>}
       </div>
     </GlassCard>
   );

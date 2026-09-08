@@ -257,7 +257,7 @@ All pages use `usePageTitle()`. Member-facing rows are defined and feature/modul
 | Volunteering | `/volunteering` | Feature: `volunteering` |
 | Blog | `/blog`, `/blog/:slug` | Feature: `blog` |
 | Resources | `/resources` | Feature: `resources` |
-| Organisations | `/organisations`, `/organisations/:id` | Feature: `volunteering` |
+| Organisations | `/organisations`, `/organisations/:id` | Features: `volunteering` and `organisations` |
 | Federation | `/federation/*` | Feature: `federation` |
 | Group Exchanges | `/group-exchanges`, `/group-exchanges/:id`, `/group-exchanges/create` | Feature: `group_exchanges` |
 | Matches | `/matches`, `/matches/preferences` | Module: `listings` (redirect → `/dashboard`) |

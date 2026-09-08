@@ -24,7 +24,7 @@ interface ComingSoonPageProps {
 
 export function ComingSoonPage({ feature = 'This feature' }: ComingSoonPageProps) {
   const { t } = useTranslation('utility');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   usePageTitle(t('coming_soon.page_title'));
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -45,11 +45,11 @@ export function ComingSoonPage({ feature = 'This feature' }: ComingSoonPageProps
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button as={Link} to={tenantPath('/dashboard')}
+            <Button as={Link} to={tenantPath(hasModule('dashboard') ? '/dashboard' : '/')}
               className="flex-1 w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white"
               startContent={<Home className="w-4 h-4" />}
             >
-              {t('coming_soon.dashboard')}
+              {hasModule('dashboard') ? t('coming_soon.dashboard') : t('not_found.go_home')}
             </Button>
             <Button
               variant="flat"

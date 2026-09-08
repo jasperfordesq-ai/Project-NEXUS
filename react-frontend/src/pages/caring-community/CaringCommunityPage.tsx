@@ -51,6 +51,7 @@ interface ActionDef {
   href: string;
   icon: ComponentType<{ className?: string }>;
   feature?: keyof TenantFeatures;
+  features?: (keyof TenantFeatures)[];
   module?: keyof TenantModules;
   /** Mark features that aren't fully live yet so we never imply they're ready. */
   preview?: boolean;
@@ -87,7 +88,7 @@ const GROUPS: GroupDef[] = [
       { key: 'offer_favour', href: '/caring-community/offer-favour', icon: HeartHandshake, feature: 'caring_community' },
       { key: 'offer_time', href: '/listings/create?type=offer', icon: Heart, module: 'listings' },
       { key: 'log_hours', href: '/volunteering?tab=hours', icon: Wallet, feature: 'volunteering' },
-      { key: 'coordinate_org', href: '/volunteering/my-organisations', icon: Building2, feature: 'volunteering' },
+      { key: 'coordinate_org', href: '/volunteering/my-organisations', icon: Building2, features: ['volunteering', 'organisations'] },
     ],
   },
   {
@@ -122,7 +123,7 @@ const GROUPS: GroupDef[] = [
 const moduleCards: ActionDef[] = [
   { key: 'timebank', href: '/listings', icon: ListChecks, module: 'listings' },
   { key: 'volunteering', href: '/volunteering', icon: Heart, feature: 'volunteering' },
-  { key: 'organisations', href: '/organisations', icon: Building2, feature: 'volunteering' },
+  { key: 'organisations', href: '/organisations', icon: Building2, features: ['volunteering', 'organisations'] },
   { key: 'events', href: '/events', icon: Calendar, feature: 'events' },
   { key: 'groups', href: '/groups', icon: Users, feature: 'groups' },
   { key: 'resources', href: '/resources', icon: FileText, feature: 'resources' },
@@ -130,7 +131,7 @@ const moduleCards: ActionDef[] = [
   { key: 'federation', href: '/federation', icon: Globe, feature: 'federation' },
   { key: 'clubs', href: '/clubs', icon: ShoppingBag },
   { key: 'messages', href: '/messages', icon: MessageSquare, module: 'messages' },
-  { key: 'trust', href: '/verify-identity', icon: ShieldCheck },
+  { key: 'trust', href: '/verify-identity', icon: ShieldCheck, feature: 'identity_verification' },
 ];
 
 function isVisible(
@@ -139,6 +140,7 @@ function isVisible(
   hasModule: (module: keyof TenantModules) => boolean,
 ): boolean {
   if (item.feature && !hasFeature(item.feature)) return false;
+  if (item.features?.some((feature) => !hasFeature(feature))) return false;
   if (item.module && !hasModule(item.module)) return false;
   return true;
 }
@@ -173,7 +175,8 @@ export function CaringCommunityPage() {
   }, [onboardingTenantScope]);
 
   // The hero's primary call-to-action follows what the visitor told us they're here for.
-  const primaryCta = choice === 'helper' ? 'give' : 'get';
+  const hasVolunteering = hasFeature('volunteering');
+  const primaryCta = choice === 'helper' && hasVolunteering ? 'give' : 'get';
 
   const visibleGroups = useMemo(
     () =>
@@ -231,9 +234,11 @@ export function CaringCommunityPage() {
                   <Button as={Link} to={tenantPath('/caring-community/request-help')} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white" startContent={<ListChecks className="h-4 w-4" aria-hidden="true" />}>
                     {t('caring_community.hero.cta_get_help')}
                   </Button>
-                  <Button as={Link} to={tenantPath('/volunteering')} variant="tertiary" startContent={<HelpingHand className="h-4 w-4" aria-hidden="true" />}>
-                    {t('caring_community.hero.cta_give_help')}
-                  </Button>
+                  {hasVolunteering && (
+                    <Button as={Link} to={tenantPath('/volunteering')} variant="tertiary" startContent={<HelpingHand className="h-4 w-4" aria-hidden="true" />}>
+                      {t('caring_community.hero.cta_give_help')}
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>
@@ -284,7 +289,7 @@ export function CaringCommunityPage() {
         </section>
 
         {/* ── We need caregivers: honest recruitment, not a pretend roster ── */}
-        {hasFeature('caring_community') && (
+        {hasFeature('caring_community') && hasVolunteering && (
           <GlassCard className="border-emerald-200/60 bg-emerald-50/50 p-6 dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:p-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-4">

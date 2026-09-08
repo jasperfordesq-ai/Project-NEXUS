@@ -66,7 +66,7 @@ const itemVariants = {
 export function NotificationsPage() {
   const { t } = useTranslation('notifications');
   usePageTitle(t('page_title'));
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const toast = useToast();
   const pusher = usePusherOptional();
   const onNotification = pusher?.onNotification;
@@ -330,7 +330,7 @@ export function NotificationsPage() {
                 {t('mark_all_read')}
               </Button>
             )}
-            <Button
+            {hasModule('settings') && <Button
               as={Link}
               to={tenantPath('/settings')}
               variant="flat"
@@ -340,7 +340,7 @@ export function NotificationsPage() {
               startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
             >
               {t('settings_label')}
-            </Button>
+            </Button>}
           </div>
         </div>
       </header>

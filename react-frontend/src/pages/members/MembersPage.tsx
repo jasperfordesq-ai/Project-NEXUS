@@ -198,7 +198,7 @@ export function MembersPage() {
     }
   }, [savedRadiusKm]);
   const { user, isAuthenticated } = useAuth();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const hasMapsFeature = useFeature('maps');
   const canUseMapView = MAPS_ENABLED && hasMapsFeature;
   const membersAlgorithm = useAlgorithmInfo('members');
@@ -960,7 +960,7 @@ export function MembersPage() {
                         ))}
                       </ul>
                       <p>{t('members.coverage_outro')}</p>
-                      {isAuthenticated && (
+                      {isAuthenticated && hasModule('settings') && (
                         <Link
                           to={tenantPath('/settings?tab=privacy')}
                           className="inline-block font-medium text-accent underline underline-offset-2"

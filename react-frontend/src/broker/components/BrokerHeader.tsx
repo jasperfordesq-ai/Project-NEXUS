@@ -32,7 +32,7 @@ interface BrokerHeaderProps {
 export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }: BrokerHeaderProps) {
   const { t } = useTranslation('broker');
   const { user, logout } = useAuth();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, hasModule } = useTenant();
   const navigate = useNavigate();
 
   return (
@@ -58,7 +58,7 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
         <Button
           variant="tertiary"
           size="sm"
-          onPress={() => navigate(tenantPath('/dashboard'))}
+          onPress={() => navigate(tenantPath(hasModule('dashboard') ? '/dashboard' : '/'))}
           startContent={<ArrowLeft size={16} />}
           className="min-w-0 px-2 text-muted sm:px-3"
         >
@@ -108,7 +108,7 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
         >
           <HelpCircle size={18} />
         </Button>
-        <Button
+        {hasModule('notifications') && <Button
           isIconOnly
           variant="tertiary"
           size="sm"
@@ -116,7 +116,7 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
           aria-label={t('header.notifications')}
         >
           <Bell size={18} />
-        </Button>
+        </Button>}
 
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -139,9 +139,9 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
               if (key === 'logout') logout();
             }}
           >
-            <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
+            {hasModule('profile') ? <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
               {t('header.my_profile')}
-            </DropdownItem>
+            </DropdownItem> : null}
             <DropdownItem
               key="logout" id="logout"
               startContent={<LogOut size={16} />}

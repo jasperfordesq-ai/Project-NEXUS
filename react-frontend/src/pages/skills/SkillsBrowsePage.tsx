@@ -124,7 +124,7 @@ const itemVariants = {
 export function SkillsBrowsePage() {
   const { t } = useTranslation('common');
   usePageTitle(t('skills.browse_title'));
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const { isAuthenticated } = useAuth();
 
   // State
@@ -295,7 +295,7 @@ export function SkillsBrowsePage() {
             </div>
           </div>
 
-          {isAuthenticated && (
+          {isAuthenticated && hasModule('settings') && (
             <Link
               to={tenantPath('/settings?tab=skills')}
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/20"

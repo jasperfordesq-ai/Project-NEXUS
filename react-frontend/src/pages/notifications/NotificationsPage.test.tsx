@@ -26,6 +26,7 @@ const notifMocks = vi.hoisted(() => ({
   markAllAsRead: vi.fn(),
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
+const mockHasModule = vi.hoisted(() => vi.fn(() => true));
 
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(() => ({
@@ -36,7 +37,7 @@ vi.mock('@/contexts', () => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasModule: mockHasModule,
   })),
   useToast: vi.fn(() => notifMocks.toast),
 
@@ -108,6 +109,7 @@ describe('NotificationsPage', () => {
     // individual tests override with mockResolvedValue(false) to exercise failure.
     notifMocks.markAsRead.mockResolvedValue(true);
     notifMocks.markAllAsRead.mockResolvedValue(true);
+    mockHasModule.mockReturnValue(true);
   });
 
   it('renders the page heading and description', () => {
@@ -271,6 +273,12 @@ describe('NotificationsPage', () => {
   it('shows notification settings button', () => {
     render(<NotificationsPage />);
     expect(screen.getByLabelText('Notification settings')).toBeInTheDocument();
+  });
+
+  it('hides notification settings when the settings module is disabled', () => {
+    mockHasModule.mockImplementation((module: string) => module !== 'settings');
+    render(<NotificationsPage />);
+    expect(screen.queryByLabelText('Notification settings')).not.toBeInTheDocument();
   });
 
   // Regression: the context mark-as-read handlers swallow errors and never throw, so

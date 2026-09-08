@@ -32,7 +32,8 @@ interface ProfileStats {
 
 export function ProfileCardWidget() {
   const { isAuthenticated, user } = useAuth();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
+  const hasListings = hasModule('listings');
   const { t } = useTranslation('feed');
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,12 +97,14 @@ export function ProfileCardWidget() {
       ) : stats && (
         <>
           <div className="flex justify-center gap-6 mt-3 pt-3 border-t border-[var(--border-default)]">
-            <Link to={tenantPath('/listings')} className="text-center group">
-              <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-accent">
-                {stats.listings_count}
-              </p>
-              <p className="text-xs text-[var(--text-muted)]">{t('sidebar.profile.listings')}</p>
-            </Link>
+            {hasListings && (
+              <Link to={tenantPath('/listings')} className="text-center group">
+                <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-accent">
+                  {stats.listings_count}
+                </p>
+                <p className="text-xs text-[var(--text-muted)]">{t('sidebar.profile.listings')}</p>
+              </Link>
+            )}
             <div className="text-center">
               <p className="text-sm font-bold text-theme-success">{stats.given_count}</p>
               <p className="text-xs text-[var(--text-muted)]">{t('sidebar.profile.given')}</p>
@@ -113,7 +116,7 @@ export function ProfileCardWidget() {
           </div>
 
           {/* Offers / Requests mini grid */}
-          <div className="grid grid-cols-2 gap-2 mt-3">
+          {hasListings && <div className="grid grid-cols-2 gap-2 mt-3">
             <Link
               to={tenantPath('/listings?type=offer')}
               className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors duration-200"
@@ -138,7 +141,7 @@ export function ProfileCardWidget() {
                 <p className="text-[10px] text-[var(--text-muted)]">{t('sidebar.profile.requests')}</p>
               </div>
             </Link>
-          </div>
+          </div>}
         </>
       )}
     </GlassCard>

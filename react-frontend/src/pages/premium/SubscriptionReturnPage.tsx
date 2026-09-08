@@ -38,7 +38,7 @@ const MAX_POLLS = 20;
 
 export function SubscriptionReturnPage() {
   const { t } = useTranslation('common');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const [search] = useSearchParams();
   const cancelled = search.get('cancelled') === '1';
   usePageTitle(t('premium.return_title'));
@@ -117,8 +117,8 @@ export function SubscriptionReturnPage() {
                 <Button as={Link} to={tenantPath('/premium/manage')} variant="primary">
                   {t('premium.manage_cta')}
                 </Button>
-                <Button as={Link} to={tenantPath('/dashboard')} variant="tertiary">
-                  {t('premium.go_to_dashboard')}
+                <Button as={Link} to={tenantPath(hasModule('dashboard') ? '/dashboard' : '/')} variant="tertiary">
+                  {hasModule('dashboard') ? t('premium.go_to_dashboard') : t('not_found.go_home', { ns: 'utility' })}
                 </Button>
               </div>
             </>

@@ -34,7 +34,9 @@ type VerifyState = 'loading' | 'success' | 'error';
 export function VerifyEmailPage() {
   const { t } = useTranslation('auth');
   usePageTitle(t('page_meta.verify_email.title'));
-  const { branding, tenantPath } = useTenant();
+  const { branding, tenantPath, hasModule } = useTenant();
+  const dashboardEnabled = hasModule('dashboard');
+  const dashboardPath = tenantPath(dashboardEnabled ? '/dashboard' : '/');
   const { isAuthenticated } = useAuth();
   const toast = useToast();
 
@@ -186,8 +188,8 @@ export function VerifyEmailPage() {
             )}
 
             {isAuthenticated ? (
-              <Button as={Link} to={tenantPath('/dashboard')} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
-                {t('verify_email.go_to_dashboard')}
+              <Button as={Link} to={dashboardPath} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+                {dashboardEnabled ? t('verify_email.go_to_dashboard') : t('not_found.go_home', { ns: 'utility' })}
               </Button>
             ) : (
               <Button as={Link} to={tenantPath('/login')} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
@@ -245,12 +247,14 @@ export function VerifyEmailPage() {
               </p>
             )}
 
-            <Button as={Link} to={isAuthenticated ? tenantPath('/dashboard') : tenantPath('/login')}
+            <Button as={Link} to={isAuthenticated ? dashboardPath : tenantPath('/login')}
               variant="flat"
               className="w-full bg-theme-elevated text-theme-primary"
               startContent={<ArrowLeft aria-hidden="true" className="w-4 h-4" />}
             >
-              {isAuthenticated ? t('verify_email.back_to_dashboard') : t('verify_email.back_to_login')}
+              {isAuthenticated
+                ? (dashboardEnabled ? t('verify_email.back_to_dashboard') : t('not_found.go_home', { ns: 'utility' }))
+                : t('verify_email.back_to_login')}
             </Button>
           </div>
         </GlassCard>

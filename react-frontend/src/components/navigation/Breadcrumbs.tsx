@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import Home from 'lucide-react/icons/house';
 import { useTenant } from '@/contexts/TenantContext';
+import { isNavigationPathEnabled } from './navigationRegistry';
 
 export interface BreadcrumbItem {
   label: string;
@@ -29,8 +30,11 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items, showHome = true }: BreadcrumbsProps) {
   const { t } = useTranslation('common');
-  const { tenantPath } = useTenant();
-  if (items.length === 0) return null;
+  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const visibleItems = items.filter((item) => (
+    !item.href || isNavigationPathEnabled(item.href, { hasFeature, hasModule }, tenantPath(''))
+  ));
+  if (visibleItems.length === 0) return null;
 
   return (
     <nav aria-label={t('accessibility.breadcrumb')} className="mb-4">
@@ -48,8 +52,8 @@ export function Breadcrumbs({ items, showHome = true }: BreadcrumbsProps) {
           </li>
         )}
 
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
+        {visibleItems.map((item, index) => {
+          const isLast = index === visibleItems.length - 1;
 
           return (
             <li key={`${item.label}-${index}`} className="flex items-center">

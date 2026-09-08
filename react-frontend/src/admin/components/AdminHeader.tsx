@@ -67,7 +67,7 @@ function scheduleSupportStatsFetch(callback: () => void): () => void {
 export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderProps) {
   const { t } = useTranslation('admin_nav');
   const { user, logout } = useAuth();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, hasModule } = useTenant();
   const navigate = useNavigate();
   const adminLabel = t('admin');
 
@@ -120,7 +120,7 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
         <Button
           variant="tertiary"
           size="sm"
-          onPress={() => navigate(tenantPath('/dashboard'))}
+          onPress={() => navigate(tenantPath(hasModule('dashboard') ? '/dashboard' : '/'))}
           startContent={<ArrowLeft size={16} aria-hidden="true" />}
           aria-label={t('back_to_site')}
           className="min-w-0 bg-surface-secondary/70 px-2 text-muted hover:bg-surface-tertiary/70 sm:px-3"
@@ -159,7 +159,7 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
           )}
         </Button>
 
-        <Button
+        {hasModule('notifications') && <Button
           isIconOnly
           variant="tertiary"
           size="sm"
@@ -168,7 +168,7 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
           className="bg-surface-secondary/70 text-muted hover:bg-surface-tertiary/70"
         >
           <Bell size={18} />
-        </Button>
+        </Button>}
 
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -191,12 +191,12 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
               if (key === 'logout') logout();
             }}
           >
-            <DropdownItem
+            {hasModule('profile') ? <DropdownItem
               key="profile" id="profile"
               startContent={<User size={16} />}
             >
               {t('my_profile')}
-            </DropdownItem>
+            </DropdownItem> : null}
             <DropdownItem
               key="logout" id="logout"
               startContent={<LogOut size={16} />}

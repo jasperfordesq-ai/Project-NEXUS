@@ -27,7 +27,7 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 // ─── Auth state managed via hoisted mutable ref ───────────────────────────
 // We use a mutable object so we can update auth between tests without
 // needing to re-register the mock (vi.mock is hoisted and runs once).
-const { authState } = vi.hoisted(() => ({
+const { authState, disabledModules } = vi.hoisted(() => ({
   authState: {
     user: {
       id: 42,
@@ -38,6 +38,7 @@ const { authState } = vi.hoisted(() => ({
     } as Record<string, unknown> | null,
     isAuthenticated: true,
   },
+  disabledModules: new Set<string>(),
 }));
 
 vi.mock('@/contexts', () =>
@@ -57,7 +58,7 @@ vi.mock('@/contexts', () =>
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasModule: vi.fn((module: string) => !disabledModules.has(module)),
     }),
   }),
 );
@@ -89,6 +90,7 @@ const makeResponse = (data: object) => ({ success: true, data });
 describe('ProfileCardWidget', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    disabledModules.clear();
     // Restore default authenticated state
     authState.user = {
       id: 42,
@@ -99,6 +101,21 @@ describe('ProfileCardWidget', () => {
     };
     authState.isAuthenticated = true;
     mockApi.get.mockResolvedValue(makeResponse(makeStats()));
+  });
+
+  it('hides listing totals, offers, and requests when listings are disabled', async () => {
+    disabledModules.add('listings');
+    mockApi.get.mockResolvedValue(makeResponse(makeStats()));
+
+    const { ProfileCardWidget } = await import('./ProfileCardWidget');
+    render(<ProfileCardWidget />);
+
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalled());
+    expect(screen.queryByText('Listings')).not.toBeInTheDocument();
+    expect(screen.queryByText('Offers')).not.toBeInTheDocument();
+    expect(screen.queryByText('Requests')).not.toBeInTheDocument();
+    expect(screen.getByText('Given')).toBeInTheDocument();
+    expect(screen.getByText('Received')).toBeInTheDocument();
   });
 
   it('renders the user display name', async () => {

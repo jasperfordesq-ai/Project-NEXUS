@@ -15,6 +15,7 @@ vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 const stableTenant = {
   tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
   tenantPath: (p: string) => `/test${p}`,
+  hasModule: vi.fn(() => true),
 };
 
 vi.mock('@/contexts', () => ({
@@ -28,6 +29,12 @@ describe('MatchesEmptyState', () => {
     render(<MatchesEmptyState variant="no_coordinates" />);
     expect(screen.getByText('We need your location to find matches')).toBeInTheDocument();
     expect(screen.getByText('Set your location')).toBeInTheDocument();
+  });
+
+  it('hides the set-location CTA when settings are disabled', () => {
+    stableTenant.hasModule.mockReturnValueOnce(false);
+    render(<MatchesEmptyState variant="no_coordinates" />);
+    expect(screen.queryByText('Set your location')).not.toBeInTheDocument();
   });
 
   it('renders the no-listings variant with a create-listing CTA', () => {

@@ -26,6 +26,7 @@ vi.mock('@/contexts', () => ({
     branding: { name: 'Test Community', logo_url: null },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
   })),
   useAuth: vi.fn(() => ({
     isAuthenticated: false,
@@ -57,6 +58,7 @@ vi.mock('@/contexts/TenantContext', () => ({
     branding: { name: 'Test Community', logo_url: null },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
   })),
 }));
 
@@ -108,6 +110,7 @@ describe('VerifyEmailPage', () => {
       tenant: { id: 2, name: 'Test Tenant', slug: 'test', settings: {} },
       branding: { name: 'Test Community', logo_url: null },
       tenantPath: (p: string) => `/test${p}`,
+      hasModule: vi.fn(() => true),
     });
   });
 

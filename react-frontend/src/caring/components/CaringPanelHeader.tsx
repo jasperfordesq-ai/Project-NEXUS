@@ -22,7 +22,7 @@ interface CaringPanelHeaderProps {
 
 export function CaringPanelHeader({ sidebarCollapsed, onSidebarToggle }: CaringPanelHeaderProps) {
   const { user, logout } = useAuth();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, hasModule } = useTenant();
   const navigate = useNavigate();
   const { t } = useTranslation('caring_community');
 
@@ -49,7 +49,7 @@ export function CaringPanelHeader({ sidebarCollapsed, onSidebarToggle }: CaringP
         <Button
           variant="tertiary"
           size="sm"
-          onPress={() => navigate(tenantPath('/dashboard'))}
+          onPress={() => navigate(tenantPath(hasModule('dashboard') ? '/dashboard' : '/'))}
           startContent={<ArrowLeft size={16} />}
           className="text-muted"
           aria-label={t('panel.header.back_to_site')}
@@ -65,7 +65,7 @@ export function CaringPanelHeader({ sidebarCollapsed, onSidebarToggle }: CaringP
 
       {/* Right: User menu */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-        <Button
+        {hasModule('notifications') && <Button
           isIconOnly
           variant="tertiary"
           size="sm"
@@ -73,7 +73,7 @@ export function CaringPanelHeader({ sidebarCollapsed, onSidebarToggle }: CaringP
           aria-label={t('panel.header.notifications')}
         >
           <Bell size={18} />
-        </Button>
+        </Button>}
 
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -101,9 +101,9 @@ export function CaringPanelHeader({ sidebarCollapsed, onSidebarToggle }: CaringP
               if (key === 'logout') logout();
             }}
           >
-            <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
+            {hasModule('profile') ? <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
               {t('panel.header.my_profile')}
-            </DropdownItem>
+            </DropdownItem> : null}
             <DropdownItem
               key="logout" id="logout"
               startContent={<LogOut size={16} />}

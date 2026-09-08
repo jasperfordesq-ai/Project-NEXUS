@@ -33,7 +33,7 @@ export function GuardianConsentPrompt() {
   const { t } = useTranslation('settings');
   // Project convention: internal links go through the tenant-aware helper on
   // the context, not the bare one in lib/tenant-routing.
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const [pending, setPending] = useState(0);
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export function GuardianConsentPrompt() {
             {t('safeguarding.guardians_prompt.message')}
           </p>
         </div>
-        <Button
+        {hasModule('settings') && <Button
           as={Link}
           to={tenantPath('/settings?tab=safeguarding')}
           size="sm"
@@ -86,7 +86,7 @@ export function GuardianConsentPrompt() {
           className="w-full sm:w-auto"
         >
           {t('safeguarding.guardians_prompt.action')}
-        </Button>
+        </Button>}
       </div>
     </GlassCard>
   );

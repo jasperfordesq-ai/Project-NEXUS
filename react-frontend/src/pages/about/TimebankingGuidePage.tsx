@@ -123,7 +123,7 @@ const stagger = {
 export function TimebankingGuidePage() {
   const { t } = useTranslation('about');
   usePageTitle(t('timebanking_guide.page_title'));
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const { isAuthenticated } = useAuth();
 
   return (
@@ -348,7 +348,7 @@ export function TimebankingGuidePage() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  {isAuthenticated ? (
+                  {isAuthenticated ? (hasModule('listings') ? (
                     <Button
                       as={Link}
                       to={tenantPath('/listings')}
@@ -358,7 +358,7 @@ export function TimebankingGuidePage() {
                     >
                       {t('timebanking_guide.cta_browse_listings')}
                     </Button>
-                  ) : (
+                  ) : null) : (
                     <Button
                       as={Link}
                       to={tenantPath('/register')}

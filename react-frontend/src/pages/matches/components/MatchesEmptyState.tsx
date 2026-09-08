@@ -26,7 +26,7 @@ export interface MatchesEmptyStateProps {
  */
 export function MatchesEmptyState({ variant }: MatchesEmptyStateProps) {
   const { t } = useTranslation('matches');
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
 
   if (variant === 'no_coordinates') {
     return (
@@ -34,11 +34,11 @@ export function MatchesEmptyState({ variant }: MatchesEmptyStateProps) {
         icon={<MapPin className="w-12 h-12" />}
         title={t('empty.no_coordinates_title')}
         description={t('empty.no_coordinates_description')}
-        action={
+        action={hasModule('settings') ? (
           <Button as={Link} to={tenantPath('/settings?tab=profile')} className="bg-gradient-to-r from-accent to-accent-gradient-end text-white">
             {t('empty.set_location_cta')}
           </Button>
-        }
+        ) : undefined}
       />
     );
   }

@@ -33,7 +33,7 @@ export default function NewsletterUnsubscribePage() {
   usePageTitle(t('newsletter.page_title'));
 
   const [searchParams] = useSearchParams();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const token = searchParams.get('token') ?? '';
 
   const [state, setState] = useState<State>(token ? 'loading' : 'invalid');
@@ -89,14 +89,14 @@ export default function NewsletterUnsubscribePage() {
             <p className="mt-2 text-muted text-sm">
               {t('newsletter.unsubscribed_description')}
             </p>
-            <Button
+            {hasModule('settings') && <Button
               className="mt-6"
               variant="secondary"
               as="a"
               href={tenantPath('/settings')}
             >
               {t('newsletter.manage_preferences')}
-            </Button>
+            </Button>}
           </>
         )}
 
@@ -117,14 +117,14 @@ export default function NewsletterUnsubscribePage() {
             <p className="mt-2 text-muted text-sm">
               {t('newsletter.invalid_link_description')}
             </p>
-            <Button
+            {hasModule('settings') && <Button
               className="mt-6"
               variant="secondary"
               as="a"
               href={tenantPath('/settings')}
             >
               {t('newsletter.go_to_settings')}
-            </Button>
+            </Button>}
           </>
         )}
 

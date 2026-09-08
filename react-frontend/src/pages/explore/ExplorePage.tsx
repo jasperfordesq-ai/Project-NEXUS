@@ -1514,19 +1514,8 @@ export default function ExplorePage() {
         </ExploreSection>
       )}
 
-      {/*
-        ─── Organisations (Phase 2) ─────────────────────────────────────
-
-        🔴 Gated on `volunteering` ALONE. There is a feature flag literally named
-        `organisations`, and requiring it here is a known trap that the root CLAUDE.md
-        page table warns about: Organisations is a volunteering surface, and the
-        register route is gated the same way for the same reason. An
-        `&& hasFeature('organisations')` was added on 2026-09-07 and hid the section from
-        any community running volunteering without that second flag;
-        `ExplorePage.test.tsx` had pinned the correct behaviour and caught it. Removed on
-        the owner's decision, 2026-09-08.
-      */}
-      {showSection('all') && hasFeature('volunteering') && data?.active_organisations && data.active_organisations.length > 0 && (
+      {/* ─── Organisations (Phase 2) ───────────────────────────────── */}
+      {showSection('all') && hasFeature('volunteering') && hasFeature('organisations') && data?.active_organisations && data.active_organisations.length > 0 && (
         <ExploreSection
           title={t('organisations.title')}
           subtitle={t('organisations.subtitle')}

@@ -40,6 +40,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 // ─── Contexts ────────────────────────────────────────────────────────────────
 const mockLogout = vi.fn();
+const disabledModules = vi.hoisted(() => new Set<string>());
 const mockToast = {
   success: vi.fn(),
   error: vi.fn(),
@@ -66,7 +67,7 @@ vi.mock('@/contexts', () =>
       tenant: { id: 2, name: 'Hour Timebank', slug: 'hour-timebank' },
       tenantPath: (p: string) => `/hour-timebank${p}`,
       hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasModule: (module: string) => !disabledModules.has(module),
     }),
   })
 );
@@ -204,6 +205,7 @@ vi.mock('@/components/ui/Dropdown', () => ({
 describe('AdminHeader', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    disabledModules.clear();
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) =>
       window.setTimeout(() => callback(performance.now()), 0)
     );
@@ -327,6 +329,19 @@ describe('AdminHeader', () => {
       (btn) => btn.getAttribute('aria-label')?.toLowerCase().includes('notification')
     );
     expect(notifBtn).toBeDefined();
+  });
+
+  it('hides notifications and profile controls when their modules are disabled', async () => {
+    disabledModules.add('notifications');
+    disabledModules.add('profile');
+    const { AdminHeader } = await import('./AdminHeader');
+    render(<AdminHeader sidebarCollapsed={false} />);
+
+    expect(screen.getAllByRole('button').some(
+      (button) => button.getAttribute('aria-label')?.toLowerCase().includes('notification'),
+    )).toBe(false);
+    expect(screen.queryByTestId('dropdown-item-profile')).not.toBeInTheDocument();
+    expect(screen.getByTestId('dropdown-item-logout')).toBeInTheDocument();
   });
 
   it('navigates to notifications when bell button is clicked', async () => {
