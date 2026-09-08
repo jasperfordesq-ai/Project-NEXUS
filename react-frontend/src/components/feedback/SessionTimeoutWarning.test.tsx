@@ -279,16 +279,34 @@ describe('SessionTimeoutWarning — opens on event (real timers)', () => {
 // ─── Countdown ticks down (real timers, small wait) ───────────────────────────
 //
 // Fake timers + runAllTimersAsync trigger the infinite-loop guard because
-// setInterval keeps re-queuing itself.  We use real timers and wait > 1 second
-// for at least one tick to fire.  The tick recomputes from the wall-clock
-// deadline, so ~1.1 real seconds after opening the badge must read 29.
+// setInterval keeps re-queuing itself.  We use real timers and poll for the
+// badge to fall below its starting value, which is the behaviour under test:
+// the tick recomputes from the wall-clock deadline rather than counting.
+//
+// 🔴 Do NOT sleep for a fixed 1.1s and then read the DOM synchronously.  That
+// is what this test did until 2026-09-08, and it went red on CI shard 4/8 with
+// the badge still reading 30 — twice, because the shard runner retries once.
+// Both the interval callback and React's flush of the resulting state update
+// are at the mercy of a loaded runner, so a single-shot read races them.  For
+// the same reason the assertion is "lower than 30", not "exactly 29": a runner
+// slow enough to miss one tick can just as easily deliver two.
+
+const START_SECONDS = 30;
+
+/** The countdown badge is the only element whose whole text is digits. */
+function readCountdownBadge(): number | null {
+  const badge = Array.from(document.querySelectorAll('span')).find((span) =>
+    /^\d+$/.test(span.textContent?.trim() ?? ''),
+  );
+  return badge ? Number(badge.textContent) : null;
+}
 
 describe('SessionTimeoutWarning — countdown ticks down (real timers)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('shows one second less after ~1.1 seconds', async () => {
+  it('counts down from the wall-clock deadline', async () => {
     render(<SessionTimeoutWarning />);
 
     await act(async () => {
@@ -296,15 +314,17 @@ describe('SessionTimeoutWarning — countdown ticks down (real timers)', () => {
     });
 
     // Confirm modal shows 30 initially
-    await waitForText('30');
+    await waitForText(String(START_SECONDS));
 
-    // Wait a real 1.1 seconds for the first interval tick
-    await new Promise((resolve) => setTimeout(resolve, 1100));
-
-    const bodyText = document.body.textContent ?? '';
-    // ceil((30s deadline − 1.1s elapsed) / 1s) = 29
-    expect(bodyText).toContain('29');
-  }, 10000); // 10-second test timeout (covers 1.1s real wait + render overhead)
+    await waitFor(
+      () => {
+        const seconds = readCountdownBadge();
+        expect(seconds).not.toBeNull();
+        expect(seconds as number).toBeLessThan(START_SECONDS);
+      },
+      { timeout: 5000, interval: 100 },
+    );
+  }, 10000); // 10-second test timeout (covers the real-time wait + render overhead)
 });
 
 // ─── Wall-clock deadline (real timers, frozen Date.now) ───────────────────────
