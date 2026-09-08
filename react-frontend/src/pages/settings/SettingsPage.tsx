@@ -153,11 +153,19 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, logout, refreshUser } = useAuth();
-  const { tenantPath, tenant, hasFeature } = useTenant();
+  const { tenantPath, tenant, hasFeature, hasModule } = useTenant();
   const toast = useToast();
   const { subscribe: subscribeWebPush, unsubscribe: unsubscribeWebPush } = useWebPush();
+  const hasProfileModule = hasModule('profile');
+  const hasNotificationsModule = hasModule('notifications');
+  const defaultTab: SettingsTabKey = hasProfileModule ? 'profile' : 'privacy';
   const tabParam = searchParams.get('tab');
-  const initialTab: SettingsTabKey = isSettingsTabKey(tabParam) ? tabParam : 'profile';
+  const requestedTab = isSettingsTabKey(tabParam) ? tabParam : defaultTab;
+  const initialTab: SettingsTabKey =
+    (requestedTab === 'profile' && !hasProfileModule)
+    || (requestedTab === 'notifications' && !hasNotificationsModule)
+      ? defaultTab
+      : requestedTab;
   const [activeTab, setActiveTab] = useState<SettingsTabKey>(initialTab);
   const [pendingTab, setPendingTab] = useState<SettingsTabKey | null>(null);
   const [isDirty, setIsDirty] = useState(false);
@@ -1095,24 +1103,28 @@ export function SettingsPage() {
             tabContent: 'whitespace-nowrap',
           }}
         >
-          <Tab
-            key="profile"
-            title={
-              <span className="flex items-center gap-2">
-                <User className="w-4 h-4" aria-hidden="true" />
-                {t("tabs.profile")}
-              </span>
-            }
-          />
-          <Tab
-            key="notifications"
-            title={
-              <span className="flex items-center gap-2">
-                <Bell className="w-4 h-4" aria-hidden="true" />
-                {t("tabs.notifications")}
-              </span>
-            }
-          />
+          {hasProfileModule && (
+            <Tab
+              key="profile"
+              title={
+                <span className="flex items-center gap-2">
+                  <User className="w-4 h-4" aria-hidden="true" />
+                  {t("tabs.profile")}
+                </span>
+              }
+            />
+          )}
+          {hasNotificationsModule && (
+            <Tab
+              key="notifications"
+              title={
+                <span className="flex items-center gap-2">
+                  <Bell className="w-4 h-4" aria-hidden="true" />
+                  {t("tabs.notifications")}
+                </span>
+              }
+            />
+          )}
           <Tab
             key="privacy"
             title={
@@ -1191,7 +1203,7 @@ export function SettingsPage() {
       {/* Tab Content */}
       <motion.div variants={itemVariants}>
         {/* PROFILE TAB */}
-        {activeTab === 'profile' && (
+        {hasProfileModule && activeTab === 'profile' && (
           <>
             <ProfileTab
               profileData={profileData}
@@ -1218,7 +1230,7 @@ export function SettingsPage() {
         )}
 
         {/* NOTIFICATIONS TAB */}
-        {activeTab === 'notifications' && (
+        {hasNotificationsModule && activeTab === 'notifications' && (
           <NotificationsTab
             notifications={notifications}
             notificationError={notificationError}

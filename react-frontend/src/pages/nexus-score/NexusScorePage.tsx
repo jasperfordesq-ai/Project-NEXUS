@@ -178,7 +178,7 @@ function TierLadder({
 export default function NexusScorePage() {
   const { t } = useTranslation('gamification');
   const { user }       = useAuth();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const toast = useToast();
 
   usePageTitle(t('nexus_score.title'));
@@ -442,7 +442,7 @@ export default function NexusScorePage() {
         >
           {t('nexus_score.view_leaderboard')}
         </Button>
-        <Button
+        {hasModule('profile') && <Button
           as={Link}
           to={tenantPath(`/profile/${user?.id}`)}
           variant="flat"
@@ -450,7 +450,7 @@ export default function NexusScorePage() {
           size="sm"
         >
           {t('nexus_score.my_profile')}
-        </Button>
+        </Button>}
       </motion.div>
     </motion.div>
   );

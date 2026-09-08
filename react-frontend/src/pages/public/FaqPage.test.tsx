@@ -121,4 +121,13 @@ describe('FaqPage', () => {
     expect(screen.queryByText('Can I hide my badges or opt out of leaderboards?')).not.toBeInTheDocument();
     expect(screen.queryByText('How do I change my password?')).not.toBeInTheDocument();
   });
+
+  it('does not show a Wallet link or an incomplete Wallet sentence when Wallet is disabled', () => {
+    mockHasModule.mockImplementation((module: string) => module !== 'wallet');
+
+    render(<FaqPage />);
+
+    expect(screen.queryByRole('link', { name: 'Wallet' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Go to your')).not.toBeInTheDocument();
+  });
 });

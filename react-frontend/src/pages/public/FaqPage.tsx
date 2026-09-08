@@ -149,7 +149,7 @@ export function FaqPage() {
                 <li>{t('faq.categories.time_credits.q3.option1')}</li>
                 <li>{t('faq.categories.time_credits.q3.option2')}</li>
               </ul>
-              <p>{t('faq.categories.time_credits.q3.answer_link_before')}{hasModule('wallet') && <Link to={tenantPath('/wallet')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.time_credits.q3.wallet_link')}</Link>}{t('faq.categories.time_credits.q3.answer_link_after')}</p>
+              {hasModule('wallet') && <p>{t('faq.categories.time_credits.q3.answer_link_before')}<Link to={tenantPath('/wallet')} className="text-accent dark:text-accent hover:underline">{t('faq.categories.time_credits.q3.wallet_link')}</Link>{t('faq.categories.time_credits.q3.answer_link_after')}</p>}
             </>
           ),
         },

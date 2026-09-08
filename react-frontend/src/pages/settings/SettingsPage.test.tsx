@@ -23,6 +23,11 @@ const webPushMocks = vi.hoisted(() => ({
   refresh: vi.fn().mockResolvedValue(undefined),
 }));
 
+const tenantGateMocks = vi.hoisted(() => ({
+  hasFeature: vi.fn(() => true),
+  hasModule: vi.fn(() => true),
+}));
+
 vi.mock('@/hooks/useWebPush', () => ({
   useWebPush: () => ({
     isSupported: true,
@@ -191,8 +196,8 @@ vi.mock('@/contexts', () => {
   const mockTenantResult = {
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasFeature: tenantGateMocks.hasFeature,
+    hasModule: tenantGateMocks.hasModule,
   };
 
   const mockToastSuccess = vi.fn();
@@ -369,6 +374,8 @@ function Wrapper({ children }: { children: ReactNode }) {
 describe('SettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tenantGateMocks.hasFeature.mockReturnValue(true);
+    tenantGateMocks.hasModule.mockReturnValue(true);
     vi.mocked(api.get).mockImplementation((url: string) => {
       if (url.includes('/v2/users/me/notifications')) {
         return Promise.resolve({
@@ -440,6 +447,17 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('tab', { name: 'Notifications' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Privacy' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Security' })).toBeInTheDocument();
+  });
+
+  it('hides Profile and Notifications tabs when their modules are disabled', () => {
+    tenantGateMocks.hasModule.mockImplementation((module: string) => !['profile', 'notifications'].includes(module));
+
+    render(<SettingsPage />, { wrapper: Wrapper });
+
+    expect(screen.queryByRole('tab', { name: 'Profile' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Notifications' })).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Privacy' })).toBeInTheDocument();
+    expect(screen.queryByText('Profile Information')).not.toBeInTheDocument();
   });
 
   it('shows Profile Information section by default', () => {

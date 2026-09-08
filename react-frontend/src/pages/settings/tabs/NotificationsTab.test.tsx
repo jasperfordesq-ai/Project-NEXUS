@@ -28,9 +28,16 @@ vi.mock('@/lib/motion', () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren) => children,
 }));
 
+const mockHasModule = vi.fn(() => true);
+const mockHasFeature = vi.fn(() => true);
+
 // NotificationsTab links out to /matches/preferences via useTenant().tenantPath.
 vi.mock('@/contexts', () => ({
-  useTenant: () => ({ tenantPath: (p: string) => `/test${p}` }),
+  useTenant: () => ({
+    tenantPath: (p: string) => `/test${p}`,
+    hasModule: mockHasModule,
+    hasFeature: mockHasFeature,
+  }),
 }));
 
 const defaultNotifications: NotificationSettings = {
@@ -78,6 +85,8 @@ const defaultProps = {
 describe('NotificationsTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockHasModule.mockReturnValue(true);
+    mockHasFeature.mockReturnValue(true);
   });
 
   it('renders notifications heading', () => {
@@ -131,6 +140,23 @@ describe('NotificationsTab', () => {
     // The frequency label appears more than once (label + control), so assert
     // at least one rendering.
     expect(screen.getAllByText('match_digest.frequency').length).toBeGreaterThan(0);
+  });
+
+  it('hides preferences belonging to disabled modules and features', () => {
+    mockHasModule.mockReturnValue(false);
+    mockHasFeature.mockReturnValue(false);
+
+    render(<NotificationsTab {...defaultProps} isOrganisation />);
+
+    expect(screen.queryByText('notification_prefs.new_messages')).toBeNull();
+    expect(screen.queryByText('notification_prefs.listing_activity')).toBeNull();
+    expect(screen.queryByText('notification_prefs.credit_transactions')).toBeNull();
+    expect(screen.queryByText('notification_prefs.connection_requests')).toBeNull();
+    expect(screen.queryByText('notification_prefs.event_emails')).toBeNull();
+    expect(screen.queryByText('notification_prefs.new_reviews')).toBeNull();
+    expect(screen.queryByText('notification_prefs.gamification_digest')).toBeNull();
+    expect(screen.queryByText('notification_sections.organisation_notifications')).toBeNull();
+    expect(screen.queryByText('notification_sections.match_digest')).toBeNull();
   });
 
   it('renders and updates the Events email preference', async () => {

@@ -134,7 +134,19 @@ export function NotificationsTab({
 }: NotificationsTabProps) {
   const { t } = useTranslation('settings');
   const webPush = useWebPush();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule, hasFeature } = useTenant();
+  const hasMessages = hasModule('messages');
+  const hasListings = hasModule('listings');
+  const hasWallet = hasModule('wallet');
+  const hasConnections = hasFeature('connections');
+  const hasCaringCommunity = hasFeature('caring_community');
+  const hasFederation = hasFeature('federation');
+  const hasEvents = hasFeature('events');
+  const hasReviews = hasFeature('reviews');
+  const hasGamification = hasFeature('gamification');
+  const hasOrganisations = hasFeature('volunteering') && hasFeature('organisations');
+  const hasCommunicationPreferences = hasMessages || hasConnections || hasCaringCommunity || hasFederation;
+  const hasActivityPreferences = hasEvents || hasListings || hasWallet || hasReviews;
 
   // The push_enabled toggle is the source of truth for *consent*. The actual
   // browser subscription is managed by useWebPush. When the user flips the
@@ -186,97 +198,97 @@ export function NotificationsTab({
       ) : (
         <div className="space-y-6">
           {/* Messages & Communication */}
-          <div className="space-y-4">
+          {hasCommunicationPreferences && <div className="space-y-4">
             <h3 className="text-sm font-medium text-theme-muted flex items-center gap-2">
               <Mail className="w-4 h-4" aria-hidden="true" />
-              {t('notification_sections.messages_communication')}
+              {hasMessages ? t('notification_sections.messages_communication') : t('notification_sections.title')}
             </h3>
 
-            <SettingToggle
+            {hasMessages && <SettingToggle
               label={t('notification_prefs.new_messages')}
               description={t('notification_descriptions.new_messages')}
               checked={notifications.email_messages}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_messages: checked }))}
-            />
+            />}
 
-            <SettingToggle
+            {hasConnections && <SettingToggle
               label={t('notification_prefs.connection_requests')}
               description={t('notification_descriptions.connection_requests')}
               checked={notifications.email_connections}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_connections: checked }))}
-            />
+            />}
 
-            <SettingToggle
+            {hasCaringCommunity && <SettingToggle
               label={t('notification_prefs.caring_smart_nudges')}
               description={t('notification_descriptions.caring_smart_nudges')}
               checked={notifications.caring_smart_nudges}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, caring_smart_nudges: checked }))}
-            />
+            />}
 
-            <SettingToggle
+            {hasFederation && <SettingToggle
               label={t('notification_prefs.federation_notifications')}
               description={t('notification_descriptions.federation_notifications')}
               checked={notifications.federation_notifications_enabled}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, federation_notifications_enabled: checked }))}
-            />
-          </div>
+            />}
+          </div>}
 
           {/* Activity & Listings */}
-          <div className="pt-4 border-t border-theme-default space-y-4">
+          {hasActivityPreferences && <div className="pt-4 border-t border-theme-default space-y-4">
             <h3 className="text-sm font-medium text-theme-muted flex items-center gap-2">
               <CreditCard className="w-4 h-4" aria-hidden="true" />
-              {t('notification_sections.activity_listings')}
+              {hasListings ? t('notification_sections.activity_listings') : t('notification_sections.title')}
             </h3>
 
-            <SettingToggle
+            {hasEvents && <SettingToggle
               label={t('notification_prefs.event_emails')}
               description={t('notification_descriptions.event_emails')}
               checked={notifications.email_events}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_events: checked }))}
-            />
+            />}
 
-            <SettingToggle
+            {hasListings && <SettingToggle
               label={t('notification_prefs.listing_activity')}
               description={t('notification_descriptions.listing_activity')}
               checked={notifications.email_listings}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_listings: checked }))}
-            />
+            />}
 
-            <SettingToggle
+            {hasWallet && <SettingToggle
               label={t('notification_prefs.credit_transactions')}
               description={t('notification_descriptions.credit_transactions')}
               checked={notifications.email_transactions}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_transactions: checked }))}
-            />
+            />}
 
-            <SettingToggle
+            {hasReviews && <SettingToggle
               label={t('notification_prefs.new_reviews')}
               description={t('notification_descriptions.new_reviews')}
               checked={notifications.email_reviews}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_reviews: checked }))}
-            />
-          </div>
+            />}
+          </div>}
 
           {/* Community & Achievements */}
           <div className="pt-4 border-t border-theme-default space-y-4">
             <h3 className="text-sm font-medium text-theme-muted flex items-center gap-2">
               <Trophy className="w-4 h-4" aria-hidden="true" />
-              {t('notification_sections.community_achievements')}
+              {hasGamification ? t('notification_sections.community_achievements') : t('notification_sections.title')}
             </h3>
 
-            <SettingToggle
+            {hasGamification && <SettingToggle
               label={t('notification_prefs.gamification_digest')}
               description={t('notification_descriptions.gamification_digest')}
               checked={notifications.email_gamification_digest}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_gamification_digest: checked }))}
-            />
+            />}
 
-            <SettingToggle
+            {hasGamification && <SettingToggle
               label={t('notification_prefs.achievement_milestones')}
               description={t('notification_descriptions.achievement_milestones')}
               checked={notifications.email_gamification_milestones}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_gamification_milestones: checked }))}
-            />
+            />}
 
             <SettingToggle
               label={t('notification_prefs.weekly_digest')}
@@ -327,7 +339,7 @@ export function NotificationsTab({
           </div>
 
           {/* Organisation Notifications */}
-          {isOrganisation && (
+          {isOrganisation && hasOrganisations && (
             <div className="pt-4 border-t border-theme-default space-y-4">
               <h3 className="text-sm font-medium text-theme-muted flex items-center gap-2">
                 <Building2 className="w-4 h-4" aria-hidden="true" />
@@ -365,7 +377,7 @@ export function NotificationsTab({
           )}
 
           {/* Match Digest */}
-          <div className="pt-4 border-t border-theme-default space-y-4">
+          {hasListings && <div className="pt-4 border-t border-theme-default space-y-4">
             <h3 className="text-sm font-medium text-theme-muted flex items-center gap-2">
               <Search className="w-4 h-4" aria-hidden="true" />
               {t('notification_sections.match_digest')}
@@ -419,7 +431,7 @@ export function NotificationsTab({
               {t('match_digest.manage_in_preferences')}
               <ArrowRight className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
             </Link>
-          </div>
+          </div>}
 
           {/* Push Notifications */}
           <div className="pt-4 border-t border-theme-default space-y-4">

@@ -101,6 +101,7 @@ const mockScoreData = {
 describe('NexusScorePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    stableTenant.hasModule.mockReturnValue(true);
   });
 
   it('renders heading after loading', async () => {
@@ -109,6 +110,17 @@ describe('NexusScorePage', () => {
     await waitFor(() => {
       expect(screen.getByText('NexusScore')).toBeInTheDocument();
     });
+  });
+
+  it('hides the profile shortcut when Profile is disabled', async () => {
+    stableTenant.hasModule.mockImplementation((module: string) => module !== 'profile');
+    mockApiGet.mockResolvedValue({ success: true, data: mockScoreData });
+
+    render(<NexusScorePage />);
+
+    await waitFor(() => expect(screen.getByText('NexusScore')).toBeInTheDocument());
+    expect(screen.queryByRole('link', { name: /profile/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /leaderboard/i })).toBeInTheDocument();
   });
 
   it('renders total score', async () => {
