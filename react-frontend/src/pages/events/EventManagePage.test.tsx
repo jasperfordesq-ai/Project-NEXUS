@@ -27,10 +27,22 @@ const { mockApi, mockToast } = vi.hoisted(() => ({
 
 vi.mock('@/lib/api', () => ({ api: mockApi }));
 vi.mock('@/contexts/ToastContext', () => ({ useToast: () => mockToast }));
+/*
+  🔴 `hasFeature` and `hasModule` are NOT optional in this mock, even though nothing in
+  this file reads them. `Breadcrumbs` — rendered inside this page — began asking the
+  tenant context whether each crumb's destination is enabled (5871d270f), and a partial
+  mock made `context.hasFeature` undefined. The page then threw during render and all
+  16 cases here failed at once, none of them about breadcrumbs.
+
+  Both grant everything: this suite is about event management permissions, which come
+  from the event contract, not from tenant gating.
+*/
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (path: string) => `/test${path}`,
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
   }),
 }));
 vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));
