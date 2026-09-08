@@ -756,7 +756,9 @@
       "count": "{{count}} listados",
       "count_one": "{{count}} listado",
       "saveFailed": "No se pudo crear esta colección.",
-      "deleteFailed": "No se pudo eliminar esta colección."
+      "deleteFailed": "No se pudo eliminar esta colección.",
+      "deleteTitle": "¿Eliminar esta colección?",
+      "deleteMessage": "«{{name}}» y todo lo guardado en ella desaparecerán. Esto no se puede deshacer."
     },
     "savedSearches": {
       "title": "Búsquedas guardadas",
@@ -780,7 +782,9 @@
         "email": "Correo electrónico",
         "push": "Push",
         "both": "Envíe correos electrónicos y push"
-      }
+      },
+      "deleteTitle": "¿Eliminar esta búsqueda guardada?",
+      "deleteMessage": "Se eliminará «{{name}}», junto con los avisos que te envía."
     },
     "promotions": {
       "title": "Promociones",
@@ -840,7 +844,9 @@
       "emptySlots": "Aún no hay espacios para retiro",
       "emptyReservations": "Aún no hay reservas para retiro",
       "capacity": "{{booked}}/{{capacity}} reservado",
-      "order": "Pedido {{order}}"
+      "order": "Pedido {{order}}",
+      "deleteTitle": "¿Eliminar esta franja de recogida?",
+      "deleteMessage": "Quien ya tenga una reserva en esta franja perderá su hora de recogida."
     },
     "coupons": {
       "title": "Cupones del vendedor",

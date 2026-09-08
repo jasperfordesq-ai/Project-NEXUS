@@ -756,7 +756,9 @@
       "count": "{{count}} anúncios",
       "count_one": "{{count}} anúncio",
       "saveFailed": "Não foi possível criar esta coleção.",
-      "deleteFailed": "Não foi possível excluir esta coleção."
+      "deleteFailed": "Não foi possível excluir esta coleção.",
+      "deleteTitle": "Eliminar esta coleção?",
+      "deleteMessage": "«{{name}}» e tudo o que nela está guardado desaparecerão. Não é possível anular."
     },
     "savedSearches": {
       "title": "Pesquisas salvas",
@@ -780,7 +782,9 @@
         "email": "E-mail",
         "push": "Push",
         "both": "E-mail e push"
-      }
+      },
+      "deleteTitle": "Eliminar esta pesquisa guardada?",
+      "deleteMessage": "«{{name}}» será removida, juntamente com os alertas que lhe envia."
     },
     "promotions": {
       "title": "Promoções",
@@ -840,7 +844,9 @@
       "emptySlots": "Ainda não há vagas de retirada",
       "emptyReservations": "Nenhuma reserva de retirada ainda",
       "capacity": "{{booked}}/{{capacity}} reservado",
-      "order": "Solicite {{order}}"
+      "order": "Solicite {{order}}",
+      "deleteTitle": "Eliminar esta janela de recolha?",
+      "deleteMessage": "Quem já tiver reserva nesta janela perderá a sua hora de recolha."
     },
     "coupons": {
       "title": "Cupões do vendedor",

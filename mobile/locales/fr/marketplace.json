@@ -756,7 +756,9 @@
       "count": "{{count}} listes",
       "count_one": "{{count}} liste",
       "saveFailed": "Impossible de créer cette collection.",
-      "deleteFailed": "Impossible de supprimer cette collection."
+      "deleteFailed": "Impossible de supprimer cette collection.",
+      "deleteTitle": "Supprimer cette collection ?",
+      "deleteMessage": "« {{name}} » et tout ce qui y est enregistré seront perdus. Cette action est irréversible."
     },
     "savedSearches": {
       "title": "Recherches enregistrées",
@@ -780,7 +782,9 @@
         "email": "E-mail",
         "push": "Push",
         "both": "E-mail et push"
-      }
+      },
+      "deleteTitle": "Supprimer cette recherche enregistrée ?",
+      "deleteMessage": "« {{name}} » sera supprimée, ainsi que les alertes qu’elle vous envoie."
     },
     "promotions": {
       "title": "Promotions",
@@ -840,7 +844,9 @@
       "emptySlots": "Aucun créneau de retrait pour l'instant",
       "emptyReservations": "Aucune réservation de retrait pour l'instant",
       "capacity": "{{booked}}/{{capacity}} réservé",
-      "order": "Commande {{order}}"
+      "order": "Commande {{order}}",
+      "deleteTitle": "Supprimer ce créneau de retrait ?",
+      "deleteMessage": "Les personnes déjà inscrites sur ce créneau perdront leur horaire de retrait."
     },
     "coupons": {
       "title": "Coupons du vendeur",

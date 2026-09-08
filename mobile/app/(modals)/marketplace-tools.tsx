@@ -15,6 +15,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
+import { describeApiError } from '@/lib/api/describeApiError';
 import { useConfirm } from '@/components/ui/useConfirm';
 import BottomSheet from '@/components/ui/BottomSheet';
 import EmptyState from '@/components/ui/EmptyState';
@@ -269,6 +270,7 @@ function MarketplaceToolsScreen() {
 function CollectionsPanel() {
   const { t } = useTranslation(['marketplace', 'common']);
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -289,13 +291,28 @@ function CollectionsPanel() {
     }
   }
 
-  async function remove(item: MarketplaceCollection) {
-    try {
-      await deleteMarketplaceCollection(item.id);
-      collections.refresh();
-    } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('tools.collections.deleteFailed'), variant: 'danger' });
-    }
+  /*
+    🔴 One tap, gone. There is no undo on any of these three and no trash to restore
+    from, and the button sits on a small row beside Edit. The coupon panel further down
+    has always confirmed; these three never did. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  function remove(item: MarketplaceCollection) {
+    confirm({
+      title: t('tools.collections.deleteTitle'),
+      message: t('tools.collections.deleteMessage', { name: item.name }),
+      confirmLabel: t('tools.delete'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'collection-delete-confirm',
+      onConfirm: async () => {
+        try {
+          await deleteMarketplaceCollection(item.id);
+          collections.refresh();
+        } catch (err) {
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('tools.collections.deleteFailed')), variant: 'danger' });
+        }
+      },
+    });
   }
 
   return (
@@ -322,6 +339,7 @@ function CollectionsPanel() {
           />
         )}
       />
+      {confirmDialog}
     </PanelCard>
   );
 }
@@ -329,6 +347,7 @@ function CollectionsPanel() {
 function SavedSearchesPanel() {
   const { t } = useTranslation(['marketplace', 'common']);
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [name, setName] = useState('');
   const [query, setQuery] = useState('');
   const [alertFrequency, setAlertFrequency] = useState<SavedSearchAlertFrequency>('daily');
@@ -352,13 +371,28 @@ function SavedSearchesPanel() {
     }
   }
 
-  async function remove(item: MarketplaceSavedSearch) {
-    try {
-      await deleteMarketplaceSavedSearch(item.id);
-      searches.refresh();
-    } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('tools.savedSearches.deleteFailed'), variant: 'danger' });
-    }
+  /*
+    🔴 One tap, gone. There is no undo on any of these three and no trash to restore
+    from, and the button sits on a small row beside Edit. The coupon panel further down
+    has always confirmed; these three never did. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  function remove(item: MarketplaceSavedSearch) {
+    confirm({
+      title: t('tools.savedSearches.deleteTitle'),
+      message: t('tools.savedSearches.deleteMessage', { name: item.name }),
+      confirmLabel: t('tools.delete'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'saved-search-delete-confirm',
+      onConfirm: async () => {
+        try {
+          await deleteMarketplaceSavedSearch(item.id);
+          searches.refresh();
+        } catch (err) {
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('tools.savedSearches.deleteFailed')), variant: 'danger' });
+        }
+      },
+    });
   }
 
   return (
@@ -399,6 +433,7 @@ function SavedSearchesPanel() {
           />
         )}
       />
+      {confirmDialog}
     </PanelCard>
   );
 }
@@ -583,6 +618,7 @@ function normalizePickupCapacity(value: string): number {
 function PickupsPanel() {
   const { t } = useTranslation(['marketplace', 'common']);
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const [slotStart, setSlotStart] = useState('');
@@ -660,14 +696,28 @@ function PickupsPanel() {
     }
   }
 
-  async function remove(slot: MarketplacePickupSlot) {
-    try {
-      await deleteMarketplacePickupSlot(slot.id);
-      if (editingSlot?.id === slot.id) resetSlotForm();
-      slots.refresh();
-    } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('tools.pickups.deleteFailed'), variant: 'danger' });
-    }
+  /*
+    🔴 Worse than the other two: a pickup slot can already have buyers booked onto it,
+    and deleting it takes their collection time away. One tap did that with no warning.
+  */
+  function remove(slot: MarketplacePickupSlot) {
+    confirm({
+      title: t('tools.pickups.deleteTitle'),
+      message: t('tools.pickups.deleteMessage'),
+      confirmLabel: t('tools.delete'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'pickup-slot-delete-confirm',
+      onConfirm: async () => {
+        try {
+          await deleteMarketplacePickupSlot(slot.id);
+          if (editingSlot?.id === slot.id) resetSlotForm();
+          slots.refresh();
+        } catch (err) {
+          showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('tools.pickups.deleteFailed')), variant: 'danger' });
+        }
+      },
+    });
   }
 
   async function toggleSlot(slot: MarketplacePickupSlot) {
@@ -759,6 +809,7 @@ function PickupsPanel() {
           <ToolRow key={item.id} icon="qr-code-outline" title={t('tools.pickups.order', { order: item.order_id })} subtitle={t(`pickup.status.${item.status}`, { defaultValue: item.status })} />
         )}
       />
+      {confirmDialog}
     </PanelCard>
   );
 }

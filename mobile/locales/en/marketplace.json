@@ -756,7 +756,9 @@
       "count": "{{count}} listings",
       "count_one": "{{count}} listing",
       "saveFailed": "Could not create this collection.",
-      "deleteFailed": "Could not delete this collection."
+      "deleteFailed": "Could not delete this collection.",
+      "deleteTitle": "Delete this collection?",
+      "deleteMessage": "“{{name}}” and everything saved in it will be gone. This cannot be undone."
     },
     "savedSearches": {
       "title": "Saved searches",
@@ -780,7 +782,9 @@
         "email": "Email",
         "push": "Push",
         "both": "Email and push"
-      }
+      },
+      "deleteTitle": "Delete this saved search?",
+      "deleteMessage": "“{{name}}” will be removed, along with any alerts it sends you."
     },
     "promotions": {
       "title": "Promotions",
@@ -840,7 +844,9 @@
       "emptySlots": "No pickup slots yet",
       "emptyReservations": "No pickup reservations yet",
       "capacity": "{{booked}}/{{capacity}} booked",
-      "order": "Order {{order}}"
+      "order": "Order {{order}}",
+      "deleteTitle": "Delete this pickup slot?",
+      "deleteMessage": "Anyone already booked into this slot will lose their collection time."
     },
     "coupons": {
       "title": "Seller coupons",

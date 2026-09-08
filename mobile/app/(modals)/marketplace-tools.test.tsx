@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockParams: Record<string, string> = {};
 
@@ -18,11 +18,16 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // Auto-confirm: invoking confirm() runs the action immediately, mirroring the
 // old Alert.alert destructive button-press simulation.
+/*
+  🔴 RECORDS the question; does not answer it. It used to run `onConfirm` itself, which
+  makes every confirmation on this screen unobservable — a case would pass just as
+  happily with the dialog deleted. Same shape that hid a one-tap cross-community
+  transfer on member-profile. Each case answers by hand below.
+*/
+const mockConfirm = jest.fn<void, [{ title: string; message?: string; variant?: string; onConfirm: () => void | Promise<void> }]>();
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (opts: { onConfirm: () => void | Promise<void> }) => {
-      void opts.onConfirm();
-    },
+    confirm: (...args: unknown[]) => mockConfirm(...(args as [never])),
     confirmDialog: null,
   }),
 }));
@@ -575,5 +580,47 @@ describe('MarketplaceToolsRoute', () => {
     fireEvent.press(getByText('Mock camera scanner'));
 
     expect(onScanned).toHaveBeenCalledWith('camera-token-123');
+  });
+
+  /*
+    🔴 One tap, gone. None of these three had a confirmation: no undo, no trash to
+    restore from, and the button sits on a small row next to Edit. The coupon panel in
+    the same file has always confirmed. Audit 2026-09-07, fixed 2026-09-08.
+  */
+  describe('deleting a seller tool asks first', () => {
+    async function openTools() {
+      // Collections default to empty in the shared fixture, so there is no Delete
+      // button to press until one exists.
+      jest.mocked(getMarketplaceCollections).mockResolvedValue({
+        data: [{ id: 12, name: 'Repair kit', description: null, item_count: 3 }],
+      } as never);
+
+      const screen = render(<MarketplaceToolsRoute />);
+      await waitFor(() => expect(screen.getAllByText('Delete').length).toBeGreaterThan(0));
+      return screen;
+    }
+
+    it('asks before deleting a collection, and deletes only on yes', async () => {
+      const { deleteMarketplaceCollection } = require('@/lib/api/marketplace');
+      const screen = await openTools();
+
+      fireEvent.press(screen.getAllByText('Delete')[0]);
+
+      expect(deleteMarketplaceCollection).not.toHaveBeenCalled();
+      expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+
+      await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
+      expect(deleteMarketplaceCollection).toHaveBeenCalled();
+    });
+
+    it('leaves the collection alone when the member backs out', async () => {
+      const { deleteMarketplaceCollection } = require('@/lib/api/marketplace');
+      const screen = await openTools();
+
+      fireEvent.press(screen.getAllByText('Delete')[0]);
+
+      // Asked and never answered: nothing must reach the server.
+      expect(deleteMarketplaceCollection).not.toHaveBeenCalled();
+    });
   });
 });

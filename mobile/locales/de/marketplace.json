@@ -756,7 +756,9 @@
       "count": "{{count}} Inserate",
       "count_one": "{{count}} Inserat",
       "saveFailed": "Diese Sammlung konnte nicht erstellt werden.",
-      "deleteFailed": "Diese Sammlung konnte nicht gelöscht werden."
+      "deleteFailed": "Diese Sammlung konnte nicht gelöscht werden.",
+      "deleteTitle": "Diese Sammlung löschen?",
+      "deleteMessage": "„{{name}}“ und alles darin Gespeicherte ist dann weg. Das lässt sich nicht rückgängig machen."
     },
     "savedSearches": {
       "title": "Gespeicherte Suchanfragen",
@@ -780,7 +782,9 @@
         "email": "E-Mail",
         "push": "Push",
         "both": "E-Mail und push"
-      }
+      },
+      "deleteTitle": "Diese gespeicherte Suche löschen?",
+      "deleteMessage": "„{{name}}“ wird entfernt, zusammen mit allen Benachrichtigungen daraus."
     },
     "promotions": {
       "title": "Werbeaktionen",
@@ -840,7 +844,9 @@
       "emptySlots": "Noch keine Abholplätze",
       "emptyReservations": "Noch keine Abholreservierungen",
       "capacity": "{{booked}}/{{capacity}} gebucht",
-      "order": "Bestellung {{order}}"
+      "order": "Bestellung {{order}}",
+      "deleteTitle": "Dieses Abholfenster löschen?",
+      "deleteMessage": "Wer bereits für dieses Zeitfenster gebucht hat, verliert seinen Abholtermin."
     },
     "coupons": {
       "title": "Händler-Gutscheine",

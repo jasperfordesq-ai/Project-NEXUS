@@ -756,7 +756,9 @@
       "count": "{{count}} liostaí",
       "count_one": "{{count}} liosta",
       "saveFailed": "Níorbh fhéidir an bailiúchán seo a chruthú.",
-      "deleteFailed": "Níorbh fhéidir an bailiúchán seo a scriosadh."
+      "deleteFailed": "Níorbh fhéidir an bailiúchán seo a scriosadh.",
+      "deleteTitle": "An bailiúchán seo a scriosadh?",
+      "deleteMessage": "Beidh „{{name}}“ agus gach rud atá sábháilte ann imithe. Ní féidir é seo a chur ar ais."
     },
     "savedSearches": {
       "title": "Cuardaigh shábháilte",
@@ -780,7 +782,9 @@
         "email": "R-phost",
         "push": "Brúigh",
         "both": "Ríomhphost agus brúigh"
-      }
+      },
+      "deleteTitle": "An cuardach sábháilte seo a scriosadh?",
+      "deleteMessage": "Bainfear „{{name}}“, mar aon le haon fholáirimh a sheolann sé chugat."
     },
     "promotions": {
       "title": "Promóisin",
@@ -840,7 +844,9 @@
       "emptySlots": "Níl aon sliotán bailithe fós",
       "emptyReservations": "Níl aon áirithintí bailithe fós",
       "capacity": "{{booked}}/{{capacity}} curtha in áirithe",
-      "order": "Ordú {{order}}"
+      "order": "Ordú {{order}}",
+      "deleteTitle": "An sliotán bailithe seo a scriosadh?",
+      "deleteMessage": "Caillfidh aon duine atá curtha in áirithe don sliotán seo a n-am bailithe."
     },
     "coupons": {
       "title": "Cúpóin an díoltóra",

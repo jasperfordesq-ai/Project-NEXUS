@@ -756,7 +756,9 @@
       "count": "{{count}} annunci",
       "count_one": "{{count}} annuncio",
       "saveFailed": "Impossibile creare questa raccolta.",
-      "deleteFailed": "Impossibile eliminare questa raccolta."
+      "deleteFailed": "Impossibile eliminare questa raccolta.",
+      "deleteTitle": "Eliminare questa raccolta?",
+      "deleteMessage": "«{{name}}» e tutto ciò che vi è salvato andranno persi. Non è possibile annullare."
     },
     "savedSearches": {
       "title": "Ricerche salvate",
@@ -780,7 +782,9 @@
         "email": "E-mail",
         "push": "Push",
         "both": "Invia email e invia"
-      }
+      },
+      "deleteTitle": "Eliminare questa ricerca salvata?",
+      "deleteMessage": "«{{name}}» verrà rimossa, insieme agli avvisi che ti invia."
     },
     "promotions": {
       "title": "Promozioni",
@@ -840,7 +844,9 @@
       "emptySlots": "Ancora nessuno spazio di ritiro",
       "emptyReservations": "Ancora nessuna prenotazione di ritiro",
       "capacity": "{{booked}}/{{capacity}} prenotato",
-      "order": "Ordine {{order}}"
+      "order": "Ordine {{order}}",
+      "deleteTitle": "Eliminare questa fascia di ritiro?",
+      "deleteMessage": "Chi ha già prenotato questa fascia perderà il proprio orario di ritiro."
     },
     "coupons": {
       "title": "Coupon del venditore",
