@@ -16,10 +16,10 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Middleware to check if tenant platform modules are enabled before allowing access.
  * This is the single source of truth for module access control, using the
- * tenants.features JSON column.
+ * tenants.configuration.modules JSON object.
  *
  * Usage in controllers:
- *   TenantModuleMiddleware::require('events');
+ *   TenantModuleMiddleware::require('messages');
  *   TenantModuleMiddleware::require('listings');
  */
 class TenantModuleMiddleware
@@ -33,57 +33,47 @@ class TenantModuleMiddleware
             'description' => 'Offers & Requests marketplace',
             'default_redirect' => '/'
         ],
-        'groups' => [
-            'label' => 'Groups',
-            'description' => 'Community groups and local hubs',
-            'default_redirect' => '/'
-        ],
         'wallet' => [
             'label' => 'Wallet',
             'description' => 'Time credit wallet and transactions',
             'default_redirect' => '/dashboard'
         ],
-        'volunteering' => [
-            'label' => 'Volunteering',
-            'description' => 'Volunteer opportunity management',
+        'messages' => [
+            'label' => 'Messages',
+            'description' => 'Member conversations and message media',
+            'default_redirect' => '/dashboard'
+        ],
+        'dashboard' => [
+            'label' => 'Dashboard',
+            'description' => 'Member dashboard',
             'default_redirect' => '/'
         ],
-        'events' => [
-            'label' => 'Events',
-            'description' => 'Event creation and management',
+        'feed' => [
+            'label' => 'Feed',
+            'description' => 'Community activity feed',
             'default_redirect' => '/'
         ],
-        'resources' => [
-            'label' => 'Resources',
-            'description' => 'Shared resource library',
-            'default_redirect' => '/'
+        'notifications' => [
+            'label' => 'Notifications',
+            'description' => 'Member notification inbox',
+            'default_redirect' => '/dashboard'
         ],
-        'polls' => [
-            'label' => 'Polls',
-            'description' => 'Community voting and polls',
-            'default_redirect' => '/'
+        'profile' => [
+            'label' => 'Profile',
+            'description' => 'Member profile pages',
+            'default_redirect' => '/dashboard'
         ],
-        'goals' => [
-            'label' => 'Goals',
-            'description' => 'Goal setting and tracking',
-            'default_redirect' => '/'
-        ],
-        'blog' => [
-            'label' => 'Blog',
-            'description' => 'News and content publishing',
-            'default_redirect' => '/'
-        ],
-        'help_center' => [
-            'label' => 'Help Center',
-            'description' => 'Support documentation and FAQs',
-            'default_redirect' => '/'
+        'settings' => [
+            'label' => 'Settings',
+            'description' => 'Member account settings',
+            'default_redirect' => '/dashboard'
         ],
     ];
 
     /**
      * Check if a module is enabled for the current tenant
      *
-     * @param string $module Module key (listings, events, etc.)
+     * @param string $module Module key (listings, messages, etc.)
      * @return bool
      */
     public static function isEnabled(string $module): bool

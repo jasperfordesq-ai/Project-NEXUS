@@ -580,6 +580,7 @@ Route::middleware('module:listings')->group(function () {
 // MIGRATED ROUTES — Messages
 // Source: httpdocs/routes/messages.php
 // ============================================
+Route::middleware('module:messages')->group(function () {
 Route::get('/v2/messages', [\App\Http\Controllers\Api\MessagesController::class, 'conversations']);
 Route::get('/v2/messages/unread-count', [\App\Http\Controllers\Api\MessagesController::class, 'unreadCount']);
 Route::get('/v2/messages/restriction-status', [\App\Http\Controllers\Api\MessagesController::class, 'restrictionStatus']);
@@ -600,11 +601,12 @@ Route::delete('/v2/messages/{id}', [\App\Http\Controllers\Api\MessagesController
 Route::delete('/v2/conversations/{id}', [\App\Http\Controllers\Api\MessagesController::class, 'archive']);
 Route::post('/v2/messages/conversations/{id}/restore', [\App\Http\Controllers\Api\MessagesController::class, 'restoreConversation']);
 Route::get('/v2/messages/reactions/batch', [\App\Http\Controllers\Api\MessagesController::class, 'getReactionsBatch']);
+});
 
 // ============================================
 // Group Conversations (Group DMs)
 // ============================================
-Route::middleware('feature:groups')
+Route::middleware(['feature:groups', 'module:messages'])
     ->where([
         'id' => '[0-9]+',
         'userId' => '[0-9]+',
@@ -625,7 +627,7 @@ Route::post('/v2/conversations/{id}/messages', [\App\Http\Controllers\Api\GroupC
 // Source: httpdocs/routes/groups.php
 Route::get('/v2/connections/status/me', function () {
     return response()->json(['errors' => [['code' => 'invalid_user', 'message' => 'Cannot check connection status with yourself']]], 422);
-}); // Guard: reject literal "me" before {userId} param
+})->middleware('feature:connections'); // Guard: reject literal "me" before {userId} param
 // ============================================
 // NOTE: GET /v2/groups, /v2/groups/{id}, /v2/groups/{id}/members are registered
 // in the authenticated feature-gated group above.
@@ -739,6 +741,7 @@ Route::get('/v2/group-collections', [\App\Http\Controllers\Api\GroupCollectionCo
 Route::get('/v2/group-collections/{id}', [\App\Http\Controllers\Api\GroupCollectionController::class, 'show']);
 Route::get('/v2/groups/{id}/mentions/suggest', [\App\Http\Controllers\Api\GroupMentionController::class, 'suggestions']);
 });
+Route::middleware('feature:connections')->group(function () {
 Route::get('/v2/connections', [\App\Http\Controllers\Api\ConnectionsController::class, 'index']);
 Route::get('/v2/connections/pending', [\App\Http\Controllers\Api\ConnectionsController::class, 'pendingCounts']);
 Route::get('/v2/connections/status/{userId}', [\App\Http\Controllers\Api\ConnectionsController::class, 'status']);
@@ -747,6 +750,7 @@ Route::post('/v2/connections/{id}/accept', [\App\Http\Controllers\Api\Connection
 Route::post('/v2/connections/{id}/decline', [\App\Http\Controllers\Api\ConnectionsController::class, 'decline']);
 Route::delete('/v2/connections/{id}', [\App\Http\Controllers\Api\ConnectionsController::class, 'destroy']);
 Route::get('/v2/connections/suggestions', [\App\Http\Controllers\Api\ConnectionSuggestionController::class, 'suggestions']);
+});
 
 // ============================================
 // MIGRATED ROUTES — Users (controller routes only)
@@ -768,7 +772,8 @@ Route::delete('/v2/users/me', [\App\Http\Controllers\Api\UsersController::class,
 Route::get('/v2/users/me/listings', [\App\Http\Controllers\Api\UsersController::class, 'myListings']);
 Route::get('/v2/users/me/notifications', [\App\Http\Controllers\Api\UsersController::class, 'notificationPreferences']);
 Route::put('/v2/users/me/notifications', [\App\Http\Controllers\Api\UsersController::class, 'updateNotificationPreferences']);
-Route::put('/v2/users/me/notification-settings', [\App\Http\Controllers\Api\NotificationSettingsController::class, 'update']);
+Route::put('/v2/users/me/notification-settings', [\App\Http\Controllers\Api\NotificationSettingsController::class, 'update'])
+    ->middleware('module:notifications');
 Route::get('/v2/users/me/consent', [\App\Http\Controllers\Api\UsersController::class, 'getConsent']);
 Route::put('/v2/users/me/consent', [\App\Http\Controllers\Api\UsersController::class, 'updateConsent']);
 Route::post('/v2/users/me/gdpr-request', [\App\Http\Controllers\Api\UsersController::class, 'createGdprRequest']);
@@ -927,6 +932,7 @@ Route::post('/v2/support-actions/confirm/{token}', [\App\Http\Controllers\Api\Su
 Route::get('/v2/realtime/config', [\App\Http\Controllers\Api\RealtimeController::class, 'config']);
 // ============================================
 // Wallet
+Route::middleware('module:wallet')->group(function () {
 Route::get('/v2/wallet/config', [\App\Http\Controllers\Api\WalletController::class, 'config']);
 Route::get('/v2/wallet/balance', [\App\Http\Controllers\Api\WalletController::class, 'balance']);
 Route::get('/v2/wallet/transactions', [\App\Http\Controllers\Api\WalletController::class, 'transactions']);
@@ -935,7 +941,9 @@ Route::post('/v2/wallet/transfer', [\App\Http\Controllers\Api\WalletController::
 Route::delete('/v2/wallet/transactions/{id}', [\App\Http\Controllers\Api\WalletController::class, 'destroyTransaction']);
 Route::get('/v2/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
 Route::get('/v2/wallet/pending-count', [\App\Http\Controllers\Api\WalletController::class, 'pendingCount']);
+});
 // Feed
+Route::middleware('module:feed')->group(function () {
 Route::get('/v2/feed', [\App\Http\Controllers\Api\SocialController::class, 'feedV2']);
 Route::get('/v2/feed/posts/{id}', [\App\Http\Controllers\Api\SocialController::class, 'showPost']);
 Route::get('/v2/feed/items/{type}/{id}', [\App\Http\Controllers\Api\SocialController::class, 'showItem'])
@@ -943,9 +951,9 @@ Route::get('/v2/feed/items/{type}/{id}', [\App\Http\Controllers\Api\SocialContro
     ->where('id', '[0-9]+');
 Route::post('/v2/feed/posts', [\App\Http\Controllers\Api\SocialController::class, 'createPostV2'])->middleware('legal-acceptance');
 Route::post('/v2/feed/like', [\App\Http\Controllers\Api\SocialController::class, 'likeV2']);
-Route::post('/v2/feed/polls', [\App\Http\Controllers\Api\SocialController::class, 'createPollV2']);
-Route::get('/v2/feed/polls/{id}', [\App\Http\Controllers\Api\SocialController::class, 'getPollV2']);
-Route::post('/v2/feed/polls/{id}/vote', [\App\Http\Controllers\Api\SocialController::class, 'votePollV2']);
+Route::post('/v2/feed/polls', [\App\Http\Controllers\Api\SocialController::class, 'createPollV2'])->middleware('feature:polls');
+Route::get('/v2/feed/polls/{id}', [\App\Http\Controllers\Api\SocialController::class, 'getPollV2'])->middleware('feature:polls');
+Route::post('/v2/feed/polls/{id}/vote', [\App\Http\Controllers\Api\SocialController::class, 'votePollV2'])->middleware('feature:polls');
 Route::get('/v2/feed/posts/scheduled', [\App\Http\Controllers\Api\SocialController::class, 'scheduledPosts']);
 Route::put('/v2/feed/posts/{id}', [\App\Http\Controllers\Api\SocialController::class, 'updatePostV2']);
 Route::post('/v2/feed/posts/{id}/not-interested', [\App\Http\Controllers\Api\SocialController::class, 'notInterested']);
@@ -977,6 +985,7 @@ Route::delete('/v2/shares', [\App\Http\Controllers\Api\FeedSocialController::cla
 Route::get('/v2/feed/hashtags/trending', [\App\Http\Controllers\Api\FeedSocialController::class, 'getTrendingHashtags']);
 Route::get('/v2/feed/hashtags/search', [\App\Http\Controllers\Api\FeedSocialController::class, 'searchHashtags']);
 Route::get('/v2/feed/hashtags/{tag}', [\App\Http\Controllers\Api\FeedSocialController::class, 'getHashtagPosts']);
+});
 // Reactions — polymorphic (canonical) + legacy aliases
 //   Reactions are polymorphic: post, listing, event, goal, poll, review,
 //   volunteer, challenge, resource, comment.
@@ -998,8 +1007,10 @@ Route::put('/v2/posts/{id}/media/reorder', [\App\Http\Controllers\Api\PostMediaC
 Route::delete('/v2/posts/media/{mediaId}', [\App\Http\Controllers\Api\PostMediaController::class, 'removeMedia']);
 Route::put('/v2/posts/media/{mediaId}/alt', [\App\Http\Controllers\Api\PostMediaController::class, 'updateAltText']);
 // Post Views & Analytics
-Route::post('/v2/feed/posts/{id}/view', [\App\Http\Controllers\Api\PostAnalyticsController::class, 'recordView']);
-Route::get('/v2/feed/posts/{id}/analytics', [\App\Http\Controllers\Api\PostAnalyticsController::class, 'analytics']);
+Route::post('/v2/feed/posts/{id}/view', [\App\Http\Controllers\Api\PostAnalyticsController::class, 'recordView'])
+    ->middleware('module:feed');
+Route::get('/v2/feed/posts/{id}/analytics', [\App\Http\Controllers\Api\PostAnalyticsController::class, 'analytics'])
+    ->middleware('module:feed');
 // Bookmarks / Save Collections
 Route::post('/v2/bookmarks', [\App\Http\Controllers\Api\BookmarkController::class, 'toggle']);
 Route::get('/v2/bookmarks', [\App\Http\Controllers\Api\BookmarkController::class, 'index']);
@@ -1010,6 +1021,7 @@ Route::post('/v2/bookmark-collections', [\App\Http\Controllers\Api\BookmarkContr
 Route::match(['patch', 'put'], '/v2/bookmark-collections/{id}', [\App\Http\Controllers\Api\BookmarkController::class, 'updateCollection']);
 Route::delete('/v2/bookmark-collections/{id}', [\App\Http\Controllers\Api\BookmarkController::class, 'deleteCollection']);
 // Notifications
+Route::middleware('module:notifications')->group(function () {
 Route::get('/v2/notifications', [\App\Http\Controllers\Api\NotificationsController::class, 'index']);
 Route::get('/v2/notifications/grouped', [\App\Http\Controllers\Api\NotificationsController::class, 'grouped']);
 Route::get('/v2/notifications/counts', [\App\Http\Controllers\Api\NotificationsController::class, 'counts']);
@@ -1024,7 +1036,9 @@ Route::post('/v2/notifications/settings', [\App\Http\Controllers\Api\UsersContro
 Route::get('/v2/notifications/{id}', [\App\Http\Controllers\Api\NotificationsController::class, 'show']);
 Route::post('/v2/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationsController::class, 'markRead']);
 Route::delete('/v2/notifications/{id}', [\App\Http\Controllers\Api\NotificationsController::class, 'destroy']);
+});
 // Reviews
+Route::middleware('feature:reviews')->group(function () {
 Route::get('/v2/reviews/pending', [\App\Http\Controllers\Api\ReviewsController::class, 'pending']);
 // Registered BEFORE /v2/reviews/{id} so 'given' is not swallowed as an {id}.
 Route::get('/v2/reviews/given', [\App\Http\Controllers\Api\ReviewsController::class, 'given']);
@@ -1035,7 +1049,9 @@ Route::get('/v2/reviews/user/{userId}/stats', [\App\Http\Controllers\Api\Reviews
 Route::get('/v2/reviews/{id}', [\App\Http\Controllers\Api\ReviewsController::class, 'show']);
 Route::post('/v2/reviews', [\App\Http\Controllers\Api\ReviewsController::class, 'store'])->middleware('legal-acceptance');
 Route::delete('/v2/reviews/{id}', [\App\Http\Controllers\Api\ReviewsController::class, 'destroy']);
+});
 // Search
+Route::middleware('feature:search')->group(function () {
 Route::get('/v2/search', [\App\Http\Controllers\Api\SearchController::class, 'index']);
 Route::get('/v2/search/suggestions', [\App\Http\Controllers\Api\SearchController::class, 'suggestions']);
 Route::get('/v2/search/saved', [\App\Http\Controllers\Api\SearchController::class, 'savedSearches']);
@@ -1043,10 +1059,12 @@ Route::post('/v2/search/saved', [\App\Http\Controllers\Api\SearchController::cla
 Route::delete('/v2/search/saved/{id}', [\App\Http\Controllers\Api\SearchController::class, 'deleteSavedSearch']);
 Route::post('/v2/search/saved/{id}/run', [\App\Http\Controllers\Api\SearchController::class, 'runSavedSearch']);
 Route::get('/v2/search/trending', [\App\Http\Controllers\Api\SearchController::class, 'trending']);
+});
 // Metrics
 Route::post('/v2/metrics', [\App\Http\Controllers\Api\MetricsController::class, 'store']);
 Route::get('/v2/metrics/summary', [\App\Http\Controllers\Api\MetricsController::class, 'summary']);
 // Polls
+Route::middleware('feature:polls')->group(function () {
 Route::get('/v2/polls', [\App\Http\Controllers\Api\PollsController::class, 'index']);
 Route::post('/v2/polls', [\App\Http\Controllers\Api\PollsController::class, 'store']);
 Route::get('/v2/polls/categories', [\App\Http\Controllers\Api\PollsController::class, 'categories']);
@@ -1057,6 +1075,7 @@ Route::post('/v2/polls/{id}/vote', [\App\Http\Controllers\Api\PollsController::c
 Route::post('/v2/polls/{id}/rank', [\App\Http\Controllers\Api\PollsController::class, 'rank']);
 Route::get('/v2/polls/{id}/ranked-results', [\App\Http\Controllers\Api\PollsController::class, 'rankedResults']);
 Route::get('/v2/polls/{id}/export', [\App\Http\Controllers\Api\PollsController::class, 'export']);
+});
 
 // ============================================
 // MIGRATED ROUTES — Content (Jobs, Ideation, Goals, Gamification, Volunteering, Comments, Blog, Help, Pages, Resources, KB)
@@ -1188,6 +1207,7 @@ Route::post('/v2/ideation-challenges/{id}/ideas', [\App\Http\Controllers\Api\Ide
 Route::post('/v2/ideation-challenges/{id}/favorite', [\App\Http\Controllers\Api\IdeationChallengesController::class, 'toggleFavorite']);
 Route::post('/v2/ideation-challenges/{id}/duplicate', [\App\Http\Controllers\Api\IdeationChallengesController::class, 'duplicate']);
 Route::post('/v2/ideation-ideas/{id}/convert-to-group', [\App\Http\Controllers\Api\IdeationChallengesController::class, 'convertToGroup']);
+Route::middleware('feature:goals')->group(function () {
 Route::get('/v2/goals', [\App\Http\Controllers\Api\GoalsController::class, 'index']);
 Route::post('/v2/goals', [\App\Http\Controllers\Api\GoalsController::class, 'store']);
 Route::get('/v2/goals/discover', [\App\Http\Controllers\Api\GoalsController::class, 'discover']);
@@ -1211,6 +1231,8 @@ Route::get('/v2/goals/{id}/insights', [\App\Http\Controllers\Api\GoalsController
 Route::get('/v2/goals/{id}/reminder', [\App\Http\Controllers\Api\GoalsController::class, 'getReminder']);
 Route::put('/v2/goals/{id}/reminder', [\App\Http\Controllers\Api\GoalsController::class, 'setReminder']);
 Route::delete('/v2/goals/{id}/reminder', [\App\Http\Controllers\Api\GoalsController::class, 'deleteReminder']);
+});
+Route::middleware('feature:gamification')->group(function () {
 Route::get('/v2/gamification/profile', [\App\Http\Controllers\Api\GamificationV2Controller::class, 'profile']);
 Route::get('/v2/gamification/badges', [\App\Http\Controllers\Api\GamificationV2Controller::class, 'badges']);
 Route::get('/v2/gamification/badges/{key}', [\App\Http\Controllers\Api\GamificationV2Controller::class, 'showBadge']);
@@ -1230,6 +1252,7 @@ Route::get('/v2/gamification/community-dashboard', [\App\Http\Controllers\Api\Ga
 Route::get('/v2/gamification/personal-journey', [\App\Http\Controllers\Api\GamificationV2Controller::class, 'personalJourney']);
 Route::get('/v2/gamification/member-spotlight', [\App\Http\Controllers\Api\GamificationV2Controller::class, 'memberSpotlight']);
 Route::get('/v2/gamification/engagement-history', [\App\Http\Controllers\Api\GamificationV2Controller::class, 'engagementHistory']);
+});
 Route::get('/v2/volunteering/opportunities', [\App\Http\Controllers\Api\VolunteerController::class, 'opportunities']);
 Route::post('/v2/volunteering/opportunities', [\App\Http\Controllers\Api\VolunteerController::class, 'createOpportunity']);
 Route::get('/v2/volunteering/opportunities/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'showOpportunity']);
@@ -1280,9 +1303,11 @@ Route::delete('/v2/comments/{id}', [\App\Http\Controllers\Api\CommentsController
 // Note: POST /v2/comments/{id}/reactions is handled by ReactionController (line ~354)
 Route::get('/v2/mentions/search', [\App\Http\Controllers\Api\MentionController::class, 'search']);
 Route::get('/v2/mentions/me', [\App\Http\Controllers\Api\MentionController::class, 'myMentions']);
+Route::middleware('feature:blog')->group(function () {
 Route::get('/v2/blog', [\App\Http\Controllers\Api\BlogPublicController::class, 'index'])->withoutMiddleware('auth:sanctum');
 Route::get('/v2/blog/categories', [\App\Http\Controllers\Api\BlogPublicController::class, 'categories'])->withoutMiddleware('auth:sanctum');
 Route::get('/v2/blog/{slug}', [\App\Http\Controllers\Api\BlogPublicController::class, 'show'])->withoutMiddleware('auth:sanctum');
+});
 Route::get('/v2/help/faqs', [\App\Http\Controllers\Api\HelpController::class, 'getFaqs'])->withoutMiddleware('auth:sanctum');
 Route::get('/v2/public-changelog', [\App\Http\Controllers\Api\PublicChangelogController::class, 'index'])
     ->withoutMiddleware('auth:sanctum');
@@ -1293,6 +1318,7 @@ Route::get('/v2/public-page-content/{pageKey}', [\App\Http\Controllers\Api\Stati
     ->where('pageKey', '[a-z0-9-]+')
     ->withoutMiddleware('auth:sanctum');
 Route::get('/v2/pages/{slug}', [\App\Http\Controllers\Api\PagesPublicController::class, 'show'])->withoutMiddleware('auth:sanctum');
+Route::middleware('feature:resources')->group(function () {
 Route::get('/v2/resources', [\App\Http\Controllers\Api\ResourcePublicController::class, 'index']);
 Route::get('/v2/resources/categories', [\App\Http\Controllers\Api\ResourcePublicController::class, 'categories']);
 Route::get('/v2/resources/categories/tree', [\App\Http\Controllers\Api\ResourceCategoryController::class, 'tree']);
@@ -1304,6 +1330,7 @@ Route::post('/v2/resources', [\App\Http\Controllers\Api\ResourcePublicController
 Route::get('/v2/resources/{id}/download', [\App\Http\Controllers\Api\ResourcePublicController::class, 'download']);
 Route::put('/v2/resources/{id}', [\App\Http\Controllers\Api\ResourcePublicController::class, 'update']);
 Route::delete('/v2/resources/{id}', [\App\Http\Controllers\Api\ResourcePublicController::class, 'destroy']);
+});
 Route::get('/v2/kb', [\App\Http\Controllers\Api\KnowledgeBaseController::class, 'index']);
 Route::get('/v2/kb/search', [\App\Http\Controllers\Api\KnowledgeBaseController::class, 'search']);
 Route::post('/v2/kb', [\App\Http\Controllers\Api\KnowledgeBaseController::class, 'store']);
@@ -1737,7 +1764,8 @@ Route::post('/v2/admin/users/import', [\App\Http\Controllers\Api\AdminUsersContr
 Route::get('/v2/admin/users/import/template', [\App\Http\Controllers\Api\AdminUsersController::class, 'importTemplate']);
 Route::delete('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'destroy']);
 Route::post('/v2/admin/users/{id}/ban', [\App\Http\Controllers\Api\AdminUsersController::class, 'ban']);
-Route::post('/v2/admin/users/badges/recheck-all', [\App\Http\Controllers\Api\AdminGamificationController::class, 'recheckAll']);
+Route::post('/v2/admin/users/badges/recheck-all', [\App\Http\Controllers\Api\AdminGamificationController::class, 'recheckAll'])
+    ->middleware('feature:gamification');
 Route::post('/v2/admin/users/{id}/badges', [\App\Http\Controllers\Api\AdminUsersController::class, 'addBadge']);
 Route::delete('/v2/admin/users/{id}/badges/{badgeId}', [\App\Http\Controllers\Api\AdminUsersController::class, 'removeBadge']);
 // impersonate, super-admin promotion — moved to super-admin middleware group (see below)
@@ -1908,6 +1936,7 @@ Route::get('/v2/admin/help/faqs', [\App\Http\Controllers\Api\HelpController::cla
 Route::post('/v2/admin/help/faqs', [\App\Http\Controllers\Api\HelpController::class, 'adminCreateFaq']);
 Route::put('/v2/admin/help/faqs/{id}', [\App\Http\Controllers\Api\HelpController::class, 'adminUpdateFaq']);
 Route::delete('/v2/admin/help/faqs/{id}', [\App\Http\Controllers\Api\HelpController::class, 'adminDeleteFaq']);
+Route::middleware('feature:blog')->group(function () {
 Route::post('/v2/admin/blog/bulk-delete', [\App\Http\Controllers\Api\AdminBlogController::class, 'bulkDelete']);
 Route::post('/v2/admin/blog/bulk-publish', [\App\Http\Controllers\Api\AdminBlogController::class, 'bulkPublish']);
 Route::get('/v2/admin/blog', [\App\Http\Controllers\Api\AdminBlogController::class, 'index']);
@@ -1916,30 +1945,31 @@ Route::get('/v2/admin/blog/{id}', [\App\Http\Controllers\Api\AdminBlogController
 Route::put('/v2/admin/blog/{id}', [\App\Http\Controllers\Api\AdminBlogController::class, 'update']);
 Route::delete('/v2/admin/blog/{id}', [\App\Http\Controllers\Api\AdminBlogController::class, 'destroy']);
 Route::post('/v2/admin/blog/{id}/toggle-status', [\App\Http\Controllers\Api\AdminBlogController::class, 'toggleStatus']);
+});
 // Broker-or-admin: feed/comments/reviews moderation lives in the broker
 // panel (/broker/moderation/*) since 2026-07-02. Controllers add self-dealing
 // guards (a broker cannot moderate content they are a party to); announcer
 // grant/revoke is privilege management and stays admin-only below.
 // See BrokerModerationAuthorizationTest.
 Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function () {
-    Route::get('/v2/admin/feed/posts', [\App\Http\Controllers\Api\AdminFeedController::class, 'index']);
-    Route::get('/v2/admin/feed/posts/{id}', [\App\Http\Controllers\Api\AdminFeedController::class, 'show']);
-    Route::post('/v2/admin/feed/posts/{id}/hide', [\App\Http\Controllers\Api\AdminFeedController::class, 'hide'])->middleware('throttle:nexus-route-60-per-1m');
-    Route::delete('/v2/admin/feed/posts/{id}', [\App\Http\Controllers\Api\AdminFeedController::class, 'destroy'])->middleware('throttle:nexus-route-60-per-1m');
-    Route::get('/v2/admin/feed/stats', [\App\Http\Controllers\Api\AdminFeedController::class, 'stats']);
+    Route::get('/v2/admin/feed/posts', [\App\Http\Controllers\Api\AdminFeedController::class, 'index'])->middleware('module:feed');
+    Route::get('/v2/admin/feed/posts/{id}', [\App\Http\Controllers\Api\AdminFeedController::class, 'show'])->middleware('module:feed');
+    Route::post('/v2/admin/feed/posts/{id}/hide', [\App\Http\Controllers\Api\AdminFeedController::class, 'hide'])->middleware(['module:feed', 'throttle:nexus-route-60-per-1m']);
+    Route::delete('/v2/admin/feed/posts/{id}', [\App\Http\Controllers\Api\AdminFeedController::class, 'destroy'])->middleware(['module:feed', 'throttle:nexus-route-60-per-1m']);
+    Route::get('/v2/admin/feed/stats', [\App\Http\Controllers\Api\AdminFeedController::class, 'stats'])->middleware('module:feed');
     Route::get('/v2/admin/comments', [\App\Http\Controllers\Api\AdminCommentsController::class, 'index']);
     Route::get('/v2/admin/comments/{id}', [\App\Http\Controllers\Api\AdminCommentsController::class, 'show']);
     Route::post('/v2/admin/comments/{id}/hide', [\App\Http\Controllers\Api\AdminCommentsController::class, 'hide'])->middleware('throttle:nexus-route-60-per-1m');
     Route::delete('/v2/admin/comments/{id}', [\App\Http\Controllers\Api\AdminCommentsController::class, 'destroy'])->middleware('throttle:nexus-route-60-per-1m');
-    Route::get('/v2/admin/reviews', [\App\Http\Controllers\Api\AdminReviewsController::class, 'index']);
-    Route::get('/v2/admin/reviews/{id}', [\App\Http\Controllers\Api\AdminReviewsController::class, 'show']);
-    Route::post('/v2/admin/reviews/{id}/flag', [\App\Http\Controllers\Api\AdminReviewsController::class, 'flag'])->middleware('throttle:nexus-route-60-per-1m');
-    Route::post('/v2/admin/reviews/{id}/hide', [\App\Http\Controllers\Api\AdminReviewsController::class, 'hide'])->middleware('throttle:nexus-route-60-per-1m');
-    Route::delete('/v2/admin/reviews/{id}', [\App\Http\Controllers\Api\AdminReviewsController::class, 'destroy'])->middleware('throttle:nexus-route-60-per-1m');
+    Route::get('/v2/admin/reviews', [\App\Http\Controllers\Api\AdminReviewsController::class, 'index'])->middleware('feature:reviews');
+    Route::get('/v2/admin/reviews/{id}', [\App\Http\Controllers\Api\AdminReviewsController::class, 'show'])->middleware('feature:reviews');
+    Route::post('/v2/admin/reviews/{id}/flag', [\App\Http\Controllers\Api\AdminReviewsController::class, 'flag'])->middleware(['feature:reviews', 'throttle:nexus-route-60-per-1m']);
+    Route::post('/v2/admin/reviews/{id}/hide', [\App\Http\Controllers\Api\AdminReviewsController::class, 'hide'])->middleware(['feature:reviews', 'throttle:nexus-route-60-per-1m']);
+    Route::delete('/v2/admin/reviews/{id}', [\App\Http\Controllers\Api\AdminReviewsController::class, 'destroy'])->middleware(['feature:reviews', 'throttle:nexus-route-60-per-1m']);
 });
 // AG14: Municipal Announcer role management — admin-only (privilege mgmt).
-Route::post('/v2/admin/feed/grant-announcer', [\App\Http\Controllers\Api\AdminFeedController::class, 'grantAnnouncer']);
-Route::delete('/v2/admin/feed/revoke-announcer/{id}', [\App\Http\Controllers\Api\AdminFeedController::class, 'revokeAnnouncer']);
+Route::post('/v2/admin/feed/grant-announcer', [\App\Http\Controllers\Api\AdminFeedController::class, 'grantAnnouncer'])->middleware('module:feed');
+Route::delete('/v2/admin/feed/revoke-announcer/{id}', [\App\Http\Controllers\Api\AdminFeedController::class, 'revokeAnnouncer'])->middleware('module:feed');
 Route::get('/v2/admin/support-reports', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'index']);
 Route::get('/v2/admin/support-reports/stats', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'stats']);
 Route::get('/v2/admin/support-reports/assignees', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'assignees']);
@@ -2385,6 +2415,7 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::post('/v2/admin/reports/{id}/resolve', [\App\Http\Controllers\Api\AdminReportsController::class, 'resolve'])->middleware('throttle:nexus-route-60-per-1m');
     Route::post('/v2/admin/reports/{id}/dismiss', [\App\Http\Controllers\Api\AdminReportsController::class, 'dismiss'])->middleware('throttle:nexus-route-60-per-1m');
 });
+Route::middleware('feature:gamification')->group(function () {
 Route::get('/v2/admin/gamification/stats', [\App\Http\Controllers\Api\AdminGamificationController::class, 'stats']);
 Route::get('/v2/admin/gamification/badges', [\App\Http\Controllers\Api\AdminGamificationController::class, 'badges']);
 Route::post('/v2/admin/gamification/badges', [\App\Http\Controllers\Api\AdminGamificationController::class, 'createBadge']);
@@ -2402,6 +2433,7 @@ Route::post('/v2/admin/gamification/bulk-award', [\App\Http\Controllers\Api\Admi
 Route::get('/v2/admin/gamification/badge-config', [\App\Http\Controllers\Api\AdminGamificationController::class, 'getBadgeConfig']);
 Route::put('/v2/admin/gamification/badge-config/{badgeKey}', [\App\Http\Controllers\Api\AdminGamificationController::class, 'updateBadgeConfig']);
 Route::post('/v2/admin/gamification/badge-config/{badgeKey}/reset', [\App\Http\Controllers\Api\AdminGamificationController::class, 'resetBadgeConfig']);
+});
 Route::where([
     'id' => '[0-9]+',
     'groupId' => '[0-9]+',
@@ -2727,15 +2759,15 @@ Route::middleware('feature:events')->group(function () {
     Route::post('/v2/admin/events/{id}/reschedule', [\App\Http\Controllers\Api\AdminEventsController::class, 'reschedule'])->whereNumber('id');
     Route::delete('/v2/admin/events/{id}', [\App\Http\Controllers\Api\AdminEventsController::class, 'destroy'])->whereNumber('id');
 });
-Route::get('/v2/admin/polls', [\App\Http\Controllers\Api\AdminPollsController::class, 'index']);
-Route::get('/v2/admin/polls/{id}', [\App\Http\Controllers\Api\AdminPollsController::class, 'show']);
-Route::delete('/v2/admin/polls/{id}', [\App\Http\Controllers\Api\AdminPollsController::class, 'destroy']);
-Route::get('/v2/admin/goals', [\App\Http\Controllers\Api\AdminGoalsController::class, 'index']);
-Route::get('/v2/admin/goals/{id}', [\App\Http\Controllers\Api\AdminGoalsController::class, 'show']);
-Route::delete('/v2/admin/goals/{id}', [\App\Http\Controllers\Api\AdminGoalsController::class, 'destroy']);
-Route::get('/v2/admin/resources', [\App\Http\Controllers\Api\AdminResourcesController::class, 'index']);
-Route::get('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'show']);
-Route::delete('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'destroy']);
+Route::get('/v2/admin/polls', [\App\Http\Controllers\Api\AdminPollsController::class, 'index'])->middleware('feature:polls');
+Route::get('/v2/admin/polls/{id}', [\App\Http\Controllers\Api\AdminPollsController::class, 'show'])->middleware('feature:polls');
+Route::delete('/v2/admin/polls/{id}', [\App\Http\Controllers\Api\AdminPollsController::class, 'destroy'])->middleware('feature:polls');
+Route::get('/v2/admin/goals', [\App\Http\Controllers\Api\AdminGoalsController::class, 'index'])->middleware('feature:goals');
+Route::get('/v2/admin/goals/{id}', [\App\Http\Controllers\Api\AdminGoalsController::class, 'show'])->middleware('feature:goals');
+Route::delete('/v2/admin/goals/{id}', [\App\Http\Controllers\Api\AdminGoalsController::class, 'destroy'])->middleware('feature:goals');
+Route::get('/v2/admin/resources', [\App\Http\Controllers\Api\AdminResourcesController::class, 'index'])->middleware('feature:resources');
+Route::get('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'show'])->middleware('feature:resources');
+Route::delete('/v2/admin/resources/{id}', [\App\Http\Controllers\Api\AdminResourcesController::class, 'destroy'])->middleware('feature:resources');
 Route::get('/v2/admin/jobs', [\App\Http\Controllers\Api\AdminJobsController::class, 'index']);
 // Static literal admin job routes BEFORE {id} wildcard (Agent B + D)
 Route::get('/v2/admin/jobs/moderation-queue', [\App\Http\Controllers\Api\AdminJobsController::class, 'moderationQueue']);
@@ -3411,6 +3443,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Source: httpdocs/routes/misc-api.php
 // ============================================
 // Legacy social routes (deprecated — use V2 GET/POST equivalents above)
+Route::middleware('module:feed')->group(function () {
 Route::get('/social/test', [\App\Http\Controllers\Api\SocialController::class, 'test']);
 Route::post('/social/like', [\App\Http\Controllers\Api\SocialController::class, 'like']);
 Route::post('/social/likers', [\App\Http\Controllers\Api\SocialController::class, 'likers']); // deprecated: use V2 GET equivalent
@@ -3424,6 +3457,7 @@ Route::post('/social/delete-comment', [\App\Http\Controllers\Api\SocialControlle
 Route::post('/social/mention-search', [\App\Http\Controllers\Api\SocialController::class, 'mentionSearch']); // deprecated: use V2 GET equivalent
 Route::post('/social/feed', [\App\Http\Controllers\Api\SocialController::class, 'feed']); // deprecated: use GET /v2/feed
 Route::post('/social/create-post', [\App\Http\Controllers\Api\SocialController::class, 'createPost']);
+});
 // Generic authenticated upload endpoint — throttle to prevent storage DoS via
 // high-frequency small-file uploads. Canonical path is /v2/upload (matches the
 // controller's $isV2Api contract and every frontend caller, e.g. the newsletter
@@ -3490,6 +3524,7 @@ Route::post('/webauthn/rename', [\App\Http\Controllers\Api\WebAuthnController::c
 Route::post('/webauthn/remove-all', [\App\Http\Controllers\Api\WebAuthnController::class, 'removeAll'])->middleware('throttle:nexus-route-10-per-1m');
 Route::get('/webauthn/credentials', [\App\Http\Controllers\Api\WebAuthnController::class, 'credentials']);
 Route::get('/webauthn/status', [\App\Http\Controllers\Api\WebAuthnController::class, 'status']);
+Route::middleware('feature:ai_chat')->group(function () {
 Route::post('/ai/chat', [\App\Http\Controllers\Api\AiChatController::class, 'chat']);
 Route::post('/ai/chat/feedback', [\App\Http\Controllers\Api\AiChatController::class, 'feedback']);
 Route::get('/ai/chat/starters', [\App\Http\Controllers\Api\AiChatController::class, 'starters']);
@@ -3508,6 +3543,7 @@ Route::post('/ai/generate/bio', [\App\Http\Controllers\Api\AiChatController::cla
 Route::post('/ai/generate/newsletter', [\App\Http\Controllers\Api\AiChatController::class, 'generateNewsletter']);
 Route::post('/ai/generate/blog', [\App\Http\Controllers\Api\AiChatController::class, 'generateBlog']);
 Route::post('/ai/generate/page', [\App\Http\Controllers\Api\AiChatController::class, 'generatePage']);
+});
 Route::post('/menus/clear-cache', [\App\Http\Controllers\Api\MenuController::class, 'clearCache']);
 // NOTE: GET /menus, /menus/config, /menus/mobile, /menus/{slug} are public routes (registered above auth group)
 // NOTE: POST /v2/contact is a public route (registered above auth group)
@@ -3520,8 +3556,10 @@ Route::middleware('feature:groups')->whereNumber('id')->group(function () {
     Route::get('/recommendations/metrics', [\App\Http\Controllers\Api\GroupRecommendController::class, 'metrics']);
     Route::get('/recommendations/similar/{id}', [\App\Http\Controllers\Api\GroupRecommendController::class, 'similar']);
 });
+Route::middleware('module:notifications')->group(function () {
 Route::get('/notifications/settings', [\App\Http\Controllers\Api\UsersController::class, 'getSettings']);
 Route::post('/notifications/settings', [\App\Http\Controllers\Api\UsersController::class, 'updateSettings']);
+});
 
 // Generic one-click unsubscribe for ANY bulk / notification email.
 // Public — token-authenticated, no login required (link from an email).
@@ -3539,6 +3577,7 @@ Route::get('/v2/admin/email-deliverability/queues',           [\App\Http\Control
 Route::get('/v2/admin/email-deliverability/suppressions',     [\App\Http\Controllers\Api\AdminEmailDeliverabilityController::class, 'suppressions'])->middleware(['auth:sanctum', 'admin']);
 Route::delete('/v2/admin/email-deliverability/suppressions/{id}', [\App\Http\Controllers\Api\AdminEmailDeliverabilityController::class, 'removeSuppression'])->middleware(['auth:sanctum', 'admin']);
 Route::get('/v2/admin/email-deliverability/user/{userId}',    [\App\Http\Controllers\Api\AdminEmailDeliverabilityController::class, 'userHistory'])->middleware(['auth:sanctum', 'admin']);
+Route::middleware('feature:gamification')->group(function () {
 Route::get('/leaderboard', [\App\Http\Controllers\Api\GamificationController::class, 'api']);
 Route::get('/leaderboard/widget', [\App\Http\Controllers\Api\GamificationController::class, 'widget']);
 Route::get('/streaks', [\App\Http\Controllers\Api\GamificationController::class, 'streaks']);
@@ -3557,16 +3596,21 @@ Route::get('/gamification/share', [\App\Http\Controllers\Api\GamificationControl
 Route::get('/gamification/seasons', [\App\Http\Controllers\Api\GamificationController::class, 'getSeasons']);
 Route::get('/gamification/seasons/current', [\App\Http\Controllers\Api\GamificationController::class, 'getCurrentSeason']);
 Route::post('/shop/purchase', [\App\Http\Controllers\Api\GamificationController::class, 'purchaseItem']);
+});
 Route::get('/insights', [\App\Http\Controllers\Api\AdminDashboardController::class, 'apiInsights'])->middleware(['auth:sanctum', 'admin']);
+Route::middleware('module:feed')->group(function () {
 Route::post('/feed/hide', [\App\Http\Controllers\Api\FeedController::class, 'hidePost']);
 Route::post('/feed/mute', [\App\Http\Controllers\Api\FeedController::class, 'muteUser']);
 Route::post('/feed/report', [\App\Http\Controllers\Api\FeedController::class, 'reportPost']);
+});
+Route::middleware('module:messages')->group(function () {
 Route::post('/messages/voice', [\App\Http\Controllers\Api\VoiceMessageController::class, 'store']);
 // Legacy message routes removed — all clients use /v2/messages (MessagesController)
 Route::post('/messages/delete', [\App\Http\Controllers\Api\MessagesController::class, 'deleteMessage']);
 Route::post('/messages/delete-conversation', [\App\Http\Controllers\Api\MessagesController::class, 'deleteConversation']);
 Route::post('/messages/reaction', [\App\Http\Controllers\Api\MessagesController::class, 'toggleReaction']);
 Route::get('/messages/reactions-batch', [\App\Http\Controllers\Api\MessagesController::class, 'getReactionsBatch']);
+});
 Route::get('/admin/users/search', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'userSearchApi'])->middleware(['auth:sanctum', 'admin']);
 // Newsletter unsubscribe/tracking — moved to public routes (no auth required)
 // See public section below line 1244
@@ -3606,6 +3650,7 @@ Route::post('/v2/group-exchanges/{id}/start', [\App\Http\Controllers\Api\GroupEx
 Route::post('/v2/group-exchanges/{id}/confirm', [\App\Http\Controllers\Api\GroupExchangeController::class, 'confirm']);
 Route::post('/v2/group-exchanges/{id}/complete', [\App\Http\Controllers\Api\GroupExchangeController::class, 'complete']);
 });
+Route::middleware('module:wallet')->group(function () {
 Route::get('/v2/wallet/statement', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'statement']);
 Route::get('/v2/wallet/categories', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'listCategories']);
 Route::post('/v2/wallet/categories', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'createCategory']);
@@ -3620,6 +3665,7 @@ Route::post('/v2/wallet/donate', [\App\Http\Controllers\Api\WalletFeaturesContro
 Route::get('/v2/wallet/donations', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'donationHistory']);
 Route::get('/v2/wallet/starting-balance', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'getStartingBalance']);
 Route::put('/v2/wallet/starting-balance', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'setStartingBalance']);
+});
 Route::post('/v2/exchanges/{id}/rate', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'rateExchange']);
 Route::get('/v2/exchanges/{id}/ratings', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'exchangeRatings']);
 Route::get('/v2/users/{id}/rating', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'userRating']);
@@ -3831,13 +3877,14 @@ Route::middleware('auth:sanctum')->group(function () {
 // MIGRATED ROUTES — Legacy API (Polls, Goals, Events, Wallet, Cookie Consent, Legal, Nexus Score, Notifications, Listings)
 // Source: httpdocs/routes/legacy-api.php
 // ============================================
-Route::get('/polls', [\App\Http\Controllers\Api\PollsController::class, 'index']);
-Route::post('/polls/vote', [\App\Http\Controllers\Api\PollsController::class, 'vote']);
-Route::get('/goals', [\App\Http\Controllers\Api\GoalsController::class, 'index']);
+Route::get('/polls', [\App\Http\Controllers\Api\PollsController::class, 'index'])->middleware('feature:polls');
+Route::post('/polls/vote', [\App\Http\Controllers\Api\PollsController::class, 'vote'])->middleware('feature:polls');
+Route::get('/goals', [\App\Http\Controllers\Api\GoalsController::class, 'index'])->middleware('feature:goals');
 // Legacy routes removed: /goals/update and /goals/offer-buddy — use V2 endpoints instead
 Route::get('/vol_opportunities', [\App\Http\Controllers\Api\VolunteerController::class, 'index']);
 Route::get('/events', [\App\Http\Controllers\Api\EventsController::class, 'index'])->middleware('feature:events');
 // Legacy POST /events/rsvp removed: it had no {id} route parameter and no callers.
+Route::middleware('module:wallet')->group(function () {
 Route::get('/wallet/balance', [\App\Http\Controllers\Api\WalletController::class, 'balance']);
 Route::get('/cookie-consent', [\App\Http\Controllers\Api\CookieConsentController::class, 'show']);
 Route::post('/cookie-consent', [\App\Http\Controllers\Api\CookieConsentController::class, 'store']);
@@ -3850,23 +3897,26 @@ Route::delete('/cookie-consent/{id}', [\App\Http\Controllers\Api\CookieConsentCo
 // hook fetches custom legal docs without authentication (skipAuth: true).
 // Keeping them here caused a recurring regression: the API returned 401,
 // the hook silently fell back, and tenants lost their custom policies.
-Route::get('/nexus-score', [\App\Http\Controllers\Api\GamificationController::class, 'apiGetScore']);
-Route::post('/nexus-score/recalculate', [\App\Http\Controllers\Api\GamificationController::class, 'apiRecalculateScores']);
+Route::get('/nexus-score', [\App\Http\Controllers\Api\GamificationController::class, 'apiGetScore'])->middleware('feature:gamification');
+Route::post('/nexus-score/recalculate', [\App\Http\Controllers\Api\GamificationController::class, 'apiRecalculateScores'])->middleware('feature:gamification');
 Route::get('/wallet/transactions', [\App\Http\Controllers\Api\WalletController::class, 'transactions']);
 Route::get('/wallet/pending-count', [\App\Http\Controllers\Api\WalletController::class, 'pendingCount']);
 Route::post('/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer']);
 // Legacy route removed: /wallet/delete — use V2 DELETE /v2/wallet/transactions/{id} instead
 Route::post('/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
+});
 Route::get('/members', [\App\Http\Controllers\Api\CoreController::class, 'members']);
 Route::get('/listings', [\App\Http\Controllers\Api\CoreController::class, 'listings']);
 Route::get('/groups', [\App\Http\Controllers\Api\CoreController::class, 'groups'])->middleware('feature:groups');
 // Legacy GET /messages removed — all clients use /v2/messages (MessagesController)
+Route::middleware('module:notifications')->group(function () {
 Route::get('/notifications', [\App\Http\Controllers\Api\CoreController::class, 'notifications']);
 Route::get('/notifications/check', [\App\Http\Controllers\Api\CoreController::class, 'checkNotifications']);
 Route::get('/notifications/unread-count', [\App\Http\Controllers\Api\CoreController::class, 'unreadCount']);
 Route::get('/notifications/poll', [\App\Http\Controllers\Api\NotificationsController::class, 'poll']);
 Route::post('/notifications/read', [\App\Http\Controllers\Api\NotificationsController::class, 'markRead']);
 Route::post('/notifications/delete', [\App\Http\Controllers\Api\NotificationsController::class, 'delete']);
+});
 // Legacy POST /listings/delete removed — ListingsController::delete never existed after the
 // Laravel migration (the real method is destroy), so the route fataled on every request.
 // ApiDeprecation already points callers at DELETE /api/v2/listings/{id}.

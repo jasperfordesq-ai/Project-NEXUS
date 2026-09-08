@@ -117,6 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Tenant module and feature switches now reject direct API access for Messages, Wallet, Feed, Notifications, Connections, Reviews, Search, Polls, Goals, Gamification, AI Chat, Blog, and Resources, including legacy and operational-admin routes. Route-inventory regression tests keep owned endpoints behind their switch, while public notification unsubscribe remains reachable when Notifications is off.
+
 - **Sending time credits to a member of another community happened on one tap.** Up to 100 hours left the wallet immediately, cross-community and not reversible from the app. Every comparable movement of credits — the personal wallet transfer, the group exchange, the organisation wallet deposit, a paid course enrolment — was put behind a confirmation on 2026-09-06/07; this one was missed. 🔴 The reason no test caught it is worth recording: `member-profile.test.tsx` mocked `useConfirm` as `confirm: (opts) => void opts.onConfirm()`, running the action the instant it was asked to confirm, so every confirmation on that screen was unobservable and a new one-tap money path could be added with nothing to notice it. The stand-in now requires the second tap. Found by the 2026-09-07 audit (G/F-4).
 
 - **An instructor’s grade of "82,5" was recorded as 0%.** `Number(score) || 0` turns NaN into a real, wrong mark, so a grader on a German, Spanish, French, Italian or Portuguese device typed an ordinary grade, saw a success toast, and the learner was marked at zero. Any other typo did the same. The score is now parsed properly and refused if it is not between 0 and 100 (G/F-9).

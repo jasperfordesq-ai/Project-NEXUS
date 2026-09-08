@@ -15,7 +15,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
  * Tests for TenantModuleMiddleware.
  *
  * This middleware checks if tenant platform modules are enabled
- * using TenantContext::hasFeature().
+ * using TenantContext::hasModule().
  */
 class TenantModuleMiddlewareTest extends TestCase
 {
@@ -24,7 +24,7 @@ class TenantModuleMiddlewareTest extends TestCase
     public function test_isEnabled_delegates_to_tenant_context(): void
     {
         // TenantContext is set up in parent::setUp()
-        // By default, all features are enabled (per FEATURE_DEFAULTS)
+        // By default, standard modules are enabled (per MODULE_DEFAULTS)
         $result = TenantModuleMiddleware::isEnabled('listings');
 
         $this->assertIsBool($result);
@@ -32,10 +32,10 @@ class TenantModuleMiddlewareTest extends TestCase
 
     public function test_check_returns_true_when_module_enabled(): void
     {
-        // With default feature config, standard modules should be enabled
+        // With default module config, standard modules should be enabled
         $result = TenantModuleMiddleware::check('listings');
 
-        // Either true (feature enabled) or array (feature disabled)
+        // Either true (module enabled) or array (module disabled)
         if ($result === true) {
             $this->assertTrue($result);
         } else {
@@ -49,7 +49,7 @@ class TenantModuleMiddlewareTest extends TestCase
         // Use a module name that is very unlikely to be enabled
         $result = TenantModuleMiddleware::check('nonexistent_module_xyz');
 
-        // hasFeature returns false for unknown modules, so check returns error
+        // hasModule returns false for unknown modules, so check returns error
         if (is_array($result)) {
             $this->assertTrue($result['error']);
             $this->assertEquals('nonexistent_module_xyz', $result['module']);
@@ -69,8 +69,8 @@ class TenantModuleMiddlewareTest extends TestCase
 
     public function test_can_is_alias_for_isEnabled(): void
     {
-        $enabled = TenantModuleMiddleware::isEnabled('events');
-        $can = TenantModuleMiddleware::can('events');
+        $enabled = TenantModuleMiddleware::isEnabled('messages');
+        $can = TenantModuleMiddleware::can('messages');
 
         $this->assertEquals($enabled, $can);
     }
@@ -81,15 +81,13 @@ class TenantModuleMiddlewareTest extends TestCase
 
         $this->assertIsArray($states);
         $this->assertArrayHasKey('listings', $states);
-        $this->assertArrayHasKey('groups', $states);
         $this->assertArrayHasKey('wallet', $states);
-        $this->assertArrayHasKey('volunteering', $states);
-        $this->assertArrayHasKey('events', $states);
-        $this->assertArrayHasKey('resources', $states);
-        $this->assertArrayHasKey('polls', $states);
-        $this->assertArrayHasKey('goals', $states);
-        $this->assertArrayHasKey('blog', $states);
-        $this->assertArrayHasKey('help_center', $states);
+        $this->assertArrayHasKey('messages', $states);
+        $this->assertArrayHasKey('dashboard', $states);
+        $this->assertArrayHasKey('feed', $states);
+        $this->assertArrayHasKey('notifications', $states);
+        $this->assertArrayHasKey('profile', $states);
+        $this->assertArrayHasKey('settings', $states);
 
         foreach ($states as $module => $state) {
             $this->assertIsBool($state, "State for '$module' should be boolean");
@@ -118,9 +116,9 @@ class TenantModuleMiddlewareTest extends TestCase
         $defs = TenantModuleMiddleware::getAllModuleDefinitions();
 
         $this->assertIsArray($defs);
-        $this->assertCount(10, $defs);
+        $this->assertCount(8, $defs);
         $this->assertArrayHasKey('listings', $defs);
-        $this->assertArrayHasKey('blog', $defs);
+        $this->assertArrayHasKey('settings', $defs);
     }
 
     public function test_check_error_array_contains_redirect_with_base_path(): void
