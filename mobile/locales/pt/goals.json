@@ -70,8 +70,8 @@
     "notFoundHint": "Este objetivo pode ter sido removido ou já não estar disponível.",
     "insights": "Insights",
     "progressUpdate": "Atualizar progresso",
-    "progressIncrement": "Progresso a adicionar",
-    "progressPlaceholder": "por ex., 1,5",
+    "progressIncrement": "Progresso a registar",
+    "progressPlaceholder": "p. ex. 1,5",
     "saveProgress": "Guardar progresso",
     "saving": "Saving...",
     "progressError": "Não foi possível atualizar o progresso. Tente novamente.",
@@ -99,6 +99,7 @@
       "weekly": "Weekly",
       "biweekly": "A cada 2 semanas",
       "monthly": "Monthly"
-    }
+    },
+    "progressCorrectionHint": "Coloque um sinal menos à frente para corrigir um erro, por exemplo -1,5."
   }
 }

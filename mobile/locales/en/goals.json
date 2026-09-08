@@ -70,7 +70,7 @@
     "notFoundHint": "This goal may have been removed or is no longer available.",
     "insights": "Insights",
     "progressUpdate": "Update progress",
-    "progressIncrement": "Progress to add",
+    "progressIncrement": "Progress to record",
     "progressPlaceholder": "e.g. 1.5",
     "saveProgress": "Save progress",
     "saving": "Saving...",
@@ -99,6 +99,7 @@
       "weekly": "Weekly",
       "biweekly": "Every 2 weeks",
       "monthly": "Monthly"
-    }
+    },
+    "progressCorrectionHint": "Put a minus in front to correct a mistake, for example -1.5."
   }
 }

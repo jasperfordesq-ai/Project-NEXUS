@@ -70,7 +70,7 @@
     "notFoundHint": "Dieses Ziel wurde möglicherweise entfernt oder ist nicht mehr verfügbar.",
     "insights": "Insights",
     "progressUpdate": "Fortschritt aktualisieren",
-    "progressIncrement": "Fortschritt hinzufügen",
+    "progressIncrement": "Zu erfassender Fortschritt",
     "progressPlaceholder": "z. B. 1,5",
     "saveProgress": "Fortschritt speichern",
     "saving": "Saving...",
@@ -99,6 +99,7 @@
       "weekly": "Weekly",
       "biweekly": "Alle 2 Wochen",
       "monthly": "Monthly"
-    }
+    },
+    "progressCorrectionHint": "Setzen Sie ein Minus davor, um einen Fehler zu korrigieren, zum Beispiel -1,5."
   }
 }

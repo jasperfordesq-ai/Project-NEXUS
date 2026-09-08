@@ -70,7 +70,7 @@
     "notFoundHint": "Questo obiettivo potrebbe essere stato rimosso o non essere più disponibile.",
     "insights": "Insights",
     "progressUpdate": "Aggiorna avanzamento",
-    "progressIncrement": "Avanzamento da aggiungere",
+    "progressIncrement": "Progresso da registrare",
     "progressPlaceholder": "ad es. 1,5",
     "saveProgress": "Salva avanzamento",
     "saving": "Saving...",
@@ -99,6 +99,7 @@
       "weekly": "Weekly",
       "biweekly": "Ogni 2 settimane",
       "monthly": "Monthly"
-    }
+    },
+    "progressCorrectionHint": "Metti un meno davanti per correggere un errore, ad esempio -1,5."
   }
 }

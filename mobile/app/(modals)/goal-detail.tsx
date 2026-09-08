@@ -183,9 +183,27 @@ function GoalDetailScreen() {
     ];
   }, [completedMilestones, goal, insights, milestones.length, percent, primary, t, theme.success]);
 
+  /*
+    🔴 Progress could only ever go UP. `increment <= 0` returned early and the button
+    was disabled below zero, so a member who logged five hours by mistake, or logged the
+    same session twice, had no way to correct it from the phone — the goal simply stayed
+    wrong, and at a high enough number the server marked it complete.
+
+    The server has always accepted a negative: `GoalService::incrementProgress` does
+    `current + increment` with no sign check. It also does no floor check, so it would
+    happily store a negative total — which is why the clamp below is on this side.
+    Audit 2026-09-07, fixed 2026-09-08.
+  */
   async function handleProgressSave() {
-    const increment = parseDecimalInput(progressIncrement) ?? Number.NaN;
-    if (!goal || !Number.isFinite(increment) || increment <= 0) return;
+    const requested = parseDecimalInput(progressIncrement) ?? Number.NaN;
+    if (!goal || !Number.isFinite(requested) || requested === 0) return;
+
+    // Never let a correction drive the recorded total below zero: the server stores
+    // whatever it is sent, and a goal at "-3 hours" is worse than the mistake.
+    const currentValue = numberOrFallback(goal.progress_hours, numberOrFallback(goal.current_value));
+    const increment = requested < 0 ? Math.max(requested, -currentValue) : requested;
+    if (increment === 0) return;
+
     setIsSaving(true);
     try {
       const result = await updateGoalProgress(goal.id, increment);
@@ -197,6 +215,10 @@ function GoalDetailScreen() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function isFiniteNonZero(value: number | null): boolean {
+    return value !== null && Number.isFinite(value) && value !== 0;
   }
 
   async function handleReminderSave(enabled: boolean) {
@@ -314,13 +336,22 @@ function GoalDetailScreen() {
                   label={t('detail.progressIncrement')}
                   value={progressIncrement}
                   onChangeText={setProgressIncrement}
-                  keyboardType="decimal-pad"
+                  /*
+                    🔴 `decimal-pad` has no minus key on iOS. A field that accepts a
+                    correction the keyboard cannot type is not a correction at all.
+                  */
+                  keyboardType="numbers-and-punctuation"
                   placeholder={t('detail.progressPlaceholder')}
+                  testID="goal-progress-input"
                 />
+                <Text className="text-xs text-muted-foreground">
+                  {t('detail.progressCorrectionHint')}
+                </Text>
                 <HeroButton
                   variant="primary"
+                  testID="goal-progress-save"
                   onPress={handleProgressSave}
-                  isDisabled={isSaving || !((parseDecimalInput(progressIncrement) ?? Number.NaN) > 0)}
+                  isDisabled={isSaving || !isFiniteNonZero(parseDecimalInput(progressIncrement))}
                 >
                   <HeroButton.Label>{isSaving ? t('detail.saving') : t('detail.saveProgress')}</HeroButton.Label>
                 </HeroButton>

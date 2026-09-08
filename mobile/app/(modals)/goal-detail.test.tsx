@@ -32,7 +32,8 @@ const mockGoalDetailT = (key: string, opts?: Record<string, unknown>) => {
     'detail.notFoundHint': 'This goal may have been removed.',
     'detail.insights': 'Insights',
     'detail.progressUpdate': 'Update progress',
-    'detail.progressIncrement': 'Progress to add',
+    'detail.progressIncrement': 'Progress to record',
+    'detail.progressCorrectionHint': 'Put a minus in front to correct a mistake.',
     'detail.progressPlaceholder': 'e.g. 1.5',
     'detail.saveProgress': 'Save progress',
     'detail.saving': 'Saving...',
@@ -208,5 +209,56 @@ describe('GoalDetailScreen', () => {
       fireEvent.press(second.getByText('Enable'));
     });
     await waitFor(() => expect(mockSetGoalReminder).toHaveBeenCalledWith(1, { frequency: 'daily', enabled: true }));
+  });
+
+  /*
+    🔴 Progress could only ever go UP. A member who logged five hours by mistake, or
+    logged the same session twice, had no way to correct it from the phone — the goal
+    stayed wrong, and at a high enough number the server marked it complete. The server
+    has always accepted a negative; only the client refused. Audit 2026-09-07 F-16,
+    fixed 2026-09-08.
+  */
+  it('records a correction as well as an addition', async () => {
+    const { getByTestId } = render(<GoalDetailScreen />);
+    await waitFor(() => expect(getByTestId('goal-progress-save')).toBeTruthy());
+
+    fireEvent.changeText(getByTestId('goal-progress-input'), '-1.5');
+    await act(async () => { fireEvent.press(getByTestId('goal-progress-save')); });
+
+    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -1.5));
+  });
+
+  it('will not drive the recorded total below zero', async () => {
+    // The fixture stands at 4 hours. The server stores whatever it is sent and has no
+    // floor of its own, and a goal reading "-6 hours" is worse than the mistake.
+    const { getByTestId } = render(<GoalDetailScreen />);
+    await waitFor(() => expect(getByTestId('goal-progress-save')).toBeTruthy());
+
+    fireEvent.changeText(getByTestId('goal-progress-input'), '-10');
+    await act(async () => { fireEvent.press(getByTestId('goal-progress-save')); });
+
+    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -4));
+  });
+
+  it('sends nothing for zero', async () => {
+    const { getByTestId } = render(<GoalDetailScreen />);
+    await waitFor(() => expect(getByTestId('goal-progress-save')).toBeTruthy());
+
+    fireEvent.changeText(getByTestId('goal-progress-input'), '0');
+    await act(async () => { fireEvent.press(getByTestId('goal-progress-save')); });
+
+    expect(mockUpdateGoalProgress).not.toHaveBeenCalled();
+  });
+
+  it('accepts a comma decimal in a correction', async () => {
+    // The comma locales type "-1,5". Losing the sign or the decimal here would record
+    // a wildly wrong number.
+    const { getByTestId } = render(<GoalDetailScreen />);
+    await waitFor(() => expect(getByTestId('goal-progress-save')).toBeTruthy());
+
+    fireEvent.changeText(getByTestId('goal-progress-input'), '-1,5');
+    await act(async () => { fireEvent.press(getByTestId('goal-progress-save')); });
+
+    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -1.5));
   });
 });

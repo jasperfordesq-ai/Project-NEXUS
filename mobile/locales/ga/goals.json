@@ -70,7 +70,7 @@
     "notFoundHint": "Seans gur baineadh an sprioc seo nó nach bhfuil sí ar fáil a thuilleadh.",
     "insights": "Léargais",
     "progressUpdate": "Nuashonraigh an dul chun cinn",
-    "progressIncrement": "Dul chun cinn le cur leis",
+    "progressIncrement": "Dul chun cinn le taifeadadh",
     "progressPlaceholder": "m.sh. 1.5",
     "saveProgress": "Sábháil an dul chun cinn",
     "saving": "Á shábháil...",
@@ -99,6 +99,7 @@
       "weekly": "Go seachtainiúil",
       "biweekly": "Gach coicís",
       "monthly": "Go míosúil"
-    }
+    },
+    "progressCorrectionHint": "Cuir míneas os a chomhair chun botún a cheartú, mar shampla -1.5."
   }
 }
