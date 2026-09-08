@@ -29,6 +29,7 @@ import Avatar from '@/components/ui/Avatar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import {
   getGroupJoinRequests,
@@ -38,10 +39,17 @@ import {
 import { useApi } from '@/lib/hooks/useApi';
 import { useTheme } from '@/lib/hooks/useTheme';
 
+/*
+  🔴 `dateLocale()`, never a bare `toLocaleDateString()`. With no argument, Intl uses
+  the DEVICE locale, so a member who switched the app to Irish would still be shown
+  dates in whatever language their phone is set to — and a bare 'en' is formatted as
+  US English (8/17/2026), not 17/08/2026. `scripts/check-date-locale.mjs` enforces
+  this and caught exactly this line on 2026-09-08.
+*/
 function formatRequestedAt(value: string | null | undefined): string {
   if (!value) return '';
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(dateLocale());
 }
 
 export default function GroupJoinRequestsCard({
