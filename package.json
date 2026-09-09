@@ -86,10 +86,10 @@
     "accessible-autocomplete": "^3.0.1"
   },
   "overrides": {
-    "@xmldom/xmldom": ">=0.8.13",
+    "@xmldom/xmldom": ">=0.9.12",
     "basic-ftp": ">=5.2.3",
     "esbuild": ">=0.28.1",
-    "js-yaml": "^4.2.0",
+    "js-yaml": "^4.3.2",
     "tar": ">=7.5.21"
   }
 }
