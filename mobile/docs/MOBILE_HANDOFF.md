@@ -189,8 +189,11 @@ here too, or links stay unverified for everyone who installed from Play.
 
 Follow the ordered backlog in the status document. The first four release gates are:
 
-1. Correct the live Play description's false absolute no-money claim; time-credit exchanges
-   use no money, while optional physical marketplace purchases may use Stripe.
+1. ~~Correct the live Play description's false absolute no-money claim.~~ **Already done —
+   verified against the live listing 2026-09-09.** Neither the short nor the full description
+   contains the "No money changes hands" wording any more; the full description opens
+   "trades time instead of money", which is accurate. This item had outlived the fix in three
+   documents. Do not re-raise it without reading the live listing first.
 2. ~~Close the organisation-deposit money-integrity gap.~~ Fixed 2026-08-27: both ledgers
    now commit atomically and the service regression suite checks wallet visibility and replay.
 3. ~~Commit and push the current candidate.~~ Done as `4c38d229a`; all six workflows are
@@ -289,6 +292,7 @@ status document's backlog.
 
 | Need | Source |
 | --- | --- |
+| 🔴 **Shipping a build to Play — order of operations, version codes, review timing, every silent trap** | [`PLAY_RELEASE_PROCEDURE.md`](PLAY_RELEASE_PROCEDURE.md) |
 | The 2026-09-07 audit — what was read, fixed and left open | [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md) |
 | Two-account emulator/device procedure | [`MOBILE_TEST_HARNESS.md`](MOBILE_TEST_HARNESS.md) |
 | Automated suites and gates | [`TESTING.md`](TESTING.md) |

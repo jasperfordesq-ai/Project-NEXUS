@@ -275,10 +275,13 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
 
 ## Ordered backlog before another Play build
 
-1. **Correct the live Play description.** Replace the absolute “No money changes hands and
-   nothing is ever put behind a payment” claim with the prepared distinction: time-credit
-   exchanges use no money; optional marketplace purchases are physical goods and may use
-   Stripe. This is a Console wording change, not an app build.
+1. ~~**Correct the live Play description.**~~ **Already done — verified against the live
+   listing on 2026-09-09** by reading both description fields in the Console. The absolute
+   “No money changes hands and nothing is ever put behind a payment” wording is gone; the
+   full description now opens “trades time instead of money”, which is true. The item
+   survived in three documents after the fix landed, which is why it kept being re-raised.
+   🔴 The four withheld Store-readiness points below are therefore stale too and should be
+   re-scored at the next audit.
 2. ~~**Close the organisation-deposit ledger gap.**~~ **Fixed and regression-tested
    2026-08-27.** `depositFromUser()` now writes the member's personal `transactions` row and
    the organisation ledger inside the same database transaction; the 19-test service suite

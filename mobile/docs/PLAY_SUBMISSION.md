@@ -502,10 +502,10 @@ risk acceptance, not a claim that `npm audit` is clean.
 - ~~**An encrypted/offline copy of the local EAS credential backup.**~~ **Completed
   2026-08-27**, including an unencrypted offline recovery copy, matching header-encrypted
   offline/cloud archives, byte comparisons, a passworded integrity test and recovery notes.
-- **Correct the live full description before another release.** It currently says “No money
-  changes hands and nothing is ever put behind a payment”, which contradicts optional
-  purchases of physical marketplace goods. Use the truthful prepared paragraph above:
-  time-credit exchanges involve no money; physical-goods payments may use Stripe.
+- ~~**Correct the live full description before another release.**~~ **Done, and verified
+  against the live listing 2026-09-09.** The “No money changes hands and nothing is ever put
+  behind a payment” wording is no longer present in either the short or the full
+  description. Read the live fields in the Console before re-raising this.
 - ~~**Bank the current working tree and confirm CI.**~~ Done 2026-08-27 as `4c38d229a`;
   all six workflows are green. This banks source/test evidence, not a new Play artefact.
 - Nothing on crash reporting. Project, DSN, cloud build variables, source-map upload and
