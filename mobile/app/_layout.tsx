@@ -11,7 +11,7 @@ import { Stack, router, usePathname } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
 import { markAppReady } from '@/lib/startupTiming';
 import { registerLegalAcceptanceRequiredCallback, registerTenantMismatchCallback } from '@/lib/api/client';
@@ -26,6 +26,7 @@ import { AuthProvider, useAuthContext } from '@/lib/context/AuthContext';
 import { TenantProvider, useTenantContext } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
 import BiometricLockGate from '@/components/BiometricLockGate';
+import OfflineBanner from '@/components/OfflineBanner';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import SessionNoticeHost from '@/components/ui/SessionNoticeHost';
 import SessionRestoreGate from '@/components/SessionRestoreGate';
@@ -246,13 +247,46 @@ function ThemedShell() {
   const { navTheme, scheme } = useNavigationTheme();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const [offlineBannerHeight, setOfflineBannerHeight] = useState(0);
+
+  /*
+    🔴 One offline banner for the whole app, instead of five.
+
+    `OfflineBanner` existed and was mounted by hand on fourteen screens out of a hundred and
+    seventy — the tabs, plus five forms and the message thread. On the other hundred and
+    fifty-six a lost connection was indistinguishable from a server fault: the member saw
+    "something went wrong", not "you are offline". Audit 2026-09-09, item 8.
+
+    🔴 It must not COVER anything, which is the whole reason for the inset override below.
+    Screens position their own content with `insets.top`, so a banner drawn over the top of
+    the window would sit on the back button of every screen behind it. Adding the banner's
+    measured height to the top inset reported to everything beneath makes each screen start
+    below it, exactly as if the status bar were taller. The height is measured rather than
+    assumed because the banner's text grows with the OS text-size setting.
+
+    Mounted here rather than in `RootLayout` so it is inside the theme, and after the status
+    bar strip in paint order so a scrolled row cannot pass in front of it.
+  */
+  const shellInsets = useMemo(
+    () => (offlineBannerHeight > 0 ? { ...insets, top: insets.top + offlineBannerHeight } : insets),
+    [insets, offlineBannerHeight],
+  );
 
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <ThemeProvider value={navTheme}>
-        <RootNavigator />
+        <SafeAreaInsetsContext.Provider value={shellInsets}>
+          <RootNavigator />
+        </SafeAreaInsetsContext.Provider>
       </ThemeProvider>
+
+      <View
+        style={{ position: 'absolute', top: insets.top, left: 0, right: 0 }}
+        onLayout={(event) => setOfflineBannerHeight(event.nativeEvent.layout.height)}
+      >
+        <OfflineBanner />
+      </View>
       {/*
         🔴 The strip behind the status bar. Without it, scrolled content passes
         BEHIND the clock and battery icons with nothing between them, so a member's

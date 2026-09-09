@@ -34,7 +34,6 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import NativePressable from '@/components/ui/NativePressable';
-import OfflineBanner from '@/components/OfflineBanner';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import { formatDecimal } from '@/lib/utils/decimal';
@@ -146,7 +145,6 @@ function ExploreScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
-      <OfflineBanner />
       <ScrollView
         className="flex-1"
         style={{ flex: 1 }}

@@ -29,7 +29,6 @@ import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import ExchangeCard from '@/components/ExchangeCard';
-import OfflineBanner from '@/components/OfflineBanner';
 import SearchInput from '@/components/ui/SearchInput';
 import { ExchangeCardSkeleton } from '@/components/ui/Skeleton';
 import AccentIcon from '@/components/ui/AccentIcon';
@@ -596,7 +595,6 @@ function ExchangesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-      <OfflineBanner />
 
       <View className="px-4 pb-2 pt-3">
         {pinnedSearch}

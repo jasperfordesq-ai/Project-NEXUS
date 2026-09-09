@@ -23,7 +23,6 @@ import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import FeedItem, { type FeedCommentTarget, type FeedReactorsTarget } from '@/components/FeedItem';
 import CommentSheet from '@/components/comments/CommentSheet';
 import ReactorsSheet from '@/components/reactions/ReactorsSheet';
-import OfflineBanner from '@/components/OfflineBanner';
 import PushPermissionCard from '@/components/PushPermissionCard';
 import TenantBanner from '@/components/TenantBanner';
 import { FeedItemSkeleton } from '@/components/ui/Skeleton';
@@ -201,7 +200,6 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <TenantBanner />
-      <OfflineBanner />
 
       <FlatList<FeedItemType>
         testID="feed-list"

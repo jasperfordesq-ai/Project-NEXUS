@@ -21,7 +21,6 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import AppTopBar from '@/components/ui/AppTopBar';
-import OfflineBanner from '@/components/OfflineBanner';
 import EmptyState from '@/components/ui/EmptyState';
 import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
@@ -324,8 +323,6 @@ function GroupsScreen() {
           },
         }}
       />
-
-      <OfflineBanner />
 
       <FlatList<ApiGroup>
         data={groups}

@@ -27,7 +27,6 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
-import OfflineBanner from '@/components/OfflineBanner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
 function ChangePasswordScreenInner() {
@@ -97,7 +96,6 @@ function ChangePasswordScreenInner() {
           contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 12 }}
           keyboardShouldPersistTaps="handled"
         >
-          <OfflineBanner />
 
           <HeroCard className="overflow-hidden rounded-panel p-0">
             <View className="h-1.5" style={{ backgroundColor: primary }} />

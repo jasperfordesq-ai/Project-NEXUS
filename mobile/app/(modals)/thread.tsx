@@ -44,7 +44,6 @@ import Avatar from '@/components/ui/Avatar';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import OfflineBanner from '@/components/OfflineBanner';
 import VoiceMessageBubble from '@/components/VoiceMessageBubble';
 import { resolveMediaUrl } from '@/lib/utils/resolveImageUrl';
 import { ApiResponseError, authenticatedMediaRequest } from '@/lib/api/client';
@@ -818,7 +817,6 @@ function ThreadScreenInner() {
   return (
     <SafeAreaView testID="thread-screen" className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
       <AppTopBar title={threadTitle} backLabel={t('common:back')} fallbackHref="/(tabs)/messages" />
-      <OfflineBanner />
       <KeyboardAvoidingView
         className="flex-1"
         style={{ flex: 1, backgroundColor: theme.bg }}

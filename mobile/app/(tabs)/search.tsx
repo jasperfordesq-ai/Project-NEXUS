@@ -39,7 +39,6 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
-import OfflineBanner from '@/components/OfflineBanner';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type FilterOption = SearchResultType | 'all';
@@ -317,8 +316,6 @@ function SearchScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
-
-      <OfflineBanner />
 
       {/* Results */}
       <FlatList<SearchResult>

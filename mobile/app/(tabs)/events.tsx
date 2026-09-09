@@ -29,7 +29,6 @@ import { EventCardSkeleton } from '@/components/ui/Skeleton';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatEventSchedule } from '@/lib/utils/eventDateTime';
-import OfflineBanner from '@/components/OfflineBanner';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function extractEventsPage(r: CanonicalEventsResponse) {
@@ -92,7 +91,6 @@ function EventsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-      <OfflineBanner />
       {error && items.length === 0 ? (
         <View className="flex-1">
           <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={items.length} isLoading={isLoading} />

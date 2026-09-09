@@ -23,7 +23,6 @@ import MemberCard from '@/components/MemberCard';
 import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
 import AppTopBar from '@/components/ui/AppTopBar';
-import OfflineBanner from '@/components/OfflineBanner';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function MemberCardSkeleton() {
@@ -81,7 +80,6 @@ function MembersScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('title')} backLabel={t('back')} fallbackHref="/(tabs)/home" />
-      <OfflineBanner />
       <FlatList<Member>
         data={items}
         keyExtractor={(item) => String(item.id)}

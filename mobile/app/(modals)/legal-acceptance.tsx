@@ -26,7 +26,6 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import OfflineBanner from '@/components/OfflineBanner';
 
 /**
  * The legal acceptance screen.
@@ -114,7 +113,6 @@ function LegalAcceptanceScreenInner() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
-        <OfflineBanner />
 
         <HeroCard className="overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: primary }} />

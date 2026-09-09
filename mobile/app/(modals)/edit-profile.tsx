@@ -36,7 +36,6 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
-import OfflineBanner from '@/components/OfflineBanner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -270,7 +269,6 @@ function EditProfileScreenInner() {
           contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 116, gap: 12 }}
           keyboardShouldPersistTaps="handled"
         >
-          <OfflineBanner />
 
           <HeroCard variant="default" className="overflow-hidden">
             <View className="h-1 w-full" style={{ backgroundColor: primary }} />

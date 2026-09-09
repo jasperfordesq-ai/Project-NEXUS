@@ -31,7 +31,6 @@ import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
-import OfflineBanner from '@/components/OfflineBanner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Input from '@/components/ui/Input';
 import AccentIcon from '@/components/ui/AccentIcon';
@@ -365,7 +364,6 @@ function NewExchangeModalInner() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }}
           keyboardShouldPersistTaps="handled"
         >
-          <OfflineBanner />
 
           <HeroCard variant="default" className="overflow-hidden">
             <View style={{ height: 4, backgroundColor: primary }} />

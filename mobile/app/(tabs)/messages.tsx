@@ -29,7 +29,6 @@ import { ConversationSkeleton } from '@/components/ui/Skeleton';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
-import OfflineBanner from '@/components/OfflineBanner';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function extractConversationsPage(response: ConversationListResponse) {
@@ -253,7 +252,6 @@ function MessagesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-      <OfflineBanner />
       <FlatList<Conversation>
         data={filteredConversations}
         keyExtractor={(item) => String(item.id)}

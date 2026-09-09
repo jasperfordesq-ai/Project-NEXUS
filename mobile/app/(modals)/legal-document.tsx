@@ -17,7 +17,6 @@ import { withAlpha } from '@/lib/utils/color';
 import { isNotYetInForce, legalDateOnly, parseLegalContent } from '@/lib/utils/legalText';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import OfflineBanner from '@/components/OfflineBanner';
 
 /**
  * Read one legal document in full.
@@ -73,7 +72,6 @@ function LegalDocumentScreenInner() {
         fallbackHref="/(modals)/legal-acceptance"
       />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48, gap: 12 }}>
-        <OfflineBanner />
 
         {isLoading ? (
           <View className="items-center py-8">
