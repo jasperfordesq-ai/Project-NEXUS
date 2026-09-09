@@ -145,7 +145,22 @@
     "discard": "Descartar",
     "loadError": "No se han podido cargar tus cursos.",
     "unpublishConfirmTitle": "¿Retirar este curso?",
-    "unpublishConfirmMessage": "{{title}} dejará de estar visible para todas las personas matriculadas hasta que lo vuelvas a publicar."
+    "unpublishConfirmMessage": "{{title}} dejará de estar visible para todas las personas matriculadas hasta que lo vuelvas a publicar.",
+    "eyebrow": "Formador",
+    "create_subtitle": "Configura primero los detalles del curso. El constructor del programa se desbloquea cuando el curso existe.",
+    "edit_subtitle": "Actualiza los detalles y luego construye o ajusta el programa más abajo.",
+    "section_basics": "Información básica",
+    "section_access": "Nivel y acceso",
+    "section_credits": "Créditos y requisitos previos",
+    "summary_level": "Nivel",
+    "summary_pacing": "Ritmo",
+    "footer_title": "¿Listo para guardar?",
+    "footer_missing": "Añade un título antes de guardar.",
+    "footer_ready": "Guarda los detalles y luego añade secciones y lecciones.",
+    "footer_ready_edit": "Tus cambios se guardan en el curso de inmediato.",
+    "title_required": "Ponle un título al curso.",
+    "credit_cost_hint": "Cuántos créditos de tiempo gasta un miembro para inscribirse. Deja 0 para un curso gratuito.",
+    "prerequisites_hint": "Opcional. Los números de identificación de los cursos que un miembro debe terminar primero, separados por comas."
   },
   "grading": {
     "title": "Calificación",

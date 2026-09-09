@@ -149,7 +149,22 @@
     "discard": "Cuir i leataobh",
     "loadError": "Níorbh fhéidir do chúrsaí a lódáil.",
     "unpublishConfirmTitle": "Bain an cúrsa seo anuas?",
-    "unpublishConfirmMessage": "Ní bheidh {{title}} le feiceáil ag aon duine atá cláraithe go dtí go bhfoilseoidh tú arís é."
+    "unpublishConfirmMessage": "Ní bheidh {{title}} le feiceáil ag aon duine atá cláraithe go dtí go bhfoilseoidh tú arís é.",
+    "eyebrow": "Teagascóir",
+    "create_subtitle": "Socraigh sonraí an chúrsa ar dtús. Osclaítear tógálaí an churaclaim nuair a bheidh an cúrsa ann.",
+    "edit_subtitle": "Nuashonraigh na sonraí, ansin tóg nó athraigh an curaclam thíos.",
+    "section_basics": "Bunsonraí an chúrsa",
+    "section_access": "Leibhéal agus rochtain",
+    "section_credits": "Creidmheasanna agus réamhriachtanais",
+    "summary_level": "Leibhéal",
+    "summary_pacing": "Luas",
+    "footer_title": "Réidh le sábháil?",
+    "footer_missing": "Cuir teideal leis roimh shábháil.",
+    "footer_ready": "Sábháil na sonraí, ansin cuir rannóga agus ceachtanna leis.",
+    "footer_ready_edit": "Sábhálfar d'athruithe sa chúrsa ar an toirt.",
+    "title_required": "Tabhair teideal don chúrsa.",
+    "credit_cost_hint": "Cé mhéad creidmheas ama a chaitheann ball le clárú. Fág ag 0 do chúrsa saor in aisce.",
+    "prerequisites_hint": "Roghnach. Uimhreacha aitheantais na gcúrsaí a chaithfidh ball a chríochnú ar dtús, scartha le camóga."
   },
   "grading": {
     "title": "Grádú",

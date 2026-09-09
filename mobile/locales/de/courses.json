@@ -143,7 +143,22 @@
     "discard": "Verwerfen",
     "loadError": "Deine Kurse konnten nicht geladen werden.",
     "unpublishConfirmTitle": "Kurs offline nehmen?",
-    "unpublishConfirmMessage": "{{title}} ist für alle Teilnehmenden nicht mehr sichtbar, bis du ihn wieder veröffentlichst."
+    "unpublishConfirmMessage": "{{title}} ist für alle Teilnehmenden nicht mehr sichtbar, bis du ihn wieder veröffentlichst.",
+    "eyebrow": "Kursleitung",
+    "create_subtitle": "Lege zuerst die Kursdetails fest. Der Lehrplan-Editor wird freigeschaltet, sobald der Kurs existiert.",
+    "edit_subtitle": "Aktualisiere die Details und baue oder passe den Lehrplan unten an.",
+    "section_basics": "Kurs-Grundlagen",
+    "section_access": "Niveau und Zugang",
+    "section_credits": "Zeitguthaben und Voraussetzungen",
+    "summary_level": "Niveau",
+    "summary_pacing": "Tempo",
+    "footer_title": "Bereit zum Speichern?",
+    "footer_missing": "Gib vor dem Speichern einen Titel ein.",
+    "footer_ready": "Speichere die Details und füge dann Abschnitte und Lektionen hinzu.",
+    "footer_ready_edit": "Deine Änderungen werden sofort im Kurs gespeichert.",
+    "title_required": "Gib dem Kurs einen Titel.",
+    "credit_cost_hint": "Wie viele Zeitguthaben ein Mitglied für die Anmeldung ausgibt. Für einen kostenlosen Kurs bei 0 lassen.",
+    "prerequisites_hint": "Optional. Die ID-Nummern der Kurse, die ein Mitglied zuerst abschließen muss, durch Kommas getrennt."
   },
   "grading": {
     "title": "Benotung",

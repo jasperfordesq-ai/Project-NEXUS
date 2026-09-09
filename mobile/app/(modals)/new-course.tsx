@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import * as Haptics from '@/lib/haptics';
@@ -24,6 +24,8 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import FeatureGate from '@/components/FeatureGate';
+import FormActionFooter from '@/components/ui/FormActionFooter';
+import { FormHero, FormSection, SummaryTile } from '@/components/ui/FormSection';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
 import { Chip } from '@/components/ui/StatusChip';
@@ -51,7 +53,6 @@ import {
   type CourseVisibility,
 } from '@/lib/api/courses';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -82,7 +83,6 @@ function NewCourseScreen() {
   const { t } = useTranslation(['courses', 'common']);
   const params = useLocalSearchParams<{ id?: string }>();
   const theme = useTheme();
-  const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
 
@@ -118,6 +118,8 @@ function NewCourseScreen() {
   const [categoryId, setCategoryId] = useState('');
   const [creditCost, setCreditCost] = useState('0');
   const [prerequisites, setPrerequisites] = useState('');
+  /** Shown under the title field, not only as a toast that fades before it is read. */
+  const [titleError, setTitleError] = useState<string | null>(null);
 
   /*
     🔴 A course description is long-form writing. Losing it to a stray Back is the same
@@ -233,6 +235,7 @@ function NewCourseScreen() {
 
   async function saveDetails() {
     if (!title.trim()) {
+      setTitleError(t('instructor.title_required'));
       showToast({ title: t('form.required'), variant: 'warning' });
       return;
     }
@@ -320,6 +323,13 @@ function NewCourseScreen() {
       : t('instructor.draft');
 
   const screenTitle = isEditing ? t('instructor.edit_course') : t('instructor.new_course');
+  const hasTitle = title.trim().length > 0;
+  const footerSubtitle = !hasTitle
+    ? t('instructor.footer_missing')
+    : isEditing ? t('instructor.footer_ready_edit') : t('instructor.footer_ready');
+  const selectedCategoryName = categoryId
+    ? categories.find((category) => String(category.id) === categoryId)?.name ?? t('instructor.no_category')
+    : t('instructor.no_category');
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
@@ -331,45 +341,56 @@ function NewCourseScreen() {
         {isLoading ? (
           <View className="flex-1 items-center justify-center"><LoadingSpinner /></View>
         ) : (
-          <ScrollView
-            className="flex-1"
-            style={{ flex: 1, backgroundColor: theme.bg }}
-            contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 48 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
-              <View className="h-1.5" style={{ backgroundColor: primary }} />
-              <HeroCard.Body className="gap-2 p-4">
-                <Text className="text-2xl font-bold" style={{ color: theme.text }}>{screenTitle}</Text>
+          <>
+            <ScrollView
+              className="flex-1"
+              style={{ flex: 1, backgroundColor: theme.bg }}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <FormHero
+                icon="school-outline"
+                eyebrow={t('instructor.eyebrow')}
+                title={screenTitle}
+                subtitle={isEditing ? t('instructor.edit_subtitle') : t('instructor.create_subtitle')}
+              >
+                <View className="mt-1 flex-row gap-2">
+                  <SummaryTile label={t('instructor.summary_level')} value={t(`level.${level}`)} />
+                  <SummaryTile label={t('instructor.summary_pacing')} value={t(`instructor.enrollment_${enrollmentType}`)} />
+                  <SummaryTile label={t('instructor.category_label')} value={selectedCategoryName} />
+                </View>
                 {isEditing ? (
-                  <View className="flex-row flex-wrap items-center gap-2">
-                    <Chip size="sm" variant="secondary"><Chip.Label>{statusChipLabel}</Chip.Label></Chip>
+                  <View className="gap-3">
+                    <View className="flex-row flex-wrap items-center gap-2">
+                      <Chip size="sm" variant="secondary"><Chip.Label>{statusChipLabel}</Chip.Label></Chip>
+                    </View>
+                    {status !== 'published' ? (
+                      <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                        {t('builder.publish_hint')}
+                      </Text>
+                    ) : null}
+                    <HeroButton variant={status === 'published' ? 'secondary' : 'primary'} isDisabled={isPublishing} onPress={() => void togglePublish()}>
+                      <HeroButton.Label>
+                        {status === 'published' ? t('instructor.unpublish') : t('instructor.publish')}
+                      </HeroButton.Label>
+                    </HeroButton>
                   </View>
                 ) : null}
-                {isEditing && status !== 'published' ? (
-                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-                    {t('builder.publish_hint')}
-                  </Text>
-                ) : null}
-                {isEditing ? (
-                  <HeroButton isDisabled={isPublishing} onPress={() => void togglePublish()}>
-                    <HeroButton.Label>
-                      {status === 'published' ? t('instructor.unpublish') : t('instructor.publish')}
-                    </HeroButton.Label>
-                  </HeroButton>
-                ) : null}
-              </HeroCard.Body>
-            </HeroCard>
+              </FormHero>
 
-            <HeroCard className="mb-4 rounded-panel">
-              <HeroCard.Body className="gap-4 p-4">
+              <FormSection title={t('instructor.section_basics')} icon="document-text-outline" testID="course-section-basics">
                 <Input
                   label={t('instructor.title_label')}
                   accessibilityLabel={t('instructor.title_label')}
                   value={title}
-                  onChangeText={setTitle}
+                  onChangeText={(value) => {
+                    setTitle(value);
+                    if (titleError) setTitleError(null);
+                  }}
+                  error={titleError ?? undefined}
                   style={{ color: theme.text }}
                   containerClassName="mb-0"
+                  testID="course-title"
                 />
                 <Input
                   label={t('instructor.summary_label')}
@@ -387,7 +408,9 @@ function NewCourseScreen() {
                   style={{ color: theme.text }}
                   containerClassName="mb-0"
                 />
+              </FormSection>
 
+              <FormSection title={t('instructor.section_access')} icon="people-outline" testID="course-section-access">
                 <ChoiceGroup
                   label={t('instructor.level_label')}
                   values={LEVELS}
@@ -403,6 +426,13 @@ function NewCourseScreen() {
                   labelFor={(value) => t(`instructor.visibility_${value}`)}
                 />
                 <ChoiceGroup
+                  label={t('instructor.enrollment_type_label')}
+                  values={ENROLLMENT_TYPES}
+                  selected={enrollmentType}
+                  onSelect={setEnrollmentType}
+                  labelFor={(value) => t(`instructor.enrollment_${value}`)}
+                />
+                <ChoiceGroup
                   label={t('instructor.category_label')}
                   values={[NO_CATEGORY, ...categories.map((category) => String(category.id))]}
                   selected={categoryId || NO_CATEGORY}
@@ -413,14 +443,9 @@ function NewCourseScreen() {
                       : categories.find((category) => String(category.id) === value)?.name ?? value
                   )}
                 />
-                <ChoiceGroup
-                  label={t('instructor.enrollment_type_label')}
-                  values={ENROLLMENT_TYPES}
-                  selected={enrollmentType}
-                  onSelect={setEnrollmentType}
-                  labelFor={(value) => t(`instructor.enrollment_${value}`)}
-                />
+              </FormSection>
 
+              <FormSection title={t('instructor.section_credits')} icon="time-outline" testID="course-section-credits">
                 <Input
                   label={t('instructor.credit_cost_label')}
                   accessibilityLabel={t('instructor.credit_cost_label')}
@@ -430,6 +455,7 @@ function NewCourseScreen() {
                   style={{ color: theme.text }}
                   containerClassName="mb-0"
                 />
+                <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('instructor.credit_cost_hint')}</Text>
                 <Input
                   label={t('instructor.prerequisites_label')}
                   accessibilityLabel={t('instructor.prerequisites_label')}
@@ -439,21 +465,15 @@ function NewCourseScreen() {
                   style={{ color: theme.text }}
                   containerClassName="mb-0"
                 />
+                <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('instructor.prerequisites_hint')}</Text>
+              </FormSection>
 
-                <HeroButton isDisabled={isSaving} onPress={() => void saveDetails()}>
-                  <HeroButton.Label>{isSaving ? t('quiz.submitting') : t('instructor.save')}</HeroButton.Label>
-                </HeroButton>
-              </HeroCard.Body>
-            </HeroCard>
+              {isEditing ? (
+                <View className="gap-4">
+                  <CourseBuilder courseId={courseId} initialSections={sections} />
 
-            {isEditing ? (
-              <View className="gap-4">
-                <CourseBuilder courseId={courseId} initialSections={sections} />
-
-                {enrollmentType === 'cohort' ? (
-                  <HeroCard className="rounded-panel">
-                    <HeroCard.Body className="gap-3 p-4">
-                      <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('builder.cohorts')}</Text>
+                  {enrollmentType === 'cohort' ? (
+                    <FormSection title={t('builder.cohorts')} icon="calendar-outline">
                       {cohorts.length > 0 ? (
                         cohorts.map((cohort) => (
                           <Text key={cohort.id} className="text-sm" style={{ color: theme.textSecondary }}>
@@ -482,25 +502,32 @@ function NewCourseScreen() {
                           {isAddingCohort ? t('builder.cohort_adding') : t('builder.add_cohort')}
                         </HeroButton.Label>
                       </HeroButton>
-                    </HeroCard.Body>
-                  </HeroCard>
-                ) : null}
+                    </FormSection>
+                  ) : null}
 
-                <View className="flex-row flex-wrap gap-2">
-                  <HeroButton
-                    size="sm"
-                    variant="secondary"
-                    onPress={() => router.push({ pathname: '/(modals)/course-detail', params: { id: String(courseId) } })}
-                  >
-                    <HeroButton.Label>{t('builder.preview_course')}</HeroButton.Label>
-                  </HeroButton>
-                  <HeroButton size="sm" variant="secondary" onPress={() => router.replace('/(modals)/course-instructor')}>
-                    <HeroButton.Label>{t('builder.done')}</HeroButton.Label>
-                  </HeroButton>
+                  <View className="flex-row flex-wrap gap-2">
+                    <HeroButton
+                      size="sm"
+                      variant="secondary"
+                      onPress={() => router.push({ pathname: '/(modals)/course-detail', params: { id: String(courseId) } })}
+                    >
+                      <HeroButton.Label>{t('builder.preview_course')}</HeroButton.Label>
+                    </HeroButton>
+                    <HeroButton size="sm" variant="secondary" onPress={() => router.replace('/(modals)/course-instructor')}>
+                      <HeroButton.Label>{t('builder.done')}</HeroButton.Label>
+                    </HeroButton>
+                  </View>
                 </View>
-              </View>
-            ) : null}
-          </ScrollView>
+              ) : null}
+            </ScrollView>
+            <FormActionFooter
+              title={t('instructor.footer_title')}
+              subtitle={footerSubtitle}
+              submitLabel={isSaving ? t('quiz.submitting') : t('instructor.save')}
+              isSubmitting={isSaving}
+              onSubmit={() => void saveDetails()}
+            />
+          </>
         )}
       </KeyboardAvoidingView>
       {confirmDialog}

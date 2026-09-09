@@ -109,6 +109,21 @@ jest.mock('@/lib/api/courses', () => ({
   createCourseQuiz: jest.fn(),
   createQuizQuestion: jest.fn(),
 }));
+jest.mock('@/components/ui/FormActionFooter', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return function MockFormActionFooter({ subtitle, submitLabel, isDisabled, onSubmit }: { subtitle: string; submitLabel: string; isDisabled?: boolean; onSubmit: () => void }) {
+    return (
+      <View>
+        <Text>{subtitle}</Text>
+        <Pressable accessibilityRole="button" testID="footer-submit" accessibilityState={{ disabled: !!isDisabled }} onPress={onSubmit}>
+          <Text>{submitLabel}</Text>
+        </Pressable>
+      </View>
+    );
+  };
+});
+
 jest.mock('heroui-native', () => {
   const ReactLib = require('react');
   const { Pressable, Text, TextInput, View } = require('react-native');

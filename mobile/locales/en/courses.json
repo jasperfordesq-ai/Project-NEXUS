@@ -143,7 +143,22 @@
     "discard": "Discard",
     "loadError": "Could not load your courses.",
     "unpublishConfirmTitle": "Take this course down?",
-    "unpublishConfirmMessage": "{{title}} will stop being visible to everyone enrolled until you publish it again."
+    "unpublishConfirmMessage": "{{title}} will stop being visible to everyone enrolled until you publish it again.",
+    "eyebrow": "Instructor",
+    "create_subtitle": "Set up the course details first. The curriculum builder unlocks once the course exists.",
+    "edit_subtitle": "Update the details, then build or adjust the curriculum below.",
+    "section_basics": "Course basics",
+    "section_access": "Level and access",
+    "section_credits": "Credits and prerequisites",
+    "summary_level": "Level",
+    "summary_pacing": "Pacing",
+    "footer_title": "Ready to save?",
+    "footer_missing": "Add a title before saving.",
+    "footer_ready": "Save the details, then add sections and lessons.",
+    "footer_ready_edit": "Your changes are saved to the course straight away.",
+    "title_required": "Give the course a title.",
+    "credit_cost_hint": "How many time credits a member spends to enrol. Leave at 0 for a free course.",
+    "prerequisites_hint": "Optional. The ID numbers of courses a member must finish first, separated by commas."
   },
   "grading": {
     "title": "Grading",
