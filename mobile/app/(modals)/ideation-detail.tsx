@@ -224,7 +224,8 @@ function IdeationDetailScreen() {
                     {t('ideation:submitIdea')}
                   </Text>
                   <Input label={t('ideation:ideaTitleLabel')} value={title} onChangeText={setTitle} placeholder={t('ideation:ideaTitlePlaceholder')} />
-                  <Input label={t('ideation:ideaDescriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('ideation:ideaDescriptionPlaceholder')} multiline numberOfLines={4} />
+                  {/* A real paragraph box: `numberOfLines` alone leaves the field one line tall on Android. */}
+                  <Input label={t('ideation:ideaDescriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('ideation:ideaDescriptionPlaceholder')} multiline numberOfLines={4} style={{ minHeight: 112, textAlignVertical: 'top' }} />
                   {statusMessage ? (
                     <Text className="text-sm" style={{ color: theme.textSecondary }}>
                       {statusMessage}

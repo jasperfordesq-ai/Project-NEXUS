@@ -1067,10 +1067,10 @@ function PodcastStudioScreen() {
                   <Input label={t('fields.episode_title')} maxLength={200} value={episodeForm.title} onChangeText={(title) => setEpisodeForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} containerClassName="mb-0" />
                   <View className="flex-row gap-3">
                     <View className="min-w-0 flex-1">
-                      <Input label={t('fields.episode_number')} keyboardType="number-pad" value={episodeForm.episodeNumber} onChangeText={(episodeNumber) => setEpisodeForm((prev) => ({ ...prev, episodeNumber }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                      <Input label={t('fields.episode_number')} containerClassName="mb-0 flex-1" keyboardType="number-pad" value={episodeForm.episodeNumber} onChangeText={(episodeNumber) => setEpisodeForm((prev) => ({ ...prev, episodeNumber }))} style={{ color: theme.text }} />
                     </View>
                     <View className="min-w-0 flex-1">
-                      <Input label={t('fields.season_number')} keyboardType="number-pad" value={episodeForm.seasonNumber} onChangeText={(seasonNumber) => setEpisodeForm((prev) => ({ ...prev, seasonNumber }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                      <Input label={t('fields.season_number')} containerClassName="mb-0 flex-1" keyboardType="number-pad" value={episodeForm.seasonNumber} onChangeText={(seasonNumber) => setEpisodeForm((prev) => ({ ...prev, seasonNumber }))} style={{ color: theme.text }} />
                     </View>
                   </View>
                   <ImageField label={t('fields.cover_image_file')} uri={episodeCoverUri} onPress={() => void pickImage(setEpisodeCoverUri)} theme={theme} />

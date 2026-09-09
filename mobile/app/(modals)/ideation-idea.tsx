@@ -214,7 +214,7 @@ function IdeationIdeaScreen() {
                 <HeroCard className="rounded-panel"><HeroCard.Body className="gap-3 p-5">
                   {isEditing ? <>
                     <Input label={t('ideation:form.title_label')} value={editTitle} onChangeText={setEditTitle} />
-                    <Input label={t('ideation:form.description_label')} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={6} />
+                    <Input label={t('ideation:form.description_label')} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={6} style={{ minHeight: 132, textAlignVertical: 'top' }} />
                     <View className="flex-row gap-2">
                       <HeroButton className="flex-1" variant="secondary" onPress={() => setIsEditing(false)}><HeroButton.Label>{t('ideation:form.cancel')}</HeroButton.Label></HeroButton>
                       <HeroButton className="flex-1" isDisabled={isSaving || !editTitle.trim() || !editDescription.trim()} onPress={() => void saveIdea()}><HeroButton.Label>{isSaving ? t('ideation:form.saving') : t('ideation:form.save')}</HeroButton.Label></HeroButton>
@@ -243,7 +243,7 @@ function IdeationIdeaScreen() {
 
                 <HeroCard className="rounded-panel"><HeroCard.Body className="gap-3 p-5">
                   <Text accessibilityRole="header" className="text-lg font-bold" style={{ color: theme.text }}>{t('ideation:comments.title')}</Text>
-                  <Input label={t('ideation:comments.add_label')} value={comment} onChangeText={setComment} placeholder={t('ideation:comments.add_placeholder')} multiline numberOfLines={3} />
+                  <Input label={t('ideation:comments.add_label')} value={comment} onChangeText={setComment} placeholder={t('ideation:comments.add_placeholder')} multiline numberOfLines={3} style={{ minHeight: 88, textAlignVertical: 'top' }} />
                   <HeroButton isDisabled={!comment.trim() || isPosting} onPress={() => void postComment()}><HeroButton.Label>{isPosting ? t('ideation:form.saving') : t('ideation:comments.add_button')}</HeroButton.Label></HeroButton>
                   {commentsState.isLoading && !commentsState.data ? <LoadingSpinner /> : commentsState.error ? <EmptyState icon="warning-outline" title={t('ideation:comments.load_error')} subtitle={commentsState.error} actionLabel={t('ideation:actions.retry')} onAction={commentsState.refresh} /> : (commentsState.data?.items.length ?? 0) === 0 ? <EmptyState icon="chatbubble-outline" title={t('ideation:comments.empty_title')} subtitle={t('ideation:comments.empty_description')} /> : commentsState.data?.items.map((item) => (
                     <View key={item.id} className="gap-1 border-t border-divider py-3">
