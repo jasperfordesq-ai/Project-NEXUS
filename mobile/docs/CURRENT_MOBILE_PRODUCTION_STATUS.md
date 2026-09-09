@@ -103,6 +103,37 @@ only when a device walk verifies the effect, and only gives full credit when an 
 guard can fail on regression. Rubric M1 measures demonstrated product behaviour, not the
 size of the test suite or the fact that the app has reached production distribution.
 
+## Visual and UX audit — 2026-09-09 (evening)
+
+The owner reported the Create Podcast, Course and Job forms as badly laid out, their option
+pickers as tiny and not visibly highlighted, and the Goals drawer as "completely
+malfunctioning", naming Create Listing as the form that looks right. Every finding was
+reproduced on the Android emulator (`nexus_test`, 411dp, dark scheme) before any change,
+and every fix was walked there afterwards. Prompt and notes:
+`.local-docs-archive/mobile-visual-ux-audit-prompt-2026-09-09.md`. Six commits.
+
+- **The pickers were systemic.** Eleven screens built them on HeroUI Native's
+  `TagGroup size="sm"` — about 20dp tall, selected state a pale tint over which every
+  screen painted `contrastText(primary)`, white on most communities. Replaced by the
+  shared `components/ui/ChoiceChips` (HeroUI `Button`, 44dp, full accent fill), and
+  `components/choiceChipsMigration.test.ts` keeps `TagGroup` out of the app.
+- **The Goals drawer really was broken.** Its Cancel / Create buttons were not rendered at
+  all (`HeroCard.Footer` has no row layout, so two `flex-1` buttons collapsed to zero
+  height) and the form had no scroll container. Nine other drawers used a plain
+  `ScrollView` the sheet swallows. The shared `BottomSheet` now has `scrollable` and
+  `footer`; 22 drawers migrated; on Android the wrapper lifts the footer above the
+  keyboard itself, because neither the window nor the sheet moves for it under this
+  app's root. Guard: `components/ui/sheetContentRules.test.ts`.
+- **Create Course, Create Job, Create Opportunity and Podcast Studio** now share Create
+  Listing's shape: hero card with summary tiles, titled sections
+  (`components/ui/FormSection`), sticky footer. 50 new strings in all seven locales;
+  `check:untranslated` stays at 0.
+- **Ideation** was walked (list, challenge detail with the idea form, new challenge) and
+  already followed the shape; its three paragraph fields were one line tall and now are not.
+
+Not verified on iOS — this machine cannot run the simulator. The full Jest suite is green
+(452 suites) and `type-check`, `lint` and `check:untranslated` pass. Nothing was pushed.
+
 ## Source audit — 2026-09-07
 
 A second full pass the day after the emulator audit, source-only, recorded in
