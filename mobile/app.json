@@ -175,8 +175,8 @@
         "applinks:app.project-nexus.ie"
       ],
       "infoPlist": {
-        "NSCameraUsageDescription": "Scan a marketplace QR code when you choose to use the scanner.",
-        "NSPhotoLibraryUsageDescription": "Choose a photo from your library for your profile or post.",
+        "NSCameraUsageDescription": "Scan a marketplace QR code or an event check-in code when you choose to open the scanner.",
+        "NSPhotoLibraryUsageDescription": "Choose photos and videos from your library for your profile picture, posts, listings, events, groups, marketplace items and organisation logo.",
         "NSMicrophoneUsageDescription": "Record a voice message when you choose to send one.",
         "CFBundleAllowMixedLocalizations": true,
         "UIBackgroundModes": ["audio"]
@@ -227,11 +227,18 @@
           "faceIDPermission": "Use Face ID to unlock the Timebank Global session already saved on this device."
         }
       ],
-      "expo-image-picker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose photos and videos from your library for your profile picture, posts, listings, events, groups, marketplace items and organisation logo.",
+          "cameraPermission": "Scan a marketplace QR code or an event check-in code when you choose to open the scanner.",
+          "microphonePermission": "Record a voice message when you choose to send one."
+        }
+      ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Timebank Global uses your location only when you choose to search nearby marketplace listings.",
+          "locationWhenInUsePermission": "Timebank Global uses your location only when you choose to find listings or marketplace items near you.",
           "locationAlwaysAndWhenInUsePermission": false,
           "locationAlwaysPermission": false,
           "isIosBackgroundLocationEnabled": false,
@@ -241,7 +248,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Timebank Global uses the camera only when you choose to scan marketplace QR codes."
+          "cameraPermission": "Timebank Global uses the camera only when you choose to scan a marketplace QR code or an event check-in code."
         }
       ],
       "expo-font",

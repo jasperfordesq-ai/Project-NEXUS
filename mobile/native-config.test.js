@@ -410,4 +410,82 @@ describe('native app configuration', () => {
     expect(networkConfig).not.toContain('localhost');
     expect(networkConfig).toContain('<base-config cleartextTrafficPermitted="false">');
   });
+
+  /**
+   * 🔴 Apple's review guideline 5.1.1 requires each purpose string to describe what the app
+   * actually does with the data, and a reviewer checks it against the running app. Three of
+   * ours described a narrower app than the one we ship: the camera string named only
+   * marketplace QR codes while the camera also scans event check-in codes; the photo-library
+   * string said "profile or post" while photos are chosen for listings, events, groups,
+   * marketplace items and organisation logos, and VIDEOS are chosen too; the location string
+   * named only nearby marketplace listings while the Listings tab uses location as well.
+   *
+   * These assertions tie each string to the code path that needs it. A new use of a
+   * protected resource fails here until its purpose string says so. Audit 2026-09-09, item 4.
+   */
+  describe('iOS purpose strings describe what the app really does', () => {
+    const appConfig = readJson('app.json');
+    const infoPlist = appConfig.expo.ios.infoPlist;
+
+    function pluginOptions(name) {
+      const entry = appConfig.expo.plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === name);
+      return entry ? entry[1] : null;
+    }
+
+    it('names both things the camera scans', () => {
+      // marketplace-tools.tsx scans marketplace QR codes; EventOfflineCheckinCard.tsx scans
+      // event check-in codes. Both reach the same permission.
+      for (const description of [infoPlist.NSCameraUsageDescription, pluginOptions('expo-camera').cameraPermission]) {
+        expect(description).toMatch(/marketplace/i);
+        expect(description).toMatch(/check-in/i);
+      }
+    });
+
+    it('says the photo library is used for videos too, not only a profile picture', () => {
+      const description = infoPlist.NSPhotoLibraryUsageDescription;
+      // group-detail.tsx and new-marketplace-listing.tsx both pick MediaType videos.
+      expect(description).toMatch(/video/i);
+      expect(description).toMatch(/listing/i);
+      expect(description).toMatch(/event/i);
+    });
+
+    it('says location serves listings as well as the marketplace', () => {
+      // exchanges.tsx (the Listings tab) requests foreground location, not just marketplace-map.tsx.
+      const description = pluginOptions('expo-location').locationWhenInUsePermission;
+      expect(description).toMatch(/listing/i);
+      expect(description).toMatch(/marketplace/i);
+      /*
+        🔴 The two assertions above are not enough on their own, and the control run proved
+        it: the old string, "search nearby marketplace listings", contains both words and
+        passed. "Marketplace listings" is a single noun phrase naming ONE use — it is exactly
+        the claim that was too narrow, because timebank listings are a separate thing found
+        by the same permission. The two uses have to read as two.
+      */
+      expect(description).not.toMatch(/marketplace listings/i);
+    });
+
+    it('configures expo-image-picker explicitly rather than relying on plugin precedence', () => {
+      /*
+        Left unconfigured, the plugin contributes Expo's own generic defaults ("Allow
+        $(PRODUCT_NAME) to access your photos"). Today `applyPermissions` lets an existing
+        infoPlist value win, so ours survived — but that is a precedence rule inside a
+        dependency, not a decision of ours, and plugin order decides the camera string
+        already. Setting all three here makes the shipped text ours whatever the order.
+      */
+      const options = pluginOptions('expo-image-picker');
+      expect(options).toBeTruthy();
+      expect(options.photosPermission).toBe(infoPlist.NSPhotoLibraryUsageDescription);
+      expect(options.microphonePermission).toBe(infoPlist.NSMicrophoneUsageDescription);
+      expect(options.cameraPermission).toBe(infoPlist.NSCameraUsageDescription);
+    });
+
+    it('leaves no purpose string as Expo\'s placeholder', () => {
+      const strings = Object.entries(infoPlist).filter(([key]) => key.endsWith('UsageDescription'));
+      expect(strings.length).toBeGreaterThan(0);
+      for (const [, description] of strings) {
+        expect(description).not.toMatch(/\$\(PRODUCT_NAME\)/);
+        expect(description.length).toBeGreaterThan(30);
+      }
+    });
+  });
 });
