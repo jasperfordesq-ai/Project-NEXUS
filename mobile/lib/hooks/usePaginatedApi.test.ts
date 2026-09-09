@@ -335,3 +335,113 @@ describe('usePaginatedApi — machine-readable failure detail', () => {
 
 // The hook translates its fallback error; return the key so the assertion is locale-free.
 jest.mock('i18next', () => ({ __esModule: true, default: { t: (key: string) => key } }));
+
+// ---------------------------------------------------------------------------
+// De-duplication — audit 2026-09-09, item 5
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 Pages were appended with `[...prev, ...newItems]` and nothing checked whether a row
+ * was already on the list. Cursor pagination runs over a list the server keeps re-ordering,
+ * so a post written between two page fetches — or a refresh racing a load-more — hands the
+ * same row over twice. React then finds two children with the same key and renders one of
+ * them unpredictably: a row shown twice, or one that disappears when its twin arrives.
+ *
+ * Nothing reported it because the platform's two warnings for exactly this were both in
+ * `LogBox.ignoreLogs` in app/_layout.tsx. Those suppressions are gone; `app/_layout.test.tsx`
+ * keeps them gone.
+ */
+describe('usePaginatedApi — a row cannot appear twice', () => {
+  interface Row { id: number; label: string }
+
+  function rowsResponse(rows: Row[], cursor: string | null, hasMore: boolean) {
+    return { data: rows, meta: { cursor, has_more: hasMore } };
+  }
+
+  function rowExtractor(r: { data: Row[]; meta: { cursor: string | null; has_more: boolean } }) {
+    return { items: r.data, cursor: r.meta.cursor, hasMore: r.meta.has_more };
+  }
+
+  it('drops a row the next page repeats', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce(rowsResponse([{ id: 1, label: 'a' }, { id: 2, label: 'b' }], 'c1', true))
+      // The server has re-ordered since page one, so row 2 arrives again.
+      .mockResolvedValueOnce(rowsResponse([{ id: 2, label: 'b' }, { id: 3, label: 'c' }], null, false));
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, rowExtractor));
+    await waitFor(() => expect(result.current.items).toHaveLength(2));
+
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.isLoadingMore).toBe(false));
+
+    expect(result.current.items.map((row) => row.id)).toEqual([1, 2, 3]);
+  });
+
+  it('drops a row a single page repeats within itself', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(rowsResponse([{ id: 1, label: 'a' }, { id: 1, label: 'a' }], null, false));
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, rowExtractor));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.items).toHaveLength(1);
+  });
+
+  it('keeps rows that carry no id, rather than throwing them away', async () => {
+    // Losing a row because we cannot identify it would be worse than showing one twice.
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(rowsResponse([{ label: 'x' } as Row, { label: 'y' } as Row], null, false));
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, rowExtractor));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.items).toHaveLength(2);
+  });
+
+  it('uses a caller-supplied key when id alone is not identity', async () => {
+    // The feed's case: a post and a listing can share a number, so the pair is the key.
+    interface FeedRow { id: number; type: string }
+    const page = {
+      data: [
+        { id: 1, type: 'post' },
+        { id: 1, type: 'listing' },
+        { id: 1, type: 'post' },
+      ] as FeedRow[],
+      meta: { cursor: null, has_more: false },
+    };
+    const fetchFn = jest.fn().mockResolvedValue(page);
+
+    const { result } = renderHook(() =>
+      usePaginatedApi<FeedRow, typeof page>(
+        fetchFn,
+        (r) => ({ items: r.data, cursor: r.meta.cursor, hasMore: r.meta.has_more }),
+        undefined,
+        { getKey: (item) => `${item.type}-${item.id}` },
+      ),
+    );
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // The duplicate post goes; the listing that merely shares a number stays.
+    expect(result.current.items).toEqual([{ id: 1, type: 'post' }, { id: 1, type: 'listing' }]);
+  });
+
+  it('leaves the list untouched when an appended page is entirely duplicates', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValueOnce(rowsResponse([{ id: 1, label: 'a' }], 'c1', true))
+      .mockResolvedValueOnce(rowsResponse([{ id: 1, label: 'a' }], null, false));
+
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, rowExtractor));
+    await waitFor(() => expect(result.current.items).toHaveLength(1));
+    const before = result.current.items;
+
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.isLoadingMore).toBe(false));
+
+    // Same array reference: a page of nothing new must not re-render every row.
+    expect(result.current.items).toBe(before);
+  });
+});

@@ -80,12 +80,30 @@ configureNativeTheme();
   navigates immediately. So anything that raises a banner on a normal launch is a real
   problem, and the two below are here because they are known and accepted, not to hide them.
 */
+/*
+  🔴 THREE entries were removed on 2026-09-09 and must not come back:
+
+    'VirtualizedLists should never be nested'
+    'Each child in a list should have a unique'
+    'Encountered two children with the same key'
+
+  The last two are the platform's only warning for a duplicated row, and
+  `usePaginatedApi` appended pages without de-duplicating them — so cursor pagination
+  over a list the server re-orders (a post written between two page fetches, a refresh
+  racing a load-more) handed React two children with the same key, and React rendered
+  one of them unpredictably. The warning that would have shown this was switched off,
+  which is why it survived. The hook now de-duplicates; if the warning ever fires again
+  it is a real defect and must be visible.
+
+  The first was checked rather than assumed. Every ScrollView nested near a FlatList in
+  this app is HORIZONTAL inside a vertical list's header, which React Native does not
+  warn about, and the only two vertical ones (marketplace-orders, marketplace-tools) are
+  inside bottom sheets and render `.map()` output, not a list. Nothing in the app can
+  raise it, so suppressing it only hid future mistakes.
+*/
 LogBox.ignoreLogs([
   'expo-notifications',
   'expo-av',
-  'VirtualizedLists should never be nested',
-  'Each child in a list should have a unique',
-  'Encountered two children with the same key',
   'Non-serializable values were found in the navigation state',
   // The session payload genuinely exceeds SecureStore's 2 KB advisory size and stores
   // fine; expo warns on every write. Accepted, not hidden — if the write ever does fail,

@@ -51,9 +51,63 @@ export interface PaginatedApiState<TItem> {
   refresh: () => void;
 }
 
-interface UsePaginatedApiOptions {
+interface UsePaginatedApiOptions<TItem> {
   /** When false, the initial fetch and later refresh/load-more calls are skipped. Defaults to true. */
   enabled?: boolean;
+  /**
+   * How to identify a row, so the same one cannot appear twice. Defaults to `item.id`.
+   *
+   * Pass this when rows have no `id`, or when identity is a pair — the feed keys on
+   * `type` and `id` together, because a post and a listing can share a number.
+   */
+  getKey?: (item: TItem) => string | number | null | undefined;
+}
+
+/** Default identity: the `id` field almost every row in this API carries. */
+function defaultKey(item: unknown): string | number | null | undefined {
+  return (item as { id?: string | number } | null)?.id;
+}
+
+/**
+ * Append `incoming` to `existing`, dropping any row already on the list.
+ *
+ * 🔴 Why this is needed, and why nobody saw it. Pagination here is by cursor over a list
+ * the server keeps re-ordering: a post written between two page fetches, or a refresh
+ * racing a load-more, hands the same row to the app twice. React then finds two children
+ * with the same key, warns, and renders one of them unpredictably — a row that appears
+ * twice, or one that vanishes when its twin arrives.
+ *
+ * The warning that would have made this obvious was in `LogBox.ignoreLogs` in
+ * app/_layout.tsx, alongside a second one for the same fault, so the only signal the
+ * platform gives was switched off. Both suppressions are gone. Audit 2026-09-09, item 5.
+ *
+ * A row whose key is null or undefined cannot be judged and is always kept: dropping rows
+ * because we cannot identify them would be a worse bug than showing one twice.
+ */
+function appendUnique<TItem>(
+  existing: readonly TItem[],
+  incoming: readonly TItem[],
+  getKey: (item: TItem) => string | number | null | undefined,
+): TItem[] {
+  const seen = new Set<string | number>();
+  for (const item of existing) {
+    const key = getKey(item);
+    if (key !== null && key !== undefined) seen.add(key);
+  }
+
+  const added: TItem[] = [];
+  for (const item of incoming) {
+    const key = getKey(item);
+    if (key === null || key === undefined) {
+      added.push(item);
+      continue;
+    }
+    if (seen.has(key)) continue;
+    seen.add(key);
+    added.push(item);
+  }
+
+  return added.length === 0 ? (existing as TItem[]) : [...existing, ...added];
 }
 
 /**
@@ -101,9 +155,15 @@ export function usePaginatedApi<TItem, TResponse>(
     hasMore: boolean;
   },
   deps?: DependencyList,
-  options?: UsePaginatedApiOptions,
+  options?: UsePaginatedApiOptions<TItem>,
 ): PaginatedApiState<TItem> {
   const enabled = options?.enabled ?? true;
+  /*
+    Held in a ref so a caller passing an inline arrow — which almost every caller does —
+    cannot change the identity of `fetchPage` on every render and restart the list.
+  */
+  const getKeyRef = useRef(options?.getKey ?? defaultKey);
+  getKeyRef.current = options?.getKey ?? defaultKey;
   const [items, setItems] = useState<TItem[]>([]);
   const [isLoading, setIsLoading] = useState(enabled);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -166,9 +226,10 @@ export function usePaginatedApi<TItem, TResponse>(
         cursorRef.current = nextCursor;
 
         if (isInitial) {
-          setItems(newItems);
+          // A first page can repeat a row within itself just as an appended one can.
+          setItems(appendUnique([], newItems, getKeyRef.current));
         } else {
-          setItems((prev) => [...prev, ...newItems]);
+          setItems((prev) => appendUnique(prev, newItems, getKeyRef.current));
         }
 
         setHasMore(more);

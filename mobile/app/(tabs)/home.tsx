@@ -99,7 +99,16 @@ export default function HomeScreen() {
   );
 
   const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
-    usePaginatedApi<FeedItemType, FeedResponse>(fetchFeed, extractFeedPage, [feedMode, filter, subFilter], { enabled: !feedUnavailable });
+    usePaginatedApi<FeedItemType, FeedResponse>(fetchFeed, extractFeedPage, [feedMode, filter, subFilter], {
+      enabled: !feedUnavailable,
+      /*
+        The feed is the one list where `id` alone is not identity: a post and a listing can
+        carry the same number, so the pair is the key. Deliberately the same expression as
+        `keyExtractor` below — if the two ever disagree, the list de-duplicates on one rule
+        and renders on another.
+      */
+      getKey: (item) => `${item.type}-${item.id}`,
+    });
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const wasRefreshingRef = useRef(false);
