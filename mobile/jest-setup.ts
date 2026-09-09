@@ -216,12 +216,20 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('@/components/OfflineBanner', () => () => null);
 jest.mock('@/components/TenantBanner', () => () => null);
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
-jest.mock('@/components/ui/Skeleton', () => ({
-  SkeletonBox: () => null,
-  FeedItemSkeleton: () => null,
-  ConversationSkeleton: () => null,
-  EventCardSkeleton: () => null,
-  ExchangeCardSkeleton: () => null,
-  ProfileSkeleton: () => null,
-  GroupCardSkeleton: () => null,
-}));
+/*
+  🔴 Derived from the real module's exports rather than listed by hand.
+
+  It used to be a hand-written list, and adding `ListSkeleton` to the real module broke four
+  suites across three screens: the mock had no such export, so the component resolved to
+  `undefined` and React failed with "Element type is invalid" — which points at the SCREEN,
+  not at this file, and gives no hint that a test-setup mock is the cause. Two of the four
+  failures did not even mention a skeleton (a missing RefreshControl, an empty state that
+  should not have rendered), because a broken subtree takes its siblings with it.
+
+  The old list had also drifted: it mocked `GroupCardSkeleton`, which the real module has
+  never exported. Reading the real exports fixes both problems permanently.
+*/
+jest.mock('@/components/ui/Skeleton', () => {
+  const actual = jest.requireActual('@/components/ui/Skeleton');
+  return Object.fromEntries(Object.keys(actual).map((name) => [name, () => null]));
+});
