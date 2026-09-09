@@ -170,6 +170,9 @@ function MarketplaceOffersScreen() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('offers.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <FlatList
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets
         data={offers.items}
         keyExtractor={(item) => String(item.id)}
         refreshControl={<RefreshControl refreshing={offers.isLoading && offers.items.length > 0} onRefresh={offers.refresh} tintColor={primary} colors={[primary]} />}

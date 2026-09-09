@@ -856,6 +856,9 @@ function JobAlertsPanel({
   return (
     <>
     <FlatList<JobAlert>
+      // iOS only: without it the keyboard covers the fields below. Android is already
+      // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+      automaticallyAdjustKeyboardInsets
       data={alerts}
       keyExtractor={(item) => String(item.id)}
       onRefresh={onRefresh}

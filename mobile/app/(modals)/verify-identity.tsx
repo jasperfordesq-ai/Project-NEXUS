@@ -229,6 +229,9 @@ function VerifyIdentityScreenInner() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('identity.page_title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/settings" />
       <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} tintColor={primary} colors={[primary]} />}
         contentContainerStyle={{ padding: 16, paddingBottom: 48, gap: 12 }}
       >

@@ -537,7 +537,10 @@ function EventCommunicationsScreenInner() {
         backLabel={t('common:back')}
         fallbackHref="/(tabs)/events"
       />
-      <ScrollView contentContainerClassName="gap-4 px-4 pb-10">
+      <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets contentContainerClassName="gap-4 px-4 pb-10">
         <Alert status="accent">
           <Alert.Indicator />
           <Alert.Content>

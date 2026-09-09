@@ -341,7 +341,10 @@ function OnboardingScreenInner() {
 
   return (
     <View className="flex-1 bg-background" style={{ backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 20, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
         <View className="mb-5 gap-2">
           <Text accessibilityRole="header" className="text-center text-2xl font-bold text-foreground">{t('page_title')}</Text>
           <Text className="text-center text-sm text-muted-foreground">{t('subtitle')}</Text>

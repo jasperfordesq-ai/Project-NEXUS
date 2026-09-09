@@ -269,7 +269,10 @@ function GoalDetailScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={t('detail.title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/goals" />
-        <ScrollView style={{ flex: 1, backgroundColor: theme.bg }} contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 40, gap: 12 }}>
+        <ScrollView
+          // iOS only: without it the keyboard covers the fields below. Android is already
+          // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+          automaticallyAdjustKeyboardInsets style={{ flex: 1, backgroundColor: theme.bg }} contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 40, gap: 12 }}>
           <HeroCard className="overflow-hidden rounded-panel p-0">
             <View className="h-1.5" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="gap-4 p-4">

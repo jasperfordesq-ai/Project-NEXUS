@@ -676,6 +676,9 @@ function VolunteeringOrgDashboardInner() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={org?.name ?? t('org.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
       <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets
         refreshControl={<RefreshControl refreshing={orgApi.isLoading || statsApi.isLoading} onRefresh={refreshAll} tintColor={primary} colors={[primary]} />}
         contentContainerClassName="gap-4 px-4 pb-8"
       >

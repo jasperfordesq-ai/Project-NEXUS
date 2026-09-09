@@ -190,7 +190,10 @@ function SettingsLinkedAccountsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('linkedAccounts.title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/settings" />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }} refreshControl={<RefreshControl refreshing={query.isLoading && Boolean(query.data)} onRefresh={query.refresh} tintColor={primary} colors={[primary]} />}>
+      <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }} refreshControl={<RefreshControl refreshing={query.isLoading && Boolean(query.data)} onRefresh={query.refresh} tintColor={primary} colors={[primary]} />}>
         <RefreshFailedNotice error={query.data ? query.error : null} onRetry={query.refresh} />
         <HeroCard className="overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: primary }} />

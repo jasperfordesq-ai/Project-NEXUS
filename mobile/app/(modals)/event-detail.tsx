@@ -510,6 +510,9 @@ function EventDetailScreenInner() {
       />
 
       <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets
         style={{ flex: 1, backgroundColor: theme.bg }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: footerReservedSpace, gap: 12 }}

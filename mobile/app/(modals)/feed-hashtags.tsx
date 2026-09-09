@@ -147,6 +147,9 @@ function FeedHashtagsScreen() {
           />
         ) : (
           <FlatList
+            // iOS only: without it the keyboard covers the fields below. Android is already
+            // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+            automaticallyAdjustKeyboardInsets
             data={displayHashtags}
             keyExtractor={(item) => item.tag}
             renderItem={renderHashtag}

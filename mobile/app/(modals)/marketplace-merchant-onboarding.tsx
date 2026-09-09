@@ -252,7 +252,10 @@ function MarketplaceMerchantOnboardingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('merchantOnboarding.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace-my-listings' as Href} />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132, gap: 12 }}>
+      <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132, gap: 12 }}>
         <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.border }}>
           <View className="h-1.5" style={{ backgroundColor: completed ? theme.success : primary }} />
           <HeroCard.Body className="gap-3 p-4">

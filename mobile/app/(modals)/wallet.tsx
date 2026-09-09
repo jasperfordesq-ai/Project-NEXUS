@@ -447,6 +447,9 @@ function WalletModalInner() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('title')} backLabel={t('back')} />
       <ScrollView
+        // iOS only: without it the keyboard covers the fields below. Android is already
+        // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
+        automaticallyAdjustKeyboardInsets
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         // Only a pull-to-refresh shows the indicator. On the initial load it floated over
         // the hero card's eyebrow text (emulator, 2026-09-05); the cards carry their own
