@@ -58,16 +58,34 @@ describe('CoursePlayerScreen', () => {
     expect(getByText('Mark as complete')).toBeTruthy();
   });
 
-  it('offers a retry when the course could not be loaded, instead of a dead end', async () => {
+  /**
+   * 🔴 This case pressed Retry after a 404 and asserted the course was fetched again. It
+   * passed, and it was pinning the fault: a course that was taken down, or one this member
+   * is not enrolled on, answers 404 every time. The button could never work. It now asserts
+   * the refusal is named as one, with the retry case moved to a genuine failure below.
+   */
+  it('says a course that is gone or not yours is unavailable, with no dead Retry', async () => {
     jest.mocked(getCourse).mockRejectedValue(new ApiResponseError(404, 'That course could not be found.'));
     jest.mocked(getCourseProgress).mockRejectedValue(new ApiResponseError(404, 'That course could not be found.'));
 
+    const { findByText, queryByText } = render(<CoursePlayerScreen />);
+
+    expect(await findByText('common:errors.notAvailableHint')).toBeTruthy();
+    expect(queryByText('Retry')).toBeNull();
+  });
+
+  it('offers a retry when the course genuinely failed to load, instead of a dead end', async () => {
+    jest.mocked(getCourse).mockRejectedValue(new ApiResponseError(500, 'Something went wrong.'));
+    jest.mocked(getCourseProgress).mockRejectedValue(new ApiResponseError(500, 'Something went wrong.'));
+
     const { getByText } = render(<CoursePlayerScreen />);
 
-    await waitFor(() => expect(getByText('That course could not be found.')).toBeTruthy());
+    // useApi retries a 5xx once after 2s before surfacing it.
+    await waitFor(() => expect(getByText('Something went wrong.')).toBeTruthy(), { timeout: 6000 });
     expect(getByText('Retry')).toBeTruthy();
+    const before = jest.mocked(getCourse).mock.calls.length;
     fireEvent.press(getByText('Retry'));
-    await waitFor(() => expect(jest.mocked(getCourse).mock.calls.length).toBeGreaterThan(1));
+    await waitFor(() => expect(jest.mocked(getCourse).mock.calls.length).toBeGreaterThan(before));
   });
 
   /*

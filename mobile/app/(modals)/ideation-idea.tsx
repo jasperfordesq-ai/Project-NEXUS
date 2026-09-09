@@ -28,6 +28,7 @@ import {
   voteIdeationIdea,
 } from '@/lib/api/ideation';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
@@ -179,7 +180,7 @@ function IdeationIdeaScreen() {
   }
 
   const ideaRefused = Boolean(ideaState.error)
-    && (ideaState.errorStatus === 401 || ideaState.errorStatus === 403 || ideaState.errorStatus === 404);
+    && isRefusalStatus(ideaState.errorStatus);
 
   const fallback = challengeId > 0
     ? ({ pathname: '/(modals)/ideation-detail', params: { id: String(challengeId) } } as unknown as Href)

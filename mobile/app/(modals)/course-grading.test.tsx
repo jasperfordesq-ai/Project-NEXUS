@@ -244,17 +244,34 @@ describe('CourseGradingRoute', () => {
     await waitFor(() => expect(getByText('Nothing to grade right now.')).toBeTruthy());
   });
 
-  it('offers a retry when the queue fails to load', async () => {
+  /**
+   * 🔴 This case used to press Retry after a 403 and assert it worked, because the mock
+   * was changed to succeed in between. Against the real server it never could: grading is
+   * course-owner-only, so somebody who is not the instructor gets the same 403 for ever.
+   * The test was pinning the fault. It now asserts the refusal is named as one.
+   */
+  it('says a grading queue that is not yours is unavailable, with no dead Retry', async () => {
     // A 403 is deliberately NOT one of `useApi`'s retryable statuses, so the failure
     // surfaces immediately instead of after its 2s single-retry timer.
     mockGetCourseGradingQueue.mockRejectedValue(new ApiResponseError(403, 'Only the author can grade.'));
 
-    const { getByText } = render(<CourseGradingRoute />);
+    const { getByTestId, queryByText } = render(<CourseGradingRoute />);
 
-    await waitFor(() => expect(getByText('Only the author can grade.')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('course-grading-refused')).toBeTruthy());
+    expect(queryByText('Retry')).toBeNull();
+  });
+
+  it('still offers a retry for a server failure, which retrying can fix', async () => {
+    mockGetCourseGradingQueue.mockRejectedValue(new ApiResponseError(500, 'Something went wrong.'));
+
+    const { getByText, queryByTestId } = render(<CourseGradingRoute />);
+
+    // useApi retries a 5xx once after 2s before surfacing it.
+    await waitFor(() => expect(getByText('Something went wrong.')).toBeTruthy(), { timeout: 5000 });
+    expect(queryByTestId('course-grading-refused')).toBeNull();
+
     mockGetCourseGradingQueue.mockResolvedValue([attempt]);
     fireEvent.press(getByText('Retry'));
-
     await waitFor(() => expect(getByText('Maura Byrne')).toBeTruthy());
   });
 });

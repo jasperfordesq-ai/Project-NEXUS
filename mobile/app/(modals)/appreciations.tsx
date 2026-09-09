@@ -30,6 +30,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
 
 const REACTIONS: { key: AppreciationReactionType; icon: keyof typeof Ionicons.glyphMap }[] = [
@@ -65,11 +66,14 @@ function AppreciationsScreenInner() {
   const [items, setItems] = useState<Appreciation[]>([]);
   const [isReacting, setIsReacting] = useState<number | null>(null);
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getUserAppreciations(userId, page, 20),
     [userId, page],
     { enabled: userId.trim().length > 0 },
   );
+  /* 🔴 A member whose profile is private, or who has left, answers 403/404 — a Retry
+     there is a button that can never work. */
+  const refused = isRefusalStatus(errorStatus);
 
   useEffect(() => {
     if (!data?.data) return;
@@ -176,8 +180,9 @@ function AppreciationsScreenInner() {
                 icon={error ? 'warning-outline' : 'chatbubble-ellipses-outline'}
                 title={error ? t('appreciations.errorTitle') : t('appreciations.emptyTitle')}
                 subtitle={error ?? t('appreciations.emptySubtitle')}
-                actionLabel={error ? t('common:buttons.retry') : undefined}
-                onAction={error ? handleRefresh : undefined}
+                // 🔴 A private profile answers 403/404 — no Retry can clear that.
+                actionLabel={error && !refused ? t('common:buttons.retry') : undefined}
+                onAction={error && !refused ? handleRefresh : undefined}
               />
             </Surface>
           )

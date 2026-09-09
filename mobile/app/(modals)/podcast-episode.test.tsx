@@ -36,6 +36,7 @@ jest.mock('@/components/ui/ActionSheet', () => () => null);
 jest.mock('@/lib/api/podcasts', () => ({ getPodcastEpisode: jest.fn(), togglePodcastReaction: jest.fn(), reportPodcastEpisode: jest.fn() }));
 
 import PodcastEpisodeScreen from './podcast-episode';
+import { ApiResponseError } from '@/lib/api/client';
 import { getPodcastEpisode, togglePodcastReaction } from '@/lib/api/podcasts';
 
 describe('PodcastEpisodeScreen', () => {
@@ -62,5 +63,25 @@ describe('PodcastEpisodeScreen', () => {
     fireEvent.press(getByText('React'));
     await waitFor(() => expect(togglePodcastReaction).toHaveBeenCalledWith(8));
     expect(getByText('Reacted')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 An episode in a private show, or one that was taken down, answers 403/404. That was
+   * rendered as "could not load" with a Try again the member could press for ever — the
+   * server had understood perfectly and said no.
+   */
+  it('says an episode that is gone or not shared is unavailable, with no dead Retry', async () => {
+    jest.mocked(getPodcastEpisode).mockRejectedValue(new ApiResponseError(403, 'Forbidden'));
+    const { findByText, queryByText } = render(<PodcastEpisodeScreen />);
+    expect(await findByText('common:errors.notAvailableTitle')).toBeTruthy();
+    expect(queryByText('episode.retry')).toBeNull();
+  });
+
+  it('still offers a retry for a server failure, which retrying can fix', async () => {
+    jest.mocked(getPodcastEpisode).mockRejectedValue(new ApiResponseError(500, 'Server error'));
+    // useApi retries a 5xx once after 2s before surfacing it.
+    const { findByText, queryByText } = render(<PodcastEpisodeScreen />);
+    expect(await findByText('episode.retry', {}, { timeout: 5000 })).toBeTruthy();
+    expect(queryByText('common:errors.notAvailableTitle')).toBeNull();
   });
 });

@@ -36,6 +36,7 @@ import Toggle from '@/components/ui/Toggle';
 import { useAppToast } from '@/components/ui/AppToast';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import {
   gradeCourseAttempt,
   getCourseGradingQueue,
@@ -88,7 +89,7 @@ function CourseGradingScreen() {
   const courseId = Number(params.id);
   const hasCourse = Number.isFinite(courseId) && courseId > 0;
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getCourseGradingQueue(courseId),
     [courseId],
     { enabled: hasCourse },
@@ -121,6 +122,18 @@ function CourseGradingScreen() {
         <View className="py-12">
           <LoadingSpinner />
         </View>
+      );
+    }
+    /* 🔴 Grading is course-owner-only, so somebody who is not the instructor — or who
+       stopped being one — gets 403 here, and a Retry could never clear it. */
+    if (isRefusalStatus(errorStatus)) {
+      return (
+        <EmptyState
+          icon="lock-closed-outline"
+          title={t('common:errors.notAvailableTitle')}
+          subtitle={t('common:errors.notAvailableHint')}
+          testID="course-grading-refused"
+        />
       );
     }
     if (error) {

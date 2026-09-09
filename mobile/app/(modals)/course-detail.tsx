@@ -17,6 +17,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { Chip } from '@/components/ui/StatusChip';
 import { enrollInCourse, getCourse } from '@/lib/api/courses';
@@ -33,7 +34,10 @@ function CourseDetailScreen() {
   const { show } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [enrolling, setEnrolling] = useState(false);
-  const { data: course, isLoading, error, refresh } = useApi(() => getCourse(id || ''), [id], { enabled: Boolean(id) });
+  const { data: course, isLoading, error, errorStatus, refresh } = useApi(() => getCourse(id || ''), [id], { enabled: Boolean(id) });
+  /* 🔴 A course a member is not enrolled on, or one taken down, answers 403/404. That
+     was rendered as a load failure with a Retry that can never succeed (audit F/F-8). */
+  const refused = isRefusalStatus(errorStatus);
 
   async function enroll() {
     if (!course || enrolling) return;
@@ -80,7 +84,12 @@ function CourseDetailScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={course?.title ?? t('title')} backLabel={t('common:back')} fallbackHref="/(modals)/courses" />
-        {isLoading && !course ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : !course ? (
+        {isLoading && !course ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : refused && !course ? (
+          <View className="flex-1 items-center justify-center gap-4 px-6" testID="course-detail-refused">
+            <Text className="text-lg font-semibold" style={{ color: theme.text }}>{t('common:errors.notAvailableTitle')}</Text>
+            <Text className="text-center" style={{ color: theme.textSecondary }}>{t('common:errors.notAvailableHint')}</Text>
+          </View>
+        ) : !course ? (
           <View className="flex-1 items-center justify-center gap-4 px-6">
             <Text style={{ color: theme.textSecondary }}>{error ?? t('detail.not_available')}</Text>
             <HeroButton onPress={() => refresh()}><HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label></HeroButton>

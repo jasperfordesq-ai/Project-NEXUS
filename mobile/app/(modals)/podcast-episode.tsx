@@ -20,6 +20,7 @@ import PodcastAudioPlayer, { type PodcastAudioPlayerHandle } from '@/components/
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { getPodcastEpisode, reportPodcastEpisode, togglePodcastReaction } from '@/lib/api/podcasts';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -69,7 +70,8 @@ function PodcastEpisodeScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={episode?.title ?? t('episode.title')} backLabel={t('common:back')} fallbackHref="/(modals)/podcasts" />
-        {!episode ? <EmptyState icon="warning-outline" title={state.error ?? t('episode.not_found')} actionLabel={t('episode.retry')} onAction={() => state.refresh()} /> : <>
+        {!episode && isRefusalStatus(state.errorStatus) ? <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="podcast-episode-refused" />
+          : !episode ? <EmptyState icon="warning-outline" title={state.error ?? t('episode.not_found')} actionLabel={t('episode.retry')} onAction={() => state.refresh()} /> : <>
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={state.isLoading && Boolean(state.data)} onRefresh={state.refresh} tintColor={primary} colors={[primary]} />}>
             <RefreshFailedNotice error={state.data ? state.error : null} onRetry={state.refresh} />
             <HeroCard className="rounded-panel"><HeroCard.Body className="gap-4 p-5">

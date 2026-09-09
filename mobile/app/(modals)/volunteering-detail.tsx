@@ -34,6 +34,7 @@ import {
   type VolunteeringOrganisation,
 } from '@/lib/api/volunteering';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
@@ -44,6 +45,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import BottomSheet from '@/components/ui/BottomSheet';
+import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -357,7 +359,7 @@ function VolunteeringDetailScreenInner() {
   const opportunityId = Number(id);
   const safeId = Number.isFinite(opportunityId) && opportunityId > 0 ? opportunityId : 0;
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getOpportunity(safeId),
     [safeId],
     { enabled: safeId > 0 },
@@ -562,6 +564,22 @@ function VolunteeringDetailScreenInner() {
         <View className="flex-1 items-center justify-center" style={{ flex: 1 }}>
           <LoadingSpinner />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  /* 🔴 …and a refusal must not get one. An opportunity that was withdrawn, or one this
+     community does not share, answers 403/404 and no amount of retrying clears it. */
+  if (!opportunity && isRefusalStatus(errorStatus)) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
+        <EmptyState
+          icon="lock-closed-outline"
+          title={t('common:errors.notAvailableTitle')}
+          subtitle={t('common:errors.notAvailableHint')}
+          testID="volunteering-detail-refused"
+        />
       </SafeAreaView>
     );
   }

@@ -45,6 +45,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
 import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useParamTab } from '@/lib/hooks/useParamTab';
@@ -651,8 +652,9 @@ function VolunteeringOrgDashboardInner() {
     "No transactions" — each of which is a factual claim the app could not support.
     Found by the 2026-09-07 audit (E/F-8).
   */
-  const accessRefused = statsApi.errorStatus === 401 || statsApi.errorStatus === 403
-    || applicationsApi.errorStatus === 401 || applicationsApi.errorStatus === 403;
+  // One list of refusal statuses for the whole app — see lib/api/refusal.ts. This one
+  // deliberately covers 404 as well: an organisation that is not the member's answers it.
+  const accessRefused = isRefusalStatus(statsApi.errorStatus) || isRefusalStatus(applicationsApi.errorStatus);
 
   if (accessRefused) {
     return (

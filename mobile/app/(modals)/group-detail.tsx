@@ -124,6 +124,7 @@ import { useParamTab } from '@/lib/hooks/useParamTab';
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
 
 const CARD_MIN_HEIGHT = 118;
@@ -269,16 +270,18 @@ function StateMessage({
   action,
   primary,
   onAction,
+  testID,
 }: {
   title: string;
   action: string;
   primary: string;
   onAction?: () => void;
+  testID?: string;
 }) {
   const theme = useTheme();
 
   return (
-    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }} testID={testID}>
       <AppTopBar title={title} backLabel={action} fallbackHref="/(tabs)/groups" />
       <View className="flex-1 items-center justify-center px-6" style={{ flex: 1, backgroundColor: theme.bg }}>
         <Surface variant="secondary" className="items-center gap-4 rounded-panel p-8">
@@ -318,7 +321,7 @@ function GroupDetailScreenInner() {
   const groupId = Number(id);
   const safeGroupId = Number.isFinite(groupId) && groupId > 0 ? groupId : 0;
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getGroup(safeGroupId),
     [safeGroupId],
     { enabled: safeGroupId > 0 },
@@ -511,6 +514,19 @@ function GroupDetailScreenInner() {
           <LoadingSpinner />
         </View>
       </SafeAreaView>
+    );
+  }
+
+  /* 🔴 A private group, or one this member was removed from, answers 403/404. That was
+     rendered with a Retry the member could press for ever (audit F/F-8). */
+  if (isRefusalStatus(errorStatus)) {
+    return (
+      <StateMessage
+        title={t('common:errors.notAvailableTitle')}
+        action={t('detail.goBack')}
+        primary={primary}
+        testID="group-detail-refused"
+      />
     );
   }
 

@@ -32,6 +32,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function IdeationDetailScreen() {
@@ -161,6 +162,15 @@ function IdeationDetailScreen() {
           {loading ? (
             <View className="items-center justify-center py-14">
               <LoadingSpinner />
+            </View>
+          ) : !challenge && isRefusalStatus(challengeState.errorStatus) ? (
+            <View className="px-4 py-8">
+              <EmptyState
+                icon="lock-closed-outline"
+                title={t('common:errors.notAvailableTitle')}
+                subtitle={t('common:errors.notAvailableHint')}
+                testID="ideation-challenge-refused"
+              />
             </View>
           ) : !challenge ? (
             <View className="px-4 py-8">

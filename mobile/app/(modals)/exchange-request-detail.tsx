@@ -42,6 +42,7 @@ import {
   type ExchangeRequestStatus,
 } from '@/lib/api/exchangeRequests';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -81,7 +82,7 @@ function ExchangeRequestDetailScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = Number(params.id);
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getExchangeRequest(id),
     [id],
     { enabled: Number.isFinite(id) && id > 0 },
@@ -447,6 +448,17 @@ function ExchangeRequestDetailScreen() {
 
       {isLoading && !exchange ? (
         <LoadingSpinner />
+      ) : isRefusalStatus(errorStatus) && !exchange ? (
+        /* 🔴 An exchange between two other members answers 403/404. Retrying it produces
+           the same answer for ever. */
+        <View className="px-4">
+          <ErrorState
+            icon="lock-closed-outline"
+            title={t('common:errors.notAvailableTitle')}
+            subtitle={t('common:errors.notAvailableHint')}
+            testID="exchange-request-detail-refused"
+          />
+        </View>
       ) : error || !exchange ? (
         <View className="px-4">
           <ErrorState

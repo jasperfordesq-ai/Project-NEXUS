@@ -44,6 +44,7 @@ import type {
   EventReminderRule,
 } from '@/lib/api/events';
 import { ApiResponseError } from '@/lib/api/client';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
@@ -113,7 +114,7 @@ function EventDetailScreenInner() {
 
   const eventId = Number(id);
   const safeEventId = Number.isFinite(eventId) && eventId > 0 ? eventId : 0;
-  const { data, isLoading, error, refresh } = useApi(() => getEvent(safeEventId), [safeEventId], { enabled: safeEventId > 0 });
+  const { data, isLoading, error, errorStatus, refresh } = useApi(() => getEvent(safeEventId), [safeEventId], { enabled: safeEventId > 0 });
   const remindersApi = useApi(() => getEventReminders(safeEventId), [safeEventId], { enabled: safeEventId > 0 && !!user });
   const event = data?.data ?? null;
   const canLoadRoster = Boolean(event?.permissions.manage_people);
@@ -168,7 +169,11 @@ function EventDetailScreenInner() {
   if (!event && error) {
     return (
       <ScreenShell title={t('detailTitle')} backLabel={t('common:back')}>
-        <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading} testID="event-detail-error" />
+        {/* 🔴 A cancelled event, or one a member was not invited to, answers 403/404 —
+            a Retry on that can never succeed. */}
+        {isRefusalStatus(errorStatus)
+          ? <ErrorState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="event-detail-refused" />
+          : <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading} testID="event-detail-error" />}
       </ScreenShell>
     );
   }

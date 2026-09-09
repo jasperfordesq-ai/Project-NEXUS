@@ -28,6 +28,7 @@ import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from '
 
 import { useTranslation } from 'react-i18next';
 import { deleteMessage, displayName, getMessagingRestrictionStatus, getOrCreateThread, getThread, markConversationRead, sendMessage, sendMessageWithAttachments, sendVoiceMessage as sendVoiceMessageApi, toggleMessageReaction, updateMessage, type Message, type ConversationOtherUser, type MessageAttachmentUpload, type MessagingRestrictionStatus, type SendMessageOptions } from '@/lib/api/messages';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -781,7 +782,9 @@ function ThreadScreenInner() {
     );
   }
 
-  if (error && !data && errorStatus === 404) {
+  // One list of refusal statuses for the whole app — see lib/api/refusal.ts. A thread
+  // in a conversation this member is not part of answers 403 the same way.
+  if (error && !data && isRefusalStatus(errorStatus)) {
     // A stale notification for a conversation that no longer exists. Retry can never
     // succeed on a 404, so offer the way back instead (B/F-14).
     return (

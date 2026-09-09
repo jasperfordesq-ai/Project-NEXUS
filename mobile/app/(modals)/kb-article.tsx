@@ -12,6 +12,7 @@ import { Card as HeroCard, Chip } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { getKbArticle } from '@/lib/api/resources';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -33,7 +34,7 @@ function KbArticleScreen() {
     not share, answers 404 or 403 — and that was rendered as "could not load" with a Retry
     the member could press for ever. Found by the 2026-09-07 audit (F/F-8).
   */
-  const refused = Boolean(error) && (errorStatus === 401 || errorStatus === 403 || errorStatus === 404);
+  const refused = Boolean(error) && isRefusalStatus(errorStatus);
 
   return (
     <ModalErrorBoundary>

@@ -37,6 +37,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import {
   completeCourseLesson,
   getCourse,
@@ -159,9 +160,13 @@ function CoursePlayerScreen() {
         ) : !lesson ? (
           <View className="flex-1 items-center justify-center gap-4 px-6">
             <Text style={{ color: theme.textSecondary }}>
-              {courseState.error ?? progressState.error ?? t('detail.no_lessons')}
+              {isRefusalStatus(courseState.errorStatus)
+                ? t('common:errors.notAvailableHint')
+                : courseState.error ?? progressState.error ?? t('detail.no_lessons')}
             </Text>
-            {courseState.error || progressState.error ? (
+            {/* 🔴 No Retry on a refusal: a course a member is not enrolled on answers
+                403/404 however many times it is asked. */}
+            {(courseState.error || progressState.error) && !isRefusalStatus(courseState.errorStatus) ? (
               <HeroButton onPress={retryAll}>
                 <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
               </HeroButton>

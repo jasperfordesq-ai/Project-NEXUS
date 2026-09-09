@@ -21,6 +21,7 @@ import { Button as HeroButton, Card as HeroCard, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { getBlogPost, type BlogPost } from '@/lib/api/blog';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -140,7 +141,8 @@ function BlogPostScreen() {
     "could not load" with a Retry the member could press for ever. `useApi` returns
     `errorStatus` for exactly this (F/F-8).
   */
-  if (!post && postError && (postErrorStatus === 401 || postErrorStatus === 403 || postErrorStatus === 404)) {
+  // One list of refusal statuses for the whole app — see lib/api/refusal.ts.
+  if (!post && postError && isRefusalStatus(postErrorStatus)) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/blog" />

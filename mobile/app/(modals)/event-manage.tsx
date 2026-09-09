@@ -17,6 +17,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { getEvent } from '@/lib/api/events';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -53,6 +54,9 @@ function EventManageScreen() {
   const eventId = Number(id ?? 0);
   const theme = useTheme();
   const eventState = useApi(() => getEvent(eventId), [eventId], { enabled: eventId > 0 });
+  /* 🔴 Managing an event you do not run answers 403/404, and the load-failure branch
+     below offered a Try again that could never clear it. */
+  const refused = isRefusalStatus(eventState.errorStatus);
   const event = eventState.data?.data;
 
   useEffect(() => {
@@ -85,7 +89,9 @@ function EventManageScreen() {
         <AppTopBar title={event ? t('manage.page_title', { title: event.title }) : t('manage.page_title_fallback')} backLabel={t('common:back')} fallbackHref={eventId > 0 ? ({ pathname: '/(modals)/event-detail', params: { id: String(eventId) } } as unknown as Href) : '/(tabs)/events'} />
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={eventState.isLoading && Boolean(eventState.data)} onRefresh={eventState.refresh} tintColor={primary} colors={[primary]} />}>
           <RefreshFailedNotice error={eventState.data ? eventState.error : null} onRetry={eventState.refresh} />
-          {eventState.isLoading && !event ? <LoadingSpinner /> : !event ? (
+          {eventState.isLoading && !event ? <LoadingSpinner /> : refused && !event ? (
+            <EmptyState icon="lock-closed-outline" title={t('manage.access_denied_title')} subtitle={t('manage.access_denied_desc')} testID="event-manage-refused" />
+          ) : !event ? (
             <EmptyState icon="warning-outline" title={t('manage.load_error_title')} subtitle={eventState.error ?? t('manage.load_error_desc')} actionLabel={t('manage.try_again')} onAction={eventState.refresh} />
           ) : operations.length === 0 ? (
             <EmptyState icon="lock-closed-outline" title={t('manage.access_denied_title')} subtitle={t('manage.access_denied_desc')} />

@@ -12,6 +12,7 @@ import { Card as HeroCard, Chip, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { getJobAnalytics, getJobPredictions } from '@/lib/api/jobs';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import type { JobAnalyticsData, JobPredictionsData } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -90,7 +91,7 @@ function JobAnalyticsScreen() {
     load" with a Retry that could never succeed.
   */
   if (analyticsApi.error
-    && (analyticsApi.errorStatus === 401 || analyticsApi.errorStatus === 403 || analyticsApi.errorStatus === 404)) {
+    && isRefusalStatus(analyticsApi.errorStatus)) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('analytics.title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />

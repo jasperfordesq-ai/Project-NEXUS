@@ -55,6 +55,7 @@ import {
   type MemberReview,
 } from '@/lib/api/members';
 import type { Exchange } from '@/lib/api/exchanges';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { endorseSkill } from '@/lib/api/endorsements';
@@ -386,7 +387,8 @@ function MemberProfileScreenInner() {
     retry can never succeed on a 4xx (audit 2026-09-07, B/F-06). Say what it is and offer
     the way back.
   */
-  if (!member && (errorStatus === 404 || errorStatus === 403)) {
+  // One list of refusal statuses for the whole app — see lib/api/refusal.ts.
+  if (!member && isRefusalStatus(errorStatus)) {
     return (
       <ScreenShell t={t} title={t('profileTitle')}>
         <CenteredState icon="person-circle-outline" color={theme.textMuted} text={t(errorStatus === 403 ? 'profile.notVisible' : 'profile.notAvailable')} testID="member-profile-unavailable">

@@ -13,6 +13,7 @@ import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'her
 import { useTranslation } from 'react-i18next';
 
 import { getJobApplications, updateJobApplication } from '@/lib/api/jobs';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import type { JobOwnerApplication } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -94,8 +95,7 @@ function JobPipelineScreen() {
     2026-09-07 audit (E/F-9); the same fault was fixed for hidden profiles and deleted
     conversations the day before, and these two screens were not in that pass.
   */
-  const refused = applicationsApi.error
-    && (applicationsApi.errorStatus === 401 || applicationsApi.errorStatus === 403 || applicationsApi.errorStatus === 404);
+  const refused = applicationsApi.error && isRefusalStatus(applicationsApi.errorStatus);
 
   if (refused) {
     return (

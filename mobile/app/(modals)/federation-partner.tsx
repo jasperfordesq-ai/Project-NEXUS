@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { buildWebUrl } from '@/lib/utils/webUrl';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useMemo } from 'react';
 import {
   Linking,
@@ -181,12 +182,15 @@ function PartnerActionGrid({
 
 function EmptyPartnerState({
   isInvalid,
+  isRefused,
   refresh,
   t,
   theme,
   primary,
 }: {
   isInvalid: boolean;
+  /** True when the server said no (401/403/404) rather than something going wrong. */
+  isRefused?: boolean;
   refresh: () => void;
   t: (key: string) => string;
   theme: ReturnType<typeof useTheme>;
@@ -200,10 +204,12 @@ function EmptyPartnerState({
             <Ionicons name="alert-circle-outline" size={28} color={theme.error} />
           </View>
           <Text className="text-center text-base font-semibold" style={{ color: theme.text }}>
-            {t('detail.notFound')}
+            {isRefused ? t('common:errors.notAvailableTitle') : t('detail.notFound')}
           </Text>
           <View className="w-full gap-2">
-            {!isInvalid ? (
+            {/* 🔴 No Retry on a refusal: a partner this community is not connected to
+                answers the same way however many times it is asked. */}
+            {!isInvalid && !isRefused ? (
               <HeroButton variant="secondary" onPress={refresh} accessibilityLabel={t('detail.retry')}>
                 <Ionicons name="refresh-outline" size={16} color={primary} />
                 <HeroButton.Label>{t('detail.retry')}</HeroButton.Label>
@@ -236,6 +242,7 @@ function FederationPartnerScreen() {
     data,
     isLoading,
     error,
+    errorStatus,
     refresh,
   } = useApi(
     () => loadPartner(partnerId ?? ''),
@@ -286,6 +293,7 @@ function FederationPartnerScreen() {
         ) : !partner ? (
           <EmptyPartnerState
             isInvalid={!partnerId}
+            isRefused={isRefusalStatus(errorStatus)}
             refresh={refresh}
             t={t}
             theme={theme}

@@ -48,6 +48,7 @@ import { contrastText, withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import * as Haptics from '@/lib/haptics';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -126,7 +127,7 @@ function EditExchangeModalInner() {
   const [partialSave, setPartialSave] = useState<{ extras: ListingExtras; result: ListingExtrasResult } | null>(null);
   const [retryingExtras, setRetryingExtras] = useState(false);
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getExchange(safeListingId),
     [safeListingId],
     { enabled: safeListingId > 0 },
@@ -362,7 +363,11 @@ function EditExchangeModalInner() {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('editTitle')} backLabel={t('common:back')} fallbackHref="/(tabs)/exchanges" />
-        <ErrorState subtitle={error ?? t('detail.editLoadFailed')} onRetry={refresh} isRetrying={isLoading} />
+        {/* 🔴 Editing a listing that is not yours answers 403/404. A Retry there is a
+            button that can never work. */}
+        {isRefusalStatus(errorStatus)
+          ? <ErrorState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="edit-exchange-refused" />
+          : <ErrorState subtitle={error ?? t('detail.editLoadFailed')} onRetry={refresh} isRetrying={isLoading} />}
       </SafeAreaView>
     );
   }

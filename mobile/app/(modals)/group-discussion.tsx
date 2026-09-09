@@ -34,6 +34,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import {
   getGroupDiscussionThread,
   postGroupDiscussionMessage,
@@ -220,7 +221,8 @@ function GroupDiscussionScreenInner() {
 
   // A refusal is not a failure. Retry can never turn a 403 or a 404 into a thread, so
   // these two say what happened and offer the way back instead (audit 2026-09-07).
-  if (error && !discussion && (errorStatus === 403 || errorStatus === 404)) {
+  // One list of refusal statuses for the whole app — see lib/api/refusal.ts.
+  if (error && !discussion && isRefusalStatus(errorStatus)) {
     return (
       <DiscussionShell {...shellProps}>
         <EmptyState

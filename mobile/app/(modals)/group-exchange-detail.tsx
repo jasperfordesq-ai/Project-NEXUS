@@ -18,6 +18,7 @@ import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { cancelGroupExchange, completeGroupExchange, confirmGroupExchange, getGroupExchange, type GroupExchangeParticipant, type GroupExchangeStatus } from '@/lib/api/groupExchanges';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -65,7 +66,7 @@ function GroupExchangeDetailScreenInner() {
 
   const exchangeId = Number(id);
   const safeExchangeId = Number.isFinite(exchangeId) && exchangeId > 0 ? exchangeId : 0;
-  const { data, isLoading, error, refresh } = useApi(() => getGroupExchange(safeExchangeId), [safeExchangeId], { enabled: safeExchangeId > 0 });
+  const { data, isLoading, error, errorStatus, refresh } = useApi(() => getGroupExchange(safeExchangeId), [safeExchangeId], { enabled: safeExchangeId > 0 });
   const exchange = data?.data ?? null;
 
   async function runAction(action: 'confirm' | 'complete' | 'cancel') {
@@ -136,6 +137,16 @@ function GroupExchangeDetailScreenInner() {
     return (
       <ScreenShell title={t('groupExchanges.detail.title')} backLabel={t('common:buttons.back')}>
         <View className="flex-1 items-center justify-center"><Spinner size="lg" /></View>
+      </ScreenShell>
+    );
+  }
+
+  /* 🔴 An exchange in a group this member is not in answers 403/404, and the branch
+     below offered a Retry that could never clear it. */
+  if (isRefusalStatus(errorStatus)) {
+    return (
+      <ScreenShell title={t('groupExchanges.detail.title')} backLabel={t('common:buttons.back')}>
+        <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="group-exchange-refused" />
       </ScreenShell>
     );
   }

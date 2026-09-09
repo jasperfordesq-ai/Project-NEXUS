@@ -13,6 +13,7 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { createOpportunity, getMyOrganisations, getOpportunity, updateOpportunity, type VolunteerOpportunity, type VolunteeringOrganisation } from '@/lib/api/volunteering';
+import { isRefusal } from '@/lib/api/refusal';
 import { canPostForOrganisation } from '@/lib/volunteering/postingPermission';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -90,6 +91,9 @@ function NewVolunteeringScreen() {
   const [hasSaved, setHasSaved] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
   const [editLoadFailed, setEditLoadFailed] = useState(false);
+  /* 🔴 Editing an opportunity that is not yours answers 403/404. Offering a Retry there
+     is a button that can never work — say what happened instead. */
+  const [editRefused, setEditRefused] = useState(false);
   const [editRetryToken, setEditRetryToken] = useState(0);
   const attemptedEditRetryRef = useRef<number | null>(null);
   // Mount tracking in its own effect: a re-render mid-fetch must not cancel the hydration.
@@ -115,10 +119,11 @@ function NewVolunteeringScreen() {
         hydrateFromOpportunity(response.data);
         setHasHydratedEdit(true);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (!isMountedRef.current) return;
         // 🔴 Not a dead form. A failed hydration used to leave empty fields under a live
         // "Update opportunity" button — one tap would have wiped the record (S4-03).
+        setEditRefused(isRefusal(err));
         setEditLoadFailed(true);
         showToastRef.current({
           title: tRef.current('create.failedTitle'),
@@ -262,11 +267,11 @@ function NewVolunteeringScreen() {
       {isEditing && editLoadFailed ? (
         <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-volunteering-load-failed">
           <EmptyState
-            icon="heart-outline"
-            title={t('create.loadFailedTitle')}
-            subtitle={t('create.loadFailed')}
-            actionLabel={t('common:buttons.retry')}
-            onAction={() => setEditRetryToken((value) => value + 1)}
+            icon={editRefused ? 'lock-closed-outline' : 'heart-outline'}
+            title={editRefused ? t('common:errors.notAvailableTitle') : t('create.loadFailedTitle')}
+            subtitle={editRefused ? t('common:errors.notAvailableHint') : t('create.loadFailed')}
+            actionLabel={editRefused ? undefined : t('common:buttons.retry')}
+            onAction={editRefused ? undefined : () => setEditRetryToken((value) => value + 1)}
           />
         </View>
       ) : isEditing && !hasHydratedEdit ? (

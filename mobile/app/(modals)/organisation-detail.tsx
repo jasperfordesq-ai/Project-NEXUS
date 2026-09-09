@@ -19,6 +19,7 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { getOrganisation } from '@/lib/api/organisations';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -102,7 +103,7 @@ function OrganisationDetailScreen() {
   const orgId = Number(id);
   const safeId = isNaN(orgId) || orgId <= 0 ? 0 : orgId;
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getOrganisation(safeId),
     [safeId],
     { enabled: safeId > 0 },
@@ -133,6 +134,22 @@ function OrganisationDetailScreen() {
         <View className="flex-1 items-center justify-center" style={{ flex: 1 }}>
           <LoadingSpinner />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  /* 🔴 …and a refusal must not get one. An organisation that is private, or was removed,
+     answers 403/404, and a Retry there can never succeed. */
+  if (!organisation && isRefusalStatus(errorStatus)) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detailTitle')} backLabel={t('common:back')} fallbackHref="/(modals)/organisations" />
+        <EmptyState
+          icon="lock-closed-outline"
+          title={t('common:errors.notAvailableTitle')}
+          subtitle={t('common:errors.notAvailableHint')}
+          testID="organisation-detail-refused"
+        />
       </SafeAreaView>
     );
   }

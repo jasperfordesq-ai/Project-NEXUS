@@ -89,11 +89,25 @@ describe('IdeationCampaignDetailScreen', () => {
     expect(getIdeationCampaign).not.toHaveBeenCalled();
   });
 
-  it('offers a retry when the campaign cannot be loaded', async () => {
+  /**
+   * 🔴 This case pressed Retry after a 404 and asserted the request went out twice. It
+   * passed, and it was pinning the fault: a campaign that was removed, or one in a
+   * community this member cannot see, answers 404 every single time.
+   */
+  it('says a campaign that is gone or not shared is unavailable, with no dead Retry', async () => {
     jest.mocked(getIdeationCampaign).mockRejectedValue(new ApiResponseError(404, 'Campaign not found'));
-    const { getByText } = render(<IdeationCampaignDetailScreen />);
-    await waitFor(() => expect(getByText('Campaign not found')).toBeTruthy());
+    const { getByTestId, queryByText } = render(<IdeationCampaignDetailScreen />);
+    await waitFor(() => expect(getByTestId('ideation-campaign-refused')).toBeTruthy());
+    expect(queryByText('Retry')).toBeNull();
+  });
+
+  it('still offers a retry for a server failure, which retrying can fix', async () => {
+    jest.mocked(getIdeationCampaign).mockRejectedValue(new ApiResponseError(500, 'Server error'));
+    const { getByText, queryByTestId } = render(<IdeationCampaignDetailScreen />);
+    // useApi retries a 5xx once after 2s before surfacing it.
+    await waitFor(() => expect(getByText('Server error')).toBeTruthy(), { timeout: 5000 });
+    expect(queryByTestId('ideation-campaign-refused')).toBeNull();
     fireEvent.press(getByText('Retry'));
-    await waitFor(() => expect(getIdeationCampaign).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(getIdeationCampaign).toHaveBeenCalledTimes(3));
   });
 });

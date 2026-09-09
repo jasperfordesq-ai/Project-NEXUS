@@ -17,6 +17,7 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { getJobApplications, getJobDetail, applyToJob, saveJob, unsaveJob, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import type { JobOwnerApplication, JobVacancy } from '@/lib/api/jobs';
@@ -51,7 +52,7 @@ function JobDetailScreen() {
   const jobId = Number(id);
   const safeId = isNaN(jobId) || jobId <= 0 ? 0 : jobId;
 
-  const { data, isLoading, error: jobError, refresh: refreshJob } = useApi(
+  const { data, isLoading, error: jobError, errorStatus: jobErrorStatus, refresh: refreshJob } = useApi(
     () => getJobDetail(safeId),
     [safeId],
     { enabled: safeId > 0 },
@@ -126,6 +127,17 @@ function JobDetailScreen() {
     bad signal was told the item no longer exists — with a browse button that navigates
     away from the thing they were looking for. A load failure gets a retry (audit 2026-09-06).
   */
+  /* 🔴 …and the mirror of it: a vacancy that was taken down, or one only its owner may
+     see, answers 403/404, where a Retry can never succeed. */
+  if (!job && isRefusalStatus(jobErrorStatus)) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('detailTitle')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
+        <ErrorState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="job-detail-refused" />
+      </SafeAreaView>
+    );
+  }
+
   if (!job && jobError) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
