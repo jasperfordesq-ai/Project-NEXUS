@@ -80,6 +80,8 @@
     "requestFailedWithStatus": "La solicitud ha fallado con el estado {{status}}",
     "unauthorized": "Tu sesión ha caducado. Inicia sesión de nuevo.",
     "sessionEndedTitle": "Sesión cerrada",
+    "wrongCommunityTitle": "Has iniciado sesión en otra comunidad",
+    "wrongCommunityBody": "Tu cuenta pertenece a una comunidad y la aplicación está mostrando otra, por eso no se carga nada. Elige tu comunidad abajo para arreglarlo.",
     "notFound": "No encontrado.",
     "alertTitle": "Error",
     "contractDrift": "Esta pantalla recibió información en un formato inesperado. Actualiza la app o inténtalo más tarde.",

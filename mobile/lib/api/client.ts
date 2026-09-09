@@ -222,6 +222,34 @@ export function registerLegalAcceptanceRequiredCallback(cb: () => void): void {
   onLegalAcceptanceRequiredCallback = cb;
 }
 
+/**
+ * Called when the API refuses a request with `TENANT_MISMATCH` — the token was issued by
+ * one community and the request asked about another, so `TenantContext` answers 403 to
+ * EVERYTHING until one of the two changes.
+ *
+ * 🔴 Seen in the wild on 2026-09-09, release 1.4.0+7: one member's unread count,
+ * notification count and push-device registration were all refused inside one second, so
+ * they were signed in, receiving no notifications, and being told nothing. Retrying cannot
+ * clear it — an account belongs to ONE community — and the app cannot silently correct
+ * itself either, because this response does not say which community the token belongs to.
+ * The only honest move is to say so and open the community picker.
+ *
+ * The picker is reachable from here on purpose: `GET /v2/tenants` is sent anonymously
+ * (`RequestOptions.anonymous`) precisely so it still loads in this state, and
+ * `decideAuthRedirect` deliberately exempts the tenant-selection path from the
+ * signed-in bounce to home. Both of those already existed; this is the missing third
+ * piece — nothing was telling the member to go there.
+ *
+ * Registered centrally rather than at each of the app's call sites, for the same reason as
+ * the two callbacks above: a refusal only some screens knew about shows up as a generic
+ * error on all the others.
+ */
+let onTenantMismatchCallback: (() => void) | null = null;
+
+export function registerTenantMismatchCallback(cb: () => void): void {
+  onTenantMismatchCallback = cb;
+}
+
 /** Build headers for native media players/downloaders without exposing tokens in URLs. */
 export async function authenticatedMediaRequest(path: string): Promise<{ uri: string; headers: Record<string, string> }> {
   const base = new URL(API_BASE_URL);
@@ -629,6 +657,12 @@ async function request<T>(
     // still throw so the caller does not mistake the refusal for success.
     if (code === 'LEGAL_ACCEPTANCE_REQUIRED') {
       onLegalAcceptanceRequiredCallback?.();
+    }
+
+    // Matched on the CODE, not the message: `TenantContext::respondWithTenantMismatchError`
+    // sends an English sentence that is not translated and could be reworded at any time.
+    if (code === 'TENANT_MISMATCH') {
+      onTenantMismatchCallback?.();
     }
 
     // 🔴 The client half of the force-update lever. The server refuses a build below

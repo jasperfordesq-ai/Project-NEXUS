@@ -80,6 +80,8 @@
     "requestFailedWithStatus": "Die Anfrage ist mit Status {{status}} fehlgeschlagen",
     "unauthorized": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
     "sessionEndedTitle": "Abgemeldet",
+    "wrongCommunityTitle": "Sie sind bei einer anderen Gemeinschaft angemeldet",
+    "wrongCommunityBody": "Ihr Konto gehört zu einer Gemeinschaft, die App zeigt aber eine andere an, deshalb lädt nichts. Wählen Sie unten Ihre eigene Gemeinschaft, um das zu beheben.",
     "notFound": "Nicht gefunden.",
     "alertTitle": "Error",
     "contractDrift": "Dieser Bildschirm hat Daten in einer unerwarteten Form erhalten. Bitte aktualisiere die App oder versuche es später erneut.",

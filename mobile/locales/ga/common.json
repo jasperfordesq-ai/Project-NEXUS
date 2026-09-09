@@ -80,6 +80,8 @@
     "requestFailedWithStatus": "Theip ar an iarratas le stádas {{status}}",
     "unauthorized": "Tá do sheisiún imithe in éag. Logáil isteach arís.",
     "sessionEndedTitle": "Sínithe amach",
+    "wrongCommunityTitle": "Tá tú sínithe isteach i bpobal eile",
+    "wrongCommunityBody": "Baineann do chuntas le pobal amháin agus tá an aip ag taispeáint cinn eile, mar sin ní lódálfaidh aon rud. Roghnaigh do phobal féin thíos chun é a chur ina cheart.",
     "notFound": "Gan aimsiú.",
     "alertTitle": "Error",
     "contractDrift": "Fuair an scáileán seo eolas i gcruth nach raibh súil leis. Nuashonraigh an aip, nó bain triail eile as ar ball.",

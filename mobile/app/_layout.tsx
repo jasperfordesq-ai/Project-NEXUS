@@ -5,7 +5,7 @@
 
 import '@/global.css'; // Tailwind v4 + HeroUI Native styles — must be first
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LogBox, View } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import * as Linking from 'expo-linking';
@@ -14,7 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
 import { markAppReady } from '@/lib/startupTiming';
-import { registerLegalAcceptanceRequiredCallback } from '@/lib/api/client';
+import { registerLegalAcceptanceRequiredCallback, registerTenantMismatchCallback } from '@/lib/api/client';
 import { flushPendingPaidCampaignOpen, observeNotificationResponses } from '@/lib/notifications';
 import { ThemeProvider, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -33,6 +33,8 @@ import UpdateReadyHost from '@/components/ui/UpdateReadyHost';
 import UpdateRequiredGate from '@/components/UpdateRequiredGate';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { decideAuthRedirect } from '@/lib/navigation/authRedirect';
+import { createTenantMismatchHandler } from '@/lib/navigation/tenantMismatch';
+import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { scrubSentryBreadcrumb, scrubSentryEvent } from '@/lib/observability/sentryScrubbing';
 import { configureNativeTheme } from '@/lib/theme/nativeTheme';
 import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
@@ -350,6 +352,30 @@ function RootNavigator() {
       legalScreenOpenRef.current = false;
     }
   }, [pathname]);
+
+  /*
+    The API refuses EVERY tenant-scoped request when the token belongs to one community and
+    the app is asking about another. `createTenantMismatchHandler` holds the whole decision,
+    including the once-only guard, so it can be tested — this layout has no behavioural test
+    of its own, and a guard that fires "once" is exactly what quietly stops working. The
+    comment on that module explains the state and why the picker is the answer.
+  */
+  const tenantMismatch = useMemo(
+    () => createTenantMismatchHandler({
+      publish: (notice) => sessionNoticeStore.publish(notice),
+      navigate: (href) => router.replace(href as Parameters<typeof router.replace>[0]),
+      t,
+    }),
+    [t],
+  );
+
+  useEffect(() => {
+    registerTenantMismatchCallback(() => tenantMismatch.onMismatch());
+  }, [tenantMismatch]);
+
+  useEffect(() => {
+    tenantMismatch.onPathChange(pathname);
+  }, [pathname, tenantMismatch]);
 
   // Auth redirect — check for a pending deep link BEFORE defaulting to home.
   // This prevents the race condition where router.replace('/(tabs)/home')

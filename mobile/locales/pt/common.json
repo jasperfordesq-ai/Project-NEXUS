@@ -80,6 +80,8 @@
     "requestFailedWithStatus": "O pedido falhou com o estado {{status}}",
     "unauthorized": "A sua sessão expirou. Inicie sessão novamente.",
     "sessionEndedTitle": "Sessão terminada",
+    "wrongCommunityTitle": "Tem sessão iniciada noutra comunidade",
+    "wrongCommunityBody": "A sua conta pertence a uma comunidade e a aplicação está a mostrar outra, por isso nada será carregado. Escolha a sua comunidade abaixo para corrigir.",
     "notFound": "Não encontrado.",
     "alertTitle": "Error",
     "contractDrift": "Este ecrã recebeu informação num formato inesperado. Atualiza a app ou tenta novamente mais tarde.",

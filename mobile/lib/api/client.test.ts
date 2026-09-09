@@ -29,7 +29,7 @@ jest.mock('@/lib/constants', () => ({
   },
 }));
 
-import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, attemptTokenRefresh, clearApiSession, installApiSession, __resetRefreshStateForTests } from './client';
+import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, registerTenantMismatchCallback, attemptTokenRefresh, clearApiSession, installApiSession, __resetRefreshStateForTests } from './client';
 import { storage } from '@/lib/storage';
 import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
 
@@ -483,6 +483,73 @@ describe('machine error codes', () => {
       fail('Expected to throw');
     } catch (err) {
       expect((err as ApiResponseError).code).toBe('REAL_CODE');
+    }
+  });
+});
+
+describe('the tenant mismatch callback', () => {
+  /**
+   * 🔴 Seen in the wild on 2026-09-09, release 1.4.0+7: a member's unread count,
+   * notification count and push-device registration were all refused with this code inside
+   * one second. They were signed in, receiving no notifications, and being told nothing.
+   * Retrying cannot clear it — an account belongs to ONE community — so something central
+   * has to notice and route them out of it.
+   */
+  it('fires when the server refuses a request because the token is for another community', async () => {
+    const onMismatch = jest.fn();
+    registerTenantMismatchCallback(onMismatch);
+
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { errors: [{ code: 'TENANT_MISMATCH', message: 'Token tenant does not match requested tenant' }] },
+        { status: 403 },
+      ),
+    );
+
+    await expect(api.get('/api/v2/notifications/counts')).rejects.toThrow(ApiResponseError);
+    expect(onMismatch).toHaveBeenCalledTimes(1);
+
+    registerTenantMismatchCallback(() => {});
+  });
+
+  /**
+   * Matched on the CODE, never the sentence: `respondWithTenantMismatchError` sends an
+   * English string that is not translated and could be reworded at any time.
+   */
+  it('does not fire for an ordinary 403 that carries the same words', async () => {
+    const onMismatch = jest.fn();
+    registerTenantMismatchCallback(onMismatch);
+
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { errors: [{ code: 'FORBIDDEN', message: 'Token tenant does not match requested tenant' }] },
+        { status: 403 },
+      ),
+    );
+
+    await expect(api.get('/api/v2/notifications/counts')).rejects.toThrow(ApiResponseError);
+    expect(onMismatch).not.toHaveBeenCalled();
+
+    registerTenantMismatchCallback(() => {});
+  });
+
+  it('still throws, so a caller cannot mistake the refusal for success', async () => {
+    registerTenantMismatchCallback(() => {});
+
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { errors: [{ code: 'TENANT_MISMATCH', message: 'Token tenant does not match requested tenant' }] },
+        { status: 403 },
+      ),
+    );
+
+    try {
+      await api.get('/api/v2/messages/unread-count');
+      throw new Error('should have thrown');
+    } catch (err) {
+      expect(err).toBeInstanceOf(ApiResponseError);
+      expect((err as ApiResponseError).status).toBe(403);
+      expect((err as ApiResponseError).code).toBe('TENANT_MISMATCH');
     }
   });
 });

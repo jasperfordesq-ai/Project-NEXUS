@@ -187,7 +187,7 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1244 |
 | GET | `/api/v2/events/{param}/waitlist` | events.ts:1230 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
-| POST | `/api/v2/exchanges` | client.ts:682, exchanges.ts:213 |
+| POST | `/api/v2/exchanges` | client.ts:716, exchanges.ts:213 |
 | DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:199 |
 | GET | `/api/v2/exchanges/{param}` | exchangeRequests.ts:122 |
 | POST | `/api/v2/exchanges/{param}/accept` | exchangeRequests.ts:141 |
@@ -556,7 +556,7 @@ and the places a contract test earns the most.
 | PUT | `/api/v2/team-tasks/{param}` | groups.ts:827 |
 | GET | `/api/v2/tenant/bootstrap` | tenant.ts:66, tenant.ts:86 |
 | GET | `/api/v2/tenants` | tenant.ts:101 |
-| GET | `/api/v2/users` | client.ts:681, members.ts:76 |
+| GET | `/api/v2/users` | client.ts:715, members.ts:76 |
 | GET | `/api/v2/users/{param}` | members.ts:81 |
 | GET | `/api/v2/users/{param}/appreciations` | appreciations.ts:46 |
 | DELETE | `/api/v2/users/{param}/block` | settings.ts:143 |

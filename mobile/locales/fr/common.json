@@ -80,6 +80,8 @@
     "requestFailedWithStatus": "La requête a échoué avec le statut {{status}}",
     "unauthorized": "Votre session a expiré. Veuillez vous reconnecter.",
     "sessionEndedTitle": "Déconnecté",
+    "wrongCommunityTitle": "Vous êtes connecté à une autre communauté",
+    "wrongCommunityBody": "Votre compte appartient à une communauté et l’application en affiche une autre, donc rien ne se charge. Choisissez votre communauté ci-dessous pour corriger cela.",
     "notFound": "Introuvable.",
     "alertTitle": "Error",
     "contractDrift": "Cet écran a reçu des informations dans un format inattendu. Mettez l'application à jour ou réessayez plus tard.",

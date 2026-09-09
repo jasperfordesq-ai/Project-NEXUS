@@ -80,6 +80,8 @@
     "requestFailedWithStatus": "La richiesta non è riuscita con stato {{status}}",
     "unauthorized": "La sessione è scaduta. Accedi di nuovo.",
     "sessionEndedTitle": "Disconnesso",
+    "wrongCommunityTitle": "Hai effettuato l’accesso a un’altra comunità",
+    "wrongCommunityBody": "Il tuo account appartiene a una comunità e l’app ne sta mostrando un’altra, quindi non si carica nulla. Scegli la tua comunità qui sotto per sistemare la cosa.",
     "notFound": "Non trovato.",
     "alertTitle": "Error",
     "contractDrift": "Questa schermata ha ricevuto informazioni in un formato inatteso. Aggiorna l'app o riprova più tardi.",

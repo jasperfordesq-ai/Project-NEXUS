@@ -80,6 +80,8 @@
     "requestFailedWithStatus": "Request failed with status {{status}}",
     "unauthorized": "Your session has expired. Please log in again.",
     "sessionEndedTitle": "Signed out",
+    "wrongCommunityTitle": "You are signed in to a different community",
+    "wrongCommunityBody": "Your account belongs to one community and the app is showing another, so nothing will load. Choose your own community below to put it right.",
     "notFound": "Not found.",
     "alertTitle": "Error",
     "contractDrift": "This screen received information in a shape it did not expect. Please update the app, or try again later.",
