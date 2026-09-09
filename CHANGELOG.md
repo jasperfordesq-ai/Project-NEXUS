@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`mobile/scripts/build-aab-play.sh` — the signed Play bundle now has a checked-in recipe.** There was none: `build-apk-local.sh` builds a deliberately debug-signed APK for sideloading, and the artefact actually uploaded to Google was assembled by hand each time. Three ways that goes wrong silently, all of which produce a file that looks completely normal, are now refusals rather than warnings.
+  - **A debug-signed bundle.** `android/app/build.gradle:133` reads `release { signingConfig playStoreFile ? playRelease : signingConfigs.debug }` — with the signing values absent Gradle does not fail, it signs with the debug key and still writes `app-release.aab`. The script reads the key and its passwords from `mobile/credentials.json` (never echoing them) and verifies the finished bundle's certificate against the Play upload key before reporting success.
+  - 🔴 **The wrong server baked in.** `.env.production.local` was found holding `EXPO_PUBLIC_API_URL=http://10.0.2.2:8090` — the address an Android *emulator* uses to reach the build machine, left behind by a test build on 2026-09-03. That value is compiled into the bundle permanently. A release built from it works flawlessly on an emulator and is dead in every real user's hand. The script regenerates the file and refuses any loopback, private-network or plain-http host.
+  - **One CPU architecture.** `expo run:android` writes `reactNativeArchitectures=<one abi>` into `android/gradle.properties`; a later release build inherits it. On 2026-08-20 that shipped an x86_64-only artefact — perfect on the emulator, "App not installed" on a real phone. All four are passed explicitly.
+  - It also requires `--version-code` rather than defaulting, because Play refuses a version code it has already seen.
+
 ### Fixed
 
 - 🔴 **Android App Links have never verified, because `assetlinks.json` published the wrong certificate.** The file listed `F5:0D:87:55…`, which is the **upload** key — the one used to sign what we send to Google. Play App Signing is enabled, so Google re-signs the app with its own key (`79:38:E8:06…`), and that is the fingerprint a phone checks. Every `https://app.project-nexus.ie/…` link therefore opened a browser or a chooser for everyone who installed from Play, while `app.json`'s `autoVerify: true` half looked correct. Both fingerprints are now published — Google's app signing key first, the upload key retained so a locally signed release build verifies too. Confirmed against the Play Console's own ready-made snippet, which names the app signing key. `verify-release-config.mjs` already anticipated this in a comment and accepts multiple fingerprints; it passes.
