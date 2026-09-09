@@ -323,6 +323,9 @@
     "sendCounter": "Enviar contador",
     "cancelCounter": "Cancelar",
     "acceptCounter": "Aceptar counter",
+    "acceptedTitle": "Tu oferta fue aceptada",
+    "acceptedHint": "Todavía no se ha pagado nada. Completa la compra al precio de tu oferta para asegurarla.",
+    "payNow": "Pagar ahora",
     "counterFailed": "No se pudo enviar esta contraoferta.",
     "actionFailed": "No se pudo actualizar esta oferta.",
     "status": {
@@ -838,6 +841,10 @@
       "lastScan": "Recogida confirmada",
       "lastScanDetail": "El pedido {{order}} está ahora {{status}}.",
       "slotFailed": "No se pudo crear este espacio de recogida.",
+      "dateInvalid": "Escribe ambas horas como AAAA-MM-DD HH:MM, por ejemplo 2026-09-08 14:00.",
+      "endBeforeStart": "La franja tiene que terminar después de empezar.",
+      "quickToday": "Más tarde hoy",
+      "quickTomorrow": "Mañana",
       "updateFailed": "No se pudo actualizar este espacio de recogida.",
       "scanFailed": "No se pudo escanear este código de recogida.",
       "deleteFailed": "No se pudo eliminar este espacio de recogida.",
@@ -909,6 +916,8 @@
       "percentValue": "{{value}}%",
       "discount": "{{value}} · {{status}}",
       "saveFailed": "No se pudo guardar esto cupón.",
+      "dateInvalid": "Escribe las fechas como AAAA-MM-DD HH:MM, por ejemplo 2026-09-08 14:00.",
+      "untilBeforeFrom": "El cupón tiene que dejar de ser válido después de empezar.",
       "deleteFailed": "No se pudo eliminar este cupón.",
       "discountTypes": {
         "percent": "Porcentaje",
@@ -1141,6 +1150,8 @@
     "payoutHistory": "Historial de pagos",
     "payoutHistoryHint": "Pagos recientes del mercado y estado de los pagos.",
     "noPayouts": "Aún no hay registros de pagos.",
+    "balanceUnavailable": "No se pudo cargar tu saldo, por eso no se muestra ninguna cifra aquí. Esto no significa que el saldo sea cero.",
+    "payoutsUnavailable": "No se pudo cargar tu historial de pagos. Esto no significa que no hayas recibido ninguno.",
     "payoutOrder": "Pedido {{order}}",
     "dateUnknown": "Fecha no disponible",
     "payoutStatus": {

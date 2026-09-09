@@ -323,6 +323,9 @@
     "sendCounter": "Seol friththairiscint",
     "cancelCounter": "Cealaigh",
     "acceptCounter": "Glac leis an bhfriththairiscint",
+    "acceptedTitle": "Glacadh le do thairiscint",
+    "acceptedHint": "Níor íocadh aon rud fós. Críochnaigh an ceannach ar phraghas do thairisceana chun é a dhaingniú.",
+    "payNow": "Íoc anois",
     "counterFailed": "Níorbh fhéidir an frith-thairiscint seo a sheoladh.",
     "actionFailed": "Níorbh fhéidir an tairiscint seo a nuashonrú.",
     "status": {
@@ -838,6 +841,10 @@
       "lastScan": "Bailiú deimhnithe",
       "lastScanDetail": "Tá an t-ordú {{order}} {{status}} anois.",
       "slotFailed": "Níorbh fhéidir an sliotán bailithe seo a chruthú.",
+      "dateInvalid": "Cuir isteach an dá am mar BBBB-MM-LL UU:NN, mar shampla 2026-09-08 14:00.",
+      "endBeforeStart": "Caithfidh an sliotán críochnú tar éis dó tosú.",
+      "quickToday": "Níos déanaí inniu",
+      "quickTomorrow": "Amárach",
       "updateFailed": "Níorbh fhéidir an sliotán bailithe seo a nuashonrú.",
       "scanFailed": "Níorbh fhéidir an cód bailithe seo a scanadh.",
       "deleteFailed": "Níorbh fhéidir an sliotán bailithe seo a scriosadh.",
@@ -909,6 +916,8 @@
       "percentValue": "{{value}}%",
       "discount": "{{value}} · {{status}}",
       "saveFailed": "Níorbh fhéidir an cúpón seo a shábháil.",
+      "dateInvalid": "Cuir isteach na dátaí mar BBBB-MM-LL UU:NN, mar shampla 2026-09-08 14:00.",
+      "untilBeforeFrom": "Caithfidh an dearbhán dul as feidhm tar éis dó tosú.",
       "deleteFailed": "Níorbh fhéidir an cúpón seo a scriosadh.",
       "discountTypes": {
         "percent": "Céatadán",
@@ -1141,6 +1150,8 @@
     "payoutHistory": "Stair íocaíochta",
     "payoutHistoryHint": "Íocaíochtaí margaidh le déanaí agus stádas eisíocaíochta.",
     "noPayouts": "Níl aon taifid íocaíochta amach fós.",
+    "balanceUnavailable": "Níorbh fhéidir do iarmhéid a lódáil, mar sin níl figiúr ar bith le feiceáil anseo. Ní chiallaíonn sé sin go bhfuil d’iarmhéid ag nialas.",
+    "payoutsUnavailable": "Níorbh fhéidir stair d’íocaíochtaí a lódáil. Ní chiallaíonn sé sin nach bhfuair tú aon cheann.",
     "payoutOrder": "Ordú {{order}}",
     "dateUnknown": "Dáta ar fáil",
     "payoutStatus": {

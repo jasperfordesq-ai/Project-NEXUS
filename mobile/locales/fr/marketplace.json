@@ -323,6 +323,9 @@
     "sendCounter": "Envoyer le compteur",
     "cancelCounter": "Annuler",
     "acceptCounter": "Accepter le compteur",
+    "acceptedTitle": "Votre offre a été acceptée",
+    "acceptedHint": "Rien n’a encore été payé. Finalisez l’achat au prix de votre offre pour la garantir.",
+    "payNow": "Payer maintenant",
     "counterFailed": "Impossible d'envoyer cette contre-offre.",
     "actionFailed": "Impossible de mettre à jour cette offre.",
     "status": {
@@ -838,6 +841,10 @@
       "lastScan": "Retrait confirmé",
       "lastScanDetail": "La commande {{order}} est maintenant {{status}}.",
       "slotFailed": "Impossible de créer ce créneau de ramassage.",
+      "dateInvalid": "Saisissez les deux heures au format AAAA-MM-JJ HH:MM, par exemple 2026-09-08 14:00.",
+      "endBeforeStart": "Le créneau doit se terminer après son début.",
+      "quickToday": "Plus tard aujourd’hui",
+      "quickTomorrow": "Demain",
       "updateFailed": "Impossible de mettre à jour ce créneau de ramassage.",
       "scanFailed": "Impossible de scanner ce code de ramassage.",
       "deleteFailed": "Impossible de supprimer ce créneau de ramassage. créneau.",
@@ -909,6 +916,8 @@
       "percentValue": "{{value}}%",
       "discount": "{{value}} · {{status}}",
       "saveFailed": "Impossible d'enregistrer ce coupon.",
+      "dateInvalid": "Saisissez les dates au format AAAA-MM-JJ HH:MM, par exemple 2026-09-08 14:00.",
+      "untilBeforeFrom": "Le bon doit cesser d’être valable après son début.",
       "deleteFailed": "Impossible de supprimer ce coupon.",
       "discountTypes": {
         "percent": "Pourcent",
@@ -1141,6 +1150,8 @@
     "payoutHistory": "Historique des paiements",
     "payoutHistoryHint": "Paiements récents sur le marché et état des paiements.",
     "noPayouts": "Aucun enregistrement de paiement pour l'instant.",
+    "balanceUnavailable": "Votre solde n’a pas pu être chargé, aucun montant n’est donc affiché ici. Cela ne veut pas dire que votre solde est nul.",
+    "payoutsUnavailable": "Votre historique de versements n’a pas pu être chargé. Cela ne veut pas dire que vous n’en avez reçu aucun.",
     "payoutOrder": "Commande {{order}}",
     "dateUnknown": "Date indisponible",
     "payoutStatus": {

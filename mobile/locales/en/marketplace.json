@@ -323,6 +323,9 @@
     "sendCounter": "Send counter",
     "cancelCounter": "Cancel",
     "acceptCounter": "Accept counter",
+    "acceptedTitle": "Your offer was accepted",
+    "acceptedHint": "Nothing has been paid yet. Complete the purchase at your offer price to secure it.",
+    "payNow": "Pay now",
     "counterFailed": "Could not send this counter-offer.",
     "actionFailed": "Could not update this offer.",
     "status": {
@@ -838,6 +841,10 @@
       "lastScan": "Pickup confirmed",
       "lastScanDetail": "Order {{order}} is now {{status}}.",
       "slotFailed": "Could not create this pickup slot.",
+      "dateInvalid": "Enter both times as YYYY-MM-DD HH:MM, for example 2026-09-08 14:00.",
+      "endBeforeStart": "The slot has to end after it starts.",
+      "quickToday": "Later today",
+      "quickTomorrow": "Tomorrow",
       "updateFailed": "Could not update this pickup slot.",
       "scanFailed": "Could not scan this pickup code.",
       "deleteFailed": "Could not delete this pickup slot.",
@@ -909,6 +916,8 @@
       "percentValue": "{{value}}%",
       "discount": "{{value}} · {{status}}",
       "saveFailed": "Could not save this coupon.",
+      "dateInvalid": "Enter the dates as YYYY-MM-DD HH:MM, for example 2026-09-08 14:00.",
+      "untilBeforeFrom": "The coupon has to stop being valid after it starts.",
       "deleteFailed": "Could not delete this coupon.",
       "discountTypes": {
         "percent": "Percent",
@@ -1141,6 +1150,8 @@
     "payoutHistory": "Payout history",
     "payoutHistoryHint": "Recent marketplace payments and payout status.",
     "noPayouts": "No payout records yet.",
+    "balanceUnavailable": "Your balance could not be loaded, so no figure is shown here. This is not a zero balance.",
+    "payoutsUnavailable": "Your payout history could not be loaded. This does not mean you have had none.",
     "payoutOrder": "Order {{order}}",
     "dateUnknown": "Date unavailable",
     "payoutStatus": {

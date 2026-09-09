@@ -17,6 +17,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { addHoursToInput, formatLocalDateTimeInput, nextWholeHourInput, parseLocalDateTimeInput } from '@/lib/utils/dateTimeInput';
 import { useConfirm } from '@/components/ui/useConfirm';
 import BottomSheet from '@/components/ui/BottomSheet';
 import EmptyState from '@/components/ui/EmptyState';
@@ -665,17 +666,55 @@ function PickupsPanel({ refreshNonce }: PanelProps) {
 
   function openSlotEditor(slot: MarketplacePickupSlot) {
     setEditingSlot(slot);
-    setSlotStart(slot.slot_start ?? '');
-    setSlotEnd(slot.slot_end ?? '');
+    setSlotStart(formatLocalDateTimeInput(slot.slot_start));
+    setSlotEnd(formatLocalDateTimeInput(slot.slot_end));
     setCapacity(String(slot.capacity ?? PICKUP_DEFAULT_CAPACITY));
     setIsRecurring(Boolean(slot.is_recurring));
   }
 
+  /** Fill both fields with a one-hour slot starting on the next whole hour. */
+  function fillSlot(daysAhead: number) {
+    const start = nextWholeHourInput(daysAhead);
+    setSlotStart(start);
+    setSlotEnd(addHoursToInput(start, 1));
+  }
+
   async function saveSlot() {
     if (!slotStart.trim() || !slotEnd.trim()) return;
+    /*
+      🔴 Both fields went to the server exactly as typed, unchecked. "next Tuesday",
+      "12/09/2026" and "2026-02-31 10:00" were all sent, and a slot could be created ending
+      before it started. There is no native date picker in this app — adding one is a
+      native dependency and a new store build — so the fields stay typed and the app
+      checks them, in one place, with a refusal that says which field is wrong.
+    */
+    const startIso = parseLocalDateTimeInput(slotStart);
+    const endIso = parseLocalDateTimeInput(slotEnd);
+    if (!startIso || !endIso) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: t('tools.pickups.dateInvalid'),
+        variant: 'warning',
+      });
+      return;
+    }
+    if (new Date(endIso).getTime() <= new Date(startIso).getTime()) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: t('tools.pickups.endBeforeStart'),
+        variant: 'warning',
+      });
+      return;
+    }
+    /*
+      🔴 The ISO instant, not the typed string. `Carbon::parse` reads a bare
+      "2026-06-01 11:00" in the SERVER's time zone, so a seller in UTC+1 who edited a slot
+      saved it an hour out — the same offset shift recorded on the challenge deadline in
+      new-challenge.tsx. An instant with an offset cannot be misread.
+    */
     const payload = {
-      slot_start: slotStart.trim(),
-      slot_end: slotEnd.trim(),
+      slot_start: startIso,
+      slot_end: endIso,
       capacity: normalizePickupCapacity(capacity),
       is_recurring: isRecurring,
       recurring_pattern: isRecurring ? 'weekly' : null,
@@ -771,6 +810,16 @@ function PickupsPanel({ refreshNonce }: PanelProps) {
         ) : null}
         <FormInput label={t('tools.pickups.start')} value={slotStart} onChangeText={setSlotStart} placeholder={t('tools.pickups.startPlaceholder')} />
         <FormInput label={t('tools.pickups.end')} value={slotEnd} onChangeText={setSlotEnd} placeholder={t('tools.pickups.endPlaceholder')} />
+        {/* The commonest slot is "later today" or "tomorrow", and typing thirty-two
+            characters for it is what invites the typo the check above then refuses. */}
+        <View className="flex-row flex-wrap gap-2">
+          <HeroButton size="sm" variant="secondary" testID="pickup-slot-quick-today" onPress={() => fillSlot(0)}>
+            <HeroButton.Label>{t('tools.pickups.quickToday')}</HeroButton.Label>
+          </HeroButton>
+          <HeroButton size="sm" variant="secondary" testID="pickup-slot-quick-tomorrow" onPress={() => fillSlot(1)}>
+            <HeroButton.Label>{t('tools.pickups.quickTomorrow')}</HeroButton.Label>
+          </HeroButton>
+        </View>
         <FormInput label={t('tools.pickups.capacityLabel')} value={capacity} onChangeText={setCapacity} placeholder={t('tools.pickups.capacityPlaceholder')} keyboardType="decimal-pad" />
         <HeroButton
           variant={isRecurring ? 'primary' : 'secondary'}
@@ -926,8 +975,8 @@ function CouponsPanel({ refreshNonce }: PanelProps) {
       minOrderCents: coupon.min_order_cents != null ? String(coupon.min_order_cents) : '',
       maxUses: coupon.max_uses != null ? String(coupon.max_uses) : '',
       maxUsesPerMember: coupon.max_uses_per_member != null ? String(coupon.max_uses_per_member) : '1',
-      validFrom: coupon.valid_from ? String(coupon.valid_from).slice(0, 16) : '',
-      validUntil: coupon.valid_until ? String(coupon.valid_until).slice(0, 16) : '',
+      validFrom: formatLocalDateTimeInput(coupon.valid_from),
+      validUntil: formatLocalDateTimeInput(coupon.valid_until),
       status: coupon.status ?? 'active',
       appliesTo: coupon.applies_to ?? 'all_listings',
     } : emptyCouponForm);
@@ -935,6 +984,29 @@ function CouponsPanel({ refreshNonce }: PanelProps) {
 
   async function save() {
     if (!form.title.trim()) return;
+    /*
+      🔴 Same as the pickup slot: both dates were passed through `.trim()` and sent. A
+      coupon whose "valid until" was mistyped either never worked or never expired, and
+      the seller was told nothing either way.
+    */
+    const fromIso = form.validFrom.trim() ? parseLocalDateTimeInput(form.validFrom) : null;
+    const untilIso = form.validUntil.trim() ? parseLocalDateTimeInput(form.validUntil) : null;
+    if ((form.validFrom.trim() && !fromIso) || (form.validUntil.trim() && !untilIso)) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: t('tools.coupons.dateInvalid'),
+        variant: 'warning',
+      });
+      return;
+    }
+    if (fromIso && untilIso && new Date(untilIso).getTime() <= new Date(fromIso).getTime()) {
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: t('tools.coupons.untilBeforeFrom'),
+        variant: 'warning',
+      });
+      return;
+    }
     const payload = couponPayload(form);
     setIsSavingCoupon(true);
     try {

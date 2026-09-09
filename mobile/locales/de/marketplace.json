@@ -323,6 +323,9 @@
     "sendCounter": "Gegenangebot senden",
     "cancelCounter": "Abbrechen",
     "acceptCounter": "Zähler akzeptieren",
+    "acceptedTitle": "Ihr Angebot wurde angenommen",
+    "acceptedHint": "Es wurde noch nichts bezahlt. Schließen Sie den Kauf zu Ihrem Angebotspreis ab, um ihn zu sichern.",
+    "payNow": "Jetzt bezahlen",
     "counterFailed": "Dieses Gegenangebot konnte nicht gesendet werden.",
     "actionFailed": "Dieses Angebot konnte nicht aktualisiert werden.",
     "status": {
@@ -838,6 +841,10 @@
       "lastScan": "Abholung bestätigt",
       "lastScanDetail": "Bestellung {{order}} ist jetzt {{status}}.",
       "slotFailed": "Dieser Abholplatz konnte nicht erstellt werden.",
+      "dateInvalid": "Geben Sie beide Zeiten als JJJJ-MM-TT HH:MM an, zum Beispiel 2026-09-08 14:00.",
+      "endBeforeStart": "Das Zeitfenster muss nach seinem Beginn enden.",
+      "quickToday": "Später heute",
+      "quickTomorrow": "Morgen",
       "updateFailed": "Dieser Abholplatz konnte nicht aktualisiert werden.",
       "scanFailed": "Konnte nicht scannen Dieser Abholcode.",
       "deleteFailed": "Dieser Abholplatz konnte nicht gelöscht werden.",
@@ -909,6 +916,8 @@
       "percentValue": "{{value}} %",
       "discount": "{{value}} · {{status}}",
       "saveFailed": "Dieser Gutschein konnte nicht gespeichert werden.",
+      "dateInvalid": "Geben Sie die Daten als JJJJ-MM-TT HH:MM an, zum Beispiel 2026-09-08 14:00.",
+      "untilBeforeFrom": "Der Gutschein muss nach seinem Beginn ungültig werden.",
       "deleteFailed": "Dieser Gutschein konnte nicht gelöscht werden.",
       "discountTypes": {
         "percent": "Prozent",
@@ -1141,6 +1150,8 @@
     "payoutHistory": "Auszahlungsverlauf",
     "payoutHistoryHint": "Letzte Marktplatzzahlungen und Auszahlungsstatus.",
     "noPayouts": "Noch keine Auszahlungsdatensätze.",
+    "balanceUnavailable": "Ihr Guthaben konnte nicht geladen werden, daher wird hier kein Betrag angezeigt. Das bedeutet nicht, dass Ihr Guthaben null ist.",
+    "payoutsUnavailable": "Ihr Auszahlungsverlauf konnte nicht geladen werden. Das bedeutet nicht, dass es keine Auszahlungen gab.",
     "payoutOrder": "Bestellung {{order}}",
     "dateUnknown": "Datum nicht verfügbar",
     "payoutStatus": {

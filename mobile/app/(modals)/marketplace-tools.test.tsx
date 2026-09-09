@@ -484,15 +484,60 @@ describe('MarketplaceToolsRoute', () => {
     fireEvent.press(getByText('Create pickup slot'));
 
     await waitFor(() => {
+      // Typed locally, sent as an instant: a bare "2026-06-01 10:00" is read in the
+      // SERVER's time zone, which is how a slot ends up an hour out.
       expect(createMarketplacePickupSlot).toHaveBeenCalledWith({
-        slot_start: '2026-06-01 10:00',
-        slot_end: '2026-06-01 12:00',
+        slot_start: new Date('2026-06-01T10:00').toISOString(),
+        slot_end: new Date('2026-06-01T12:00').toISOString(),
         capacity: 8,
         is_recurring: true,
         recurring_pattern: 'weekly',
         is_active: true,
       });
     });
+  });
+
+  /**
+   * 🔴 Both fields went to the server exactly as typed, unchecked. "next Tuesday" was a
+   * valid entry as far as the app was concerned, and a slot could be created that ended
+   * before it started.
+   */
+  it('refuses a pickup slot whose times are not dates, instead of sending them', async () => {
+    mockParams = { tab: 'pickups' };
+
+    const { getByPlaceholderText, getByText } = render(<MarketplaceToolsRoute />);
+
+    fireEvent.changeText(getByPlaceholderText('2026-06-01 10:00'), 'next Tuesday');
+    fireEvent.changeText(getByPlaceholderText('2026-06-01 12:00'), '2026-06-01 12:00');
+    fireEvent.press(getByText('Create pickup slot'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning' })));
+    expect(createMarketplacePickupSlot).not.toHaveBeenCalled();
+  });
+
+  it('refuses a pickup slot that ends before it starts', async () => {
+    mockParams = { tab: 'pickups' };
+
+    const { getByPlaceholderText, getByText } = render(<MarketplaceToolsRoute />);
+
+    fireEvent.changeText(getByPlaceholderText('2026-06-01 10:00'), '2026-06-01 12:00');
+    fireEvent.changeText(getByPlaceholderText('2026-06-01 12:00'), '2026-06-01 10:00');
+    fireEvent.press(getByText('Create pickup slot'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning' })));
+    expect(createMarketplacePickupSlot).not.toHaveBeenCalled();
+  });
+
+  it('fills a one-hour slot from the quick buttons, so the common case is not typed', async () => {
+    mockParams = { tab: 'pickups' };
+
+    const { getByPlaceholderText, getByTestId } = render(<MarketplaceToolsRoute />);
+    fireEvent.press(getByTestId('pickup-slot-quick-tomorrow'));
+
+    const start = (getByPlaceholderText('2026-06-01 10:00').props as { value: string }).value;
+    const end = (getByPlaceholderText('2026-06-01 12:00').props as { value: string }).value;
+    expect(start).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:00$/);
+    expect(new Date(end.replace(' ', 'T')).getTime() - new Date(start.replace(' ', 'T')).getTime()).toBe(3_600_000);
   });
 
   it('updates and pauses existing pickup slots from seller tools', async () => {
@@ -521,9 +566,11 @@ describe('MarketplaceToolsRoute', () => {
     fireEvent.press(getByText('Update pickup slot'));
 
     await waitFor(() => {
+      // The instant is preserved exactly through the local editor field and back — see
+      // the comment on the payload: a bare local string is read in the SERVER's zone.
       expect(updateMarketplacePickupSlot).toHaveBeenCalledWith(32, {
-        slot_start: '2026-06-01T10:00:00Z',
-        slot_end: '2026-06-01T12:00:00Z',
+        slot_start: '2026-06-01T10:00:00.000Z',
+        slot_end: '2026-06-01T12:00:00.000Z',
         capacity: 6,
         is_recurring: false,
         recurring_pattern: null,

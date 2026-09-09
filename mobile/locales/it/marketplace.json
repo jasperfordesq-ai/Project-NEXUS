@@ -323,6 +323,9 @@
     "sendCounter": "Invia contatore",
     "cancelCounter": "Annulla",
     "acceptCounter": "Accetta contatore",
+    "acceptedTitle": "La tua offerta è stata accettata",
+    "acceptedHint": "Non è ancora stato pagato nulla. Completa l’acquisto al prezzo della tua offerta per assicurartelo.",
+    "payNow": "Paga ora",
     "counterFailed": "Impossibile inviare questo controproposta.",
     "actionFailed": "Impossibile aggiornare questa offerta.",
     "status": {
@@ -838,6 +841,10 @@
       "lastScan": "Ritiro confermato",
       "lastScanDetail": "L'ordine {{order}} è ora {{status}}.",
       "slotFailed": "Impossibile creare questo spazio di ritiro.",
+      "dateInvalid": "Inserisci entrambi gli orari come AAAA-MM-GG HH:MM, per esempio 2026-09-08 14:00.",
+      "endBeforeStart": "La fascia oraria deve finire dopo il suo inizio.",
+      "quickToday": "Più tardi oggi",
+      "quickTomorrow": "Domani",
       "updateFailed": "Impossibile aggiornare questo spazio di ritiro.",
       "scanFailed": "Impossibile scansionare questo codice di ritiro.",
       "deleteFailed": "Impossibile eliminare questo spazio di ritiro.",
@@ -909,6 +916,8 @@
       "percentValue": "{{value}}%",
       "discount": "{{value}} · {{status}}",
       "saveFailed": "Impossibile salvare questo coupon.",
+      "dateInvalid": "Inserisci le date come AAAA-MM-GG HH:MM, per esempio 2026-09-08 14:00.",
+      "untilBeforeFrom": "Il buono deve cessare di essere valido dopo il suo inizio.",
       "deleteFailed": "Impossibile eliminare questo coupon.",
       "discountTypes": {
         "percent": "Percentuale",
@@ -1141,6 +1150,8 @@
     "payoutHistory": "Cronologia pagamenti",
     "payoutHistoryHint": "Pagamenti recenti sul marketplace e stato dei pagamenti.",
     "noPayouts": "Nessun record di pagamenti ancora.",
+    "balanceUnavailable": "Non è stato possibile caricare il tuo saldo, quindi qui non viene mostrata alcuna cifra. Non significa che il saldo sia zero.",
+    "payoutsUnavailable": "Non è stato possibile caricare la cronologia dei pagamenti. Non significa che tu non ne abbia ricevuto nessuno.",
     "payoutOrder": "Ordine {{order}}",
     "dateUnknown": "Data non disponibile",
     "payoutStatus": {

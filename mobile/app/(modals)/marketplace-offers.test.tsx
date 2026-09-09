@@ -32,6 +32,9 @@ jest.mock('react-i18next', () => ({
         'offers.subtitle': 'Review received offers and track offers you have made.',
         'offers.received': 'Received',
         'offers.sentTab': 'Sent',
+        'offers.acceptedTitle': 'Your offer was accepted',
+        'offers.acceptedHint': 'Nothing has been paid yet. Complete the purchase at your offer price to secure it.',
+        'offers.payNow': 'Pay now',
         'offers.signInTitle': 'Sign in to view marketplace offers',
         'offers.signInHint': 'Offers you send or receive are available after you sign in.',
         'offers.listing': 'Listing',
@@ -179,5 +182,56 @@ describe('MarketplaceOffersRoute', () => {
       pathname: '/(modals)/marketplace-detail',
       params: { id: '12', offer_id: '31', offer_amount: '37' },
     });
+  });
+
+  /**
+   * 🔴 An accepted offer said "accepted" and stopped there. The only button was View, and
+   * nothing on the screen told the buyer that no money had moved or that the purchase was
+   * still theirs to complete. A seller waiting to be paid, and a buyer who believed they
+   * had bought the thing, is the worst kind of quiet failure on a marketplace.
+   */
+  it('tells the buyer an accepted offer still has to be paid, and takes them there', async () => {
+    (getMarketplaceOffers as jest.Mock).mockResolvedValueOnce({
+      data: [{
+        id: 31,
+        amount: 37,
+        currency: 'EUR',
+        status: 'accepted',
+        created_at: '2026-05-15T10:30:00Z',
+        listing: { id: 12, title: 'Cordless drill', status: 'reserved' },
+        seller: { id: 4, name: 'Jordan Seller' },
+      }],
+      meta: { cursor: null, has_more: false },
+    });
+
+    const { getByText, getByTestId } = render(<MarketplaceOffersRoute />);
+
+    expect(await waitFor(() => getByTestId('offer-accepted-pay-31'))).toBeTruthy();
+    expect(getByText('Nothing has been paid yet. Complete the purchase at your offer price to secure it.')).toBeTruthy();
+
+    fireEvent.press(getByText('Pay now'));
+    expect(require('expo-router').router.push).toHaveBeenCalledWith({
+      pathname: '/(modals)/marketplace-detail',
+      params: { id: '12', offer_id: '31', offer_amount: '37' },
+    });
+  });
+
+  it('shows no pay prompt while an offer is still pending', async () => {
+    (getMarketplaceOffers as jest.Mock).mockResolvedValueOnce({
+      data: [{
+        id: 32,
+        amount: 37,
+        currency: 'EUR',
+        status: 'pending',
+        created_at: '2026-05-15T10:30:00Z',
+        listing: { id: 12, title: 'Cordless drill', status: 'active' },
+        seller: { id: 4, name: 'Jordan Seller' },
+      }],
+      meta: { cursor: null, has_more: false },
+    });
+
+    const { queryByTestId, findByText } = render(<MarketplaceOffersRoute />);
+    await findByText('Cordless drill');
+    expect(queryByTestId('offer-accepted-pay-32')).toBeNull();
   });
 });

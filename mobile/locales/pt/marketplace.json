@@ -323,6 +323,9 @@
     "sendCounter": "Enviar contador",
     "cancelCounter": "Cancelar",
     "acceptCounter": "Aceitar contador",
+    "acceptedTitle": "A sua oferta foi aceite",
+    "acceptedHint": "Ainda não foi pago nada. Conclua a compra ao preço da sua oferta para a garantir.",
+    "payNow": "Pagar agora",
     "counterFailed": "Não foi possível enviar esta contraoferta.",
     "actionFailed": "Não foi possível atualizar esta oferta.",
     "status": {
@@ -838,6 +841,10 @@
       "lastScan": "Recolha confirmada",
       "lastScanDetail": "O pedido {{order}} agora é {{status}}.",
       "slotFailed": "Não foi possível criar este local de coleta.",
+      "dateInvalid": "Indique as duas horas como AAAA-MM-DD HH:MM, por exemplo 2026-09-08 14:00.",
+      "endBeforeStart": "O período tem de terminar depois de começar.",
+      "quickToday": "Mais tarde hoje",
+      "quickTomorrow": "Amanhã",
       "updateFailed": "Não foi possível atualizar este local de coleta.",
       "scanFailed": "Não foi possível ler este código de retirada.",
       "deleteFailed": "Não foi possível excluir este horário de retirada.",
@@ -909,6 +916,8 @@
       "percentValue": "{{value}}%",
       "discount": "{{value}} · {{status}}",
       "saveFailed": "Não foi possível salvar este cupom.",
+      "dateInvalid": "Indique as datas como AAAA-MM-DD HH:MM, por exemplo 2026-09-08 14:00.",
+      "untilBeforeFrom": "O cupão tem de deixar de ser válido depois de começar.",
       "deleteFailed": "Não foi possível excluir este cupom.",
       "discountTypes": {
         "percent": "Porcentagem",
@@ -1141,6 +1150,8 @@
     "payoutHistory": "Histórico de pagamentos",
     "payoutHistoryHint": "Pagamentos recentes do mercado e status de pagamento.",
     "noPayouts": "Nenhum registro de pagamento ainda.",
+    "balanceUnavailable": "Não foi possível carregar o seu saldo, por isso não é apresentado qualquer valor aqui. Isto não significa que o saldo seja zero.",
+    "payoutsUnavailable": "Não foi possível carregar o histórico de pagamentos. Isto não significa que não tenha recebido nenhum.",
     "payoutOrder": "Pedido {{order}}",
     "dateUnknown": "Data indisponível",
     "payoutStatus": {

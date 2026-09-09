@@ -377,6 +377,29 @@ function OfferCard({
             </View>
           </Surface>
         ) : null}
+        {/*
+          🔴 An accepted offer said "accepted" and stopped there. The only button was
+          "View", which opens the listing — the buyer had to work out for themselves that
+          the money had not moved and that they still had to buy the thing. Nothing on this
+          screen said so, and nothing led them to the checkout that honours their price.
+        */}
+        {mode === 'sent' && offer.status === 'accepted' && listingId ? (
+          <Surface variant="secondary" className="mb-2 gap-2 rounded-panel-inner p-3" testID={`offer-accepted-pay-${offer.id}`}>
+            <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('offers.acceptedTitle')}</Text>
+            <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('offers.acceptedHint')}</Text>
+            <HeroButton
+              size="sm"
+              variant="primary"
+              onPress={() => router.push({
+                pathname: '/(modals)/marketplace-detail',
+                params: { id: String(listingId), offer_id: String(offer.id), offer_amount: String(offer.amount) },
+              } as unknown as Href)}
+            >
+              <Ionicons name="card-outline" size={14} color={theme.onPrimary} />
+              <HeroButton.Label>{t('offers.payNow')}</HeroButton.Label>
+            </HeroButton>
+          </Surface>
+        ) : null}
         <View className="flex-row flex-wrap gap-2">
           {listingId ? (
             <HeroButton

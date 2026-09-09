@@ -35,6 +35,9 @@ jest.mock('react-i18next', () => ({
         'stripeOnboarding.readinessHint': 'Stripe must enable all three checks before buyers can pay you.',
         'stripeOnboarding.requirementReady': '{{label}} ready',
         'stripeOnboarding.requirementMissing': '{{label}} not ready',
+        'stripeOnboarding.balanceUnavailable': 'Your balance could not be loaded, so no figure is shown here. This is not a zero balance.',
+        'stripeOnboarding.payoutsUnavailable': 'Your payout history could not be loaded. This does not mean you have had none.',
+        'common:buttons.retry': 'Retry',
         'stripeOnboarding.needBank': 'Bank details',
         'stripeOnboarding.needBankHint': 'Stripe asks for payout details directly in its secure onboarding flow.',
         'stripeOnboarding.needIdentity': 'Identity checks',
@@ -184,5 +187,46 @@ describe('MarketplaceStripeOnboardingRoute', () => {
 
     expect(balances.length).toBeGreaterThan(0);
     balances.forEach((balance) => expect(String(balance.props.children)).not.toMatch(/[,.]00(?:\D|$)/));
+  });
+
+  /**
+   * 🔴 The one that matters most on this screen. `Promise.all` rejected on the first
+   * failure, the catch set every piece to null, and the balance tiles rendered
+   * `formatMoney(undefined)` as "0.00" — so a seller with money waiting was shown three
+   * zeroes and no hint that anything had gone wrong.
+   */
+  it('never shows 0.00 when the balance request failed', async () => {
+    (getMarketplaceSellerBalance as jest.Mock).mockRejectedValueOnce(new Error('offline'));
+
+    const { findByTestId, queryAllByText } = render(<MarketplaceStripeOnboardingRoute />);
+
+    expect(await findByTestId('stripe-balance-unavailable')).toBeTruthy();
+    expect(queryAllByText(/0[.,]00/)).toHaveLength(0);
+  });
+
+  /**
+   * One failure must not take the other two down with it: a payout list that fails no
+   * longer blanks a balance that loaded perfectly well.
+   */
+  it('still shows a balance that loaded when only the payout list failed', async () => {
+    (getMarketplaceSellerBalance as jest.Mock).mockResolvedValueOnce({
+      data: { pending: 0, available: 24000, total_earned: 24000, currency: 'EUR' },
+    });
+    (getMarketplaceSellerPayouts as jest.Mock).mockRejectedValueOnce(new Error('offline'));
+
+    const { findAllByText, findByTestId, queryByTestId } = render(<MarketplaceStripeOnboardingRoute />);
+
+    expect((await findAllByText(/24[,.]000/)).length).toBeGreaterThan(0);
+    expect(await findByTestId('stripe-payouts-unavailable')).toBeTruthy();
+    expect(queryByTestId('stripe-balance-unavailable')).toBeNull();
+  });
+
+  it('does not claim there have been no payouts when the list failed to load', async () => {
+    (getMarketplaceSellerPayouts as jest.Mock).mockRejectedValueOnce(new Error('offline'));
+
+    const { findByTestId, queryByText } = render(<MarketplaceStripeOnboardingRoute />);
+
+    expect(await findByTestId('stripe-payouts-unavailable')).toBeTruthy();
+    expect(queryByText('No payout records yet.')).toBeNull();
   });
 });

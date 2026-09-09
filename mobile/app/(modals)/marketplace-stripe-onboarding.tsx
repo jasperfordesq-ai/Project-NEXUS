@@ -53,25 +53,33 @@ function MarketplaceStripeOnboardingScreen() {
   const [payouts, setPayouts] = useState<MarketplaceSellerPayout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
+  /* 🔴 Whether the BALANCE specifically could not be read. See the comment on load(). */
+  const [balanceFailed, setBalanceFailed] = useState(false);
+  const [payoutsFailed, setPayoutsFailed] = useState(false);
 
+  /*
+    🔴 This told a seller they had earned nothing when it had simply failed to ask.
+    `Promise.all` rejects on the FIRST failure, the catch set all three pieces to null, and
+    the balance tiles render `formatMoney(undefined)` as "0.00" — so a seller with £240
+    waiting saw three zeroes and no hint that anything had gone wrong. On a screen about
+    money that is not a cosmetic bug.
+
+    `allSettled` also stops one failure taking the other two down with it: a payout list
+    that 500s no longer blanks a balance that loaded perfectly well.
+  */
   async function load() {
     setIsLoading(true);
-    try {
-      const [statusResponse, balanceResponse, payoutsResponse] = await Promise.all([
-        getMarketplaceStripeOnboardingStatus(),
-        getMarketplaceSellerBalance(),
-        getMarketplaceSellerPayouts(1, 5),
-      ]);
-      setStatus(statusResponse.data);
-      setBalance(balanceResponse.data);
-      setPayouts(payoutsResponse.data);
-    } catch {
-      setStatus(null);
-      setBalance(null);
-      setPayouts([]);
-    } finally {
-      setIsLoading(false);
-    }
+    const [statusResult, balanceResult, payoutsResult] = await Promise.allSettled([
+      getMarketplaceStripeOnboardingStatus(),
+      getMarketplaceSellerBalance(),
+      getMarketplaceSellerPayouts(1, 5),
+    ]);
+    setStatus(statusResult.status === 'fulfilled' ? statusResult.value.data : null);
+    setBalance(balanceResult.status === 'fulfilled' ? balanceResult.value.data : null);
+    setBalanceFailed(balanceResult.status === 'rejected');
+    setPayouts(payoutsResult.status === 'fulfilled' ? payoutsResult.value.data : []);
+    setPayoutsFailed(payoutsResult.status === 'rejected');
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -212,11 +220,23 @@ function MarketplaceStripeOnboardingScreen() {
               </View>
               <Ionicons name="wallet-outline" size={22} color={primary} />
             </View>
-            <View className="flex-row flex-wrap gap-2">
-              <BalanceTile label={t('stripeOnboarding.pending')} value={formatMoney(balance?.pending, balance?.currency || tenant?.currency)} tone={theme.warning} />
-              <BalanceTile label={t('stripeOnboarding.available')} value={formatMoney(balance?.available, balance?.currency || tenant?.currency)} tone={theme.success} />
-              <BalanceTile label={t('stripeOnboarding.totalEarned')} value={formatMoney(balance?.total_earned, balance?.currency || tenant?.currency)} tone={primary} />
-            </View>
+            {balanceFailed ? (
+              /* Never a zero the seller could mistake for their real balance. */
+              <Surface variant="secondary" className="gap-3 rounded-panel-inner p-3" testID="stripe-balance-unavailable">
+                <Text accessibilityRole="alert" className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                  {t('stripeOnboarding.balanceUnavailable')}
+                </Text>
+                <HeroButton size="sm" variant="secondary" onPress={() => void load()}>
+                  <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+                </HeroButton>
+              </Surface>
+            ) : (
+              <View className="flex-row flex-wrap gap-2">
+                <BalanceTile label={t('stripeOnboarding.pending')} value={formatMoney(balance?.pending, balance?.currency || tenant?.currency)} tone={theme.warning} />
+                <BalanceTile label={t('stripeOnboarding.available')} value={formatMoney(balance?.available, balance?.currency || tenant?.currency)} tone={theme.success} />
+                <BalanceTile label={t('stripeOnboarding.totalEarned')} value={formatMoney(balance?.total_earned, balance?.currency || tenant?.currency)} tone={primary} />
+              </View>
+            )}
           </HeroCard.Body>
         </HeroCard>
 
@@ -229,7 +249,17 @@ function MarketplaceStripeOnboardingScreen() {
               </View>
               <Ionicons name="receipt-outline" size={22} color={primary} />
             </View>
-            {payouts.length === 0 ? (
+            {payoutsFailed ? (
+              /* "No payouts yet" is a claim about money. Do not make it on a failed request. */
+              <Surface variant="secondary" className="gap-3 rounded-panel-inner p-3" testID="stripe-payouts-unavailable">
+                <Text accessibilityRole="alert" className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                  {t('stripeOnboarding.payoutsUnavailable')}
+                </Text>
+                <HeroButton size="sm" variant="secondary" onPress={() => void load()}>
+                  <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+                </HeroButton>
+              </Surface>
+            ) : payouts.length === 0 ? (
               <Surface variant="secondary" className="rounded-panel-inner p-3">
                 <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('stripeOnboarding.noPayouts')}</Text>
               </Surface>
