@@ -7,6 +7,7 @@ import React from 'react';
 import { View, type ViewStyle, type StyleProp } from 'react-native';
 import { Button as HeroButton, Spinner } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
+import { CHROME_MAX_FONT_SCALE } from '@/lib/ui/textScale';
 import { contrastText } from '@/lib/utils/color';
 import { useAccentForeground } from '@/lib/theme/accentForeground';
 
@@ -88,10 +89,18 @@ export default function Button({
       {isLoading ? (
         <View className="flex-row items-center gap-2">
           <Spinner size="sm" color={variant === 'solid' ? (color ? contrastText(color) : accentForeground) : color ?? 'default'} />
-          {typeof children === 'string' ? <HeroButton.Label>{children}</HeroButton.Label> : children}
+          {typeof children === 'string' ? (
+            <HeroButton.Label maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}>{children}</HeroButton.Label>
+          ) : children}
         </View>
       ) : typeof children === 'string' ? (
-        <HeroButton.Label>{children}</HeroButton.Label>
+        /*
+          Capped, because a button's label sits in a row with other controls and at an
+          uncapped 2.0 system font scale it pushed them off the screen. 1.6 is as far as the
+          widest button ("Turn on notifications") can grow before it truncates — see
+          lib/ui/textScale.ts for why body text is deliberately NOT capped.
+        */
+        <HeroButton.Label maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}>{children}</HeroButton.Label>
       ) : (
         children
       )}

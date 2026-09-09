@@ -424,7 +424,7 @@ export default function HomeScreen() {
                       <Chip
                         key={option.key}
                         size="sm"
-                        className="h-12 px-3"
+                        className="min-h-12 px-3"
                         variant={filter === option.key ? 'secondary' : 'soft'}
                         color={filter === option.key ? 'accent' : 'default'}
                         onPress={() => handleFilterChange(option.key)}
@@ -445,7 +445,7 @@ export default function HomeScreen() {
                           key={option}
                           size="sm"
                           // Same measured 48dp minimum as the filter row above.
-                          className="h-12 px-3"
+                          className="min-h-12 px-3"
                           variant={subFilter === option ? 'primary' : 'soft'}
                           color={subFilter === option ? 'accent' : 'default'}
                           onPress={() => setSubFilter(subFilter === option ? null : option)}

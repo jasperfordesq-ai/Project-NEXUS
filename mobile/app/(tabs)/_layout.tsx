@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, PixelRatio, Text, View } from 'react-native';
 import { Tabs, router, type Href, usePathname } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +17,7 @@ import { useOptionalTenantCapabilities } from '@/lib/context/TenantContext';
 import { isRouteAllowed } from '@/lib/navigation/routeRequirements';
 
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
+import { TAB_LABEL_MAX_FONT_SCALE } from '@/lib/ui/textScale';
 import { contrastText } from '@/lib/utils/color';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -95,6 +96,21 @@ export default function TabsLayout() {
   // (cold start, offline with no cache) keeps every tab — see `isRouteAllowed`.
   const capabilities = useOptionalTenantCapabilities();
 
+  /*
+    🔴 The tab bar is the one row in the app whose height the navigator fixes, so it is the
+    one place the OS text-size setting could not simply be obeyed. At a 2.0 font scale the
+    11pt labels grew to 22pt inside a 60dp bar and were clipped mid-word, on every screen.
+
+    Two halves, and both are needed. The label is capped at 1.3 (the most a five-tab bar can
+    show on a 360dp phone before "Messages" truncates to nothing useful), and the bar grows
+    by the same capped amount so the larger label still fits instead of clipping against a
+    height that never moved. `PixelRatio.getFontScale()` is read at render, which is when the
+    navigator measures; Android restarts the activity on a font-scale change, so it is
+    re-read. Audit 2026-09-09, item 3.
+  */
+  const labelFontScale = Math.min(PixelRatio.getFontScale(), TAB_LABEL_MAX_FONT_SCALE);
+  const tabBarContentHeight = Math.round(60 + (labelFontScale - 1) * 16);
+
   // Single source of truth from RealtimeContext — no duplicate API call
   const messagesBadgeCount = unreadMessages;
 
@@ -123,7 +139,7 @@ export default function TabsLayout() {
           borderTopWidth: 1,
           paddingBottom: (insets.bottom || 0) + 4,
           paddingTop: 4,
-          height: 60 + (insets.bottom || 0),
+          height: tabBarContentHeight + (insets.bottom || 0),
           shadowColor: '#000',
           shadowOpacity: 0.14,
           shadowRadius: 16,
@@ -148,6 +164,21 @@ export default function TabsLayout() {
           } : undefined}
           options={{
             title: t(i18nKey),
+            /*
+              Rendered rather than styled, because `tabBarLabelStyle` has no way to express a
+              cap — `maxFontSizeMultiplier` is a Text prop, not a style. `title` above stays
+              as it is: it is what a screen reader announces, and it must not be capped or
+              truncated.
+            */
+            tabBarLabel: ({ color }: { color: string }) => (
+              <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={TAB_LABEL_MAX_FONT_SCALE}
+                style={{ color, fontSize: 11, fontWeight: '600', textAlign: 'center' }}
+              >
+                {t(i18nKey)}
+              </Text>
+            ),
             // `href: null` removes the tab from the bar; `undefined` leaves the default.
             ...(isRouteAllowed(capabilities, name) ? {} : { href: null }),
             tabBarIcon: ({ focused, color, size }) => (

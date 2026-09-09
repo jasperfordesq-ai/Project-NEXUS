@@ -11,6 +11,7 @@ import { Button as HeroButton, Surface } from 'heroui-native';
 
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { CHROME_MAX_FONT_SCALE } from '@/lib/ui/textScale';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -80,10 +81,23 @@ export default function AppTopBar({
     <Surface variant="default" className="mx-4 mt-2 mb-3 flex-row items-center gap-3 rounded-panel-inner px-3 py-2">
       <HeroButton variant="secondary" accessibilityLabel={backLabel} onPress={goBack}>
         <Ionicons name="arrow-back-outline" size={18} color={primary} />
-        <HeroButton.Label>{backLabel}</HeroButton.Label>
+        <HeroButton.Label maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}>{backLabel}</HeroButton.Label>
       </HeroButton>
 
-      <Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+      {/*
+        🔴 Capped, and this one bar decides it for 134 screens. The title shares its row with
+        the Back button and an optional action, so at the OS's largest text setting it either
+        squeezed them out or was itself squeezed to nothing. `numberOfLines={1}` then hid the
+        damage by truncating — the row looked fine and the screen had lost its name.
+        Ordinary body text inside screens is deliberately left uncapped; see lib/ui/textScale.ts.
+      */}
+      <Text
+        accessibilityRole="header"
+        className="min-w-0 flex-1 text-base font-semibold"
+        style={{ color: theme.text }}
+        numberOfLines={1}
+        maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}
+      >
         {title}
       </Text>
 
