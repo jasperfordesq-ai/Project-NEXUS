@@ -394,7 +394,6 @@ function NewCourseScreen() {
                   selected={level}
                   onSelect={setLevel}
                   labelFor={(value) => t(`level.${value}`)}
-                  primary={primary}
                 />
                 <ChoiceGroup
                   label={t('instructor.visibility_label')}
@@ -402,7 +401,6 @@ function NewCourseScreen() {
                   selected={visibility === 'group' ? 'members' : visibility}
                   onSelect={(value) => setVisibility(value)}
                   labelFor={(value) => t(`instructor.visibility_${value}`)}
-                  primary={primary}
                 />
                 <ChoiceGroup
                   label={t('instructor.category_label')}
@@ -414,7 +412,6 @@ function NewCourseScreen() {
                       ? t('instructor.no_category')
                       : categories.find((category) => String(category.id) === value)?.name ?? value
                   )}
-                  primary={primary}
                 />
                 <ChoiceGroup
                   label={t('instructor.enrollment_type_label')}
@@ -422,7 +419,6 @@ function NewCourseScreen() {
                   selected={enrollmentType}
                   onSelect={setEnrollmentType}
                   labelFor={(value) => t(`instructor.enrollment_${value}`)}
-                  primary={primary}
                 />
 
                 <Input

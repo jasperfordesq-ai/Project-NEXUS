@@ -10,7 +10,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -18,12 +18,13 @@ import { createGroup, getGroup, getGroupTemplates, updateGroup, uploadGroupImage
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import AppTopBar from '@/components/ui/AppTopBar';
+import ChoiceChips from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
@@ -435,32 +436,14 @@ function NewGroupScreen() {
             {!isEditing && templates.length > 0 ? (
               <View className="gap-2">
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.templateLabel')}</Text>
-                <TagGroup
-                  size="sm"
-                  selectionMode="single"
-                  selectedKeys={selectedTemplateId !== null ? [selectedTemplateId] : []}
-                  onSelectionChange={(keys) => {
-                    const id = Array.from(keys)[0];
-                    const template = templates.find((tpl) => tpl.id === id);
+                <ChoiceChips
+                  options={templates.map((template) => ({ value: String(template.id), label: template.name }))}
+                  selected={selectedTemplateId !== null ? String(selectedTemplateId) : ''}
+                  onSelect={(value) => {
+                    const template = templates.find((tpl) => String(tpl.id) === value);
                     if (template) applyTemplate(template);
                   }}
-                >
-                  <TagGroup.List>
-                    {templates.map((template) => {
-                      const isSelected = selectedTemplateId === template.id;
-                      return (
-                        <TagGroup.Item
-                          key={template.id}
-                          id={template.id}
-                        >
-                          <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                            {template.name}
-                          </TagGroup.ItemLabel>
-                        </TagGroup.Item>
-                      );
-                    })}
-                  </TagGroup.List>
-                </TagGroup>
+                />
               </View>
             ) : null}
 

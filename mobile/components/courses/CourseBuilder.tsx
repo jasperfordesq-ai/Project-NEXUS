@@ -22,11 +22,12 @@
 import { useState } from 'react';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { View } from 'react-native';
-import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { Ionicons } from '@/components/ui/Icon';
 import Checkbox from '@/components/ui/Checkbox';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import Input from '@/components/ui/Input';
 import NativePressable from '@/components/ui/NativePressable';
 import TextArea from '@/components/ui/TextArea';
@@ -48,7 +49,6 @@ import {
 } from '@/lib/api/courses';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { contrastText } from '@/lib/utils/color';
 
 const CONTENT_TYPES: LessonContentType[] = ['text', 'video', 'pdf', 'embed', 'quiz'];
 const DRIP_TYPES: LessonDripType[] = ['none', 'days_after_enroll', 'fixed_date'];
@@ -466,7 +466,6 @@ function LessonRow({
             selected={draft.content_type}
             onSelect={(value) => set({ content_type: value })}
             labelFor={(value) => t(`lesson_content.${value}`)}
-            primary={primary}
           />
 
           {draft.content_type === 'text' ? (
@@ -599,7 +598,6 @@ function LessonRow({
             selected={draft.drip_type ?? 'none'}
             onSelect={(value) => set({ drip_type: value })}
             labelFor={(value) => t(`builder.drip_${value}`)}
-            primary={primary}
           />
 
           {(draft.drip_type ?? 'none') === 'days_after_enroll' ? (
@@ -686,40 +684,20 @@ export function ChoiceGroup<T extends string>({
   selected,
   onSelect,
   labelFor,
-  primary,
 }: {
   label: string;
   values: readonly T[];
   selected: T | '';
   onSelect: (value: T) => void;
   labelFor: (value: T) => string;
-  primary: string;
 }) {
-  const theme = useTheme();
-
   return (
-    <View className="gap-2">
-      <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{label}</Text>
-      <TagGroup
-        size="sm"
-        selectionMode="single"
-        selectedKeys={selected ? [selected] : []}
-        onSelectionChange={(keys) => {
-          const next = Array.from(keys)[0];
-          if (next !== undefined) onSelect(next as T);
-        }}
-      >
-        <TagGroup.List>
-          {values.map((value) => (
-            <TagGroup.Item key={value} id={value}>
-              <TagGroup.ItemLabel style={selected === value ? { color: contrastText(primary) } : undefined}>
-                {labelFor(value)}
-              </TagGroup.ItemLabel>
-            </TagGroup.Item>
-          ))}
-        </TagGroup.List>
-      </TagGroup>
-    </View>
+    <ChoiceChips
+      label={label}
+      options={toOptions(values, labelFor)}
+      selected={selected}
+      onSelect={(value) => { if (value) onSelect(value); }}
+    />
   );
 }
 

@@ -8,12 +8,13 @@ import { FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Surface, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Surface, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
@@ -30,7 +31,7 @@ import {
 } from '@/lib/api/marketplace';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -260,66 +261,33 @@ function MarketplaceCategoryScreen() {
               <FilterInput label={t('category.priceMax')} value={priceMax} onChangeText={setPriceMax} placeholder={t('category.maxPlaceholder')} />
             </View>
 
-            <TagGroup
-              size="sm"
-              selectionMode="multiple"
-              selectedKeys={conditions.length === 0 ? ['all'] : conditions}
-              onSelectionChange={(keys) => {
-                const next = Array.from(keys);
-                // The 'all' sentinel chip clears the multi-select; picking any
-                // real condition drops 'all'.
-                if (next.includes('all') && conditions.length > 0) {
-                  setConditions([]);
-                } else {
-                  setConditions(next.filter((key) => key !== 'all') as MarketplaceCondition[]);
-                }
-              }}
-              className="mb-3"
-            >
-              <TagGroup.List>
-                {CONDITION_FILTERS.map((value) => {
-                  const id = value || 'all';
-                  const isSelected = value ? conditions.includes(value) : conditions.length === 0;
-                  return (
-                    <TagGroup.Item
-                      key={id}
-                      id={id}
-                    >
-                      <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                        {value ? t(`condition.${value}`) : t('category.allConditions')}
-                      </TagGroup.ItemLabel>
-                    </TagGroup.Item>
-                  );
-                })}
-              </TagGroup.List>
-            </TagGroup>
+            <View className="mb-3">
+              <ChoiceChips
+                selectionMode="multiple"
+                options={CONDITION_FILTERS.map((value) => ({
+                  value: value || 'all',
+                  label: value ? t(`condition.${value}`) : t('category.allConditions'),
+                }))}
+                selected={conditions.length === 0 ? ['all'] : conditions}
+                onSelectionChange={(next) => {
+                  // The 'all' chip clears the multi-select; picking any real
+                  // condition drops 'all'.
+                  if (next.includes('all') && conditions.length > 0) {
+                    setConditions([]);
+                  } else {
+                    setConditions(next.filter((key) => key !== 'all') as MarketplaceCondition[]);
+                  }
+                }}
+              />
+            </View>
 
-            <TagGroup
-              size="sm"
-              selectionMode="single"
-              selectedKeys={[sort]}
-              onSelectionChange={(keys) => {
-                const next = Array.from(keys)[0];
-                if (next !== undefined) setSort(next as typeof sort);
-              }}
-              className="mb-3"
-            >
-              <TagGroup.List>
-                {SORTS.map((value) => {
-                  const isSelected = sort === value;
-                  return (
-                    <TagGroup.Item
-                      key={value}
-                      id={value}
-                    >
-                      <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                        {t(`advancedSearch.sortOptions.${value}`)}
-                      </TagGroup.ItemLabel>
-                    </TagGroup.Item>
-                  );
-                })}
-              </TagGroup.List>
-            </TagGroup>
+            <View className="mb-3">
+              <ChoiceChips
+                options={toOptions(SORTS, (value) => t(`advancedSearch.sortOptions.${value}`))}
+                selected={sort}
+                onSelect={(value) => { if (value) setSort(value); }}
+              />
+            </View>
 
             {activeFilterCount > 0 ? (
               <HeroButton className="mb-3" variant="secondary" onPress={resetFilters}>

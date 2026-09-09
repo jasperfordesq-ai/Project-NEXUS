@@ -26,7 +26,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
-import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { Ionicons } from '@/components/ui/Icon';
@@ -43,9 +43,10 @@ import {
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import { toPlainText } from '@/lib/utils/plainText';
 import AppTopBar from '@/components/ui/AppTopBar';
+import ChoiceChips from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
@@ -260,7 +261,6 @@ function ContactDetails() {
 
 function ContactPanel({ page }: { page: StaticPageContent }) {
   const { t } = useTranslation(['profile', 'common']);
-  const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
 
@@ -388,27 +388,11 @@ function ContactPanel({ page }: { page: StaticPageContent }) {
               <Text className="text-sm font-semibold" style={{ color: theme.text }}>
                 {t('profile:support.contactForm.subject')}
               </Text>
-              <TagGroup
-                size="sm"
-                selectionMode="single"
-                selectedKeys={subjectId ? [subjectId] : []}
-                onSelectionChange={(keys) => {
-                  const next = Array.from(keys)[0];
-                  if (next !== undefined) setSubjectId(String(next));
-                }}
-              >
-                <TagGroup.List>
-                  {subjects.map((option) => (
-                    <TagGroup.Item key={option.id} id={option.id}>
-                      <TagGroup.ItemLabel
-                        style={option.id === subjectId ? { color: contrastText(primary) } : undefined}
-                      >
-                        {option.label}
-                      </TagGroup.ItemLabel>
-                    </TagGroup.Item>
-                  ))}
-                </TagGroup.List>
-              </TagGroup>
+              <ChoiceChips
+                options={subjects.map((option) => ({ value: option.id, label: option.label }))}
+                selected={subjectId}
+                onSelect={(value) => { if (value) setSubjectId(value); }}
+              />
             </View>
           ) : null}
 

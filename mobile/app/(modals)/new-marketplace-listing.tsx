@@ -12,7 +12,7 @@ import { Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-n
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
@@ -45,10 +45,11 @@ import {
 } from '@/lib/api/marketplace';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { MARKETPLACE_MAX_EDGE, prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { withRouteGate } from '@/components/withRouteGate';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 
 const PRICE_TYPES: MarketplacePriceType[] = ['fixed', 'negotiable', 'free', 'contact'];
 const CURRENCIES = ['EUR', 'GBP', 'USD', 'CAD', 'AUD', 'NZD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'JPY'] as const;
@@ -513,7 +514,7 @@ export function MarketplaceListingForm() {
               <Ionicons name="sparkles-outline" size={16} color={primary} />
               <HeroButton.Label>{isGeneratingDescription ? t('forms.generatingDescription') : t('forms.generateDescription')}</HeroButton.Label>
             </HeroButton>
-            <ButtonGroup label={t('forms.priceType')} values={PRICE_TYPES} selected={priceType} onSelect={setPriceType} labelFor={(value) => t(`priceType.${value}`)} primary={primary} />
+            <ButtonGroup label={t('forms.priceType')} values={PRICE_TYPES} selected={priceType} onSelect={setPriceType} labelFor={(value) => t(`priceType.${value}`)} />
             {priceType !== 'free' && priceType !== 'contact' ? (
               <>
                 <FormField label={t('forms.price')} value={price} onChangeText={setPrice} placeholder={t('forms.pricePlaceholder')} keyboardType="decimal-pad" />
@@ -525,12 +526,11 @@ export function MarketplaceListingForm() {
                   selected={currency}
                   onSelect={setCurrency}
                   labelFor={(value) => value}
-                  primary={primary}
                 />
               </>
             ) : null}
             <FormField label={t('forms.timeCredits')} value={timeCredits} onChangeText={setTimeCredits} placeholder={t('forms.timeCreditsPlaceholder')} keyboardType="decimal-pad" />
-            <ButtonGroup label={t('forms.condition')} values={CONDITIONS} selected={condition} onSelect={setCondition} labelFor={(value) => t(`condition.${value}`)} primary={primary} />
+            <ButtonGroup label={t('forms.condition')} values={CONDITIONS} selected={condition} onSelect={setCondition} labelFor={(value) => t(`condition.${value}`)} />
             <CategoryGroup categories={categories} selected={categoryId} onSelect={setCategoryId} primary={primary} />
             <TemplateFieldsSection
               fields={categoryTemplate}
@@ -583,8 +583,8 @@ export function MarketplaceListingForm() {
                 </View>
               </View>
             </View>
-            <ButtonGroup label={t('forms.delivery')} values={DELIVERY} selected={deliveryMethod} onSelect={setDeliveryMethod} labelFor={(value) => t(`delivery_method.${value}`)} primary={primary} />
-            <ButtonGroup label={t('forms.sellerType')} values={['private', 'business'] as const} selected={sellerType} onSelect={setSellerType} labelFor={(value) => t(`sellerType.${value}`)} primary={primary} />
+            <ButtonGroup label={t('forms.delivery')} values={DELIVERY} selected={deliveryMethod} onSelect={setDeliveryMethod} labelFor={(value) => t(`delivery_method.${value}`)} />
+            <ButtonGroup label={t('forms.sellerType')} values={['private', 'business'] as const} selected={sellerType} onSelect={setSellerType} labelFor={(value) => t(`sellerType.${value}`)} />
             <View className="gap-3">
               <View className="flex-row items-center justify-between gap-3">
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('forms.media')}</Text>
@@ -703,45 +703,20 @@ function ButtonGroup<T extends string>({
   selected,
   onSelect,
   labelFor,
-  primary,
 }: {
   label: string;
   values: readonly T[];
   selected: T;
   onSelect: (value: T) => void;
   labelFor: (value: T) => string;
-  primary: string;
 }) {
-  const theme = useTheme();
   return (
-    <View className="gap-2">
-      <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{label}</Text>
-      <TagGroup
-        size="sm"
-        selectionMode="single"
-        selectedKeys={[selected]}
-        onSelectionChange={(keys) => {
-          const next = Array.from(keys)[0];
-          if (next !== undefined) onSelect(next as T);
-        }}
-      >
-        <TagGroup.List>
-          {values.map((value) => {
-            const isSelected = selected === value;
-            return (
-              <TagGroup.Item
-                key={value}
-                id={value}
-              >
-                <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                  {labelFor(value)}
-                </TagGroup.ItemLabel>
-              </TagGroup.Item>
-            );
-          })}
-        </TagGroup.List>
-      </TagGroup>
-    </View>
+    <ChoiceChips
+      label={label}
+      options={toOptions(values, labelFor)}
+      selected={selected}
+      onSelect={(value) => { if (value) onSelect(value); }}
+    />
   );
 }
 

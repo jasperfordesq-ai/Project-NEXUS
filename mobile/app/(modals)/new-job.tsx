@@ -15,17 +15,18 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { createJob, generateJobDescription, getJobDetail, updateJob, type CreateJobPayload, type JobVacancy } from '@/lib/api/jobs';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { parseDecimalInput } from '@/lib/utils/decimal';
@@ -350,8 +351,8 @@ function NewJobScreen() {
               <Ionicons name="sparkles-outline" size={16} color={primary} />
               <HeroButton.Label>{isGeneratingDescription ? t('create.generatingDescription') : t('create.generateDescription')}</HeroButton.Label>
             </HeroButton>
-            <ButtonGroup label={t('create.typeLabel')} values={jobTypes} selected={type} onSelect={setType} labelFor={(value) => t(`filters.type.${value}`)} primary={primary} theme={theme} />
-            <ButtonGroup label={t('create.commitmentLabel')} values={commitments} selected={commitment} onSelect={setCommitment} labelFor={(value) => t(`filters.commitment.${value}`)} primary={primary} theme={theme} />
+            <ButtonGroup label={t('create.typeLabel')} values={jobTypes} selected={type} onSelect={setType} labelFor={(value) => t(`filters.type.${value}`)} />
+            <ButtonGroup label={t('create.commitmentLabel')} values={commitments} selected={commitment} onSelect={setCommitment} labelFor={(value) => t(`filters.commitment.${value}`)} />
             <FormField label={t('create.locationLabel')} value={location} onChangeText={setLocation} placeholder={t('create.locationPlaceholder')} theme={theme} />
             <FormField label={t('create.categoryLabel')} value={category} onChangeText={setCategory} placeholder={t('create.categoryPlaceholder')} theme={theme} />
             <FormField label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
@@ -370,7 +371,7 @@ function NewJobScreen() {
                   </View>
                 </View>
                 <FormField label={t('create.salaryCurrencyLabel')} value={salaryCurrency} onChangeText={setSalaryCurrency} placeholder={t('create.salaryCurrencyPlaceholder')} theme={theme} />
-                <ButtonGroup label={t('create.salaryTypeLabel')} values={salaryTypes} selected={salaryType} onSelect={setSalaryType} labelFor={(value) => t(`create.salaryType.${value}`)} primary={primary} theme={theme} />
+                <ButtonGroup label={t('create.salaryTypeLabel')} values={salaryTypes} selected={salaryType} onSelect={setSalaryType} labelFor={(value) => t(`create.salaryType.${value}`)} />
                 <HeroButton
                   variant={salaryNegotiable ? 'primary' : 'secondary'}
                   onPress={() => setSalaryNegotiable((value) => !value)}
@@ -394,7 +395,7 @@ function NewJobScreen() {
 
             <FormField label={t('create.taglineLabel')} value={tagline} onChangeText={setTagline} placeholder={t('create.taglinePlaceholder')} theme={theme} />
             <FormField label={t('create.videoUrlLabel')} value={videoUrl} onChangeText={setVideoUrl} placeholder={t('create.videoUrlPlaceholder')} theme={theme} keyboardType="url" />
-            <ButtonGroup label={t('create.companySizeLabel')} values={companySizes} selected={companySize} onSelect={setCompanySize} labelFor={(value) => t(`create.companySize.${value}`)} primary={primary} theme={theme} />
+            <ButtonGroup label={t('create.companySizeLabel')} values={companySizes} selected={companySize} onSelect={setCompanySize} labelFor={(value) => t(`create.companySize.${value}`)} />
             <FormField label={t('create.benefitsLabel')} value={benefits} onChangeText={setBenefits} placeholder={t('create.benefitsPlaceholder')} theme={theme} />
           </HeroCard.Body>
         </HeroCard>
@@ -423,46 +424,20 @@ function ButtonGroup<T extends string>({
   selected,
   onSelect,
   labelFor,
-  primary,
-  theme,
 }: {
   label: string;
   values: T[];
   selected: T | '';
   onSelect: (value: T) => void;
   labelFor: (value: T) => string;
-  primary: string;
-  theme: ReturnType<typeof useTheme>;
 }) {
   return (
-    <View className="gap-2">
-      <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{label}</Text>
-      <TagGroup
-        size="sm"
-        selectionMode="single"
-        selectedKeys={selected ? [selected] : []}
-        onSelectionChange={(keys) => {
-          const next = Array.from(keys)[0];
-          if (next !== undefined) onSelect(next as T);
-        }}
-      >
-        <TagGroup.List>
-          {values.map((value) => {
-            const isSelected = selected === value;
-            return (
-              <TagGroup.Item
-                key={value}
-                id={value}
-              >
-                <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                  {labelFor(value)}
-                </TagGroup.ItemLabel>
-              </TagGroup.Item>
-            );
-          })}
-        </TagGroup.List>
-      </TagGroup>
-    </View>
+    <ChoiceChips
+      label={label}
+      options={toOptions(values, labelFor)}
+      selected={selected}
+      onSelect={(value) => { if (value) onSelect(value); }}
+    />
   );
 }
 

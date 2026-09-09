@@ -8,10 +8,11 @@ import { FlatList, Linking, RefreshControl, ScrollView, View } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, CloseButton, Surface, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Chip, CloseButton, Surface, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
@@ -45,7 +46,7 @@ import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { presentMarketplacePayment } from '@/lib/payments/marketplacePayment';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
@@ -466,31 +467,11 @@ function MarketplaceOrdersScreen() {
                   <HeroButton.Label>{t('orders.sales')}</HeroButton.Label>
                 </HeroButton>
               </View>
-              <TagGroup
-                size="sm"
-                selectionMode="single"
-                selectedKeys={[statusTab]}
-                onSelectionChange={(keys) => {
-                  const next = Array.from(keys)[0];
-                  if (next !== undefined) setStatusTab(next as OrderStatusTab);
-                }}
-              >
-                <TagGroup.List>
-                  {(['all', 'active', 'completed', 'cancelled'] as OrderStatusTab[]).map((tab) => {
-                    const isSelected = statusTab === tab;
-                    return (
-                      <TagGroup.Item
-                        key={tab}
-                        id={tab}
-                      >
-                        <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                          {t(`orders.tabs.${tab}`)}
-                        </TagGroup.ItemLabel>
-                      </TagGroup.Item>
-                    );
-                  })}
-                </TagGroup.List>
-              </TagGroup>
+              <ChoiceChips
+                options={toOptions(['all', 'active', 'completed', 'cancelled'] as OrderStatusTab[], (tab) => t(`orders.tabs.${tab}`))}
+                selected={statusTab}
+                onSelect={(value) => { if (value) setStatusTab(value); }}
+              />
             </HeroCard.Body>
           </HeroCard>
         }

@@ -12,7 +12,7 @@ import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { randomUUID } from 'expo-crypto';
-import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -38,7 +38,7 @@ import {
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -51,6 +51,7 @@ import {
   shiftEventLocalDate,
 } from '@/lib/utils/eventDateTime';
 import AppTopBar from '@/components/ui/AppTopBar';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import EmptyState from '@/components/ui/EmptyState';
@@ -881,34 +882,13 @@ function NewEventScreen() {
                 </HeroButton>
               )}
             </View>
-            <View className="gap-2">
-              <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.categoryLabel')}</Text>
-              <TagGroup
-                size="sm"
-                selectionMode="single"
-                selectedKeys={category ? [category] : []}
-                onSelectionChange={(keys) => {
-                  const next = Array.from(keys)[0];
-                  setCategory(next === undefined ? '' : String(next));
-                }}
-              >
-                <TagGroup.List>
-                  {categoryOptions.map((option) => {
-                    const isSelected = category === option.id;
-                    return (
-                      <TagGroup.Item
-                        key={option.id}
-                        id={option.id}
-                      >
-                        <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                          {option.label}
-                        </TagGroup.ItemLabel>
-                      </TagGroup.Item>
-                    );
-                  })}
-                </TagGroup.List>
-              </TagGroup>
-            </View>
+            <ChoiceChips
+              label={t('create.categoryLabel')}
+              options={categoryOptions.map((option) => ({ value: option.id, label: option.label }))}
+              selected={category}
+              onSelect={(value) => setCategory(value)}
+              allowDeselect
+            />
             <FormField label={t('create.timezoneLabel')} value={timezone} onChangeText={setTimezone} placeholder={t('create.timezonePlaceholder')} theme={theme} />
             <Text className="text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.timezoneHint')}</Text>
             <ToggleChip
@@ -925,61 +905,27 @@ function NewEventScreen() {
                 <ToggleChip label={t('create.recurrenceToggle')} selected={isRecurring} onPress={() => setIsRecurring((value) => !value)} primary={primary} />
                 {isRecurring ? (
                   <>
-                    <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.recurrenceFrequency')}</Text>
-                    <TagGroup
-                      size="sm"
-                      selectionMode="single"
-                      selectedKeys={[recurrenceFrequency]}
-                      onSelectionChange={(keys) => {
-                        const value = Array.from(keys)[0];
-                        if (value) setRecurrenceFrequency(String(value) as RecurrenceFrequency);
-                      }}
-                    >
-                      <TagGroup.List>
-                        {supportedRecurrenceFrequencies.map((value) => (
-                          <TagGroup.Item key={value} id={value}>
-                            <TagGroup.ItemLabel>{t(`create.recurrenceFrequencies.${value}`)}</TagGroup.ItemLabel>
-                          </TagGroup.Item>
-                        ))}
-                      </TagGroup.List>
-                    </TagGroup>
+                    <ChoiceChips
+                      label={t('create.recurrenceFrequency')}
+                      options={toOptions(supportedRecurrenceFrequencies, (value) => t(`create.recurrenceFrequencies.${value}`))}
+                      selected={recurrenceFrequency}
+                      onSelect={(value) => { if (value) setRecurrenceFrequency(value as RecurrenceFrequency); }}
+                    />
                     {recurrenceFrequency === 'weekly' || recurrenceFrequency === 'biweekly' ? (
-                      <>
-                        <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.recurrenceDays')}</Text>
-                        <TagGroup
-                          size="sm"
-                          selectionMode="multiple"
-                          selectedKeys={recurrenceDays}
-                          onSelectionChange={(keys) => setRecurrenceDays(Array.from(keys).map(String))}
-                        >
-                          <TagGroup.List>
-                            {RECURRENCE_WEEKDAYS.map((value) => (
-                              <TagGroup.Item key={value} id={value}>
-                                <TagGroup.ItemLabel>{t(`create.recurrenceWeekdays.${value}`)}</TagGroup.ItemLabel>
-                              </TagGroup.Item>
-                            ))}
-                          </TagGroup.List>
-                        </TagGroup>
-                      </>
+                      <ChoiceChips
+                        label={t('create.recurrenceDays')}
+                        selectionMode="multiple"
+                        options={toOptions(RECURRENCE_WEEKDAYS, (value) => t(`create.recurrenceWeekdays.${value}`))}
+                        selected={recurrenceDays as (typeof RECURRENCE_WEEKDAYS)[number][]}
+                        onSelectionChange={(values) => setRecurrenceDays(values)}
+                      />
                     ) : null}
-                    <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.recurrenceEnds')}</Text>
-                    <TagGroup
-                      size="sm"
-                      selectionMode="single"
-                      selectedKeys={[recurrenceEndType]}
-                      onSelectionChange={(keys) => {
-                        const value = Array.from(keys)[0];
-                        if (value) setRecurrenceEndType(String(value) as RecurrenceEndType);
-                      }}
-                    >
-                      <TagGroup.List>
-                        {supportedRecurrenceEndTypes.map((value) => (
-                          <TagGroup.Item key={value} id={value}>
-                            <TagGroup.ItemLabel>{t(`create.recurrenceEndTypes.${value}`)}</TagGroup.ItemLabel>
-                          </TagGroup.Item>
-                        ))}
-                      </TagGroup.List>
-                    </TagGroup>
+                    <ChoiceChips
+                      label={t('create.recurrenceEnds')}
+                      options={toOptions(supportedRecurrenceEndTypes, (value) => t(`create.recurrenceEndTypes.${value}`))}
+                      selected={recurrenceEndType}
+                      onSelect={(value) => { if (value) setRecurrenceEndType(value as RecurrenceEndType); }}
+                    />
                     {recurrenceEndType === 'after_count' ? (
                       <FormField label={t('create.recurrenceCount')} value={recurrenceCount} onChangeText={setRecurrenceCount} placeholder={t('create.recurrenceCountPlaceholder', { max: recurrenceCapabilities.max_occurrences })} theme={theme} keyboardType="number-pad" />
                     ) : recurrenceEndType === 'on_date' ? (
@@ -994,25 +940,21 @@ function NewEventScreen() {
             {isEditing && isRecurringSeries ? (
               <View className="gap-3 rounded-panel-inner border p-3" style={{ borderColor: theme.border, backgroundColor: withAlpha(primary, 0.06) }}>
                 <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('create.recurrenceEditScope')}</Text>
-                <TagGroup
-                  size="sm"
-                  selectionMode="single"
-                  selectedKeys={[recurrenceEditScope]}
-                  onSelectionChange={(keys) => {
-                    const value = Array.from(keys)[0];
+                <ChoiceChips
+                  options={[
+                    { value: 'single' as RecurrenceEditScope, label: t('create.recurrenceScopeSingle') },
+                    ...(recurrenceCapabilities.supports_effective_revisions
+                      ? [{ value: 'this_and_future' as RecurrenceEditScope, label: t('create.recurrenceScopeFuture') }]
+                      : []),
+                  ]}
+                  selected={recurrenceEditScope}
+                  onSelect={(value) => {
                     if (value) {
-                      setRecurrenceEditScope(String(value) as RecurrenceEditScope);
+                      setRecurrenceEditScope(value);
                       setRevisionPreview(null);
                     }
                   }}
-                >
-                  <TagGroup.List>
-                    <TagGroup.Item id="single"><TagGroup.ItemLabel>{t('create.recurrenceScopeSingle')}</TagGroup.ItemLabel></TagGroup.Item>
-                    {recurrenceCapabilities.supports_effective_revisions ? (
-                      <TagGroup.Item id="this_and_future"><TagGroup.ItemLabel>{t('create.recurrenceScopeFuture')}</TagGroup.ItemLabel></TagGroup.Item>
-                    ) : null}
-                  </TagGroup.List>
-                </TagGroup>
+                />
                 <Text className="text-xs leading-5" style={{ color: theme.textMuted }}>
                   {t(recurrenceCapabilities.supports_effective_revisions && recurrenceEditScope === 'this_and_future'
                     ? 'create.recurrenceScopeFutureHint'
@@ -1190,33 +1132,18 @@ function AccessibilityChoice({
   noLabel: string;
   primary: string;
 }) {
-  const theme = useTheme();
   const selected = value === true ? 'yes' : value === false ? 'no' : 'unknown';
   return (
-    <View className="gap-2">
-      <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{label}</Text>
-      <TagGroup
-        size="sm"
-        selectionMode="single"
-        selectedKeys={[selected]}
-        onSelectionChange={(keys) => {
-          const next = String(Array.from(keys)[0] ?? 'unknown');
-          onChange(next === 'yes' ? true : next === 'no' ? false : null);
-        }}
-      >
-        <TagGroup.List>
-          {([
-            ['unknown', unknownLabel],
-            ['yes', yesLabel],
-            ['no', noLabel],
-          ] as const).map(([id, optionLabel]) => (
-            <TagGroup.Item key={id} id={id}>
-              <TagGroup.ItemLabel>{optionLabel}</TagGroup.ItemLabel>
-            </TagGroup.Item>
-          ))}
-        </TagGroup.List>
-      </TagGroup>
-    </View>
+    <ChoiceChips
+      label={label}
+      options={[
+        { value: 'unknown', label: unknownLabel },
+        { value: 'yes', label: yesLabel },
+        { value: 'no', label: noLabel },
+      ]}
+      selected={selected}
+      onSelect={(next) => onChange(next === 'yes' ? true : next === 'no' ? false : null)}
+    />
   );
 }
 

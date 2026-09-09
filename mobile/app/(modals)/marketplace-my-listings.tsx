@@ -8,11 +8,12 @@ import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Surface, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Chip, Surface, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import AppTopBar from '@/components/ui/AppTopBar';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import EmptyState from '@/components/ui/EmptyState';
@@ -35,7 +36,7 @@ import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -267,31 +268,11 @@ function DashboardCard({
           <Chip size="sm" variant="secondary"><Chip.Label>{t('myListings.views', { count: stats.total_views ?? stats.views_30d ?? 0 })}</Chip.Label></Chip>
           <Chip size="sm" variant="secondary"><Chip.Label>{t('myListings.offers', { count: stats.pending_offers ?? 0 })}</Chip.Label></Chip>
         </View>
-        <TagGroup
-          size="sm"
-          selectionMode="single"
-          selectedKeys={[activeTab]}
-          onSelectionChange={(keys) => {
-            const next = Array.from(keys)[0];
-            if (next !== undefined) onTabChange(next as ListingTab);
-          }}
-        >
-          <TagGroup.List>
-            {LISTING_TABS.map((tab) => {
-              const isSelected = activeTab === tab;
-              return (
-                <TagGroup.Item
-                  key={tab}
-                  id={tab}
-                >
-                  <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                    {t(`myListings.tabs.${tab}`, { count: listingTabCount(stats, tab) })}
-                  </TagGroup.ItemLabel>
-                </TagGroup.Item>
-              );
-            })}
-          </TagGroup.List>
-        </TagGroup>
+        <ChoiceChips
+          options={toOptions(LISTING_TABS, (tab) => t(`myListings.tabs.${tab}`, { count: listingTabCount(stats, tab) }))}
+          selected={activeTab}
+          onSelect={(value) => { if (value) onTabChange(value); }}
+        />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 2 }}>
           <SellerShortcutButton label={t('myListings.onboarding')} icon="storefront-outline" primary={primary} onPress={() => router.push('/(modals)/marketplace-merchant-onboarding' as Href)} />
           <SellerShortcutButton label={t('myListings.payments')} icon="card-outline" primary={primary} onPress={() => router.push('/(modals)/marketplace-stripe-onboarding' as Href)} />

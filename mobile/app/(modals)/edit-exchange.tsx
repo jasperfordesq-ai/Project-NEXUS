@@ -13,7 +13,7 @@ import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, TagGroup } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Chip, Spinner } from 'heroui-native';
 
 import {
   generateExchangeDescription,
@@ -44,12 +44,13 @@ import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import * as Haptics from '@/lib/haptics';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import AppTopBar from '@/components/ui/AppTopBar';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -468,32 +469,12 @@ function EditExchangeModalInner() {
           </FormSection>
 
           <FormSection title={t('form.deliveryTitle')} icon="location-outline" primary={primary} theme={theme}>
-              <FieldLabel label={t('form.serviceType')} theme={theme} />
-              <TagGroup
-                size="sm"
-                selectionMode="single"
-                selectedKeys={[serviceType]}
-                onSelectionChange={(keys) => {
-                  const next = Array.from(keys)[0];
-                  if (next !== undefined) setServiceType(next as ServiceType);
-                }}
-              >
-                <TagGroup.List>
-                  {serviceTypes.map((value) => {
-                    const isSelected = serviceType === value;
-                    return (
-                      <TagGroup.Item
-                        key={value}
-                        id={value}
-                      >
-                        <TagGroup.ItemLabel style={isSelected ? { color: contrastText(primary) } : undefined}>
-                          {t(`serviceType.${value}`)}
-                        </TagGroup.ItemLabel>
-                      </TagGroup.Item>
-                    );
-                  })}
-                </TagGroup.List>
-              </TagGroup>
+              <ChoiceChips
+                label={t('form.serviceType')}
+                options={toOptions(serviceTypes, (value) => t(`serviceType.${value}`))}
+                selected={serviceType}
+                onSelect={(value) => { if (value) setServiceType(value); }}
+              />
 
               <FieldLabel label={t('form.location')} theme={theme} />
               <Input

@@ -20,13 +20,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button as HeroButton, Card as HeroCard, TagGroup, Text } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 
 import * as Haptics from '@/lib/haptics';
 import AppTopBar from '@/components/ui/AppTopBar';
 import BottomSheet from '@/components/ui/BottomSheet';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -949,8 +950,8 @@ function PodcastStudioScreen() {
                     <Input label={t('fields.owner_email')} keyboardType="email-address" autoCapitalize="none" value={showForm.ownerEmail} onChangeText={(ownerEmail) => setShowForm((prev) => ({ ...prev, ownerEmail }))} style={{ color: theme.text }} />
                     <Input label={t('fields.copyright')} value={showForm.copyright} onChangeText={(copyright) => setShowForm((prev) => ({ ...prev, copyright }))} style={{ color: theme.text }} />
                     <Input label={t('fields.funding_url')} keyboardType="url" autoCapitalize="none" value={showForm.fundingUrl} onChangeText={(fundingUrl) => setShowForm((prev) => ({ ...prev, fundingUrl }))} style={{ color: theme.text }} />
-                    <OptionGroup label={t('fields.language')} values={languages} selected={showForm.language} onSelect={(language) => setShowForm((prev) => ({ ...prev, language }))} labelFor={(value) => value.toUpperCase()} primary={primary} theme={theme} />
-                    <OptionGroup label={t('fields.visibility')} values={visibilityOptions} selected={showForm.visibility} onSelect={(visibility) => setShowForm((prev) => ({ ...prev, visibility }))} labelFor={(value) => t(`visibility.${value}`)} primary={primary} theme={theme} />
+                    <OptionGroup label={t('fields.language')} values={languages} selected={showForm.language} onSelect={(language) => setShowForm((prev) => ({ ...prev, language }))} labelFor={(value) => value.toUpperCase()} />
+                    <OptionGroup label={t('fields.visibility')} values={visibilityOptions} selected={showForm.visibility} onSelect={(visibility) => setShowForm((prev) => ({ ...prev, visibility }))} labelFor={(value) => t(`visibility.${value}`)} />
                     <ToggleRow label={t('fields.explicit_show')} value={showForm.explicit} onToggle={() => setShowForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
                     <TextArea label={t('fields.summary')} value={showForm.summary} onChangeText={(summary) => setShowForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} />
                     <TextArea label={t('fields.description')} value={showForm.description} onChangeText={(description) => setShowForm((prev) => ({ ...prev, description }))} style={{ color: theme.text }} />
@@ -979,8 +980,6 @@ function PodcastStudioScreen() {
                       selected={selectedShowId != null ? String(selectedShowId) : ''}
                       onSelect={(value) => setSelectedShowId(Number(value))}
                       labelFor={(value) => shows.find((show) => String(show.id) === value)?.title ?? value}
-                      primary={primary}
-                      theme={theme}
                     />
                   )}
                   <Input label={t('fields.episode_title')} maxLength={200} value={episodeForm.title} onChangeText={(title) => setEpisodeForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} />
@@ -1053,7 +1052,7 @@ function PodcastStudioScreen() {
                   <Input label={t('fields.episode_number')} keyboardType="number-pad" value={episodeForm.episodeNumber} onChangeText={(episodeNumber) => setEpisodeForm((prev) => ({ ...prev, episodeNumber }))} style={{ color: theme.text }} />
                   <Input label={t('fields.season_number')} keyboardType="number-pad" value={episodeForm.seasonNumber} onChangeText={(seasonNumber) => setEpisodeForm((prev) => ({ ...prev, seasonNumber }))} style={{ color: theme.text }} />
                   <ImageField label={t('fields.cover_image_file')} uri={episodeCoverUri} onPress={() => void pickImage(setEpisodeCoverUri)} theme={theme} />
-                  <OptionGroup label={t('fields.visibility')} values={episodeVisibilityOptions} selected={episodeForm.visibility} onSelect={(visibility) => setEpisodeForm((prev) => ({ ...prev, visibility }))} labelFor={(value) => t(`visibility.${value}`)} primary={primary} theme={theme} />
+                  <OptionGroup label={t('fields.visibility')} values={episodeVisibilityOptions} selected={episodeForm.visibility} onSelect={(visibility) => setEpisodeForm((prev) => ({ ...prev, visibility }))} labelFor={(value) => t(`visibility.${value}`)} />
                   <Input label={t('fields.duration_seconds')} keyboardType="number-pad" value={episodeForm.durationSeconds} onChangeText={(durationSeconds) => setEpisodeForm((prev) => ({ ...prev, durationSeconds }))} style={{ color: theme.text }} />
                   <Input
                     label={t('fields.scheduled_for')}
@@ -1064,14 +1063,14 @@ function PodcastStudioScreen() {
                     onChangeText={(scheduledFor) => setEpisodeForm((prev) => ({ ...prev, scheduledFor }))}
                     style={{ color: theme.text }}
                   />
-                  <OptionGroup label={t('fields.episode_type')} values={EPISODE_TYPES} selected={episodeForm.episodeType} onSelect={(episodeType) => setEpisodeForm((prev) => ({ ...prev, episodeType }))} labelFor={(value) => t(`episode.type.${value}`)} primary={primary} theme={theme} />
+                  <OptionGroup label={t('fields.episode_type')} values={EPISODE_TYPES} selected={episodeForm.episodeType} onSelect={(episodeType) => setEpisodeForm((prev) => ({ ...prev, episodeType }))} labelFor={(value) => t(`episode.type.${value}`)} />
                   <TextArea label={t('fields.summary')} value={episodeForm.summary} onChangeText={(summary) => setEpisodeForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} />
                   <TextArea label={t('fields.description')} value={episodeForm.description} onChangeText={(description) => setEpisodeForm((prev) => ({ ...prev, description }))} style={{ color: theme.text }} />
                   <ToggleRow label={t('fields.explicit_episode')} value={episodeForm.explicit} onToggle={() => setEpisodeForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
                   {capabilities.enable_transcripts !== false ? (
                     <>
                       <TextArea label={t('fields.transcript')} value={episodeForm.transcript} onChangeText={(transcript) => setEpisodeForm((prev) => ({ ...prev, transcript }))} style={{ color: theme.text }} />
-                      <OptionGroup label={t('fields.transcript_language')} values={languages} selected={episodeForm.transcriptLanguage} onSelect={(transcriptLanguage) => setEpisodeForm((prev) => ({ ...prev, transcriptLanguage }))} labelFor={(value) => value.toUpperCase()} primary={primary} theme={theme} />
+                      <OptionGroup label={t('fields.transcript_language')} values={languages} selected={episodeForm.transcriptLanguage} onSelect={(transcriptLanguage) => setEpisodeForm((prev) => ({ ...prev, transcriptLanguage }))} labelFor={(value) => value.toUpperCase()} />
                     </>
                   ) : null}
                   {capabilities.enable_chapters !== false ? (
@@ -1233,15 +1232,13 @@ function PodcastStudioScreen() {
             <Input label={t('fields.owner_email')} keyboardType="email-address" autoCapitalize="none" value={editingShowForm.ownerEmail} onChangeText={(ownerEmail) => setEditingShowForm((prev) => ({ ...prev, ownerEmail }))} style={{ color: theme.text }} />
             <Input label={t('fields.copyright')} value={editingShowForm.copyright} onChangeText={(copyright) => setEditingShowForm((prev) => ({ ...prev, copyright }))} style={{ color: theme.text }} />
             <Input label={t('fields.funding_url')} keyboardType="url" autoCapitalize="none" value={editingShowForm.fundingUrl} onChangeText={(fundingUrl) => setEditingShowForm((prev) => ({ ...prev, fundingUrl }))} style={{ color: theme.text }} />
-            <OptionGroup label={t('fields.language')} values={languages} selected={editingShowForm.language} onSelect={(language) => setEditingShowForm((prev) => ({ ...prev, language }))} labelFor={(value) => value.toUpperCase()} primary={primary} theme={theme} />
+            <OptionGroup label={t('fields.language')} values={languages} selected={editingShowForm.language} onSelect={(language) => setEditingShowForm((prev) => ({ ...prev, language }))} labelFor={(value) => value.toUpperCase()} />
             <OptionGroup
               label={t('fields.visibility')}
               values={optionsWithCurrent(visibilityOptions, editingShow?.visibility)}
               selected={editingShowForm.visibility}
               onSelect={(visibility) => setEditingShowForm((prev) => ({ ...prev, visibility }))}
               labelFor={(value) => t(`visibility.${value}`)}
-              primary={primary}
-              theme={theme}
             />
             <ToggleRow label={t('fields.explicit_show')} value={editingShowForm.explicit} onToggle={() => setEditingShowForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
             <TextArea label={t('fields.summary')} value={editingShowForm.summary} onChangeText={(summary) => setEditingShowForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} />
@@ -1278,15 +1275,13 @@ function PodcastStudioScreen() {
               onChangeText={(scheduledFor) => setEditingEpisodeForm((prev) => ({ ...prev, scheduledFor }))}
               style={{ color: theme.text }}
             />
-            <OptionGroup label={t('fields.episode_type')} values={EPISODE_TYPES} selected={editingEpisodeForm.episodeType} onSelect={(episodeType) => setEditingEpisodeForm((prev) => ({ ...prev, episodeType }))} labelFor={(value) => t(`episode.type.${value}`)} primary={primary} theme={theme} />
+            <OptionGroup label={t('fields.episode_type')} values={EPISODE_TYPES} selected={editingEpisodeForm.episodeType} onSelect={(episodeType) => setEditingEpisodeForm((prev) => ({ ...prev, episodeType }))} labelFor={(value) => t(`episode.type.${value}`)} />
             <OptionGroup
               label={t('fields.visibility')}
               values={optionsWithCurrent(episodeVisibilityOptions, editingEpisode?.episode.visibility)}
               selected={editingEpisodeForm.visibility}
               onSelect={(visibility) => setEditingEpisodeForm((prev) => ({ ...prev, visibility }))}
               labelFor={(value) => t(`visibility.${value}`)}
-              primary={primary}
-              theme={theme}
             />
             <ToggleRow label={t('fields.explicit_episode')} value={editingEpisodeForm.explicit} onToggle={() => setEditingEpisodeForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
             <TextArea label={t('fields.summary')} value={editingEpisodeForm.summary} onChangeText={(summary) => setEditingEpisodeForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} />
@@ -1294,7 +1289,7 @@ function PodcastStudioScreen() {
             {capabilities.enable_transcripts !== false ? (
               <>
                 <TextArea label={t('fields.transcript')} value={editingEpisodeForm.transcript} onChangeText={(transcript) => setEditingEpisodeForm((prev) => ({ ...prev, transcript }))} style={{ color: theme.text }} />
-                <OptionGroup label={t('fields.transcript_language')} values={languages} selected={editingEpisodeForm.transcriptLanguage} onSelect={(transcriptLanguage) => setEditingEpisodeForm((prev) => ({ ...prev, transcriptLanguage }))} labelFor={(value) => value.toUpperCase()} primary={primary} theme={theme} />
+                <OptionGroup label={t('fields.transcript_language')} values={languages} selected={editingEpisodeForm.transcriptLanguage} onSelect={(transcriptLanguage) => setEditingEpisodeForm((prev) => ({ ...prev, transcriptLanguage }))} labelFor={(value) => value.toUpperCase()} />
               </>
             ) : null}
             {capabilities.enable_chapters !== false ? (
@@ -1419,40 +1414,20 @@ function OptionGroup<T extends string>({
   selected,
   onSelect,
   labelFor,
-  primary,
-  theme,
 }: {
   label: string;
   values: T[];
   selected: T | '';
   onSelect: (value: T) => void;
   labelFor: (value: T) => string;
-  primary: string;
-  theme: ReturnType<typeof useTheme>;
 }) {
   return (
-    <View className="gap-2">
-      <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{label}</Text>
-      <TagGroup
-        size="sm"
-        selectionMode="single"
-        selectedKeys={selected ? [selected] : []}
-        onSelectionChange={(keys) => {
-          const next = Array.from(keys)[0];
-          if (next !== undefined) onSelect(next as T);
-        }}
-      >
-        <TagGroup.List>
-          {values.map((value) => (
-            <TagGroup.Item key={value} id={value}>
-              <TagGroup.ItemLabel style={selected === value ? { color: contrastText(primary) } : undefined}>
-                {labelFor(value)}
-              </TagGroup.ItemLabel>
-            </TagGroup.Item>
-          ))}
-        </TagGroup.List>
-      </TagGroup>
-    </View>
+    <ChoiceChips
+      label={label}
+      options={toOptions(values, labelFor)}
+      selected={selected}
+      onSelect={(value) => { if (value) onSelect(value); }}
+    />
   );
 }
 
