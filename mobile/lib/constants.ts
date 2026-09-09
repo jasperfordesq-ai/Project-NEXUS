@@ -82,6 +82,15 @@ export const STORAGE_KEYS = {
   LANGUAGE: 'nexus_language',
   /** Last Expo push token registered with the API, retained for reliable opt-out/logout. */
   PUSH_TOKEN: 'nexus_expo_push_token',
+  /**
+   * Whether this member has already been offered notifications on this device.
+   *
+   * 🔴 Written on EITHER answer, so the offer is made once and never again. Nothing else
+   * stops it coming back: the OS permission stays "undetermined" when a member declines
+   * our own card without ever seeing the system dialog, so a visibility rule based on
+   * permission alone would re-ask on every launch. See components/PushPermissionCard.tsx.
+   */
+  PUSH_PROMPT_DECISION: 'nexus_push_prompt_decision',
 } as const;
 
 /** App-wide timing constants */

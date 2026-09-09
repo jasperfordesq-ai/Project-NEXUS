@@ -53,5 +53,14 @@
   "andOthers": "Und {{count}} weitere",
   "andOthers_one": "Und {{count}} weitere Person",
   "actionsFor": "Aktionen für {{label}}",
-  "openNotification": "Öffnen"
+  "openNotification": "Öffnen",
+  "permissionCard": {
+    "title": "Werde benachrichtigt, wenn etwas passiert",
+    "body": "Aktiviere Benachrichtigungen für neue Nachrichten, Tauschanfragen und die Veranstaltungen, zu denen du gehst.",
+    "enable": "Benachrichtigungen aktivieren",
+    "notNow": "Jetzt nicht",
+    "blockedTitle": "Benachrichtigungen sind deaktiviert",
+    "blockedBody": "Dein Gerät blockiert Benachrichtigungen für diese App. Du kannst sie in den Systemeinstellungen wieder aktivieren.",
+    "openSettings": "Einstellungen öffnen"
+  }
 }

@@ -53,5 +53,14 @@
   "andOthers": "Agus {{count}} duine eile",
   "andOthers_one": "Agus {{count}} duine eile",
   "actionsFor": "Gníomhartha do {{label}}",
-  "openNotification": "Oscail"
+  "openNotification": "Oscail",
+  "permissionCard": {
+    "title": "Faigh fógra nuair a tharlaíonn rud éigin",
+    "body": "Cuir fógraí ar siúl le haghaidh teachtaireachtaí nua, iarratais mhalartaithe agus na himeachtaí a bhfuil tú ag dul chucu.",
+    "enable": "Cuir fógraí ar siúl",
+    "notNow": "Ní anois",
+    "blockedTitle": "Tá fógraí múchta",
+    "blockedBody": "Tá do ghléas ag cur bac ar fhógraí don aip seo. Is féidir leat iad a chur ar siúl arís i socruithe an chórais.",
+    "openSettings": "Oscail na socruithe"
+  }
 }

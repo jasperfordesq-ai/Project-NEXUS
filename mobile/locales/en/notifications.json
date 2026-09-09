@@ -53,5 +53,14 @@
   "andOthers": "And {{count}} others",
   "andOthers_one": "And {{count}} other",
   "actionsFor": "Actions for {{label}}",
-  "openNotification": "Open"
+  "openNotification": "Open",
+  "permissionCard": {
+    "title": "Get notified when something happens",
+    "body": "Turn on notifications for new messages, exchange requests and the events you are going to.",
+    "enable": "Turn on notifications",
+    "notNow": "Not now",
+    "blockedTitle": "Notifications are switched off",
+    "blockedBody": "Your device is blocking notifications for this app. You can switch them back on in system settings.",
+    "openSettings": "Open settings"
+  }
 }

@@ -24,6 +24,7 @@ import FeedItem, { type FeedCommentTarget, type FeedReactorsTarget } from '@/com
 import CommentSheet from '@/components/comments/CommentSheet';
 import ReactorsSheet from '@/components/reactions/ReactorsSheet';
 import OfflineBanner from '@/components/OfflineBanner';
+import PushPermissionCard from '@/components/PushPermissionCard';
 import TenantBanner from '@/components/TenantBanner';
 import { FeedItemSkeleton } from '@/components/ui/Skeleton';
 import FAB from '@/components/ui/FAB';
@@ -208,6 +209,14 @@ export default function HomeScreen() {
         windowSize={5}
         ListHeaderComponent={
           <View className="pb-2">
+            {/*
+              Offers notifications once to a member who has never been asked — nothing else
+              in the app ever raises the system permission dialog. Inside the list header so
+              it scrolls away rather than holding a permanent strip above the feed, and
+              first so it is not buried under the greeting panel. It renders nothing at all
+              once the member has answered. Audit 2026-09-09, item 1.
+            */}
+            <PushPermissionCard />
             <Surface
               variant="default"
               className="mx-3 mt-2 gap-2.5 overflow-hidden rounded-panel px-3 py-2.5"

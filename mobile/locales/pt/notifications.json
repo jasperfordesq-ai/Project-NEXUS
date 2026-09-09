@@ -53,5 +53,14 @@
   "andOthers": "E mais {{count}} pessoas",
   "andOthers_one": "E mais {{count}} pessoa",
   "actionsFor": "Ações para {{label}}",
-  "openNotification": "Abrir"
+  "openNotification": "Abrir",
+  "permissionCard": {
+    "title": "Seja avisado quando acontecer alguma coisa",
+    "body": "Ative as notificações para novas mensagens, pedidos de troca e os eventos em que vai participar.",
+    "enable": "Ativar notificações",
+    "notNow": "Agora não",
+    "blockedTitle": "As notificações estão desativadas",
+    "blockedBody": "O seu dispositivo está a bloquear as notificações desta aplicação. Pode reativá-las nas definições do sistema.",
+    "openSettings": "Abrir definições"
+  }
 }

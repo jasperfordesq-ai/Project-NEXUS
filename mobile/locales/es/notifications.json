@@ -53,5 +53,14 @@
   "andOthers": "Y {{count}} personas más",
   "andOthers_one": "Y {{count}} persona más",
   "actionsFor": "Acciones para {{label}}",
-  "openNotification": "Abrir"
+  "openNotification": "Abrir",
+  "permissionCard": {
+    "title": "Recibe un aviso cuando ocurra algo",
+    "body": "Activa las notificaciones para los mensajes nuevos, las solicitudes de intercambio y los eventos a los que vas.",
+    "enable": "Activar notificaciones",
+    "notNow": "Ahora no",
+    "blockedTitle": "Las notificaciones están desactivadas",
+    "blockedBody": "Tu dispositivo está bloqueando las notificaciones de esta aplicación. Puedes volver a activarlas en los ajustes del sistema.",
+    "openSettings": "Abrir ajustes"
+  }
 }
