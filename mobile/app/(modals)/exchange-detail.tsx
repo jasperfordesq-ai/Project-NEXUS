@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { parseDecimalInput } from '@/lib/utils/decimal';
+import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useState, useCallback } from 'react';
 import {
   View,
@@ -599,7 +599,7 @@ function ExchangeDetailModalInner() {
                   {authorRating ? (
                     <Chip color="default" size="sm" variant="soft">
                       <Ionicons name="star" size={12} color={theme.warning} />
-                      <Chip.Label>{t('detail.rating', { rating: authorRating.toFixed(1), count: authorReviews })}</Chip.Label>
+                      <Chip.Label>{t('detail.rating', { rating: formatDecimal(authorRating, 1, 1), count: authorReviews })}</Chip.Label>
                     </Chip>
                   ) : null}
                   {authorExchanges ? (

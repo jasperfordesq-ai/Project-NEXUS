@@ -124,6 +124,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
+import { formatDecimal } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
@@ -172,7 +173,8 @@ function formatFileSize(bytes?: number | null) {
   const units = ['B', 'KB', 'MB', 'GB'];
   const index = Math.min(units.length - 1, Math.floor(Math.log(value) / Math.log(1024)));
   const amount = value / Math.pow(1024, index);
-  return `${amount.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+  // Locale-aware, so a file reads "1,5 MB" where the member's language uses a comma.
+  return `${formatDecimal(amount, index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
 function formatMetric(value?: number | null, options?: Intl.NumberFormatOptions) {

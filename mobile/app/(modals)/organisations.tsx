@@ -24,6 +24,7 @@ import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
+import { formatDecimal } from '@/lib/utils/decimal';
 import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
@@ -59,7 +60,8 @@ function isVerified(org: Organisation) {
 }
 
 function formatRating(value: number | null | undefined) {
-  return typeof value === 'number' && value > 0 ? value.toFixed(1) : null;
+  // formatDecimal, not toFixed: a French member reads 4,5 rather than 4.5.
+  return typeof value === 'number' && value > 0 ? formatDecimal(value, 1, 1) : null;
 }
 
 function ActionPill({
