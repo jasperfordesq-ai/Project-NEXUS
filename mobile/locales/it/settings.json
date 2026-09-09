@@ -343,5 +343,9 @@
     "hint": "Scegli la lingua che l’app usa su questo dispositivo.",
     "optionHint": "Lingua dell’interfaccia",
     "current": "Attualmente selezionata"
+  },
+  "haptics": {
+    "title": "Vibrazione",
+    "hint": "Emetti una breve vibrazione quando tocchi un pulsante principale o distruttivo."
   }
 }

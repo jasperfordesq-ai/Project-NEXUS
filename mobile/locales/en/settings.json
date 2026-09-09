@@ -343,5 +343,9 @@
     "hint": "Choose the language the app uses on this device.",
     "optionHint": "Interface language",
     "current": "Currently selected"
+  },
+  "haptics": {
+    "title": "Vibration",
+    "hint": "Give a short buzz when you tap a main or destructive button."
   }
 }

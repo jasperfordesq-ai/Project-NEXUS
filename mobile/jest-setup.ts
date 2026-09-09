@@ -184,10 +184,22 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
-// Mock @/lib/haptics globally so Button.tsx and other components get complete
-// ImpactFeedbackStyle/NotificationFeedbackType enums even when individual test
-// files partially override the expo-haptics mock.
+/*
+  Mock @/lib/haptics globally so Button.tsx and other components get complete
+  ImpactFeedbackStyle/NotificationFeedbackType enums even when individual test files
+  partially override the expo-haptics mock.
+
+  🔴 Built from the real module's exports, with only the three feedback calls stubbed.
+  It used to be a hand-written list, which is the same trap the Skeleton mock above fell
+  into: a new export (`hapticsEnabled`, `setHapticsEnabled`, `initHaptics`,
+  `subscribeToHaptics`) is simply absent, and the failure surfaces as "x is not a function"
+  somewhere unrelated. Spreading the actual module means the list cannot fall behind.
+
+  A test that needs the REAL feedback functions — because it is testing the on/off gate
+  inside them — calls `jest.unmock('@/lib/haptics')`; see lib/haptics.test.ts.
+*/
 jest.mock('@/lib/haptics', () => ({
+  ...jest.requireActual('@/lib/haptics'),
   impactAsync: jest.fn().mockResolvedValue(undefined),
   notificationAsync: jest.fn().mockResolvedValue(undefined),
   selectionAsync: jest.fn().mockResolvedValue(undefined),

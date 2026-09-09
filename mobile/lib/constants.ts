@@ -91,6 +91,8 @@ export const STORAGE_KEYS = {
    * permission alone would re-ask on every launch. See components/PushPermissionCard.tsx.
    */
   PUSH_PROMPT_DECISION: 'nexus_push_prompt_decision',
+  /** Whether the app vibrates. Default on; see lib/haptics.ts. */
+  HAPTICS_ENABLED: 'nexus_haptics_enabled',
 } as const;
 
 /** App-wide timing constants */

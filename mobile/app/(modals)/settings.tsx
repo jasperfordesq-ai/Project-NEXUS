@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import ErrorState from '@/components/ui/ErrorState';
-import { Children, Fragment, useEffect, useState } from 'react';
+import { Children, Fragment, useCallback, useEffect, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -111,6 +111,21 @@ function SettingsScreen() {
   const [biometricUsable, setBiometricUsable] = useState(false);
   const [biometricLockOn, setBiometricLockOn] = useState(false);
   const [biometricBusy, setBiometricBusy] = useState(false);
+  /*
+    Read from the module flag rather than from storage, and kept in step by subscribing:
+    `lib/haptics.ts` is called from render callbacks and plain functions all over the app,
+    so the flag is the source of truth and this switch is a view of it.
+  */
+  const [hapticsOn, setHapticsOn] = useState(() => Haptics.hapticsEnabled());
+  useEffect(() => Haptics.subscribeToHaptics(setHapticsOn), []);
+  const toggleHaptics = useCallback(async () => {
+    const next = !Haptics.hapticsEnabled();
+    // Fire BEFORE switching off, so turning it on confirms itself and turning it off is
+    // the last thing the member feels.
+    if (next) await Haptics.setHapticsEnabled(true);
+    await Haptics.selectionAsync();
+    if (!next) await Haptics.setHapticsEnabled(false);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -399,6 +414,18 @@ function SettingsScreen() {
               selected={themeMode === 'dark'}
               primary={primary}
               onPress={() => selectThemeMode('dark')}
+            />
+            {/*
+              🔴 The app buzzed on every button press and there was no way to stop it short
+              of turning off system haptics entirely. It sits under Appearance because that
+              is where a member looks for "how the app behaves", and next to the theme,
+              which is the other setting of that kind. Audit 2026-09-09, item 15.
+            */}
+            <SettingRow
+              label={t('haptics.title')}
+              value={hapticsOn}
+              onToggle={() => void toggleHaptics()}
+              disabled={false}
             />
           </Section>
 

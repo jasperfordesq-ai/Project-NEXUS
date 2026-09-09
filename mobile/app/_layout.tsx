@@ -22,6 +22,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 import '@/lib/i18n'; // initialise i18next before any screen renders
 import { validateEnv } from '@/lib/env';
+import { initHaptics } from '@/lib/haptics';
 import { AuthProvider, useAuthContext } from '@/lib/context/AuthContext';
 import { TenantProvider, useTenantContext } from '@/lib/context/TenantContext';
 import { RealtimeProvider } from '@/lib/context/RealtimeContext';
@@ -72,6 +73,12 @@ function useNavigationTheme(): { navTheme: Theme; scheme: 'light' | 'dark' } {
 // Validate environment variables at startup — logs warnings for missing config
 validateEnv();
 configureNativeTheme();
+/*
+  Seeds the vibration preference from storage. Fire-and-forget: haptics default to on, so
+  the only cost of the read losing a race with the first tap is one buzz a member who had
+  switched them off did not want, once, at launch.
+*/
+void initHaptics();
 
 /*
   🔴 Must run at module scope, before React renders anything. Without it the native splash

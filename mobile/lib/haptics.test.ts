@@ -4,142 +4,130 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * 🔴 `jest-setup.ts` mocks `@/lib/haptics` GLOBALLY, for every test in the suite.
- * That is the right default — it gives screen tests complete
- * `ImpactFeedbackStyle` / `NotificationFeedbackType` enums without each of them
- * re-stubbing expo-haptics — but it also means the real module was unreachable,
- * and reported 0% coverage for a reason that looked like "nobody wrote a test"
- * when it was really "no test could reach it".
+ * 🔴 The shared Button vibrated on EVERY press of every variant, and toasts and
+ * confirmations added their own on top, so the app buzzed on plain navigation as hard as it
+ * did on sending credits. There was no way to stop it short of turning off system haptics
+ * for the whole phone. Audit 2026-09-09, item 15.
  *
- * `jest.unmock` below is what makes the real implementation testable. It is the
- * first use of it in this codebase; the same pattern is needed for anything else
- * jest-setup.ts mocks globally (OfflineBanner, TenantBanner, LoadingSpinner,
- * Skeleton).
- *
- * What is worth pinning: haptics must be a no-op on web rather than throwing,
- * and a device that cannot vibrate must never break the action the feedback was
- * decorating.
+ * Two halves are under test: the preference actually silences every kind of feedback, and
+ * it survives a restart.
  */
 
+import { Platform } from 'react-native';
+
+/*
+  jest-setup mocks this module globally so every screen test gets stub feedback functions.
+  This suite is testing the on/off gate that lives INSIDE those functions, so it needs the
+  real ones — with expo-haptics itself mocked below, which is the actual boundary.
+*/
 jest.unmock('@/lib/haptics');
 
-const mockImpactAsync = jest.fn();
-const mockNotificationAsync = jest.fn();
-const mockSelectionAsync = jest.fn();
+import {
+  ImpactFeedbackStyle,
+  NotificationFeedbackType,
+  hapticsEnabled,
+  impactAsync,
+  initHaptics,
+  notificationAsync,
+  resetHapticsForTests,
+  selectionAsync,
+  setHapticsEnabled,
+  subscribeToHaptics,
+} from './haptics';
+
+const mockImpact = jest.fn();
+const mockNotification = jest.fn();
+const mockSelection = jest.fn();
+const mockStorageGet = jest.fn();
+const mockStorageSet = jest.fn();
 
 jest.mock('expo-haptics', () => ({
-  impactAsync: (...args: unknown[]) => mockImpactAsync(...args),
-  notificationAsync: (...args: unknown[]) => mockNotificationAsync(...args),
-  selectionAsync: (...args: unknown[]) => mockSelectionAsync(...args),
-  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  impactAsync: (...args: unknown[]) => mockImpact(...args),
+  notificationAsync: (...args: unknown[]) => mockNotification(...args),
+  selectionAsync: (...args: unknown[]) => mockSelection(...args),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
-type HapticsModule = typeof import('./haptics');
+jest.mock('@/lib/storage', () => ({
+  storage: {
+    get: (...args: unknown[]) => mockStorageGet(...args),
+    set: (...args: unknown[]) => mockStorageSet(...args),
+  },
+}));
 
-/**
- * `Platform.OS` is read inside each function rather than captured at module
- * load, but the module still needs a fresh require per platform because the
- * react-native mock is installed per isolated registry. Only `Platform` is
- * mocked — spreading the real react-native module eagerly evaluates its lazy
- * getters and throws on missing TurboModules under Jest.
- */
-function loadHapticsFor(os: 'ios' | 'android' | 'web'): HapticsModule {
-  let loaded: HapticsModule;
-  jest.isolateModules(() => {
-    jest.doMock('react-native', () => ({ Platform: { OS: os } }));
-    loaded = require('./haptics');
-  });
-  return loaded!;
-}
-
-describe('haptic feedback on a device', () => {
-  let haptics: HapticsModule;
-
+describe('haptics preference', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockImpactAsync.mockResolvedValue(undefined);
-    mockNotificationAsync.mockResolvedValue(undefined);
-    mockSelectionAsync.mockResolvedValue(undefined);
-    haptics = loadHapticsFor('ios');
+    resetHapticsForTests();
+    Platform.OS = 'ios';
+    mockStorageGet.mockResolvedValue(null);
+    mockStorageSet.mockResolvedValue(undefined);
   });
 
-  it('passes the requested impact style through', async () => {
-    await haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
+  it('vibrates by default, because that is the established behaviour', async () => {
+    expect(hapticsEnabled()).toBe(true);
 
-    expect(mockImpactAsync).toHaveBeenCalledWith('medium');
+    await impactAsync(ImpactFeedbackStyle.Light);
+    expect(mockImpact).toHaveBeenCalled();
   });
 
-  it('passes the requested notification type through', async () => {
-    await haptics.notificationAsync(haptics.NotificationFeedbackType.Success);
+  it('silences every kind of feedback when switched off', async () => {
+    // 🔴 All three, not just the button impact. A member who turns vibration off and still
+    // feels the toast on every error has not been given the setting they asked for.
+    await setHapticsEnabled(false);
 
-    expect(mockNotificationAsync).toHaveBeenCalledWith('success');
+    await impactAsync(ImpactFeedbackStyle.Light);
+    await notificationAsync(NotificationFeedbackType.Success);
+    await selectionAsync();
+
+    expect(mockImpact).not.toHaveBeenCalled();
+    expect(mockNotification).not.toHaveBeenCalled();
+    expect(mockSelection).not.toHaveBeenCalled();
   });
 
-  it('triggers selection feedback', async () => {
-    await haptics.selectionAsync();
+  it('remembers the choice', async () => {
+    await setHapticsEnabled(false);
+    expect(mockStorageSet).toHaveBeenCalledWith('nexus_haptics_enabled', '0');
 
-    expect(mockSelectionAsync).toHaveBeenCalled();
+    await setHapticsEnabled(true);
+    expect(mockStorageSet).toHaveBeenCalledWith('nexus_haptics_enabled', '1');
   });
 
-  it('re-exports the full style and type enums the shared controls rely on', () => {
-    // Button.tsx and friends read these off this module, so a missing member
-    // becomes `undefined` passed to the native call rather than a type error.
-    expect(haptics.ImpactFeedbackStyle).toEqual({ Light: 'light', Medium: 'medium', Heavy: 'heavy' });
-    expect(haptics.NotificationFeedbackType).toEqual({
-      Success: 'success',
-      Warning: 'warning',
-      Error: 'error',
-    });
-  });
-});
+  it('restores the choice at startup', async () => {
+    mockStorageGet.mockResolvedValue('0');
+    await initHaptics();
 
-describe('haptic feedback when the hardware refuses', () => {
-  let haptics: HapticsModule;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    haptics = loadHapticsFor('android');
+    expect(hapticsEnabled()).toBe(false);
+    await impactAsync(ImpactFeedbackStyle.Light);
+    expect(mockImpact).not.toHaveBeenCalled();
   });
 
-  it('swallows an impact failure so the action it decorated still completes', async () => {
-    mockImpactAsync.mockRejectedValue(new Error('no vibrator'));
+  it('stays on when nothing was ever stored', async () => {
+    mockStorageGet.mockResolvedValue(null);
+    await initHaptics();
 
-    await expect(haptics.impactAsync(haptics.ImpactFeedbackStyle.Light)).resolves.toBeUndefined();
+    expect(hapticsEnabled()).toBe(true);
   });
 
-  it('swallows a notification failure', async () => {
-    mockNotificationAsync.mockRejectedValue(new Error('no vibrator'));
+  it('keeps the setting for this session even if the write fails', async () => {
+    // A preference is not data. Losing the write should not lose the member's choice now.
+    mockStorageSet.mockRejectedValue(new Error('keychain unavailable'));
 
-    await expect(
-      haptics.notificationAsync(haptics.NotificationFeedbackType.Error)
-    ).resolves.toBeUndefined();
+    await setHapticsEnabled(false);
+
+    expect(hapticsEnabled()).toBe(false);
   });
 
-  it('swallows a selection failure', async () => {
-    mockSelectionAsync.mockRejectedValue(new Error('no vibrator'));
+  it('tells a rendered switch when the value changes', async () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribeToHaptics(listener);
 
-    await expect(haptics.selectionAsync()).resolves.toBeUndefined();
-  });
-});
+    await setHapticsEnabled(false);
+    expect(listener).toHaveBeenCalledWith(false);
 
-describe('haptic feedback on web', () => {
-  let haptics: HapticsModule;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    haptics = loadHapticsFor('web');
-  });
-
-  it('never reaches the native module at all', async () => {
-    // expo-haptics throws on web, so this has to short-circuit rather than
-    // rely on the try/catch.
-    await haptics.impactAsync(haptics.ImpactFeedbackStyle.Heavy);
-    await haptics.notificationAsync(haptics.NotificationFeedbackType.Warning);
-    await haptics.selectionAsync();
-
-    expect(mockImpactAsync).not.toHaveBeenCalled();
-    expect(mockNotificationAsync).not.toHaveBeenCalled();
-    expect(mockSelectionAsync).not.toHaveBeenCalled();
+    unsubscribe();
+    await setHapticsEnabled(true);
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 });

@@ -343,5 +343,9 @@
     "hint": "Roghnaigh an teanga a úsáideann an aip ar an ngléas seo.",
     "optionHint": "Teanga an chomhéadain",
     "current": "Roghnaithe faoi láthair"
+  },
+  "haptics": {
+    "title": "Creathadh",
+    "hint": "Tabhair crith gairid nuair a bhrúnn tú príomhchnaipe nó cnaipe scriosta."
   }
 }

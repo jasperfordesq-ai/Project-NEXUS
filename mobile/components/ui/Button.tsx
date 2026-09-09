@@ -30,7 +30,22 @@ interface ButtonProps {
   className?: string;
   accessibilityLabel?: string;
   testID?: string;
+  /**
+   * Vibrate on press. Defaults to true for `solid` and `danger`, false otherwise.
+   *
+   * 🔴 It used to fire on every press of every variant, which meant the app buzzed on
+   * ordinary navigation — Back, "See all", a ghost link — as loudly as it did on sending
+   * credits. A signal given for everything is a signal for nothing. `solid` and `danger`
+   * are the variants this app uses for the primary action of a screen and for destructive
+   * ones, which is where the confirmation is worth feeling. Audit 2026-09-09, item 15.
+   *
+   * Pass it explicitly to override in either direction.
+   */
+  haptic?: boolean;
 }
+
+/** Variants whose press is worth feeling: the screen's main action, and destructive ones. */
+const HAPTIC_BY_DEFAULT: ReadonlySet<LegacyVariant> = new Set<LegacyVariant>(['solid', 'danger']);
 
 const VARIANT_MAP: Record<LegacyVariant, 'primary' | 'outline' | 'ghost' | 'secondary' | 'danger'> = {
   solid: 'primary',
@@ -53,11 +68,13 @@ export default function Button({
   className,
   accessibilityLabel,
   testID,
+  haptic,
 }: ButtonProps) {
   // The spinner on a solid accent button must be the same colour as the label beside it.
   const accentForeground = useAccentForeground();
+  const shouldVibrate = haptic ?? HAPTIC_BY_DEFAULT.has(variant);
   const handlePress = () => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (shouldVibrate) void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress?.();
   };
 

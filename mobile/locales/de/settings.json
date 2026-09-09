@@ -343,5 +343,9 @@
     "hint": "Wähle die Sprache, die die App auf diesem Gerät verwendet.",
     "optionHint": "Sprache der Oberfläche",
     "current": "Derzeit ausgewählt"
+  },
+  "haptics": {
+    "title": "Vibration",
+    "hint": "Kurz vibrieren, wenn du eine Haupt- oder Löschschaltfläche antippst."
   }
 }
