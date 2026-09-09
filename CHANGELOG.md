@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-09-09
+
 ### Added
 
 - **A job application sent from the phone can carry a CV.** `POST /v2/jobs/{id}/apply` has always accepted one and the app never sent it, so every application made on a phone arrived with a covering message and nothing to read. The apply sheet now says plainly what will be sent, names a CV you have saved to your jobs profile — and says that it is **not** attached for you, because the server does not do that — and lets you attach a PDF or Word document from the phone. Files the API would refuse (wrong type, over 5 MB) are refused before you fill in the message rather than after.
@@ -6850,7 +6852,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.2...v1.7.0
 [1.6.2]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.0...v1.6.1
