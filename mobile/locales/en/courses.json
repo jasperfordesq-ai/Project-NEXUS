@@ -48,6 +48,8 @@
     "completed": "Completed",
     "next_lesson": "Next lesson",
     "prev_lesson": "Previous lesson",
+    "resumed": "Picked up where you left off",
+    "start_from_beginning": "Start from the beginning",
     "course_progress": "Course progress",
     "lesson_completed": "Lesson completed",
     "action_failed": "Couldn't save your progress. Please try again.",

@@ -22,7 +22,7 @@
  * "0% complete, nothing done" as though that were the member's real progress.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -78,6 +78,42 @@ function CoursePlayerScreen() {
   );
   const [lessonIndex, setLessonIndex] = useState(0);
   const lesson = lessons[lessonIndex];
+  /*
+    🔴 The player always opened at lesson one. A learner eleven lessons into a course
+    reopened it and was put back at the beginning every single time, with nothing to say
+    the app knew better — and `GET /v2/courses/{id}/progress` has always returned exactly
+    which lessons are finished and which are still locked. Audit 2026-09-07.
+
+    Once only, and only on the first arrival: the ref means a member who deliberately
+    navigates back to lesson one is not dragged forward again on the next re-render.
+  */
+  const hasResumedRef = useRef(false);
+  const [didResume, setDidResume] = useState(false);
+
+  useEffect(() => {
+    if (hasResumedRef.current) return;
+    const progress = progressState.data as CourseProgress | null;
+    if (!progress || lessons.length === 0) return;
+    hasResumedRef.current = true;
+
+    const completed = new Set(
+      progress.lessons.filter((item) => item.status === 'completed').map((item) => item.lesson_id),
+    );
+    if (completed.size === 0) return;
+
+    const unlocked = new Map((progress.availability ?? []).map((entry) => [entry.lesson_id, entry]));
+    // A locked lesson is not somewhere to land: the drip gate would refuse it anyway.
+    const isOpen = (lessonId: number) => unlocked.get(lessonId)?.available !== false;
+    const next = lessons.findIndex((item) => !completed.has(item.id) && isOpen(item.id));
+
+    // -1 means every lesson is either finished or still locked. If they are finished, the
+    // last one is where the learner was; if they are locked, lesson one is right.
+    const target = next >= 0 ? next : (completed.size >= lessons.length ? lessons.length - 1 : 0);
+    if (target > 0) {
+      setLessonIndex(target);
+      setDidResume(true);
+    }
+  }, [lessons, progressState.data]);
 
   useEffect(() => {
     const progress = progressState.data as CourseProgress | null;
@@ -264,6 +300,15 @@ function CoursePlayerScreen() {
                     </HeroButton>
                   </>
                 )}
+
+                {didResume ? (
+                  <View className="flex-row flex-wrap items-center gap-2" testID="course-player-resumed">
+                    <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('player.resumed')}</Text>
+                    <HeroButton size="sm" variant="ghost" onPress={() => { setLessonIndex(0); setDidResume(false); }}>
+                      <HeroButton.Label>{t('player.start_from_beginning')}</HeroButton.Label>
+                    </HeroButton>
+                  </View>
+                ) : null}
 
                 <View className="flex-row justify-between gap-3">
                   <HeroButton

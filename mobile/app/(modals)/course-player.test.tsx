@@ -10,7 +10,7 @@ const mockShow = jest.fn();
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(), useLocalSearchParams: () => ({ id: '7' }) }));
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ 'player.mark_complete': 'Mark as complete', 'player.completed': 'Completed', 'player.lesson_completed': 'Lesson completed', 'player.action_failed': "Couldn't save your progress. Please try again.", 'player.course_progress': 'Course progress', 'player.transcript': 'Transcript', 'detail.no_lessons': 'No lessons have been added yet.', 'player.locked': "This lesson isn't available yet.", 'player.locked_until': 'Available from {{date}}', 'player.progress_unavailable': 'We could not load your progress for this course.', 'player.watched': 'Watched {{percent}}%', 'player.video_unavailable': 'No video has been added to this lesson yet.', 'common:buttons.retry': 'Retry', 'common:back': 'Back' } as Record<string, string>)[key] ?? key }) }));
+jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ 'player.mark_complete': 'Mark as complete', 'player.completed': 'Completed', 'player.lesson_completed': 'Lesson completed', 'player.action_failed': "Couldn't save your progress. Please try again.", 'player.course_progress': 'Course progress', 'player.transcript': 'Transcript', 'detail.no_lessons': 'No lessons have been added yet.', 'player.locked': "This lesson isn't available yet.", 'player.locked_until': 'Available from {{date}}', 'player.progress_unavailable': 'We could not load your progress for this course.', 'player.resumed': 'Picked up where you left off', 'player.start_from_beginning': 'Start from the beginning', 'player.next_lesson': 'Next lesson', 'player.prev_lesson': 'Previous lesson', 'player.watched': 'Watched {{percent}}%', 'player.video_unavailable': 'No video has been added to this lesson yet.', 'common:buttons.retry': 'Retry', 'common:back': 'Back' } as Record<string, string>)[key] ?? key }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textSecondary: '#555', border: '#ddd', error: '#b00', errorBg: '#fee', success: '#070', successBg: '#efe', warning: '#a40' }) }));
@@ -240,5 +240,97 @@ describe('CoursePlayerScreen', () => {
     fireEvent.press(getByText('Mark as complete'));
 
     await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 12, 0));
+  });
+
+  /**
+   * 🔴 The player always opened at lesson one. A learner eleven lessons in reopened the
+   * course and was put back at the beginning every single time, with nothing to say the app
+   * knew better — while `GET /v2/courses/{id}/progress` had been returning exactly which
+   * lessons were finished all along.
+   */
+  describe('picking up where the learner left off', () => {
+    const threeLessons = {
+      id: 7,
+      slug: 'basics',
+      title: 'Timebanking basics',
+      level: 'beginner' as const,
+      credit_cost: 0,
+      enrollment_count: 1,
+      sections: [{
+        id: 2,
+        course_id: 7,
+        title: 'Start',
+        position: 1,
+        lessons: [
+          { id: 11, course_id: 7, section_id: 2, title: 'One', content_type: 'text', body: 'Lesson one body.', transcript: null, position: 1, is_preview: false },
+          { id: 12, course_id: 7, section_id: 2, title: 'Two', content_type: 'text', body: 'Lesson two body.', transcript: null, position: 2, is_preview: false },
+          { id: 13, course_id: 7, section_id: 2, title: 'Three', content_type: 'text', body: 'Lesson three body.', transcript: null, position: 3, is_preview: false },
+        ],
+      }],
+    };
+
+    function progressWith(completedIds: number[], availability?: { lesson_id: number; available: boolean; unlock_at: null }[]) {
+      return {
+        enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 33 },
+        lessons: completedIds.map((lesson_id) => ({ lesson_id, status: 'completed' })),
+        availability: availability ?? [11, 12, 13].map((lesson_id) => ({ lesson_id, available: true, unlock_at: null })),
+      };
+    }
+
+    it('opens at the first lesson that is not finished, and says so', async () => {
+      jest.mocked(getCourse).mockResolvedValue(threeLessons as never);
+      jest.mocked(getCourseProgress).mockResolvedValue(progressWith([11]) as never);
+
+      const { findByText, getByTestId } = render(<CoursePlayerScreen />);
+
+      expect(await findByText('Lesson two body.')).toBeTruthy();
+      expect(getByTestId('course-player-resumed')).toBeTruthy();
+    });
+
+    it('stays on lesson one for a learner who has finished nothing, and says nothing', async () => {
+      jest.mocked(getCourse).mockResolvedValue(threeLessons as never);
+      jest.mocked(getCourseProgress).mockResolvedValue(progressWith([]) as never);
+
+      const { findByText, queryByTestId } = render(<CoursePlayerScreen />);
+
+      expect(await findByText('Lesson one body.')).toBeTruthy();
+      expect(queryByTestId('course-player-resumed')).toBeNull();
+    });
+
+    it('lands on the last lesson when every one of them is finished', async () => {
+      jest.mocked(getCourse).mockResolvedValue(threeLessons as never);
+      jest.mocked(getCourseProgress).mockResolvedValue(progressWith([11, 12, 13]) as never);
+
+      const { findByText } = render(<CoursePlayerScreen />);
+
+      expect(await findByText('Lesson three body.')).toBeTruthy();
+    });
+
+    /** A locked lesson is not somewhere to land: the drip gate would refuse it anyway. */
+    it('does not drop the learner on a lesson the drip schedule has not unlocked', async () => {
+      jest.mocked(getCourse).mockResolvedValue(threeLessons as never);
+      jest.mocked(getCourseProgress).mockResolvedValue(progressWith([11], [
+        { lesson_id: 11, available: true, unlock_at: null },
+        { lesson_id: 12, available: false, unlock_at: null },
+        { lesson_id: 13, available: true, unlock_at: null },
+      ]) as never);
+
+      const { findByText } = render(<CoursePlayerScreen />);
+
+      expect(await findByText('Lesson three body.')).toBeTruthy();
+    });
+
+    it('lets the learner go back to the beginning without being dragged forward again', async () => {
+      jest.mocked(getCourse).mockResolvedValue(threeLessons as never);
+      jest.mocked(getCourseProgress).mockResolvedValue(progressWith([11]) as never);
+
+      const { findByText, getByText, queryByTestId } = render(<CoursePlayerScreen />);
+      await findByText('Lesson two body.');
+
+      fireEvent.press(getByText('Start from the beginning'));
+
+      expect(await findByText('Lesson one body.')).toBeTruthy();
+      expect(queryByTestId('course-player-resumed')).toBeNull();
+    });
   });
 });

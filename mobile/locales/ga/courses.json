@@ -54,6 +54,8 @@
     "completed": "Críochnaithe",
     "next_lesson": "An chéad cheacht eile",
     "prev_lesson": "Ceacht roimhe seo",
+    "resumed": "Ar aghaidh ón áit ar stad tú",
+    "start_from_beginning": "Tosaigh ón tús",
     "course_progress": "Dul chun cinn an chúrsa",
     "lesson_completed": "Ceacht críochnaithe",
     "action_failed": "Níorbh fhéidir do dhul chun cinn a shábháil. Bain triail eile as.",

@@ -50,6 +50,8 @@
     "completed": "Terminado",
     "next_lesson": "Próxima lección",
     "prev_lesson": "Lección anterior",
+    "resumed": "Continuamos donde lo dejaste",
+    "start_from_beginning": "Empezar desde el principio",
     "course_progress": "Progreso del curso",
     "lesson_completed": "Lección completada",
     "action_failed": "No se pudo guardar tu progreso. Por favor inténtalo de nuevo.",
