@@ -122,17 +122,17 @@ and the places a contract test earns the most.
 | POST | `/api/ai/chat/feedback` | chat.ts:131 |
 | GET | `/api/ai/chat/starters` | chat.ts:121 |
 | GET | `/api/ai/conversations/{param}` | chat.ts:117 |
-| POST | `/api/auth/forgot-password` | auth.ts:176 |
-| POST | `/api/auth/login` | auth.ts:153 |
-| POST | `/api/auth/logout` | auth.ts:235 |
-| POST | `/api/auth/refresh-token` | auth.ts:245 |
-| POST | `/api/auth/resend-verification-by-email` | auth.ts:204 |
-| POST | `/api/auth/reset-password` | auth.ts:181 |
-| POST | `/api/auth/verify-email` | auth.ts:186 |
+| POST | `/api/auth/forgot-password` | auth.ts:191 |
+| POST | `/api/auth/login` | auth.ts:168 |
+| POST | `/api/auth/logout` | auth.ts:250 |
+| POST | `/api/auth/refresh-token` | auth.ts:260 |
+| POST | `/api/auth/resend-verification-by-email` | auth.ts:219 |
+| POST | `/api/auth/reset-password` | auth.ts:196 |
+| POST | `/api/auth/verify-email` | auth.ts:201 |
 | POST | `/api/v2/appreciations` | appreciations.ts:70 |
 | POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:80 |
-| POST | `/api/v2/auth/register` | auth.ts:165 |
-| GET | `/api/v2/auth/registration-info` | auth.ts:228 |
+| POST | `/api/v2/auth/register` | auth.ts:180 |
+| GET | `/api/v2/auth/registration-info` | auth.ts:243 |
 | GET | `/api/v2/blog` | blog.ts:43 |
 | GET | `/api/v2/blog/{param}` | blog.ts:54 |
 | POST | `/api/v2/bookmarks` | feed.ts:391 |
@@ -554,8 +554,8 @@ and the places a contract test earns the most.
 | GET | `/api/v2/skills/search` | endorsements.ts:250 |
 | DELETE | `/api/v2/team-tasks/{param}` | groups.ts:831 |
 | PUT | `/api/v2/team-tasks/{param}` | groups.ts:827 |
-| GET | `/api/v2/tenant/bootstrap` | tenant.ts:66, tenant.ts:86 |
-| GET | `/api/v2/tenants` | tenant.ts:101 |
+| GET | `/api/v2/tenant/bootstrap` | tenant.ts:76, tenant.ts:96 |
+| GET | `/api/v2/tenants` | tenant.ts:111 |
 | GET | `/api/v2/users` | client.ts:715, members.ts:76 |
 | GET | `/api/v2/users/{param}` | members.ts:81 |
 | GET | `/api/v2/users/{param}/appreciations` | appreciations.ts:46 |
@@ -565,7 +565,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users/{param}/public-collections` | savedCollections.ts:59 |
 | GET | `/api/v2/users/blocked` | settings.ts:127 |
 | DELETE | `/api/v2/users/me` | settings.ts:123 |
-| GET | `/api/v2/users/me` | auth.ts:240 |
+| GET | `/api/v2/users/me` | auth.ts:255 |
 | PUT | `/api/v2/users/me` | profile.ts:25 |
 | GET | `/api/v2/users/me/activity/dashboard` | activity.ts:72 |
 | POST | `/api/v2/users/me/avatar` | profile.ts:95 |

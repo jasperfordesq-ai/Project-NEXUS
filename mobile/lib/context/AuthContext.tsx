@@ -26,6 +26,9 @@ import {
 } from '@/lib/api/auth';
 import { useTranslation } from 'react-i18next';
 
+import { listTenants } from '@/lib/api/tenant';
+import { useOptionalTenantContext } from '@/lib/context/TenantContext';
+import { adoptSignInTenant, isCrossCommunityAdmin } from '@/lib/tenancy/signInTenant';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { purgeAllMobileOfflineCheckinData } from '@/lib/eventOfflineCheckinStore';
 import { clearApiSession, installApiSession, registerUnauthorizedCallback } from '@/lib/api/client';
@@ -156,6 +159,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .catch(() => { /* best-effort */ });
   }, []);
 
+  /*
+    The community the app is currently showing. Read through the non-throwing reader so
+    this provider still renders on its own — the real tree puts `TenantProvider` directly
+    above it (app/_layout.tsx), which is what makes the switch below possible at all.
+  */
+  const tenantContext = useOptionalTenantContext();
+  const currentTenantId = tenantContext?.tenant?.id ?? null;
+  const currentSlug = tenantContext?.tenantSlug ?? '';
+  const switchCommunity = tenantContext?.setTenantSlug;
+
+  /**
+   * Put the app in the community this session was actually issued for.
+   *
+   * 🔴 A member of a sub-community signs in at their hub, because that is where the
+   * sign-in screen is — sub-communities have no address of their own. The server accepts
+   * them and issues a token for THEIR community while the app carries on asking about the
+   * hub, and `App\Core\TenantContext` then answers 403 to every request they make. Seen
+   * in the wild on 2026-09-09: signed in, and nothing loaded.
+   *
+   * Silent by design. They did nothing wrong and there is nothing to ask — an account
+   * belongs to one community, so the app already knows the only right answer. The reasoning
+   * and every edge lives in lib/tenancy/signInTenant.ts.
+   */
+  const adoptSignInCommunity = useCallback(async (signedInUser: LoginUser) => {
+    if (!switchCommunity) return;
+    await adoptSignInTenant({
+      input: {
+        userTenantId: signedInUser.tenant_id,
+        currentTenantId,
+        currentSlug,
+        isCrossCommunityAdmin: isCrossCommunityAdmin(signedInUser),
+      },
+      listTenants,
+      setTenantSlug: switchCommunity,
+    });
+  }, [currentSlug, currentTenantId, switchCommunity]);
+
   /** Throw the session away. Only ever correct when the server REFUSED the credentials. */
   const discardStoredSession = useCallback(async () => {
     await Promise.all([
@@ -273,13 +313,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(bearerToken);
     setUser(response.user);
 
+    // 🔴 Before navigating, not after. The first screen fires its own requests
+    // immediately, and on the mismatch path every one of them is refused — so a switch
+    // that happened afterwards would arrive to a screen already full of errors.
+    // `adoptSignInTenant` never throws: the sign-in has already succeeded by this line
+    // and must not be undone by a failure to tidy up which community is showing.
+    await adoptSignInCommunity(response.user);
+
     router.replace(response.user.onboarding_completed === false
       ? '/(modals)/onboarding'
       : '/(tabs)/home');
 
     // Register device for push notifications (non-blocking, best-effort)
     registerPushBestEffort();
-  }, [registerPushBestEffort]);
+  }, [adoptSignInCommunity, registerPushBestEffort]);
 
   /**
    * Adopt a session established outside `login()` — registration is the caller that

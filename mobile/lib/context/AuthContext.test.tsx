@@ -67,6 +67,25 @@ jest.mock('@/lib/api/client', () => ({
   },
 }));
 
+/*
+  The community the app is showing, and the public community list. Both are mocked because
+  this suite renders `AuthProvider` on its own — the real tree puts `TenantProvider`
+  directly above it, and `useOptionalTenantContext` is how the provider reads it without
+  requiring one. See lib/tenancy/signInTenant.ts for what these are used to decide.
+*/
+const mockListTenants = jest.fn();
+
+jest.mock('@/lib/api/tenant', () => ({
+  listTenants: (...args: unknown[]) => mockListTenants(...args),
+}));
+
+const mockSetTenantSlug = jest.fn();
+let mockTenantContext: unknown = null;
+
+jest.mock('@/lib/context/TenantContext', () => ({
+  useOptionalTenantContext: () => mockTenantContext,
+}));
+
 const mockRegisterForPushNotifications = jest.fn().mockResolvedValue('registered');
 const mockUnregisterPushNotifications = jest.fn().mockResolvedValue(undefined);
 
@@ -77,7 +96,21 @@ jest.mock('@/lib/notifications', () => ({
 
 // --- Tests ---
 
+import { router } from 'expo-router';
+
 import { AuthProvider, useAuthContext } from './AuthContext';
+
+/** The hub a sub-community's members must use to sign in, and the sub-community itself. */
+const HUB = { id: 7, slug: 'uk-timebank', name: 'UK Timebank', logo_url: null };
+const SUB = { id: 42, slug: 'stratford', name: 'Stratford', logo_url: null };
+
+function showingCommunity(community: { id: number; slug: string }) {
+  return {
+    tenant: { id: community.id, slug: community.slug },
+    tenantSlug: community.slug,
+    setTenantSlug: mockSetTenantSlug,
+  };
+}
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
@@ -111,6 +144,10 @@ describe('AuthContext', () => {
     mockStorageGet.mockResolvedValue(null);
     mockStorageGetJson.mockResolvedValue(null);
     mockApiLogout.mockResolvedValue(undefined);
+    mockSetTenantSlug.mockResolvedValue(undefined);
+    mockListTenants.mockResolvedValue({ data: [HUB, SUB] });
+    mockTenantContext = showingCommunity(HUB);
+    (router.replace as jest.Mock).mockClear();
   });
 
   it('starts in loading state', () => {
@@ -240,6 +277,98 @@ describe('AuthContext', () => {
     expect(result.current.isAuthenticated).toBe(true);
     expect(mockStorageSet).toHaveBeenCalledWith('auth_token', 'new-token');
     expect(mockStorageSet).toHaveBeenCalledWith('refresh_token', 'ref-token');
+  });
+
+  /*
+    Signing in from a hub as a member of one of its sub-communities.
+
+    THE FAILURE, seen in the wild on 2026-09-09, release 1.4.0+7. A sub-community has no
+    address of its own, so its members sign in at their hub — and the server lets them,
+    deliberately. But it issues a token for THEIR community while the app carries on asking
+    about the hub, and the server then answers 403 to every request. The member was signed
+    in, receiving no notifications, and told nothing at all.
+
+    The decision itself, and every case where the app must NOT move, live in
+    lib/tenancy/signInTenant.ts. These four are about the wiring: that this provider asks
+    at all, asks with the community it is actually showing, does it before it navigates,
+    and cannot break a sign-in by failing.
+  */
+  const signInAs = (user: Record<string, unknown>) => ({
+    access_token: 'new-token',
+    refresh_token: 'ref-token',
+    user: { ...mockUser, ...user },
+  });
+
+  it('moves the app to the community the session was issued for', async () => {
+    mockStorageGet.mockResolvedValue(null);
+    mockApiLogin.mockResolvedValue(signInAs({ tenant_id: SUB.id }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.login({ email: 'jane@example.com', password: 'secret' });
+    });
+
+    expect(mockSetTenantSlug).toHaveBeenCalledWith('stratford');
+    expect(result.current.isAuthenticated).toBe(true);
+  });
+
+  /*
+    🔴 Before navigating, not after. The first screen fires its own requests the moment it
+    mounts, and on this path every one of them is refused — so a switch that happened
+    afterwards would arrive at a screen already full of errors.
+  */
+  it('switches community before it sends the member to a screen', async () => {
+    mockStorageGet.mockResolvedValue(null);
+    mockApiLogin.mockResolvedValue(signInAs({ tenant_id: SUB.id }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.login({ email: 'jane@example.com', password: 'secret' });
+    });
+
+    const switched = mockSetTenantSlug.mock.invocationCallOrder[0];
+    const navigated = (router.replace as jest.Mock).mock.invocationCallOrder[0];
+    expect(switched).toBeLessThan(navigated);
+  });
+
+  it('leaves the community alone when the member signed in to the one on screen', async () => {
+    mockStorageGet.mockResolvedValue(null);
+    mockApiLogin.mockResolvedValue(signInAs({ tenant_id: HUB.id }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.login({ email: 'jane@example.com', password: 'secret' });
+    });
+
+    expect(mockListTenants).not.toHaveBeenCalled();
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+    expect(router.replace).toHaveBeenCalled();
+  });
+
+  /*
+    🔴 The sign-in has already succeeded by the time the switch runs. Tidying up which
+    community is showing must never be able to undo it.
+  */
+  it('still signs the member in when the community switch fails', async () => {
+    mockStorageGet.mockResolvedValue(null);
+    mockApiLogin.mockResolvedValue(signInAs({ tenant_id: SUB.id }));
+    mockSetTenantSlug.mockRejectedValue(new Error('Unable to load community'));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.login({ email: 'jane@example.com', password: 'secret' });
+    });
+
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(router.replace).toHaveBeenCalled();
   });
 
   it('logout() clears user and token', async () => {

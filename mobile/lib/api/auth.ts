@@ -55,6 +55,21 @@ export interface LoginUser {
   tenant_id: number;
   role: string;
   is_admin: boolean;
+  /**
+   * Platform super admin, and the two other shapes the same thing arrives in.
+   *
+   * 🔴 The API has always sent all three — `AuthController::login` puts them in the user
+   * block — and they are declared here for one reason: `App\Core\TenantContext` exempts
+   * exactly these people from its tenant check, so they are the ones the app must NOT
+   * quietly move to another community after sign-in. See `isCrossCommunityAdmin` in
+   * lib/tenancy/signInTenant.ts, which mirrors the server predicate field for field.
+   *
+   * Optional because registration establishes a session through a different response.
+   */
+  is_super_admin?: boolean;
+  is_god?: boolean;
+  /** A hub's network admin. Deliberately NOT exempt server-side — see the note above. */
+  is_tenant_super_admin?: boolean;
   onboarding_completed: boolean;
 }
 

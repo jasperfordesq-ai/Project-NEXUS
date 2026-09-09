@@ -14,6 +14,16 @@ export interface TenantBranding {
 }
 
 export interface TenantConfig {
+  /**
+   * The community's numeric id.
+   *
+   * 🔴 The API has always sent this — `TenantBootstrapController::buildBootstrapData`
+   * puts it first, on every one of the three return paths — and this interface simply did
+   * not declare it, so nothing in the app could compare the community it is showing
+   * against the one a session was issued for. That gap is the whole reason a
+   * sub-community member signing in at their hub ended up refused on every request.
+   */
+  id: number;
   name: string;
   slug: string;
   /** Uppercase ISO 4217 payment currency resolved by the tenant bootstrap. */

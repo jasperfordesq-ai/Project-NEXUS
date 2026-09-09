@@ -435,6 +435,26 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      itself, but `expo-av` ships no foreground service and no wake lock, so the system
      may still stop a long episode with the screen off. A media notification belongs
      with the `expo-audio` port.
+   - 🔴 **A sub-community member signing in at their hub no longer lands in a community
+     that refuses them.** Sentry NEXUS-MOBILE-5, release 1.4.0+7: unread count,
+     notification count and push registration all 403 `TENANT_MISMATCH` inside one
+     second. Two correct designs with nothing between them — `AuthController::login`
+     deliberately accepts a member of any descendant community at the parent
+     (`TenantSubtree::descendantIds`, pinned by
+     `SubCommunityEntryPointsTest::test_login_signs_in_a_sub_community_member_from_the_parent_domain`),
+     binds the token to `$lockedUser['tenant_id']`, and the app kept the parent's slug,
+     so `App\Core\TenantContext` refused every request from then on. The cure is
+     app-only and the data was already on the wire: bootstrap has always returned `id`
+     (the app's `TenantConfig` simply did not declare it), login returns
+     `user.tenant_id`, and `GET /v2/tenants` lists sub-communities. `AuthContext.login`
+     now switches the app to the member's own community before it navigates.
+     `lib/tenancy/signInTenant.ts` holds the decision, including the two cases where
+     moving would be wrong: a platform super admin is left alone (they are exempt from
+     the server's check by design), and a community absent from the public list is not
+     guessed at. A hub's network admin IS moved — `isTokenUserSuperAdmin` deliberately
+     omits `is_tenant_super_admin`, so the server refuses them like anyone else.
+     `lib/navigation/tenantMismatch.ts` stays as the rescue for anything that slips
+     through.
    - **Pull-to-refresh on twenty more screens**, plus three faults that were the same
      mistake from different sides: a failed refresh said nothing at all when rows were
      already on screen (new `components/ui/RefreshFailedNotice.tsx`); nine screens
@@ -480,6 +500,18 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      which `BaseApiController` already supports. The app will then place each one
      without further change. A member filling in three bad fields is currently told
      about one of them and not which.
+   - 🔴 **A member ALREADY stuck in the wrong community is not rescued by installing
+     the fix.** The switch above happens at sign-in; their device already holds a token
+     for one community and the slug of another, and nothing reconciles the two on
+     launch. `tenantMismatch.ts` still catches it and opens the community picker, and
+     picking their own community clears it. Reconciling on launch as well is possible —
+     the cached profile carries `tenant_id` — but was not built, because at launch the
+     community config is often not loaded yet and the check would cost an extra request
+     on cold starts that have nothing wrong with them.
+   - 🔴 **Sentry still cannot answer "which community was it asking for?"** `report.ts`
+     sends the slug as an `X-Tenant-Slug` header to `/api/app/log` and never sets it as
+     a Sentry tag. Adding one would have made this a one-click diagnosis instead of a
+     code read.
    - 🔴 **`expo-av` is deprecated for SDK 54 and removed in SDK 55**, so both media
      players need porting before the SDK moves. The podcast player's Android background
      limitation (above) is fixed by the same piece of work.

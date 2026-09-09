@@ -288,6 +288,24 @@ export function useTenantContext(): TenantContextValue {
   return ctx;
 }
 
+/**
+ * The tenant context, or `null` when there is no TenantProvider above.
+ *
+ * Third of the deliberately non-throwing readers in this file, and it exists for
+ * `AuthProvider`, which sits directly inside `TenantProvider` in the real app (see
+ * `app/_layout.tsx`) but is rendered on its own in its tests and in any screen test that
+ * needs a session without a community. It reads this to put a member into the community
+ * their session was actually issued for — see lib/tenancy/signInTenant.ts.
+ *
+ * 🔴 Sign-in must not depend on provider order to SUCCEED. A null here silently skips the
+ * community switch, so `lib/context/AuthContext.test.tsx` asserts the wiring rather than
+ * trusting it: a switch that quietly stops happening looks exactly like a member whose
+ * community was already right.
+ */
+export function useOptionalTenantContext(): TenantContextValue | null {
+  return useContext(TenantContext);
+}
+
 /** Resolve the primary brand color, falling back to NEXUS blue */
 export function usePrimaryColor(): string {
   const { tenant } = useTenantContext();
