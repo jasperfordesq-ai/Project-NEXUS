@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Members are now asked whether they want notifications.** `registerForPushNotifications()` took its prompting argument as opt-in and only the Settings switch passed it, so on iOS and Android 13+ the system permission dialog was never raised in the ordinary flow: a new member signed up, was never asked anything, and silently received no message, exchange-request or event notifications unless they found the switch. A card on the feed offers it once. Either answer is stored, because the OS cannot tell "tapped Not now" from "never asked" — both read as undetermined — so a permission-only rule would re-offer on every launch.
+
+- **A Vibration switch in Settings, and the app stops buzzing on everything.** The shared button fired a haptic on every press of every variant, and toasts and confirmations added their own, so plain navigation buzzed as hard as sending credits. The button impact is now limited to the primary and destructive variants, and the new switch silences all three kinds of feedback for members who do not want them.
+
+- **Picked photos are shrunk before upload.** Every picker passed `quality` only, which re-encodes without resizing, so a 12-to-48-megapixel camera photo left the device at full size — several megabytes against an 8 MB server limit and a 60-second timeout. On mobile data the member waited out the minute and was told the upload had failed. Capped at 1600px on the longest edge (2048 for marketplace listings). Adds `expo-image-manipulator`, so this needs a new store build. A PNG stays a PNG, so a transparent organisation logo does not gain a black background.
+
+- **Loading lists show the shape of what is coming.** Notifications, marketplace, volunteering, jobs and the wallet transaction list showed a centred spinner on a blank screen while five other tabs already had card skeletons, so the same wait looked slower on half the app.
+
 - **`mobile/docs/PLAY_RELEASE_PROCEDURE.md` — how a build actually reaches Google Play, written from an end-to-end release rather than from memory.** `PLAY_SUBMISSION.md` covered signing, listing copy and assets but not the act of shipping, so the order of operations lived only in the owner's head and an agent shipped straight to production without it. Every timing and fingerprint in the document is measured.
   - **The order is internal testing → phone → promote.** Not production first.
   - **Play's live version code is the only source of truth.** Measured 2026-09-09: Play was on **7** while EAS's remote counter said **4**, so an EAS build with `autoIncrement` would have produced 5 and been rejected outright. The counter is stale because releases are built locally, which never touches it.
@@ -26,6 +34,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - It also requires `--version-code` rather than defaulting, because Play refuses a version code it has already seen.
 
 ### Fixed
+
+- 🔴 **Form fields were hidden behind the keyboard on iPhone, on fifteen screens** — including the wallet transfer amount and the marketplace offer amount, where the member could not see the figure they were entering before sending credits or money. Android is protected by the manifest's `adjustResize`; iOS has no equivalent and each scroll view must make room itself, which is why the gap survived every Android device test. `app/keyboardAvoidance.test.ts` now scans every screen with a text field.
+
+- 🔴 **Paged lists could show a row twice or lose one, and the warning that would have revealed it was switched off.** `usePaginatedApi` appended pages without de-duplicating, so cursor pagination over a list the server re-orders handed React two children with the same key. Both of React's duplicate-key warnings were in `LogBox.ignoreLogs`, which is why it went unnoticed. The hook de-duplicates; the suppressions are gone, along with the nested-list one, which was checked rather than assumed to be needed.
+
+- 🔴 **Large system text clipped the tab bar and could squeeze a screen title's own Back button off the row.** The app had no font-scale handling anywhere. Caps are applied only where the container cannot grow — 1.6 for single-line chrome, 1.3 for tab labels, whose bar height now grows with the same capped scale. Body text is deliberately left uncapped.
+
+- 🔴 **The iOS permission explanations described a narrower app than the one we ship**, which Apple's guideline 5.1.1 checks against the running app: the camera text named only marketplace codes though it also scans event check-in codes; the photo-library text said "profile or post" though photos are picked for listings, events, groups and marketplace items, and videos are picked too; the location text named only the marketplace though the Listings tab uses it as well.
+
+- **A cold start showed three screens instead of one.** `expo-splash-screen` was not installed, so the native splash hid as soon as React rendered — and the first thing React renders is a bare spinner. The splash is now held until the redirect has landed, with a five-second backstop and a release from the crash boundary so nothing can strand a member on it. The splash also gains a dark-mode background and stops letterboxing on other aspect ratios.
+
+- **"You're offline" now appears on every screen.** The banner was mounted by hand on fourteen screens out of a hundred and seventy; on the rest a lost connection was indistinguishable from a server fault. It is mounted once in the shell and adds its own measured height to the safe-area inset, so it never covers a screen's own content.
+
+- **Every external link now opens through one checked helper.** `Linking.openURL` was called from twenty-two files; six had no error handling at all, so a device with nothing able to open the link produced an unhandled rejection and, to the member, a button that did nothing. One opened an empty string when a parcel had no tracking link, and two opened a member-typed website with no scheme check.
+
+- **A picture that fails to load no longer leaves a blank hole.** No image in the app had an `onError`, so a photo that 404s rendered as a blank rectangle the size of the picture. Seventeen server-image sites now use the component written for this.
+
+- **Harmless questions were being asked in red.** The confirmation dialog defaulted to the danger variant, so enrolling on a course, confirming a purchase or a delivery, completing a group exchange, sending credits and even unblocking somebody all asked with a red button.
+
+- **Numbers now read the way the member's language writes them.** Ratings and file sizes were built with `toFixed`, which always produces a full stop, so a French or German member saw "4.5" among numbers that otherwise read "4,5".
+
+- **A screen reader can jump by heading.** The app had twenty heading roles in total and the screen title was not one of them anywhere; one line in the shared top bar covers 134 screens.
+
+- **The same screen no longer looks different depending on how you reached it.** Groups and members are reachable at two routes that present them differently, and links were split between the two.
+
+- **A half-filled seller profile now asks before it is lost** — four steps of business details with nothing between a stray Back gesture and losing all of it.
 
 - 🔴 **Android App Links have never verified, because `assetlinks.json` published the wrong certificate.** The file listed `F5:0D:87:55…`, which is the **upload** key — the one used to sign what we send to Google. Play App Signing is enabled, so Google re-signs the app with its own key (`79:38:E8:06…`), and that is the fingerprint a phone checks. Every `https://app.project-nexus.ie/…` link therefore opened a browser or a chooser for everyone who installed from Play, while `app.json`'s `autoVerify: true` half looked correct. Both fingerprints are now published — Google's app signing key first, the upload key retained so a locally signed release build verifies too. Confirmed against the Play Console's own ready-made snippet, which names the app signing key. `verify-release-config.mjs` already anticipated this in a comment and accepts multiple fingerprints; it passes.
 

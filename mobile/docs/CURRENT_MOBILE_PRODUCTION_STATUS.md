@@ -550,6 +550,59 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      only — including things like an upload progress bar, a background podcast and a
      CV attachment, every one of which can look correct in a test and wrong in the hand.
 
+9. **The 2026-09-09 polish pass — nineteen items worked, two deliberately not done.** A
+   fourth audit weighted UI/UX, accessibility, iOS-specific behaviour and store config
+   rather than logic, because the three 09-07 passes had already read every module for
+   money and correctness bugs. Prompt:
+   `.local-docs-archive/mobile-audit-fix-prompt-2026-09-09.md`. Nineteen commits, each with
+   a regression test and a control run showing that test failing against the old code.
+
+   **The four that would have reached the most members:**
+   - **Nobody was ever asked to allow notifications.** The prompting argument on
+     `registerForPushNotifications()` was opt-in and only the Settings switch passed it, so
+     on iOS and Android 13+ the system dialog was never raised in the ordinary flow. A new
+     member simply received nothing.
+   - **The keyboard covered form fields on iPhone, on fifteen screens**, including the
+     wallet transfer amount. Android is saved by the manifest's `adjustResize`, which is
+     exactly why every Android device test passed.
+   - **Paged lists could show a row twice or drop one**, and both of React's duplicate-key
+     warnings were in `LogBox.ignoreLogs` — the platform's only signal for that fault,
+     switched off.
+   - **Photos uploaded at full camera resolution** against an 8 MB server limit and a
+     60-second timeout.
+
+   🔴 **Two items were NOT done, on purpose.**
+   - **Blocking the two unused Android storage permissions.** `minSdkVersion` is 24, so the
+     risk is Android 7 to 12, and all four local emulator images are API 36 where the
+     permission is already irrelevant — a test there would prove nothing. Blocking a
+     permission also needs a native build to take effect. Left for a session with an API 30
+     image.
+   - **Moving `events` and `explore` out of the tab navigator.** They render with no tab
+     highlighted, but they have no modal twin and their deep links and route-gating entries
+     name the `(tabs)` form. It is a navigation change that cannot be checked without a
+     device, and it overlaps the owner's open decision below about sheets.
+
+   🔴 **Four of the audit's own numbers were wrong and are corrected in the code**: the
+   offline banner was on fourteen screens, not five; `safeExternalLink.ts` had two callers,
+   not zero; only one of six "missing unsaved-guard" screens actually needed one; and the
+   spinner-versus-skeleton count was by file, not by journey — the five busiest lists were
+   already done.
+
+   🔴 **Two hand-written Jest mocks were mirrors of a module's export list**, and adding an
+   export to either broke unrelated suites with "Element type is invalid" or "x is not a
+   function", pointing at the screen rather than the mock. Both now derive from the real
+   module.
+
+   🔴 **Nothing in this pass was walked on a device either**, and two of its items are
+   inherently visual — the font-scale caps and the splash sequence. The bundle-size finding
+   below is measured; everything else is source and tests.
+
+   **Startup bundle, measured 2026-09-09** at 15.60 MB against a 16.35 MB ceiling. By source
+   bytes: the app's own `app/` 18.7%, `react-native` 13.6%, Sentry 12.8% across four
+   packages, `zod` 6.4%, `lib/` 5.3%. 🔴 Two of those Sentry packages are browser-only —
+   `@sentry-internal/replay` and `@sentry/browser`, together about 0.47 MB — which is the
+   most promising place to look for headroom.
+
 ## The blockers, in the order they hurt
 
 Four were listed on 2026-08-21. **All four are now cleared; Blocker 3 was fixed on
