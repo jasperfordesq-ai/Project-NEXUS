@@ -306,6 +306,53 @@ jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
+/*
+  🔴 Five of this screen's lists moved from `useApi` to `usePaginatedApi` when they were
+  given paging, and this file stubs `useApi` POSITIONALLY — one entry per hook call, in
+  declaration order. Rather than rewriting twenty positional arrays (and losing the
+  ordering they encode), the paginated hook draws from the SAME sequence: it consumes the
+  next `mockUseApi` slot and runs the component's real extractor over it, so the
+  extractors are exercised rather than bypassed.
+
+  Fixtures written before paging carry no `meta`/`cursor`/`has_more`. Those defaults are
+  filled in here rather than caught-and-ignored, so an extractor that reads a field the
+  fixture genuinely lacks still throws.
+*/
+type PaginatedExtract = { items: unknown[]; cursor: string | null; hasMore: boolean };
+/** Every `loadMore` handed out this render, so a test can prove a button is wired to one. */
+const mockLoadMoreCalls: jest.Mock[] = [];
+const mockWithPaginationDefaults = (response: unknown): unknown => {
+  if (!response || typeof response !== 'object') return response;
+  const body = response as Record<string, unknown>;
+  const inner = body.data;
+  return {
+    meta: { cursor: null, has_more: false },
+    ...body,
+    data: inner && typeof inner === 'object' && !Array.isArray(inner)
+      ? { cursor: null, has_more: false, items: [], ...(inner as Record<string, unknown>) }
+      : inner,
+  };
+};
+jest.mock('@/lib/hooks/usePaginatedApi', () => ({
+  usePaginatedApi: (_fetchFn: unknown, extractor: (response: unknown) => PaginatedExtract) => {
+    const state = mockUseApi() as { data?: unknown; isLoading?: boolean; error?: string | null; refresh?: () => void } | undefined;
+    const extracted = state?.data
+      ? extractor(mockWithPaginationDefaults(state.data))
+      : { items: [], cursor: null, hasMore: false };
+    return {
+      items: extracted.items ?? [],
+      isLoading: state?.isLoading ?? false,
+      isLoadingMore: false,
+      error: state?.error ?? null,
+      errorStatus: null,
+      errorCode: null,
+      hasMore: extracted.hasMore ?? false,
+      loadMore: (() => { const fn = jest.fn(); mockLoadMoreCalls.push(fn); return fn; })(),
+      refresh: state?.refresh ?? jest.fn(),
+    };
+  },
+}));
+
 let mockAuthUser: { id: number; name: string } | null = { id: 99, name: 'Current User' };
 jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({ user: mockAuthUser }),
@@ -1042,7 +1089,7 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Videos'));
 
     await waitFor(() => {
-      expect(getGroupMedia).toHaveBeenCalledWith(1, { type: 'video' });
+      expect(getGroupMedia).toHaveBeenCalledWith(1, { type: 'video', cursor: null });
     });
   });
 
@@ -1749,7 +1796,7 @@ describe('GroupDetailScreen', () => {
     const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Tasks'));
-    await waitFor(() => expect(getGroupTasks).toHaveBeenCalledWith(1, { status: 'all' }));
+    await waitFor(() => expect(getGroupTasks).toHaveBeenCalledWith(1, { status: 'all', cursor: null }));
     fireEvent.press(getByText('New task'));
     fireEvent.changeText(getByPlaceholderText('Task title'), 'Mulch vegetable beds');
     fireEvent.changeText(getByPlaceholderText('Add task details...'), 'Use the compost near shed two.');
@@ -1988,5 +2035,73 @@ describe('GroupDetailScreen', () => {
     expect(screen.queryByTestId('group-member-remove-99')).toBeNull();
     // …but the ordinary member still has them.
     expect(screen.getByTestId('group-member-role-21')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 Five of this screen's tabs stopped at twenty rows. Members, discussions,
+   * announcements, files and Q&A each fetched one page and rendered it; only the
+   * marketplace tab paged. Every one of these endpoints has always answered with a
+   * `cursor` and `has_more`, and the screen read neither — so the twenty-first member of
+   * a group did not exist as far as the phone was concerned.
+   */
+  describe('paging', () => {
+    function renderTab(tab: string, listState: Record<string, unknown>, slot: number) {
+      const groupState = {
+        data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } },
+        isLoading: false, error: null, refresh: jest.fn(),
+      };
+      const emptyList = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+      const emptyPaged = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+      const joinRequests = { data: { data: [] }, isLoading: false, error: null, errorStatus: null, errorCode: null, refresh: jest.fn() };
+      /* Declaration order: group, members, discussions, announcements, files, questions,
+         events — and, on the members tab only, GroupJoinRequestsCard's own useApi last. */
+      const states: Record<string, unknown>[] = [groupState, emptyList, emptyList, emptyPaged, emptyPaged, emptyPaged, emptyList];
+      // The join-requests card exists only while the members tab is mounted, so the
+      // number of calls PER RENDER differs by tab. Getting this length wrong shifts every
+      // result by one on the second render — the trap recorded above.
+      if (tab === 'members') states.push(joinRequests);
+      states[slot] = listState;
+      let call = 0;
+      mockUseApi.mockImplementation(() => states[call++ % states.length]);
+      mockRouteParams = { id: '1', tab };
+      return render(<GroupDetailScreen />);
+    }
+
+    it('offers Load more on the member list when the server says there are more', () => {
+      const members = [{ id: 21, name: 'Bea Member', avatar_url: null, role: 'member', joined_at: null }];
+      const { getByTestId } = renderTab('members', {
+        data: { data: members, meta: { cursor: 'abc', has_more: true } },
+        isLoading: false, error: null, refresh: jest.fn(),
+      }, 1);
+
+      expect(getByTestId('group-members-load-more')).toBeTruthy();
+    });
+
+    it('offers no Load more when the member list is complete', () => {
+      const members = [{ id: 21, name: 'Bea Member', avatar_url: null, role: 'member', joined_at: null }];
+      const { queryByTestId } = renderTab('members', {
+        data: { data: members, meta: { cursor: null, has_more: false } },
+        isLoading: false, error: null, refresh: jest.fn(),
+      }, 1);
+
+      expect(queryByTestId('group-members-load-more')).toBeNull();
+    });
+
+    it('offers Load more on files and on Q&A, which use the nested envelope', () => {
+      const files = [{ id: 3, file_name: 'minutes.pdf', file_size: 1024, folder: null, description: null, uploader_name: 'Aoife', created_at: null }];
+      const filesScreen = renderTab('files', {
+        data: { data: { items: files, cursor: 'next', has_more: true } },
+        isLoading: false, error: null, refresh: jest.fn(),
+      }, 4);
+      expect(filesScreen.getByTestId('group-files-load-more')).toBeTruthy();
+      filesScreen.unmount();
+
+      const questions = [{ id: 8, title: 'When is the next meet?', body: 'Asking for the rota.', answers: [], answer_count: 0, vote_score: 0, is_answered: false, author: null, created_at: null }];
+      const qaScreen = renderTab('qa', {
+        data: { data: { items: questions, cursor: 'next', has_more: true } },
+        isLoading: false, error: null, refresh: jest.fn(),
+      }, 5);
+      expect(qaScreen.getByTestId('group-questions-load-more')).toBeTruthy();
+    });
   });
 });

@@ -466,10 +466,11 @@ export function getOpportunity(id: number): Promise<{ data: VolunteerOpportunity
 /**
  * POST /api/v2/volunteering/opportunities/{id}/apply — apply for an opportunity.
  */
-export function getMyApplications(status?: string): Promise<VolunteerApplicationsResponse> {
+export function getMyApplications(status?: string, cursor?: string | null): Promise<VolunteerApplicationsResponse> {
   return api.get<VolunteerApplicationsResponse>(`${API_V2}/volunteering/applications`, {
     per_page: '20',
     ...(status ? { status } : {}),
+    ...(cursor ? { cursor } : {}),
   });
 }
 
@@ -505,8 +506,11 @@ export function getHoursSummary(): Promise<{ data: VolunteerHoursSummary }> {
   return api.get<{ data: VolunteerHoursSummary }>(`${API_V2}/volunteering/hours/summary`);
 }
 
-export function getMyOrganisations(): Promise<MyOrganisationsResponse> {
-  return api.get<MyOrganisationsResponse>(`${API_V2}/volunteering/my-organisations`, { per_page: '50' });
+export function getMyOrganisations(cursor?: string | null): Promise<MyOrganisationsResponse> {
+  return api.get<MyOrganisationsResponse>(`${API_V2}/volunteering/my-organisations`, {
+    per_page: '50',
+    ...(cursor ? { cursor } : {}),
+  });
 }
 
 export function getOrganisation(id: number): Promise<{ data: VolunteeringOrganisation }> {
@@ -581,8 +585,11 @@ export function updateOrganisation(id: number, payload: {
   return api.put<{ data: VolunteeringOrganisation }>(`${API_V2}/volunteering/organisations/${id}`, payload);
 }
 
-export function getMyShifts(): Promise<MyShiftsResponse> {
-  return api.get<MyShiftsResponse>(`${API_V2}/volunteering/shifts`, { per_page: '20' });
+export function getMyShifts(cursor?: string | null): Promise<MyShiftsResponse> {
+  return api.get<MyShiftsResponse>(`${API_V2}/volunteering/shifts`, {
+    per_page: '20',
+    ...(cursor ? { cursor } : {}),
+  });
 }
 
 export function getVolunteerCertificates(): Promise<VolunteerCertificatesResponse> {
@@ -593,8 +600,11 @@ export function generateVolunteerCertificate(): Promise<{ data: VolunteerCertifi
   return api.post<{ data: VolunteerCertificate }>(`${API_V2}/volunteering/certificates`, {});
 }
 
-export function getVolunteerExpenses(): Promise<VolunteerExpensesResponse> {
-  return api.get<VolunteerExpensesResponse>(`${API_V2}/volunteering/expenses`, { per_page: '20' });
+export function getVolunteerExpenses(cursor?: string | null): Promise<VolunteerExpensesResponse> {
+  return api.get<VolunteerExpensesResponse>(`${API_V2}/volunteering/expenses`, {
+    per_page: '20',
+    ...(cursor ? { cursor } : {}),
+  });
 }
 
 export function submitVolunteerExpense(payload: SubmitVolunteerExpensePayload): Promise<{ data: VolunteerExpense }> {
@@ -605,8 +615,11 @@ export function getVolunteerGivingDays(): Promise<VolunteerGivingDaysResponse> {
   return api.get<VolunteerGivingDaysResponse>(`${API_V2}/volunteering/giving-days`, {});
 }
 
-export function getVolunteerDonations(): Promise<VolunteerDonationsResponse> {
-  return api.get<VolunteerDonationsResponse>(`${API_V2}/volunteering/donations`, { per_page: '20' });
+export function getVolunteerDonations(cursor?: string | null): Promise<VolunteerDonationsResponse> {
+  return api.get<VolunteerDonationsResponse>(`${API_V2}/volunteering/donations`, {
+    per_page: '20',
+    ...(cursor ? { cursor } : {}),
+  });
 }
 
 export function getShiftSwaps(direction: 'all' | 'sent' | 'received' = 'all'): Promise<VolunteerShiftSwapsResponse> {

@@ -28,6 +28,41 @@ describe('PodcastsScreen', () => {
     jest.mocked(getPodcastShows).mockResolvedValue({ items: [{ id: 2, title: 'Time stories', slug: 'time-stories', summary: 'Local voices.', episode_count: 4, subscriber_count: 9 }], page: 1, total: 1, hasMore: false, categories: [] });
   });
 
+  /**
+   * 🔴 A community with more than twenty shows had the rest invisible: the screen asked
+   * for page one and never asked again, and there was no button, no footer and no hint
+   * that anything else existed.
+   */
+  it('fetches the next page when the member scrolls to the end, and adds to what is there', async () => {
+    jest.mocked(getPodcastShows)
+      .mockResolvedValueOnce({ items: [{ id: 2, title: 'Time stories', slug: 'time-stories', episode_count: 4, subscriber_count: 9 }], page: 1, total: 2, hasMore: true, categories: [] })
+      .mockResolvedValueOnce({ items: [{ id: 3, title: 'Second season', slug: 'second-season', episode_count: 2, subscriber_count: 1 }], page: 2, total: 2, hasMore: false, categories: [] });
+
+    const { getByText, UNSAFE_getByType } = render(<PodcastsScreen />);
+    await waitFor(() => expect(getByText('Time stories')).toBeTruthy());
+
+    const { FlatList } = require('react-native');
+    fireEvent(UNSAFE_getByType(FlatList), 'endReached');
+
+    await waitFor(() => expect(getPodcastShows).toHaveBeenCalledWith(expect.objectContaining({ page: 2 })));
+    // Page one must still be there — a second page that REPLACES the first is a worse
+    // bug than not paging at all.
+    await waitFor(() => expect(getByText('Second season')).toBeTruthy());
+    expect(getByText('Time stories')).toBeTruthy();
+  });
+
+  it('stops asking once the server says there is no more', async () => {
+    const { getByText, UNSAFE_getByType } = render(<PodcastsScreen />);
+    await waitFor(() => expect(getByText('Time stories')).toBeTruthy());
+    expect(getPodcastShows).toHaveBeenCalledTimes(1);
+
+    const { FlatList } = require('react-native');
+    fireEvent(UNSAFE_getByType(FlatList), 'endReached');
+    fireEvent(UNSAFE_getByType(FlatList), 'endReached');
+
+    await waitFor(() => expect(getPodcastShows).toHaveBeenCalledTimes(1));
+  });
+
   it('opens a podcast show from the native catalogue', async () => {
     const { getByText } = render(<PodcastsScreen />);
     await waitFor(() => expect(getByText('Time stories')).toBeTruthy());

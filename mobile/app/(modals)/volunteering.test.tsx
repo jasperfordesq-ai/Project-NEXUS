@@ -255,8 +255,59 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 const mockUsePaginatedApi = jest.fn();
+/*
+  🔴 Five of this screen's tabs moved from `useApi` to `usePaginatedApi` when they were
+  given paging — applications, shifts, my organisations, expenses and donations. This file
+  stubs `useApi` POSITIONALLY, one entry per hook call in declaration order, in fourteen
+  separate arrays. Rather than rewrite all fourteen (and lose the ordering they encode),
+  those five draw from the SAME sequence: they consume the next `mockUseApi` slot and run
+  the screen's real extractor over it, so the extractors are exercised, not bypassed.
+
+  The Opportunities list is told apart by its ARGUMENTS, not by counting: it is the only
+  paginated call on this screen with no `options`, because it is the only one that is not
+  gated on being signed in. Tests stub it through `mockUsePaginatedApi` as before.
+
+  Fixtures written before paging carry no `cursor`/`has_more`; those defaults are filled in
+  here rather than caught-and-ignored, so an extractor reading a genuinely missing field
+  still throws.
+*/
+type MockPaginatedExtract = { items: unknown[]; cursor: string | null; hasMore: boolean };
+const mockWithPaginationDefaults = (response: unknown): unknown => {
+  if (!response || typeof response !== 'object') return response;
+  const body = response as Record<string, unknown>;
+  const inner = body.data;
+  return {
+    meta: { cursor: null, has_more: false },
+    ...body,
+    data: inner && typeof inner === 'object' && !Array.isArray(inner)
+      ? { cursor: null, has_more: false, items: [], ...(inner as Record<string, unknown>) }
+      : inner,
+  };
+};
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+  usePaginatedApi: (
+    fetchFn: unknown,
+    extractor: (response: unknown) => MockPaginatedExtract,
+    deps?: unknown,
+    options?: unknown,
+  ) => {
+    if (options === undefined) return mockUsePaginatedApi(fetchFn, extractor, deps);
+    const state = mockUseApi() as { data?: unknown; isLoading?: boolean; error?: string | null; refresh?: () => void } | undefined;
+    const extracted = state?.data
+      ? extractor(mockWithPaginationDefaults(state.data))
+      : { items: [], cursor: null, hasMore: false };
+    return {
+      items: extracted.items ?? [],
+      isLoading: state?.isLoading ?? false,
+      isLoadingMore: false,
+      error: state?.error ?? null,
+      errorStatus: null,
+      errorCode: null,
+      hasMore: extracted.hasMore ?? false,
+      loadMore: jest.fn(),
+      refresh: state?.refresh ?? jest.fn(),
+    };
+  },
 }));
 
 jest.mock('expo-haptics', () => ({
@@ -1384,5 +1435,70 @@ describe('VolunteeringScreen', () => {
     expect(getByText('This registration was not approved.')).toBeTruthy();
     // It must NOT sit in the managed list looking approved.
     expect(queryByText('Manage')).toBeNull();
+  });
+
+  /**
+   * 🔴 Only the Opportunities tab paged. Applications, shifts, my organisations, expenses
+   * and donations each asked for one page of twenty and stopped, so a volunteer with more
+   * than twenty applications could not reach their oldest one, and nothing on the screen
+   * said there was more. Every one of those endpoints accepts a cursor.
+   */
+  describe('paging the member lists', () => {
+    /** Declaration order after Opportunities: applications, shifts, hours, organisations,
+     *  certificates, expenses, giving days, donations, swaps. */
+    function stub(slot: number, state: Record<string, unknown>) {
+      const emptyTop = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+      const emptyNested = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+      const hours = { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() };
+      const responses: Record<string, unknown>[] = [
+        emptyTop, emptyNested, hours, emptyTop, emptyNested,
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        emptyTop,
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      responses[slot] = state;
+      let call = 0;
+      mockUseApi.mockImplementation(() => responses[call++ % responses.length]);
+    }
+
+    it('offers Load more on the applications tab when the server says there are more', () => {
+      stub(0, {
+        data: {
+          data: [{ id: 21, status: 'approved', message: null, opportunity: { id: 10, title: 'Garden Helper' }, organization: { id: 5, name: 'Green Spaces', logo_url: null }, created_at: '2026-05-01T00:00:00Z' }],
+          meta: { cursor: 'abc', has_more: true },
+        },
+        isLoading: false, error: null, refresh: jest.fn(),
+      });
+      mockParams = { tab: 'applications' };
+
+      const { getByTestId } = render(<VolunteeringScreen />);
+      expect(getByTestId('volunteering-applications-load-more')).toBeTruthy();
+    });
+
+    it('offers no Load more when the applications list is complete', () => {
+      stub(0, {
+        data: {
+          data: [{ id: 21, status: 'approved', message: null, opportunity: { id: 10, title: 'Garden Helper' }, organization: { id: 5, name: 'Green Spaces', logo_url: null }, created_at: '2026-05-01T00:00:00Z' }],
+          meta: { cursor: null, has_more: false },
+        },
+        isLoading: false, error: null, refresh: jest.fn(),
+      });
+      mockParams = { tab: 'applications' };
+
+      const { queryByTestId } = render(<VolunteeringScreen />);
+      expect(queryByTestId('volunteering-applications-load-more')).toBeNull();
+    });
+
+    it('offers Load more on donations, which report only a next cursor', () => {
+      stub(7, {
+        data: { data: { items: [{ id: 3, amount: 5, currency: 'EUR', created_at: '2026-05-01T00:00:00Z', payment_method: 'card', message: null }], next_cursor: 42 } },
+        isLoading: false, error: null, refresh: jest.fn(),
+      });
+      mockParams = { tab: 'donations' };
+
+      const { getByTestId } = render(<VolunteeringScreen />);
+      expect(getByTestId('volunteering-donations-load-more')).toBeTruthy();
+    });
   });
 });

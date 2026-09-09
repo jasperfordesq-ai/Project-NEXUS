@@ -72,6 +72,8 @@ import {
   type GroupDetail,
   type GroupDiscussion,
   type GroupFileItem,
+  type GroupAnnouncementsResponse,
+  type GroupCollectionResponse,
   type GroupFilesResponse,
   type GroupMemberListItem,
   type GroupMediaItem,
@@ -100,6 +102,7 @@ import {
   type MarketplaceListingItem,
 } from '@/lib/api/marketplace';
 import { useApi } from '@/lib/hooks/useApi';
+import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import GroupJoinRequestsCard from '@/components/groups/GroupJoinRequestsCard';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
@@ -222,6 +225,28 @@ function StatTile({
   );
 }
 
+/**
+ * The end of a paged list inside this screen.
+ *
+ * 🔴 A button rather than `onEndReached`: the whole screen is one ScrollView with a tab
+ * strip, and there is no FlatList per tab to hang infinite scroll on. Turning each tab
+ * into its own list would be a large change for the same member-visible result.
+ */
+function LoadMoreRow({ hasMore, isLoadingMore, onPress, testID }: {
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onPress: () => void;
+  testID: string;
+}) {
+  const { t } = useTranslation(['common']);
+  if (!hasMore) return null;
+  return (
+    <HeroButton variant="secondary" isDisabled={isLoadingMore} testID={testID} onPress={onPress}>
+      {isLoadingMore ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.loadMore')}</HeroButton.Label>}
+    </HeroButton>
+  );
+}
+
 function EmptyCard({ icon, message }: { icon: IoniconName; message: string }) {
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -336,30 +361,57 @@ function GroupDetailScreenInner() {
 
   const currentIsMember = group ? (isMember ?? isGroupMember(group)) : false;
   const joinPending = !currentIsMember && Boolean(group && (joinRequested || hasPendingJoinRequest(group)));
-  const membersApi = useApi(() => getGroupMembers(safeGroupId), [safeGroupId, currentIsMember], {
-    enabled: safeGroupId > 0 && currentIsMember,
-  });
-  const discussionsApi = useApi(() => getGroupDiscussions(safeGroupId), [safeGroupId, currentIsMember], {
-    enabled: safeGroupId > 0 && currentIsMember,
-  });
-  const announcementsApi = useApi(() => getGroupAnnouncements(safeGroupId), [safeGroupId, currentIsMember], {
-    enabled: safeGroupId > 0 && currentIsMember,
-  });
-  const filesApi = useApi<GroupFilesResponse>(() => getGroupFiles(safeGroupId), [safeGroupId, currentIsMember], {
-    enabled: safeGroupId > 0 && currentIsMember,
-  });
-  const questionsApi = useApi<GroupQuestionsResponse>(() => getGroupQuestions(safeGroupId), [safeGroupId, currentIsMember], {
-    enabled: safeGroupId > 0 && currentIsMember,
-  });
+  /*
+    🔴 Five of this screen's tabs asked the server for twenty rows and stopped: members,
+    discussions, announcements, files and Q&A. Only the marketplace tab paged. Every one
+    of these endpoints has always returned a `cursor` and `has_more` — the screen read
+    neither — so the twenty-first member of a group did not exist as far as the phone was
+    concerned, and neither did the twenty-first file or question. Audit 2026-09-07.
+
+    Cursor paging, and the whole screen is one ScrollView with no FlatList to hang
+    `onEndReached` on, so each list ends in a "Load more" button. That is the same choice
+    the ideation list made, for the same reason.
+  */
+  const listEnabled = { enabled: safeGroupId > 0 && currentIsMember };
+  const membersApi = usePaginatedApi<GroupMemberListItem, GroupCollectionResponse<GroupMemberListItem>>(
+    (cursor) => getGroupMembers(safeGroupId, cursor),
+    (response) => ({ items: response.data, cursor: response.meta.cursor, hasMore: response.meta.has_more }),
+    [safeGroupId, currentIsMember],
+    listEnabled,
+  );
+  const discussionsApi = usePaginatedApi<GroupDiscussion, GroupCollectionResponse<GroupDiscussion>>(
+    (cursor) => getGroupDiscussions(safeGroupId, cursor),
+    (response) => ({ items: response.data, cursor: response.meta.cursor, hasMore: response.meta.has_more }),
+    [safeGroupId, currentIsMember],
+    listEnabled,
+  );
+  const announcementsApi = usePaginatedApi<GroupAnnouncement, GroupAnnouncementsResponse>(
+    (cursor) => getGroupAnnouncements(safeGroupId, cursor),
+    (response) => ({ items: response.data.items, cursor: response.data.cursor, hasMore: response.data.has_more }),
+    [safeGroupId, currentIsMember],
+    listEnabled,
+  );
+  const filesApi = usePaginatedApi<GroupFileItem, GroupFilesResponse>(
+    (cursor) => getGroupFiles(safeGroupId, cursor),
+    (response) => ({ items: response.data.items, cursor: response.data.cursor, hasMore: response.data.has_more }),
+    [safeGroupId, currentIsMember],
+    listEnabled,
+  );
+  const questionsApi = usePaginatedApi<GroupQuestion, GroupQuestionsResponse>(
+    (cursor) => getGroupQuestions(safeGroupId, cursor),
+    (response) => ({ items: response.data.items, cursor: response.data.cursor, hasMore: response.data.has_more }),
+    [safeGroupId, currentIsMember],
+    listEnabled,
+  );
   const eventsApi = useApi(() => getEvents('upcoming', null, 20, { groupId: safeGroupId }), [safeGroupId], {
     enabled: safeGroupId > 0,
   });
 
-  const members = useMemo<GroupMemberListItem[]>(() => membersApi.data?.data ?? [], [membersApi.data]);
-  const discussions = useMemo<GroupDiscussion[]>(() => discussionsApi.data?.data ?? [], [discussionsApi.data]);
-  const announcements = useMemo<GroupAnnouncement[]>(() => announcementsApi.data?.data?.items ?? [], [announcementsApi.data]);
-  const files = useMemo<GroupFileItem[]>(() => filesApi.data?.data.items ?? [], [filesApi.data]);
-  const questions = useMemo<GroupQuestion[]>(() => questionsApi.data?.data.items ?? [], [questionsApi.data]);
+  const members = membersApi.items;
+  const discussions = discussionsApi.items;
+  const announcements = announcementsApi.items;
+  const files = filesApi.items;
+  const questions = questionsApi.items;
   const events = useMemo<Event[]>(() => eventsApi.data?.data ?? [], [eventsApi.data]);
 
   const handleRefresh = useCallback(() => {
@@ -975,6 +1027,7 @@ function GroupDetailScreenInner() {
                 </NativePressable>
               ))
             )}
+            <LoadMoreRow hasMore={discussionsApi.hasMore} isLoadingMore={discussionsApi.isLoadingMore} onPress={discussionsApi.loadMore} testID="group-discussions-load-more" />
               </>
             )}
           </View>
@@ -1046,6 +1099,7 @@ function GroupDetailScreenInner() {
                 </HeroCard>
               ))
             )}
+            <LoadMoreRow hasMore={membersApi.hasMore} isLoadingMore={membersApi.isLoadingMore} onPress={membersApi.loadMore} testID="group-members-load-more" />
           </View>
         ) : null}
 
@@ -1174,6 +1228,7 @@ function GroupDetailScreenInner() {
                 </HeroCard>
                   ))
                 )}
+                <LoadMoreRow hasMore={announcementsApi.hasMore} isLoadingMore={announcementsApi.isLoadingMore} onPress={announcementsApi.loadMore} testID="group-announcements-load-more" />
               </>
             )}
           </View>
@@ -1184,6 +1239,9 @@ function GroupDetailScreenInner() {
             groupId={loadedGroup.id}
             files={files}
             isLoading={filesApi.isLoading}
+            hasMore={filesApi.hasMore}
+            isLoadingMore={filesApi.isLoadingMore}
+            onLoadMore={filesApi.loadMore}
             canView={userCanSeeMemberContent}
             canManage={canManageGroup}
             onRefresh={filesApi.refresh}
@@ -1203,6 +1261,9 @@ function GroupDetailScreenInner() {
             groupId={loadedGroup.id}
             questions={questions}
             isLoading={questionsApi.isLoading}
+            hasMore={questionsApi.hasMore}
+            isLoadingMore={questionsApi.isLoadingMore}
+            onLoadMore={questionsApi.loadMore}
             canView={userCanSeeMemberContent}
             canManage={canManageGroup}
             currentUserId={user?.id ?? null}
@@ -1429,6 +1490,9 @@ function GroupFilesPanel({
   groupId,
   files,
   isLoading,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
   canView,
   canManage,
   onRefresh,
@@ -1436,6 +1500,9 @@ function GroupFilesPanel({
   groupId: number;
   files: GroupFileItem[];
   isLoading: boolean;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
   canView: boolean;
   canManage: boolean;
   onRefresh: () => void;
@@ -1565,6 +1632,7 @@ function GroupFilesPanel({
           </HeroCard>
         ))
       )}
+      <LoadMoreRow hasMore={hasMore} isLoadingMore={isLoadingMore} onPress={onLoadMore} testID="group-files-load-more" />
       {confirmDialog}
     </View>
   );
@@ -1589,18 +1657,32 @@ function GroupMediaPanel({
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [uploadingMediaType, setUploadingMediaType] = useState<GroupMediaType | null>(null);
+  /* 🔴 The gallery showed the first twenty items and stopped, though the endpoint has
+     always answered with a cursor. Audit 2026-09-07. */
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const loadMedia = useCallback(async () => {
+  const loadMedia = useCallback(async (append = false) => {
     if (!canView) return;
-    setIsLoading(true);
+    if (append) setIsLoadingMore(true); else setIsLoading(true);
     try {
-      const response = await getGroupMedia(groupId, { type: filter });
-      setItems(response.data.items ?? []);
+      const response = await getGroupMedia(groupId, { type: filter, cursor: append ? cursor : null });
+      const page = response.data.items ?? [];
+      setItems((previous) => (append ? [...previous, ...page] : page));
+      setCursor(response.data.cursor ?? null);
+      setHasMore(Boolean(response.data.has_more));
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.media.loadError')), variant: 'danger' });
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, append ? t('detail.media.loadMoreError') : t('detail.media.loadError')),
+        variant: 'danger',
+      });
     } finally {
-      setIsLoading(false);
+      if (append) setIsLoadingMore(false); else setIsLoading(false);
     }
+    // `cursor` is deliberately absent: including it would restart the list from page one
+    // every time a page arrived. Appending reads it through the closure at call time.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, groupId, filter]);
 
@@ -1760,6 +1842,7 @@ function GroupMediaPanel({
           })}
         </View>
       )}
+      <LoadMoreRow hasMore={hasMore} isLoadingMore={isLoadingMore} onPress={() => void loadMedia(true)} testID="group-media-load-more" />
       {confirmDialog}
     </View>
   );
@@ -1769,6 +1852,9 @@ function GroupQAPanel({
   groupId,
   questions,
   isLoading,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
   canView,
   canManage,
   currentUserId,
@@ -1785,6 +1871,9 @@ function GroupQAPanel({
   groupId: number;
   questions: GroupQuestion[];
   isLoading: boolean;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
   canView: boolean;
   canManage: boolean;
   currentUserId: number | null;
@@ -2097,6 +2186,7 @@ function GroupQAPanel({
           );
         })
       )}
+      <LoadMoreRow hasMore={hasMore} isLoadingMore={isLoadingMore} onPress={onLoadMore} testID="group-questions-load-more" />
     </View>
   );
 }
@@ -2486,21 +2576,33 @@ function GroupTasksPanel({
   const [dueDate, setDueDate] = useState('');
   const [creating, setCreating] = useState(false);
   const [updatingTaskId, setUpdatingTaskId] = useState<number | null>(null);
+  /* 🔴 Fifty tasks and then nothing, though the endpoint answers with a cursor.
+     Audit 2026-09-07. */
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const loadTasks = useCallback(async () => {
+  const loadTasks = useCallback(async (append = false) => {
     if (!canView) return;
-    setIsLoading(true);
+    if (append) setIsLoadingMore(true); else setIsLoading(true);
     try {
       const [taskResponse, statsResponse] = await Promise.all([
-        getGroupTasks(groupId, { status: statusFilter }),
+        getGroupTasks(groupId, { status: statusFilter, cursor: append ? cursor : null }),
         getGroupTaskStats(groupId),
       ]);
-      setTasks(taskResponse.data ?? []);
+      const page = taskResponse.data ?? [];
+      setTasks((previous) => (append ? [...previous, ...page] : page));
+      setCursor(taskResponse.meta?.cursor ?? null);
+      setHasMore(Boolean(taskResponse.meta?.has_more));
       setStats(statsResponse.data);
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.loadError')), variant: 'danger' });
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, append ? t('detail.tasks.loadMoreError') : t('detail.tasks.loadError')),
+        variant: 'danger',
+      });
     } finally {
-      setIsLoading(false);
+      if (append) setIsLoadingMore(false); else setIsLoading(false);
     }
   // Keep loading tied to data inputs. The i18n function can change identity during test/runtime renders.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2819,6 +2921,7 @@ function GroupTasksPanel({
           </HeroCard>
         ))
       )}
+      <LoadMoreRow hasMore={hasMore} isLoadingMore={isLoadingMore} onPress={() => void loadTasks(true)} testID="group-tasks-load-more" />
       {confirmDialog}
     </View>
   );

@@ -649,6 +649,30 @@ function OpportunityCard({
   );
 }
 
+/**
+ * The end of one of this screen's paged tabs.
+ *
+ * A button rather than `onEndReached`: the outer FlatList's `data` is the Opportunities
+ * list, and every other tab renders inside its header, so scroll-to-end only ever fires
+ * for opportunities. Same choice, for the same reason, as the group detail screen.
+ */
+function TabLoadMore({ hasMore, isLoadingMore, onPress, testID }: {
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onPress: () => void;
+  testID: string;
+}) {
+  const { t } = useTranslation(['volunteering', 'common']);
+  if (!hasMore) return null;
+  return (
+    <View className="px-4 pb-4">
+      <HeroButton variant="secondary" isDisabled={isLoadingMore} testID={testID} onPress={onPress}>
+        {isLoadingMore ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.loadMore')}</HeroButton.Label>}
+      </HeroButton>
+    </View>
+  );
+}
+
 function ApplicationsPanel({
   applications,
   isLoading,
@@ -2031,14 +2055,66 @@ function VolunteeringScreenInner() {
       refreshOpportunities();
     }, [refreshOpportunities]),
   );
-  const applicationsApi = useApi<VolunteerApplicationsResponse>(() => getMyApplications(), [], { enabled: isAuthenticated });
-  const shiftsApi = useApi<MyShiftsResponse>(() => getMyShifts(), [], { enabled: isAuthenticated });
+  /*
+    🔴 Only the Opportunities tab paged. Applications, shifts, my organisations, expenses
+    and donations each asked for one page of twenty and stopped, though every one of those
+    endpoints accepts a `cursor` and answers with the next one — so a volunteer with more
+    than twenty applications could not see their oldest, and an organiser's expense list
+    ended without saying so. Audit 2026-09-07, fixed 2026-09-09.
+
+    🔴 Two lists on this screen are deliberately NOT paged, because the SERVER does not
+    offer it: `VolunteerCertificateController::myCertificates` calls
+    `getUserCertificates($userId)` with no filters even though the service supports a
+    cursor, and `getSwapRequests` returns everything it finds. Adding a "Load more" here
+    would be a button that cannot work. Both need an API change first.
+  */
+  const authOnly = { enabled: isAuthenticated };
+  const applicationsApi = usePaginatedApi<VolunteerApplication, VolunteerApplicationsResponse>(
+    (cursor) => getMyApplications(undefined, cursor),
+    // `Array.isArray` rather than `?? []`: this endpoint puts the list at the top level,
+    // and the screen must never hand a non-array to a renderer. The unpaged code checked
+    // the same thing.
+    (response) => ({ items: Array.isArray(response.data) ? response.data : [], cursor: response.meta?.cursor ?? null, hasMore: Boolean(response.meta?.has_more) }),
+    [],
+    authOnly,
+  );
+  const shiftsApi = usePaginatedApi<VolunteerShiftRegistration, MyShiftsResponse>(
+    (cursor) => getMyShifts(cursor),
+    (response) => ({ items: Array.isArray(response.data?.items) ? response.data.items : [], cursor: response.data?.cursor ?? null, hasMore: Boolean(response.data?.has_more) }),
+    [],
+    authOnly,
+  );
   const hoursApi = useApi<{ data: VolunteerHoursSummary }>(() => getHoursSummary(), [], { enabled: isAuthenticated });
-  const organisationsApi = useApi<MyOrganisationsResponse>(() => getMyOrganisations(), [], { enabled: isAuthenticated });
+  const organisationsApi = usePaginatedApi<VolunteeringOrganisation, MyOrganisationsResponse>(
+    (cursor) => getMyOrganisations(cursor),
+    (response) => ({ items: Array.isArray(response.data) ? response.data : [], cursor: response.meta?.cursor ?? null, hasMore: Boolean(response.meta?.has_more) }),
+    [],
+    authOnly,
+  );
   const certificatesApi = useApi<VolunteerCertificatesResponse>(() => getVolunteerCertificates(), [], { enabled: isAuthenticated });
-  const expensesApi = useApi<VolunteerExpensesResponse>(() => getVolunteerExpenses(), [], { enabled: isAuthenticated });
+  const expensesApi = usePaginatedApi<VolunteerExpense, VolunteerExpensesResponse>(
+    (cursor) => getVolunteerExpenses(cursor),
+    (response) => ({
+      items: Array.isArray(response.data?.items) ? response.data.items
+        : Array.isArray(response.data?.expenses) ? response.data.expenses : [],
+      cursor: response.data?.cursor ?? null,
+      hasMore: Boolean(response.data?.has_more),
+    }),
+    [],
+    authOnly,
+  );
   const givingDaysApi = useApi<VolunteerGivingDaysResponse>(() => getVolunteerGivingDays(), [], { enabled: isAuthenticated });
-  const donationsApi = useApi<VolunteerDonationsResponse>(() => getVolunteerDonations(), [], { enabled: isAuthenticated });
+  const donationsApi = usePaginatedApi<VolunteerDonation, VolunteerDonationsResponse>(
+    (cursor) => getVolunteerDonations(cursor),
+    // This endpoint answers with `next_cursor` alone — null means there is no more.
+    (response) => ({
+      items: Array.isArray(response.data?.items) ? response.data.items : [],
+      cursor: response.data?.next_cursor != null ? String(response.data.next_cursor) : null,
+      hasMore: response.data?.next_cursor != null,
+    }),
+    [],
+    authOnly,
+  );
   const swapsApi = useApi<VolunteerShiftSwapsResponse>(() => getShiftSwaps(), [], { enabled: isAuthenticated });
 
   const opportunities = opportunitiesApi.items;
@@ -2050,32 +2126,27 @@ function VolunteeringScreenInner() {
   */
   const activeTabIsLoading = (
     activeTab === 'opportunities' ? opportunitiesApi.isLoading && opportunities.length > 0
-      : activeTab === 'applications' ? applicationsApi.isLoading && Boolean(applicationsApi.data)
-      : activeTab === 'shifts' ? shiftsApi.isLoading && Boolean(shiftsApi.data)
+      : activeTab === 'applications' ? applicationsApi.isLoading && applicationsApi.items.length > 0
+      : activeTab === 'shifts' ? shiftsApi.isLoading && shiftsApi.items.length > 0
       : activeTab === 'hours' ? hoursApi.isLoading && Boolean(hoursApi.data)
-      : activeTab === 'organisations' ? organisationsApi.isLoading && Boolean(organisationsApi.data)
+      : activeTab === 'organisations' ? organisationsApi.isLoading && organisationsApi.items.length > 0
       : activeTab === 'certificates' ? certificatesApi.isLoading && Boolean(certificatesApi.data)
-      : activeTab === 'expenses' ? expensesApi.isLoading && Boolean(expensesApi.data)
-      : activeTab === 'donations' ? donationsApi.isLoading && Boolean(donationsApi.data)
+      : activeTab === 'expenses' ? expensesApi.isLoading && expensesApi.items.length > 0
+      : activeTab === 'donations' ? donationsApi.isLoading && donationsApi.items.length > 0
       : activeTab === 'swaps' ? swapsApi.isLoading && Boolean(swapsApi.data)
       : false
   );
 
-  const applicationsPayload = applicationsApi.data?.data;
-  const applications = useMemo(() => Array.isArray(applicationsPayload) ? applicationsPayload : [], [applicationsPayload]);
-  const shiftsPayload = shiftsApi.data?.data.items;
-  const shifts = Array.isArray(shiftsPayload) ? shiftsPayload : [];
+  const applications = applicationsApi.items;
+  const shifts = shiftsApi.items;
   const summary = hoursApi.data?.data ?? null;
-  const organisationsPayload = organisationsApi.data?.data;
-  const organisations = useMemo(() => Array.isArray(organisationsPayload) ? organisationsPayload : [], [organisationsPayload]);
+  const organisations = organisationsApi.items;
   const certificatesPayload = certificatesApi.data?.data.items;
   const certificates = Array.isArray(certificatesPayload) ? certificatesPayload : [];
-  const expensesPayload = expensesApi.data?.data.items ?? expensesApi.data?.data.expenses;
-  const expenses = Array.isArray(expensesPayload) ? expensesPayload : [];
+  const expenses = expensesApi.items;
   const givingDaysPayload = givingDaysApi.data?.data;
   const givingDays = Array.isArray(givingDaysPayload) ? givingDaysPayload : [];
-  const donationsPayload = donationsApi.data?.data.items;
-  const donations = Array.isArray(donationsPayload) ? donationsPayload : [];
+  const donations = donationsApi.items;
   const swapsPayload = swapsApi.data?.data;
   const swaps = Array.isArray(swapsPayload) ? swapsPayload : swapsPayload?.swaps ?? [];
   const loggableOrganisations = useMemo(
@@ -2235,18 +2306,24 @@ function VolunteeringScreenInner() {
             ) : null}
 
             {activeTab === 'applications' ? (
+              <>
               <ApplicationsPanel
                 applications={applications}
                 isLoading={applicationsApi.isLoading}
                 onRefresh={applicationsApi.refresh}
               />
+              <TabLoadMore hasMore={applicationsApi.hasMore} isLoadingMore={applicationsApi.isLoadingMore} onPress={applicationsApi.loadMore} testID="volunteering-applications-load-more" />
+              </>
             ) : null}
 
             {activeTab === 'organisations' ? (
+              <>
               <OrganisationsPanel
                 organisations={organisations}
                 isLoading={organisationsApi.isLoading}
               />
+              <TabLoadMore hasMore={organisationsApi.hasMore} isLoadingMore={organisationsApi.isLoadingMore} onPress={organisationsApi.loadMore} testID="volunteering-organisations-load-more" />
+              </>
             ) : null}
 
             {activeTab === 'hours' ? (
@@ -2268,11 +2345,14 @@ function VolunteeringScreenInner() {
             ) : null}
 
             {activeTab === 'shifts' ? (
+              <>
               <ShiftsPanel
                 shifts={shifts}
                 isLoading={shiftsApi.isLoading}
                 onRefresh={shiftsApi.refresh}
               />
+              <TabLoadMore hasMore={shiftsApi.hasMore} isLoadingMore={shiftsApi.isLoadingMore} onPress={shiftsApi.loadMore} testID="volunteering-shifts-load-more" />
+              </>
             ) : null}
 
             {activeTab === 'swaps' ? (
@@ -2292,15 +2372,19 @@ function VolunteeringScreenInner() {
             ) : null}
 
             {activeTab === 'expenses' ? (
+              <>
               <ExpensesPanel
                 expenses={expenses}
                 organisations={loggableOrganisations}
                 isLoading={expensesApi.isLoading || organisationsApi.isLoading}
                 onRefresh={expensesApi.refresh}
               />
+              <TabLoadMore hasMore={expensesApi.hasMore} isLoadingMore={expensesApi.isLoadingMore} onPress={expensesApi.loadMore} testID="volunteering-expenses-load-more" />
+              </>
             ) : null}
 
             {activeTab === 'donations' ? (
+              <>
               <DonationsPanel
                 givingDays={givingDays}
                 donations={donations}
@@ -2310,6 +2394,8 @@ function VolunteeringScreenInner() {
                   donationsApi.refresh();
                 }}
               />
+              <TabLoadMore hasMore={donationsApi.hasMore} isLoadingMore={donationsApi.isLoadingMore} onPress={donationsApi.loadMore} testID="volunteering-donations-load-more" />
+              </>
             ) : null}
 
             {activeTab === 'opportunities' && opportunitiesApi.error ? (
