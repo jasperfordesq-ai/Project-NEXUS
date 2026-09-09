@@ -29,6 +29,7 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { storage } from '@/lib/storage';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -118,7 +119,7 @@ function EditProfileScreenInner() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.85,
         allowsMultipleSelection: false,
       });
@@ -126,7 +127,8 @@ function EditProfileScreenInner() {
       if (result.canceled || !result.assets?.[0]?.uri) return;
 
       setUploadingAvatar(true);
-      const response = await updateAvatar(result.assets[0].uri);
+      const prepared = await prepareImageForUpload(result.assets[0]);
+      const response = await updateAvatar(prepared.uri);
       const nextAvatarUrl = withImageVersion(response.data.avatar_url);
       avatarUpdatedLocallyRef.current = true;
       latestAvatarUriRef.current = nextAvatarUrl;

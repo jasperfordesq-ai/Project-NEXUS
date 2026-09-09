@@ -778,7 +778,10 @@ describe('NewEventRoute', () => {
 
     await waitFor(() => expect(getByText('Replace image')).toBeTruthy());
     fireEvent.press(getByText('Replace image'));
-    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
+    // Wait for the pick to reach state, not merely for the picker to have been called:
+    // the chosen photo is now resized before it is stored, so "Remove" appearing is the
+    // first moment the form actually holds an image to upload.
+    await waitFor(() => expect(getByText('Remove')).toBeTruthy());
     fireEvent.press(getByText('Update event'));
 
     await waitFor(() => expect(mockUpdateEvent).toHaveBeenCalled());

@@ -47,6 +47,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import { MARKETPLACE_MAX_EDGE, prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { withRouteGate } from '@/components/withRouteGate';
 
 const PRICE_TYPES: MarketplacePriceType[] = ['fixed', 'negotiable', 'free', 'contact'];
@@ -405,13 +406,17 @@ export function MarketplaceListingForm() {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
       quality: 0.82,
       selectionLimit: availableSlots,
     });
     if (result.canceled) return;
-    const nextUris = result.assets.map((asset) => asset.uri).filter(Boolean);
+    // 2048 rather than the 1600 default: a buyer zooms into a listing photo.
+    const prepared = await Promise.all(
+      result.assets.map((asset) => prepareImageForUpload(asset, { maxEdge: MARKETPLACE_MAX_EDGE })),
+    );
+    const nextUris = prepared.map((asset) => asset.uri).filter(Boolean);
     setImageUris((current) => [...current, ...nextUris].slice(0, current.length + availableSlots));
   }
 
@@ -422,7 +427,7 @@ export function MarketplaceListingForm() {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      mediaTypes: ['videos'],
       allowsMultipleSelection: false,
       quality: 0.82,
     });

@@ -22,6 +22,7 @@ import { contrastText, withAlpha } from '@/lib/utils/color';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -187,7 +188,7 @@ function NewGroupScreen() {
   async function pickGroupImage() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.85,
         allowsMultipleSelection: false,
       });
@@ -198,12 +199,18 @@ function NewGroupScreen() {
         showToast({ title: t('create.validationTitle'), description: t('create.imageTypeError'), variant: 'warning' });
         return;
       }
-      if (asset.fileSize && asset.fileSize > MAX_GROUP_IMAGE_SIZE) {
+      /*
+        Resize BEFORE the size check, and only apply the check if the resize did not happen.
+        See the same block in new-event.tsx: the 5 MB limit was rejecting ordinary phone
+        photos the app can now upload comfortably.
+      */
+      const prepared = await prepareImageForUpload(asset);
+      if (prepared.uri === asset.uri && asset.fileSize && asset.fileSize > MAX_GROUP_IMAGE_SIZE) {
         showToast({ title: t('create.validationTitle'), description: t('create.imageSizeError'), variant: 'warning' });
         return;
       }
 
-      setSelectedImageUri(asset.uri);
+      setSelectedImageUri(prepared.uri);
     } catch (err) {
       showToast({ title: t('create.imagePickFailedTitle'), description: describeApiError(err, t('create.imagePickFailedDescription')), variant: 'danger' });
     }

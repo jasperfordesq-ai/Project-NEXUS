@@ -58,6 +58,7 @@ import AccentIcon from '@/components/ui/AccentIcon';
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
 type ServiceType = 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
@@ -199,12 +200,13 @@ function EditExchangeModalInner() {
   async function handlePickImage() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.85,
         allowsMultipleSelection: false,
       });
       if (result.canceled || !result.assets?.[0]?.uri) return;
-      setSelectedImageUri(result.assets[0].uri);
+      const prepared = await prepareImageForUpload(result.assets[0]);
+      setSelectedImageUri(prepared.uri);
       setRemoveExistingImage(false);
     } catch (err) {
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.imagePickFailed')), variant: 'danger' });

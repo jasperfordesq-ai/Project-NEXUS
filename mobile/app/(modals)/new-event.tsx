@@ -42,6 +42,7 @@ import { contrastText, withAlpha } from '@/lib/utils/color';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import {
   eventIsoToLocalInput,
   eventLocalInputToIso,
@@ -429,7 +430,7 @@ function NewEventScreen() {
   async function pickCoverImage() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.85,
         allowsMultipleSelection: false,
       });
@@ -440,12 +441,21 @@ function NewEventScreen() {
         showToast({ title: t('create.validationTitle'), description: t('create.imageTypeError'), variant: 'warning' });
         return;
       }
-      if (asset.fileSize && asset.fileSize > MAX_COVER_IMAGE_SIZE) {
+      /*
+        🔴 Resize BEFORE the size check, and only apply the check if the resize did not
+        happen. The 5 MB limit was rejecting ordinary phone photos that the app can now
+        upload perfectly well — a 12-megapixel picture is several megabytes as it comes off
+        the camera and a few hundred kilobytes once shrunk to 1600px. The check still stands
+        for the case where the resize was skipped or failed, which is the only case where
+        the original is what leaves the device.
+      */
+      const prepared = await prepareImageForUpload(asset);
+      if (prepared.uri === asset.uri && asset.fileSize && asset.fileSize > MAX_COVER_IMAGE_SIZE) {
         showToast({ title: t('create.validationTitle'), description: t('create.imageSizeError'), variant: 'warning' });
         return;
       }
 
-      setSelectedImageUri(asset.uri);
+      setSelectedImageUri(prepared.uri);
     } catch (err) {
       showToast({ title: t('create.imagePickFailedTitle'), description: describeApiError(err, t('create.imagePickFailedDescription')), variant: 'danger' });
     }

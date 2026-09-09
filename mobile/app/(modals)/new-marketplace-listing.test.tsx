@@ -320,7 +320,7 @@ describe('NewMarketplaceListingRoute', () => {
 
     await waitFor(() => {
       expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(expect.objectContaining({
-        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        mediaTypes: ['videos'],
       }));
     });
     expect(getByText('demo.mp4')).toBeTruthy();
@@ -488,7 +488,7 @@ describe('NewMarketplaceListingRoute', () => {
 
     await waitFor(() => {
       expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(expect.objectContaining({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         selectionLimit: 19,
       }));
     });

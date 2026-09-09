@@ -47,6 +47,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import {
   archivePodcastEpisode,
   archivePodcastShow,
@@ -465,7 +466,7 @@ function PodcastStudioScreen() {
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.9,
         allowsMultipleSelection: false,
       });
@@ -475,7 +476,8 @@ function PodcastStudioScreen() {
         showToast({ title: t('common:errors.alertTitle'), description: t('studio.unsupported_file_type'), variant: 'warning' });
         return;
       }
-      onPicked(asset.uri);
+      const prepared = await prepareImageForUpload(asset);
+      onPicked(prepared.uri);
     } catch (error) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(error, t('common:errors.generic')), variant: 'danger' });
     }

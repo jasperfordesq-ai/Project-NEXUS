@@ -125,6 +125,7 @@ import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingC
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { withRouteGate } from '@/components/withRouteGate';
 
 const CARD_MIN_HEIGHT = 118;
@@ -1742,7 +1743,7 @@ function GroupMediaPanel({
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: type === 'video' ? ImagePicker.MediaTypeOptions.Videos : ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: type === 'video' ? ['videos'] : ['images'],
       allowsMultipleSelection: false,
       quality: 0.82,
     });
@@ -1752,9 +1753,11 @@ function GroupMediaPanel({
     if (!asset?.uri) return;
 
     setUploadingMediaType(type);
+    // Photos are shrunk before upload; a video is passed through untouched.
+    const prepared = type === 'video' ? asset : await prepareImageForUpload(asset);
     try {
       await uploadGroupMedia(groupId, {
-        uri: asset.uri,
+        uri: prepared.uri,
         fileName: asset.fileName,
         mimeType: asset.mimeType,
       });

@@ -1157,7 +1157,7 @@ describe('GroupDetailScreen', () => {
     await waitFor(() => {
       expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalled();
       expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(expect.objectContaining({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
       }));
       expect(uploadGroupMedia).toHaveBeenCalledWith(1, expect.objectContaining({
         uri: 'file:///tmp/group-media.jpg',

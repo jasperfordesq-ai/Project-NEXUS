@@ -51,6 +51,7 @@ import { ApiResponseError, authenticatedMediaRequest } from '@/lib/api/client';
 import { openAuthenticatedMessageMedia } from '@/lib/messageMedia';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isUploadAborted } from '@/lib/api/uploadWithProgress';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -593,14 +594,18 @@ function ThreadScreenInner() {
 
     const remaining = Math.max(1, MAX_ATTACHMENTS - pendingAttachments.length);
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
       selectionLimit: remaining,
       quality: 0.85,
     });
     if (result.canceled) return;
 
-    const nextAttachments = result.assets.slice(0, remaining).map((asset, index): PendingAttachment => ({
+    const preparedAssets = await Promise.all(
+      result.assets.slice(0, remaining).map(async (asset) => ({ ...asset, ...(await prepareImageForUpload(asset)) })),
+    );
+
+    const nextAttachments = preparedAssets.map((asset, index): PendingAttachment => ({
       id: `${Date.now()}-${index}`,
       uri: asset.uri,
       name: asset.fileName ?? `message-image-${pendingAttachments.length + index + 1}.jpg`,

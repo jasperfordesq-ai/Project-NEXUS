@@ -32,6 +32,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -137,7 +138,7 @@ function MarketplaceMerchantOnboardingScreen() {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.88,
@@ -145,7 +146,8 @@ function MarketplaceMerchantOnboardingScreen() {
     if (result.canceled || !result.assets[0]?.uri) return;
     setIsSaving(true);
     try {
-      const response = await updateAvatar(result.assets[0].uri);
+      const prepared = await prepareImageForUpload(result.assets[0]);
+      const response = await updateAvatar(prepared.uri);
       setAvatarUrl(response.data.avatar_url);
       if (user) refreshUser({ ...user, avatar_url: response.data.avatar_url });
     } catch (err) {

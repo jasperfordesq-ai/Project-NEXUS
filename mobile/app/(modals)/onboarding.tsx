@@ -45,6 +45,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 
 const DEFAULT_STEPS: OnboardingStep[] = [
   { slug: 'welcome', label_code: 'welcome', required: false },
@@ -192,14 +193,15 @@ function OnboardingScreenInner() {
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.85,
         allowsMultipleSelection: false,
       });
-      const uri = result.canceled ? null : result.assets?.[0]?.uri;
-      if (!uri) return;
+      const asset = result.canceled ? null : result.assets?.[0];
+      if (!asset?.uri) return;
       setBusy(true);
-      const response = await updateAvatar(uri);
+      const prepared = await prepareImageForUpload(asset);
+      const response = await updateAvatar(prepared.uri);
       if (!mountedRef.current) return;
       const nextProfile = { ...profile, avatar_url: response.data.avatar_url };
       setProfile(nextProfile);
