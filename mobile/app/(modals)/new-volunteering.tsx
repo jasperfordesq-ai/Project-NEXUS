@@ -8,7 +8,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Spinner, Surface, Text } from 'heroui-native';
+import { Button as HeroButton, Spinner, Surface, Text } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -18,12 +18,13 @@ import { canPostForOrganisation } from '@/lib/volunteering/postingPermission';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { withAlpha } from '@/lib/utils/color';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
+import ChoiceChips from '@/components/ui/ChoiceChips';
+import { FormHero, FormSection, SummaryTile } from '@/components/ui/FormSection';
 import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
@@ -31,6 +32,9 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
+
+/** The volunteering module colour used by the quick-create menu and the volunteering list. */
+const VOLUNTEERING_TONE = '#e11d48';
 
 function unwrapOrgs(response: { data?: VolunteeringOrganisation[]; items?: VolunteeringOrganisation[] } | null | undefined): VolunteeringOrganisation[] {
   if (Array.isArray(response?.data)) {
@@ -286,84 +290,81 @@ function NewVolunteeringScreen() {
       <ScrollView
         className="flex-1"
         style={{ flex: 1, backgroundColor: theme.bg }}
-        contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }}
         keyboardShouldPersistTaps="handled"
       >
-        <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
-          <View className="h-1.5" style={{ backgroundColor: '#e11d48' }} />
-          <HeroCard.Body className="gap-4 p-4">
-            <View className="flex-row items-start gap-3">
-              <View className="size-13 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha('#e11d48', 0.14) }}>
-                <Ionicons name="heart-outline" size={25} color="#e11d48" />
-              </View>
-              <View className="min-w-0 flex-1">
-                <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.eyebrow')}</Text>
-                <Text className="text-2xl font-bold" style={{ color: theme.text }}>{isEditing ? t('create.editTitle') : t('create.title')}</Text>
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{isEditing ? t('create.editSubtitle') : t('create.subtitle')}</Text>
-              </View>
+        <FormHero
+          icon="heart-outline"
+          eyebrow={t('create.eyebrow')}
+          title={isEditing ? t('create.editTitle') : t('create.title')}
+          subtitle={isEditing ? t('create.editSubtitle') : t('create.subtitle')}
+          tone={VOLUNTEERING_TONE}
+        >
+          <View className="mt-1 flex-row gap-2">
+            <SummaryTile label={t('create.summaryOrganisation')} value={selectedOrg?.name ?? t('create.summaryNotSet')} />
+            <SummaryTile
+              label={t('create.summaryLocation')}
+              value={isRemote ? t('create.summaryRemote') : (location.trim() || t('create.summaryNotSet'))}
+            />
+          </View>
+        </FormHero>
+
+        <FormSection title={t('create.sectionOrganisation')} icon="business-outline" testID="volunteering-section-organisation">
+          {orgQuery.isLoading ? <Spinner size="sm" /> : organisationsFailed ? (
+            // 🔴 A failed organisation load used to read as "you have no organisations"
+            // and disabled the form for ever (S4-08). Say so, and offer the retry.
+            <EmptyState
+              icon="business-outline"
+              title={t('create.organisationsLoadFailed')}
+              actionLabel={t('common:buttons.retry')}
+              onAction={orgQuery.refresh}
+              testID="new-volunteering-organisations-failed"
+            />
+          ) : organisations.length === 0 ? (
+            <Surface variant="secondary" className="rounded-panel-inner p-3">
+              <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('create.noOrganisations')}</Text>
+            </Surface>
+          ) : (
+            <ChoiceChips
+              label={t('create.organisationLabel')}
+              options={organisations.map((org) => ({ value: String(org.id), label: org.name }))}
+              selected={organisationId !== null ? String(organisationId) : ''}
+              onSelect={(value) => { if (value) setOrganisationId(Number(value)); }}
+            />
+          )}
+          {selectedOrg ? <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('create.selectedOrganisation', { name: selectedOrg.name })}</Text> : null}
+          {isEditing ? <Text className="text-xs" style={{ color: theme.textMuted }}>{t('create.editOrganisationHint')}</Text> : null}
+        </FormSection>
+
+        <FormSection title={t('create.sectionBasics')} icon="document-text-outline" testID="volunteering-section-basics">
+          <FormField label={t('create.titleLabel')} value={title} onChangeText={setTitle} placeholder={t('create.titlePlaceholder')} theme={theme} />
+          <FormField label={t('create.descriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('create.descriptionPlaceholder')} theme={theme} multiline />
+          <FormField label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
+        </FormSection>
+
+        <FormSection title={t('create.sectionDetails')} icon="location-outline" testID="volunteering-section-details">
+          <FormField label={t('create.locationLabel')} value={location} onChangeText={setLocation} placeholder={t('create.locationPlaceholder')} theme={theme} />
+          <HeroButton
+            variant={isRemote ? 'primary' : 'secondary'}
+            onPress={() => setIsRemote((value) => !value)}
+            accessibilityLabel={t('create.remote')}
+            accessibilityState={{ selected: isRemote }}
+          >
+            {isRemote
+              ? <AccentIcon name="globe-outline" size={15} />
+              : <Ionicons name="globe-outline" size={15} color={primary} />}
+            <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
+          </HeroButton>
+          <View className="flex-row gap-3">
+            <View className="min-w-0 flex-1">
+              <FormField label={t('create.startLabel')} value={startDate} onChangeText={setStartDate} placeholder={t('create.datePlaceholder')} theme={theme} />
             </View>
-          </HeroCard.Body>
-        </HeroCard>
-
-        <HeroCard className="rounded-panel p-0">
-          <HeroCard.Body className="gap-4 p-4">
-            <View className="gap-2">
-              <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.organisationLabel')}</Text>
-              {orgQuery.isLoading ? <Spinner size="sm" /> : organisationsFailed ? (
-                // 🔴 A failed organisation load used to read as "you have no organisations"
-                // and disabled the form for ever (S4-08). Say so, and offer the retry.
-                <EmptyState
-                  icon="business-outline"
-                  title={t('create.organisationsLoadFailed')}
-                  actionLabel={t('common:buttons.retry')}
-                  onAction={orgQuery.refresh}
-                  testID="new-volunteering-organisations-failed"
-                />
-              ) : organisations.length === 0 ? (
-                <Surface variant="secondary" className="rounded-panel-inner p-3">
-                  <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('create.noOrganisations')}</Text>
-                </Surface>
-              ) : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                  {organisations.map((org) => (
-                    <HeroButton
-                      key={org.id}
-                      size="sm"
-                      variant={organisationId === org.id ? 'primary' : 'secondary'}
-                      onPress={() => setOrganisationId(org.id)}
-                      accessibilityLabel={org.name}
-                      accessibilityState={{ selected: organisationId === org.id }}
-                    >
-                      <HeroButton.Label>{org.name}</HeroButton.Label>
-                    </HeroButton>
-                  ))}
-                </ScrollView>
-              )}
-              {selectedOrg ? <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('create.selectedOrganisation', { name: selectedOrg.name })}</Text> : null}
-              {isEditing ? <Text className="text-xs" style={{ color: theme.textMuted }}>{t('create.editOrganisationHint')}</Text> : null}
+            <View className="min-w-0 flex-1">
+              <FormField label={t('create.endLabel')} value={endDate} onChangeText={setEndDate} placeholder={t('create.datePlaceholder')} theme={theme} />
             </View>
-
-            <FormField label={t('create.titleLabel')} value={title} onChangeText={setTitle} placeholder={t('create.titlePlaceholder')} theme={theme} />
-            <FormField label={t('create.descriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('create.descriptionPlaceholder')} theme={theme} multiline />
-            <FormField label={t('create.locationLabel')} value={location} onChangeText={setLocation} placeholder={t('create.locationPlaceholder')} theme={theme} />
-            <FormField label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
-            <FormField label={t('create.startLabel')} value={startDate} onChangeText={setStartDate} placeholder={t('create.datePlaceholder')} theme={theme} />
-            <FormField label={t('create.endLabel')} value={endDate} onChangeText={setEndDate} placeholder={t('create.datePlaceholder')} theme={theme} />
-
-            <HeroButton
-              variant={isRemote ? 'primary' : 'secondary'}
-              onPress={() => setIsRemote((value) => !value)}
-              accessibilityLabel={t('create.remote')}
-              accessibilityState={{ selected: isRemote }}
-            >
-              {isRemote
-                ? <AccentIcon name="globe-outline" size={15} />
-                : <Ionicons name="globe-outline" size={15} color={primary} />}
-              <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
-            </HeroButton>
-
-          </HeroCard.Body>
-        </HeroCard>
+          </View>
+          <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.dateHint')}</Text>
+        </FormSection>
       </ScrollView>
       <FormActionFooter
         title={isEditing ? t('create.editReviewTitle') : t('create.reviewTitle')}

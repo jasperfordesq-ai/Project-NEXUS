@@ -357,7 +357,15 @@
     "organisationsLoadFailed": "Deine Organisationen konnten nicht geladen werden, daher kann die Gelegenheit noch nicht veröffentlicht werden.",
     "unsavedTitle": "Diese Gelegenheit verwerfen?",
     "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
-    "discard": "Verwerfen"
+    "discard": "Verwerfen",
+    "sectionOrganisation": "Wer sucht",
+    "sectionBasics": "Die Möglichkeit",
+    "sectionDetails": "Wo und wann",
+    "summaryOrganisation": "Organisation",
+    "summaryLocation": "Ort",
+    "summaryRemote": "Überall",
+    "summaryNotSet": "Nicht festgelegt",
+    "dateHint": "Jahr-Monat-Tag, zum Beispiel 2026-10-14. Leer lassen, wenn es kein Ende gibt."
   },
   "org": {
     "title": "Organisationsübersicht",

@@ -324,7 +324,16 @@
     "loadFailedTitle": "This job could not be loaded for editing",
     "failedDescription": "We could not create the job. Please try again.",
     "editFailedTitle": "Job not updated",
-    "editFailedDescription": "We could not update the job. Please try again."
+    "editFailedDescription": "We could not update the job. Please try again.",
+    "sectionRole": "The role",
+    "sectionDetails": "Where and how much",
+    "sectionPay": "Pay",
+    "sectionContact": "Contact and deadline",
+    "sectionExtras": "Extras",
+    "summaryType": "Type",
+    "summaryCommitment": "Commitment",
+    "remoteHint": "Turn this on if the role can be done from anywhere.",
+    "blindHiringHint": "Hide applicants' names and photos from the people shortlisting, to reduce bias."
   },
   "alerts": {
     "title": "Job alerts",

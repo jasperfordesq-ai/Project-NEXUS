@@ -358,7 +358,15 @@
     "organisationsLoadFailed": "Non è stato possibile caricare le tue organizzazioni, quindi l'opportunità non può ancora essere pubblicata.",
     "unsavedTitle": "Scartare questa opportunità?",
     "unsavedMessage": "Hai dati non salvati. Se esci ora, andranno perduti.",
-    "discard": "Scarta"
+    "discard": "Scarta",
+    "sectionOrganisation": "Chi cerca",
+    "sectionBasics": "L'opportunità",
+    "sectionDetails": "Dove e quando",
+    "summaryOrganisation": "Organizzazione",
+    "summaryLocation": "Luogo",
+    "summaryRemote": "Ovunque",
+    "summaryNotSet": "Non impostato",
+    "dateHint": "Anno-mese-giorno, per esempio 2026-10-14. Lascia vuoto se non ha una fine fissata."
   },
   "org": {
     "title": "Pannello dell’organizzazione",

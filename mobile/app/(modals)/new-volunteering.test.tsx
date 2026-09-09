@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, screen } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockCreateOpportunity = jest.fn();
@@ -216,7 +216,7 @@ describe('NewVolunteeringRoute', () => {
   it('requires the opportunity title to meet the React length limit', async () => {
     const { getByPlaceholderText, getByText } = render(<NewVolunteeringRoute />);
 
-    fireEvent.press(getByText('Helping Hands'));
+    fireEvent.press(screen.getByLabelText('Helping Hands'));
     fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Help');
     fireEvent.changeText(getByPlaceholderText('Describe the role, support, and expected impact.'), 'Help pack and deliver food parcels for local families.');
     fireEvent.press(getByText('Create opportunity'));
@@ -267,7 +267,7 @@ describe('NewVolunteeringRoute', () => {
   it('requires the opportunity description to meet the React length limit', async () => {
     const { getByPlaceholderText, getByText } = render(<NewVolunteeringRoute />);
 
-    fireEvent.press(getByText('Helping Hands'));
+    fireEvent.press(screen.getByLabelText('Helping Hands'));
     fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Food bank help');
     fireEvent.changeText(getByPlaceholderText('Describe the role, support, and expected impact.'), 'Too short.');
     fireEvent.press(getByText('Create opportunity'));
@@ -281,7 +281,7 @@ describe('NewVolunteeringRoute', () => {
   it('requires the end date to be after the start date', async () => {
     const { getAllByPlaceholderText, getByPlaceholderText, getByText } = render(<NewVolunteeringRoute />);
 
-    fireEvent.press(getByText('Helping Hands'));
+    fireEvent.press(screen.getByLabelText('Helping Hands'));
     fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Food bank help');
     fireEvent.changeText(getByPlaceholderText('Describe the role, support, and expected impact.'), 'Help pack and deliver food parcels for local families.');
     const [startDateInput, endDateInput] = getAllByPlaceholderText('YYYY-MM-DD');

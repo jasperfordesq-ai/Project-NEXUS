@@ -214,7 +214,17 @@
     },
     "unsaved_title": "Diesen Podcast-Entwurf verwerfen?",
     "unsaved_message": "Die eingegebenen Sendungs- und Episodendaten gehen verloren.",
-    "discard": "Verwerfen"
+    "discard": "Verwerfen",
+    "section_show_basics": "Über die Sendung",
+    "section_show_directory": "Verzeichniseintrag",
+    "section_show_settings": "Sprache und Sichtbarkeit",
+    "section_episode_pick_show": "Welche Sendung",
+    "section_episode_audio": "Audio",
+    "section_episode_details": "Episodendetails",
+    "section_episode_publishing": "Veröffentlichung",
+    "section_episode_extras": "Transkript und Kapitel",
+    "create_show_intro": "Gib deiner Sendung zuerst einen Namen und ein Titelbild. Episoden werden hinzugefügt, sobald die Sendung existiert.",
+    "add_episode_intro": "Hänge eine Audiodatei oder einen Link an und beschreibe dann die Episode."
   },
   "fields": {
     "artwork_file": "Podcastbild",

@@ -324,7 +324,16 @@
     "loadFailedTitle": "Cette offre n’a pas pu être chargée pour modification",
     "failedDescription": "Impossible d'enregistrer l'emploi. Veuillez réessayer.",
     "editFailedTitle": "Emploi non mis à jour",
-    "editFailedDescription": "Nous n'avons pas pu mettre à jour l'emploi. Veuillez réessayer."
+    "editFailedDescription": "Nous n'avons pas pu mettre à jour l'emploi. Veuillez réessayer.",
+    "sectionRole": "Le poste",
+    "sectionDetails": "Où et combien",
+    "sectionPay": "Rémunération",
+    "sectionContact": "Contact et date limite",
+    "sectionExtras": "Compléments",
+    "summaryType": "Type",
+    "summaryCommitment": "Engagement",
+    "remoteHint": "Activez cette option si le poste peut être exercé de n'importe où.",
+    "blindHiringHint": "Masquer les noms et photos des candidats aux personnes qui présélectionnent, pour réduire les biais."
   },
   "alerts": {
     "title": "Alertes emploi",

@@ -324,7 +324,16 @@
     "loadFailedTitle": "Não foi possível carregar esta vaga para edição",
     "failedDescription": "Não foi possível guardar o emprego. Tente novamente.",
     "editFailedTitle": "Trabalho não atualizado",
-    "editFailedDescription": "Não foi possível atualizar o cargo. Por favor, tente novamente."
+    "editFailedDescription": "Não foi possível atualizar o cargo. Por favor, tente novamente.",
+    "sectionRole": "A função",
+    "sectionDetails": "Onde e quanto",
+    "sectionPay": "Remuneração",
+    "sectionContact": "Contacto e prazo",
+    "sectionExtras": "Extras",
+    "summaryType": "Tipo",
+    "summaryCommitment": "Compromisso",
+    "remoteHint": "Ative esta opção se a função puder ser exercida a partir de qualquer lugar.",
+    "blindHiringHint": "Ocultar os nomes e fotografias dos candidatos a quem faz a pré-seleção, para reduzir enviesamentos."
   },
   "alerts": {
     "title": "Alertas de emprego",

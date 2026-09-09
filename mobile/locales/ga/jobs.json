@@ -324,7 +324,16 @@
     "loadFailedTitle": "Níorbh fhéidir an post seo a lódáil lena chur in eagar",
     "failedDescription": "Níorbh fhéidir an post a shábháil. Bain triail eile as.",
     "editFailedTitle": " Post gan nuashonrú",
-    "editFailedDescription": "Níorbh fhéidir linn an post a nuashonrú. Bain triail eile as."
+    "editFailedDescription": "Níorbh fhéidir linn an post a nuashonrú. Bain triail eile as.",
+    "sectionRole": "An ról",
+    "sectionDetails": "Cá háit agus cé mhéad",
+    "sectionPay": "Pá",
+    "sectionContact": "Teagmháil agus spriocdháta",
+    "sectionExtras": "Breiseanna",
+    "summaryType": "Cineál",
+    "summaryCommitment": "Tiomantas",
+    "remoteHint": "Cas air seo más féidir an ról a dhéanamh ó áit ar bith.",
+    "blindHiringHint": "Folaigh ainmneacha agus grianghraif na n-iarratasóirí ó na daoine a dhéanann an gearrliosta, chun claonadh a laghdú."
   },
   "alerts": {
     "title": "Foláirimh poist",

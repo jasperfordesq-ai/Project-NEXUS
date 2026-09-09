@@ -220,7 +220,17 @@
     "chapter_format_warning_many": "Les lignes de chapitre {{count}} n'ont pas d'horodatage et commenceront à 0h00.",
     "unsaved_title": "Abandonner ce brouillon de podcast ?",
     "unsaved_message": "Les informations de l’émission et de l’épisode que vous avez saisies seront perdues.",
-    "discard": "Abandonner"
+    "discard": "Abandonner",
+    "section_show_basics": "À propos de l'émission",
+    "section_show_directory": "Fiche d'annuaire",
+    "section_show_settings": "Langue et visibilité",
+    "section_episode_pick_show": "Quelle émission",
+    "section_episode_audio": "Audio",
+    "section_episode_details": "Détails de l'épisode",
+    "section_episode_publishing": "Publication",
+    "section_episode_extras": "Transcription et chapitres",
+    "create_show_intro": "Donnez d'abord un nom et une pochette à votre émission. Les épisodes s'ajoutent une fois l'émission créée.",
+    "add_episode_intro": "Joignez un fichier audio ou un lien, puis décrivez l'épisode."
   },
   "fields": {
     "artwork_file": "Image du podcast",

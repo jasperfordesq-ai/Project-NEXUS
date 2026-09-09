@@ -220,7 +220,17 @@
     "chapter_format_warning_many": "As linhas do capítulo {{count}} não têm carimbo de data/hora e começarão às 0:00.",
     "unsaved_title": "Descartar este rascunho de podcast?",
     "unsaved_message": "Os dados do programa e do episódio que escreveu serão perdidos.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "section_show_basics": "Sobre o programa",
+    "section_show_directory": "Ficha no diretório",
+    "section_show_settings": "Idioma e visibilidade",
+    "section_episode_pick_show": "Qual programa",
+    "section_episode_audio": "Áudio",
+    "section_episode_details": "Detalhes do episódio",
+    "section_episode_publishing": "Publicação",
+    "section_episode_extras": "Transcrição e capítulos",
+    "create_show_intro": "Dê primeiro um nome e uma capa ao seu programa. Os episódios são adicionados quando o programa existir.",
+    "add_episode_intro": "Anexe um ficheiro de áudio ou um link e depois descreva o episódio."
   },
   "fields": {
     "artwork_file": "Imagem do podcast",

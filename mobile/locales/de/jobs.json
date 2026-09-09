@@ -324,7 +324,16 @@
     "loadFailedTitle": "Diese Stelle konnte nicht zum Bearbeiten geladen werden",
     "failedDescription": "Der Job konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     "editFailedTitle": "Job nicht aktualisiert",
-    "editFailedDescription": "Wir konnten den Job nicht aktualisieren. Bitte versuchen Sie es erneut."
+    "editFailedDescription": "Wir konnten den Job nicht aktualisieren. Bitte versuchen Sie es erneut.",
+    "sectionRole": "Die Rolle",
+    "sectionDetails": "Wo und wie viel",
+    "sectionPay": "Vergütung",
+    "sectionContact": "Kontakt und Frist",
+    "sectionExtras": "Zusätzliches",
+    "summaryType": "Art",
+    "summaryCommitment": "Umfang",
+    "remoteHint": "Aktiviere dies, wenn die Rolle von überall aus erledigt werden kann.",
+    "blindHiringHint": "Namen und Fotos der Bewerbenden vor den Personen verbergen, die die Vorauswahl treffen, um Voreingenommenheit zu verringern."
   },
   "alerts": {
     "title": "Stellenbenachrichtigungen",

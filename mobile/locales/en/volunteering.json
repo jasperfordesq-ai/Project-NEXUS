@@ -357,7 +357,15 @@
     "organisationsLoadFailed": "Your organisations could not be loaded, so the opportunity cannot be posted yet.",
     "unsavedTitle": "Discard this opportunity?",
     "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
-    "discard": "Discard"
+    "discard": "Discard",
+    "sectionOrganisation": "Who is asking",
+    "sectionBasics": "The opportunity",
+    "sectionDetails": "Where and when",
+    "summaryOrganisation": "Organisation",
+    "summaryLocation": "Location",
+    "summaryRemote": "Anywhere",
+    "summaryNotSet": "Not set",
+    "dateHint": "Year-month-day, for example 2026-10-14. Leave blank if it is open-ended."
   },
   "org": {
     "title": "Organisation dashboard",

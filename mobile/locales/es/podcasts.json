@@ -220,7 +220,17 @@
     "chapter_format_warning_many": "Las líneas de capítulo {{count}} no tienen marca de tiempo y comenzarán a las 0:00.",
     "unsaved_title": "¿Descartar este borrador de pódcast?",
     "unsaved_message": "Se perderán los datos del programa y del episodio que has escrito.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "section_show_basics": "Sobre el programa",
+    "section_show_directory": "Ficha del directorio",
+    "section_show_settings": "Idioma y visibilidad",
+    "section_episode_pick_show": "Qué programa",
+    "section_episode_audio": "Audio",
+    "section_episode_details": "Detalles del episodio",
+    "section_episode_publishing": "Publicación",
+    "section_episode_extras": "Transcripción y capítulos",
+    "create_show_intro": "Dale primero un nombre y una portada a tu programa. Los episodios se añaden cuando el programa existe.",
+    "add_episode_intro": "Adjunta un archivo de audio o un enlace y luego describe el episodio."
   },
   "fields": {
     "artwork_file": "Imagen del programa",

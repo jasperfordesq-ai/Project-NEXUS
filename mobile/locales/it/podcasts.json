@@ -220,7 +220,17 @@
     "chapter_format_warning_many": "Le righe dei capitoli {{count}} non hanno timestamp e inizieranno alle 0:00.",
     "unsaved_title": "Vuoi eliminare questa bozza di podcast?",
     "unsaved_message": "I dati dello show e dell’episodio che hai inserito andranno persi.",
-    "discard": "Elimina"
+    "discard": "Elimina",
+    "section_show_basics": "Il programma",
+    "section_show_directory": "Scheda nella directory",
+    "section_show_settings": "Lingua e visibilità",
+    "section_episode_pick_show": "Quale programma",
+    "section_episode_audio": "Audio",
+    "section_episode_details": "Dettagli dell'episodio",
+    "section_episode_publishing": "Pubblicazione",
+    "section_episode_extras": "Trascrizione e capitoli",
+    "create_show_intro": "Dai prima un nome e una copertina al tuo programma. Gli episodi si aggiungono una volta creato il programma.",
+    "add_episode_intro": "Allega un file audio o un link, poi descrivi l'episodio."
   },
   "fields": {
     "artwork_file": "Immagine del podcast",

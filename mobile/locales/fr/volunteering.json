@@ -358,7 +358,15 @@
     "organisationsLoadFailed": "Vos organisations n'ont pas pu être chargées ; l'opportunité ne peut donc pas encore être publiée.",
     "unsavedTitle": "Abandonner cette opportunité ?",
     "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
-    "discard": "Abandonner"
+    "discard": "Abandonner",
+    "sectionOrganisation": "Qui recherche",
+    "sectionBasics": "La mission",
+    "sectionDetails": "Où et quand",
+    "summaryOrganisation": "Organisation",
+    "summaryLocation": "Lieu",
+    "summaryRemote": "N'importe où",
+    "summaryNotSet": "Non défini",
+    "dateHint": "Année-mois-jour, par exemple 2026-10-14. Laissez vide si la mission n'a pas de fin fixée."
   },
   "org": {
     "title": "Tableau de bord de l’organisation",

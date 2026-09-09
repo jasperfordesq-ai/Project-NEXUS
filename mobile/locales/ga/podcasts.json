@@ -232,7 +232,17 @@
     "chapter_format_warning_two": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00.",
     "unsaved_title": "An dréacht podchraolta seo a chaitheamh amach?",
     "unsaved_message": "Caillfear na sonraí seó agus eipeasóide a chlóscríobh tú.",
-    "discard": "Caith amach"
+    "discard": "Caith amach",
+    "section_show_basics": "Faoin seó",
+    "section_show_directory": "Liostú eolaire",
+    "section_show_settings": "Teanga agus infheictheacht",
+    "section_episode_pick_show": "Cén seó",
+    "section_episode_audio": "Fuaim",
+    "section_episode_details": "Sonraí na heachtra",
+    "section_episode_publishing": "Foilsiú",
+    "section_episode_extras": "Tras-scríbhinn agus caibidlí",
+    "create_show_intro": "Tabhair ainm agus saothar ealaíne do do sheó ar dtús. Cuirtear eachtraí leis nuair a bheidh an seó ann.",
+    "add_episode_intro": "Ceangail comhad fuaime nó nasc, ansin déan cur síos ar an eachtra."
   },
   "fields": {
     "artwork_file": "Íomhá an phodchraolta",

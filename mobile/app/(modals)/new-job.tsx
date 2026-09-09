@@ -15,18 +15,18 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton, Text } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { createJob, generateJobDescription, getJobDetail, updateJob, type CreateJobPayload, type JobVacancy } from '@/lib/api/jobs';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
+import { FormHero, FormSection, SummaryTile } from '@/components/ui/FormSection';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { parseDecimalInput } from '@/lib/utils/decimal';
@@ -41,6 +41,8 @@ const jobTypes: JobType[] = ['volunteer', 'timebank', 'paid'];
 const commitments: Commitment[] = ['flexible', 'part_time', 'full_time', 'one_off'];
 const salaryTypes: SalaryType[] = ['hourly', 'monthly', 'annual'];
 const companySizes: CompanySize[] = ['1-10', '11-50', '51-200', '201-500', '500+'];
+/** The jobs module colour used by the quick-create menu and the jobs list. */
+const JOBS_TONE = '#06b6d4';
 
 /**
  * A number the employer typed, or null when they left the field empty.
@@ -324,81 +326,101 @@ function NewJobScreen() {
       <ScrollView
         className="flex-1"
         style={{ flex: 1, backgroundColor: theme.bg }}
-        contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }}
         keyboardShouldPersistTaps="handled"
       >
-        <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
-          <View className="h-1.5" style={{ backgroundColor: '#06b6d4' }} />
-          <HeroCard.Body className="gap-4 p-4">
-            <View className="flex-row items-start gap-3">
-              <View className="size-13 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha('#06b6d4', 0.14) }}>
-                <Ionicons name="briefcase-outline" size={25} color="#06b6d4" />
+        <FormHero
+          icon="briefcase-outline"
+          eyebrow={t('create.eyebrow')}
+          title={isEditing ? t('create.editTitle') : t('create.title')}
+          subtitle={isEditing ? t('create.editSubtitle') : t('create.subtitle')}
+          tone={JOBS_TONE}
+        >
+          <View className="mt-1 flex-row gap-2">
+            <SummaryTile label={t('create.summaryType')} value={t(`filters.type.${type}`)} />
+            <SummaryTile label={t('create.summaryCommitment')} value={t(`filters.commitment.${commitment}`)} />
+          </View>
+        </FormHero>
+
+        <FormSection title={t('create.sectionRole')} icon="document-text-outline" testID="job-section-role">
+          <FormField label={t('create.titleLabel')} value={title} onChangeText={setTitle} placeholder={t('create.titlePlaceholder')} theme={theme} />
+          <FormField label={t('create.descriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('create.descriptionPlaceholder')} theme={theme} multiline />
+          <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isGeneratingDescription || !title.trim()}>
+            <Ionicons name="sparkles-outline" size={16} color={primary} />
+            <HeroButton.Label>{isGeneratingDescription ? t('create.generatingDescription') : t('create.generateDescription')}</HeroButton.Label>
+          </HeroButton>
+          <ButtonGroup label={t('create.typeLabel')} values={jobTypes} selected={type} onSelect={setType} labelFor={(value) => t(`filters.type.${value}`)} />
+          <ButtonGroup label={t('create.commitmentLabel')} values={commitments} selected={commitment} onSelect={setCommitment} labelFor={(value) => t(`filters.commitment.${value}`)} />
+        </FormSection>
+
+        <FormSection title={t('create.sectionDetails')} icon="location-outline" testID="job-section-details">
+          <FormField label={t('create.locationLabel')} value={location} onChangeText={setLocation} placeholder={t('create.locationPlaceholder')} theme={theme} />
+          <HeroButton
+            variant={isRemote ? 'primary' : 'secondary'}
+            onPress={() => setIsRemote((value) => !value)}
+            accessibilityLabel={t('create.remote')}
+            accessibilityState={{ selected: isRemote }}
+          >
+            {isRemote ? <AccentIcon name="globe-outline" size={15} /> : <Ionicons name="globe-outline" size={15} color={primary} />}
+            <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
+          </HeroButton>
+          <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.remoteHint')}</Text>
+          <FormField label={t('create.categoryLabel')} value={category} onChangeText={setCategory} placeholder={t('create.categoryPlaceholder')} theme={theme} />
+          <FormField label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
+          <View className="flex-row gap-3">
+            <View className="min-w-0 flex-1">
+              <FormField label={t('create.hoursLabel')} value={hours} onChangeText={setHours} placeholder={t('create.hoursPlaceholder')} theme={theme} keyboardType="decimal-pad" />
+            </View>
+            <View className="min-w-0 flex-1">
+              <FormField label={t('create.creditsLabel')} value={credits} onChangeText={setCredits} placeholder={t('create.creditsPlaceholder')} theme={theme} keyboardType="decimal-pad" />
+            </View>
+          </View>
+        </FormSection>
+
+        {type === 'paid' ? (
+          <FormSection title={t('create.sectionPay')} icon="cash-outline" testID="job-section-pay">
+            <View className="flex-row gap-3">
+              <View className="min-w-0 flex-1">
+                <FormField label={t('create.salaryMinLabel')} value={salaryMin} onChangeText={setSalaryMin} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
               </View>
               <View className="min-w-0 flex-1">
-                <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.eyebrow')}</Text>
-                <Text className="text-2xl font-bold" style={{ color: theme.text }}>{isEditing ? t('create.editTitle') : t('create.title')}</Text>
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{isEditing ? t('create.editSubtitle') : t('create.subtitle')}</Text>
+                <FormField label={t('create.salaryMaxLabel')} value={salaryMax} onChangeText={setSalaryMax} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
               </View>
             </View>
-          </HeroCard.Body>
-        </HeroCard>
-
-        <HeroCard className="rounded-panel p-0">
-          <HeroCard.Body className="gap-4 p-4">
-            <FormField label={t('create.titleLabel')} value={title} onChangeText={setTitle} placeholder={t('create.titlePlaceholder')} theme={theme} />
-            <FormField label={t('create.descriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('create.descriptionPlaceholder')} theme={theme} multiline />
-            <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isGeneratingDescription || !title.trim()}>
-              <Ionicons name="sparkles-outline" size={16} color={primary} />
-              <HeroButton.Label>{isGeneratingDescription ? t('create.generatingDescription') : t('create.generateDescription')}</HeroButton.Label>
+            <FormField label={t('create.salaryCurrencyLabel')} value={salaryCurrency} onChangeText={setSalaryCurrency} placeholder={t('create.salaryCurrencyPlaceholder')} theme={theme} />
+            <ButtonGroup label={t('create.salaryTypeLabel')} values={salaryTypes} selected={salaryType} onSelect={setSalaryType} labelFor={(value) => t(`create.salaryType.${value}`)} />
+            <HeroButton
+              variant={salaryNegotiable ? 'primary' : 'secondary'}
+              onPress={() => setSalaryNegotiable((value) => !value)}
+              accessibilityState={{ selected: salaryNegotiable }}
+            >
+              {salaryNegotiable ? <AccentIcon name="cash-outline" size={15} /> : <Ionicons name="cash-outline" size={15} color={primary} />}
+              <HeroButton.Label>{t('create.salaryNegotiable')}</HeroButton.Label>
             </HeroButton>
-            <ButtonGroup label={t('create.typeLabel')} values={jobTypes} selected={type} onSelect={setType} labelFor={(value) => t(`filters.type.${value}`)} />
-            <ButtonGroup label={t('create.commitmentLabel')} values={commitments} selected={commitment} onSelect={setCommitment} labelFor={(value) => t(`filters.commitment.${value}`)} />
-            <FormField label={t('create.locationLabel')} value={location} onChangeText={setLocation} placeholder={t('create.locationPlaceholder')} theme={theme} />
-            <FormField label={t('create.categoryLabel')} value={category} onChangeText={setCategory} placeholder={t('create.categoryPlaceholder')} theme={theme} />
-            <FormField label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
-            <FormField label={t('create.hoursLabel')} value={hours} onChangeText={setHours} placeholder={t('create.hoursPlaceholder')} theme={theme} keyboardType="decimal-pad" />
-            <FormField label={t('create.creditsLabel')} value={credits} onChangeText={setCredits} placeholder={t('create.creditsPlaceholder')} theme={theme} keyboardType="decimal-pad" />
-            <FormField label={t('create.contactEmailLabel')} value={contactEmail} onChangeText={setContactEmail} placeholder={t('create.contactEmailPlaceholder')} theme={theme} keyboardType="email-address" />
-            <FormField label={t('create.contactPhoneLabel')} value={contactPhone} onChangeText={setContactPhone} placeholder={t('create.contactPhonePlaceholder')} theme={theme} keyboardType="phone-pad" />
-            {type === 'paid' ? (
-              <View className="gap-4">
-                <View className="flex-row gap-3">
-                  <View className="min-w-0 flex-1">
-                    <FormField label={t('create.salaryMinLabel')} value={salaryMin} onChangeText={setSalaryMin} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
-                  </View>
-                  <View className="min-w-0 flex-1">
-                    <FormField label={t('create.salaryMaxLabel')} value={salaryMax} onChangeText={setSalaryMax} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
-                  </View>
-                </View>
-                <FormField label={t('create.salaryCurrencyLabel')} value={salaryCurrency} onChangeText={setSalaryCurrency} placeholder={t('create.salaryCurrencyPlaceholder')} theme={theme} />
-                <ButtonGroup label={t('create.salaryTypeLabel')} values={salaryTypes} selected={salaryType} onSelect={setSalaryType} labelFor={(value) => t(`create.salaryType.${value}`)} />
-                <HeroButton
-                  variant={salaryNegotiable ? 'primary' : 'secondary'}
-                  onPress={() => setSalaryNegotiable((value) => !value)}
-                >
-                  {salaryNegotiable ? <AccentIcon name="cash-outline" size={15} /> : <Ionicons name="cash-outline" size={15} color={primary} />}
-                  <HeroButton.Label>{t('create.salaryNegotiable')}</HeroButton.Label>
-                </HeroButton>
-              </View>
-            ) : null}
-            <FormField label={t('create.deadlineLabel')} value={deadline} onChangeText={setDeadline} placeholder={t('create.deadlinePlaceholder')} theme={theme} />
+          </FormSection>
+        ) : null}
 
-            <HeroButton variant={isRemote ? 'primary' : 'secondary'} onPress={() => setIsRemote((value) => !value)}>
-              {isRemote ? <AccentIcon name="globe-outline" size={15} /> : <Ionicons name="globe-outline" size={15} color={primary} />}
-              <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
-            </HeroButton>
+        <FormSection title={t('create.sectionContact')} icon="mail-outline" testID="job-section-contact">
+          <FormField label={t('create.contactEmailLabel')} value={contactEmail} onChangeText={setContactEmail} placeholder={t('create.contactEmailPlaceholder')} theme={theme} keyboardType="email-address" />
+          <FormField label={t('create.contactPhoneLabel')} value={contactPhone} onChangeText={setContactPhone} placeholder={t('create.contactPhonePlaceholder')} theme={theme} keyboardType="phone-pad" />
+          <FormField label={t('create.deadlineLabel')} value={deadline} onChangeText={setDeadline} placeholder={t('create.deadlinePlaceholder')} theme={theme} />
+        </FormSection>
 
-            <HeroButton variant={blindHiring ? 'primary' : 'secondary'} onPress={() => setBlindHiring((value) => !value)}>
-              {blindHiring ? <AccentIcon name="eye-off-outline" size={15} /> : <Ionicons name="eye-off-outline" size={15} color={primary} />}
-              <HeroButton.Label>{t('create.blindHiring')}</HeroButton.Label>
-            </HeroButton>
-
-            <FormField label={t('create.taglineLabel')} value={tagline} onChangeText={setTagline} placeholder={t('create.taglinePlaceholder')} theme={theme} />
-            <FormField label={t('create.videoUrlLabel')} value={videoUrl} onChangeText={setVideoUrl} placeholder={t('create.videoUrlPlaceholder')} theme={theme} keyboardType="url" />
-            <ButtonGroup label={t('create.companySizeLabel')} values={companySizes} selected={companySize} onSelect={setCompanySize} labelFor={(value) => t(`create.companySize.${value}`)} />
-            <FormField label={t('create.benefitsLabel')} value={benefits} onChangeText={setBenefits} placeholder={t('create.benefitsPlaceholder')} theme={theme} />
-          </HeroCard.Body>
-        </HeroCard>
+        <FormSection title={t('create.sectionExtras')} icon="sparkles-outline" testID="job-section-extras">
+          <HeroButton
+            variant={blindHiring ? 'primary' : 'secondary'}
+            onPress={() => setBlindHiring((value) => !value)}
+            accessibilityState={{ selected: blindHiring }}
+          >
+            {blindHiring ? <AccentIcon name="eye-off-outline" size={15} /> : <Ionicons name="eye-off-outline" size={15} color={primary} />}
+            <HeroButton.Label>{t('create.blindHiring')}</HeroButton.Label>
+          </HeroButton>
+          <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.blindHiringHint')}</Text>
+          <FormField label={t('create.taglineLabel')} value={tagline} onChangeText={setTagline} placeholder={t('create.taglinePlaceholder')} theme={theme} />
+          <FormField label={t('create.videoUrlLabel')} value={videoUrl} onChangeText={setVideoUrl} placeholder={t('create.videoUrlPlaceholder')} theme={theme} keyboardType="url" />
+          <ButtonGroup label={t('create.companySizeLabel')} values={companySizes} selected={companySize} onSelect={setCompanySize} labelFor={(value) => t(`create.companySize.${value}`)} />
+          <FormField label={t('create.benefitsLabel')} value={benefits} onChangeText={setBenefits} placeholder={t('create.benefitsPlaceholder')} theme={theme} />
+        </FormSection>
       </ScrollView>
       <FormActionFooter
         title={isEditing ? t('create.editReviewTitle') : t('create.reviewTitle')}

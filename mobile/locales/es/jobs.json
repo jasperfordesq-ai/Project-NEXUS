@@ -324,7 +324,16 @@
     "loadFailedTitle": "No se pudo cargar este empleo para editarlo",
     "failedDescription": "No se pudo guardar el empleo. Inténtalo de nuevo.",
     "editFailedTitle": "Trabajo no actualizado",
-    "editFailedDescription": "No pudimos actualizar el trabajo. Inténtelo de nuevo."
+    "editFailedDescription": "No pudimos actualizar el trabajo. Inténtelo de nuevo.",
+    "sectionRole": "El puesto",
+    "sectionDetails": "Dónde y cuánto",
+    "sectionPay": "Remuneración",
+    "sectionContact": "Contacto y fecha límite",
+    "sectionExtras": "Extras",
+    "summaryType": "Tipo",
+    "summaryCommitment": "Dedicación",
+    "remoteHint": "Activa esta opción si el puesto puede desempeñarse desde cualquier lugar.",
+    "blindHiringHint": "Ocultar los nombres y fotos de los candidatos a quienes hacen la preselección, para reducir sesgos."
   },
   "alerts": {
     "title": "Alertas de empleo",

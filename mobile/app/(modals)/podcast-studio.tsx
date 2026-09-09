@@ -28,6 +28,7 @@ import * as Haptics from '@/lib/haptics';
 import AppTopBar from '@/components/ui/AppTopBar';
 import BottomSheet from '@/components/ui/BottomSheet';
 import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
+import { FormSection } from '@/components/ui/FormSection';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -940,26 +941,33 @@ function PodcastStudioScreen() {
           ) : (
             <>
               {canCreateShow ? (
-                <HeroCard className="mb-4 rounded-panel p-0">
-                  <HeroCard.Body className="gap-4 p-4">
-                    <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('studio.create_show')}</Text>
-                    <Input label={t('fields.show_title')} maxLength={200} value={showForm.title} onChangeText={(title) => setShowForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} />
-                    <Input label={t('fields.category')} value={showForm.category} onChangeText={(category) => setShowForm((prev) => ({ ...prev, category }))} style={{ color: theme.text }} />
+                <View className="mb-4 gap-3.5" testID="podcast-create-show">
+                  <View className="gap-1 px-1">
+                    <Text className="text-lg font-bold" style={{ color: theme.text }} accessibilityRole="header">{t('studio.create_show')}</Text>
+                    <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('studio.create_show_intro')}</Text>
+                  </View>
+                  <FormSection title={t('studio.section_show_basics')} icon="mic-outline">
+                    <Input label={t('fields.show_title')} maxLength={200} value={showForm.title} onChangeText={(title) => setShowForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                    <Input label={t('fields.category')} value={showForm.category} onChangeText={(category) => setShowForm((prev) => ({ ...prev, category }))} style={{ color: theme.text }} containerClassName="mb-0" />
                     <ImageField label={t('fields.artwork_file')} uri={showArtworkUri} onPress={() => void pickImage(setShowArtworkUri)} theme={theme} />
-                    <Input label={t('fields.author_name')} value={showForm.authorName} onChangeText={(authorName) => setShowForm((prev) => ({ ...prev, authorName }))} style={{ color: theme.text }} />
-                    <Input label={t('fields.owner_email')} keyboardType="email-address" autoCapitalize="none" value={showForm.ownerEmail} onChangeText={(ownerEmail) => setShowForm((prev) => ({ ...prev, ownerEmail }))} style={{ color: theme.text }} />
-                    <Input label={t('fields.copyright')} value={showForm.copyright} onChangeText={(copyright) => setShowForm((prev) => ({ ...prev, copyright }))} style={{ color: theme.text }} />
-                    <Input label={t('fields.funding_url')} keyboardType="url" autoCapitalize="none" value={showForm.fundingUrl} onChangeText={(fundingUrl) => setShowForm((prev) => ({ ...prev, fundingUrl }))} style={{ color: theme.text }} />
+                    <TextArea label={t('fields.summary')} value={showForm.summary} onChangeText={(summary) => setShowForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                    <TextArea label={t('fields.description')} value={showForm.description} onChangeText={(description) => setShowForm((prev) => ({ ...prev, description }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                  </FormSection>
+                  <FormSection title={t('studio.section_show_directory')} icon="globe-outline">
+                    <Input label={t('fields.author_name')} value={showForm.authorName} onChangeText={(authorName) => setShowForm((prev) => ({ ...prev, authorName }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                    <Input label={t('fields.owner_email')} keyboardType="email-address" autoCapitalize="none" value={showForm.ownerEmail} onChangeText={(ownerEmail) => setShowForm((prev) => ({ ...prev, ownerEmail }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                    <Input label={t('fields.copyright')} value={showForm.copyright} onChangeText={(copyright) => setShowForm((prev) => ({ ...prev, copyright }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                    <Input label={t('fields.funding_url')} keyboardType="url" autoCapitalize="none" value={showForm.fundingUrl} onChangeText={(fundingUrl) => setShowForm((prev) => ({ ...prev, fundingUrl }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                  </FormSection>
+                  <FormSection title={t('studio.section_show_settings')} icon="settings-outline">
                     <OptionGroup label={t('fields.language')} values={languages} selected={showForm.language} onSelect={(language) => setShowForm((prev) => ({ ...prev, language }))} labelFor={(value) => value.toUpperCase()} />
                     <OptionGroup label={t('fields.visibility')} values={visibilityOptions} selected={showForm.visibility} onSelect={(visibility) => setShowForm((prev) => ({ ...prev, visibility }))} labelFor={(value) => t(`visibility.${value}`)} />
                     <ToggleRow label={t('fields.explicit_show')} value={showForm.explicit} onToggle={() => setShowForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
-                    <TextArea label={t('fields.summary')} value={showForm.summary} onChangeText={(summary) => setShowForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} />
-                    <TextArea label={t('fields.description')} value={showForm.description} onChangeText={(description) => setShowForm((prev) => ({ ...prev, description }))} style={{ color: theme.text }} />
-                    <HeroButton variant="primary" isDisabled={savingShow || !showForm.title.trim()} onPress={() => void handleCreateShow()}>
-                      <HeroButton.Label>{t('studio.create_show')}</HeroButton.Label>
-                    </HeroButton>
-                  </HeroCard.Body>
-                </HeroCard>
+                  </FormSection>
+                  <HeroButton variant="primary" isDisabled={savingShow || !showForm.title.trim()} onPress={() => void handleCreateShow()}>
+                    <HeroButton.Label>{t('studio.create_show')}</HeroButton.Label>
+                  </HeroButton>
+                </View>
               ) : (
                 <HeroCard className="mb-4 rounded-panel p-0">
                   <HeroCard.Body className="p-4">
@@ -968,9 +976,12 @@ function PodcastStudioScreen() {
                 </HeroCard>
               )}
 
-              <HeroCard className="mb-4 rounded-panel p-0">
-                <HeroCard.Body className="gap-4 p-4">
-                  <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('studio.add_episode')}</Text>
+              <View className="mb-4 gap-3.5" testID="podcast-add-episode">
+                <View className="gap-1 px-1">
+                  <Text className="text-lg font-bold" style={{ color: theme.text }} accessibilityRole="header">{t('studio.add_episode')}</Text>
+                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('studio.add_episode_intro')}</Text>
+                </View>
+                <FormSection title={t('studio.section_episode_pick_show')} icon="radio-outline">
                   {shows.length === 0 ? (
                     <Text style={{ color: theme.textSecondary }}>{t('studio.no_shows')}</Text>
                   ) : (
@@ -982,7 +993,8 @@ function PodcastStudioScreen() {
                       labelFor={(value) => shows.find((show) => String(show.id) === value)?.title ?? value}
                     />
                   )}
-                  <Input label={t('fields.episode_title')} maxLength={200} value={episodeForm.title} onChangeText={(title) => setEpisodeForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} />
+                </FormSection>
+                <FormSection title={t('studio.section_episode_audio')} icon="musical-notes-outline">
                   {/*
                     Two ways to give an episode its audio, exactly as the web studio
                     offers: a file hosted by NEXUS, or an external URL. Choosing a
@@ -1026,6 +1038,7 @@ function PodcastStudioScreen() {
                     onChangeText={(audioUrl) => setEpisodeForm((prev) => ({ ...prev, audioUrl }))}
                     editable={!savingEpisode && !audioFile}
                     style={{ color: theme.text }}
+                    containerClassName="mb-0"
                   />
                   {audioFile ? (
                     <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('fields.audio_url_disabled_file_selected')}</Text>
@@ -1049,11 +1062,26 @@ function PodcastStudioScreen() {
                       </HeroButton>
                     </View>
                   ) : null}
-                  <Input label={t('fields.episode_number')} keyboardType="number-pad" value={episodeForm.episodeNumber} onChangeText={(episodeNumber) => setEpisodeForm((prev) => ({ ...prev, episodeNumber }))} style={{ color: theme.text }} />
-                  <Input label={t('fields.season_number')} keyboardType="number-pad" value={episodeForm.seasonNumber} onChangeText={(seasonNumber) => setEpisodeForm((prev) => ({ ...prev, seasonNumber }))} style={{ color: theme.text }} />
+                </FormSection>
+                <FormSection title={t('studio.section_episode_details')} icon="document-text-outline">
+                  <Input label={t('fields.episode_title')} maxLength={200} value={episodeForm.title} onChangeText={(title) => setEpisodeForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                  <View className="flex-row gap-3">
+                    <View className="min-w-0 flex-1">
+                      <Input label={t('fields.episode_number')} keyboardType="number-pad" value={episodeForm.episodeNumber} onChangeText={(episodeNumber) => setEpisodeForm((prev) => ({ ...prev, episodeNumber }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                    </View>
+                    <View className="min-w-0 flex-1">
+                      <Input label={t('fields.season_number')} keyboardType="number-pad" value={episodeForm.seasonNumber} onChangeText={(seasonNumber) => setEpisodeForm((prev) => ({ ...prev, seasonNumber }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                    </View>
+                  </View>
                   <ImageField label={t('fields.cover_image_file')} uri={episodeCoverUri} onPress={() => void pickImage(setEpisodeCoverUri)} theme={theme} />
+                  <Input label={t('fields.duration_seconds')} keyboardType="number-pad" value={episodeForm.durationSeconds} onChangeText={(durationSeconds) => setEpisodeForm((prev) => ({ ...prev, durationSeconds }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                  <OptionGroup label={t('fields.episode_type')} values={EPISODE_TYPES} selected={episodeForm.episodeType} onSelect={(episodeType) => setEpisodeForm((prev) => ({ ...prev, episodeType }))} labelFor={(value) => t(`episode.type.${value}`)} />
+                  <TextArea label={t('fields.summary')} value={episodeForm.summary} onChangeText={(summary) => setEpisodeForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                  <TextArea label={t('fields.description')} value={episodeForm.description} onChangeText={(description) => setEpisodeForm((prev) => ({ ...prev, description }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                  <ToggleRow label={t('fields.explicit_episode')} value={episodeForm.explicit} onToggle={() => setEpisodeForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
+                </FormSection>
+                <FormSection title={t('studio.section_episode_publishing')} icon="calendar-outline">
                   <OptionGroup label={t('fields.visibility')} values={episodeVisibilityOptions} selected={episodeForm.visibility} onSelect={(visibility) => setEpisodeForm((prev) => ({ ...prev, visibility }))} labelFor={(value) => t(`visibility.${value}`)} />
-                  <Input label={t('fields.duration_seconds')} keyboardType="number-pad" value={episodeForm.durationSeconds} onChangeText={(durationSeconds) => setEpisodeForm((prev) => ({ ...prev, durationSeconds }))} style={{ color: theme.text }} />
                   <Input
                     label={t('fields.scheduled_for')}
                     placeholder={t('fields.scheduled_for_hint')}
@@ -1062,34 +1090,35 @@ function PodcastStudioScreen() {
                     value={episodeForm.scheduledFor}
                     onChangeText={(scheduledFor) => setEpisodeForm((prev) => ({ ...prev, scheduledFor }))}
                     style={{ color: theme.text }}
+                    containerClassName="mb-0"
                   />
-                  <OptionGroup label={t('fields.episode_type')} values={EPISODE_TYPES} selected={episodeForm.episodeType} onSelect={(episodeType) => setEpisodeForm((prev) => ({ ...prev, episodeType }))} labelFor={(value) => t(`episode.type.${value}`)} />
-                  <TextArea label={t('fields.summary')} value={episodeForm.summary} onChangeText={(summary) => setEpisodeForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} />
-                  <TextArea label={t('fields.description')} value={episodeForm.description} onChangeText={(description) => setEpisodeForm((prev) => ({ ...prev, description }))} style={{ color: theme.text }} />
-                  <ToggleRow label={t('fields.explicit_episode')} value={episodeForm.explicit} onToggle={() => setEpisodeForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
-                  {capabilities.enable_transcripts !== false ? (
-                    <>
-                      <TextArea label={t('fields.transcript')} value={episodeForm.transcript} onChangeText={(transcript) => setEpisodeForm((prev) => ({ ...prev, transcript }))} style={{ color: theme.text }} />
-                      <OptionGroup label={t('fields.transcript_language')} values={languages} selected={episodeForm.transcriptLanguage} onSelect={(transcriptLanguage) => setEpisodeForm((prev) => ({ ...prev, transcriptLanguage }))} labelFor={(value) => value.toUpperCase()} />
-                    </>
-                  ) : null}
-                  {capabilities.enable_chapters !== false ? (
-                    <>
-                      <TextArea label={t('fields.chapters')} value={chaptersText} onChangeText={setChaptersText} style={{ color: theme.text }} />
-                      <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('fields.chapters_hint')}</Text>
-                      {chapterIssues > 0 ? (
-                        <Text className="text-xs" style={{ color: theme.warning }}>{t('studio.chapter_format_warning', { count: chapterIssues })}</Text>
-                      ) : null}
-                    </>
-                  ) : null}
-                  {episodeError ? (
-                    <Text style={{ color: theme.error }}>{episodeError}</Text>
-                  ) : null}
-                  <HeroButton variant="primary" isDisabled={savingEpisode || !canSubmitEpisode} onPress={() => void handleCreateEpisode()}>
-                    <HeroButton.Label>{t('studio.add_episode')}</HeroButton.Label>
-                  </HeroButton>
-                </HeroCard.Body>
-              </HeroCard>
+                </FormSection>
+                {capabilities.enable_transcripts !== false || capabilities.enable_chapters !== false ? (
+                  <FormSection title={t('studio.section_episode_extras')} icon="list-outline">
+                    {capabilities.enable_transcripts !== false ? (
+                      <>
+                        <TextArea label={t('fields.transcript')} value={episodeForm.transcript} onChangeText={(transcript) => setEpisodeForm((prev) => ({ ...prev, transcript }))} style={{ color: theme.text }} containerClassName="mb-0" />
+                        <OptionGroup label={t('fields.transcript_language')} values={languages} selected={episodeForm.transcriptLanguage} onSelect={(transcriptLanguage) => setEpisodeForm((prev) => ({ ...prev, transcriptLanguage }))} labelFor={(value) => value.toUpperCase()} />
+                      </>
+                    ) : null}
+                    {capabilities.enable_chapters !== false ? (
+                      <>
+                        <TextArea label={t('fields.chapters')} value={chaptersText} onChangeText={setChaptersText} style={{ color: theme.text }} containerClassName="mb-0" />
+                        <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('fields.chapters_hint')}</Text>
+                        {chapterIssues > 0 ? (
+                          <Text className="text-xs" style={{ color: theme.warning }}>{t('studio.chapter_format_warning', { count: chapterIssues })}</Text>
+                        ) : null}
+                      </>
+                    ) : null}
+                  </FormSection>
+                ) : null}
+                {episodeError ? (
+                  <Text style={{ color: theme.error }} accessibilityRole="alert">{episodeError}</Text>
+                ) : null}
+                <HeroButton variant="primary" isDisabled={savingEpisode || !canSubmitEpisode} onPress={() => void handleCreateEpisode()}>
+                  <HeroButton.Label>{t('studio.add_episode')}</HeroButton.Label>
+                </HeroButton>
+              </View>
 
               {selectedShow ? (
                 <HeroCard className="mb-4 rounded-panel p-0">

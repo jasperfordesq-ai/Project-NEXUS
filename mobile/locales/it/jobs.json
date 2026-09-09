@@ -324,7 +324,16 @@
     "loadFailedTitle": "Non è stato possibile caricare questo annuncio per la modifica",
     "failedDescription": "Impossibile salvare il lavoro. Riprova.",
     "editFailedTitle": "Lavoro non aggiornato",
-    "editFailedDescription": "Non è stato possibile aggiornare il lavoro. Per favore riprova."
+    "editFailedDescription": "Non è stato possibile aggiornare il lavoro. Per favore riprova.",
+    "sectionRole": "Il ruolo",
+    "sectionDetails": "Dove e quanto",
+    "sectionPay": "Retribuzione",
+    "sectionContact": "Contatto e scadenza",
+    "sectionExtras": "Extra",
+    "summaryType": "Tipo",
+    "summaryCommitment": "Impegno",
+    "remoteHint": "Attiva questa opzione se il ruolo può essere svolto da qualsiasi luogo.",
+    "blindHiringHint": "Nascondi nomi e foto dei candidati a chi fa la preselezione, per ridurre i pregiudizi."
   },
   "alerts": {
     "title": "Avvisi di lavoro",

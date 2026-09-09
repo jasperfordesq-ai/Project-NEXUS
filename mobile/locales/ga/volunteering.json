@@ -360,7 +360,15 @@
     "organisationsLoadFailed": "Níorbh fhéidir d'eagraíochtaí a lódáil, mar sin ní féidir an deis a phostáil fós.",
     "unsavedTitle": "An deis seo a chaitheamh i dtraipisí?",
     "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
-    "discard": "Caith i dtraipisí"
+    "discard": "Caith i dtraipisí",
+    "sectionOrganisation": "Cé atá ag iarraidh",
+    "sectionBasics": "An deis",
+    "sectionDetails": "Cá háit agus cathain",
+    "summaryOrganisation": "Eagraíocht",
+    "summaryLocation": "Suíomh",
+    "summaryRemote": "Áit ar bith",
+    "summaryNotSet": "Gan socrú",
+    "dateHint": "Bliain-mí-lá, mar shampla 2026-10-14. Fág bán má tá sé gan spriocdháta."
   },
   "org": {
     "title": "Deais na heagraíochta",

@@ -48,7 +48,7 @@ export function FormSection({
           <View className="h-8 w-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
             <Ionicons name={icon} size={17} color={primary} />
           </View>
-          <Text className="text-base font-bold" style={{ color: theme.text }} accessibilityRole="header">
+          <Text className="min-w-0 flex-1 text-base font-bold" style={{ color: theme.text }} accessibilityRole="header">
             {title}
           </Text>
         </View>

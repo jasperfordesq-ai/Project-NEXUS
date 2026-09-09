@@ -358,7 +358,15 @@
     "organisationsLoadFailed": "No se pudieron cargar tus organizaciones, así que la oportunidad aún no se puede publicar.",
     "unsavedTitle": "¿Descartar esta oportunidad?",
     "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "sectionOrganisation": "Quién busca",
+    "sectionBasics": "La oportunidad",
+    "sectionDetails": "Dónde y cuándo",
+    "summaryOrganisation": "Organización",
+    "summaryLocation": "Lugar",
+    "summaryRemote": "En cualquier lugar",
+    "summaryNotSet": "Sin definir",
+    "dateHint": "Año-mes-día, por ejemplo 2026-10-14. Déjalo en blanco si no tiene fecha de fin."
   },
   "org": {
     "title": "Panel de la organización",

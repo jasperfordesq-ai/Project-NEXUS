@@ -214,7 +214,17 @@
     },
     "unsaved_title": "Discard this podcast draft?",
     "unsaved_message": "The show and episode details you have typed will be lost.",
-    "discard": "Discard"
+    "discard": "Discard",
+    "section_show_basics": "About the show",
+    "section_show_directory": "Directory listing",
+    "section_show_settings": "Language and visibility",
+    "section_episode_pick_show": "Which show",
+    "section_episode_audio": "Audio",
+    "section_episode_details": "Episode details",
+    "section_episode_publishing": "Publishing",
+    "section_episode_extras": "Transcript and chapters",
+    "create_show_intro": "Give your show a name and artwork first. Episodes are added once the show exists.",
+    "add_episode_intro": "Attach an audio file or link, then describe the episode."
   },
   "fields": {
     "show": "Show",
