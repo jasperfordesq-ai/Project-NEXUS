@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useAccentForeground } from '@/lib/theme/accentForeground';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -16,6 +16,7 @@ import {
   getIdeationCategories,
   getIdeationChallenges,
   type IdeationCategory,
+  type CursorPage,
   type IdeationChallenge,
   type IdeationStatus,
 } from '@/lib/api/ideation';
@@ -26,6 +27,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { useApi } from '@/lib/hooks/useApi';
+import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -50,14 +52,43 @@ function IdeationScreen() {
   */
   const debouncedSearch = useDebounce(search, 350);
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  /*
+    🔴 The challenge list asked for one page and stopped. A community running more
+    challenges than fit a page had the rest invisible: no button, no hint, and the
+    filters only narrowed what had already been fetched. The endpoint has always
+    returned a cursor and `hasMore`; the screen read neither.
+    Audit 2026-09-07 F-6, fixed 2026-09-09.
+
+    A button rather than infinite scroll, because these cards sit inside a ScrollView
+    with the filters and category strip above them — there is no FlatList here to hang
+    `onEndReached` on, and turning the page into one would be a much larger change for
+    no gain to the member.
+  */
+  const fetchChallenges = useCallback(
+    (cursor: string | null) => getIdeationChallenges({ status, search: debouncedSearch, categoryId, cursor }),
+    [status, debouncedSearch, categoryId],
+  );
+
+  const extractChallenges = useCallback((page: CursorPage<IdeationChallenge>) => ({
+    items: page.items,
+    cursor: page.cursor,
+    hasMore: page.hasMore,
+  }), []);
+
   const {
-    data: challengesPage,
+    items: challenges,
     isLoading,
+    isLoadingMore,
     error,
+    hasMore,
+    loadMore,
     refresh: refreshChallenges,
-  } = useApi(() => getIdeationChallenges({ status, search: debouncedSearch, categoryId }), [status, debouncedSearch, categoryId], {
-    enabled: hasFeature('ideation_challenges'),
-  });
+  } = usePaginatedApi<IdeationChallenge, CursorPage<IdeationChallenge>>(
+    fetchChallenges,
+    extractChallenges,
+    [status, debouncedSearch, categoryId],
+    { enabled: hasFeature('ideation_challenges') },
+  );
   const {
     data: categories,
     refresh: refreshCategories,
@@ -81,7 +112,7 @@ function IdeationScreen() {
     );
   }
 
-  const challenges = challengesPage?.items ?? [];
+
 
   return (
     <ModalErrorBoundary>
@@ -170,6 +201,18 @@ function IdeationScreen() {
             ) : challenges.length > 0 ? (
               <View className="gap-3 px-4">
                 {challenges.map((challenge) => <ChallengeCard key={challenge.id} challenge={challenge} />)}
+                {hasMore ? (
+                  <HeroButton
+                    variant="secondary"
+                    isDisabled={isLoadingMore}
+                    testID="ideation-load-more"
+                    onPress={loadMore}
+                  >
+                    <HeroButton.Label>
+                      {isLoadingMore ? t('common:loading') : t('common:buttons.loadMore')}
+                    </HeroButton.Label>
+                  </HeroButton>
+                ) : null}
               </View>
             ) : (
               <View className="px-4 py-8">

@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,8 +18,9 @@ import NativePressable from '@/components/ui/NativePressable';
 import { Ionicons } from '@/components/ui/Icon';
 import SearchInput from '@/components/ui/SearchInput';
 import { Chip } from '@/components/ui/StatusChip';
-import { getCourses, getMyCourses, type Course, type CourseEnrollment } from '@/lib/api/courses';
+import { getCourses, getMyCourses, type Course, type CourseEnrollment, type CoursePage } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
+import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -34,7 +35,38 @@ function CoursesScreen() {
   const [activeTab, setActiveTab] = useState<CourseTab>(tab === 'learning' ? 'learning' : 'browse');
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
-  const catalogue = useApi(() => getCourses({ query: query || undefined }), [query], { enabled: activeTab === 'browse' });
+  /*
+    🔴 The catalogue asked for one page of twenty and stopped. A community with more
+    than twenty courses had the rest simply invisible from the phone — no button, no
+    hint, and the search box only filtered the twenty already fetched, so a course on
+    page two could not be found by searching for it either. `getCourses` has always
+    returned `page`, `total` and `hasMore`; the screen read none of them.
+    Audit 2026-09-07, fixed 2026-09-09.
+
+    Page-number paging, not cursors: this endpoint counts pages, so the "cursor" here
+    is the next page number as a string. That is the second usage `usePaginatedApi`
+    documents.
+  */
+  const fetchCatalogue = useCallback(
+    (cursor: string | null) => getCourses({
+      query: query || undefined,
+      page: cursor ? Number(cursor) : 1,
+    }),
+    [query],
+  );
+
+  const extractCatalogue = useCallback((page: CoursePage) => ({
+    items: page.items,
+    cursor: page.hasMore ? String(page.page + 1) : null,
+    hasMore: page.hasMore,
+  }), []);
+
+  const catalogue = usePaginatedApi<Course, CoursePage>(
+    fetchCatalogue,
+    extractCatalogue,
+    [query],
+    { enabled: activeTab === 'browse' },
+  );
   const learning = useApi(() => getMyCourses(), [], { enabled: activeTab === 'learning' });
 
   const openCourse = (course: Partial<Course> & { id: number }) => {
@@ -42,7 +74,7 @@ function CoursesScreen() {
   };
 
   const items: (Course | CourseEnrollment)[] = activeTab === 'browse'
-    ? (catalogue.data?.items ?? [])
+    ? catalogue.items
     : (learning.data ?? []);
   const loading = activeTab === 'browse' ? catalogue.isLoading : learning.isLoading;
   const error = activeTab === 'browse' ? catalogue.error : learning.error;
@@ -114,6 +146,13 @@ function CoursesScreen() {
                 />
               ) : null}
             </View>
+          }
+          onEndReachedThreshold={0.5}
+          onEndReached={() => { if (activeTab === 'browse') catalogue.loadMore(); }}
+          ListFooterComponent={
+            activeTab === 'browse' && catalogue.isLoadingMore
+              ? <View className="py-6"><LoadingSpinner /></View>
+              : null
           }
           renderItem={({ item }) => {
             const course = activeTab === 'browse' ? item as Course : (item as CourseEnrollment).course;

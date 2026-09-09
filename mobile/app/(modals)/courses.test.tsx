@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 let mockParams: Record<string, string> = {};
@@ -92,5 +92,79 @@ describe('CoursesScreen', () => {
 
     fireEvent.press(getByText('Create course'));
     expect(mockPush).toHaveBeenCalledWith('/(modals)/new-course');
+  });
+
+  /*
+    🔴 The catalogue asked for one page of twenty and stopped: a community with more
+    than twenty courses had the rest invisible from the phone, with no button and no
+    hint that anything was missing. `getCourses` has always returned `page`, `total`
+    and `hasMore`; the screen read none of them. Audit 2026-09-07, fixed 2026-09-09.
+  */
+  describe('catalogue paging', () => {
+    function coursePage(page: number, hasMore: boolean) {
+      return {
+        items: [{
+          id: 100 + page,
+          title: `Course page ${page}`,
+          slug: `course-${page}`,
+          summary: 'A course.',
+          level: 'beginner',
+          credit_cost: 0,
+          enrollment_count: 1,
+          author: { id: 2, name: 'Sam Tutor' },
+        }],
+        page,
+        total: 40,
+        hasMore,
+      };
+    }
+
+    it('asks for the next page when the member reaches the end of the list', async () => {
+      jest.mocked(getCourses)
+        .mockResolvedValueOnce(coursePage(1, true) as never)
+        .mockResolvedValueOnce(coursePage(2, false) as never);
+
+      const screen = render(<CoursesScreen />);
+      await waitFor(() => expect(screen.getByText('Course page 1')).toBeTruthy());
+
+      const list = screen.UNSAFE_getByType(require('react-native').FlatList);
+      await act(async () => { list.props.onEndReached(); });
+
+      // Page two is requested, and its rows are ADDED rather than replacing page one.
+      await waitFor(() => expect(getCourses).toHaveBeenCalledWith(expect.objectContaining({ page: 2 })));
+      await waitFor(() => expect(screen.getByText('Course page 2')).toBeTruthy());
+      expect(screen.getByText('Course page 1')).toBeTruthy();
+    });
+
+    it('stops asking once the server says there is no more', async () => {
+      jest.mocked(getCourses).mockResolvedValue(coursePage(1, false) as never);
+
+      const screen = render(<CoursesScreen />);
+      await waitFor(() => expect(screen.getByText('Course page 1')).toBeTruthy());
+      const callsAfterFirstLoad = jest.mocked(getCourses).mock.calls.length;
+
+      const list = screen.UNSAFE_getByType(require('react-native').FlatList);
+      await act(async () => { list.props.onEndReached(); });
+      await act(async () => { list.props.onEndReached(); });
+
+      expect(jest.mocked(getCourses).mock.calls.length).toBe(callsAfterFirstLoad);
+    });
+
+    it('starts the catalogue over when the search changes', async () => {
+      // Otherwise page two of "gardening" would be appended under page one of
+      // everything, which is worse than not paging at all.
+      jest.mocked(getCourses).mockResolvedValue(coursePage(1, true) as never);
+
+      const screen = render(<CoursesScreen />);
+      await waitFor(() => expect(screen.getByText('Course page 1')).toBeTruthy());
+
+      const input = screen.getByPlaceholderText('Search courses…');
+      fireEvent.changeText(input, 'gardening');
+      await act(async () => { fireEvent(input, 'submitEditing'); });
+
+      await waitFor(() => expect(getCourses).toHaveBeenCalledWith(
+        expect.objectContaining({ query: 'gardening', page: 1 }),
+      ));
+    });
   });
 });

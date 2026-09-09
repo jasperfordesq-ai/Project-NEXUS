@@ -15,6 +15,10 @@ jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
 }));
 
+const mockUsePaginatedApi = jest.fn();
+jest.mock('@/lib/hooks/usePaginatedApi', () => ({
+  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+}));
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
@@ -79,34 +83,32 @@ import IdeationScreen from './ideation';
 describe('IdeationScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    let call = 0;
-    mockUseApi.mockImplementation(() => {
-      call += 1;
-      if (call % 2 === 1) {
-        return {
-          data: {
-            items: [
-              {
-                id: 12,
-                title: 'Improve the park',
-                description: 'Collect ideas for safer paths.',
-                status: 'open',
-                category: 'Environment',
-                ideas_count: 3,
-              },
-            ],
-          },
-          isLoading: false,
-          error: null,
-          refresh: jest.fn(),
-        };
-      }
-      return {
-        data: [{ id: 5, name: 'Environment', challenges_count: 1 }],
-        isLoading: false,
-        error: null,
-        refresh: jest.fn(),
-      };
+    mockUsePaginatedApi.mockReturnValue({
+      items: [
+        {
+          id: 12,
+          title: 'Improve the park',
+          description: 'Collect ideas for safer paths.',
+          status: 'open',
+          category: 'Environment',
+          ideas_count: 3,
+        },
+      ],
+      isLoading: false,
+      isLoadingMore: false,
+      error: null,
+      errorStatus: null,
+      errorCode: null,
+      hasMore: false,
+      loadMore: jest.fn(),
+      refresh: jest.fn(),
+    });
+    // useApi is left with the category strip only — no more odd/even call counting.
+    mockUseApi.mockReturnValue({
+      data: [{ id: 5, name: 'Environment', challenges_count: 1 }],
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
     });
   });
 
@@ -142,5 +144,47 @@ describe('IdeationScreen', () => {
 
     fireEvent.press(challenge);
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/ideation-detail', params: { id: '12' } });
+  });
+
+  /*
+    🔴 The challenge list asked for one page and stopped: a community running more
+    challenges than fit a page had the rest invisible, with no button and no hint.
+    The endpoint has always returned a cursor and `hasMore`. Audit F-6, fixed 2026-09-09.
+  */
+  describe('paging', () => {
+    it('offers to load more only when the server says there is more', () => {
+      const screen = render(<IdeationScreen />);
+      expect(screen.queryByTestId('ideation-load-more')).toBeNull();
+    });
+
+    it('asks for the next page when the member presses it', () => {
+      const loadMore = jest.fn();
+      mockUsePaginatedApi.mockReturnValue({
+        items: [{ id: 12, title: 'Improve the park', description: 'x', status: 'open', category: 'Environment', ideas_count: 3 }],
+        isLoading: false,
+        isLoadingMore: false,
+        error: null,
+        errorStatus: null,
+        errorCode: null,
+        hasMore: true,
+        loadMore,
+        refresh: jest.fn(),
+      });
+
+      const screen = render(<IdeationScreen />);
+      fireEvent.press(screen.getByTestId('ideation-load-more'));
+
+      expect(loadMore).toHaveBeenCalled();
+    });
+
+    it('starts the list over when a filter changes', () => {
+      // The hook is keyed on status, search and category, so changing one resets to
+      // page one. Appending page two of a filtered list under page one of an
+      // unfiltered one would be worse than not paging at all.
+      render(<IdeationScreen />);
+
+      const deps = mockUsePaginatedApi.mock.calls[0][2] as unknown[];
+      expect(deps).toHaveLength(3);
+    });
   });
 });
