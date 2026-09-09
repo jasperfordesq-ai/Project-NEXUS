@@ -44,9 +44,11 @@ jest.mock('@/lib/api/auth', () => ({
 jest.mock('@/lib/api/client', () => ({
   ApiResponseError: class ApiResponseError extends Error {
     status!: number;
-    constructor(status: number, message: string) {
+    field?: string;
+    constructor(status: number, message: string, _errors?: unknown, _code?: string, field?: string) {
       super(message);
       this.status = status;
+      this.field = field;
       this.name = 'ApiResponseError';
     }
   },
@@ -312,6 +314,37 @@ describe('RegisterScreen', () => {
     expect(mockStorageSetJson).not.toHaveBeenCalled();
     expect(mockRouter.replace).not.toHaveBeenCalled();
     expect(await findByText('Check your email before signing in.')).toBeTruthy();
+  });
+
+  /**
+   * 🔴 A validation failure the server blamed on one input was shown only as a banner at
+   * the top of a form taller than the screen — the member had to work out which of eight
+   * fields it meant.
+   *
+   * 🔴 THE SERVER RARELY NAMES ONE TODAY. `RegistrationController::register` passes `null`
+   * as the field and `RegistrationService` ends with `$validator->errors()->first()`, so
+   * this path fires only for the refusals that do name an input. The banner case below is
+   * the one that runs in production, and it must keep working.
+   */
+  it('puts a server error on the input the API blamed, as well as in the banner', async () => {
+    mockApiRegister.mockRejectedValue(new ApiResponseError(422, 'Email already in use', undefined, 'VALIDATION_ERROR', 'email'));
+    const { getAllByText, getByTestId, getByText, findAllByText } = render(<RegisterScreen />);
+
+    fillRequiredRegistrationFields(getByTestId, getByText, { email: 'taken@example.com' });
+    pressSubmit(getAllByText);
+
+    // Twice: once under the email field, once in the banner the screen scrolls to.
+    await waitFor(() => expect(findAllByText('Email already in use')).resolves.toHaveLength(2));
+  });
+
+  it('keeps the banner alone when the API names no input, which is the common case', async () => {
+    mockApiRegister.mockRejectedValue(new ApiResponseError(422, 'Email already in use'));
+    const { getAllByText, getByTestId, getByText, findAllByText } = render(<RegisterScreen />);
+
+    fillRequiredRegistrationFields(getByTestId, getByText, { email: 'taken@example.com' });
+    pressSubmit(getAllByText);
+
+    await waitFor(() => expect(findAllByText('Email already in use')).resolves.toHaveLength(1));
   });
 
   it('shows API error message in the error banner', async () => {

@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Current Mobile Production Status
 
-Last reviewed: 2026-09-07
+Last reviewed: 2026-09-09
 
 Status: **Maintained — the only document that states the mobile app's current score**
 
@@ -420,47 +420,89 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      calls both — this had already been done in the third pass and was listed as
      open here by mistake).
 
-   **Still open.** Counts marked "sweep" come from heuristic scans in
-   `.local-docs-archive`-style scratch scripts, NOT from reading every file: they
-   over-report and are a starting point, not an inventory.
+   **Closed on 2026-09-09, in the release-candidate pass.** Each has a regression test
+   and a control run proving that test fails against the old code. All eleven mobile
+   gates were run and passed before every one of the seven pushes.
 
-   - **Lists that still stop at their first page.** Verified unpaged: the podcast
-     catalogue. Partially paged, needs checking tab by tab: group-detail, and the
-     volunteering lists (three paging call sites exist there, the audit named six
-     lists, so some are done and some are not).
-   - **Roughly a dozen record screens still show a 4xx refusal as a failure with a
-     Retry** (sweep: 56 candidates, most of them list screens where route gating
-     already covers it). Nine are done. `lib/api/refusal.ts` is the helper; the
-     record-scoped detail screens are the ones that matter.
-   - **Destructive actions with no confirmation** (sweep: 33 candidates, heavily
-     over-reported — the scan cannot see into `onConfirm` callbacks). The three the
-     audit named are done; the rest are unverified.
-   - **About twenty screens load data but cannot be pulled to refresh**, including
-     course-detail, course-player, the ideation screens, job-detail, job-pipeline,
-     kb-article and the marketplace seller tools. A failed refresh is also silent
-     whenever the list already has rows.
-   - **Registration validation arrives as one sentence**, never on the field it
-     belongs to. 🔴 Needs a SERVER change as well: the API sends only the first error.
-   - **Marketplace remainder:** pickup-slot and coupon dates are typed by hand; the
-     Stripe payments screen shows 0.00 balances when its request failed; an accepted
-     offer never says "pay now".
-   - **Volunteering remainder:** the apply sheet never mentions the saved CV;
-     registering an organisation lands on a hub that may not show it; an organisation
-     website link can reject unhandled; a failed load in job edit mode leaves a
-     permanently dead form.
-   - **Courses and podcasts remainder:** the course player always opens at lesson 1.
-   - 🔴 **The podcast player has no background audio** — the phone locking stops a
-     45-minute episode — **and no resume or seek.** The strings for both already
-     exist, unused, in all seven languages. Needs `app.json` changes and therefore a
-     NEW STORE BUILD, which is why it is still here.
+   - 🔴 **A podcast keeps playing when the phone locks, resumes where it stopped, and
+     can be moved around inside.** `expo-av` pauses every sound on host pause unless
+     `staysActiveInBackground` is set, and it never was; iOS additionally needs
+     `UIBackgroundModes: ["audio"]`, now in `app.json` — **which is why this one needs a
+     new store build and cannot go out over the air.** Resume is device-local, because
+     `POST /v2/podcasts/episodes/{id}/listen` accepts a position for analytics and the
+     API never hands one back. Back 15s / forward 30s, and chapters are jump targets.
+     🔴 **Android is improved, not finished:** the app no longer stops the episode
+     itself, but `expo-av` ships no foreground service and no wake lock, so the system
+     may still stop a long episode with the screen off. A media notification belongs
+     with the `expo-audio` port.
+   - **Pull-to-refresh on twenty more screens**, plus three faults that were the same
+     mistake from different sides: a failed refresh said nothing at all when rows were
+     already on screen (new `components/ui/RefreshFailedNotice.tsx`); nine screens
+     rendered `error || !data ? <error page>` and so DELETED what the member was
+     reading; seven blanked to a spinner mid-pull. Guard: `app/pullToRefresh.test.ts`.
+   - **Fourteen more lists page**: the podcast catalogue; seven group-detail tabs
+     (members, discussions, announcements, files, Q&A, media, tasks); five volunteering
+     lists (applications, shifts, my organisations, expenses, donations).
+   - **Nineteen screens stopped showing a refusal as a failure with a dead Retry.**
+     Nine more already behaved correctly and moved to the one shared helper. Guard:
+     `app/refusalHandling.test.ts`. 🔴 Three MORE tests were pinning the fault — course
+     grading, ideation-campaign and course-player each pressed Retry after a 4xx and
+     passed because the mock was changed to succeed in between.
+   - **Two one-tap destructive actions now ask first**: deleting a job alert, and
+     removing an established federation connection between two communities.
+   - **Marketplace:** the seller payments screen no longer shows 0.00 when the request
+     failed (and one failure no longer takes the other two figures down with it);
+     pickup-slot and coupon dates are checked before they are sent, with quick-fill for
+     the common slot, and a slot is sent as an instant rather than the typed text; an
+     accepted offer tells the buyer nothing has been paid yet and takes them to the
+     checkout that honours their price.
+   - **Jobs:** an application can carry a CV, and the sheet says what will be sent and
+     that a saved CV is NOT attached for you; a failed load in edit mode no longer
+     leaves an empty form under a live Update button.
+   - **Volunteering:** registering an organisation now re-reads the list it lands on;
+     an organisation website link that cannot be opened says so.
+   - **The course player opens where the learner got to**, not at lesson one.
+
+   **Still open.** Counts marked "sweep" come from heuristic scans, NOT from reading
+   every file: they over-report and are a starting point, not an inventory. Numbers
+   below that came from READING files say so.
+
+   - 🔴 **Registration validation still arrives one error at a time, and usually with
+     no field.** The app half is done: `ApiResponseError` now keeps the `field` the API
+     names, and the register screen puts the message on that input as well as in the
+     banner. **The API must change for the rest**, and precisely:
+     `RegistrationService::register` ends its validation with
+     `$validator->errors()->first()` (app/Services/RegistrationService.php:246) — one
+     string, no field — and `RegistrationController::register` passes `null` as the
+     field argument to `respondWithError` (app/Http/Controllers/Api/RegistrationController.php:55).
+     What is needed: return EVERY validation failure, each with the input it belongs
+     to, through `respondWithErrors([['code' => …, 'message' => …, 'field' => …], …])`,
+     which `BaseApiController` already supports. The app will then place each one
+     without further change. A member filling in three bad fields is currently told
+     about one of them and not which.
    - 🔴 **`expo-av` is deprecated for SDK 54 and removed in SDK 55**, so both media
-     players need porting before the SDK moves.
+     players need porting before the SDK moves. The podcast player's Android background
+     limitation (above) is fixed by the same piece of work.
+   - **Two volunteering lists cannot page, and the SERVER is why.**
+     `VolunteerCertificateController::myCertificates` calls
+     `getUserCertificates($userId)` with no filters although the service accepts a
+     cursor, and `VolunteerCommunityController::getSwapRequests` returns everything it
+     finds. A "Load more" on either would be a button that cannot work, so there is not
+     one.
+   - **Destructive actions:** the sweep said 33. All 57 destructive call sites were
+     READ; two needed a confirmation and have one. The rest already ask, or are explicit
+     two-button choices, toggles, or actions undone by tapping again.
+   - **Refusal handling:** the sweep said 56. Nineteen were READ and changed; nine more
+     were already correct and were tidied onto the shared helper. Most of the remainder
+     were list screens where route gating already refuses the screen.
+   - **Pull-to-refresh:** six screens deliberately have none, all of them forms, each
+     with a written reason in `app/pullToRefresh.test.ts`.
    - **Nothing is unread.** Run one auditor at a time; two concurrent exhausted the
      session limit.
    - 🔴 **Nothing in any pass has been walked on a device.** Unchanged, and the reason
      the readiness score has not moved. Everything above is verified by tests and CI
-     only — including things like an upload progress bar, which can look correct in a
-     test and wrong in the hand.
+     only — including things like an upload progress bar, a background podcast and a
+     CV attachment, every one of which can look correct in a test and wrong in the hand.
 
 ## The blockers, in the order they hurt
 

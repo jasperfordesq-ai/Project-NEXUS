@@ -45,6 +45,17 @@ export class ApiResponseError extends Error {
      * a generic error.
      */
     public readonly code?: string,
+    /**
+     * The input the API blamed, when it named one.
+     *
+     * 🔴 `respondWithError($code, $message, $field, $status)` has always been able to send
+     * a field, and nothing on this side kept it — so a validation failure could only ever
+     * be shown as a banner at the top of a form, however tall that form was and whichever
+     * input was actually wrong. Keeping it lets a screen put the message on the input.
+     *
+     * Absent on most refusals, and that is fine: a caller falls back to the banner.
+     */
+    public readonly field?: string,
   ) {
     super(message);
     this.name = 'ApiResponseError';
@@ -68,6 +79,19 @@ function extractErrorCode(data: unknown): string | undefined {
     }
   }
 
+  return undefined;
+}
+
+/** The input the API blamed, from `{ errors: [{ field }] }`. Undefined when it named none. */
+function extractErrorField(data: unknown): string | undefined {
+  const body = data as { field?: unknown; errors?: unknown } | null;
+  if (typeof body?.field === 'string' && body.field !== '') return body.field;
+  if (Array.isArray(body?.errors)) {
+    const found = (body.errors as { field?: unknown }[]).find(
+      (error) => typeof error?.field === 'string' && error.field !== '',
+    );
+    if (found) return String(found.field);
+  }
   return undefined;
 }
 
@@ -632,6 +656,7 @@ async function request<T>(
       ),
       errBody?.errors,
       code,
+      extractErrorField(data),
     );
   }
 

@@ -97,6 +97,7 @@ export default function RegisterScreen() {
   const {
     control,
     handleSubmit,
+    setError,
     formState: { errors, isDirty },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema) as Resolver<RegisterFormValues>,
@@ -114,6 +115,35 @@ export default function RegisterScreen() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
+
+  /*
+    🔴 A validation failure the server blamed on ONE input was shown as a banner at the top
+    of a form taller than the screen. The member had to work out for themselves which of
+    eight fields it meant. When the API names the input, put the message ON it.
+
+    🔴 THE SERVER ONLY EVER SENDS ONE, AND USUALLY NAMES NO FIELD AT ALL.
+    `RegistrationService` ends its validation with `$validator->errors()->first()` and
+    `RegistrationController::register` passes `null` as the field. So today this mapping
+    fires only for the refusals that do name one, and everything else keeps the banner —
+    which is why the banner stays. Filling in three bad fields and being told about one of
+    them, with no clue which, needs the API to answer with every failure and its field.
+    Written up in mobile/docs/CURRENT_MOBILE_PRODUCTION_STATUS.md.
+  */
+  const FIELD_BY_API_NAME: Record<string, keyof RegisterFormValues> = {
+    first_name: 'firstName',
+    firstName: 'firstName',
+    last_name: 'lastName',
+    lastName: 'lastName',
+    phone: 'phone',
+    phone_number: 'phone',
+    location: 'location',
+    email: 'email',
+    password: 'password',
+    password_confirmation: 'passwordConfirm',
+    passwordConfirm: 'passwordConfirm',
+    terms_accepted: 'termsAccepted',
+    terms: 'termsAccepted',
+  };
 
   /**
    * 🔴 An error the member cannot see is an error they did not get.
@@ -250,6 +280,12 @@ export default function RegisterScreen() {
       if (err instanceof ApiResponseError && err.status === 0) {
         setGlobalError(t('register.noAnswerFromServer'));
       } else if (err instanceof ApiResponseError) {
+        const named = err.field ? FIELD_BY_API_NAME[err.field] : undefined;
+        if (named) {
+          setError(named, { type: 'server', message: err.message });
+          // Still the banner as well: the field may be off-screen, and this form is taller
+          // than the screen — which is the whole reason the banner scrolls into view.
+        }
         setGlobalError(err.message);
       } else {
         setGlobalError(t('errors.unableToRegister'));
