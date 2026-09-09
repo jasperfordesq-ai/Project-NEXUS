@@ -36,6 +36,16 @@ export interface ConfirmOptions {
  * The dialog shows a spinner while an async `onConfirm` resolves, then closes.
  * Errors thrown by `onConfirm` still close the dialog — surface them with a
  * toast inside the action itself.
+ *
+ * 🔴 `variant` defaults to `'primary'`. It defaulted to `'danger'` until 2026-09-09, and
+ * because most confirmations ARE destructive nobody noticed that the ones which are not
+ * had gone red too: enrolling on a course, confirming a marketplace purchase, confirming
+ * delivery, completing a group exchange and sending credits from the wallet all asked with
+ * a red button. Red is how this app says "this takes something away". Spending it on
+ * ordinary affirmative actions is how it stops meaning anything on the actions that matter.
+ *
+ * Pass `variant: 'danger'` for delete, remove, leave, block, cancel, withdraw, decline,
+ * unpublish, archive and sign-out. Everything else takes the default.
  */
 export function useConfirm() {
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
@@ -73,7 +83,7 @@ export function useConfirm() {
       confirmAccessibilityLabel={options?.confirmAccessibilityLabel}
       cancelTestID={options?.cancelTestID}
       confirmTestID={options?.confirmTestID}
-      variant={options?.variant ?? 'danger'}
+      variant={options?.variant ?? 'primary'}
       isConfirming={isConfirming}
       onClose={close}
       onConfirm={handleConfirm}

@@ -67,7 +67,8 @@ export default function SettingsBlockedUsersScreen() {
       message: t('blockedUsers.unblockConfirmBody'),
       confirmLabel: t('blockedUsers.unblock'),
       cancelLabel: t('common:buttons.cancel'),
-      variant: 'danger',
+      // Unblocking restores someone. Blocking is the destructive half, not this.
+      variant: 'primary',
       onConfirm: () => handleUnblock(user),
     });
   }
