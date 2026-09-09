@@ -271,7 +271,12 @@ function MenuSection({ title, items, onNavigate, theme }: { title: string; items
 
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
+      {/*
+        A heading, so a screen-reader member can jump between "My Space", "Discover" and
+        "Account" instead of walking every row. This screen is the app's main menu and had
+        no headings at all. Audit 2026-09-09, item 14.
+      */}
+      <Text accessibilityRole="header" className="mb-2 text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
         {title}
       </Text>
       <HeroCard className="rounded-panel p-0">

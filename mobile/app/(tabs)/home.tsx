@@ -251,7 +251,7 @@ export default function HomeScreen() {
                       <View className="h-7 w-7 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
                         <Ionicons name="albums-outline" size={15} color={primary} />
                       </View>
-                      <Text className="min-w-0 flex-1 text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>
+                      <Text accessibilityRole="header" className="min-w-0 flex-1 text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>
                         {t('feed.title')}
                       </Text>
                     </View>
