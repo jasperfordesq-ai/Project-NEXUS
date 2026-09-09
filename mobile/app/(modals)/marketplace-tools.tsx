@@ -5,10 +5,11 @@
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, ScrollView, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Alert as HeroAlert, Button as HeroButton, Card as HeroCard, Chip, CloseButton, Spinner, Surface, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -141,6 +142,17 @@ function MarketplaceToolsRoute() {
   );
 }
 
+/**
+ * 🔴 A pull-to-refresh gesture on the outer list cannot reach a panel's own `refresh()`,
+ * because each tab owns its `useApi` call. The parent bumps this number instead, and every
+ * panel carries it in its dependency list, so the visible tab refetches. The alternative —
+ * lifting five panels' worth of state into the hub — would be a much larger change for the
+ * same member-visible result.
+ */
+interface PanelProps {
+  refreshNonce: number;
+}
+
 function MarketplaceToolsScreen() {
   const { t } = useTranslation(['marketplace', 'common', 'auth']);
   const { hasFeature } = useTenant();
@@ -150,6 +162,7 @@ function MarketplaceToolsScreen() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const initialTab = isToolTab(params.tab) ? params.tab : 'collections';
   const [tab, setTab] = useState<ToolTab>(initialTab);
+  const [refreshNonce, setRefreshNonce] = useState(0);
   const marketplaceEnabled = hasFeature('marketplace');
   const availableTabs = useMemo(
     () => marketplaceEnabled ? TABS.filter((item) => item !== 'coupons' || hasFeature('merchant_coupons')) : [],
@@ -212,6 +225,10 @@ function MarketplaceToolsScreen() {
         data={[tab]}
         keyExtractor={(item) => item}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132 }}
+        /* The panels own their loading state, so the hub cannot honestly say when a
+           refresh has finished; the gesture snaps back and the panel shows its own
+           spinner. Same compromise as the clubs and courses lists. */
+        refreshControl={<RefreshControl refreshing={false} onRefresh={() => setRefreshNonce((n) => n + 1)} tintColor={primary} colors={[primary]} />}
         ListHeaderComponent={
           <>
             <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
@@ -255,11 +272,11 @@ function MarketplaceToolsScreen() {
         }
         renderItem={() => (
           <>
-            {tab === 'collections' ? <CollectionsPanel /> : null}
-            {tab === 'savedSearches' ? <SavedSearchesPanel /> : null}
-            {tab === 'promotions' ? <PromotionsPanel /> : null}
-            {tab === 'pickups' ? <PickupsPanel /> : null}
-            {tab === 'coupons' ? <CouponsPanel /> : null}
+            {tab === 'collections' ? <CollectionsPanel refreshNonce={refreshNonce} /> : null}
+            {tab === 'savedSearches' ? <SavedSearchesPanel refreshNonce={refreshNonce} /> : null}
+            {tab === 'promotions' ? <PromotionsPanel refreshNonce={refreshNonce} /> : null}
+            {tab === 'pickups' ? <PickupsPanel refreshNonce={refreshNonce} /> : null}
+            {tab === 'coupons' ? <CouponsPanel refreshNonce={refreshNonce} /> : null}
           </>
         )}
       />
@@ -267,14 +284,14 @@ function MarketplaceToolsScreen() {
   );
 }
 
-function CollectionsPanel() {
+function CollectionsPanel({ refreshNonce }: PanelProps) {
   const { t } = useTranslation(['marketplace', 'common']);
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const collections = useApi(() => getMarketplaceCollections(), [], { enabled: true });
+  const collections = useApi(() => getMarketplaceCollections(), [refreshNonce], { enabled: true });
 
   async function create() {
     if (!name.trim()) return;
@@ -328,6 +345,8 @@ function CollectionsPanel() {
         isLoading={collections.isLoading}
         items={collections.data?.data ?? []}
         emptyTitle={t('tools.collections.empty')}
+        error={collections.error}
+        onRetry={collections.refresh}
         renderItem={(item) => (
           <ToolRow
             key={item.id}
@@ -344,7 +363,7 @@ function CollectionsPanel() {
   );
 }
 
-function SavedSearchesPanel() {
+function SavedSearchesPanel({ refreshNonce }: PanelProps) {
   const { t } = useTranslation(['marketplace', 'common']);
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -352,7 +371,7 @@ function SavedSearchesPanel() {
   const [query, setQuery] = useState('');
   const [alertFrequency, setAlertFrequency] = useState<SavedSearchAlertFrequency>('daily');
   const [alertChannel, setAlertChannel] = useState<SavedSearchAlertChannel>('push');
-  const searches = useApi(() => getMarketplaceSavedSearches(), [], { enabled: true });
+  const searches = useApi(() => getMarketplaceSavedSearches(), [refreshNonce], { enabled: true });
 
   async function create() {
     if (!name.trim()) return;
@@ -422,6 +441,8 @@ function SavedSearchesPanel() {
         isLoading={searches.isLoading}
         items={searches.data?.data ?? []}
         emptyTitle={t('tools.savedSearches.empty')}
+        error={searches.error}
+        onRetry={searches.refresh}
         renderItem={(item) => (
           <ToolRow
             key={item.id}
@@ -471,15 +492,15 @@ function ChoiceGroup<T extends string>({
   );
 }
 
-function PromotionsPanel() {
+function PromotionsPanel({ refreshNonce }: PanelProps) {
   const { t } = useTranslation(['marketplace', 'common']);
   const { show: showToast } = useAppToast();
   const { user } = useAuth();
   const [selectedListing, setSelectedListing] = useState<number | null>(null);
   const [promotionType, setPromotionType] = useState<MarketplacePromotionProduct['type'] | null>(null);
   const [isPromoting, setIsPromoting] = useState(false);
-  const products = useApi(() => getMarketplacePromotionProducts(), [], { enabled: true });
-  const promotions = useApi(() => getMyMarketplacePromotions(), [], { enabled: true });
+  const products = useApi(() => getMarketplacePromotionProducts(), [refreshNonce], { enabled: true });
+  const promotions = useApi(() => getMyMarketplacePromotions(), [refreshNonce], { enabled: true });
   const listings = usePaginatedApi<MarketplaceListingItem, Awaited<ReturnType<typeof getMyMarketplaceListings>>>(
     (cursor) => getMyMarketplaceListings(cursor, user?.id, 'active'),
     (response) => ({ items: response.data, cursor: marketplaceNextCursor(response), hasMore: marketplaceHasMore(response) }),
@@ -511,7 +532,7 @@ function PromotionsPanel() {
 
   return (
     <PanelCard icon="megaphone-outline" title={t('tools.promotions.title')} subtitle={t('tools.promotions.subtitle')}>
-      {listings.isLoading ? (
+      {listings.isLoading && listings.items.length === 0 ? (
         <LoadingSpinner />
       ) : listings.items.length === 0 ? (
         <EmptyState icon="bag-handle-outline" title={t('tools.promotions.noListings')} subtitle={t('tools.promotions.noListingsHint')} />
@@ -524,7 +545,7 @@ function PromotionsPanel() {
           ))}
         </ScrollView>
       )}
-      {products.isLoading ? (
+      {products.isLoading && promotionProducts.length === 0 ? (
         <LoadingSpinner />
       ) : promotionProducts.length === 0 ? (
         <EmptyState icon="megaphone-outline" title={products.error ?? t('tools.promotions.noProducts')} subtitle={t('tools.promotions.noProductsHint')} />
@@ -547,6 +568,8 @@ function PromotionsPanel() {
         isLoading={promotions.isLoading}
         items={promotions.data?.data ?? []}
         emptyTitle={t('tools.promotions.empty')}
+        error={promotions.error}
+        onRetry={promotions.refresh}
         renderItem={(item: MarketplacePromotion) => (
           <ToolRow
             key={item.id}
@@ -615,7 +638,7 @@ function normalizePickupCapacity(value: string): number {
   return Math.min(PICKUP_MAX_CAPACITY, Math.max(1, parsed));
 }
 
-function PickupsPanel() {
+function PickupsPanel({ refreshNonce }: PanelProps) {
   const { t } = useTranslation(['marketplace', 'common']);
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -629,8 +652,8 @@ function PickupsPanel() {
   const [qrCode, setQrCode] = useState('');
   const [lastScan, setLastScan] = useState<MarketplacePickupReservation | null>(null);
   const [isScannerVisible, setIsScannerVisible] = useState(false);
-  const slots = useApi(() => getMarketplacePickupSlots(), [], { enabled: true });
-  const reservations = useApi(() => getMyMarketplacePickups(), [], { enabled: true });
+  const slots = useApi(() => getMarketplacePickupSlots(), [refreshNonce], { enabled: true });
+  const reservations = useApi(() => getMyMarketplacePickups(), [refreshNonce], { enabled: true });
 
   function resetSlotForm() {
     setSlotStart('');
@@ -791,6 +814,8 @@ function PickupsPanel() {
         isLoading={slots.isLoading}
         items={slots.data?.data ?? []}
         emptyTitle={t('tools.pickups.emptySlots')}
+        error={slots.error}
+        onRetry={slots.refresh}
         renderItem={(item: MarketplacePickupSlot) => (
           <PickupSlotToolCard
             key={item.id}
@@ -805,6 +830,8 @@ function PickupsPanel() {
         isLoading={reservations.isLoading}
         items={reservations.data?.data ?? []}
         emptyTitle={t('tools.pickups.emptyReservations')}
+        error={reservations.error}
+        onRetry={reservations.refresh}
         renderItem={(item: MarketplacePickupReservation) => (
           <ToolRow key={item.id} icon="qr-code-outline" title={t('tools.pickups.order', { order: item.order_id })} subtitle={t(`pickup.status.${item.status}`, { defaultValue: item.status })} />
         )}
@@ -861,7 +888,7 @@ function PickupSlotToolCard({
   );
 }
 
-function CouponsPanel() {
+function CouponsPanel({ refreshNonce }: PanelProps) {
   const { t } = useTranslation(['marketplace', 'common']);
   const { tenant } = useTenant();
   const { show: showToast } = useAppToast();
@@ -882,7 +909,7 @@ function CouponsPanel() {
   const [isRedeemingQr, setIsRedeemingQr] = useState(false);
   const [isScannerVisible, setIsScannerVisible] = useState(false);
   const [handledRouteCouponKey, setHandledRouteCouponKey] = useState<string | null>(null);
-  const coupons = useApi(() => getMerchantCoupons(), [], { enabled: true });
+  const coupons = useApi(() => getMerchantCoupons(), [refreshNonce], { enabled: true });
 
   function updateForm(key: keyof CouponFormState, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -1140,6 +1167,8 @@ function CouponsPanel() {
         isLoading={coupons.isLoading}
         items={coupons.data?.data.items ?? []}
         emptyTitle={t('tools.coupons.empty')}
+        error={coupons.error}
+        onRetry={coupons.refresh}
         renderItem={(item: MerchantCoupon) => (
           <CouponToolCard
             key={item.id}
@@ -1377,19 +1406,27 @@ function PanelList<T>({
   items,
   emptyTitle,
   renderItem,
+  error,
+  onRetry,
 }: {
   isLoading: boolean;
   items: T[];
   emptyTitle: string;
   renderItem: (item: T) => React.ReactNode;
+  /** The last refresh's failure, if any. Shown above rows that are now out of date. */
+  error?: string | null;
+  onRetry?: () => void;
 }) {
-  if (isLoading) {
+  // A first load that failed has no rows, so the empty state below carries the message.
+  // A refresh that failed leaves the old rows standing, and said nothing at all until now.
+  const staleNotice = items.length > 0 ? <RefreshFailedNotice error={error ?? null} onRetry={onRetry} /> : null;
+  if (isLoading && items.length === 0) {
     return <LoadingSpinner />;
   }
   if (items.length === 0) {
-    return <EmptyState icon="file-tray-outline" title={emptyTitle} />;
+    return <EmptyState icon="file-tray-outline" title={error || emptyTitle} />;
   }
-  return <View className="gap-2">{items.map(renderItem)}</View>;
+  return <View className="gap-2">{staleNotice}<View className="gap-2">{items.map(renderItem)}</View></View>;
 }
 
 function ToolRow({

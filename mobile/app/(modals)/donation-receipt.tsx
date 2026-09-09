@@ -3,25 +3,28 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { getDonationReceipt } from '@/lib/api/donations';
 import { useApi } from '@/lib/hooks/useApi';
+import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import { formatDate } from '@/lib/utils/formatRelativeTime';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function DonationReceiptScreen() {
   const { t } = useTranslation(['volunteering', 'common']);
+  const primary = usePrimaryColor();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const donationId = Number(id ?? 0);
   const receipt = useApi(() => getDonationReceipt(donationId), [donationId], { enabled: donationId > 0 });
@@ -30,8 +33,9 @@ function DonationReceiptScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('donations.receipt_title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-          {receipt.isLoading ? <LoadingSpinner /> : isRefusalStatus(receipt.errorStatus) ? (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={receipt.isLoading && Boolean(receipt.data)} onRefresh={receipt.refresh} tintColor={primary} colors={[primary]} />}>
+          <RefreshFailedNotice error={receipt.data ? receipt.error : null} onRetry={receipt.refresh} />
+          {receipt.isLoading && !receipt.data ? <LoadingSpinner /> : isRefusalStatus(receipt.errorStatus) ? (
             /*
               🔴 A refusal is not a failure. A receipt belongs to one member; anybody
               else was offered a Retry that could never work. F-8, fixed 2026-09-08.
@@ -42,7 +46,7 @@ function DonationReceiptScreen() {
               subtitle={t('common:errors.notAvailableHint')}
               testID="donation-receipt-refused"
             />
-          ) : receipt.error || !receipt.data ? (
+          ) : !receipt.data ? (
             <EmptyState icon="warning-outline" title={receipt.error ?? t('donations.receipt_not_found')} actionLabel={t('common:buttons.retry')} onAction={receipt.refresh} />
           ) : (
             <HeroCard className="rounded-panel">

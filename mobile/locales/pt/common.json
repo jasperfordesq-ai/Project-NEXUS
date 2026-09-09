@@ -73,6 +73,8 @@
     "generic": "Algo correu mal. Tente novamente.",
     "loadFailedTitle": "Não foi possível carregar",
     "loadFailedSubtitle": "Algo falhou ao carregar. Tente novamente.",
+    "refreshFailedTitle": "Não foi possível atualizar",
+    "refreshFailedSubtitle": "Ainda está a ver o que foi carregado antes.",
     "network": "Erro de rede. Verifique a sua ligação.",
     "timeout": "O pedido excedeu o tempo limite. Verifique a sua ligação.",
     "requestFailedWithStatus": "O pedido falhou com o estado {{status}}",

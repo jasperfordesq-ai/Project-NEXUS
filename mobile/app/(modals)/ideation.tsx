@@ -9,6 +9,7 @@ import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -190,11 +191,12 @@ function IdeationScreen() {
               <CategoryStrip categories={categories ?? []} selectedId={categoryId} onSelect={setCategoryId} />
             </Surface>
 
-            {isLoading ? (
+            {challenges.length > 0 ? <View className="px-4"><RefreshFailedNotice error={error ? String(error) : null} onRetry={refresh} /></View> : null}
+            {isLoading && challenges.length === 0 ? (
               <View className="items-center justify-center py-14">
                 <LoadingSpinner />
               </View>
-            ) : error ? (
+            ) : error && challenges.length === 0 ? (
               <View className="px-4 py-8">
                 <EmptyState icon="warning-outline" title={t('ideation:errorTitle')} subtitle={String(error)} actionLabel={t('common:buttons.retry')} onAction={refresh} />
               </View>

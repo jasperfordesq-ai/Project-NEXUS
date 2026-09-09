@@ -5,7 +5,7 @@
 
 import { contrastText } from '@/lib/utils/color';
 import { useCallback, useState } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -138,6 +138,7 @@ export default function SelectTenantScreen() {
       <FlatList<TenantListItem>
         testID="tenant-list"
         data={!isLoading && !error ? tenants : []}
+        refreshControl={<RefreshControl refreshing={isLoading && tenants.length > 0} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
         keyExtractor={(item) => String(item.id)}
         ItemSeparatorComponent={ItemSeparator}
         contentContainerStyle={{

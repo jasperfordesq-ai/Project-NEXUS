@@ -8,6 +8,7 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import * as Linking from 'expo-linking';
 import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -109,6 +110,9 @@ function ResourcesScreen() {
   );
   const isLoading = tab === 'resources' ? resourcesLoading : kbLoading;
   const error = tab === 'resources' ? resourcesError : kbError;
+  /* Rows already on screen. A pull must not throw them away for a spinner, and a
+     refresh that fails must not replace them with an empty state either. */
+  const visibleRowCount = tab === 'resources' ? resources.length : filteredKb.length;
 
   const refresh = useCallback(() => {
     if (tab === 'resources') {
@@ -191,11 +195,12 @@ function ResourcesScreen() {
               <CategoryStrip categories={categories ?? []} selectedId={categoryId} onSelect={setCategoryId} />
             ) : null}
 
-            {isLoading ? (
+            {visibleRowCount > 0 ? <View className="px-4"><RefreshFailedNotice error={error ? String(error) : null} onRetry={refresh} /></View> : null}
+            {isLoading && visibleRowCount === 0 ? (
               <View className="items-center justify-center py-14">
                 <LoadingSpinner />
               </View>
-            ) : error ? (
+            ) : error && visibleRowCount === 0 ? (
               <View className="px-4 py-8">
                 <EmptyState icon="warning-outline" title={t('resources:errorTitle')} subtitle={String(error)} actionLabel={t('common:buttons.retry')} onAction={refresh} />
               </View>

@@ -73,6 +73,8 @@
     "generic": "Something went wrong. Please try again.",
     "loadFailedTitle": "Couldn't load this",
     "loadFailedSubtitle": "Something went wrong while loading. Please try again.",
+    "refreshFailedTitle": "Couldn’t refresh",
+    "refreshFailedSubtitle": "You’re still seeing what loaded earlier.",
     "network": "Network error. Please check your connection.",
     "timeout": "Request timed out. Please check your connection.",
     "requestFailedWithStatus": "Request failed with status {{status}}",

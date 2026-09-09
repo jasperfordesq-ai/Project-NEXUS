@@ -4,10 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -144,7 +145,8 @@ function JobPipelineScreen() {
           }}
         />
 
-        <ScrollView contentContainerStyle={{ gap: 16, padding: 16, paddingBottom: 32 }}>
+        <ScrollView contentContainerStyle={{ gap: 16, padding: 16, paddingBottom: 32 }} refreshControl={<RefreshControl refreshing={applicationsApi.isLoading && Boolean(applicationsApi.data)} onRefresh={applicationsApi.refresh} tintColor={primary} colors={[primary]} />}>
+          <RefreshFailedNotice error={applicationsApi.data ? applicationsApi.error : null} onRetry={applicationsApi.refresh} />
           <HeroCard className="overflow-hidden rounded-panel p-0">
             <View className="h-1.5" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="gap-4 p-4">

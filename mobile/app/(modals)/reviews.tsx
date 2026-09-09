@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import AccentIcon from '@/components/ui/AccentIcon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { formatDecimal } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -107,6 +108,8 @@ function ReviewsScreen() {
     : 0;
   const isLoading = activeTab === 'pending' ? pendingLoading : activeTab === 'given' ? givenLoading : reviewsLoading;
   const error = activeTab === 'pending' ? pendingError : activeTab === 'given' ? givenError : reviewsError;
+  /* Rows already on screen — see the same constant in resources.tsx. */
+  const visibleRowCount = activeTab === 'pending' ? pending.length : visibleReviews.length;
 
   useEffect(() => {
     const requestedTab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
@@ -260,11 +263,12 @@ function ReviewsScreen() {
               </Tabs>
             </Surface>
 
-            {isLoading ? (
+            {visibleRowCount > 0 ? <View className="px-4"><RefreshFailedNotice error={error ? String(error) : null} onRetry={handleRefresh} /></View> : null}
+            {isLoading && visibleRowCount === 0 ? (
               <View className="items-center justify-center py-14">
                 <LoadingSpinner />
               </View>
-            ) : error ? (
+            ) : error && visibleRowCount === 0 ? (
               <View className="px-4 py-8">
                 <EmptyState
                   icon="warning-outline"

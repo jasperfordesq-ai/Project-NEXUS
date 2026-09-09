@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useConfirm } from '@/components/ui/useConfirm';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface, Text } from 'heroui-native';
@@ -189,7 +190,8 @@ function SettingsLinkedAccountsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('linkedAccounts.title')} backLabel={t('common:buttons.back')} fallbackHref="/(modals)/settings" />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }} refreshControl={<RefreshControl refreshing={query.isLoading && Boolean(query.data)} onRefresh={query.refresh} tintColor={primary} colors={[primary]} />}>
+        <RefreshFailedNotice error={query.data ? query.error : null} onRetry={query.refresh} />
         <HeroCard className="overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: primary }} />
           <HeroCard.Body className="gap-3 p-4">
@@ -225,9 +227,9 @@ function SettingsLinkedAccountsScreen() {
           </HeroCard.Body>
         </HeroCard>
 
-        {query.isLoading ? (
+        {query.isLoading && !query.data ? (
           <View className="items-center py-8"><Spinner size="lg" /></View>
-        ) : query.error ? (
+        ) : query.error && !query.data ? (
           <Surface variant="secondary" className="rounded-panel p-4">
             <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('linkedAccounts.loadFailed')}</Text>
           </Surface>

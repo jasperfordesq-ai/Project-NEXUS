@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import AccentIcon from '@/components/ui/AccentIcon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   RefreshControl,
@@ -1500,7 +1501,8 @@ function GamificationScreen() {
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/home" />
 
-        {isLoading ? (
+        {profile ? <View className="px-4 pt-3"><RefreshFailedNotice error={profileError} onRetry={handleRefresh} /></View> : null}
+        {isLoading && !profile ? (
           <View className="flex-1 items-center justify-center">
             <LoadingSpinner />
           </View>

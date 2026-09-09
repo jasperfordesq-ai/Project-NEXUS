@@ -18,10 +18,11 @@
  */
 
 import { useMemo } from 'react';
-import { ScrollView, View } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Card as HeroCard, Surface, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -127,7 +128,7 @@ function WalletTransactionScreenInner() {
         backLabel={t('common:buttons.back')}
         fallbackHref="/(modals)/wallet"
       />
-      {isLoading ? (
+      {isLoading && !transaction ? (
         <LoadingSpinner />
       ) : !transaction ? (
         <View className="flex-1 items-center justify-center px-6" style={{ flex: 1 }}>
@@ -141,7 +142,8 @@ function WalletTransactionScreenInner() {
           />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }} refreshControl={<RefreshControl refreshing={isLoading && Boolean(data)} onRefresh={refresh} tintColor={primary} colors={[primary]} />}>
+          <RefreshFailedNotice error={data ? error : null} onRetry={refresh} />
           <HeroCard className="overflow-hidden rounded-panel p-0">
             <View className="h-1.5" style={{ backgroundColor: isCredit ? '#22c55e' : '#f43f5e' }} />
             <HeroCard.Body className="gap-3 p-5">

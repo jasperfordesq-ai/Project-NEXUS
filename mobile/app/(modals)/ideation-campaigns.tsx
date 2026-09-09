@@ -3,13 +3,14 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -17,12 +18,13 @@ import NativePressable from '@/components/ui/NativePressable';
 import { Chip } from '@/components/ui/StatusChip';
 import { getIdeationCampaigns } from '@/lib/api/ideation';
 import { useApi } from '@/lib/hooks/useApi';
-import { useTenant } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function IdeationCampaignsScreen() {
   const { t } = useTranslation(['ideation', 'common']);
+  const primary = usePrimaryColor();
   const { hasFeature } = useTenant();
   const theme = useTheme();
   const campaignsState = useApi(getIdeationCampaigns, [], { enabled: hasFeature('ideation_challenges') });
@@ -30,7 +32,8 @@ function IdeationCampaignsScreen() {
 
   return <ModalErrorBoundary><SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
     <AppTopBar title={t('ideation:campaigns.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/ideation' as Href} />
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={campaignsState.isLoading && Boolean(campaignsState.data)} onRefresh={campaignsState.refresh} tintColor={primary} colors={[primary]} />}>
+      <RefreshFailedNotice error={campaignsState.data ? campaignsState.error : null} onRetry={campaignsState.refresh} />
       {!hasFeature('ideation_challenges') ? <EmptyState icon="bulb-outline" title={t('ideation:campaigns.feature_not_available')} subtitle={t('ideation:campaigns.feature_not_available_desc')} />
         : campaignsState.isLoading && !campaignsState.data ? <LoadingSpinner />
           : campaignsState.error ? <EmptyState icon="warning-outline" title={t('ideation:challenges.load_error')} subtitle={campaignsState.error} actionLabel={t('ideation:campaigns.retry')} onAction={campaignsState.refresh} />

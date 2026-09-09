@@ -18,6 +18,9 @@ jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
 }));
 
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     text: '#111827',
@@ -74,6 +77,43 @@ describe('KbArticleScreen', () => {
       error: null,
       refresh: jest.fn(),
     });
+  });
+
+  /**
+   * 🔴 The failure this closes. `useApi` keeps the previous `data` when a refresh fails,
+   * and this screen's branch is `article ? <article/> : <error/>` — so a pull that failed
+   * left the old article on screen with nothing to say it was out of date, and the pull
+   * gesture simply snapped back. A member on a train came out of a tunnel, pulled, and was
+   * told nothing at all.
+   */
+  it('says so when a refresh fails and the article on screen is now out of date', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({
+      data: {
+        id: 7,
+        title: 'Using time credits',
+        content: '<p>Time credits are exchanged hour for hour.</p>',
+        category_name: 'Basics',
+        views_count: 12,
+        helpful_yes: 3,
+        helpful_no: 1,
+      },
+      isLoading: false,
+      error: 'Network error. Please check your connection.',
+      errorStatus: null,
+      refresh,
+    });
+
+    const { getByTestId, getByText } = render(<KbArticleScreen />);
+
+    // The article is still there — a failed refresh must never throw content away.
+    expect(getByText('Time credits are exchanged hour for hour.')).toBeTruthy();
+    expect(getByTestId('refresh-failed-notice')).toBeTruthy();
+  });
+
+  it('stays quiet while the article is up to date', () => {
+    const { queryByTestId } = render(<KbArticleScreen />);
+    expect(queryByTestId('refresh-failed-notice')).toBeNull();
   });
 
   it('renders article content and metadata', () => {

@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
@@ -234,6 +235,7 @@ function FederationPartnerScreen() {
   const {
     data,
     isLoading,
+    error,
     refresh,
   } = useApi(
     () => loadPartner(partnerId ?? ''),
@@ -276,7 +278,8 @@ function FederationPartnerScreen() {
           rightAction={partner ? { accessibilityLabel: t('detail.share'), icon: 'share-outline', onPress: handleShare } : undefined}
         />
 
-        {isLoading ? (
+        {partner ? <View className="px-4 pt-3"><RefreshFailedNotice error={error} onRetry={refresh} /></View> : null}
+        {isLoading && !partner ? (
           <View className="flex-1 items-center justify-center">
             <Spinner size="lg" />
           </View>

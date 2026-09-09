@@ -4,13 +4,14 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import ActionSheet from '@/components/ui/ActionSheet';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -69,7 +70,8 @@ function PodcastEpisodeScreen() {
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={episode?.title ?? t('episode.title')} backLabel={t('common:back')} fallbackHref="/(modals)/podcasts" />
         {!episode ? <EmptyState icon="warning-outline" title={state.error ?? t('episode.not_found')} actionLabel={t('episode.retry')} onAction={() => state.refresh()} /> : <>
-          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }}>
+          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={state.isLoading && Boolean(state.data)} onRefresh={state.refresh} tintColor={primary} colors={[primary]} />}>
+            <RefreshFailedNotice error={state.data ? state.error : null} onRetry={state.refresh} />
             <HeroCard className="rounded-panel"><HeroCard.Body className="gap-4 p-5">
               <View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t(`episode.type.${episode.episode_type}`)}</Chip.Label></Chip>{episode.explicit ? <Chip size="sm" variant="secondary"><Chip.Label>{t('episode.explicit')}</Chip.Label></Chip> : null}</View>
               <Text className="text-2xl font-bold" style={{ color: theme.text }}>{episode.title}</Text>

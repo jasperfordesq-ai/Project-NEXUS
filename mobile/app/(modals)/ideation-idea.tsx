@@ -4,13 +4,14 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, router, useLocalSearchParams } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { useAppToast } from '@/components/ui/AppToast';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
@@ -30,12 +31,13 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
-import { useTenant } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function IdeationIdeaScreen() {
   const { t } = useTranslation(['ideation', 'common']);
+  const primary = usePrimaryColor();
   const { id, challengeId: routeChallengeId } = useLocalSearchParams<{ id?: string; challengeId?: string }>();
   const ideaId = Number(id ?? 0);
   const { user } = useAuth();
@@ -188,7 +190,8 @@ function IdeationIdeaScreen() {
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={idea?.title ?? t('ideation:idea_detail.page_title')} backLabel={t('common:back')} fallbackHref={fallback} />
         <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={ideaState.isLoading && Boolean(idea)} onRefresh={() => { ideaState.refresh(); commentsState.refresh(); }} tintColor={primary} colors={[primary]} />}>
+            <RefreshFailedNotice error={idea && !ideaRefused ? (ideaState.error ?? commentsState.error) : null} onRetry={() => { ideaState.refresh(); commentsState.refresh(); }} />
             {!hasFeature('ideation_challenges') ? (
               <EmptyState icon="bulb-outline" title={t('ideation:disabledTitle')} subtitle={t('ideation:disabledSubtitle')} />
             ) : ideaState.isLoading && !idea ? <LoadingSpinner /> : ideaRefused ? (
@@ -203,7 +206,7 @@ function IdeationIdeaScreen() {
                 subtitle={t('common:errors.notAvailableHint')}
                 testID="ideation-idea-refused"
               />
-            ) : ideaState.error || !idea ? (
+            ) : !idea ? (
               <EmptyState icon="warning-outline" title={t('ideation:ideas.load_error')} subtitle={ideaState.error ?? undefined} actionLabel={t('ideation:actions.retry')} onAction={ideaState.refresh} testID="ideation-idea-error" />
             ) : (
               <View className="gap-4">

@@ -262,9 +262,15 @@ describe('SettingsLinkedAccountsRoute', () => {
       refresh: mockRefresh,
     });
 
-    const { queryByLabelText, toJSON } = render(<SettingsLinkedAccountsRoute />);
+    const { queryByLabelText, queryAllByText } = render(<SettingsLinkedAccountsRoute />);
 
-    expect(JSON.stringify(toJSON())).toContain('Prepare; you approve each action');
+    /*
+      Was `JSON.stringify(toJSON())`. Once the screen grew a pull-to-refresh gesture that
+      threw "Converting circular structure to JSON": `refreshControl` holds a React element,
+      and a serialised element carries `_owner` back into the fiber tree. Querying for the
+      text asserts the same thing without walking the whole tree.
+    */
+    expect(queryAllByText(/Prepare; you approve each action/).length).toBeGreaterThan(0);
     const listingsToggle = queryByLabelText('Toggle Manage listings for Prepared Person');
     // Renders ON despite the false boolean — the tier is the truth.
     expect(listingsToggle).toBeNull();

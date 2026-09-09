@@ -5,10 +5,11 @@
 
 import { formatDecimal } from '@/lib/utils/decimal';
 import { useState } from 'react';
-import { FlatList, Image, View } from 'react-native';
+import { FlatList, Image, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -56,6 +57,7 @@ function MarketplaceSellerScreen() {
   const safeId = Number.isFinite(sellerId) && sellerId > 0 ? sellerId : 0;
   const [tab, setTab] = useState<SellerTab>('listings');
   const { isAuthenticated, user } = useAuth();
+  const primary = usePrimaryColor();
   const seller = useApi(() => getMarketplaceSeller(safeId), [safeId], { enabled: safeId > 0 });
   const profile = seller.data?.data ?? null;
   const reviewUserId = profile?.user_id ?? 0;
@@ -97,8 +99,11 @@ function MarketplaceSellerScreen() {
         data={listData}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132 }}
+        refreshControl={<RefreshControl refreshing={seller.isLoading && Boolean(profile)} onRefresh={() => { seller.refresh(); listings.refresh(); reviews.refresh(); }} tintColor={primary} colors={[primary]} />}
         ListHeaderComponent={
-          seller.isLoading ? (
+          <>
+          <RefreshFailedNotice error={profile ? (seller.error ?? listings.error ?? reviews.error) : null} onRetry={() => { seller.refresh(); listings.refresh(); reviews.refresh(); }} />
+          {seller.isLoading && !profile ? (
             <View className="py-8"><LoadingSpinner /></View>
           ) : profile ? (
             <>
@@ -112,7 +117,8 @@ function MarketplaceSellerScreen() {
             </>
           ) : (
             <EmptyState icon="storefront-outline" title={seller.error ?? t('seller.notFound')} subtitle={t('seller.notFoundHint')} />
-          )
+          )}
+          </>
         }
         renderItem={({ item }) => (
           tab === 'listings' ? (

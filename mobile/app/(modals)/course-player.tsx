@@ -23,7 +23,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 
 import LessonContent from '@/components/courses/LessonContent';
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Ionicons } from '@/components/ui/Icon';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -153,7 +154,7 @@ function CoursePlayerScreen() {
           backLabel={t('common:back')}
           fallbackHref="/(modals)/courses"
         />
-        {isLoading ? (
+        {isLoading && !courseState.data ? (
           <View className="flex-1 items-center justify-center"><LoadingSpinner /></View>
         ) : !lesson ? (
           <View className="flex-1 items-center justify-center gap-4 px-6">
@@ -167,7 +168,8 @@ function CoursePlayerScreen() {
             ) : null}
           </View>
         ) : (
-          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }}>
+          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={courseState.isLoading && Boolean(courseState.data)} onRefresh={() => { courseState.refresh(); progressState.refresh(); }} tintColor={primary} colors={[primary]} />}>
+            <RefreshFailedNotice error={courseState.data ? courseState.error : null} onRetry={() => { courseState.refresh(); progressState.refresh(); }} />
             {/*
               🔴 Its own panel, and deliberately NOT folded into the empty state above. When
               the course loaded and only progress failed, `lesson` was truthy so that branch

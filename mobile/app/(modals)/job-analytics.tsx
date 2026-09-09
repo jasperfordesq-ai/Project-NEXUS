@@ -3,10 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { View, Text, ScrollView } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Card as HeroCard, Chip, Surface } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -105,7 +106,10 @@ function JobAnalyticsScreen() {
     );
   }
 
-  if (analyticsApi.error || !analytics) {
+  // `analyticsApi.error || !analytics` until 2026-09-09: a refresh that failed while the
+  // figures were on screen replaced them with an empty state. The notice inside the scroll
+  // view carries the message now.
+  if (!analytics) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('analytics.title')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
@@ -138,7 +142,8 @@ function JobAnalyticsScreen() {
           }}
         />
 
-        <ScrollView contentContainerStyle={{ gap: 16, padding: 16, paddingBottom: 32 }}>
+        <ScrollView contentContainerStyle={{ gap: 16, padding: 16, paddingBottom: 32 }} refreshControl={<RefreshControl refreshing={analyticsApi.isLoading && Boolean(analyticsApi.data)} onRefresh={() => { analyticsApi.refresh(); predictionsApi.refresh(); }} tintColor={primary} colors={[primary]} />}>
+          <RefreshFailedNotice error={analyticsApi.data ? analyticsApi.error : null} onRetry={() => { analyticsApi.refresh(); predictionsApi.refresh(); }} />
           <HeroCard className="overflow-hidden rounded-panel p-0">
             <View className="h-1.5" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="gap-4 p-4">

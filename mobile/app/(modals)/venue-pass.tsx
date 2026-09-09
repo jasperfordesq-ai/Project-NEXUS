@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
@@ -11,6 +11,7 @@ import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -21,11 +22,12 @@ import { getPartnerVenuePass, getPartnerVenueVisits, rotatePartnerVenuePass } fr
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useTenant } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function VenuePassScreen() {
   const { t } = useTranslation(['venues', 'common']);
+  const primary = usePrimaryColor();
   const { hasFeature } = useTenant();
   const { displayName } = useAuth();
   const { show: showToast } = useAppToast();
@@ -54,8 +56,9 @@ function VenuePassScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('pass.title')} backLabel={t('common:back')} fallbackHref="/(modals)/venues" />
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-          {!hasFeature('partner_venues') ? <EmptyState icon="warning-outline" title={t('verify.unavailable')} /> : pass.isLoading ? <LoadingSpinner /> : pass.error || !pass.data ? (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={pass.isLoading && Boolean(pass.data)} onRefresh={() => { pass.refresh(); visits.refresh(); }} tintColor={primary} colors={[primary]} />}>
+          <RefreshFailedNotice error={pass.data ? pass.error : null} onRetry={() => { pass.refresh(); visits.refresh(); }} />
+          {!hasFeature('partner_venues') ? <EmptyState icon="warning-outline" title={t('verify.unavailable')} /> : pass.isLoading && !pass.data ? <LoadingSpinner /> : !pass.data ? (
             <EmptyState icon="warning-outline" title={pass.error ?? t('pass.unavailable')} actionLabel={t('common:buttons.retry')} onAction={pass.refresh} />
           ) : (
             <View className="gap-4">

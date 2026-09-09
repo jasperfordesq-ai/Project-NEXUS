@@ -73,6 +73,8 @@
     "generic": "Qualcosa è andato storto. Riprova.",
     "loadFailedTitle": "Caricamento non riuscito",
     "loadFailedSubtitle": "Si è verificato un problema durante il caricamento. Riprova.",
+    "refreshFailedTitle": "Impossibile aggiornare",
+    "refreshFailedSubtitle": "Stai ancora vedendo ciò che è stato caricato prima.",
     "network": "Errore di rete. Controlla la connessione.",
     "timeout": "La richiesta è scaduta. Controlla la connessione.",
     "requestFailedWithStatus": "La richiesta non è riuscita con stato {{status}}",

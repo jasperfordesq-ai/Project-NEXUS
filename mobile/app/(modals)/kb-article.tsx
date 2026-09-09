@@ -3,15 +3,17 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Card as HeroCard, Chip } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { getKbArticle } from '@/lib/api/resources';
 import { useApi } from '@/lib/hooks/useApi';
+import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
@@ -21,6 +23,7 @@ import { withRouteGate } from '@/components/withRouteGate';
 
 function KbArticleScreen() {
   const { t } = useTranslation(['resources', 'common']);
+  const primary = usePrimaryColor();
   const params = useLocalSearchParams<{ id?: string }>();
   const id = Number(params.id ?? 0);
   const theme = useTheme();
@@ -39,8 +42,10 @@ function KbArticleScreen() {
         <ScrollView
           style={{ flex: 1, backgroundColor: theme.bg }}
           contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 40 }}
+          refreshControl={<RefreshControl refreshing={isLoading && Boolean(article)} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
         >
-          {isLoading ? (
+          <RefreshFailedNotice error={article && !refused ? error : null} onRetry={refresh} />
+          {isLoading && !article ? (
             <View className="items-center justify-center py-14">
               <LoadingSpinner />
             </View>
@@ -51,7 +56,10 @@ function KbArticleScreen() {
               subtitle={t('common:errors.notAvailableHint')}
               testID="kb-article-refused"
             />
-          ) : error || !article ? (
+          ) : !article ? (
+            /* `error || !article` until 2026-09-09: a refresh that failed while the article
+               was on screen replaced it with this empty state. The notice above carries the
+               message now, and the article stays where the member was reading it. */
             <EmptyState
               icon={error ? 'warning-outline' : 'book-outline'}
               title={error ? t('resources:errorTitle') : t('resources:emptyTitle')}

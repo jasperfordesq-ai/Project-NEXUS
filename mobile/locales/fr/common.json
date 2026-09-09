@@ -73,6 +73,8 @@
     "generic": "Une erreur s'est produite. Veuillez réessayer.",
     "loadFailedTitle": "Chargement impossible",
     "loadFailedSubtitle": "Une erreur s'est produite lors du chargement. Veuillez réessayer.",
+    "refreshFailedTitle": "Actualisation impossible",
+    "refreshFailedSubtitle": "Vous voyez toujours ce qui a été chargé précédemment.",
     "network": "Erreur réseau. Vérifiez votre connexion.",
     "timeout": "La requête a expiré. Vérifiez votre connexion.",
     "requestFailedWithStatus": "La requête a échoué avec le statut {{status}}",

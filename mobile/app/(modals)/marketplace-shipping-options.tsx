@@ -4,9 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import AccentIcon from '@/components/ui/AccentIcon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useState } from 'react';
-import { FlatList, ScrollView, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -231,8 +232,10 @@ function MarketplaceShippingOptionsScreen() {
         data={data}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 132 }}
+        refreshControl={<RefreshControl refreshing={options.isLoading && Boolean(options.data)} onRefresh={options.refresh} tintColor={primary} colors={[primary]} />}
         ListHeaderComponent={
           <View>
+            <RefreshFailedNotice error={options.data ? options.error : null} onRetry={options.refresh} />
             <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
               <View className="h-1.5" style={{ backgroundColor: primary }} />
               <HeroCard.Body className="gap-4 p-4">

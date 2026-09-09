@@ -4,13 +4,14 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
@@ -79,13 +80,14 @@ function CourseDetailScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={course?.title ?? t('title')} backLabel={t('common:back')} fallbackHref="/(modals)/courses" />
-        {isLoading ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : error || !course ? (
+        {isLoading && !course ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : !course ? (
           <View className="flex-1 items-center justify-center gap-4 px-6">
             <Text style={{ color: theme.textSecondary }}>{error ?? t('detail.not_available')}</Text>
             <HeroButton onPress={() => refresh()}><HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label></HeroButton>
           </View>
         ) : (
-          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }}>
+          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 44 }} refreshControl={<RefreshControl refreshing={isLoading && Boolean(course)} onRefresh={refresh} tintColor={primary} colors={[primary]} />}>
+            <RefreshFailedNotice error={course ? error : null} onRetry={refresh} />
             <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
               <View className="h-1" style={{ backgroundColor: primary }} />
               <HeroCard.Body className="gap-3 p-5">

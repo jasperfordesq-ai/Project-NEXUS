@@ -4,19 +4,21 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { getEvent } from '@/lib/api/events';
 import { useApi } from '@/lib/hooks/useApi';
+import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -46,6 +48,7 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
 
 function EventManageScreen() {
   const { t } = useTranslation(['events', 'common', 'event_templates', 'event_tickets', 'event_communications', 'event_recurrence_blueprints']);
+  const primary = usePrimaryColor();
   const { id, section } = useLocalSearchParams<{ id?: string; section?: string }>();
   const eventId = Number(id ?? 0);
   const theme = useTheme();
@@ -80,8 +83,9 @@ function EventManageScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={event ? t('manage.page_title', { title: event.title }) : t('manage.page_title_fallback')} backLabel={t('common:back')} fallbackHref={eventId > 0 ? ({ pathname: '/(modals)/event-detail', params: { id: String(eventId) } } as unknown as Href) : '/(tabs)/events'} />
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-          {eventState.isLoading ? <LoadingSpinner /> : eventState.error || !event ? (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={eventState.isLoading && Boolean(eventState.data)} onRefresh={eventState.refresh} tintColor={primary} colors={[primary]} />}>
+          <RefreshFailedNotice error={eventState.data ? eventState.error : null} onRetry={eventState.refresh} />
+          {eventState.isLoading && !event ? <LoadingSpinner /> : !event ? (
             <EmptyState icon="warning-outline" title={t('manage.load_error_title')} subtitle={eventState.error ?? t('manage.load_error_desc')} actionLabel={t('manage.try_again')} onAction={eventState.refresh} />
           ) : operations.length === 0 ? (
             <EmptyState icon="lock-closed-outline" title={t('manage.access_denied_title')} subtitle={t('manage.access_denied_desc')} />

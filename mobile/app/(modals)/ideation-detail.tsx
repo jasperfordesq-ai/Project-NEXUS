@@ -4,10 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -154,12 +155,14 @@ function IdeationDetailScreen() {
           style={{ flex: 1, backgroundColor: theme.bg }}
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40, backgroundColor: theme.bg }}
           keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={(challengeState.isLoading || ideasState.isLoading) && Boolean(challenge)} onRefresh={() => { challengeState.refresh(); ideasState.refresh(); }} tintColor={primary} colors={[primary]} />}
         >
+          <RefreshFailedNotice error={challenge ? (challengeState.error ?? ideasState.error) : null} onRetry={() => { challengeState.refresh(); ideasState.refresh(); }} />
           {loading ? (
             <View className="items-center justify-center py-14">
               <LoadingSpinner />
             </View>
-          ) : error || !challenge ? (
+          ) : !challenge ? (
             <View className="px-4 py-8">
               <EmptyState
                 icon={error ? 'warning-outline' : 'bulb-outline'}

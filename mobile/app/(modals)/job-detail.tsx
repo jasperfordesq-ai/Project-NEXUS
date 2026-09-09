@@ -4,14 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import ErrorState from '@/components/ui/ErrorState';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Share,
-} from 'react-native';
+import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
@@ -301,7 +297,8 @@ function JobDetailScreen() {
         }}
       />
 
-      <ScrollView style={{ flex: 1, backgroundColor: theme.bg }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 132 + bottomInset }}>
+      <ScrollView style={{ flex: 1, backgroundColor: theme.bg }} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 132 + bottomInset }} refreshControl={<RefreshControl refreshing={isLoading && Boolean(job)} onRefresh={refreshJob} tintColor={primary} colors={[primary]} />}>
+        <RefreshFailedNotice error={job ? jobError : null} onRetry={refreshJob} />
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: isClosed ? theme.textMuted : typeColor[job.type] }} />
           <HeroCard.Body className="gap-4 p-4">
