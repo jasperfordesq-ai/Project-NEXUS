@@ -90,7 +90,7 @@ function NewGroupScreen() {
   tRef.current = t;
   const fallbackHref = isEditing
     ? ({ pathname: '/(modals)/group-detail', params: { id: String(groupId) } } as unknown as Href)
-    : '/(tabs)/groups';
+    : '/(modals)/groups';
 
   useEffect(() => {
     if (!isEditing || hasHydratedEdit || attemptedEditRetryRef.current === editRetryToken) return;
