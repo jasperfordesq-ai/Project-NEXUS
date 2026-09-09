@@ -38,6 +38,7 @@ import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { scrubSentryBreadcrumb, scrubSentryEvent } from '@/lib/observability/sentryScrubbing';
 import { configureNativeTheme } from '@/lib/theme/nativeTheme';
+import { holdSplash, releaseSplash } from '@/lib/ui/splash';
 import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
 import * as Sentry from '@sentry/react-native';
 
@@ -70,6 +71,16 @@ function useNavigationTheme(): { navTheme: Theme; scheme: 'light' | 'dark' } {
 // Validate environment variables at startup — logs warnings for missing config
 validateEnv();
 configureNativeTheme();
+
+/*
+  🔴 Must run at module scope, before React renders anything. Without it the native splash
+  hides as soon as the first component mounts — and the first component is app/index.tsx, a
+  bare spinner — so a cold start showed the branded splash, then a blank spinner, then the
+  real screen. `RootNavigator` releases it once there is something worth looking at; the
+  hold expires on its own after five seconds so a provider that throws or a session check
+  that never settles cannot strand a member on a splash screen. See lib/ui/splash.ts.
+*/
+holdSplash();
 
 /*
   🔴 A LogBox banner is not only noise: it sits over the BOTTOM of the screen, on top of the
@@ -405,6 +416,20 @@ function RootNavigator() {
   // Auth redirect — check for a pending deep link BEFORE defaulting to home.
   // This prevents the race condition where router.replace('/(tabs)/home')
   // fires before the deep link effect has a chance to navigate.
+  /*
+    🔴 Let the splash go only once there is a real screen behind it — not merely once the
+    loading flags clear. `app/index.tsx` is a bare spinner, and the redirect away from it
+    happens in the effect below, one render later. Releasing on the flags alone would put
+    that spinner on screen for a frame, which is the flash this whole change removes.
+    `pathname !== '/'` is the signal that the redirect has landed. If it somehow never
+    does, the five-second backstop in lib/ui/splash.ts dismisses the splash anyway.
+  */
+  useEffect(() => {
+    if (!isLoading && !isTenantLoading && pathname !== '/') {
+      void releaseSplash();
+    }
+  }, [isLoading, isTenantLoading, pathname]);
+
   useEffect(() => {
     const decision = decideAuthRedirect({
       isLoading: isLoading || isTenantLoading,

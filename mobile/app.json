@@ -20,11 +20,6 @@
       "it": "./native-locales/it.json",
       "pt": "./native-locales/pt.json"
     },
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#006FEE"
-    },
     "ios": {
       "bundleIdentifier": "ie.project.nexus",
       "buildNumber": "3",
@@ -291,6 +286,18 @@
           "organization": "hour-timebank-clg",
           "project": "nexus-mobile",
           "url": "https://de.sentry.io/"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#006FEE",
+          "image": "./assets/splash.png",
+          "resizeMode": "cover",
+          "enableFullScreenImage_legacy": true,
+          "dark": {
+            "backgroundColor": "#0A0A0F"
+          }
         }
       ],
       "./plugins/with-android-network-security",

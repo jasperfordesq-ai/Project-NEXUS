@@ -8,6 +8,7 @@ import { Text, View } from 'react-native';
 import { t as translate } from 'i18next';
 import Button from '@/components/ui/Button';
 import { reportException } from '@/lib/observability/report';
+import { releaseSplash } from '@/lib/ui/splash';
 import { themeStore } from '@/lib/theme/themeStore';
 import { DARK, LIGHT } from '@/lib/hooks/useTheme';
 
@@ -82,6 +83,15 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    /*
+      🔴 The splash is held open at module scope and released by RootNavigator, which sits
+      BELOW this boundary. A crash on the way up means that release never runs, and the
+      member would be left looking at a splash screen with this fallback hidden behind it.
+      lib/ui/splash.ts has a five-second backstop for what nothing can catch; this is the
+      case something can.
+    */
+    void releaseSplash();
+
     // 🔴 "Always report to Sentry so errors are tracked in all environments" is what
     // this used to say and do. It was not true of any environment that mattered:
     // Sentry has no DSN in ANY of the six build profiles, so a crash on a member's

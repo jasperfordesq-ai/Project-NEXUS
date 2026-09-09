@@ -132,7 +132,7 @@ export default function PushPermissionCard() {
         <View className="min-w-0 flex-1 gap-1">
           <Text
             accessibilityRole="header"
-            className="text-base font-bold leading-5"
+            className="text-base font-bold"
             style={{ color: theme.text }}
             maxFontSizeMultiplier={1.6}
           >

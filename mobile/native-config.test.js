@@ -232,7 +232,10 @@ describe('native app configuration', () => {
     expect(app.plugins).toEqual(expect.arrayContaining(['expo-font']));
     expect(app.assetBundlePatterns).toEqual(expect.arrayContaining(['assets/**/*']));
     expect(app.icon).toBe('./assets/icon.png');
-    expect(app.splash.image).toBe('./assets/splash.png');
+    // The splash image moved from the legacy top-level `splash` key to the
+    // expo-splash-screen plugin, which supersedes it. Same file, one source of truth.
+    const splashPlugin = app.plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === 'expo-splash-screen');
+    expect(splashPlugin[1].image).toBe('./assets/splash.png');
     expect(app.android.adaptiveIcon.foregroundImage).toBe('./assets/adaptive-icon.png');
   });
 
@@ -246,14 +249,52 @@ describe('native app configuration', () => {
 
   it('configures a branded splash while React is booting', () => {
     const app = readJson('app.json').expo;
+    const splashPlugin = app.plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === 'expo-splash-screen');
+    const splash = splashPlugin?.[1];
 
-    expect(app.splash).toEqual(expect.objectContaining({
+    /*
+      🔴 Configured through the plugin, not the legacy top-level `splash` key. The plugin
+      supersedes that key when both are present, so leaving it behind would have been a
+      second, dead source of truth. The key is gone; this asserts the plugin took it over.
+
+      `cover` rather than `contain`: the artwork is a full-bleed painted 1284x2778 image, and
+      `contain` letterboxed it with hard bands on any other aspect ratio. `dark` gives the
+      surrounding fill the dark theme's background instead of bright blue. Audit 2026-09-09,
+      item 7 — a genuinely dark splash IMAGE still needs artwork and is an owner decision.
+    */
+    expect(app.splash).toBeUndefined();
+    expect(splash).toEqual(expect.objectContaining({
       image: './assets/splash.png',
-      resizeMode: 'contain',
+      resizeMode: 'cover',
       backgroundColor: '#006FEE',
+      enableFullScreenImage_legacy: true,
     }));
+    expect(splash.dark?.backgroundColor).toBe('#0A0A0F');
     expect(app.android.adaptiveIcon.backgroundColor).toBe('#006FEE');
-    expect(fs.existsSync(path.join(root, app.splash.image))).toBe(true);
+    expect(fs.existsSync(path.join(root, splash.image))).toBe(true);
+  });
+
+  it('holds the splash until a real screen is ready, and can never strand a member on it', () => {
+    /*
+      🔴 Without `expo-splash-screen` the native splash hid as soon as React rendered — and
+      the first thing React renders is app/index.tsx, a bare spinner. A cold start was three
+      screens: splash, blank spinner, real screen.
+      The backstop matters as much as the hold: the release lives inside the provider tree,
+      so a provider that throws would otherwise leave the splash up for ever.
+    */
+    const pkg = readJson('package.json');
+    expect(pkg.dependencies['expo-splash-screen']).toBeTruthy();
+
+    const layout = read('app/_layout.tsx');
+    expect(layout).toContain('holdSplash()');
+    expect(layout).toMatch(/pathname !== '\/'[\s\S]{0,80}releaseSplash\(\)/);
+
+    // Released from the crash boundary too, which sits above the navigator.
+    expect(read('components/ErrorBoundary.tsx')).toContain('releaseSplash()');
+
+    const splashModule = read('lib/ui/splash.ts');
+    expect(splashModule).toContain('SPLASH_MAX_HOLD_MS');
+    expect(splashModule).toContain('preventAutoHideAsync');
   });
 
   it('keeps the Android notification icon in Expo-compatible dimensions', () => {
