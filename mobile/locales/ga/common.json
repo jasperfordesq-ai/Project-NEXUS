@@ -172,5 +172,10 @@
     "subtitle": "Tá do chuntas ar an ngléas seo fós, ach níorbh fhéidir linn an freastalaí a bhaint amach. Seiceáil do cheangal agus bain triail eile as.",
     "retry": "Bain triail eile as",
     "signOut": "Sínigh amach ina ionad sin"
+  },
+  "unsavedChanges": {
+    "title": "Fág gan sábháil?",
+    "message": "Níor sábháladh na hathruithe a rinne tú ar an scáileán seo go fóill.",
+    "discard": "Fág"
   }
 }

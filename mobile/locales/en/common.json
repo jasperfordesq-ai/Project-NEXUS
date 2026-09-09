@@ -169,5 +169,10 @@
     "subtitle": "Your account is still on this device, but we could not reach the server. Check your connection and try again.",
     "retry": "Try again",
     "signOut": "Sign out instead"
+  },
+  "unsavedChanges": {
+    "title": "Leave without saving?",
+    "message": "Your changes on this screen have not been saved yet.",
+    "discard": "Leave"
   }
 }

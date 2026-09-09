@@ -169,5 +169,10 @@
     "subtitle": "A sua conta continua neste dispositivo, mas não conseguimos contactar o servidor. Verifique a ligação e tente novamente.",
     "retry": "Tentar novamente",
     "signOut": "Terminar sessão em vez disso"
+  },
+  "unsavedChanges": {
+    "title": "Sair sem guardar?",
+    "message": "As suas alterações neste ecrã ainda não foram guardadas.",
+    "discard": "Sair"
   }
 }

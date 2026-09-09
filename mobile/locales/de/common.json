@@ -169,5 +169,10 @@
     "subtitle": "Dein Konto ist weiterhin auf diesem Gerät, aber wir konnten den Server nicht erreichen. Prüfe deine Verbindung und versuche es erneut.",
     "retry": "Erneut versuchen",
     "signOut": "Stattdessen abmelden"
+  },
+  "unsavedChanges": {
+    "title": "Ohne Speichern verlassen?",
+    "message": "Deine Änderungen auf diesem Bildschirm wurden noch nicht gespeichert.",
+    "discard": "Verlassen"
   }
 }

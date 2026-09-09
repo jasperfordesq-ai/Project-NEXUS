@@ -169,5 +169,10 @@
     "subtitle": "Votre compte est toujours sur cet appareil, mais nous n'avons pas pu joindre le serveur. Vérifiez votre connexion et réessayez.",
     "retry": "Réessayer",
     "signOut": "Se déconnecter à la place"
+  },
+  "unsavedChanges": {
+    "title": "Quitter sans enregistrer ?",
+    "message": "Vos modifications sur cet écran n’ont pas encore été enregistrées.",
+    "discard": "Quitter"
   }
 }

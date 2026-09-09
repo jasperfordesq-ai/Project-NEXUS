@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useAppToast } from '@/components/ui/AppToast';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -33,6 +34,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -71,6 +73,7 @@ function MarketplaceMerchantOnboardingScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const [step, setStep] = useState<Step>(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,6 +91,34 @@ function MarketplaceMerchantOnboardingScreen() {
   const [openingHours, setOpeningHours] = useState<Record<DayKey, DayHours | null>>(() => defaultOpeningHours());
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? '');
   const [coverImageUrl, setCoverImageUrl] = useState('');
+
+  /*
+    🔴 A four-step seller form — business name, bio, registration number, full address,
+    opening hours — with nothing between a stray Back gesture and losing all of it. Every
+    other multi-field form in the app already guards; this one and the mandatory onboarding
+    wizard were the two that did not, and only this one can actually be left (the auth
+    redirect bounces a member straight back to onboarding). Audit 2026-09-09, item 16.
+
+    Compared against what was LOADED rather than against empty, so a seller returning to
+    edit an existing profile is not told they have unsaved changes the moment it hydrates.
+  */
+  const formFingerprint = JSON.stringify([
+    sellerType, businessName, display, bio, registration, street, city, postalCode, country, openingHours,
+  ]);
+  const baselineRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isLoading && baselineRef.current === null) baselineRef.current = formFingerprint;
+  }, [formFingerprint, isLoading]);
+  useUnsavedChangesGuard({
+    isDirty: baselineRef.current !== null && formFingerprint !== baselineRef.current,
+    isSaving,
+    hasSaved: completed,
+    confirm,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -385,6 +416,7 @@ function MarketplaceMerchantOnboardingScreen() {
           </HeroCard>
         )}
       </ScrollView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

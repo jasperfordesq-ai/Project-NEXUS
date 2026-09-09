@@ -169,5 +169,10 @@
     "subtitle": "Il tuo account è ancora su questo dispositivo, ma non siamo riusciti a raggiungere il server. Controlla la connessione e riprova.",
     "retry": "Riprova",
     "signOut": "Esci invece"
+  },
+  "unsavedChanges": {
+    "title": "Uscire senza salvare?",
+    "message": "Le modifiche su questa schermata non sono ancora state salvate.",
+    "discard": "Esci"
   }
 }

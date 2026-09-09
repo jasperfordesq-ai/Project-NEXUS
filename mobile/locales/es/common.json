@@ -169,5 +169,10 @@
     "subtitle": "Tu cuenta sigue en este dispositivo, pero no pudimos conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
     "retry": "Inténtalo de nuevo",
     "signOut": "Cerrar sesión en su lugar"
+  },
+  "unsavedChanges": {
+    "title": "¿Salir sin guardar?",
+    "message": "Los cambios de esta pantalla todavía no se han guardado.",
+    "discard": "Salir"
   }
 }
