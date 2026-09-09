@@ -27,6 +27,7 @@
     "check:version": "node scripts/check-version-consistency.mjs",
     "check:semver": "node scripts/check-semver-policy.mjs",
     "test:semver-gate": "node scripts/test/test-semver-policy-gate.mjs",
+    "test:release-manifest": "node scripts/test/test-release-manifest-rewrite.mjs",
     "release": "node scripts/release.mjs",
     "check:doc-scores": "node scripts/check-doc-scores.mjs",
     "check:e2e-assertions": "node scripts/check-e2e-assertion-quality.mjs",

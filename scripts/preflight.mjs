@@ -196,6 +196,9 @@ if (areas.docsMeta.length) {
   // policy was violated — that must not read as a pass or as a failure.
   sh('semver policy', 'node scripts/check-semver-policy.mjs', { unavailableExit: 2 });
   sh('semver gate contract tests', 'node scripts/test/test-semver-policy-gate.mjs');
+  // Guards the release tool's manifest rewrite. A blind string replace here cut
+  // v1.8.0 with a corrupted package-lock.json and turned every React job red.
+  sh('release manifest rewrite tests', 'node scripts/test/test-release-manifest-rewrite.mjs');
 } else {
   record('docs hygiene', 'SKIP', 'no docs/meta changes');
 }

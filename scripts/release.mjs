@@ -45,6 +45,8 @@ import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+import { JSON_VERSION_KEYS, setJsonVersion } from './lib/set-json-version.mjs';
+
 let semver;
 try {
   semver = await import('semver');
@@ -296,10 +298,25 @@ const newChangelog = (() => {
 })();
 
 // ----------------------------------------------------------- rewrite versions
+// 🔴 Dependency manifests are rewritten by KEY, never by string replace — a
+// blind replace across react-frontend/package-lock.json cut v1.8.0 and broke
+// main. See scripts/lib/set-json-version.mjs for the full account.
 const edits = [];
 for (const rel of versionFiles) {
   const abs = path.join(root, rel);
   const before = fs.readFileSync(abs, 'utf8');
+
+  if (JSON_VERSION_KEYS[rel]) {
+    let result;
+    try {
+      result = setJsonVersion(before, JSON_VERSION_KEYS[rel], currentVersion, nextVersion);
+    } catch (err) {
+      die(`${rel} is not parseable JSON, so its version cannot be set safely: ${err.message}`, 2);
+    }
+    if (result) edits.push({ rel, abs, after: result.after, occurrences: result.occurrences });
+    continue;
+  }
+
   const occurrences = before.split(currentVersion).length - 1;
   if (occurrences === 0) continue;
   edits.push({ rel, abs, after: before.split(currentVersion).join(nextVersion), occurrences });

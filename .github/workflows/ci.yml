@@ -1165,6 +1165,14 @@ jobs:
       - name: "BLOCKING: Prove the semver gate still catches violations"
         run: npm run test:semver-gate
 
+      # scripts/release.mjs rewrote react-frontend/package-lock.json with a blind
+      # string replace when cutting v1.8.0. The old platform version also
+      # occurred as a dependency's own version, in two dependency ranges and in
+      # 17 Node engine ranges, so `npm ci` died with ETARGET and every React job
+      # on main went red. This proves the rewrite stays surgical.
+      - name: "BLOCKING: Prove the release tool cannot corrupt a manifest"
+        run: npm run test:release-manifest
+
       - name: "BLOCKING: Require changelog for release-relevant changes"
         shell: bash
         run: |
