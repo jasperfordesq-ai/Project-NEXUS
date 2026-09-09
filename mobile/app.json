@@ -178,7 +178,8 @@
         "NSCameraUsageDescription": "Scan a marketplace QR code when you choose to use the scanner.",
         "NSPhotoLibraryUsageDescription": "Choose a photo from your library for your profile or post.",
         "NSMicrophoneUsageDescription": "Record a voice message when you choose to send one.",
-        "CFBundleAllowMixedLocalizations": true
+        "CFBundleAllowMixedLocalizations": true,
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {

@@ -3,8 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
@@ -15,7 +15,7 @@ import ActionSheet from '@/components/ui/ActionSheet';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import PodcastAudioPlayer from '@/components/podcasts/PodcastAudioPlayer';
+import PodcastAudioPlayer, { type PodcastAudioPlayerHandle } from '@/components/podcasts/PodcastAudioPlayer';
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { getPodcastEpisode, reportPodcastEpisode, togglePodcastReaction } from '@/lib/api/podcasts';
@@ -37,6 +37,7 @@ function PodcastEpisodeScreen() {
   const [reacted, setReacted] = useState(false);
   const [savingReaction, setSavingReaction] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const playerRef = useRef<PodcastAudioPlayerHandle>(null);
   const state = useApi(() => getPodcastEpisode(showSlug || '', episodeSlug || ''), [showSlug, episodeSlug], { enabled: Boolean(showSlug && episodeSlug) });
   useEffect(() => { if (state.data) setReacted(Boolean(state.data.viewer_has_reacted)); }, [state.data]);
 
@@ -73,12 +74,12 @@ function PodcastEpisodeScreen() {
               <View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t(`episode.type.${episode.episode_type}`)}</Chip.Label></Chip>{episode.explicit ? <Chip size="sm" variant="secondary"><Chip.Label>{t('episode.explicit')}</Chip.Label></Chip> : null}</View>
               <Text className="text-2xl font-bold" style={{ color: theme.text }}>{episode.title}</Text>
               {episode.summary ? <Text className="leading-6" style={{ color: theme.textSecondary }}>{episode.summary}</Text> : null}
-              <PodcastAudioPlayer episodeId={episode.id} audioUrl={episode.audio_url} durationSeconds={episode.duration_seconds} primaryColor={primary} />
+              <PodcastAudioPlayer ref={playerRef} episodeId={episode.id} audioUrl={episode.audio_url} durationSeconds={episode.duration_seconds} primaryColor={primary} />
               <View className="flex-row flex-wrap gap-3"><HeroButton variant={reacted ? 'secondary' : 'primary'} isDisabled={savingReaction} onPress={() => void react()}><HeroButton.Label>{t(reacted ? 'episode.reacted' : 'episode.react')}</HeroButton.Label></HeroButton><HeroButton variant="secondary" onPress={() => setReportOpen(true)}><HeroButton.Label>{t('episode.report')}</HeroButton.Label></HeroButton></View>
             </HeroCard.Body></HeroCard>
             {episode.description ? <View className="mt-5 gap-2"><Text className="text-lg font-bold" style={{ color: theme.text }}>{t('episode.description')}</Text><Text className="leading-6" style={{ color: theme.textSecondary }}>{episode.description}</Text></View> : null}
             {episode.transcript ? <View className="mt-5 gap-2"><Text className="text-lg font-bold" style={{ color: theme.text }}>{t('episode.transcript')}</Text><Text className="leading-6" style={{ color: theme.text }}>{episode.transcript}</Text></View> : null}
-            {episode.chapters?.length ? <View className="mt-5 gap-2"><Text className="text-lg font-bold" style={{ color: theme.text }}>{t('episode.chapters')}</Text>{episode.chapters.map((chapter) => <Text key={`${chapter.starts_at_seconds}-${chapter.title}`} style={{ color: theme.textSecondary }}>{Math.floor(chapter.starts_at_seconds / 60)}:{String(chapter.starts_at_seconds % 60).padStart(2, '0')} — {chapter.title}</Text>)}</View> : null}
+            {episode.chapters?.length ? <View className="mt-5 gap-2"><Text className="text-lg font-bold" style={{ color: theme.text }}>{t('episode.chapters')}</Text>{episode.chapters.map((chapter) => { const time = `${Math.floor(chapter.starts_at_seconds / 60)}:${String(chapter.starts_at_seconds % 60).padStart(2, '0')}`; return <Pressable key={`${chapter.starts_at_seconds}-${chapter.title}`} accessibilityRole="button" accessibilityLabel={t('player.jump_to_chapter', { time, title: chapter.title })} className="py-2" onPress={() => playerRef.current?.seekToSeconds(chapter.starts_at_seconds)}><Text style={{ color: theme.textSecondary }}>{time} — {chapter.title}</Text></Pressable>; })}</View> : null}
           </ScrollView>
           <ActionSheet visible={reportOpen} onClose={() => setReportOpen(false)} title={t('episode.report_title')} actions={REPORT_REASONS.map((reason) => ({ label: t(`episode.report_reasons.${reason}`), icon: 'flag-outline', onPress: () => void report(reason), destructive: true }))} />
         </>}

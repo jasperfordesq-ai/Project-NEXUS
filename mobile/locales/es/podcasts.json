@@ -90,7 +90,7 @@
     "load_error": "No se pudo cargar el audio de este episodio. Es posible que no esté disponible o que aún se esté procesando.",
     "duration_unknown": "Duración desconocida",
     "progress": "Progreso de la reproducción",
-    "skip_back": "Atrás 15",
+    "skip_back": "Atrás 15 s",
     "skip_forward": "Adelante 30s",
     "speed": "{{rate}}x",
     "jump_to_chapter": "Ir a {{time}} — {{title}}",

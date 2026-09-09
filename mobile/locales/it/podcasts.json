@@ -91,7 +91,7 @@
     "duration_unknown": "Durata sconosciuta",
     "progress": "Avanzamento della riproduzione",
     "skip_back": "Indietro 15 secondi",
-    "skip_forward": "Avanti 30 anni",
+    "skip_forward": "Avanti 30 secondi",
     "speed": "{{rate}}x",
     "jump_to_chapter": "Vai a {{time}} — {{title}}",
     "play": "Riproduci",
