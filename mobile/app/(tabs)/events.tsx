@@ -6,7 +6,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
@@ -30,6 +29,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatEventSchedule } from '@/lib/utils/eventDateTime';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 function extractEventsPage(r: CanonicalEventsResponse) {
   return {
@@ -352,7 +352,7 @@ function EventCard({
       <HeroCard variant="default" className="w-full overflow-hidden">
         <View className="h-1 w-full" style={{ backgroundColor: accent }} />
         {coverImage ? (
-          <Image source={{ uri: coverImage }} style={{ width: '100%', height: 138 }} contentFit="cover" />
+          <RemoteImage uri={coverImage} style={{ width: '100%', height: 138 }} contentFit="cover" fallbackIcon="calendar-outline" />
         ) : null}
         <HeroCard.Body className="gap-3 px-4 py-4">
           <View className="flex-row gap-3">

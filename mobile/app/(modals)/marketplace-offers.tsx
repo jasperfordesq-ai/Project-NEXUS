@@ -5,7 +5,7 @@
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useState } from 'react';
-import { FlatList, Image, View, RefreshControl } from 'react-native';
+import { FlatList, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -41,6 +41,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 type OfferMode = 'sent' | 'received';
 
@@ -305,7 +306,7 @@ function OfferCard({
         <View className="flex-row items-start gap-3">
           <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-panel-inner" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
             {imageUrl ? (
-              <Image source={{ uri: imageUrl }} className="h-full w-full" resizeMode="cover" />
+              <RemoteImage uri={imageUrl} className="h-full w-full" fallbackIcon="pricetag-outline" />
             ) : (
               <Ionicons name="pricetag-outline" size={24} color={primary} />
             )}

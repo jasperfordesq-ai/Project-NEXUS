@@ -5,7 +5,7 @@
 
 import { formatDecimal } from '@/lib/utils/decimal';
 import { useState } from 'react';
-import { FlatList, Image, RefreshControl, View } from 'react-native';
+import { FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -38,6 +38,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 type SellerTab = 'listings' | 'reviews';
 type SellerListItem = MarketplaceListingItem | ReviewItem;
@@ -233,7 +234,7 @@ function SellerHeader({ profile, canMessage }: { profile: MarketplaceSellerProfi
   return (
     <HeroCard className="mb-3 overflow-hidden rounded-panel p-0">
       {coverImageUrl ? (
-        <Image source={{ uri: coverImageUrl }} className="h-32 w-full" resizeMode="cover" accessibilityLabel={t('seller.coverAlt', { name: profile.display_name })} />
+        <RemoteImage uri={coverImageUrl} className="h-32 w-full" fallbackIcon="storefront-outline" accessibilityLabel={t('seller.coverAlt', { name: profile.display_name })} />
       ) : (
         <View className="h-1.5" style={{ backgroundColor: primary }} />
       )}

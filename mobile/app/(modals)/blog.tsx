@@ -7,7 +7,6 @@ import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useState } from 'react';
 import {
   FlatList,
-  Image,
   RefreshControl,
   Text,
   View,
@@ -34,6 +33,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 function extractBlogPage(response: BlogListResponse) {
   return {
@@ -197,7 +197,7 @@ function BlogScreen() {
           style={{ borderWidth: 1, borderColor: index === 0 && !committedSearch ? withAlpha(primary, 0.18) : withAlpha(primary, 0.10) }}
         >
           {coverImage ? (
-            <Image source={{ uri: coverImage }} className="w-full" style={{ height: imageHeight }} resizeMode="cover" />
+            <RemoteImage uri={coverImage} className="w-full" style={{ height: imageHeight }} fallbackIcon="newspaper-outline" />
           ) : (
             <View className="w-full items-center justify-center" style={{ height: imageHeight, backgroundColor: withAlpha(primary, 0.10) }}>
               <Ionicons name="newspaper-outline" size={36} color={primary} />

@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
-import { Image } from 'expo-image';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
@@ -78,6 +77,7 @@ import {
 } from '@/lib/api/eventTemplates';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
 
@@ -522,7 +522,7 @@ function EventDetailScreenInner() {
       >
         <HeroCard variant="default" className="overflow-hidden">
           <View className="h-1 w-full" style={{ backgroundColor: accent }} />
-          {coverImage ? <Image source={{ uri: coverImage }} style={{ width: '100%', height: 180 }} contentFit="cover" /> : null}
+          {coverImage ? <RemoteImage uri={coverImage} style={{ width: '100%', height: 180 }} contentFit="cover" fallbackIcon="calendar-outline" /> : null}
           <HeroCard.Body className="gap-4 px-4 py-4">
             <View className="flex-row flex-wrap gap-2">
               {event.category ? (

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
-import { Image, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -52,6 +52,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -643,7 +644,7 @@ function ListingCard({
               style={{ backgroundColor: withAlpha(typeColor, 0.1), borderWidth: 1, borderColor: withAlpha(typeColor, 0.18) }}
             >
               {listingImage ? (
-                <Image source={{ uri: listingImage }} className="h-full w-full bg-surface" resizeMode="cover" />
+                <RemoteImage uri={listingImage} className="h-full w-full bg-surface" fallbackIcon="pricetag-outline" />
               ) : (
                 <View className="h-full w-full items-center justify-center">
                   <Ionicons name={isOffer ? 'hand-left-outline' : 'search-outline'} size={27} color={typeColor} />
@@ -755,7 +756,7 @@ function ListingDetailView({
         <View className="h-1.5" style={{ backgroundColor: typeColor }} />
         <HeroCard.Body className="gap-4 p-4">
           {resolvedMediaUrl(listing.image_url) ? (
-            <Image source={{ uri: resolvedMediaUrl(listing.image_url)! }} className="h-52 w-full rounded-panel-inner bg-surface" resizeMode="cover" />
+            <RemoteImage uri={resolvedMediaUrl(listing.image_url)} className="h-52 w-full rounded-panel-inner bg-surface" fallbackIcon="pricetag-outline" />
           ) : (
             <Surface
               variant="secondary"
@@ -883,7 +884,7 @@ function GroupCard({
       >
         <View className="absolute bottom-0 left-0 top-0 w-1.5" style={{ backgroundColor: tone }} />
         {resolvedMediaUrl(group.cover_image) ? (
-          <Image source={{ uri: resolvedMediaUrl(group.cover_image)! }} className="h-32 w-full bg-surface" resizeMode="cover" />
+          <RemoteImage uri={resolvedMediaUrl(group.cover_image)} className="h-32 w-full bg-surface" fallbackIcon="people-outline" />
         ) : null}
         <HeroCard.Body className="gap-3 p-4 pl-5">
           <View className="flex-row items-start gap-3">
@@ -948,7 +949,7 @@ function GroupDetailView({
         className="overflow-hidden rounded-panel p-0"
         style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
       >
-        {resolvedMediaUrl(group.cover_image) ? <Image source={{ uri: resolvedMediaUrl(group.cover_image)! }} className="h-44 w-full bg-surface" resizeMode="cover" /> : <View className="h-1.5" style={{ backgroundColor: tone }} />}
+        {resolvedMediaUrl(group.cover_image) ? <RemoteImage uri={resolvedMediaUrl(group.cover_image)} className="h-44 w-full bg-surface" fallbackIcon="people-outline" /> : <View className="h-1.5" style={{ backgroundColor: tone }} />}
         <HeroCard.Body className="gap-4 p-4">
           <View className="flex-row items-start gap-3">
             <View
@@ -1026,7 +1027,7 @@ function EventCard({
         <View className="absolute bottom-0 left-0 top-0 w-1.5" style={{ backgroundColor: tone }} />
         <HeroCard.Body className="gap-3 p-4 pl-5">
           {resolvedMediaUrl(event.cover_image) ? (
-            <Image source={{ uri: resolvedMediaUrl(event.cover_image)! }} className="h-36 w-full rounded-panel-inner bg-surface" resizeMode="cover" />
+            <RemoteImage uri={resolvedMediaUrl(event.cover_image)} className="h-36 w-full rounded-panel-inner bg-surface" fallbackIcon="calendar-outline" />
           ) : null}
           <View className="flex-row items-start gap-3">
             <Surface
@@ -1115,7 +1116,7 @@ function EventDetailView({
         className="overflow-hidden rounded-panel p-0"
         style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
       >
-        {resolvedMediaUrl(event.cover_image) ? <Image source={{ uri: resolvedMediaUrl(event.cover_image)! }} className="h-52 w-full bg-surface" resizeMode="cover" /> : <View className="h-1.5" style={{ backgroundColor: tone }} />}
+        {resolvedMediaUrl(event.cover_image) ? <RemoteImage uri={resolvedMediaUrl(event.cover_image)} className="h-52 w-full bg-surface" fallbackIcon="calendar-outline" /> : <View className="h-1.5" style={{ backgroundColor: tone }} />}
         <HeroCard.Body className="gap-4 p-4">
           <View className="flex-row items-start gap-3">
             <View

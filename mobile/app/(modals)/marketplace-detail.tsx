@@ -6,7 +6,7 @@
 import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
-import { Image, Linking, ScrollView, Share, View } from 'react-native';
+import { Linking, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -60,6 +60,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 function MarketplaceDetailRoute() {
   return (
@@ -662,7 +663,7 @@ function MarketplaceDetailScreen() {
             {activeImageUrl || !videoUrl ? (
               <Surface variant="secondary" className="aspect-[4/3] items-center justify-center overflow-hidden rounded-panel-inner p-0">
                 {activeImageUrl ? (
-                  <Image source={{ uri: activeImageUrl }} className="h-full w-full" resizeMode="cover" />
+                  <RemoteImage uri={activeImageUrl} className="h-full w-full" fallbackIcon="bag-handle-outline" />
                 ) : (
                   <View className="items-center gap-2">
                     <Ionicons name="bag-handle-outline" size={44} color={accent} />
@@ -684,7 +685,7 @@ function MarketplaceDetailScreen() {
                       onPress={() => setActiveImage(index)}
                       accessibilityLabel={t('common:aria.carouselImage', { current: index + 1, total: images.length })}
                     >
-                      {thumb ? <Image source={{ uri: thumb }} className="size-9 rounded-xl" resizeMode="cover" /> : activeImage === index ? <AccentIcon name="image-outline" size={17} /> : <Ionicons name="image-outline" size={17} color={primary} />}
+                      {thumb ? <RemoteImage uri={thumb} className="size-9 rounded-xl" /> : activeImage === index ? <AccentIcon name="image-outline" size={17} /> : <Ionicons name="image-outline" size={17} color={primary} />}
                     </HeroButton>
                   );
                 })}

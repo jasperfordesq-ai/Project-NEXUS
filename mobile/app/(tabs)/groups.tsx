@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { FlatList, Image, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -26,6 +26,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 type FilterValue = 'all' | 'public' | 'private';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -172,7 +173,7 @@ function GroupImage({
 }) {
   const image = groupCover(group);
   if (image) {
-    return <Image source={{ uri: image }} className="size-16 rounded-2xl bg-surface-secondary" resizeMode="cover" />;
+    return <RemoteImage uri={image} className="size-16 rounded-2xl bg-surface-secondary" fallbackIcon="people-outline" />;
   }
 
   return (

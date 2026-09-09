@@ -8,7 +8,6 @@ import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Image,
   RefreshControl,
   ScrollView,
   Share,
@@ -127,6 +126,7 @@ import { isRefusalStatus } from '@/lib/api/refusal';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 const CARD_MIN_HEIGHT = 118;
 
@@ -795,7 +795,7 @@ function GroupDetailScreenInner() {
       >
         <HeroCard className="overflow-hidden rounded-panel p-0">
           {image ? (
-            <Image source={{ uri: image }} className="h-44 w-full bg-surface-secondary" resizeMode="cover" />
+            <RemoteImage uri={image} className="h-44 w-full bg-surface-secondary" fallbackIcon="people-outline" />
           ) : (
             <View className="h-28 items-center justify-center" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
               <Ionicons name="people-outline" size={42} color={primary} />
@@ -1834,7 +1834,7 @@ function GroupMediaPanel({
               <HeroCard key={item.id} className="w-[47%] rounded-panel p-0">
                 <HeroCard.Body className="gap-2 p-3">
                   {item.type === 'image' && sourceUrl ? (
-                    <Image source={{ uri: sourceUrl }} className="h-28 w-full rounded-panel-inner" resizeMode="cover" />
+                    <RemoteImage uri={sourceUrl} className="h-28 w-full rounded-panel-inner" fallbackIcon="image-outline" />
                   ) : (
                     <View className="h-28 w-full items-center justify-center rounded-panel-inner" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
                       <Ionicons name={item.type === 'video' ? 'film-outline' : 'image-outline'} size={28} color={primary} />

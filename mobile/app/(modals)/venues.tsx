@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { FlatList, Image, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
@@ -21,6 +21,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 function VenuesScreen() {
   const { t } = useTranslation(['venues', 'common']);
@@ -67,7 +68,7 @@ function VenueCard({ venue }: { venue: PartnerVenue }) {
     <HeroCard className="mb-3 rounded-panel">
       <HeroCard.Body className="gap-2 p-4">
         <View className="flex-row items-start gap-3">
-          {venue.logo_url ? <Image source={{ uri: venue.logo_url }} className="h-12 w-12 rounded-panel-inner" accessibilityLabel="" /> : <View className="h-12 w-12 rounded-panel-inner bg-default-100" />}
+          {venue.logo_url ? <RemoteImage uri={venue.logo_url} className="h-12 w-12 rounded-panel-inner" fallbackIcon="business-outline" /> : <View className="h-12 w-12 rounded-panel-inner bg-default-100" />}
           <View className="min-w-0 flex-1 gap-1">
             <Text className="text-lg font-bold" style={{ color: theme.text }}>{venue.name}</Text>
             {venue.category ? <Text className="text-xs" style={{ color: theme.textMuted }}>{t(`categories.${venue.category}`, { defaultValue: venue.category })}</Text> : null}

@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { memo } from 'react';
+
 import { formatDecimal } from '@/lib/utils/decimal';
 import { Text, View } from 'react-native';
 import RemoteImage from '@/components/ui/RemoteImage';
@@ -25,7 +27,7 @@ interface ExchangeCardProps {
   onToggleSave?: (listingId: number, currentlySaved: boolean) => void;
 }
 
-export default function ExchangeCard({ exchange, onToggleSave }: ExchangeCardProps) {
+function ExchangeCardRow({ exchange, onToggleSave }: ExchangeCardProps) {
   const { t } = useTranslation('exchanges');
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -197,3 +199,18 @@ function formatDistance(distanceKm: number, t: ReturnType<typeof useTranslation>
 
   return t('distanceKilometers', { distance: formatDecimal(distanceKm, 1) });
 }
+
+/*
+  🔴 Memoised because this renders once per row in a long list, and the screens holding
+  those lists re-render on every filter change, refresh and pagination. Only `FeedItem` was
+  memoised; the cards below it were not, so scrolling re-rendered every visible row on each
+  parent update. Audit 2026-09-09, item 13.
+
+  A shallow comparison is not enough on its own: the list screens pass inline callbacks,
+  which are a new function identity every render, so the comparator ignores them and
+  compares the fields the card actually draws. That is safe here only because those
+  callbacks close over the row's own id and cannot go stale in a way the member can see.
+*/
+const ExchangeCard = memo(ExchangeCardRow, (prev, next) => prev.exchange === next.exchange);
+
+export default ExchangeCard;

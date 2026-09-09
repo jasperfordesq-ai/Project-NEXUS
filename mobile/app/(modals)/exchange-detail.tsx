@@ -15,7 +15,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useLocalSearchParams, router, useFocusEffect, type Href } from 'expo-router';
-import { Image } from 'expo-image';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
@@ -57,6 +56,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 interface DetailStateProps {
   title: string;
@@ -473,7 +473,7 @@ function ExchangeDetailModalInner() {
           <View className="h-1 w-full" style={{ backgroundColor: accent }} />
           {activeImage ? (
             <View className="gap-2">
-              <Image source={{ uri: activeImage.url }} style={{ width: '100%', height: 180 }} contentFit="cover" accessibilityLabel={activeImage.altText ?? listing.title} />
+              <RemoteImage uri={activeImage.url} style={{ width: '100%', height: 180 }} contentFit="cover" accessibilityLabel={activeImage.altText ?? listing.title} />
               {listingImages.length > 1 ? (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 12, paddingBottom: 10 }}>
                   {listingImages.map((image, index) => {
@@ -489,7 +489,7 @@ function ExchangeDetailModalInner() {
                         className={`h-[62px] w-[62px] overflow-hidden rounded-2xl border p-0 ${isActive ? 'border-primary' : 'border-border'}`}
                         accessibilityState={{ selected: isActive }}
                       >
-                        <Image source={{ uri: image.url }} style={{ width: 58, height: 58 }} contentFit="cover" />
+                        <RemoteImage uri={image.url} style={{ width: 58, height: 58 }} contentFit="cover" />
                       </HeroButton>
                     );
                   })}

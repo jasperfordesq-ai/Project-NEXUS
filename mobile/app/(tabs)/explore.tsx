@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useMemo, useState } from 'react';
-import { Image, RefreshControl, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { RefreshControl, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -37,6 +37,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import { formatDecimal } from '@/lib/utils/decimal';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 type ExploreTab = 'all' | 'forYou' | 'listings' | 'people' | 'events' | 'groups';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -319,7 +320,7 @@ function ExploreItemCard({
         <HeroCard.Body className="gap-3 p-4">
           <View className="flex-row items-start gap-3">
             {imageUrl ? (
-              <Image source={{ uri: imageUrl }} className="h-12 w-12 rounded-2xl bg-surface" resizeMode="cover" />
+              <RemoteImage uri={imageUrl} className="h-12 w-12 rounded-2xl bg-surface" fallbackIcon="image-outline" />
             ) : section.key === 'people' || section.key === 'contributors' ? (
               <Avatar uri={(item.avatar as string | null | undefined) ?? null} name={title} size={48} />
             ) : (

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
-import { FlatList, Image, Linking, RefreshControl, ScrollView, View } from 'react-native';
+import { FlatList, Linking, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -52,6 +52,7 @@ import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 type OrderMode = 'purchases' | 'sales';
 type OrderStatusTab = 'all' | 'active' | 'completed' | 'cancelled';
@@ -750,7 +751,7 @@ function OrderCard({
             style={{ backgroundColor: withAlpha(primary, 0.12), borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}
           >
             {imageUrl ? (
-              <Image source={{ uri: imageUrl }} className="h-full w-full" resizeMode="cover" />
+              <RemoteImage uri={imageUrl} className="h-full w-full" fallbackIcon="bag-handle-outline" />
             ) : (
               <Ionicons name="bag-handle-outline" size={28} color={primary} />
             )}

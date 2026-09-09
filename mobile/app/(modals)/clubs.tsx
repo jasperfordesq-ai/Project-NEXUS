@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useState } from 'react';
-import { FlatList, Image, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 export default function ClubsScreen() {
   const { t } = useTranslation(['clubs', 'common']);
@@ -76,7 +77,7 @@ function ClubCard({ club }: { club: Club }) {
     <HeroCard className="mb-3 rounded-panel">
       <HeroCard.Body className="gap-3 p-4">
         <View className="flex-row items-start gap-3">
-          {club.logo_url ? <Image source={{ uri: club.logo_url }} className="h-14 w-14 rounded-panel-inner" accessibilityLabel="" /> : <View className="h-14 w-14 rounded-panel-inner bg-default-100" />}
+          {club.logo_url ? <RemoteImage uri={club.logo_url} className="h-14 w-14 rounded-panel-inner" fallbackIcon="people-circle-outline" /> : <View className="h-14 w-14 rounded-panel-inner bg-default-100" />}
           <View className="min-w-0 flex-1 gap-1">
             <Text className="text-lg font-bold" style={{ color: theme.text }}>{club.name}</Text>
             <Text className="text-xs" style={{ color: theme.textMuted }}>{t('member_count', { count: club.member_count })}</Text>

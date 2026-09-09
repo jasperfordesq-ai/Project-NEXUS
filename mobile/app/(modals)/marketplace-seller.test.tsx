@@ -257,6 +257,12 @@ describe('MarketplaceSellerRoute', () => {
     const cover = getByLabelText('Cover image for Nexus Goods');
 
     expect(mockResolveImageUrl).toHaveBeenCalledWith('/uploads/sellers/cover.jpg');
-    expect(cover.props.source).toEqual({ uri: 'resolved:/uploads/sellers/cover.jpg' });
+    /*
+      The cover now renders through `RemoteImage`, which draws a placeholder when the load
+      fails instead of a blank rectangle. expo-image normalises `source` to an array on the
+      way through, so this matches the entry rather than the object — the claim under test
+      is unchanged: the RESOLVED url is what reaches the image.
+    */
+    expect([].concat(cover.props.source)).toEqual([{ uri: 'resolved:/uploads/sellers/cover.jpg' }]);
   });
 });

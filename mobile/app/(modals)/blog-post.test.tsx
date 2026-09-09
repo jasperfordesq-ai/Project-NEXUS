@@ -177,7 +177,14 @@ describe('BlogPostScreen', () => {
     });
 
     const { getByLabelText } = render(<BlogPostScreen />);
-    expect(getByLabelText('Building Community Through Timebanking').props.source.uri).toBe(
+    /*
+      The cover now renders through `RemoteImage`, which draws a placeholder when the load
+      fails instead of a blank rectangle. The claim is unchanged — the RESOLVED absolute url
+      is what gets loaded — but
+      expo-image normalises `source` to an array on the way through, so this reads the entry.
+    */
+    const source = getByLabelText('Building Community Through Timebanking').props.source as { uri: string } | { uri: string }[];
+    expect((Array.isArray(source) ? source[0] : source).uri).toBe(
       'https://api.project-nexus.ie/uploads/blog/community.jpg',
     );
   });

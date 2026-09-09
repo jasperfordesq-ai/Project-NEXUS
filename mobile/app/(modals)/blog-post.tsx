@@ -7,7 +7,6 @@ import ErrorState from '@/components/ui/ErrorState';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Image,
   RefreshControl,
   ScrollView,
   Share,
@@ -35,6 +34,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import CommentSheet from '@/components/comments/CommentSheet';
 import { withRouteGate } from '@/components/withRouteGate';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 
 function ActionPill({
@@ -213,10 +213,10 @@ function BlogPostScreen() {
         >
           <HeroCard className="mb-4 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}>
             {post.featured_image ? (
-              <Image
-                source={{ uri: resolveImageUrl(post.featured_image) ?? post.featured_image }}
+              <RemoteImage
+                uri={resolveImageUrl(post.featured_image) ?? post.featured_image}
                 className="h-[240px] w-full"
-                resizeMode="cover"
+                fallbackIcon="newspaper-outline"
                 accessibilityLabel={post.title}
               />
             ) : (

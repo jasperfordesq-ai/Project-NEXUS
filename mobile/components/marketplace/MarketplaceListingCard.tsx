@@ -3,7 +3,9 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { Image, View } from 'react-native';
+import { memo } from 'react';
+
+import { View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton, Card as HeroCard, Surface, Text } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -16,6 +18,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
+import RemoteImage from '@/components/ui/RemoteImage';
 
 /**
  * The price a member sees on a card and at the top of a listing.
@@ -46,7 +49,7 @@ export function formatMarketplacePrice(
   return formatMarketplaceCurrency(Number(price), currency || fallbackCurrency);
 }
 
-export default function MarketplaceListingCard({
+function MarketplaceListingCardRow({
   item,
   onPress,
   onSavePress,
@@ -87,7 +90,7 @@ export default function MarketplaceListingCard({
         <View className="flex-row gap-3">
           <Surface variant="secondary" className="h-24 w-24 items-center justify-center overflow-hidden rounded-panel-inner p-0">
             {imageUrl ? (
-              <Image source={{ uri: imageUrl }} className="h-full w-full" resizeMode="cover" />
+              <RemoteImage uri={imageUrl} className="h-full w-full" fallbackIcon="bag-handle-outline" />
             ) : (
               <Ionicons name="bag-handle-outline" size={30} color={accent} />
             )}
@@ -190,3 +193,18 @@ function inventoryChip(item: MarketplaceListingItem): null | {
   }
   return { icon: 'cube-outline', labelKey: 'inventory.count', params: { count: inventory }, tone: '#64748b' };
 }
+
+/*
+  🔴 Memoised because this renders once per row in a long list, and the screens holding
+  those lists re-render on every filter change, refresh and pagination. Only `FeedItem` was
+  memoised; the cards below it were not, so scrolling re-rendered every visible row on each
+  parent update. Audit 2026-09-09, item 13.
+
+  A shallow comparison is not enough on its own: the list screens pass inline callbacks,
+  which are a new function identity every render, so the comparator ignores them and
+  compares the fields the card actually draws. That is safe here only because those
+  callbacks close over the row's own id and cannot go stale in a way the member can see.
+*/
+const MarketplaceListingCard = memo(MarketplaceListingCardRow, (prev, next) => prev.item === next.item);
+
+export default MarketplaceListingCard;
