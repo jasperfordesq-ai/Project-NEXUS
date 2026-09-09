@@ -8,6 +8,7 @@ import { render, screen, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 const mockNavigate = vi.fn();
+const disabledModules = vi.hoisted(() => new Set<string>());
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -34,7 +35,7 @@ vi.mock('@/contexts', () =>
       tenantSlug: 'test',
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasModule: vi.fn((module: string) => !disabledModules.has(module)),
     }),
   }),
 );
@@ -51,6 +52,7 @@ import { CaringPanelHeader } from './CaringPanelHeader';
 describe('CaringPanelHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    disabledModules.clear();
   });
 
   it('renders a header element', () => {
@@ -120,9 +122,16 @@ describe('CaringPanelHeader', () => {
     expect(toggleBtn).not.toBeInTheDocument();
   });
 
-  // NOTE: The user dropdown (My Profile / Sign Out) uses a HeroUI Dropdown that
-  // renders into a portal and requires the trigger to be pressed first.
-  // Testing dropdown item actions is deferred — those items are inside portals
-  // and HeroUI's Dropdown uses floating UI positioning requiring browser layout.
-  // The logout flow is tested at the integration level.
+  it('hides notifications and profile controls when their modules are disabled', async () => {
+    disabledModules.add('notifications');
+    disabledModules.add('profile');
+
+    render(<CaringPanelHeader sidebarCollapsed={false} />);
+
+    expect(screen.queryByRole('button', { name: /notifications/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Alice Member').closest('button')!);
+    expect(screen.queryByText(/my.?profile/i)).not.toBeInTheDocument();
+    expect(await screen.findByText(/sign.?out/i)).toBeInTheDocument();
+  });
+
 });

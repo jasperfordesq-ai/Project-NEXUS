@@ -8,6 +8,7 @@ import { render, screen, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 const mockNavigate = vi.fn();
+const disabledModules = vi.hoisted(() => new Set<string>());
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
   return {
@@ -43,7 +44,7 @@ vi.mock('@/contexts', () =>
       tenant: { id: 2, name: 'hOUR Timebank', slug: 'hour-timebank' },
       tenantPath: (p: string) => `/hour-timebank${p}`,
       hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasModule: vi.fn((module: string) => !disabledModules.has(module)),
     }),
   })
 );
@@ -53,6 +54,7 @@ import { SuperAdminHeader } from './SuperAdminHeader';
 describe('SuperAdminHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    disabledModules.clear();
   });
 
   it('renders the header element', () => {
@@ -113,10 +115,16 @@ describe('SuperAdminHeader', () => {
     expect(screen.queryByRole('button', { name: /toggle.*sidebar/i })).not.toBeInTheDocument();
   });
 
-  // Skipped: verifying dropdown items (My Profile / Sign Out) requires opening
-  // the HeroUI Dropdown which renders into a portal and opening it via
-  // fireEvent.click on the trigger produces a popover that is tricky to query
-  // reliably without real pointer events + portal flushing. The logout / navigate
-  // logic is a two-line switch statement that is sufficiently covered by
-  // component-level inspection of the rendered trigger.
+  it('hides notifications and profile controls when their modules are disabled', async () => {
+    disabledModules.add('notifications');
+    disabledModules.add('profile');
+
+    render(<SuperAdminHeader sidebarCollapsed={false} />);
+
+    expect(screen.queryByRole('button', { name: /notification/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('Jasper Ford').closest('button')!);
+    expect(screen.queryByText(/my.?profile/i)).not.toBeInTheDocument();
+    expect(await screen.findByText(/sign.?out/i)).toBeInTheDocument();
+  });
+
 });

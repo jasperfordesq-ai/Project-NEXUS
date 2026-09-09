@@ -9,6 +9,7 @@ import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
 const mockNavigate = vi.fn();
+const disabledModules = vi.hoisted(() => new Set<string>());
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
   return { ...actual, useNavigate: () => mockNavigate };
@@ -39,7 +40,7 @@ vi.mock('@/contexts', () =>
       tenantSlug: 'hour-timebank',
       tenantPath: (p: string) => `/hour-timebank${p}`,
       hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasModule: vi.fn((module: string) => !disabledModules.has(module)),
     }),
   })
 );
@@ -60,6 +61,7 @@ describe('BrokerHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    disabledModules.clear();
   });
 
   it('renders a <header> element', () => {
@@ -149,5 +151,18 @@ describe('BrokerHeader', () => {
     const profileItem = await screen.findByText(/my.?profile/i);
     await user.click(profileItem);
     expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/profile');
+  });
+
+  it('hides notifications and profile controls when their modules are disabled', async () => {
+    disabledModules.add('notifications');
+    disabledModules.add('profile');
+    const user = userEvent.setup();
+
+    render(<BrokerHeader sidebarCollapsed={false} />);
+
+    expect(screen.queryByRole('button', { name: /notifications/i })).not.toBeInTheDocument();
+    await user.click(screen.getByText('Alice Smith').closest('button')!);
+    expect(screen.queryByText(/my.?profile/i)).not.toBeInTheDocument();
+    expect(await screen.findByText(/sign.?out/i)).toBeInTheDocument();
   });
 });
