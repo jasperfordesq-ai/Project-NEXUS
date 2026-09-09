@@ -405,44 +405,62 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
    `LessonQuiz` cases pressed Submit on a blank quiz and passed for the same reason.
    Assume a green suite proves the behaviour it describes, not that the behaviour is right.
 
-   **Still open:**
-   - Every group-detail tab shows its first page only. (Approving join requests and
-     managing members was closed in the fourth pass above.)
-   - Message attachments upload with no progress and no cancel (`uploadWithProgress`
-     exists and is unused there).
-   - Message attachments still upload with no progress and no cancel.
-   - Registration validation still arrives as one sentence, never on the field it
-     belongs to — the server sends only the first error, so this one needs a server
-     change as well as a client one.
-   - Marketplace remainder: pickup-slot and coupon dates are typed by hand; collections,
-     saved searches and pickup slots delete with no confirmation; the Stripe payments
-     screen shows 0.00 balances when its request failed; an accepted offer never says
-     "pay now".
-   - Volunteering remainder: the apply sheet never mentions the saved CV; six lists stop
-     at twenty rows; registering an organisation lands on a hub that may not show it; an
-     organisation website link can reject unhandled; a failed load in job edit mode leaves
-     a permanently dead form.
-   - Gamification remainder: a member can never endorse anyone and can never send an
-     appreciation (both endpoints exist, neither is called); six more lists stop at their
-     first page; the leaderboard only ever shows the top 20; roughly a dozen more record
-     screens still show a 4xx refusal as a failure with a Retry — `lib/api/refusal.ts`
-     and the sweep in the fourth-pass commit list them; two live searches fire a request per
-     keystroke; knowledge-base search only filters what is already on screen; logged goal
-     progress can only go up; voting on a poll discards every page loaded; four screens
-     have no pull-to-refresh; a member cannot withdraw an idea or delete their own
-     comment; a failed refresh is silent whenever the list already has rows.
-   - Courses and podcasts remainder: the **podcast player has no background audio** (the
-     phone locking stops a 45-minute episode) and **no resume or seek** — the strings for
-     both already exist, unused, in all seven languages; this one needs `app.json`
-     changes and therefore a new store build. The catalogues stop at 20; the player always
-     opens at lesson 1; `expo-av` is deprecated for SDK 54 and removed in SDK 55, so both
-     media players will need porting.
-   - Federation remainder: nothing from the third-pass list. The English-only refusal
-     check and the per-keystroke search were both closed in the fourth pass above.
-   - **Nothing is unread now.** Run one auditor at a time; two concurrent exhausted the
+   **Closed on 2026-09-08/09, after the fourth-pass entry above.** Each has a
+   regression test and a control run proving that test fails against the old code.
+
+   - Message attachments upload with a progress bar and can be cancelled.
+   - The leaderboard goes past the top 20, to the server ceiling of 100.
+   - Goal progress can be corrected downwards, not only added to.
+   - Voting on a poll no longer discards every page loaded.
+   - A member can withdraw their own idea and delete their own comment.
+   - Knowledge-base search asks the server instead of filtering the loaded page.
+   - The course catalogue and the ideation challenge list both page.
+   - Collections, saved searches and pickup slots confirm before deleting.
+   - A member can endorse a skill and send an appreciation (`member-profile.tsx`
+     calls both — this had already been done in the third pass and was listed as
+     open here by mistake).
+
+   **Still open.** Counts marked "sweep" come from heuristic scans in
+   `.local-docs-archive`-style scratch scripts, NOT from reading every file: they
+   over-report and are a starting point, not an inventory.
+
+   - **Lists that still stop at their first page.** Verified unpaged: the podcast
+     catalogue. Partially paged, needs checking tab by tab: group-detail, and the
+     volunteering lists (three paging call sites exist there, the audit named six
+     lists, so some are done and some are not).
+   - **Roughly a dozen record screens still show a 4xx refusal as a failure with a
+     Retry** (sweep: 56 candidates, most of them list screens where route gating
+     already covers it). Nine are done. `lib/api/refusal.ts` is the helper; the
+     record-scoped detail screens are the ones that matter.
+   - **Destructive actions with no confirmation** (sweep: 33 candidates, heavily
+     over-reported — the scan cannot see into `onConfirm` callbacks). The three the
+     audit named are done; the rest are unverified.
+   - **About twenty screens load data but cannot be pulled to refresh**, including
+     course-detail, course-player, the ideation screens, job-detail, job-pipeline,
+     kb-article and the marketplace seller tools. A failed refresh is also silent
+     whenever the list already has rows.
+   - **Registration validation arrives as one sentence**, never on the field it
+     belongs to. 🔴 Needs a SERVER change as well: the API sends only the first error.
+   - **Marketplace remainder:** pickup-slot and coupon dates are typed by hand; the
+     Stripe payments screen shows 0.00 balances when its request failed; an accepted
+     offer never says "pay now".
+   - **Volunteering remainder:** the apply sheet never mentions the saved CV;
+     registering an organisation lands on a hub that may not show it; an organisation
+     website link can reject unhandled; a failed load in job edit mode leaves a
+     permanently dead form.
+   - **Courses and podcasts remainder:** the course player always opens at lesson 1.
+   - 🔴 **The podcast player has no background audio** — the phone locking stops a
+     45-minute episode — **and no resume or seek.** The strings for both already
+     exist, unused, in all seven languages. Needs `app.json` changes and therefore a
+     NEW STORE BUILD, which is why it is still here.
+   - 🔴 **`expo-av` is deprecated for SDK 54 and removed in SDK 55**, so both media
+     players need porting before the SDK moves.
+   - **Nothing is unread.** Run one auditor at a time; two concurrent exhausted the
      session limit.
-   - 🔴 **Nothing from any of the four passes has been walked on a device.** That has not
-     changed and is the reason the readiness score has not moved.
+   - 🔴 **Nothing in any pass has been walked on a device.** Unchanged, and the reason
+     the readiness score has not moved. Everything above is verified by tests and CI
+     only — including things like an upload progress bar, which can look correct in a
+     test and wrong in the hand.
 
 ## The blockers, in the order they hurt
 
