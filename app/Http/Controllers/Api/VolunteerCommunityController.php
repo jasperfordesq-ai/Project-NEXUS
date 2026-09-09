@@ -199,8 +199,29 @@ class VolunteerCommunityController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_swaps_list', 60, 60);
         $direction = $this->query('direction') ?? 'all';
-        $requests = $this->shiftSwapService->getSwapRequests($userId, $direction);
-        return $this->respondWithData($requests);
+
+        $filters = [];
+        $limit = $this->inputInt('limit') ?: $this->inputInt('per_page');
+        if ($limit) {
+            $filters['limit'] = $limit;
+        }
+        $cursor = $this->query('cursor');
+        if (is_string($cursor) && $cursor !== '') {
+            $filters['cursor'] = $cursor;
+        }
+
+        $pagination = null;
+        $requests = $this->shiftSwapService->getSwapRequests($userId, $direction, $filters, $pagination);
+
+        // respondWithCollection keeps `data` a flat array — which is what the
+        // native app's VolunteerShiftSwapsResponse already expects — and puts
+        // the cursor in `meta`, so adding paging breaks no existing caller.
+        return $this->respondWithCollection(
+            $requests,
+            $pagination['cursor'] ?? null,
+            $filters['limit'] ?? 20,
+            $pagination['has_more'] ?? false,
+        );
     }
 
     public function respondToSwap($id): JsonResponse

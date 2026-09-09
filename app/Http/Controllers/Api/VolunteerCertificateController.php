@@ -57,7 +57,25 @@ class VolunteerCertificateController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_certificates_list', 30, 60);
 
-        $certs = $this->volunteerCertificateService->getUserCertificates($userId);
+        // 🔴 The cursor the service returns was never read back, so this
+        // endpoint could only ever serve page one. The service has always
+        // paginated (limit + `id <` cursor) and always returned a cursor;
+        // calling it with no filters simply threw the caller's page request
+        // away, which is why the native app has no "Load more" here.
+        // `per_page` is accepted as an alias because the app already sends it.
+        $filters = [];
+        $limit = $this->inputInt('limit') ?: $this->inputInt('per_page');
+        if ($limit) {
+            $filters['limit'] = $limit;
+        }
+        $cursor = $this->query('cursor');
+        if (is_string($cursor) && $cursor !== '') {
+            $filters['cursor'] = $cursor;
+        }
+
+        // Shape is unchanged — { items, cursor, has_more } — because both the
+        // native app and CertificatesTab.tsx read `data.items` today.
+        $certs = $this->volunteerCertificateService->getUserCertificates($userId, $filters);
         return $this->respondWithData($certs);
     }
 

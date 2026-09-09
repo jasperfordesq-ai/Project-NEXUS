@@ -387,11 +387,51 @@ class ShiftSwapService
     }
 
     /**
-     * Get swap requests for a user (incoming and outgoing).
+     * Map a caller's direction word onto the two this service filters by.
+     *
+     * 🔴 `sent` and `received` are the words the native app sends, and they
+     * matched NOTHING: both fell through to the catch-all branch, so choosing
+     * a direction in the app quietly returned every swap in both directions.
+     * Accepting the app's vocabulary fixes that without a new store build.
+     *
+     * @return 'incoming'|'outgoing'|'all'
      */
-    public static function getSwapRequests(int $userId, string $direction = 'all'): array
+    public static function normaliseDirection(string $direction): string
     {
+        return match (strtolower(trim($direction))) {
+            'received', 'incoming' => 'incoming',
+            'sent', 'outgoing'     => 'outgoing',
+            default                => 'all',
+        };
+    }
+
+    /**
+     * Get swap requests for a user (incoming and outgoing).
+     *
+     * 🔴 Cursor pagination added 2026-09-09. This returned everything it found
+     * behind a hard `limit(50)` and no cursor, so a member with more than
+     * fifty swap requests simply could not see the rest and no client could
+     * ask for them. `$filters` accepts `limit` (default 20, max 50) and
+     * `cursor`; the return shape is unchanged for callers that ignore the new
+     * `$pagination` out-parameter.
+     *
+     * Ordering moved from `created_at` to `id`, both descending. A cursor on
+     * `created_at` cannot be stable — two requests made in the same second tie,
+     * and a tie makes rows repeat or vanish between pages. `id` is monotonic
+     * with insertion, so the visible order is the same and the cursor is exact.
+     *
+     * @param  array{limit?: int, cursor?: string|null}  $filters
+     * @param  array{cursor: string|null, has_more: bool}|null  $pagination  Out-parameter.
+     */
+    public static function getSwapRequests(
+        int $userId,
+        string $direction = 'all',
+        array $filters = [],
+        ?array &$pagination = null,
+    ): array {
         $tenantId = TenantContext::getId();
+        $limit = max(1, min((int) ($filters['limit'] ?? 20), 50));
+        $cursor = $filters['cursor'] ?? null;
 
         $query = DB::table('vol_shift_swap_requests as sr')
             ->join('users as fu', 'sr.from_user_id', '=', 'fu.id')
@@ -413,9 +453,11 @@ class ShiftSwapService
                 'to_opp.title as to_opp_title', 'torg.name as to_org_name'
             );
 
-        if ($direction === 'incoming') {
+        $normalisedDirection = self::normaliseDirection($direction);
+
+        if ($normalisedDirection === 'incoming') {
             $query->where('sr.to_user_id', $userId);
-        } elseif ($direction === 'outgoing') {
+        } elseif ($normalisedDirection === 'outgoing') {
             $query->where('sr.from_user_id', $userId);
         } else {
             $query->where(function ($q) use ($userId) {
@@ -424,7 +466,23 @@ class ShiftSwapService
             });
         }
 
-        $requests = $query->orderByDesc('sr.created_at')->limit(50)->get();
+        if ($cursor !== null && ($cid = base64_decode((string) $cursor, true)) !== false && ctype_digit((string) $cid)) {
+            $query->where('sr.id', '<', (int) $cid);
+        }
+
+        // One extra row is the cheapest honest answer to "is there more?".
+        $rows = $query->orderByDesc('sr.id')->limit($limit + 1)->get();
+        $hasMore = $rows->count() > $limit;
+        if ($hasMore) {
+            $rows->pop();
+        }
+
+        $pagination = [
+            'cursor'   => $hasMore && $rows->isNotEmpty() ? base64_encode((string) $rows->last()->id) : null,
+            'has_more' => $hasMore,
+        ];
+
+        $requests = $rows;
 
         return $requests->map(function ($r) use ($userId) {
             return [

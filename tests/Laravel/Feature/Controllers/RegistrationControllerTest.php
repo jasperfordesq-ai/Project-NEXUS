@@ -688,4 +688,79 @@ class RegistrationControllerTest extends TestCase
         $body = json_decode((string) $response->getContent(), true);
         $this->assertSame('LOCATION_NOT_VERIFIED', $body['errors'][0]['code'] ?? null);
     }
+
+    // ------------------------------------------------------------------
+    //  Validation errors name the input they belong to (2026-09-09)
+    //
+    //  Registration used to answer with `$validator->errors()->first()` —
+    //  one string, no field — so a member who got three inputs wrong was
+    //  told about one of them and not which of eight. These pin the fix in
+    //  the direction that matters: every failure present, each attributed.
+    // ------------------------------------------------------------------
+
+    public function test_register_returns_every_failed_field_each_naming_its_input(): void
+    {
+        // terms accepted, so this exercises the GENERIC validation branch.
+        $response = $this->apiPost('/v2/auth/register', [
+            'terms_accepted' => 1,
+            'first_name' => 'Test',
+            'last_name' => 'User',
+            'email' => 'not-an-email',
+            'location' => 'Toronto, Canada',
+            'password' => 'short',
+            // phone omitted entirely
+        ]);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        $errors = $body['errors'] ?? [];
+
+        $this->assertGreaterThan(
+            1,
+            count($errors),
+            'every failed input must be reported, not just the first'
+        );
+
+        foreach ($errors as $error) {
+            $this->assertArrayHasKey('field', $error, 'each error must name its input');
+            $this->assertNotSame('', (string) $error['field']);
+            $this->assertArrayHasKey('message', $error);
+        }
+
+        $fields = array_column($errors, 'field');
+        $this->assertContains('email', $fields, 'a malformed email must be reported against `email`');
+        $this->assertContains('phone', $fields, 'a missing phone must be reported against `phone`');
+        $this->assertContains('password', $fields, 'a too-short password must be reported against `password`');
+    }
+
+    public function test_register_terms_failure_keeps_its_code_first_and_still_names_other_fields(): void
+    {
+        // Both first-party frontends branch on errors[0].code to tell a terms
+        // refusal from a generic one, so the special code must stay in front.
+        $response = $this->apiPost('/v2/auth/register', [
+            'first_name' => 'Test',
+            'last_name' => 'User',
+            'email' => 'still-not-an-email',
+            'location' => 'Toronto, Canada',
+            'password' => 'short',
+            // terms_accepted omitted -> the special-cased failure
+        ]);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        $errors = $body['errors'] ?? [];
+
+        $this->assertSame('TERMS_REQUIRED', $errors[0]['code'] ?? null, 'the distinct code must lead');
+        $this->assertSame('terms_accepted', $errors[0]['field'] ?? null);
+
+        // ...and the special case must no longer HIDE the other bad inputs.
+        $fields = array_column($errors, 'field');
+        $this->assertContains('email', $fields);
+        $this->assertContains('password', $fields);
+        $this->assertSame(
+            ['terms_accepted'],
+            array_values(array_unique(array_filter($fields, fn ($f) => $f === 'terms_accepted'))),
+            'terms must appear once, not twice'
+        );
+    }
 }

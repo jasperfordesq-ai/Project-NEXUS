@@ -100,4 +100,40 @@ class ShiftSwapServiceTest extends TestCase
         $result = ShiftSwapService::getSwapRequests(1);
         $this->assertIsArray($result);
     }
+
+    // ------------------------------------------------------------------
+    //  Direction filtering (2026-09-09)
+    //
+    //  The native app sends `sent` / `received`. The service only tested for
+    //  `incoming` / `outgoing`, so both fell through to the catch-all and
+    //  every swap came back in both directions — the filter looked like it
+    //  worked and did nothing. These pin the mapping in both directions.
+    // ------------------------------------------------------------------
+
+    public function test_normaliseDirection_accepts_the_words_the_native_app_sends(): void
+    {
+        $this->assertSame('outgoing', ShiftSwapService::normaliseDirection('sent'));
+        $this->assertSame('incoming', ShiftSwapService::normaliseDirection('received'));
+    }
+
+    public function test_normaliseDirection_keeps_the_original_api_vocabulary(): void
+    {
+        $this->assertSame('incoming', ShiftSwapService::normaliseDirection('incoming'));
+        $this->assertSame('outgoing', ShiftSwapService::normaliseDirection('outgoing'));
+    }
+
+    public function test_normaliseDirection_falls_back_to_all_for_anything_else(): void
+    {
+        // Unrecognised input must show BOTH directions, never an empty list:
+        // a filter nobody asked for is worse than no filter.
+        $this->assertSame('all', ShiftSwapService::normaliseDirection('all'));
+        $this->assertSame('all', ShiftSwapService::normaliseDirection(''));
+        $this->assertSame('all', ShiftSwapService::normaliseDirection('sideways'));
+    }
+
+    public function test_normaliseDirection_is_case_and_whitespace_tolerant(): void
+    {
+        $this->assertSame('outgoing', ShiftSwapService::normaliseDirection(' Sent '));
+        $this->assertSame('incoming', ShiftSwapService::normaliseDirection('RECEIVED'));
+    }
 }

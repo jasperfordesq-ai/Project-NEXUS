@@ -226,27 +226,88 @@ class RegistrationService
         ]);
 
         if ($validator->fails()) {
+            // 🔴 EVERY failure is returned, each tagged with the input it
+            // belongs to. This used to end at `$validator->errors()->first()`
+            // — one string, no field — so a member who got three inputs wrong
+            // was told about one of them and not which. Eight inputs and a
+            // single unattributed banner is a guessing game; the native app
+            // already places a message on whichever field the API names
+            // (`ApiResponseError.field`) and simply had nothing to place.
+            //
+            // `errors` is the exact list the controller sends. The FIRST entry
+            // keeps the code and message the old single-error response had, so
+            // a client reading `errors[0].code` — both first-party frontends
+            // do, to tell TERMS_REQUIRED from a generic validation failure —
+            // is unaffected. The rest are additive.
+            $fieldErrors = [];
+            foreach ($validator->errors()->messages() as $field => $messages) {
+                foreach ($messages as $message) {
+                    $fieldErrors[] = [
+                        'code'    => \App\Core\ApiErrorCodes::VALIDATION_ERROR,
+                        'message' => (string) $message,
+                        'field'   => (string) $field,
+                    ];
+                }
+            }
+
+            /**
+             * Put a distinct primary error first and keep the rest, so a
+             * special-cased failure does not hide the other fields.
+             *
+             * @param  list<array{code: string, message: string, field: string}>  $rest
+             * @return list<array{code: string, message: string, field: string}>
+             */
+            $leadWith = static function (array $primary, array $rest): array {
+                return array_values(array_merge([$primary], array_filter(
+                    $rest,
+                    static fn (array $e): bool => $e['field'] !== $primary['field'],
+                )));
+            };
+
             // If terms specifically failed, surface a distinct code so the
             // frontend can render a specific message instead of the generic
             // "check the form" fallback.
             if ($validator->errors()->has('terms_accepted')) {
+                $primary = [
+                    'code'    => 'TERMS_REQUIRED',
+                    'message' => __('api.terms_required'),
+                    'field'   => 'terms_accepted',
+                ];
                 return [
-                    'error' => __('api.terms_required'),
-                    'code'  => 'TERMS_REQUIRED',
+                    'error'  => __('api.terms_required'),
+                    'code'   => 'TERMS_REQUIRED',
+                    'field'  => 'terms_accepted',
+                    'errors' => $leadWith($primary, $fieldErrors),
                     'status' => 422,
                 ];
             }
             if ($validator->errors()->has('latitude') || $validator->errors()->has('longitude')) {
+                $primary = [
+                    'code'    => 'LOCATION_NOT_VERIFIED',
+                    'message' => __('api.location_not_verified'),
+                    'field'   => 'location',
+                ];
+                // Drop the raw latitude/longitude rows: they are not inputs a
+                // member can see or correct, and naming them would put a
+                // message on a field the form does not have.
+                $visible = array_values(array_filter(
+                    $fieldErrors,
+                    static fn (array $e): bool => !in_array($e['field'], ['latitude', 'longitude'], true),
+                ));
                 return [
-                    'error' => __('api.location_not_verified'),
-                    'code'  => 'LOCATION_NOT_VERIFIED',
+                    'error'  => __('api.location_not_verified'),
+                    'code'   => 'LOCATION_NOT_VERIFIED',
+                    'field'  => 'location',
+                    'errors' => $leadWith($primary, $visible),
                     'status' => 422,
                 ];
             }
-            $errors = $validator->errors()->first();
+
             return [
-                'error' => $errors,
-                'code'  => \App\Core\ApiErrorCodes::VALIDATION_ERROR,
+                'error'  => $fieldErrors[0]['message'] ?? __('api.validation_failed'),
+                'code'   => \App\Core\ApiErrorCodes::VALIDATION_ERROR,
+                'field'  => $fieldErrors[0]['field'] ?? null,
+                'errors' => $fieldErrors,
                 'status' => 422,
             ];
         }
@@ -288,6 +349,7 @@ class RegistrationService
                 return [
                     'error' => __('api.password_mismatch'),
                     'code'  => 'PASSWORD_MISMATCH',
+                    'field' => 'password_confirmation',
                     'status' => 422,
                 ];
             }
@@ -307,6 +369,7 @@ class RegistrationService
             return [
                 'error' => __('api.email_disposable'),
                 'code'  => 'EMAIL_DISPOSABLE',
+                    'field' => 'email',
                 'status' => 422,
             ];
         }
@@ -325,6 +388,7 @@ class RegistrationService
             return [
                 'error' => __('api.email_domain_invalid'),
                 'code'  => 'EMAIL_DOMAIN_INVALID',
+                    'field' => 'email',
                 'status' => 422,
             ];
         }
@@ -336,6 +400,7 @@ class RegistrationService
             return [
                 'error' => __('api.password_pwned'),
                 'code'  => 'PASSWORD_PWNED',
+                    'field' => 'password',
                 'status' => 422,
             ];
         }
@@ -351,6 +416,7 @@ class RegistrationService
                 return [
                     'error' => __('api.invite_code_required'),
                     'code'  => 'INVITE_REQUIRED',
+                    'field' => 'invite_code',
                     'status' => 422,
                 ];
             }
@@ -359,6 +425,7 @@ class RegistrationService
                 return [
                     'error' => __('api.invite_code_invalid'),
                     'code'  => 'INVITE_INVALID',
+                    'field' => 'invite_code',
                     'status' => 422,
                 ];
             }
@@ -424,6 +491,7 @@ class RegistrationService
             return [
                 'error' => __('emails_misc.registration.error_generic'),
                 'code'  => \App\Core\ApiErrorCodes::VALIDATION_DUPLICATE,
+                'field' => 'email',
                 'status' => 409,
             ];
         }
@@ -442,6 +510,7 @@ class RegistrationService
                 return [
                     'error' => __('api.invite_code_invalid'),
                     'code'  => 'INVITE_INVALID',
+                    'field' => 'invite_code',
                     'status' => 422,
                 ];
             }

@@ -48,6 +48,18 @@ class RegistrationController extends BaseApiController
         $result = $this->registrationService->register($data, $tenantId);
 
         if (isset($result['error'])) {
+            $status = (int) ($result['status'] ?? 422);
+
+            // A validation failure carries EVERY failed input, each naming the
+            // field it belongs to. Passing `null` as the field here is what
+            // left the app with one unattributed banner across an eight-input
+            // form; the service now supplies the list and the first entry
+            // keeps the code the single-error response used to carry, so
+            // clients reading errors[0] see no change.
+            if (!empty($result['errors']) && is_array($result['errors'])) {
+                return $this->respondWithErrors($result['errors'], $status);
+            }
+
             // Surface specific failure codes from the service so the frontend
             // can distinguish Turnstile failures, validation errors, duplicate
             // accounts, and pwned-password rejections — instead of one
@@ -55,8 +67,8 @@ class RegistrationController extends BaseApiController
             return $this->respondWithError(
                 $result['code'] ?? 'REGISTRATION_FAILED',
                 $result['error'],
-                null,
-                (int) ($result['status'] ?? 422)
+                isset($result['field']) ? (string) $result['field'] : null,
+                $status
             );
         }
 
