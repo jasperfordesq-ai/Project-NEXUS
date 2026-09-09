@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`scripts/release.mjs` could not finish a release, because it ran the semver gate one step too early.** It wrote all thirty-six version files, then ran `check-semver-policy.mjs` *before* committing and tagging — and that gate asserts every release at or above its `1.7.0` enforcement floor has a `vX.Y.Z` tag. The tag cannot exist yet at that point, so the check failed by construction, the script exited without committing, and the release had to be completed by hand. It was latent until now: `1.7.0` was tagged before it became the floor, so `1.8.0` was the first cut to hit it.
+  - **Root cause:** a tag-dependent check placed in a pre-commit self-check block. `check-version-consistency.mjs` (tag-independent) still runs there and still blocks the commit; `check-semver-policy.mjs` now runs after the tag, and on failure prints the `git tag -d` / `git reset --soft` undo pair rather than leaving the state unexplained.
+  - **Prevention:** `--no-tag` and `--no-commit` now say in words that the semver gate did **not** run and what to run once the tag exists, instead of reporting checks as passed when one was skipped.
+
 ## [1.8.0] - 2026-09-09
 
 ### Added

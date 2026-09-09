@@ -334,24 +334,23 @@ if (!run('npm', ['--prefix', 'react-frontend', 'run', 'copy-changelog'])) {
 }
 
 // --------------------------------------------------------------- self-check
-let checksPassed = true;
-for (const script of ['scripts/check-version-consistency.mjs', 'scripts/check-semver-policy.mjs']) {
-  if (!run('node', [script])) {
-    console.error(`release: ${script} FAILED after the rewrite.`);
-    checksPassed = false;
-  }
-}
-if (!checksPassed) {
+// Only the tag-independent check can run here. check-semver-policy asserts that
+// every release at or above its enforcement floor has a `vX.Y.Z` tag, and this
+// release cannot have one until it is committed — so running it before the
+// commit fails by construction. It runs after the tag instead.
+if (!run('node', ['scripts/check-version-consistency.mjs'])) {
+  console.error('release: scripts/check-version-consistency.mjs FAILED after the rewrite.');
   console.error('');
   console.error('The files were written but do not pass their own gates. Inspect the diff before committing.');
   process.exit(1);
 }
-console.log('Checks passed: version consistency, semver policy.');
+console.log('Checks passed: version consistency.');
 
 // ------------------------------------------------------------ commit and tag
 if (NO_COMMIT) {
   console.log('');
   console.log('--no-commit: files written, nothing committed. Tag after you commit, or the tag will point at the wrong commit.');
+  console.log('Run `npm run check:semver` once the commit is tagged — it cannot pass before then.');
   process.exit(0);
 }
 
@@ -362,6 +361,21 @@ console.log(`Committed: chore(release): cut v${nextVersion}`);
 if (!NO_TAG) {
   git(['tag', '-a', `v${nextVersion}`, '-m', `Project NEXUS v${nextVersion}`]);
   console.log(`Tagged: v${nextVersion}`);
+}
+
+// --------------------------------------------------- self-check (needs the tag)
+if (NO_TAG) {
+  console.log('');
+  console.log('--no-tag: the semver policy check was NOT run, because it requires the release tag.');
+  console.log(`Tag the commit (git tag -a v${nextVersion}) and run \`npm run check:semver\`.`);
+} else if (!run('node', ['scripts/check-semver-policy.mjs'])) {
+  console.error('release: scripts/check-semver-policy.mjs FAILED after the commit and tag.');
+  console.error('');
+  console.error('The release is committed and tagged locally. Nothing has been pushed.');
+  console.error('Inspect it, then either fix it forward or undo it:');
+  console.error(`  git tag -d v${nextVersion}`);
+  console.error('  git reset --soft HEAD~1');
+  process.exit(1);
 }
 
 console.log('');
