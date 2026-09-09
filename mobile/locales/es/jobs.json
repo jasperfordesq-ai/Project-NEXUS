@@ -350,6 +350,8 @@
     "resumeSuccess": "Alerta de empleo reanudada.",
     "toggleError": "No se pudo actualizar esta alerta de empleo.",
     "deleteSuccess": "Alerta de empleo eliminada.",
-    "deleteError": "No se pudo eliminar esta alerta de empleo."
+    "deleteError": "No se pudo eliminar esta alerta de empleo.",
+    "deleteConfirmTitle": "¿Eliminar esta alerta de empleo?",
+    "deleteConfirmMessage": "Se eliminan las palabras clave, los filtros y la ubicación que guardaste. Esto no se puede deshacer."
   }
 }

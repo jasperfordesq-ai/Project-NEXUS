@@ -223,7 +223,9 @@
       "reject": "Reject",
       "cancel": "Cancel request",
       "actionFailedTitle": "Connection not updated",
-      "actionFailedDescription": "Please check federation profiles are enabled and try again."
+      "actionFailedDescription": "Please check federation profiles are enabled and try again.",
+      "removeConfirmTitle": "Remove this connection?",
+      "removeConfirmMessage": "Your two communities stop sharing with each other. Reconnecting means asking again and waiting for them to agree."
     },
     "messages": {
       "eyebrow": "Cross-community inbox",

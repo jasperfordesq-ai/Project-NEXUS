@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -74,6 +74,28 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success' },
 }));
 
+/*
+  A PRESENTATIONAL stub, not an auto-confirming one. The real dialog renders through
+  heroui-native's portal, which this test tree has no host for; a stub that fired
+  `onConfirm` by itself would make every confirmation on this screen invisible to every
+  test here, which is exactly how a one-tap destructive action shipped in the first place.
+*/
+jest.mock('@/components/ui/ConfirmDialog', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, title, cancelLabel, confirmLabel, cancelTestID, confirmTestID, onClose, onConfirm }: Record<string, unknown>) =>
+      visible ? (
+        <View>
+          <Text>{title as string}</Text>
+          <Pressable testID={cancelTestID as string} onPress={onClose as () => void}><Text>{cancelLabel as string}</Text></Pressable>
+          <Pressable testID={confirmTestID as string} onPress={onConfirm as () => void}><Text>{confirmLabel as string}</Text></Pressable>
+        </View>
+      ) : null,
+  };
+});
+
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/Avatar', () => 'View');
 
@@ -128,5 +150,25 @@ describe('FederationConnectionsRoute', () => {
       pathname: '/(modals)/federation-messages',
       params: { compose: 'true', to_user: '272', to_tenant: '5', name: 'Katherine', community: 'Partner Timebank' },
     });
+  });
+
+  /**
+   * 🔴 One tap took an established connection between two communities apart, with nothing
+   * asked. Reconnecting is not a matter of tapping again: the other community has to be
+   * asked and has to agree.
+   *
+   * The dialog stub above renders but never confirms by itself, so this asserts the two
+   * steps separately: the destructive call must not happen on the first press.
+   */
+  it('asks before taking an established connection apart, then removes it', async () => {
+    const { removeFederationConnection } = require('@/lib/api/federation');
+    mockUseApi.mockReturnValueOnce({ data: { data: [connection] }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText, getByTestId } = render(<FederationConnectionsRoute />);
+    fireEvent.press(getByText('Remove'));
+    expect(removeFederationConnection).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('federation-connection-remove-confirm-8'));
+    await waitFor(() => expect(removeFederationConnection).toHaveBeenCalledWith(8));
   });
 });

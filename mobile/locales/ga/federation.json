@@ -223,7 +223,9 @@
       "reject": "Diúltaigh",
       "cancel": "Cealaigh iarratas",
       "actionFailedTitle": "Ceangal gan nuashonrú",
-      "actionFailedDescription": "Seiceáil le do thoil go bhfuil próifílí cónaidhme cumasaithe agus bain triail eile as."
+      "actionFailedDescription": "Seiceáil le do thoil go bhfuil próifílí cónaidhme cumasaithe agus bain triail eile as.",
+      "removeConfirmTitle": "Bain an nasc seo?",
+      "removeConfirmMessage": "Stopfaidh an dá phobal agaibh de bheith ag roinnt lena chéile. Chun athnascadh, caithfear iarraidh arís agus fanacht go n-aontóidh siad."
     },
     "messages": {
       "eyebrow": "Bosca isteach trasphobail",

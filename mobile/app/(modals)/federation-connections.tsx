@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import AccentIcon from '@/components/ui/AccentIcon';
+import { useConfirm } from '@/components/ui/useConfirm';
 import { useMemo, useState, type ComponentProps } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -65,7 +66,31 @@ function FederationConnectionsScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { data, isLoading, error, refresh } = useApi(() => getFederationConnections(tab), [tab]);
+  const { confirm, confirmDialog } = useConfirm();
   const connections = useMemo(() => unwrapConnections(data), [data]);
+
+  /*
+    🔴 One tap took an ESTABLISHED connection between two communities apart, with nothing
+    asked. Reconnecting is not a matter of tapping again: the other community has to be
+    asked and has to agree. Cancelling an outgoing request you sent yourself, and declining
+    an incoming one, stay one tap — both are already an explicit two-button choice and
+    neither destroys anything the other side agreed to.
+  */
+  function requestAction(connection: FederationConnection, action: 'accept' | 'reject' | 'remove') {
+    if (action !== 'remove' || tab !== 'accepted') {
+      void runAction(connection, action);
+      return;
+    }
+    confirm({
+      title: t('directory.connections.removeConfirmTitle'),
+      message: t('directory.connections.removeConfirmMessage'),
+      confirmLabel: t('directory.connections.remove'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `federation-connection-remove-confirm-${connection.id}`,
+      onConfirm: () => runAction(connection, 'remove'),
+    });
+  }
 
   async function runAction(connection: FederationConnection, action: 'accept' | 'reject' | 'remove') {
     setActionId(connection.id);
@@ -203,12 +228,13 @@ function FederationConnectionsScreen() {
                 primary={primary}
                 t={t}
                 isActioning={actionId === connection.id}
-                onAction={(action) => void runAction(connection, action)}
+                onAction={(action) => requestAction(connection, action)}
               />
             ))}
           </View>
         )}
       </ScrollView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }

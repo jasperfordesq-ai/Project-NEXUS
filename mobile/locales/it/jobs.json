@@ -350,6 +350,8 @@
     "resumeSuccess": "Avviso di lavoro riattivato.",
     "toggleError": "Impossibile aggiornare questo avviso di lavoro.",
     "deleteSuccess": "Avviso di lavoro eliminato.",
-    "deleteError": "Impossibile eliminare questo avviso di lavoro."
+    "deleteError": "Impossibile eliminare questo avviso di lavoro.",
+    "deleteConfirmTitle": "Eliminare questo avviso di lavoro?",
+    "deleteConfirmMessage": "Le parole chiave, i filtri e il luogo che avevi salvato verranno rimossi. Questa operazione non può essere annullata."
   }
 }

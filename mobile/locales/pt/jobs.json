@@ -350,6 +350,8 @@
     "resumeSuccess": "Alerta de emprego retomado.",
     "toggleError": "Não foi possível atualizar este alerta de emprego.",
     "deleteSuccess": "Alerta de emprego eliminado.",
-    "deleteError": "Não foi possível eliminar este alerta de emprego."
+    "deleteError": "Não foi possível eliminar este alerta de emprego.",
+    "deleteConfirmTitle": "Eliminar este alerta de emprego?",
+    "deleteConfirmMessage": "As palavras-chave, os filtros e a localização que guardou serão removidos. Não é possível anular esta ação."
   }
 }

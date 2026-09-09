@@ -223,7 +223,9 @@
       "reject": "Ablehnen",
       "cancel": "Abbrechen Anfrage",
       "actionFailedTitle": "Verbindung nicht aktualisiert",
-      "actionFailedDescription": "Bitte überprüfen Sie, ob die Verbundprofile aktiviert sind, und versuchen Sie es erneut."
+      "actionFailedDescription": "Bitte überprüfen Sie, ob die Verbundprofile aktiviert sind, und versuchen Sie es erneut.",
+      "removeConfirmTitle": "Diese Verbindung entfernen?",
+      "removeConfirmMessage": "Ihre beiden Gemeinschaften teilen dann nichts mehr miteinander. Für eine erneute Verbindung müssen Sie erneut anfragen und auf deren Zustimmung warten."
     },
     "messages": {
       "eyebrow": "Gemeinschaftsübergreifender Posteingang",

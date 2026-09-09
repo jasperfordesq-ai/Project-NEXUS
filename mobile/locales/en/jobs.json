@@ -350,6 +350,8 @@
     "resumeSuccess": "Job alert resumed.",
     "toggleError": "Could not update this job alert.",
     "deleteSuccess": "Job alert deleted.",
-    "deleteError": "Could not delete this job alert."
+    "deleteError": "Could not delete this job alert.",
+    "deleteConfirmTitle": "Delete this job alert?",
+    "deleteConfirmMessage": "The keywords, filters and location you saved for it are removed. This cannot be undone."
   }
 }

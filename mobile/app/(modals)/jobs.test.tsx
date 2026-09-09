@@ -511,7 +511,15 @@ describe('JobsScreen', () => {
     expect(pauseJobAlert).toHaveBeenCalledWith(77);
   });
 
-  it('deletes existing job alerts', async () => {
+  /**
+   * 🔴 This pressed Delete and asserted the alert was gone. It was: one tap on a trash
+   * button destroyed the keywords, filters and location the member had typed in, with no
+   * undo and nothing asked. It now asserts the ask comes first. The ConfirmDialog stub at
+   * the top of this file is presentational and never confirms by itself — an
+   * auto-confirming mock would make every confirmation on this screen invisible to every
+   * test, which is how a one-tap destructive action ships unnoticed.
+   */
+  it('asks before deleting a job alert, then deletes it', async () => {
     mockUseApi.mockReturnValue({
       data: { data: [mockAlert] },
       isLoading: false,
@@ -519,10 +527,13 @@ describe('JobsScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { getByText } = render(<JobsScreen />);
+    const { getByText, getByTestId } = render(<JobsScreen />);
     fireEvent.press(getByText('Alerts'));
 
     fireEvent.press(getByText('Delete'));
+    expect(deleteJobAlert).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('job-alert-delete-confirm-77'));
     await waitFor(() => expect(deleteJobAlert).toHaveBeenCalledWith(77));
   });
 });

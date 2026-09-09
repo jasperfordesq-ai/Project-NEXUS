@@ -350,6 +350,8 @@
     "resumeSuccess": "Alerte emploi réactivée.",
     "toggleError": "Impossible de mettre à jour cette alerte emploi.",
     "deleteSuccess": "Alerte emploi supprimée.",
-    "deleteError": "Impossible de supprimer cette alerte emploi."
+    "deleteError": "Impossible de supprimer cette alerte emploi.",
+    "deleteConfirmTitle": "Supprimer cette alerte emploi ?",
+    "deleteConfirmMessage": "Les mots-clés, les filtres et le lieu que vous aviez enregistrés seront supprimés. Cette action est irréversible."
   }
 }

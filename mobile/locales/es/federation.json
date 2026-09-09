@@ -223,7 +223,9 @@
       "reject": "Rechazar",
       "cancel": "Cancelar solicitud",
       "actionFailedTitle": "Conexión no actualizada",
-      "actionFailedDescription": "Compruebe que los perfiles de federación estén habilitados e inténtelo de nuevo."
+      "actionFailedDescription": "Compruebe que los perfiles de federación estén habilitados e inténtelo de nuevo.",
+      "removeConfirmTitle": "¿Eliminar esta conexión?",
+      "removeConfirmMessage": "Vuestras dos comunidades dejarán de compartir entre sí. Para volver a conectaros habrá que solicitarlo de nuevo y esperar a que acepten."
     },
     "messages": {
       "eyebrow": "Bandeja de entrada entre comunidades",

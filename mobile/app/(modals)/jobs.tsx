@@ -768,6 +768,7 @@ function JobAlertsPanel({
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const { confirm, confirmDialog } = useConfirm();
 
   const resetForm = () => {
     setKeywords('');
@@ -820,7 +821,25 @@ function JobAlertsPanel({
     }
   };
 
-  const handleDelete = async (id: number) => {
+  /*
+    🔴 One tap on a trash button and the alert was gone. A job alert is the keywords,
+    filters and location a member typed in themselves, so deleting one by accident means
+    entering it all again — there is no undo and no trash to restore from. The saved
+    searches on the marketplace side have confirmed since 2026-09-08; this one had not.
+  */
+  const handleDelete = (id: number) => {
+    confirm({
+      title: t('alerts.deleteConfirmTitle'),
+      message: t('alerts.deleteConfirmMessage'),
+      confirmLabel: t('alerts.delete'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `job-alert-delete-confirm-${id}`,
+      onConfirm: () => runDelete(id),
+    });
+  };
+
+  const runDelete = async (id: number) => {
     setBusyKey(`delete-${id}`);
     setStatusMessage(null);
     try {
@@ -835,6 +854,7 @@ function JobAlertsPanel({
   };
 
   return (
+    <>
     <FlatList<JobAlert>
       data={alerts}
       keyExtractor={(item) => String(item.id)}
@@ -961,6 +981,8 @@ function JobAlertsPanel({
       }
       contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingBottom: 112, paddingTop: 4 }}
     />
+    {confirmDialog}
+    </>
   );
 }
 

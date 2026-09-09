@@ -223,7 +223,9 @@
       "reject": "Rejeitar",
       "cancel": "Cancelar solicitação",
       "actionFailedTitle": "Conexão não atualizada",
-      "actionFailedDescription": "Verifique se os perfis da federação estão ativados e tente novamente."
+      "actionFailedDescription": "Verifique se os perfis da federação estão ativados e tente novamente.",
+      "removeConfirmTitle": "Remover esta ligação?",
+      "removeConfirmMessage": "As vossas duas comunidades deixam de partilhar entre si. Para voltar a ligar é preciso pedir de novo e aguardar que aceitem."
     },
     "messages": {
       "eyebrow": "Caixa de entrada entre comunidades",

@@ -350,6 +350,8 @@
     "resumeSuccess": "Atosaíodh an foláireamh poist.",
     "toggleError": "Níorbh fhéidir an foláireamh poist seo a nuashonrú.",
     "deleteSuccess": "Scriosadh an foláireamh poist.",
-    "deleteError": "Níorbh fhéidir an foláireamh poist seo a scriosadh."
+    "deleteError": "Níorbh fhéidir an foláireamh poist seo a scriosadh.",
+    "deleteConfirmTitle": "Scrios an foláireamh poist seo?",
+    "deleteConfirmMessage": "Baintear na heochairfhocail, na scagairí agus an suíomh a shábháil tú dó. Ní féidir é seo a chur ar ais."
   }
 }

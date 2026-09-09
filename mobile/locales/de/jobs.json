@@ -350,6 +350,8 @@
     "resumeSuccess": "Stellenbenachrichtigung fortgesetzt.",
     "toggleError": "Diese Stellenbenachrichtigung konnte nicht aktualisiert werden.",
     "deleteSuccess": "Stellenbenachrichtigung gelöscht.",
-    "deleteError": "Diese Stellenbenachrichtigung konnte nicht gelöscht werden."
+    "deleteError": "Diese Stellenbenachrichtigung konnte nicht gelöscht werden.",
+    "deleteConfirmTitle": "Diese Job-Benachrichtigung löschen?",
+    "deleteConfirmMessage": "Die dafür gespeicherten Stichwörter, Filter und der Ort werden entfernt. Das lässt sich nicht rückgängig machen."
   }
 }

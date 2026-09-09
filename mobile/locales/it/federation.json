@@ -223,7 +223,9 @@
       "reject": "Rifiuta",
       "cancel": "Annulla richiesta",
       "actionFailedTitle": "Connessione non aggiornata",
-      "actionFailedDescription": "Verifica che i profili federati siano abilitati e riprova."
+      "actionFailedDescription": "Verifica che i profili federati siano abilitati e riprova.",
+      "removeConfirmTitle": "Rimuovere questo collegamento?",
+      "removeConfirmMessage": "Le vostre due comunità smetteranno di condividere tra loro. Per ricollegarvi occorrerà richiederlo di nuovo e attendere il loro consenso."
     },
     "messages": {
       "eyebrow": "Posta in arrivo tra comunità",

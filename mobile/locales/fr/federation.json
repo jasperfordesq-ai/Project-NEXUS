@@ -223,7 +223,9 @@
       "reject": "Rejeter",
       "cancel": "Annuler la demande",
       "actionFailedTitle": "Connexion non mise à jour",
-      "actionFailedDescription": "Veuillez vérifier que les profils de fédération sont activés et réessayer."
+      "actionFailedDescription": "Veuillez vérifier que les profils de fédération sont activés et réessayer.",
+      "removeConfirmTitle": "Supprimer cette connexion ?",
+      "removeConfirmMessage": "Vos deux communautés cesseront de partager entre elles. Pour vous reconnecter, il faudra redemander et attendre leur accord."
     },
     "messages": {
       "eyebrow": "Boîte de réception intercommunautaire",
