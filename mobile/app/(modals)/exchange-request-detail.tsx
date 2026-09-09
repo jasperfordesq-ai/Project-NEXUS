@@ -556,6 +556,7 @@ function ExchangeRequestDetailScreen() {
 
       <BottomSheet
         visible={reportSheetOpen}
+        scrollable
         onClose={() => setReportSheetOpen(false)}
         title={t('requests.dispute.title')}
       >
@@ -613,6 +614,7 @@ function ExchangeRequestDetailScreen() {
 
       <BottomSheet
         visible={confirmSheetOpen}
+        scrollable
         onClose={() => setConfirmSheetOpen(false)}
         title={t('requests.confirmSheetTitle')}
       >

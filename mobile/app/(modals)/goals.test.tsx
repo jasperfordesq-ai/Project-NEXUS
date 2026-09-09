@@ -170,6 +170,34 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // Auto-confirm: invoking confirm() runs the action immediately, mirroring the
 // old Alert.alert destructive-button-press simulation.
+
+/*
+  The real sheet renders through a portal that Jest cannot lay out, so the wrapper is
+  replaced with one that renders what it is GIVEN: the body, the sticky footer, and a
+  marker for `scrollable`. That is exactly the contract the composer regression test
+  checks — the two things that were missing on the device.
+*/
+jest.mock('@/components/ui/BottomSheet', () => {
+  const React = require('react');
+  const { Text, View } = require('react-native');
+  return function MockBottomSheet({ visible, title, children, footer, scrollable, testID }: {
+    visible: boolean;
+    title?: string;
+    children: React.ReactNode;
+    footer?: React.ReactNode;
+    scrollable?: boolean;
+    testID?: string;
+  }) {
+    if (!visible) return null;
+    return (
+      <View testID={testID}>
+        {title ? <Text>{title}</Text> : null}
+        {scrollable ? <View testID={testID ? `${testID}-scroll` : undefined}>{children}</View> : children}
+        {footer ? <View testID={testID ? `${testID}-footer` : undefined}>{footer}</View> : null}
+      </View>
+    );
+  };
+});
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: (opts: { onConfirm: () => void | Promise<void> }) => {
@@ -220,6 +248,28 @@ describe('GoalsScreen', () => {
   it('renders the empty state when there are no goals', () => {
     const { getByText } = render(<GoalsScreen />);
     expect(getByText('No goals yet')).toBeTruthy();
+  });
+
+  /*
+    🔴 Reproduced on the emulator on 2026-09-09 after the owner reported the drawer as
+    "completely malfunctioning": the composer's Cancel and Create buttons were not on
+    screen at all (`HeroCard.Footer` has no `flex-row`, so two `flex-1` buttons in a column
+    collapsed to zero height) and the form had no scroll container, so with the keyboard
+    up nothing below the title could be reached. The actions now live in the sheet's
+    sticky footer and the body is a gorhom scroll view.
+  */
+  it('opens the composer as a scrollable sheet with its actions in the sticky footer', async () => {
+    const { getAllByText, getByTestId } = render(<GoalsScreen />);
+
+    // The header "+" and the empty state both offer it; the first is the panel button.
+    fireEvent.press(getAllByText('Add Goal')[0]);
+
+    await waitFor(() => {
+      expect(getByTestId('goal-composer-submit')).toBeTruthy();
+    });
+    expect(getByTestId('goal-composer-cancel')).toBeTruthy();
+    expect(getByTestId('goal-composer-scroll')).toBeTruthy();
+    expect(getByTestId('goal-composer-footer')).toBeTruthy();
   });
 
   it('renders a loading spinner when data is loading', () => {

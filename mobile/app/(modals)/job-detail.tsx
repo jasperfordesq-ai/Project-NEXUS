@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, CloseButton, Surface } from 'heroui-native';
+import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -535,16 +535,29 @@ function JobDetailScreen() {
       </Surface>
 
       {/* Apply sheet */}
-      <BottomSheet visible={applyModalVisible} onClose={handleCloseModal} snapPoints={['72%', '92%']}>
-        <View style={{ flex: 1, backgroundColor: theme.bg }}>
-            <View className="flex-row items-center justify-between px-5 py-3 border-b border-border/50">
-              <CloseButton onPress={handleCloseModal} accessibilityLabel={t('common:close')} iconProps={{ size: 24, color: theme.text }} />
-              <Text className="text-base font-bold text-foreground flex-1 text-center mx-2">
-                {t('apply.title', { jobTitle: job.title })}
-              </Text>
-              <View style={{ width: 44 }} />
-            </View>
-
+      <BottomSheet
+        visible={applyModalVisible}
+        onClose={handleCloseModal}
+        snapPoints={['72%', '92%']}
+        title={t('apply.title', { jobTitle: job.title })}
+        scrollable
+        footer={applySuccess ? undefined : (
+          <HeroButton
+            variant="primary"
+            onPress={() => void handleSubmitApplication()}
+            isDisabled={coverMessage.trim().length === 0 || applyLoading}
+            testID="job-apply-submit"
+          >
+            {applyLoading ? (
+              <Spinner size="sm" />
+            ) : (
+              <AccentIcon name="paper-plane-outline" size={17} />
+            )}
+            <HeroButton.Label>{t('apply.submit')}</HeroButton.Label>
+          </HeroButton>
+        )}
+      >
+        <View style={{ backgroundColor: theme.bg }}>
             {applySuccess ? (
               <View className="items-center justify-center p-10">
                 <Ionicons name="checkmark-circle" size={64} color={successColor} />
@@ -559,11 +572,7 @@ function JobDetailScreen() {
                 </HeroButton>
               </View>
             ) : (
-              <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
-                keyboardShouldPersistTaps="handled"
-              >
+              <View style={{ paddingTop: 12 }}>
                 {/* The CV, and what will actually be sent. */}
                 <Text className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
                   {t('apply.cvLabel')}
@@ -622,29 +631,9 @@ function JobDetailScreen() {
                   multiline
                   numberOfLines={6}
                   textAlignVertical="top"
-                  autoFocus
                   accessibilityLabel={t('apply.messageLabel')}
                 />
-
-                <HeroButton
-                  className="mt-5"
-                  variant="primary"
-                  style={{
-                    backgroundColor:
-                      coverMessage.trim().length === 0 || applyLoading
-                        ? theme.textMuted
-                        : primary,
-                  }}
-                  onPress={() => void handleSubmitApplication()}
-                  isDisabled={coverMessage.trim().length === 0 || applyLoading}
-                >
-                  {applyLoading ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <HeroButton.Label>{t('apply.submit')}</HeroButton.Label>
-                  )}
-                </HeroButton>
-              </ScrollView>
+              </View>
             )}
         </View>
       </BottomSheet>

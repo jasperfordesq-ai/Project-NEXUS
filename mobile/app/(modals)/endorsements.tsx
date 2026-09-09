@@ -585,6 +585,7 @@ function EndorsementsHeader({
           input (was a cramped inline field that the keyboard covered). */}
       <BottomSheet
         visible={addingSkill}
+        scrollable
         onClose={() => { setAddingSkill(false); setSkillInput(''); }}
         title={t('addSkill')}
       >

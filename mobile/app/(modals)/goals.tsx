@@ -360,12 +360,25 @@ function GoalCard({
   );
 }
 
-function CreateGoalForm({
+/**
+ * The goal composer, as a bottom sheet.
+ *
+ * 🔴 Reproduced on the emulator on 2026-09-09 after the owner reported it as "completely
+ * malfunctioning": the sheet opened with the keyboard up on the title field, the
+ * description and target fields sat under the keyboard, and the Cancel / Create buttons
+ * were not on screen AT ALL — `HeroCard.Footer` has no `flex-row`, so two `flex-1` buttons
+ * in a column collapsed to zero height. There was no scroll container either, so nothing
+ * the member did could reach them. The sheet is now `scrollable` and the actions live in
+ * its sticky footer, which stays above the keyboard however far the form is scrolled.
+ */
+function CreateGoalSheet({
+  visible,
   theme,
   t,
   onCreated,
   onCancel,
 }: {
+  visible: boolean;
   theme: ReturnType<typeof useTheme>;
   t: (key: string) => string;
   onCreated: (goal: Goal) => void;
@@ -401,58 +414,16 @@ function CreateGoalForm({
   }
 
   return (
-    <HeroCard className="rounded-panel p-0">
-      <HeroCard.Body className="gap-4 p-4">
-        <View className="flex-row items-center gap-3">
-          <View className="size-10 items-center justify-center rounded-2xl bg-default-200">
-            <Ionicons name="add-outline" size={22} color={theme.text} />
-          </View>
-          <View className="min-w-0 flex-1">
-            <Text className="text-base font-bold text-foreground">{t('create.title')}</Text>
-            <Text className="text-xs text-muted-foreground">{t('create.subtitle')}</Text>
-          </View>
-        </View>
-
-        <View>
-          <Input
-            label={t('create.titleLabel')}
-            style={{ color: theme.text }}
-            placeholder={t('create.titlePlaceholder')}
-            placeholderTextColor={theme.textMuted}
-            value={title}
-            onChangeText={setTitle}
-            returnKeyType="next"
-            autoFocus
-          />
-        </View>
-
-        <View>
-          <Input
-            label={t('create.descriptionLabel')}
-            style={{ color: theme.text, minHeight: 82, textAlignVertical: 'top' }}
-            placeholder={t('create.descriptionPlaceholder')}
-            placeholderTextColor={theme.textMuted}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
-        </View>
-
-        <View>
-          <Input
-            label={t('create.targetHoursLabel')}
-            style={{ color: theme.text }}
-            placeholder={t('create.targetPlaceholder')}
-            placeholderTextColor={theme.textMuted}
-            value={targetValue}
-            onChangeText={setTargetValue}
-            keyboardType="decimal-pad"
-            returnKeyType="done"
-          />
-        </View>
-
-        <HeroCard.Footer className="gap-2 p-0">
-          <HeroButton className="flex-1" variant="tertiary" onPress={onCancel}>
+    <BottomSheet
+      visible={visible}
+      onClose={onCancel}
+      snapPoints={['75%', '92%']}
+      title={t('create.title')}
+      scrollable
+      testID="goal-composer"
+      footer={
+        <View className="flex-row gap-2">
+          <HeroButton className="flex-1" variant="tertiary" onPress={onCancel} testID="goal-composer-cancel">
             <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
           </HeroButton>
           <HeroButton
@@ -460,13 +431,52 @@ function CreateGoalForm({
             variant="primary"
             onPress={() => void handleSubmit()}
             isDisabled={submitting || !title.trim()}
+            testID="goal-composer-submit"
           >
             {submitting ? <Spinner size="sm" /> : null}
             <HeroButton.Label>{t('create.submit')}</HeroButton.Label>
           </HeroButton>
-        </HeroCard.Footer>
-      </HeroCard.Body>
-    </HeroCard>
+        </View>
+      }
+    >
+      <View className="gap-4 py-3">
+        <Text className="text-sm leading-5 text-muted-foreground">{t('create.subtitle')}</Text>
+
+        <Input
+          label={t('create.titleLabel')}
+          style={{ color: theme.text }}
+          placeholder={t('create.titlePlaceholder')}
+          placeholderTextColor={theme.textMuted}
+          value={title}
+          onChangeText={setTitle}
+          returnKeyType="next"
+          containerClassName="mb-0"
+        />
+
+        <Input
+          label={t('create.descriptionLabel')}
+          style={{ color: theme.text, minHeight: 82, textAlignVertical: 'top' }}
+          placeholder={t('create.descriptionPlaceholder')}
+          placeholderTextColor={theme.textMuted}
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          containerClassName="mb-0"
+        />
+
+        <Input
+          label={t('create.targetHoursLabel')}
+          style={{ color: theme.text }}
+          placeholder={t('create.targetPlaceholder')}
+          placeholderTextColor={theme.textMuted}
+          value={targetValue}
+          onChangeText={setTargetValue}
+          keyboardType="decimal-pad"
+          returnKeyType="done"
+          containerClassName="mb-0"
+        />
+      </View>
+    </BottomSheet>
   );
 }
 
@@ -820,16 +830,15 @@ function GoalsScreen() {
           </KeyboardAvoidingView>
         )}
 
-        {/* Goal composer — bottom sheet so the keyboard never buries the form
-            (was rendered inline inside the list header). */}
-        <BottomSheet visible={showForm} onClose={() => setShowForm(false)} snapPoints={['75%', '92%']}>
-          <CreateGoalForm
-            theme={theme}
-            t={t}
-            onCreated={handleGoalCreated}
-            onCancel={() => setShowForm(false)}
-          />
-        </BottomSheet>
+        {/* Goal composer — a scrollable bottom sheet with its actions in a sticky footer,
+            so neither the keyboard nor a short screen can hide them. */}
+        <CreateGoalSheet
+          visible={showForm}
+          theme={theme}
+          t={t}
+          onCreated={handleGoalCreated}
+          onCancel={() => setShowForm(false)}
+        />
       </SafeAreaView>
     </ModalErrorBoundary>
   );

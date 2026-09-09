@@ -867,7 +867,7 @@ function MemberProfileScreenInner() {
         </View>
       </Surface>
 
-      <BottomSheet visible={thanksOpen} onClose={() => setThanksOpen(false)}>
+      <BottomSheet visible={thanksOpen} onClose={() => setThanksOpen(false)} scrollable>
         <View className="gap-3 p-4" testID="profile-thanks-sheet">
           <Text className="text-lg font-bold" style={{ color: theme.text }}>
             {t('profile.thanksTitle', { name: displayName })}

@@ -774,6 +774,7 @@ function ExchangeDetailModalInner() {
 
       <BottomSheet
         visible={!isOwner && workflowEnabled && showRequestForm}
+        scrollable
         onClose={() => setShowRequestForm(false)}
         snapPoints={['52%', '84%']}
         title={t('detail.requestExchange')}
@@ -834,6 +835,7 @@ function ExchangeDetailModalInner() {
 
       <BottomSheet
         visible={!isOwner && showReportForm && !isReported}
+        scrollable
         onClose={() => setShowReportForm(false)}
         snapPoints={['62%', '88%']}
         title={t('detail.reportTitle')}

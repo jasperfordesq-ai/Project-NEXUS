@@ -1260,8 +1260,8 @@ function CouponsPanel({ refreshNonce }: PanelProps) {
         onScanned={(token) => void redeemScannedQr(token)}
       />
 
-      <BottomSheet visible={Boolean(redemptionCoupon)} onClose={() => setRedemptionCoupon(null)} snapPoints={['68%', '92%']}>
-        <Surface variant="default" className="max-h-[78%] rounded-panel p-4">
+      <BottomSheet visible={Boolean(redemptionCoupon)} onClose={() => setRedemptionCoupon(null)} snapPoints={['68%', '92%']} scrollable>
+        <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <View className="min-w-0 flex-1">
                 <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('tools.coupons.redemptionsTitle')}</Text>
@@ -1274,11 +1274,11 @@ function CouponsPanel({ refreshNonce }: PanelProps) {
             ) : redemptions.length === 0 ? (
               <EmptyState icon="receipt-outline" title={t('tools.coupons.noRedemptions')} />
             ) : (
-              <ScrollView contentContainerStyle={{ gap: 10 }}>
+              <View style={{ gap: 10 }}>
                 {redemptions.map((redemption) => (
                   <RedemptionRow key={redemption.id} redemption={redemption} currency={tenant?.currency} />
                 ))}
-              </ScrollView>
+              </View>
             )}
         </Surface>
       </BottomSheet>

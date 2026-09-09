@@ -729,6 +729,7 @@ function ChatScreenInner() {
       </KeyboardAvoidingView>
       <BottomSheet
         visible={Boolean(pendingFeedbackNote)}
+        scrollable
         onClose={closeFeedbackNote}
         title={t('feedback.noteTitle')}
         snapPoints={['44%', '70%']}

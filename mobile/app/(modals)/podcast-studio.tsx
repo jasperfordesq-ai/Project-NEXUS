@@ -1222,8 +1222,23 @@ function PodcastStudioScreen() {
           modals, both forms edit a row this screen already holds (a pushed
           screen would have to refetch it), and `app/_layout.tsx` — where a new
           route would have to be registered — is owned by another session. */}
-      <BottomSheet visible={editingShow !== null} onClose={() => setEditingShow(null)} snapPoints={['80%', '94%']} title={t('studio.edit_show')}>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
+      <BottomSheet
+        visible={editingShow !== null}
+        onClose={() => setEditingShow(null)}
+        snapPoints={['80%', '94%']}
+        title={t('studio.edit_show')}
+        scrollable
+        footer={
+          <View className="flex-row gap-2">
+            <HeroButton className="flex-1" variant="tertiary" onPress={() => setEditingShow(null)}>
+              <HeroButton.Label>{t('actions.cancel')}</HeroButton.Label>
+            </HeroButton>
+            <HeroButton className="flex-[2]" variant="primary" isDisabled={savingEdit || !editingShowForm.title.trim()} onPress={() => void handleUpdateShow()}>
+              <HeroButton.Label>{t('studio.save_changes')}</HeroButton.Label>
+            </HeroButton>
+          </View>
+        }
+      >
           <View className="gap-4 py-2">
             <Input label={t('fields.show_title')} maxLength={200} value={editingShowForm.title} onChangeText={(title) => setEditingShowForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} />
             <Input label={t('fields.category')} value={editingShowForm.category} onChangeText={(category) => setEditingShowForm((prev) => ({ ...prev, category }))} style={{ color: theme.text }} />
@@ -1243,20 +1258,26 @@ function PodcastStudioScreen() {
             <ToggleRow label={t('fields.explicit_show')} value={editingShowForm.explicit} onToggle={() => setEditingShowForm((prev) => ({ ...prev, explicit: !prev.explicit }))} primary={primary} />
             <TextArea label={t('fields.summary')} value={editingShowForm.summary} onChangeText={(summary) => setEditingShowForm((prev) => ({ ...prev, summary }))} style={{ color: theme.text }} />
             <TextArea label={t('fields.description')} value={editingShowForm.description} onChangeText={(description) => setEditingShowForm((prev) => ({ ...prev, description }))} style={{ color: theme.text }} />
-            <View className="flex-row gap-2">
-              <HeroButton className="flex-1" variant="tertiary" onPress={() => setEditingShow(null)}>
-                <HeroButton.Label>{t('actions.cancel')}</HeroButton.Label>
-              </HeroButton>
-              <HeroButton className="flex-[2]" variant="primary" isDisabled={savingEdit || !editingShowForm.title.trim()} onPress={() => void handleUpdateShow()}>
-                <HeroButton.Label>{t('studio.save_changes')}</HeroButton.Label>
-              </HeroButton>
-            </View>
           </View>
-        </ScrollView>
       </BottomSheet>
 
-      <BottomSheet visible={editingEpisode !== null} onClose={() => setEditingEpisode(null)} snapPoints={['80%', '94%']} title={t('studio.edit_episode')}>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
+      <BottomSheet
+        visible={editingEpisode !== null}
+        onClose={() => setEditingEpisode(null)}
+        snapPoints={['80%', '94%']}
+        title={t('studio.edit_episode')}
+        scrollable
+        footer={
+          <View className="flex-row gap-2">
+            <HeroButton className="flex-1" variant="tertiary" onPress={() => setEditingEpisode(null)}>
+              <HeroButton.Label>{t('actions.cancel')}</HeroButton.Label>
+            </HeroButton>
+            <HeroButton className="flex-[2]" variant="primary" isDisabled={savingEdit || !editingEpisodeForm.title.trim()} onPress={() => void handleUpdateEpisode()}>
+              <HeroButton.Label>{t('studio.save_changes')}</HeroButton.Label>
+            </HeroButton>
+          </View>
+        }
+      >
           <View className="gap-4 py-2">
             <Input label={t('fields.episode_title')} maxLength={200} value={editingEpisodeForm.title} onChangeText={(title) => setEditingEpisodeForm((prev) => ({ ...prev, title }))} style={{ color: theme.text }} />
             {!editingEpisode?.episode.hosted_audio ? (
@@ -1298,16 +1319,7 @@ function PodcastStudioScreen() {
                 <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('fields.chapters_hint')}</Text>
               </>
             ) : null}
-            <View className="flex-row gap-2">
-              <HeroButton className="flex-1" variant="tertiary" onPress={() => setEditingEpisode(null)}>
-                <HeroButton.Label>{t('actions.cancel')}</HeroButton.Label>
-              </HeroButton>
-              <HeroButton className="flex-[2]" variant="primary" isDisabled={savingEdit || !editingEpisodeForm.title.trim()} onPress={() => void handleUpdateEpisode()}>
-                <HeroButton.Label>{t('studio.save_changes')}</HeroButton.Label>
-              </HeroButton>
-            </View>
           </View>
-        </ScrollView>
       </BottomSheet>
 
       <BottomSheet
@@ -1315,8 +1327,8 @@ function PodcastStudioScreen() {
         onClose={() => setFeedValidation(null)}
         snapPoints={['60%', '88%']}
         title={feedValidation ? t('studio.feed_validation.title', { title: feedValidation.show.title }) : undefined}
+        scrollable
       >
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
           <View className="gap-4 py-2">
             {feedValidation ? (
               <>
@@ -1357,7 +1369,6 @@ function PodcastStudioScreen() {
               <HeroButton.Label>{t('actions.close')}</HeroButton.Label>
             </HeroButton>
           </View>
-        </ScrollView>
       </BottomSheet>
 
       {confirmDialog}

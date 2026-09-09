@@ -313,7 +313,7 @@ function ReviewsScreen() {
             )}
           </View>
         </ScrollView>
-        <BottomSheet visible={activePending !== null} onClose={resetForm} snapPoints={['52%', '84%']}>
+        <BottomSheet visible={activePending !== null} onClose={resetForm} snapPoints={['52%', '84%']} scrollable>
           {activePending ? (
             <PendingReviewForm
               item={activePending}

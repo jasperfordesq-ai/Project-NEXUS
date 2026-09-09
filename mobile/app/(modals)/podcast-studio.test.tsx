@@ -299,12 +299,14 @@ jest.mock('@/components/ui/EmptyState', () => {
 jest.mock('@/components/ui/BottomSheet', () => {
   const React = require('react');
   const { Text, View } = require('react-native');
-  return function MockBottomSheet({ visible, title, children }: { visible: boolean; title?: string; children: React.ReactNode }) {
+  // Save / Cancel live in the sheet's sticky `footer`, so the mock must render it too.
+  return function MockBottomSheet({ visible, title, children, footer }: { visible: boolean; title?: string; children: React.ReactNode; footer?: React.ReactNode }) {
     if (!visible) return null;
     return (
       <View>
         {title ? <Text>{title}</Text> : null}
         {children}
+        {footer}
       </View>
     );
   };

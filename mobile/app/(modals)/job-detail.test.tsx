@@ -171,9 +171,10 @@ jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ui/BottomSheet', () => ({
   __esModule: true,
-  default: ({ visible, children }: { visible: boolean; children: React.ReactNode }) => {
-    const { View } = require('react-native');
-    return visible ? <View>{children}</View> : null;
+  // The apply button lives in the sheet's sticky `footer`, so the mock must render it too.
+  default: ({ visible, title, children, footer }: { visible: boolean; title?: string; children: React.ReactNode; footer?: React.ReactNode }) => {
+    const { Text, View } = require('react-native');
+    return visible ? <View>{title ? <Text>{title}</Text> : null}{children}{footer}</View> : null;
   },
 }));
 

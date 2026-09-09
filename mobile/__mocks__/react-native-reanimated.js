@@ -162,6 +162,12 @@ const Animated = {
   Image: require('react-native').Image,
   ScrollView: require('react-native').ScrollView,
   FlatList: require('react-native').FlatList,
+  // `@gorhom/bottom-sheet`'s scrollables call these on the DEFAULT export
+  // (`Animated.addWhitelistedUIProps(...)`) at module load, so a test that renders
+  // the shared BottomSheet wrapper (which imports BottomSheetScrollView) needs them here,
+  // not only on module.exports below.
+  addWhitelistedNativeProps: NOOP,
+  addWhitelistedUIProps: NOOP,
 };
 
 // useAnimatedGestureHandler

@@ -981,8 +981,8 @@ function MarketplaceDetailScreen() {
         </Surface>
       ) : null}
 
-      <BottomSheet visible={collectionOpen} onClose={() => setCollectionOpen(false)} snapPoints={['58%', '86%']}>
-        <Surface variant="default" className="max-h-[72%] rounded-panel p-4">
+      <BottomSheet visible={collectionOpen} onClose={() => setCollectionOpen(false)} snapPoints={['58%', '86%']} scrollable>
+        <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('collections.addTitle')}</Text>
               <CloseButton onPress={() => setCollectionOpen(false)} iconProps={{ size: 20, color: primary }} />
@@ -998,19 +998,19 @@ function MarketplaceDetailScreen() {
                 </HeroButton>
               </View>
             ) : (
-              <ScrollView contentContainerStyle={{ gap: 10 }}>
+              <View style={{ gap: 10 }}>
                 {collections.map((collection) => (
                   <HeroButton key={collection.id} variant="secondary" onPress={() => void addToCollection(collection)} isDisabled={isActionLoading}>
                     <Ionicons name="folder-outline" size={17} color={primary} />
                     <HeroButton.Label>{collection.name}</HeroButton.Label>
                   </HeroButton>
                 ))}
-              </ScrollView>
+              </View>
             )}
         </Surface>
       </BottomSheet>
 
-      <BottomSheet visible={offerOpen} onClose={() => setOfferOpen(false)} snapPoints={['48%', '78%']}>
+      <BottomSheet visible={offerOpen} onClose={() => setOfferOpen(false)} snapPoints={['48%', '78%']} scrollable>
         <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('offers.makeTitle')}</Text>
@@ -1027,13 +1027,13 @@ function MarketplaceDetailScreen() {
         </Surface>
       </BottomSheet>
 
-      <BottomSheet visible={reportOpen} onClose={() => setReportOpen(false)} snapPoints={['70%', '92%']}>
-        <Surface variant="default" className="max-h-[86%] rounded-panel p-4">
+      <BottomSheet visible={reportOpen} onClose={() => setReportOpen(false)} snapPoints={['70%', '92%']} scrollable>
+        <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('detail.reportTitle')}</Text>
               <CloseButton onPress={() => setReportOpen(false)} iconProps={{ size: 20, color: primary }} />
             </View>
-            <ScrollView contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
+            <View style={{ gap: 12 }}>
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('detail.reportHint')}</Text>
               <View className="gap-2">
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('detail.reportReason')}</Text>
@@ -1056,7 +1056,7 @@ function MarketplaceDetailScreen() {
                 <Ionicons name="flag-outline" size={17} color="#fff" />
                 <HeroButton.Label>{t('detail.reportSubmit')}</HeroButton.Label>
               </HeroButton>
-            </ScrollView>
+            </View>
         </Surface>
       </BottomSheet>
       {/* The purchase confirmation for a time-credit or free checkout (D/F-2). */}

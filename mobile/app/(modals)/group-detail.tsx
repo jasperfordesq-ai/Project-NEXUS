@@ -1326,6 +1326,7 @@ function GroupDetailScreenInner() {
       </ScrollView>
       <BottomSheet
         visible={showDiscussionComposer}
+        scrollable
         onClose={() => setShowDiscussionComposer(false)}
         snapPoints={['62%', '88%']}
         title={t('detail.startDiscussion')}

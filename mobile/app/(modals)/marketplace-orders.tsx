@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
-import { FlatList, Linking, RefreshControl, ScrollView, View } from 'react-native';
+import { FlatList, Linking, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -510,7 +510,7 @@ function MarketplaceOrdersScreen() {
         onEndReachedThreshold={0.35}
       />
 
-      <BottomSheet visible={Boolean(shipOrder)} onClose={() => setShipOrder(null)} snapPoints={['58%', '86%']}>
+      <BottomSheet visible={Boolean(shipOrder)} onClose={() => setShipOrder(null)} snapPoints={['58%', '86%']} scrollable>
         <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="min-w-0 flex-1 pr-3 text-lg font-bold" style={{ color: theme.text }} numberOfLines={1}>{t('orders.shipTitle')}</Text>
@@ -538,7 +538,7 @@ function MarketplaceOrdersScreen() {
         </Surface>
       </BottomSheet>
 
-      <BottomSheet visible={Boolean(cancelOrder)} onClose={() => setCancelOrder(null)} snapPoints={['40%', '66%']}>
+      <BottomSheet visible={Boolean(cancelOrder)} onClose={() => setCancelOrder(null)} snapPoints={['40%', '66%']} scrollable>
         <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="min-w-0 flex-1 pr-3 text-lg font-bold" style={{ color: theme.text }} numberOfLines={1}>{t('orders.cancelTitle')}</Text>
@@ -554,7 +554,7 @@ function MarketplaceOrdersScreen() {
         </Surface>
       </BottomSheet>
 
-      <BottomSheet visible={Boolean(rateOrder)} onClose={() => setRateOrder(null)} snapPoints={['58%', '86%']}>
+      <BottomSheet visible={Boolean(rateOrder)} onClose={() => setRateOrder(null)} snapPoints={['58%', '86%']} scrollable>
         <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="min-w-0 flex-1 pr-3 text-lg font-bold" style={{ color: theme.text }} numberOfLines={1}>{t('orders.rateTitle')}</Text>
@@ -592,13 +592,13 @@ function MarketplaceOrdersScreen() {
         </Surface>
       </BottomSheet>
 
-      <BottomSheet visible={Boolean(disputeOrder)} onClose={() => setDisputeOrder(null)} snapPoints={['70%', '92%']}>
-        <Surface variant="default" className="max-h-[86%] rounded-panel p-4">
+      <BottomSheet visible={Boolean(disputeOrder)} onClose={() => setDisputeOrder(null)} snapPoints={['70%', '92%']} scrollable>
+        <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="min-w-0 flex-1 pr-3 text-lg font-bold" style={{ color: theme.text }} numberOfLines={1}>{t('orders.disputeTitle')}</Text>
               <CloseButton onPress={() => setDisputeOrder(null)} iconProps={{ size: 20, color: primary }} />
             </View>
-            <ScrollView contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
+            <View style={{ gap: 12 }}>
               <View className="gap-2">
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{t('orders.disputeReason')}</Text>
                 <View className="flex-row flex-wrap gap-2">
@@ -620,12 +620,12 @@ function MarketplaceOrdersScreen() {
                 <Ionicons name="alert-circle-outline" size={17} color="#fff" />
                 <HeroButton.Label>{t('orders.submitDispute')}</HeroButton.Label>
               </HeroButton>
-            </ScrollView>
+            </View>
         </Surface>
       </BottomSheet>
 
-      <BottomSheet visible={Boolean(deliveryOrder)} onClose={() => setDeliveryOrder(null)} snapPoints={['70%', '92%']}>
-        <Surface variant="default" className="max-h-[86%] rounded-panel p-4">
+      <BottomSheet visible={Boolean(deliveryOrder)} onClose={() => setDeliveryOrder(null)} snapPoints={['70%', '92%']} scrollable>
+        <Surface variant="default" className="rounded-panel p-4">
             <View className="mb-4 flex-row items-center justify-between">
               <View className="min-w-0 flex-1">
                 <Text className="text-lg font-bold" style={{ color: theme.text }} numberOfLines={1}>{t('orders.deliveryOffersTitle')}</Text>
@@ -638,7 +638,7 @@ function MarketplaceOrdersScreen() {
             ) : deliveryOffers.length === 0 ? (
               <EmptyState icon="car-outline" title={t('orders.deliveryOffersEmpty')} subtitle={t('orders.deliveryOffersEmptyHint')} />
             ) : (
-              <ScrollView contentContainerStyle={{ gap: 12 }} showsVerticalScrollIndicator={false}>
+              <View style={{ gap: 12 }}>
                 {deliveryOffers.map((offer) => (
                   <DeliveryOfferCard
                     key={offer.id}
@@ -648,7 +648,7 @@ function MarketplaceOrdersScreen() {
                     onConfirm={() => void updateDeliveryOffer(offer, 'confirm')}
                   />
                 ))}
-              </ScrollView>
+              </View>
             )}
         </Surface>
       </BottomSheet>

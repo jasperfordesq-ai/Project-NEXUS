@@ -841,7 +841,7 @@ function VolunteeringDetailScreenInner() {
           </HeroCard>
         )}
       </ScrollView>
-      <BottomSheet visible={!opportunity.is_owner && applySheetOpen} onClose={() => setApplySheetOpen(false)} snapPoints={['52%', '84%']}>
+      <BottomSheet visible={!opportunity.is_owner && applySheetOpen} onClose={() => setApplySheetOpen(false)} snapPoints={['52%', '84%']} scrollable>
         <View className="gap-4 py-2">
           <View>
             <Text className="text-lg font-bold" style={{ color: theme.text }}>
