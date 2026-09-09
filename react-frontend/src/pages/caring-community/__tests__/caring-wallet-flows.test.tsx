@@ -36,6 +36,7 @@ vi.mock('@/contexts', async () => {
   return {
     ...actual,
     useTenant: () => ({
+      hasModule: vi.fn((_key: string) => true),
       tenantSlug: 'hour-timebank',
       tenantPath: (path: string) => `/hour-timebank${path}`,
       hasFeature: (feature: string) => feature === 'caring_community',

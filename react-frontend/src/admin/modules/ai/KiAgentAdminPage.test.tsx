@@ -24,6 +24,7 @@ vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
     useTenant: () => ({
+      hasModule: vi.fn((_key: string) => true),
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),

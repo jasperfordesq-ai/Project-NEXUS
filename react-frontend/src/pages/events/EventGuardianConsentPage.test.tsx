@@ -14,8 +14,12 @@ const mockLogError = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/logger', () => ({ logError: mockLogError }));
 vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('@/contexts/TenantContext', () => ({
-  useTenant: () => ({ tenantPath: (path: string) => `/test${path}` }),
+  useTenant: () => ({ tenantPath: (path: string) => `/test${path}`, hasFeature: vi.fn((_key: string) => true), hasModule: vi.fn((_key: string) => true) }),
 }));
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => undefined },

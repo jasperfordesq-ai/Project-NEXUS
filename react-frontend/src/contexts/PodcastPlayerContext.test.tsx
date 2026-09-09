@@ -24,8 +24,12 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('@/contexts/TenantContext', () => ({
-  useTenant: () => ({ tenant: { id: 2 }, hasFeature: () => true, tenantPath: (p: string) => p }),
+  useTenant: () => ({ tenant: { id: 2 }, hasFeature: () => true, tenantPath: (p: string) => p, hasModule: vi.fn((_key: string) => true) }),
 }));
 
 function track(overrides: Record<string, unknown> = {}) {

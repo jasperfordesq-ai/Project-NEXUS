@@ -34,6 +34,8 @@ vi.mock('@/contexts/CookieConsentContext', () => ({
 // Mock tenant context
 vi.mock('@/contexts', () => ({
   useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (path: string) => `/test-tenant${path}`,
     branding: { name: 'Test Community' },
     tenant: { id: 1, slug: 'test-tenant' },
@@ -50,8 +52,14 @@ vi.mock('@/contexts', () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
 }));
 
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (path: string) => `/test-tenant${path}`,
     branding: { name: 'Test Community' },
     tenant: { id: 1, slug: 'test-tenant' },

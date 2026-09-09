@@ -16,6 +16,8 @@ vi.mock('@/admin/api/adminApi', () => ({
 
 vi.mock('@/contexts', () => ({
   useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (path: string) => path,
   }),
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),

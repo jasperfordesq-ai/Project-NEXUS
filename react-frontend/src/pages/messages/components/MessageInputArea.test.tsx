@@ -19,6 +19,8 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('@/contexts', () => ({
   useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (p: string) => `/t/test${p}`,
   }),
 

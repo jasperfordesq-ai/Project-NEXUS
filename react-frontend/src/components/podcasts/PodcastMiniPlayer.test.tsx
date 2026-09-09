@@ -19,8 +19,13 @@ vi.mock('@/contexts/PodcastPlayerContext', () => ({
   usePodcastPlayerOptional: () => mockPlayer,
 }));
 
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({
+    hasModule: vi.fn((_key: string) => true),
     tenant: { id: 2 },
     hasFeature: () => mockHasFeature,
     tenantPath: (p: string) => p,

@@ -11,6 +11,7 @@ let twoFactorEnrollmentAllowed = true;
 
 vi.mock('@/contexts', () => ({
   useTenant: () => ({
+    hasModule: vi.fn((_key: string) => true),
     hasFeature: (feature: string) => feature !== 'two_factor_authentication' || twoFactorEnrollmentAllowed,
   }),
 }));

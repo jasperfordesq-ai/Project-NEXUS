@@ -26,8 +26,12 @@ import { render, screen, fireEvent } from '@/test/test-utils';
 
 const hasModule = vi.hoisted(() => vi.fn(() => true));
 
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('@/contexts/TenantContext', () => ({
-  useTenant: () => ({ tenantPath: (p: string) => `/test${p}`, hasModule }),
+  useTenant: () => ({ tenantPath: (p: string) => `/test${p}`, hasModule, hasFeature: vi.fn((_key: string) => true) }),
 }));
 
 vi.mock('@/lib/motion', () => ({

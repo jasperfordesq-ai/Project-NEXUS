@@ -92,9 +92,15 @@ vi.mock('@/contexts/ToastContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/contexts/ToastContext')>();
   return { ...actual, useToast: () => mockToast };
 });
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('@/contexts/TenantContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/contexts/TenantContext')>();
   return { ...actual, useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     tenant: { id: 2, name: 'Test', slug: 'test' },
     tenantPath: stableTenantPath,
     branding: { name: 'Test Platform' },

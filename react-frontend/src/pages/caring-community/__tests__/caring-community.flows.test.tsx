@@ -22,6 +22,7 @@ vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/contexts', () => ({
   useTenant: () => ({
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (path: string) => `/test-timebank${path}`,
     hasFeature: () => true,
   }),

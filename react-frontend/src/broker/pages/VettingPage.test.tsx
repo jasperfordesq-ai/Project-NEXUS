@@ -43,7 +43,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@/contexts', () => createMockContexts({
   useAuth: () => ({ user: { id: 1, role: 'admin', is_admin: true } }),
-  useTenant: () => ({ tenantPath: (path: string) => `/test${path}` }),
+  useTenant: () => ({ tenantPath: (path: string) => `/test${path}`, hasFeature: vi.fn((_key: string) => true), hasModule: vi.fn((_key: string) => true) }),
   useToast: () => mocks.toast,
 }));
 

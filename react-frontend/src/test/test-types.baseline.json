@@ -177,7 +177,6 @@
       "TS2345": 3
     },
     "src/admin/modules/ai/KiAgentAdminPage.test.tsx": {
-      "TS2322": 1,
       "TS2345": 4
     },
     "src/admin/modules/analytics/CommunityAnalytics.test.tsx": {
@@ -620,7 +619,7 @@
       "TS2345": 1
     },
     "src/admin/modules/volunteering/VolunteerOrganizations.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/admin/modules/volunteering/VolunteerProjects.test.tsx": {
       "TS18048": 1,
@@ -1953,6 +1952,6 @@
   },
   "totals": {
     "fileCount": 576,
-    "errorCount": 1773
+    "errorCount": 1771
   }
 }

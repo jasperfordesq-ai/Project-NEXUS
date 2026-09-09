@@ -27,9 +27,15 @@ let mockTenant: { id: number; slug: string } | null = { id: 2, slug: 'hour-timeb
 // '@/contexts' barrel mock is never consulted and the real provider-backed hook
 // throws, because renderHook mounts the hook with no TenantProvider. Partial
 // mock so TenantProvider and the other exports stay real.
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
   useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     isLoading: mockTenantLoading,
     tenant: mockTenant,
   }),

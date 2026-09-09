@@ -15,6 +15,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@/contexts', () => ({
   useTenant: () => ({
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (path: string) => `/t/test${path}`,
     hasFeature: vi.fn().mockReturnValue(false),
   }),

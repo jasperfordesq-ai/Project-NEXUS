@@ -22,7 +22,7 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 vi.mock('@/contexts', () => ({
-  useTenant: () => ({ tenantPath: (path: string) => `/test${path}` }),
+  useTenant: () => ({ tenantPath: (path: string) => `/test${path}`, hasFeature: vi.fn((_key: string) => true), hasModule: vi.fn((_key: string) => true) }),
   useToast: () => toastMock,
 }));
 vi.mock('../../api/adminApi', () => ({

@@ -55,6 +55,8 @@ vi.mock("@/lib/logger", () => ({
 
 vi.mock("@/contexts", () => ({
   useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (path: string) => `/hour-timebank${path}`,
   }),
 }));

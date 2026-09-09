@@ -17,7 +17,7 @@ const { mockToast, mockConfirm, mockTenantState } = vi.hoisted(() => ({
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
-    useTenant: () => ({ tenant: { currency: mockTenantState.currency } }),
+    useTenant: () => ({ tenant: { currency: mockTenantState.currency }, hasFeature: vi.fn((_key: string) => true), hasModule: vi.fn((_key: string) => true) }),
   }),
 );
 

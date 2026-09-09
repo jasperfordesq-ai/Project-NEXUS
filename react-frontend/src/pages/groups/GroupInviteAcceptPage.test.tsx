@@ -17,6 +17,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/contexts', () => createMockContexts({
   useTenant: () => ({
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
     tenantPath: (path: string) => `/test${path}`,
   }),
 }));

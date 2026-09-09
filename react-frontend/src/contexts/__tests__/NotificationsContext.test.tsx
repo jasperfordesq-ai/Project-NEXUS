@@ -103,8 +103,12 @@ vi.mock('@/lib/logger', () => ({
 
 const mockUseAuth = vi.fn();
 const disabledModules = new Set<string>();
+// 🔴 Both gates are required even when nothing in this file reads them: shared
+// components (Breadcrumbs, headers, menus) ask the tenant context whether a
+// destination is enabled, and a partial mock makes that call throw during render.
+// Granting everything keeps these cases about their own subject.
 vi.mock('../TenantContext', () => ({
-  useTenant: () => ({ hasModule: (module: string) => !disabledModules.has(module) }),
+  useTenant: () => ({ hasModule: (module: string) => !disabledModules.has(module), hasFeature: vi.fn((_key: string) => true) }),
 }));
 
 vi.mock('../AuthContext', () => ({
