@@ -101,7 +101,6 @@ import ResourcesScreen from './resources';
 describe('ResourcesScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    let call = 0;
     const resourcesState = {
       data: {
         items: [

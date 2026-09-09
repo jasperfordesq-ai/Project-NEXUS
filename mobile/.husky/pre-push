@@ -1,5 +1,21 @@
 #!/usr/bin/env sh
 
-# Mobile pre-push hook disabled — mobile development on hold
-# CI pipeline handles all test validation
+# 🔴 There is deliberately NO pre-push gate in this repository, and this file exists only
+# because husky's hooks path (mobile/.husky/_) is set repo-wide by `npm install` in mobile/.
+# Without the file, git would still find nothing to run; with it, the reason is written down.
+#
+# Why nothing runs here: the full checks — type-check, the 449-suite Jest run, lint, the
+# translation and release gates — take minutes, and a push is not the moment to spend them.
+# CI is the authoritative net (AGENTS.md says so explicitly). The pre-commit hook, which
+# DOES run, carries the two gates that must never be skipped: the credential scan and the
+# staged PHP tests.
+#
+# 🔴 This file used to say "Mobile pre-push hook disabled — mobile development on hold".
+# That premise died long ago — mobile is one of the most active areas of the project — and
+# the identical wording in the pre-commit file had silently disabled the credential scan on
+# a PUBLIC repository for months. The comment is corrected rather than deleted so the next
+# reader knows the absence is a decision, not neglect.
+#
+# Do not add a gate here without an explicit instruction. `scripts/pre-push-checks.sh` at
+# the repo root is the bundle to run by hand.
 exit 0
