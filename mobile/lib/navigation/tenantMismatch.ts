@@ -14,9 +14,12 @@ import { isTenantSelectionPath } from '@/lib/navigation/authRedirect';
  * notification count and push-device registration were all refused inside a single second.
  * They were signed in, receiving no notifications, and being told nothing at all.
  *
- * 🔴 Retrying cannot clear it, and the app cannot quietly correct itself either: an account
- * belongs to ONE community, and the refusal does not say which one issued the token. The
- * only honest move is to say so and open the community picker.
+ * 🔴 This is now the FALLBACK, not the first answer. The app repairs itself where it can —
+ * at sign-in, and once per launch — by reading the community its own session belongs to and
+ * moving there silently (lib/tenancy/signInTenant.ts). What reaches here is what that could
+ * not fix: a member whose community is not in the public list, one whose cached profile is
+ * too old to prove they are not a platform super admin, or a repair that failed. For those
+ * the honest move is unchanged: say so, and open the community picker.
  *
  * The picker genuinely works from this state, and that is not an accident — two earlier
  * pieces of work made it so. `GET /v2/tenants` is sent anonymously so the list still loads
@@ -37,6 +40,15 @@ export interface TenantMismatchDeps {
   navigate: (href: string) => void;
   /** Translator, already bound to a namespace list that includes `common`. */
   t: (key: string) => string;
+  /**
+   * Is the app already putting this right by itself? `communityRepairStore.isRepairing`.
+   *
+   * 🔴 Without this the two race at launch. The repair reads the cached profile while the
+   * first screens are already firing requests that get refused, so the member would be
+   * told "choose your community below" at the exact moment the app was choosing it for
+   * them. A warning that contradicts what the app is doing is worse than either alone.
+   */
+  isRepairInProgress: () => boolean;
 }
 
 export interface TenantMismatchHandler {
@@ -60,6 +72,20 @@ export function createTenantMismatchHandler(deps: TenantMismatchDeps): TenantMis
         second, and a busy launch has many more.
       */
       if (handled) return;
+
+      /*
+        Deliberately does NOT consume the once-only guard. A repair can fail — the community
+        list may be unreachable, or the community itself may not load — and when it does the
+        next refusal must still be able to apologise and open the picker.
+
+        🔴 The window closes when the repair finishes, not later, so a refusal that lands
+        after that still opens the picker. That is today's behaviour and no worse. It is
+        also rare in practice rather than by luck: the refusals in flight at launch come
+        back in a single round-trip, while the repair spends two — the community list and
+        then the new community's configuration — so they land inside the window.
+      */
+      if (deps.isRepairInProgress()) return;
+
       handled = true;
       deps.publish({
         title: deps.t('common:errors.wrongCommunityTitle'),

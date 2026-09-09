@@ -454,7 +454,9 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      guessed at. A hub's network admin IS moved — `isTokenUserSuperAdmin` deliberately
      omits `is_tenant_super_admin`, so the server refuses them like anyone else.
      `lib/navigation/tenantMismatch.ts` stays as the rescue for anything that slips
-     through.
+     through. **The same repair also runs once per launch** for devices already in this
+     state — see the note under "Still open" for the one group it deliberately will not
+     move.
    - **Pull-to-refresh on twenty more screens**, plus three faults that were the same
      mistake from different sides: a failed refresh said nothing at all when rows were
      already on screen (new `components/ui/RefreshFailedNotice.tsx`); nine screens
@@ -500,14 +502,23 @@ banked headline. A new rubric id legitimately resets the floor — M1 → M2 wou
      which `BaseApiController` already supports. The app will then place each one
      without further change. A member filling in three bad fields is currently told
      about one of them and not which.
-   - 🔴 **A member ALREADY stuck in the wrong community is not rescued by installing
-     the fix.** The switch above happens at sign-in; their device already holds a token
-     for one community and the slug of another, and nothing reconciles the two on
-     launch. `tenantMismatch.ts` still catches it and opens the community picker, and
-     picking their own community clears it. Reconciling on launch as well is possible —
-     the cached profile carries `tenant_id` — but was not built, because at launch the
-     community config is often not loaded yet and the check would cost an extra request
-     on cold starts that have nothing wrong with them.
+   - **A member ALREADY stuck in the wrong community is now repaired on launch** —
+     `AuthContext` runs the same decision once per launch against the cached profile's
+     `tenant_id`. It waits for `tenantContext.tenant` so the comparison is two ids in
+     hand and a healthy launch costs no request. 🔴 **One group is deliberately left to
+     the picker:** a member the server calls an admin whose cached profile predates
+     `is_super_admin`/`is_god`. `classifyCrossCommunityAdmin` answers `'unknown'` there
+     rather than guessing `false`, because being wrong means moving a platform super
+     admin out of a community they chose. `is_admin === false` IS treated as proof of
+     not-exempt — the server computes `is_admin` to include every super-admin flag — so
+     ordinary members are rescued from any age of cache.
+   - 🔴 **The repair and the apology share one flag, `lib/tenancy/communityRepairStore.ts`.**
+     They react to the same state and raced at launch. `tenantMismatch.onMismatch` now
+     returns early while a repair is in flight WITHOUT consuming its once-only guard, so
+     a failed repair still gets the picker. The window closes when the repair finishes,
+     so a refusal landing after that still opens the picker — no worse than before, and
+     rare in practice because the repair spends two round-trips while the refusals it
+     races take one.
    - 🔴 **Sentry still cannot answer "which community was it asking for?"** `report.ts`
      sends the slug as an `X-Tenant-Slug` header to `/api/app/log` and never sets it as
      a Sentry tag. Adding one would have made this a one-click diagnosis instead of a

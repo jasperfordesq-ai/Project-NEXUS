@@ -98,6 +98,8 @@ jest.mock('@/lib/notifications', () => ({
 
 import { router } from 'expo-router';
 
+import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
+
 import { AuthProvider, useAuthContext } from './AuthContext';
 
 /** The hub a sub-community's members must use to sign in, and the sub-community itself. */
@@ -108,9 +110,18 @@ function showingCommunity(community: { id: number; slug: string }) {
   return {
     tenant: { id: community.id, slug: community.slug },
     tenantSlug: community.slug,
+    isLoading: false,
     setTenantSlug: mockSetTenantSlug,
   };
 }
+
+/** The community's configuration has not loaded yet — the state every launch starts in. */
+const stillLoadingCommunity = {
+  tenant: null,
+  tenantSlug: HUB.slug,
+  isLoading: true,
+  setTenantSlug: mockSetTenantSlug,
+};
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
@@ -148,6 +159,7 @@ describe('AuthContext', () => {
     mockListTenants.mockResolvedValue({ data: [HUB, SUB] });
     mockTenantContext = showingCommunity(HUB);
     (router.replace as jest.Mock).mockClear();
+    communityRepairStore.__resetForTests();
   });
 
   it('starts in loading state', () => {
@@ -428,6 +440,161 @@ describe('AuthContext', () => {
 
     expect(mockInstallApiSession).toHaveBeenCalledWith('new-account-token');
     expect(result.current.token).toBe('new-account-token');
+  });
+
+  /*
+    LAUNCHING WHILE ALREADY IN THE WRONG COMMUNITY.
+
+    Fixing this at sign-in does nothing for the people it has already happened to. Their
+    phone holds a session issued by one community and the name of another, and every launch
+    repeated the same silent refusal of everything — they would have had to notice the
+    community picker and work out for themselves which community was theirs.
+
+    The decision is the same shared one (lib/tenancy/signInTenant.ts). These are about when
+    it runs, what it costs when nothing is wrong, and that it holds the apology back while
+    it works.
+  */
+  const cachedMemberOf = (tenantId: number, extra: Record<string, unknown> = {}) => ({
+    ...mockUser,
+    tenant_id: tenantId,
+    is_super_admin: false,
+    is_god: false,
+    ...extra,
+  });
+
+  it('puts a member who launches in the wrong community back into their own', async () => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(SUB.id));
+    // Everything token-scoped is refused in this state, including the profile fetch.
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalledWith('stratford'));
+    // The screens already on the stack asked the old community and were refused; useApi
+    // does not re-fetch because the community changed underneath it.
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(tabs)/home'));
+    expect(result.current.isAuthenticated).toBe(true);
+  });
+
+  it('costs a healthy launch nothing at all', async () => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(HUB.id));
+    mockGetMe.mockResolvedValue({ data: cachedMemberOf(HUB.id) });
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    expect(mockListTenants).not.toHaveBeenCalled();
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+  });
+
+  /*
+    🔴 This is what keeps the cost at nothing. Without the wait the community id is unknown
+    on every cold start, and "unknown" means asking the server for the community list —
+    an extra request on every launch, for everybody, to catch a rare fault.
+  */
+  it('waits for the community configuration rather than guessing', async () => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(SUB.id));
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+    mockTenantContext = stillLoadingCommunity;
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    expect(mockListTenants).not.toHaveBeenCalled();
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+  });
+
+  /*
+    🔴 A repair, not a policy. A member who picks a different community later in the same
+    session must not be dragged back to their own on the next render.
+  */
+  it('tries once per launch, not once per render', async () => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(SUB.id));
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalledTimes(1));
+
+    /*
+      🔴 The user object changing is what would restart it — a profile edit, or the
+      background `getMe` landing — so that is what this provokes, rather than a bare
+      re-render the effect would ignore anyway.
+
+      🔴 And it has to WAIT before asserting. Written without the flush below this test
+      passed with the once-only guard deleted: the repair's second run does not reach
+      `setTenantSlug` until two promises have settled, so a synchronous assertion is taken
+      before the thing it is looking for could possibly have happened. Caught by a control
+      run, which is the only reason it is written properly now.
+    */
+    await act(async () => {
+      result.current.refreshUser({ ...cachedMemberOf(SUB.id), first_name: 'Jo' } as never);
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+
+    expect(mockListTenants).toHaveBeenCalledTimes(1);
+    expect(mockSetTenantSlug).toHaveBeenCalledTimes(1);
+  });
+
+  /*
+    🔴 The apology and the repair race at launch, and the apology must lose. Otherwise the
+    member is told "choose your community below" at the exact moment the app is choosing it
+    for them. `communityRepairStore` is the only thing joining the two.
+  */
+  it('holds the community picker back while it is working', async () => {
+    let releaseSwitch: () => void = () => {};
+    mockSetTenantSlug.mockImplementation(() => new Promise<void>((resolve) => {
+      releaseSwitch = resolve;
+    }));
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(SUB.id));
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+
+    renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalled());
+
+    expect(communityRepairStore.isRepairing()).toBe(true);
+
+    await act(async () => { releaseSwitch(); });
+    await waitFor(() => expect(communityRepairStore.isRepairing()).toBe(false));
+  });
+
+  it('lets the picker apologise again once a failed repair is over', async () => {
+    mockSetTenantSlug.mockRejectedValue(new Error('Unable to load community'));
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(SUB.id));
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalled());
+
+    await waitFor(() => expect(communityRepairStore.isRepairing()).toBe(false));
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(router.replace).not.toHaveBeenCalledWith('/(tabs)/home');
+  });
+
+  /*
+    🔴 A cache written by an older build may predate the super-admin flags, and then "no
+    flag" and "flag is false" look identical. Moving a platform super admin out of the
+    community they deliberately chose is the one expensive mistake here, so an admin we
+    cannot classify is left alone and the picker rescues them instead.
+  */
+  it('will not move an admin whose cached profile predates the super-admin flags', async () => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue({
+      ...mockUser, tenant_id: SUB.id, is_admin: true,
+    });
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    expect(mockListTenants).not.toHaveBeenCalled();
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
   });
 
   it('refreshUser() updates in-memory user without a network call', async () => {

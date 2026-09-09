@@ -5,13 +5,14 @@
 
 import { TENANT_PICKER_HREF, createTenantMismatchHandler } from './tenantMismatch';
 
-function harness() {
+function harness(isRepairInProgress: () => boolean = () => false) {
   const publish = jest.fn();
   const navigate = jest.fn();
   const handler = createTenantMismatchHandler({
     publish,
     navigate,
     t: (key: string) => key,
+    isRepairInProgress,
   });
   return { handler, publish, navigate };
 }
@@ -81,6 +82,39 @@ describe('a token that belongs to a different community', () => {
 
     expect(publish).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  /**
+   * 🔴 The app repairs this by itself now, at sign-in and once per launch. At launch the two
+   * race: the repair reads the cached profile while the first screens are already firing
+   * requests that get refused. Without this the member would be told "choose your community
+   * below" at the exact moment the app was choosing it for them.
+   */
+  it('says nothing while the app is already putting it right', () => {
+    const { handler, publish, navigate } = harness(() => true);
+
+    handler.onMismatch();
+
+    expect(publish).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  /**
+   * 🔴 The half that matters more. A repair can fail — the community list may be
+   * unreachable, or the community itself may not load — and staying quiet after that would
+   * leave the member with everything refused and nothing said. Keeping quiet must not
+   * consume the once-only guard.
+   */
+  it('still apologises once the repair has given up', () => {
+    let repairing = true;
+    const { handler, publish, navigate } = harness(() => repairing);
+
+    handler.onMismatch();
+    repairing = false;
+    handler.onMismatch();
+
+    expect(publish).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(TENANT_PICKER_HREF);
   });
 
   /**

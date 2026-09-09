@@ -6,6 +6,7 @@
 import type { TenantListItem } from '@/lib/api/tenant';
 import {
   adoptSignInTenant,
+  classifyCrossCommunityAdmin,
   decideSignInTenant,
   isCrossCommunityAdmin,
   type SignInTenantInput,
@@ -25,7 +26,7 @@ function input(overrides: Partial<SignInTenantInput> = {}): SignInTenantInput {
     userTenantId: SUB.id,
     currentTenantId: HUB.id,
     currentSlug: HUB.slug,
-    isCrossCommunityAdmin: false,
+    adminExemption: 'not-exempt',
     tenants: TENANTS,
     ...overrides,
   };
@@ -81,7 +82,7 @@ describe('which community the app should be in after signing in', () => {
    * they signed in to do.
    */
   it('leaves a platform super admin where they chose to be', () => {
-    expect(decideSignInTenant(input({ isCrossCommunityAdmin: true })))
+    expect(decideSignInTenant(input({ adminExemption: 'exempt' })))
       .toEqual({ action: 'keep', reason: 'cross-community-admin' });
   });
 
@@ -92,11 +93,22 @@ describe('which community the app should be in after signing in', () => {
    * exactly the same rescue.
    */
   it('still moves a hub network admin, who the server does not exempt', () => {
-    const networkAdmin = { role: 'admin', is_tenant_super_admin: true };
-    expect(isCrossCommunityAdmin(networkAdmin)).toBe(false);
+    const networkAdmin = { role: 'admin', is_admin: true, is_tenant_super_admin: true, is_super_admin: false, is_god: false };
+    expect(classifyCrossCommunityAdmin(networkAdmin)).toBe('not-exempt');
     expect(decideSignInTenant(input({
-      isCrossCommunityAdmin: isCrossCommunityAdmin(networkAdmin),
+      adminExemption: classifyCrossCommunityAdmin(networkAdmin),
     }))).toEqual({ action: 'adopt', slug: 'stratford' });
+  });
+
+  /**
+   * 🔴 The launch repair reads a profile CACHED on the device, and a cache written by an
+   * older build may predate the super-admin flags — at which point "no flag" and "flag is
+   * false" are indistinguishable. Doing nothing is the only safe answer: being wrong here
+   * means dragging a platform super admin out of the community they deliberately chose.
+   */
+  it('does nothing when it cannot tell whether the member is exempt', () => {
+    expect(decideSignInTenant(input({ adminExemption: 'unknown' })))
+      .toEqual({ action: 'keep', reason: 'admin-status-unknown' });
   });
 
   it('does nothing when the sign-in response carried no community', () => {
@@ -161,10 +173,43 @@ const NOT_EXEMPT: [string, UserFlags][] = [
 describe('mirroring the server rule about who may be in another community', () => {
   it.each(EXEMPT)('treats %s as exempt', (_label, user) => {
     expect(isCrossCommunityAdmin(user)).toBe(true);
+    expect(classifyCrossCommunityAdmin(user)).toBe('exempt');
   });
 
   it.each(NOT_EXEMPT)('does not treat %s as exempt', (_label, user) => {
     expect(isCrossCommunityAdmin(user)).toBe(false);
+  });
+});
+
+/**
+ * The three-answer version, which is what the launch repair uses. A sign-in response always
+ * carries the flags; a profile cached by an older build may not.
+ */
+describe('telling exempt from not-exempt from cannot-tell', () => {
+  it('reads the flags when the profile carries them', () => {
+    expect(classifyCrossCommunityAdmin({ role: 'member', is_super_admin: false, is_god: false }))
+      .toBe('not-exempt');
+    expect(classifyCrossCommunityAdmin({ role: 'admin', is_admin: true, is_super_admin: false, is_god: false }))
+      .toBe('not-exempt');
+  });
+
+  /**
+   * 🔴 A proof, not a guess. The server computes `is_admin` as
+   * `role in (admin, tenant_admin, super_admin) || is_super_admin || is_tenant_super_admin`,
+   * so a member it calls not-admin cannot be a platform super admin. This is what lets the
+   * overwhelming majority of members — admins of nothing — be rescued from the oldest cache
+   * imaginable.
+   */
+  it('trusts is_admin === false even with no super-admin flags at all', () => {
+    expect(classifyCrossCommunityAdmin({ role: 'member', is_admin: false })).toBe('not-exempt');
+  });
+
+  it('refuses to guess for an admin whose cached profile predates the flags', () => {
+    expect(classifyCrossCommunityAdmin({ role: 'admin', is_admin: true })).toBe('unknown');
+  });
+
+  it('refuses to guess when the profile says nothing at all', () => {
+    expect(classifyCrossCommunityAdmin({})).toBe('unknown');
   });
 });
 
@@ -179,7 +224,7 @@ describe('carrying the decision out', () => {
         userTenantId: full.userTenantId,
         currentTenantId: full.currentTenantId,
         currentSlug: full.currentSlug,
-        isCrossCommunityAdmin: full.isCrossCommunityAdmin,
+        adminExemption: full.adminExemption,
       },
       listTenants,
       setTenantSlug,

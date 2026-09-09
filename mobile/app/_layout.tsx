@@ -34,6 +34,7 @@ import UpdateRequiredGate from '@/components/UpdateRequiredGate';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { decideAuthRedirect } from '@/lib/navigation/authRedirect';
 import { createTenantMismatchHandler } from '@/lib/navigation/tenantMismatch';
+import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { scrubSentryBreadcrumb, scrubSentryEvent } from '@/lib/observability/sentryScrubbing';
 import { configureNativeTheme } from '@/lib/theme/nativeTheme';
@@ -359,12 +360,18 @@ function RootNavigator() {
     including the once-only guard, so it can be tested — this layout has no behavioural test
     of its own, and a guard that fires "once" is exactly what quietly stops working. The
     comment on that module explains the state and why the picker is the answer.
+
+    It is the FALLBACK now: `AuthContext` repairs this by itself at sign-in and once per
+    launch, and `communityRepairStore` is how this handler knows to keep quiet while that is
+    happening rather than telling the member to choose a community the app is already
+    choosing for them.
   */
   const tenantMismatch = useMemo(
     () => createTenantMismatchHandler({
       publish: (notice) => sessionNoticeStore.publish(notice),
       navigate: (href) => router.replace(href as Parameters<typeof router.replace>[0]),
       t,
+      isRepairInProgress: () => communityRepairStore.isRepairing(),
     }),
     [t],
   );

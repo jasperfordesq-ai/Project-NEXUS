@@ -37,6 +37,18 @@ export interface User {
    * A client courtesy only: the API is the real gate. Absent means "assume not".
    */
   is_admin?: boolean;
+  /**
+   * Platform super admin. `UserService::formatProfile` sends this and `is_god` on the
+   * own-profile branch, and this interface did not declare them.
+   *
+   * 🔴 They matter because the launch repair reads this profile out of the device cache to
+   * decide whether the app is in the wrong community — and a platform super admin is exempt
+   * from the server's tenant check, so they are precisely the people it must not move. See
+   * `classifyCrossCommunityAdmin` in lib/tenancy/signInTenant.ts, which treats an absent
+   * flag as "cannot tell" rather than as false.
+   */
+  is_super_admin?: boolean;
+  is_god?: boolean;
   tenant_id: number;
   created_at: string | null;
   onboarding_completed?: boolean;

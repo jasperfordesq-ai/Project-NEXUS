@@ -28,7 +28,8 @@ import { useTranslation } from 'react-i18next';
 
 import { listTenants } from '@/lib/api/tenant';
 import { useOptionalTenantContext } from '@/lib/context/TenantContext';
-import { adoptSignInTenant, isCrossCommunityAdmin } from '@/lib/tenancy/signInTenant';
+import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
+import { adoptSignInTenant, classifyCrossCommunityAdmin } from '@/lib/tenancy/signInTenant';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { purgeAllMobileOfflineCheckinData } from '@/lib/eventOfflineCheckinStore';
 import { clearApiSession, installApiSession, registerUnauthorizedCallback } from '@/lib/api/client';
@@ -182,19 +183,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * belongs to one community, so the app already knows the only right answer. The reasoning
    * and every edge lives in lib/tenancy/signInTenant.ts.
    */
-  const adoptSignInCommunity = useCallback(async (signedInUser: LoginUser) => {
-    if (!switchCommunity) return;
-    await adoptSignInTenant({
-      input: {
-        userTenantId: signedInUser.tenant_id,
-        currentTenantId,
-        currentSlug,
-        isCrossCommunityAdmin: isCrossCommunityAdmin(signedInUser),
-      },
-      listTenants,
-      setTenantSlug: switchCommunity,
-    });
+  const adoptSignInCommunity = useCallback(async (signedInUser: AnyUser): Promise<boolean> => {
+    if (!switchCommunity) return false;
+    /*
+      Raised for the whole repair, including the decision, so `tenantMismatch.ts` holds its
+      apology back while this runs. Released in a `finally` — a repair that throws must
+      never leave the apology suppressed for the rest of the session.
+    */
+    const finish = communityRepairStore.begin();
+    try {
+      const outcome = await adoptSignInTenant({
+        input: {
+          userTenantId: signedInUser.tenant_id,
+          currentTenantId,
+          currentSlug,
+          adminExemption: classifyCrossCommunityAdmin(signedInUser),
+        },
+        listTenants,
+        setTenantSlug: switchCommunity,
+      });
+      return outcome.action === 'adopt';
+    } finally {
+      finish();
+    }
   }, [currentSlug, currentTenantId, switchCommunity]);
+
+  /**
+   * The same repair, once per launch, for a member who is ALREADY in the wrong community.
+   *
+   * 🔴 Fixing it at sign-in does nothing for the people it has already happened to. Their
+   * phone holds a session issued by one community and the name of another, and every launch
+   * repeated the same silent refusal of everything. They would have had to notice the
+   * community picker and work out for themselves which community was theirs.
+   *
+   * 🔴 It costs a healthy launch NOTHING, which is why it waits for the community
+   * configuration to load first: with both numeric ids in hand the comparison is local and
+   * ends there. Only when they genuinely differ does anything reach the network.
+   *
+   * Once per launch, by design. It is a repair, not a policy — a member who chooses another
+   * community from the picker later in the same session must not be dragged back.
+   */
+  const repairAttemptedRef = useRef(false);
+
+  useEffect(() => {
+    if (repairAttemptedRef.current) return;
+    if (!token || !user) return;
+    // Nothing to compare against until the community's own configuration has loaded. On a
+    // launch where it could not (offline, or a bootstrap the mismatch itself refused), this
+    // stays quiet rather than reaching for the community list on every cold start.
+    if (!tenantContext || tenantContext.isLoading || !tenantContext.tenant) return;
+
+    repairAttemptedRef.current = true;
+    void (async () => {
+      const moved = await adoptSignInCommunity(user);
+      if (!moved || !isMountedRef.current) return;
+      /*
+        Send them somewhere fresh. Every screen already on the stack asked the previous
+        community and was refused, and `useApi` does not re-fetch just because the community
+        changed underneath it, so without this the app would be correct and still look
+        broken.
+      */
+      router.replace((user as LoginUser).onboarding_completed === false
+        ? '/(modals)/onboarding'
+        : '/(tabs)/home');
+    })();
+  }, [adoptSignInCommunity, tenantContext, token, user]);
 
   /** Throw the session away. Only ever correct when the server REFUSED the credentials. */
   const discardStoredSession = useCallback(async () => {

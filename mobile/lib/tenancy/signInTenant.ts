@@ -42,6 +42,8 @@ export type SignInTenantKeepReason =
   | 'no-user-tenant'
   /** The token holder is exempt from the server's tenant check — see `isCrossCommunityAdmin`. */
   | 'cross-community-admin'
+  /** We cannot tell whether they are exempt, so we must not move them. */
+  | 'admin-status-unknown'
   /** The app is already showing the community this session belongs to. */
   | 'already-correct'
   /** The community is not in the public list, so its slug cannot be resolved. */
@@ -70,8 +72,8 @@ export interface SignInTenantInput {
   currentTenantId: number | null | undefined;
   /** The slug the app is putting in `X-Tenant-Slug` — exactly what the server compares. */
   currentSlug: string;
-  /** True when the server would not refuse this member for asking about another community. */
-  isCrossCommunityAdmin: boolean;
+  /** Whether the server would refuse this member for asking about another community. */
+  adminExemption: CrossCommunityAdmin;
   /** The public community list, or `null` when it has not been fetched. */
   tenants: readonly TenantListItem[] | null;
 }
@@ -101,8 +103,39 @@ export function isCrossCommunityAdmin(user: {
     || user.role === 'god';
 }
 
+export type CrossCommunityAdmin = 'exempt' | 'not-exempt' | 'unknown';
+
+/**
+ * The same question as `isCrossCommunityAdmin`, but honest about not knowing.
+ *
+ * 🔴 It needs three answers because of WHERE the answer comes from. At sign-in the server
+ * has just sent every flag, so the answer is always known. On a later launch the answer
+ * comes from the profile cached on the device, and a cache written by an older build may
+ * predate those fields — at which point "no flag" and "flag is false" look identical, and
+ * guessing "false" would drag a platform super admin out of the community they chose.
+ *
+ * 🔴 `is_admin === false` is a PROOF of not-exempt, not a guess. The server computes it as
+ * `role in (admin, tenant_admin, super_admin) || is_super_admin || is_tenant_super_admin`
+ * (`AuthController::login`, `UserService::formatProfile`), so a member it calls not-admin
+ * cannot be a super admin. That is what lets the overwhelming majority of members — who are
+ * not admins of anything — be rescued from the oldest cache imaginable.
+ */
+export function classifyCrossCommunityAdmin(user: {
+  role?: string | null;
+  is_admin?: boolean | null;
+  is_super_admin?: boolean | null;
+  is_god?: boolean | null;
+}): CrossCommunityAdmin {
+  if (isCrossCommunityAdmin(user)) return 'exempt';
+  // The flags are present and false, so the answer above was real rather than absent.
+  if (user.is_super_admin !== undefined || user.is_god !== undefined) return 'not-exempt';
+  // No flags, but the server has said this member is not an admin of anything.
+  if (user.is_admin === false) return 'not-exempt';
+  return 'unknown';
+}
+
 export function decideSignInTenant(input: SignInTenantInput): SignInTenantDecision {
-  const { userTenantId, currentTenantId, currentSlug, isCrossCommunityAdmin: isAdmin, tenants } = input;
+  const { userTenantId, currentTenantId, currentSlug, adminExemption, tenants } = input;
 
   // Nothing to compare against. An older API build, or a response shape that changed
   // under us — either way, guessing would be worse than leaving things alone.
@@ -110,8 +143,18 @@ export function decideSignInTenant(input: SignInTenantInput): SignInTenantDecisi
     return { action: 'keep', reason: 'no-user-tenant' };
   }
 
-  if (isAdmin) {
+  if (adminExemption === 'exempt') {
     return { action: 'keep', reason: 'cross-community-admin' };
+  }
+
+  /*
+    🔴 Not knowing is a reason to do nothing, not a reason to assume. This only happens on a
+    launch reading a profile cached by an older build, and only for a member the server
+    calls an admin — the one group where being wrong means moving somebody who was where
+    they meant to be. `lib/navigation/tenantMismatch.ts` still rescues them.
+  */
+  if (adminExemption === 'unknown') {
+    return { action: 'keep', reason: 'admin-status-unknown' };
   }
 
   // The overwhelmingly common case, and the reason `TenantConfig.id` is declared at all:
