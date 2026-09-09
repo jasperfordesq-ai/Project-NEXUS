@@ -87,7 +87,9 @@
     "contractDrift": "Este ecrã recebeu informação num formato inesperado. Atualiza a app ou tenta novamente mais tarde.",
     "uploadIncomplete": "O carregamento terminou, mas o servidor não devolveu o ficheiro.",
     "notAvailableTitle": "Não está disponível para si",
-    "notAvailableHint": "Pode ter sido removido, ou pode não estar partilhado consigo."
+    "notAvailableHint": "Pode ter sido removido, ou pode não estar partilhado consigo.",
+    "linkOpenFailed": "Não foi possível abrir essa ligação neste dispositivo.",
+    "linkUnavailable": "Essa ligação está em falta ou não pode ser aberta."
   },
   "labels": {
     "timeBalance": "Saldo de tempo",

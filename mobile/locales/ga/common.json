@@ -87,7 +87,9 @@
     "contractDrift": "Fuair an scáileán seo eolas i gcruth nach raibh súil leis. Nuashonraigh an aip, nó bain triail eile as ar ball.",
     "uploadIncomplete": "Críochnaíodh an uaslódáil, ach níor sheol an freastalaí an comhad ar ais.",
     "notAvailableTitle": "Níl sé seo ar fáil duit",
-    "notAvailableHint": "B'fhéidir gur baineadh é, nó nach bhfuil sé roinnte leat."
+    "notAvailableHint": "B'fhéidir gur baineadh é, nó nach bhfuil sé roinnte leat.",
+    "linkOpenFailed": "Níorbh fhéidir an nasc sin a oscailt ar an ngléas seo.",
+    "linkUnavailable": "Tá an nasc sin ar iarraidh nó ní féidir é a oscailt."
   },
   "labels": {
     "timeBalance": "Iarmhéid ama",

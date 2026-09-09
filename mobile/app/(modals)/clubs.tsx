@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useState } from 'react';
-import { FlatList, Image, Linking, RefreshControl, Text, View } from 'react-native';
+import { FlatList, Image, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ import { getClubs, type Club } from '@/lib/api/clubs';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 export default function ClubsScreen() {
   const { t } = useTranslation(['clubs', 'common']);
@@ -68,6 +69,7 @@ export default function ClubsScreen() {
 }
 
 function ClubCard({ club }: { club: Club }) {
+  const openExternal = useOpenExternalUrl();
   const { t } = useTranslation('clubs');
   const theme = useTheme();
   const content = (
@@ -87,6 +89,6 @@ function ClubCard({ club }: { club: Club }) {
     </HeroCard>
   );
   return club.website ? (
-    <NativePressable accessibilityLabel={`${t('view')}: ${club.name}`} onPress={() => void Linking.openURL(club.website!)} feedback="highlight">{content}</NativePressable>
+    <NativePressable accessibilityLabel={`${t('view')}: ${club.name}`} onPress={() => void openExternal(club.website)} feedback="highlight">{content}</NativePressable>
   ) : content;
 }

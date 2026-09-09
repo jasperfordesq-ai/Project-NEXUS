@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Image,
-  Linking,
   ScrollView,
   Text,
   View,
@@ -46,6 +45,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { storage } from '@/lib/storage';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 const DEFAULT_STEPS: OnboardingStep[] = [
   { slug: 'welcome', label_code: 'welcome', required: false },
@@ -86,6 +86,7 @@ function OnboardingScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const openExternal = useOpenExternalUrl();
   const mountedRef = useRef(true);
 
   const [configuration, setConfiguration] = useState<OnboardingConfiguration | null>(null);
@@ -441,7 +442,7 @@ function OnboardingScreenInner() {
                       </NativePressable>
                     );
                   }) : null}
-                  {option.help_url ? <Button variant="ghost" size="sm" onPress={() => void Linking.openURL(option.help_url!)}>{t('safeguarding.learn_more')}</Button> : null}
+                  {option.help_url ? <Button variant="ghost" size="sm" onPress={() => void openExternal(option.help_url)}>{t('safeguarding.learn_more')}</Button> : null}
                 </View>
               ))}
             </HeroCard.Body>

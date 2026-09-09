@@ -87,7 +87,9 @@
     "contractDrift": "Cet écran a reçu des informations dans un format inattendu. Mettez l'application à jour ou réessayez plus tard.",
     "uploadIncomplete": "Le téléversement est terminé, mais le serveur n'a pas renvoyé le fichier.",
     "notAvailableTitle": "Pas accessible pour vous",
-    "notAvailableHint": "Cela a peut-être été supprimé, ou n'est pas partagé avec vous."
+    "notAvailableHint": "Cela a peut-être été supprimé, ou n'est pas partagé avec vous.",
+    "linkOpenFailed": "Impossible d’ouvrir ce lien sur cet appareil.",
+    "linkUnavailable": "Ce lien est absent ou ne peut pas être ouvert."
   },
   "labels": {
     "timeBalance": "Balance temporelle",

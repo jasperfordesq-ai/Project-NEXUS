@@ -87,7 +87,9 @@
     "contractDrift": "Dieser Bildschirm hat Daten in einer unerwarteten Form erhalten. Bitte aktualisiere die App oder versuche es später erneut.",
     "uploadIncomplete": "Der Upload ist abgeschlossen, aber der Server hat die Datei nicht zurückgegeben.",
     "notAvailableTitle": "Für dich nicht verfügbar",
-    "notAvailableHint": "Das wurde vielleicht entfernt, oder es ist nicht für dich freigegeben."
+    "notAvailableHint": "Das wurde vielleicht entfernt, oder es ist nicht für dich freigegeben.",
+    "linkOpenFailed": "Dieser Link konnte auf diesem Gerät nicht geöffnet werden.",
+    "linkUnavailable": "Dieser Link fehlt oder kann nicht geöffnet werden."
   },
   "labels": {
     "timeBalance": "Zeitsaldo",

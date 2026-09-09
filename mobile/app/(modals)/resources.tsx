@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
-import * as Linking from 'expo-linking';
 import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +33,7 @@ import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 type ResourcesTab = 'resources' | 'kb';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -258,6 +258,7 @@ function CategoryStrip({
 }
 
 function ResourceCard({ item, highlighted = false }: { item: ResourceItem; highlighted?: boolean }) {
+  const openExternal = useOpenExternalUrl();
   const { t } = useTranslation(['resources']);
   const theme = useTheme();
   const primary = usePrimaryColor();
@@ -285,7 +286,7 @@ function ResourceCard({ item, highlighted = false }: { item: ResourceItem; highl
           </View>
         </View>
         {item.file_url ? (
-          <HeroButton variant="secondary" onPress={() => void Linking.openURL(item.file_url ?? '')}>
+          <HeroButton variant="secondary" onPress={() => void openExternal(item.file_url)}>
             <HeroButton.Label>{t('resources:download')}</HeroButton.Label>
             <Ionicons name="open-outline" size={16} color={theme.info} />
           </HeroButton>

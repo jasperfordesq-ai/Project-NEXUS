@@ -3,12 +3,13 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { Linking, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@/components/ui/Icon';
 
 import { useTheme } from '@/lib/hooks/useTheme';
 import NativePressable from '@/components/ui/NativePressable';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 /**
  * Canonical Project NEXUS source repository.
@@ -36,6 +37,7 @@ interface SourceRepositoryLinkProps {
  * Do not remove: dropping either the notice or the link is a licence violation.
  */
 export default function SourceRepositoryLink({ className = 'mt-2' }: SourceRepositoryLinkProps) {
+  const openExternal = useOpenExternalUrl();
   const { t } = useTranslation('common');
   const theme = useTheme();
 
@@ -54,7 +56,7 @@ export default function SourceRepositoryLink({ className = 'mt-2' }: SourceRepos
         testID="source-repository-link"
         feedback="highlight"
         className="rounded-panel-inner px-3 py-2"
-        onPress={() => void Linking.openURL(PROJECT_NEXUS_REPO_URL)}
+        onPress={() => void openExternal(PROJECT_NEXUS_REPO_URL)}
       >
         <View className="min-h-[44px] flex-row items-center justify-center gap-2">
           <Ionicons name="logo-github" size={14} color={theme.textSecondary} />

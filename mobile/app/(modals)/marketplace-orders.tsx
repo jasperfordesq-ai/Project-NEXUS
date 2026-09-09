@@ -51,6 +51,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 type OrderMode = 'purchases' | 'sales';
 type OrderStatusTab = 'all' | 'active' | 'completed' | 'cancelled';
@@ -703,6 +704,7 @@ function OrderCard({
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const openExternal = useOpenExternalUrl();
   /**
    * 🔴 An order paid in time credits has a cash total of zero, so printing the cash total
    * showed the buyer "€0.00" for something they had just paid two credits for. Measured on
@@ -800,7 +802,7 @@ function OrderCard({
               {t('orders.tracking', { number: item.tracking_number })}
             </Text>
             {item.tracking_url ? (
-              <HeroButton size="sm" variant="secondary" onPress={() => void Linking.openURL(item.tracking_url ?? '')}>
+              <HeroButton size="sm" variant="secondary" onPress={() => void openExternal(item.tracking_url)}>
                 <Ionicons name="open-outline" size={14} color={primary} />
                 <HeroButton.Label>{t('orders.track')}</HeroButton.Label>
               </HeroButton>

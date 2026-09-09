@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps 
 import {
   FlatList,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   Text,
   View,
@@ -41,6 +40,7 @@ import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 type DisplayMessage = ChatMessage | { id: string; role: 'thinking'; content: string; created_at: string };
 type FeedbackState = Record<string, ChatFeedbackVote>;
@@ -149,6 +149,7 @@ function ToolResultCards({
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
+  const openExternal = useOpenExternalUrl();
   const renderableInvocations = invocations.filter((invocation) => invocation.ok && Array.isArray(invocation.results) && invocation.results.length > 0);
   if (renderableInvocations.length === 0) return null;
 
@@ -172,7 +173,7 @@ function ToolResultCards({
                 isDisabled={!url}
                 accessibilityLabel={t('tool_results.open', { title })}
                 onPress={() => {
-                  if (url) void Linking.openURL(url);
+                  if (url) void openExternal(url);
                 }}
               >
                 <Surface

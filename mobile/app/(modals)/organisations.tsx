@@ -5,7 +5,7 @@
 
 import AccentIcon from '@/components/ui/AccentIcon';
 import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
-import { FlatList, Linking, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -30,6 +30,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import SearchInput from '@/components/ui/SearchInput';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -229,6 +230,7 @@ function OrganisationCard({
   t: (key: string, opts?: Record<string, unknown>) => string;
   onPress: () => void;
 }) {
+  const openExternal = useOpenExternalUrl();
   const opportunities = opportunityCount(item);
   const volunteers = volunteerCount(item);
   const hours = item.total_hours ?? 0;
@@ -238,7 +240,7 @@ function OrganisationCard({
   async function openWebsite() {
     if (!item.website) return;
     const url = item.website.startsWith('http') ? item.website : `https://${item.website}`;
-    await Linking.openURL(url);
+    await openExternal(url);
   }
 
   return (

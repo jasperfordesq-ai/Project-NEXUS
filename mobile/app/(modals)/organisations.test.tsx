@@ -172,6 +172,19 @@ jest.mock('@/lib/api/organisations', () => ({
   getOrganisations: jest.fn(),
 }));
 
+/*
+  These screens now open external links through `useOpenExternalUrl`, which reports a
+  failure to the member with a toast. `useToast` throws outside a ToastProvider, and these
+  tests render the screen on its own. Stable references so a screen holding `show` in a
+  dependency array does not re-run its effects on every render.
+*/
+jest.mock('@/components/ui/AppToast', () => {
+  const show = jest.fn();
+  const hide = jest.fn();
+  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+});
+
+
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 

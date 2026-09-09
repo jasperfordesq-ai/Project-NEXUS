@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { FlatList, Image, Linking, RefreshControl, Text, View } from 'react-native';
+import { FlatList, Image, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
@@ -20,6 +20,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 function VenuesScreen() {
   const { t } = useTranslation(['venues', 'common']);
@@ -58,6 +59,7 @@ function VenuesScreen() {
 }
 
 function VenueCard({ venue }: { venue: PartnerVenue }) {
+  const openExternal = useOpenExternalUrl();
   const { t } = useTranslation('venues');
   const theme = useTheme();
   const address = [venue.address_line, venue.city, venue.postcode].filter(Boolean).join(', ');
@@ -78,7 +80,7 @@ function VenueCard({ venue }: { venue: PartnerVenue }) {
       </HeroCard.Body>
     </HeroCard>
   );
-  return venue.website ? <NativePressable accessibilityLabel={`${t('directory.visit_website')}: ${venue.name}`} onPress={() => void Linking.openURL(venue.website!)} feedback="highlight">{content}</NativePressable> : content;
+  return venue.website ? <NativePressable accessibilityLabel={`${t('directory.visit_website')}: ${venue.name}`} onPress={() => void openExternal(venue.website)} feedback="highlight">{content}</NativePressable> : content;
 }
 
 export default withRouteGate(VenuesScreen, 'venues');

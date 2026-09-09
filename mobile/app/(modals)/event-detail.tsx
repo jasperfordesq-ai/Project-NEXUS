@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { Linking, RefreshControl, ScrollView, Share, Text, TextInput, View } from 'react-native';
+import { RefreshControl, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { Image } from 'expo-image';
@@ -77,6 +77,7 @@ import {
   type MobileEventTemplateCapturePreview,
 } from '@/lib/api/eventTemplates';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 const REMINDER_OPTIONS = [60, 1440, 10080] as const;
 
@@ -110,6 +111,7 @@ function EventDetailScreenInner() {
   const theme = useTheme();
   const bottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
+  const openExternal = useOpenExternalUrl();
   const { confirm, confirmDialog } = useConfirm();
 
   const eventId = Number(id);
@@ -575,7 +577,7 @@ function EventDetailScreenInner() {
             <HeroCard.Body className="gap-3 px-4 py-4">
               <SectionTitle icon="videocam-outline" title={onlineLink ? t('onlineTapToJoin') : t('onlineEvent')} primary={primary} theme={theme} />
               {onlineLink ? (
-                <HeroButton variant="secondary" onPress={() => void Linking.openURL(onlineLink).catch(() => showToast({ title: t('detail.linkOpenFailed'), variant: 'danger' }))}>
+                <HeroButton variant="secondary" onPress={() => void openExternal(onlineLink)}>
                   <Ionicons name="open-outline" size={18} color={primary} />
                   <HeroButton.Label>{t('detail.joinOnline')}</HeroButton.Label>
                 </HeroButton>

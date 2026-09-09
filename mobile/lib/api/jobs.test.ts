@@ -37,7 +37,7 @@ class RecordingFormData {
   readonly _parts: [string, unknown][] = [];
   append(name: string, value: unknown) { this._parts.push([name, value]); }
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 (global as any).FormData = RecordingFormData;
 
 function formParts(form: unknown): [string, unknown][] {

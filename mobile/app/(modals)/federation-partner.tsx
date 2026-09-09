@@ -7,7 +7,6 @@ import { buildWebUrl } from '@/lib/utils/webUrl';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useMemo } from 'react';
 import {
-  Linking,
   RefreshControl,
   ScrollView,
   Share,
@@ -37,6 +36,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -228,6 +228,7 @@ function EmptyPartnerState({
 
 function FederationPartnerScreen() {
   const { t } = useTranslation(['federation', 'common']);
+  const openExternal = useOpenExternalUrl();
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const primary = usePrimaryColor();
   const { tenant } = useTenant();
@@ -270,9 +271,8 @@ function FederationPartnerScreen() {
   async function openWebsite() {
     if (!websiteUrl) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (await Linking.canOpenURL(websiteUrl)) {
-      await Linking.openURL(websiteUrl);
-    }
+    // Was silent when canOpenURL said no: the member tapped and nothing happened.
+    await openExternal(websiteUrl);
   }
 
   return (

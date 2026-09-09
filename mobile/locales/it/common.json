@@ -87,7 +87,9 @@
     "contractDrift": "Questa schermata ha ricevuto informazioni in un formato inatteso. Aggiorna l'app o riprova più tardi.",
     "uploadIncomplete": "Il caricamento è terminato, ma il server non ha restituito il file.",
     "notAvailableTitle": "Non disponibile per te",
-    "notAvailableHint": "Potrebbe essere stato rimosso, oppure non è condiviso con te."
+    "notAvailableHint": "Potrebbe essere stato rimosso, oppure non è condiviso con te.",
+    "linkOpenFailed": "Non è stato possibile aprire questo link su questo dispositivo.",
+    "linkUnavailable": "Questo link è mancante o non può essere aperto."
   },
   "labels": {
     "timeBalance": "Saldo ore",

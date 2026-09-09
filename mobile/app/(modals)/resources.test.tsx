@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import * as Linking from 'expo-linking';
+import { Linking } from 'react-native';
 
 const mockUseApi = jest.fn();
 const mockPush = jest.fn();
@@ -83,6 +83,19 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+/*
+  These screens now open external links through `useOpenExternalUrl`, which reports a
+  failure to the member with a toast. `useToast` throws outside a ToastProvider, and these
+  tests render the screen on its own. Stable references so a screen holding `show` in a
+  dependency array does not re-run its effects on every render.
+*/
+jest.mock('@/components/ui/AppToast', () => {
+  const show = jest.fn();
+  const hide = jest.fn();
+  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+});
+
+
 import ResourcesScreen from './resources';
 
 describe('ResourcesScreen', () => {
@@ -131,15 +144,25 @@ describe('ResourcesScreen', () => {
     });
   });
 
-  it('renders resources and opens resource downloads', () => {
-    const { getAllByText, getByText } = render(<ResourcesScreen />);
+  it('renders resources and opens resource downloads', async () => {
+    /*
+      Spied on react-native's Linking, which is what `openExternalUrl` uses. This asserted
+      on `expo-linking` before the screen moved to the shared helper; both reach the same
+      native module, but only one of them is the boundary the screen now crosses.
+    */
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    try {
+      const { getAllByText, getByText } = render(<ResourcesScreen />);
 
-    expect(getAllByText('Resources').length).toBeGreaterThan(0);
-    expect(getByText('Member handbook')).toBeTruthy();
-    expect(getAllByText('Guides').length).toBeGreaterThan(0);
+      expect(getAllByText('Resources').length).toBeGreaterThan(0);
+      expect(getByText('Member handbook')).toBeTruthy();
+      expect(getAllByText('Guides').length).toBeGreaterThan(0);
 
-    fireEvent.press(getByText('Open resource'));
-    expect(Linking.openURL).toHaveBeenCalledWith('https://example.test/handbook.pdf');
+      fireEvent.press(getByText('Open resource'));
+      await waitFor(() => expect(openURL).toHaveBeenCalledWith('https://example.test/handbook.pdf'));
+    } finally {
+      openURL.mockRestore();
+    }
   });
 
   it('renders knowledge base articles and routes to detail', () => {

@@ -9,7 +9,6 @@ import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Image,
-  Linking,
   RefreshControl,
   ScrollView,
   Share,
@@ -127,6 +126,7 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { withRouteGate } from '@/components/withRouteGate';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 
 const CARD_MIN_HEIGHT = 118;
 
@@ -1670,6 +1670,7 @@ function GroupMediaPanel({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [filter, setFilter] = useState<GroupMediaType | 'all'>('all');
+  const openExternal = useOpenExternalUrl();
   const [items, setItems] = useState<GroupMediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -1709,7 +1710,7 @@ function GroupMediaPanel({
 
   function openMedia(item: GroupMediaItem) {
     const url = item.url ?? item.thumbnail_url;
-    if (url) void Linking.openURL(resolveImageUrl(url) ?? url);
+    void openExternal(resolveImageUrl(url) ?? url);
   }
 
   function confirmDelete(item: GroupMediaItem) {
