@@ -53,6 +53,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
@@ -1354,7 +1355,7 @@ function JobsScreen() {
             }
             ListEmptyComponent={
               jobsLoading ? (
-                <LoadingSpinner />
+                <ListSkeleton rows={4} testID="jobs-skeleton" />
               ) : jobsError ? (
                 <View className="flex-1 justify-center items-center p-10">
                   <Text className="text-sm text-danger text-center">{jobsError}</Text>

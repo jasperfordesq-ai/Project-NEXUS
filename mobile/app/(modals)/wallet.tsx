@@ -37,6 +37,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import NativePressable from '@/components/ui/NativePressable';
 import EmptyState from '@/components/ui/EmptyState';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -527,7 +528,7 @@ function WalletModalInner() {
                 </ScrollView>
 
                 {transactionsQuery.isLoading ? (
-                  <View className="items-center py-8"><Spinner size="lg" /></View>
+                  <ListSkeleton rows={4} showLeadingCircle testID="wallet-transactions-skeleton" />
                 ) : filteredTransactions.length === 0 ? (
                   <Surface variant="secondary" className="rounded-panel-inner p-5">
                     <EmptyState

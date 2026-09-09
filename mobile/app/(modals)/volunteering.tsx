@@ -81,6 +81,7 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SearchInput from '@/components/ui/SearchInput';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -407,7 +408,7 @@ function OrganisationsPanel({
   const declined = organisations.filter(isDeclined);
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <ListSkeleton rows={3} testID="volunteering-organisations-skeleton" />;
   }
 
   if (managed.length === 0 && pending.length === 0 && declined.length === 0) {
@@ -719,7 +720,7 @@ function ApplicationsPanel({
   }
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <ListSkeleton rows={3} testID="volunteering-applications-skeleton" />;
   }
 
   if (applications.length === 0) {

@@ -17,6 +17,7 @@ import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingC
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -344,9 +345,7 @@ function MarketplaceScreen() {
         )}
         ListEmptyComponent={
           isLoading ? (
-            <View className="py-16">
-              <LoadingSpinner />
-            </View>
+            <ListSkeleton rows={4} testID="marketplace-skeleton" />
           ) : (
             <EmptyState
               icon="bag-handle-outline"

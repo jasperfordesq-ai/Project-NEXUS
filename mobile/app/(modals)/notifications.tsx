@@ -39,7 +39,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 import NativePressable from '@/components/ui/NativePressable';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 import { formatRelativeTime } from '@/lib/utils/formatRelativeTime';
@@ -569,7 +569,7 @@ function NotificationsScreen() {
           }
           ListEmptyComponent={
             isLoading ? (
-              <LoadingSpinner />
+              <ListSkeleton rows={5} showLeadingCircle testID="notifications-skeleton" />
             ) : error ? (
               <Surface variant="secondary" className="mx-4 rounded-panel p-6">
                 <View className="items-center gap-3">
