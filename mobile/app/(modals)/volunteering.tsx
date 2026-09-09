@@ -1960,7 +1960,16 @@ function VolunteeringScreen() {
 
 function VolunteeringScreenInner() {
   const { t } = useTranslation(['volunteering', 'common']);
-  const params = useLocalSearchParams<{ tab?: string }>();
+  const params = useLocalSearchParams<{ tab?: string; submitted?: string }>();
+  /*
+    🔴 Registering an organisation replaced this screen with itself, carrying
+    `tab=organisations&submitted=<id>`. If it was already mounted — and it always is, because
+    Register is reached from this very tab — React reuses the instance, and the organisations
+    fetch has an empty dependency list, so it never asked again. The member landed on a list
+    that did not contain the organisation they had just created and had no way to tell
+    whether it had worked. Carrying the id into the deps makes the arrival a refetch.
+  */
+  const submittedOrganisationId = typeof params.submitted === 'string' ? params.submitted : '';
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -2088,7 +2097,7 @@ function VolunteeringScreenInner() {
   const organisationsApi = usePaginatedApi<VolunteeringOrganisation, MyOrganisationsResponse>(
     (cursor) => getMyOrganisations(cursor),
     (response) => ({ items: Array.isArray(response.data) ? response.data : [], cursor: response.meta?.cursor ?? null, hasMore: Boolean(response.meta?.has_more) }),
-    [],
+    [submittedOrganisationId],
     authOnly,
   );
   const certificatesApi = useApi<VolunteerCertificatesResponse>(() => getVolunteerCertificates(), [], { enabled: isAuthenticated });

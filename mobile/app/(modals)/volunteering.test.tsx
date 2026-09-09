@@ -272,6 +272,8 @@ const mockUsePaginatedApi = jest.fn();
   still throws.
 */
 type MockPaginatedExtract = { items: unknown[]; cursor: string | null; hasMore: boolean };
+/** The dependency list each auth-gated paginated call was created with, in order. */
+const mockPaginatedDeps: unknown[][] = [];
 const mockWithPaginationDefaults = (response: unknown): unknown => {
   if (!response || typeof response !== 'object') return response;
   const body = response as Record<string, unknown>;
@@ -292,6 +294,7 @@ jest.mock('@/lib/hooks/usePaginatedApi', () => ({
     options?: unknown,
   ) => {
     if (options === undefined) return mockUsePaginatedApi(fetchFn, extractor, deps);
+    mockPaginatedDeps.push(Array.isArray(deps) ? deps : []);
     const state = mockUseApi() as { data?: unknown; isLoading?: boolean; error?: string | null; refresh?: () => void } | undefined;
     const extracted = state?.data
       ? extractor(mockWithPaginationDefaults(state.data))
@@ -1500,5 +1503,32 @@ describe('VolunteeringScreen', () => {
       const { getByTestId } = render(<VolunteeringScreen />);
       expect(getByTestId('volunteering-donations-load-more')).toBeTruthy();
     });
+  });
+
+  /**
+   * 🔴 Registering an organisation replaced this screen with itself, carrying
+   * `tab=organisations&submitted=<id>`. React reuses the mounted instance — and it always
+   * is mounted, because Register is reached from this very tab — so a fetch with an empty
+   * dependency list never ran again. The member landed on a list that did not contain the
+   * organisation they had just created, with no way to tell whether it had worked.
+   */
+  it('re-reads the organisations list when it is returned to after a registration', () => {
+    mockPaginatedDeps.length = 0;
+    mockParams = { tab: 'organisations', submitted: '77' };
+
+    render(<VolunteeringScreen />);
+
+    // Second auth-gated paginated call in declaration order: applications, shifts,
+    // organisations. Its deps must carry the new organisation's id.
+    expect(mockPaginatedDeps[2]).toEqual(['77']);
+  });
+
+  it('carries no registration id when the screen is opened normally', () => {
+    mockPaginatedDeps.length = 0;
+    mockParams = { tab: 'organisations' };
+
+    render(<VolunteeringScreen />);
+
+    expect(mockPaginatedDeps[2]).toEqual(['']);
   });
 });

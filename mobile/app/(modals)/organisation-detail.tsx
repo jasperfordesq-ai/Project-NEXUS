@@ -193,15 +193,33 @@ function OrganisationDetailScreen() {
     }
   }
 
+  /*
+    🔴 Neither `canOpenURL` nor `openURL` was wrapped. Both reject: `canOpenURL` throws on
+    Android when the scheme is not in the manifest's query list, and `openURL` rejects on a
+    malformed address or a device with no browser — an organisation's website is typed in by
+    that organisation, so a malformed one is ordinary, not exotic. The rejection went
+    nowhere, and the member saw nothing happen at all.
+
+    The old failure branch was little better: it showed the bare URL as the body of a red
+    toast with no sentence, which reads as an error message that happens to be a web
+    address.
+  */
   async function handleOpenWebsite() {
     if (!organisation?.website) return;
     const url = organisation.website.startsWith('http') ? organisation.website : `https://${organisation.website}`;
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      showToast({ title: t('common:errors.alertTitle'), description: url, variant: 'danger' });
+    try {
+      if (await Linking.canOpenURL(url)) {
+        await Linking.openURL(url);
+        return;
+      }
+    } catch {
+      // Fall through to the same message: from here, "cannot" and "would not" are the same.
     }
+    showToast({
+      title: t('detail.websiteFailedTitle'),
+      description: t('detail.websiteFailedMessage', { url }),
+      variant: 'danger',
+    });
   }
 
   const membersCount = organisation.members_count ?? 0;

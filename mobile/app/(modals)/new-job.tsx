@@ -5,9 +5,12 @@
 
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import EmptyState from '@/components/ui/EmptyState';
+import { isRefusal } from '@/lib/api/refusal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -110,26 +113,48 @@ function NewJobScreen() {
   });
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
+  /*
+    🔴 Not a dead form — and worse than dead. A failed load in EDIT mode left every field
+    empty under a live "Update job" button, so one tap would have wiped the vacancy's
+    title, description, location and pay. The toast was the only sign anything had gone
+    wrong, and it fades. This is the same fault as S4-03 on the volunteering form, which
+    was fixed there and never here.
+  */
+  const [editLoadFailed, setEditLoadFailed] = useState(false);
+  const [editRefused, setEditRefused] = useState(false);
+  const [editRetryToken, setEditRetryToken] = useState(0);
+
+  /*
+    🔴 One attempt per retry token. Without this the effect re-runs on the re-render its own
+    failure causes — `t` and the toast opener are new objects on every render — and the
+    screen sits in a fetch loop against an endpoint that has already said no.
+  */
+  const attemptedEditRetryRef = useRef(-1);
 
   useEffect(() => {
-    if (!isEditing || hasHydratedEdit) return;
+    if (!isEditing || hasHydratedEdit || attemptedEditRetryRef.current === editRetryToken) return;
+    attemptedEditRetryRef.current = editRetryToken;
 
     let isMounted = true;
+    setEditLoadFailed(false);
     getJobDetail(jobId)
       .then((response) => {
         if (!isMounted) return;
         hydrateFromJob(response.data);
         setHasHydratedEdit(true);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (!isMounted) return;
+        // A vacancy that is not this member's answers 403/404; retrying cannot clear that.
+        setEditRefused(isRefusal(err));
+        setEditLoadFailed(true);
         showToast({ title: t('create.failedTitle'), description: t('create.loadFailed'), variant: 'danger' });
       });
 
     return () => {
       isMounted = false;
     };
-  }, [hasHydratedEdit, isEditing, jobId, showToast, t]);
+  }, [editRetryToken, hasHydratedEdit, isEditing, jobId, showToast, t]);
 
   function hydrateFromJob(job: JobVacancy) {
     setTitle(job.title ?? '');
@@ -258,6 +283,34 @@ function NewJobScreen() {
     } finally {
       setIsGeneratingDescription(false);
     }
+  }
+
+  if (isEditing && editLoadFailed) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-job-load-failed">
+        <AppTopBar title={t('create.editTitle')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
+        <View className="flex-1 justify-center" style={{ flex: 1, backgroundColor: theme.bg }}>
+          <EmptyState
+            icon={editRefused ? 'lock-closed-outline' : 'briefcase-outline'}
+            title={editRefused ? t('common:errors.notAvailableTitle') : t('create.loadFailedTitle')}
+            subtitle={editRefused ? t('common:errors.notAvailableHint') : t('create.loadFailed')}
+            actionLabel={editRefused ? undefined : t('common:buttons.retry')}
+            onAction={editRefused ? undefined : () => setEditRetryToken((value) => value + 1)}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isEditing && !hasHydratedEdit) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }} testID="new-job-loading">
+        <AppTopBar title={t('create.editTitle')} backLabel={t('common:back')} fallbackHref="/(modals)/jobs" />
+        <View className="flex-1 items-center justify-center" style={{ flex: 1, backgroundColor: theme.bg }}>
+          <LoadingSpinner />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (

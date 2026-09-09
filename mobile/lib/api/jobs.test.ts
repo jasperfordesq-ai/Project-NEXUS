@@ -24,8 +24,28 @@
  *    member who failed to accept a job offer would be told it worked.
  */
 
+/**
+ * 🔴 A recording stand-in for FormData, and it has to be one.
+ *
+ * React Native's FormData keeps what it was handed and exposes it as `_parts`; the
+ * platform implementation this test environment provides coerces a non-Blob value with
+ * `String()`, so the file descriptor the app appends arrives as "[object Object]" and the
+ * assertion can only ever check that SOMETHING was appended. The device behaviour is the
+ * one worth pinning, so it is the one modelled here.
+ */
+class RecordingFormData {
+  readonly _parts: [string, unknown][] = [];
+  append(name: string, value: unknown) { this._parts.push([name, value]); }
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(global as any).FormData = RecordingFormData;
+
+function formParts(form: unknown): [string, unknown][] {
+  return (form as RecordingFormData)._parts;
+}
+
 jest.mock('@/lib/api/client', () => ({
-  api: { get: jest.fn(), post: jest.fn(), put: jest.fn(), patch: jest.fn(), delete: jest.fn() },
+  api: { get: jest.fn(), post: jest.fn(), put: jest.fn(), patch: jest.fn(), delete: jest.fn(), upload: jest.fn() },
   ApiResponseError: class ApiResponseError extends Error {
     status!: number;
     constructor(status: number, message: string) {
@@ -217,6 +237,45 @@ describe('acting on a vacancy', () => {
       { message: 'I would like to help.' },
       { timeout: 45_000 },
     );
+  });
+
+  /**
+   * 🔴 The `cv` part has always been accepted by this endpoint and the app never sent one,
+   * so every application made from a phone arrived with a covering message and nothing to
+   * read — including from members who had saved a CV, which the server does NOT attach for
+   * them.
+   */
+  it('sends a CV as multipart, on the field name the API reads', async () => {
+    const { api } = require('@/lib/api/client');
+    (api.upload as jest.Mock).mockResolvedValue({ success: true, message: 'ok' });
+
+    await applyToJob(42, 'I would like to help.', {
+      uri: 'file:///cache/aoife-cv.pdf',
+      name: 'aoife-cv.pdf',
+      mimeType: 'application/pdf',
+    });
+
+    expect(api.upload).toHaveBeenCalledWith('/api/v2/jobs/42/apply', expect.any(RecordingFormData), { timeout: 45_000 });
+    // Still the ordinary JSON path when there is no file, so the common case is unchanged.
+    expect(mockPost).not.toHaveBeenCalled();
+
+    const parts = formParts((api.upload as jest.Mock).mock.calls[0][1]);
+    expect(parts.map(([name]) => name).sort()).toEqual(['cv', 'message']);
+    expect(parts.find(([name]) => name === 'cv')?.[1]).toMatchObject({
+      uri: 'file:///cache/aoife-cv.pdf',
+      name: 'aoife-cv.pdf',
+      type: 'application/pdf',
+    });
+  });
+
+  it('names a type the server can sniff when the device reported none', async () => {
+    const { api } = require('@/lib/api/client');
+    (api.upload as jest.Mock).mockResolvedValue({ success: true, message: 'ok' });
+
+    await applyToJob(42, 'Hello.', { uri: 'file:///cache/cv.pdf', name: 'cv.pdf', mimeType: '' });
+
+    const parts = formParts((api.upload as jest.Mock).mock.calls[0][1]);
+    expect(parts.find(([name]) => name === 'cv')?.[1]).toMatchObject({ type: 'application/octet-stream' });
   });
 
   it('saves and unsaves through the same path with different verbs', async () => {

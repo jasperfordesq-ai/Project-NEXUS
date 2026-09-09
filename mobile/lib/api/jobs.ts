@@ -310,11 +310,34 @@ export function withdrawJobApplication(applicationId: number): Promise<{ data: {
 export function applyToJob(
   id: number,
   message: string,
+  cv?: { uri: string; name: string; mimeType: string } | null,
 ): Promise<{ success: boolean; message: string }> {
   // See TIMEOUTS.API_JOB_APPLY: this endpoint sends two emails inside the request and was
   // measured at 9.5s against the ordinary 15s mutation timeout, on a write that has already
   // committed by the time it is still waiting.
-  return api.post<{ success: boolean; message: string }>(`${API_V2}/jobs/${id}/apply`, { message }, {
+  if (!cv) {
+    return api.post<{ success: boolean; message: string }>(`${API_V2}/jobs/${id}/apply`, { message }, {
+      timeout: TIMEOUTS.API_JOB_APPLY,
+    });
+  }
+
+  /*
+    🔴 The `cv` part has always been accepted here and the phone never sent one, so every
+    application made from the app arrived with nothing to read — including from members who
+    had saved a CV, which the server does NOT attach for them.
+
+    `Content-Type` is deliberately left unset: React Native writes its own multipart
+    boundary, and setting the header by hand produces a body the server cannot parse. The
+    shared client already knows this (see the FormData branch in `client.ts`).
+  */
+  const form = new FormData();
+  form.append('message', message);
+  form.append('cv', {
+    uri: cv.uri,
+    name: cv.name,
+    type: cv.mimeType || 'application/octet-stream',
+  } as unknown as Blob);
+  return api.upload<{ success: boolean; message: string }>(`${API_V2}/jobs/${id}/apply`, form, {
     timeout: TIMEOUTS.API_JOB_APPLY,
   });
 }

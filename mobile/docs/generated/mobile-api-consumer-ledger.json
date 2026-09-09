@@ -5,7 +5,7 @@
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 59,
-    "call_sites": 606,
+    "call_sites": 607,
     "distinct_endpoints": 514,
     "verified": 514,
     "unverified": 0,
@@ -2449,7 +2449,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:317"
+        "jobs.ts:319",
+        "jobs.ts:340"
       ]
     },
     {
@@ -2458,7 +2459,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:401"
+        "jobs.ts:424"
       ]
     },
     {
@@ -2476,7 +2477,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:333"
+        "jobs.ts:356"
       ]
     },
     {
@@ -2485,7 +2486,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:326"
+        "jobs.ts:349"
       ]
     },
     {
@@ -2494,7 +2495,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:364"
+        "jobs.ts:387"
       ]
     },
     {
@@ -2503,7 +2504,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:371"
+        "jobs.ts:394"
       ]
     },
     {
@@ -2512,7 +2513,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:378"
+        "jobs.ts:401"
       ]
     },
     {
@@ -2521,7 +2522,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:392"
+        "jobs.ts:415"
       ]
     },
     {
@@ -2530,7 +2531,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:385"
+        "jobs.ts:408"
       ]
     },
     {
@@ -2567,7 +2568,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:420"
+        "jobs.ts:443"
       ]
     },
     {
@@ -2576,7 +2577,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:431"
+        "jobs.ts:454"
       ]
     },
     {
@@ -2585,7 +2586,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:346"
+        "jobs.ts:369"
       ]
     },
     {
@@ -2594,7 +2595,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:408"
+        "jobs.ts:431"
       ]
     },
     {
@@ -2603,7 +2604,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:438"
+        "jobs.ts:461"
       ]
     },
     {
@@ -2612,7 +2613,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:357"
+        "jobs.ts:380"
       ]
     },
     {
@@ -2621,7 +2622,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:450"
+        "jobs.ts:473"
       ]
     },
     {
@@ -2630,7 +2631,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:461"
+        "jobs.ts:484"
       ]
     },
     {
@@ -2648,7 +2649,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "jobs.ts:469"
+        "jobs.ts:492"
       ]
     },
     {

@@ -22,7 +22,7 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2240 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 59 |
-| Call sites | 606 |
+| Call sites | 607 |
 | Distinct method + endpoint pairs | 514 |
 | Verified against openapi.json | 514 |
 | **Missing from Laravel routes** | **0** |
@@ -344,29 +344,29 @@ and the places a contract test earns the most.
 | PUT | `/api/v2/jobs/{param}` | jobs.ts:250, jobs.ts:254 |
 | GET | `/api/v2/jobs/{param}/analytics` | jobs.ts:285 |
 | GET | `/api/v2/jobs/{param}/applications` | jobs.ts:281 |
-| POST | `/api/v2/jobs/{param}/apply` | jobs.ts:317 |
-| GET | `/api/v2/jobs/{param}/match` | jobs.ts:401 |
+| POST | `/api/v2/jobs/{param}/apply` | jobs.ts:319, jobs.ts:340 |
+| GET | `/api/v2/jobs/{param}/match` | jobs.ts:424 |
 | GET | `/api/v2/jobs/{param}/predictions` | jobs.ts:289 |
-| DELETE | `/api/v2/jobs/{param}/save` | jobs.ts:333 |
-| POST | `/api/v2/jobs/{param}/save` | jobs.ts:326 |
-| GET | `/api/v2/jobs/alerts` | jobs.ts:364 |
-| POST | `/api/v2/jobs/alerts` | jobs.ts:371 |
-| DELETE | `/api/v2/jobs/alerts/{param}` | jobs.ts:378 |
-| PUT | `/api/v2/jobs/alerts/{param}/resubscribe` | jobs.ts:392 |
-| PUT | `/api/v2/jobs/alerts/{param}/unsubscribe` | jobs.ts:385 |
+| DELETE | `/api/v2/jobs/{param}/save` | jobs.ts:356 |
+| POST | `/api/v2/jobs/{param}/save` | jobs.ts:349 |
+| GET | `/api/v2/jobs/alerts` | jobs.ts:387 |
+| POST | `/api/v2/jobs/alerts` | jobs.ts:394 |
+| DELETE | `/api/v2/jobs/alerts/{param}` | jobs.ts:401 |
+| PUT | `/api/v2/jobs/alerts/{param}/resubscribe` | jobs.ts:415 |
+| PUT | `/api/v2/jobs/alerts/{param}/unsubscribe` | jobs.ts:408 |
 | PUT | `/api/v2/jobs/applications/{param}` | jobs.ts:296, jobs.ts:304 |
 | GET | `/api/v2/jobs/applications/{param}/history` | jobs.ts:300 |
 | POST | `/api/v2/jobs/generate-description` | jobs.ts:263 |
-| PUT | `/api/v2/jobs/interviews/{param}/accept` | jobs.ts:420 |
-| PUT | `/api/v2/jobs/interviews/{param}/decline` | jobs.ts:431 |
-| GET | `/api/v2/jobs/my-applications` | jobs.ts:346 |
-| GET | `/api/v2/jobs/my-interviews` | jobs.ts:408 |
-| GET | `/api/v2/jobs/my-offers` | jobs.ts:438 |
-| GET | `/api/v2/jobs/my-postings` | jobs.ts:357 |
-| PUT | `/api/v2/jobs/offers/{param}/accept` | jobs.ts:450 |
-| PUT | `/api/v2/jobs/offers/{param}/reject` | jobs.ts:461 |
+| PUT | `/api/v2/jobs/interviews/{param}/accept` | jobs.ts:443 |
+| PUT | `/api/v2/jobs/interviews/{param}/decline` | jobs.ts:454 |
+| GET | `/api/v2/jobs/my-applications` | jobs.ts:369 |
+| GET | `/api/v2/jobs/my-interviews` | jobs.ts:431 |
+| GET | `/api/v2/jobs/my-offers` | jobs.ts:461 |
+| GET | `/api/v2/jobs/my-postings` | jobs.ts:380 |
+| PUT | `/api/v2/jobs/offers/{param}/accept` | jobs.ts:473 |
+| PUT | `/api/v2/jobs/offers/{param}/reject` | jobs.ts:484 |
 | GET | `/api/v2/jobs/recommended` | jobs.ts:270 |
-| GET | `/api/v2/jobs/saved-profile` | jobs.ts:469 |
+| GET | `/api/v2/jobs/saved-profile` | jobs.ts:492 |
 | GET | `/api/v2/kb` | resources.ts:100 |
 | GET | `/api/v2/kb/{param}` | resources.ts:110 |
 | GET | `/api/v2/kb/search` | resources.ts:105 |

@@ -76,6 +76,14 @@ jest.mock('react-i18next', () => ({
         'apply.success': 'Application Sent!',
         'apply.successMessage': 'The employer will be in touch.',
         'apply.messageLabel': 'Cover Message',
+        'apply.cvLabel': 'CV or résumé',
+        'apply.cvNone': 'No CV attached. Applications sent from this app include only your message unless you add one.',
+        'apply.cvSavedNotice': `You have ${String(opts?.name ?? '')} saved to your jobs profile. It is not attached for you.`,
+        'apply.cvAttach': 'Attach a CV',
+        'apply.cvReplace': 'Choose a different file',
+        'apply.cvRemove': 'Remove',
+        'apply.cvTooLarge': `That file is larger than ${String(opts?.maxMb ?? '')} MB.`,
+        'apply.cvUnsupported': 'Attach a PDF or a Word document (.pdf, .doc or .docx).',
         'apply.messagePlaceholder': 'Why are you a great fit?',
         'apply.submit': 'Submit Application',
         'apply.error': 'Application failed.',
@@ -170,6 +178,11 @@ jest.mock('@/components/ui/BottomSheet', () => ({
 }));
 
 const mockShowToast = jest.fn();
+const mockPickCvFile = jest.fn();
+jest.mock('@/lib/media/pickCvFile', () => ({
+  CV_MAX_MB: 5,
+  pickCvFile: (...args: unknown[]) => mockPickCvFile(...args),
+}));
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
   // dependency array don't re-run their effects on every render.
@@ -422,6 +435,71 @@ describe('JobDetailScreen', () => {
     expect(getByText('Browse jobs')).toBeTruthy();
   });
 
+  /**
+   * 🔴 An application made from the phone went out with a covering message and nothing
+   * else. `POST /v2/jobs/{id}/apply` has always accepted a `cv` part; the phone never sent
+   * one, and a member who had saved a CV to their jobs profile was told nothing — the
+   * server does NOT attach it for them, so the application arrived with nothing to read.
+   */
+  it('says plainly that no CV is attached, and mentions a saved one by name', async () => {
+    (getSavedProfile as jest.Mock).mockResolvedValueOnce({ cv_filename: 'aoife-cv.pdf' });
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText } = render(<JobDetailScreen />);
+    fireEvent.press(getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+
+    expect(getByText('You have aoife-cv.pdf saved to your jobs profile. It is not attached for you.')).toBeTruthy();
+  });
+
+  it('says no CV is attached when the member has none saved either', async () => {
+    (getSavedProfile as jest.Mock).mockResolvedValueOnce(null);
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText } = render(<JobDetailScreen />);
+    fireEvent.press(getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+
+    expect(getByText('No CV attached. Applications sent from this app include only your message unless you add one.')).toBeTruthy();
+  });
+
+  it('sends the CV the member attached, not just the message', async () => {
+    mockPickCvFile.mockResolvedValueOnce({
+      status: 'picked',
+      file: { uri: 'file:///tmp/aoife-cv.pdf', name: 'aoife-cv.pdf', mimeType: 'application/pdf', size: 1024 },
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByLabelText, getByText, getByTestId, findByTestId } = render(<JobDetailScreen />);
+    fireEvent.press(getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+
+    fireEvent.press(getByTestId('job-apply-attach-cv'));
+    expect(await findByTestId('job-apply-cv-attached')).toBeTruthy();
+
+    fireEvent.changeText(getByLabelText('Cover Message'), 'I would like to help.');
+    fireEvent.press(getByText('Submit Application'));
+
+    await waitFor(() => expect(applyToJob).toHaveBeenCalledWith(1, 'I would like to help.', expect.objectContaining({
+      name: 'aoife-cv.pdf',
+      mimeType: 'application/pdf',
+    })));
+  });
+
+  it('refuses a file the API would refuse, before the member fills in a message', async () => {
+    mockPickCvFile.mockResolvedValueOnce({ status: 'too_large', maxMb: 5 });
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText, getByTestId, queryByTestId } = render(<JobDetailScreen />);
+    fireEvent.press(getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+
+    fireEvent.press(getByTestId('job-apply-attach-cv'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning' })));
+    expect(queryByTestId('job-apply-cv-attached')).toBeNull();
+  });
+
   it('uses the saved cover profile when submitting an application', async () => {
     (getSavedProfile as jest.Mock).mockResolvedValueOnce({ cover_text: 'I can support this role with community coordination experience.' });
     mockUseApi.mockReturnValue({
@@ -441,7 +519,7 @@ describe('JobDetailScreen', () => {
     fireEvent.press(getByText('Submit Application'));
 
     await waitFor(() => {
-      expect(applyToJob).toHaveBeenCalledWith(1, 'I can support this role with community coordination experience.');
+      expect(applyToJob).toHaveBeenCalledWith(1, 'I can support this role with community coordination experience.', null);
     });
   });
   /**

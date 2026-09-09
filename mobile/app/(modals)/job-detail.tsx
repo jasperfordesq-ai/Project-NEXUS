@@ -17,6 +17,7 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { getJobApplications, getJobDetail, applyToJob, saveJob, unsaveJob, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
+import { CV_MAX_MB, pickCvFile, type PickedCvFile } from '@/lib/media/pickCvFile';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -70,6 +71,13 @@ function JobDetailScreen() {
 
   // Saved profile (one-click apply)
   const [savedProfile, setSavedProfile] = useState<{ cv_filename?: string; cover_text?: string } | null>(null);
+  /*
+    🔴 The application went out with a covering message and nothing else. The endpoint
+    has always accepted a `cv` part; the phone never sent one, and a member who had saved
+    a CV to their jobs profile was not told that the server does NOT attach it for them.
+    So an application could look complete on this screen and arrive with nothing to read.
+  */
+  const [cvFile, setCvFile] = useState<PickedCvFile | null>(null);
 
   // Sync saved/applied state from fetched job
   useEffect(() => {
@@ -181,11 +189,27 @@ function JobDetailScreen() {
     }
   }
 
+  async function chooseCv() {
+    const result = await pickCvFile();
+    if (result.status === 'picked') {
+      setCvFile(result.file);
+      return;
+    }
+    if (result.status === 'cancelled') return;
+    showToast({
+      title: t('common:errors.alertTitle'),
+      description: result.status === 'too_large'
+        ? t('apply.cvTooLarge', { maxMb: CV_MAX_MB })
+        : t('apply.cvUnsupported'),
+      variant: 'warning',
+    });
+  }
+
   async function handleSubmitApplication() {
     if (!job || applyLoading || !coverMessage.trim()) return;
     setApplyLoading(true);
     try {
-      await applyToJob(job.id, coverMessage.trim());
+      await applyToJob(job.id, coverMessage.trim(), cvFile);
       setApplySuccess(true);
       setHasApplied(true);
     } catch (err) {
@@ -540,6 +564,35 @@ function JobDetailScreen() {
                 contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
                 keyboardShouldPersistTaps="handled"
               >
+                {/* The CV, and what will actually be sent. */}
+                <Text className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  {t('apply.cvLabel')}
+                </Text>
+                {cvFile ? (
+                  <View className="mb-3 flex-row items-center gap-2" testID="job-apply-cv-attached">
+                    <Ionicons name="document-attach-outline" size={16} color={primary} />
+                    <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.text }} numberOfLines={1}>{cvFile.name}</Text>
+                    <HeroButton size="sm" variant="ghost" onPress={() => setCvFile(null)}>
+                      <HeroButton.Label>{t('apply.cvRemove')}</HeroButton.Label>
+                    </HeroButton>
+                  </View>
+                ) : (
+                  <Text className="mb-3 text-xs leading-4" style={{ color: theme.textSecondary }}>
+                    {savedProfile?.cv_filename
+                      ? t('apply.cvSavedNotice', { name: savedProfile.cv_filename })
+                      : t('apply.cvNone')}
+                  </Text>
+                )}
+                <HeroButton
+                  variant="secondary"
+                  style={{ alignSelf: 'flex-start', marginBottom: 12 }}
+                  testID="job-apply-attach-cv"
+                  onPress={() => void chooseCv()}
+                >
+                  <Ionicons name="attach-outline" size={14} color={primary} />
+                  <HeroButton.Label>{cvFile ? t('apply.cvReplace') : t('apply.cvAttach')}</HeroButton.Label>
+                </HeroButton>
+
                 {/* Saved profile one-click apply */}
                 {savedProfile?.cover_text ? (
                   <HeroButton

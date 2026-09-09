@@ -97,6 +97,10 @@ jest.mock('react-i18next', () => ({
         'create.salaryRangeInvalid': 'Minimum salary cannot exceed maximum salary.',
         'create.salaryRequired': 'Salary range required. You may mark salary negotiable to omit it.',
         'create.loadFailed': 'Could not load job.',
+        'create.loadFailedTitle': 'This job could not be loaded for editing',
+        'common:errors.notAvailableTitle': 'Not available to you',
+        'common:errors.notAvailableHint': 'This may have been removed, or it may not be shared with you.',
+        'common:buttons.retry': 'Retry',
         'create.failedTitle': 'Job not created',
         'create.failedDescription': 'We could not create the job.',
         'create.editFailedTitle': 'Job not updated',
@@ -201,6 +205,7 @@ jest.mock('heroui-native', () => {
 
 import NewJobRoute from './new-job';
 import { updateJob } from '@/lib/api/jobs';
+import { ApiResponseError } from '@/lib/api/client';
 import { useAppToast } from '@/components/ui/AppToast';
 
 const showToast = useAppToast().show as jest.Mock;
@@ -350,6 +355,34 @@ describe('NewJobRoute', () => {
       }));
     });
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/job-detail', params: { id: '301' } });
+  });
+
+  /**
+   * 🔴 Worse than a dead form. A failed load in EDIT mode left every field empty under a
+   * live "Update job" button, so one tap would have wiped the vacancy's title,
+   * description, location and pay. The toast was the only sign, and toasts fade. Same
+   * fault as S4-03 on the volunteering form, fixed there and never here.
+   */
+  it('never shows an empty edit form with a live Update button after a failed load', async () => {
+    mockSearchParams = { id: '301' };
+    mockGetJobDetail.mockRejectedValue(new ApiResponseError(500, 'Server error'));
+
+    const { findByTestId, queryByText } = render(<NewJobRoute />);
+
+    expect(await findByTestId('new-job-load-failed')).toBeTruthy();
+    expect(queryByText('Update job')).toBeNull();
+    expect(queryByText('Retry')).toBeTruthy();
+  });
+
+  it('offers no retry when the vacancy is simply not this member’s', async () => {
+    mockSearchParams = { id: '301' };
+    mockGetJobDetail.mockRejectedValue(new ApiResponseError(403, 'Forbidden'));
+
+    const { findByText, queryByText } = render(<NewJobRoute />);
+
+    expect(await findByText('Not available to you')).toBeTruthy();
+    expect(queryByText('Retry')).toBeNull();
+    expect(queryByText('Update job')).toBeNull();
   });
 
   it('hydrates an existing job and updates it in edit mode', async () => {

@@ -80,6 +80,8 @@
     "title": "Eagraíocht",
     "about": "Faoin eagraíocht",
     "contact": "Teagmháil",
+    "websiteFailedTitle": "Níorbh fhéidir an suíomh gréasáin seo a oscailt",
+    "websiteFailedMessage": "Thug an eagraíocht an seoladh {{url}}. Níorbh fhéidir le do ghuthán é a oscailt — b’fhéidir go bhfuil an seoladh mícheart, nó nach bhfuil brabhsálaí suiteáilte agat.",
     "share": " Roinn",
     "notFound": "Eagraíocht gan aimsiú.",
     "notFoundHint": "Seans gur baineadh an eagraíocht seo nó nach bhfuil sí ar fáil sa phobal seo.",

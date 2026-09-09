@@ -80,6 +80,8 @@
     "title": "Organisation",
     "about": "About",
     "contact": "Contact",
+    "websiteFailedTitle": "This website could not be opened",
+    "websiteFailedMessage": "The organisation gave the address {{url}}. Your phone could not open it — the address may be wrong, or you may have no browser installed.",
     "share": "Share",
     "notFound": "Organisation not found.",
     "notFoundHint": "This organisation may have been removed or is not available in this community.",

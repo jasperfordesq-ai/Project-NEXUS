@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { Linking } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
@@ -23,6 +24,8 @@ jest.mock('react-i18next', () => ({
         'detailTitle': 'Organisation Details',
         'detail.about': 'About',
         'detail.contact': 'Contact',
+        'detail.websiteFailedTitle': 'This website could not be opened',
+        'detail.websiteFailedMessage': 'The organisation gave the address. Your phone could not open it.',
         'detail.share': 'Share',
         'detail.invalidId': 'Invalid organisation ID.',
         'detail.notFound': 'Organisation not found.',
@@ -97,6 +100,7 @@ jest.mock('@/components/ui/AppToast', () => {
 // --- Tests ---
 
 import OrganisationDetailScreen from './organisation-detail';
+import { useAppToast } from '@/components/ui/AppToast';
 
 const mockOrg = {
   id: 3,
@@ -226,5 +230,69 @@ describe('OrganisationDetailScreen', () => {
     const { getByText } = render(<OrganisationDetailScreen />);
     expect(getByText('Organisation not found.')).toBeTruthy();
     expect(getByText('Browse organisations')).toBeTruthy();
+  });
+
+  describe('opening the organisation website', () => {
+    /*
+      🔴 Both halves of the old opener were unwrapped promises. `canOpenURL` throws on
+      Android when the scheme is not in the manifest's query list, and `openURL` rejects on
+      a malformed address or a device with no browser — and an organisation's website is
+      typed in by that organisation, so a malformed one is ordinary. The rejection went
+      nowhere and the member saw nothing happen at all.
+
+      Spied on the real `Linking` the screen imports, rather than module-mocked: a mock of
+      the internal path is not necessarily the object `react-native`'s barrel re-exports
+      under jest-expo, and the failure cases would then have passed for the wrong reason.
+    */
+    let canOpenURL: jest.SpyInstance;
+    let openURL: jest.SpyInstance;
+
+    beforeEach(() => {
+      canOpenURL = jest.spyOn(Linking, 'canOpenURL');
+      openURL = jest.spyOn(Linking, 'openURL');
+      (useAppToast().show as jest.Mock).mockClear();
+      mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: null, refresh: jest.fn() });
+    });
+
+    afterEach(() => {
+      canOpenURL.mockRestore();
+      openURL.mockRestore();
+    });
+
+    it('opens a website the phone can handle', async () => {
+      canOpenURL.mockResolvedValue(true);
+      openURL.mockResolvedValue(undefined);
+
+      const { getByText } = render(<OrganisationDetailScreen />);
+      fireEvent.press(getByText('Visit Website'));
+
+      await waitFor(() => expect(openURL).toHaveBeenCalledWith('https://dublincommunityhub.ie'));
+    });
+
+    it('says so when the phone throws rather than leaving the member with nothing', async () => {
+      canOpenURL.mockRejectedValue(new Error('no query permission'));
+
+      const { getByText } = render(<OrganisationDetailScreen />);
+      fireEvent.press(getByText('Visit Website'));
+
+      await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'This website could not be opened',
+        variant: 'danger',
+      })));
+      expect(openURL).not.toHaveBeenCalled();
+    });
+
+    it('says so when opening the address rejects', async () => {
+      canOpenURL.mockResolvedValue(true);
+      openURL.mockRejectedValue(new Error('no browser installed'));
+
+      const { getByText } = render(<OrganisationDetailScreen />);
+      fireEvent.press(getByText('Visit Website'));
+
+      await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'This website could not be opened',
+        variant: 'danger',
+      })));
+    });
   });
 });

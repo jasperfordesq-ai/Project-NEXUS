@@ -80,6 +80,8 @@
     "title": "Organização",
     "about": "Sobre",
     "contact": "Contato",
+    "websiteFailedTitle": "Não foi possível abrir este site",
+    "websiteFailedMessage": "A organização indicou o endereço {{url}}. O seu telemóvel não conseguiu abri-lo — o endereço pode estar errado ou pode não ter nenhum navegador instalado.",
     "share": "Compartilhar",
     "notFound": "Organização não encontrada.",
     "notFoundHint": "Esta organização pode ter sido removida ou não está disponível nesta comunidade.",
