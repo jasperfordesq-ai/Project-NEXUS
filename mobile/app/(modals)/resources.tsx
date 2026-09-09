@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   getKbArticles,
+  searchKbArticles,
   getResourceCategories,
   getResources,
   type KbArticle,
@@ -66,12 +67,33 @@ function ResourcesScreen() {
     data: categories,
     refresh: refreshCategories,
   } = useApi(() => getResourceCategories());
+  /*
+    🔴 The knowledge-base search only filtered the articles already on screen. The tab
+    fetches one page and then matched the typed term against those rows in JavaScript,
+    so an article that answered the question exactly — but sat outside that page —
+    reported "no results". A member searching their community's help articles was told
+    the answer did not exist.
+
+    `searchKbArticles` hits `/v2/kb/search`, which searches all of them, and had no
+    caller outside its own unit test. Audit 2026-09-07 F-15, fixed 2026-09-09.
+  */
+  const kbTerm = debouncedSearch.trim();
   const {
     data: kbPage,
-    isLoading: kbLoading,
-    error: kbError,
-    refresh: refreshKb,
-  } = useApi(() => getKbArticles());
+    isLoading: kbBrowseLoading,
+    error: kbBrowseError,
+    refresh: refreshKbBrowse,
+  } = useApi(() => getKbArticles(), [], { enabled: kbTerm === '' });
+  const {
+    data: kbResults,
+    isLoading: kbSearchLoading,
+    error: kbSearchError,
+    refresh: refreshKbSearch,
+  } = useApi(() => searchKbArticles(kbTerm), [kbTerm], { enabled: kbTerm !== '' });
+
+  const kbLoading = kbTerm === '' ? kbBrowseLoading : kbSearchLoading;
+  const kbError = kbTerm === '' ? kbBrowseError : kbSearchError;
+  const refreshKb = kbTerm === '' ? refreshKbBrowse : refreshKbSearch;
 
   const resources = useMemo(() => {
     const items = resourcesPage?.items ?? [];
@@ -79,16 +101,12 @@ function ResourcesScreen() {
     const pinned = items.find((item) => item.id === highlightedId);
     return pinned ? [pinned, ...items.filter((item) => item.id !== highlightedId)] : items;
   }, [highlightedId, resourcesPage?.items]);
-  const kbArticles = useMemo(() => kbPage?.items ?? [], [kbPage?.items]);
-  const filteredKb = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return kbArticles;
-    return kbArticles.filter((article) => [
-      article.title,
-      article.content_preview,
-      article.category_name,
-    ].filter(Boolean).join(' ').toLowerCase().includes(term));
-  }, [kbArticles, search]);
+  // With a term, the server has already done the matching; without one, the browse
+  // page IS the list. Nothing is filtered here any more.
+  const filteredKb = useMemo(
+    () => (kbTerm === '' ? (kbPage?.items ?? []) : (kbResults ?? [])),
+    [kbTerm, kbPage?.items, kbResults],
+  );
   const isLoading = tab === 'resources' ? resourcesLoading : kbLoading;
   const error = tab === 'resources' ? resourcesError : kbError;
 

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import * as Linking from 'expo-linking';
 
 const mockUseApi = jest.fn();
@@ -121,12 +121,13 @@ describe('ResourcesScreen', () => {
       error: null,
       refresh: jest.fn(),
     };
-    mockUseApi.mockImplementation(() => {
-      call += 1;
-      const index = ((call - 1) % 3) + 1;
-      if (index === 1) return resourcesState;
-      if (index === 2) return categoriesState;
-      return kbState;
+    const kbSearchState = { data: [], isLoading: false, error: null, refresh: jest.fn() };
+    mockUseApi.mockImplementation((loader: unknown) => {
+      const source = String(loader);
+      if (source.includes('getResourceCategories')) return categoriesState;
+      if (source.includes('searchKbArticles')) return kbSearchState;
+      if (source.includes('getKbArticles')) return kbState;
+      return resourcesState;
     });
   });
 
@@ -184,5 +185,40 @@ describe('ResourcesScreen', () => {
 
     expect(refreshResources).toHaveBeenCalled();
     expect(refreshCategories).toHaveBeenCalled();
+  });
+
+  /*
+    🔴 The knowledge-base search only filtered the articles already on screen: the tab
+    fetched one page and matched the typed term against those rows in JavaScript. An
+    article that answered the question exactly, but sat outside that page, came back as
+    "no results" — the app telling a member their community had no answer when it did.
+    `searchKbArticles` hits an endpoint that searches all of them and had no caller
+    outside its own unit test. Audit 2026-09-07 F-15, fixed 2026-09-09.
+  */
+  describe('knowledge-base search', () => {
+    it('asks the server rather than filtering the page it already has', async () => {
+      const screen = render(<ResourcesScreen />);
+      fireEvent.press(screen.getByText('Knowledge'));
+
+      fireEvent.changeText(screen.getByPlaceholderText('Search resources'), 'compost');
+
+      // Debounced, so the request is not made per keystroke.
+      await waitFor(() => {
+        const asked = mockUseApi.mock.calls.some(([loader]) => String(loader).includes('searchKbArticles'));
+        expect(asked).toBe(true);
+      }, { timeout: 3000 });
+    });
+
+    it('browses without searching when the box is empty', () => {
+      render(<ResourcesScreen />);
+
+      const browsing = mockUseApi.mock.calls.filter(([loader]) => String(loader).includes('getKbArticles'));
+      // The search hook is registered but disabled, so no request is made for it.
+      const searchCalls = mockUseApi.mock.calls.filter(([loader]) => String(loader).includes('searchKbArticles'));
+      expect(browsing.length).toBeGreaterThan(0);
+      searchCalls.forEach(([, , opts]) => {
+        expect((opts as { enabled?: boolean }).enabled).toBe(false);
+      });
+    });
   });
 });
