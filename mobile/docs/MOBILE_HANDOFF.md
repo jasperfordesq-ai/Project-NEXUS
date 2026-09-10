@@ -292,7 +292,7 @@ status document's backlog.
 
 | Need | Source |
 | --- | --- |
-| 🔴 **Shipping a build to Play — order of operations, version codes, review timing, every silent trap** | [`PLAY_RELEASE_PROCEDURE.md`](PLAY_RELEASE_PROCEDURE.md) |
+| 🔴 **Shipping a build to Play — order of operations, version codes, review timing, every silent trap** | [`PLAY_RELEASE_PROCEDURE.md`](PLAY_RELEASE_PROCEDURE.md) — and the agent checklist distilled from it, `.agents/skills/play-release/SKILL.md`, whose first rule is: let Play's quick checks finish before pressing Submit |
 | The 2026-09-07 audit — what was read, fixed and left open | [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md) |
 | Two-account emulator/device procedure | [`MOBILE_TEST_HARNESS.md`](MOBILE_TEST_HARNESS.md) |
 | Automated suites and gates | [`TESTING.md`](TESTING.md) |

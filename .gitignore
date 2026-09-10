@@ -422,6 +422,9 @@ DPO_Confidentiality_Agreement_*.docx
 !.agents/skills/heroui-migration/
 !.agents/skills/heroui-native/
 !.agents/skills/heroui-react/
+# Project-owned: the Play release checklist, written after the same submission
+# mistake was made twice (2026-09-09, 2026-09-10). See mobile/docs/PLAY_RELEASE_PROCEDURE.md.
+!.agents/skills/play-release/
 
 # ─── HyperFrames video projects — machine-local, NOT committed ───────────────
 # `videos/` holds HyperFrames composition projects. A single finished project

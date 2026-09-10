@@ -127,6 +127,18 @@ Two Console behaviours worth knowing before you click:
 - On the production review step the button is **"Save"**, and it does *not*
   publish. It stages the release into **Publishing overview**. The actual
   decision is **"Submit N changes for review"** there.
+- 🔴 **On Publishing overview, LET THE QUICK CHECKS FINISH before you submit.**
+  After Save, the page shows a progress bar — *"Running quick checks for
+  commonly found issues … up to 14 minutes remaining … Changes will be sent for
+  review as soon as checks complete successfully."* The **Submit button is
+  enabled while that bar is still running**, and that is the trap: pressing it
+  queues the release before Google's own policy and crash-surface scan has
+  reported, so a problem the scan would have shown you is discovered in review
+  instead of on this page where you could still fix it. This was done wrong
+  twice, on submissions 7 (2026-09-09) and 8 (2026-09-10), and the owner's
+  instruction is explicit: wait for the bar to disappear and read what it
+  found, then submit. An enabled button is not permission. The same applies to
+  "Save and publish" on internal testing if a quick-checks bar is showing.
 - **"Create new release" is greyed out on a track that already holds a draft.**
   That is the signal a draft exists, not a permissions problem — resume the draft
   instead of trying to make another.
