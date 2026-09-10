@@ -233,6 +233,17 @@ class AdminLegalDocController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_type'), 'target', 422);
         }
 
+        // Resolve the version in THIS community first, as publishVersion() does.
+        // notifyUsersOfUpdate() is scoped and correctly notified nobody for a
+        // foreign version, but it returns 0 for several legitimate reasons too
+        // (not current, still a draft, acceptance not required), so the count
+        // cannot distinguish them — and the response said `notified: true`.
+        // (CrossCommunityAccessSweepTest foreign-child sweep, 2026-09-10.)
+        $version = $this->legalDocumentService->getVersion($vid);
+        if (!$version || (int) ($version['document_id'] ?? 0) !== $docId) {
+            return $this->respondWithError('NOT_FOUND', __('api.version_not_found'), null, 404);
+        }
+
         try {
             $count = $this->legalDocumentService->notifyUsersOfUpdate($docId, $vid, true, $target);
             return $this->respondWithData(['notified' => true, 'count' => $count]);
@@ -246,6 +257,15 @@ class AdminLegalDocController extends BaseApiController
     public function getUsersPendingCount(int $docId, int $vid): JsonResponse
     {
         $this->requireAdmin();
+
+        // As above: a version from another community answered 200 with count 0,
+        // which is indistinguishable from "nobody is pending" and confirmed the
+        // foreign id exists.
+        $version = $this->legalDocumentService->getVersion($vid);
+        if (!$version || (int) ($version['document_id'] ?? 0) !== $docId) {
+            return $this->respondWithError('NOT_FOUND', __('api.version_not_found'), null, 404);
+        }
+
         try {
             $count = $this->legalDocumentService->getUsersPendingAcceptanceCount($docId, $vid);
             return $this->respondWithData(['count' => $count]);

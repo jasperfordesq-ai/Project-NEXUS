@@ -51,7 +51,14 @@ class CourseCohortController extends BaseApiController
     {
         $this->guardCourse($courseId);
 
-        CourseCohortService::delete($courseId, $cohortId);
+        // The service already scopes the cohort to this course and returns
+        // false when there is nothing of ours to delete — but its answer was
+        // discarded, so a cohort belonging to another community was reported as
+        // deleted. Nothing crossed; the response was simply untrue.
+        // (CrossCommunityAccessSweepTest foreign-child sweep, 2026-09-10.)
+        if (! CourseCohortService::delete($courseId, $cohortId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Cohort']), null, 404);
+        }
 
         return $this->respondWithData(['deleted' => true]);
     }

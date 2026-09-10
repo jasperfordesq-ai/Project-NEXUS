@@ -172,7 +172,16 @@ class CourseQuizController extends BaseApiController
         $this->guardCourse($courseId);
         $this->ensureQuizInCourse($quizId, $courseId);
 
-        CourseQuestion::where('id', $questionId)->where('quiz_id', $quizId)->delete();
+        // Scoped to the quiz, which is scoped to the guarded course — so a
+        // question from another community could never be removed. But the
+        // delete count was discarded and the response said `deleted: true`
+        // regardless, which confirmed a foreign question id exists.
+        // (CrossCommunityAccessSweepTest foreign-child sweep, 2026-09-10.)
+        $deleted = CourseQuestion::where('id', $questionId)->where('quiz_id', $quizId)->delete();
+
+        if ($deleted === 0) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Question']), null, 404);
+        }
 
         return $this->respondWithData(['deleted' => true]);
     }

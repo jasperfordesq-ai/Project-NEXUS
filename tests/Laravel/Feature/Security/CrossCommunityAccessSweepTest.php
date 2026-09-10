@@ -216,6 +216,80 @@ class CrossCommunityAccessSweepTest extends TestCase
         'marketplace_listing' => ['table' => 'marketplace_listings', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep listing', 'description' => 'Sweep listing description']],
         'story' => ['table' => 'stories', 'owner' => 'user_id', 'columns' => ['expires_at' => '{tomorrow}']],
         'podcast_show' => ['table' => 'podcast_shows', 'owner' => 'owner_user_id', 'columns' => ['title' => 'Sweep show', 'slug' => 'sweep-show-{n}']],
+
+        // ---------------------------------------------------------------
+        // CHILD records, for the multi-parameter sweep in Section 6.5.
+        //
+        // Each is linked by 'needs' to the parent seeded for the SAME tenant,
+        // so the control request uses a child that genuinely belongs to the
+        // parent in the URL. Without that the endpoint refuses for the mundane
+        // reason that the child is not part of the parent, which looks like a
+        // pass and is not one. Declared after their parents: seeding is ordered.
+        // ---------------------------------------------------------------
+        'course_lesson' => ['table' => 'course_lessons', 'needs' => ['course_id' => 'course'], 'columns' => ['title' => 'Sweep lesson']],
+        'course_section' => ['table' => 'course_sections', 'needs' => ['course_id' => 'course'], 'columns' => ['title' => 'Sweep section']],
+        'course_cohort' => ['table' => 'course_cohorts', 'needs' => ['course_id' => 'course'], 'columns' => ['name' => 'Sweep cohort']],
+        'course_quiz' => ['table' => 'course_quizzes', 'needs' => ['course_id' => 'course'], 'columns' => ['title' => 'Sweep quiz']],
+        'course_question' => ['table' => 'course_questions', 'needs' => ['quiz_id' => 'course_quiz'], 'columns' => ['prompt' => 'Sweep prompt']],
+        'group_discussion' => ['table' => 'group_discussions', 'needs' => ['group_id' => 'group'], 'owner' => 'user_id', 'columns' => ['title' => 'Sweep discussion']],
+        'group_chatroom' => ['table' => 'group_chatrooms', 'needs' => ['group_id' => 'group'], 'owner' => 'created_by', 'columns' => ['name' => 'Sweep chatroom']],
+        'group_chatroom_message' => ['table' => 'group_chatroom_messages', 'needs' => ['chatroom_id' => 'group_chatroom'], 'owner' => 'user_id', 'columns' => ['body' => 'Sweep chatroom message']],
+        'group_announcement' => ['table' => 'group_announcements', 'needs' => ['group_id' => 'group'], 'owner' => 'created_by', 'columns' => ['title' => 'Sweep announcement', 'content' => 'Sweep announcement body']],
+        'group_question' => ['table' => 'group_questions', 'needs' => ['group_id' => 'group'], 'owner' => 'user_id', 'columns' => ['title' => 'Sweep group question']],
+        'group_answer' => ['table' => 'group_answers', 'needs' => ['question_id' => 'group_question'], 'owner' => 'user_id', 'columns' => ['body' => 'Sweep answer']],
+        'group_file' => ['table' => 'group_files', 'needs' => ['group_id' => 'group'], 'owner' => 'uploaded_by', 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_type' => 'text/plain']],
+        'group_media' => ['table' => 'group_media', 'needs' => ['group_id' => 'group'], 'owner' => 'uploaded_by'],
+        'group_invite' => ['table' => 'group_invites', 'needs' => ['group_id' => 'group'], 'owner' => 'invited_by', 'columns' => ['token' => 'sweep-invite-{n}']],
+        'group_challenge' => ['table' => 'group_challenges', 'needs' => ['group_id' => 'group'], 'owner' => 'created_by', 'columns' => ['title' => 'Sweep challenge', 'metric' => 'posts', 'target_value' => '10', 'ends_at' => '{tomorrow}']],
+        'group_scheduled_post' => ['table' => 'group_scheduled_posts', 'needs' => ['group_id' => 'group'], 'owner' => 'user_id', 'columns' => ['content' => 'Sweep scheduled post', 'scheduled_at' => '{tomorrow}']],
+        'podcast_episode' => ['table' => 'podcast_episodes', 'needs' => ['show_id' => 'podcast_show'], 'owner' => 'author_user_id', 'columns' => ['title' => 'Sweep episode', 'slug' => 'sweep-episode-{n}', 'audio_url' => 'https://example.invalid/sweep.mp3']],
+        // `unique_tenant_document` is (tenant_id, document_type) and every
+        // seeded tenant already has a 'terms' row, so the sweep takes a type
+        // nothing else claims rather than colliding with real data.
+        'legal_document' => ['table' => 'legal_documents', 'unique' => ['document_type'], 'columns' => ['document_type' => 'acceptable_use', 'title' => 'Sweep acceptable use', 'slug' => 'sweep-acceptable-use-{n}']],
+        // No tenant_id of its own: scoped through legal_documents by join.
+        'legal_document_version' => ['table' => 'legal_document_versions', 'needs' => ['document_id' => 'legal_document'], 'owner' => 'created_by', 'columns' => ['version_number' => '1.{n}', 'content' => 'Sweep version content', 'effective_date' => '{today}']],
+    ];
+
+    /**
+     * Child-record parameters for the multi-parameter sweep, resolved by the
+     * path segment before the parameter.
+     *
+     * Deliberately SEPARATE from PREFIX_FIXTURES. That map is shared with the
+     * read and write sweeps whose figures are published, and `{questionId}`
+     * proves why a shared map could not do this job anyway: under
+     * `courses/{courseId}/quizzes/{quizId}/questions` it is a quiz question,
+     * and under `groups/{id}/questions` it is a group's Q&A question. Only the
+     * local prefix distinguishes them.
+     */
+    private const CHILD_FIXTURES_BY_PREFIX = [
+        'courses/lessons' => 'course_lesson',
+        'courses/sections' => 'course_section',
+        'courses/cohorts' => 'course_cohort',
+        'courses/quizzes' => 'course_quiz',
+        'courses/quizzes/questions' => 'course_question',
+        'courses/groups' => 'group',
+        'groups/discussions' => 'group_discussion',
+        'groups/chatrooms' => 'group_chatroom',
+        'groups/chatrooms/pin' => 'group_chatroom_message',
+        'groups/announcements' => 'group_announcement',
+        'groups/questions' => 'group_question',
+        'groups/answers' => 'group_answer',
+        'groups/files' => 'group_file',
+        'groups/media' => 'group_media',
+        'groups/invites' => 'group_invite',
+        'groups/challenges' => 'group_challenge',
+        'groups/scheduled-posts' => 'group_scheduled_post',
+        'podcasts/shows/episodes' => 'podcast_episode',
+        'admin/legal-documents' => 'legal_document',
+        'admin/legal-documents/versions' => 'legal_document_version',
+    ];
+
+    /**
+     * Endpoints that answer 2xx for a child record from another community while
+     * provably changing nothing. Shrink-only in both directions.
+     */
+    private const KNOWN_CHILD_ACCEPTED_NO_CHANGE = [
     ];
 
     /**
@@ -816,6 +890,458 @@ class CrossCommunityAccessSweepTest extends TestCase
     }
 
     /**
+     * A CHILD RECORD from another community, supplied as the deepest identifier.
+     *
+     * The companion to the foreign-person sweep, and the rest of Finding 14.
+     * These are the multi-parameter routes whose second identifier is another
+     * RECORD rather than a person: a lesson within a course, a version within a
+     * legal document, an episode within a show, an answer within a question.
+     *
+     * The shape is the same and so is the reasoning: **every identifier except
+     * the last is one of OUR OWN records, owned by the acting user.** Only the
+     * deepest one belongs to another community. So the request looks entirely
+     * legitimate up to its final segment, and it fails only if the handler
+     * confirms that the child really belongs to the parent it was reached
+     * through — which is the check most easily forgotten.
+     *
+     * WHY THIS NEEDED EIGHTEEN NEW FIXTURES
+     * -------------------------------------
+     * Measuring this first showed why it could not be bolted onto the existing
+     * resolution: 84 of the 86 candidate routes resolved BOTH identifiers to
+     * the same fixture type, because the child parameter fell back to matching
+     * its parent's path prefix. The sweep would have requested
+     * `courses/5/lessons/5` — the same row as both course and lesson — and the
+     * control would have rejected it, producing a page of results that proved
+     * nothing while appearing to be coverage. Real child fixtures, each linked
+     * by `needs` to the parent seeded for the same community, are what make the
+     * question answerable at all.
+     *
+     * Every probe is control-verified: the same request with OUR OWN child.
+     */
+    public function test_no_endpoint_accepts_a_child_record_from_another_community(): void
+    {
+        $endpoints = $this->multiParamChildEndpoints();
+        $this->assertNotEmpty(
+            $endpoints,
+            'Multi-parameter child-route enumeration produced nothing — this sweep would pass vacuously.'
+        );
+
+        // The courses module is switched OFF for the test community, so twelve
+        // course endpoints answered 403 FEATURE_DISABLED to the probe AND to
+        // the control — an unexercised endpoint, not a pass. A feature gate
+        // firing first tells us nothing about community scoping, which is what
+        // this test is for, so the module is enabled for both communities here.
+        $this->enableTenantFeatures(['courses', 'podcasts'], $this->testTenantId, self::VICTIM_TENANT_ID);
+
+        $this->victimOwner = User::factory()->forTenant(self::VICTIM_TENANT_ID)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->victimIds = $this->seedRecords(self::VICTIM_TENANT_ID, $this->victimOwner);
+
+        $results = [];
+
+        $run = function (string $actorLabel, User $actor, callable $selector) use ($endpoints, &$results): void {
+            $ownIds = $this->seedRecords($this->testTenantId, $actor);
+
+            foreach ($endpoints as $e) {
+                if (! $selector($e)) {
+                    continue;
+                }
+
+                // The endpoints run in sorted order, and a CONTROL request is a
+                // real request: the control for `DELETE .../versions/{versionId}`
+                // genuinely deletes our own version, after which the controls
+                // for PUT, notify and pending-count on the same record all
+                // answered "Version not found" and three endpoints were
+                // reported INCONCLUSIVE through no fault of the platform. The
+                // person sweep hit the identical trap with group membership.
+                // So: if a record this endpoint needs has been consumed, seed a
+                // fresh set. Cheap, because it only happens after a destructive
+                // control, and it makes the sweep order-independent.
+                if (! $this->recordsStillExist($e['keys'] ?? [], $ownIds)) {
+                    $ownIds = $this->seedRecords($this->testTenantId, $actor);
+                }
+
+                $row = $e + [
+                    'actor' => $actorLabel,
+                    'status' => null,
+                    'control_status' => null,
+                    'verdict' => 'SKIPPED',
+                    'note' => $e['skip'] ?? '',
+                    'body_excerpt' => '',
+                ];
+
+                if ($e['skip'] !== null) {
+                    $results[] = $row;
+
+                    continue;
+                }
+
+                $last = count($e['keys']) - 1;
+                $childKey = $e['keys'][$last];
+
+                // Probe: our own records, and another community's child last.
+                $probeIds = [];
+                $controlIds = [];
+                $missing = null;
+                foreach ($e['keys'] as $i => $key) {
+                    $own = $ownIds[$key] ?? null;
+                    if ($own === null) {
+                        $missing = "our own fixture '{$key}' could not be created";
+                        break;
+                    }
+                    $controlIds[] = $own;
+
+                    if ($i === $last) {
+                        $victim = $this->victimIds[$key] ?? null;
+                        if ($victim === null) {
+                            $missing = "the other community's fixture '{$key}' could not be created";
+                            break;
+                        }
+                        $probeIds[] = $victim;
+                    } else {
+                        $probeIds[] = $own;
+                    }
+                }
+
+                if ($missing !== null) {
+                    $results[] = array_merge($row, ['note' => $missing]);
+
+                    continue;
+                }
+
+                $table = $this->fixtureTable($childKey);
+                $victimChildId = $this->victimIds[$childKey];
+                $before = $table ? json_encode(DB::table($table)->where('id', $victimChildId)->first()) : null;
+
+                [$uri] = $this->fillFromIds($e['uri'], $probeIds);
+
+                try {
+                    $response = $this->json($e['method'], '/' . ltrim($uri, '/'), [], $this->withTenantHeader());
+                    $status = $response->getStatusCode();
+                    $body = mb_substr((string) $response->getContent(), 0, 300);
+                } catch (\Throwable $ex) {
+                    $results[] = array_merge($row, [
+                        'verdict' => 'INCONCLUSIVE',
+                        'note' => 'threw ' . class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160),
+                    ]);
+
+                    continue;
+                }
+
+                $after = $table ? json_encode(DB::table($table)->where('id', $victimChildId)->first()) : null;
+                $rowChanged = $table !== null && $before !== $after;
+
+                [$controlUri] = $this->fillFromIds($e['uri'], $controlIds);
+                $controlStatus = null;
+
+                try {
+                    $controlStatus = $this->json($e['method'], '/' . ltrim($controlUri, '/'), [], $this->withTenantHeader())
+                        ->getStatusCode();
+                } catch (\Throwable) {
+                    $controlStatus = null;
+                }
+
+                $controlWorked = $controlStatus !== null && $controlStatus >= 200 && $controlStatus < 300;
+                $succeeded = $status >= 200 && $status < 300;
+
+                [$verdict, $note] = match (true) {
+                    $succeeded && $rowChanged => ['MUTATED', $after === 'null' ? "another community's {$childKey} was DELETED" : "another community's {$childKey} was CHANGED"],
+                    $succeeded && $e['method'] === 'GET' && $this->bodyMentionsVictim($body, $victimChildId) => ['LEAKED', "the response carried another community's {$childKey}"],
+                    $succeeded => ['ACCEPTED_NO_CHANGE', "2xx for another community's {$childKey} but its row is unchanged — should refuse"],
+                    in_array($status, self::REFUSED, true) && $controlWorked => ['REFUSED', ''],
+                    in_array($status, self::REFUSED, true) => ['INCONCLUSIVE', "refused, but the control also failed ({$controlStatus}) — endpoint not exercised"],
+                    in_array($status, [400, 422], true) => ['VALIDATION_FIRST', 'validation rejected the empty body before scoping could be observed — not a pass'],
+                    $status === 405 => ['SKIPPED', 'method not allowed at runtime'],
+                    default => ['INCONCLUSIVE', "status {$status}"],
+                };
+
+                $results[] = array_merge($row, [
+                    'status' => $status,
+                    'control_status' => $controlStatus,
+                    'verdict' => $verdict,
+                    'note' => $note,
+                    'body_excerpt' => $verdict === 'REFUSED' ? '' : $body,
+                ]);
+            }
+        };
+
+        $member = $this->actAs(['role' => 'member']);
+        $run('member', $member, static fn ($e) => ! str_starts_with($e['prefix'], 'admin/'));
+
+        $admin = $this->actAs(['role' => 'admin']);
+        $run('admin', $admin, static fn ($e) => str_starts_with($e['prefix'], 'admin/'));
+
+        $dir = dirname(__DIR__, 4) . '/.local-docs-archive/security-evidence';
+        if (is_dir($dir) || @mkdir($dir, 0o775, true) || is_dir($dir)) {
+            @file_put_contents($dir . '/cross-community-child-sweep.json', json_encode([
+                'generated_at' => date('c'),
+                'method' => "Every v2 route taking two or more path parameters where none names a person. All identifiers except the deepest are filled with OUR OWN records owned by the acting user; the deepest is a child record from tenant 999. The foreign child's row is read before and after each request. Every probe is control-verified with our own child.",
+                'results' => $results,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
+
+        $lines = ['', '=== FOREIGN-CHILD SWEEP (multi-parameter routes) ===',
+            sprintf('multi-parameter v2 route/method combinations without a person : %d', count($endpoints)),
+        ];
+        foreach (['member' => 'PASS 1 — member, member-facing routes', 'admin' => 'PASS 2 — community admin, /admin/ routes'] as $actorLabel => $label) {
+            $t = ['MUTATED' => 0, 'LEAKED' => 0, 'ACCEPTED_NO_CHANGE' => 0, 'REFUSED' => 0, 'VALIDATION_FIRST' => 0, 'INCONCLUSIVE' => 0, 'SKIPPED' => 0];
+            foreach ($results as $r) {
+                if ($r['actor'] === $actorLabel) {
+                    $t[$r['verdict']]++;
+                }
+            }
+            $lines[] = '';
+            $lines[] = $label;
+            $lines[] = sprintf('  probed                                    : %d', $t['MUTATED'] + $t['LEAKED'] + $t['ACCEPTED_NO_CHANGE'] + $t['REFUSED'] + $t['VALIDATION_FIRST'] + $t['INCONCLUSIVE']);
+            $lines[] = sprintf('    refused, control succeeded              : %d', $t['REFUSED']);
+            $lines[] = sprintf('    validation rejected first (not a pass)  : %d', $t['VALIDATION_FIRST']);
+            $lines[] = sprintf('    accepted, row unchanged (review)        : %d', $t['ACCEPTED_NO_CHANGE']);
+            $lines[] = sprintf("    LEAKED another community's child        : %d", $t['LEAKED']);
+            $lines[] = sprintf('    MUTATED it                              : %d', $t['MUTATED']);
+            $lines[] = sprintf('    inconclusive                            : %d', $t['INCONCLUSIVE']);
+            $lines[] = sprintf('  skipped                                   : %d', $t['SKIPPED']);
+        }
+        $lines[] = '';
+        foreach (['MUTATED', 'LEAKED', 'ACCEPTED_NO_CHANGE', 'INCONCLUSIVE'] as $bucket) {
+            $rows = array_filter($results, static fn ($r) => $r['verdict'] === $bucket);
+            if ($rows === []) {
+                continue;
+            }
+            $lines[] = $bucket . ':';
+            foreach ($rows as $r) {
+                $lines[] = sprintf(
+                    '  [%s] %-6s %s  probe=%s control=%s  %s',
+                    $r['actor'],
+                    $r['method'],
+                    $r['uri'],
+                    $r['status'] ?? 'exception',
+                    $r['control_status'] ?? '-',
+                    preg_replace('/\s+/', ' ', $r['note'] . ' ' . $r['body_excerpt'])
+                );
+            }
+            $lines[] = '';
+        }
+        fwrite(STDERR, implode(PHP_EOL, $lines) . PHP_EOL);
+
+        $breaches = array_values(array_map(
+            static fn ($r) => $r['verdict'] . ' ' . $r['actor'] . ' ' . $r['method'] . ' ' . $r['uri'] . ' -> ' . $r['status'] . ' :: ' . $r['note'],
+            array_filter($results, static fn ($r) => in_array($r['verdict'], ['MUTATED', 'LEAKED'], true))
+        ));
+
+        $this->assertSame(
+            [],
+            $breaches,
+            "An endpoint served or altered another community's child record. Read cross-community-child-sweep.json."
+        );
+
+        $acceptedNoChange = array_values(array_map(
+            static fn ($r) => $r['method'] . ' ' . $r['uri'],
+            array_filter($results, static fn ($r) => $r['verdict'] === 'ACCEPTED_NO_CHANGE')
+        ));
+        sort($acceptedNoChange);
+        $known = self::KNOWN_CHILD_ACCEPTED_NO_CHANGE;
+        sort($known);
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($acceptedNoChange, $known)),
+            "An endpoint newly answers 2xx for another community's child record. Fix it to refuse, or — only "
+            . 'if it provably touches nothing — add it to KNOWN_CHILD_ACCEPTED_NO_CHANGE with a note.'
+        );
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($known, $acceptedNoChange)),
+            'A KNOWN_CHILD_ACCEPTED_NO_CHANGE entry no longer answers 2xx for a foreign child. It is fixed — delete its line.'
+        );
+    }
+
+    /**
+     * Multi-parameter v2 routes naming no person, where every parameter
+     * resolves to a record type this test can create.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function multiParamChildEndpoints(): array
+    {
+        $endpoints = [];
+
+        foreach (Route::getRoutes() as $route) {
+            $uri = $route->uri();
+
+            if (! str_starts_with($uri, 'api/v2/')) {
+                continue;
+            }
+
+            preg_match_all('/\{([^}]+)\}/', $uri, $matches);
+            $params = array_map(static fn ($p) => rtrim($p, '?'), $matches[1]);
+
+            if (count($params) < 2) {
+                continue;
+            }
+
+            // Routes naming a person belong to the other sweep.
+            if (array_intersect($params, self::PERSON_PARAMS) !== []) {
+                continue;
+            }
+
+            $path = substr($uri, strlen('api/v2/'));
+            $prefix = rtrim(substr($path, 0, (int) strpos($path, '{')), '/');
+
+            $keys = [];
+            $skip = null;
+
+            foreach ($params as $param) {
+                [$key, $reason] = $this->resolveChildParam($path, $param);
+
+                if ($key === null) {
+                    $skip = $reason ?? "no fixture for {{$param}}";
+
+                    break;
+                }
+
+                $keys[] = $key;
+            }
+
+            // Both identifiers resolving to the SAME type means the child
+            // parameter fell back to its parent's prefix; the request would use
+            // one row as both. That is not a test, so it is skipped rather than
+            // reported as coverage.
+            if ($skip === null && count(array_unique($keys)) === 1) {
+                $skip = 'every parameter resolves to the same record type — no distinct child fixture';
+            }
+
+            foreach (array_diff($route->methods(), ['HEAD']) as $method) {
+                $endpoints[] = [
+                    'method' => $method,
+                    'uri' => $uri,
+                    'prefix' => $prefix,
+                    'params' => $params,
+                    'keys' => $keys,
+                    'skip' => $skip,
+                    'action' => $route->getActionName(),
+                ];
+            }
+        }
+
+        usort($endpoints, static fn ($a, $b) => [$a['uri'], $a['method']] <=> [$b['uri'], $b['method']]);
+
+        return $endpoints;
+    }
+
+    /**
+     * Do the rows behind these fixture keys still exist?
+     *
+     * @param  list<string>  $keys
+     * @param  array<string,int>  $ids
+     */
+    private function recordsStillExist(array $keys, array $ids): bool
+    {
+        foreach ($keys as $key) {
+            $id = $ids[$key] ?? null;
+            $table = $this->fixtureTable($key);
+
+            if ($id === null || $table === null) {
+                return false;
+            }
+
+            if (! DB::table($table)->where('id', $id)->exists()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Switch feature modules on for the given communities, merging into the
+     * existing `tenants.features` JSON rather than replacing it.
+     *
+     * A module that is off makes its endpoints answer 403 before any scoping
+     * check runs, which the sweep can only record as inconclusive. Enabling it
+     * is what lets the endpoint be exercised at all — it does not weaken the
+     * test, because the probe and the control are treated identically.
+     */
+    private function enableTenantFeatures(array $features, int ...$tenantIds): void
+    {
+        foreach ($tenantIds as $tenantId) {
+            $current = DB::table('tenants')->where('id', $tenantId)->value('features');
+            $decoded = is_string($current) ? json_decode($current, true) : $current;
+            $decoded = is_array($decoded) ? $decoded : [];
+
+            foreach ($features as $feature) {
+                $decoded[$feature] = true;
+            }
+
+            DB::table('tenants')->where('id', $tenantId)->update(['features' => json_encode($decoded)]);
+        }
+    }
+
+    /**
+     * Resolve one parameter, preferring the child map (matched on the path
+     * segment before the parameter) and falling back to the shared resolver.
+     *
+     * @return array{0:?string,1:?string}
+     */
+    private function resolveChildParam(string $path, string $param): array
+    {
+        if (in_array($param, ['action', 'state'], true)) {
+            return [null, "parameter {{$param}} names an operation, not a record"];
+        }
+
+        $before = substr($path, 0, (int) strpos($path, '{' . $param . '}'));
+        $localPrefix = trim(preg_replace('#/+#', '/', rtrim(preg_replace('/\{[^}]+\}/', '', $before), '/')), '/');
+
+        $best = null;
+        foreach (array_keys(self::CHILD_FIXTURES_BY_PREFIX) as $candidate) {
+            if ($localPrefix === $candidate || str_starts_with($localPrefix, $candidate . '/')) {
+                if ($best === null || strlen($candidate) > strlen($best)) {
+                    $best = $candidate;
+                }
+            }
+        }
+
+        if ($best !== null) {
+            return [self::CHILD_FIXTURES_BY_PREFIX[$best], null];
+        }
+
+        return $this->resolve($localPrefix !== '' ? $localPrefix : $path, $param);
+    }
+
+    /**
+     * Substitute concrete ids for a route's parameters, in order.
+     *
+     * @param  list<int>  $ids
+     * @return array{0:string,1:?string}
+     */
+    private function fillFromIds(string $uri, array $ids): array
+    {
+        $index = 0;
+        $missing = null;
+
+        $filled = preg_replace_callback(
+            '/\{[^}]+\}/',
+            static function () use ($ids, &$index, &$missing): string {
+                $id = $ids[$index] ?? null;
+                $index++;
+
+                if ($id === null) {
+                    $missing ??= 'fewer ids than parameters';
+
+                    return '0';
+                }
+
+                return (string) $id;
+            },
+            $uri
+        );
+
+        return [(string) $filled, $missing];
+    }
+
+    /**
      * Give the CONTROL person the relationships these endpoints require.
      *
      * Without this, "remove this member", "promote this member" and "approve
@@ -1350,7 +1876,7 @@ class CrossCommunityAccessSweepTest extends TestCase
                 }
 
                 if (isset($spec['table'])) {
-                    $ids[$key] = $this->insertRow($spec, $tenantId, $owner);
+                    $ids[$key] = $this->insertRow($spec, $tenantId, $owner, $ids);
                     continue;
                 }
 
@@ -1379,21 +1905,71 @@ class CrossCommunityAccessSweepTest extends TestCase
     }
 
     /** Direct insert for a module that has no factory. Fills only NOT NULL columns without defaults. */
-    private function insertRow(array $spec, int $tenantId, User $owner): int
+    /**
+     * @param  array<string,int>  $seeded  fixture key => id, for 'needs' linkage
+     */
+    private function insertRow(array $spec, int $tenantId, User $owner, array $seeded = []): int
     {
-        $row = ['tenant_id' => $tenantId, $spec['owner'] => $owner->id];
+        $row = [];
         $n = Str::lower(Str::random(8));
 
-        foreach ($spec['columns'] as $column => $value) {
+        // Not every child table carries tenant_id — `legal_document_versions`
+        // is scoped through its parent document's tenant_id by join, which is
+        // correct and is how LegalDocumentService reads it. Setting a column
+        // that does not exist would throw and lose the fixture.
+        if (Schema::hasColumn($spec['table'], 'tenant_id')) {
+            $row['tenant_id'] = $tenantId;
+        }
+
+        // Owner is optional: some child rows have no per-row owner column.
+        if (isset($spec['owner'])) {
+            $row[$spec['owner']] = $owner->id;
+        }
+
+        // Parent linkage. A child fixture MUST point at the parent seeded for
+        // this same tenant, or the endpoint refuses for the mundane reason that
+        // the child does not belong to the parent in the URL — which reads as a
+        // pass and is not one.
+        foreach ($spec['needs'] ?? [] as $column => $parentKey) {
+            if (! isset($seeded[$parentKey])) {
+                throw new \RuntimeException("parent fixture '{$parentKey}' missing");
+            }
+            $row[$column] = $seeded[$parentKey];
+        }
+
+        foreach ($spec['columns'] ?? [] as $column => $value) {
             $row[$column] = match ($value) {
                 '{tomorrow}' => now()->addDay(),
-                default => str_replace('{n}', $n, $value),
+                '{today}' => now()->toDateString(),
+                default => str_replace('{n}', $n, (string) $value),
             };
         }
 
         foreach (['created_at', 'updated_at'] as $ts) {
             if (Schema::hasColumn($spec['table'], $ts)) {
                 $row[$ts] = now();
+            }
+        }
+
+        // A fixture whose table has a per-tenant uniqueness rule cannot simply
+        // be inserted twice, and seedRecords() runs once PER ACTOR PASS inside
+        // one test — so the second pass collides with the row the first pass
+        // created. `unique` names the columns that, with tenant_id, identify an
+        // existing row; that row is then reused. (`legal_documents` is unique on
+        // (tenant_id, document_type).) Reuse is sound here: the sweep needs *a*
+        // record of this type in this community, not a brand-new one.
+        if (isset($spec['unique'])) {
+            $lookup = DB::table($spec['table']);
+            if (Schema::hasColumn($spec['table'], 'tenant_id')) {
+                $lookup->where('tenant_id', $tenantId);
+            }
+            foreach ($spec['unique'] as $column) {
+                $lookup->where($column, $row[$column] ?? null);
+            }
+
+            $existing = $lookup->value('id');
+            if ($existing !== null) {
+                return (int) $existing;
             }
         }
 
