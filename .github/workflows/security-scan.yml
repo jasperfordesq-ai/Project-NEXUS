@@ -128,21 +128,21 @@ jobs:
         if: always()
         run: pip install semgrep
 
+      # 🔴 An unavailable scan must LOOK unavailable. Until 2026-09-10 this step
+      # ended in `|| true` and, when Semgrep failed to run (auth, network, install),
+      # fabricated an EMPTY SARIF so the upload never crashed — which made a scan
+      # that never happened indistinguishable from a scan that found nothing.
+      # Now: the step fails visibly (continue-on-error keeps the rest of the job
+      # running), and the upload only happens when Semgrep actually wrote a file.
       - name: SAST Scan with Semgrep
         if: always()
+        continue-on-error: true
         run: |
           semgrep ci \
             --config p/php \
             --config p/security-audit \
             --config p/secrets \
-            --sarif --output semgrep-results.sarif \
-            || true
-          # Semgrep may fail to produce the SARIF file (auth error, network issue,
-          # install problem). Create a valid empty SARIF so the upload step
-          # never crashes regardless of why Semgrep didn't write the file.
-          if [ ! -f semgrep-results.sarif ]; then
-            echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > semgrep-results.sarif
-          fi
+            --sarif --output semgrep-results.sarif
         env:
           SEMGREP_RULES: p/php p/security-audit p/secrets
 
@@ -150,7 +150,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'semgrep-results.sarif'
-        if: always()
+        if: always() && hashFiles('semgrep-results.sarif') != ''
 
       # ── TruffleHog secret detection ──────────────────────────────
       # Blocks if verified secrets are found in the repository.

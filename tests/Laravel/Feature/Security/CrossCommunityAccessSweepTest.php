@@ -606,7 +606,16 @@ class CrossCommunityAccessSweepTest extends TestCase
                     $status === 405 => ['SKIPPED', 'method not allowed at runtime'],
                     default => ['INCONCLUSIVE', "status {$status}"],
                 };
-                $results[] = array_merge($row, ['status' => $status, 'verdict' => $verdict, 'note' => $note, 'body_excerpt' => $verdict === 'REFUSED' ? '' : $body]);
+
+                // Third case: does the same request behave any differently for an id
+                // that exists NOWHERE? If not, the success reply reveals nothing about
+                // whether the foreign record exists, and "existence disclosure" is the
+                // wrong label for it.
+                $ghost = $verdict === 'ACCEPTED_NO_CHANGE'
+                    ? $this->ghostComparison($e['method'], '/' . preg_replace('/\{[^}]+\}/', (string) self::GHOST_ID, $e['uri']), [], $status, $body)
+                    : null;
+
+                $results[] = array_merge($row, ['status' => $status, 'verdict' => $verdict, 'note' => $note, 'body_excerpt' => $verdict === 'REFUSED' ? '' : $body, 'ghost' => $ghost]);
             }
         };
 
@@ -640,6 +649,7 @@ class CrossCommunityAccessSweepTest extends TestCase
             $lines[] = sprintf('    refused (401/403/404/410)               : %d', $t['REFUSED']);
             $lines[] = sprintf('    validation rejected first (not a pass)  : %d', $t['VALIDATION_FIRST']);
             $lines[] = sprintf('    accepted, foreign row unchanged (review): %d', $t['ACCEPTED_NO_CHANGE']);
+            $lines[] = sprintf('      ...indistinguishable from a NONEXISTENT id: %d  (no existence disclosure)', count(array_filter($results, static fn ($r) => $r['actor'] === $actor && $r['verdict'] === 'ACCEPTED_NO_CHANGE' && (($r['ghost']['distinguishable'] ?? true) === false))));
             $lines[] = sprintf('    MUTATED the foreign record              : %d', $t['MUTATED']);
             $lines[] = sprintf('    inconclusive                            : %d', $t['INCONCLUSIVE']);
             $lines[] = sprintf('  skipped                                   : %d', $t['SKIPPED']);
@@ -1194,6 +1204,12 @@ class CrossCommunityAccessSweepTest extends TestCase
                     default => ['INCONCLUSIVE', "status {$status}"],
                 };
 
+                // Third case, as in the empty-body pass: the SAME accepted body against an
+                // id that exists nowhere. Identical answers mean no existence disclosure.
+                $ghost = $verdict === 'ACCEPTED_NO_CHANGE'
+                    ? $this->ghostComparison($e['method'], '/' . preg_replace('/\{[^}]+\}/', (string) self::GHOST_ID, $e['uri']), $body, (int) $status, mb_substr($raw, 0, 300))
+                    : null;
+
                 $results[] = [
                     'actor' => $actor,
                     'method' => $e['method'],
@@ -1204,6 +1220,7 @@ class CrossCommunityAccessSweepTest extends TestCase
                     'rounds' => $rounds,
                     'body_sent' => $body,
                     'body_excerpt' => $verdict === 'REFUSED' ? '' : mb_substr($raw, 0, 260),
+                    'ghost' => $ghost,
                 ];
             }
         };
@@ -1236,6 +1253,7 @@ class CrossCommunityAccessSweepTest extends TestCase
             sprintf('  refused a foreign id holding a good body : %d', $tally['REFUSED']),
             sprintf('  MUTATED the foreign record               : %d', $tally['MUTATED']),
             sprintf('  accepted, row unchanged (review)         : %d', $tally['ACCEPTED_NO_CHANGE']),
+            sprintf('    ...indistinguishable from a NONEXISTENT id: %d  (no existence disclosure)', count(array_filter($results, static fn ($r) => $r['verdict'] === 'ACCEPTED_NO_CHANGE' && (($r['ghost']['distinguishable'] ?? true) === false)))),
             sprintf('  no acceptable body found (still unproven): %d', $tally['VALIDATION_UNRESOLVED']),
             sprintf('  inconclusive                             : %d', $tally['INCONCLUSIVE']),
             sprintf('  method not allowed                       : %d', $tally['SKIPPED']),
@@ -2131,6 +2149,44 @@ class CrossCommunityAccessSweepTest extends TestCase
         }
 
         return ['fingerprints' => $fingerprints, 'unreadable' => $unreadable];
+    }
+
+    /** An identifier that exists in no table: bigint auto-increments are nowhere near it. */
+    private const GHOST_ID = 2000000000;
+
+    /**
+     * The THIRD request for an accepted-but-unchanged write: the same call with
+     * an identifier that exists nowhere. Compared with the foreign-id response on
+     * status and on the body with digit runs normalised (ids are echoed back).
+     *
+     * `distinguishable === false` means the endpoint answers a foreign record and
+     * a nonexistent one identically — a misleading success reply, but NOT an
+     * existence disclosure, because the caller learns nothing about the record.
+     * `true` means the two differ and the caller can tell them apart.
+     *
+     * @return array{status:?int,body_excerpt:string,distinguishable:bool,why:string}
+     */
+    private function ghostComparison(string $method, string $path, array $requestBody, int $foreignStatus, string $foreignBody): array
+    {
+        try {
+            $response = $this->json($method, $path, $requestBody, $this->withTenantHeader());
+            $status = $response->getStatusCode();
+            $raw = mb_substr((string) $response->getContent(), 0, 300);
+        } catch (\Throwable $ex) {
+            return ['status' => null, 'body_excerpt' => class_basename($ex), 'distinguishable' => true, 'why' => 'the nonexistent-id request threw'];
+        }
+
+        $normalise = static fn (string $s): string => preg_replace('/\d{2,}/', '#', $s) ?? $s;
+        $distinguishable = $status !== $foreignStatus || $normalise($raw) !== $normalise($foreignBody);
+
+        return [
+            'status' => $status,
+            'body_excerpt' => $raw,
+            'distinguishable' => $distinguishable,
+            'why' => ! $distinguishable
+                ? 'identical status and id-normalised body for a nonexistent id'
+                : ($status !== $foreignStatus ? "status differs ({$foreignStatus} foreign vs {$status} nonexistent)" : 'body differs'),
+        ];
     }
 
     /** Database table behind a fixture key, for before/after snapshots. */
