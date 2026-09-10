@@ -782,6 +782,12 @@ class JobVacanciesController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('jobs_unsave', 30, 60);
 
+        // Resolve the vacancy inside this community first. A foreign or missing
+        // id previously answered "removed from saved" (CrossCommunityAccessSweepTest).
+        if ($this->jobService->getById((int) $id) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.job_vacancy_not_found'), null, 404);
+        }
+
         $this->jobService->unsaveJob((int) $id, $userId);
 
         return $this->respondWithData(['message' => __('api.job_removed_from_saved'), 'is_saved' => false]);

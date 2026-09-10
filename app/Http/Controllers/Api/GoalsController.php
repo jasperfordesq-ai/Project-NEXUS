@@ -736,6 +736,12 @@ class GoalsController extends BaseApiController
     {
         $userId = $this->getUserId();
 
+        // Resolve the goal inside this community first. A foreign or missing
+        // id previously answered 204 (CrossCommunityAccessSweepTest).
+        if (! $this->goalService->getById($id)) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.goal_not_found'), null, 404);
+        }
+
         $this->reminderService->deleteReminder($id, $userId);
 
         return $this->noContent();

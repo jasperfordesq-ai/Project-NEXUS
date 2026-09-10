@@ -319,21 +319,8 @@ class CrossCommunityAccessSweepTest extends TestCase
      * answer not-found; none of them moves any data.
      */
     private const KNOWN_VALID_BODY_ACCEPTED = [
-        'DELETE api/v2/admin/courses/instructors/{userId}',
-        'PUT api/v2/admin/volunteering/giving-days/{id}',
-        'DELETE api/v2/courses/{id}/enroll',
-        'POST api/v2/events/{id}/attendance/bulk',
-        'DELETE api/v2/events/{id}/waitlist',
-        'DELETE api/v2/feed/posts/{id}/share',
-        'DELETE api/v2/goals/{id}/reminder',
-        'DELETE api/v2/jobs/{id}/save',
-        'DELETE api/v2/listings/{id}/save',
-        'DELETE api/v2/members/{id}/endorse',
-        'PUT api/v2/messages/{id}/read',
-        'DELETE api/v2/stories/close-friends/{friendId}',
-        'POST api/v2/stories/{id}/analytics',
-        'DELETE api/v2/users/me/availability/{id}',
-        'DELETE api/v2/users/me/sub-accounts/{id}',
+        // Empty since the fifteen accepted-no-op endpoints were fixed to refuse
+        // a foreign identifier with 404. Shrink-only: a new entry needs a note.
     ];
 
     /**
@@ -369,16 +356,8 @@ class CrossCommunityAccessSweepTest extends TestCase
      * SHRINK-ONLY in both directions, exactly like KNOWN_SOFT_200.
      */
     private const KNOWN_ACCEPTED_NO_CHANGE = [
-        'DELETE api/v2/events/{id}/waitlist',
-        'DELETE api/v2/feed/posts/{id}/share',
-        'DELETE api/v2/goals/{id}/reminder',
-        'DELETE api/v2/jobs/{id}/save',
-        'DELETE api/v2/listings/{id}/save',
-        'PUT api/v2/messages/{id}/read',
-        'DELETE api/v2/stories/close-friends/{friendId}',
-        'DELETE api/v2/users/me/availability/{id}',
-        'DELETE api/v2/users/me/sub-accounts/{id}',
-        'PUT api/v2/admin/volunteering/giving-days/{id}',
+        // Empty since the ten accepted-no-op endpoints were fixed to refuse a
+        // foreign identifier with 404. Shrink-only: a new entry needs a note.
     ];
 
     /**

@@ -719,9 +719,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/ListingsController.php:990:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Http/Controllers/Api/ListingsController.php:996:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Http/Controllers/Api/ListingsController.php",
-            "line": 990,
+            "line": 996,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,

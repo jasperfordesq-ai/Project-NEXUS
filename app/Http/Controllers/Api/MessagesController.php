@@ -215,6 +215,17 @@ class MessagesController extends BaseApiController
         $this->rateLimit('messages_mark_read', 60, 60);
         $otherUserId = $id;
 
+        // The conversation partner must be a member of THIS community. A
+        // foreign or missing id previously answered `marked_read: 0`
+        // (CrossCommunityAccessSweepTest).
+        $partnerExists = \App\Models\User::query()
+            ->whereKey($otherUserId)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists();
+        if (! $partnerExists) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         $count = $this->messageService->markAsRead($otherUserId, $userId);
 
         return $this->respondWithData(['marked_read' => $count]);

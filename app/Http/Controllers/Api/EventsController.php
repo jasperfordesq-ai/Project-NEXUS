@@ -1607,6 +1607,12 @@ class EventsController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('events_waitlist', 30, 60);
 
+        // Resolve the event inside this community first. A foreign or missing
+        // id previously answered an idempotent 204 (CrossCommunityAccessSweepTest).
+        if ($this->eventService->getById($id, $userId) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.event_not_found'), null, 404);
+        }
+
         try {
             $this->eventWaitlistService->withdrawCompatibility(
                 $id,
@@ -1857,6 +1863,13 @@ class EventsController extends BaseApiController
         $id = (int) $id;
         $userId = $this->requireAuth();
         $this->rateLimit('events_attendance', 10, 60);
+
+        // Resolve the event inside this community before reading the body. A
+        // foreign or missing id previously answered success with zero rows
+        // marked (CrossCommunityAccessSweepTest).
+        if ($this->eventService->getById($id, $userId) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.event_not_found'), null, 404);
+        }
 
         $userIds = $this->input('user_ids');
         if (!is_array($userIds) || empty($userIds)) {

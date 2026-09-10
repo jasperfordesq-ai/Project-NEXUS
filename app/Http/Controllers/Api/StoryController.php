@@ -638,6 +638,16 @@ class StoryController extends BaseApiController
     {
         $userId = $this->requireAuth();
 
+        // The friend must be a member of THIS community. A foreign or missing
+        // id previously answered `removed: true` (CrossCommunityAccessSweepTest).
+        $friendExists = \App\Models\User::query()
+            ->whereKey($friendId)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists();
+        if (! $friendExists) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         try {
             $this->storyService->removeCloseFriend($userId, $friendId);
             return $this->respondWithData(['removed' => true]);
@@ -660,6 +670,17 @@ class StoryController extends BaseApiController
         }
 
         $watchDuration = request()->input('watch_duration_ms');
+
+        // The story must exist in THIS community. The service already skips
+        // foreign ids silently, which made the reply `tracked: true` for a
+        // record that was never touched (CrossCommunityAccessSweepTest).
+        $storyExists = DB::table('stories')
+            ->where('id', $id)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists();
+        if (! $storyExists) {
+            return $this->respondWithError('NOT_FOUND', __('api.story_not_found'), null, 404);
+        }
 
         try {
             $this->storyService->trackAnalytics($id, $userId, $eventType, $watchDuration ? (int) $watchDuration : null);

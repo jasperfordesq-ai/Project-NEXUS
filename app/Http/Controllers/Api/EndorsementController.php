@@ -81,6 +81,16 @@ class EndorsementController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.skill_name_required'), 'skill_name', 400);
         }
 
+        // The endorsed member must belong to THIS community. A foreign or
+        // missing id previously answered "removed" (CrossCommunityAccessSweepTest).
+        $memberExists = \App\Models\User::query()
+            ->whereKey($id)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists();
+        if (! $memberExists) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         $this->endorsementService->removeEndorsement($userId, $id, $skillName);
 
         return $this->respondWithData(['message' => __('api_controllers_1.endorsement.endorsement_removed')]);

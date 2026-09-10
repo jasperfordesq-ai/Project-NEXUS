@@ -142,6 +142,13 @@ class FeedSocialController extends BaseApiController
             return $this->respondWithError('INVALID_INPUT', __('api.invalid_shareable_type'), null, 422);
         }
 
+        // The target must exist in THIS community. A foreign or missing id
+        // previously answered `shared: false` as if the unshare had succeeded
+        // (CrossCommunityAccessSweepTest).
+        if ($this->shareService->resolveOwnerId($type, $id, $this->getTenantId()) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.post_not_found'), null, 404);
+        }
+
         // If a share exists, toggle() will remove it. Otherwise this is a no-op.
         if (!$this->shareService->isShared($userId, $type, $id)) {
             return $this->respondWithData([

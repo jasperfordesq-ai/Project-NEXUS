@@ -99,7 +99,12 @@ class MemberAvailabilityController extends BaseApiController
     {
         $userId = $this->requireAuth();
 
-        $this->memberAvailabilityService->deleteSlot($userId, $id);
+        // deleteSlot() is scoped to the caller's own rows, so a foreign or
+        // missing id deletes nothing. It previously still answered "deleted"
+        // (CrossCommunityAccessSweepTest).
+        if (! $this->memberAvailabilityService->deleteSlot($userId, $id)) {
+            return $this->respondWithError('NOT_FOUND', __('api.resource_not_found'), null, 404);
+        }
 
         return $this->respondWithData(['message' => __('api_controllers_2.member_availability.slot_deleted')]);
     }

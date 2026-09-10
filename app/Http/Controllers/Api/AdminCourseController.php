@@ -103,6 +103,16 @@ class AdminCourseController extends BaseApiController
         $this->ensureCoursesFeature();
         $this->requireAdmin();
 
+        // The user must belong to THIS community. A foreign or missing id
+        // previously answered `revoked: true` (CrossCommunityAccessSweepTest).
+        $userExists = \App\Models\User::query()
+            ->whereKey($userId)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists();
+        if (! $userExists) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         CourseInstructorService::revoke($userId);
 
         return $this->respondWithData(['revoked' => true]);

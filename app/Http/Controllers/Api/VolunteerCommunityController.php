@@ -942,6 +942,18 @@ class VolunteerCommunityController extends BaseApiController
 
         $data = $this->getAllInput();
         $tenantId = TenantContext::getId();
+
+        // Resolve the giving day inside this community first. The service
+        // returns false for a foreign id, which previously surfaced as a 200
+        // with `success: false` (CrossCommunityAccessSweepTest).
+        $exists = \App\Models\VolGivingDay::query()
+            ->whereKey((int) $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+        if (! $exists) {
+            return $this->respondWithError('NOT_FOUND', __('api.vol_giving_day_not_found'), null, 404);
+        }
+
         $result = $this->volunteerDonationService->updateGivingDay((int) $id, $data, $tenantId);
         return $this->respondWithData(['success' => $result]);
     }

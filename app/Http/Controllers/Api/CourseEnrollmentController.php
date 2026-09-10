@@ -173,6 +173,16 @@ class CourseEnrollmentController extends BaseApiController
         $this->ensureCoursesFeature();
         $userId = $this->requireAuth();
 
+        // Resolve the course inside this community first. A foreign or missing
+        // id previously answered 200 with `dropped: false` (CrossCommunityAccessSweepTest).
+        $courseExists = \App\Models\Course::query()
+            ->whereKey($id)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists();
+        if (! $courseExists) {
+            return $this->respondWithError('NOT_FOUND', __('api_controllers_2.courses.not_found'), null, 404);
+        }
+
         $dropped = CourseEnrollmentService::drop($id, $userId);
 
         return $this->respondWithData(['dropped' => $dropped]);

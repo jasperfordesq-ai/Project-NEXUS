@@ -208,7 +208,12 @@ class SubAccountController extends BaseApiController
     {
         $userId = $this->requireAuth();
 
-        $this->subAccountService->revokeRelationship($userId, $id);
+        // revoke() only touches a relationship the caller is party to, so a
+        // foreign or missing id changes nothing. It previously still answered
+        // "revoked" (CrossCommunityAccessSweepTest).
+        if (! $this->subAccountService->revokeRelationship($userId, $id)) {
+            return $this->respondWithError('NOT_FOUND', __('api.subaccount_relationship_not_found'), null, 404);
+        }
 
         return $this->respondWithData(['message' => __('api_controllers_2.sub_account.relationship_revoked')]);
     }

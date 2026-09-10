@@ -685,6 +685,12 @@ class ListingsController extends BaseApiController
 
         $userId = $this->requireAuth();
 
+        // Resolve the listing inside this community first. A foreign or missing
+        // id previously answered `saved: false` (CrossCommunityAccessSweepTest).
+        if (! $this->listingService->getById($id, false, $userId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.listing_not_found'), null, 404);
+        }
+
         $wasSaved = DB::table('user_saved_listings')
             ->where('user_id', $userId)
             ->where('listing_id', $id)
