@@ -119,15 +119,25 @@ RewriteRule ^storage/.*\.(?:php[0-9]?|phtml|pht|phar)(?:/|$) - [F,L,NC]
         Header set Expires "0" env=!nexus_cacheable_api_asset
     </FilesMatch>
 
-    # Security Headers
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set X-Frame-Options "SAMEORIGIN"
-    Header always set X-XSS-Protection "1; mode=block"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    # Security Headers — for files Apache serves directly (uploads, static
+    # assets). Laravel's SecurityHeaders middleware is the source of truth for
+    # every PHP response, so these are `setifempty`, not `always set`: the
+    # previous form emitted a SECOND copy of each header on every API response,
+    # with a Permissions-Policy that contradicted the middleware's
+    # (observed on production 2026-09-10). Values match the middleware exactly.
+    # X-XSS-Protection is deliberately gone: the header is obsolete and current
+    # guidance is not to send it.
+    Header setifempty X-Content-Type-Options "nosniff"
+    Header setifempty X-Frame-Options "SAMEORIGIN"
+    Header setifempty Referrer-Policy "strict-origin-when-cross-origin"
+    Header setifempty Permissions-Policy "camera=(self), microphone=(self), geolocation=(self), fullscreen=(self), payment=(), usb=(), browsing-topics=()"
+
+    # Never advertise the runtime.
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
 
     # HSTS (only on HTTPS)
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+    Header setifempty Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
 </IfModule>
 
 # 1. HTTPS and WWW Redirect - COMPLETELY DISABLED FOR CLOUDFLARE

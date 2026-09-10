@@ -1779,25 +1779,30 @@ class JobVacancyService
     /**
      * Delete a job alert permanently.
      */
-    public function deleteAlert(int $id, int $userId): void
+    public function deleteAlert(int $id, int $userId): bool
     {
-        JobAlert::where('id', $id)->where('user_id', $userId)->delete();
+        return JobAlert::where('id', $id)->where('user_id', $userId)->delete() > 0;
     }
 
     /**
      * Unsubscribe (deactivate) a job alert.
      */
-    public function unsubscribeAlert(int $id, int $userId): void
+    public function unsubscribeAlert(int $id, int $userId): bool
     {
-        JobAlert::where('id', $id)->where('user_id', $userId)->update(['is_active' => false]);
+        // Scoped to the caller's own alerts. The count tells the controller
+        // whether there was anything of theirs to change; a foreign or unknown
+        // id used to be acknowledged as a success.
+        return JobAlert::where('id', $id)->where('user_id', $userId)->exists()
+            && JobAlert::where('id', $id)->where('user_id', $userId)->update(['is_active' => false]) >= 0;
     }
 
     /**
      * Resubscribe (reactivate) a paused job alert.
      */
-    public function resubscribeAlert(int $id, int $userId): void
+    public function resubscribeAlert(int $id, int $userId): bool
     {
-        JobAlert::where('id', $id)->where('user_id', $userId)->update(['is_active' => true]);
+        return JobAlert::where('id', $id)->where('user_id', $userId)->exists()
+            && JobAlert::where('id', $id)->where('user_id', $userId)->update(['is_active' => true]) >= 0;
     }
 
     // =========================================================================

@@ -6,6 +6,11 @@ process.env.TZ = 'Europe/Dublin';
 module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.js'],
+  // htmlparser2 ^12 (required by sanitize-html >= 2.17.6) is an ES module.
+  // Node 22 loads it in production; Jest's loader cannot. See the shim.
+  moduleNameMapper: {
+    '^htmlparser2$': '<rootDir>/tests/shims/htmlparser2.cjs'
+  },
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/server.js'

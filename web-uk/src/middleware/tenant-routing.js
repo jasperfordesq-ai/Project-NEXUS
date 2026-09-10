@@ -632,7 +632,10 @@ function tenantRouting(req, res, next) {
   }
 
   const [, tenantSlug, mount] = match;
-  const rest = pathname.slice(match[0].length) || '/';
+  // Collapse a run of leading slashes. `/{slug}/accessible//evil.example`
+  // would otherwise leave `rest` as `//evil.example`, and a redirect to a
+  // protocol-relative path is an open redirect to another host.
+  const rest = (pathname.slice(match[0].length) || '/').replace(/^\/{2,}/, '/');
   const accessiblePrefix = `/${tenantSlug}/accessible`;
 
   redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, queryIndex, originalUrl)

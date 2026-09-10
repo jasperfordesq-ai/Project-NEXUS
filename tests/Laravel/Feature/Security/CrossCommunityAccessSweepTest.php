@@ -75,7 +75,7 @@ class CrossCommunityAccessSweepTest extends TestCase
 
     /** Parameter names that are not record identifiers. */
     private const NOT_AN_ID = [
-        'slug', 'idOrSlug', 'showSlug', 'token', 'tag', 'key', 'checkKey', 'pageKey',
+        'slug', 'idOrSlug', 'showSlug', 'token', 'tag', 'key', 'checkKey', 'pageKey', 'groupKey',
         'provider', 'filename', 'type', 'kind', 'code', 'uuid', 'acc_id', 'municipalityCode',
     ];
 
@@ -84,6 +84,7 @@ class CrossCommunityAccessSweepTest extends TestCase
         'userId' => 'user',
         'childId' => 'user',
         'caredForId' => 'user',
+        'friendId' => 'user',
         'groupId' => 'group',
         'eventId' => 'event',
         'courseId' => 'course',
@@ -114,6 +115,13 @@ class CrossCommunityAccessSweepTest extends TestCase
         'wallet/transactions' => 'transaction',
         'jobs' => 'job',
         'jobs/applications' => 'job_application',
+        'jobs/alerts' => 'job_alert',
+        // users/me/* sub-resources carry THEIR OWN ids, not a user id. Mapping
+        // them to 'user' (via the 'users' prefix) produced meaningless writes
+        // on the first write-sweep run.
+        'users/me/availability' => 'member_availability',
+        'users/me/sub-accounts' => 'account_relationship',
+        'users/me/skills' => null,
         'volunteering/opportunities' => 'vol_opportunity',
         'volunteering/organisations' => 'vol_organization',
         'volunteering/reviews/organization' => 'vol_organization',
@@ -176,6 +184,9 @@ class CrossCommunityAccessSweepTest extends TestCase
         'transaction' => ['model' => \App\Models\Transaction::class],
         'job' => ['model' => \App\Models\JobVacancy::class],
         'job_application' => ['model' => \App\Models\JobApplication::class],
+        'job_alert' => ['model' => \App\Models\JobAlert::class],
+        'member_availability' => ['model' => \App\Models\MemberAvailability::class],
+        'account_relationship' => ['model' => \App\Models\AccountRelationship::class],
         'vol_opportunity' => ['model' => \App\Models\VolOpportunity::class],
         'vol_organization' => ['model' => \App\Models\VolOrganization::class],
         'vol_expense' => ['model' => \App\Models\VolExpense::class],
@@ -207,17 +218,36 @@ class CrossCommunityAccessSweepTest extends TestCase
      * test fails on an entry that no longer reproduces, so this list cannot rot.
      */
     private const KNOWN_SOFT_200 = [
-        // reviewed 2026-09-10: {"status":"none",...} — identical to the answer
-        // for a user id that does not exist anywhere.
-        'api/v2/connections/status/{userId}',
-        // reviewed 2026-09-10: percentage 100 against empty skill lists — it
-        // scored a job it should not have loaded. No job content exposed.
-        'api/v2/jobs/{id}/match',
-        // reviewed 2026-09-10: every counter zero, timeline empty.
-        'api/v2/users/{id}/activity/dashboard',
-        // reviewed 2026-09-10 (admin actor): badges [] plus the platform-wide
-        // static list of badge types and labels. Nothing about the member.
-        'api/v2/admin/users/{id}/verification-badges',
+        // 2026-09-10: the four entries found on the first run — connections/
+        // status/{userId}, jobs/{id}/match, users/{id}/activity/dashboard and
+        // admin/users/{id}/verification-badges — were fixed the same day (each
+        // now refuses a foreign id with 404) and removed here as GATE 2 demands.
+    ];
+
+    /**
+     * Write endpoints that answer 2xx for a record in another community while
+     * leaving that record untouched — an idempotent "unsave", "leave", "mark
+     * read" or "delete" of a row the actor never had. No other community's
+     * data changes, but the endpoint should refuse rather than acknowledge.
+     *
+     * Eight further entries found on 2026-09-10 were fixed the same day and are
+     * deliberately NOT here: jobs/{id}/referral (minted a referral for a foreign
+     * vacancy), stories/{id}/view, jobs/alerts/{id} (three routes),
+     * admin/jobs/{id}/unfeature, admin/newsletters/{id} and its templates.
+     *
+     * SHRINK-ONLY in both directions, exactly like KNOWN_SOFT_200.
+     */
+    private const KNOWN_ACCEPTED_NO_CHANGE = [
+        'DELETE api/v2/events/{id}/waitlist',
+        'DELETE api/v2/feed/posts/{id}/share',
+        'DELETE api/v2/goals/{id}/reminder',
+        'DELETE api/v2/jobs/{id}/save',
+        'DELETE api/v2/listings/{id}/save',
+        'PUT api/v2/messages/{id}/read',
+        'DELETE api/v2/stories/close-friends/{friendId}',
+        'DELETE api/v2/users/me/availability/{id}',
+        'DELETE api/v2/users/me/sub-accounts/{id}',
+        'PUT api/v2/admin/volunteering/giving-days/{id}',
     ];
 
     /** @var array<string,int> fixture key => victim record id (tenant 999) */
@@ -316,6 +346,232 @@ class CrossCommunityAccessSweepTest extends TestCase
             'A KNOWN_SOFT_200 entry no longer answers 200 for a foreign record. '
             . 'It is fixed — delete its line from KNOWN_SOFT_200 so the list keeps shrinking.'
         );
+    }
+
+    // ================================================================
+    // Write operations
+    // ================================================================
+
+    /**
+     * Every non-GET v2 endpoint with exactly one path parameter, requested
+     * with a record from the OTHER community and an empty JSON body.
+     *
+     * The bar here is deliberately the one a tester would apply: any 2xx is a
+     * mutation accepted against a foreign record and is a finding. A 401/403/
+     * 404/410 is a refusal. A 400/422 means validation rejected the empty body
+     * before scoping could be observed — recorded as VALIDATION_FIRST and never
+     * counted as a pass, because it proves nothing about the scope check.
+     * There is no control request for writes: sending a real body to hundreds
+     * of endpoints is out of scope for an automated sweep.
+     */
+    public function test_no_write_endpoint_mutates_another_communitys_record(): void
+    {
+        $endpoints = $this->probeableWriteEndpoints();
+        $this->assertNotEmpty($endpoints, 'Write-route enumeration produced nothing — the sweep would pass vacuously.');
+
+        $this->victimOwner = User::factory()->forTenant(self::VICTIM_TENANT_ID)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->victimIds = $this->seedRecords(self::VICTIM_TENANT_ID, $this->victimOwner);
+
+        $results = [];
+        $run = function (string $actor, callable $selector) use ($endpoints, &$results): void {
+            foreach ($endpoints as $e) {
+                if (! $selector($e)) {
+                    continue;
+                }
+                $row = $e + ['actor' => $actor, 'status' => null, 'verdict' => 'SKIPPED', 'note' => $e['skip'] ?? '', 'body_excerpt' => ''];
+                if ($e['skip'] !== null) {
+                    $results[] = $row;
+                    continue;
+                }
+                $victimId = $this->victimIds[$e['fixture']] ?? null;
+                if ($victimId === null) {
+                    $results[] = array_merge($row, ['note' => "fixture '{$e['fixture']}' could not be created"]);
+                    continue;
+                }
+                $uri = '/' . ltrim(preg_replace('#^api/#', '', preg_replace('/\{[^}]+\}/', (string) $victimId, $e['uri'])), '/');
+
+                // Snapshot the foreign record so "accepted" and "actually changed"
+                // are not confused. A 2xx that leaves the row identical is an
+                // endpoint that should have refused but did no harm to the other
+                // community's data (a no-op unsave, an idempotent delete of a row
+                // the actor never had). A 2xx that alters or removes the row is a
+                // confirmed cross-community mutation. Rows CREATED elsewhere (a
+                // referral, a view record) are not visible to this comparison and
+                // are why every ACCEPTED_NO_CHANGE body is kept for a human to read.
+                $table = $this->fixtureTable($e['fixture']);
+                $before = $table ? json_encode(DB::table($table)->where('id', $victimId)->first()) : null;
+
+                try {
+                    $response = $this->json($e['method'], '/api' . $uri, [], $this->withTenantHeader());
+                    $status = $response->getStatusCode();
+                    $body = mb_substr((string) $response->getContent(), 0, 300);
+                } catch (\Throwable $ex) {
+                    $results[] = array_merge($row, ['verdict' => 'INCONCLUSIVE', 'note' => 'threw ' . class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160)]);
+                    continue;
+                }
+
+                $after = $table ? json_encode(DB::table($table)->where('id', $victimId)->first()) : null;
+                $rowChanged = $table !== null && $before !== $after;
+
+                [$verdict, $note] = match (true) {
+                    $status >= 200 && $status < 300 && $rowChanged => ['MUTATED', $after === 'null' ? 'the foreign record was DELETED' : 'the foreign record was CHANGED'],
+                    $status >= 200 && $status < 300 => ['ACCEPTED_NO_CHANGE', '2xx for a foreign id but its row is unchanged — should refuse; read the body for side rows'],
+                    in_array($status, [401, 403, 404, 410], true) => ['REFUSED', ''],
+                    in_array($status, [400, 422], true) => ['VALIDATION_FIRST', 'validation rejected the empty body before scoping could be observed — not a pass'],
+                    $status === 405 => ['SKIPPED', 'method not allowed at runtime'],
+                    default => ['INCONCLUSIVE', "status {$status}"],
+                };
+                $results[] = array_merge($row, ['status' => $status, 'verdict' => $verdict, 'note' => $note, 'body_excerpt' => $verdict === 'REFUSED' ? '' : $body]);
+            }
+        };
+
+        $this->actAs(['role' => 'member']);
+        $run('member', static fn ($e) => ! str_starts_with($e['prefix'], 'admin/'));
+
+        $this->actAs(['role' => 'admin']);
+        $run('admin', static fn ($e) => str_starts_with($e['prefix'], 'admin/'));
+
+        // Evidence + summary.
+        $dir = dirname(__DIR__, 4) . '/.local-docs-archive/security-evidence';
+        if (is_dir($dir) || @mkdir($dir, 0o775, true) || is_dir($dir)) {
+            @file_put_contents($dir . '/cross-community-write-sweep.json', json_encode([
+                'generated_at' => date('c'),
+                'method' => 'Every non-GET single-parameter v2 route requested with a tenant-999 record id and an empty JSON body, as a tenant-2 member (member routes) and a tenant-2 community admin (/admin/ routes). 2xx = MUTATED (finding); 401/403/404/410 = REFUSED; 400/422 = VALIDATION_FIRST (not a pass).',
+                'results' => $results,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
+
+        $lines = ['', '=== CROSS-COMMUNITY WRITE SWEEP ===', sprintf('non-GET v2 endpoints with one path parameter : %d', count($endpoints))];
+        foreach (['member' => 'PASS 1 — member, member-facing routes', 'admin' => 'PASS 2 — community admin, /admin/ routes'] as $actor => $label) {
+            $t = ['MUTATED' => 0, 'ACCEPTED_NO_CHANGE' => 0, 'REFUSED' => 0, 'VALIDATION_FIRST' => 0, 'INCONCLUSIVE' => 0, 'SKIPPED' => 0];
+            foreach ($results as $r) {
+                if ($r['actor'] === $actor) {
+                    $t[$r['verdict']]++;
+                }
+            }
+            $lines[] = '';
+            $lines[] = $label;
+            $lines[] = sprintf('  probed                                    : %d', $t['MUTATED'] + $t['ACCEPTED_NO_CHANGE'] + $t['REFUSED'] + $t['VALIDATION_FIRST'] + $t['INCONCLUSIVE']);
+            $lines[] = sprintf('    refused (401/403/404/410)               : %d', $t['REFUSED']);
+            $lines[] = sprintf('    validation rejected first (not a pass)  : %d', $t['VALIDATION_FIRST']);
+            $lines[] = sprintf('    accepted, foreign row unchanged (review): %d', $t['ACCEPTED_NO_CHANGE']);
+            $lines[] = sprintf('    MUTATED the foreign record              : %d', $t['MUTATED']);
+            $lines[] = sprintf('    inconclusive                            : %d', $t['INCONCLUSIVE']);
+            $lines[] = sprintf('  skipped                                   : %d', $t['SKIPPED']);
+        }
+        $lines[] = '';
+        foreach (['MUTATED', 'ACCEPTED_NO_CHANGE', 'INCONCLUSIVE'] as $bucket) {
+            $rows = array_filter($results, static fn ($r) => $r['verdict'] === $bucket);
+            if ($rows === []) {
+                continue;
+            }
+            $lines[] = $bucket . ':';
+            foreach ($rows as $r) {
+                $lines[] = sprintf('  [%s] %-6s %s -> %s  %s', $r['actor'], $r['method'], $r['uri'], $r['status'] ?? 'exception', preg_replace('/\s+/', ' ', $r['body_excerpt']));
+            }
+            $lines[] = '';
+        }
+        fwrite(STDERR, implode(PHP_EOL, $lines) . PHP_EOL);
+
+        $mutated = array_values(array_map(
+            static fn ($r) => $r['actor'] . ' ' . $r['method'] . ' ' . $r['uri'] . ' -> ' . $r['status'],
+            array_filter($results, static fn ($r) => $r['verdict'] === 'MUTATED')
+        ));
+
+        $this->assertSame([], $mutated, 'A write against another community\'s record was accepted. Read the body_excerpt in cross-community-write-sweep.json.');
+
+        // Baseline of accepted-but-harmless no-ops: may only shrink.
+        $acceptedNoChange = array_values(array_map(
+            static fn ($r) => $r['method'] . ' ' . $r['uri'],
+            array_filter($results, static fn ($r) => $r['verdict'] === 'ACCEPTED_NO_CHANGE')
+        ));
+        sort($acceptedNoChange);
+        $known = self::KNOWN_ACCEPTED_NO_CHANGE;
+        sort($known);
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($acceptedNoChange, $known)),
+            'A write endpoint newly acknowledges a foreign id with 2xx. Read its body in cross-community-write-sweep.json; '
+            . 'fix it to refuse, or — only if it provably touches nothing — add it to KNOWN_ACCEPTED_NO_CHANGE with a note.'
+        );
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($known, $acceptedNoChange)),
+            'A KNOWN_ACCEPTED_NO_CHANGE entry no longer answers 2xx for a foreign id. It is fixed — delete its line.'
+        );
+    }
+
+    /** Database table behind a fixture key, for before/after snapshots. */
+    private function fixtureTable(?string $key): ?string
+    {
+        if ($key === null || ! isset(self::FIXTURES[$key])) {
+            return null;
+        }
+
+        $spec = self::FIXTURES[$key];
+
+        if (isset($spec['table'])) {
+            return $spec['table'];
+        }
+
+        return (new $spec['model']())->getTable();
+    }
+
+    /**
+     * Every v2 non-GET endpoint with exactly one path parameter, one row per
+     * declared method, with its id type resolved exactly as for reads.
+     *
+     * @return array<int,array{method:string,uri:string,prefix:string,param:string,fixture:?string,skip:?string,action:string}>
+     */
+    private function probeableWriteEndpoints(): array
+    {
+        $endpoints = [];
+
+        foreach (Route::getRoutes() as $route) {
+            $uri = $route->uri();
+
+            if (! str_starts_with($uri, 'api/v2/') || substr_count($uri, '{') !== 1) {
+                continue;
+            }
+
+            $methods = array_values(array_diff($route->methods(), ['GET', 'HEAD', 'OPTIONS']));
+            if ($methods === []) {
+                continue;
+            }
+
+            $path = substr($uri, strlen('api/v2/'));
+            $brace = strpos($path, '{');
+            $prefix = rtrim(substr($path, 0, $brace), '/');
+            preg_match('/\{([^}?]+)\??\}/', $path, $m);
+            $param = $m[1] ?? '';
+
+            if ($prefix === '' || $param === '') {
+                continue;
+            }
+
+            [$fixture, $skip] = $this->resolve($prefix, $param);
+
+            foreach ($methods as $method) {
+                $endpoints[] = [
+                    'method' => $method,
+                    'uri' => $uri,
+                    'prefix' => $prefix,
+                    'param' => $param,
+                    'fixture' => $fixture,
+                    'skip' => $skip,
+                    'action' => $route->getActionName(),
+                ];
+            }
+        }
+
+        usort($endpoints, static fn ($a, $b) => [$a['uri'], $a['method']] <=> [$b['uri'], $b['method']]);
+
+        return $endpoints;
     }
 
     // ================================================================
@@ -654,7 +910,11 @@ class CrossCommunityAccessSweepTest extends TestCase
         }
 
         if ($best !== null) {
-            return [self::PREFIX_FIXTURES[$best], null];
+            $key = self::PREFIX_FIXTURES[$best];
+
+            return $key === null
+                ? [null, 'no fixture for this path (deliberately unmapped)']
+                : [$key, null];
         }
 
         return [null, 'no fixture for this path'];

@@ -285,7 +285,7 @@ class StoryService
      * @param int $storyId
      * @param int $viewerId
      */
-    public function viewStory(int $storyId, int $viewerId): void
+    public function viewStory(int $storyId, int $viewerId): bool
     {
         $tenantId = TenantContext::getId();
 
@@ -296,12 +296,15 @@ class StoryService
         );
 
         if (!$story) {
-            return; // Story not found or expired — silently ignore
+            // Not in this community, or expired. Reported to the caller rather
+            // than swallowed: the controller used to answer {"viewed": true}
+            // for a story in ANOTHER community (CrossCommunityAccessSweepTest).
+            return false;
         }
 
         // Don't track self-views
         if ((int) $story->user_id === $viewerId) {
-            return;
+            return true;
         }
 
         // Insert view (ignore duplicate) — only increment view_count if a new row was actually inserted
@@ -316,6 +319,8 @@ class StoryService
                 [$storyId, $tenantId]
             );
         }
+
+        return true;
     }
 
     /**

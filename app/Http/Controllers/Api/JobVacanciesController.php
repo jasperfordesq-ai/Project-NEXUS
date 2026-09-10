@@ -890,7 +890,9 @@ class JobVacanciesController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('jobs_alerts_delete', 10, 60);
 
-        $this->jobService->deleteAlert((int) $id, $userId);
+        if (! $this->jobService->deleteAlert((int) $id, $userId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Alert']), null, 404);
+        }
 
         return $this->noContent();
     }
@@ -902,7 +904,9 @@ class JobVacanciesController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('jobs_alerts_unsub', 10, 60);
 
-        $this->jobService->unsubscribeAlert((int) $id, $userId);
+        if (! $this->jobService->unsubscribeAlert((int) $id, $userId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Alert']), null, 404);
+        }
 
         return $this->respondWithData(['message' => __('api.alert_unsubscribed')]);
     }
@@ -914,7 +918,9 @@ class JobVacanciesController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('jobs_alerts_resub', 10, 60);
 
-        $this->jobService->resubscribeAlert((int) $id, $userId);
+        if (! $this->jobService->resubscribeAlert((int) $id, $userId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Alert']), null, 404);
+        }
 
         return $this->respondWithData(['message' => __('api.alert_resubscribed')]);
     }
@@ -932,6 +938,13 @@ class JobVacanciesController extends BaseApiController
         }
         $userId = $this->getUserId();
         $this->rateLimit('jobs_match', 30, 60);
+
+        // Resolve the vacancy inside this community before scoring it. A
+        // foreign or missing id previously scored 100% against empty skill
+        // lists instead of being refused (CrossCommunityAccessSweepTest).
+        if ($this->jobService->getById((int) $id) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.job_vacancy_not_found'), null, 404);
+        }
 
         $result = $this->jobService->calculateMatchPercentage($userId, (int) $id);
 
@@ -1496,6 +1509,14 @@ class JobVacanciesController extends BaseApiController
         }
 
         $userId   = $this->getOptionalUserId();
+
+        // A referral must only ever be minted for a vacancy in THIS community.
+        // Without this check a member could create referral tokens against
+        // another community's vacancies (CrossCommunityAccessSweepTest, 2026-09-10).
+        if ($this->jobService->getById($id) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.job_vacancy_not_found'), null, 404);
+        }
+
         $referral = JobReferralService::getOrCreate($id, $userId);
 
         if (empty($referral)) {

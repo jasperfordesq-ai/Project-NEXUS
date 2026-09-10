@@ -117,6 +117,16 @@ class MemberVerificationBadgeController extends BaseApiController
         $this->requireAdmin();
         $this->rateLimit('admin_badge_list', 30, 60);
 
+        // A community admin asking about a member of ANOTHER community got the
+        // empty badge list plus the platform-wide type vocabulary. Refuse the
+        // id outright (CrossCommunityAccessSweepTest, 2026-09-10).
+        if (! \App\Models\User::query()
+            ->where('id', $id)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists()) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         $badges = $this->memberVerificationBadgeService->getAdminBadgeList($id);
 
         return $this->respondWithData([

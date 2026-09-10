@@ -882,7 +882,14 @@ class VolunteerCommunityController extends BaseApiController
         $this->ensureFeature();
         $this->rateLimit('vol_public_read', 60, 30);
 
-        $stats = $this->volunteerDonationService->getGivingDayStats((int) $id);
+        // The service throws when the giving day is not in this community; the
+        // controller expected a falsy return, so a foreign id was a 500 rather
+        // than a 404 (CrossCommunityAccessSweepTest, 2026-09-10).
+        try {
+            $stats = $this->volunteerDonationService->getGivingDayStats((int) $id);
+        } catch (\RuntimeException $e) {
+            return $this->respondWithError('NOT_FOUND', __('api.vol_giving_day_not_found'), null, 404);
+        }
         if (!$stats) {
             return $this->respondWithError('NOT_FOUND', __('api.vol_giving_day_not_found'), null, 404);
         }

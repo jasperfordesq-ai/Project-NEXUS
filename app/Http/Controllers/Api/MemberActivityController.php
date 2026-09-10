@@ -72,6 +72,16 @@ class MemberActivityController extends BaseApiController
     {
         $this->rateLimit('activity_public_dashboard', 20, 60);
 
+        // A member id from another community answered 200 with every counter
+        // at zero — indistinguishable from a real member with no activity.
+        // Refuse it instead (CrossCommunityAccessSweepTest, 2026-09-10).
+        if (! \App\Models\User::query()
+            ->where('id', $id)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists()) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         $data = $this->memberActivityService->getDashboardData($id);
 
         return $this->respondWithData($data);

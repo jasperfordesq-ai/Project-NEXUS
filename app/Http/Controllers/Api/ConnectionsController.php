@@ -101,6 +101,17 @@ class ConnectionsController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('connections_status', 120, 60);
 
+        // A user id from another community must read as "not found", not as
+        // "no connection". The two answers were identical, which let a caller
+        // confirm that an id exists somewhere on the platform
+        // (CrossCommunityAccessSweepTest, 2026-09-10).
+        if (! \App\Models\User::query()
+            ->where('id', $otherUserId)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists()) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         $status = $this->connectionService->getStatus($userId, $otherUserId);
 
         return $this->respondWithData($status);

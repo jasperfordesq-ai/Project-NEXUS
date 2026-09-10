@@ -107,6 +107,11 @@ class AdminJobsController extends BaseApiController
     public function unfeature(int $id): JsonResponse
     {
         $adminId = $this->requireAdminForJobs();
+        // The update is community-scoped by the model, so a vacancy from another
+        // community was a zero-row update reported as success. Refuse it.
+        if ($this->jobVacancyService->getById($id) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.job_not_found'), null, 404);
+        }
         $unfeatured = $this->jobVacancyService->unfeatureJob($id, $adminId);
         if ($unfeatured) return $this->respondWithData(['featured' => false, 'id' => $id]);
         return $this->respondWithError('UNFEATURE_FAILED', __('api.update_failed', ['resource' => 'job feature']), null, 400);

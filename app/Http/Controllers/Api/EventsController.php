@@ -1368,14 +1368,18 @@ class EventsController extends BaseApiController
                     throw new \RuntimeException('legacy_event_rsvp_remove_failed');
                 }
             }, 5);
+        } catch (EventRegistrationException|EventWaitlistException|EventParticipationException $exception) {
+            // Must come BEFORE the \RuntimeException catch: these extend it, so
+            // the generic clause used to swallow and rethrow them — a member
+            // withdrawing from another community's event got a 500 instead of
+            // the canonical not-found (CrossCommunityAccessSweepTest, 2026-09-10).
+            return $this->legacyCanonicalMutationError($exception, 'remove_rsvp');
         } catch (\RuntimeException $exception) {
             if ($exception->getMessage() !== 'legacy_event_rsvp_remove_failed') {
                 throw $exception;
             }
 
             return $this->respondWithErrors($this->eventService->getErrors(), 400);
-        } catch (EventRegistrationException|EventWaitlistException|EventParticipationException $exception) {
-            return $this->legacyCanonicalMutationError($exception, 'remove_rsvp');
         }
 
         return $this->noContent();

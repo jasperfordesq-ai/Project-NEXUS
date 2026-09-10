@@ -194,14 +194,19 @@ class StoryControllerTest extends TestCase
         $response->assertJsonPath('data.viewed', true);
     }
 
-    public function test_view_silently_handles_nonexistent_story(): void
+    public function test_view_of_nonexistent_story_is_not_found(): void
     {
         $this->authenticatedUser();
 
         $response = $this->apiPost('/v2/stories/999999/view');
 
-        // viewStory returns silently for nonexistent stories
-        $response->assertStatus(200);
+        // Until 2026-09-10 this answered 200 {"viewed": true} for a story that
+        // does not exist — and, identically, for a story in ANOTHER community,
+        // which the cross-community write sweep flagged. The service now
+        // reports whether the story was found in this community and the
+        // controller refuses with 404 when it was not.
+        $response->assertStatus(404);
+        $response->assertJsonPath('errors.0.code', 'NOT_FOUND');
     }
 
     // ------------------------------------------------------------------

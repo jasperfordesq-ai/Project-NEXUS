@@ -188,7 +188,9 @@ class StoryController extends BaseApiController
         $userId = $this->requireAuth();
 
         try {
-            $this->storyService->viewStory($id, $userId);
+            if (! $this->storyService->viewStory($id, $userId)) {
+                return $this->respondWithError('NOT_FOUND', __('api.story_not_found'), null, 404);
+            }
             return $this->respondWithData(['viewed' => true]);
         } catch (\Throwable $e) {
             Log::error('StoryController::view failed', ['error' => $e->getMessage()]);

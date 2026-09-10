@@ -606,7 +606,10 @@ function statusBanner(status, t) {
     'optout-failed': () => federationBanner('error', 'optout_failed', t)
   };
 
-  const build = banners[trimmed(status)];
+  // Own keys only: a status of "constructor" or "toString" would otherwise
+  // resolve through Object.prototype to a function that is not a banner.
+  const key = trimmed(status);
+  const build = Object.hasOwn(banners, key) ? banners[key] : null;
   return build ? build() : null;
 }
 
@@ -623,7 +626,10 @@ function memberStatusBanner(status, t) {
     'transfer-sent': () => federationBanner('success', 'transfer_sent', t)
   };
 
-  const build = banners[trimmed(status)];
+  // Own keys only: a status of "constructor" or "toString" would otherwise
+  // resolve through Object.prototype to a function that is not a banner.
+  const key = trimmed(status);
+  const build = Object.hasOwn(banners, key) ? banners[key] : null;
   return build ? build() : null;
 }
 

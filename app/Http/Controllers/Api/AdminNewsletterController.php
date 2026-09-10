@@ -398,7 +398,12 @@ class AdminNewsletterController extends BaseApiController
         }
 
         try {
-            DB::delete("DELETE FROM newsletters WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            $deleted = DB::delete("DELETE FROM newsletters WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            if ($deleted === 0) {
+                // Nothing in this community has that id — say so rather than
+                // acknowledging a delete that did not happen.
+                return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Newsletter']), null, 404);
+            }
             return $this->noContent();
         } catch (\Exception $e) {
             return $this->respondWithError('DELETE_FAILED', __('api.delete_failed', ['resource' => 'newsletter']));
@@ -1287,10 +1292,13 @@ class AdminNewsletterController extends BaseApiController
         }
 
         try {
-            DB::delete(
+            $deleted = DB::delete(
                 "DELETE FROM newsletter_templates WHERE id = ? AND tenant_id = ?",
                 [$id, $tenantId]
             );
+            if ($deleted === 0) {
+                return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Template']), null, 404);
+            }
             return $this->noContent();
         } catch (\Exception $e) {
             return $this->respondWithError('DELETE_FAILED', __('api.delete_failed', ['resource' => 'template']));
