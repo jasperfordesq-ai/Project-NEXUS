@@ -238,6 +238,15 @@ runs `expo prebuild` on every build, and it opens the finished bundle and refuse
 the channel or the runtime version is missing or stale. **Version code 9 is the first
 build that can take an update.** Everything below applies from that build on.
 
+✅ **Confirmed working on a real phone, 2026-09-10.** The first update ever published
+(channel `production`, runtime 1.4.0, update group `05e7ad87-52be-42b0-8f32-661d1d981575`,
+built from commit `773562745`) went out at about 11:35. Version code 9 was released to
+Production at 12:24. The owner installed it from Play, opened it, and the app's own
+"Update ready" prompt (`components/ui/UpdateReadyHost.tsx`) appeared — which it only does
+after the app has downloaded a new update from the channel. That prompt is the evidence:
+build 9 asked the channel, got the update, and offered to apply it. The update carried the
+same code as build 9, so nothing visible changed; it was published to prove the path.
+
 ```bash
 cd mobile
 npm run update:staging                                          # internal testers

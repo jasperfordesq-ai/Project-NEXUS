@@ -132,7 +132,20 @@ and every fix was walked there afterwards. Prompt and notes:
   already followed the shape; its three paragraph fields were one line tall and now are not.
 
 Not verified on iOS — this machine cannot run the simulator. The full Jest suite is green
-(452 suites) and `type-check`, `lint` and `check:untranslated` pass. Nothing was pushed.
+(452 suites) and `type-check`, `lint` and `check:untranslated` pass.
+
+**Follow-up, 2026-09-10 — shipped, and the over-the-air path proven.** All of the above
+was pushed and CI was green. Trying to send the fixes as an over-the-air update then
+exposed that **no Play build could ever have received one**: the locally built bundle
+carried no update channel and a runtime version of 1.2.0 inside a 1.4.0 app, and no update
+had ever been published. Fixed the same day (`app.json` bakes the `production` channel,
+`build-aab-play.sh` regenerates the native project every build and reads both values back
+out of the finished bundle). **Version code 9** was built, uploaded to internal testing by
+the owner, promoted, and **released to Production at 12:24 after a 27-minute review**. The
+owner installed it from Play and the app's "Update ready" prompt appeared — the first
+over-the-air update this app has ever received (`DISTRIBUTION.md` has the identifiers).
+Two process lessons are recorded in `PLAY_RELEASE_PROCEDURE.md` and the `play-release`
+skill: let Play's quick checks finish before submitting, and review takes minutes, not days.
 
 ## Source audit — 2026-09-07
 

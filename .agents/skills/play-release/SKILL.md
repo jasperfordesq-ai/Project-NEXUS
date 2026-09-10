@@ -57,6 +57,9 @@ submit. The same wait applies to "Save and publish" on internal testing.
 
 - Only builds from **version code 9 onward** can receive one. Earlier bundles carried no
   update channel and a stale runtime version (see `mobile/docs/DISTRIBUTION.md`).
+- ✅ **Confirmed working 2026-09-10**: build 9 on the owner's phone showed the app's own
+  "Update ready" prompt after the first publish. That prompt only appears once an update has
+  been downloaded from the channel, so it is the proof — no cable or log needed.
 - Play installs listen to channel **`production`**. "Publish to internal testing" therefore
   means `NEXUS_APPROVE_PRODUCTION_OTA=yes npm run update:production` from `mobile/`, from a
   **clean `main` worktree** (the script refuses otherwise — commit first).
