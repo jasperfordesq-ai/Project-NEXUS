@@ -853,6 +853,18 @@ jobs:
       - name: Production image copies an allowlist, not the whole context
         run: node scripts/check-production-image-allowlist.mjs
 
+      # Production served every application response with two X-Frame-Options,
+      # two X-Content-Type-Options, two Referrer-Policy and two CONTRADICTING
+      # Permissions-Policy headers until 2026-09-10 — one from the Apache conf
+      # baked here, one from the Laravel middleware. `Header always set` writes
+      # to err_headers_out while the `setifempty` guard in httpdocs/.htaccess
+      # reads headers_out, so the guard added to stop it never could. Nothing in
+      # CI noticed, and the dev image bakes no such conf, so a local check
+      # genuinely showed one of each. Runs in this always-on job so a path
+      # filter can never let it sleep.
+      - name: Exactly one source per security header
+        run: node scripts/check-duplicate-security-headers.mjs
+
       - name: Compare PHP settings between Dockerfile and Dockerfile.prod
         run: |
           echo "========================================="

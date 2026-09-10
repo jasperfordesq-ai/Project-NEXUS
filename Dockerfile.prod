@@ -147,14 +147,33 @@ RUN echo 'ServerTokens Prod' >> /etc/apache2/conf-available/security.conf \
     && echo 'ServerSignature Off' >> /etc/apache2/conf-available/security.conf \
     && a2enconf security
 
-# Static security headers (HSTS, clickjacking, MIME-sniff, referrer).
-# CSP is emitted once by Laravel SecurityHeaders so its per-request nonce remains authoritative.
+# HSTS only. CSP is emitted once by Laravel SecurityHeaders so its per-request
+# nonce remains authoritative.
+#
+# 🔴 THIS FILE SETS HSTS AND NOTHING ELSE. Do not add X-Frame-Options,
+# X-Content-Type-Options, Referrer-Policy or Permissions-Policy back here.
+# It used to set all five, and that shipped a SECOND, CONTRADICTING copy of four
+# headers on every application response — measured on production 2026-09-10:
+#   Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(self)   <- here
+#   Permissions-Policy: camera=(self), microphone=(self), ... payment=(), usb=(), ...  <- middleware
+# The Apache directive here writes to err_headers_out; the `setifempty` guard in
+# httpdocs/.htaccess, added for this very problem, reads headers_out. The two
+# tables cannot see each other, so the guard no-opped and both copies went out.
+# A browser INTERSECTS duplicate Permissions-Policy headers, so the pair
+# silently denied camera, microphone, payment, usb and browsing-topics —
+# payment=() breaks browser payment integrations.
+# The dev Dockerfile bakes no such file, which is why a local check said "one of
+# each" and production said otherwise. Re-check header changes against the LIVE
+# service, not the local origin.
+#
+# The four removed headers now come from exactly one place per path:
+#   application responses      -> App\Http\Middleware\SecurityHeaders
+#   files Apache serves itself -> `Header setifempty` in httpdocs/.htaccess
+# HSTS stays here because the container is reached over HTTP from the host
+# proxy, so $request->secure() is false and the middleware does not emit it.
+# Enforced by scripts/check-duplicate-security-headers.mjs.
 RUN a2enmod headers \
-    && printf 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"\n\
-Header always set X-Frame-Options "SAMEORIGIN"\n\
-Header always set X-Content-Type-Options "nosniff"\n\
-Header always set Referrer-Policy "strict-origin-when-cross-origin"\n\
-Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(self), payment=(self)"\n' \
+    && printf 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"\n' \
     > /etc/apache2/conf-available/security-headers.conf \
     && a2enconf security-headers
 
