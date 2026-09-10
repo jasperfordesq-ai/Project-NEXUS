@@ -77,6 +77,14 @@ class CrossCommunityAccessSweepTest extends TestCase
     private const NOT_AN_ID = [
         'slug', 'idOrSlug', 'showSlug', 'token', 'tag', 'key', 'checkKey', 'pageKey', 'groupKey',
         'provider', 'filename', 'type', 'kind', 'code', 'uuid', 'acc_id', 'municipalityCode',
+        // {day} is a DAY OF THE WEEK, not a record id: PUT users/me/availability/{day}
+        // sets the caller's own availability for that day. Resolving it by path
+        // prefix fed it a member_availability row id, which the endpoint happily
+        // accepted as a day number and answered 2xx — reported as an eleventh
+        // accepted-no-change write. It surfaced only on a CI shard, because the
+        // local run had failed to seed that fixture and skipped the endpoint
+        // instead. Naming it here makes the result the same in both places.
+        'day',
     ];
 
     /** Parameter names that identify the record type on their own. */
@@ -253,6 +261,35 @@ class CrossCommunityAccessSweepTest extends TestCase
         'DELETE api/v2/users/me/availability/{id}',
         'DELETE api/v2/users/me/sub-accounts/{id}',
         'PUT api/v2/admin/volunteering/giving-days/{id}',
+    ];
+
+    /**
+     * Parameter names that identify a PERSON rather than a record. These are
+     * the second identifier in the multi-parameter sweep below, and the one
+     * deliberately taken from another community.
+     */
+    private const PERSON_PARAMS = [
+        'userId', 'childId', 'friendId', 'caredForId',
+        'attendeeId', 'guestId', 'delivererId', 'partnerId',
+    ];
+
+    /**
+     * Columns that reference a person. Every occurrence of these in the live
+     * schema is counted before and after each foreign-person request, which is
+     * how a CREATED join row (a membership, an allocation, a participation)
+     * becomes visible — the single-parameter write sweep cannot see those.
+     */
+    private const PERSON_COLUMNS = [
+        'user_id', 'member_id', 'participant_id', 'attendee_id',
+        'guest_id', 'deliverer_id', 'recipient_id', 'child_id',
+    ];
+
+    /**
+     * Endpoints that answer 2xx for a person from another community while
+     * provably moving nothing. Shrink-only in both directions. Populated from
+     * the first run; every entry needs a reason.
+     */
+    private const KNOWN_PERSON_ACCEPTED_NO_CHANGE = [
     ];
 
     /** @var array<string,int> fixture key => victim record id (tenant 999) */
@@ -509,6 +546,550 @@ class CrossCommunityAccessSweepTest extends TestCase
             array_values(array_diff($known, $acceptedNoChange)),
             'A KNOWN_ACCEPTED_NO_CHANGE entry no longer answers 2xx for a foreign id. It is fixed — delete its line.'
         );
+    }
+
+    /**
+     * A PERSON from another community, supplied as the SECOND identifier.
+     *
+     * WHY THIS IS A SEPARATE SWEEP
+     * ----------------------------
+     * Both sweeps above take routes with exactly ONE path parameter. 141
+     * route-and-method combinations take two or more, and none of them were
+     * exercised. They are also where a scoping bug is most likely to survive
+     * review, because the handler checks that the FIRST id belongs to the
+     * caller's community and then forgets the second.
+     *
+     * `PUT groups/{id}/members/{userId}` with OUR group and a FOREIGN member is
+     * the shape that matters: nothing about the group looks wrong, the caller is
+     * a legitimate administrator of it, and a person is quietly pulled across a
+     * community boundary. So the outer record here is deliberately ours and
+     * legitimate. Only the person is foreign. A refusal is the required answer.
+     *
+     * DETECTOR — stronger than the single-parameter write sweep's
+     * -----------------------------------------------------------
+     * That sweep compares the target row before and after, and says plainly
+     * that rows CREATED ELSEWHERE are invisible to it. That blind spot is
+     * exactly this sweep's subject, because "add this person to my group"
+     * creates a row in a join table rather than altering the group. So this
+     * sweep counts, before and after every request, each row in the schema that
+     * REFERENCES the foreign person — across every table carrying a
+     * person-shaped foreign key. A count that moves in either direction is a
+     * confirmed cross-community write, whether the row was created, changed or
+     * removed.
+     *
+     * CONTROL-VERIFIED, like the read sweep: every probe is repeated with a
+     * person from our OWN community, so an endpoint that refuses everything
+     * cannot be counted as a pass.
+     */
+    public function test_no_endpoint_accepts_a_person_from_another_community(): void
+    {
+        $endpoints = $this->multiParamPersonEndpoints();
+        $this->assertNotEmpty(
+            $endpoints,
+            'Multi-parameter route enumeration produced nothing — this sweep would pass vacuously.'
+        );
+
+        $this->victimOwner = User::factory()->forTenant(self::VICTIM_TENANT_ID)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $foreignPersonId = (int) $this->victimOwner->id;
+
+        $refs = $this->personReferenceColumns();
+        $this->assertNotEmpty($refs, 'No person-shaped foreign keys found — the mutation detector would be blind.');
+
+        $results = [];
+
+        $run = function (string $actorLabel, User $actor, callable $selector) use (
+            $endpoints,
+            &$results,
+            $foreignPersonId,
+            $refs
+        ): void {
+            $ownIds = $this->seedRecords($this->testTenantId, $actor);
+            $controlPerson = User::factory()->forTenant($this->testTenantId)->create([
+                'status' => 'active',
+                'is_approved' => true,
+            ]);
+            $this->seedControlRelationships($controlPerson, $actor, $ownIds);
+
+            foreach ($endpoints as $e) {
+                if (! $selector($e)) {
+                    continue;
+                }
+
+                $row = $e + [
+                    'actor' => $actorLabel,
+                    'status' => null,
+                    'control_status' => null,
+                    'verdict' => 'SKIPPED',
+                    'note' => $e['skip'] ?? '',
+                    'body_excerpt' => '',
+                    'moved' => [],
+                ];
+
+                if ($e['skip'] !== null) {
+                    $results[] = $row;
+
+                    continue;
+                }
+
+                // Re-established before EVERY endpoint, not once per pass.
+                // The control request for `DELETE .../members/{userId}` really
+                // does remove the control person from the group, after which
+                // every later control failed and seven endpoints were reported
+                // INCONCLUSIVE for a reason that was this test's fault rather
+                // than the platform's.
+                $this->seedControlRelationships($controlPerson, $actor, $ownIds);
+
+                [$uri, $missing] = $this->fillMultiParamUri($e['plan'], $e['uri'], $ownIds, $foreignPersonId);
+                if ($missing !== null) {
+                    $results[] = array_merge($row, ['note' => $missing]);
+
+                    continue;
+                }
+
+                $before = $this->personReferenceCounts($refs, $foreignPersonId);
+
+                try {
+                    $response = $this->json(
+                        $e['method'],
+                        '/' . ltrim($uri, '/'),
+                        [],
+                        $this->withTenantHeader()
+                    );
+                    $status = $response->getStatusCode();
+                    $body = mb_substr((string) $response->getContent(), 0, 300);
+                } catch (\Throwable $ex) {
+                    $results[] = array_merge($row, [
+                        'verdict' => 'INCONCLUSIVE',
+                        'note' => 'threw ' . class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160),
+                    ]);
+
+                    continue;
+                }
+
+                $after = $this->personReferenceCounts($refs, $foreignPersonId);
+                $moved = [];
+                foreach ($after as $where => $count) {
+                    $was = $before[$where] ?? 0;
+                    if ($count !== $was) {
+                        $moved[] = "{$where}: {$was} -> {$count}";
+                    }
+                }
+
+                // Control: the same request for a person of OUR community, so a
+                // blanket-refusing endpoint cannot be scored as a pass.
+                [$controlUri] = $this->fillMultiParamUri($e['plan'], $e['uri'], $ownIds, (int) $controlPerson->id);
+                $controlStatus = null;
+
+                try {
+                    $controlStatus = $this->json(
+                        $e['method'],
+                        '/' . ltrim($controlUri, '/'),
+                        [],
+                        $this->withTenantHeader()
+                    )->getStatusCode();
+                } catch (\Throwable) {
+                    $controlStatus = null;
+                }
+
+                $controlWorked = $controlStatus !== null && $controlStatus >= 200 && $controlStatus < 300;
+                $succeeded = $status >= 200 && $status < 300;
+                $isRead = $e['method'] === 'GET';
+
+                [$verdict, $note] = match (true) {
+                    $succeeded && $moved !== [] => ['MUTATED', 'rows referencing the foreign person moved: ' . implode('; ', $moved)],
+                    $succeeded && $isRead && $this->bodyMentionsVictim($body, $foreignPersonId) => ['LEAKED', 'the response carried the foreign person\'s data'],
+                    $succeeded => ['ACCEPTED_NO_CHANGE', '2xx for a foreign person but nothing referencing them moved — should refuse'],
+                    in_array($status, self::REFUSED, true) && $controlWorked => ['REFUSED', ''],
+                    in_array($status, self::REFUSED, true) => ['INCONCLUSIVE', "refused, but the control also failed ({$controlStatus}) — endpoint not exercised"],
+                    in_array($status, [400, 422], true) => ['VALIDATION_FIRST', 'validation rejected the empty body before scoping could be observed — not a pass'],
+                    $status === 405 => ['SKIPPED', 'method not allowed at runtime'],
+                    default => ['INCONCLUSIVE', "status {$status}"],
+                };
+
+                $results[] = array_merge($row, [
+                    'status' => $status,
+                    'control_status' => $controlStatus,
+                    'verdict' => $verdict,
+                    'note' => $note,
+                    'moved' => $moved,
+                    'body_excerpt' => $verdict === 'REFUSED' ? '' : $body,
+                ]);
+            }
+        };
+
+        $member = $this->actAs(['role' => 'member']);
+        $run('member', $member, static fn ($e) => ! str_starts_with($e['prefix'], 'admin/'));
+
+        $admin = $this->actAs(['role' => 'admin']);
+        $run('admin', $admin, static fn ($e) => str_starts_with($e['prefix'], 'admin/'));
+
+        $dir = dirname(__DIR__, 4) . '/.local-docs-archive/security-evidence';
+        if (is_dir($dir) || @mkdir($dir, 0o775, true) || is_dir($dir)) {
+            @file_put_contents($dir . '/cross-community-person-sweep.json', json_encode([
+                'generated_at' => date('c'),
+                'method' => 'Every v2 route taking two or more path parameters where one names a PERSON. The record parameters are filled with OUR OWN records, owned by the acting user; only the person is from tenant 999. Rows referencing that person are counted across every person-shaped foreign key in the schema, before and after each request, so a created join row is detected. Every probe is control-verified with a person from our own community.',
+                'person_reference_columns_watched' => count($refs),
+                'results' => $results,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
+
+        $lines = ['', '=== FOREIGN-PERSON SWEEP (multi-parameter routes) ===',
+            sprintf('multi-parameter v2 route/method combinations naming a person : %d', count($endpoints)),
+            sprintf('person-shaped foreign keys watched for side rows            : %d', count($refs)),
+        ];
+        foreach (['member' => 'PASS 1 — member, member-facing routes', 'admin' => 'PASS 2 — community admin, /admin/ routes'] as $actorLabel => $label) {
+            $t = ['MUTATED' => 0, 'LEAKED' => 0, 'ACCEPTED_NO_CHANGE' => 0, 'REFUSED' => 0, 'VALIDATION_FIRST' => 0, 'INCONCLUSIVE' => 0, 'SKIPPED' => 0];
+            foreach ($results as $r) {
+                if ($r['actor'] === $actorLabel) {
+                    $t[$r['verdict']]++;
+                }
+            }
+            $lines[] = '';
+            $lines[] = $label;
+            $lines[] = sprintf('  probed                                    : %d', $t['MUTATED'] + $t['LEAKED'] + $t['ACCEPTED_NO_CHANGE'] + $t['REFUSED'] + $t['VALIDATION_FIRST'] + $t['INCONCLUSIVE']);
+            $lines[] = sprintf('    refused, control succeeded              : %d', $t['REFUSED']);
+            $lines[] = sprintf('    validation rejected first (not a pass)  : %d', $t['VALIDATION_FIRST']);
+            $lines[] = sprintf('    accepted, nothing moved (review)        : %d', $t['ACCEPTED_NO_CHANGE']);
+            $lines[] = sprintf('    LEAKED the foreign person\'s data        : %d', $t['LEAKED']);
+            $lines[] = sprintf('    MUTATED rows referencing them           : %d', $t['MUTATED']);
+            $lines[] = sprintf('    inconclusive                            : %d', $t['INCONCLUSIVE']);
+            $lines[] = sprintf('  skipped                                   : %d', $t['SKIPPED']);
+        }
+        $lines[] = '';
+        foreach (['MUTATED', 'LEAKED', 'ACCEPTED_NO_CHANGE', 'INCONCLUSIVE'] as $bucket) {
+            $rows = array_filter($results, static fn ($r) => $r['verdict'] === $bucket);
+            if ($rows === []) {
+                continue;
+            }
+            $lines[] = $bucket . ':';
+            foreach ($rows as $r) {
+                $lines[] = sprintf(
+                    '  [%s] %-6s %s  probe=%s control=%s  %s',
+                    $r['actor'],
+                    $r['method'],
+                    $r['uri'],
+                    $r['status'] ?? 'exception',
+                    $r['control_status'] ?? '-',
+                    preg_replace('/\s+/', ' ', $r['note'] . ' ' . $r['body_excerpt'])
+                );
+            }
+            $lines[] = '';
+        }
+        fwrite(STDERR, implode(PHP_EOL, $lines) . PHP_EOL);
+
+        $breaches = array_values(array_map(
+            static fn ($r) => $r['verdict'] . ' ' . $r['actor'] . ' ' . $r['method'] . ' ' . $r['uri'] . ' -> ' . $r['status'] . ' :: ' . $r['note'],
+            array_filter($results, static fn ($r) => in_array($r['verdict'], ['MUTATED', 'LEAKED'], true))
+        ));
+
+        $this->assertSame(
+            [],
+            $breaches,
+            'An endpoint accepted or served a person belonging to another community. '
+            . 'Read cross-community-person-sweep.json.'
+        );
+
+        // Accepted-but-inert answers: shrink-only, both directions.
+        $acceptedNoChange = array_values(array_map(
+            static fn ($r) => $r['method'] . ' ' . $r['uri'],
+            array_filter($results, static fn ($r) => $r['verdict'] === 'ACCEPTED_NO_CHANGE')
+        ));
+        sort($acceptedNoChange);
+        $known = self::KNOWN_PERSON_ACCEPTED_NO_CHANGE;
+        sort($known);
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($acceptedNoChange, $known)),
+            'An endpoint newly answers 2xx for a person from another community. Fix it to refuse, '
+            . 'or — only if it provably touches nothing — add it to KNOWN_PERSON_ACCEPTED_NO_CHANGE with a note.'
+        );
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($known, $acceptedNoChange)),
+            'A KNOWN_PERSON_ACCEPTED_NO_CHANGE entry no longer answers 2xx for a foreign person. It is fixed — delete its line.'
+        );
+    }
+
+    /**
+     * Give the CONTROL person the relationships these endpoints require.
+     *
+     * Without this, "remove this member", "promote this member" and "approve
+     * this registration" refuse the control person too — for the mundane reason
+     * that they are not a member or registrant — and the probe proves nothing.
+     * Nine results were INCONCLUSIVE on the first run for exactly that reason.
+     *
+     * The foreign person is deliberately given NONE of these, which is what
+     * makes the comparison meaningful.
+     *
+     * 🔴 A NOTE FOR WHOEVER EXTENDS THIS. `group_members` carries `is_federated`
+     * and `source_tenant_id`, so a member row pointing at a user in another
+     * tenant is a DESIGNED federation state, not automatically a breach. Do not
+     * "improve" this sweep by planting a foreign user in group_members and
+     * calling a successful promote a finding — that needs the federation rules
+     * read first. What is tested here is narrower and sound: a person with no
+     * relationship to our record, and no presence in our community, must be
+     * refused.
+     */
+    private function seedControlRelationships(User $controlPerson, User $actor, array $ownIds): void
+    {
+        $tenantId = $this->testTenantId;
+        $now = now();
+
+        $inserts = [
+            'job_vacancy_team' => isset($ownIds['job']) ? [
+                'tenant_id' => $tenantId,
+                'vacancy_id' => $ownIds['job'],
+                'user_id' => $controlPerson->id,
+                'role' => 'reviewer',
+                'added_by' => $actor->id,
+                'created_at' => $now,
+            ] : null,
+            'group_members' => isset($ownIds['group']) ? [
+                'tenant_id' => $tenantId,
+                'group_id' => $ownIds['group'],
+                'user_id' => $controlPerson->id,
+                'status' => 'active',
+                'role' => 'member',
+                'joined_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ] : null,
+            'event_registrations' => isset($ownIds['event']) ? [
+                'tenant_id' => $tenantId,
+                'event_id' => $ownIds['event'],
+                'user_id' => $controlPerson->id,
+                'registration_state' => 'pending',
+                'created_at' => $now,
+            ] : null,
+        ];
+
+        foreach ($inserts as $table => $row) {
+            if ($row === null || ! Schema::hasTable($table)) {
+                continue;
+            }
+
+            try {
+                // Idempotent: this runs before every endpoint, and some of those
+                // endpoints legitimately delete the very row being seeded.
+                $exists = DB::table($table)
+                    ->where('tenant_id', $row['tenant_id'])
+                    ->where('user_id', $row['user_id'])
+                    ->when(isset($row['group_id']), fn ($q) => $q->where('group_id', $row['group_id']))
+                    ->when(isset($row['event_id']), fn ($q) => $q->where('event_id', $row['event_id']))
+                    ->when(isset($row['vacancy_id']), fn ($q) => $q->where('vacancy_id', $row['vacancy_id']))
+                    ->exists();
+
+                if ($exists) {
+                    continue;
+                }
+
+                DB::table($table)->insert($row);
+            } catch (\Throwable $e) {
+                // Left as a coverage gap rather than papered over: the control
+                // will fail and the endpoint is reported INCONCLUSIVE, which is
+                // the honest outcome. The reason is printed so it can be fixed.
+                fwrite(STDERR, sprintf(
+                    "  [control fixture] could not seed %s: %s%s",
+                    $table,
+                    mb_substr($e->getMessage(), 0, 140),
+                    PHP_EOL
+                ));
+            }
+        }
+    }
+
+    /**
+     * Multi-parameter v2 routes where one parameter names a person and every
+     * other parameter resolves to a record we can create in our own community.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function multiParamPersonEndpoints(): array
+    {
+        $endpoints = [];
+
+        foreach (Route::getRoutes() as $route) {
+            $uri = $route->uri();
+
+            if (! str_starts_with($uri, 'api/v2/')) {
+                continue;
+            }
+
+            preg_match_all('/\{([^}]+)\}/', $uri, $matches);
+            $params = array_map(static fn ($p) => rtrim($p, '?'), $matches[1]);
+
+            if (count($params) < 2) {
+                continue;
+            }
+
+            if (array_intersect($params, self::PERSON_PARAMS) === []) {
+                continue;
+            }
+
+            $path = substr($uri, strlen('api/v2/'));
+            $prefix = rtrim(substr($path, 0, strpos($path, '{')), '/');
+
+            $plan = [];
+            $skip = null;
+
+            foreach ($params as $param) {
+                if (in_array($param, self::PERSON_PARAMS, true)) {
+                    $plan[] = ['person', $param];
+
+                    continue;
+                }
+
+                // Verb-shaped parameters ({action}, {state}) name an operation,
+                // not a record, and carry a route pattern constraint. Resolving
+                // them by path prefix filled them with an event id, the router
+                // rejected the URL, and the endpoint was reported INCONCLUSIVE
+                // for no better reason than that. Recognised here rather than in
+                // the shared NOT_AN_ID list, because the other two sweeps'
+                // published figures are derived from that list.
+                if (in_array($param, ['action', 'state'], true)) {
+                    $skip = "parameter {{$param}} names an operation, not a record";
+
+                    break;
+                }
+
+                // Resolve against the path segment preceding THIS parameter, so
+                // that {ticketTypeId} in events/{id}/tickets/{ticketTypeId}
+                // resolves on 'events/…/tickets' rather than on 'events'.
+                $before = substr($path, 0, strpos($path, '{' . $param . '}') ?: 0);
+                $localPrefix = rtrim(preg_replace('/\{[^}]+\}/', '', $before), '/');
+                $localPrefix = trim(preg_replace('#/+#', '/', $localPrefix), '/');
+
+                [$fixture, $reason] = $this->resolve($localPrefix !== '' ? $localPrefix : $prefix, $param);
+
+                if ($fixture === null) {
+                    $skip = $reason ?? "no fixture for {{$param}}";
+
+                    break;
+                }
+
+                $plan[] = ['fixture', $fixture];
+            }
+
+            foreach (array_diff($route->methods(), ['HEAD']) as $method) {
+                $endpoints[] = [
+                    'method' => $method,
+                    'uri' => $uri,
+                    'prefix' => $prefix,
+                    'params' => $params,
+                    'plan' => $plan,
+                    'skip' => $skip,
+                    'action' => $route->getActionName(),
+                ];
+            }
+        }
+
+        usort($endpoints, static fn ($a, $b) => [$a['uri'], $a['method']] <=> [$b['uri'], $b['method']]);
+
+        return $endpoints;
+    }
+
+    /**
+     * Substitute a concrete id for every path parameter, in order.
+     *
+     * @param  list<array{0:string,1:string}>  $plan
+     * @param  array<string,int>  $ownIds
+     * @return array{0:string,1:?string} [uri, missing-fixture reason]
+     */
+    private function fillMultiParamUri(array $plan, string $uri, array $ownIds, int $personId): array
+    {
+        $missing = null;
+        $index = 0;
+
+        $filled = preg_replace_callback(
+            '/\{[^}]+\}/',
+            static function () use ($plan, $ownIds, $personId, &$index, &$missing): string {
+                $slot = $plan[$index] ?? null;
+                $index++;
+
+                if ($slot === null) {
+                    $missing ??= 'parameter/plan mismatch';
+
+                    return '0';
+                }
+
+                if ($slot[0] === 'person') {
+                    return (string) $personId;
+                }
+
+                $id = $ownIds[$slot[1]] ?? null;
+
+                if ($id === null) {
+                    $missing ??= "own-community fixture '{$slot[1]}' could not be created";
+
+                    return '0';
+                }
+
+                return (string) $id;
+            },
+            $uri
+        );
+
+        return [(string) $filled, $missing];
+    }
+
+    /**
+     * Every [table, column] in the live schema whose column references a person.
+     * This is what makes a created join row visible to the sweep.
+     *
+     * @return list<array{0:string,1:string}>
+     */
+    private function personReferenceColumns(): array
+    {
+        $placeholders = implode(',', array_fill(0, count(self::PERSON_COLUMNS), '?'));
+
+        try {
+            $rows = DB::select(
+                'SELECT TABLE_NAME AS t, COLUMN_NAME AS c
+                   FROM information_schema.COLUMNS
+                  WHERE TABLE_SCHEMA = DATABASE()
+                    AND COLUMN_NAME IN (' . $placeholders . ')
+                  ORDER BY TABLE_NAME, COLUMN_NAME',
+                self::PERSON_COLUMNS
+            );
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            $out[] = [(string) $row->t, (string) $row->c];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Count rows referencing a person, per [table, column].
+     *
+     * @param  list<array{0:string,1:string}>  $refs
+     * @return array<string,int>
+     */
+    private function personReferenceCounts(array $refs, int $personId): array
+    {
+        $counts = [];
+
+        foreach ($refs as [$table, $column]) {
+            try {
+                $counts[$table . '.' . $column] = (int) DB::table($table)->where($column, $personId)->count();
+            } catch (\Throwable) {
+                // A view, or a column type that cannot be compared. Not a
+                // detector for this table; deliberately left out rather than
+                // recorded as zero, which would read as "nothing moved".
+                continue;
+            }
+        }
+
+        return $counts;
     }
 
     /** Database table behind a fixture key, for before/after snapshots. */

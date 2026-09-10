@@ -92,6 +92,32 @@ class JobTeamService
     /**
      * Remove a team member from a vacancy.
      */
+    /**
+     * Is this person on the vacancy's team IN THIS COMMUNITY?
+     *
+     * removeMember() below deletes tenant-scoped, so it can never remove
+     * another community's row — but it returned true regardless of how many
+     * rows it removed, so a person belonging to another community was answered
+     * `success: true` for a delete that did nothing. Found by the
+     * foreign-person sweep in CrossCommunityAccessSweepTest, 2026-09-10.
+     *
+     * Fails closed: anything unexpected reports "not on the team", which the
+     * controller turns into a not-found rather than a success.
+     */
+    public static function isTeamMember(int $vacancyId, int $targetUserId): bool
+    {
+        try {
+            return JobVacancyTeam::where('tenant_id', TenantContext::getId())
+                ->where('vacancy_id', $vacancyId)
+                ->where('user_id', $targetUserId)
+                ->exists();
+        } catch (\Throwable $e) {
+            Log::error('JobTeamService::isTeamMember failed', ['error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
     public static function removeMember(int $vacancyId, int $ownerUserId, int $targetUserId): bool
     {
         $tenantId = TenantContext::getId();

@@ -1647,9 +1647,18 @@ class JobVacanciesController extends BaseApiController
         $this->ensureFeature();
         $currentUserId = $this->getUserId();
 
+        // The vacancy is tenant- and owner-checked inside the service, but the
+        // TARGET PERSON was not: a person from another community produced a
+        // zero-row delete reported as `success: true`. Read membership first so
+        // a non-owner still gets the same 422 as before and learns nothing.
+        $isTeamMember = JobTeamService::isTeamMember($id, $userId);
+
         $ok = JobTeamService::removeMember($id, $currentUserId, $userId);
         if (!$ok) {
             return $this->respondWithError('RESOURCE_FORBIDDEN', __('api.job_team_remove_failed'), null, 422);
+        }
+        if (!$isTeamMember) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Team member']), null, 404);
         }
         return $this->respondWithData(['success' => true]);
     }

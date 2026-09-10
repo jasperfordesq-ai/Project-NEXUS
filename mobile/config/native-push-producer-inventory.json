@@ -524,9 +524,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/ConnectionsController.php:241:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/ConnectionsController.php:252:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/ConnectionsController.php",
-            "line": 241,
+            "line": 252,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $requesterId",
@@ -875,9 +875,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/StoryController.php:298:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/StoryController.php:300:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/StoryController.php",
-            "line": 298,
+            "line": 300,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $story->user_id",
@@ -888,9 +888,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/StoryController.php:528:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/StoryController.php:530:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/StoryController.php",
-            "line": 528,
+            "line": 530,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $story->user_id",
@@ -2773,9 +2773,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/StoryService.php:1268:NotificationDispatcher::dispatch",
+            "id": "app/Services/StoryService.php:1273:NotificationDispatcher::dispatch",
             "file": "app/Services/StoryService.php",
-            "line": 1268,
+            "line": 1273,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$friendId",
