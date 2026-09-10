@@ -178,7 +178,7 @@
       }
     },
     "android": {
-      "versionCode": 7,
+      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#006FEE"
@@ -318,7 +318,10 @@
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/90f411f3-b6b4-4251-85ad-00937bb0513d"
+      "url": "https://u.expo.dev/90f411f3-b6b4-4251-85ad-00937bb0513d",
+      "requestHeaders": {
+        "expo-channel-name": "production"
+      }
     },
     "runtimeVersion": {
       "policy": "appVersion"

@@ -225,6 +225,19 @@ It is not fine for anything else:
 
 ## Sending an update, and taking one back
 
+🔴 **No over-the-air update had ever been published before 2026-09-10, and the build on
+Play could not have received one.** Opening the version code 8 bundle showed two faults:
+it carried **no update channel** — EAS writes the channel into a cloud build, but the Play
+bundle is built locally by `scripts/build-aab-play.sh`, and nothing in `app.json` set one
+— and its **runtime version read 1.2.0** inside an app labelled 1.4.0, because that script
+only regenerated the native project when `android/` was missing. Either fault alone means
+the update service serves the build nothing. Both are closed: `app.json` now carries
+`updates.requestHeaders["expo-channel-name"] = "production"` (the channel the store
+profile is pinned to — `native-config.test.js` pins the two together), the build script
+runs `expo prebuild` on every build, and it opens the finished bundle and refuses it if
+the channel or the runtime version is missing or stale. **Version code 9 is the first
+build that can take an update.** Everything below applies from that build on.
+
 ```bash
 cd mobile
 npm run update:staging                                          # internal testers

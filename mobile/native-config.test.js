@@ -247,6 +247,23 @@ describe('native app configuration', () => {
     expect(app.updates.fallbackToCacheTimeout).toBe(0);
   });
 
+  /*
+    🔴 A locally built Play bundle listens to NO update channel unless app.json says which.
+    EAS writes the channel into a cloud build itself; `scripts/build-aab-play.sh` — the
+    recipe for the bundle that actually goes to Play — gets it only from here. Found on
+    2026-09-10 by opening the version code 8 bundle: no channel, so the Expo update service
+    would never have served it anything, and no over-the-air fix could reach those phones.
+    The channel must be the one the store build profile is pinned to, or a publish aimed at
+    "the store build" lands on a channel the store build does not read.
+  */
+  it('bakes the store update channel into locally built bundles', () => {
+    const app = readJson('app.json').expo;
+    const eas = readJson('eas.json');
+
+    expect(app.updates.requestHeaders['expo-channel-name']).toBe('production');
+    expect(app.updates.requestHeaders['expo-channel-name']).toBe(eas.build.production.channel);
+  });
+
   it('configures a branded splash while React is booting', () => {
     const app = readJson('app.json').expo;
     const splashPlugin = app.plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === 'expo-splash-screen');

@@ -28,6 +28,18 @@
 #      native code for one CPU. On 2026-08-20 that produced an x86_64-only build:
 #      flawless on the emulator, "App not installed" on a real phone.
 #
+#   4. OVER-THE-AIR UPDATES. Found on 2026-09-10 by opening the bundle that had
+#      gone to Play as version code 8: it carried NO update channel and a runtime
+#      version of 1.2.0 inside an app labelled 1.4.0. EAS-built binaries get the
+#      channel written in by the build service; a local Gradle build gets it only
+#      from `updates.requestHeaders` in app.json, which nothing set. And this
+#      script only ran `expo prebuild` when android/ was missing, so the generated
+#      strings.xml kept whatever runtime version it had when the folder was first
+#      created — an August value. Either fault alone means the Expo update
+#      service serves that build nothing, ever: no fix can reach it without a new
+#      store release. The native project is now regenerated on every build, and
+#      the finished bundle is opened and checked for both values.
+#
 # Every one of those is checked below and refuses the build rather than warning.
 #
 # Usage:
@@ -99,10 +111,12 @@ PLAY_STORE_FILE="$KEYSTORE_ABS";                    export PLAY_STORE_FILE
 PLAY_KEY_ALIAS="$KEY_ALIAS";                        export PLAY_KEY_ALIAS
 
 # ------------------------------------------------------------ native project
-if [ ! -d android ]; then
-  echo "No android/ project yet — generating it."
-  npx expo prebuild --platform android
-fi
+# 🔴 Always. Prebuild is what copies app.json into AndroidManifest.xml and
+# strings.xml — the update channel, the runtime version, permissions. Running it
+# only when android/ was missing is how version code 8 shipped with a runtime
+# version from August (see header, item 4).
+echo "Regenerating the native project from app.json …"
+npx expo prebuild --platform android --no-install
 
 # Certificate pins live in the source file; the config plugin copies them in on
 # prebuild, so copy them here too in case no prebuild has run since they changed.
@@ -171,6 +185,34 @@ if [ -n "$KEYTOOL" ]; then
 else
   echo "WARNING: keytool not found — signature NOT verified. This is not a pass." >&2
 fi
+
+# ------------------------------- guard 4: prove the bundle can receive updates
+# Both values are read from the FINISHED bundle, not from the sources that should
+# have produced them. The manifest and resources inside an .aab are protobuf, but
+# the strings are stored verbatim, so a byte search is a reliable check.
+APP_VERSION="$(node -e "process.stdout.write(require('./app.json').expo.version)")"
+EXPECTED_CHANNEL="$(node -e "process.stdout.write(require('./app.json').expo.updates.requestHeaders['expo-channel-name'])")"
+if [ -z "$EXPECTED_CHANNEL" ]; then
+  echo "ERROR: app.json has no updates.requestHeaders['expo-channel-name']; a local build" >&2
+  echo "would listen to no update channel and could never receive a fix." >&2
+  exit 1
+fi
+if ! unzip -p "$AAB" base/manifest/AndroidManifest.xml | grep -a -q "expo-channel-name"; then
+  echo "ERROR: the bundle's manifest carries no update channel header." >&2
+  echo "Members on this build could never receive an over-the-air update." >&2
+  exit 1
+fi
+if ! unzip -p "$AAB" base/manifest/AndroidManifest.xml | grep -a -q "\"expo-channel-name\":\"${EXPECTED_CHANNEL}\""; then
+  echo "ERROR: the bundle's update channel is not '${EXPECTED_CHANNEL}'." >&2
+  exit 1
+fi
+if ! unzip -p "$AAB" base/resources.pb | grep -a -q "${APP_VERSION}"; then
+  echo "ERROR: the bundle's runtime version is not ${APP_VERSION} (app.json version)." >&2
+  echo "Updates published for ${APP_VERSION} would be refused by this build." >&2
+  exit 1
+fi
+echo "Update channel     : ${EXPECTED_CHANNEL} (verified in bundle)"
+echo "Runtime version    : ${APP_VERSION} (verified in bundle)"
 
 echo ""
 echo "Bundle: $ROOT/$AAB"

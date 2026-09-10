@@ -65,7 +65,7 @@ bash mobile/scripts/build-aab-play.sh --version-code 8
 Output: `mobile/android/app/build/outputs/bundle/release/app-release.aab`
 (~90 MB; the build itself took **1m 45s** on the dev machine, no EAS quota spent).
 
-That script exists because three separate failures here are silent, and each
+That script exists because four separate failures here are silent, and each
 produces a normal-looking `app-release.aab`. It refuses rather than warns:
 
 | Trap | What happens without the guard |
@@ -73,6 +73,7 @@ produces a normal-looking `app-release.aab`. It refuses rather than warns:
 | **Debug signing** | `android/app/build.gradle` falls back to `signingConfigs.debug` when the signing values are absent. No error. Play rejects the upload, and if it did not, the signature could never update the installed app. |
 | **Wrong API host** | Expo bakes `EXPO_PUBLIC_API_URL` into the bundle permanently. On 2026-09-09 `.env.production.local` still held `http://10.0.2.2:8090` — the emulator's alias for the build machine — left behind by `build-apk-local.sh` during testing. That build works flawlessly on an emulator and is dead in every real user's hand. |
 | **One CPU architecture** | `expo run:android` writes `reactNativeArchitectures=<one abi>` into `android/gradle.properties`; a later release build inherits it. On 2026-08-20 that shipped an x86_64-only artefact: perfect on the emulator, "App not installed" on a real phone. |
+| **A build no update can reach** | Found 2026-09-10 by opening the version code 8 bundle: it had **no update channel** (EAS writes one into cloud builds; a local build gets it only from `app.json`'s `updates.requestHeaders`, which nothing set) and a **runtime version of 1.2.0** inside a 1.4.0 app (the script only ran `expo prebuild` when `android/` was missing, so an August value survived). Either alone means the update service serves that build nothing, ever. The script now regenerates the native project on every build and reads both values back out of the finished bundle. Version code 9 is the first build that can receive an over-the-air update. |
 
 The script also verifies the finished bundle's certificate against the upload key
 before reporting success.
