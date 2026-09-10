@@ -569,7 +569,25 @@ class CrossCommunityAccessSweepTest extends TestCase
                     $status = $response->getStatusCode();
                     $body = mb_substr((string) $response->getContent(), 0, 300);
                 } catch (\Throwable $ex) {
+                    // 🔴 A throw is not a reason to stop looking. The previous
+                    // version returned here without reading the record again, so
+                    // a request that CHANGED a foreign record and then threw was
+                    // recorded as merely inconclusive. Raised by an external
+                    // review, 2026-09-10.
+                    $afterThrow = $table ? json_encode(DB::table($table)->where('id', $victimId)->first()) : null;
+
+                    if ($table !== null && $before !== $afterThrow) {
+                        $results[] = array_merge($row, [
+                            'verdict' => 'MUTATED',
+                            'note' => 'the foreign record changed and the request then threw '
+                                . class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 120),
+                        ]);
+
+                        continue;
+                    }
+
                     $results[] = array_merge($row, ['verdict' => 'INCONCLUSIVE', 'note' => 'threw ' . class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160)]);
+
                     continue;
                 }
 
@@ -577,7 +595,11 @@ class CrossCommunityAccessSweepTest extends TestCase
                 $rowChanged = $table !== null && $before !== $after;
 
                 [$verdict, $note] = match (true) {
-                    $status >= 200 && $status < 300 && $rowChanged => ['MUTATED', $after === 'null' ? 'the foreign record was DELETED' : 'the foreign record was CHANGED'],
+                    // 🔴 Checked BEFORE the status, and independently of it. Classifying a
+                    // mutation only on a 2xx meant a write that CHANGED a foreign record and
+                    // then returned an error escaped the detector entirely. Raised by an
+                    // external review of the assessment, 2026-09-10.
+                    $rowChanged => ['MUTATED', ($after === 'null' ? 'the foreign record was DELETED' : 'the foreign record was CHANGED') . " (response was {$status})"],
                     $status >= 200 && $status < 300 => ['ACCEPTED_NO_CHANGE', '2xx for a foreign id but its row is unchanged — should refuse; read the body for side rows'],
                     in_array($status, [401, 403, 404, 410], true) => ['REFUSED', ''],
                     in_array($status, [400, 422], true) => ['VALIDATION_FIRST', 'validation rejected the empty body before scoping could be observed — not a pass'],
@@ -714,6 +736,7 @@ class CrossCommunityAccessSweepTest extends TestCase
         $foreignPersonId = (int) $this->victimOwner->id;
 
         $refs = $this->personReferenceColumns();
+        $unreadableColumns = 0;
         $this->assertNotEmpty($refs, 'No person-shaped foreign keys found — the mutation detector would be blind.');
 
         $results = [];
@@ -722,7 +745,8 @@ class CrossCommunityAccessSweepTest extends TestCase
             $endpoints,
             &$results,
             $foreignPersonId,
-            $refs
+            $refs,
+            &$unreadableColumns
         ): void {
             $ownIds = $this->seedRecords($this->testTenantId, $actor);
             $controlPerson = User::factory()->forTenant($this->testTenantId)->create([
@@ -767,7 +791,13 @@ class CrossCommunityAccessSweepTest extends TestCase
                     continue;
                 }
 
-                $before = $this->personReferenceCounts($refs, $foreignPersonId);
+                $beforeSnap = $this->personReferenceFingerprints($refs, $foreignPersonId);
+                $before = $beforeSnap['fingerprints'];
+                $unreadableColumns = max($unreadableColumns, $beforeSnap['unreadable']);
+                $threw = null;
+                $status = 0;
+                $body = '';
+                $fullBody = '';
 
                 try {
                     $response = $this->json(
@@ -777,23 +807,34 @@ class CrossCommunityAccessSweepTest extends TestCase
                         $this->withTenantHeader()
                     );
                     $status = $response->getStatusCode();
-                    $body = mb_substr((string) $response->getContent(), 0, 300);
+                    $fullBody = (string) $response->getContent();
+                    $body = mb_substr($fullBody, 0, 300);
                 } catch (\Throwable $ex) {
+                    // The after-snapshot is still taken: a request that changed
+                    // something and THEN threw must not be filed as merely
+                    // inconclusive.
+                    $threw = class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160);
+                }
+
+                $after = $this->personReferenceFingerprints($refs, $foreignPersonId)['fingerprints'];
+                $moved = [];
+                foreach ($after as $where => $fingerprint) {
+                    $was = $before[$where] ?? null;
+                    if ($fingerprint !== $was) {
+                        $moved[] = "{$where}: " . var_export($was, true) . " -> {$fingerprint}";
+                    }
+                }
+
+                if ($threw !== null) {
                     $results[] = array_merge($row, [
-                        'verdict' => 'INCONCLUSIVE',
-                        'note' => 'threw ' . class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160),
+                        'verdict' => $moved === [] ? 'INCONCLUSIVE' : 'MUTATED',
+                        'note' => $moved === []
+                            ? 'threw ' . $threw
+                            : 'rows referencing the foreign person moved and the request then threw ' . $threw,
+                        'moved' => $moved,
                     ]);
 
                     continue;
-                }
-
-                $after = $this->personReferenceCounts($refs, $foreignPersonId);
-                $moved = [];
-                foreach ($after as $where => $count) {
-                    $was = $before[$where] ?? 0;
-                    if ($count !== $was) {
-                        $moved[] = "{$where}: {$was} -> {$count}";
-                    }
                 }
 
                 // Control: the same request for a person of OUR community, so a
@@ -817,8 +858,13 @@ class CrossCommunityAccessSweepTest extends TestCase
                 $isRead = $e['method'] === 'GET';
 
                 [$verdict, $note] = match (true) {
-                    $succeeded && $moved !== [] => ['MUTATED', 'rows referencing the foreign person moved: ' . implode('; ', $moved)],
-                    $succeeded && $isRead && $this->bodyMentionsVictim($body, $foreignPersonId) => ['LEAKED', 'the response carried the foreign person\'s data'],
+                    // Independent of the response status, and read from row CONTENTS
+                    // rather than row counts — see personReferenceFingerprints().
+                    $moved !== [] => ['MUTATED', "rows referencing the foreign person moved (response was {$status}): " . implode('; ', $moved)],
+                    // The FULL body is scanned, not the 300-character excerpt kept for
+                    // the report: a leak further down the response would otherwise be
+                    // invisible to the detector while visible to the caller.
+                    $succeeded && $isRead && $this->bodyMentionsVictim($fullBody, $foreignPersonId) => ['LEAKED', 'the response carried the foreign person\'s data'],
                     $succeeded => ['ACCEPTED_NO_CHANGE', '2xx for a foreign person but nothing referencing them moved — should refuse'],
                     in_array($status, self::REFUSED, true) && $controlWorked => ['REFUSED', ''],
                     in_array($status, self::REFUSED, true) => ['INCONCLUSIVE', "refused, but the control also failed ({$controlStatus}) — endpoint not exercised"],
@@ -850,6 +896,7 @@ class CrossCommunityAccessSweepTest extends TestCase
                 'generated_at' => date('c'),
                 'method' => 'Every v2 route taking two or more path parameters where one names a PERSON. The record parameters are filled with OUR OWN records, owned by the acting user; only the person is from tenant 999. Rows referencing that person are counted across every person-shaped foreign key in the schema, before and after each request, so a created join row is detected. Every probe is control-verified with a person from our own community.',
                 'person_reference_columns_watched' => count($refs),
+                'person_reference_columns_unreadable' => $unreadableColumns,
                 'results' => $results,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         }
@@ -857,6 +904,7 @@ class CrossCommunityAccessSweepTest extends TestCase
         $lines = ['', '=== FOREIGN-PERSON SWEEP (multi-parameter routes) ===',
             sprintf('multi-parameter v2 route/method combinations naming a person : %d', count($endpoints)),
             sprintf('person-shaped foreign keys watched for side rows            : %d', count($refs)),
+            sprintf('  of which could NOT be read (blind spots, not passes)      : %d', $unreadableColumns),
         ];
         foreach (['member' => 'PASS 1 — member, member-facing routes', 'admin' => 'PASS 2 — community admin, /admin/ routes'] as $actorLabel => $label) {
             $t = ['MUTATED' => 0, 'LEAKED' => 0, 'ACCEPTED_NO_CHANGE' => 0, 'REFUSED' => 0, 'VALIDATION_FIRST' => 0, 'INCONCLUSIVE' => 0, 'SKIPPED' => 0];
@@ -930,6 +978,95 @@ class CrossCommunityAccessSweepTest extends TestCase
             [],
             array_values(array_diff($known, $acceptedNoChange)),
             'A KNOWN_PERSON_ACCEPTED_NO_CHANGE entry no longer answers 2xx for a foreign person. It is fixed — delete its line.'
+        );
+    }
+
+    /**
+     * Does the mutation detector actually detect anything?
+     *
+     * WHY THIS TEST EXISTS
+     * --------------------
+     * Every sweep in this file reports "0 mutated". That number is worth exactly
+     * as much as the detector behind it, and an external review of the
+     * assessment pointed out — correctly — that the detector had blind spots
+     * which the reported figure did not disclose. Three were real:
+     *
+     *   1. a mutation was classified only when the response was 2xx, so a write
+     *      that changed a record and then errored escaped entirely;
+     *   2. an exception skipped the after-snapshot altogether;
+     *   3. the person sweep compared row COUNTS, so changing somebody's role in
+     *      a group — same row, same count — was invisible.
+     *
+     * All three are fixed. This test is the proof, and it is deliberately the
+     * inverse of every other test here: it **causes** each kind of change and
+     * fails if the detector does not see it. A detector nobody has tried to fool
+     * is an assumption, not a control.
+     */
+    public function test_the_mutation_detector_sees_changes_it_is_supposed_to_see(): void
+    {
+        $owner = User::factory()->forTenant(self::VICTIM_TENANT_ID)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $ids = $this->seedRecords(self::VICTIM_TENANT_ID, $owner);
+
+        $listingId = $ids['listing'] ?? null;
+        $this->assertNotNull($listingId, 'Listing fixture missing — cannot exercise the detector.');
+
+        // ---- (1) A field change on the watched row must be seen.
+        $before = json_encode(DB::table('listings')->where('id', $listingId)->first());
+        DB::table('listings')->where('id', $listingId)->update(['title' => 'Mutated by the detector self-test']);
+        $after = json_encode(DB::table('listings')->where('id', $listingId)->first());
+
+        $this->assertNotSame($before, $after, 'A field change on the watched row was NOT visible to the row comparison.');
+
+        // ---- (2) A deletion must be seen, and must be distinguishable.
+        DB::table('listings')->where('id', $listingId)->delete();
+        $afterDelete = json_encode(DB::table('listings')->where('id', $listingId)->first());
+
+        $this->assertSame('null', $afterDelete, 'A deletion did not read back as null, so the DELETED/CHANGED wording would be wrong.');
+        $this->assertNotSame($after, $afterDelete, 'A deletion was NOT visible to the row comparison.');
+
+        // ---- (3) A side row created elsewhere, referencing the person, must be
+        // seen — this is the shape of the one real cross-community side effect
+        // found in this assessment (a referral minted against a foreign vacancy).
+        $refs = $this->personReferenceColumns();
+        $this->assertNotEmpty($refs, 'No person-shaped foreign keys resolved — the side-row detector would be blind.');
+
+        $personId = (int) $owner->id;
+        $sideBefore = $this->personReferenceFingerprints($refs, $personId)['fingerprints'];
+
+        DB::table('notifications')->insert([
+            'tenant_id' => self::VICTIM_TENANT_ID,
+            'user_id' => $personId,
+            'type' => 'detector_self_test',
+            'message' => 'Side row created by the detector self-test',
+            'created_at' => now(),
+        ]);
+
+        $sideAfter = $this->personReferenceFingerprints($refs, $personId)['fingerprints'];
+        $this->assertNotSame($sideBefore, $sideAfter, 'A row CREATED elsewhere referencing the person was NOT detected.');
+
+        // ---- (4) The one the count-based detector used to miss entirely:
+        // a change to an existing row that leaves the number of rows identical.
+        $countBefore = count($sideAfter);
+        DB::table('notifications')
+            ->where('user_id', $personId)
+            ->where('type', 'detector_self_test')
+            ->update(['message' => 'Same row, same count, different contents']);
+
+        $sameCount = $this->personReferenceFingerprints($refs, $personId)['fingerprints'];
+
+        $this->assertSame(
+            $countBefore,
+            count($sameCount),
+            'Precondition failed: this step must not change how many entries are watched.'
+        );
+        $this->assertNotSame(
+            $sideAfter,
+            $sameCount,
+            'A CONTENT change with an unchanged row count was NOT detected. This is exactly the '
+            . 'blind spot the external review identified, and it must stay closed.'
         );
     }
 
@@ -1045,7 +1182,11 @@ class CrossCommunityAccessSweepTest extends TestCase
                 $rowChanged = $table !== null && $before !== $after;
 
                 [$verdict, $note] = match (true) {
-                    $status >= 200 && $status < 300 && $rowChanged => ['MUTATED', $after === 'null' ? 'the foreign record was DELETED' : 'the foreign record was CHANGED'],
+                    // 🔴 Checked BEFORE the status, and independently of it. Classifying a
+                    // mutation only on a 2xx meant a write that CHANGED a foreign record and
+                    // then returned an error escaped the detector entirely. Raised by an
+                    // external review of the assessment, 2026-09-10.
+                    $rowChanged => ['MUTATED', ($after === 'null' ? 'the foreign record was DELETED' : 'the foreign record was CHANGED') . " (response was {$status})"],
                     $status >= 200 && $status < 300 => ['ACCEPTED_NO_CHANGE', '2xx for a foreign id with a valid body, row unchanged — should refuse'],
                     in_array($status, [401, 403, 404, 410], true) => ['REFUSED', ''],
                     in_array($status, [400, 422], true) => ['VALIDATION_UNRESOLVED', 'no acceptable body could be constructed — still unproven'],
@@ -1410,7 +1551,8 @@ class CrossCommunityAccessSweepTest extends TestCase
                 $succeeded = $status >= 200 && $status < 300;
 
                 [$verdict, $note] = match (true) {
-                    $succeeded && $rowChanged => ['MUTATED', $after === 'null' ? "another community's {$childKey} was DELETED" : "another community's {$childKey} was CHANGED"],
+                    // Checked independently of the response status — see the write sweep.
+                    $rowChanged => ['MUTATED', ($after === 'null' ? "another community's {$childKey} was DELETED" : "another community's {$childKey} was CHANGED") . " (response was {$status})"],
                     $succeeded && $e['method'] === 'GET' && $this->bodyMentionsVictim($body, $victimChildId) => ['LEAKED', "the response carried another community's {$childKey}"],
                     $succeeded => ['ACCEPTED_NO_CHANGE', "2xx for another community's {$childKey} but its row is unchanged — should refuse"],
                     in_array($status, self::REFUSED, true) && $controlWorked => ['REFUSED', ''],
@@ -1958,27 +2100,37 @@ class CrossCommunityAccessSweepTest extends TestCase
     }
 
     /**
-     * Count rows referencing a person, per [table, column].
+     * Fingerprint every row referencing a person, per [table, column].
+     *
+     * 🔴 This used to return row COUNTS, and counting is not enough: changing a
+     * person's ROLE in a group alters the row without altering how many rows
+     * reference them, so a count-only detector reports "nothing moved" for a
+     * genuine modification. Raised by an external review of the assessment,
+     * 2026-09-10. Each entry is now a count AND a hash of the rows' contents, so
+     * a change of any field is visible.
+     *
+     * Columns that cannot be read are counted and reported rather than silently
+     * dropped — an unreadable column is a blind spot, and a blind spot recorded
+     * as nothing is how a sweep comes to overstate what it saw.
      *
      * @param  list<array{0:string,1:string}>  $refs
-     * @return array<string,int>
+     * @return array{fingerprints: array<string,string>, unreadable: int}
      */
-    private function personReferenceCounts(array $refs, int $personId): array
+    private function personReferenceFingerprints(array $refs, int $personId): array
     {
-        $counts = [];
+        $fingerprints = [];
+        $unreadable = 0;
 
         foreach ($refs as [$table, $column]) {
             try {
-                $counts[$table . '.' . $column] = (int) DB::table($table)->where($column, $personId)->count();
+                $rows = DB::table($table)->where($column, $personId)->get();
+                $fingerprints[$table . '.' . $column] = count($rows) . ':' . md5((string) json_encode($rows));
             } catch (\Throwable) {
-                // A view, or a column type that cannot be compared. Not a
-                // detector for this table; deliberately left out rather than
-                // recorded as zero, which would read as "nothing moved".
-                continue;
+                $unreadable++;
             }
         }
 
-        return $counts;
+        return ['fingerprints' => $fingerprints, 'unreadable' => $unreadable];
     }
 
     /** Database table behind a fixture key, for before/after snapshots. */
