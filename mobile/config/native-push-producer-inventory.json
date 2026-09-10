@@ -836,9 +836,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/PollsController.php:226:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/PollsController.php:236:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/PollsController.php",
-            "line": 226,
+            "line": 236,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $pollModel->user_id",
@@ -849,9 +849,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/PollsController.php:274:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/PollsController.php:284:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/PollsController.php",
-            "line": 274,
+            "line": 284,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $pollModel->user_id",
@@ -862,9 +862,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/SocialController.php:967:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Http/Controllers/Api/SocialController.php:974:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Http/Controllers/Api/SocialController.php",
-            "line": 967,
+            "line": 974,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,
