@@ -48,8 +48,10 @@ submit. The same wait applies to "Save and publish" on internal testing.
    is 100% and all targeted countries. "Save" only STAGES it.
 6. **Publishing overview**: *wait for the quick checks to finish* (see the rule above), then
    "Submit N changes for review", confirm. Verify in **Submission activity**.
-7. Review is measured in minutes, not days: submission 7 took 33 minutes. With managed
-   publishing off, submitting is the decision to go live.
+7. Review is measured in minutes, not days: submission 7 took 33 minutes, submission 8
+   took 27 (11:57 AM → 12:24 PM, 2026-09-10). The exact "Released on" time is on the
+   Production track's Releases tab. With managed publishing off, submitting is the
+   decision to go live.
 
 ## Over-the-air updates
 

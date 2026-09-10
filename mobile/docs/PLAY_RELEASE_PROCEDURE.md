@@ -152,17 +152,19 @@ Two Console behaviours worth knowing before you click:
 
 ## 5. How long the review actually takes
 
-Measured for submission 7 on 2026-09-09:
+Measured, twice:
 
-| Event | Time |
-| --- | --- |
-| Submitted for review | 7:32 PM |
-| Published | 8:05 PM |
+| Submission | Submitted for review | Published | Review time |
+| --- | --- | --- | --- |
+| 7 (version code 8), 2026-09-09 | 7:32 PM | 8:05 PM | **33 minutes** |
+| 8 (version code 9), 2026-09-10 | 11:57 AM | 12:24 PM | **27 minutes** |
 
-**33 minutes.** The confirmation dialog's "typically completed within 7 days" is
-a worst case; an established app making a routine update is reviewed largely
-automatically. Plan for hours, not days — and with managed publishing off, treat
-submission as going live the same evening.
+The confirmation dialog's "typically completed within 7 days" is a worst case; an
+established app making a routine update is reviewed largely automatically. Plan
+for under an hour, not days — and with managed publishing off, treat submission
+as going live within the hour. (Submission 8 was still "In review" at 12:15 and
+"Published" by 12:30; the Production track's Releases tab gives the exact
+"Released on" time.)
 
 The authoritative record is **Publishing overview → Submission activity**, which
 lists every submission with its status and exact publish time.
