@@ -129,7 +129,15 @@ describe('PushPermissionCard', () => {
 
     fireEvent.press(await screen.findByTestId('push-permission-enable'));
 
-    await waitFor(() => expect(screen.queryByTestId('push-permission-card')).toBeNull());
+    // handleEnable awaits TWO promises — the registration call and the storage
+    // write that records "the member has been asked" — before it hides the card,
+    // so the default waitFor window is tight on a loaded runner. This failed once
+    // on a CI Android job (1 of 3,854) while passing repeatedly on the developer
+    // machine; the component is deterministic (a 'failed' result always sets the
+    // card hidden), so the wait is widened rather than the behaviour changed.
+    await waitFor(() => expect(screen.queryByTestId('push-permission-card')).toBeNull(), {
+      timeout: 5000,
+    });
     expect(screen.queryByTestId('push-permission-settings')).toBeNull();
   });
 });
