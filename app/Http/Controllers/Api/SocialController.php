@@ -896,6 +896,13 @@ class SocialController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.social_option_id_required'), 'option_id', 400);
         }
 
+        // As in PollsController::vote() — the service throws for a poll in
+        // another community and that exception was not caught here, so a foreign
+        // id answered 500 rather than not-found.
+        if ($this->pollService->getById((int) $id, $userId) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Poll']), null, 404);
+        }
+
         try {
             $success = $this->pollService->vote((int) $id, $optionId, $userId);
         } catch (SafeguardingPolicyException $e) {

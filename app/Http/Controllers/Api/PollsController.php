@@ -192,6 +192,16 @@ class PollsController extends BaseApiController
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.social_option_id_required'), 'option_id', 400);
         }
 
+        // Resolve the poll inside this community before voting. PollService::vote()
+        // is correctly scoped and throws RuntimeException('Poll not found') for a
+        // poll belonging elsewhere, but only SafeguardingPolicyException is caught
+        // here — so a foreign id produced a 500 instead of a not-found. Same shape
+        // as the giving-days and event-RSVP fixes earlier today; found by the
+        // valid-body pass of CrossCommunityAccessSweepTest, 2026-09-10.
+        if ($this->pollService->getById($id, $userId) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Poll']), null, 404);
+        }
+
         try {
             $success = $this->pollService->vote($id, (int) $optionId, $userId);
         } catch (SafeguardingPolicyException $e) {

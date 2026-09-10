@@ -293,6 +293,50 @@ class CrossCommunityAccessSweepTest extends TestCase
     ];
 
     /**
+     * Endpoints that answer 2xx for a foreign identifier once the body satisfies
+     * validation, while provably changing nothing. Shrink-only.
+     *
+     * Ten of these are the same idempotent no-ops already pinned in
+     * KNOWN_ACCEPTED_NO_CHANGE. **Five are visible only here**, because an empty
+     * body never got past validation to reach them — which is the whole reason
+     * this pass exists:
+     *
+     *   DELETE courses/{id}/enroll                  answers `dropped: false`
+     *   POST   events/{id}/attendance/bulk          reports 1 processed, 0 successful, 1 failed
+     *   DELETE members/{id}/endorse                 answers "Endorsement removed"
+     *   POST   stories/{id}/analytics               answers `tracked: true`
+     *   DELETE admin/courses/instructors/{userId}   answers `revoked: true`
+     *
+     * Each was read before being pinned. `StoryService::trackAnalytics()` is the
+     * one worth naming: it answers `tracked: true` but looks the story up with
+     * `WHERE id = ? AND tenant_id = ?` and returns before inserting, so **no
+     * analytics row is created for another community's story**. That check
+     * mattered — the single genuine cross-community side effect found in this
+     * whole assessment was an endpoint of exactly this shape that did create a
+     * row (`POST jobs/{id}/referral`).
+     *
+     * All fifteen are open Low findings, listed in the assessment. They should
+     * answer not-found; none of them moves any data.
+     */
+    private const KNOWN_VALID_BODY_ACCEPTED = [
+        'DELETE api/v2/admin/courses/instructors/{userId}',
+        'PUT api/v2/admin/volunteering/giving-days/{id}',
+        'DELETE api/v2/courses/{id}/enroll',
+        'POST api/v2/events/{id}/attendance/bulk',
+        'DELETE api/v2/events/{id}/waitlist',
+        'DELETE api/v2/feed/posts/{id}/share',
+        'DELETE api/v2/goals/{id}/reminder',
+        'DELETE api/v2/jobs/{id}/save',
+        'DELETE api/v2/listings/{id}/save',
+        'DELETE api/v2/members/{id}/endorse',
+        'PUT api/v2/messages/{id}/read',
+        'DELETE api/v2/stories/close-friends/{friendId}',
+        'POST api/v2/stories/{id}/analytics',
+        'DELETE api/v2/users/me/availability/{id}',
+        'DELETE api/v2/users/me/sub-accounts/{id}',
+    ];
+
+    /**
      * Endpoints that answer 200 for a record in another community but return
      * no member data — reviewed by hand, body recorded in the evidence file.
      *
@@ -887,6 +931,325 @@ class CrossCommunityAccessSweepTest extends TestCase
             array_values(array_diff($known, $acceptedNoChange)),
             'A KNOWN_PERSON_ACCEPTED_NO_CHANGE entry no longer answers 2xx for a foreign person. It is fixed — delete its line.'
         );
+    }
+
+    /**
+     * The write endpoints that validation refused before the community check
+     * could be seen — re-tried with a body validation will accept.
+     *
+     * WHY THIS EXISTS
+     * ---------------
+     * The write sweep above sends an EMPTY body, and 108 of the 366 endpoints it
+     * probed rejected that at validation before any community check could run.
+     * Those are recorded as unproven, never as passes — but "unproven" was the
+     * largest single gap in the whole assessment, and an endpoint that has not
+     * been exercised is exactly where a scoping mistake survives.
+     *
+     * HOW A VALID BODY IS FOUND WITHOUT HAND-WRITING 108 OF THEM
+     * ----------------------------------------------------------
+     * The API's own validation errors name the field that failed, and often the
+     * values it will accept:
+     *
+     *     {"errors":[{"code":"VALIDATION_ERROR",
+     *                 "message":"Invalid reaction_type. Valid types: love, like, …",
+     *                 "field":"reaction_type"}]}
+     *
+     * So the endpoint is asked repeatedly: send a body, read which field it
+     * objected to, add a plausible value for that field, send again. Up to eight
+     * rounds, stopping as soon as validation stops complaining — or as soon as it
+     * complains twice about the same field, which means the value was rejected
+     * rather than missing and guessing further would be dishonest.
+     *
+     * The identifier in the URL is still another community's throughout. A body
+     * that satisfies validation must NOT turn into a write against a record that
+     * belongs to somebody else.
+     *
+     * WHAT COUNTS
+     * -----------
+     * Reaching validation's far side is not itself a pass — it is what makes the
+     * real question askable. The verdicts are the write sweep's: the foreign row
+     * is read before and after, so MUTATED means a confirmed cross-community
+     * write, REFUSED means the endpoint declined a foreign identifier while
+     * holding a body it was happy with, and VALIDATION_UNRESOLVED means we could
+     * not construct an acceptable body and the endpoint remains unproven.
+     */
+    public function test_write_endpoints_refuse_a_foreign_id_even_with_a_valid_body(): void
+    {
+        $this->enableTenantFeatures(['courses', 'podcasts'], $this->testTenantId, self::VICTIM_TENANT_ID);
+
+        $endpoints = $this->probeableWriteEndpoints();
+        $this->assertNotEmpty($endpoints, 'Write-route enumeration produced nothing — this sweep would pass vacuously.');
+
+        $this->victimOwner = User::factory()->forTenant(self::VICTIM_TENANT_ID)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->victimIds = $this->seedRecords(self::VICTIM_TENANT_ID, $this->victimOwner);
+
+        $results = [];
+
+        $run = function (string $actor, callable $selector) use ($endpoints, &$results): void {
+            foreach ($endpoints as $e) {
+                if (! $selector($e) || $e['skip'] !== null) {
+                    continue;
+                }
+
+                $victimId = $this->victimIds[$e['fixture']] ?? null;
+                if ($victimId === null) {
+                    continue;
+                }
+
+                // $e['uri'] ALREADY begins with `api/`. Prefixing another `/api`
+                // produced `/api/api/v2/...`, which matches no route, so all 366
+                // endpoints answered a router 404 — scored as REFUSED, and the
+                // sweep reported a flawless 366/366 in under six seconds. The
+                // assertion below now makes that failure mode impossible.
+                $uri = '/' . ltrim(preg_replace('/\{[^}]+\}/', (string) $victimId, $e['uri']), '/');
+                $table = $this->fixtureTable($e['fixture']);
+                $before = $table ? json_encode(DB::table($table)->where('id', $victimId)->first()) : null;
+
+                $body = [];
+                $tried = [];
+                $status = null;
+                $raw = '';
+                $rounds = 0;
+
+                for ($attempt = 0; $attempt < 8; $attempt++) {
+                    $rounds = $attempt + 1;
+
+                    try {
+                        $response = $this->json($e['method'], $uri, $body, $this->withTenantHeader());
+                        $status = $response->getStatusCode();
+                        $raw = (string) $response->getContent();
+                    } catch (\Throwable $ex) {
+                        $status = 0;
+                        $raw = class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160);
+
+                        break;
+                    }
+
+                    if (! in_array($status, [400, 422], true)) {
+                        break;
+                    }
+
+                    [$field, $message] = $this->firstFailingField($raw);
+                    if ($field === null || isset($tried[$field])) {
+                        break;
+                    }
+
+                    $tried[$field] = true;
+                    $body[$field] = $this->synthesiseValue($field, $message);
+                }
+
+                $after = $table ? json_encode(DB::table($table)->where('id', $victimId)->first()) : null;
+                $rowChanged = $table !== null && $before !== $after;
+
+                [$verdict, $note] = match (true) {
+                    $status >= 200 && $status < 300 && $rowChanged => ['MUTATED', $after === 'null' ? 'the foreign record was DELETED' : 'the foreign record was CHANGED'],
+                    $status >= 200 && $status < 300 => ['ACCEPTED_NO_CHANGE', '2xx for a foreign id with a valid body, row unchanged — should refuse'],
+                    in_array($status, [401, 403, 404, 410], true) => ['REFUSED', ''],
+                    in_array($status, [400, 422], true) => ['VALIDATION_UNRESOLVED', 'no acceptable body could be constructed — still unproven'],
+                    $status === 405 => ['SKIPPED', 'method not allowed at runtime'],
+                    default => ['INCONCLUSIVE', "status {$status}"],
+                };
+
+                $results[] = [
+                    'actor' => $actor,
+                    'method' => $e['method'],
+                    'uri' => $e['uri'],
+                    'status' => $status,
+                    'verdict' => $verdict,
+                    'note' => $note,
+                    'rounds' => $rounds,
+                    'body_sent' => $body,
+                    'body_excerpt' => $verdict === 'REFUSED' ? '' : mb_substr($raw, 0, 260),
+                ];
+            }
+        };
+
+        $this->actAs(['role' => 'member']);
+        $run('member', static fn ($e) => ! str_starts_with($e['prefix'], 'admin/'));
+
+        $this->actAs(['role' => 'admin']);
+        $run('admin', static fn ($e) => str_starts_with($e['prefix'], 'admin/'));
+
+        $tally = ['MUTATED' => 0, 'ACCEPTED_NO_CHANGE' => 0, 'REFUSED' => 0, 'VALIDATION_UNRESOLVED' => 0, 'INCONCLUSIVE' => 0, 'SKIPPED' => 0];
+        foreach ($results as $r) {
+            $tally[$r['verdict']]++;
+        }
+
+        $dir = dirname(__DIR__, 4) . '/.local-docs-archive/security-evidence';
+        if (is_dir($dir) || @mkdir($dir, 0o775, true) || is_dir($dir)) {
+            @file_put_contents($dir . '/cross-community-valid-body-sweep.json', json_encode([
+                'generated_at' => date('c'),
+                'method' => "Every probeable non-GET single-parameter v2 endpoint, requested with another community's record id and a body built by reading the API's own validation errors: send, read which field it objected to, supply a plausible value, send again, up to eight rounds. Stops when validation objects twice to the same field. The foreign row is read before and after.",
+                'tally' => $tally,
+                'results' => $results,
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
+
+        $lines = [
+            '',
+            '=== WRITE SWEEP WITH A VALID BODY ===',
+            sprintf('endpoints attempted                        : %d', count($results)),
+            sprintf('  refused a foreign id holding a good body : %d', $tally['REFUSED']),
+            sprintf('  MUTATED the foreign record               : %d', $tally['MUTATED']),
+            sprintf('  accepted, row unchanged (review)         : %d', $tally['ACCEPTED_NO_CHANGE']),
+            sprintf('  no acceptable body found (still unproven): %d', $tally['VALIDATION_UNRESOLVED']),
+            sprintf('  inconclusive                             : %d', $tally['INCONCLUSIVE']),
+            sprintf('  method not allowed                       : %d', $tally['SKIPPED']),
+            '',
+        ];
+        foreach (['MUTATED', 'ACCEPTED_NO_CHANGE', 'INCONCLUSIVE'] as $bucket) {
+            $rows = array_filter($results, static fn ($r) => $r['verdict'] === $bucket);
+            if ($rows === []) {
+                continue;
+            }
+            $lines[] = $bucket . ':';
+            foreach ($rows as $r) {
+                $lines[] = sprintf(
+                    '  [%s] %-6s %-58s %s  body=%s  %s',
+                    $r['actor'],
+                    $r['method'],
+                    $r['uri'],
+                    $r['status'],
+                    json_encode(array_keys($r['body_sent'])),
+                    preg_replace('/\s+/', ' ', $r['body_excerpt'])
+                );
+            }
+            $lines[] = '';
+        }
+        fwrite(STDERR, implode(PHP_EOL, $lines) . PHP_EOL);
+
+        // A router 404 means the URL matched no route at all, so the endpoint was
+        // never exercised and the "refusal" is worthless. The first version of
+        // this test built `/api/api/v2/...` and scored a flawless 366 of 366 in
+        // under six seconds on exactly that mistake. Refuse to report at all if
+        // it recurs.
+        $unrouted = array_values(array_map(
+            static fn ($r) => $r['method'] . ' ' . $r['uri'],
+            array_filter(
+                $results,
+                static fn ($r) => str_contains($r['body_excerpt'], 'could not be found')
+                    && str_contains($r['body_excerpt'], 'NotFoundHttpException')
+            )
+        ));
+
+        $this->assertSame(
+            [],
+            $unrouted,
+            'Requests did not match any route, so nothing was exercised. The URL is being built '
+            . "wrongly — check the `api/` prefix.\n" . implode("\n", array_slice($unrouted, 0, 5))
+        );
+
+        $this->assertGreaterThan(
+            0,
+            $tally['REFUSED'] + $tally['MUTATED'] + $tally['ACCEPTED_NO_CHANGE'] + $tally['VALIDATION_UNRESOLVED'],
+            'No endpoint produced a usable verdict.'
+        );
+
+        $mutated = array_values(array_map(
+            static fn ($r) => $r['actor'] . ' ' . $r['method'] . ' ' . $r['uri'] . ' -> ' . $r['status'],
+            array_filter($results, static fn ($r) => $r['verdict'] === 'MUTATED')
+        ));
+
+        $this->assertSame(
+            [],
+            $mutated,
+            "A write against another community's record was accepted once the body satisfied "
+            . 'validation. Read cross-community-valid-body-sweep.json.'
+        );
+
+        $accepted = array_values(array_map(
+            static fn ($r) => $r['method'] . ' ' . $r['uri'],
+            array_filter($results, static fn ($r) => $r['verdict'] === 'ACCEPTED_NO_CHANGE')
+        ));
+        sort($accepted);
+        $known = self::KNOWN_VALID_BODY_ACCEPTED;
+        sort($known);
+
+        $this->assertSame(
+            [],
+            array_values(array_diff($accepted, $known)),
+            'A write endpoint newly answers 2xx for a foreign id when given a valid body. Fix it '
+            . 'to refuse, or — only if it provably touches nothing — add it to '
+            . 'KNOWN_VALID_BODY_ACCEPTED with a note.'
+        );
+    }
+
+    /**
+     * The field a validation response objected to, and its message.
+     *
+     * Handles this platform's shape (`errors: [{field, message}]`) and Laravel's
+     * own (`errors: {field: [messages]}`).
+     *
+     * @return array{0:?string,1:string}
+     */
+    private function firstFailingField(string $body): array
+    {
+        $decoded = json_decode($body, true);
+        if (! is_array($decoded) || ! isset($decoded['errors'])) {
+            return [null, ''];
+        }
+
+        $errors = $decoded['errors'];
+
+        if (is_array($errors) && array_is_list($errors)) {
+            foreach ($errors as $error) {
+                if (is_array($error) && ! empty($error['field'])) {
+                    return [(string) $error['field'], (string) ($error['message'] ?? '')];
+                }
+            }
+
+            return [null, ''];
+        }
+
+        if (is_array($errors)) {
+            foreach ($errors as $field => $messages) {
+                if (! is_string($field) || $field === '') {
+                    continue;
+                }
+                $message = is_array($messages) ? (string) reset($messages) : (string) $messages;
+
+                return [$field, $message];
+            }
+        }
+
+        return [null, ''];
+    }
+
+    /**
+     * A plausible value for a field the API asked for.
+     *
+     * Enumerations are read out of the message wherever the API lists them
+     * ("Valid types: love, like, …"), because a guessed enum value is rejected
+     * and wastes the round.
+     */
+    private function synthesiseValue(string $field, string $message): mixed
+    {
+        if (preg_match('/(?:valid(?:\s+\w+)?|allowed|must be one of|one of)\s*:?\s*([a-z0-9_]+(?:\s*,\s*[a-z0-9_]+)+)/i', $message, $m)) {
+            $options = array_map('trim', explode(',', $m[1]));
+            if ($options !== []) {
+                return $options[0];
+            }
+        }
+
+        $lower = mb_strtolower($field);
+
+        return match (true) {
+            str_contains($lower, 'idempotency') || str_contains($lower, 'token') => 'sweep-' . Str::lower(Str::random(16)),
+            str_ends_with($lower, '_ids') || $lower === 'ids' || str_ends_with($lower, 'emails') => [1],
+            str_ends_with($lower, '_id') || $lower === 'id' => 1,
+            str_contains($lower, 'version') || str_contains($lower, 'increment') || str_contains($lower, 'index') => 1,
+            str_contains($lower, 'email') => 'sweep@example.invalid',
+            str_contains($lower, 'language') || str_contains($lower, 'locale') => 'en',
+            str_contains($lower, 'emoji') => '👍',
+            str_starts_with($lower, 'is_') || str_starts_with($lower, 'has_') || str_contains($lower, 'enabled') => true,
+            str_contains($lower, '_at') || str_contains($lower, 'date') || str_contains($lower, 'scheduled') => now()->addDay()->toDateTimeString(),
+            str_contains($lower, 'amount') || str_contains($lower, 'hours') || str_contains($lower, 'credits') || str_contains($lower, 'quantity') => 1,
+            in_array($lower, ['patch', 'permissions', 'tiers', 'rankings', 'slots', 'campaign', 'form', 'invitation', 'retention', 'submission', 'review', 'access_evidence'], true) => [],
+            default => 'Sweep ' . $field,
+        };
     }
 
     /**
