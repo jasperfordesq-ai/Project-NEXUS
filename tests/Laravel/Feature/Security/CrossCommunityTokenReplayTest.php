@@ -6,81 +6,87 @@
 
 namespace Tests\Laravel\Feature\Security;
 
+use App\Core\TenantContext;
 use App\Models\User;
+use App\Services\TokenService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Route;
-use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
- * Can a VALID account in one community be used against ANOTHER community?
+ * Can a VALID login credential from one community be used against ANOTHER?
  *
- * WHY THIS IS ITS OWN TEST
- * ------------------------
- * The four sweeps in CrossCommunityAccessSweepTest and RoleBoundarySweepTest all
- * keep the actor and the community aligned: a tenant-2 member asking for a
- * tenant-999 record. None of them asks the opposite and more direct question —
- * what if the CALLER is from somewhere else?
+ * WHY THIS MATTERS MORE THAN IT LOOKS
+ * -----------------------------------
+ * Every community-owned query is restricted with `tenant_id = <current
+ * community>`, and **the community is resolved from the request, not from the
+ * account**. So if a member of community A could get their request resolved as
+ * community B, those queries would faithfully hand over community B's data —
+ * every one of them working exactly as designed while doing it. No amount of
+ * correct query scoping prevents this. The request itself has to be refused.
  *
- * That matters more than it first appears. Every community-owned query is
- * restricted with `tenant_id = TenantContext::getId()`, and the community is
- * resolved from the request, not from the account. So if a member of community A
- * could get their request resolved as community B, the scoping would faithfully
- * hand them community B's data — and every one of those queries would be working
- * exactly as designed while doing it. The protection cannot come from the
- * queries; it has to come from refusing the request.
+ * 🔴 WHICH CREDENTIAL PATH THIS TESTS, AND WHY THE FIRST VERSION WAS WRONG
+ * ------------------------------------------------------------------------
+ * An earlier version of this test authenticated with `Sanctum::actingAs()` and
+ * described the protection as two checks inside
+ * `App\Http\Middleware\Authenticate`. That description was **wrong**, and an
+ * external review was right to call it out. The middleware reads:
  *
- * It does. `App\Http\Middleware\Authenticate` carries two independent checks:
+ *     foreach ($request->bearerToken() === null ? $guards : [] as $guard) {
  *
- *   1. the authenticated USER's tenant_id must match the resolved community
- *      (`tenant_mismatch`), and
- *   2. the TOKEN's own tenant_id must match it too (`token_tenant_mismatch`),
- *      which still applies to a platform super-admin whose account is allowed
- *      to cross communities.
+ * Those checks therefore run ONLY when there is no bearer token — i.e. for
+ * stateful and test-guard requests. Production logins carry a bearer JWT, so on
+ * the real path that branch never executes at all, and the token-tenant check
+ * inside it is unreachable there.
  *
- * Both are unit-tested in tests/Laravel/Unit/Middleware/AuthenticateTest.php.
- * What was never established is that they cover the WHOLE API: the checks live
- * in one middleware, so any route not running that middleware does not get
- * them. 2,374 of the 2,503 version-2 routes run it. This test proves the claim
- * route by route rather than in principle.
+ * The protection on the real path lives in `App\Core\TenantContext::resolve()`,
+ * which extracts `tenant_id` from the **signature-validated** JWT and compares
+ * it with the requested community, exempting platform administrators. This test
+ * now exercises that path, with a token minted the way login mints one.
  *
- * 🔴 WHICH OF THE TWO CHECKS THIS EXERCISES — read before quoting it.
- * The actor is authenticated with Sanctum::actingAs(), so the request carries no
- * bearer token and check (2), which reads the token's own tenant_id, cannot
- * fire. **This sweep therefore proves check (1) — the account's community — on
- * every route, and does not exercise check (2).** A real issued token was tried
- * first and returns 401 for its own community inside the test harness, which is
- * an artefact of middleware ordering under the test kernel and not production
- * behaviour; chasing it would have proved less than testing what can be tested
- * honestly. Check (2) remains covered by the unit test named above.
+ * A second earlier error, also corrected: a genuinely issued token was observed
+ * returning 401 and that was attributed to "middleware ordering under the test
+ * kernel". The real reasons are that user-login personal access tokens were
+ * deliberately RETIRED (the middleware docblock says so, and rejects them so an
+ * old seven-day token cannot bypass JWT lifetime and revocation), and that
+ * `TenantContext::resolve()` reads `$_SERVER` directly while the test harness
+ * clears it. Both are recorded here so the mistake is not repeated.
  *
- * CONTROL-VERIFIED
- * ----------------
- * A sweep where everything is refused proves nothing if the account is simply
- * broken. So the same account is first exercised against its OWN community and
- * must NOT be refused for a community mismatch.
+ * CONTROL-VERIFIED, AND THE REFUSAL IS ATTRIBUTED
+ * -----------------------------------------------
+ * The same credential is first used against its OWN community and must be
+ * served — otherwise "everything refused" would prove only that the credential
+ * was broken. And each refusal records the community that actually resolved:
+ * `respondWithTenantMismatchError()` is the only thing that sets community id
+ * **0**, so that value is the fingerprint proving the mismatch check is what
+ * refused, rather than some unrelated failure.
  */
 class CrossCommunityTokenReplayTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** The community the actor really belongs to. */
+    /** The community the credential really belongs to. */
     private const ACTOR_TENANT_ID = 999;
 
-    /** Refusal: the request was rejected before any application code ran. */
-    private const REFUSED = [401, 403];
+    /** A refusal: rejected before any application code ran. */
+    private const REFUSED = [400, 401, 403];
 
     /**
      * A success — or a validation error, which proves the request reached form
-     * validation and therefore got past authentication.
+     * validation and therefore got past authentication and tenant resolution.
      */
     private const REACHED_STATUSES = [200, 201, 202, 204, 422];
 
-    public function test_an_account_from_another_community_cannot_act_in_this_one(): void
+    protected function tearDown(): void
     {
-        // Rate limiting would refuse thousands of requests from one client
-        // before the guard could answer, exactly as it did on the first run of
-        // the role-boundary sweep. Rate limiting has its own tests.
+        unset($_SERVER['HTTP_AUTHORIZATION'], $_SERVER['HTTP_X_TENANT_ID']);
+        parent::tearDown();
+    }
+
+    public function test_a_real_login_credential_from_another_community_reaches_nothing(): void
+    {
+        // Rate limiting would refuse thousands of requests from one client before
+        // the tenant check could answer, as it did on the role sweep's first run.
         $this->withoutMiddleware([
             \Illuminate\Routing\Middleware\ThrottleRequests::class,
             \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
@@ -94,87 +100,78 @@ class CrossCommunityTokenReplayTest extends TestCase
             'is_tenant_super_admin' => false,
         ]);
 
-        Sanctum::actingAs($outsider, ['*']);
+        // Minted exactly as the login flow mints it, carrying the community id.
+        $jwt = app(TokenService::class)->generateToken((int) $outsider->id, self::ACTOR_TENANT_ID);
 
         $endpoints = $this->authenticatedEndpoints();
         $this->assertNotEmpty($endpoints, 'Route enumeration produced nothing — this sweep would pass vacuously.');
 
-        // ---- CONTROL: the same account against its OWN community.
-        //
-        // Member-facing GET routes only. The first routes alphabetically are all
-        // under /admin/, which an ordinary member is refused from regardless of
-        // community — so a control drawn from those cannot show whether the
-        // account works, and the first version of this test failed on exactly
-        // that. Read-only, so the control cannot disturb what follows.
+        // ---- CONTROL: the same credential against its OWN community.
         $controlCandidates = array_values(array_filter(
             $endpoints,
             static fn ($e) => $e['method'] === 'GET'
                 && ! str_contains($e['uri'], 'api/v2/admin/')
                 && ! str_contains($e['uri'], '{')
         ));
-
         $this->assertNotEmpty($controlCandidates, 'No member-facing control route found.');
 
-        $controlSample = array_slice($controlCandidates, 0, 25);
         $controlServed = 0;
         $controlDetail = [];
-        foreach ($controlSample as $e) {
-            $status = $this->send($e, (string) self::ACTOR_TENANT_ID)['status'];
-            if (! in_array($status, self::REFUSED, true)) {
+        foreach (array_slice($controlCandidates, 0, 25) as $e) {
+            $r = $this->send($e, (string) self::ACTOR_TENANT_ID, $jwt);
+            if (! in_array($r['status'], self::REFUSED, true)) {
                 $controlServed++;
             }
-            $controlDetail[] = sprintf('%s -> %d', $e['uri'], $status);
+            $controlDetail[] = sprintf('%s -> %d (community %s)', $e['uri'], $r['status'], var_export($r['tenant'], true));
         }
 
         $this->assertGreaterThan(
             0,
             $controlServed,
-            'Every control request was refused, so this account cannot use its OWN community and '
-            . "the sweep below would prove nothing.\n" . implode("\n", array_slice($controlDetail, 0, 8))
+            "This credential cannot use its OWN community, so the sweep below would prove nothing.\n"
+            . implode("\n", array_slice($controlDetail, 0, 8))
         );
 
-        // ---- SWEEP: the same account against a community it does not belong to.
+        // ---- SWEEP: the same credential against a community it does not belong to.
         $results = [];
-        $codes = [];
-
         foreach ($endpoints as $e) {
-            $response = $this->send($e, (string) $this->testTenantId);
-            $status = $response['status'];
-            $body = $response['body'];
+            $r = $this->send($e, (string) $this->testTenantId, $jwt);
 
             [$verdict, $note] = match (true) {
-                in_array($status, self::REACHED_STATUSES, true) => ['REACHED', $status === 422
-                    ? 'validation ran, so authentication let the request through'
-                    : 'the request was served'],
-                in_array($status, self::REFUSED, true) => ['REFUSED', ''],
-                default => ['INCONCLUSIVE', "status {$status}"],
+                in_array($r['status'], self::REACHED_STATUSES, true) => ['REACHED', 'served, or reached validation'],
+                // Routes whose URL carries a pattern constraint raise the
+                // mismatch as an exception rather than returning a response.
+                // The thrown body carries the TENANT_MISMATCH code itself, so
+                // this is the same refusal by the same check — attributed on
+                // that evidence, not assumed from the fact that it threw.
+                $r['status'] === 0 && str_contains($r['body'], 'TENANT_MISMATCH') => ['REFUSED', 'community mismatch refused it (raised as an exception)'],
+                $r['status'] === 0 => ['INCONCLUSIVE', 'request threw without a mismatch code: ' . mb_substr($r['body'], 0, 120)],
+                in_array($r['status'], self::REFUSED, true) && $r['tenant'] === 0 => ['REFUSED', 'community mismatch refused it (resolved community 0)'],
+                in_array($r['status'], self::REFUSED, true) => ['REFUSED_OTHER', "refused with {$r['status']}, but the resolved community was " . var_export($r['tenant'], true)],
+                default => ['INCONCLUSIVE', "status {$r['status']}"],
             };
-
-            if ($verdict === 'REFUSED' && preg_match('/"code"\s*:\s*"([a-z_]*tenant_mismatch)"/', $body, $m)) {
-                $codes[$m[1]] = ($codes[$m[1]] ?? 0) + 1;
-            }
 
             $results[] = [
                 'method' => $e['method'],
                 'uri' => $e['uri'],
-                'status' => $status,
+                'status' => $r['status'],
+                'resolved_tenant' => $r['tenant'],
                 'verdict' => $verdict,
                 'note' => $note,
-                'body_excerpt' => $verdict === 'REFUSED' ? '' : mb_substr($body, 0, 200),
+                'body_excerpt' => str_starts_with($verdict, 'REFUSED') ? '' : mb_substr($r['body'], 0, 200),
             ];
         }
 
-        $tally = ['REFUSED' => 0, 'REACHED' => 0, 'INCONCLUSIVE' => 0];
+        $tally = ['REFUSED' => 0, 'REFUSED_OTHER' => 0, 'REACHED' => 0, 'INCONCLUSIVE' => 0];
         foreach ($results as $r) {
             $tally[$r['verdict']]++;
         }
 
         $dir = dirname(__DIR__, 4) . '/.local-docs-archive/security-evidence';
         if (is_dir($dir) || @mkdir($dir, 0o775, true) || is_dir($dir)) {
-            @file_put_contents($dir . '/cross-community-token-replay.json', json_encode([
+            @file_put_contents($dir . '/cross-community-jwt-replay.json', json_encode([
                 'generated_at' => date('c'),
-                'method' => 'A valid, active, approved MEMBER account belonging to tenant 999, with a real bearer token issued for tenant 999, used against every version-2 route that runs the Authenticate middleware with the tenant header set to tenant 2. 401/403 = refused; 200/201/202/204/422 = REACHED (a finding, because 422 proves authentication was passed).',
-                'refusal_codes' => $codes,
+                'method' => 'A real short-lived JWT, minted for an active approved MEMBER of tenant 999 exactly as the login flow mints it, replayed against every version-2 route that runs the Authenticate middleware with the community header set to tenant 2. The community that actually resolved is recorded for every request: only respondWithTenantMismatchError() sets community 0, so that value attributes the refusal to the mismatch check rather than to an unrelated failure. Control: the same credential against tenant 999 must be served.',
                 'tally' => $tally,
                 'results' => $results,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
@@ -182,26 +179,26 @@ class CrossCommunityTokenReplayTest extends TestCase
 
         $lines = [
             '',
-            '=== CROSS-COMMUNITY TOKEN REPLAY ===',
-            sprintf('authenticated v2 routes swept              : %d', count($endpoints)),
-            sprintf('  refused (401/403)                        : %d', $tally['REFUSED']),
-            sprintf('  REACHED the application                  : %d', $tally['REACHED']),
-            sprintf('  inconclusive                             : %d', $tally['INCONCLUSIVE']),
-            '',
-            'refusal codes observed: ' . (($codes === []) ? '(none matched)' : json_encode($codes)),
+            '=== CROSS-COMMUNITY REPLAY OF A REAL LOGIN CREDENTIAL ===',
+            sprintf('authenticated v2 routes swept                       : %d', count($endpoints)),
+            sprintf('  refused, community mismatch attributed (id 0)     : %d', $tally['REFUSED']),
+            sprintf('  refused for some other reason (reported, not counted): %d', $tally['REFUSED_OTHER']),
+            sprintf('  REACHED the application                           : %d', $tally['REACHED']),
+            sprintf('  inconclusive                                      : %d', $tally['INCONCLUSIVE']),
+            sprintf('control requests served against its own community   : %d of 25', $controlServed),
             '',
         ];
-        foreach (['REACHED', 'INCONCLUSIVE'] as $bucket) {
+        foreach (['REACHED', 'REFUSED_OTHER', 'INCONCLUSIVE'] as $bucket) {
             $rows = array_filter($results, static fn ($r) => $r['verdict'] === $bucket);
             if ($rows === []) {
                 continue;
             }
             $lines[] = $bucket . ':';
-            foreach (array_slice($rows, 0, 40) as $r) {
-                $lines[] = sprintf('  %-6s %-64s %s  %s', $r['method'], $r['uri'], $r['status'], preg_replace('/\s+/', ' ', $r['body_excerpt']));
+            foreach (array_slice($rows, 0, 25) as $r) {
+                $lines[] = sprintf('  %-6s %-60s %s  %s', $r['method'], $r['uri'], $r['status'], preg_replace('/\s+/', ' ', $r['note'] . ' ' . $r['body_excerpt']));
             }
-            if (count($rows) > 40) {
-                $lines[] = '  ... and ' . (count($rows) - 40) . ' more (see the evidence file)';
+            if (count($rows) > 25) {
+                $lines[] = '  ... and ' . (count($rows) - 25) . ' more (see the evidence file)';
             }
             $lines[] = '';
         }
@@ -215,41 +212,59 @@ class CrossCommunityTokenReplayTest extends TestCase
         $this->assertSame(
             [],
             $reached,
-            'An account belonging to another community reached the application. This is a '
-            . 'community-separation breach: every tenant-scoped query would then run correctly '
-            . "against the WRONG community. Read cross-community-token-replay.json.\n"
-            . implode("\n", array_slice($reached, 0, 20))
+            "A credential from another community reached the application. Every tenant-scoped query "
+            . "would then run correctly against the WRONG community.\n" . implode("\n", array_slice($reached, 0, 20))
         );
     }
 
     /**
      * @param  array<string,mixed>  $endpoint
-     * @return array{status:int,body:string}
+     * @return array{status:int,body:string,tenant:mixed}
      */
-    private function send(array $endpoint, string $tenantHeader): array
+    private function send(array $endpoint, string $tenantHeader, string $jwt): array
     {
         $uri = '/' . ltrim(preg_replace('/\{[^}]+\}/', '1', $endpoint['uri']), '/');
+
+        // TenantContext::resolve() reads these superglobals directly, and the
+        // harness clears them in setUp — without this the credential is
+        // invisible to the very check being tested.
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $jwt;
+        $_SERVER['HTTP_X_TENANT_ID'] = $tenantHeader;
+        TenantContext::reset();
 
         try {
             $response = $this->json($endpoint['method'], $uri, [], [
                 'X-Tenant-ID' => $tenantHeader,
                 'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwt,
             ]);
 
-            return ['status' => $response->getStatusCode(), 'body' => (string) $response->getContent()];
+            return [
+                'status' => $response->getStatusCode(),
+                'body' => (string) $response->getContent(),
+                'tenant' => TenantContext::getId(),
+            ];
         } catch (\Throwable $e) {
-            // An exception is not a refusal. Reported as inconclusive by status 0.
-            return ['status' => 0, 'body' => class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 160)];
+            return [
+                'status' => 0,
+                'body' => class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 160),
+                'tenant' => TenantContext::getId(),
+            ];
         }
     }
 
     /**
      * Every version-2 route that actually runs the Authenticate middleware.
      *
-     * Read through gatherRouteMiddleware() so that `->withoutMiddleware(...)`
-     * exclusions are honoured — the declared stack still lists middleware that
-     * has been removed, which produced 48 phantom breaches on the first run of
-     * the role-boundary sweep.
+     * Read through gatherRouteMiddleware() so `->withoutMiddleware(...)`
+     * exclusions are honoured; the declared stack still lists middleware that
+     * has been removed, which produced 48 phantom breaches on the role sweep's
+     * first run.
+     *
+     * 🔴 Platform-tier prefixes are EXCLUDED: they are refused by their own gate
+     * for a member whatever community they belong to, so they cannot show
+     * whether the community check fired. RoleBoundarySweepTest covers them. The
+     * reported total is therefore of *selected* routes, not of every route.
      *
      * @return list<array<string,mixed>>
      */
@@ -277,9 +292,6 @@ class CrossCommunityTokenReplayTest extends TestCase
                 continue;
             }
 
-            // Platform-tier routes are refused by their own gate for a member
-            // regardless of community, so they cannot show whether the
-            // community check fired. RoleBoundarySweepTest covers them.
             $path = substr($uri, strlen('api/v2/'));
             if (str_starts_with($path, 'admin/super/') || str_starts_with($path, 'super-admin/')) {
                 continue;
