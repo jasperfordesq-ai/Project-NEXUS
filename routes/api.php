@@ -4328,9 +4328,16 @@ Route::middleware('partner.api:webhooks.manage')->group(function () {
 // ============================================
 // AG59 — Paid Regional Analytics product
 // ============================================
-// Partner-facing endpoints: auth via subscription_token (Bearer header or ?token=)
-// — controller resolves the token directly, so no Sanctum middleware here.
-Route::prefix('partner-analytics')->group(function () {
+// Partner-facing endpoints: auth via a per-subscription token presented as a
+// Bearer header ONLY. `resolveSubscription()` reads `$request->bearerToken()`
+// and nothing else — a previous version of this comment also offered `?token=`,
+// which the controller has never accepted and must not, because a credential in
+// a query string is recorded in web-server access logs, browser history and
+// Referer headers. The controller resolves the token itself, so there is no
+// Sanctum middleware here; the rate limit is therefore the only thing standing
+// between an unauthenticated caller and repeated token guesses, and these
+// routes had none until 2026-09-10.
+Route::middleware('throttle:nexus-route-30-per-1m')->prefix('partner-analytics')->group(function () {
     Route::get('/me/dashboard', [\App\Http\Controllers\Api\RegionalAnalyticsPartnerController::class, 'dashboard']);
     Route::get('/me/reports', [\App\Http\Controllers\Api\RegionalAnalyticsPartnerController::class, 'reports']);
     Route::get('/me/reports/{id}/download', [\App\Http\Controllers\Api\RegionalAnalyticsPartnerController::class, 'downloadReport'])
