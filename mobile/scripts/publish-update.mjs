@@ -78,6 +78,17 @@ if (status.status !== 0 || status.stdout.trim() || (requiresMain && branch.stdou
 }
 
 const sha = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim();
+
+/**
+ * 🔴 On Windows this runs through a shell (`npx` is a .cmd), and `spawnSync` with
+ * `shell: true` joins the arguments with spaces WITHOUT quoting them. The message
+ * `NEXUS <sha>` therefore reached eas-cli as two arguments and the very first
+ * production publish (2026-09-10) died with "Unexpected argument: d912a62f8…" before
+ * anything was uploaded. Every argument is quoted when a shell is in the way; on a
+ * POSIX host there is no shell and the array is passed through untouched.
+ */
+const useShell = process.platform === 'win32';
+const quoteForShell = (value) => (useShell ? `"${String(value).replace(/"/g, '\\"')}"` : value);
 const result = spawnSync(
   'npx',
   [
@@ -89,10 +100,11 @@ const result = spawnSync(
     `NEXUS ${sha}`,
     '--environment',
     CHANNEL_ENVIRONMENTS[channel],
-  ],
+    '--non-interactive',
+  ].map(quoteForShell),
   {
     stdio: 'inherit',
-    shell: process.platform === 'win32',
+    shell: useShell,
   }
 );
 process.exit(result.status ?? 1);
