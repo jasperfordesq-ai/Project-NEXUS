@@ -190,6 +190,17 @@ fi
 # Both values are read from the FINISHED bundle, not from the sources that should
 # have produced them. The manifest and resources inside an .aab are protobuf, but
 # the strings are stored verbatim, so a byte search is a reliable check.
+#
+# 🔴 `grep -c … >/dev/null`, never `grep -q`. This script runs with pipefail, and
+# `grep -q` exits the moment it matches — so `unzip -p` is still writing, takes a
+# broken pipe (exit 141), and the pipeline reports FAILURE for a value that is
+# present. The first run of this guard refused a correct version code 9 bundle
+# exactly that way. `-c` reads the whole stream and exits 1 only on zero matches.
+# `-F` because the pattern is a version string: as a regex, "1.4.0" also matches
+# "1x4y0", and a few megabytes of protobuf contain plenty of those.
+in_bundle() { # in_bundle <entry> <pattern>
+  unzip -p "$AAB" "$1" | grep -a -F -c -- "$2" >/dev/null
+}
 APP_VERSION="$(node -e "process.stdout.write(require('./app.json').expo.version)")"
 EXPECTED_CHANNEL="$(node -e "process.stdout.write(require('./app.json').expo.updates.requestHeaders['expo-channel-name'])")"
 if [ -z "$EXPECTED_CHANNEL" ]; then
@@ -197,16 +208,16 @@ if [ -z "$EXPECTED_CHANNEL" ]; then
   echo "would listen to no update channel and could never receive a fix." >&2
   exit 1
 fi
-if ! unzip -p "$AAB" base/manifest/AndroidManifest.xml | grep -a -q "expo-channel-name"; then
+if ! in_bundle base/manifest/AndroidManifest.xml "expo-channel-name"; then
   echo "ERROR: the bundle's manifest carries no update channel header." >&2
   echo "Members on this build could never receive an over-the-air update." >&2
   exit 1
 fi
-if ! unzip -p "$AAB" base/manifest/AndroidManifest.xml | grep -a -q "\"expo-channel-name\":\"${EXPECTED_CHANNEL}\""; then
+if ! in_bundle base/manifest/AndroidManifest.xml "\"expo-channel-name\":\"${EXPECTED_CHANNEL}\""; then
   echo "ERROR: the bundle's update channel is not '${EXPECTED_CHANNEL}'." >&2
   exit 1
 fi
-if ! unzip -p "$AAB" base/resources.pb | grep -a -q "${APP_VERSION}"; then
+if ! in_bundle base/resources.pb "${APP_VERSION}"; then
   echo "ERROR: the bundle's runtime version is not ${APP_VERSION} (app.json version)." >&2
   echo "Updates published for ${APP_VERSION} would be refused by this build." >&2
   exit 1
