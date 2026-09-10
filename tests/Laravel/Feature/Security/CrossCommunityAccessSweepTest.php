@@ -172,7 +172,12 @@ class CrossCommunityAccessSweepTest extends TestCase
         'user' => ['model' => User::class],
         'listing' => ['model' => \App\Models\Listing::class],
         'event' => ['model' => \App\Models\Event::class],
-        'group' => ['model' => \App\Models\Group::class],
+        // 'attributes' pins factory fields that are otherwise randomised and
+        // would make the CONTROL flap: a private group 404s its own
+        // /similar endpoint, an inactive organisation 404s its own page, and
+        // the endpoint then swings between REFUSED and INCONCLUSIVE from run
+        // to run. Observed 2026-09-10 (98/52 → 97/53 across two runs).
+        'group' => ['model' => \App\Models\Group::class, 'attributes' => ['visibility' => 'public']],
         'goal' => ['model' => \App\Models\Goal::class],
         'poll' => ['model' => \App\Models\Poll::class],
         'post' => ['model' => \App\Models\Post::class],
@@ -188,7 +193,7 @@ class CrossCommunityAccessSweepTest extends TestCase
         'member_availability' => ['model' => \App\Models\MemberAvailability::class],
         'account_relationship' => ['model' => \App\Models\AccountRelationship::class],
         'vol_opportunity' => ['model' => \App\Models\VolOpportunity::class],
-        'vol_organization' => ['model' => \App\Models\VolOrganization::class],
+        'vol_organization' => ['model' => \App\Models\VolOrganization::class, 'attributes' => ['status' => 'active']],
         'vol_expense' => ['model' => \App\Models\VolExpense::class],
         'vol_giving_day' => ['model' => \App\Models\VolGivingDay::class],
         'exchange_request' => ['model' => \App\Models\ExchangeRequest::class],
@@ -769,7 +774,7 @@ class CrossCommunityAccessSweepTest extends TestCase
                 }
 
                 $modelClass = $spec['model'];
-                $attributes = $this->ownerAttributesFor($modelClass, $owner);
+                $attributes = array_merge($this->ownerAttributesFor($modelClass, $owner), $spec['attributes'] ?? []);
 
                 foreach ($spec['needs'] ?? [] as $column => $parentKey) {
                     if (! isset($ids[$parentKey])) {
