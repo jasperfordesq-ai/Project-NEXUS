@@ -110,6 +110,51 @@ fi
 
 #
 # =============================================================================
+# GATE C — Native push producer inventory
+# =============================================================================
+# mobile/config/native-push-producer-inventory.json pins every
+# NotificationDispatcher call site by FILE AND LINE. So any edit that adds or
+# removes lines ABOVE such a call in a tracked file makes it stale — even when
+# no producer changed at all — and that reds `PHP Tests (shard 1)`, and through
+# it `PHP Checks` and `Release Gate`.
+#
+# Added 2026-09-10 after this happened TWICE in one day, the second time to
+# someone who had already written the trap down in a handoff document. A
+# one-second check is more reliable than remembering.
+#
+# Runs only when app/ PHP is staged. Needs the app container, because the script
+# uses nikic/php-parser from vendor/ and there is no PHP on the host. If Docker
+# or the container is unavailable this gate SKIPS with a notice — CI remains the
+# backstop, exactly as gate (B) does for php/phpunit.
+#
+# 🔴 Like gate (B), this inspects the WORKING TREE rather than staged content,
+# so a staged-but-then-edited file is judged on what is on disk.
+
+STAGED_APP_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^app/.*\.php$' || true)
+
+if [ -n "$STAGED_APP_PHP" ]; then
+  if command -v docker >/dev/null 2>&1 && docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^nexus-php-app$'; then
+    # Relative path deliberately: an absolute /var/www/... argument gets mangled
+    # by MSYS path conversion when the hook runs under Git Bash on Windows.
+    PUSH_OUT=$(docker exec nexus-php-app php mobile/scripts/audit-native-push-producers.php --check 2>&1)
+    if [ $? -ne 0 ]; then
+      echo "" >&2
+      echo "$PUSH_OUT" | tail -3 >&2
+      echo "" >&2
+      echo "pre-commit: native push producer inventory is STALE — commit BLOCKED." >&2
+      echo "  You changed app/ PHP above a NotificationDispatcher call, so the" >&2
+      echo "  committed file-and-line references no longer match." >&2
+      echo "  Fix it and stage the result:" >&2
+      echo "    docker exec nexus-php-app php mobile/scripts/audit-native-push-producers.php --write" >&2
+      echo "    git add mobile/config/native-push-producer-inventory.json" >&2
+      exit 1
+    fi
+  else
+    echo "pre-commit: push producer inventory NOT checked (app container unavailable) — CI will." >&2
+  fi
+fi
+
+# =============================================================================
 # GATE B — Pre-commit verify-gate (test batches)
 # =============================================================================
 # Auto-generated/coverage test batches kept landing on `main` broken (failing

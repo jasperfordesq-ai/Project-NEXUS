@@ -80,6 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The pre-commit hook gained a third gate: the native push producer inventory.** When `app/**.php` is staged it runs `audit-native-push-producers.php --check` in the app container — about a second — and blocks with the exact `--write` command if the inventory has gone stale. Added because that inventory pins `NotificationDispatcher` call sites **by file and line**, so any edit adding or removing lines above one makes it stale even when no producer changed, and that reds `PHP Tests (shard 1)`, `PHP Checks` and `Release Gate` together. It happened twice on 2026-09-10, the second time to someone who had already written the trap down in a handoff. Skips with a notice when Docker or the container is unavailable, as gate B does for phpunit; CI remains the backstop. Verified by deliberately shifting a call site and confirming the commit was blocked.
+
 - **The mobile Create Course, Create Job, Create Opportunity and Podcast Studio forms are laid out like Create Listing.** The owner named Create Listing as the form that looks right and the others as "really badly formatted": a single undivided column of up to twenty fields, a save button buried in the middle of a card, and no summary of what has been chosen. Each now opens with a hero card (module icon, eyebrow, title, one-line purpose, and summary tiles that echo the choices as they are made), groups its fields into titled sections with an icon (`components/ui/FormSection`), and keeps its primary action in the sticky footer that Create Listing and Create Event already had. Course titles that are missing are now also flagged under the field, not only in a toast that fades.
 
 ### Fixed
