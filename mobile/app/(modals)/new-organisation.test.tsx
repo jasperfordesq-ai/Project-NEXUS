@@ -148,6 +148,10 @@ jest.mock('@/lib/haptics', () => ({
 }));
 
 jest.mock('@/components/ui/AppTopBar', () => 'View');
+jest.mock('@/components/ModalErrorBoundary', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 // Stable AppToast mock — fns created inside the factory closure.
 jest.mock('@/components/ui/AppToast', () => {
@@ -247,14 +251,16 @@ describe('NewOrganisationScreen', () => {
     fireEvent.press(getByText('Submit for review'));
 
     expect(mockCreateOrganisation).toHaveBeenCalledTimes(1);
-    expect(name.props.editable).toBe(false);
-    expect(description.props.editable).toBe(false);
-    expect(email.props.editable).toBe(false);
-    expect(website.props.editable).toBe(false);
+    await waitFor(() => {
+      expect(getByPlaceholderText('Community skills network').props.isDisabled).toBe(true);
+      expect(getByPlaceholderText('Tell members what your organisation does and how volunteers can help.').props.isDisabled).toBe(true);
+      expect(getByPlaceholderText('contact@example.org').props.isDisabled).toBe(true);
+      expect(getByPlaceholderText('https://example.org').props.isDisabled).toBe(true);
+    });
 
     rejectRequest(new Error('response lost'));
-    await waitFor(() => expect(name.props.editable).toBe(true));
-    expect(name.props.value).toBe('Neighbourhood Skills Network');
+    await waitFor(() => expect(getByPlaceholderText('Community skills network').props.isDisabled).toBe(false));
+    expect(getByPlaceholderText('Community skills network').props.value).toBe('Neighbourhood Skills Network');
 
     mockCreateOrganisation.mockResolvedValueOnce({ data: { id: 44, name: 'Neighbourhood Skills Network' } });
     fireEvent.press(getByText('Submit for review'));

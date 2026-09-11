@@ -28,6 +28,7 @@ class CreateOrganisationRequest extends FormRequest
             // org page, so other schemes (javascript:, data:) are a link-injection
             // hole. Mirrors UpdateOrganisationRequest and the service-level check.
             'website' => ['nullable', 'url:http,https', 'max:500'],
+            'idempotency_key' => ['nullable', 'string', 'min:8', 'max:191'],
         ];
     }
 }

@@ -43,6 +43,7 @@
     "dev:frontend": "npm --prefix react-frontend run dev:laravel -- --host 127.0.0.1 --port 5173 --strictPort",
     "dev:frontend:docker": "docker compose --profile docker-frontend up -d frontend",
     "test:e2e": "npx playwright test",
+    "test:mfa:journeys": "node scripts/test-mfa-journeys.mjs",
     "test:events": "node scripts/test-events.mjs",
     "test:events:php": "node scripts/test-events.mjs --php-only",
     "test:events:react": "node scripts/test-events.mjs --react-only",

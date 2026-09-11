@@ -583,8 +583,14 @@ class SocialAuthService
         int $authenticationStartedAt,
         string $browserChallenge,
         ?array $identityLink = null,
-        bool $upstreamMfaVerified = false
+        bool $upstreamMfaVerified = false,
+        ?int $upstreamMfaVerifiedAt = null,
+        ?array $ssoProviderContext = null
     ): array {
+        $ssoProviderContext = str_starts_with($provider, 'sso:') ? ($ssoProviderContext ?? []) : null;
+        if ($identityLink !== null && $ssoProviderContext !== null) {
+            $identityLink['sso_provider_context'] = $ssoProviderContext;
+        }
         if ($userId < 1 || $tenantId < 1 || $authenticationStartedAt < 1) {
             throw new \InvalidArgumentException('OAuth login issuance context is invalid.');
         }
@@ -599,7 +605,9 @@ class SocialAuthService
                 $authenticationStartedAt,
                 $browserChallenge,
                 $identityLink,
-                $upstreamMfaVerified
+                $upstreamMfaVerified,
+                $upstreamMfaVerifiedAt,
+                $ssoProviderContext
             );
         }
 
@@ -608,9 +616,18 @@ class SocialAuthService
             $tenantId,
             $authenticationStartedAt,
             null,
-            $upstreamMfaVerified
+            $upstreamMfaVerified,
+            $upstreamMfaVerifiedAt,
+            $ssoProviderContext
         );
 
+        if (($issuance['status'] ?? null) === 'mfa_challenge') {
+            return ['status' => 'issued', 'callback_code' => $this->cacheCallbackCode([
+                'kind' => 'mfa', 'provider' => $provider, 'is_new' => $isNew,
+                'tenant_id' => $tenantId, 'browser_challenge' => $browserChallenge,
+                'mfa' => $issuance['mfa'],
+            ])];
+        }
         if (($issuance['status'] ?? null) !== 'credentials_issued') {
             return $issuance;
         }
@@ -672,7 +689,9 @@ class SocialAuthService
         int $authenticationStartedAt,
         string $browserChallenge,
         array $identityLink,
-        bool $upstreamMfaVerified = false
+        bool $upstreamMfaVerified = false,
+        ?int $upstreamMfaVerifiedAt = null,
+        ?array $ssoProviderContext = null
     ): array {
         $identityProvider = (string) ($identityLink['provider'] ?? '');
         $expectedIdentityProvider = str_starts_with($provider, 'sso:')
@@ -703,6 +722,8 @@ class SocialAuthService
                 'authentication_started_at' => $authenticationStartedAt,
                 'identity_link' => $identityLink,
                 'upstream_mfa_verified' => $upstreamMfaVerified,
+                'upstream_mfa_verified_at' => $upstreamMfaVerifiedAt,
+                'sso_provider_context' => $ssoProviderContext,
             ],
         ]);
 
@@ -721,14 +742,18 @@ class SocialAuthService
         int $tenantId,
         int $authenticationStartedAt,
         ?array $identityLink,
-        bool $upstreamMfaVerified = false
+        bool $upstreamMfaVerified = false,
+        ?int $upstreamMfaVerifiedAt = null,
+        ?array $ssoProviderContext = null
     ): array {
         return DB::transaction(function () use (
             $userId,
             $tenantId,
             $authenticationStartedAt,
             $identityLink,
-            $upstreamMfaVerified
+            $upstreamMfaVerified,
+            $upstreamMfaVerifiedAt,
+            $ssoProviderContext
         ): array {
             $lockedRow = DB::table('users')
                 ->where('id', $userId)
@@ -744,31 +769,30 @@ class SocialAuthService
             }
 
             $user = (array) $lockedRow;
+            if ($ssoProviderContext !== null) {
+                SsoOidcService::assertPrivilegedProviderTrusted($user, $ssoProviderContext);
+            }
             $gateBlock = $this->tenantSettings->checkLoginGatesForUser($user);
             if ($gateBlock !== null) {
                 return ['status' => 'gate_blocked', 'gate' => $gateBlock];
             }
 
-            // The OAuth callback page cannot complete the established local
-            // TOTP challenge contract, so enabled untrusted TOTP fails closed.
-            if (
-                $this->totp->isEnabled($userId, $tenantId)
-                && !$this->totp->isTrustedDevice($userId, null, $tenantId)
-                && !$upstreamMfaVerified
-            ) {
-                return ['status' => 'two_factor_required'];
-            }
-
-            $isAdmin = in_array((string) ($user['role'] ?? ''), ['admin', 'tenant_admin', 'org_admin', 'super_admin'], true)
-                || !empty($user['is_super_admin'])
-                || !empty($user['is_tenant_super_admin']);
-            if (
-                (bool) config('auth.force_admin_2fa', false)
-                && $isAdmin
-                && !$this->totp->isEnabled($userId, $tenantId)
-                && !$upstreamMfaVerified
-            ) {
-                return ['status' => 'two_factor_setup_required'];
+            $required = app(\App\Services\TwoFactorPolicy::class)->required($user);
+            $upstreamMfaVerified = $upstreamMfaVerified && $upstreamMfaVerifiedAt !== null
+                && $upstreamMfaVerifiedAt > 0 && $upstreamMfaVerifiedAt <= time();
+            $assurance = $upstreamMfaVerified
+                ? ['mfa_method' => 'sso', 'mfa_verified_at' => $upstreamMfaVerifiedAt] : [];
+            $enabled = $this->totp->isEnabled($userId, $tenantId);
+            if (!$upstreamMfaVerified && ($required || ($enabled && !$this->totp->isTrustedDevice($userId, null, $tenantId)))) {
+                $methods = $enabled ? ['totp', 'backup_code'] : ['totp_setup'];
+                $challenge = app(\App\Services\TwoFactorChallengeManager::class)->create(
+                    $userId, $methods, $tenantId, $authenticationStartedAt, $identityLink, $ssoProviderContext
+                );
+                return ['status' => 'mfa_challenge', 'mfa' => [
+                    'requires_2fa' => $enabled, 'requires_2fa_setup' => !$enabled,
+                    'two_factor_token' => $challenge, 'methods' => $methods,
+                    'allow_trusted_device' => !$required, 'tenant_id' => $tenantId,
+                ]];
             }
 
             if ($identityLink !== null) {
@@ -788,10 +812,11 @@ class SocialAuthService
                     'is_super_admin' => !empty($user['is_super_admin']),
                     'is_tenant_super_admin' => !empty($user['is_tenant_super_admin']),
                     'is_god' => !empty($user['is_god']),
+                    ...$assurance,
                 ],
                 false
             );
-            $refreshToken = $this->tokens->generateRefreshToken($userId, $tenantId, false);
+            $refreshToken = $this->tokens->generateRefreshToken($userId, $tenantId, false, $assurance);
 
             return [
                 'status' => 'credentials_issued',
@@ -807,7 +832,7 @@ class SocialAuthService
      * @param array<string,mixed> $currentUser
      * @param array<string,mixed> $identityLink
      */
-    private function applyCallbackIdentityLink(
+    public function applyCallbackIdentityLink(
         array $currentUser,
         array $identityLink,
         int $authenticationStartedAt
@@ -815,6 +840,9 @@ class SocialAuthService
         $userId = (int) ($currentUser['id'] ?? 0);
         $tenantId = (int) ($currentUser['tenant_id'] ?? 0);
         $provider = (string) ($identityLink['provider'] ?? '');
+        if (str_starts_with($provider, 'sso:')) {
+            SsoOidcService::assertPrivilegedProviderTrusted($currentUser, $identityLink['sso_provider_context'] ?? []);
+        }
         $providerUserId = (string) ($identityLink['provider_user_id'] ?? '');
         $linkStartedAt = (int) ($identityLink['authentication_started_at'] ?? 0);
         $rawPayload = $identityLink['raw_payload'] ?? null;
@@ -975,6 +1003,10 @@ class SocialAuthService
                     Cache::forget($cacheKey);
                     throw new \RuntimeException('OAuth callback code is invalid or expired.');
                 }
+            } elseif ($kind === 'mfa') {
+                if (!is_array($payload['mfa'] ?? null) || empty($payload['mfa']['two_factor_token'])) {
+                    throw new \RuntimeException('OAuth callback code is invalid or expired.');
+                }
             } elseif (
                 $kind !== 'pending_identity'
                 || !is_array($pending)
@@ -994,6 +1026,10 @@ class SocialAuthService
                 throw new \RuntimeException('OAuth callback code is invalid or expired.');
             }
 
+            if ($kind === 'mfa') {
+                $result = $payload['mfa'];
+                return $result;
+            }
             if ($kind === 'pending_identity') {
                 /** @var array<string,mixed> $pending */
                 /** @var array<string,mixed> $identityLink */
@@ -1003,8 +1039,13 @@ class SocialAuthService
                     (int) $payload['tenant_id'],
                     (int) $pending['authentication_started_at'],
                     $identityLink,
-                    (bool) ($pending['upstream_mfa_verified'] ?? false)
+                    (bool) ($pending['upstream_mfa_verified'] ?? false),
+                    isset($pending['upstream_mfa_verified_at']) ? (int) $pending['upstream_mfa_verified_at'] : null,
+                    $pending['sso_provider_context'] ?? null
                 );
+                if (($issuance['status'] ?? null) === 'mfa_challenge') {
+                    return $issuance['mfa'];
+                }
                 if (($issuance['status'] ?? null) !== 'credentials_issued') {
                     throw new \RuntimeException('OAuth callback code is invalid or expired.');
                 }

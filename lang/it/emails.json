@@ -677,5 +677,9 @@
     "subject": "La certificazione di tutela di :name ? scaduta",
     "title": "Certificazione di tutela scaduta",
     "body": "La certificazione comunitaria di tutela di :name in :community ? scaduta il :date. Il contatto protetto rimane bloccato finch? il personale autorizzato non la rinnova."
+  },
+  "mfa_changed": {
+    "subject": "La sicurezza del tuo account è cambiata",
+    "body": "I codici di recupero o le impostazioni di autenticazione sono cambiati. Se non hai richiesto la modifica, contatta subito l’amministratore della tua comunità."
   }
 }

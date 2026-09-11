@@ -39,7 +39,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config');
 
@@ -55,7 +57,9 @@ class AdminConfigControllerTest extends TestCase
             'password_hash' => null,
             'password' => null,
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         foreach ([$passwordUser, $passkeyOnlyUser] as $index => $user) {
             DB::table('webauthn_credentials')->insert([
@@ -95,7 +99,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_events_configuration_is_tenant_scoped_versioned_and_audited(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         DB::table('tenants')->where('id', $this->testTenantId)->update([
             'configuration' => json_encode(['branding' => ['theme' => 'preserved']]),
         ]);
@@ -142,7 +148,9 @@ class AdminConfigControllerTest extends TestCase
         $this->apiGet('/v2/admin/config/events')->assertForbidden();
 
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         DB::table('tenants')->where('id', $this->testTenantId)->update([
             'configuration' => json_encode(['events' => ['config_version' => 3]]),
         ]);
@@ -157,7 +165,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_events_configuration_rejects_unsafe_dependencies(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPut('/v2/admin/config/events', [
             'version' => 0,
@@ -172,7 +182,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_events_restore_removes_only_event_overrides_and_exposes_audit_history(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         DB::table('tenants')->where('id', $this->testTenantId)->update([
             'configuration' => json_encode([
                 'branding' => ['theme' => 'preserved'],
@@ -226,7 +238,9 @@ class AdminConfigControllerTest extends TestCase
             'user_id' => $admin->id,
             'federated_visibility' => 'listed',
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $payload = [
             'version' => 0,
@@ -251,7 +265,9 @@ class AdminConfigControllerTest extends TestCase
         // VOL-BE-010: the missing-settings validation message must be translated,
         // not a hardcoded English literal.
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPut('/v2/admin/config/volunteering/bulk', []);
 
@@ -263,7 +279,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_group_config_validation_errors_are_translated(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $missingKey = $this->apiPut('/v2/admin/config/groups', ['value' => true]);
         $missingKey->assertStatus(422);
@@ -298,7 +316,9 @@ class AdminConfigControllerTest extends TestCase
     {
         $this->resetAuthenticationConfig();
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/authentication');
 
@@ -307,12 +327,14 @@ class AdminConfigControllerTest extends TestCase
         $response->assertJsonPath('data.defaults', AuthenticationConfigurationService::DEFAULTS);
     }
 
-    public function test_authentication_config_endpoints_reject_ordinary_admins(): void
+    public function test_ordinary_admins_can_read_policy_but_cannot_change_passkey_controls(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
-        $this->apiGet('/v2/admin/config/authentication')->assertStatus(403);
+        $this->apiGet('/v2/admin/config/authentication')->assertOk()->assertJsonPath('data.writable_keys', ['two_factor.require_members']);
         $this->apiPut('/v2/admin/config/authentication/bulk', [
             'settings' => [
                 AuthenticationConfigurationService::CONFIG_PASSKEYS_CONDITIONAL_AUTOFILL => false,
@@ -324,7 +346,9 @@ class AdminConfigControllerTest extends TestCase
     {
         $this->resetAuthenticationConfig();
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->mock(RedisCache::class, function ($mock): void {
             $mock->shouldReceive('delete')
@@ -369,7 +393,9 @@ class AdminConfigControllerTest extends TestCase
     {
         $this->resetAuthenticationConfig();
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPut('/v2/admin/config/authentication/bulk', [
             'settings' => [
@@ -394,7 +420,9 @@ class AdminConfigControllerTest extends TestCase
     {
         $this->resetAuthenticationConfig();
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $otherTenantId = $this->testTenantId === 1 ? 999999 : 1;
 
         DB::table('user_trusted_devices')->insert([
@@ -471,7 +499,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_cache_stats_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/cache/stats');
 
@@ -496,7 +526,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_clear_cache_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/cache/clear');
 
@@ -520,7 +552,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_settings_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/settings');
 
@@ -541,7 +575,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_settings_validate_every_field_before_mutating_tenant_routing(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $originalSlug = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('slug');
 
         $this->apiPut('/v2/admin/settings', [
@@ -558,7 +594,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_settings_reject_reserved_tenant_slug(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPut('/v2/admin/settings', ['slug' => 'about'])
             ->assertStatus(422);
@@ -567,7 +605,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_routing_setting_schedules_authoritative_prerender_refresh(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
             $mock->shouldReceive('refreshAllOrFail')->once()->andReturn(987);
         });
@@ -582,7 +622,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_tenant_admin_cannot_change_tenant_routing_identity(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPut('/v2/admin/settings', ['domain' => 'tenant-admin.example'])
             ->assertStatus(403);
@@ -591,7 +633,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_platform_service_host_cannot_be_claimed_as_tenant_domain(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPut('/v2/admin/settings', ['domain' => 'api.project-nexus.ie'])
             ->assertStatus(422);
@@ -603,7 +647,9 @@ class AdminConfigControllerTest extends TestCase
             'is_super_admin' => true,
         ]);
         $member = User::factory()->forTenant($this->testTenantId)->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         DB::table('tenants')->where('id', $this->testTenantId)->update([
             'domain' => 'current-passkey.example.test',
         ]);
@@ -635,7 +681,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_render_affecting_setting_schedules_tenant_prerender_refresh(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
             $mock->shouldReceive('refreshTenantOrFail')
                 ->once()
@@ -650,7 +698,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_settings_roll_back_when_durable_prerender_intent_cannot_be_written(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $original = DB::table('tenants')->where('id', $this->testTenantId)->value('tagline');
         $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
             $mock->shouldReceive('refreshTenantOrFail')
@@ -671,7 +721,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_landing_page_config_rolls_back_when_rebuild_intent_fails(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         DB::table('tenant_settings')->updateOrInsert(
             ['tenant_id' => $this->testTenantId, 'setting_key' => 'landing_page.config'],
             ['setting_value' => json_encode(['sections' => []]), 'setting_type' => 'json']
@@ -711,7 +763,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_feature_toggle_rolls_back_when_rebuild_intent_fails(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $original = DB::table('tenants')->where('id', $this->testTenantId)->value('features');
         $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
             $mock->shouldReceive('refreshTenantOrFail')
@@ -735,7 +789,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_jobs_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/background-jobs');
 
@@ -752,7 +808,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_ai_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/ai');
 
@@ -777,7 +835,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_feed_algorithm_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/feed-algorithm');
 
@@ -792,7 +852,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_algorithm_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/algorithms');
 
@@ -807,7 +869,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_algorithm_health_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/algorithm-health');
 
@@ -822,7 +886,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_image_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/images');
 
@@ -837,7 +903,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_seo_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/seo');
 
@@ -852,7 +920,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_language_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/languages');
 
@@ -867,7 +937,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_native_app_config_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/config/native-app');
 
@@ -878,7 +950,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_native_app_config_tracks_tenant_branded_store_readiness(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $update = $this->apiPut('/v2/admin/config/native-app', [
             'native_app_name' => 'KISS Musterstadt',
@@ -924,7 +998,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_native_app_tenant_branded_readiness_lists_missing_requirements(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $update = $this->apiPut('/v2/admin/config/native-app', [
             'native_app_store_mode' => 'tenant_branded',
@@ -972,7 +1048,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_get_cron_jobs_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/system/cron-jobs');
 
@@ -999,7 +1077,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_update_feature_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPut('/v2/admin/config/features', [
             'feature' => 'events',
@@ -1025,7 +1105,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_authentication_feature_switches_reject_ordinary_admins(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $original = DB::table('tenants')->where('id', $this->testTenantId)->value('features');
 
         foreach (['two_factor_authentication', 'biometric_login'] as $feature) {
@@ -1044,7 +1126,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_super_admin_can_update_authentication_feature_switches(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         foreach (['two_factor_authentication', 'biometric_login'] as $feature) {
             $this->apiPut('/v2/admin/config/features', [
@@ -1064,7 +1148,9 @@ class AdminConfigControllerTest extends TestCase
     public function test_super_admin_must_explicitly_confirm_disabling_passkey_authentication(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPut('/v2/admin/config/features', [
             'feature' => 'biometric_login',

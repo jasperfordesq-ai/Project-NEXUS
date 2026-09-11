@@ -208,6 +208,18 @@ class VolOrgWalletService
         $idemCacheKey = "volorgdeposit:idem:{$tenantId}:{$userId}:{$fingerprint}";
         $idemTtl = $hasExplicitKey ? 86400 : 120;
 
+        $receiptQuery = fn () => DB::table('vol_org_deposit_receipts')
+            ->where('tenant_id', $tenantId)->where('user_id', $userId)
+            ->where('fingerprint', $fingerprint);
+        $replayResult = fn ($balance) => [
+            'success' => true,
+            'message' => __('svc_notifications_2.vol_org_wallet.deposit_successful'),
+            'new_balance' => (float) $balance,
+        ];
+        if ($hasExplicitKey && ($receipt = $receiptQuery()->first())) {
+            return $replayResult($receipt->new_balance);
+        }
+
         $claimed = true;
         try {
             $claimed = Cache::add($idemCacheKey, ['status' => 'pending'], $idemTtl);
@@ -227,6 +239,13 @@ class VolOrgWalletService
                 $prior = null;
             }
             if (is_array($prior) && array_key_exists('new_balance', $prior)) {
+                if ($hasExplicitKey) {
+                    DB::table('vol_org_deposit_receipts')->insertOrIgnore([
+                        'tenant_id' => $tenantId, 'user_id' => $userId,
+                        'fingerprint' => $fingerprint, 'new_balance' => $prior['new_balance'],
+                        'created_at' => now(),
+                    ]);
+                }
                 return [
                     'success' => true,
                     'message' => __('svc_notifications_2.vol_org_wallet.deposit_successful'),
@@ -237,78 +256,108 @@ class VolOrgWalletService
             return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.deposit_duplicate')];
         }
 
-        $result = DB::transaction(function () use ($userId, $volOrgId, $amount, $note, $tenantId) {
-            // Lock user row to prevent concurrent balance changes
-            $user = DB::selectOne(
-                "SELECT id, balance, name FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
-                [$userId, $tenantId]
-            );
+        $replayed = false;
+        try {
+            $result = DB::transaction(function () use ($userId, $volOrgId, $amount, $note, $tenantId, $hasExplicitKey, $receiptQuery, $replayResult, $fingerprint, &$replayed) {
+                // Lock user row to prevent concurrent balance changes
+                $user = DB::selectOne(
+                    "SELECT id, balance, name FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
+                    [$userId, $tenantId]
+                );
 
-            if (!$user) {
-                return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.user_not_found')];
+                if (!$user) {
+                    return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.user_not_found')];
+                }
+
+                if ($hasExplicitKey && ($receipt = $receiptQuery()->lockForUpdate()->first())) {
+                    $replayed = true;
+                    return $replayResult($receipt->new_balance);
+                }
+
+                // Lock org row BEFORE validating user balance (prevent race condition on org balance_after)
+                $org = DB::selectOne(
+                    "SELECT id, name, balance, status FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
+                    [$volOrgId, $tenantId]
+                );
+
+                if (!$org) {
+                    return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.organization_not_found')];
+                }
+
+                // Hard-freeze: a suspended/pending (non-approved) org cannot take on
+                // new value movements. Enforced HERE — not only in the React
+                // controller — so every caller (accessible frontend included)
+                // inherits the block (2026-07-10 audit M2).
+                if (!VolunteerService::isApprovedOrganizationStatus($org->status ?? null)) {
+                    return ['success' => false, 'message' => __('api.volunteer_org_not_active')];
+                }
+
+                // Whole-number amounts only (fractional deposits are rejected
+                // above): user loses the same INT as the org gains.
+                $intAmount = (int) $amount;
+                if ($intAmount <= 0) {
+                    return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.amount_must_be_at_least_1')];
+                }
+
+                if ((int) $user->balance < $intAmount) {
+                    return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.insufficient_personal_balance')];
+                }
+                DB::update(
+                    "UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ?",
+                    [$intAmount, $userId, $tenantId]
+                );
+
+                // Credit to org (same INT amount as deducted from user — no phantom credits)
+                DB::update(
+                    "UPDATE vol_organizations SET balance = balance + ? WHERE id = ? AND tenant_id = ?",
+                    [$intAmount, $volOrgId, $tenantId]
+                );
+
+                $newBalance = (float) $org->balance + $intAmount;
+
+                // Record both sides of the movement. vol_org_transactions is the
+                // organisation's reconciliation ledger; transactions is the
+                // member-facing wallet ledger. Keeping both inserts inside this
+                // transaction means balances and histories either all commit or all
+                // roll back together.
+                $orgDescription = $note ?: __('svc_notifications_2.vol_org_wallet.deposit_from_user', ['name' => $user->name]);
+                $memberDescription = $note ?: __('emails_misc.vol_org_wallet.deposit_subject', ['org' => $org->name]);
+
+                DB::insert("
+                    INSERT INTO vol_org_transactions (tenant_id, vol_organization_id, user_id, type, amount, balance_after, description, created_at)
+                    VALUES (?, ?, ?, 'deposit', ?, ?, ?, NOW())
+                ", [$tenantId, $volOrgId, $userId, $intAmount, $newBalance, $orgDescription]);
+
+                DB::insert("
+                    INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, transaction_type, status, created_at, updated_at)
+                    VALUES (?, ?, NULL, ?, ?, 'volunteer', 'completed', NOW(), NOW())
+                ", [$tenantId, $userId, $intAmount, $memberDescription]);
+
+                if ($hasExplicitKey) {
+                    DB::table('vol_org_deposit_receipts')->insert([
+                        'tenant_id' => $tenantId, 'user_id' => $userId,
+                        'fingerprint' => $fingerprint, 'new_balance' => $newBalance,
+                        'created_at' => now(),
+                    ]);
+                }
+                return ['success' => true, 'message' => __('svc_notifications_2.vol_org_wallet.deposit_successful'), 'new_balance' => $newBalance, '_deposit_user_id' => $userId, '_org_name' => $org->name, '_amount' => $intAmount];
+            });
+        } catch (\Throwable $error) {
+            // The database rolled back. Do not leave a failed operation looking
+            // pending for the rest of the cache window.
+            if ($idemCacheKey !== null) {
+                try {
+                    Cache::forget($idemCacheKey);
+                } catch (\Throwable $ignored) {
+                    // Cache recovery must not replace the original failure.
+                }
             }
+            throw $error;
+        }
 
-            // Lock org row BEFORE validating user balance (prevent race condition on org balance_after)
-            $org = DB::selectOne(
-                "SELECT id, name, balance, status FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
-                [$volOrgId, $tenantId]
-            );
-
-            if (!$org) {
-                return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.organization_not_found')];
-            }
-
-            // Hard-freeze: a suspended/pending (non-approved) org cannot take on
-            // new value movements. Enforced HERE — not only in the React
-            // controller — so every caller (accessible frontend included)
-            // inherits the block (2026-07-10 audit M2).
-            if (!VolunteerService::isApprovedOrganizationStatus($org->status ?? null)) {
-                return ['success' => false, 'message' => __('api.volunteer_org_not_active')];
-            }
-
-            // Whole-number amounts only (fractional deposits are rejected
-            // above): user loses the same INT as the org gains.
-            $intAmount = (int) $amount;
-            if ($intAmount <= 0) {
-                return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.amount_must_be_at_least_1')];
-            }
-
-            if ((int) $user->balance < $intAmount) {
-                return ['success' => false, 'message' => __('svc_notifications_2.vol_org_wallet.insufficient_personal_balance')];
-            }
-            DB::update(
-                "UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ?",
-                [$intAmount, $userId, $tenantId]
-            );
-
-            // Credit to org (same INT amount as deducted from user — no phantom credits)
-            DB::update(
-                "UPDATE vol_organizations SET balance = balance + ? WHERE id = ? AND tenant_id = ?",
-                [$intAmount, $volOrgId, $tenantId]
-            );
-
-            $newBalance = (float) $org->balance + $intAmount;
-
-            // Record both sides of the movement. vol_org_transactions is the
-            // organisation's reconciliation ledger; transactions is the
-            // member-facing wallet ledger. Keeping both inserts inside this
-            // transaction means balances and histories either all commit or all
-            // roll back together.
-            $orgDescription = $note ?: __('svc_notifications_2.vol_org_wallet.deposit_from_user', ['name' => $user->name]);
-            $memberDescription = $note ?: __('emails_misc.vol_org_wallet.deposit_subject', ['org' => $org->name]);
-
-            DB::insert("
-                INSERT INTO vol_org_transactions (tenant_id, vol_organization_id, user_id, type, amount, balance_after, description, created_at)
-                VALUES (?, ?, ?, 'deposit', ?, ?, ?, NOW())
-            ", [$tenantId, $volOrgId, $userId, $intAmount, $newBalance, $orgDescription]);
-
-            DB::insert("
-                INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, transaction_type, status, created_at, updated_at)
-                VALUES (?, ?, NULL, ?, ?, 'volunteer', 'completed', NOW(), NOW())
-            ", [$tenantId, $userId, $intAmount, $memberDescription]);
-
-            return ['success' => true, 'message' => __('svc_notifications_2.vol_org_wallet.deposit_successful'), 'new_balance' => $newBalance, '_deposit_user_id' => $userId, '_org_name' => $org->name, '_amount' => $intAmount];
-        });
+        if ($replayed) {
+            return $result;
+        }
 
         // Record the outcome so a duplicate replays it, or release the claim so a
         // genuine retry after a REFUSED deposit (wrong org, too little balance)

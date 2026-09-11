@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -52,6 +52,9 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useParamTab } from '@/lib/hooks/useParamTab';
 import { withRouteGate } from '@/components/withRouteGate';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type OrgTab = 'overview' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -190,7 +193,7 @@ function OverviewPanel({
   );
 }
 
-function ApplicationsPanel({ applications, loading, onRefresh }: { applications: OrganisationVolunteerApplication[]; loading: boolean; onRefresh: () => void }) {
+function ApplicationsPanel({ applications, loading, error, onRefresh }: { applications: OrganisationVolunteerApplication[]; loading: boolean; error: string | null; onRefresh: () => void }) {
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -221,11 +224,13 @@ function ApplicationsPanel({ applications, loading, onRefresh }: { applications:
     }
   }
 
-  if (loading) return <LoadingSpinner />;
-  if (applications.length === 0) return <EmptyState icon="clipboard-outline" title={t('org.applications.empty')} />;
+  if (loading && applications.length === 0) return <LoadingSpinner />;
+  if (error && applications.length === 0) return <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-applications-error" />;
 
   return (
     <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-applications-error" />
+      {applications.length === 0 ? <EmptyState icon="clipboard-outline" title={t('org.applications.empty')} /> : null}
       {applications.map((application) => (
         <HeroCard key={application.id} className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
@@ -286,14 +291,17 @@ function ApplicationsPanel({ applications, loading, onRefresh }: { applications:
   );
 }
 
-function HoursPanel({ entries, loading, onRefresh }: { entries: OrganisationPendingHour[]; loading: boolean; onRefresh: () => void }) {
+function HoursPanel({ entries, loading, error, onRefresh }: { entries: OrganisationPendingHour[]; loading: boolean; error: string | null; onRefresh: () => void }) {
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [actioningId, setActioningId] = useState<number | null>(null);
+  const decisionPending = useRef(false);
 
   async function act(id: number, action: 'approve' | 'decline') {
+    if (decisionPending.current) return;
+    decisionPending.current = true;
     setActioningId(id);
     try {
       await verifyVolunteerHours(id, action);
@@ -303,15 +311,18 @@ function HoursPanel({ entries, loading, onRefresh }: { entries: OrganisationPend
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.hours.actionError')), variant: 'danger' });
     } finally {
+      decisionPending.current = false;
       setActioningId(null);
     }
   }
 
-  if (loading) return <LoadingSpinner />;
-  if (entries.length === 0) return <EmptyState icon="time-outline" title={t('org.hours.empty')} />;
+  if (loading && entries.length === 0) return <LoadingSpinner />;
+  if (error && entries.length === 0) return <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-hours-error" />;
 
   return (
     <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-hours-error" />
+      {entries.length === 0 ? <EmptyState icon="time-outline" title={t('org.hours.empty')} /> : null}
       {entries.map((entry) => (
         <HeroCard key={entry.id} className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
@@ -340,11 +351,11 @@ function HoursPanel({ entries, loading, onRefresh }: { entries: OrganisationPend
               </View>
             </View>
             <View className="flex-row gap-2">
-              <HeroButton className="flex-1" size="sm" variant="secondary" isDisabled={actioningId === entry.id} onPress={() => void act(entry.id, 'approve')}>
+              <HeroButton className="flex-1" size="sm" variant="secondary" isDisabled={actioningId !== null} onPress={() => void act(entry.id, 'approve')}>
                 {actioningId === entry.id ? <Spinner size="sm" /> : <Ionicons name="checkmark-outline" size={16} color={primary} />}
                 <HeroButton.Label>{t('org.hours.approve')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId === entry.id} onPress={() => void act(entry.id, 'decline')}>
+              <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void act(entry.id, 'decline')}>
                 <HeroButton.Label>{t('org.hours.decline')}</HeroButton.Label>
               </HeroButton>
             </View>
@@ -355,13 +366,15 @@ function HoursPanel({ entries, loading, onRefresh }: { entries: OrganisationPend
   );
 }
 
-function VolunteersPanel({ volunteers, loading }: { volunteers: OrganisationVolunteer[]; loading: boolean }) {
+function VolunteersPanel({ volunteers, loading, error, onRefresh }: { volunteers: OrganisationVolunteer[]; loading: boolean; error: string | null; onRefresh: () => void }) {
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
-  if (loading) return <LoadingSpinner />;
-  if (volunteers.length === 0) return <EmptyState icon="people-outline" title={t('org.volunteers.empty')} />;
+  if (loading && volunteers.length === 0) return <LoadingSpinner />;
+  if (error && volunteers.length === 0) return <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-volunteers-error" />;
   return (
     <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-volunteers-error" />
+      {volunteers.length === 0 ? <EmptyState icon="people-outline" title={t('org.volunteers.empty')} /> : null}
       {volunteers.map((volunteer) => (
         <HeroCard key={volunteer.id} className="rounded-panel p-0">
           <HeroCard.Body className="flex-row items-center gap-3 p-4">
@@ -398,6 +411,7 @@ function WalletPanel({
   stats,
   transactions,
   loading,
+  error,
   onRefresh,
 }: {
   orgId: number;
@@ -405,6 +419,7 @@ function WalletPanel({
   stats: VolunteerOrganisationStats | null;
   transactions: OrganisationWalletTransaction[];
   loading: boolean;
+  error: string | null;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation('volunteering');
@@ -524,6 +539,7 @@ function WalletPanel({
             placeholder={t('org.wallet.amountPlaceholder')}
             placeholderTextColor={theme.textMuted}
             leftIcon={<Ionicons name="add-circle-outline" size={18} color={theme.textMuted} />}
+            editable={!saving}
           />
           <Input
             value={note}
@@ -531,6 +547,7 @@ function WalletPanel({
             placeholder={t('org.wallet.notePlaceholder')}
             placeholderTextColor={theme.textMuted}
             leftIcon={<Ionicons name="document-text-outline" size={18} color={theme.textMuted} />}
+            editable={!saving}
           />
           <HeroButton isDisabled={saving} onPress={deposit} testID="org-wallet-deposit">
             {saving ? <Spinner size="sm" /> : <AccentIcon name="wallet-outline" size={16} />}
@@ -542,8 +559,9 @@ function WalletPanel({
       <Text className="text-base font-semibold" style={{ color: theme.text }}>
         {t('org.wallet.transactions')}
       </Text>
-      {loading ? <LoadingSpinner /> : null}
-      {!loading && transactions.length === 0 ? <EmptyState icon="receipt-outline" title={t('org.wallet.empty')} /> : null}
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-wallet-error" />
+      {loading && transactions.length === 0 ? <LoadingSpinner /> : null}
+      {!loading && !error && transactions.length === 0 ? <EmptyState icon="receipt-outline" title={t('org.wallet.empty')} /> : null}
       {!loading && transactions.map((transaction) => (
         <HeroCard key={transaction.id} className="rounded-panel p-0">
           <HeroCard.Body className="flex-row items-center justify-between gap-3 p-4">
@@ -566,7 +584,17 @@ function WalletPanel({
   );
 }
 
-function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | null; onRefresh: () => void }) {
+type SettingsDraftState = { isDirty: boolean; isSaving: boolean };
+
+function SettingsPanel({
+  org,
+  onRefresh,
+  onDraftStateChange,
+}: {
+  org: VolunteeringOrganisation | null;
+  onRefresh: () => void;
+  onDraftStateChange: (state: SettingsDraftState) => void;
+}) {
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -575,34 +603,72 @@ function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | nul
   const [contactEmail, setContactEmail] = useState(org?.contact_email ?? '');
   const [website, setWebsite] = useState(org?.website ?? '');
   const [saving, setSaving] = useState(false);
+  const savePending = useRef(false);
+  const mountedRef = useRef(true);
+  const hydratedOrgIdRef = useRef<number | null>(null);
+  const snapshot = JSON.stringify({ name, description, contactEmail, website });
+  const [baseline, setBaseline] = useState(snapshot);
+  const isDirty = snapshot !== baseline;
 
   useEffect(() => {
+    if (!org || hydratedOrgIdRef.current === org.id) return;
+    hydratedOrgIdRef.current = org.id;
     setName(org?.name ?? '');
     setDescription(org?.description ?? '');
     setContactEmail(org?.contact_email ?? '');
     setWebsite(org?.website ?? '');
-  }, [org?.contact_email, org?.description, org?.name, org?.website]);
+    setBaseline(JSON.stringify({
+      name: org?.name ?? '',
+      description: org?.description ?? '',
+      contactEmail: org?.contact_email ?? '',
+      website: org?.website ?? '',
+    }));
+  }, [org]);
+
+  useEffect(() => {
+    onDraftStateChange({ isDirty, isSaving: saving });
+  }, [isDirty, onDraftStateChange, saving]);
+
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
   async function save() {
+    if (savePending.current) return;
     if (!org || !name.trim()) {
       showToast({ title: t('common:errors.alertTitle'), description: t('org.settings.validation'), variant: 'warning' });
       return;
     }
+    savePending.current = true;
     setSaving(true);
+    const submitted = {
+      name: name.trim(),
+      description: description.trim(),
+      contactEmail: contactEmail.trim(),
+      website: website.trim(),
+    };
     try {
       await updateOrganisation(org.id, {
-        name: name.trim(),
-        description: description.trim() || null,
-        contact_email: contactEmail.trim() || null,
-        website: website.trim() || null,
+        name: submitted.name,
+        description: submitted.description || null,
+        contact_email: submitted.contactEmail || null,
+        website: submitted.website || null,
       });
-      onRefresh();
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (mountedRef.current) {
+        setName(submitted.name);
+        setDescription(submitted.description);
+        setContactEmail(submitted.contactEmail);
+        setWebsite(submitted.website);
+        setBaseline(JSON.stringify(submitted));
+        onRefresh();
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     } catch (err) {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.settings.saveError')), variant: 'danger' });
+      if (mountedRef.current) {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.settings.saveError')), variant: 'danger' });
+      }
     } finally {
-      setSaving(false);
+      savePending.current = false;
+      if (mountedRef.current) setSaving(false);
     }
   }
 
@@ -612,10 +678,10 @@ function SettingsPanel({ org, onRefresh }: { org: VolunteeringOrganisation | nul
         <Text className="text-base font-semibold" style={{ color: theme.text }}>
           {t('org.settings.heading')}
         </Text>
-        <Input value={name} onChangeText={setName} placeholder={t('org.settings.namePlaceholder')} placeholderTextColor={theme.textMuted} />
-        <Input value={description} onChangeText={setDescription} placeholder={t('org.settings.descriptionPlaceholder')} placeholderTextColor={theme.textMuted} multiline />
-        <Input value={contactEmail} onChangeText={setContactEmail} placeholder={t('org.settings.emailPlaceholder')} placeholderTextColor={theme.textMuted} keyboardType="email-address" autoCapitalize="none" />
-        <Input value={website} onChangeText={setWebsite} placeholder={t('org.settings.websitePlaceholder')} placeholderTextColor={theme.textMuted} autoCapitalize="none" />
+        <Input value={name} onChangeText={setName} placeholder={t('org.settings.namePlaceholder')} placeholderTextColor={theme.textMuted} editable={!saving} />
+        <Input value={description} onChangeText={setDescription} placeholder={t('org.settings.descriptionPlaceholder')} placeholderTextColor={theme.textMuted} multiline editable={!saving} />
+        <Input value={contactEmail} onChangeText={setContactEmail} placeholder={t('org.settings.emailPlaceholder')} placeholderTextColor={theme.textMuted} keyboardType="email-address" autoCapitalize="none" editable={!saving} />
+        <Input value={website} onChangeText={setWebsite} placeholder={t('org.settings.websitePlaceholder')} placeholderTextColor={theme.textMuted} autoCapitalize="none" editable={!saving} />
         <HeroButton isDisabled={saving} onPress={() => void save()}>
           {saving ? <Spinner size="sm" /> : <AccentIcon name="save-outline" size={16} />}
           <HeroButton.Label>{t('org.settings.save')}</HeroButton.Label>
@@ -632,6 +698,55 @@ function VolunteeringOrgDashboardInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const [tab, setTab] = useParamTab<OrgTab>(params.tab, resolveOrgTab, 'overview');
+  const [settingsDraft, setSettingsDraft] = useState<SettingsDraftState>({ isDirty: false, isSaving: false });
+  const [settingsDraftVersion, setSettingsDraftVersion] = useState(0);
+  const { confirm: confirmSettingsLeave, confirmDialog: settingsLeaveDialog } = useConfirm();
+  const updateSettingsDraft = useCallback((state: SettingsDraftState) => setSettingsDraft(state), []);
+
+  useUnsavedChangesGuard({
+    isDirty: settingsDraft.isDirty,
+    isSaving: settingsDraft.isSaving,
+    confirm: confirmSettingsLeave,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
+  const selectTab = useCallback((next: OrgTab) => {
+    if (next === tab) return;
+    const leaveSettings = () => {
+      setSettingsDraft({ isDirty: false, isSaving: false });
+      if (tab === 'settings') setSettingsDraftVersion((version) => version + 1);
+      setTab(next);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    };
+    if (tab === 'settings' && settingsDraft.isSaving) {
+      confirmSettingsLeave({
+        title: t('common:unsavedSaving.title'),
+        message: t('common:unsavedSaving.message'),
+        confirmLabel: t('common:unsavedSaving.leave'),
+        cancelLabel: t('common:unsavedSaving.wait'),
+        confirmTestID: 'org-settings-leave-saving-confirm',
+        variant: 'danger',
+        onConfirm: leaveSettings,
+      });
+      return;
+    }
+    if (tab === 'settings' && settingsDraft.isDirty) {
+      confirmSettingsLeave({
+        title: t('common:unsavedChanges.title'),
+        message: t('common:unsavedChanges.message'),
+        confirmLabel: t('common:unsavedChanges.discard'),
+        cancelLabel: t('common:buttons.cancel'),
+        confirmTestID: 'org-settings-discard-confirm',
+        variant: 'danger',
+        onConfirm: leaveSettings,
+      });
+      return;
+    }
+    leaveSettings();
+  }, [confirmSettingsLeave, setTab, settingsDraft.isDirty, settingsDraft.isSaving, t, tab]);
 
   const orgApi = useApi(() => (orgId ? getOrganisation(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });
   const statsApi = useApi(() => (orgId ? getOrganisationStats(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });
@@ -718,8 +833,7 @@ function VolunteeringOrgDashboardInner() {
                   className="h-11 min-w-[126px] rounded-panel-inner"
                   style={{ backgroundColor: selected ? withAlpha(primary, 0.18) : 'transparent' }}
                   onPress={() => {
-                    setTab(item.key);
-                    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    selectTab(item.key);
                   }}
                 >
                   <Ionicons name={item.icon} size={16} color={selected ? primary : theme.textSecondary} />
@@ -747,20 +861,35 @@ function VolunteeringOrgDashboardInner() {
         ) : null}
 
         {orgApi.isLoading && !org ? <LoadingSpinner /> : null}
-        {tab === 'overview' && !orgApi.isLoading ? <OverviewPanel stats={stats} org={org} onTab={setTab} /> : null}
-        {tab === 'applications' ? <ApplicationsPanel applications={applications} loading={applicationsApi.isLoading} onRefresh={refreshAll} /> : null}
-        {tab === 'hours' ? <HoursPanel entries={pendingHours} loading={hoursApi.isLoading} onRefresh={refreshAll} /> : null}
-        {tab === 'volunteers' ? <VolunteersPanel volunteers={volunteers} loading={volunteersApi.isLoading} /> : null}
-        {tab === 'wallet' ? <WalletPanel orgId={orgId} orgName={org?.name ?? stats?.org_name ?? ''} stats={stats} transactions={transactions} loading={walletApi.isLoading} onRefresh={refreshAll} /> : null}
-        {tab === 'settings' ? <SettingsPanel org={org} onRefresh={refreshAll} /> : null}
+        {tab === 'overview' && !orgApi.isLoading ? <OverviewPanel stats={stats} org={org} onTab={selectTab} /> : null}
+        {tab === 'applications' ? <ApplicationsPanel applications={applications} loading={applicationsApi.isLoading} error={applicationsApi.error} onRefresh={refreshAll} /> : null}
+        {tab === 'hours' ? <HoursPanel entries={pendingHours} loading={hoursApi.isLoading} error={hoursApi.error} onRefresh={refreshAll} /> : null}
+        {tab === 'volunteers' ? <VolunteersPanel volunteers={volunteers} loading={volunteersApi.isLoading} error={volunteersApi.error} onRefresh={refreshAll} /> : null}
+        {tab === 'wallet' ? <WalletPanel orgId={orgId} orgName={org?.name ?? stats?.org_name ?? ''} stats={stats} transactions={transactions} loading={walletApi.isLoading} error={walletApi.error} onRefresh={refreshAll} /> : null}
+        <View
+          style={{ display: tab === 'settings' ? 'flex' : 'none' }}
+          accessibilityElementsHidden={tab !== 'settings'}
+          importantForAccessibility={tab === 'settings' ? 'auto' : 'no-hide-descendants'}
+        >
+          <SettingsPanel
+            key={settingsDraftVersion}
+            org={org}
+            onRefresh={refreshAll}
+            onDraftStateChange={updateSettingsDraft}
+          />
+        </View>
+        {settingsLeaveDialog}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 function VolunteeringOrgDashboard() {
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${parseId(params.id) ?? 'invalid'}`}>
       <VolunteeringOrgDashboardInner />
     </ModalErrorBoundary>
   );

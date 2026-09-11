@@ -24,12 +24,14 @@ class CreditDonation extends Model
 
     protected $fillable = [
         'donor_id', 'recipient_type', 'recipient_id',
-        'amount', 'message', 'transaction_id',
+        'amount', 'message', 'transaction_id', 'idempotency_fingerprint',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
     ];
+
+    protected $hidden = ['idempotency_fingerprint'];
 
     public function donor(): BelongsTo
     {

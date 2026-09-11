@@ -79,6 +79,15 @@ class ShiftSwapService
           the same shift do not both queue behind one person.
         */
         if (! $toUserId) {
+            $existingIntent = DB::table('vol_shift_swap_requests')
+                ->where('tenant_id', $tenantId)
+                ->where('from_user_id', $fromUserId)
+                ->where('from_shift_id', $fromShiftId)
+                ->where('to_shift_id', $toShiftId)
+                ->whereIn('status', ['pending', 'admin_pending'])
+                ->first(['id']);
+            if ($existingIntent) return (int) $existingIntent->id;
+
             $toUserId = self::resolveCounterpartForShift($toShiftId, $fromUserId, $tenantId);
             if (! $toUserId) {
                 self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.shift_swap_no_one_on_shift')];
@@ -152,31 +161,60 @@ class ShiftSwapService
             ->where('tenant_id', $tenantId)
             ->exists();
 
-        if ($duplicate) {
-            self::$errors[] = ['code' => 'ALREADY_EXISTS', 'message' => __('api.shift_swap_already_exists')];
-            return null;
-        }
+        if ($duplicate) return (int) DB::table('vol_shift_swap_requests')
+            ->where('from_user_id', $fromUserId)
+            ->where('to_user_id', $toUserId)
+            ->where('from_shift_id', $fromShiftId)
+            ->where('to_shift_id', $toShiftId)
+            ->whereIn('status', ['pending', 'admin_pending'])
+            ->where('tenant_id', $tenantId)
+            ->value('id');
 
         // Check if admin approval is required (tenant setting)
         $requiresAdmin = self::requiresAdminApproval($tenantId);
 
         try {
-            $swapId = DB::table('vol_shift_swap_requests')->insertGetId([
-                'tenant_id'               => $tenantId,
-                'from_user_id'            => $fromUserId,
-                'to_user_id'              => $toUserId,
-                'from_shift_id'           => $fromShiftId,
-                'to_shift_id'             => $toShiftId,
-                'status'                  => 'pending',
-                'requires_admin_approval' => $requiresAdmin ? 1 : 0,
-                'message'                 => $message,
-                'created_at'              => now(),
-            ]);
+            $created = false;
+            $swapId = DB::transaction(function () use ($fromApp, $toApp, $tenantId, $fromUserId, $toUserId, $fromShiftId, $toShiftId, $requiresAdmin, $message, &$created): int {
+                $lockedAssignments = DB::table('vol_applications')
+                    ->whereIn('id', [(int) $fromApp->id, (int) $toApp->id])
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'approved')
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get(['id']);
+                if ($lockedAssignments->count() !== 2) {
+                    throw new \RuntimeException('Shift assignment changed while requesting swap');
+                }
 
-            // Notify the target user about the incoming swap request
-            self::notifySwap($toUserId, 'vol_swap_requested', 'svc_notifications.shift_swap.requested', '/volunteering?tab=swaps');
+                $existing = DB::table('vol_shift_swap_requests')
+                    ->where('tenant_id', $tenantId)
+                    ->where('from_user_id', $fromUserId)
+                    ->where('to_user_id', $toUserId)
+                    ->where('from_shift_id', $fromShiftId)
+                    ->where('to_shift_id', $toShiftId)
+                    ->whereIn('status', ['pending', 'admin_pending'])
+                    ->first(['id']);
+                if ($existing) return (int) $existing->id;
 
-            return (int) $swapId;
+                $created = true;
+                return (int) DB::table('vol_shift_swap_requests')->insertGetId([
+                    'tenant_id'               => $tenantId,
+                    'from_user_id'            => $fromUserId,
+                    'to_user_id'              => $toUserId,
+                    'from_shift_id'            => $fromShiftId,
+                    'to_shift_id'              => $toShiftId,
+                    'status'                  => 'pending',
+                    'requires_admin_approval' => $requiresAdmin ? 1 : 0,
+                    'message'                 => $message,
+                    'created_at'              => now(),
+                ]);
+            });
+
+            if ($created) {
+                self::notifySwap($toUserId, 'vol_swap_requested', 'svc_notifications.shift_swap.requested', '/volunteering?tab=swaps');
+            }
+            return $swapId;
         } catch (\Exception $e) {
             Log::error('ShiftSwapService::requestSwap error: ' . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.shift_swap_create_failed')];
@@ -242,7 +280,6 @@ class ShiftSwapService
 
         $swap = DB::table('vol_shift_swap_requests')
             ->where('id', $swapId)
-            ->where('status', 'pending')
             ->where('tenant_id', $tenantId)
             ->first();
 
@@ -253,6 +290,15 @@ class ShiftSwapService
 
         if ((int) $swap->to_user_id !== $userId) {
             self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.shift_swap_not_addressed_to_you')];
+            return false;
+        }
+
+        $alreadyMatches = $action === 'accept'
+            ? in_array($swap->status, ['accepted', 'admin_pending', 'admin_approved'], true)
+            : $swap->status === 'rejected';
+        if ($swap->status !== 'pending') {
+            if ($alreadyMatches) return true;
+            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
             return false;
         }
 
@@ -273,35 +319,52 @@ class ShiftSwapService
         }
 
         try {
-            if ($action === 'reject') {
-                DB::table('vol_shift_swap_requests')
+            $transitioned = false;
+            $requesterId = (int) $swap->from_user_id;
+            $result = DB::transaction(function () use ($swapId, $tenantId, $userId, $action, &$transitioned, &$requesterId): bool {
+                $locked = DB::table('vol_shift_swap_requests')
                     ->where('id', $swapId)
                     ->where('tenant_id', $tenantId)
-                    ->update(['status' => 'rejected']);
+                    ->lockForUpdate()
+                    ->first();
+                if (! $locked || (int) $locked->to_user_id !== $userId) {
+                    self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.shift_swap_not_addressed_to_you')];
+                    return false;
+                }
+                $requesterId = (int) $locked->from_user_id;
+                if ($locked->status !== 'pending') {
+                    $matches = $action === 'accept'
+                        ? in_array($locked->status, ['accepted', 'admin_pending', 'admin_approved'], true)
+                        : $locked->status === 'rejected';
+                    if ($matches) return true;
+                    self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
+                    return false;
+                }
 
-                // Notify requester their swap was declined
-                self::notifySwap((int) $swap->from_user_id, 'vol_swap_declined', 'svc_notifications.shift_swap.declined', '/volunteering?tab=swaps');
+                if ($action === 'reject') {
+                    DB::table('vol_shift_swap_requests')->where('id', $swapId)->where('tenant_id', $tenantId)->update(['status' => 'rejected']);
+                    $transitioned = true;
+                    return true;
+                }
+                if ($locked->requires_admin_approval) {
+                    DB::table('vol_shift_swap_requests')->where('id', $swapId)->where('tenant_id', $tenantId)->update(['status' => 'admin_pending']);
+                    $transitioned = true;
+                    return true;
+                }
 
-                return true;
+                $result = self::executeSwap($locked, $tenantId);
+                $transitioned = $result;
+                return $result;
+            });
+
+            if ($result && $transitioned) {
+                self::notifySwap(
+                    $requesterId,
+                    $action === 'accept' ? 'vol_swap_approved' : 'vol_swap_declined',
+                    $action === 'accept' ? 'svc_notifications.shift_swap.accepted' : 'svc_notifications.shift_swap.declined',
+                    '/volunteering?tab=swaps'
+                );
             }
-
-            // Accept flow
-            if ($swap->requires_admin_approval) {
-                DB::table('vol_shift_swap_requests')
-                    ->where('id', $swapId)
-                    ->where('tenant_id', $tenantId)
-                    ->update(['status' => 'admin_pending']);
-                return true;
-            }
-
-            // Execute swap directly
-            $result = self::executeSwap($swap, $tenantId);
-
-            if ($result) {
-                // Notify requester their swap was approved
-                self::notifySwap((int) $swap->from_user_id, 'vol_swap_approved', 'svc_notifications.shift_swap.accepted', '/volunteering?tab=swaps');
-            }
-
             return $result;
         } catch (\Exception $e) {
             Log::error('ShiftSwapService::respond error: ' . $e->getMessage());
@@ -530,7 +593,6 @@ class ShiftSwapService
         $swap = DB::table('vol_shift_swap_requests')
             ->where('id', $swapId)
             ->where('from_user_id', $userId)
-            ->whereIn('status', ['pending', 'admin_pending'])
             ->where('tenant_id', $tenantId)
             ->first();
 
@@ -539,12 +601,34 @@ class ShiftSwapService
             return false;
         }
 
+        if ($swap->status === 'cancelled') return true;
+        if (! in_array($swap->status, ['pending', 'admin_pending'], true)) {
+            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_not_cancellable')];
+            return false;
+        }
+
         try {
-            DB::table('vol_shift_swap_requests')
-                ->where('id', $swapId)
-                ->where('tenant_id', $tenantId)
-                ->update(['status' => 'cancelled']);
-            return true;
+            return DB::transaction(function () use ($swapId, $userId, $tenantId): bool {
+                $locked = DB::table('vol_shift_swap_requests')
+                    ->where('id', $swapId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                if (! $locked || (int) $locked->from_user_id !== $userId) {
+                    self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.shift_swap_not_found_or_not_cancellable')];
+                    return false;
+                }
+                if ($locked->status === 'cancelled') return true;
+                if (! in_array($locked->status, ['pending', 'admin_pending'], true)) {
+                    self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_not_cancellable')];
+                    return false;
+                }
+                DB::table('vol_shift_swap_requests')
+                    ->where('id', $swapId)
+                    ->where('tenant_id', $tenantId)
+                    ->update(['status' => 'cancelled']);
+                return true;
+            });
         } catch (\Exception $e) {
             Log::error('ShiftSwapService::cancel error: ' . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.shift_swap_cancel_failed')];

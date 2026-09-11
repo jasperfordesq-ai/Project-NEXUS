@@ -275,7 +275,7 @@ class CommunityFundService
     /**
      * Member donates credits to the community fund.
      */
-    public static function receiveDonation(int $donorId, float $amount, string $message = ''): array
+    public static function receiveDonation(int $donorId, float $amount, string $message = '', ?string $idempotencyFingerprint = null): array
     {
         if ($amount <= 0) {
             return ['success' => false, 'error' => __('api.amount_must_be_greater_than_0')];
@@ -299,6 +299,13 @@ class CommunityFundService
             }
 
             $newBalance = (float) $lockedFund->balance + $amount;
+
+            if ($idempotencyFingerprint !== null && DB::table('credit_donations')
+                ->where('tenant_id', $tenantId)->where('donor_id', $donorId)
+                ->where('idempotency_fingerprint', $idempotencyFingerprint)->lockForUpdate()->first()) {
+                DB::commit();
+                return ['success' => true, 'balance' => (float) $lockedFund->balance, 'replayed' => true];
+            }
 
             // Atomic deduct from donor (WHERE balance >= amount prevents negative balance)
             $affected = DB::update(
@@ -334,6 +341,7 @@ class CommunityFundService
                 'tenant_id' => $tenantId,
                 'donor_id' => $donorId,
                 'recipient_type' => 'community_fund',
+                'idempotency_fingerprint' => $idempotencyFingerprint,
                 'amount' => $amount,
                 'message' => $message,
                 'created_at' => now(),

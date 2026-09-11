@@ -677,5 +677,9 @@
     "subject": "A certifica??o de prote??o de :name expirou",
     "title": "Certifica??o de prote??o expirada",
     "body": "A certifica??o comunit?ria de prote??o de :name em :community expirou em :date. O contacto protegido permanece bloqueado at? ser renovado por pessoal autorizado."
+  },
+  "mfa_changed": {
+    "subject": "A segurança da sua conta foi alterada",
+    "body": "Os códigos de recuperação ou as definições de autenticação foram alterados. Se não solicitou esta alteração, contacte imediatamente a administração da sua comunidade."
   }
 }

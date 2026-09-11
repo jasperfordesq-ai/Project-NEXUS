@@ -36,6 +36,8 @@ import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 const TRANSLATABLE_STATUSES = new Set(['approved', 'active', 'pending', 'declined']);
 
@@ -94,7 +96,7 @@ function ActionPill({
   );
 }
 
-function OrganisationDetailScreen() {
+function OrganisationDetailContent() {
   const { t } = useTranslation(['organisations', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { tenant } = useTenant();
@@ -224,9 +226,8 @@ function OrganisationDetailScreen() {
     });
   }
 
-  const membersCount = organisation.members_count ?? 0;
-  const listingsCount = organisation.listings_count ?? 0;
-  const opportunityCount = organisation.opportunity_count ?? 0;
+  const volunteerCount = organisation.volunteer_count ?? organisation.members_count ?? 0;
+  const opportunityCount = organisation.opportunity_count ?? organisation.listings_count ?? 0;
   const totalHours = organisation.total_hours ?? 0;
   const statusLabel = getStatusLabel(organisation.status, t);
 
@@ -250,6 +251,7 @@ function OrganisationDetailScreen() {
             <RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />
           }
         >
+          <RefreshFailedNotice error={error} onRetry={refresh} isRetrying={isLoading} />
           <HeroCard className="mb-4 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}>
             <View className="h-1" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="gap-5 p-5">
@@ -302,8 +304,7 @@ function OrganisationDetailScreen() {
           </HeroCard>
 
           <View className="mb-4 flex-row flex-wrap gap-3">
-            <StatTile icon="people-outline" value={membersCount} label={t('members', { count: membersCount })} primary={primary} theme={theme} />
-            <StatTile icon="list-outline" value={listingsCount} label={t('listings', { count: listingsCount })} primary={primary} theme={theme} />
+            <StatTile icon="people-outline" value={volunteerCount} label={t('volunteers', { count: volunteerCount })} primary={primary} theme={theme} />
             <StatTile icon="heart-outline" value={opportunityCount} label={t('opportunities', { count: opportunityCount })} primary={primary} theme={theme} />
             <StatTile icon="time-outline" value={totalHours} label={t('hoursLogged', { hours: totalHours })} primary={primary} theme={theme} />
           </View>
@@ -334,6 +335,13 @@ function OrganisationDetailScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+function OrganisationDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <OrganisationDetailContent key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id}`} />;
 }
 
 function StatTile({

@@ -5,6 +5,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'mandatory_2fa' => [
+        'title' => 'Skonfiguruj uwierzytelnianie dwuskładnikowe',
+        'reason' => 'Twoje konto wymaga uwierzytelniania dwuskładnikowego, aby kontynuować.',
+        'saved' => 'Zapisano moje kody odzyskiwania',
+        'recovery_help' => 'Przechowuj te kody w bezpiecznym miejscu. Każdego kodu można użyć raz w razie utraty dostępu do aplikacji uwierzytelniającej.',
+        'required' => 'Uwierzytelnianie dwuskładnikowe jest wymagane dla Twojego konta i nie można go wyłączyć.',
+    ],
     'opens_new_tab' => '(otwiera się w nowej karcie)',
     'service_name' => 'Project NEXUS Accessible',
     'phase' => 'Wersja beta',
@@ -4890,5 +4897,16 @@ return [
             'description_required' => 'Wprowadź opis wydarzenia',
             'start_required' => 'Wprowadź datę i godzinę rozpoczęcia',
         ],
+    ],
+    'mfa_recovery' => [
+        'title' => 'Kody odzyskiwania',
+        'warning' => 'Wymiana unieważnia stare niewykorzystane kody. Wpisz nowy kod z aplikacji; po zalogowaniu poczekaj na kolejny. Jeśli odpowiedź konfiguracji została utracona, możesz tutaj wymienić kody.',
+        'code' => 'Kod uwierzytelniający',
+        'replace' => 'Wymień kody odzyskiwania',
+        'save' => 'Zapisz nowe kody w bezpiecznym miejscu przed opuszczeniem strony.',
+        'saved' => 'Kody zostały zapisane',
+        'revoke' => 'Zapomnij wszystkie zaufane urządzenia',
+        'revoked' => 'Usunięto zaufane urządzenia. Przy następnym logowaniu będzie wymagana weryfikacja.',
+        'failed' => 'Nie udało się ukończyć działania. Sprawdź kod i spróbuj ponownie.',
     ],
 ];

@@ -302,6 +302,10 @@ class JobVacanciesController extends BaseApiController
         $this->rateLimit('jobs_create', 5, 60);
 
         $data = $this->getAllInput();
+        $idempotencyKey = trim((string) request()->header('Idempotency-Key', ''));
+        if ($idempotencyKey !== '') {
+            $data['idempotency_key'] = $idempotencyKey;
+        }
 
         // Validate required fields before calling service
         $title = trim($data['title'] ?? '');
@@ -321,7 +325,13 @@ class JobVacanciesController extends BaseApiController
 
         if (!$jobId) {
             $errors = $this->jobService->getErrors();
-            return $this->respondWithErrors($errors ?: [['code' => 'SERVER_INTERNAL_ERROR', 'message' => __('api.job_create_failed')]], 422);
+            $status = collect($errors)->contains(
+                fn (array $error): bool => ($error['code'] ?? '') === 'IDEMPOTENCY_CONFLICT'
+            ) ? 409 : 422;
+            return $this->respondWithErrors(
+                $errors ?: [['code' => 'SERVER_INTERNAL_ERROR', 'message' => __('api.job_create_failed')]],
+                $status
+            );
         }
 
         $job = $this->jobService->getById($jobId);
@@ -875,12 +885,19 @@ class JobVacanciesController extends BaseApiController
         $this->rateLimit('jobs_alerts_create', 5, 60);
 
         $data = $this->getAllInput();
+        $idempotencyKey = trim((string) request()->header('Idempotency-Key', ''));
+        if ($idempotencyKey !== '') {
+            $data['idempotency_key'] = $idempotencyKey;
+        }
 
         $alertId = $this->jobService->subscribeAlert($userId, $data);
 
         if ($alertId === null) {
             $errors = $this->jobService->getErrors();
-            return $this->respondWithErrors($errors, 422);
+            $status = collect($errors)->contains(fn (array $error): bool => ($error['code'] ?? null) === 'IDEMPOTENCY_CONFLICT')
+                ? 409
+                : 422;
+            return $this->respondWithErrors($errors, $status);
         }
 
         return $this->respondWithData([
@@ -3080,18 +3097,21 @@ class JobVacanciesController extends BaseApiController
             ->where('id', '!=', $id)
             ->where('type', $vacancy->type)
             ->where('status', 'filled')
-            ->select('id', 'applications_count', 'views_count', 'created_at', 'updated_at')
+            ->select('id', 'views_count', 'created_at', 'updated_at')
+            ->withCount('applications as actual_applications_count')
             ->limit(50)
             ->get();
 
-        $avgApplications = $similarJobs->avg('applications_count') ?: 0;
+        $avgApplications = $similarJobs->avg('actual_applications_count') ?: 0;
         $avgViews = $similarJobs->avg('views_count') ?: 0;
         $avgDaysToFill = $similarJobs->count() > 0
             ? $similarJobs->avg(fn($j) => $j->created_at->diffInDays($j->updated_at))
             : null;
 
         // Current job metrics
-        $currentApps = $vacancy->applications_count ?? 0;
+        $currentApps = \App\Models\JobApplication::where('tenant_id', $tenantId)
+            ->where('vacancy_id', $vacancy->id)
+            ->count();
         $currentViews = $vacancy->views_count ?? 0;
         // Carbon v3 `diffInDays` is signed; measure created_at -> now (older ->
         // newer) so days-posted is positive. The reversed form returned negative.

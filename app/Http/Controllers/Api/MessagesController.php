@@ -93,7 +93,8 @@ class MessagesController extends BaseApiController
         $result = $this->messageService->getMessages($otherUserId, $userId, $filters);
 
         // Mark as read when viewing (unless explicitly fetching newer messages for polling)
-        if ($filters['direction'] !== 'newer' || !$this->query('cursor')) {
+        if (empty(request()->attributes->get('verified_auth_claims', [])['impersonated_by'])
+            && ($filters['direction'] !== 'newer' || !$this->query('cursor'))) {
             $this->messageService->markAsRead($otherUserId, $userId);
         }
 

@@ -243,24 +243,9 @@ class AuthController extends BaseApiController
             $wantsStateless = $isMobile || isset($_SERVER['HTTP_X_STATELESS_AUTH']);
             $userTenantId = (int) $user['tenant_id'];
 
-            // ADMIN 2FA ENFORCEMENT — DISABLED until the dedicated setup UI
-            // ships. Re-enable via the FORCE_ADMIN_2FA env flag once the
-            // first-time setup page is in place. See temporary rollback at
-            // commit 7fecb5b13 → unblock at <next>.
-            $has2faEnabled = $this->totpService->isEnabled((int)$user['id'], $userTenantId);
-            $isAdminAccount = in_array(($user['role'] ?? ''), ['admin', 'tenant_admin', 'org_admin', 'super_admin'], true)
-                || !empty($user['is_super_admin'])
-                || !empty($user['is_tenant_super_admin']);
-
-            if (
-                filter_var(env('FORCE_ADMIN_2FA', false), FILTER_VALIDATE_BOOLEAN)
-                && TenantContext::runForTenant(
-                    $userTenantId,
-                    static fn (): bool => TenantContext::hasFeature('two_factor_authentication')
-                )
-                && $isAdminAccount
-                && !$has2faEnabled
-            ) {
+            $has2faEnabled = $this->totpService->isEnabled((int) $user['id'], $userTenantId);
+            $mfaRequired = app(\App\Services\TwoFactorPolicy::class)->required($user);
+            if ($mfaRequired && !$has2faEnabled) {
                 $setupToken = $this->twoFactorChallengeManager->create(
                     (int)$user['id'],
                     ['totp_setup'],
@@ -286,7 +271,7 @@ class AuthController extends BaseApiController
             // The users.totp_enabled column can drift (e.g. initializeSetup resets
             // the settings row to is_enabled=0 but leaves users.totp_enabled=1),
             // which would gate login on 2FA the verify endpoint can't satisfy.
-            $isTrustedDevice = $has2faEnabled
+            $isTrustedDevice = !$mfaRequired && $has2faEnabled
                 && $this->totpService->isTrustedDevice((int)$user['id'], null, $userTenantId);
 
             if ($has2faEnabled && !$isTrustedDevice) {
@@ -317,7 +302,7 @@ class AuthController extends BaseApiController
                     'requires_2fa' => true,
                     'two_factor_token' => $twoFactorToken,
                     'methods' => ['totp', 'backup_code'],
-                    'allow_trusted_device' => (bool) ($authenticationConfig['two_factor.allow_trusted_devices'] ?? true),
+                    'allow_trusted_device' => !$mfaRequired && (bool) ($authenticationConfig['two_factor.allow_trusted_devices'] ?? true),
                     'trusted_device_days' => (int) ($authenticationConfig['two_factor.trusted_device_days'] ?? 30),
                     'code' => ApiErrorCodes::AUTH_2FA_REQUIRED,
                     'message' => __('api_controllers_1.auth.two_factor_required'),
@@ -708,6 +693,7 @@ class AuthController extends BaseApiController
                     'is_super_admin' => !empty($user['is_super_admin']),
                     'is_tenant_super_admin' => !empty($user['is_tenant_super_admin']),
                     'refresh_family_id' => $refreshFamilyId,
+                    ...array_intersect_key($rotation['payload'], array_flip(['mfa_method', 'mfa_verified_at'])),
                 ],
                 $isMobile
             );
@@ -852,7 +838,8 @@ class AuthController extends BaseApiController
 
         $admin = DB::table('users')->where('id', $adminId)->first();
         if ($admin === null || ($admin->status ?? '') !== 'active'
-            || !\App\Support\Authorization\AdminTier::allows($admin)) {
+            || !\App\Support\Authorization\AdminTier::allows($admin)
+            || !$this->tokenService->isImpersonationAssuranceValid($payload)) {
             return $this->authError(
                 __('api.impersonation_actor_unavailable'),
                 ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
@@ -863,7 +850,8 @@ class AuthController extends BaseApiController
         $session = $this->tokenService->generateImpersonationSessionToken(
             $targetId,
             $tokenTenantId,
-            $adminId
+            $adminId,
+            $payload
         );
 
         \Illuminate\Support\Facades\Log::info('[Auth] Impersonation session started', [

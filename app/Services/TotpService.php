@@ -73,8 +73,32 @@ class TotpService
      */
     public static function verifyCode(string $secret, string $code, int $window = 1): bool
     {
+        return self::matchingStep($secret, $code, $window) !== null;
+    }
+
+    /** Resolve the accepted 30-second step; OTPHP's verify leeway is seconds. */
+    private static function matchingStep(string $secret, string $code, int $window = 1): ?int
+    {
+        if (preg_match('/^[0-9]{6}$/D', $code) !== 1) {
+            return null;
+        }
         $totp = TOTP::createFromSecret($secret);
-        return $totp->verify($code, null, $window);
+        $step = intdiv(now()->getTimestamp(), $totp->getPeriod());
+        for ($offset = -$window; $offset <= $window; $offset++) {
+            $candidate = $step + $offset;
+            if ($candidate >= 0 && hash_equals($totp->at($candidate * $totp->getPeriod()), $code)) {
+                return $candidate;
+            }
+        }
+        return null;
+    }
+
+    /** Pending enrollment must not survive a password change or logout-all. */
+    private static function revocationVersion(int $userId): int
+    {
+        $row = DB::selectOne('SELECT UNIX_TIMESTAMP(revoked_at) AS version FROM revoked_tokens WHERE jti = ?',
+            ['global_revoke_' . $userId]);
+        return (int) ($row->version ?? 0);
     }
 
     /**
@@ -132,8 +156,8 @@ class TotpService
     /**
      * Check if current device is trusted for this user.
      *
-     * Checks the X-Trusted-Device header first (sent by the React SPA from
-     * localStorage), then falls back to the cookie for legacy/session clients.
+     * Browsers present an HttpOnly cookie. Stateless clients may present the
+     * explicit header; every credential remains user- and tenant-bound.
      */
     public static function isTrustedDevice(int $userId, ?string $deviceHash = null, ?int $tenantId = null): bool
     {
@@ -176,10 +200,8 @@ class TotpService
     /**
      * Trust the current device for this user.
      *
-     * Returns the plain token so the caller can include it in the API response.
-     * The frontend stores it in localStorage and sends it via X-Trusted-Device
-     * header on subsequent login requests — cookies don't work cross-origin
-     * (SameSite=Lax blocks cross-origin POST from app.* to api.*).
+     * Returns the plain token to the controller, which puts it in an HttpOnly
+     * browser cookie or the native client's secure-storage response.
      */
     public static function trustDevice(int $userId, ?string $deviceHash = null, ?int $tenantId = null): ?string
     {
@@ -244,18 +266,27 @@ class TotpService
             return ['success' => false, 'error' => 'Authentication error. Please contact support.'];
         }
 
-        if (!self::verifyCode($secret, $code)) {
+        $step = self::matchingStep($secret, $code);
+        if ($step === null) {
             self::recordAttempt($userId, false, 'totp', 'invalid_code', $tenantId);
             return ['success' => false, 'error' => 'Invalid code. Please try again.'];
         }
 
-        DB::update(
+        $consumed = DB::update(
             "UPDATE user_totp_settings SET
                 last_verified_at = NOW(),
+                last_used_step = ?,
                 verified_device_count = verified_device_count + 1
-             WHERE user_id = ? AND tenant_id = ?",
-            [$userId, $tenantId]
+             WHERE user_id = ? AND tenant_id = ? AND is_enabled = 1
+               AND totp_secret_encrypted = ?
+               AND (last_used_step IS NULL OR last_used_step < ?)",
+            [$step, $userId, $tenantId, $settings->totp_secret_encrypted, $step]
         );
+
+        if ($consumed !== 1) {
+            self::recordAttempt($userId, false, 'totp', 'replayed_code', $tenantId);
+            return ['success' => false, 'error' => __('api.validation_failed')];
+        }
 
         self::recordAttempt($userId, true, 'totp', null, $tenantId);
 
@@ -385,43 +416,58 @@ class TotpService
     public static function initializeSetup(int $userId, ?int $tenantId = null): array
     {
         $tenantId = self::resolveTenantId($tenantId);
+        return DB::transaction(function () use ($userId, $tenantId): array {
+            $user = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)
+                ->lockForUpdate()->first(['email']);
 
-        $user = DB::selectOne("SELECT email FROM users WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
+            if (!$user) {
+                throw new \RuntimeException('User not found');
+            }
 
-        if (!$user) {
-            throw new \RuntimeException('User not found');
-        }
+            $settings = DB::table('user_totp_settings')->where('user_id', $userId)
+                ->where('tenant_id', $tenantId)->first();
+            if ($settings && $settings->is_enabled) {
+                throw new \RuntimeException('Two-factor authentication is already enabled.');
+            }
+            // Refreshing or retrying the accessible setup page must keep the secret
+            // already scanned into the authenticator. The user lock also prevents
+            // setup racing with confirmation or credential recovery.
+            $revocationVersion = self::revocationVersion($userId);
+            $secret = $settings && $settings->is_pending_setup
+                && (int) $settings->setup_revocation_version === $revocationVersion
+                ? TotpEncryption::decrypt($settings->totp_secret_encrypted)
+                : self::generateSecret();
+            $encryptedSecret = TotpEncryption::encrypt($secret);
 
-        $secret = self::generateSecret();
-        $encryptedSecret = TotpEncryption::encrypt($secret);
+            DB::insert(
+                "INSERT INTO user_totp_settings
+                 (user_id, tenant_id, totp_secret_encrypted, is_enabled, is_pending_setup, setup_revocation_version)
+                 VALUES (?, ?, ?, 0, 1, ?)
+                 ON DUPLICATE KEY UPDATE
+                    totp_secret_encrypted = VALUES(totp_secret_encrypted),
+                    is_enabled = 0,
+                    is_pending_setup = 1,
+                    setup_revocation_version = VALUES(setup_revocation_version),
+                    updated_at = NOW()",
+                [$userId, $tenantId, $encryptedSecret, $revocationVersion]
+            );
 
-        DB::insert(
-            "INSERT INTO user_totp_settings
-             (user_id, tenant_id, totp_secret_encrypted, is_enabled, is_pending_setup)
-             VALUES (?, ?, ?, 0, 1)
-             ON DUPLICATE KEY UPDATE
-                totp_secret_encrypted = VALUES(totp_secret_encrypted),
-                is_enabled = 0,
-                is_pending_setup = 1,
-                updated_at = NOW()",
-            [$userId, $tenantId, $encryptedSecret]
-        );
+            // Keep users.totp_enabled in sync — without this, abandoning a re-setup
+            // leaves the user locked out (login requires 2FA, verify rejects it).
+            DB::update(
+                "UPDATE users SET totp_enabled = 0 WHERE id = ? AND tenant_id = ?",
+                [$userId, $tenantId]
+            );
 
-        // Keep users.totp_enabled in sync — without this, abandoning a re-setup
-        // leaves the user locked out (login requires 2FA, verify rejects it).
-        DB::update(
-            "UPDATE users SET totp_enabled = 0 WHERE id = ? AND tenant_id = ?",
-            [$userId, $tenantId]
-        );
+            $provisioningUri = self::getProvisioningUri($secret, $user->email);
+            $qrCode = self::generateQrCode($provisioningUri);
 
-        $provisioningUri = self::getProvisioningUri($secret, $user->email);
-        $qrCode = self::generateQrCode($provisioningUri);
-
-        return [
-            'secret' => $secret,
-            'provisioning_uri' => $provisioningUri,
-            'qr_code' => $qrCode,
-        ];
+            return [
+                'secret' => $secret,
+                'provisioning_uri' => $provisioningUri,
+                'qr_code' => $qrCode,
+            ];
+        });
     }
 
     /**
@@ -433,63 +479,76 @@ class TotpService
     {
         $tenantId = self::resolveTenantId($tenantId);
 
-        $rateLimit = self::checkRateLimit($userId, $tenantId);
-        if ($rateLimit['limited']) {
-            return ['success' => false, 'error' => $rateLimit['message']];
-        }
+        return DB::transaction(function () use ($userId, $code, $tenantId): array {
+            $user = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)
+                ->lockForUpdate()->first(['id']);
+            if (!$user) {
+                return ['success' => false, 'error' => __('api.user_not_found')];
+            }
 
-        $settings = DB::selectOne(
-            "SELECT totp_secret_encrypted FROM user_totp_settings
-             WHERE user_id = ? AND tenant_id = ? AND is_pending_setup = 1",
-            [$userId, $tenantId]
-        );
+            $rateLimit = self::checkRateLimit($userId, $tenantId);
+            if ($rateLimit['limited']) {
+                return ['success' => false, 'error' => $rateLimit['message']];
+            }
 
-        if (!$settings) {
-            return ['success' => false, 'error' => '2FA setup not initialized. Please start over.'];
-        }
-
-        try {
-            $secret = TotpEncryption::decrypt($settings->totp_secret_encrypted);
-        } catch (\Exception $e) {
-            Log::error("TOTP decrypt error for user $userId: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Encryption error. Please start setup again.'];
-        }
-
-        if (!self::verifyCode($secret, $code)) {
-            self::recordAttempt($userId, false, 'totp', 'invalid_code_during_setup', $tenantId);
-            return ['success' => false, 'error' => 'Invalid code. Please check the code and try again.'];
-        }
-
-        DB::beginTransaction();
-        try {
-            DB::update(
-                "UPDATE user_totp_settings SET
-                    is_enabled = 1,
-                    is_pending_setup = 0,
-                    enabled_at = NOW(),
-                    last_verified_at = NOW(),
-                    verified_device_count = verified_device_count + 1
-                 WHERE user_id = ? AND tenant_id = ?",
+            $settings = DB::selectOne(
+                "SELECT totp_secret_encrypted, setup_revocation_version FROM user_totp_settings
+                 WHERE user_id = ? AND tenant_id = ? AND is_pending_setup = 1",
                 [$userId, $tenantId]
             );
 
-            DB::update(
-                "UPDATE users SET totp_enabled = 1, totp_setup_required = 0 WHERE id = ? AND tenant_id = ?",
-                [$userId, $tenantId]
-            );
+            if (!$settings) {
+                return ['success' => false, 'error' => '2FA setup not initialized. Please start over.'];
+            }
+            if ((int) $settings->setup_revocation_version !== self::revocationVersion($userId)) {
+                return ['success' => false, 'error' => __('api.session_expired')];
+            }
 
-            $backupCodes = self::generateBackupCodes($userId, $tenantId);
+            try {
+                $secret = TotpEncryption::decrypt($settings->totp_secret_encrypted);
+            } catch (\Exception $e) {
+                Log::error("TOTP decrypt error for user $userId: " . $e->getMessage());
+                return ['success' => false, 'error' => 'Encryption error. Please start setup again.'];
+            }
 
-            self::recordAttempt($userId, true, 'totp', null, $tenantId);
+            $step = self::matchingStep($secret, $code);
+            if ($step === null) {
+                self::recordAttempt($userId, false, 'totp', 'invalid_code_during_setup', $tenantId);
+                return ['success' => false, 'error' => 'Invalid code. Please check the code and try again.'];
+            }
 
-            DB::commit();
+            DB::beginTransaction();
+            try {
+                DB::update(
+                    "UPDATE user_totp_settings SET
+                        is_enabled = 1,
+                        is_pending_setup = 0,
+                        enabled_at = NOW(),
+                        last_verified_at = NOW(),
+                        last_used_step = ?,
+                        verified_device_count = verified_device_count + 1
+                     WHERE user_id = ? AND tenant_id = ?",
+                    [$step, $userId, $tenantId]
+                );
 
-            return ['success' => true, 'backup_codes' => $backupCodes];
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("TOTP setup error for user $userId: " . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to enable 2FA. Please try again.'];
-        }
+                DB::update(
+                    "UPDATE users SET totp_enabled = 1, totp_setup_required = 0 WHERE id = ? AND tenant_id = ?",
+                    [$userId, $tenantId]
+                );
+
+                $backupCodes = self::generateBackupCodes($userId, $tenantId);
+
+                self::recordAttempt($userId, true, 'totp', null, $tenantId);
+
+                DB::commit();
+
+                return ['success' => true, 'backup_codes' => $backupCodes];
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error("TOTP setup error for user $userId: " . $e->getMessage());
+                return ['success' => false, 'error' => 'Failed to enable 2FA. Please try again.'];
+            }
+        });
     }
 
     /**
@@ -510,12 +569,16 @@ class TotpService
                     ->where('id', $userId)
                     ->where('tenant_id', $tenantId)
                     ->lockForUpdate()
-                    ->first(['id', 'password_hash']);
+                    ->first();
                 if ($user === null || !is_string($user->password_hash)) {
                     return 'invalid_password';
                 }
                 if (!password_verify($password, $user->password_hash)) {
                     return 'invalid_password';
+                }
+
+                if (app(TwoFactorPolicy::class)->required($user)) {
+                    return 'mfa_required';
                 }
 
                 DB::delete("DELETE FROM user_totp_settings WHERE user_id = ? AND tenant_id = ?", [$userId, $tenantId]);
@@ -549,6 +612,9 @@ class TotpService
             return ['success' => false, 'error' => 'Failed to disable 2FA.'];
         }
 
+        if ($disableOutcome === 'mfa_required') {
+            return ['success' => false, 'error' => __('mfa.disable_forbidden')];
+        }
         if ($disableOutcome !== 'disabled') {
             return ['success' => false, 'error' => 'Invalid password.'];
         }
@@ -595,6 +661,29 @@ class TotpService
         }
 
         return $codes;
+    }
+
+    /** Notify after committed security maintenance, in the recipient's locale. */
+    public static function notifySecurityChange(int $userId, int $tenantId): void
+    {
+        try {
+            $user = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)
+                ->first(['id', 'email', 'preferred_language']);
+            if (!$user) return;
+            TenantContext::runForTenant($tenantId, function () use ($user, $userId, $tenantId): void {
+                \App\I18n\LocaleContext::withLocale($user, function () use ($user, $userId, $tenantId): void {
+                    $subject = __('emails.mfa_changed.subject');
+                    $body = __('emails.mfa_changed.body');
+                    \App\Models\Notification::createNotification($userId, $body, '/settings?tab=security', 'security', true);
+                    $html = \App\Core\EmailTemplateBuilder::make()->theme('warning')->title($subject)->paragraph($body)->render();
+                    if (!EmailDispatchService::sendRaw($user->email, $subject, $html, null, null, null, 'security_alert', ['tenant_id' => $tenantId])) {
+                        Log::warning('[2FA] Security-change email was not delivered', ['user_id' => $userId, 'tenant_id' => $tenantId]);
+                    }
+                });
+            });
+        } catch (\Throwable $e) {
+            Log::warning('[2FA] Security-change notification failed', ['user_id' => $userId, 'tenant_id' => $tenantId, 'exception' => get_class($e)]);
+        }
     }
 
     /**
@@ -668,6 +757,11 @@ class TotpService
 
         DB::beginTransaction();
         try {
+            $user = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->lockForUpdate()->first();
+            if (!$user) {
+                DB::rollBack();
+                return ['success' => false, 'error' => 'User not found.'];
+            }
             $ip = request()->ip();
             $userAgent = request()->userAgent();
 
@@ -681,6 +775,11 @@ class TotpService
             DB::delete("DELETE FROM user_totp_settings WHERE user_id = ? AND tenant_id = ?", [$userId, $tenantId]);
             DB::delete("DELETE FROM user_backup_codes WHERE user_id = ? AND tenant_id = ?", [$userId, $tenantId]);
             DB::update("UPDATE users SET totp_enabled = 0, totp_setup_required = 1 WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
+            self::revokeAllDevices($userId, 'admin_2fa_reset');
+            if (app(TokenService::class)->revokeAllTokensForUser($userId, 'admin_2fa_reset') < 1) {
+                throw new \RuntimeException('Session revocation failed.');
+            }
+            DB::afterCommit(fn () => self::notifySecurityChange($userId, $tenantId));
 
             DB::commit();
             return ['success' => true];

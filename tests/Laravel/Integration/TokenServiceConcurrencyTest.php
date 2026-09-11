@@ -43,6 +43,9 @@ final class TokenServiceConcurrencyTest extends TestCase
             DB::reconnect();
 
             if ($this->fixtureUserId !== null) {
+                foreach (['user_totp_settings', 'user_backup_codes', 'totp_verification_attempts'] as $table) {
+                    DB::table($table)->where('user_id', $this->fixtureUserId)->where('tenant_id', $this->fixtureTenantId)->delete();
+                }
                 DB::table('refresh_token_sessions')
                     ->where('user_id', $this->fixtureUserId)
                     ->delete();
@@ -70,6 +73,7 @@ final class TokenServiceConcurrencyTest extends TestCase
     {
         [$tenantId, $userId] = $this->createCommittedFixture();
         $service = new TokenService();
+        $access = $service->generateToken($userId, $tenantId);
         $confirmation = $service->generateSecurityConfirmationToken(
             $userId,
             $tenantId,
@@ -135,12 +139,61 @@ final class TokenServiceConcurrencyTest extends TestCase
                 $userId,
                 $tenantId
             ));
+            self::assertNotNull($service->validateToken($access), 'Control: consistent reads still observe the old snapshot.');
+            self::assertNull($service->validateToken($access, true));
+            self::assertFalse($service->isAuthenticationStartValid($userId, (int) $payload['iat']));
         } finally {
             if ($registration->transactionLevel() > 0) {
                 $registration->rollBack();
             }
             DB::purge($revocationConnection);
             config(["database.connections.{$revocationConnection}" => null]);
+        }
+    }
+
+    public function test_simultaneous_factor_consumption_has_exactly_one_winner(): void
+    {
+        [$tenantId, $userId] = $this->createCommittedFixture();
+        $secret = \App\Services\TotpService::generateSecret();
+        DB::table('user_totp_settings')->insert([
+            'user_id' => $userId, 'tenant_id' => $tenantId, 'is_enabled' => 1,
+            'totp_secret_encrypted' => \App\Core\TotpEncryption::encrypt($secret),
+        ]);
+        $recovery = \App\Services\TotpService::generateBackupCodes($userId, $tenantId)[0];
+        foreach (['totp', 'recovery'] as $method) {
+            $code = $method === 'totp' ? \OTPHP\TOTP::createFromSecret($secret)->now() : $recovery;
+            DB::disconnect();
+            $workers = [];
+            for ($index = 0; $index < 2; $index++) {
+                $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+                if ($sockets === false) throw new RuntimeException('mfa_concurrency_socket_failed');
+                $pid = pcntl_fork();
+                if ($pid === -1) throw new RuntimeException('mfa_concurrency_fork_failed');
+                if ($pid === 0) {
+                    fclose($sockets[0]);
+                    fread($sockets[1], 1);
+                    try {
+                        DB::purge(); DB::reconnect();
+                        DB::statement('SET SESSION innodb_lock_wait_timeout = 5');
+                        $result = $method === 'totp'
+                            ? \App\Services\TotpService::verifyLogin($userId, $code, $tenantId)
+                            : \App\Services\TotpService::verifyBackupCode($userId, $code, $tenantId);
+                        fwrite($sockets[1], json_encode(['status' => $result['success'] ? 'accepted' : 'rejected'], JSON_THROW_ON_ERROR));
+                        fclose($sockets[1]); exit(0);
+                    } catch (Throwable $exception) {
+                        fwrite($sockets[1], json_encode(['status' => 'error', 'exception' => get_class($exception)], JSON_THROW_ON_ERROR));
+                        fclose($sockets[1]); exit(1);
+                    }
+                }
+                fclose($sockets[1]);
+                $workers[] = ['pid' => $pid, 'socket' => $sockets[0], 'buffer' => ''];
+            }
+            foreach ($workers as $worker) fwrite($worker['socket'], '1');
+            $results = $this->awaitWorkers($workers, 12.0);
+            DB::purge(); DB::reconnect();
+            $statuses = array_column($results, 'status');
+            sort($statuses);
+            self::assertSame(['accepted', 'rejected'], $statuses, $method);
         }
     }
 

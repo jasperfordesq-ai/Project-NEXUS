@@ -122,7 +122,8 @@ class TwoFactorControllerTest extends TestCase
 
     public function test_setup_returns_qr_data(): void
     {
-        $this->authenticatedUser();
+        $user = $this->authenticatedUser();
+        $this->withHeader('Authorization', 'Bearer ' . app(TokenService::class)->generateToken($user->id, $this->testTenantId));
         $this->setTwoFactorEnrollmentAllowed(true);
 
         $response = $this->apiPost('/v2/auth/2fa/setup');
@@ -213,7 +214,7 @@ class TwoFactorControllerTest extends TestCase
         ]);
         $setupResponse->assertOk();
 
-        $tokenService = Mockery::mock(TokenService::class);
+        $tokenService = Mockery::mock(TokenService::class)->makePartial();
         $tokenService->shouldReceive('generateToken')
             ->once()
             ->andThrow(new \RuntimeException('Simulated token issuance failure.'));
@@ -227,12 +228,17 @@ class TwoFactorControllerTest extends TestCase
             ->assertJsonPath('errors.0.code', 'SETUP_FAILED');
 
         $this->assertNotNull($challengeManager->get($challenge));
+        $this->assertDatabaseHas('user_totp_settings', [
+            'user_id' => $user->id, 'is_enabled' => 0, 'is_pending_setup' => 1,
+        ]);
+        $this->assertDatabaseMissing('user_backup_codes', ['user_id' => $user->id]);
         $this->assertSame($this->testTenantId, TenantContext::getId());
     }
 
     public function test_setup_and_setup_verification_are_blocked_when_new_enrollment_is_disabled(): void
     {
-        $this->authenticatedUser();
+        $user = $this->authenticatedUser();
+        $this->withHeader('Authorization', 'Bearer ' . app(TokenService::class)->generateToken($user->id, $this->testTenantId));
         $this->setTwoFactorEnrollmentAllowed(false);
 
         $this->apiPost('/v2/auth/2fa/setup')

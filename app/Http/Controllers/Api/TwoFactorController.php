@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\EmailDispatchService;
 use App\Services\TotpService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -40,15 +41,18 @@ class TwoFactorController extends BaseApiController
      *     (created by AuthController::login when an admin without 2FA
      *     authenticates). The challenge must have method='totp_setup'.
      *
-     * Returns the user ID, setup token, and tenant that owns the account. On
-     * an invalid setup token, falls through to the normal requireAuth() flow
-     * which will 401 the request.
+     * Returns the user ID, setup token, and tenant that owns the account.
+     * An explicitly supplied invalid challenge fails closed; it must not
+     * silently select the transport's authenticated account instead.
      */
     private function resolveSetupIdentity(): array
     {
         $allInput = $this->getAllInput();
         $setupToken = $allInput['two_factor_token'] ?? null;
-        if (is_string($setupToken) && $setupToken !== '') {
+        if ($setupToken !== null) {
+            if (!is_string($setupToken) || $setupToken === '') {
+                $this->rejectSetupChallenge();
+            }
             $challenge = $this->challengeManager->get($setupToken);
             if (
                 $challenge
@@ -57,8 +61,59 @@ class TwoFactorController extends BaseApiController
             ) {
                 return [(int) $challenge['user_id'], $setupToken, (int) $challenge['tenant_id']];
             }
+            $this->rejectSetupChallenge();
         }
         return [$this->requireAuth(), null, (int) TenantContext::getId()];
+    }
+
+    private function rejectSetupChallenge(): never
+    {
+        throw new HttpResponseException($this->respondWithError(
+            'AUTH_2FA_TOKEN_EXPIRED', __('api.session_expired'), null, 401
+        ));
+    }
+
+    /** Called inside the transaction, before any enrollment or token mutation. */
+    private function lockSetupIdentity(int $userId, ?string $setupToken, int $tenantId): void
+    {
+        $user = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)
+            ->lockForUpdate()->first();
+        if (!$user || ($user->status ?? '') !== 'active') {
+            $this->rejectSetupChallenge();
+        }
+        if ($setupToken === null) {
+            $claims = $this->tokenService->validateToken((string) request()->bearerToken(), true);
+            if (!$claims || (int) ($claims['user_id'] ?? 0) !== $userId
+                || (int) ($claims['tenant_id'] ?? 0) !== $tenantId
+                || !empty($claims['impersonated_by'])
+                || (app(\App\Services\TwoFactorPolicy::class)->required($user)
+                    && !app(\App\Services\TwoFactorPolicy::class)->satisfied($claims))) {
+                $this->rejectSetupChallenge();
+            }
+            return;
+        }
+        $challenge = $this->challengeManager->get($setupToken);
+        $startedAt = (int) ($challenge['authentication_started_at'] ?? 0);
+        if ($startedAt < 1) {
+            $startedAt = (int) strtotime((string) ($challenge['created_at'] ?? ''));
+        }
+        if (!$challenge || (int) ($challenge['user_id'] ?? 0) !== $userId
+            || (int) ($challenge['tenant_id'] ?? 0) !== $tenantId
+            || !in_array('totp_setup', $challenge['methods'] ?? [], true)
+            || !$this->tokenService->isAuthenticationStartValid($userId, $startedAt)) {
+            $this->rejectSetupChallenge();
+        }
+        if (is_array($challenge['sso_provider_context'] ?? null)) {
+            try {
+                \App\Services\Auth\SsoOidcService::assertPrivilegedProviderTrusted($user, $challenge['sso_provider_context']);
+            } catch (\RuntimeException $e) {
+                $this->rejectSetupChallenge();
+            }
+        }
+        $gate = app(\App\Services\TenantSettingsService::class)->checkLoginGatesForUser((array) $user);
+        if ($gate) {
+            throw new HttpResponseException($this->respondWithError($gate['code'], $gate['message'], null, 403));
+        }
     }
 
     /** GET auth/2fa/status */
@@ -68,7 +123,8 @@ class TwoFactorController extends BaseApiController
 
         return $this->respondWithData([
             'enabled' => $this->totpService->isEnabled($userId),
-            'enrollment_allowed' => TenantContext::hasFeature('two_factor_authentication'),
+            'enrollment_allowed' => TenantContext::hasFeature('two_factor_authentication') || app(\App\Services\TwoFactorPolicy::class)->required(auth()->user()),
+            'enforcement_required' => app(\App\Services\TwoFactorPolicy::class)->required(auth()->user()),
             'setup_required' => $this->totpService->isSetupRequired($userId),
             'backup_codes_remaining' => $this->totpService->getBackupCodeCount($userId),
         ]);
@@ -77,15 +133,23 @@ class TwoFactorController extends BaseApiController
     /** POST auth/2fa/setup */
     public function setup(): JsonResponse
     {
+        return DB::transaction(fn (): JsonResponse => $this->setupWithinTransaction());
+    }
+
+    private function setupWithinTransaction(): JsonResponse
+    {
         [$userId, $setupToken, $tenantId] = $this->resolveSetupIdentity();
+        $this->lockSetupIdentity($userId, $setupToken, $tenantId);
         $enrollmentAllowed = TenantContext::runForTenant(
             $tenantId,
             fn (): bool => TenantContext::hasFeature('two_factor_authentication')
         );
-        if (!$enrollmentAllowed) {
+        if (!$enrollmentAllowed && !app(\App\Services\TwoFactorPolicy::class)->required(
+            DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->first()
+        )) {
             return $this->respondWithError('FEATURE_DISABLED', __('api.feature_disabled'), null, 403);
         }
-        $this->rateLimit('2fa_setup', 5, 300);
+        $this->rateLimit('2fa_setup', 5, 300, "mfa-user:{$tenantId}:{$userId}");
 
         if ($this->totpService->isEnabled($userId, $tenantId)) {
             return $this->respondWithError(
@@ -120,18 +184,26 @@ class TwoFactorController extends BaseApiController
     /** POST auth/2fa/verify */
     public function verify(): JsonResponse
     {
+        return DB::transaction(fn (): JsonResponse => $this->verifyWithinTransaction());
+    }
+
+    private function verifyWithinTransaction(): JsonResponse
+    {
         [$userId, $setupToken, $tenantId] = $this->resolveSetupIdentity();
+        $this->lockSetupIdentity($userId, $setupToken, $tenantId);
         $enrollmentAllowed = TenantContext::runForTenant(
             $tenantId,
             fn (): bool => TenantContext::hasFeature('two_factor_authentication')
         );
-        if (!$enrollmentAllowed) {
+        if (!$enrollmentAllowed && !app(\App\Services\TwoFactorPolicy::class)->required(
+            DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->first()
+        )) {
             return $this->respondWithError('FEATURE_DISABLED', __('api.feature_disabled'), null, 403);
         }
-        $this->rateLimit('2fa_verify', 10, 300);
+        $this->rateLimit('2fa_verify', 10, 300, "mfa-user:{$tenantId}:{$userId}");
 
         $data = $this->getAllInput();
-        $code = trim($data['code'] ?? '');
+        $code = is_string($data['code'] ?? null) ? trim($data['code']) : '';
 
         if (empty($code)) {
             return $this->respondWithError(
@@ -153,63 +225,73 @@ class TwoFactorController extends BaseApiController
             );
         }
 
+        $completedChallenge = $setupToken ? $this->challengeManager->get($setupToken) : null;
+        if (is_array($completedChallenge['pending_identity_link'] ?? null)) {
+            $user = (array) DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->first();
+            app(\App\Services\Auth\SocialAuthService::class)->applyCallbackIdentityLink(
+                $user, $completedChallenge['pending_identity_link'], (int) $completedChallenge['authentication_started_at']
+            );
+        }
+
         // Security notification + email: render in the user's preferred_language
         // so both bell text and the email match the recipient's locale, not the
         // request caller's (which can differ for impersonation/admin flows).
-        try {
-            TenantContext::runForTenant(
-                $tenantId,
-                function () use ($userId, $tenantId): void {
-                    $user = User::query()
-                        ->whereKey($userId)
-                        ->where('tenant_id', $tenantId)
-                        ->first();
-                    $userLocale = $user?->preferred_language;
+        DB::afterCommit(function () use ($userId, $tenantId): void {
+            try {
+                TenantContext::runForTenant(
+                    $tenantId,
+                    function () use ($userId, $tenantId): void {
+                        $user = User::query()
+                            ->whereKey($userId)
+                            ->where('tenant_id', $tenantId)
+                            ->first();
+                        $userLocale = $user?->preferred_language;
 
-                    LocaleContext::withLocale($userLocale, function () use ($user, $userId, $tenantId) {
-                        try {
-                            Notification::createNotification(
-                                $userId,
-                                __('api_controllers_2.two_factor.enabled_notification'),
-                                '/settings/security',
-                                '2fa_enabled'
-                            );
-                            \App\Services\NotificationDispatcher::fanOutPush(
-                                $userId,
-                                '2fa_enabled',
-                                __('api_controllers_2.two_factor.enabled_notification'),
-                                '/settings/security'
-                            );
-                        } catch (\Throwable $e) {
-                            Log::warning('[2FA] Failed to create 2FA enabled notification: ' . $e->getMessage(), ['user_id' => $userId]);
-                        }
+                        LocaleContext::withLocale($userLocale, function () use ($user, $userId, $tenantId) {
+                            try {
+                                Notification::createNotification(
+                                    $userId,
+                                    __('api_controllers_2.two_factor.enabled_notification'),
+                                    '/settings?tab=security',
+                                    '2fa_enabled'
+                                );
+                                \App\Services\NotificationDispatcher::fanOutPush(
+                                    $userId,
+                                    '2fa_enabled',
+                                    __('api_controllers_2.two_factor.enabled_notification'),
+                                    '/settings?tab=security'
+                                );
+                            } catch (\Throwable $e) {
+                                Log::warning('[2FA] Failed to create 2FA enabled notification: ' . $e->getMessage(), ['user_id' => $userId]);
+                            }
 
-                        if (!$user || !$user->email) {
-                            return;
-                        }
+                            if (!$user || !$user->email) {
+                                return;
+                            }
 
-                        $tenantName = TenantContext::get()['name'] ?? 'Project NEXUS';
-                        $userName   = $user->first_name ?? $user->name ?? '';
+                            $tenantName = TenantContext::get()['name'] ?? 'Project NEXUS';
+                            $userName   = $user->first_name ?? $user->name ?? '';
 
-                        $html = EmailTemplateBuilder::make()
-                            ->theme('success')
-                            ->title(__('emails_security_alerts.2fa_enabled.title'))
-                            ->previewText(__('emails_security_alerts.2fa_enabled.preview'))
-                            ->greeting($userName)
-                            ->paragraph(__('emails_security_alerts.2fa_enabled.body'))
-                            ->paragraph(__('emails_security_alerts.2fa_enabled.warning'))
-                            ->render();
+                            $html = EmailTemplateBuilder::make()
+                                ->theme('success')
+                                ->title(__('emails_security_alerts.2fa_enabled.title'))
+                                ->previewText(__('emails_security_alerts.2fa_enabled.preview'))
+                                ->greeting($userName)
+                                ->paragraph(__('emails_security_alerts.2fa_enabled.body'))
+                                ->paragraph(__('emails_security_alerts.2fa_enabled.warning'))
+                                ->render();
 
-                        $subject = __('emails_security_alerts.2fa_enabled.subject', ['community' => $tenantName]);
-                        if (!EmailDispatchService::sendRaw($user->email, $subject, $html, null, null, null, 'security_alert', ['tenant_id' => $tenantId])) {
-                            Log::warning('[2FA] Failed to send 2FA enabled email', ['user_id' => $userId]);
-                        }
-                    });
-                }
-            );
-        } catch (\Throwable $e) {
-            Log::warning('[2FA] Failed to send 2FA enabled email: ' . $e->getMessage(), ['user_id' => $userId]);
-        }
+                            $subject = __('emails_security_alerts.2fa_enabled.subject', ['community' => $tenantName]);
+                            if (!EmailDispatchService::sendRaw($user->email, $subject, $html, null, null, null, 'security_alert', ['tenant_id' => $tenantId])) {
+                                Log::warning('[2FA] Failed to send 2FA enabled email', ['user_id' => $userId]);
+                            }
+                        });
+                    }
+                );
+            } catch (\Throwable $e) {
+                Log::warning('[2FA] Failed to send 2FA enabled email: ' . $e->getMessage(), ['user_id' => $userId]);
+            }
+        });
 
         // If we were authenticated via a 2FA setup token (first-time admin
         // setup flow), issue real access + refresh tokens under the challenge
@@ -228,22 +310,25 @@ class TwoFactorController extends BaseApiController
                             throw new \RuntimeException('2FA setup user could not be resolved in the challenge tenant.');
                         }
 
-                        $isMobile = false;
+                        $isMobile = $this->tokenService->isMobileRequest();
                         $accessToken = $this->tokenService->generateToken(
                             (int) $userRow->id,
                             $tenantId,
                             [
+                                ...\App\Services\TwoFactorPolicy::claims('totp'),
                                 'role' => $userRow->role,
                                 'email' => $userRow->email,
                                 'is_super_admin' => !empty($userRow->is_super_admin),
                                 'is_tenant_super_admin' => !empty($userRow->is_tenant_super_admin),
+                                'is_god' => !empty($userRow->is_god),
                             ],
                             $isMobile
                         );
                         $refreshToken = $this->tokenService->generateRefreshToken(
                             (int) $userRow->id,
                             $tenantId,
-                            $isMobile
+                            $isMobile,
+                            \App\Services\TwoFactorPolicy::claims('totp')
                         );
 
                         return [
@@ -261,10 +346,12 @@ class TwoFactorController extends BaseApiController
                     'tenant_id' => $tenantId,
                 ]);
 
-                return $this->respondWithError('SETUP_FAILED', __('api.server_error'), null, 500);
+                throw new HttpResponseException($this->respondWithError('SETUP_FAILED', __('api.server_error'), null, 500));
             }
 
-            $this->challengeManager->consume($setupToken);
+            if (!$this->challengeManager->consume($setupToken)) {
+                $this->rejectSetupChallenge();
+            }
         }
 
         $payload = ['backup_codes' => $result['backup_codes'] ?? []];
@@ -275,11 +362,65 @@ class TwoFactorController extends BaseApiController
         return $this->respondWithData($payload);
     }
 
+    /** Replace recovery codes only after a new, single-use authenticator proof. */
+    public function regenerateRecoveryCodes(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('2fa_recovery_codes', 5, 300);
+        $claims = request()->attributes->get('verified_auth_claims', []);
+        if (!empty($claims['impersonated_by'])) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+        }
+        $code = $this->input('code', '');
+        if (!is_string($code) || !preg_match('/^[0-9]{6}$/D', $code)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.code_required'), 'code', 422);
+        }
+        $tenantId = (int) auth()->user()->tenant_id;
+        $result = DB::transaction(function () use ($userId, $tenantId, $code): array {
+            $user = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->lockForUpdate()->first();
+            if (!$user || $user->status !== 'active') {
+                return ['success' => false];
+            }
+            // Revalidate the bearer after taking the same lock as security resets.
+            if (!$this->tokenService->validateToken((string) request()->bearerToken(), true)) {
+                return ['success' => false];
+            }
+            $verified = $this->totpService->verifyLogin($userId, $code, $tenantId);
+            if (!$verified['success']) {
+                return ['success' => false]; // Commit the failed-attempt counter.
+            }
+            $codes = $this->totpService->generateBackupCodes($userId, $tenantId);
+            $this->totpService->recordAttempt($userId, true, 'totp', 'recovery_codes_regenerated', $tenantId);
+            DB::afterCommit(fn () => TotpService::notifySecurityChange($userId, $tenantId));
+            return ['success' => true, 'backup_codes' => $codes];
+        });
+        if (!$result['success']) {
+            return $this->respondWithError('VERIFICATION_FAILED', __('api.validation_failed'), 'code', 422);
+        }
+        return $this->respondWithData(['backup_codes' => $result['backup_codes']]);
+    }
+
+    /** Trusted-device removal does not weaken MFA or change the current session. */
+    public function revokeTrustedDevices(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('2fa_revoke_devices', 5, 300);
+        if (!empty(request()->attributes->get('verified_auth_claims', [])['impersonated_by'])) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+        }
+        $count = $this->totpService->revokeAllDevices($userId);
+        return $this->respondWithData(['revoked_count' => $count])
+            ->withCookie(cookie()->forget(TotpService::trustedDeviceCookieName()));
+    }
+
     /** POST auth/2fa/disable */
     public function disable(): JsonResponse
     {
         $userId = $this->requireAuth();
         $this->rateLimit('2fa_disable', 3, 3600);
+        if (app(\App\Services\TwoFactorPolicy::class)->required(auth()->user())) {
+            return $this->respondWithError('MFA_REQUIRED', __('mfa.disable_forbidden'), null, 403);
+        }
 
         $data = $this->getAllInput();
         $password = $data['password'] ?? '';
@@ -314,10 +455,10 @@ class TwoFactorController extends BaseApiController
                     Notification::createNotification(
                         $userId,
                         __('api_controllers_2.two_factor.disabled_notification'),
-                        '/settings/security',
+                        '/settings?tab=security',
                         '2fa_disabled'
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), '2fa_disabled', __('api_controllers_2.two_factor.disabled_notification'), '/settings/security');
+                    \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), '2fa_disabled', __('api_controllers_2.two_factor.disabled_notification'), '/settings?tab=security');
                 } catch (\Throwable $e) {
                     Log::warning('[2FA] Failed to create 2FA disabled notification: ' . $e->getMessage(), ['user_id' => $userId]);
                 }

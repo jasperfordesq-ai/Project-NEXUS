@@ -918,6 +918,7 @@ class WebAuthnController extends BaseApiController
                     (int) $credential['user_id'],
                     (int) $credential['user_tenant_id'],
                     [
+                        ...\App\Services\TwoFactorPolicy::claims('passkey'),
                         'role' => $credential['role'],
                         'email' => $credential['email'],
                         'is_super_admin' => !empty($credential['is_super_admin']),
@@ -932,7 +933,8 @@ class WebAuthnController extends BaseApiController
                 $refreshToken = $this->tokenService->generateRefreshToken(
                     (int) $credential['user_id'],
                     (int) $credential['user_tenant_id'],
-                    $isMobile
+                    $isMobile,
+                    \App\Services\TwoFactorPolicy::claims('passkey')
                 );
                 $securityConfirmationToken = $this->tokenService->generateSecurityConfirmationToken(
                     (int) $credential['user_id'],
@@ -1161,7 +1163,7 @@ class WebAuthnController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.webauthn_invalid_credential'), 'credential_id', 422);
         }
         try {
-            $result = DB::transaction(function () use ($credentialId, $tenantId, $userId): array {
+            $result = DB::transaction(function () use ($credentialId, $tenantId, $userId, $input): array {
                 // Lock the user first so passkey removal and OAuth unlinking cannot
                 // concurrently delete the two methods after each sees the other.
                 $hasAlternative = AuthenticationMethodGuard::hasAlternativeToPasskeys(
@@ -1170,6 +1172,9 @@ class WebAuthnController extends BaseApiController
                     true
                 );
 
+                if ($this->requireSecurityConfirmation($userId, $tenantId, $input, true) !== null) {
+                    return ['authorization_failed' => true];
+                }
                 $credentials = DB::table('webauthn_credentials')
                     ->where('user_id', $userId)
                     ->where('tenant_id', $tenantId)
@@ -1210,6 +1215,9 @@ class WebAuthnController extends BaseApiController
             ));
         }
 
+        if (!empty($result['authorization_failed'])) {
+            return $this->securityConfirmationFailed();
+        }
         if ($result['blocked']) {
             return $this->respondWithError(
                 'LAST_SIGN_IN_METHOD',
@@ -1328,12 +1336,15 @@ class WebAuthnController extends BaseApiController
             return $confirmationError;
         }
         try {
-            $result = DB::transaction(function () use ($tenantId, $userId): array {
+            $result = DB::transaction(function () use ($tenantId, $userId, $input): array {
                 $hasAlternative = AuthenticationMethodGuard::hasAlternativeToPasskeys(
                     $userId,
                     $tenantId,
                     true
                 );
+                if ($this->requireSecurityConfirmation($userId, $tenantId, $input, true) !== null) {
+                    return ['authorization_failed' => true];
+                }
                 $credentialIds = DB::table('webauthn_credentials')
                     ->where('user_id', $userId)
                     ->where('tenant_id', $tenantId)
@@ -1370,6 +1381,9 @@ class WebAuthnController extends BaseApiController
             ));
         }
 
+        if (!empty($result['authorization_failed'])) {
+            return $this->securityConfirmationFailed();
+        }
         if ($result['blocked']) {
             return $this->respondWithError(
                 'LAST_SIGN_IN_METHOD',
@@ -1940,7 +1954,7 @@ class WebAuthnController extends BaseApiController
         return max(1, min(self::MAX_CREDENTIALS_PER_USER, $configured));
     }
 
-    private function requireSecurityConfirmation(int $userId, int $tenantId, array $input): ?JsonResponse
+    private function requireSecurityConfirmation(int $userId, int $tenantId, array $input, bool $underUserLock = false): ?JsonResponse
     {
         $token = $input['security_confirmation_token']
             ?? request()->headers->get('X-Security-Confirmation');
@@ -1948,7 +1962,23 @@ class WebAuthnController extends BaseApiController
             return $this->securityConfirmationFailed();
         }
 
-        return $this->tokenService->validateSecurityConfirmationToken($token, $userId, $tenantId) === null
+        if ($underUserLock) {
+            $user = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->lockForUpdate()->first();
+            $bearer = request()->bearerToken();
+            $claims = $bearer ? $this->tokenService->validateToken($bearer, true) : null;
+            if (!$user || $user->status !== 'active'
+                || ($bearer && (!$claims || (int) ($claims['user_id'] ?? 0) !== $userId
+                    || (int) ($claims['tenant_id'] ?? 0) !== $tenantId
+                    || !empty($claims['impersonated_by'])
+                    || (app(\App\Services\TwoFactorPolicy::class)->required($user)
+                        && !app(\App\Services\TwoFactorPolicy::class)->satisfied($claims))))) {
+                return $this->securityConfirmationFailed();
+            }
+        }
+        $proof = $underUserLock
+            ? $this->tokenService->validateSecurityConfirmationTokenUnderUserLock($token, $userId, $tenantId)
+            : $this->tokenService->validateSecurityConfirmationToken($token, $userId, $tenantId);
+        return $proof === null
             ? $this->securityConfirmationFailed()
             : null;
     }

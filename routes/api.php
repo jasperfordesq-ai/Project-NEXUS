@@ -938,6 +938,7 @@ Route::get('/v2/wallet/balance', [\App\Http\Controllers\Api\WalletController::cl
 Route::get('/v2/wallet/transactions', [\App\Http\Controllers\Api\WalletController::class, 'transactions']);
 Route::get('/v2/wallet/transactions/{id}', [\App\Http\Controllers\Api\WalletController::class, 'showTransaction']);
 Route::post('/v2/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer'])->middleware('onboarding-required')->middleware('legal-acceptance');
+Route::post('/v2/wallet/operation-status', [\App\Http\Controllers\Api\WalletController::class, 'operationStatus']);
 Route::delete('/v2/wallet/transactions/{id}', [\App\Http\Controllers\Api\WalletController::class, 'destroyTransaction']);
 Route::get('/v2/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
 Route::get('/v2/wallet/pending-count', [\App\Http\Controllers\Api\WalletController::class, 'pendingCount']);
@@ -3353,7 +3354,9 @@ Route::middleware('throttle:nexus-route-30-per-1m')->group(function () {
 // TOTP verify — strict throttle (5/min) to prevent 6-digit code brute-force during 2FA login
 Route::get('/v2/auth/registration-info', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'getRegistrationInfo'])->middleware('throttle:nexus-route-30-per-1m');
 Route::post('/v2/auth/validate-invite', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'validateInviteCode'])->middleware('throttle:nexus-route-10-per-1m');
-Route::post('/totp/verify', [\App\Http\Controllers\Api\TotpController::class, 'verify'])->middleware('throttle:nexus-route-5-per-1m');
+Route::post('/v2/auth/2fa/setup', [\App\Http\Controllers\Api\TwoFactorController::class, 'setup'])->middleware([\App\Http\Middleware\AuthenticateTwoFactorSetup::class, 'throttle:mfa-challenge']);
+Route::post('/v2/auth/2fa/verify', [\App\Http\Controllers\Api\TwoFactorController::class, 'verify'])->middleware([\App\Http\Middleware\AuthenticateTwoFactorSetup::class, 'throttle:mfa-challenge']);
+Route::post('/totp/verify', [\App\Http\Controllers\Api\TotpController::class, 'verify'])->middleware('throttle:mfa-challenge');
 // Password reset endpoints — stricter throttle to mitigate email enumeration/spam (5/min per IP)
 Route::middleware('throttle:nexus-route-5-per-1m')->group(function () {
     Route::post('/auth/forgot-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'forgotPassword']);
@@ -3500,9 +3503,9 @@ Route::get('/v2/auth/oauth/me/identities', [\App\Http\Controllers\Auth\SocialAut
     ->middleware('throttle:nexus-route-30-per-1m');
 
 Route::get('/v2/auth/2fa/status', [\App\Http\Controllers\Api\TwoFactorController::class, 'status'])->middleware('throttle:nexus-route-30-per-1m');
-Route::post('/v2/auth/2fa/setup', [\App\Http\Controllers\Api\TwoFactorController::class, 'setup'])->middleware('throttle:nexus-route-5-per-1m');
-Route::post('/v2/auth/2fa/verify', [\App\Http\Controllers\Api\TwoFactorController::class, 'verify'])->middleware('throttle:nexus-route-5-per-1m');
 Route::post('/v2/auth/2fa/disable', [\App\Http\Controllers\Api\TwoFactorController::class, 'disable'])->middleware('throttle:nexus-route-5-per-1m');
+Route::post('/v2/auth/2fa/recovery-codes', [\App\Http\Controllers\Api\TwoFactorController::class, 'regenerateRecoveryCodes'])->middleware('throttle:nexus-route-5-per-1m');
+Route::post('/v2/auth/2fa/trusted-devices/revoke', [\App\Http\Controllers\Api\TwoFactorController::class, 'revokeTrustedDevices'])->middleware('throttle:nexus-route-5-per-1m');
 Route::post('/app/log', [\App\Http\Controllers\Api\AppController::class, 'log'])->withoutMiddleware('auth:sanctum')->middleware('throttle:nexus-route-10-per-1m');
 Route::post('/pusher/auth', [\App\Http\Controllers\Api\PusherController::class, 'auth']);
 Route::get('/pusher/auth', [\App\Http\Controllers\Api\PusherController::class, 'auth']);

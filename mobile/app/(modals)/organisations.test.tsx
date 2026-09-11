@@ -44,6 +44,8 @@ jest.mock('react-i18next', () => ({
         'common:back': 'Back',
         'common:endOfList': "You've reached the end",
         'common:buttons.retry': 'Retry',
+        'common:errors.refreshFailedTitle': 'Couldn’t refresh',
+        'common:errors.refreshFailedSubtitle': 'You’re still seeing what loaded earlier.',
       };
       return map[key] ?? key;
     },
@@ -53,7 +55,10 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { id: 2, slug: 'hour-timebank' } }),
+}));
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7 } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -187,6 +192,10 @@ jest.mock('@/components/ui/AppToast', () => {
 
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/AppTopBar', () => 'View');
+jest.mock('@/components/ModalErrorBoundary', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 import OrganisationsScreen from './organisations';
 
@@ -282,6 +291,22 @@ describe('OrganisationsScreen', () => {
     const { getByText } = render(<OrganisationsScreen />);
     expect(getByText('Green Dublin')).toBeTruthy();
     expect(getByText('Dublin, Ireland')).toBeTruthy();
+  });
+
+  it('keeps loaded organisations visible and warns when a refresh fails', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValueOnce({
+      ...defaultPaginatedState,
+      items: [mockOrganisation],
+      error: 'Network down',
+      refresh,
+    });
+
+    const { getByText, getByTestId, getByLabelText } = render(<OrganisationsScreen />);
+    expect(getByText('Green Dublin')).toBeTruthy();
+    expect(getByTestId('refresh-failed-notice')).toBeTruthy();
+    fireEvent.press(getByLabelText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   it('renders the Verified badge on verified organisations', () => {

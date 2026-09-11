@@ -62,6 +62,7 @@ class VolunteerCommunityController extends BaseApiController
             if ($code === 'NOT_FOUND') return 404;
             if ($code === 'FORBIDDEN') return 403;
             if ($code === 'ALREADY_EXISTS') return 409;
+            if ($code === 'DECISION_CONFLICT') return 409;
             if ($code === 'FEATURE_DISABLED') return 403;
         }
         return 400;

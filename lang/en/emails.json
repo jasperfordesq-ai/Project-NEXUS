@@ -677,5 +677,9 @@
     "message": "You have been invited to attend :event. Review the event details and respond before the invitation expires.",
     "expiry": "This invitation expires at :expiry.",
     "accept_button": "Review invitation"
+  },
+  "mfa_changed": {
+    "subject": "Your account security changed",
+    "body": "Your recovery codes or authenticator settings have changed. If you did not request this, contact your community administrator immediately."
   }
 }

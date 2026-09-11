@@ -45,7 +45,5 @@ return [
     // never widen a real credential's life.
     'test_access_token_expiry_seconds' => (int) env('NEXUS_TEST_ACCESS_TOKEN_EXPIRY_SECONDS', 0),
 
-    // Applies equally to password and federated sign-in. Federated sessions
-    // may satisfy it only with explicit validated upstream MFA assurance.
-    'force_admin_2fa' => filter_var(env('FORCE_ADMIN_2FA', false), FILTER_VALIDATE_BOOLEAN),
+    // Administrator MFA is an invariant in TwoFactorPolicy, not an environment toggle.
 ];

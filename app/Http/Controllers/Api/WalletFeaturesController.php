@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\Services\CommunityFundService;
 use App\Services\TransactionCategoryService;
@@ -370,6 +371,7 @@ class WalletFeaturesController extends BaseApiController
         $recipientType = $data['recipient_type'] ?? 'community_fund';
         $idemKey = trim((string) ($data['idempotency_key'] ?? request()->header('Idempotency-Key', '')));
         $idemCacheKey = null;
+        $fingerprint = null;
         if ($idemKey !== '') {
             $fingerprint = sha1(implode('|', [
                 $idemKey,
@@ -379,6 +381,10 @@ class WalletFeaturesController extends BaseApiController
                 (string) ($data['message'] ?? ''),
             ]));
             $idemCacheKey = sprintf('wallet_donate:idem:%d:%d:%s', TenantContext::getId(), $userId, $fingerprint);
+            if (DB::table('credit_donations')->where('tenant_id', TenantContext::getId())
+                ->where('donor_id', $userId)->where('idempotency_fingerprint', $fingerprint)->exists()) {
+                return $this->respondWithData(['message' => __('api_controllers_2.wallet.donation_successful'), 'replayed' => true], null, 201);
+            }
             try {
                 $replay = \Illuminate\Support\Facades\Cache::get($idemCacheKey);
                 if (is_array($replay) && ($replay['status'] ?? null) === 'completed') {
@@ -408,13 +414,15 @@ class WalletFeaturesController extends BaseApiController
                     $userId,
                     (int) $data['recipient_id'],
                     (float) $data['amount'],
-                    $data['message'] ?? ''
+                    $data['message'] ?? '',
+                    $fingerprint
                 );
             } else {
                 $result = $this->creditDonationService->donateToCommunityFund(
                     $userId,
                     (float) $data['amount'],
-                    $data['message'] ?? ''
+                    $data['message'] ?? '',
+                    $fingerprint
                 );
             }
         } catch (\App\Exceptions\SafeguardingPolicyException $e) {

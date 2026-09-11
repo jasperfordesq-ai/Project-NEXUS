@@ -38,6 +38,11 @@ class MemberDataExportController extends BaseApiController
     public function create(Request $request): SymfonyResponse|JsonResponse
     {
         $userId = $this->requireAuth();
+        // The legacy GET alias creates a tracked export too; HTTP-method-only
+        // write restrictions cannot protect it during delegated support access.
+        if (!empty($request->attributes->get('verified_auth_claims', [])['impersonated_by'])) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('mfa.impersonation_read_only'), null, 403);
+        }
 
         $format = (string) $request->input('format', 'json');
         if (!in_array($format, ['json', 'zip'], true)) {

@@ -2019,11 +2019,6 @@ class VolunteerService
             return false;
         }
 
-        if ($log->status !== 'pending') {
-            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.only_pending_can_be_verified')];
-            return false;
-        }
-
         // Prevent users from approving their own hours
         if ((int) $log->user_id === $adminUserId) {
             self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_verify_own_hours_forbidden')];
@@ -2047,6 +2042,16 @@ class VolunteerService
             return false;
         }
 
+        $status = $action === 'approve' ? 'approved' : self::getDeclineStatusValue();
+        if ($log->status !== 'pending') {
+            if ($log->status === $status) {
+                self::$lastPaymentOutcome = 'already_processed';
+                return true;
+            }
+            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.only_pending_can_be_verified')];
+            return false;
+        }
+
         // Hard-freeze: a suspended (non-approved) org cannot mint new time
         // credits. Declining pending hours stays allowed (no value movement) so
         // admins can still clear the queue during suspension.
@@ -2055,17 +2060,16 @@ class VolunteerService
             return false;
         }
 
-        $status = $action === 'approve' ? 'approved' : self::getDeclineStatusValue();
-
         try {
             $hours = (float) $log->hours;
             $volunteerId = (int) $log->user_id;
             $orgName = $org->name ?? __('emails.common.fallback_organization');
             $paymentResult = null;
             $transitioned = false;
+            $conflictingDecision = false;
 
             // DB transaction for data mutations only — notifications sent AFTER commit
-            DB::transaction(function () use ($logId, $tenantId, $status, $action, $log, $org, $adminUserId, $hours, $volunteerId, &$paymentResult, &$transitioned) {
+            DB::transaction(function () use ($logId, $tenantId, $status, $action, $log, $org, $adminUserId, $hours, $volunteerId, &$paymentResult, &$transitioned, &$conflictingDecision) {
                 // 1. Flip status — conditional on the log still being pending. This is
                 //    the idempotency gate: a concurrent or retried approval finds 0 rows
                 //    affected and aborts without paying again. The org-row lock below
@@ -2076,8 +2080,15 @@ class VolunteerService
                     [$status, $logId, $tenantId]
                 );
                 if ($affected === 0) {
-                    // Already verified by a concurrent/retried request — nothing to do.
-                    $paymentResult = 'already_processed';
+                    $finalStatus = DB::table('vol_logs')
+                        ->where('id', $logId)
+                        ->where('tenant_id', $tenantId)
+                        ->value('status');
+                    if ($finalStatus === $status) {
+                        $paymentResult = 'already_processed';
+                    } else {
+                        $conflictingDecision = true;
+                    }
                     return;
                 }
                 $transitioned = true;
@@ -2154,6 +2165,11 @@ class VolunteerService
             });
 
             self::$lastPaymentOutcome = $paymentResult;
+
+            if ($conflictingDecision) {
+                self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.only_pending_can_be_verified')];
+                return false;
+            }
 
             // If a concurrent/retried request already verified this log, return
             // idempotently without re-dispatching events or re-sending notifications.
@@ -2321,6 +2337,7 @@ class VolunteerService
         $description = trim($data['description'] ?? '');
         $contactEmail = trim($data['contact_email'] ?? '');
         $website = trim($data['website'] ?? '');
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
 
         if (empty($name)) {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_org_name_required'), 'field' => 'name'];
@@ -2370,6 +2387,35 @@ class VolunteerService
             }
         }
 
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.validation_failed'), 'field' => 'idempotency_key'];
+                return null;
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode([
+                'name' => $name,
+                'description' => $description,
+                'contact_email' => $contactEmail,
+                'website' => $website ?: null,
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+            $replay = DB::table('vol_organizations')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('creation_idempotency_key_hash', $keyHash)
+                ->first(['id', 'creation_request_hash']);
+            if ($replay) {
+                if (!hash_equals((string) $replay->creation_request_hash, $requestHash)) {
+                    self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                    return null;
+                }
+                return (int) $replay->id;
+            }
+        }
+
         // Check for duplicate name
         $existing = DB::selectOne(
             "SELECT id FROM vol_organizations WHERE tenant_id = ? AND LOWER(name) = LOWER(?) AND status != 'declined'",
@@ -2385,13 +2431,13 @@ class VolunteerService
         $maxRetries = 3;
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
-                $orgId = DB::transaction(function () use ($tenantId, $userId, $name, $description, $contactEmail, $website) {
+                $orgId = DB::transaction(function () use ($tenantId, $userId, $name, $description, $contactEmail, $website, $keyHash, $requestHash) {
                     $slug = self::generateOrgSlug($name, $tenantId);
 
                     DB::insert(
-                        "INSERT INTO vol_organizations (tenant_id, user_id, name, description, contact_email, website, slug, status, created_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())",
-                        [$tenantId, $userId, $name, $description, $contactEmail, $website ?: null, $slug]
+                        "INSERT INTO vol_organizations (tenant_id, user_id, creation_idempotency_key_hash, creation_request_hash, name, description, contact_email, website, slug, status, created_at)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())",
+                        [$tenantId, $userId, $keyHash, $requestHash, $name, $description, $contactEmail, $website ?: null, $slug]
                     );
 
                     $orgId = (int) DB::getPdo()->lastInsertId();
@@ -2432,6 +2478,20 @@ class VolunteerService
 
                 return $orgId;
             } catch (\Illuminate\Database\QueryException $e) {
+                if ($keyHash !== null && $requestHash !== null) {
+                    $winner = DB::table('vol_organizations')
+                        ->where('tenant_id', $tenantId)
+                        ->where('user_id', $userId)
+                        ->where('creation_idempotency_key_hash', $keyHash)
+                        ->first(['id', 'creation_request_hash']);
+                    if ($winner) {
+                        if (!hash_equals((string) $winner->creation_request_hash, $requestHash)) {
+                            self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                            return null;
+                        }
+                        return (int) $winner->id;
+                    }
+                }
                 // Retry on duplicate slug (integrity constraint violation)
                 if ($attempt >= $maxRetries || $e->getCode() !== '23000') {
                     Log::warning("VolunteerService::createOrganization error: " . $e->getMessage());

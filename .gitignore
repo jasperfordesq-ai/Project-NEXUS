@@ -66,6 +66,8 @@ CLAUDE.md
 
 # ─── Scripts & Migrations (internal, contain credentials/emails) ──────────────
 /scripts/*
+!/scripts/mfa-e2e-fixture.php
+!/scripts/test-mfa-journeys.mjs
 # CI helper scripts must be tracked so GitHub Actions can run them.
 !/scripts/ci/
 !/scripts/npm-audit-gate.mjs

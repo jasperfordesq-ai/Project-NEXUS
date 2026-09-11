@@ -157,7 +157,7 @@ class JobInterviewService
             }
 
             if ($interview->status !== 'proposed') {
-                return false;
+                return $interview->status === 'accepted';
             }
 
             $posterId = (int) ($interview->application->vacancy->user_id ?? 0);
@@ -179,10 +179,16 @@ class JobInterviewService
                 'job_interview_accept',
             );
 
-            $interview->update([
-                'status'          => 'accepted',
-                'candidate_notes' => $notes ? trim($notes) : null,
-            ]);
+            $updated = JobInterview::where('id', $interviewId)
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'proposed')
+                ->update([
+                    'status'          => 'accepted',
+                    'candidate_notes' => $notes ? trim($notes) : null,
+                ]);
+            if ($updated !== 1) {
+                return false;
+            }
 
             // Notify the job poster
             try {
@@ -258,7 +264,7 @@ class JobInterviewService
             }
 
             if ($interview->status !== 'proposed') {
-                return false;
+                return $interview->status === 'declined';
             }
 
             $posterId = (int) ($interview->application->vacancy->user_id ?? 0);
@@ -274,10 +280,16 @@ class JobInterviewService
                 }
             }
 
-            $interview->update([
-                'status'          => 'declined',
-                'candidate_notes' => $notes ? trim($notes) : null,
-            ]);
+            $updated = JobInterview::where('id', $interviewId)
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'proposed')
+                ->update([
+                    'status'          => 'declined',
+                    'candidate_notes' => $notes ? trim($notes) : null,
+                ]);
+            if ($updated !== 1) {
+                return false;
+            }
 
             // Notify the job poster
             try {

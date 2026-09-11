@@ -22,8 +22,9 @@ import {
 } from '@/lib/api/organisations';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { withAlpha } from '@/lib/utils/color';
 import { formatDecimal } from '@/lib/utils/decimal';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -33,6 +34,7 @@ import SearchInput from '@/components/ui/SearchInput';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -349,7 +351,7 @@ function OrganisationCardSkeleton() {
   );
 }
 
-function OrganisationsScreen() {
+function OrganisationsContent() {
   const { t } = useTranslation(['organisations', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -431,6 +433,8 @@ function OrganisationsScreen() {
             <View className="gap-3 pb-3">
               <OrganisationsHero organisations={organisations} primary={primary} theme={theme} t={t} onRegister={openRegistration} />
 
+              <RefreshFailedNotice error={organisations.length > 0 ? error : null} onRetry={refresh} isRetrying={isLoading} />
+
               <Surface variant="secondary" className="gap-3 rounded-panel p-2">
                 <SearchInput
                   placeholder={t('searchPlaceholder')}
@@ -483,6 +487,12 @@ function OrganisationsScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+function OrganisationsScreen() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <OrganisationsContent key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
 }
 
 export default withRouteGate(OrganisationsScreen, 'organisations');

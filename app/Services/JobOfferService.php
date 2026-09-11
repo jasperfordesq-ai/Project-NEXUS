@@ -157,7 +157,7 @@ class JobOfferService
             }
 
             if ($offer->status !== 'pending') {
-                return false;
+                return $offer->status === 'accepted';
             }
 
             // Check if the offer has expired
@@ -199,8 +199,10 @@ class JobOfferService
                     ->lockForUpdate()
                     ->first();
 
-                // Re-read the offer status inside the lock — guards same-offer double accept.
-                if (JobOffer::where('id', $offerId)->value('status') !== 'pending') {
+                // Lock and re-read the offer after the vacancy lock. Reject uses
+                // the same order, so accept/reject cannot both consume pending.
+                $lockedOffer = JobOffer::where('id', $offerId)->lockForUpdate()->first();
+                if (!$lockedOffer || $lockedOffer->status !== 'pending') {
                     return false;
                 }
 
@@ -213,7 +215,7 @@ class JobOfferService
                     return false;
                 }
 
-                $offer->update([
+                $lockedOffer->update([
                     'status'       => 'accepted',
                     'responded_at' => now(),  // column added via 2026_03_27_000000 migration
                 ]);
@@ -402,13 +404,28 @@ class JobOfferService
             }
 
             if ($offer->status !== 'pending') {
-                return false;
+                return $offer->status === 'rejected';
             }
 
-            $offer->update([
-                'status'       => 'rejected',
-                'responded_at' => now(),  // column added via 2026_03_27_000000 migration
-            ]);
+            $rejected = DB::transaction(function () use ($offer, $offerId, $tenantId): bool {
+                // Match accept's lock order so an accept/reject race has one winner.
+                JobVacancy::where('id', (int) $offer->vacancy_id)->lockForUpdate()->first();
+                $lockedOffer = JobOffer::where('id', $offerId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$lockedOffer || $lockedOffer->status !== 'pending') {
+                    return false;
+                }
+                $lockedOffer->update([
+                    'status'       => 'rejected',
+                    'responded_at' => now(),
+                ]);
+                return true;
+            });
+            if (!$rejected) {
+                return false;
+            }
 
             // Notify the job poster
             try {

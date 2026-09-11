@@ -12,6 +12,7 @@ use App\Models\CourseLesson;
 use App\Models\CourseLessonProgress;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 /**
  * CourseProgressService — records lesson completion, recomputes course progress,
@@ -51,27 +52,36 @@ class CourseProgressService
      */
     public static function recompute(CourseEnrollment $enrollment, int $userId): array
     {
-        $totalLessons = CourseLesson::where('course_id', $enrollment->course_id)->count();
+        [$enrollment, $percent, $justCompleted] = DB::transaction(function () use ($enrollment) {
+            // Requests can carry independently loaded, stale enrolments. Serialize
+            // the transition against the persisted row before firing integrations.
+            $enrollment = CourseEnrollment::whereKey($enrollment->id)->lockForUpdate()->firstOrFail();
+            $totalLessons = CourseLesson::where('course_id', $enrollment->course_id)->count();
 
-        $completedLessons = CourseLessonProgress::where('enrollment_id', $enrollment->id)
-            ->where('status', 'completed')
-            ->count();
+            $completedLessons = CourseLessonProgress::where('enrollment_id', $enrollment->id)
+                ->where('status', 'completed')
+                ->count();
 
-        $percent = $totalLessons > 0
-            ? round(($completedLessons / $totalLessons) * 100, 2)
-            : 0;
+            $percent = $totalLessons > 0
+                ? round(($completedLessons / $totalLessons) * 100, 2)
+                : 0;
 
-        $enrollment->progress_percent = $percent;
-        $enrollment->last_accessed_at = Carbon::now();
+            $enrollment->progress_percent = $percent;
+            $enrollment->last_accessed_at = Carbon::now();
 
-        $justCompleted = false;
-        if ($totalLessons > 0 && $completedLessons >= $totalLessons && $enrollment->status !== 'completed') {
-            $enrollment->status = 'completed';
-            $enrollment->completed_at = Carbon::now();
-            $justCompleted = true;
-        }
+            $justCompleted = false;
+            if ($totalLessons > 0 && $completedLessons >= $totalLessons && $enrollment->status !== 'completed') {
+                $enrollment->status = 'completed';
+                $enrollment->completed_at = Carbon::now();
+                $justCompleted = true;
+            }
 
-        $enrollment->save();
+            $enrollment->save();
+            if ($justCompleted) {
+                Course::where('id', $enrollment->course_id)->increment('completion_count');
+            }
+            return [$enrollment, $percent, $justCompleted];
+        });
 
         if ($justCompleted) {
             self::onCourseCompleted($enrollment, $userId);
@@ -94,12 +104,6 @@ class CourseProgressService
      */
     private static function onCourseCompleted(CourseEnrollment $enrollment, int $userId): void
     {
-        try {
-            Course::where('id', $enrollment->course_id)->increment('completion_count');
-        } catch (\Throwable $e) {
-            Log::warning('[CourseProgress] completion_count increment failed', ['error' => $e->getMessage()]);
-        }
-
         // Issue a completion certificate (idempotent). Guarded so a certificate
         // failure never blocks the learner's progress.
         try {

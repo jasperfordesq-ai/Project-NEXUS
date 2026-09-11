@@ -186,6 +186,26 @@ class NotifyJobAlertSubscribers implements ShouldQueue
             }
         }
 
+        // Categories are entered as a comma-separated list in all clients. At
+        // least one requested category must occur in the vacancy's category.
+        if (!empty($alert->categories)) {
+            $categories = array_filter(array_map('trim', explode(',', $alert->categories)));
+            $vacancyCategory = strtolower(trim((string) ($vacancy->category ?? '')));
+            if ($vacancyCategory === '') {
+                return false;
+            }
+            $categoryFound = false;
+            foreach ($categories as $category) {
+                if (str_contains($vacancyCategory, strtolower($category))) {
+                    $categoryFound = true;
+                    break;
+                }
+            }
+            if (!$categoryFound) {
+                return false;
+            }
+        }
+
         // Type: alert type must match vacancy type, or alert type is null/empty (any)
         if (!empty($alert->type) && $alert->type !== $vacancy->type) {
             return false;
@@ -197,8 +217,8 @@ class NotifyJobAlertSubscribers implements ShouldQueue
         }
 
         // Location: alert location must match, or null/empty (any)
-        if (!empty($alert->location) && !empty($vacancy->location)) {
-            if (stripos($vacancy->location, $alert->location) === false) {
+        if (!empty($alert->location)) {
+            if (empty($vacancy->location) || stripos($vacancy->location, $alert->location) === false) {
                 return false;
             }
         }

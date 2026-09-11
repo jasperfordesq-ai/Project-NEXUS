@@ -19183,6 +19183,8 @@ CREATE TABLE `user_totp_settings` (
   `verified_device_count` int(11) NOT NULL DEFAULT 0 COMMENT 'Number of times 2FA verified',
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `last_used_step` bigint(20) unsigned DEFAULT NULL,
+  `setup_revocation_version` bigint(20) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_user_totp` (`user_id`),
   KEY `idx_tenant` (`tenant_id`),

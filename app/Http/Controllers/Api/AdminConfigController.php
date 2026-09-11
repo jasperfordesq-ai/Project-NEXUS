@@ -3558,22 +3558,33 @@ class AdminConfigController extends BaseApiController
     // Authentication Configuration
     // =========================================================================
 
+    private function writableAuthenticationKeys(): array
+    {
+        $user = $this->resolveUser();
+        return in_array($user->role ?? '', ['super_admin', 'god'], true)
+            || !empty($user->is_super_admin) || !empty($user->is_tenant_super_admin)
+            ? array_keys(AuthenticationConfigurationService::DEFAULTS)
+            : [AuthenticationConfigurationService::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS];
+    }
+
     /** GET /api/v2/admin/config/authentication */
     public function getAuthenticationConfig(): JsonResponse
     {
-        $this->requireSuperAdmin();
+        $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
         return $this->respondWithData([
             'config' => AuthenticationConfigurationService::getAll($tenantId),
             'defaults' => AuthenticationConfigurationService::DEFAULTS,
+            'policy' => ['administrators_required' => true],
+            'writable_keys' => $this->writableAuthenticationKeys(),
         ]);
     }
 
     /** PUT /api/v2/admin/config/authentication/bulk */
     public function updateAuthenticationConfigBulk(): JsonResponse
     {
-        $this->requireSuperAdmin();
+        $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
         $settings = $this->input('settings');
@@ -3594,6 +3605,10 @@ class AdminConfigController extends BaseApiController
                     is_string($key) ? $key : 'settings',
                     422
                 );
+            }
+
+            if (!in_array($key, $this->writableAuthenticationKeys(), true)) {
+                return $this->respondForbidden(__('api.super_admin_required'));
             }
 
             if (!AuthenticationConfigurationService::isValidValue($key, $value)) {
@@ -3631,6 +3646,12 @@ class AdminConfigController extends BaseApiController
         });
 
         AuthenticationConfigurationService::clearCache($tenantId);
+        app(AuditLogService::class)->logAdminAction('authentication_policy_updated', $actorId, null, [
+            'tenant_id' => $tenantId,
+            'previous' => array_intersect_key($current, $settings),
+            'updated' => $settings,
+            'administrators_required' => true,
+        ]);
         $this->tenantSettingsService->clearCacheForTenant($tenantId);
         $this->redisCache->delete('tenant_bootstrap', $tenantId);
         $this->redisCache->delete('tenants_list_public');

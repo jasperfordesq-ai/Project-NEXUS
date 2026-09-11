@@ -21,6 +21,7 @@ use InvalidArgumentException;
  */
 class AuthenticationConfigurationService
 {
+    public const CONFIG_TWO_FACTOR_REQUIRE_MEMBERS = 'two_factor.require_members';
     public const CONFIG_TWO_FACTOR_ALLOW_TRUSTED_DEVICES = 'two_factor.allow_trusted_devices';
     public const CONFIG_TWO_FACTOR_TRUSTED_DEVICE_DAYS = 'two_factor.trusted_device_days';
     public const CONFIG_TWO_FACTOR_BACKUP_CODE_COUNT = 'two_factor.backup_code_count';
@@ -36,6 +37,7 @@ class AuthenticationConfigurationService
     public const PASSKEY_CREDENTIALS_MAX = 20;
 
     public const DEFAULTS = [
+        self::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS => false,
         self::CONFIG_TWO_FACTOR_ALLOW_TRUSTED_DEVICES => true,
         self::CONFIG_TWO_FACTOR_TRUSTED_DEVICE_DAYS => 30,
         self::CONFIG_TWO_FACTOR_BACKUP_CODE_COUNT => 10,
@@ -117,6 +119,7 @@ class AuthenticationConfigurationService
     public static function isValidValue(string $key, mixed $value): bool
     {
         return match ($key) {
+            self::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS,
             self::CONFIG_TWO_FACTOR_ALLOW_TRUSTED_DEVICES,
             self::CONFIG_PASSKEYS_CONDITIONAL_AUTOFILL,
             self::CONFIG_PASSKEYS_ENROLLMENT_ENABLED => is_bool($value),

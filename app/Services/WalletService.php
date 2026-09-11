@@ -673,10 +673,10 @@ class WalletService
         // network retry of a sufficient-balance amount would otherwise create two
         // real, legitimate-looking debits. Claim a short-lived fingerprint; on a
         // duplicate, replay the ORIGINAL transaction instead of debiting again.
-        // Prefer an explicit client Idempotency-Key (24h window); otherwise fall
+        // Prefer an explicit client Idempotency-Key (durable receipt); otherwise fall
         // back to a 120s content fingerprint so an accidental double-click is
-        // caught even without a client key. Fail OPEN on any cache hiccup — never
-        // block a legitimate transfer on cache flakiness.
+        // caught even without a client key. Cache failures do not bypass the
+        // explicit-key database receipt committed with the balance changes.
         $explicitKey = trim((string) ($data['idempotency_key'] ?? ''));
         $hasExplicitKey = $explicitKey !== '';
         // Bind the fingerprint to the request content in BOTH branches. An
@@ -694,6 +694,17 @@ class WalletService
             : sha1('content:' . $receiver->id . '|' . $amount . '|' . $description . '|' . ($actingUserId ?? 0));
         $idemCacheKey = "wallettx:idem:{$tenantId}:{$senderId}:{$fingerprint}";
         $idemTtl = $hasExplicitKey ? 86400 : 120;
+
+        // Explicit mobile retry identities outlive cache eviction and process
+        // restarts. Read the durable receipt before a potentially stale cache claim.
+        $receiptQuery = fn () => DB::table('wallet_transfer_receipts')
+            ->where('tenant_id', $tenantId)->where('sender_id', $senderId)
+            ->where('fingerprint', $fingerprint);
+        if ($hasExplicitKey && ($receipt = $receiptQuery()->first())) {
+            $original = $this->transaction->newQuery()->with(['sender', 'receiver'])
+                ->where('tenant_id', $tenantId)->findOrFail($receipt->transaction_id);
+            return $this->formatTransaction($original, $senderId);
+        }
 
         $claimed = true;
         try {
@@ -717,20 +728,41 @@ class WalletService
                     ->with(['sender', 'receiver'])
                     ->find((int) $prior['transaction_id']);
                 if ($original) {
+                    if ($hasExplicitKey) {
+                        // Upgrade an existing pre-migration cache receipt when it
+                        // is replayed while still available. No balance mutation.
+                        DB::table('wallet_transfer_receipts')->insertOrIgnore([
+                            'tenant_id' => $tenantId,
+                            'sender_id' => $senderId,
+                            'fingerprint' => $fingerprint,
+                            'transaction_id' => $original->id,
+                            'created_at' => now(),
+                        ]);
+                    }
                     return $this->formatTransaction($original, $senderId);
                 }
             }
             throw new \RuntimeException(__('api.wallet_transfer_duplicate'));
         }
 
+        $replayed = false;
         try {
-            $txn = DB::transaction(function () use ($senderId, $receiver, $amount, $description, $tenantId, $actingUserId) {
+            $txn = DB::transaction(function () use ($senderId, $receiver, $amount, $description, $tenantId, $actingUserId, $hasExplicitKey, $receiptQuery, $fingerprint, &$replayed) {
                 // Lock both user rows in consistent ID order to prevent deadlocks
                 // when two users transfer to each other simultaneously
                 $minId = min($senderId, $receiver->id);
                 $maxId = max($senderId, $receiver->id);
                 $this->user->newQuery()->where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($minId);
                 $this->user->newQuery()->where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($maxId);
+
+                // All transfers by this sender serialize on its user row. A
+                // locking read sees the latest committed receipt even when two
+                // requests both missed it before either obtained those locks.
+                if ($hasExplicitKey && ($receipt = $receiptQuery()->lockForUpdate()->first())) {
+                    $replayed = true;
+                    return $this->transaction->newQuery()->with(['sender', 'receiver'])
+                        ->where('tenant_id', $tenantId)->findOrFail($receipt->transaction_id);
+                }
 
                 /** @var User $sender */
                 $sender = $this->user->newQuery()->where('tenant_id', $tenantId)->findOrFail($senderId);
@@ -756,6 +788,16 @@ class WalletService
                 $sender->decrement('balance', $amount);
                 $receiver->increment('balance', $amount);
 
+                if ($hasExplicitKey) {
+                    DB::table('wallet_transfer_receipts')->insert([
+                        'tenant_id' => $tenantId,
+                        'sender_id' => $senderId,
+                        'fingerprint' => $fingerprint,
+                        'transaction_id' => $txn->id,
+                        'created_at' => now(),
+                    ]);
+                }
+
                 return $txn->fresh(['sender', 'receiver']);
             });
         } catch (\Throwable $e) {
@@ -769,6 +811,10 @@ class WalletService
                 }
             }
             throw $e;
+        }
+
+        if ($replayed) {
+            return $this->formatTransaction($txn, $senderId);
         }
 
         // Record the committed result against the idempotency key so a replay

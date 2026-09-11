@@ -677,5 +677,9 @@
     "subject": "La certificaci?n de protecci?n de :name ha caducado",
     "title": "Certificaci?n de protecci?n caducada",
     "body": "La certificaci?n comunitaria de protecci?n de :name en :community caduc? el :date. El contacto protegido permanece bloqueado hasta que la renueve personal autorizado."
+  },
+  "mfa_changed": {
+    "subject": "Ha cambiado la seguridad de tu cuenta",
+    "body": "Han cambiado tus códigos de recuperación o ajustes de autenticación. Si no lo solicitaste, contacta inmediatamente con la administración de tu comunidad."
   }
 }

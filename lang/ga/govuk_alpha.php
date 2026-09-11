@@ -5,6 +5,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'mandatory_2fa' => [
+        'title' => 'Socraigh fíordheimhniú dhá fhachtóir',
+        'reason' => 'Tá fíordheimhniú dhá fhachtóir riachtanach do do chuntas sular féidir leat leanúint ar aghaidh.',
+        'saved' => 'Tá mo chóid aisghabhála sábháilte agam',
+        'recovery_help' => 'Coinnigh na cóid seo in áit shábháilte. Is féidir gach cód a úsáid uair amháin má chailleann tú rochtain ar d’aip fíordheimhnithe.',
+        'required' => 'Tá fíordheimhniú dhá fhachtóir riachtanach do do chuntas agus ní féidir é a dhíchumasú.',
+    ],
     'opens_new_tab' => '(osclaítear i gcluaisín nua)',
     'service_name' => 'Project NEXUS Accessible',
     'phase' => 'Béite',
@@ -4892,5 +4899,16 @@ return [
             'description_required' => 'Cuir cur síos ar an imeacht isteach',
             'start_required' => 'Cuir dáta agus am tosaithe isteach',
         ],
+    ],
+    'mfa_recovery' => [
+        'title' => 'Cóid athshlánaithe',
+        'warning' => 'Má athraíonn tú na cóid, ní bheidh na seanchóid nár úsáideadh bailí a thuilleadh. Cuir isteach cód nua ón aip fíordheimhnithe; má tá tú díreach tar éis síniú isteach, fan leis an gcéad chód eile. Má cailleadh an freagra socraithe roimhe seo, is féidir cóid nua a fháil anseo.',
+        'code' => 'Cód fíordheimhnithe',
+        'replace' => 'Faigh cóid athshlánaithe nua',
+        'save' => 'Sábháil na cóid nua in áit shlán sula bhfágann tú an leathanach seo.',
+        'saved' => 'Tá na cóid seo sábháilte agam',
+        'revoke' => 'Déan dearmad ar gach gléas iontaofa',
+        'revoked' => 'Baineadh na gléasanna iontaofa. Beidh fíorú de dhíth orthu ag an gcéad síniú isteach eile.',
+        'failed' => 'Níorbh fhéidir an gníomh seo a chur i gcrích. Seiceáil do chód agus bain triail eile as.',
     ],
 ];

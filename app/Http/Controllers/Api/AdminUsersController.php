@@ -1117,13 +1117,45 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
         }
 
-        $reason = $this->input('reason', __('svc_notifications.reset_by_admin'));
+        $reason = $this->input('reason', '');
+        if (!is_string($reason) || mb_strlen(trim($reason)) < 10 || mb_strlen($reason) > 500) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), 'reason', 422);
+        }
+        $claims = request()->attributes->get('verified_auth_claims', []);
+        if (!app(\App\Services\TwoFactorPolicy::class)->satisfied($claims)
+            || (int) $claims['mfa_verified_at'] < time() - 300 || !empty($claims['impersonated_by'])) {
+            return $this->respondWithError('MFA_REQUIRED', __('mfa.sign_in_required'), null, 403);
+        }
 
         try {
-            DB::delete("DELETE FROM user_totp_settings WHERE user_id = ? AND tenant_id = ?", [$id, $tenantId]);
-            DB::delete("DELETE FROM user_backup_codes WHERE user_id = ? AND tenant_id = ?", [$id, $tenantId]);
-            DB::update("UPDATE users SET totp_enabled = 0 WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
-            DB::update("UPDATE user_trusted_devices SET is_revoked = 1, revoked_at = NOW(), revoked_reason = 'admin_reset' WHERE user_id = ? AND tenant_id = ?", [$id, $tenantId]);
+            $reset = DB::transaction(function () use ($adminId, $id, $tenantId, $reason): bool {
+                if ($this->lockManageableSecurityTarget($adminId, $id, $tenantId) === null) {
+                    return false;
+                }
+                $proof = app(TokenService::class)->validateToken((string) request()->bearerToken(), true);
+                if (!$proof || (int) ($proof['user_id'] ?? 0) !== $adminId
+                    || !empty($proof['impersonated_by'])
+                    || !app(\App\Services\TwoFactorPolicy::class)->satisfied($proof)
+                    || (int) $proof['mfa_verified_at'] < time() - 300) {
+                    return false;
+                }
+                DB::table('totp_admin_overrides')->insert([
+                    'user_id' => $id, 'admin_id' => $adminId, 'tenant_id' => $tenantId,
+                    'action_type' => 'reset', 'reason' => trim($reason),
+                    'ip_address' => request()->ip(), 'user_agent' => request()->userAgent(),
+                ]);
+                DB::delete("DELETE FROM user_totp_settings WHERE user_id = ? AND tenant_id = ?", [$id, $tenantId]);
+                DB::delete("DELETE FROM user_backup_codes WHERE user_id = ? AND tenant_id = ?", [$id, $tenantId]);
+                DB::update("UPDATE users SET totp_enabled = 0, totp_setup_required = 1 WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+                DB::update("UPDATE user_trusted_devices SET is_revoked = 1, revoked_at = NOW(), revoked_reason = 'admin_reset' WHERE user_id = ? AND tenant_id = ?", [$id, $tenantId]);
+                if (app(TokenService::class)->revokeAllTokensForUser($id, 'admin_reset_2fa') < 1) {
+                    throw new \RuntimeException('Unable to revoke sessions after two-factor reset.');
+                }
+                return true;
+            }, 3);
+            if (!$reset) {
+                return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+            }
         } catch (\Throwable $e) {
             return $this->respondWithError('SERVER_ERROR', __('api.update_failed', ['resource' => '2FA']), null, 500);
         }
@@ -1138,7 +1170,7 @@ class AdminUsersController extends BaseApiController
                 Notification::createNotification(
                     $id,
                     __('emails_misc.admin_actions.reset_2fa_bell'),
-                    '/settings/security',
+                    '/settings?tab=security',
                     'security',
                     true
                 );

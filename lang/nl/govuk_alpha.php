@@ -5,6 +5,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'mandatory_2fa' => [
+        'title' => 'Tweefactorauthenticatie instellen',
+        'reason' => 'Je account vereist tweefactorauthenticatie voordat je verder kunt gaan.',
+        'saved' => 'Ik heb mijn herstelcodes bewaard',
+        'recovery_help' => 'Bewaar deze codes op een veilige plek. Elke code kan één keer worden gebruikt als je geen toegang meer hebt tot je authenticator.',
+        'required' => 'Tweefactorauthenticatie is verplicht voor je account en kan niet worden uitgeschakeld.',
+    ],
     'opens_new_tab' => '(opent in een nieuw tabblad)',
     'service_name' => 'Project NEXUS Accessible',
     'phase' => 'Bèta',
@@ -4890,5 +4897,16 @@ return [
             'description_required' => 'Voer een gebeurtenisbeschrijving in',
             'start_required' => 'Voer een startdatum en -tijd in',
         ],
+    ],
+    'mfa_recovery' => [
+        'title' => 'Herstelcodes',
+        'warning' => 'Vervangen maakt uw oude ongebruikte codes ongeldig. Voer een nieuwe authenticatorcode in; wacht na het inloggen op de volgende code. Als het instellingsantwoord verloren ging, kunt u hier nieuwe codes maken.',
+        'code' => 'Authenticatorcode',
+        'replace' => 'Herstelcodes vervangen',
+        'save' => 'Bewaar deze nieuwe codes veilig voordat u deze pagina verlaat.',
+        'saved' => 'Ik heb deze codes opgeslagen',
+        'revoke' => 'Alle vertrouwde apparaten vergeten',
+        'revoked' => 'Vertrouwde apparaten verwijderd. Bij de volgende aanmelding is verificatie nodig.',
+        'failed' => 'De actie kon niet worden voltooid. Controleer uw code en probeer het opnieuw.',
     ],
 ];

@@ -139,6 +139,21 @@ class RouteServiceProvider extends ServiceProvider
             );
         }
 
+        RateLimiter::for('mfa-challenge', static function (Request $request): array {
+            $actor = 'ip:' . $request->ip();
+            $token = $request->input('two_factor_token');
+            $challenge = is_string($token) ? app(\App\Services\TwoFactorChallengeManager::class)->get($token) : null;
+            if ($challenge && array_intersect(['totp_setup', 'totp', 'backup_code'], $challenge['methods'] ?? [])) {
+                $actor = 'user:' . (int) $challenge['tenant_id'] . ':' . (int) $challenge['user_id'];
+            } elseif (!$request->exists('two_factor_token') && $request->user()) {
+                $actor = 'user:' . $request->user()->tenant_id . ':' . $request->user()->id;
+            }
+            return [
+                Limit::perMinute(5)->by('mfa-challenge:' . $request->path() . ':' . $actor),
+                Limit::perMinute(600)->by('nexus-route:ip:' . $request->ip() . ':all'),
+            ];
+        });
+
         // Event People bulk mutations must not share Laravel's default numeric
         // throttle bucket with unrelated API routes. Keep the existing allowance,
         // but isolate it per tenant and authenticated actor.

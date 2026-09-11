@@ -677,5 +677,9 @@
     "subject": "Certyfikacja ochronna dla :name wygas?a",
     "title": "Certyfikacja ochronna wygas?a",
     "body": "Certyfikacja ochronna spo?eczno?ci dla :name w :community wygas?a :date. Chroniony kontakt pozostaje zablokowany do czasu odnowienia przez upowa?niony personel."
+  },
+  "mfa_changed": {
+    "subject": "Zmieniono zabezpieczenia Twojego konta",
+    "body": "Zmieniono kody odzyskiwania lub ustawienia uwierzytelniania. Jeśli nie zlecono tej zmiany, natychmiast skontaktuj się z administratorem społeczności."
   }
 }

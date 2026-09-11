@@ -39,7 +39,6 @@ class TotpController extends BaseApiController
      */
     public function verify(): JsonResponse
     {
-        $this->rateLimit('totp_verify', 5, 300);
 
         $input = $this->getAllInput();
         $rawTwoFactorToken = $input['two_factor_token'] ?? null;
@@ -182,6 +181,7 @@ class TotpController extends BaseApiController
             );
         }
 
+        $this->rateLimit('totp_verify', 5, 300, "mfa-user:{$tenantId}:{$userId}");
         DB::beginTransaction();
         try {
             // Password changes and logout-all take this same row lock. Keeping
@@ -191,7 +191,7 @@ class TotpController extends BaseApiController
                 ->where('id', $userId)
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
-                ->first(['id']);
+                ->first();
             if ($lockedUser === null) {
                 DB::rollBack();
                 return $this->respondWithError(ApiErrorCodes::RESOURCE_NOT_FOUND, __('api.user_not_found'), null, 401);
@@ -238,11 +238,22 @@ class TotpController extends BaseApiController
             LEFT JOIN tenants t ON u.tenant_id = t.id
             WHERE u.id = ? AND u.tenant_id = ?
         ", [$userId, $tenantId]);
-        $user = $userRow ? (array) $userRow : null;
+        // Authorization fields must come from the locking current read, not
+        // from an older REPEATABLE READ snapshot of the joined profile query.
+        $user = $userRow ? array_replace((array) $userRow, (array) $lockedUser) : null;
 
         if (!$user) {
             DB::rollBack();
             return $this->respondWithError(ApiErrorCodes::RESOURCE_NOT_FOUND, __('api.user_not_found'), null, 401);
+        }
+
+        if (is_array($liveChallenge['sso_provider_context'] ?? null)) {
+            try {
+                \App\Services\Auth\SsoOidcService::assertPrivilegedProviderTrusted($user, $liveChallenge['sso_provider_context']);
+            } catch (\RuntimeException $e) {
+                DB::rollBack();
+                return $this->respondWithError(ApiErrorCodes::AUTH_2FA_TOKEN_EXPIRED, __('api.session_expired'), null, 401);
+            }
         }
 
         // Verify the code
@@ -300,9 +311,15 @@ class TotpController extends BaseApiController
             return $this->respondWithError($gateBlock['code'], $gateBlock['message'], null, 403);
         }
 
+        if (is_array($liveChallenge['pending_identity_link'] ?? null)) {
+            app(\App\Services\Auth\SocialAuthService::class)->applyCallbackIdentityLink(
+                $user, $liveChallenge['pending_identity_link'], (int) $authenticationStartedAt
+            );
+        }
+
         // Return the plain trusted-device token for the frontend only after
         // every account-policy gate has passed.
-        $trustedDeviceToken = $trustDevice
+        $trustedDeviceToken = $trustDevice && !app(\App\Services\TwoFactorPolicy::class)->required($user)
             ? $this->totpService->trustDevice($userId, null, $tenantId)
             : null;
 
@@ -312,11 +329,12 @@ class TotpController extends BaseApiController
         $isMobile = $this->tokenService->isMobileRequest();
         [$accessToken, $refreshToken] = TenantContext::runForTenant(
             $tenantId,
-            function () use ($user, $isMobile): array {
+            function () use ($user, $isMobile, $useBackupCode): array {
                 $accessToken = $this->tokenService->generateToken(
                     (int) $user['id'],
                     (int) $user['tenant_id'],
                     [
+                        ...\App\Services\TwoFactorPolicy::claims($useBackupCode ? 'recovery_code' : 'totp'),
                         'role' => $user['role'],
                         'email' => $user['email'],
                         'is_super_admin' => !empty($user['is_super_admin']),
@@ -328,7 +346,8 @@ class TotpController extends BaseApiController
                 $refreshToken = $this->tokenService->generateRefreshToken(
                     (int) $user['id'],
                     (int) $user['tenant_id'],
-                    $isMobile
+                    $isMobile,
+                    \App\Services\TwoFactorPolicy::claims($useBackupCode ? 'recovery_code' : 'totp')
                 );
 
                 return [$accessToken, $refreshToken];

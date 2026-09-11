@@ -33,6 +33,53 @@ class WalletController extends BaseApiController
         private readonly WalletService $walletService,
     ) {}
 
+    /** Read-only reconciliation: unknown never means that a debit did not happen. */
+    public function operationStatus(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('wallet_operation_status', 30, 60);
+        $data = request()->validate([
+            'kind' => 'required|in:transfer,donation,organisation-deposit,federation',
+            'idempotency_key' => 'required|string|max:255',
+            'intent' => 'required|array',
+        ]);
+        $donation = $data['kind'] === 'donation';
+        $federation = $data['kind'] === 'federation';
+        request()->validate([
+            'intent' => 'size:' . ($donation || $federation ? 4 : 3),
+            'intent.0' => $donation ? 'required|in:user,community_fund' : 'required|integer|min:1',
+            'intent.1' => $donation
+                ? (($data['intent'][0] ?? null) === 'user' ? 'required|integer|min:1' : 'nullable|string')
+                : 'required|numeric|gt:0|max:1000000000',
+            'intent.2' => $donation || $federation ? 'required|numeric|gt:0|max:1000000000' : 'nullable|string|max:20000',
+            'intent.3' => $donation || $federation ? 'nullable|string|max:20000' : 'prohibited',
+        ]);
+        $intent = $data['intent'];
+        $key = trim($data['idempotency_key']);
+        $tenantId = \App\Core\TenantContext::getId();
+        if ($federation) {
+            request()->validate(['intent.1' => 'required|integer|min:1', 'intent.2' => 'required|integer|min:1|max:100']);
+            $payloadHash = hash('sha256', json_encode([(int) $intent[0], (int) $intent[1], (int) $intent[2], (string) ($intent[3] ?? '')], JSON_THROW_ON_ERROR));
+            $query = \Illuminate\Support\Facades\DB::table('transactions')
+                ->where('sender_id', $userId)->where('is_federated', 1)->where('status', 'completed')
+                ->where('federation_idempotency_key', 'internal:' . $userId . ':' . hash('sha256', $key))
+                ->where('federation_idempotency_payload_hash', $payloadHash);
+        } elseif ($data['kind'] === 'transfer') {
+            $fingerprint = sha1('key:' . $key . '|' . (int) $intent[0] . '|' . (float) $intent[1] . '|' . trim((string) $intent[2]) . '|0');
+            $query = \Illuminate\Support\Facades\DB::table('wallet_transfer_receipts')
+                ->where('sender_id', $userId)->where('fingerprint', $fingerprint);
+        } elseif ($data['kind'] === 'organisation-deposit') {
+            $fingerprint = sha1('key:' . $key . '|' . (int) $intent[0] . '|' . (int) $intent[1] . '|' . (string) $intent[2]);
+            $query = \Illuminate\Support\Facades\DB::table('vol_org_deposit_receipts')
+                ->where('user_id', $userId)->where('fingerprint', $fingerprint);
+        } else {
+            $fingerprint = sha1(implode('|', [$key, $intent[0], (string) ($intent[1] ?? ''), (string) (float) $intent[2], (string) ($intent[3] ?? '')]));
+            $query = \Illuminate\Support\Facades\DB::table('credit_donations')
+                ->where('donor_id', $userId)->where('idempotency_fingerprint', $fingerprint);
+        }
+        return $this->respondWithData(['status' => $query->where('tenant_id', $tenantId)->exists() ? 'confirmed' : 'unknown']);
+    }
+
     // -----------------------------------------------------------------
     //  GET /api/v2/wallet/config
     // -----------------------------------------------------------------

@@ -35,14 +35,14 @@ class CreditDonationService
      * @param string|null $message Optional message
      * @return bool
      */
-    public function donate(int $tenantId, int $fromUserId, int $toUserId, float $amount, ?string $message = null): bool
+    public function donate(int $tenantId, int $fromUserId, int $toUserId, float $amount, ?string $message = null, ?string $idempotencyFingerprint = null): bool
     {
         if ($amount <= 0 || $fromUserId === $toUserId) {
             return false;
         }
 
         $donor = User::where('tenant_id', $tenantId)->where('id', $fromUserId)->first();
-        if (!$donor || (float) ($donor->balance ?? 0) < $amount) {
+        if (!$donor) {
             return false;
         }
 
@@ -58,7 +58,17 @@ class CreditDonationService
             'credit_donation',
         );
 
-        $success = DB::transaction(function () use ($tenantId, $fromUserId, $toUserId, $amount, $message, $recipient) {
+        $replayed = false;
+        $success = DB::transaction(function () use ($tenantId, $fromUserId, $toUserId, $amount, $message, $recipient, $idempotencyFingerprint, &$replayed) {
+            // Stable user-lock order also protects transfers in opposite directions.
+            DB::table('users')->where('tenant_id', $tenantId)->whereIn('id', [$fromUserId, $toUserId])
+                ->orderBy('id')->lockForUpdate()->get();
+            if ($idempotencyFingerprint !== null && DB::table('credit_donations')
+                ->where('tenant_id', $tenantId)->where('donor_id', $fromUserId)
+                ->where('idempotency_fingerprint', $idempotencyFingerprint)->lockForUpdate()->first()) {
+                $replayed = true;
+                return true;
+            }
             // Atomic deduct
             $affected = DB::table('users')
                 ->where('id', $fromUserId)
@@ -106,12 +116,13 @@ class CreditDonationService
                 'amount' => $amount,
                 'message' => $message ?? '',
                 'transaction_id' => $transactionId,
+                'idempotency_fingerprint' => $idempotencyFingerprint,
             ]);
 
             return true;
         });
 
-        if ($success) {
+        if ($success && !$replayed) {
             try {
                 DonationEmailService::sendDonationEmails($tenantId, $donor, $recipient, $amount, $message);
             } catch (\Throwable $e) {
@@ -202,7 +213,7 @@ class CreditDonationService
      * @param string $message Optional message
      * @return array{success: bool, error?: string}
      */
-    public function donateToCommunityFund(int $userId, float $amount, string $message = ''): array
+    public function donateToCommunityFund(int $userId, float $amount, string $message = '', ?string $idempotencyFingerprint = null): array
     {
         if ($amount <= 0) {
             return ['success' => false, 'error' => __('api.amount_must_be_greater_than_0')];
@@ -210,7 +221,7 @@ class CreditDonationService
 
         // CommunityFundService::receiveDonation handles balance checks, deduction,
         // fund credit, transaction logging, and credit_donations record creation atomically.
-        return CommunityFundService::receiveDonation($userId, $amount, $message);
+        return CommunityFundService::receiveDonation($userId, $amount, $message, $idempotencyFingerprint);
     }
 
     /**
@@ -224,11 +235,11 @@ class CreditDonationService
      * @param string $message Optional message
      * @return array{success: bool, error?: string}
      */
-    public function donateToMember(int $userId, int $recipientId, float $amount, string $message = ''): array
+    public function donateToMember(int $userId, int $recipientId, float $amount, string $message = '', ?string $idempotencyFingerprint = null): array
     {
         $tenantId = TenantContext::getId();
 
-        $result = $this->donate($tenantId, $userId, $recipientId, $amount, $message);
+        $result = $this->donate($tenantId, $userId, $recipientId, $amount, $message, $idempotencyFingerprint);
 
         if ($result) {
             return ['success' => true];

@@ -163,14 +163,14 @@ class VolunteerCheckInController extends BaseApiController
         }
 
         $checkinUserId = $this->volunteerCheckInService->getUserIdByToken($token);
-        $success = $this->volunteerCheckInService->checkOut($token);
+        $outcome = $this->volunteerCheckInService->checkOutWithOutcome($token);
 
-        if (!$success) {
+        if ($outcome === null) {
             $errors = $this->volunteerCheckInService->getErrors();
             return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
         }
 
-        if ($checkinUserId) {
+        if ($checkinUserId && $outcome === 'completed') {
             try {
                 $this->webhookDispatchService->dispatch('shift.completed', [
                     'user_id' => $checkinUserId,

@@ -13,9 +13,179 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING:** Removed the abandoned mobile web wrapper, its native bridge, push/update hooks, update modal, dependencies and `/api/app/version` and `/api/app/check-version` endpoints. The Expo / React Native app in `mobile/` is the sole native Android/iOS client; its version enforcement and native push remain supported. Project documentation and admin descriptions now reflect this scope.
 
+### Fixed
+
+- Native organisation dashboards now keep successful panel data visible when a later applications, hours, volunteers or wallet refresh fails, with a panel-specific Retry warning instead of a false empty state. Hour decisions, wallet inputs and settings fields also lock synchronously while their writes are pending, and the dashboard resets when the account, community or organisation changes.
+
+- Volunteer-hours decisions now have one atomic winner across concurrent approve/decline requests. Retrying the winning decision after response loss succeeds without paying twice, while the conflicting decision returns HTTP 409 instead of reporting contradictory success.
+
+- Native organisation directory/detail screens now reset on account/community changes and warn when a refresh fails instead of silently presenting stale records. Organisation details map the Laravel `volunteer_count` and `opportunity_count` contract, replacing misleading zero member/listing tiles and restoring the missing volunteer total.
+
+- Native organisation registration now locks every field and its authority confirmation while saving, serializes rapid submissions, resets on account/community changes, and retries an unknown result with the same content-bound operation key. Laravel stores hashed operation identity so response loss and simultaneous retries return one pending organisation and one owner membership instead of a duplicate-name dead end or duplicate records.
+
+- Native job analytics now distinguish a failed prediction request from “not enough data,” offer a direct retry, refresh figures and predictions together, and reset on account/community changes. Prediction totals and comparisons use real tenant-scoped application rows instead of stale stored counters, and leftover English analytics labels are translated in German, Spanish, French, Italian and Portuguese.
+
+- Native candidate interview and offer decisions now serialize rapid taps, remain retryable after a failed request, and ignore completions after an account/community change or unmount. Laravel resolves conflicting decisions atomically, permits a response-loss retry of the decision that already won, and rejects the opposite decision.
+
+- Job-alert emails now render role type, commitment and closing dates in the recipient's language and regional date format instead of leaking English enum labels and month names.
+
+- Job-alert notifications now honour saved category filters and do not match location-specific alerts to vacancies with no location.
+
+- Native job-alert creation now locks the draft while saving, resets on account/community replacement, ignores completions from the prior identity, and retries the same intended alert with a content-bound idempotency key; Laravel stores hashed operation identity so lost responses and simultaneous retries return one subscription instead of creating duplicates.
+
+- Native job applications now read saved CV and cover-letter details from the Laravel response envelope, show an honest loading state, and expose failed lookups with Retry instead of claiming no saved CV exists.
+
+- Job creation retries carry a content-bound idempotency key, and Laravel stores it with the vacancy, so lost responses and simultaneous retries return the original job instead of publishing duplicates.
+
+- Job forms reset when the signed-in account or community changes, and completions from the previous identity cannot navigate or show success in the replacement session.
+
+- Job forms lock every field, choice and generation action while a save is pending, preventing accepted submissions from clearing edits that were never included in the request.
+
+- Job creation and editing prevent repeated save dispatches while a submission is pending.
+
+- Delayed AI job descriptions no longer overwrite employer edits or apply after their generation inputs change.
+
+- Switching job edit targets loads the correct vacancy and resets the form baseline instead of retaining the previous job's draft.
+
+- Job forms track unsaved changes across all fields and treat an unchanged loaded vacancy as clean, including when edits are reverted.
+
+- Hiring pipeline stage summaries use full-width rows so enlarged system text has room without relying on live font-scale notifications.
+
+- Hiring pipeline stage summaries use explicit container widths to prevent narrow, stretched controls in the native layout.
+
+- Job lists calculate application totals in a tenant-scoped batch query so stale stored counters no longer contradict job details and hiring pipelines.
+
+- Job detail application counts now reflect actual tenant-scoped applications rather than a potentially stale stored counter.
+
+- Mobile hiring pipeline actions prevent rapid conflicting moves for the same candidate while a request is pending.
+
+- Mobile hiring pipelines keep withdrawn candidates in their own stage and suppress forbidden actions for accepted, rejected and withdrawn applications, using the server's authoritative stage.
+
+- Mobile job candidate cards hide decision actions after acceptance, rejection or withdrawal, matching the server's terminal-status rules.
+
+- Mobile job candidate decisions prevent rapid conflicting updates while a status change is pending.
+
+- Mobile job applications respect server-derived vacancy availability, including expired deadlines and moderation restrictions, using the same end-of-day rule as submission.
+
+- Mobile job application drafts are scoped to the job, account and community, preventing a previous job's covering message or attachment from appearing in another application.
+
+- Mobile job application drafts retain their covering message when the sheet is closed and reopened after a failed submission; successful completion clears both message and attachment.
+
+- Mobile job owners no longer see an application action for their own vacancy; owner management tools remain available.
+
+- Mobile job applications wait for CV selection to finish before submission and recover when the document picker fails.
+
+- Mobile job applications lock the submitted message and CV controls while sending and preserve the message after rejection; pending submissions cannot be dismissed or dispatched twice from the form.
+
+- Mobile opportunity owners and organisation managers can include a decision note when reviewing volunteering applications. Tenant-required decline notes are explained and enforced before submission; failed decisions preserve the note for retry.
+
+- Mobile volunteering prevents conflicting approve/decline requests while an organiser's application decision is pending.
+
+- Mobile volunteering isolates application and form state by opportunity so navigating to another opportunity does not carry over a previous submitted status.
+
+- Mobile volunteering prevents overlapping shift sign-ups and cancellations while a shift change is being submitted.
+
+- Mobile volunteering pauses shift changes when existing registrations are loading or failed, offering retry instead of bypassing the confirmation required to move from another shift.
+
+- Mobile volunteering now permits a new application after a previous application was declined or withdrawn, matching the server's eligibility rules.
+
+- Mobile volunteering applications now show success only after server acceptance and lock the submitted note while sending, preserving it after failure for retry.
+
+- Opening another volunteer QR token resets the check-in confirmation and prevents the previous volunteer's status or delayed response from appearing for the new token.
+
+- Volunteer checkout retries return success for the original completed checkout without changing its timestamp or dispatching a duplicate shift-completed webhook.
+
+- Native volunteer check-in and checkout offer a same-token retry after temporary network or server failures, retaining the volunteer name and retrying the correct action.
+
+- Confirmation actions ignore duplicate events while an action is pending, preventing rapid presses from starting the same operation twice before the button disables.
+
+- Android confirmation dialogs disable portal animations that could crash the app when a confirmed action navigated away, including discarding an unsaved course.
+
+- Course completion checks the locked enrolment record before running completion integrations, preventing stale repeat requests from counting the same completion twice.
+
+- Instructor grading preserves fractional percentage scores instead of truncating them to whole numbers; invalid or out-of-range scores are rejected without replacing an existing grade.
+
+- Native course grading pauses score, pass/fail and feedback edits while saving, preserving the submitted draft when a grade is rejected.
+
+- Refreshing the native course grading queue preserves unsent feedback and keeps accepted grades hidden; refresh failures appear beside the retained forms instead of discarding them.
+
+- Native cross-community credit transfers save their retry key before sending, retain it after request failure, and prevent overlapping submissions or edits during a pending transfer.
+
+- Internal cross-community transfers with an explicit retry key retain their committed receipt in the database, preventing cache loss from causing a second debit and rejecting reuse of a key with changed transfer details. The wallet recovery endpoint can confirm these receipts for the original sender and transfer details.
+
+- Accepting a connection request no longer hides the member from the Connected tab if the user switches tabs before the request finishes.
+
+- Closing or unmounting an open native bottom sheet dismisses its keyboard, preventing it from covering the screen beneath the closed form.
+
+- Shared native top-bar labels remeasure after text-size changes, preventing the Back label and screen title from retaining clipped layout bounds.
+
+- Bottom-sheet titles and the group discussion helper text remeasure when text size changes, preserving the discussion draft while preventing stale clipped text.
+
+- Group discussion actions use full-width rows at larger text sizes to give translated and enlarged labels room to wrap.
+
+- The group discussion composer opens at its expanded height so Android keyboard users can reach the message and publishing actions without first expanding the sheet.
+
+- An accepted group answer is no longer reported as a failed post when its subsequent detail refresh fails; the question list refreshes and the UI reports the read failure separately.
+
+- Group questions and answers pause text editing while submitting, preventing successful saves from clearing newer unsent edits.
+
+- Group announcement title, body and pin controls pause during publishing so edits made during a pending save cannot be silently cleared; rejected saves retain the draft for retry.
+
+- Group discussion fields pause editing while publishing and unlock after a failed request, preventing successful submission from clearing text entered during the save.
+
+- Late native API authentication failures no longer refresh, retry under, or sign out a replacement session.
+
+- Native API requests awaiting credential reads are cancelled before dispatch if the session is replaced or cleared, preventing queued actions from using another account's bearer or stale sign-out credentials.
+
+- Native wallet reservations stop when the account or community changes during asynchronous recovery, preserving the original account's retry record.
+
+- Native wallet retries older than the legacy cache window can now check for a matching durable server record and replay the original key when confirmed. Unknown or unavailable results retain the existing safety block and never create a replacement debit.
+
+- Donation retry identities are persisted with the donation ledger, preventing a lost replay-cache result from debiting members twice. Member and community-fund paths retain atomic balance updates. Requires the credit donation retry-identity migration before rollout.
+
+- Explicit wallet transfer retries now use a durable receipt committed with the debit and credit, preventing duplicate transfers after replay-cache failure or eviction. Requires the wallet transfer receipt migration before rollout; legacy unresolved transfers and other credit-changing paths retain their existing recovery limits.
+- Organisation deposit retries now commit a durable receipt with both balances and ledger entries, preventing a replay-cache outage from charging the member twice. Requires the organisation deposit receipt migration before rollout.
+
+- Late duplicate wallet success responses no longer erase the saved retry identity of a newer intentional transfer, donation or organisation deposit.
+
+- Native text buttons grow to fit wrapped labels at larger accessibility text sizes. Android handles font-size changes without recreating the active screen and discarding its unsaved form state.
+- Cold native deep links retain the main navigation behind the destination, so Back and Cancel can leave the screen and invoke unsaved-draft confirmation.
+
+- Native image placeholders no longer persist when a failed image is replaced with a different URL. Saved event/group image recovery also uses the shared failure placeholder.
+
+- Native podcast playback failures now show a retry action and retain the last playback position instead of leaving the player showing Pause after a decoder error. Playback also supplies episode and show titles to native media controls.
+
+- **Biometric unlock preserves its security boundary on failures.** Native sessions stay locked when device authentication or the saved lock preference is unavailable; secure-storage failures no longer report successful enable/disable changes. Locked content is hidden from accessibility services, and hardware/enrolment errors use the existing translated messages.
+- Native biometric settings explain that the lock protects a saved session, permits biometrics enrolled on the device and may accept the device PIN. Enrolment guidance correctly requires fingerprint or face unlock; all seven native locales include the clarification.
+- **Passkey cancellation and revocation remain under member control.** Cancelling platform registration no longer opens a second prompt. Existing credentials remain manageable when tenant passkey sign-in is disabled.
+- **ASP.NET passkeys require local user verification.** Registration and sign-in enforce verification before issuing verified-passkey claims, including ceremonies started under the older policy. New credentials must be discoverable.
+- **ASP.NET passkey removal preserves recovery and revokes sessions.** Removing credentials cannot consume a passwordless member's final passkey, missing IDs cannot remove every key, and unknown IDs return a truthful failure. Successful removal invalidates access, refresh and security-confirmation tokens. Credential mutations, passkey sign-in and refresh rotation serialize against removal, and compatibility endpoints require security confirmation for enrolment and management.
+- Updated the ASP.NET WebAuthn verifier to the stable Fido2.AspNet 4.0.1 patch.
+- ASP.NET enforces the tenant biometric-login switch on registration and authentication, including assertions started before the switch was disabled, while retaining credential management.
+
+- **Voice-message retries retain their duration.** Retrying a failed native voice upload now sends the original recording length instead of zero seconds.
+- **Marketplace media failures keep a recovery path.** Saved listings retain failed photo/video operations for retry against the existing listing. Photos are tracked individually so a rejected file is not hidden by a successful batch response. Successful media steps are not repeated, and sellers can explicitly continue to the saved listing.
+- **Saved events and groups retain failed cover images.** A failed upload now opens recovery with retry, replacement-image selection and an explicit continue action, without repeating the saved event/group creation. Recovery controls use all seven native language catalogues.
+- **Image recovery respects navigation and large-text attribution.** Pending retries keep the recovery screen in place, completed retries do not redirect after unmount, and the native source-repository link wraps within the screen at large text sizes.
+- **Lost photo-upload responses no longer duplicate marketplace photos on retry.** Native retries retain an operation key, and the API commits a durable upload receipt with the image rows. Matching replays return the original result, conflicting content is refused, and ownership remains enforced. Requires the marketplace image-upload receipt migration before rollout.
+- **Generated listing descriptions preserve newer edits.** Delayed AI descriptions no longer overwrite text entered while generation is pending in native service and marketplace listing forms.
+- **Stale sign-in responses cannot replace the current account.** Delayed native password, MFA profile and session-restore responses are ignored after logout or a newer session is installed, including old credential refusals.
+- **Delayed sign-out preserves a newer session.** Native logout now stops obsolete cleanup after push unregister, server logout and local storage waits, avoiding deletion of credentials belonging to a subsequently signed-in account.
+- **Late authentication replies preserve the active API identity.** Login/logout responses cannot replace a newer bearer token, and mutation requests correctly recognize an isolated refresh-suppression option.
+- **Credential cleanup follows pending writes.** Native storage operations now preserve order per key, preventing a delayed write or cached read from restoring a token after logout removes it.
+- **Confirmed wallet payments survive local cleanup failures.** A failed secure-storage deletion no longer reports an accepted transfer or donation as failed. Completion is retained so intentional repeats can receive a new durable operation ID while uncertain requests keep duplicate protection.
+
 ### Added
 
 - Published [`docs/SECURITY-ASSURANCE.md`](docs/SECURITY-ASSURANCE.md), a public description of how security assessment works on the platform: what gets tested, how findings are recorded and tracked in the private register, how evidence is handled, and what a customer with a supplier-assurance obligation can ask for. It states process only and deliberately contains no findings. Linked from the documentation index and the published site navigation, with contributor and agent guidance pointing at it so security assessment is maintained as an ongoing record rather than a one-off audit.
+
+- Repeatable real-backend MFA journeys for React, the accessible website (with JavaScript disabled), and the Android debug emulator, using dedicated synthetic accounts in the isolated end-to-end database. Browser tests cover enrollment, recovery acknowledgment, recovery sign-in and rejected code reuse; Android additionally checks session restoration after process restart.
+
+- **MFA recovery and operational tooling.** Members can replace recovery codes with a fresh authenticator code and revoke remembered devices from React and accessible security settings. OAuth/SSO sign-in can continue into local MFA without prematurely linking identities or issuing credentials. Read-only `security:mfa-readiness` inventory and explicitly confirmed `security:recover-admin-mfa` host recovery commands support rollout and emergency recovery; security changes send recipient-localized notifications.
+
+- **Native Android/iOS MFA sign-in and required enrollment.** Password challenges now open native authenticator or recovery-code verification. Mandatory setup presents the setup key and recovery codes, preserves issued credentials while profile loading is retried, and handles expired challenges without silently refreshing an unrelated session.
+
+- **Tenant member MFA enforcement with a mandatory platform administrator baseline.** The authentication configuration panel now lets tenant administrators require MFA for every member, while the administrator requirement cannot be disabled. Restricted enrollment on React and the accessible website includes QR/manual setup, retries and recovery-code acknowledgment. Server checks cover existing sessions, role promotion and refresh; remembered devices cannot bypass required MFA, and required users cannot disable their factor. Existing passkey configuration permissions remain restricted to super administrators. Deployment activates the administrator baseline and requires the accompanying TOTP migration first.
 
 - **`tests/Laravel/Feature/Security/ExternalSurfaceKillSwitchSweepTest.php` — the inbound partner surfaces, enumerated from the route table instead of a list.** External partner federation and the partner v1 API are switched OFF in production and have been since 2026-07-27 with no partner connected. Both already have dedicated kill-switch tests and both pass. This adds a sweep because those tests drive **hand-written lists**, and these are the one authentication path that never runs `Authenticate` — so they never see the cross-community checks proved in `CrossCommunityTokenReplayTest`.
   - **69 inbound partner route-and-method combinations: all 69 gated, all 69 refuse with `503` while the switch is off, 0 reached.** Surfaces covered: Credit Commons 17, Komunitin 17, Nexus ingest 7, legacy v1 15, partner v1 10, plus external webhooks, aggregates and hour-transfer inbound.
@@ -86,6 +256,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Updated the native app to Expo SDK 55 and React Native 0.83, including the system-appearance API adjustment and explicit background audio configuration.
+
+- Native voice messages, podcasts and lesson/marketplace video now use Expo's separate audio and video modules. Audio loading has a bounded timeout and cancellation on leaving the screen; podcasts seek to their saved position before playing and activate lock-screen controls. Voice recording prevents overlapping starts while permission is pending and late starts after leaving the screen.
+
+- Updated the web passkey client to `@simplewebauthn/browser` 14.0.0, retaining the platform's existing Node 22 minimum and Laravel credential algorithms.
+
 - 🔴 **The mutation detector had three blind spots, all now closed and all now proved closed by a test that tries to fool it.** An external review of the assessment identified them, and it was right on every one. Every sweep in this file reports "0 mutated", and that number is worth exactly as much as the detector behind it.
   - **A mutation was classified only when the response was 2xx**, so a write that changed another community's record and *then* returned an error escaped the detector entirely. Now classified from the record comparison alone, with the status reported alongside rather than gating it.
   - **An exception skipped the after-snapshot altogether**, so a request that changed something and then threw was filed as merely inconclusive. The record is now read again on the exception path too, in both the write and person sweeps.
@@ -99,6 +275,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The mobile Create Course, Create Job, Create Opportunity and Podcast Studio forms are laid out like Create Listing.** The owner named Create Listing as the form that looks right and the others as "really badly formatted": a single undivided column of up to twenty fields, a save button buried in the middle of a card, and no summary of what has been chosen. Each now opens with a hero card (module icon, eyebrow, title, one-line purpose, and summary tiles that echo the choices as they are made), groups its fields into titled sections with an icon (`components/ui/FormSection`), and keeps its primary action in the sticky footer that Create Listing and Create Event already had. Course titles that are missing are now also flagged under the field, not only in a toast that fades.
 
 ### Fixed
+
+- **Native wallet and message recovery.** Transfers, donations and organisation deposits persist unresolved retry identities in encrypted storage across screen closure and app restart, scoped to account and community. Failed messages preserve the next draft and its attachments separately, with an unsent-draft switcher and navigation protection.
+- **Native message editing preserves unsent work.** Opening an older message for editing retains the current draft and photos in the unsent-draft area. Edit switching and cancellation are unavailable while a send or edit save is pending.
+- **Native interaction and startup polish.** Shared HeroUI buttons, tabs and interactive chips use 48dp targets; Messages has a compact header. Public configuration and preferences migrate from SecureStore to files, credential-write failures prevent false sign-in success, and browser-only Sentry replay is excluded from native bundles. iOS camera descriptions cover both QR journeys, and API/parity checks include MFA routes.
+- **Native audit follow-through.** Authentication screens suppress internal server exceptions and display source attribution, achievement navigation wraps into readable rows, and decorative status badges disable their press responders. API and parity check mode no longer rewrites generated evidence files.
+
+- Preserve pending two-factor enrollment when retrying setup, support the intended authenticator clock tolerance, and retain trusted-device choices through the accessible website. React now returns to sign-in after two-factor removal revokes the current session.
 
 - 🔴 **The mobile API-consumer ledger was stale, and a flaky test had been hiding it.** `mobile/` pins a fingerprint of `routes/api.php` and verifies that every endpoint the app calls still exists. Adding the partner-analytics rate limit changed that file, so `npm run drift:check` failed with *"nothing was verified. This is NOT a pass."* — the correct answer, and a good gate. It surfaced only after the jest flake below was fixed, because jest runs first in the same job and its failure stopped the job before `drift:check` ran. **One red check can conceal another in the same job.** Refreshed with `npm run api:routes`: 2,240 API paths, 514 of 514 consumed endpoints verified, and the only diff is two fingerprints and two review dates — no endpoint was added or removed, because the change added middleware rather than a route.
 
@@ -168,6 +351,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Platform-tier prefixes are excluded from the population and the document now says so: the total is of *selected* routes, not of every route.
 
 ### Security
+
+- Close MFA enforcement for operational-role accounts carrying platform-administrator authority, and rotate accessible-site sessions after password acceptance before storing MFA challenges. Recheck enrollment and administrator-reset authority under the user lock, using current revocation reads for security decisions.
+- Scope restricted MFA setup and verification rate limits to the validated account, preventing unrelated members behind the accessible server or a shared network from exhausting each other's allowance. Replacement challenges share the same account bucket; invalid challenges remain IP-limited and the broad IP abuse ceiling remains enforced.
+- **BREAKING:** Privileged SSO sign-in now requires a host-controlled `SSO_PRIVILEGED_PROVIDERS` JSON allowlist binding the exact tenant ID, provider key, issuer URL and client ID. Tenant-editable identity-provider settings cannot authorize administrator sign-in by themselves. Verified upstream authentication time is preserved rather than refreshed at callback, and provider trust is rechecked when pending MFA completes.
+- Recheck passkey-removal authority and confirmation under the account lock; bind impersonation to its originating refresh session; prevent delegated message reads from changing read state and reject delegated data-export creation. Current database reads prevent stale transaction snapshots from accepting revoked authentication.
+
+- **BREAKING:** Administrator impersonation now requires verified actor MFA and is read-only; revoking the actor's authentication invalidates delegated access. Administrator MFA resets require proof verified within five minutes, an identity-check reason and a durable audit record. Mandatory administrator MFA activates with this release; apply the accompanying TOTP migration before serving updated code.
+- Harden two-factor enrollment and recovery with atomic session revocation, pending-setup invalidation and single-use authenticator timesteps and recovery codes. SSO requires verified upstream assurance or local MFA continuation. Upgrade React Router to 7.18.3 and validate login return paths to address unsafe navigation paths.
 
 - **Production served two of every security header, with two contradicting `Permissions-Policy` values. The production images now bake HSTS and nothing else.** `Dockerfile.prod` and `Dockerfile.bluegreen` wrote an Apache conf with `Header always set` for `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`; `App\Http\Middleware\SecurityHeaders` sets the last four as well, so every application response carried both. Measured live on 2026-09-10: `camera=(), microphone=(), geolocation=(self), payment=(self)` from the image alongside `camera=(self), microphone=(self), geolocation=(self), fullscreen=(self), payment=(), usb=(), browsing-topics=()` from the middleware. 🔴 **The `Header setifempty` guard added to `httpdocs/.htaccess` on the same day could never have worked:** `always set` writes to Apache's `err_headers_out` while `setifempty` reads `headers_out`, and the two tables cannot see each other. 🔴 **A browser intersects duplicate `Permissions-Policy` headers, so the live pair denied `camera`, `microphone`, `payment`, `usb` and `browsing-topics` outright** — `payment=()` breaks browser payment integrations. Each header now has exactly one source: the middleware for application responses, `Header setifempty` in `httpdocs/.htaccess` for files Apache serves itself, and the image for HSTS only (the container is reached over HTTP from the host proxy, so `$request->secure()` is false and the middleware does not emit it). Reproduced and fixed in the dev container across three states — no conf (one each), old conf (two each, matching production exactly), HSTS-only conf (one each). 🔴 The dev `Dockerfile` bakes no such conf, which is why the original fix was "verified on the local origin" and still shipped broken; header changes must be re-checked against the live service.
 - **`scripts/check-duplicate-security-headers.mjs` — a guard so that cannot come back.** Fails if either production Dockerfile bakes an Apache directive for a header the middleware owns, if the middleware stops setting one of them (which would leave production with none), if `httpdocs/.htaccess` switches from `setifempty` to `always set`, or if the image stops setting HSTS. Runs in the always-on `Dockerfile Drift Detection` job so no path filter can let it sleep. Verified in both directions: passes on the fixed tree, fails when the old directive is reintroduced.

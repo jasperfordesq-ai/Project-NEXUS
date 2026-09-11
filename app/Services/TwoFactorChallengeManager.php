@@ -45,7 +45,9 @@ class TwoFactorChallengeManager
         int $userId,
         array $methods = ['totp'],
         ?int $tenantId = null,
-        ?int $authenticationStartedAt = null
+        ?int $authenticationStartedAt = null,
+        ?array $pendingIdentityLink = null,
+        ?array $ssoProviderContext = null
     ): string
     {
         $tenantId ??= (int) TenantContext::getId();
@@ -69,6 +71,8 @@ class TwoFactorChallengeManager
             'authentication_started_at' => $authenticationStartedAt,
             'expires_at' => $now + self::CHALLENGE_TTL,
             'created_at' => now()->toIso8601String(),
+            'pending_identity_link' => $pendingIdentityLink,
+            'sso_provider_context' => $ssoProviderContext,
         ], self::CHALLENGE_TTL);
 
         return $token;

@@ -37,6 +37,13 @@ jest.mock('react-i18next', () => ({
         'org.wallet.validation': 'Enter an amount greater than zero.',
         'org.wallet.depositError': 'Could not deposit credits.',
         'common:buttons.cancel': 'Cancel',
+        'common:unsavedChanges.title': 'Leave without saving?',
+        'common:unsavedChanges.message': 'Your changes on this screen have not been saved yet.',
+        'common:unsavedChanges.discard': 'Leave',
+        'common:unsavedSaving.title': 'Still saving',
+        'common:unsavedSaving.message': 'Your changes are still being saved.',
+        'common:unsavedSaving.leave': 'Leave anyway',
+        'common:unsavedSaving.wait': 'Keep waiting',
         'org.statsUnavailable': 'Organisation stats are unavailable.',
         'org.reviewApplications': 'Review applications',
         'org.reviewHours': 'Review hours',
@@ -86,6 +93,9 @@ jest.mock('react-i18next', () => ({
         'tryAgain': 'Try again',
         'common:back': 'Back',
         'common:errors.alertTitle': 'Error',
+        'common:errors.refreshFailedTitle': 'Couldn’t refresh',
+        'common:errors.refreshFailedSubtitle': 'You’re still seeing what loaded earlier.',
+        'common:buttons.retry': 'Retry',
       };
       return map[key] ?? key;
     },
@@ -101,7 +111,10 @@ jest.mock('@/lib/haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light' },
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired } }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired } }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7 } }),
+}));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     bg: '#fff',
@@ -167,10 +180,10 @@ jest.mock('@/lib/api/volunteering', () => ({
   verifyVolunteerHours: jest.fn().mockResolvedValue({ data: {} }),
 }));
 
-import { depositOrganisationWallet, handleVolunteerApplication } from '@/lib/api/volunteering';
+import { depositOrganisationWallet, handleVolunteerApplication, updateOrganisation, verifyVolunteerHours } from '@/lib/api/volunteering';
 import VolunteeringOrgDashboard from './volunteering-org-dashboard';
 
-function mockDashboardApis() {
+function mockDashboardApis(overrides: Partial<Record<number, Record<string, unknown>>> = {}) {
   let call = 0;
   const refresh = jest.fn();
   mockUseApi.mockImplementation(() => {
@@ -212,7 +225,8 @@ function mockDashboardApis() {
         refresh,
       },
     ];
-    const response = responses[call % responses.length];
+    const index = call % responses.length;
+    const response = overrides[index] ?? responses[index];
     call += 1;
     return response;
   });
@@ -275,6 +289,101 @@ describe('VolunteeringOrgDashboard', () => {
     fireEvent.press(getAllByText('Wallet')[0]);
     expect(getByText('Top-up')).toBeTruthy();
     expect(getByText('Deposit credits')).toBeTruthy();
+  });
+
+  it.each([
+    ['applications', 2, 'org-applications-error', 'No applications to review.'],
+    ['hours', 3, 'org-hours-error', 'No hours are waiting for review.'],
+    ['volunteers', 4, 'org-volunteers-error', 'No approved volunteers yet.'],
+    ['wallet', 5, 'org-wallet-error', 'No wallet transactions yet.'],
+  ])('shows a retryable %s load failure instead of an unsupported empty claim', (tab, apiIndex, testId, emptyText) => {
+    const retry = jest.fn();
+    mockRouteParams = { id: '5', tab };
+    mockDashboardApis({
+      [apiIndex]: { data: null, isLoading: false, error: 'Network down', errorStatus: 500, errorCode: null, refresh: retry },
+    });
+
+    const screen = render(<VolunteeringOrgDashboard />);
+    expect(screen.getByTestId(testId)).toBeTruthy();
+    expect(screen.queryByText(emptyText)).toBeNull();
+    fireEvent.press(screen.getByLabelText('Retry'));
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
+  it('serializes rapid conflicting hour decisions before the buttons rerender', async () => {
+    mockRouteParams = { id: '5', tab: 'hours' };
+    const screen = render(<VolunteeringOrgDashboard />);
+
+    fireEvent.press(screen.getByText('Approve hours'));
+    fireEvent.press(screen.getByText('Decline'));
+
+    await waitFor(() => expect(verifyVolunteerHours).toHaveBeenCalledTimes(1));
+    expect(verifyVolunteerHours).toHaveBeenCalledWith(12, 'approve');
+  });
+
+  it('locks wallet inputs while the confirmed deposit is pending', async () => {
+    let resolveDeposit!: (value: { data: { message: string; new_balance: number } }) => void;
+    jest.mocked(depositOrganisationWallet).mockReturnValueOnce(new Promise((resolve) => { resolveDeposit = resolve; }));
+    mockRouteParams = { id: '5', tab: 'wallet' };
+    const screen = render(<VolunteeringOrgDashboard />);
+    fireEvent.changeText(screen.getByPlaceholderText('Amount'), '5');
+    fireEvent.changeText(screen.getByPlaceholderText('Optional note'), 'Community fund');
+    fireEvent.press(screen.getByTestId('org-wallet-deposit'));
+    fireEvent.press(screen.getByTestId('org-wallet-confirm-deposit'));
+
+    fireEvent.changeText(screen.getByPlaceholderText('Amount'), '99');
+    fireEvent.changeText(screen.getByPlaceholderText('Optional note'), 'Changed after send');
+    expect(screen.getByPlaceholderText('Amount').props.value).toBe('5');
+    expect(screen.getByPlaceholderText('Optional note').props.value).toBe('Community fund');
+    resolveDeposit({ data: { message: 'Deposited', new_balance: 19 } });
+    await waitFor(() => expect(screen.getByPlaceholderText('Amount').props.value).toBe(''));
+  });
+
+  it('locks organisation settings and serializes rapid saves while the update is pending', async () => {
+    let resolveUpdate!: (value: { data: { id: number; name: string } }) => void;
+    jest.mocked(updateOrganisation).mockReturnValueOnce(new Promise((resolve) => { resolveUpdate = resolve; }));
+    mockRouteParams = { id: '5', tab: 'settings' };
+    const screen = render(<VolunteeringOrgDashboard />);
+
+    fireEvent.press(screen.getByText('Save organisation'));
+    fireEvent.press(screen.getByText('Save organisation'));
+    expect(updateOrganisation).toHaveBeenCalledTimes(1);
+    fireEvent.changeText(screen.getByPlaceholderText('Organisation name'), 'Changed after send');
+    fireEvent.changeText(screen.getByPlaceholderText('Description'), 'Changed after send');
+    expect(screen.getByPlaceholderText('Organisation name').props.value).toBe('Green Spaces');
+    expect(screen.getByPlaceholderText('Description').props.value).toBe('Community gardens.');
+    fireEvent.press(screen.getByText('Overview'));
+    expect(screen.getByText('Still saving')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Organisation name')).toBeTruthy();
+    fireEvent.press(screen.getByText('Keep waiting'));
+    resolveUpdate({ data: { id: 5, name: 'Green Spaces' } });
+    await waitFor(() => expect(screen.getByPlaceholderText('Organisation name').props.editable).toBe(true));
+  });
+
+  it('preserves a settings draft through refresh and confirms before discarding it for another tab', async () => {
+    mockRouteParams = { id: '5', tab: 'settings' };
+    const screen = render(<VolunteeringOrgDashboard />);
+    fireEvent.changeText(screen.getByPlaceholderText('Description'), 'Unsaved community description');
+
+    mockDashboardApis({
+      0: {
+        data: { data: { id: 5, name: 'Green Spaces from refresh', description: 'Remote refresh value', status: 'approved', balance: 14, auto_pay_enabled: true } },
+        isLoading: false,
+        error: null,
+        refresh: jest.fn(),
+      },
+    });
+    screen.rerender(<VolunteeringOrgDashboard />);
+    expect(screen.getByPlaceholderText('Description').props.value).toBe('Unsaved community description');
+
+    fireEvent.press(screen.getByText('Overview'));
+    expect(screen.getByText('Leave without saving?')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Description').props.value).toBe('Unsaved community description');
+    await act(async () => { fireEvent.press(screen.getByTestId('org-settings-discard-confirm')); });
+    expect(screen.queryByText('Leave without saving?')).toBeNull();
+
+    fireEvent.press(screen.getByText('Settings'));
+    expect(screen.getByPlaceholderText('Description').props.value).toBe('Remote refresh value');
   });
   it('🔴 does not move credits until the deposit is confirmed', async () => {
     mockRouteParams = { id: '5', tab: 'wallet' };

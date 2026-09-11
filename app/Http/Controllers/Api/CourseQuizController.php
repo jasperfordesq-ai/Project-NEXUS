@@ -108,7 +108,11 @@ class CourseQuizController extends BaseApiController
         $course = $this->findCourseOrFail($courseId);
         $this->ensureCourseOwnerOrAdmin($course, $userId);
 
-        $score = (float) $this->inputInt('score_percent', 0, 0, 100);
+        $validated = request()->validate([
+            'score_percent' => 'required|numeric|between:0,100',
+            'feedback' => 'nullable|string',
+        ]);
+        $score = (float) $validated['score_percent'];
         $passed = $this->inputBool('passed', $score >= 50);
         $feedback = $this->input('feedback');
 

@@ -41,10 +41,13 @@ jest.mock('react-i18next', () => ({
         'members': opts ? `${String(opts.count ?? 0)} members` : '0 members',
         'listings': opts ? `${String(opts.count ?? 0)} listings` : '0 listings',
         'opportunities': opts ? `${String(opts.count ?? 0)} opportunities` : '0 opportunities',
+        'volunteers': opts ? `${String(opts.count ?? 0)} volunteers` : '0 volunteers',
         'hoursLogged': opts ? `${String(opts.hours ?? 0)}h logged` : '0h logged',
         'common:errors.alertTitle': 'Error',
         'common:errors.loadFailedTitle': "Couldn't load this",
         'common:buttons.retry': 'Retry',
+        'common:errors.refreshFailedTitle': 'Couldn’t refresh',
+        'common:errors.refreshFailedSubtitle': 'You’re still seeing what loaded earlier.',
         'common:back': 'Back',
       };
       return map[key] ?? key;
@@ -55,7 +58,10 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true, tenant: { slug: 'hour-timebank' } }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { id: 2, slug: 'hour-timebank' } }),
+}));
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7 } }),
 }));
 jest.mock('@/components/ui/AccentIcon', () => {
   const React = require('react');
@@ -88,6 +94,10 @@ jest.mock('@/lib/api/organisations', () => ({
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/components/ModalErrorBoundary', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
@@ -167,6 +177,21 @@ describe('OrganisationDetailScreen', () => {
     expect(getAllByText('A vibrant hub for community services in Dublin.').length).toBeGreaterThan(0);
   });
 
+  it('maps the API volunteer and opportunity metrics instead of showing unrelated zero member/listing tiles', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockOrg, members_count: undefined, listings_count: undefined, volunteer_count: 42, opportunity_count: 15 } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText, queryByText } = render(<OrganisationDetailScreen />);
+    expect(getByText('42 volunteers')).toBeTruthy();
+    expect(getByText('15 opportunities')).toBeTruthy();
+    expect(queryByText('0 members')).toBeNull();
+    expect(queryByText('0 listings')).toBeNull();
+  });
+
   it('renders translated backend organisation statuses', () => {
     mockUseApi.mockReturnValue({
       data: { data: { ...mockOrg, verified: false, status: 'pending' } },
@@ -205,6 +230,16 @@ describe('OrganisationDetailScreen', () => {
 
     const { getAllByText } = render(<OrganisationDetailScreen />);
     expect(getAllByText('Dublin Community Hub').length).toBeGreaterThan(0);
+  });
+
+  it('warns that loaded organisation details are stale when refresh fails and retries in place', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: 'Network down', refresh });
+
+    const { getByTestId, getByLabelText } = render(<OrganisationDetailScreen />);
+    expect(getByTestId('refresh-failed-notice')).toBeTruthy();
+    fireEvent.press(getByLabelText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   /** S4-10 / S4-22. Share links carry the community slug, and the primary pill's icon takes the accent foreground. */

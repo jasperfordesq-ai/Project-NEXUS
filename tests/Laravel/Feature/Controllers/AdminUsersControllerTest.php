@@ -35,7 +35,9 @@ class AdminUsersControllerTest extends TestCase
     public function test_index_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/users');
 
@@ -68,7 +70,9 @@ class AdminUsersControllerTest extends TestCase
             'email' => 'activated-member-' . uniqid('', true) . '@example.test',
             'email_verified_at' => $verifiedAt,
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/users?search=' . urlencode($user->email));
 
@@ -84,7 +88,9 @@ class AdminUsersControllerTest extends TestCase
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $user = User::factory()->forTenant($this->testTenantId)->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/users/' . $user->id);
 
@@ -117,7 +123,9 @@ class AdminUsersControllerTest extends TestCase
             'awarded_at' => now(),
         ]);
 
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/users/' . $user->id);
 
@@ -131,7 +139,9 @@ class AdminUsersControllerTest extends TestCase
     public function test_show_returns_404_for_nonexistent_user(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/users/99999');
 
@@ -183,7 +193,9 @@ class AdminUsersControllerTest extends TestCase
         ]);
         $mailer = new AdminUsersSuccessfulEmailDispatchService();
         app()->instance(EmailDispatchService::class, $mailer);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $pending->id . '/approve');
 
@@ -218,7 +230,9 @@ class AdminUsersControllerTest extends TestCase
             'is_approved' => false,
             'email_verified_at' => now(),
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $pending->id . '/reject', [
             'reason' => 'Outside the area this community covers',
@@ -256,7 +270,9 @@ class AdminUsersControllerTest extends TestCase
         $pending = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'pending', 'is_approved' => false,
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPost('/v2/admin/users/' . $pending->id . '/reject', ['reason' => '   '])
             ->assertStatus(400);
@@ -275,7 +291,9 @@ class AdminUsersControllerTest extends TestCase
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active', 'is_approved' => true,
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPost('/v2/admin/users/' . $member->id . '/reject', ['reason' => 'Changed my mind'])
             ->assertStatus(400);
@@ -306,7 +324,9 @@ class AdminUsersControllerTest extends TestCase
         ]);
         $mailer = new AdminUsersSuccessfulEmailDispatchService();
         app()->instance(EmailDispatchService::class, $mailer);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPost('/v2/admin/users/' . $rejected->id . '/reject', ['reason' => 'Rejected in error'])
             ->assertStatus(200);
@@ -334,7 +354,9 @@ class AdminUsersControllerTest extends TestCase
             'is_approved' => true,
             'email_verified_at' => now(),
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $stuck->id . '/approve');
 
@@ -356,7 +378,9 @@ class AdminUsersControllerTest extends TestCase
         ]);
         $mailer = new AdminUsersSuccessfulEmailDispatchService();
         app()->instance(EmailDispatchService::class, $mailer);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/bulk-approve', [
             'user_ids' => [$pending->id],
@@ -395,7 +419,9 @@ class AdminUsersControllerTest extends TestCase
         ]);
         $mailer = new AdminUsersSuccessfulEmailDispatchService();
         app()->instance(EmailDispatchService::class, $mailer);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/bulk-suspend', [
             'user_ids' => [$first->id, $second->id],
@@ -446,7 +472,9 @@ class AdminUsersControllerTest extends TestCase
             'is_approved' => false,
             'status' => 'active',
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $user->id . '/ban');
 
@@ -469,7 +497,9 @@ class AdminUsersControllerTest extends TestCase
             'is_approved' => true,
             'status' => 'active',
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPut('/v2/admin/users/' . $user->id, [
             'status' => 'pending',
@@ -539,7 +569,9 @@ class AdminUsersControllerTest extends TestCase
             'created_at' => now(),
         ]);
 
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
         $response = $this->apiDelete("/v2/admin/users/{$target->id}");
 
         $response->assertStatus(200);
@@ -563,7 +595,9 @@ class AdminUsersControllerTest extends TestCase
     public function test_import_template_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiGet('/v2/admin/users/import/template');
 
@@ -616,9 +650,11 @@ class AdminUsersControllerTest extends TestCase
             'email' => 'admin-password-failure-' . uniqid('', true) . '@example.test',
             'password_hash' => Hash::make($oldPassword),
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
-        $tokens = \Mockery::mock(TokenService::class);
+        $tokens = \Mockery::mock(TokenService::class)->makePartial();
         $tokens->shouldReceive('revokeAllTokensForUser')
             ->once()
             ->with((int) $user->id, 'admin_password_change')
@@ -647,7 +683,9 @@ class AdminUsersControllerTest extends TestCase
             'is_approved' => false,
             'status' => 'suspended',
         ]);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPut('/v2/admin/users/' . $peer->id, [
             'email' => 'attacker-controlled@example.test',
@@ -685,7 +723,9 @@ class AdminUsersControllerTest extends TestCase
                 'created_at' => now(),
             ]);
         }
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $this->apiPost('/v2/admin/users/' . $user->id . '/password', [
             'password' => 'new-admin-managed-password',
@@ -722,7 +762,9 @@ class AdminUsersControllerTest extends TestCase
             'created_at' => now(),
         ]);
         app()->instance(EmailDispatchService::class, new AdminUsersFailingEmailDispatchService());
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $user->id . '/send-password-reset');
 
@@ -755,7 +797,9 @@ class AdminUsersControllerTest extends TestCase
         ]);
         $mailer = new AdminUsersSuccessfulEmailDispatchService();
         app()->instance(EmailDispatchService::class, $mailer);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $user->id . '/send-password-reset');
 
@@ -787,7 +831,9 @@ class AdminUsersControllerTest extends TestCase
         ]);
         $mailer = new AdminUsersSuccessfulEmailDispatchService();
         app()->instance(EmailDispatchService::class, $mailer);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $user->id . '/send-verification-email');
 
@@ -814,7 +860,9 @@ class AdminUsersControllerTest extends TestCase
         ]);
         $mailer = new AdminUsersSuccessfulEmailDispatchService();
         app()->instance(EmailDispatchService::class, $mailer);
-        Sanctum::actingAs($admin);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
 
         $response = $this->apiPost('/v2/admin/users/' . $user->id . '/send-verification-email');
 

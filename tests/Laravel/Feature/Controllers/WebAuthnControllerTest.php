@@ -1379,6 +1379,8 @@ class WebAuthnControllerTest extends TestCase
                 'tenant_id' => $this->testTenantId,
                 'type' => 'security_confirmation',
             ]);
+        $tokenService->shouldReceive('validateSecurityConfirmationTokenUnderUserLock')
+            ->once()->andReturn(['user_id' => (int) $user->id, 'tenant_id' => $this->testTenantId, 'type' => 'security_confirmation']);
         $tokenService->shouldReceive('revokeAllTokensForUser')
             ->once()
             ->with((int) $user->id)
@@ -1397,6 +1399,28 @@ class WebAuthnControllerTest extends TestCase
             'tenant_id' => $this->testTenantId,
             'credential_id' => $credential['credential_id'],
         ]);
+    }
+
+    public function test_passkey_removal_rechecks_confirmation_after_user_lock(): void
+    {
+        foreach (['/webauthn/remove', '/webauthn/remove-all'] as $route) {
+            $user = $this->authenticatedUser();
+            $credential = $this->credentialFor($user);
+            $confirmation = $this->securityConfirmationToken($user);
+            $armed = true;
+            DB::listen(function ($query) use (&$armed, $user): void {
+                if ($armed && str_contains(strtolower($query->sql), 'for update')
+                    && str_contains($query->sql, '`users`') && in_array($user->id, $query->bindings)) {
+                    $armed = false;
+                    app(TokenService::class)->revokeAllTokensForUser($user->id);
+                }
+            });
+            $this->apiPost($route, ['credential_id' => $credential['credential_id'],
+                'security_confirmation_token' => $confirmation])->assertStatus(403);
+            $this->assertFalse($armed);
+            $this->assertDatabaseHas('webauthn_credentials', ['user_id' => $user->id,
+                'credential_id' => $credential['credential_id']]);
+        }
     }
 
     public function test_status_requires_auth(): void

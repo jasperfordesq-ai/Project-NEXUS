@@ -50,8 +50,8 @@ class UpdateOrganisationRequest extends FormRequest
                     }
                 },
             ],
-            'description' => ['sometimes', 'required', 'string', 'max:5000'],
-            'contact_email' => ['sometimes', 'required', 'email', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:5000'],
+            'contact_email' => ['sometimes', 'nullable', 'email', 'max:255'],
             'website' => ['sometimes', 'nullable', 'url:http,https', 'max:500'],
         ];
     }

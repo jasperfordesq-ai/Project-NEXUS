@@ -84,34 +84,46 @@ class VolunteerCheckInService
      */
     public function checkOut(string $token): bool
     {
+        return $this->checkOutWithOutcome($token) !== null;
+    }
+
+    /** A replay succeeds without changing the original checkout timestamp. */
+    public function checkOutWithOutcome(string $token): ?string
+    {
         $this->clearErrors();
 
         try {
-            $checkin = DB::table('vol_shift_checkins')
-                ->where('qr_token', $token)
-                ->where('tenant_id', TenantContext::getId())
-                ->first();
+            return DB::transaction(function () use ($token): ?string {
+                $checkin = DB::table('vol_shift_checkins')
+                    ->where('qr_token', $token)
+                    ->where('tenant_id', TenantContext::getId())
+                    ->lockForUpdate()->first();
 
-            if (!$checkin) {
-                $this->addError('NOT_FOUND', __('api.vol_checkin_record_not_found'));
-                return false;
-            }
+                if (!$checkin) {
+                    $this->addError('NOT_FOUND', __('api.vol_checkin_record_not_found'));
+                    return null;
+                }
 
-            if ($checkin->status !== 'checked_in') {
-                $this->addError('VALIDATION_ERROR', __('api.vol_checkin_not_currently_checked_in'));
-                return false;
-            }
+                if ($checkin->status === 'checked_out') {
+                    return 'replayed';
+                }
 
-            DB::table('vol_shift_checkins')
-                ->where('id', $checkin->id)
-                ->where('tenant_id', TenantContext::getId())
-                ->update(['status' => 'checked_out', 'checked_out_at' => now(), 'updated_at' => now()]);
+                if ($checkin->status !== 'checked_in') {
+                    $this->addError('VALIDATION_ERROR', __('api.vol_checkin_not_currently_checked_in'));
+                    return null;
+                }
 
-            return true;
+                DB::table('vol_shift_checkins')
+                    ->where('id', $checkin->id)
+                    ->where('tenant_id', TenantContext::getId())
+                    ->update(['status' => 'checked_out', 'checked_out_at' => now(), 'updated_at' => now()]);
+
+                return 'completed';
+            });
         } catch (\Exception $e) {
             Log::error('VolunteerCheckInService::checkOut error: ' . $e->getMessage());
             $this->addError('INTERNAL_ERROR', __('api.unexpected_error'));
-            return false;
+            return null;
         }
     }
 

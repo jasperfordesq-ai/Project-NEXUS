@@ -22,6 +22,8 @@ class JobAlert extends Model
     protected $fillable = [
         'tenant_id',
         'user_id',
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
         'keywords',
         'categories',
         'type',
@@ -31,6 +33,11 @@ class JobAlert extends Model
         'is_active',
         'last_notified_at',
         'created_at',
+    ];
+
+    protected $hidden = [
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
     ];
 
     protected $casts = [

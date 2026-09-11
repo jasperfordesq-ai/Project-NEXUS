@@ -79,6 +79,8 @@ class VolunteerController extends BaseApiController
             if ($code === 'NOT_FOUND') return 404;
             if ($code === 'FORBIDDEN') return 403;
             if ($code === 'ALREADY_EXISTS') return 409;
+            if ($code === 'IDEMPOTENCY_CONFLICT') return 409;
+            if ($code === 'DECISION_CONFLICT') return 409;
             if ($code === 'FEATURE_DISABLED') return 403;
         }
         return 400;
@@ -667,6 +669,7 @@ class VolunteerController extends BaseApiController
             'description'   => trim($this->input('description', '')),
             'contact_email' => trim($this->input('contact_email', '')),
             'website'       => trim($this->input('website', '')),
+            'idempotency_key' => $request->header('Idempotency-Key') ?? $this->input('idempotency_key'),
         ];
 
         $orgId = $this->volunteerService->createOrganization($userId, $data);
@@ -1105,13 +1108,14 @@ class VolunteerController extends BaseApiController
         $tenantId = TenantContext::getId();
         $updates = [];
         $params = [];
+        $validated = $request->validated();
 
         $fields = ['name', 'description', 'contact_email', 'website'];
         foreach ($fields as $field) {
-            $value = $this->input($field);
-            if ($value !== null) {
+            if (array_key_exists($field, $validated)) {
+                $value = $validated[$field];
                 $updates[] = "{$field} = ?";
-                $params[] = trim($value);
+                $params[] = is_string($value) ? trim($value) : null;
             }
         }
 

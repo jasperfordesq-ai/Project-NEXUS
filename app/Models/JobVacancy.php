@@ -21,6 +21,8 @@ class JobVacancy extends Model
     protected $fillable = [
         'tenant_id',
         'user_id',
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
         'organization_id',
         'title',
         'description',
@@ -62,6 +64,11 @@ class JobVacancy extends Model
         'spam_score',
         'spam_flags',
         'blind_hiring',
+    ];
+
+    protected $hidden = [
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
     ];
 
     protected $casts = [

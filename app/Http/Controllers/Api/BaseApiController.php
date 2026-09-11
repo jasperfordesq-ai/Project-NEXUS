@@ -962,10 +962,12 @@ abstract class BaseApiController extends Controller
      *
      * @throws \Illuminate\Http\Exceptions\HttpResponseException if rate limited
      */
-    protected function rateLimit(string $action, int $maxAttempts = 60, int $windowSeconds = 60): void
+    protected function rateLimit(string $action, int $maxAttempts = 60, int $windowSeconds = 60, ?string $validatedIdentifier = null): void
     {
+        // An override is only for identities established by server-validated
+        // restricted authentication; never pass an unverified request field.
         $userId = $this->getOptionalUserId();
-        $identifier = $userId ? "user:{$userId}" : 'ip:' . request()->ip();
+        $identifier = $validatedIdentifier ?? ($userId ? "user:{$userId}" : 'ip:' . request()->ip());
         $key = "api:{$action}:{$identifier}";
 
         $executed = RateLimiter::attempt(

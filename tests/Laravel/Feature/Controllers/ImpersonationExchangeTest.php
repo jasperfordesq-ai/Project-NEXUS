@@ -30,6 +30,12 @@ class ImpersonationExchangeTest extends TestCase
         return app(TokenService::class);
     }
 
+    private function verifiedProof(int $userId, int $tenantId, int $adminId): string
+    {
+        $actor = DB::table('users')->where('id', $adminId)->first();
+        $jwt = $this->tokenService()->generateToken($adminId, (int) $actor->tenant_id, \App\Services\TwoFactorPolicy::claims('totp'));
+        return $this->tokenService()->generateImpersonationToken($userId, $tenantId, $adminId, $this->tokenService()->validateToken($jwt));
+    }
     /** Present a bearer token to an authenticated endpoint. */
     private function meAs(string $token): \Illuminate\Testing\TestResponse
     {
@@ -45,7 +51,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -61,7 +67,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -89,7 +95,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -108,7 +114,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -133,7 +139,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -167,7 +173,7 @@ class ImpersonationExchangeTest extends TestCase
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
         $otherTenantId = $this->testTenantId + 1000;
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $otherTenantId,
             $admin->id
@@ -183,7 +189,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -202,7 +208,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -219,7 +225,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id
@@ -246,7 +252,7 @@ class ImpersonationExchangeTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $member = User::factory()->forTenant($this->testTenantId)->create();
 
-        $proof = $this->tokenService()->generateImpersonationToken(
+        $proof = $this->verifiedProof(
             $member->id,
             $this->testTenantId,
             $admin->id

@@ -16,9 +16,8 @@
  * Random rather than derived from the amount and recipient: two genuinely separate
  * transfers that happen to look identical must both go through.
  *
- * Call sites using it today: the personal wallet transfer and donation
- * (`app/(modals)/wallet.tsx`) and the organisation wallet deposit
- * (`app/(modals)/volunteering-org-dashboard.tsx`).
+ * Call sites include credit movements, job and job-alert creation, and volunteer
+ * organisation registration. Each call site owns the content/attempt lifetime.
  */
 export function mutationIdempotencyKey(prefix = 'mobile-mutation'): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();

@@ -677,5 +677,9 @@
     "subject": "Schutzbescheinigung f?r :name abgelaufen",
     "title": "Schutzbescheinigung abgelaufen",
     "body": "Die Schutzbescheinigung der Community f?r :name in :community ist am :date abgelaufen. Gesch?tzter Kontakt bleibt gesperrt, bis autorisiertes Personal sie erneuert."
+  },
+  "mfa_changed": {
+    "subject": "Ihre Kontosicherheit wurde geändert",
+    "body": "Ihre Wiederherstellungscodes oder Authenticator-Einstellungen wurden geändert. Falls Sie dies nicht angefordert haben, wenden Sie sich sofort an die Administration Ihrer Gemeinschaft."
   }
 }

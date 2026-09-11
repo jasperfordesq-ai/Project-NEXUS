@@ -196,7 +196,16 @@ class SsoOidcService
             $payload['authentication_started_at']
         );
         $result['provider_key'] = $providerKey;
+        $result['sso_provider_context'] = [
+            'tenant_id' => (int) $provider->tenant_id, 'provider_key' => (string) $provider->provider_key,
+            'issuer_url' => (string) $provider->issuer_url, 'client_id' => (string) $provider->client_id,
+        ];
         $result['upstream_mfa_verified'] = $this->hasUpstreamMfaAssurance($claims);
+        // Only the signed authentication time describes the upstream ceremony.
+        // Local callback arrival must never turn historical MFA into fresh MFA.
+        $authTime = $claims['auth_time'] ?? null;
+        $result['upstream_mfa_verified_at'] = is_int($authTime) && $authTime > 0 && $authTime <= time()
+            ? $authTime : null;
         $result['authentication_started_at'] = $payload['authentication_started_at'];
         $result['browser_challenge'] = $payload['browser_challenge'];
         return $result;
@@ -593,6 +602,7 @@ class SsoOidcService
             if ($user === null) {
                 throw new \RuntimeException('Linked user not found.');
             }
+            self::assertPrivilegedProviderTrusted($user, (array) $provider);
 
             if ($emailVerified && $email !== null) {
                 DB::update(
@@ -637,6 +647,7 @@ class SsoOidcService
                 [$tenantId, $email]
             );
             if ($emailMatch) {
+                self::assertPrivilegedProviderTrusted($emailMatch, (array) $provider);
                 if (! empty($emailMatch->email_verified_at)) {
                     $user = (new User())->newFromBuilder((array) $emailMatch);
 
@@ -900,12 +911,32 @@ class SsoOidcService
     }
 
     /**
-     * Accept only explicit, standards-based MFA evidence from the validated
-     * ID token. Password-only and arbitrary ACR values never satisfy local
-     * MFA policy. Deployments may extend the ACR allow-list deliberately.
-     *
-     * @param array<string, mixed> $claims
+     * Tenant-managed identity providers need independent host approval before
+     * authenticating accounts with administrative authority.
      */
+    public static function assertPrivilegedProviderTrusted(object|array $user, array $provider): void
+    {
+        if (!\App\Support\Authorization\AdminTier::allows($user)
+            && !data_get($user, 'is_super_admin') && !data_get($user, 'is_god')
+            && data_get($user, 'role') !== 'org_admin') {
+            return;
+        }
+        $approved = config('services.sso.privileged_providers', []);
+        foreach (is_array($approved) ? $approved : [] as $entry) {
+            if (is_array($entry)
+                && (int) ($entry['tenant_id'] ?? 0) === (int) data_get($user, 'tenant_id')
+                && (int) ($provider['tenant_id'] ?? 0) === (int) data_get($user, 'tenant_id')
+                && !empty($entry['issuer_url']) && !empty($entry['client_id']) && !empty($entry['provider_key'])
+                && ($entry['issuer_url'] ?? null) === ($provider['issuer_url'] ?? null)
+                && ($entry['client_id'] ?? null) === ($provider['client_id'] ?? null)
+                && ($entry['provider_key'] ?? null) === ($provider['provider_key'] ?? null)) {
+                return;
+            }
+        }
+        throw new \RuntimeException(__('api.sso_login_failed'));
+    }
+
+    /** Accept explicit MFA evidence only from an already validated ID token. */
     public function hasUpstreamMfaAssurance(array $claims): bool
     {
         $amr = $claims['amr'] ?? null;
@@ -914,7 +945,11 @@ class SsoOidcService
                 static fn (mixed $method): string => strtolower(trim(is_string($method) ? $method : '')),
                 $amr
             );
-            if (array_intersect($methods, ['mfa', 'otp', 'hwk', 'swk']) !== []) {
+            // RFC 8176: otp/hwk/swk individually describe possession, not MFA.
+            // Require explicit MFA assurance or password plus possession.
+            if (in_array('mfa', $methods, true)
+                || (in_array('pwd', $methods, true)
+                    && array_intersect($methods, ['otp', 'hwk', 'swk']) !== [])) {
                 return true;
             }
         }

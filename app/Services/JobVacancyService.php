@@ -67,6 +67,85 @@ class JobVacancyService
         return null;
     }
 
+    private function canonicalizeCreationInput(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        if (array_is_list($value)) {
+            return array_map(fn (mixed $item): mixed => $this->canonicalizeCreationInput($item), $value);
+        }
+
+        ksort($value);
+        foreach ($value as $key => $item) {
+            $value[$key] = $this->canonicalizeCreationInput($item);
+        }
+        return $value;
+    }
+
+    /**
+     * Resolve an earlier accepted creation. Null means no matching key; zero means
+     * the key belongs to a different request and must be rejected.
+     */
+    private function creationReplay(
+        int $tenantId,
+        int $userId,
+        string $keyHash,
+        string $requestHash,
+    ): ?int {
+        $existing = $this->vacancy->newQuery()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('creation_idempotency_key_hash', $keyHash)
+            ->first(['id', 'creation_request_hash']);
+
+        if (!$existing) {
+            return null;
+        }
+
+        if (!hash_equals((string) $existing->creation_request_hash, $requestHash)) {
+            $this->errors[] = [
+                'code' => 'IDEMPOTENCY_CONFLICT',
+                'message' => __('event_registration.idempotency_conflict'),
+            ];
+            return 0;
+        }
+
+        return (int) $existing->id;
+    }
+
+    /**
+     * Resolve an earlier accepted alert creation. Null means no matching key;
+     * zero means the key belongs to different alert content.
+     */
+    private function alertCreationReplay(
+        int $tenantId,
+        int $userId,
+        string $keyHash,
+        string $requestHash,
+    ): ?int {
+        $existing = JobAlert::query()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('creation_idempotency_key_hash', $keyHash)
+            ->first(['id', 'creation_request_hash']);
+
+        if (!$existing) {
+            return null;
+        }
+
+        if (!hash_equals((string) $existing->creation_request_hash, $requestHash)) {
+            $this->errors[] = [
+                'code' => 'IDEMPOTENCY_CONFLICT',
+                'message' => __('event_registration.idempotency_conflict'),
+            ];
+            return 0;
+        }
+
+        return (int) $existing->id;
+    }
+
     /**
      * Accept skills as either a comma-separated string (web) or an array of
      * strings (mobile builds ≤ 2026-06-11 sent arrays). The column is text;
@@ -604,7 +683,10 @@ class JobVacancyService
             return null;
         }
 
-        return $this->enrichVacancy($job, $userId);
+        $data = $this->enrichVacancy($job, $userId);
+        $data['applications_count'] = (int) JobApplication::where('tenant_id', TenantContext::getId())
+            ->where('vacancy_id', $id)->count();
+        return $data;
     }
 
     /**
@@ -614,6 +696,29 @@ class JobVacancyService
     {
         $this->errors = [];
         $tenantId = TenantContext::getId();
+
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+        unset($data['idempotency_key']);
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                $this->errors[] = [
+                    'code' => 'IDEMPOTENCY_INVALID',
+                    'message' => __('event_registration.idempotency_invalid'),
+                ];
+                return 0;
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode(
+                $this->canonicalizeCreationInput($data),
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            ));
+            $replay = $this->creationReplay($tenantId, $userId, $keyHash, $requestHash);
+            if ($replay !== null) {
+                return $replay;
+            }
+        }
 
         $type = $data['type'] ?? 'volunteer';
         $validTypes = ['paid', 'volunteer', 'timebank'];
@@ -704,8 +809,10 @@ class JobVacancyService
             $salaryCurrency = (string) JobConfigurationService::get(JobConfigurationService::CONFIG_DEFAULT_CURRENCY, 'EUR');
         }
 
-        $vacancy = $this->vacancy->newQuery()->create(array_filter([
+        $attributes = array_filter([
             'tenant_id'       => $tenantId,
+            'creation_idempotency_key_hash' => $keyHash,
+            'creation_request_hash' => $requestHash,
             'title'          => trim($data['title']),
             'description'    => trim($data['description'] ?? ''),
             'type'           => $type,
@@ -738,7 +845,19 @@ class JobVacancyService
             'moderation_status' => $moderationStatus,
             'spam_score'     => $spamScore,
             'spam_flags'     => !empty($spamFlags) ? $spamFlags : null,
-        ], fn($v) => $v !== null));
+        ], fn($v) => $v !== null);
+
+        try {
+            $vacancy = $this->vacancy->newQuery()->create($attributes);
+        } catch (\Illuminate\Database\QueryException $exception) {
+            if ($keyHash !== null && $requestHash !== null) {
+                $replay = $this->creationReplay($tenantId, $userId, $keyHash, $requestHash);
+                if ($replay !== null) {
+                    return $replay;
+                }
+            }
+            throw $exception;
+        }
 
         // Log spam detection results (Agent B)
         if ($spamAction === 'block') {
@@ -1056,11 +1175,7 @@ class JobVacancyService
             $this->errors[] = ['code' => 'RESOURCE_FORBIDDEN', 'message' => __('api.job_cannot_apply_own')];
             return null;
         }
-        if ($vacancy->status !== 'open' || ($vacancy->deadline && $vacancy->deadline->copy()->endOfDay()->isPast())) {
-            $this->errors[] = ['code' => 'VACANCY_CLOSED', 'message' => __('api.job_vacancy_not_accepting_applications')];
-            return null;
-        }
-        if ($vacancy->moderation_status && $vacancy->moderation_status !== 'approved') {
+        if (!$this->acceptingApplications($vacancy->toArray())) {
             $this->errors[] = ['code' => 'VACANCY_CLOSED', 'message' => __('api.job_vacancy_not_accepting_applications')];
             return null;
         }
@@ -1754,11 +1869,37 @@ class JobVacancyService
     public function subscribeAlert(int $userId, array $data): ?int
     {
         $this->errors = [];
+        $tenantId = TenantContext::getId();
+
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+        unset($data['idempotency_key']);
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                $this->errors[] = [
+                    'code' => 'IDEMPOTENCY_INVALID',
+                    'message' => __('event_registration.idempotency_invalid'),
+                ];
+                return null;
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode(
+                $this->canonicalizeCreationInput($data),
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            ));
+            $replay = $this->alertCreationReplay($tenantId, $userId, $keyHash, $requestHash);
+            if ($replay !== null) {
+                return $replay === 0 ? null : $replay;
+            }
+        }
 
         try {
             $alert = JobAlert::create([
-                'tenant_id' => TenantContext::getId(),
+                'tenant_id' => $tenantId,
                 'user_id' => $userId,
+                'creation_idempotency_key_hash' => $keyHash,
+                'creation_request_hash' => $requestHash,
                 'keywords' => isset($data['keywords']) ? (mb_substr(trim($data['keywords']), 0, 500) ?: null) : null,
                 'categories' => isset($data['categories']) ? (mb_substr(trim($data['categories']), 0, 500) ?: null) : null,
                 'type' => isset($data['type']) && in_array($data['type'], ['paid', 'volunteer', 'timebank']) ? $data['type'] : null,
@@ -1770,6 +1911,15 @@ class JobVacancyService
             ]);
 
             return $alert->id;
+        } catch (\Illuminate\Database\QueryException $exception) {
+            if ($keyHash !== null && $requestHash !== null) {
+                $replay = $this->alertCreationReplay($tenantId, $userId, $keyHash, $requestHash);
+                if ($replay !== null) {
+                    return $replay === 0 ? null : $replay;
+                }
+            }
+            Log::error('JobVacancyService::subscribeAlert failed: ' . $exception->getMessage());
+            return null;
         } catch (\Throwable $e) {
             Log::error('JobVacancyService::subscribeAlert failed: ' . $e->getMessage());
             return null;
@@ -2341,12 +2491,24 @@ class JobVacancyService
                 ->all();
         }
 
-        return $items->map(fn ($item) => $this->enrichVacancyArray(
-            is_array($item) ? $item : $item->toArray(),
-            $userId,
-            $appliedMap,
-            $savedSet,
-        ))->values()->all();
+        $counts = empty($ids) ? [] : JobApplication::where('tenant_id', TenantContext::getId())
+            ->whereIn('vacancy_id', $ids)
+            ->selectRaw('vacancy_id, COUNT(*) as application_total')
+            ->groupBy('vacancy_id')->pluck('application_total', 'vacancy_id')->all();
+
+        return $items->map(function ($item) use ($userId, $appliedMap, $savedSet, $counts) {
+            $data = is_array($item) ? $item : $item->toArray();
+            $data['applications_count'] = (int) ($counts[$data['id']] ?? 0);
+            return $this->enrichVacancyArray($data, $userId, $appliedMap, $savedSet);
+        })->values()->all();
+    }
+
+    private function acceptingApplications(array $data): bool
+    {
+        return ($data['status'] ?? null) === 'open'
+            && (empty($data['moderation_status']) || $data['moderation_status'] === 'approved')
+            && (empty($data['deadline']) || !\Illuminate\Support\Carbon::parse($data['deadline'])
+                ->setTimezone(config('app.timezone'))->endOfDay()->isPast());
     }
 
     /**
@@ -2357,6 +2519,7 @@ class JobVacancyService
      */
     private function enrichVacancyArray(array $data, ?int $userId = null, ?array $appliedMap = null, ?array $savedSet = null): array
     {
+        $data['accepting_applications'] = $this->acceptingApplications($data);
         // Format creator info
         $data['creator'] = [
             'id' => (int) ($data['user_id'] ?? 0),

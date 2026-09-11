@@ -132,7 +132,9 @@ class SsoAuthController extends Controller
                 isset($result['identity_link']) && is_array($result['identity_link'])
                     ? $result['identity_link']
                     : null,
-                (bool) ($result['upstream_mfa_verified'] ?? false)
+                (bool) ($result['upstream_mfa_verified'] ?? false),
+                $result['upstream_mfa_verified_at'] ?? null,
+                $result['sso_provider_context'] ?? []
             );
             if (($issuance['status'] ?? null) !== 'issued' || empty($issuance['callback_code'])) {
                 throw new \RuntimeException(

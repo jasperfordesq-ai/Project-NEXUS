@@ -418,6 +418,56 @@ class MarketplaceListingController extends BaseApiController
         $listing = $this->findListingOrFail($id);
         $this->ensureOwner($listing, $userId);
 
+        $validated = request()->validate(['idempotency_key' => ['nullable', 'string', 'max:128']]);
+        $operationKey = $validated['idempotency_key'] ?? null;
+        $operationHash = $operationKey !== null && $operationKey !== '' ? hash('sha256', $operationKey) : null;
+        $fileHashes = [];
+        foreach (\Illuminate\Support\Arr::flatten(request()->allFiles()) as $file) {
+            if (!$file->isValid()) {
+                return $this->respondWithError('UPLOAD_FAILED', __('api_controllers_2.marketplace_listing.no_valid_images'), null, 422);
+            }
+            $fileHashes[] = [hash_file('sha256', $file->getRealPath()), strtolower($file->getClientOriginalExtension())];
+        }
+        $payloadHash = hash('sha256', json_encode($fileHashes, JSON_THROW_ON_ERROR));
+
+        // Serialize writes for this listing, including unkeyed clients, so capacity
+        // checks and the upload receipt commit with the image rows they describe.
+        return DB::transaction(function () use ($id, $userId, $operationHash, $payloadHash): JsonResponse {
+            $listing = MarketplaceListing::where('id', $id)->lockForUpdate()->firstOrFail();
+            $this->ensureOwner($listing, $userId);
+            if ($operationHash !== null) {
+                $receipt = DB::table('marketplace_image_upload_receipts')
+                    ->where('tenant_id', $listing->tenant_id)
+                    ->where('listing_id', $id)
+                    ->where('user_id', $userId)
+                    ->where('operation_hash', $operationHash)->first();
+                if ($receipt !== null) {
+                    if (!hash_equals($receipt->payload_hash, $payloadHash)) {
+                        return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('validation.in', ['attribute' => 'idempotency_key']), 'idempotency_key', 409);
+                    }
+                    return response()->json(json_decode($receipt->response_json, true, 512, JSON_THROW_ON_ERROR), 201);
+                }
+            }
+
+            $response = $this->uploadImagesForListing($listing);
+            if ($operationHash !== null && $response->getStatusCode() === 201) {
+                DB::table('marketplace_image_upload_receipts')->insert([
+                    'tenant_id' => $listing->tenant_id,
+                    'listing_id' => $id,
+                    'user_id' => $userId,
+                    'operation_hash' => $operationHash,
+                    'payload_hash' => $payloadHash,
+                    'response_json' => $response->getContent(),
+                    'created_at' => now(),
+                ]);
+            }
+            return $response;
+        });
+    }
+
+    private function uploadImagesForListing(MarketplaceListing $listing): JsonResponse
+    {
+        $id = (int) $listing->id;
         // Check existing image count against tenant config
         $maxImages = \App\Services\MarketplaceConfigurationService::maxImages();
         $existingCount = $listing->images()->count();

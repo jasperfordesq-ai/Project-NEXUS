@@ -677,5 +677,9 @@
     "subject": "Beschermingscertificering van :name verlopen",
     "title": "Beschermingscertificering verlopen",
     "body": "De beschermingscertificering van :name in :community is op :date verlopen. Beschermd contact blijft geblokkeerd totdat bevoegd personeel deze vernieuwt."
+  },
+  "mfa_changed": {
+    "subject": "De beveiliging van uw account is gewijzigd",
+    "body": "Uw herstelcodes of authenticatorinstellingen zijn gewijzigd. Als u dit niet hebt aangevraagd, neem dan onmiddellijk contact op met uw gemeenschapsbeheerder."
   }
 }

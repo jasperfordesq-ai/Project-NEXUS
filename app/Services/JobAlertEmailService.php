@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\I18n\FormattingLocale;
 use App\Models\JobAlert;
 use App\Models\JobVacancy;
 use App\Models\User;
@@ -83,9 +84,25 @@ class JobAlertEmailService
         foreach ($vacancies as $v) {
             $title       = htmlspecialchars($v->title ?? '');
             $location    = htmlspecialchars($v->location ?? ($v->is_remote ? __('emails.job_alert.remote') : __('emails.job_alert.location_not_specified')));
-            $commitment  = htmlspecialchars(ucfirst(str_replace('_', ' ', $v->commitment ?? '')));
-            $type        = htmlspecialchars(ucfirst($v->type ?? ''));
-            $deadline    = $v->deadline ? __('emails.job_alert.closes', ['date' => date('d M Y', strtotime($v->deadline))]) : __('emails.job_alert.deadline_open');
+            $commitment  = htmlspecialchars(match ($v->commitment ?? '') {
+                'full_time' => __('govuk_alpha.jobs_t2.commitment_full_time'),
+                'part_time' => __('govuk_alpha.jobs_t2.commitment_part_time'),
+                'flexible' => __('govuk_alpha.jobs_t2.commitment_flexible'),
+                'one_off' => __('govuk_alpha.jobs_t2.commitment_one_off'),
+                default => '',
+            });
+            $type        = htmlspecialchars(match ($v->type ?? '') {
+                'paid' => __('govuk_alpha.jobs.type_paid'),
+                'volunteer' => __('govuk_alpha.jobs.type_volunteer'),
+                'timebank' => __('govuk_alpha.jobs.type_timebank'),
+                default => '',
+            });
+            $deadlineDate = $v->deadline
+                ? \Carbon\Carbon::parse($v->deadline)->locale(FormattingLocale::carbon())->isoFormat('ll')
+                : null;
+            $deadline    = $deadlineDate
+                ? __('emails.job_alert.closes', ['date' => $deadlineDate])
+                : __('emails.job_alert.deadline_open');
             $jobUrl      = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/jobs/' . $v->id;
             $viewJobText = __('emails.job_alert.view_job');
 

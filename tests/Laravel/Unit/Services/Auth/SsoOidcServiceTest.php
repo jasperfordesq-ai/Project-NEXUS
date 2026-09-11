@@ -66,7 +66,11 @@ class SsoOidcServiceTest extends TestCase
         $this->assertFalse($this->service->hasUpstreamMfaAssurance(['amr' => ['pwd']]));
         $this->assertFalse($this->service->hasUpstreamMfaAssurance(['acr' => 'arbitrary-high']));
         $this->assertTrue($this->service->hasUpstreamMfaAssurance(['amr' => ['pwd', 'mfa']]));
-        $this->assertTrue($this->service->hasUpstreamMfaAssurance(['amr' => ['otp']]));
+        $this->assertFalse($this->service->hasUpstreamMfaAssurance(['amr' => ['otp']]));
+        $this->assertFalse($this->service->hasUpstreamMfaAssurance(['amr' => ['hwk']]));
+        $this->assertFalse($this->service->hasUpstreamMfaAssurance(['amr' => ['swk']]));
+        $this->assertFalse($this->service->hasUpstreamMfaAssurance(['amr' => ['hwk', 'swk']]));
+        $this->assertTrue($this->service->hasUpstreamMfaAssurance(['amr' => ['pwd', 'otp']]));
         $this->assertTrue($this->service->hasUpstreamMfaAssurance(['acr' => 'urn:nist:ac:classes:aal2']));
     }
 

@@ -5,6 +5,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'mandatory_2fa' => [
+        'title' => 'Set up two-factor authentication',
+        'reason' => 'Two-factor authentication is required for your account before you can continue.',
+        'saved' => 'I have saved my recovery codes',
+        'recovery_help' => 'Store these codes somewhere safe. Each code can be used once if you lose access to your authenticator.',
+        'required' => 'Two-factor authentication is required for your account and cannot be disabled.',
+    ],
     'opens_new_tab' => '(opens in new tab)',
     'service_name' => 'Project NEXUS Accessible',
     'phase' => 'Beta',
@@ -5007,5 +5014,16 @@ return [
             'description_required' => 'Enter an event description',
             'start_required' => 'Enter a start date and time',
         ],
+    ],
+    'mfa_recovery' => [
+        'title' => 'Recovery codes',
+        'warning' => 'Replacing codes invalidates your old unused codes. Enter a new authenticator code; if you just signed in, wait for the next code. If an earlier setup response was lost, you can replace your codes here.',
+        'code' => 'Authenticator code',
+        'replace' => 'Replace recovery codes',
+        'save' => 'Save these replacement codes somewhere secure before leaving this page.',
+        'saved' => 'I have saved these codes',
+        'revoke' => 'Forget all trusted devices',
+        'revoked' => 'Trusted devices removed. They will need verification at the next sign-in.',
+        'failed' => 'Unable to complete this action. Check your code and try again.',
     ],
 ];

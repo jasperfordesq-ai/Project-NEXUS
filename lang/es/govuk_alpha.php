@@ -5,6 +5,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'mandatory_2fa' => [
+        'title' => 'Configurar la autenticación de dos factores',
+        'reason' => 'Tu cuenta requiere autenticación de dos factores antes de continuar.',
+        'saved' => 'He guardado mis códigos de recuperación',
+        'recovery_help' => 'Guarda estos códigos en un lugar seguro. Cada código se puede usar una vez si pierdes el acceso a tu autenticador.',
+        'required' => 'La autenticación de dos factores es obligatoria para tu cuenta y no se puede desactivar.',
+    ],
     'opens_new_tab' => '(se abre en una pestaña nueva)',
     'service_name' => 'Project NEXUS Accessible',
     'phase' => 'Versión beta',
@@ -4890,5 +4897,16 @@ return [
             'description_required' => 'Introduzca una descripción del evento',
             'start_required' => 'Introduzca una fecha y hora de inicio',
         ],
+    ],
+    'mfa_recovery' => [
+        'title' => 'Códigos de recuperación',
+        'warning' => 'Al sustituirlos, los códigos antiguos sin usar dejarán de ser válidos. Introduce un código nuevo de tu aplicación; si acabas de entrar, espera al siguiente. Si se perdió la respuesta de configuración, puedes sustituir tus códigos aquí.',
+        'code' => 'Código de autenticación',
+        'replace' => 'Sustituir códigos de recuperación',
+        'save' => 'Guarda estos nuevos códigos en un lugar seguro antes de salir de esta página.',
+        'saved' => 'He guardado estos códigos',
+        'revoke' => 'Olvidar todos los dispositivos de confianza',
+        'revoked' => 'Dispositivos de confianza eliminados. Deberán verificarse al volver a iniciar sesión.',
+        'failed' => 'No se pudo completar la acción. Comprueba tu código e inténtalo de nuevo.',
     ],
 ];

@@ -1165,7 +1165,27 @@ class SocialAuthServiceTest extends TestCase
         );
     }
 
-    public function test_locked_callback_issuance_fails_closed_for_enabled_local_totp(): void
+    public function test_pending_identity_link_waits_for_local_mfa(): void
+    {
+        $userId = $this->insertUser(['email' => 'mfa.link@example.test', 'email_verified_at' => now()]);
+        $secret = \App\Services\TotpService::generateSecret();
+        DB::table('user_totp_settings')->insert([
+            'user_id' => $userId, 'tenant_id' => self::TENANT_ID,
+            'totp_secret_encrypted' => \App\Core\TotpEncryption::encrypt($secret), 'is_enabled' => 1, 'is_pending_setup' => 0,
+        ]);
+        $started = time();
+        $identity = $this->svc->findOrCreateFromOauth('google', $this->makeProviderUser('mfa-link-subject', 'mfa.link@example.test', 'MFA Person'), self::TENANT_ID, $started);
+        $issuance = $this->svc->issueLoginCallbackCode($userId, self::TENANT_ID, 'google', false, $started, self::BROWSER_CHALLENGE, $identity['identity_link']);
+        $challenge = $this->svc->consumeCallbackCode($issuance['callback_code'], self::BROWSER_VERIFIER);
+        $this->assertTrue($challenge['requires_2fa']);
+        $this->assertDatabaseMissing('oauth_identities', ['provider_user_id' => 'mfa-link-subject']);
+        $this->apiPost('/totp/verify', ['two_factor_token' => $challenge['two_factor_token'], 'code' => 'invalid'])->assertStatus(401);
+        $this->assertDatabaseMissing('oauth_identities', ['provider_user_id' => 'mfa-link-subject']);
+        $this->apiPost('/totp/verify', ['two_factor_token' => $challenge['two_factor_token'], 'code' => \OTPHP\TOTP::createFromSecret($secret)->now()])->assertOk();
+        $this->assertDatabaseHas('oauth_identities', ['user_id' => $userId, 'provider_user_id' => 'mfa-link-subject']);
+    }
+
+    public function test_locked_callback_issuance_continues_with_local_totp(): void
     {
         $userId = $this->insertUser(['email' => 'totp.oauth@example.test']);
         DB::table('user_totp_settings')->insert([
@@ -1185,8 +1205,10 @@ class SocialAuthServiceTest extends TestCase
             self::BROWSER_CHALLENGE
         );
 
-        $this->assertSame('two_factor_required', $issuance['status']);
-        $this->assertArrayNotHasKey('callback_code', $issuance);
+        $this->assertSame('issued', $issuance['status']);
+        $challenge = $this->svc->consumeCallbackCode($issuance['callback_code'], self::BROWSER_VERIFIER);
+        $this->assertTrue($challenge['requires_2fa']);
+        $this->assertArrayNotHasKey('token', $challenge);
         $this->assertSame(
             0,
             DB::table('refresh_token_sessions')->where('user_id', $userId)->count()

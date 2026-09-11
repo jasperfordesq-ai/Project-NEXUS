@@ -420,9 +420,9 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $response->assertJsonPath('success', true);
-        $response->assertJsonPath('user.email', $email);
-        $response->assertJsonPath('user.role', 'god');
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('requires_2fa_setup', true);
+        $this->assertNotEmpty($response->json('two_factor_token'));
     }
 
     public function test_login_rejects_tenant_super_admin_from_different_tenant(): void

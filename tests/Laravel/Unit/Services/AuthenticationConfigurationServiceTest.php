@@ -35,6 +35,7 @@ class AuthenticationConfigurationServiceTest extends TestCase
     public function test_defaults_are_lockout_safe_and_typed(): void
     {
         $this->assertSame([
+            'two_factor.require_members' => false,
             'two_factor.allow_trusted_devices' => true,
             'two_factor.trusted_device_days' => 30,
             'two_factor.backup_code_count' => 10,

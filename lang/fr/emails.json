@@ -677,5 +677,9 @@
     "subject": "La certification de protection de :name a expir?",
     "title": "Certification de protection expir?e",
     "body": "La certification communautaire de protection de :name dans :community a expir? le :date. Le contact prot?g? reste bloqu? jusqu?? son renouvellement par une personne autoris?e."
+  },
+  "mfa_changed": {
+    "subject": "La sécurité de votre compte a changé",
+    "body": "Vos codes de récupération ou paramètres d’authentification ont changé. Si vous n’avez pas demandé cette modification, contactez immédiatement l’administration de votre communauté."
   }
 }

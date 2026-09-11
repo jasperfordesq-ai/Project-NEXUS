@@ -166,7 +166,9 @@ class TokenServiceTest extends TestCase
 
     public function test_generateImpersonationToken_has_correct_claims(): void
     {
-        $token = $this->service->generateImpersonationToken(1, 2, 99);
+        $token = $this->service->generateImpersonationToken(1, 2, 99, [
+            'user_id' => 99, 'iat' => time(), ...\App\Services\TwoFactorPolicy::claims('totp'),
+        ]);
         $parts = explode('.', $token);
         $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
 
@@ -584,6 +586,25 @@ class TokenServiceTest extends TestCase
 
         $this->assertNull($this->service->validateToken($legacy));
         $this->assertNull($this->service->validateToken($overlongCurrentVersion));
+    }
+
+    public function test_impersonation_is_invalidated_when_original_actor_family_is_revoked(): void
+    {
+        $actor = $this->makeSessionUser();
+        DB::table('users')->where('id', $actor->id)->update(['role' => 'admin', 'status' => 'active']);
+        $target = $this->makeSessionUser();
+        $refresh = $this->service->generateRefreshToken($actor->id, $actor->tenant_id);
+        $family = $this->decodeJwt($refresh)['family_id'];
+        $access = $this->service->generateToken($actor->id, $actor->tenant_id, array_merge(
+            \App\Services\TwoFactorPolicy::claims('totp'), ['refresh_family_id' => $family]
+        ));
+        $handoff = $this->service->generateImpersonationToken($target->id, $target->tenant_id, $actor->id, $this->decodeJwt($access));
+        $proof = $this->decodeJwt($handoff);
+        $delegated = $this->service->generateImpersonationSessionToken($target->id, $target->tenant_id, $actor->id, $proof);
+        $this->assertNotNull($this->service->validateToken($delegated['token']));
+        $this->assertTrue($this->service->revokeToken($refresh, $actor->id));
+        $this->assertFalse($this->service->isImpersonationAssuranceValid($proof));
+        $this->assertNull($this->service->validateToken($delegated['token']));
     }
 
     private function makeSessionUser(): User

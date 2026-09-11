@@ -3338,10 +3338,19 @@ class FederationV2Controller extends BaseApiController
                 : sha1('content:' . $receiverIdInt . '|' . $receiverTenantIdInt . '|' . $amount . '|' . $description);
             $idemCacheKey = "fedtx:idem:{$tenantId}:{$userId}:{$fingerprint}";
             $idemTtl = $hasExplicitKey ? 86400 : 120;
+            // Explicit retries are durable and sender-scoped. The cache remains
+            // only a short-window convenience for older clients without keys.
+            $durableKey = $hasExplicitKey ? 'internal:' . $userId . ':' . hash('sha256', $explicitKey) : null;
+            $payloadHash = hash('sha256', json_encode([$receiverIdInt, $receiverTenantIdInt, (int) $amount, $description], JSON_THROW_ON_ERROR));
+            if ($hasExplicitKey) {
+                $idemCacheKey = null;
+            }
 
             $claimed = true;
             try {
-                $claimed = \Illuminate\Support\Facades\Cache::add($idemCacheKey, ['status' => 'pending'], $idemTtl);
+                if ($idemCacheKey !== null) {
+                    $claimed = \Illuminate\Support\Facades\Cache::add($idemCacheKey, ['status' => 'pending'], $idemTtl);
+                }
             } catch (\Throwable $cacheEx) {
                 $claimed = true;        // cache unavailable → do not block the transfer
                 $idemCacheKey = null;   // and don't try to forget/store later
@@ -3358,6 +3367,23 @@ class FederationV2Controller extends BaseApiController
             }
 
             DB::beginTransaction();
+            // Lock both members in a stable order, then read the receipt. A
+            // concurrent retry waits for the first commit before checking it.
+            DB::table('users')->whereIn('id', [$userId, $receiverIdInt])->orderBy('id')->lockForUpdate()->get(['id']);
+            if ($durableKey !== null) {
+                $receipt = DB::table('transactions')
+                    ->where('tenant_id', $tenantId)
+                    ->where('sender_id', $userId)
+                    ->where('federation_idempotency_key', $durableKey)
+                    ->lockForUpdate()->first();
+                if ($receipt !== null) {
+                    DB::commit();
+                    if (!hash_equals((string) $receipt->federation_idempotency_payload_hash, $payloadHash)) {
+                        return $this->respondWithError('DUPLICATE_TRANSACTION', __('api.fed_transaction_failed'), null, 409);
+                    }
+                    return $this->respondWithData(['transaction_id' => (int) $receipt->id, 'status' => 'completed', 'amount' => (int) $receipt->amount], null, 201);
+                }
+            }
             $deducted = DB::update("UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND balance >= ?", [$amount, $userId, $tenantId, $amount]);
             if ($deducted === 0) {
                 DB::rollBack();
@@ -3380,9 +3406,9 @@ class FederationV2Controller extends BaseApiController
             }
 
             DB::insert(
-                "INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, status, is_federated, sender_tenant_id, receiver_tenant_id, created_at)
-                 VALUES (?, ?, ?, ?, ?, 'completed', 1, ?, ?, NOW())",
-                [$tenantId, $userId, $receiverIdInt, $amount, $description, $tenantId, $receiverTenantIdInt]
+                "INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, status, is_federated, sender_tenant_id, receiver_tenant_id, federation_idempotency_key, federation_idempotency_payload_hash, created_at)
+                 VALUES (?, ?, ?, ?, ?, 'completed', 1, ?, ?, ?, ?, NOW())",
+                [$tenantId, $userId, $receiverIdInt, $amount, $description, $tenantId, $receiverTenantIdInt, $durableKey, $hasExplicitKey ? $payloadHash : null]
             );
             $txId = (int) DB::getPdo()->lastInsertId();
             DB::commit();

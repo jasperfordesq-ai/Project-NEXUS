@@ -90,6 +90,9 @@ return [
     ],
 
     'sso' => [
+        // Host-managed trust for privileged accounts. Tenant-editable provider
+        // settings alone cannot grant an issuer authority over administrators.
+        'privileged_providers' => json_decode((string) env('SSO_PRIVILEGED_PROVIDERS', '[]'), true) ?: [],
         // Base URL identity providers redirect back to; defaults to
         // app.url. Override when the API is served from another host.
         'redirect_base' => env('SSO_REDIRECT_BASE'),

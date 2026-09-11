@@ -188,6 +188,9 @@ class SocialAuthController extends Controller
                 is_string($browserVerifier) ? $browserVerifier : null
             );
 
+            if (!empty($payload['requires_2fa']) || !empty($payload['requires_2fa_setup'])) {
+                return response()->json(['success' => true, ...$payload])->header('Cache-Control', 'private, no-store');
+            }
             return response()->json([
                 'success' => true,
                 'token' => $payload['token'],

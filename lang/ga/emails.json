@@ -677,5 +677,9 @@
     "subject": "Deimhni? cosanta :name imithe in ?ag",
     "title": "Deimhni? cosanta imithe in ?ag",
     "body": "Chuaigh deimhni? cosanta pobail :name in :community in ?ag ar :date. Fanann teagmh?il chosanta bactha go dt? go nd?anann ball foirne ?daraithe ? a athnuachan."
+  },
+  "mfa_changed": {
+    "subject": "Athraíodh slándáil do chuntais",
+    "body": "Athraíodh do chóid athshlánaithe nó do shocruithe fíordheimhnithe. Murar iarr tú é seo, déan teagmháil le riarthóir do phobail láithreach."
   }
 }

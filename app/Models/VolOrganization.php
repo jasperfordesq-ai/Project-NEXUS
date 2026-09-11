@@ -20,6 +20,8 @@ class VolOrganization extends Model
 
     protected $fillable = [
         'user_id',
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
         'name',
         'description',
         'contact_email',
@@ -29,6 +31,11 @@ class VolOrganization extends Model
         'logo_url',
         'auto_pay_enabled',
         'balance',
+    ];
+
+    protected $hidden = [
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
     ];
 
     protected $casts = [

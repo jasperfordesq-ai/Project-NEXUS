@@ -52,7 +52,7 @@ class TokenService
     }
 
     /**
-     * Check if the current request is from the Expo mobile app.
+     * Check if the current request is from a Expo mobile app.
      */
     public function isMobileRequest(): bool
     {
@@ -113,12 +113,12 @@ class TokenService
     /**
      * Generate a refresh token for a user.
      */
-    public function generateRefreshToken(int $userId, int $tenantId, ?bool $isMobile = null): string
+    public function generateRefreshToken(int $userId, int $tenantId, ?bool $isMobile = null, array $assurance = []): string
     {
         $familyId = bin2hex(random_bytes(32));
         $familyExpiresAt = time() + self::REFRESH_TOKEN_EXPIRY;
 
-        return DB::transaction(function () use ($userId, $tenantId, $familyId, $familyExpiresAt): string {
+        return DB::transaction(function () use ($userId, $tenantId, $familyId, $familyExpiresAt, $assurance): string {
             // Serialize every new family with password changes and logout-all.
             // Callers may already hold this row lock; re-acquiring it within a
             // nested transaction is safe and protects less obvious call sites.
@@ -135,7 +135,9 @@ class TokenService
                 $userId,
                 $tenantId,
                 $familyId,
-                $familyExpiresAt
+                $familyExpiresAt,
+                null,
+                $assurance
             );
         }, 3);
     }
@@ -200,9 +202,9 @@ class TokenService
     /**
      * Validate an access token and return its payload if valid.
      */
-    public function validateToken(string $token): ?array
+    public function validateToken(string $token, bool $underUserLock = false): ?array
     {
-        $payload = $this->validateSignedToken($token);
+        $payload = $this->validateSignedToken($token, $underUserLock);
 
         if (
             !$payload
@@ -211,6 +213,14 @@ class TokenService
             || (int) ($payload['exp'] ?? 0) - (int) ($payload['nbf'] ?? 0) > $this->getAccessTokenExpiry()
         ) {
             return null;
+        }
+
+        if (!empty($payload['impersonated_by'])) {
+            $actor = DB::table('users')->where('id', (int) $payload['impersonated_by'])->first();
+            if (!$actor || $actor->status !== 'active' || !\App\Support\Authorization\AdminTier::allows($actor)
+                || !$this->isImpersonationAssuranceValid($payload)) {
+                return null;
+            }
         }
 
         // An impersonated session can be ended early ("stop impersonating")
@@ -234,7 +244,8 @@ class TokenService
         $accessJti = $payload['jti'] ?? null;
         if (is_string($accessJti) && $accessJti !== '') {
             try {
-                $revoked = DB::selectOne('SELECT id FROM revoked_tokens WHERE jti = ?', [$accessJti]);
+                $lockingClause = $underUserLock ? ' FOR UPDATE' : '';
+                $revoked = DB::selectOne('SELECT id FROM revoked_tokens WHERE jti = ?' . $lockingClause, [$accessJti]);
             } catch (\Throwable $e) {
                 Log::error('[TokenService] Access-token revocation check failed: ' . $e->getMessage());
                 return null;
@@ -339,13 +350,15 @@ class TokenService
         // frontend without turning a one-device logout into logout-everywhere.
         $refreshFamilyId = $payload['refresh_family_id'] ?? null;
         if (is_string($refreshFamilyId) && $refreshFamilyId !== '') {
-            $familyIsActive = DB::table('refresh_token_sessions')
+            $familyQuery = DB::table('refresh_token_sessions')
                 ->where('family_hash', $this->hashIdentifier($refreshFamilyId))
                 ->where('user_id', (int) ($payload['user_id'] ?? 0))
                 ->where('tenant_id', (int) ($payload['tenant_id'] ?? 0))
                 ->whereNull('revoked_at')
-                ->where('family_expires_at', '>', now())
-                ->exists();
+                ->where('family_expires_at', '>', now());
+            $familyIsActive = $lockGlobalRevocation
+                ? $familyQuery->lockForUpdate()->first() !== null
+                : $familyQuery->exists();
             if (!$familyIsActive) {
                 return null;
             }
@@ -435,7 +448,7 @@ class TokenService
 
         try {
             $globalRevoke = DB::selectOne(
-                "SELECT revoked_at FROM revoked_tokens WHERE jti = ? AND revoked_at >= FROM_UNIXTIME(?)",
+                "SELECT revoked_at FROM revoked_tokens WHERE jti = ? AND revoked_at >= FROM_UNIXTIME(?) FOR UPDATE",
                 ['global_revoke_' . $userId, $authenticationStartedAt]
             );
 
@@ -492,8 +505,10 @@ class TokenService
                     ->where('id', (int) $payload['user_id'])
                     ->where('tenant_id', (int) $payload['tenant_id'])
                     ->lockForUpdate()
-                    ->first(['id']);
-                if ($lockedUser === null) {
+                    ->first();
+                if ($lockedUser === null
+                    || (app(TwoFactorPolicy::class)->required($lockedUser)
+                        && !app(TwoFactorPolicy::class)->satisfied($payload))) {
                     return null;
                 }
 
@@ -598,7 +613,8 @@ class TokenService
                     (int) $payload['tenant_id'],
                     (string) $payload['family_id'],
                     $familyExpiresAt,
-                    $jtiHash
+                    $jtiHash,
+                    array_intersect_key($payload, array_flip(['mfa_method', 'mfa_verified_at']))
                 );
 
                 return [
@@ -837,16 +853,52 @@ class TokenService
         }
     }
 
-    /**
-     * Generate a short-lived, single-use impersonation token (5 min TTL).
-     */
-    public function generateImpersonationToken(int $userId, int $tenantId, int $adminId): string
+    /** Validate original actor assurance against global and individual logout. */
+    public function isImpersonationAssuranceValid(array $proof): bool
     {
+        $id = (int) ($proof['impersonated_by'] ?? 0);
+        $started = (int) ($proof['actor_started_at'] ?? 0);
+        $jti = $proof['actor_access_jti'] ?? null;
+        // Logical JWT issuance can be one second ahead after a same-second
+        // global revocation; it is distinct from an authentication-start time.
+        if ($id < 1 || $started < 1 || $started > time() + 1 || !is_string($jti) || $jti === ''
+            || !app(TwoFactorPolicy::class)->satisfied($proof['actor_mfa'] ?? [])) return false;
+        try {
+            $familyId = $proof['actor_refresh_family_id'] ?? null;
+            if ($familyId !== null && (!is_string($familyId) || $familyId === ''
+                || !DB::table('refresh_token_sessions')
+                    ->where('family_hash', $this->hashIdentifier($familyId))
+                    ->where('user_id', $id)
+                    ->where('tenant_id', (int) ($proof['actor_tenant_id'] ?? 0))
+                    ->whereNull('revoked_at')->where('family_expires_at', '>', now())->exists())) {
+                return false;
+            }
+            return !DB::table('revoked_tokens')->where('jti', $jti)->exists()
+                && !DB::table('revoked_tokens')->where('jti', 'global_revoke_' . $id)
+                    ->whereRaw('UNIX_TIMESTAMP(revoked_at) >= ?', [$started])->exists();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /** Generate a short-lived, single-use impersonation token (5 min TTL). */
+    public function generateImpersonationToken(int $userId, int $tenantId, int $adminId, ?array $actorClaims = null): string
+    {
+        $actorClaims ??= request()->attributes->get('verified_auth_claims', []);
+        if ((int) ($actorClaims['user_id'] ?? 0) !== $adminId || !empty($actorClaims['impersonated_by'])
+            || !app(TwoFactorPolicy::class)->satisfied($actorClaims)) {
+            throw new \RuntimeException('Verified administrator MFA is required for impersonation.');
+        }
         return $this->createToken([
             'user_id' => $userId,
             'tenant_id' => $tenantId,
             'type' => 'impersonation',
             'impersonated_by' => $adminId,
+            'actor_mfa' => array_intersect_key($actorClaims, array_flip(['mfa_method', 'mfa_verified_at'])),
+            'actor_started_at' => (int) ($actorClaims['iat'] ?? 0),
+            'actor_access_jti' => $actorClaims['jti'] ?? null,
+            'actor_refresh_family_id' => $actorClaims['refresh_family_id'] ?? null,
+            'actor_tenant_id' => (int) ($actorClaims['tenant_id'] ?? 0),
             'jti' => bin2hex(random_bytes(16)),
         ], self::IMPERSONATION_TOKEN_EXPIRY);
     }
@@ -866,13 +918,18 @@ class TokenService
      *
      * @return array{token: string, session_jti: string, expires_in: int}
      */
-    public function generateImpersonationSessionToken(int $userId, int $tenantId, int $adminId): array
+    public function generateImpersonationSessionToken(int $userId, int $tenantId, int $adminId, array $proof = []): array
     {
         $sessionJti = bin2hex(random_bytes(16));
 
         $token = $this->generateToken($userId, $tenantId, [
             'impersonated_by' => $adminId,
             'impersonation_jti' => $sessionJti,
+            'actor_mfa' => $proof['actor_mfa'] ?? [],
+            'actor_started_at' => (int) ($proof['actor_started_at'] ?? 0),
+            'actor_access_jti' => $proof['actor_access_jti'] ?? null,
+            'actor_refresh_family_id' => $proof['actor_refresh_family_id'] ?? null,
+            'actor_tenant_id' => (int) ($proof['actor_tenant_id'] ?? 0),
         ]);
 
         return [
@@ -1102,7 +1159,8 @@ class TokenService
         int $tenantId,
         string $familyId,
         int $familyExpiresAt,
-        ?string $parentJtiHash = null
+        ?string $parentJtiHash = null,
+        array $assurance = []
     ): string {
         if ($familyExpiresAt <= time()) {
             throw new \RuntimeException('Cannot issue a refresh token for an expired family.');
@@ -1122,6 +1180,7 @@ class TokenService
             'tenant_id' => $tenantId,
             'type' => 'refresh',
             'refresh_version' => self::REFRESH_TOKEN_VERSION,
+            ...array_intersect_key($assurance, array_flip(['mfa_method', 'mfa_verified_at'])),
             'family_id' => $familyId,
             'jti' => $jti,
         ], $familyExpiresAt - time());

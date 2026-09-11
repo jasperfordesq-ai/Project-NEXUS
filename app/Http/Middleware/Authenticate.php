@@ -124,7 +124,7 @@ class Authenticate
                 // SetLocale ran in the api group, before this middleware, so it
                 // could not see the member's saved language. Apply it now.
                 SetLocale::applyUserPreference($request, $user);
-                return $this->preventSharedCaching($next($request));
+                return $this->enforceTwoFactor($request, $next, $user, []);
             }
         }
 
@@ -142,7 +142,7 @@ class Authenticate
                 // SetLocale ran in the api group, before the JWT was validated,
                 // so it could not see the member's saved language. Apply it now.
                 SetLocale::applyUserPreference($request, $user);
-                return $this->preventSharedCaching($next($request));
+                return $this->enforceTwoFactor($request, $next, $user, $request->attributes->get('verified_auth_claims', []));
             }
         }
 
@@ -229,6 +229,7 @@ class Authenticate
             }
 
             auth()->guard('sanctum')->setUser($eloquentUser);
+            request()->attributes->set('verified_auth_claims', $payload);
 
             return true;
         } catch (\Throwable $e) {
@@ -243,6 +244,29 @@ class Authenticate
             || !empty($user->is_god)
             || !empty($user->is_tenant_super_admin)
             || in_array($user->role ?? '', ['admin', 'tenant_admin', 'super_admin', 'god'], true);
+    }
+
+    private function enforceTwoFactor(Request $request, Closure $next, ?object $user, array $claims): Response
+    {
+        $policy = app(\App\Services\TwoFactorPolicy::class);
+        // Delegated support sessions are read-only and retain the actor's MFA,
+        // never a claim that the target personally performed authentication.
+        $delegated = !empty($claims['impersonated_by']) && $policy->satisfied($claims['actor_mfa'] ?? []);
+        if ($delegated && !in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true)
+            && !in_array($request->path(), ['api/auth/logout', 'api/v2/auth/logout', 'api/v2/auth/impersonate/end'], true)) {
+            return $this->preventSharedCaching(response()->json([
+                'success' => false, 'errors' => [['code' => 'AUTH_INSUFFICIENT_PERMISSIONS', 'message' => __('mfa.impersonation_read_only')]],
+            ], 403));
+        }
+        if ($user && $policy->required($user) && !$policy->satisfied($claims) && !$delegated
+            && !in_array($request->path(), ['api/auth/logout', 'api/v2/auth/logout'], true)) {
+            return $this->preventSharedCaching(response()->json([
+                'success' => false,
+                'code' => 'AUTH_MFA_REQUIRED',
+                'errors' => [['code' => 'AUTH_MFA_REQUIRED', 'message' => __('mfa.sign_in_required')]],
+            ], 401));
+        }
+        return $this->preventSharedCaching($next($request));
     }
 
     /**
