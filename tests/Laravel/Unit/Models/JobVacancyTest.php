@@ -30,7 +30,10 @@ class JobVacancyTest extends TestCase
     public function test_fillable_contains_expected_fields(): void
     {
         $expected = [
-            'tenant_id', 'user_id', 'organization_id', 'title', 'description',
+            'tenant_id', 'user_id',
+            // Creation idempotency (2026-09-11): a retried job creation returns the original vacancy.
+            'creation_idempotency_key_hash', 'creation_request_hash',
+            'organization_id', 'title', 'description',
             'tagline', 'video_url', 'culture_photos', 'company_size', 'benefits',
             'location', 'latitude', 'longitude', 'is_remote', 'type', 'commitment', 'category',
             'skills_required', 'hours_per_week', 'time_credits', 'contact_email',

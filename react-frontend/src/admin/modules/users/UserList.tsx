@@ -11,7 +11,9 @@ import { Select, SelectItem, Dropdown, DropdownTrigger, DropdownMenu, DropdownIt
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { TextField, Label, Input } from '@heroui/react';
+import { Input } from '@heroui/react/input';
+import { Label } from '@heroui/react/label';
+import { TextField } from '@heroui/react/textfield';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Plus from 'lucide-react/icons/plus';

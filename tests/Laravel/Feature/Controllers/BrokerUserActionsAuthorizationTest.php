@@ -83,9 +83,18 @@ class BrokerUserActionsAuthorizationTest extends TestCase
     public function test_broker_can_reset_member_2fa(): void
     {
         $target = $this->member();
-        Sanctum::actingAs($this->broker());
+        // Resetting someone's second factor needs the actor's OWN second factor,
+        // verified within the last five minutes (E-004 property P7). A broker is
+        // not forced to enrol, so the shared test fixture does not upgrade them;
+        // this broker has enrolled voluntarily and holds the bearer that proves it.
+        $broker = $this->broker();
+        $headers = ['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $broker->id,
+            $broker->tenant_id,
+            [...\App\Services\TwoFactorPolicy::claims('totp'), 'role' => 'broker']
+        )];
 
-        $response = $this->apiPost("/v2/admin/users/{$target->id}/reset-2fa", ['reason' => 'locked out']);
+        $response = $this->apiPost("/v2/admin/users/{$target->id}/reset-2fa", ['reason' => 'Member locked out; identity checked by phone'], $headers);
 
         $this->assertNotSame(403, $response->getStatusCode(), 'Broker must be allowed to reset a member 2FA.');
     }

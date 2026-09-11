@@ -54,9 +54,18 @@ final class EventsPublicationTransitionCrossTenantTest extends TestCase
 
     private function bearerHeaders(User $user): array
     {
+        // A platform administrator's bearer carries verified MFA claims — mandatory
+        // since the MFA baseline (E-004) — plus the admin flags login mints.
         $token = app(TokenService::class)->generateToken(
             (int) $user->id,
             self::ACTING_TENANT,
+            [
+                ...\App\Services\TwoFactorPolicy::claims('totp'),
+                'role' => $user->role,
+                'is_super_admin' => !empty($user->is_super_admin),
+                'is_tenant_super_admin' => !empty($user->is_tenant_super_admin),
+                'is_god' => !empty($user->is_god),
+            ]
         );
 
         return ['Authorization' => 'Bearer ' . $token];

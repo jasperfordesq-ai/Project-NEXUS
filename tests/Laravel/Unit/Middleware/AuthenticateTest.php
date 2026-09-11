@@ -134,7 +134,13 @@ class AuthenticateTest extends TestCase
 
         $response = $this->middleware->handle($request, $this->makeNext());
 
-        $this->assertEquals(200, $response->getStatusCode());
+        // Since the MFA baseline (E-004) a platform administrator MUST hold a
+        // verified second factor, and a stateful session carries no MFA claims:
+        // the tenant check is bypassed, but the request is refused for MFA. The
+        // cross-tenant bypass itself is proven with a bearer that carries the
+        // claims in test_handle_legacy_jwt_platform_super_admin_crosses_tenant.
+        $this->assertEquals(401, $response->getStatusCode());
+        $this->assertSame('AUTH_MFA_REQUIRED', $response->getData(true)['code'] ?? null);
     }
 
     /**
@@ -305,7 +311,13 @@ class AuthenticateTest extends TestCase
             'is_super_admin' => true,
         ]);
 
-        $token = app(TokenService::class)->generateToken((int) $user->id, 99);
+        // A real platform administrator's bearer carries verified MFA claims
+        // (mandatory since the MFA baseline) plus the admin flags login mints.
+        $token = app(TokenService::class)->generateToken((int) $user->id, 99, [
+            ...\App\Services\TwoFactorPolicy::claims('totp'),
+            'role' => $user->role,
+            'is_super_admin' => true,
+        ]);
         TenantContext::setById($this->testTenantId);
 
         $request = Request::create('/api/v2/feed', 'GET');
@@ -313,6 +325,6 @@ class AuthenticateTest extends TestCase
 
         $response = $this->middleware->handle($request, $this->makeNext());
 
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(200, $response->getStatusCode(), (string) $response->getContent());
     }
 }

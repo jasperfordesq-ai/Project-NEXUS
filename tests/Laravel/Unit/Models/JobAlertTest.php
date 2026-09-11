@@ -34,7 +34,11 @@ class JobAlertTest extends TestCase
     public function test_fillable_contains_expected_fields(): void
     {
         $expected = [
-            'tenant_id', 'user_id', 'keywords', 'categories', 'type',
+            'tenant_id', 'user_id',
+            // Creation idempotency (2026-09-11): a retried alert creation must
+            // return the original row instead of a duplicate.
+            'creation_idempotency_key_hash', 'creation_request_hash',
+            'keywords', 'categories', 'type',
             'commitment', 'location', 'is_remote_only', 'is_active',
             'last_notified_at', 'created_at',
         ];

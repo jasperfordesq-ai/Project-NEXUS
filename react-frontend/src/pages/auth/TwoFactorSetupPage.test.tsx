@@ -9,9 +9,13 @@ import { MemoryRouter } from 'react-router-dom';
 import TwoFactorSetupPage from './TwoFactorSetupPage';
 
 const mocks = vi.hoisted(() => ({ post: vi.fn(), access: vi.fn(), refresh: vi.fn(), user: vi.fn(), cancel: vi.fn() }));
-vi.mock('@/contexts', () => ({
+// The page imports the context hooks from their direct modules (bundle-budget rule
+// for auth startup surfaces), so the mocks must target those modules, not the barrel.
+vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ status: 'requires_2fa_setup', twoFactorToken: 'restricted-challenge',
     cancel2FA: mocks.cancel, refreshUser: mocks.user, scheduleSessionWarning: vi.fn() }),
+}));
+vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({ tenantPath: (path: string) => path }),
 }));
 vi.mock('@/lib/api', () => ({ api: { post: mocks.post }, tokenManager: { setAccessToken: mocks.access, setRefreshToken: mocks.refresh } }));

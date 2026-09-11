@@ -20,7 +20,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextField, Label, Input as HeroInput } from '@heroui/react';
+import { Input as HeroInput } from '@heroui/react/input';
+import { Label } from '@heroui/react/label';
+import { TextField } from '@heroui/react/textfield';
 import {
   Avatar, Button, Chip, Separator, Input, Textarea,
   Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter,

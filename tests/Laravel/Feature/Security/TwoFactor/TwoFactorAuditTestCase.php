@@ -33,6 +33,14 @@ abstract class TwoFactorAuditTestCase extends TestCase
     {
         parent::setUp();
         Cache::flush();
+        // Members are optional-MFA unless a test says otherwise. CI's seeded tenant
+        // may carry the opposite setting, which turned two member-bearer tests into
+        // 401 AUTH_MFA_REQUIRED there while they passed locally.
+        \App\Services\AuthenticationConfigurationService::set(
+            \App\Services\AuthenticationConfigurationService::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS,
+            false,
+            $this->testTenantId
+        );
     }
 
     protected function member(array $attributes = []): User

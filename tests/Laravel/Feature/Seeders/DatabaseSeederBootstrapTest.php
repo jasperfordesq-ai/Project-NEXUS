@@ -95,6 +95,17 @@ class DatabaseSeederBootstrapTest extends TestCase
         $this->assertNotNull($admin->email_verified_at);
         $this->assertTrue(password_verify(TenantSeeder::DEFAULT_ADMIN_PASSWORD, $admin->password_hash));
 
+        // The seeded administrator has a fixed e-mail address, and the enrolment
+        // this test performs below has been observed to survive the wrapping
+        // transaction on a developer database (rows dated from an earlier run were
+        // present at the start of the next). A second run then meets a login that
+        // asks for a code this test cannot produce instead of the enrolment
+        // handover it asserts. Start every run from "no second factor".
+        DB::table('user_totp_settings')->where('user_id', $admin->id)->delete();
+        DB::table('user_backup_codes')->where('user_id', $admin->id)->delete();
+        DB::table('user_trusted_devices')->where('user_id', $admin->id)->delete();
+        DB::table('users')->where('id', $admin->id)->update(['totp_enabled' => 0, 'totp_setup_required' => 0]);
+
         $response = $this->postJson('/api/auth/login', [
             'email' => TenantSeeder::DEFAULT_ADMIN_EMAIL,
             'password' => TenantSeeder::DEFAULT_ADMIN_PASSWORD,
@@ -103,12 +114,35 @@ class DatabaseSeederBootstrapTest extends TestCase
             'Accept' => 'application/json',
         ]);
 
+        // Since the MFA baseline (E-004) a platform administrator cannot receive a
+        // credential from the password step alone: the seeded god account is
+        // "loginable" in the sense that the password is accepted and login hands
+        // over the mandatory enrolment challenge. Complete that enrolment the way
+        // the React setup page does, and continue with the credential it issues.
+        $tenantHeaders = [
+            'X-Tenant-ID' => (string) TenantSeeder::MASTER_TENANT_ID,
+            'Accept' => 'application/json',
+        ];
         $response->assertStatus(200);
-        $response->assertJsonPath('success', true);
-        $response->assertJsonPath('user.email', TenantSeeder::DEFAULT_ADMIN_EMAIL);
-        $response->assertJsonPath('user.role', 'god');
+        $response->assertJsonPath('success', false);
+        $response->assertJsonPath('requires_2fa_setup', true);
+        $response->assertJsonMissingPath('access_token');
+        $challenge = $response->json('two_factor_token');
+        $this->assertIsString($challenge);
 
-        $token = $response->json('token');
+        $setup = $this->postJson('/api/v2/auth/2fa/setup', ['two_factor_token' => $challenge], $tenantHeaders)
+            ->assertStatus(200);
+        $secret = $setup->json('data.secret');
+        $this->assertIsString($secret);
+
+        $enrolled = $this->postJson('/api/v2/auth/2fa/verify', [
+            'two_factor_token' => $challenge,
+            'code' => \OTPHP\TOTP::createFromSecret($secret)->now(),
+        ], $tenantHeaders)->assertStatus(200);
+        $enrolled->assertJsonPath('data.login_complete', true);
+        $this->assertCount(10, $enrolled->json('data.backup_codes'));
+
+        $token = $enrolled->json('data.access_token');
         $this->assertIsString($token);
         $this->assertNotEmpty($token);
 
@@ -169,11 +203,23 @@ class DatabaseSeederBootstrapTest extends TestCase
             'password' => 'Tenant2GodPass123!',
         ], ['X-Tenant-ID' => '2', 'Accept' => 'application/json']);
 
+        // Same mandatory-enrolment handover as the master-tenant god above; the
+        // account's tenant and role are asserted on the row, then the challenge
+        // is completed to obtain the credential the rest of the test needs.
         $tenantTwoLogin->assertStatus(200);
-        $tenantTwoLogin->assertJsonPath('user.tenant_id', 2);
-        $tenantTwoLogin->assertJsonPath('user.role', 'god');
+        $tenantTwoLogin->assertJsonPath('requires_2fa_setup', true);
+        $this->assertDatabaseHas('users', ['email' => $tenantTwoGodEmail, 'tenant_id' => 2, 'role' => 'god']);
+        $tenantTwoChallenge = $tenantTwoLogin->json('two_factor_token');
+        $this->assertIsString($tenantTwoChallenge);
+        $tenantTwoHeaders = ['X-Tenant-ID' => '2', 'Accept' => 'application/json'];
+        $tenantTwoSecret = $this->postJson('/api/v2/auth/2fa/setup', ['two_factor_token' => $tenantTwoChallenge], $tenantTwoHeaders)
+            ->assertStatus(200)->json('data.secret');
+        $tenantTwoEnrolled = $this->postJson('/api/v2/auth/2fa/verify', [
+            'two_factor_token' => $tenantTwoChallenge,
+            'code' => \OTPHP\TOTP::createFromSecret($tenantTwoSecret)->now(),
+        ], $tenantTwoHeaders)->assertStatus(200);
 
-        $tenantTwoToken = $tenantTwoLogin->json('token');
+        $tenantTwoToken = $tenantTwoEnrolled->json('data.access_token');
         $this->assertIsString($tenantTwoToken);
         $this->assertNotEmpty($tenantTwoToken);
 

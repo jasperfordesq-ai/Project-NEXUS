@@ -124,14 +124,22 @@ class Authenticate
                 // SetLocale ran in the api group, before this middleware, so it
                 // could not see the member's saved language. Apply it now.
                 SetLocale::applyUserPreference($request, $user);
-                return $this->enforceTwoFactor($request, $next, $user, []);
+                // A stateful session carries no MFA claims of its own. Read the same
+                // request attribute the bearer branch fills in validateLegacyToken():
+                // in production nothing sets it on this branch (the bearer branch
+                // returns before reaching here, and clients cannot set request
+                // attributes), so this stays an empty array and required accounts
+                // are refused exactly as before. The test base class sets it for
+                // stateful administrator actors, the way a real administrator's
+                // token would carry it — see tests/Laravel/Support/ActingAsVerifiedAdministrator.
+                return $this->enforceTwoFactor($request, $next, $user, $request->attributes->get('verified_auth_claims', []));
             }
         }
 
         // Bearer authentication uses the versioned, short-lived JWT contract.
         $token = $this->extractBearerToken($request);
         if ($token) {
-            $validated = $this->validateLegacyToken($token);
+            $validated = $this->validateLegacyToken($token, $request);
             if ($validated) {
                 // shouldUse AFTER setUser (setUser happens inside validateLegacyToken)
                 auth()->shouldUse('sanctum');
@@ -180,7 +188,7 @@ class Authenticate
      * The legacy system uses $_SESSION['user_id'] for auth checks,
      * and delegation controllers call legacy code that reads from session.
      */
-    private function validateLegacyToken(string $token): bool
+    private function validateLegacyToken(string $token, Request $request): bool
     {
         try {
             $tokenService = app(TokenService::class);
@@ -229,7 +237,11 @@ class Authenticate
             }
 
             auth()->guard('sanctum')->setUser($eloquentUser);
-            request()->attributes->set('verified_auth_claims', $payload);
+            // Store the claims on the request being handled — the same object
+            // enforceTwoFactor() reads from. In a real request this is also the
+            // container's request(); in a unit test that builds its own Request
+            // the two differ, and the claims used to vanish between the two steps.
+            $request->attributes->set('verified_auth_claims', $payload);
 
             return true;
         } catch (\Throwable $e) {

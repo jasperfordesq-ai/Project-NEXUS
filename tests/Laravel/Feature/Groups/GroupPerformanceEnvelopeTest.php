@@ -72,67 +72,74 @@ final class GroupPerformanceEnvelopeTest extends TestCase
         $smallList = $this->measureGet('/v2/groups?q=' . rawurlencode($fixture['marker'] . ' small'));
         $largeList = $this->measureGet('/v2/groups?per_page=20');
         $measurements['directory'] = [$smallList['queries'], $largeList['queries']];
-        $this->assertBoundedGrowth('group directory', $smallList['queries'], $largeList['queries'], 24, 2);
+        // 🔴 Every absolute budget below was raised by six on 2026-09-11: since the
+        // MFA baseline every authenticated request pays for the two-factor policy
+        // check (TwoFactorPolicy::required: schema probe, role-grant lookup, tenant
+        // setting), measured at +4 to +6 queries per screen on the small fixture
+        // (directory 24 -> 28, members 30 -> 34, wiki 12 -> 18). The GROWTH bounds
+        // (second argument) are unchanged — that is the property this test guards.
+        // Optimising the policy check is tracked in the E-004 review (O-011).
+        $this->assertBoundedGrowth('group directory', $smallList['queries'], $largeList['queries'], 30, 2);
 
         $smallDetail = $this->measureGet("/v2/groups/{$fixture['small_group_id']}");
         $largeDetail = $this->measureGet("/v2/groups/{$fixture['large_group_id']}");
         $measurements['detail'] = [$smallDetail['queries'], $largeDetail['queries']];
-        $this->assertBoundedGrowth('group detail', $smallDetail['queries'], $largeDetail['queries'], 24, 1);
+        $this->assertBoundedGrowth('group detail', $smallDetail['queries'], $largeDetail['queries'], 30, 1);
 
         $smallMembers = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/members?per_page=20");
         $largeMembers = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/members?per_page=20");
         $measurements['members'] = [$smallMembers['queries'], $largeMembers['queries']];
-        $this->assertBoundedGrowth('members tab', $smallMembers['queries'], $largeMembers['queries'], 30, 1);
+        $this->assertBoundedGrowth('members tab', $smallMembers['queries'], $largeMembers['queries'], 36, 1);
 
         $smallDiscussions = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/discussions?per_page=20");
         $largeDiscussions = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/discussions?per_page=20");
         $measurements['discussions'] = [$smallDiscussions['queries'], $largeDiscussions['queries']];
-        $this->assertBoundedGrowth('discussion tab', $smallDiscussions['queries'], $largeDiscussions['queries'], 18, 1);
+        $this->assertBoundedGrowth('discussion tab', $smallDiscussions['queries'], $largeDiscussions['queries'], 24, 1);
 
         $smallFiles = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/files?per_page=20");
         $largeFiles = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/files?per_page=20");
         $measurements['files'] = [$smallFiles['queries'], $largeFiles['queries']];
-        $this->assertBoundedGrowth('files tab', $smallFiles['queries'], $largeFiles['queries'], 18, 1);
+        $this->assertBoundedGrowth('files tab', $smallFiles['queries'], $largeFiles['queries'], 24, 1);
 
         $smallAnnouncements = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/announcements?per_page=20");
         $largeAnnouncements = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/announcements?per_page=20");
         $measurements['announcements'] = [$smallAnnouncements['queries'], $largeAnnouncements['queries']];
-        $this->assertBoundedGrowth('announcements tab', $smallAnnouncements['queries'], $largeAnnouncements['queries'], 18, 1);
+        $this->assertBoundedGrowth('announcements tab', $smallAnnouncements['queries'], $largeAnnouncements['queries'], 24, 1);
 
         $smallAnalytics = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/analytics");
         $largeAnalytics = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/analytics");
         $measurements['analytics'] = [$smallAnalytics['queries'], $largeAnalytics['queries']];
-        $this->assertBoundedGrowth('analytics dashboard', $smallAnalytics['queries'], $largeAnalytics['queries'], 40, 2);
+        $this->assertBoundedGrowth('analytics dashboard', $smallAnalytics['queries'], $largeAnalytics['queries'], 46, 2);
 
         $smallQuestions = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/questions?per_page=20");
         $largeQuestions = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/questions?per_page=20");
         $measurements['qa'] = [$smallQuestions['queries'], $largeQuestions['queries']];
-        $this->assertBoundedGrowth('Q&A tab', $smallQuestions['queries'], $largeQuestions['queries'], 18, 1);
+        $this->assertBoundedGrowth('Q&A tab', $smallQuestions['queries'], $largeQuestions['queries'], 24, 1);
 
         $smallWiki = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/wiki");
         $largeWiki = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/wiki");
         $measurements['wiki'] = [$smallWiki['queries'], $largeWiki['queries']];
-        $this->assertBoundedGrowth('wiki tab', $smallWiki['queries'], $largeWiki['queries'], 12, 1);
+        $this->assertBoundedGrowth('wiki tab', $smallWiki['queries'], $largeWiki['queries'], 18, 1);
 
         $smallMedia = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/media?per_page=20");
         $largeMedia = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/media?per_page=20");
         $measurements['media'] = [$smallMedia['queries'], $largeMedia['queries']];
-        $this->assertBoundedGrowth('media tab', $smallMedia['queries'], $largeMedia['queries'], 18, 1);
+        $this->assertBoundedGrowth('media tab', $smallMedia['queries'], $largeMedia['queries'], 24, 1);
 
         $smallChatrooms = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/chatrooms");
         $largeChatrooms = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/chatrooms");
         $measurements['chatrooms'] = [$smallChatrooms['queries'], $largeChatrooms['queries']];
-        $this->assertBoundedGrowth('chatrooms tab', $smallChatrooms['queries'], $largeChatrooms['queries'], 12, 1);
+        $this->assertBoundedGrowth('chatrooms tab', $smallChatrooms['queries'], $largeChatrooms['queries'], 18, 1);
 
         $smallTasks = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/tasks?per_page=20");
         $largeTasks = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/tasks?per_page=20");
         $measurements['tasks'] = [$smallTasks['queries'], $largeTasks['queries']];
-        $this->assertBoundedGrowth('tasks tab', $smallTasks['queries'], $largeTasks['queries'], 20, 1);
+        $this->assertBoundedGrowth('tasks tab', $smallTasks['queries'], $largeTasks['queries'], 26, 1);
 
         $smallScheduled = $this->measureGet("/v2/groups/{$fixture['small_group_id']}/scheduled-posts");
         $largeScheduled = $this->measureGet("/v2/groups/{$fixture['large_group_id']}/scheduled-posts");
         $measurements['scheduled_posts'] = [$smallScheduled['queries'], $largeScheduled['queries']];
-        $this->assertBoundedGrowth('scheduled posts', $smallScheduled['queries'], $largeScheduled['queries'], 12, 1);
+        $this->assertBoundedGrowth('scheduled posts', $smallScheduled['queries'], $largeScheduled['queries'], 18, 1);
 
         $smallUpdate = $this->measurePut(
             "/v2/groups/{$fixture['small_group_id']}",
@@ -143,12 +150,12 @@ final class GroupPerformanceEnvelopeTest extends TestCase
             ['description' => 'Deterministic G18 large-group mutation.'],
         );
         $measurements['ordinary_update'] = [$smallUpdate['queries'], $largeUpdate['queries']];
-        $this->assertBoundedGrowth('ordinary group update', $smallUpdate['queries'], $largeUpdate['queries'], 40, 2);
+        $this->assertBoundedGrowth('ordinary group update', $smallUpdate['queries'], $largeUpdate['queries'], 46, 2);
 
         $smallExport = $this->measurePost("/v2/groups/{$fixture['small_group_id']}/exports");
         $largeExport = $this->measurePost("/v2/groups/{$fixture['large_group_id']}/exports");
         $measurements['export_enqueue'] = [$smallExport['queries'], $largeExport['queries']];
-        $this->assertBoundedGrowth('queued export request', $smallExport['queries'], $largeExport['queries'], 18, 1);
+        $this->assertBoundedGrowth('queued export request', $smallExport['queries'], $largeExport['queries'], 24, 1);
         Queue::assertPushed(GenerateGroupDataExport::class, 2);
 
         $smallWebhookQueries = $this->measureQueries(static function () use ($fixture): void {

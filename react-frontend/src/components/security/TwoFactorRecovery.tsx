@@ -4,7 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useState } from 'react';
-import { Button, Input, Label, TextField } from '@heroui/react';
+import { Button } from '@heroui/react/button';
+import { Input } from '@heroui/react/input';
+import { Label } from '@heroui/react/label';
+import { TextField } from '@heroui/react/textfield';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 

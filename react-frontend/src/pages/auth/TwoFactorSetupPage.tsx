@@ -5,9 +5,14 @@
 
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Button, Label, TextField, Input } from '@heroui/react';
+import { Button } from '@heroui/react/button';
+import { Input } from '@heroui/react/input';
+import { Label } from '@heroui/react/label';
+import { TextField } from '@heroui/react/textfield';
 import { useTranslation } from 'react-i18next';
-import { useAuth, useTenant } from '@/contexts';
+// Auth startup surface: direct context modules, never the @/contexts barrel (bundle budget).
+import { useAuth } from '@/contexts/AuthContext';
+import { useTenant } from '@/contexts/TenantContext';
 import { api, tokenManager } from '@/lib/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
