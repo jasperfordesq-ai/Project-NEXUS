@@ -99,8 +99,16 @@ class TwoFactorPolicyTest extends TestCase
 
     public function test_stateful_admin_without_verified_assurance_is_refused(): void
     {
-        Sanctum::actingAs($this->member(['role' => 'admin']));
-        $this->apiGet('/v2/admin/config/authentication')->assertStatus(401);
+        // The shared test base upgrades stateful administrators to a verified
+        // bearer (they cannot exist in production otherwise); this test is the
+        // one place that asserts the raw stateful refusal, so opt out here.
+        \Tests\Laravel\Support\ActingAsVerifiedAdministrator::$disabled = true;
+        try {
+            Sanctum::actingAs($this->member(['role' => 'admin']));
+            $this->apiGet('/v2/admin/config/authentication')->assertStatus(401);
+        } finally {
+            \Tests\Laravel\Support\ActingAsVerifiedAdministrator::$disabled = false;
+        }
     }
 
     public function test_tenant_admin_can_change_member_enforcement_but_cannot_disable_admin_enforcement(): void

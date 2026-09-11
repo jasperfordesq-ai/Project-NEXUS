@@ -131,7 +131,8 @@ describe('AuthContext', () => {
     const { api } = await import('@/lib/api');
     vi.mocked(api.post).mockResolvedValue({ success: true, data: { requires_2fa_setup: true, two_factor_token: 'setup-only' } });
     render(<AuthProvider><TestAuthActions /></AuthProvider>);
-    await userEvent.click(screen.getByRole('button', { name: 'Login', exact: true }));
+    // A string `name` already matches exactly; `exact` is a ByText option, not a ByRole one.
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('requires_2fa_setup'));
     expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
     expect(tokenManager.setRefreshToken).not.toHaveBeenCalled();

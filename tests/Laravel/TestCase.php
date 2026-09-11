@@ -206,6 +206,14 @@ abstract class TestCase extends BaseTestCase
         );
         TenantContext::reset();
 
+        // Administrators must hold a verified second factor since the MFA baseline
+        // (E-004). Tests that `Sanctum::actingAs($admin)` would otherwise all get
+        // 401 AUTH_MFA_REQUIRED; this test-only middleware hands such actors the
+        // bearer a real administrator holds. See the class for the opt-out.
+        \Tests\Laravel\Support\ActingAsVerifiedAdministrator::$disabled = false;
+        $this->app->make(\Illuminate\Contracts\Http\Kernel::class)
+            ->prependMiddleware(\Tests\Laravel\Support\ActingAsVerifiedAdministrator::class);
+
         // Seed the test tenant. Use updateOrInsert (NOT insertOrIgnore) keyed on id:
         // CI pre-seeds tenant id=2 with slug 'test-tenant-2', so insertOrIgnore was a
         // no-op and the slug never became the expected 'hour-timebank' — every test

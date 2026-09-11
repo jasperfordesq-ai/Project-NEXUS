@@ -65,7 +65,6 @@ const ALLOWED_WITHOUT_SINGULAR = [
   'messages:unreadCount',
   'messages:visibleCount',
   'notifications:unreadCount',
-  'profile:listings',
   'settings:blockedUsers.count',
   'volunteering:hoursValue',
   'volunteering:org.walletBalance',

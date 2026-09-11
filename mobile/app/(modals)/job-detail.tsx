@@ -236,8 +236,8 @@ function JobDetailContent() {
           : t('apply.cvUnsupported'),
         variant: 'warning',
       });
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('common:errors.generic'), variant: 'danger' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common:errors.generic')), variant: 'danger' });
     } finally {
       cvPickerPending.current = false;
       setCvPicking(false);
