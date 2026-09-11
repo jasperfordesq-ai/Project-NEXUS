@@ -34,6 +34,7 @@ jest.mock('../src/lib/api', () => ({
     }
   },
   login: jest.fn(),
+  setupRequiredTwoFactor: jest.fn(),
   logout: jest.fn(),
   invalidateUserCache: jest.fn(),
   register: jest.fn(),
@@ -72,6 +73,42 @@ describe('authenticated responses are never cached', () => {
     api.getTenants.mockResolvedValue({
       data: [{ id: 2, name: 'Acme Timebank', slug: 'acme' }]
     });
+  });
+
+  it('mounts mandatory enrollment on the real server and protects its posts with CSRF', async () => {
+    const setup = await request(app).get('/login/two-factor/setup');
+    expect(setup.status).toBe(302);
+    expect(setup.headers.location).toContain('/login?status=two-factor-expired');
+    await request(app).post('/login/two-factor/setup').type('form').send({ code: '123456' }).expect(419);
+    await request(app).post('/login/two-factor/setup/complete').type('form').send({}).expect(419);
+  });
+
+  it('renders and completes enrollment through the real server, session and CSRF middleware', async () => {
+    const client = request.agent(app);
+    api.getTenantBootstrap.mockResolvedValue({ data: { id: 2, slug: 'acme', name: 'Acme' } });
+    api.login.mockResolvedValue({ requires_2fa_setup: true, two_factor_token: 'restricted-setup' });
+    const signIn = await client.get('/login').expect(200);
+    const csrf = html => {
+      const match = html.match(/name="_csrf" value="([^"]+)"/);
+      expect(match).not.toBeNull();
+      return match[1];
+    };
+    await client.post('/login').type('form').send({ email: 'admin@example.test', password: 'password', tenant_slug: 'acme', _csrf: csrf(signIn.text) }).expect(302);
+    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'JBSWY3DPEHPK3PXP', qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+' } });
+    const setup = await client.get('/login/two-factor/setup').expect(200);
+    expect(setup.text).toContain('JBSWY3DPEHPK3PXP');
+    expect(setup.text).toContain('Set up two-factor authentication');
+    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { login_complete: true, access_token: 'fixture-access-token', refresh_token: 'fixture-refresh-token', expires_in: 900, refresh_expires_in: 2592000, backup_codes: ['recover-once'] } });
+    const verified = await client.post('/login/two-factor/setup').type('form').send({ code: '123456', _csrf: csrf(setup.text) }).expect(302);
+    expect((verified.headers['set-cookie'] || []).join(';')).not.toMatch(/(?:^|;)\s*token=/);
+    const recovery = await client.get('/login/two-factor/setup').expect(200);
+    expect(recovery.text).toContain('recover-once');
+    expect(recovery.text).not.toContain('fixture-access-token');
+    expect(recovery.text).not.toContain('fixture-refresh-token');
+    expect(recovery.headers['cache-control']).toContain('no-store');
+    const complete = await client.post('/login/two-factor/setup/complete').type('form').send({ _csrf: csrf(recovery.text) }).expect(302);
+    expect(complete.headers.location).toBe('/dashboard');
+    expect((complete.headers['set-cookie'] || []).join(';')).toContain('token=');
   });
 
   it('sets private, no-store when the signed session token is present', async () => {

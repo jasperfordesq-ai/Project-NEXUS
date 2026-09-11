@@ -1068,6 +1068,7 @@ function normalizeTwoFactorPayload(payload) {
 
   return {
     enabled,
+    enforcementRequired: source.enforcement_required === true,
     setup: enabled || (qrDataUri === '' && secret === '')
       ? null
       : {
@@ -1092,6 +1093,8 @@ function renderTwoFactor(req, res, twoFactor, status = '') {
     errorStatus: statusConfig && statusConfig.type === 'error',
     errorAnchor: statusConfig ? statusConfig.anchor || 'tfa-form' : '',
     enabled: twoFactor.enabled,
+    enforcementRequired: twoFactor.enforcementRequired,
+    devicesRevoked: req.query.devices_revoked === '1',
     setup: twoFactor.setup,
     backupCodes: twoFactor.backupCodes,
     backupCodesRemaining: twoFactor.backupCodesRemaining,
@@ -1770,6 +1773,7 @@ router.get('/two-factor', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    throw error;
   }
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
@@ -1833,6 +1837,30 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
   }
 }));
 
+router.post('/two-factor/recovery-codes', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const code = trimmed(req.body.code);
+  if (!/^[0-9]{6}$/.test(code)) return redirectTo(res, twoFactorRedirect('2fa-code-required'));
+  try {
+    const payload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/recovery-codes', { code }));
+    res.set('Cache-Control', 'private, no-store');
+    return renderTwoFactor(req, res, normalizeTwoFactorPayload({ ...payload, enabled: true }));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    if (error instanceof ApiError && error.status === 422) return redirectTo(res, twoFactorRedirect('2fa-code-invalid'));
+    throw error;
+  }
+}));
+
+router.post('/two-factor/revoke-devices', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  await callProfile(token, 'POST', '/auth/2fa/trusted-devices/revoke', {});
+  res.clearCookie('nexus_trusted_device', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
+  return redirectTo(res, '/profile/two-factor?devices_revoked=1');
+}));
+
 router.post('/two-factor/disable', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
@@ -1844,6 +1872,7 @@ router.post('/two-factor/disable', asyncRoute(async (req, res) => {
 
   try {
     await callProfile(token, 'POST', '/auth/2fa/disable', { password });
+    res.clearCookie('nexus_trusted_device', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
     invalidateUserCache(token);
     await destroyRequestSession(req);
     clearAuthCookies(res);

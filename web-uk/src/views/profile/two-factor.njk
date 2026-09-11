@@ -58,7 +58,23 @@
       {% elif enabled %}
         <p class="govuk-body-l">{{ t("security_2fa.is_on") }}</p>
         <p class="govuk-body">{{ backupCodesRemainingLabel }}</p>
+        {% if devicesRevoked %}<p class="govuk-inset-text" role="status">{{ t('mfa_recovery.revoked') }}</p>{% endif %}
+        <h2 class="govuk-heading-m">{{ t('mfa_recovery.title') }}</h2>
+        <p class="govuk-body">{{ t('mfa_recovery.warning') }}</p>
+        <form method="post" action="{{ urlFor('/profile/two-factor/recovery-codes') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="recovery-code">{{ t('mfa_recovery.code') }}</label>
+            <input class="govuk-input govuk-input--width-10" id="recovery-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+          </div>
+          <button class="govuk-button">{{ t('mfa_recovery.replace') }}</button>
+        </form>
+        <form method="post" action="{{ urlFor('/profile/two-factor/revoke-devices') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--secondary">{{ t('mfa_recovery.revoke') }}</button>
+        </form>
 
+        {% if enforcementRequired %}<p class="govuk-inset-text">{{ t('mandatory_2fa.required') }}</p>{% else %}
         <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("security_2fa.disable_heading") }}</h2>
         <p class="govuk-body">{{ t("security_2fa.disable_intro") }}</p>
         <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/disable') }}">
@@ -69,6 +85,7 @@
           </div>
           <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("security_2fa.disable_button") }}</button>
         </form>
+        {% endif %}
       {% elif setup %}
         <p class="govuk-body-l">{{ t("security_2fa.setup_intro") }}</p>
         <ol class="govuk-list govuk-list--number">

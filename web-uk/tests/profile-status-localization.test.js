@@ -43,6 +43,9 @@ function createApp(locale) {
       tenantSlug: 'test-community'
     };
     req.signedCookies = { token: 'test-token' };
+    // Express needs the signing secret when the route clears a signed cookie,
+    // just as cookie-parser provides it in the real application.
+    req.secret = 'profile-status-test-cookie-secret';
     req.token = 'test-token';
     req.session = { locale: locale || 'en' };
     req.flash = () => [];

@@ -1014,6 +1014,13 @@
             "confirm_cancel": "Annuler le billet gratuit"
         },
         "govuk_alpha": {
+            "mandatory_2fa": {
+                "title": "Configurer l’authentification à deux facteurs",
+                "reason": "Votre compte exige une authentification à deux facteurs pour continuer.",
+                "saved": "J’ai enregistré mes codes de récupération",
+                "recovery_help": "Conservez ces codes en lieu sûr. Chaque code est utilisable une seule fois si vous perdez l’accès à votre authentificateur.",
+                "required": "L’authentification à deux facteurs est obligatoire pour votre compte et ne peut pas être désactivée."
+            },
             "opens_new_tab": "(s'ouvre dans un nouvel onglet)",
             "service_name": "Project NEXUS Accessible",
             "phase": "Bêta",
@@ -5899,6 +5906,17 @@
                     "description_required": "Entrez une description d'événement",
                     "start_required": "Entrez une date et une heure de début"
                 }
+            },
+            "mfa_recovery": {
+                "title": "Codes de récupération",
+                "warning": "Le remplacement invalide vos anciens codes inutilisés. Saisissez un nouveau code de votre application ; après connexion, attendez le suivant. Si la réponse de configuration a été perdue, vous pouvez remplacer vos codes ici.",
+                "code": "Code de vérification",
+                "replace": "Remplacer les codes de récupération",
+                "save": "Conservez ces nouveaux codes en lieu sûr avant de quitter cette page.",
+                "saved": "J’ai enregistré ces codes",
+                "revoke": "Oublier tous les appareils de confiance",
+                "revoked": "Appareils de confiance supprimés. Une vérification sera nécessaire à la prochaine connexion.",
+                "failed": "Impossible de terminer cette action. Vérifiez votre code et réessayez."
             }
         },
         "govuk_alpha_activity": {

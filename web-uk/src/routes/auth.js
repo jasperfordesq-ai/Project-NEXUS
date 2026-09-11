@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const { login, register, getRegistrationInfo, getTenantBootstrap, logout, forgotPassword, resetPassword, resendVerification, verify2fa, invalidateUserCache, ApiError, ApiOfflineError } = require('../lib/api');
+const { setupRequiredTwoFactor, login, register, getRegistrationInfo, getTenantBootstrap, logout, forgotPassword, resetPassword, resendVerification, verify2fa, invalidateUserCache, ApiError, ApiOfflineError } = require('../lib/api');
 const { setAuthCookies, clearAuthCookies } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { createTranslator } = require('../lib/localization');
@@ -196,6 +196,8 @@ function tenantSlugForRequest(req) {
 function clearPendingTwoFactor(req) {
   if (!req.session) return;
   delete req.session.pending2faToken;
+  delete req.session.pending2faSetup;
+  delete req.session.pending2faCompletion;
   delete req.session.pending2faTenantSlug;
   delete req.session.pending2faAllowTrustedDevice;
   delete req.session.pending2faTrustedDeviceDays;
@@ -263,7 +265,23 @@ router.post('/login', asyncRoute(async (req, res) => {
   clearPendingTwoFactor(req);
 
   try {
-    const result = await login(email.toLowerCase(), password, tenantSlug);
+    const trustedCookie = req.signedCookies?.nexus_trusted_device;
+    const result = trustedCookie
+      ? await login(email.toLowerCase(), password, tenantSlug, trustedCookie)
+      : await login(email.toLowerCase(), password, tenantSlug);
+
+    // Password acceptance changes the session's authority, even before MFA.
+    // Destroy the anonymous session before storing any challenge or setup seed.
+    if (req.session) {
+      await new Promise((resolve, reject) => req.session.regenerate(error => error ? reject(error) : resolve()));
+    }
+
+    if (result.requires_2fa_setup && result.two_factor_token && req.session) {
+      req.session.pending2faToken = result.two_factor_token;
+      req.session.pending2faTenantSlug = tenantSlug;
+      req.session.pending2faSetup = true;
+      return redirectTo(res, '/login/two-factor/setup');
+    }
 
     // Handle 2FA requirement — store pending token in session for verification
     if (result.requires_2fa) {
@@ -364,6 +382,12 @@ async function handleTwoFactorPost(req, res) {
 
     const session = rotatingSessionFrom(result);
     clearPendingTwoFactor(req);
+    if (allowTrustedDevice && checkboxValue(req.body.trust_device) && result.trusted_device_cookie) {
+      res.cookie('nexus_trusted_device', result.trusted_device_cookie, {
+        path: '/', httpOnly: true, signed: true, secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax', maxAge: Math.min(365, Math.max(1, trustedDeviceDays)) * 86400000
+      });
+    }
     setAuthCookies(res, session.accessToken, session.refreshToken, {
       expiresIn: session.expiresIn,
       refreshExpiresIn: session.refreshExpiresIn,
@@ -396,6 +420,60 @@ async function handleTwoFactorPost(req, res) {
     });
   }
 }
+
+router.get('/login/two-factor/setup', asyncRoute(async (req, res) => {
+  res.set('Cache-Control', 'private, no-store');
+  if (!req.session?.pending2faSetup || !req.session.pending2faToken) {
+    return redirectTo(res, '/login?status=two-factor-expired');
+  }
+  const completion = req.session.pending2faCompletion;
+  if (completion && completion.expiresAt <= Date.now()) {
+    clearPendingTwoFactor(req);
+    return redirectTo(res, '/login?status=two-factor-expired');
+  }
+  const result = completion ? null : await setupRequiredTwoFactor(req.session.pending2faToken, pendingTwoFactorTenantSlug(req));
+  return res.render('auth/two-factor-setup', {
+    title: translate(req, 'mandatory_2fa.title'), setup: result?.data,
+    backupCodes: completion?.backupCodes,
+    error: req.query.status === 'invalid' ? translate(req, 'auth.two_factor_invalid') : null,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}));
+
+router.post('/login/two-factor/setup', asyncRoute(async (req, res) => {
+  res.set('Cache-Control', 'private, no-store');
+  if (!req.session?.pending2faSetup || !req.session.pending2faToken) {
+    return redirectTo(res, '/login?status=two-factor-expired');
+  }
+  if (req.session.pending2faCompletion) return redirectTo(res, '/login/two-factor/setup');
+  const code = String(req.body.code || '').trim();
+  if (!/^[0-9]{6}$/.test(code)) return redirectTo(res, '/login/two-factor/setup?status=invalid');
+  try {
+    const result = await setupRequiredTwoFactor(req.session.pending2faToken, pendingTwoFactorTenantSlug(req), code);
+    if (!result.data?.login_complete) throw new ApiError('Invalid enrollment response', 502);
+    const session = rotatingSessionFrom(result.data);
+    req.session.pending2faCompletion = { session, backupCodes: result.data.backup_codes, expiresAt: Date.now() + 300000 };
+    return redirectTo(res, '/login/two-factor/setup');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 400) return redirectTo(res, '/login/two-factor/setup?status=invalid');
+    throw error;
+  }
+}));
+
+router.post('/login/two-factor/setup/complete', (req, res) => {
+  const completion = req.session?.pending2faCompletion;
+  if (!completion || completion.expiresAt <= Date.now()) {
+    clearPendingTwoFactor(req);
+    return redirectTo(res, '/login?status=two-factor-expired');
+  }
+  const tenantSlug = pendingTwoFactorTenantSlug(req);
+  const session = completion.session;
+  clearPendingTwoFactor(req);
+  setAuthCookies(res, session.accessToken, session.refreshToken, {
+    expiresIn: session.expiresIn, refreshExpiresIn: session.refreshExpiresIn, tenantSlug
+  });
+  return redirectTo(res, '/dashboard');
+});
 
 router.get('/login/two-factor', (req, res) => {
   if (!req.session?.pending2faToken) {

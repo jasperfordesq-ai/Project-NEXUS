@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const request = require('supertest');
 
@@ -25,6 +26,7 @@ jest.mock('../src/lib/api', () => ({
   resetPassword: jest.fn(),
   resendVerification: jest.fn(),
   verify2fa: jest.fn(),
+  setupRequiredTwoFactor: jest.fn(),
   verifyEmail: jest.fn(),
   callNewsletterApi: jest.fn(),
   invalidateUserCache: jest.fn()
@@ -42,6 +44,7 @@ const publicInfoRouter = require('../src/routes/public-info');
 
 function createApp() {
   const app = express();
+  app.use(cookieParser('auth-cookie-test-secret'));
   app.use(express.urlencoded({ extended: false }));
   app.use(session({
     secret: 'auth-tenant-authority-test-secret',
@@ -73,6 +76,22 @@ function createApp() {
 }
 
 describe('auth tenant authority', () => {
+  test.each(['requires_2fa', 'requires_2fa_setup'])('rotates the anonymous session before storing %s authority', async (requirement) => {
+    const isolatedApp = createApp();
+    const anonymous = await request(isolatedApp).get('/__test/session');
+    const oldCookie = anonymous.headers['set-cookie'][0].split(';')[0];
+    api.login.mockResolvedValue({ [requirement]: true, two_factor_token: 'protected-challenge' });
+    const accepted = await request(isolatedApp).post('/acme/accessible/login')
+      .set('Cookie', oldCookie).type('form').send({ email: 'member@example.test', password: 'password' });
+    expect(accepted.status).toBe(302);
+    const newCookie = accepted.headers['set-cookie'][0].split(';')[0];
+    expect(newCookie).not.toBe(oldCookie);
+    const stale = await request(isolatedApp).get('/__test/session').set('Cookie', oldCookie);
+    expect(stale.body.pending2faToken).toBeNull();
+    const current = await request(isolatedApp).get('/__test/session').set('Cookie', newCookie);
+    expect(current.body.pending2faToken).toBe('protected-challenge');
+  });
+
   let app;
 
   beforeEach(() => {
@@ -89,6 +108,39 @@ describe('auth tenant authority', () => {
       data: { id: 2, slug, name: slug }
     }));
     app = createApp();
+  });
+
+  it('completes restricted enrollment and waits for recovery-code acknowledgment before login', async () => {
+    const client = request.agent(app);
+    api.login.mockResolvedValue({ requires_2fa_setup: true, two_factor_token: 'setup-challenge' });
+    await client.post('/acme/accessible/login').type('form').send({ email: 'admin@example.com', password: 'password', tenant_slug: 'wrong' })
+      .expect(302).expect('Location', '/acme/accessible/login/two-factor/setup');
+    expect(setAuthCookies).not.toHaveBeenCalled();
+    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'test-secret', qr_code_url: 'data:image/svg+xml;base64,abc' } });
+    const setup = await client.get('/acme/accessible/login/two-factor/setup').expect(200);
+    expect(setup.headers['cache-control']).toBe('private, no-store');
+    expect(api.setupRequiredTwoFactor).toHaveBeenCalledWith('setup-challenge', 'acme');
+    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: {
+      login_complete: true, access_token: 'access', refresh_token: 'refresh', expires_in: 900,
+      refresh_expires_in: 2592000, backup_codes: ['recovery-code']
+    } });
+    await client.post('/acme/accessible/login/two-factor/setup').type('form').send({ code: '123456', tenant_slug: 'wrong' }).expect(302);
+    expect(api.setupRequiredTwoFactor).toHaveBeenLastCalledWith('setup-challenge', 'acme', '123456');
+    expect(setAuthCookies).not.toHaveBeenCalled();
+    const codes = await client.get('/acme/accessible/login/two-factor/setup').expect(200);
+    expect(codes.body.locals.backupCodes).toEqual(['recovery-code']);
+    expect(JSON.stringify(codes.body)).not.toContain('refresh_token');
+    await client.post('/acme/accessible/login/two-factor/setup/complete').type('form').send({}).expect(302)
+      .expect('Location', '/acme/accessible/dashboard');
+    expect(setAuthCookies).toHaveBeenCalledWith(expect.anything(), 'access', 'refresh', expect.objectContaining({ tenantSlug: 'acme' }));
+    await client.get('/acme/accessible/login/two-factor/setup').expect(302);
+  });
+
+  it('does not accept completion or verification without restricted enrollment state', async () => {
+    await request(app).post('/login/two-factor/setup').type('form').send({ code: '123456' }).expect(302);
+    await request(app).post('/login/two-factor/setup/complete').type('form').send({}).expect(302);
+    expect(api.setupRequiredTwoFactor).not.toHaveBeenCalled();
+    expect(setAuthCookies).not.toHaveBeenCalled();
   });
 
   it('uses the mounted tenant for login even when a different tenant is posted', async () => {
@@ -224,6 +276,7 @@ describe('auth tenant authority', () => {
       success: true,
       access_token: 'verified-access-token',
       refresh_token: 'verified-refresh-token',
+      trusted_device_cookie: 'opaque-laravel-cookie%3D',
       expires_in: 900,
       refresh_expires_in: 604800
     });
@@ -263,6 +316,7 @@ describe('auth tenant authority', () => {
 
     expect(verifyResponse.status).toBe(302);
     expect(verifyResponse.headers.location).toBe('/acme/accessible/dashboard');
+    expect(verifyResponse.headers['set-cookie'].some((value) => value.startsWith('nexus_trusted_device=') && value.includes('HttpOnly'))).toBe(true);
     expect(api.verify2fa).toHaveBeenCalledWith('pending-two-factor-token', 'ABCD1234', 'acme', {
       useBackupCode: true,
       trustDevice: true
@@ -281,6 +335,9 @@ describe('auth tenant authority', () => {
       pending2faToken: null,
       pending2faTenantSlug: null
     });
+    api.login.mockResolvedValueOnce({ access_token: 'next-access', refresh_token: 'next-refresh', expires_in: 900, refresh_expires_in: 604800 });
+    await agent.post('/acme/accessible/login').type('form').send({ email: 'member@example.test', password: 'Test123!' });
+    expect(api.login).toHaveBeenLastCalledWith('member@example.test', 'Test123!', 'acme', 'opaque-laravel-cookie%3D');
   });
 
   it('keeps a retryable 2FA challenge but clears expired challenge state', async () => {

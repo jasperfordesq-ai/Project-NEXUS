@@ -1014,6 +1014,13 @@
             "confirm_cancel": "Gratisticket stornieren"
         },
         "govuk_alpha": {
+            "mandatory_2fa": {
+                "title": "Zwei-Faktor-Authentifizierung einrichten",
+                "reason": "Für Ihr Konto ist eine Zwei-Faktor-Authentifizierung erforderlich, bevor Sie fortfahren können.",
+                "saved": "Ich habe meine Wiederherstellungscodes gespeichert",
+                "recovery_help": "Bewahren Sie diese Codes sicher auf. Jeder Code kann einmal verwendet werden, falls Sie den Zugriff auf Ihre Authenticator-App verlieren.",
+                "required": "Für Ihr Konto ist Zwei-Faktor-Authentifizierung vorgeschrieben und kann nicht deaktiviert werden."
+            },
             "opens_new_tab": "(wird in neuem Tab geöffnet)",
             "service_name": "Project NEXUS Accessible",
             "phase": "Beta-Version",
@@ -5899,6 +5906,17 @@
                     "description_required": "Geben Sie eine Ereignisbeschreibung ein",
                     "start_required": "Geben Sie ein Startdatum und eine Startzeit ein"
                 }
+            },
+            "mfa_recovery": {
+                "title": "Wiederherstellungscodes",
+                "warning": "Neue Codes machen Ihre alten unbenutzten Codes ungültig. Geben Sie einen neuen Authenticator-Code ein; warten Sie nach der Anmeldung auf den nächsten Code. Wenn die Einrichtungsantwort verloren ging, können Sie hier neue Codes erstellen.",
+                "code": "Authenticator-Code",
+                "replace": "Wiederherstellungscodes ersetzen",
+                "save": "Speichern Sie diese neuen Codes sicher, bevor Sie diese Seite verlassen.",
+                "saved": "Ich habe diese Codes gespeichert",
+                "revoke": "Alle vertrauenswürdigen Geräte vergessen",
+                "revoked": "Vertrauenswürdige Geräte entfernt. Bei der nächsten Anmeldung ist eine Überprüfung erforderlich.",
+                "failed": "Die Aktion konnte nicht abgeschlossen werden. Prüfen Sie den Code und versuchen Sie es erneut."
             }
         },
         "govuk_alpha_activity": {

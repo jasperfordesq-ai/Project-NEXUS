@@ -143,7 +143,7 @@ function addRequestLocaleHeader(headers) {
   return headers;
 }
 
-async function request(endpoint, options = {}) {
+async function request(endpoint, options = {}, captureTrustedDevice = false) {
   const url = `${API_BASE_URL}${endpoint}`;
   const isFormData = typeof globalThis.FormData !== 'undefined' && options.body instanceof globalThis.FormData;
 
@@ -175,6 +175,14 @@ async function request(endpoint, options = {}) {
       );
     }
 
+    // The BFF has its own cookie jar. Preserve only Laravel's opaque trusted
+    // device cookie, and only for successful two-factor completion. Keep it
+    // non-enumerable so a JSON response cannot accidentally expose it.
+    if (captureTrustedDevice && data?.success === true) {
+      const cookie = response.headers.get('set-cookie') || '';
+      const match = cookie.match(/(?:^|,\s*)nexus_trusted_device=([A-Za-z0-9%._~+/=-]{1,4096})(?:;|$)/);
+      if (match) Object.defineProperty(data, 'trusted_device_cookie', { value: match[1] });
+    }
     return data;
   } catch (error) {
     const mappedError = connectionError(error, timedRequest.didTimeOut());
@@ -236,9 +244,19 @@ async function downloadRequest(endpoint, options = {}) {
   }
 }
 
+async function setupRequiredTwoFactor(twoFactorToken, tenantSlug, code) {
+  return request(`/api/v2/auth/2fa/${code === undefined ? 'setup' : 'verify'}`, {
+    method: 'POST', headers: tenantSlugHeaders(tenantSlug),
+    body: JSON.stringify({ two_factor_token: twoFactorToken, ...(code === undefined ? {} : { code }) })
+  });
+}
+
 // Auth
-async function login(email, password, tenantSlug) {
+async function login(email, password, tenantSlug, trustedDeviceCookie) {
   const headers = tenantSlugHeaders(tenantSlug);
+  if (typeof trustedDeviceCookie === 'string' && /^[A-Za-z0-9%._~+/=-]{1,4096}$/.test(trustedDeviceCookie)) {
+    headers.Cookie = `nexus_trusted_device=${trustedDeviceCookie}`;
+  }
   return request('/api/auth/login', {
     method: 'POST',
     headers,
@@ -433,7 +451,7 @@ async function verify2fa(twoFactorToken, code, tenantSlug, options = {}) {
       use_backup_code: options.useBackupCode === true,
       trust_device: options.trustDevice === true
     })
-  });
+  }, options.trustDevice === true);
 }
 
 async function forgotPassword(email, tenantSlug) {
@@ -4041,6 +4059,7 @@ async function updatePrivacyPreferences(token, data) {
 }
 
 module.exports = {
+  setupRequiredTwoFactor,
   ApiError,
   ApiOfflineError,
   // Exported for its own test: a header value that cannot be encoded

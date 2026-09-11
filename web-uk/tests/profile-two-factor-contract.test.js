@@ -9,6 +9,7 @@ const path = require('path');
 const request = require('supertest');
 
 jest.mock('../src/lib/api', () => ({
+  ApiOfflineError: class ApiOfflineError extends Error {},
   ApiError: class ApiError extends Error {
     constructor(message, status, data = {}) {
       super(message);
@@ -55,8 +56,31 @@ function createApp({ tc, urlFor = (pathname) => pathname } = {}) {
 }
 
 describe('Laravel two-factor enrolment contract', () => {
+  it('replaces codes through the authenticated API and displays the result without caching', async () => {
+    api.callProfileApi.mockResolvedValueOnce({ data: { backup_codes: ['ABCD-1234'] } });
+    const response = await request(createApp()).post('/profile/two-factor/recovery-codes').type('form').send({ code: '123456' });
+    expect(response.status).toBe(200);
+    expect(response.headers['cache-control']).toContain('no-store');
+    expect(response.body.locals.backupCodes).toEqual(['ABCD-1234']);
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/recovery-codes', { code: '123456' });
+  });
+
+  it('does not claim success after a rejected recovery code', async () => {
+    api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Invalid code', 422));
+    const response = await request(createApp()).post('/profile/two-factor/recovery-codes').type('form').send({ code: '123456' });
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain('2fa-code-invalid');
+  });
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it.each([429, 503])('does not show a false disabled state when status fails with %s', async (status) => {
+    api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Upstream unavailable', status));
+    const response = await request(createApp()).get('/profile/two-factor');
+    expect(response.status).toBe(status);
+    expect(response.body.locals).toBeUndefined();
+    expect(api.callProfileApi).toHaveBeenCalledTimes(1);
   });
 
   it('reads status before initializing disabled enrolment with POST setup', async () => {
