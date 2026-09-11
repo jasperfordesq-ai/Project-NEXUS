@@ -310,6 +310,11 @@ const TWO_FACTOR_STATUS_MESSAGES = {
     type: 'error',
     message: 'We could not turn off two-step verification. Check your password and try again.',
     anchor: 'tfa-form'
+  },
+  '2fa-devices-revoke-failed': {
+    type: 'error',
+    message: 'We could not forget your remembered devices. Try again in a moment.',
+    anchor: 'tfa-form'
   }
 };
 const TWO_FACTOR_STATUS_MESSAGE_KEYS = Object.freeze({
@@ -318,7 +323,8 @@ const TWO_FACTOR_STATUS_MESSAGE_KEYS = Object.freeze({
   '2fa-code-required': 'security_2fa.code_required',
   '2fa-code-invalid': 'security_2fa.code_invalid',
   '2fa-password-required': 'security_2fa.password_required',
-  '2fa-disable-failed': 'security_2fa.disable_failed'
+  '2fa-disable-failed': 'security_2fa.disable_failed',
+  '2fa-devices-revoke-failed': 'security_2fa.devices_revoke_failed'
 });
 
 function tokenFrom(req) {
@@ -1083,6 +1089,10 @@ function normalizeTwoFactorPayload(payload) {
 function renderTwoFactor(req, res, twoFactor, status = '') {
   const statusConfig = twoFactorStatusConfig(req, status);
 
+  // The page can carry the pending setup key, the QR code and one-time recovery
+  // codes. None of that may be replayed from a browser or proxy cache.
+  res.set('Cache-Control', 'private, no-store');
+
   return res.render('profile/two-factor', {
     title: 'Authenticator app (two-step verification)',
     titleKey: 'security_2fa.title',
@@ -1811,6 +1821,11 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
   if (code === '') {
     return redirectTo(res, twoFactorRedirect('2fa-code-required'));
   }
+  // Same local shape check as the recovery-code and login-setup forms: only a
+  // six-digit authenticator code is ever forwarded.
+  if (!/^[0-9]{6}$/.test(code)) {
+    return redirectTo(res, twoFactorRedirect('2fa-code-invalid'));
+  }
 
   try {
     const verifiedPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/verify', { code }));
@@ -1856,10 +1871,23 @@ router.post('/two-factor/recovery-codes', asyncRoute(async (req, res) => {
 router.post('/two-factor/revoke-devices', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
-  await callProfile(token, 'POST', '/auth/2fa/trusted-devices/revoke', {});
-  res.clearCookie('nexus_trusted_device', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
+  try {
+    await callProfile(token, 'POST', '/auth/2fa/trusted-devices/revoke', {});
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, twoFactorRedirect('2fa-devices-revoke-failed'));
+  }
+  clearTrustedDeviceCookie(res);
   return redirectTo(res, '/profile/two-factor?devices_revoked=1');
 }));
+
+// Clear with the same attributes the login flow sets (auth.js), or a production
+// browser keeps the Secure cookie and the device stays remembered.
+function clearTrustedDeviceCookie(res) {
+  res.clearCookie('nexus_trusted_device', {
+    path: '/', httpOnly: true, signed: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production'
+  });
+}
 
 router.post('/two-factor/disable', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
@@ -1872,7 +1900,7 @@ router.post('/two-factor/disable', asyncRoute(async (req, res) => {
 
   try {
     await callProfile(token, 'POST', '/auth/2fa/disable', { password });
-    res.clearCookie('nexus_trusted_device', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
+    clearTrustedDeviceCookie(res);
     invalidateUserCache(token);
     await destroyRequestSession(req);
     clearAuthCookies(res);

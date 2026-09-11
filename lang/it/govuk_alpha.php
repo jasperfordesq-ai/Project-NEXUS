@@ -2033,7 +2033,7 @@ return [
             'notification-marked-read' => 'Notifica segnata come letta.',
             'all-notifications-deleted' => 'Tutte le notifiche eliminate.',
             'group-marked-read' => 'Queste notifiche sono state contrassegnate come lette.',
-        'action-failed' => 'Non è stato possibile completare quell\'azione. Riprova.',
+            'action-failed' => 'Non è stato possibile completare quell\'azione. Riprova.',
         ],
     ],
     'activity' => [
@@ -3501,6 +3501,7 @@ return [
         'password_required' => 'Inserisci la tua password per disattivare la verifica in due passaggi.',
         'disable_button' => 'Disattiva la verifica in due passaggi',
         'disable_failed' => 'Non è stato possibile disattivare la verifica in due passaggi. Controlla la tua password e riprova.',
+        'devices_revoke_failed' => 'Non potevamo dimenticare i tuoi dispositivi ricordati. Riprova tra un attimo.',
         'enabled_success' => 'La verifica in due passaggi è ora attiva.',
         'disabled_success' => 'La verifica in due passaggi è stata disattivata.',
         'setup_unavailable' => 'Non è stato possibile avviare la configurazione della verifica in due passaggi. Riprova più tardi.',

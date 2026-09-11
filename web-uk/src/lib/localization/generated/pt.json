@@ -4510,6 +4510,7 @@
                 "password_required": "Introduza a sua palavra-passe para desativar a verificação em dois passos.",
                 "disable_button": "Desativar a verificação em dois passos",
                 "disable_failed": "Não foi possível desativar a verificação em dois passos. Verifique a sua palavra-passe e tente novamente.",
+                "devices_revoke_failed": "Não poderíamos esquecer seus dispositivos lembrados. Tente novamente em alguns instantes.",
                 "enabled_success": "A verificação em dois passos está agora ativada.",
                 "disabled_success": "A verificação em dois passos foi desativada.",
                 "setup_unavailable": "Não foi possível iniciar a configuração da verificação em dois passos. Tente novamente mais tarde."

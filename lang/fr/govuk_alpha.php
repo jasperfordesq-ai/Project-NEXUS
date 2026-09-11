@@ -2033,7 +2033,7 @@ return [
             'notification-marked-read' => 'Notification marquée comme lue.',
             'all-notifications-deleted' => 'Toutes les notifications ont été supprimées.',
             'group-marked-read' => 'Ces notifications ont été marquées comme lues.',
-        'action-failed' => 'Nous n\'avons pas pu effectuer cette action. Veuillez réessayer.',
+            'action-failed' => 'Nous n\'avons pas pu effectuer cette action. Veuillez réessayer.',
         ],
     ],
     'activity' => [
@@ -3501,6 +3501,7 @@ return [
         'password_required' => 'Saisissez votre mot de passe pour désactiver la vérification en deux étapes.',
         'disable_button' => 'Désactiver la vérification en deux étapes',
         'disable_failed' => 'Nous n\'avons pas pu désactiver la vérification en deux étapes. Vérifiez votre mot de passe et réessayez.',
+        'devices_revoke_failed' => 'Nous ne pouvions pas oublier vos appareils mémorisés. Réessayez dans un instant.',
         'enabled_success' => 'La vérification en deux étapes est maintenant activée.',
         'disabled_success' => 'La vérification en deux étapes a été désactivée.',
         'setup_unavailable' => 'Nous n\'avons pas pu démarrer la configuration de la vérification en deux étapes. Réessayez ultérieurement.',

@@ -4510,6 +4510,7 @@
                 "password_required": "Cuir isteach do phasfhocal chun fíordheimhniú dhá chéim a chasadh as.",
                 "disable_button": "Cas as fíordheimhniú dhá chéim",
                 "disable_failed": "Níorbh fhéidir fíordheimhniú dhá chéim a chasadh as. Seiceáil do phasfhocal agus bain triail eile as.",
+                "devices_revoke_failed": "Níorbh fhéidir linn do ghléasanna cuimhnithe a dhearmad. Bain triail eile as i gceann nóiméid.",
                 "enabled_success": "Tá fíordheimhniú dhá chéim casta air anois.",
                 "disabled_success": "Casadh as fíordheimhniú dhá chéim.",
                 "setup_unavailable": "Níorbh fhéidir socrú fíordheimhnithe dhá chéim a thosú. Bain triail eile as níos déanaí."

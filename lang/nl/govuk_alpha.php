@@ -2033,7 +2033,7 @@ return [
             'notification-marked-read' => 'Melding als gelezen gemarkeerd.',
             'all-notifications-deleted' => 'Alle meldingen verwijderd.',
             'group-marked-read' => 'Deze meldingen zijn als gelezen gemarkeerd.',
-        'action-failed' => 'We konden die actie niet uitvoeren. Probeer het opnieuw.',
+            'action-failed' => 'We konden die actie niet uitvoeren. Probeer het opnieuw.',
         ],
     ],
     'activity' => [
@@ -3501,6 +3501,7 @@ return [
         'password_required' => 'Voer uw wachtwoord in om de verificatie in twee stappen uit te schakelen.',
         'disable_button' => 'Verificatie in twee stappen uitschakelen',
         'disable_failed' => 'We konden de verificatie in twee stappen niet uitschakelen. Controleer uw wachtwoord en probeer het opnieuw.',
+        'devices_revoke_failed' => 'We konden uw herinnerde apparaten niet vergeten. Probeer het zo nog eens.',
         'enabled_success' => 'Verificatie in twee stappen is nu ingeschakeld.',
         'disabled_success' => 'Verificatie in twee stappen is uitgeschakeld.',
         'setup_unavailable' => 'We konden de installatie van verificatie in twee stappen niet starten. Probeer het later opnieuw.',

@@ -2033,7 +2033,7 @@ return [
             'notification-marked-read' => 'Powiadomienie oznaczono jako przeczytane.',
             'all-notifications-deleted' => 'Wszystkie powiadomienia zostały usunięte.',
             'group-marked-read' => 'Te powiadomienia zostały oznaczone jako przeczytane.',
-        'action-failed' => 'Nie udało się wykonać tej czynności. Spróbuj ponownie.',
+            'action-failed' => 'Nie udało się wykonać tej czynności. Spróbuj ponownie.',
         ],
     ],
     'activity' => [
@@ -3501,6 +3501,7 @@ return [
         'password_required' => 'Wprowadź swoje hasło, aby wyłączyć weryfikację dwuetapową.',
         'disable_button' => 'Wyłącz weryfikację dwuetapową',
         'disable_failed' => 'Nie udało się wyłączyć weryfikacji dwuetapowej. Sprawdź swoje hasło i spróbuj ponownie.',
+        'devices_revoke_failed' => 'Nie mogliśmy zapomnieć o Waszych zapamiętanych urządzeniach. Spróbuj ponownie za chwilę.',
         'enabled_success' => 'Weryfikacja dwuetapowa jest teraz włączona.',
         'disabled_success' => 'Weryfikacja dwuetapowa została wyłączona.',
         'setup_unavailable' => 'Nie udało się uruchomić konfiguracji weryfikacji dwuetapowej. Spróbuj ponownie później.',

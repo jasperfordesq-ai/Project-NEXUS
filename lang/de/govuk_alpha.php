@@ -2033,7 +2033,7 @@ return [
             'notification-marked-read' => 'Benachrichtigung als gelesen markiert.',
             'all-notifications-deleted' => 'Alle Benachrichtigungen gelöscht.',
             'group-marked-read' => 'Diese Benachrichtigungen wurden als gelesen markiert.',
-        'action-failed' => 'Diese Aktion konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
+            'action-failed' => 'Diese Aktion konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
         ],
     ],
     'activity' => [
@@ -3501,6 +3501,7 @@ return [
         'password_required' => 'Geben Sie Ihr Passwort ein, um die Zwei-Schritt-Verifizierung zu deaktivieren.',
         'disable_button' => 'Zwei-Schritt-Verifizierung deaktivieren',
         'disable_failed' => 'Die Zwei-Schritt-Verifizierung konnte nicht deaktiviert werden. Überprüfen Sie Ihr Passwort und versuchen Sie es erneut.',
+        'devices_revoke_failed' => 'Wir konnten Ihre erinnerten Geräte nicht vergessen. Versuchen Sie es gleich noch einmal.',
         'enabled_success' => 'Die Zwei-Schritt-Verifizierung ist jetzt aktiviert.',
         'disabled_success' => 'Die Zwei-Schritt-Verifizierung wurde deaktiviert.',
         'setup_unavailable' => 'Die Einrichtung der Zwei-Schritt-Verifizierung konnte nicht gestartet werden. Versuchen Sie es später erneut.',

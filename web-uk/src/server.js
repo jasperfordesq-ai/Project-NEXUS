@@ -2246,7 +2246,9 @@ app.post('/members/:id(\\d+)/connect', renderLegacyNotFound);
 // Protected routes with CSRF and rate limiting
 app.use('/dashboard', doubleCsrfProtection, dashboardRoutes);
 app.use('/listings', doubleCsrfProtection, postOnly(formLimiter), listingsRoutes);
-app.use('/profile', doubleCsrfProtection, profileRoutes);
+// /profile carries the two-factor forms (code entry, recovery codes, disable);
+// throttle their POSTs like every other form-bearing route.
+app.use('/profile', doubleCsrfProtection, postOnly(formLimiter), profileRoutes);
 app.use('/activity', doubleCsrfProtection, activityRoutes);
 app.use('/wallet', doubleCsrfProtection, postOnly(walletLimiter), walletRoutes);
 app.use('/messages', doubleCsrfProtection, postOnly(formLimiter), messagesRoutes);

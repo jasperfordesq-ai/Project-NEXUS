@@ -2033,7 +2033,7 @@ return [
             'notification-marked-read' => '通知を既読にしました。',
             'all-notifications-deleted' => 'すべての通知を削除しました。',
             'group-marked-read' => 'これらの通知は既読としてマークされました。',
-        'action-failed' => 'そのアクションを完了できませんでした。もう一度お試しください。',
+            'action-failed' => 'そのアクションを完了できませんでした。もう一度お試しください。',
         ],
     ],
     'activity' => [
@@ -3501,6 +3501,7 @@ return [
         'password_required' => '2段階認証をオフにするにはパスワードを入力してください。',
         'disable_button' => '2段階認証をオフにする',
         'disable_failed' => '2段階認証をオフにできませんでした。パスワードを確認してもう一度お試しください。',
+        'devices_revoke_failed' => '私たちはあなたの記憶に残っているデバイスを忘れることはできません。しばらくしてからもう一度試してください。',
         'enabled_success' => '2段階認証がオンになりました。',
         'disabled_success' => '2段階認証がオフになりました。',
         'setup_unavailable' => '2段階認証のセットアップを開始できませんでした。後でもう一度お試しください。',

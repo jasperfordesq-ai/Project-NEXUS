@@ -4510,6 +4510,7 @@
                 "password_required": "Enter your password to turn off two-step verification.",
                 "disable_button": "Turn off two-step verification",
                 "disable_failed": "We could not turn off two-step verification. Check your password and try again.",
+                "devices_revoke_failed": "We could not forget your remembered devices. Try again in a moment.",
                 "enabled_success": "Two-step verification is now turned on.",
                 "disabled_success": "Two-step verification has been turned off.",
                 "setup_unavailable": "We could not start two-step verification setup. Try again later."
