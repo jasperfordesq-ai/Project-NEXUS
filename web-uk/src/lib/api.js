@@ -244,10 +244,18 @@ async function downloadRequest(endpoint, options = {}) {
   }
 }
 
+// Restricted enrolment: the member holds only a two-factor challenge token, so no
+// bearer is sent. Two literal paths (not one interpolated path) so the API
+// consumer ledger can resolve each contract against the Laravel route table.
 async function setupRequiredTwoFactor(twoFactorToken, tenantSlug, code) {
-  return request(`/api/v2/auth/2fa/${code === undefined ? 'setup' : 'verify'}`, {
-    method: 'POST', headers: tenantSlugHeaders(tenantSlug),
-    body: JSON.stringify({ two_factor_token: twoFactorToken, ...(code === undefined ? {} : { code }) })
+  const headers = tenantSlugHeaders(tenantSlug);
+  if (code === undefined) {
+    return request('/api/v2/auth/2fa/setup', {
+      method: 'POST', headers, body: JSON.stringify({ two_factor_token: twoFactorToken })
+    });
+  }
+  return request('/api/v2/auth/2fa/verify', {
+    method: 'POST', headers, body: JSON.stringify({ two_factor_token: twoFactorToken, code })
   });
 }
 

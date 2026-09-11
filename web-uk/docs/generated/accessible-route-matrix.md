@@ -2,20 +2,20 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-09-11T14:37:23.188Z
-Laravel commit SHA: `aa19256b742a4b5681125be11a2673a36674aef5`
-Web UK repository commit SHA: `aa19256b742a4b5681125be11a2673a36674aef5`
-Laravel working tree dirty: no
-Web UK repository working tree dirty: no
-Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
+Generated: 2026-09-11T20:49:10.553Z
+Laravel commit SHA: `988cb8c4fbab0bd7aa84a0cf2e2381d1976145e3`
+Web UK repository commit SHA: `988cb8c4fbab0bd7aa84a0cf2e2381d1976145e3`
+Laravel working tree dirty: yes
+Web UK repository working tree dirty: yes
+Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
 
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 740 |
+| web-uk routes | 742 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 30 |
+| Extra web-uk routes | 32 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -79,7 +79,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
 | privacy | 0 | 0 | 1 | 0 |
-| profile | 23 | 0 | 0 | 0 |
+| profile | 23 | 0 | 2 | 0 |
 | register | 2 | 0 | 0 | 0 |
 | report-a-problem | 2 | 0 | 0 | 0 |
 | resources | 12 | 0 | 0 | 0 |
@@ -138,6 +138,8 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
 | GET | `/podcasts/studio/{param}/episodes/{param}/delete` | podcasts | confirm-delete | web-uk/src/routes/podcast-actions.js |
 | GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
+| POST | `/profile/two-factor/recovery-codes` | profile |  | web-uk/src/routes/profile.js |
+| POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |
 

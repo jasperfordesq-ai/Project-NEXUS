@@ -8411,4 +8411,45 @@ describe('API Request Functions', () => {
       );
     });
   });
+
+  describe('restricted two-factor enrolment helper (E-004)', () => {
+    // Direct helper assertions: the member holds only a challenge token, so these
+    // pin that NO bearer is sent, that setup and verify hit two literal Laravel
+    // paths, and that the body carries exactly the challenge token (and the code).
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('starts enrolment against the setup path with only the challenge token', async () => {
+      jsonOnce({ success: true, data: { secret: 'SETUPKEY' } });
+      await api.setupRequiredTwoFactor('challenge-token', 'hour-timebank');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/auth/2fa/setup',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ two_factor_token: 'challenge-token' })
+        })
+      );
+      const options = mockFetch.mock.calls[0][1];
+      expect(options.headers.Authorization).toBeUndefined();
+      expect(options.headers['X-Tenant-Slug']).toBe('hour-timebank');
+    });
+
+    it('completes enrolment against the verify path with the challenge token and the code', async () => {
+      jsonOnce({ success: true, data: { login_complete: true, backup_codes: ['AAAA-1111'] } });
+      await api.setupRequiredTwoFactor('challenge-token', 'hour-timebank', '123456');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/auth/2fa/verify',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ two_factor_token: 'challenge-token', code: '123456' })
+        })
+      );
+      expect(mockFetch.mock.calls[0][1].headers.Authorization).toBeUndefined();
+    });
+  });
 });
