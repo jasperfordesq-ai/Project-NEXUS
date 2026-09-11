@@ -306,9 +306,9 @@ final class EventRegistrationProductController extends BaseApiController
             if ($stream === false) {
                 return;
             }
-            fputcsv($stream, $csv['headers'], ',', '"', '\\');
+            \App\Support\CsvExportSanitizer::put($stream, $csv['headers'], ',', '"', '\\');
             foreach ($csv['rows'] as $row) {
-                fputcsv($stream, $row, ',', '"', '\\');
+                \App\Support\CsvExportSanitizer::put($stream, $row, ',', '"', '\\');
             }
             fclose($stream);
         }, "event-registration-{$id}.csv", [

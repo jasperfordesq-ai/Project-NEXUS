@@ -1844,7 +1844,7 @@ class AdminCaringCommunityController extends BaseApiController
             // UTF-8 BOM so Excel renders Swiss German umlauts correctly.
             fwrite($out, "\xEF\xBB\xBF");
             foreach ($rows as $row) {
-                fputcsv($out, CsvExportSanitizer::row($row));
+                \App\Support\CsvExportSanitizer::put($out, CsvExportSanitizer::row($row));
             }
             fclose($out);
         }, 200, [

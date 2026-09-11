@@ -849,9 +849,9 @@ class VolunteerCommunityController extends BaseApiController
         $rows = $this->volunteerDonationService->exportDonations(TenantContext::getId(), $filters);
         $handle = fopen('php://temp', 'r+');
         if (!empty($rows)) {
-            fputcsv($handle, array_keys((array) $rows[0]));
+            \App\Support\CsvExportSanitizer::put($handle, array_keys((array) $rows[0]));
             foreach ($rows as $row) {
-                fputcsv($handle, CsvExportSanitizer::row(array_values((array) $row)));
+                \App\Support\CsvExportSanitizer::put($handle, CsvExportSanitizer::row(array_values((array) $row)));
             }
         }
         rewind($handle);

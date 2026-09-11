@@ -451,7 +451,7 @@ class MunicipalityFeedbackService
 
         // UTF-8 BOM for Excel compatibility
         fwrite($fh, "\xEF\xBB\xBF");
-        fputcsv($fh, [
+        \App\Support\CsvExportSanitizer::put($fh, [
             'id', 'created_at', 'category', 'status', 'subject', 'sentiment_tag',
             'sub_region_id', 'submitter', 'is_anonymous', 'is_public',
             'assigned_role', 'triage_notes', 'resolution_notes', 'body',
@@ -464,7 +464,7 @@ class MunicipalityFeedbackService
                 ? '(anonymous)'
                 : (string) ($r['submitter_user_id'] ?? '');
 
-            fputcsv($fh, CsvExportSanitizer::row([
+            \App\Support\CsvExportSanitizer::put($fh, CsvExportSanitizer::row([
                 (int) ($r['id'] ?? 0),
                 (string) ($r['created_at'] ?? ''),
                 (string) ($r['category'] ?? ''),

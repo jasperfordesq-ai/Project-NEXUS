@@ -2547,7 +2547,7 @@ class JobVacancyService
 
         $out = fopen('php://temp', 'r+');
         foreach ($rows as $row) {
-            fputcsv($out, $row);
+            \App\Support\CsvExportSanitizer::put($out, $row);
         }
         rewind($out);
         $csv = stream_get_contents($out);

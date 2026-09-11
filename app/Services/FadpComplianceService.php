@@ -445,7 +445,10 @@ class FadpComplianceService
 
     private static function csvCell(mixed $value): string
     {
-        $cell = str_replace('"', '""', (string) $value);
+        // Quoting alone does not stop a spreadsheet evaluating `="..."` as a
+        // formula; neutralise the leading character first (security audit,
+        // 2026-09-11), then quote for the CSV grammar.
+        $cell = str_replace('"', '""', \App\Support\CsvExportSanitizer::cell($value));
 
         return '"' . $cell . '"';
     }

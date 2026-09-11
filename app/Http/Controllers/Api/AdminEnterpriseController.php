@@ -571,7 +571,7 @@ class AdminEnterpriseController extends BaseApiController
 
         return response()->streamDownload(function () use ($where, $params) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Admin', 'Action', 'Entity Type', 'Entity ID', 'Old Value', 'New Value', 'IP Address', 'Date']);
+            \App\Support\CsvExportSanitizer::put($handle, ['ID', 'Admin', 'Action', 'Entity Type', 'Entity ID', 'Old Value', 'New Value', 'IP Address', 'Date']);
 
             try {
                 $rows = DB::select(
@@ -584,7 +584,7 @@ class AdminEnterpriseController extends BaseApiController
                 );
 
                 foreach ($rows as $row) {
-                    fputcsv($handle, [
+                    \App\Support\CsvExportSanitizer::put($handle, [
                         $row->id,
                         $row->user_name ?? '',
                         $row->action ?? '',
@@ -598,7 +598,7 @@ class AdminEnterpriseController extends BaseApiController
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: GDPR audit export query failed: ' . $e->getMessage());
-                fputcsv($handle, ['Error exporting data', '', '', '', '', '', '', '', '']);
+                \App\Support\CsvExportSanitizer::put($handle, ['Error exporting data', '', '', '', '', '', '', '', '']);
             }
 
             fclose($handle);
@@ -1448,7 +1448,7 @@ class AdminEnterpriseController extends BaseApiController
 
         return response()->streamDownload(function () use ($slug, $tenantId) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['user_name', 'user_email', 'consent_given', 'given_at', 'ip_address']);
+            \App\Support\CsvExportSanitizer::put($handle, ['user_name', 'user_email', 'consent_given', 'given_at', 'ip_address']);
 
             try {
                 $rows = DB::select(
@@ -1461,7 +1461,7 @@ class AdminEnterpriseController extends BaseApiController
                 );
 
                 foreach ($rows as $row) {
-                    fputcsv($handle, [
+                    \App\Support\CsvExportSanitizer::put($handle, [
                         $row->user_name ?? '',
                         $row->user_email ?? '',
                         $row->consent_given ? 'Yes' : 'No',
@@ -1472,7 +1472,7 @@ class AdminEnterpriseController extends BaseApiController
             } catch (\Exception $e) {
                 // Write error row
                 \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: consent export query failed: ' . $e->getMessage());
-                fputcsv($handle, ['Error exporting data', '', '', '', '']);
+                \App\Support\CsvExportSanitizer::put($handle, ['Error exporting data', '', '', '', '']);
             }
 
             fclose($handle);

@@ -263,7 +263,7 @@ class LeadNurtureService
             return '';
         }
         foreach ($rows as $row) {
-            fputcsv($out, CsvExportSanitizer::row($row));
+            \App\Support\CsvExportSanitizer::put($out, CsvExportSanitizer::row($row));
         }
         rewind($out);
         $csv = stream_get_contents($out) ?: '';

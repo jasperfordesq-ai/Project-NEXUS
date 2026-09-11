@@ -185,7 +185,7 @@ class AdminPartnerVenueController extends BaseApiController
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'wb');
 
-            fputcsv($out, [
+            \App\Support\CsvExportSanitizer::put($out, [
                 __('api.partner_venue_csv_date'),
                 __('api.partner_venue_csv_time'),
                 __('api.partner_venue_csv_venue'),
@@ -200,7 +200,7 @@ class AdminPartnerVenueController extends BaseApiController
                 // fields — sanitised so a name like "=HYPERLINK(...)" cannot
                 // execute as a formula in the admin's spreadsheet. Same
                 // sanitiser as every other CSV export in the codebase.
-                fputcsv($out, \App\Support\CsvExportSanitizer::row([
+                \App\Support\CsvExportSanitizer::put($out, \App\Support\CsvExportSanitizer::row([
                     $row['visited_on'],
                     $row['visited_at'],
                     $row['venue_name'],

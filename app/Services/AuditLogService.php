@@ -528,7 +528,7 @@ class AuditLogService
         $output = fopen('php://temp', 'r+');
         fwrite($output, "\xEF\xBB\xBF"); // UTF-8 BOM
 
-        fputcsv($output, ['Date', 'Action', 'User', 'Target User', 'Details', 'IP Address']);
+        \App\Support\CsvExportSanitizer::put($output, ['Date', 'Action', 'User', 'Target User', 'Details', 'IP Address']);
 
         foreach ($logs as $log) {
             $detailsStr = '';
@@ -554,7 +554,7 @@ class AuditLogService
                 $detailsStr,
                 $log['ip_address'] ?? '-',
             ]);
-            fputcsv($output, $row);
+            \App\Support\CsvExportSanitizer::put($output, $row);
         }
 
         rewind($output);

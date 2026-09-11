@@ -190,7 +190,7 @@ class AdminAuditLogController extends BaseApiController
      */
     private function putRow($handle, array $row): void
     {
-        fputcsv($handle, array_map(static function ($value) {
+        \App\Support\CsvExportSanitizer::put($handle, array_map(static function ($value) {
             if (is_string($value) && $value !== '' && preg_match('/^[=+\-@\t\r]/', $value)) {
                 return "'" . $value;
             }

@@ -396,9 +396,9 @@ class MemberPremiumAdminController extends BaseApiController
             // strings (gift-aid declaration name, address lines, donor_name) that
             // begin with =, +, -, @ etc. would otherwise execute as formulas in a
             // spreadsheet. Mirrors the donation-export sanitisation.
-            fputcsv($out, \App\Support\CsvExportSanitizer::row($headers));
+            \App\Support\CsvExportSanitizer::put($out, \App\Support\CsvExportSanitizer::row($headers));
             foreach ($rows as $row) {
-                fputcsv($out, \App\Support\CsvExportSanitizer::row(array_map(
+                \App\Support\CsvExportSanitizer::put($out, \App\Support\CsvExportSanitizer::row(array_map(
                     static fn (string $key): mixed => $row[$key] ?? '',
                     $headers,
                 )));

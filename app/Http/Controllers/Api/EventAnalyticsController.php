@@ -64,9 +64,9 @@ final class EventAnalyticsController extends BaseApiController
                     return;
                 }
                 fwrite($stream, "\xEF\xBB\xBF");
-                fputcsv($stream, $headers);
+                \App\Support\CsvExportSanitizer::put($stream, $headers);
                 foreach ($rows as $row) {
-                    fputcsv($stream, $row);
+                    \App\Support\CsvExportSanitizer::put($stream, $row);
                 }
                 fclose($stream);
             },

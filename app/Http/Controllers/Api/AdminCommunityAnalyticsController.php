@@ -189,11 +189,11 @@ class AdminCommunityAnalyticsController extends BaseApiController
 
         // Build CSV content in memory
         $handle = fopen('php://temp', 'r+');
-        fputcsv($handle, ['Month', 'New Users', 'Active Traders', 'Transactions', 'Hours Exchanged']);
+        \App\Support\CsvExportSanitizer::put($handle, ['Month', 'New Users', 'Active Traders', 'Transactions', 'Hours Exchanged']);
 
         foreach ($monthlyTrends as $row) {
             $month = $row['month'] ?? '';
-            fputcsv($handle, [
+            \App\Support\CsvExportSanitizer::put($handle, [
                 $month,
                 (int) ($row['new_users'] ?? 0),
                 (int) ($activeTradersByMonth[$month] ?? 0),

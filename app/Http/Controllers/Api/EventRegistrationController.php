@@ -266,9 +266,9 @@ final class EventRegistrationController extends BaseApiController
                 if ($output === false) {
                     return;
                 }
-                fputcsv($output, CsvExportSanitizer::row($headers));
+                \App\Support\CsvExportSanitizer::put($output, CsvExportSanitizer::row($headers));
                 foreach ($this->people->exportRows($event, $query) as $person) {
-                    fputcsv($output, CsvExportSanitizer::row([
+                    \App\Support\CsvExportSanitizer::put($output, CsvExportSanitizer::row([
                         $person['user_id'] ?? null,
                         $person['display_name'] ?? null,
                         $person['engagement_state'] ?? null,

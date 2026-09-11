@@ -296,10 +296,10 @@ class GroupDataExportService
         if (empty($rows)) return '';
 
         $output = fopen('php://temp', 'r+');
-        fputcsv($output, array_keys($rows[0]));
+        \App\Support\CsvExportSanitizer::put($output, array_keys($rows[0]));
 
         foreach ($rows as $row) {
-            fputcsv($output, CsvExportSanitizer::row(array_values($row)));
+            \App\Support\CsvExportSanitizer::put($output, CsvExportSanitizer::row(array_values($row)));
         }
 
         rewind($output);

@@ -851,9 +851,9 @@ class AdminSafeguardingController extends BaseApiController
             $out = fopen('php://output', 'w');
             // UTF-8 BOM for Excel
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, ['occurred_at', 'event', 'actor', 'details']);
+            \App\Support\CsvExportSanitizer::put($out, ['occurred_at', 'event', 'actor', 'details']);
             foreach ($events as $event) {
-                fputcsv($out, [
+                \App\Support\CsvExportSanitizer::put($out, [
                     $event['occurred_at'] ?? '',
                     $event['event'] ?? '',
                     $event['actor_name'] ?? '',

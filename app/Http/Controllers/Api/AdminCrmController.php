@@ -1062,9 +1062,9 @@ class AdminCrmController extends BaseApiController
         $date = date('Y-m-d');
         return new StreamedResponse(function () use ($headers, $rows) {
             $output = fopen('php://output', 'w');
-            fputcsv($output, $headers);
+            \App\Support\CsvExportSanitizer::put($output, $headers);
             foreach ($rows as $row) {
-                fputcsv($output, array_values($row));
+                \App\Support\CsvExportSanitizer::put($output, array_values($row));
             }
             fclose($output);
         }, 200, [

@@ -1220,9 +1220,9 @@ class AdminFederationController extends BaseApiController
             return new \Symfony\Component\HttpFoundation\StreamedResponse(function () use ($headers, $rows) {
                 $output = fopen('php://output', 'w');
                 fwrite($output, "\xEF\xBB\xBF"); // BOM for Excel UTF-8 compatibility
-                fputcsv($output, $headers);
+                \App\Support\CsvExportSanitizer::put($output, $headers);
                 foreach ($rows as $row) {
-                    fputcsv($output, array_values($row));
+                    \App\Support\CsvExportSanitizer::put($output, array_values($row));
                 }
                 fclose($output);
             }, 200, [

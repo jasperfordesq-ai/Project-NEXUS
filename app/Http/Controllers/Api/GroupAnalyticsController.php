@@ -123,13 +123,13 @@ class GroupAnalyticsController extends BaseApiController
             $output = fopen('php://output', 'w');
 
             if (!empty($members) && is_array($members[0] ?? null)) {
-                fputcsv($output, array_keys($members[0]));
+                \App\Support\CsvExportSanitizer::put($output, array_keys($members[0]));
             } elseif (!empty($members) && is_object($members[0] ?? null)) {
-                fputcsv($output, array_keys((array) $members[0]));
+                \App\Support\CsvExportSanitizer::put($output, array_keys((array) $members[0]));
             }
 
             foreach ($members as $row) {
-                fputcsv($output, CsvExportSanitizer::row((array) $row));
+                \App\Support\CsvExportSanitizer::put($output, CsvExportSanitizer::row((array) $row));
             }
 
             fclose($output);
@@ -155,13 +155,13 @@ class GroupAnalyticsController extends BaseApiController
             $output = fopen('php://output', 'w');
 
             if (!empty($activity) && is_array($activity[0] ?? null)) {
-                fputcsv($output, array_keys($activity[0]));
+                \App\Support\CsvExportSanitizer::put($output, array_keys($activity[0]));
             } elseif (!empty($activity) && is_object($activity[0] ?? null)) {
-                fputcsv($output, array_keys((array) $activity[0]));
+                \App\Support\CsvExportSanitizer::put($output, array_keys((array) $activity[0]));
             }
 
             foreach ($activity as $row) {
-                fputcsv($output, CsvExportSanitizer::row((array) $row));
+                \App\Support\CsvExportSanitizer::put($output, CsvExportSanitizer::row((array) $row));
             }
 
             fclose($output);

@@ -1021,9 +1021,9 @@ class AdminPrerenderController extends BaseApiController
             $out = fopen('php://output', 'w');
 
             if ($kind === 'audit') {
-                fputcsv($out, ['id', 'created_at', 'action', 'outcome', 'actor_email', 'tenant_slug', 'job_id', 'ip', 'details']);
+                \App\Support\CsvExportSanitizer::put($out, ['id', 'created_at', 'action', 'outcome', 'actor_email', 'tenant_slug', 'job_id', 'ip', 'details']);
                 foreach ($this->service->recentAudit(5000, $r->query('action')) as $row) {
-                    fputcsv($out, CsvExportSanitizer::row([
+                    \App\Support\CsvExportSanitizer::put($out, CsvExportSanitizer::row([
                         $row['id'] ?? '',
                         $row['created_at'] ?? '',
                         $row['action'] ?? '',
@@ -1036,11 +1036,11 @@ class AdminPrerenderController extends BaseApiController
                     ]));
                 }
             } elseif ($kind === 'inventory') {
-                fputcsv($out, ['host', 'route', 'cache_path', 'size_bytes', 'mtime', 'age_s', 'staleness', 'http_status', 'content_stale', 'asset_issues']);
+                \App\Support\CsvExportSanitizer::put($out, ['host', 'route', 'cache_path', 'size_bytes', 'mtime', 'age_s', 'staleness', 'http_status', 'content_stale', 'asset_issues']);
                 $items = $this->service->inventory($r->query('tenant'));
                 foreach (array_slice($items, 0, 5000) as $row) {
                     if (!empty($row['__truncated'])) continue;
-                    fputcsv($out, CsvExportSanitizer::row([
+                    \App\Support\CsvExportSanitizer::put($out, CsvExportSanitizer::row([
                         $row['host'] ?? '',
                         $row['route'] ?? '',
                         $row['cache_path'] ?? '',
@@ -1054,10 +1054,10 @@ class AdminPrerenderController extends BaseApiController
                     ]));
                 }
             } else { // jobs
-                fputcsv($out, ['id', 'status', 'priority', 'tenant_slug', 'routes', 'force', 'dry_run', 'queued_at', 'fence_ready_at', 'started_at', 'finished_at', 'duration_s', 'exit_code', 'rendered_count', 'planned_count', 'requested_by']);
+                \App\Support\CsvExportSanitizer::put($out, ['id', 'status', 'priority', 'tenant_slug', 'routes', 'force', 'dry_run', 'queued_at', 'fence_ready_at', 'started_at', 'finished_at', 'duration_s', 'exit_code', 'rendered_count', 'planned_count', 'requested_by']);
                 $rows = $this->service->listJobs(5000, $r->query('status'));
                 foreach ($rows as $row) {
-                    fputcsv($out, CsvExportSanitizer::row([
+                    \App\Support\CsvExportSanitizer::put($out, CsvExportSanitizer::row([
                         $row['id'] ?? '',
                         $row['status'] ?? '',
                         $row['priority'] ?? '',
