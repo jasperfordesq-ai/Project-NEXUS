@@ -52,6 +52,15 @@ final class ActingAsVerifiedAdministrator
             return $next($request);
         }
 
+        // A bearer names its tenant, and TenantContext refuses a token whose tenant
+        // differs from the request's (400 tenant_resolution_failed). Tests that act
+        // as an administrator of ANOTHER community on purpose (cross-tenant refusal
+        // tests) expect the stateful path's 403, so leave them alone.
+        $requestTenant = (int) ($request->header('X-Tenant-ID') ?: \App\Core\TenantContext::getId());
+        if ($requestTenant > 0 && (int) $user->tenant_id !== $requestTenant) {
+            return $next($request);
+        }
+
         $token = app(TokenService::class)->generateToken(
             (int) $user->id,
             (int) $user->tenant_id,
