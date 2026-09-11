@@ -129,6 +129,7 @@ nav:
       - SLOs: SLO.md
       - Sentry: SENTRY.md
       - Security scanning: SECURITY-SCANNING.md
+      - Security assurance: SECURITY-ASSURANCE.md
   - Support:
       - Overview: support/README.md
       - In-product support reports: support/SUPPORT-REPORTS.md

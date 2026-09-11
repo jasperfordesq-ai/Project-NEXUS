@@ -33,6 +33,46 @@ entries and files under `docs/` keep their normal technical precision.
 
 ---
 
+## 🔴 Security work — start from the register, and leave it updated
+
+`AGENTS.md` carries the binding rule ("SECURITY WORK IS A MAINTAINED RECORD"). This is the
+Claude-specific workflow for it. Public-sector customers audit this history, so continuity
+between engagements matters as much as the testing.
+
+**Starting any security assessment, audit or remediation pass:**
+
+1. Read `.local-docs-archive/security-log/REGISTER.md` — Section 3 (what has been done) and
+   Section 4 (every finding and its current status). It is gitignored, so it is not in a fresh
+   clone; if it is missing, say so rather than starting a register from nothing.
+2. Add your engagement block to Section 3 **before** you start: dates, scope, baseline commit,
+   what is deliberately out of scope.
+3. Check whether anything you plan to test is already a known finding. Re-test it by all means —
+   just do not report it as new.
+
+**While working:**
+
+- Give every finding a new permanent `F-###` in Section 4. Never reuse a number.
+- Fix-as-found is the usual instruction here: failing regression test first, minimal fix, one
+  commit per finding, never pushed without asking.
+- Keep evidence under the engagement's own directory and freeze it. Never commit it.
+- 🔴 Another agent is often mid-workstream in this repository. Snapshot `git status --short`
+  before you start, treat every dirty path as off-limits, read those files with
+  `git show HEAD:<path>`, and record anything you could not fix because of it.
+
+**Finishing:**
+
+- Work Section 5 of the register: what does this engagement change about `SECURITY.md`,
+  `docs/SECURITY-ASSURANCE.md`, `docs/SECURITY-SCANNING.md`, `docs/CI.md`, and any customer
+  package under `.local-docs-archive/`? Record it even if the answer is "nothing".
+- Move anything needing the owner into Section 7 of the register.
+- Update `docs/SECURITY-ASSURANCE.md` only if the *process* changed. Findings never go there.
+- Write to the owner in plain English (see the rule above): the answer first, then what it means,
+  then what could not be checked.
+
+**Never**: claim an engagement that is not in the register; edit customer-facing collateral to
+match a new finding (surface the discrepancy instead); quote a coverage number without its
+skipped and inconclusive counts; call a header or configuration fix done without a live re-check.
+
 ## Verification / Definition of Done
 
 After ANY code edit, run the relevant tests AND typecheck (tsc/PHPStan) before committing. Never commit unverified changes.

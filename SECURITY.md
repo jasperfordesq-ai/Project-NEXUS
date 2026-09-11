@@ -41,6 +41,20 @@ Please avoid actions that could harm real users or tenants:
 - Do not bypass rate limits beyond what is necessary to demonstrate the issue.
 - Stop testing and report promptly if you encounter personal data, secrets, credentials, or cross-tenant data exposure.
 
+## Security Assurance and Assessment History
+
+Project NEXUS hosts communities for public-sector and charitable organisations, so security work
+is kept as a maintained record rather than a series of one-off exercises.
+
+[`docs/SECURITY-ASSURANCE.md`](docs/SECURITY-ASSURANCE.md) describes how assessment works here:
+route-table-wide sweeps of specific security properties, the finding register and the status
+vocabulary that distinguishes "a fix exists" from "the fix works in production", how evidence is
+frozen, and what an organisation with a supplier-assurance obligation can ask for.
+
+Finding detail is held privately and shared with a customer under their own confidential package
+once remediation allows. No independent penetration test has been commissioned to date; that is
+stated plainly in every assurance document rather than left to inference.
+
 ## Scope
 
 In scope:

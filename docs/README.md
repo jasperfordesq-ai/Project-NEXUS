@@ -37,6 +37,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [ROLES-AND-PERMISSIONS.md](ROLES-AND-PERMISSIONS.md) | The five authorisation tiers, why a broker is not a junior admin, hierarchy scoping in the super-admin panel, and the caveats to know before writing a permission check. |
 | [PRODUCT-AUDIENCE.md](PRODUCT-AUDIENCE.md) | Who the platform is for: the adults-only (18+) position, the three sign-up doors that state it, what is enforced versus declared, and how the guardian capabilities should be described. |
 | [SAFEGUARDING-AND-CONSENT.md](SAFEGUARDING-AND-CONSENT.md) | Guardian relationships, versioned consent records, the safeguarding case workflow, vetting attestations, and the current state of acting on behalf of a member. |
+| [SECURITY-ASSURANCE.md](SECURITY-ASSURANCE.md) | How security assessment works: route-table-wide sweeps, the finding register and its status vocabulary, evidence handling, and what a customer with a supplier-assurance obligation can ask for. |
 | [VERSIONING.md](VERSIONING.md) | Semantic versioning policy: what each number means here, what counts as a breaking change, how to cut a release, and which parts are machine-enforced. |
 | [CI.md](CI.md) | The CI pipeline, which checks are blocking, PR gates, and how to run them locally. |
 | [TESTING.md](TESTING.md) | Test-layer meanings, E2E status, and generated-report policy. |

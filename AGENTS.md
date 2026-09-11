@@ -74,6 +74,7 @@ project-nexus/
 | [docs/README.md](docs/README.md) | Public documentation index and publication standards |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Maintained platform architecture map and major runtime boundaries |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment guide (public-safe; secrets stay in local env files) |
+| [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md) | How security assessment works, the finding register and its rules, evidence handling, and what a public-sector customer can ask for. 🔴 Read before any security work — the private master record is `.local-docs-archive/security-log/REGISTER.md` |
 | [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md) | React dual-backend guardrails: Laravel production/default, ASP.NET a committed second edition until certified |
 | [aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md](aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md) | The finite ASP.NET work list — 130 enumerated journeys and their certification status |
 | [aspnet-backend/docs/ROADMAP.md](aspnet-backend/docs/ROADMAP.md) | Plain-English owner-facing ASP.NET status, score meaning, and time frames |
@@ -385,6 +386,52 @@ The GOV.UK branding prohibitions below are unchanged and still binding.
 - Preserve tenant context, module gates, and AGPL Section 7(b) attribution on every accessible frontend page.
 
 See [docs/govuk-alpha/RESEARCH.md](docs/govuk-alpha/RESEARCH.md) for the architecture decision and source list.
+
+---
+
+### 🔴 SECURITY WORK IS A MAINTAINED RECORD, NOT A ONE-OFF (CRITICAL)
+
+**Project NEXUS hosts communities for public-sector bodies, and they have supplier-assurance
+obligations.** A council must be able to ask "what security work has been done, what did it find,
+what happened to each finding" and get one ordered answer. That has already been asked once
+(Coventry City Council, September 2026) and will be asked at every renewal and by every new
+public-sector customer.
+
+So security work is **cumulative and cross-referenced**, never a standalone exercise:
+
+- **The master record is `.local-docs-archive/security-log/REGISTER.md`** — private (gitignored)
+  because it carries finding detail. The public-safe description of the process is
+  [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md).
+- **Before starting any security assessment, audit, pen-test-like exercise or remediation pass,
+  READ THE REGISTER.** Re-finding a known finding as if it were new destroys the credibility of
+  the whole record. Re-testing a closed finding is welcome; reporting it as new is not.
+- **Append to the register as you go**, not afterwards. An engagement that is not in it did not
+  happen as far as any customer is concerned. Add the engagement block *before* you start.
+- **Finding identifiers are permanent.** Never reused, never renumbered, never deleted. A finding
+  that proves wrong is marked withdrawn with the reason.
+- **Reconcile with the other security documents every time.** Section 5 of the register lists
+  them: `SECURITY.md`, `docs/SECURITY-ASSURANCE.md`, `docs/SECURITY-SCANNING.md`, `docs/CI.md`,
+  this file, and the private customer packages under `.local-docs-archive/`. A finding that
+  contradicts a statement in customer collateral is a documentation defect as well as a technical
+  one — record both. 🔴 **Never edit a customer-facing package to match; surface the discrepancy
+  to the owner.** That collateral is the owner's, and some of it is unsent.
+- **Use the six-state status vocabulary**: found → confirmed → fixed in source → locally retested
+  → CI verified → deployed → production retested → independently verified. "Fixed" alone is not a
+  status. 🔴 "CI verified" requires reading the JOB LIST, not the green tick (this pipeline skips
+  jobs by path). 🔴 A configuration fix verified only locally has shipped broken before — the host
+  layer above the application does not exist locally, so header/config fixes need a production
+  re-check.
+- **Freeze evidence per engagement.** Test runs overwrite their own output files, so any figure
+  quoted anywhere must point at a frozen copy. Evidence is never committed: it contains response
+  bodies and member-shaped fixtures.
+- **Quote coverage honestly.** A probed count without its skipped and inconclusive counts beside
+  it is not a coverage statement. "Unavailable" is never a pass.
+- **Findings stay in the record.** The answer to "this makes us look bad" is the severity
+  distribution and the remediation history, never a shorter list. Never write "bombproof",
+  "unbreakable" or "fully secure".
+
+Two standing facts that are easy to get wrong and damaging to state incorrectly: **no independent
+penetration test has been performed**, and **Coventry did not offer to perform testing**.
 
 ---
 
