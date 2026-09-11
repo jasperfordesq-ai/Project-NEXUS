@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Timebank Global",
-    "NSCameraUsageDescription": "Leia um código QR do mercado quando escolher usar o leitor.",
+    "NSCameraUsageDescription": "Leia um código QR do mercado ou um código de entrada num evento quando escolher abrir o leitor.",
     "NSPhotoLibraryUsageDescription": "Escolha uma fotografia da sua biblioteca para o seu perfil ou uma publicação.",
     "NSMicrophoneUsageDescription": "Grave uma mensagem de voz quando escolher enviar uma.",
     "NSFaceIDUsageDescription": "Use o Face ID para desbloquear a sessão da Timebank Global já guardada neste dispositivo.",

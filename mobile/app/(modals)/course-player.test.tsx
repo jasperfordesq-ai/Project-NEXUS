@@ -18,7 +18,7 @@ jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: mockShow }) }));
-jest.mock('expo-av', () => ({ ResizeMode: { CONTAIN: 'contain' }, Video: 'Video' }));
+jest.mock('@/components/media/NativeVideo', () => 'Video');
 jest.mock('@/components/ui/Icon', () => ({ Ionicons: 'Ionicons' }));
 jest.mock('@/lib/api/courses', () => ({ getCourse: jest.fn(), getCourseProgress: jest.fn(), completeCourseLesson: jest.fn(), getCourseQuiz: jest.fn(), submitCourseQuizAttempt: jest.fn() }));
 
@@ -35,10 +35,16 @@ describe('CoursePlayerScreen', () => {
   });
 
   it('shows lesson content and saves completion before changing the UI', async () => {
-    const { getByText } = render(<CoursePlayerScreen />);
+    let finish!: (value: { progress_percent: number; course_completed: boolean }) => void;
+    jest.mocked(completeCourseLesson).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const { getByText, queryByText } = render(<CoursePlayerScreen />);
     await waitFor(() => expect(getByText('Offer one useful skill.')).toBeTruthy());
     fireEvent.press(getByText('Mark as complete'));
     await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 12, 100));
+    expect(queryByText('Completed')).toBeNull();
+    fireEvent.press(getByText('Mark as complete'));
+    expect(completeCourseLesson).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ progress_percent: 100, course_completed: true }); });
     expect(getByText('Completed')).toBeTruthy();
   });
   it('tells the member why the lesson could not be marked complete', async () => {
@@ -143,10 +149,9 @@ describe('CoursePlayerScreen', () => {
     await waitFor(() => expect(getByTestId('lesson-video')).toBeTruthy());
 
     await act(async () => {
-      getByTestId('lesson-video').props.onPlaybackStatusUpdate({
-        isLoaded: true,
-        positionMillis: 30_000,
-        durationMillis: 120_000,
+      getByTestId('lesson-video').props.onProgress({
+        currentTime: 30,
+        duration: 120,
       });
     });
 

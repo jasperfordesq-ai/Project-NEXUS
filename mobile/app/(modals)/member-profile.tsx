@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { formatDecimal , parseDecimalInput } from '@/lib/utils/decimal';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
@@ -12,7 +12,9 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
-import { Accordion, Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Accordion, Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import {
   acceptFederationConnection,
@@ -58,6 +60,7 @@ import type { Exchange } from '@/lib/api/exchanges';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
 import { endorseSkill } from '@/lib/api/endorsements';
 import { sendAppreciation } from '@/lib/api/appreciations';
 import { blockUser } from '@/lib/api/settings';
@@ -1042,6 +1045,7 @@ function FederatedTransferCard({
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const tenantId = member.timebank?.id ?? member.tenant_id;
 
   /*
@@ -1083,14 +1087,20 @@ function FederatedTransferCard({
   }
 
   async function runTransfer(parsedAmount: number, receiverTenantId: number | string) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
+      const transferDescription = description.trim();
+      const operation = await reserveWalletOperation('federation', JSON.stringify([Number(member.id), Number(receiverTenantId), parsedAmount, transferDescription]));
       await sendFederationTransaction({
+        idempotency_key: operation.key,
         receiver_id: member.id,
         receiver_tenant_id: receiverTenantId,
         amount: parsedAmount,
-        description: description.trim(),
+        description: transferDescription,
       });
+      await completeWalletOperation(operation);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('profile.transferSuccessTitle'), description: t('profile.transferSuccessMessage', { amount: parsedAmount, name: displayName }), variant: 'success' });
       setAmount('');
@@ -1099,6 +1109,7 @@ function FederatedTransferCard({
     } catch (err) {
       showToast({ title: t('profile.transferFailedTitle'), description: describeApiError(err, t('profile.transferFailedMessage')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -1128,6 +1139,7 @@ function FederatedTransferCard({
             placeholderTextColor={theme.textMuted}
             value={amount}
             onChangeText={setAmount}
+            editable={!isSubmitting}
             keyboardType="number-pad"
             accessibilityLabel={t('profile.amountHours')}
           />
@@ -1142,6 +1154,7 @@ function FederatedTransferCard({
             placeholderTextColor={theme.textMuted}
             value={description}
             onChangeText={setDescription}
+            editable={!isSubmitting}
             multiline
             accessibilityLabel={t('profile.transferDescription')}
           />

@@ -7,7 +7,8 @@ import { useCallback } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
-import { Card as HeroCard, Chip, Surface, Spinner } from 'heroui-native';
+import { Card as HeroCard, Surface, Spinner } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import {

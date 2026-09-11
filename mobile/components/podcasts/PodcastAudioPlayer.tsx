@@ -5,8 +5,9 @@
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
-import { Audio, type AVPlaybackStatus } from 'expo-av';
-import { Button as HeroButton, Spinner } from 'heroui-native';
+import { setAudioModeAsync, type AudioStatus } from 'expo-audio';
+import { Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import { Ionicons } from '@/components/ui/Icon';
@@ -19,6 +20,7 @@ import {
 } from '@/lib/podcasts/playbackPositions';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useAccentForeground } from '@/lib/theme/accentForeground';
+import { loadAudioPlayer } from '@/lib/media/loadAudioPlayer';
 
 function mediaUrl(value: string) {
   const resolved = new URL(value, `${new URL(API_BASE_URL).origin}/`);
@@ -51,47 +53,31 @@ export interface PodcastAudioPlayerHandle {
 interface PodcastAudioPlayerProps {
   episodeId: number;
   audioUrl: string;
+  episodeTitle?: string;
+  showTitle?: string;
   durationSeconds?: number | null;
   primaryColor: string;
 }
 
-/**
- * 🔴 Background playback is configured HERE, not once at startup, and the whole audio mode
- * is spelled out rather than patched.
- *
- * `Audio.setAudioModeAsync` merges into whatever the last caller left behind, app-wide.
- * The message thread turns `allowsRecordingIOS` on to record a voice note and never turns
- * it off, and on iOS that setting makes every later playback quiet and route to the
- * earpiece. Passing the full mode means an episode sounds the same whether or not the
- * member recorded a voice message earlier in the session.
- *
- * `staysActiveInBackground` is what keeps a 45-minute episode alive when the phone locks:
- * with it false — the default, and what shipped — expo-av explicitly pauses every sound on
- * host pause. iOS additionally needs `UIBackgroundModes: ["audio"]`, which is in app.json,
- * and it REFUSES the combination of `staysActiveInBackground: true` with
- * `playsInSilentModeIOS: false`, so those two move together.
- *
- * 🔴 Android has no media foreground service here, and this does not add one. expo-av
- * ships neither a service nor a wake lock, so what this changes on Android is that the app
- * stops pausing itself; the system may still stop a long episode with the screen off. A
- * real media notification belongs with the expo-audio port (expo-av is removed in SDK 55).
- */
+/** Reset recording mode and enable the native background playback session. */
 const BACKGROUND_AUDIO_MODE = {
-  allowsRecordingIOS: false,
-  playsInSilentModeIOS: true,
-  staysActiveInBackground: true,
-  shouldDuckAndroid: true,
-  playThroughEarpieceAndroid: false,
+  allowsRecording: false,
+  playsInSilentMode: true,
+  shouldPlayInBackground: true,
+  interruptionMode: 'duckOthers',
+  shouldRouteThroughEarpiece: false,
 } as const;
 
 function PodcastAudioPlayer(
-  { episodeId, audioUrl, durationSeconds, primaryColor }: PodcastAudioPlayerProps,
+  { episodeId, audioUrl, episodeTitle, showTitle, durationSeconds, primaryColor }: PodcastAudioPlayerProps,
   ref: React.Ref<PodcastAudioPlayerHandle>,
 ) {
   const { t } = useTranslation('podcasts');
   const theme = useTheme();
   const accentForeground = useAccentForeground();
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<Awaited<ReturnType<typeof loadAudioPlayer>> | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+  const loadingRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -115,81 +101,116 @@ function PodcastAudioPlayer(
   useEffect(() => {
     let cancelled = false;
     void loadPodcastPosition(episodeId, durationSeconds ?? null).then((seconds) => {
-      if (cancelled || !seconds) return;
+      if (cancelled || !seconds || loadingRef.current || soundRef.current) return;
       setResumeFromMs(seconds * 1000);
       setPosition(seconds * 1000);
     });
     return () => { cancelled = true; };
   }, [episodeId, durationSeconds]);
 
-  useEffect(() => () => {
-    const sound = soundRef.current;
-    soundRef.current = null;
-    // Leaving the screen mid-episode is the commonest way to stop listening, so it is the
-    // most important moment to remember the position.
-    void savePodcastPosition(episodeId, lastPositionRef.current / 1000, durationRef.current).catch(() => undefined);
-    void sound?.unloadAsync().catch(() => undefined);
-  }, [episodeId]);
+  useEffect(() => {
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setIsPlaying(false);
+    setIsLoading(false);
+    setIsLoaded(false);
+    setFailed(false);
+    setPosition(0);
+    setResumeFromMs(0);
+    lastPositionRef.current = 0;
+    return () => {
+      controller.abort();
+      const sound = soundRef.current;
+      soundRef.current = null;
+      // Save the final playback position when leaving this episode.
+      void savePodcastPosition(episodeId, lastPositionRef.current / 1000, durationRef.current).catch(() => undefined);
+      sound?.release();
+      loadingRef.current = false;
+    };
+  }, [episodeId, audioUrl]);
 
-  const update = useCallback((status: AVPlaybackStatus) => {
+  const update = useCallback((status: AudioStatus) => {
+    if (status.playbackState === 'failed' || status.playbackState === 'error') {
+      soundRef.current?.release();
+      soundRef.current = null;
+      setIsPlaying(false);
+      setIsLoaded(false);
+      setResumeFromMs(lastPositionRef.current);
+      setFailed(true);
+      return;
+    }
     if (!status.isLoaded) return;
-    setPosition(status.positionMillis);
-    lastPositionRef.current = status.positionMillis;
-    if (status.durationMillis) setDuration(status.durationMillis);
-    setIsPlaying(status.isPlaying);
+    setPosition(status.currentTime * 1000);
+    lastPositionRef.current = status.currentTime * 1000;
+    if (status.duration) setDuration(status.duration * 1000);
+    setIsPlaying(status.playing);
     if (status.didJustFinish) {
-      const finalMillis = status.durationMillis ?? duration;
+      const finalMillis = status.duration ? status.duration * 1000 : duration;
       setPosition(finalMillis);
       void clearPodcastPosition(episodeId).catch(() => undefined);
       void recordPodcastListen(episodeId, { position_seconds: Math.round(finalMillis / 1000), completed: true }).catch(() => undefined);
       return;
     }
     const now = Date.now();
-    if (status.isPlaying && now - lastSaveAtRef.current >= POSITION_SAVE_INTERVAL_MS) {
+    if (status.playing && now - lastSaveAtRef.current >= POSITION_SAVE_INTERVAL_MS) {
       lastSaveAtRef.current = now;
-      void savePodcastPosition(episodeId, status.positionMillis / 1000, durationRef.current).catch(() => undefined);
+      void savePodcastPosition(episodeId, status.currentTime, durationRef.current).catch(() => undefined);
     }
   }, [duration, episodeId]);
 
-  /**
-   * Load the episode and start it at `startAtMillis`. expo-av takes the start point in the
-   * initial status, so a resume is a single load rather than a load followed by a visible
-   * jump from zero.
-   */
+  /** Load and seek before playback so a resume never starts audibly at zero. */
   const load = useCallback(async (startAtMillis: number) => {
+    const controller = controllerRef.current;
+    if (!controller || controller.signal.aborted || loadingRef.current) return;
+    loadingRef.current = true;
     setIsLoading(true);
     try {
-      await Audio.setAudioModeAsync(BACKGROUND_AUDIO_MODE);
-      const { sound } = await Audio.Sound.createAsync(
+      await setAudioModeAsync(BACKGROUND_AUDIO_MODE);
+      if (controller.signal.aborted) return;
+      const sound = await loadAudioPlayer(
         { uri: mediaUrl(audioUrl) },
-        { shouldPlay: true, positionMillis: Math.max(0, Math.round(startAtMillis)) },
         update,
+        controller.signal,
       );
+      if (controller.signal.aborted) { sound.release(); return; }
       soundRef.current = sound;
+      await sound.player.seekTo(Math.max(0, startAtMillis / 1000));
+      if (controller.signal.aborted) return;
+      sound.player.setActiveForLockScreen(true, { title: episodeTitle, artist: showTitle });
+      sound.player.play();
       setIsLoaded(true);
       setIsPlaying(true);
       setResumeFromMs(0);
       lastPositionRef.current = startAtMillis;
       lastSaveAtRef.current = Date.now();
       void recordPodcastListen(episodeId, { position_seconds: Math.round(startAtMillis / 1000), completed: false }).catch(() => undefined);
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      soundRef.current?.release();
+      soundRef.current = null;
+      throw error;
     } finally {
-      setIsLoading(false);
+      if (controllerRef.current === controller) loadingRef.current = false;
+      if (!controller.signal.aborted) setIsLoading(false);
     }
-  }, [audioUrl, episodeId, update]);
+  }, [audioUrl, episodeId, episodeTitle, showTitle, update]);
 
   const toggle = useCallback(async () => {
+    if (loadingRef.current) return;
     setFailed(false);
     try {
       const sound = soundRef.current;
       if (sound) {
         if (isPlaying) {
-          await sound.pauseAsync();
+          sound.player.pause();
           setIsPlaying(false);
           // A pause is a deliberate stopping point — record it without waiting for the
           // next interval tick, which would never come.
           void savePodcastPosition(episodeId, lastPositionRef.current / 1000, durationRef.current).catch(() => undefined);
         } else {
-          await sound.playAsync();
+          if (duration > 0 && lastPositionRef.current >= duration) await sound.player.seekTo(0);
+          if (controllerRef.current?.signal.aborted) return;
+          sound.player.play();
           setIsPlaying(true);
         }
         return;
@@ -199,9 +220,10 @@ function PodcastAudioPlayer(
       setFailed(true);
       setIsPlaying(false);
     }
-  }, [episodeId, isPlaying, load, resumeFromMs]);
+  }, [duration, episodeId, isPlaying, load, resumeFromMs]);
 
   const seekTo = useCallback(async (targetMillis: number) => {
+    if (loadingRef.current) return;
     const ceiling = duration > 0 ? duration : Number.MAX_SAFE_INTEGER;
     const target = Math.min(Math.max(0, targetMillis), ceiling);
     setFailed(false);
@@ -213,7 +235,8 @@ function PodcastAudioPlayer(
         await load(target);
         return;
       }
-      await sound.setPositionAsync(target);
+      await sound.player.seekTo(target / 1000);
+      if (controllerRef.current?.signal.aborted) return;
       setPosition(target);
       lastPositionRef.current = target;
       void savePodcastPosition(episodeId, target / 1000, durationRef.current).catch(() => undefined);
@@ -227,6 +250,7 @@ function PodcastAudioPlayer(
   }), [seekTo]);
 
   const startOver = useCallback(async () => {
+    if (loadingRef.current) return;
     setResumeFromMs(0);
     setPosition(0);
     lastPositionRef.current = 0;
@@ -255,10 +279,10 @@ function PodcastAudioPlayer(
         </View>
       </View>
       <View className="flex-row flex-wrap items-center gap-2">
-        <HeroButton size="sm" variant="tertiary" accessibilityLabel={t('player.skip_back')} onPress={() => void seekTo(position - SKIP_BACK_MS)}>
+        <HeroButton size="sm" variant="tertiary" isDisabled={isLoading} accessibilityLabel={t('player.skip_back')} onPress={() => void seekTo(position - SKIP_BACK_MS)}>
           <HeroButton.Label>{t('player.skip_back')}</HeroButton.Label>
         </HeroButton>
-        <HeroButton size="sm" variant="tertiary" accessibilityLabel={t('player.skip_forward')} onPress={() => void seekTo(position + SKIP_FORWARD_MS)}>
+        <HeroButton size="sm" variant="tertiary" isDisabled={isLoading} accessibilityLabel={t('player.skip_forward')} onPress={() => void seekTo(position + SKIP_FORWARD_MS)}>
           <HeroButton.Label>{t('player.skip_forward')}</HeroButton.Label>
         </HeroButton>
         {resumeFromMs > 0 || position > 0 ? (

@@ -70,8 +70,12 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
+}));
+
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7 } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -102,6 +106,10 @@ jest.mock('@/lib/api/jobs', () => ({
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/components/ModalErrorBoundary', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 import JobAnalyticsScreen from './job-analytics';
 
@@ -156,17 +164,33 @@ describe('JobAnalyticsScreen', () => {
     expect(getByText('42 similar roles')).toBeTruthy();
   });
 
-  it('can retry analytics from the top action', () => {
-    const refresh = jest.fn();
+  it('refreshes analytics and predictions from the top action', () => {
+    const refreshAnalytics = jest.fn();
+    const refreshPredictions = jest.fn();
     mockUseApi.mockReset();
     mockUseApi
-      .mockReturnValueOnce({ data: { data: analytics }, isLoading: false, error: null, refresh })
-      .mockReturnValueOnce({ data: { data: predictions }, isLoading: false, error: null, refresh: jest.fn() });
+      .mockReturnValueOnce({ data: { data: analytics }, isLoading: false, error: null, refresh: refreshAnalytics })
+      .mockReturnValueOnce({ data: { data: predictions }, isLoading: false, error: null, refresh: refreshPredictions });
 
     const { getByLabelText } = render(<JobAnalyticsScreen />);
     fireEvent.press(getByLabelText('Retry'));
 
-    expect(refresh).toHaveBeenCalled();
+    expect(refreshAnalytics).toHaveBeenCalled();
+    expect(refreshPredictions).toHaveBeenCalled();
+  });
+
+  it('shows a prediction failure and offers a direct retry instead of claiming there is no data yet', () => {
+    const retryPredictions = jest.fn();
+    mockUseApi.mockReset();
+    mockUseApi
+      .mockReturnValueOnce({ data: { data: analytics }, isLoading: false, error: null, refresh: jest.fn() })
+      .mockReturnValueOnce({ data: null, isLoading: false, error: 'Prediction service unavailable', refresh: retryPredictions });
+
+    const { getByTestId, getByLabelText, queryByText } = render(<JobAnalyticsScreen />);
+    expect(getByTestId('job-predictions-error')).toBeTruthy();
+    expect(queryByText('Predictions are not available yet.')).toBeNull();
+    fireEvent.press(getByLabelText('common:buttons.retry'));
+    expect(retryPredictions).toHaveBeenCalledTimes(1);
   });
   it('🔴 says the vacancy is not yours rather than offering a Retry that cannot work', () => {
     // A 403 was rendered as "could not load" with a Retry that would fail identically

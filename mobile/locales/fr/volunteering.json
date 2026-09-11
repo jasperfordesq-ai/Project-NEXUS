@@ -10,6 +10,9 @@
   "ownerOpportunityHint": "Vous gérez cette opportunité, les candidatures de bénévoles sont donc traitées à partir des outils de l'organisateur.",
   "editOpportunity": "Modifier l'opportunité",
   "applications": {
+    "decisionNoteRequired": "Une note est requise avant de refuser.",
+    "decisionNoteLabel": "Note de décision",
+    "decisionNotePlaceholder": "Partagez la raison ou les prochaines étapes pour le bénévole.",
     "heading": "Applications",
     "emptyOwner": "Aucune candidature en attente pour le moment.",
     "loadFailed": "Impossible de charger les candidatures.",

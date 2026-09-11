@@ -8,7 +8,8 @@ import { FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Surface, Text } from 'heroui-native';
+import { Card as HeroCard, Surface, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';

@@ -99,7 +99,8 @@
     "confirmDonationTitle": "¿Donar estas horas?",
     "confirmDonationMessage": "Vas a donar {{amount}} horas a {{name}}. Esta acción no se puede deshacer.",
     "recipientResolving": "Comprobando el destinatario…",
-    "recipientUnresolved": "No se encontró a esa persona. Busca al destinatario en su lugar."
+    "recipientUnresolved": "No se encontró a esa persona. Busca al destinatario en su lugar.",
+    "unresolvedOperation": "Una transferencia anterior sigue sin confirmar. Revisa el historial y contacta con tu coordinador antes de enviarla de nuevo."
   },
   "status": {
     "completed": "Completado",

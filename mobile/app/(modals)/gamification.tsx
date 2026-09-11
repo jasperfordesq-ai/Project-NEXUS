@@ -14,7 +14,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Surface } from 'heroui-native';
+import { Card as HeroCard, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -1120,14 +1122,14 @@ function SegmentButton({
 }) {
   return (
     <HeroButton
-      className="flex-1"
+      className="grow shrink-0"
       size="sm"
       variant={isSelected ? 'primary' : 'secondary'}
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: isSelected }}
     >
-      <HeroButton.Label>{label}</HeroButton.Label>
+      <HeroButton.Label numberOfLines={1}>{label}</HeroButton.Label>
     </HeroButton>
   );
 }
@@ -1547,7 +1549,7 @@ function GamificationScreen() {
             />
 
             <Surface variant="default" className="gap-3 rounded-panel p-3">
-              <View className="flex-row gap-2">
+              <View className="flex-row flex-wrap gap-2">
                 <SegmentButton
                   label={t('badges.title')}
                   isSelected={activeTab === 'badges'}

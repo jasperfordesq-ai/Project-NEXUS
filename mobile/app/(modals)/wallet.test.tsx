@@ -6,6 +6,7 @@
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { RefreshControl } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 // --- Mocks ---
 
@@ -606,6 +607,30 @@ describe('WalletModal', () => {
         .map((call) => (call[0] as { idempotency_key?: string }).idempotency_key);
     }
 
+    it('does not offer a failed-transfer retry when secure cleanup fails after a successful transfer', async () => {
+      jest.mocked(transferWalletCredits).mockResolvedValueOnce({ success: true } as never);
+      jest.mocked(SecureStore.deleteItemAsync).mockRejectedValueOnce(new Error('Secure storage unavailable'));
+      const ui = renderTransferPanel();
+      fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+      await ui.findByText('Jasper Ford');
+      fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+      await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(ui.queryByPlaceholderText('Hours to send')).toBeNull());
+    });
+
+    it('completes a successful transfer even when success haptics rejects', async () => {
+      jest.mocked(transferWalletCredits).mockResolvedValueOnce({ success: true } as never);
+      jest.mocked(Haptics.notificationAsync).mockRejectedValueOnce(new Error('Haptics unavailable'));
+      const ui = renderTransferPanel();
+      fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+      await ui.findByText('Jasper Ford');
+      fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+      await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(ui.queryByPlaceholderText('Hours to send')).toBeNull());
+    });
+
     it('reuses one operation id when an uncertain transfer is retried', async () => {
       jest.mocked(transferWalletCredits)
         .mockRejectedValueOnce(new Error('Network request failed'))
@@ -638,6 +663,26 @@ describe('WalletModal', () => {
       expect(second).toBe(first);
     });
 
+    it('AUDIT preserves operation identity after closing and reopening an uncertain transfer', async () => {
+      jest.mocked(transferWalletCredits).mockRejectedValue(new Error('Network request failed'));
+      const ui = renderTransferPanel();
+      const fillAndSend = async () => {
+        fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+        fireEvent.changeText(ui.getByPlaceholderText('What is this transfer for?'), 'Garden help');
+        await ui.findByText('Jasper Ford');
+        fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+        fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+      };
+      await fillAndSend();
+      await waitFor(() => expect(mockRefreshWallet).toHaveBeenCalledTimes(1));
+      fireEvent.press(ui.getByLabelText('Close wallet action'));
+      expect(ui.queryByPlaceholderText('Hours to send')).toBeNull();
+      fireEvent.press(ui.getByText('Send credits'));
+      await fillAndSend();
+      await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(2));
+      const [first, second] = keysSent();
+      expect(second).toBe(first);
+    });
     it('starts a new operation id once the member changes what they are sending', async () => {
       jest.mocked(transferWalletCredits)
         .mockRejectedValueOnce(new Error('Network request failed'))
@@ -867,4 +912,14 @@ describe('WalletModal', () => {
     screen.rerender(<WalletModal />);
     expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(false);
   });
+});
+
+import * as SecureStore from 'expo-secure-store';
+jest.mock('@/lib/storage', () => ({ storage: { get: async () => 'hour-timebank', getJson: async () => ({ id: 674 }) } }));
+jest.mock('expo-crypto', () => ({ CryptoDigestAlgorithm: { SHA256: 'SHA256' }, digestStringAsync: async (_: unknown, text: string) => require('crypto').createHash('sha256').update(text).digest('hex') }));
+beforeEach(() => {
+  const persisted = new Map<string, string>();
+  jest.mocked(SecureStore.getItemAsync).mockImplementation(async key => persisted.get(key) ?? null);
+  jest.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => { persisted.set(key, value); });
+  jest.mocked(SecureStore.deleteItemAsync).mockImplementation(async key => { persisted.delete(key); });
 });

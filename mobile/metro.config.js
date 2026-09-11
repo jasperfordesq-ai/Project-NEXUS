@@ -5,6 +5,7 @@
 
 const { getDefaultConfig } = require('expo/metro-config');
 const { withUniwindConfig } = require('uniwind/metro');
+const { withSentryResolver } = require('@sentry/react-native/metro');
 
 const config = getDefaultConfig(__dirname);
 
@@ -66,8 +67,10 @@ const tenantThemes = Object.keys(palette.tenants ?? {})
   .sort()
   .flatMap((slug) => ['light', 'dark'].map((scheme) => `t-${slug}-${scheme}`));
 
-module.exports = withUniwindConfig(config, {
+// The SDK's resolver excludes browser DOM replay from Android/iOS bundles.
+// Keep its default platform selection so Expo Web retains its existing behaviour.
+module.exports = withSentryResolver(withUniwindConfig(config, {
   cssEntryFile: './global.css',
   dtsFile: './uniwind-types.d.ts',
   extraThemes: tenantThemes,
-});
+}));

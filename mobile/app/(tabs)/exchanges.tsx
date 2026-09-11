@@ -10,7 +10,9 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Location from 'expo-location';
 import * as Haptics from '@/lib/haptics';
-import { Button as HeroButton, Card as HeroCard, Separator, Slider, Spinner, Surface, Tabs } from 'heroui-native';
+import { Card as HeroCard, Separator, Slider, Spinner, Surface } from 'heroui-native';
+import { Tabs } from '@/components/ui/NativeTabs';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 

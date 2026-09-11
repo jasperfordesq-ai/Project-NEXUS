@@ -10,6 +10,9 @@
   "ownerOpportunityHint": "Usted administra esta oportunidad, por lo que las solicitudes de voluntariado se manejan desde el organizador herramientas.",
   "editOpportunity": "Editar oportunidad",
   "applications": {
+    "decisionNoteRequired": "Se requiere una nota antes de rechazar.",
+    "decisionNoteLabel": "nota de decisión",
+    "decisionNotePlaceholder": "Comparta el motivo o los próximos pasos para el voluntario.",
     "heading": "Solicitudes",
     "emptyOwner": "Aún no hay solicitudes pendientes.",
     "loadFailed": "No se pudieron cargar aplicaciones.",

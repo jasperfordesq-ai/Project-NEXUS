@@ -6,13 +6,17 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 // --- Mocks ---
+let mockOpportunityId = '10';
+let mockDeclineNoteRequired = false;
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({ id: '10' }),
+  useLocalSearchParams: () => ({ id: mockOpportunityId }),
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -98,7 +102,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true, tenant: { slug: 'hour-timebank' } }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired } } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -200,6 +204,8 @@ import { cancelShiftSignup, expressInterest, signUpForShift } from '@/lib/api/vo
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
 beforeEach(() => {
+  mockOpportunityId = '10';
+  mockDeclineNoteRequired = false;
   mockUseApi.mockReturnValue(defaultApiState);
   mockHandleVolunteerApplication.mockResolvedValue({ data: {} });
   jest.clearAllMocks();
@@ -308,6 +314,44 @@ describe('VolunteeringDetailScreen', () => {
     expect(queryByText('Express Interest')).toBeNull();
   });
 
+  it('does not send conflicting owner decisions before the first decision completes', async () => {
+    mockUseApi.mockReturnValue({ data: { data: {
+      ...mockOpportunity, is_owner: true,
+      items: [{ id: 55, status: 'pending', user: { id: 12, name: 'Maya Patel' }, shift: null }],
+    } }, isLoading: false, error: null, refresh: jest.fn() });
+    let resolve!: () => void;
+    mockHandleVolunteerApplication.mockImplementationOnce(() => new Promise<void>((done) => { resolve = done; }));
+    const screen = render(<VolunteeringDetailScreen />);
+    const approve = screen.getByText('Approve');
+    const decline = screen.getByText('Decline');
+    act(() => {
+      fireEvent.press(approve);
+      fireEvent.press(decline);
+    });
+    expect(mockHandleVolunteerApplication).toHaveBeenCalledTimes(1);
+    expect(mockHandleVolunteerApplication).toHaveBeenCalledWith(55, 'approve');
+    await act(async () => { resolve(); });
+  });
+
+  it('sends the decision note and retains it when declining fails', async () => {
+    mockDeclineNoteRequired = true;
+    mockUseApi.mockReturnValue({ data: { data: {
+      ...mockOpportunity, is_owner: true,
+      items: [{ id: 55, status: 'pending', user: { id: 12, name: 'Maya Patel' }, shift: null }],
+    } }, isLoading: false, error: null, refresh: jest.fn() });
+    mockHandleVolunteerApplication.mockRejectedValueOnce(new Error('Offline'));
+    const screen = render(<VolunteeringDetailScreen />);
+    expect(screen.getByText('applications.decisionNoteRequired')).toBeTruthy();
+    fireEvent.press(screen.getByText('Decline'));
+    expect(mockHandleVolunteerApplication).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByLabelText('applications.decisionNoteLabel'), 'Please apply for the next session.');
+    await act(async () => { fireEvent.press(screen.getByText('Decline')); });
+    expect(mockHandleVolunteerApplication).toHaveBeenCalledWith(55, 'decline', 'Please apply for the next session.');
+    expect(screen.getByLabelText('applications.decisionNoteLabel').props.value).toBe('Please apply for the next session.');
+    await act(async () => { fireEvent.press(screen.getByText('Decline')); });
+    expect(mockHandleVolunteerApplication).toHaveBeenCalledTimes(2);
+  });
+
   it('allows owners to approve pending applications', async () => {
     const ownerOpportunity = { ...mockOpportunity, is_owner: true };
     const applicationsApiRefresh = jest.fn();
@@ -404,6 +448,68 @@ describe('VolunteeringDetailScreen', () => {
     expect(getAllByText('Go Back').length).toBeGreaterThan(0);
   });
 
+  it('sends only one application when submit is pressed twice before rendering', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+    let resolve!: () => void;
+    jest.mocked(expressInterest).mockImplementationOnce(() => new Promise<{ message: string }>((done) => { resolve = () => done({ message: 'Accepted' }); }));
+    const screen = render(<VolunteeringDetailScreen />);
+    fireEvent.press(screen.getByText('Express Interest'));
+    fireEvent.changeText(screen.getByPlaceholderText(/Tell the organiser/), 'Available Saturday.');
+    const buttons = screen.getAllByText('Express Interest');
+    act(() => {
+      fireEvent.press(buttons[buttons.length - 1]);
+      fireEvent.press(buttons[buttons.length - 1]);
+    });
+    expect(expressInterest).toHaveBeenCalledTimes(1);
+    await act(async () => { resolve(); });
+    expect(screen.queryByTestId('volunteer-apply-sheet')).toBeNull();
+  });
+
+  it('preserves the submitted note after a pending application is rejected', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+    let reject!: (error: Error) => void;
+    jest.mocked(expressInterest).mockImplementationOnce(() => new Promise((_, fail) => { reject = fail; }));
+    const screen = render(<VolunteeringDetailScreen />);
+    fireEvent.press(screen.getByText('Express Interest'));
+    fireEvent.changeText(screen.getByPlaceholderText(/Tell the organiser/), 'Available Saturday.');
+    const buttons = screen.getAllByText('Express Interest');
+    fireEvent.press(buttons[buttons.length - 1]);
+    expect(screen.queryByText('Application submitted')).toBeNull();
+    expect(screen.getByPlaceholderText(/Tell the organiser/).props.editable).toBe(false);
+    await act(async () => { reject(new Error('Offline')); });
+    expect(screen.getByPlaceholderText(/Tell the organiser/).props.value).toBe('Available Saturday.');
+    expect(screen.getByPlaceholderText(/Tell the organiser/).props.editable).toBe(true);
+    const retry = screen.getAllByText('Express Interest');
+    await act(async () => { fireEvent.press(retry[retry.length - 1]); });
+    await waitFor(() => expect(screen.queryByTestId('volunteer-apply-sheet')).toBeNull());
+    expect(expressInterest).toHaveBeenLastCalledWith(10, 'Available Saturday.');
+  });
+
+  it.each(['declined', 'withdrawn'])('allows a fresh application after the previous one was %s', async (status) => {
+    mockUseApi.mockReturnValue({ data: { data: { ...mockOpportunity, has_applied: false, application: { id: 44, status } } }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<VolunteeringDetailScreen />);
+    expect(screen.queryByText('Application submitted')).toBeNull();
+    fireEvent.press(screen.getByText('Express Interest'));
+    fireEvent.changeText(screen.getByPlaceholderText(/Tell the organiser/), 'My availability has changed.');
+    const buttons = screen.getAllByText('Express Interest');
+    fireEvent.press(buttons[buttons.length - 1]);
+    await waitFor(() => expect(expressInterest).toHaveBeenCalledWith(10, 'My availability has changed.'));
+  });
+
+  it('does not carry a submitted application into another opportunity', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<VolunteeringDetailScreen />);
+    fireEvent.press(screen.getByText('Express Interest'));
+    const buttons = screen.getAllByText('Express Interest');
+    await act(async () => { fireEvent.press(buttons[buttons.length - 1]); });
+    expect(screen.getByText('Application submitted')).toBeTruthy();
+    mockOpportunityId = '11';
+    mockUseApi.mockReturnValue({ data: { data: { ...mockOpportunity, id: 11 } }, isLoading: false, error: null, refresh: jest.fn() });
+    screen.rerender(<VolunteeringDetailScreen />);
+    expect(screen.queryByText('Application submitted')).toBeNull();
+    expect(screen.getByText('Express Interest')).toBeTruthy();
+  });
+
   it('submits an interest note for an open opportunity', async () => {
     mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
 
@@ -465,7 +571,7 @@ describe('VolunteeringDetailScreen', () => {
    * and offers a cancel; a second sign-up asks first; and it does nothing until the
    * member agrees.
    */
-  function approvedOpportunityWithMyShift(myShiftId: number | null) {
+  function approvedOpportunityWithMyShift(myShiftId: number | null, shiftError: string | null = null) {
     const opportunity = {
       ...mockOpportunity,
       has_applied: true,
@@ -508,11 +614,40 @@ describe('VolunteeringDetailScreen', () => {
       return {
         data: isMyShifts ? myShifts : { data: opportunity },
         isLoading: false,
-        error: null,
+        error: isMyShifts ? shiftError : null,
         refresh: jest.fn(),
       };
     });
   }
+
+  it('does not submit two different shifts while the first signup is pending', async () => {
+    approvedOpportunityWithMyShift(null);
+    let resolve!: () => void;
+    jest.mocked(signUpForShift).mockImplementationOnce(() => new Promise((done) => {
+      resolve = () => done({ data: { shift_id: 1, message: 'Joined' } });
+    }));
+    const screen = render(<VolunteeringDetailScreen />);
+    const buttons = screen.getAllByText('Sign up for shift');
+    act(() => {
+      fireEvent.press(buttons[0]);
+      fireEvent.press(buttons[1]);
+    });
+    expect(signUpForShift).toHaveBeenCalledTimes(1);
+    await act(async () => { resolve(); });
+  });
+
+  it('does not offer shift changes when the current registration lookup failed', () => {
+    approvedOpportunityWithMyShift(null, 'Offline');
+    const screen = render(<VolunteeringDetailScreen />);
+    expect(screen.queryByText('Sign up for shift')).toBeNull();
+    expect(screen.getByText('Retry')).toBeTruthy();
+    expect(signUpForShift).not.toHaveBeenCalled();
+    approvedOpportunityWithMyShift(1);
+    screen.rerender(<VolunteeringDetailScreen />);
+    fireEvent.press(screen.getByText('Sign up for shift'));
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Move to this shift?' }));
+    expect(signUpForShift).not.toHaveBeenCalled();
+  });
 
   it('marks the shift the member is on and offers to cancel it, not to join it again', () => {
     approvedOpportunityWithMyShift(1);

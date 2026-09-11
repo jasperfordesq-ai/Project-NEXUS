@@ -99,7 +99,8 @@
     "confirmDonationTitle": "Diese Stunden spenden?",
     "confirmDonationMessage": "Du bist dabei, {{amount}} Stunden an {{name}} zu spenden. Das kann nicht rückgängig gemacht werden.",
     "recipientResolving": "Empfänger wird geprüft …",
-    "recipientUnresolved": "Dieses Mitglied wurde nicht gefunden. Suche stattdessen nach dem Empfänger."
+    "recipientUnresolved": "Dieses Mitglied wurde nicht gefunden. Suche stattdessen nach dem Empfänger.",
+    "unresolvedOperation": "Eine frühere Überweisung ist noch unbestätigt. Prüfen Sie Ihren Kontoverlauf und kontaktieren Sie Ihre Koordination, bevor Sie erneut senden."
   },
   "status": {
     "completed": "Abgeschlossen",

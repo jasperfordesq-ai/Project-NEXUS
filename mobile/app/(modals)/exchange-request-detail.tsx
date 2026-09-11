@@ -23,7 +23,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { Button as HeroButton, Chip, Surface } from 'heroui-native';
+import { Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import {

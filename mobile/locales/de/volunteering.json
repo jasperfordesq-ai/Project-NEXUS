@@ -10,6 +10,9 @@
   "ownerOpportunityHint": "Sie verwalten diese Gelegenheit, daher werden Bewerbungen von Freiwilligen über die Organizer-Tools bearbeitet.",
   "editOpportunity": "Möglichkeit bearbeiten",
   "applications": {
+    "decisionNoteRequired": "Vor der Ablehnung ist eine Notiz erforderlich.",
+    "decisionNoteLabel": "Entscheidungsnotiz",
+    "decisionNotePlaceholder": "Teilen Sie dem Freiwilligen den Grund oder die nächsten Schritte mit.",
     "heading": "Bewerbungen",
     "emptyOwner": "Noch keine ausstehenden Bewerbungen.",
     "loadFailed": "Anträge konnten nicht geladen werden.",

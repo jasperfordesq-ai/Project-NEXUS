@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Timebank Global",
-    "NSCameraUsageDescription": "Scan cód QR margaidh nuair a roghnaíonn tú an scanóir a úsáid.",
+    "NSCameraUsageDescription": "Scan cód QR margaidh nó cód seiceála isteach imeachta nuair a roghnaíonn tú an scanóir a oscailt.",
     "NSPhotoLibraryUsageDescription": "Roghnaigh grianghraf ó do leabharlann do do phróifíl nó do phostáil.",
     "NSMicrophoneUsageDescription": "Taifead teachtaireacht ghutha nuair a roghnaíonn tú ceann a sheoladh.",
     "NSFaceIDUsageDescription": "Bain úsáid as Face ID chun an seisiún Timebank Global atá sábháilte ar an ngléas seo cheana a dhíghlasáil.",

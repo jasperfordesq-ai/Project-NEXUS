@@ -295,7 +295,7 @@
   },
   "biometricLock": {
     "title": "Sblocca con impronta o volto",
-    "hint": "Accedi più velocemente con l'impronta digitale, il volto o il PIN.",
+    "hint": "Blocca la sessione salvata all’avvio dell’app. Chiunque abbia dati biometrici registrati su questo dispositivo può sbloccarla. Può essere accettato anche il PIN del dispositivo.",
     "prompt": "Sblocca il tuo account",
     "lockedTitle": "Bloccato",
     "lockedSubtitle": "Sblocca per tornare alla tua community.",
@@ -305,7 +305,7 @@
       "failed": "Non corrisponde. Riprova.",
       "lockout": "Troppi tentativi. Usa il PIN del telefono o riprova più tardi.",
       "noHardware": "Questo telefono non ha lo sblocco con impronta o volto.",
-      "notEnrolled": "Configura prima impronta, volto o PIN nelle impostazioni del telefono.",
+      "notEnrolled": "Configura prima lo sblocco con impronta digitale o riconoscimento del volto nelle impostazioni del dispositivo.",
       "unavailable": "Lo sblocco non è disponibile su questo telefono in questo momento."
     }
   },

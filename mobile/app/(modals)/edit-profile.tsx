@@ -16,7 +16,8 @@ import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from '@/lib/haptics';
-import { Button as HeroButton, Card as HeroCard, Description, Spinner } from 'heroui-native';
+import { Card as HeroCard, Description, Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { useTranslation } from 'react-i18next';
 

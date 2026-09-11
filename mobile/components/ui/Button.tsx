@@ -5,7 +5,8 @@
 
 import React from 'react';
 import { View, type ViewStyle, type StyleProp } from 'react-native';
-import { Button as HeroButton, Spinner } from 'heroui-native';
+import { Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { CHROME_MAX_FONT_SCALE } from '@/lib/ui/textScale';
 import { contrastText } from '@/lib/utils/color';
@@ -82,6 +83,7 @@ export default function Button({
     fullWidth && { width: '100%' },
     color && variant === 'solid' && { backgroundColor: color },
     style,
+    { minHeight: 48, minWidth: 48 },
   ];
 
   return (

@@ -10,7 +10,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
-import { Button as HeroButton, Card as HeroCard, Surface, Tabs } from 'heroui-native';
+import { Card as HeroCard, Surface } from 'heroui-native';
+import { Tabs } from '@/components/ui/NativeTabs';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import {

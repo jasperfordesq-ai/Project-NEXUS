@@ -127,6 +127,66 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
 
+it.each(['requires_2fa', 'requires_2fa_setup'])('does not adopt a %s password challenge as a session', async (flag) => {
+  const { result } = renderHook(() => useAuthContext(), { wrapper });
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
+  const challenge = { success: false, [flag]: true, two_factor_token: 'challenge' };
+  mockApiLogin.mockResolvedValue(challenge);
+  mockStorageSet.mockClear();
+  mockInstallApiSession.mockClear();
+  await act(async () => {
+    expect(await result.current.login({ email: 'test@example.com', password: 'password' })).toEqual(challenge);
+  });
+  expect(result.current.isAuthenticated).toBe(false);
+  expect(mockStorageSet).not.toHaveBeenCalled();
+  expect(mockInstallApiSession).not.toHaveBeenCalled();
+});
+
+it('ignores an old restore response after logout', async () => {
+  mockStorageGet.mockResolvedValue('old-token');
+  mockStorageGetJson.mockResolvedValue(null);
+  let finish!: (value: unknown) => void;
+  mockGetMe.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  const { result } = renderHook(() => useAuthContext(), { wrapper });
+  await waitFor(() => expect(mockGetMe).toHaveBeenCalled());
+  await act(async () => { await result.current.logout(); });
+  mockStorageSetJson.mockClear();
+  await act(async () => { finish({ data: { id: 1, first_name: 'Old account' } }); });
+  expect(result.current.isAuthenticated).toBe(false);
+  expect(result.current.user).toBeNull();
+  expect(mockStorageSetJson).not.toHaveBeenCalled();
+});
+
+it('ignores an old cached-profile refresh after a different session is installed', async () => {
+  mockStorageGet.mockResolvedValue('old-token');
+  mockStorageGetJson.mockResolvedValue({ id: 1, first_name: 'Old account' });
+  let finish!: (value: unknown) => void;
+  mockGetMe.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  const { result } = renderHook(() => useAuthContext(), { wrapper });
+  await waitFor(() => expect(mockGetMe).toHaveBeenCalled());
+  act(() => result.current.setSession('new-token', { id: 2, first_name: 'New account' } as never));
+  mockStorageSetJson.mockClear();
+  await act(async () => { finish({ data: { id: 1, first_name: 'Old account refreshed' } }); });
+  expect(result.current.token).toBe('new-token');
+  expect(result.current.user?.id).toBe(2);
+  expect(mockStorageSetJson).not.toHaveBeenCalled();
+});
+
+it('does not discard a new session when an older restore rejects its credentials', async () => {
+  mockStorageGet.mockResolvedValue('old-token');
+  mockStorageGetJson.mockResolvedValue(null);
+  let reject!: (error: unknown) => void;
+  mockGetMe.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+  const { result } = renderHook(() => useAuthContext(), { wrapper });
+  await waitFor(() => expect(mockGetMe).toHaveBeenCalled());
+  act(() => result.current.setSession('new-token', { id: 2, first_name: 'New account' } as never));
+  mockStorageRemove.mockClear();
+  await act(async () => { reject({ status: 401 }); });
+  expect(result.current.token).toBe('new-token');
+  expect(result.current.user?.id).toBe(2);
+  expect(mockStorageRemove).not.toHaveBeenCalled();
+});
+
 const mockUser = {
   id: 1,
   first_name: 'Jane',
@@ -160,6 +220,38 @@ describe('AuthContext', () => {
     mockTenantContext = showingCommunity(HUB);
     (router.replace as jest.Mock).mockClear();
     communityRepairStore.__resetForTests();
+  });
+
+  it('ignores a password response received after logout', async () => {
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    let finish!: (value: unknown) => void;
+    mockApiLogin.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    let pending!: Promise<unknown>;
+    act(() => { pending = result.current.login({ email: 'old@example.test', password: 'password' }); });
+    await act(async () => { await result.current.logout(); });
+    mockStorageSet.mockClear();
+    await act(async () => {
+      finish({ access_token: 'late-token', refresh_token: 'late-refresh', user: mockUser });
+      await pending;
+    });
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(mockStorageSet).not.toHaveBeenCalled();
+  });
+
+  it('ignores an MFA profile response received after logout', async () => {
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    let finish!: (value: unknown) => void;
+    mockGetMe.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    let pending!: Promise<void>;
+    act(() => { pending = result.current.completeMfa({ access_token: 'mfa-token', refresh_token: 'mfa-refresh' } as never); });
+    await waitFor(() => expect(mockGetMe).toHaveBeenCalled());
+    await act(async () => { await result.current.logout(); });
+    mockStorageSet.mockClear();
+    await act(async () => { finish({ data: mockUser }); await pending; });
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(mockStorageSet).not.toHaveBeenCalled();
   });
 
   it('starts in loading state', () => {
@@ -287,8 +379,22 @@ describe('AuthContext', () => {
     });
 
     expect(result.current.isAuthenticated).toBe(true);
-    expect(mockStorageSet).toHaveBeenCalledWith('auth_token', 'new-token');
-    expect(mockStorageSet).toHaveBeenCalledWith('refresh_token', 'ref-token');
+    expect(mockStorageSet).toHaveBeenCalledWith('auth_token', 'new-token', { required: true });
+    expect(mockStorageSet).toHaveBeenCalledWith('refresh_token', 'ref-token', { required: true });
+  });
+
+  it('does not expose a signed-in session if required encrypted token persistence fails', async () => {
+    mockStorageGet.mockResolvedValue(null);
+    mockApiLogin.mockResolvedValue({ access_token: 'new-token', refresh_token: 'ref-token', user: mockUser });
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    mockStorageSet.mockRejectedValueOnce(new Error('Storage unavailable'));
+    await act(async () => {
+      await expect(result.current.login({ email: 'jane@example.com', password: 'secret' })).rejects.toThrow('Storage unavailable');
+    });
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(mockClearApiSession).toHaveBeenCalled();
+    expect(mockStorageRemove).toHaveBeenCalledWith('auth_token');
   });
 
   /*
@@ -399,6 +505,32 @@ describe('AuthContext', () => {
     expect(result.current.token).toBeNull();
     expect(mockStorageRemove).toHaveBeenCalled();
     expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['push', 'server'])('does not clear a newer session when old logout waits for %s', async (stage) => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(mockUser);
+    mockGetMe.mockResolvedValue({ data: mockFullUser });
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    if (stage === 'push') mockUnregisterPushNotifications.mockReturnValueOnce(pending);
+    else mockApiLogout.mockReturnValueOnce(pending);
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+    let signingOut!: Promise<void>;
+    act(() => { signingOut = result.current.logout(); });
+    if (stage === 'server') await waitFor(() => expect(mockApiLogout).toHaveBeenCalled());
+    act(() => result.current.setSession('new-account-token', { id: 2, first_name: 'Bea' } as never));
+    mockStorageRemove.mockClear();
+    mockClearApiSession.mockClear();
+    await act(async () => { release(); await signingOut; });
+
+    expect(result.current.token).toBe('new-account-token');
+    expect(result.current.user?.id).toBe(2);
+    expect(mockStorageRemove).not.toHaveBeenCalled();
+    expect(mockClearApiSession).not.toHaveBeenCalled();
+    if (stage === 'push') expect(mockApiLogout).not.toHaveBeenCalled();
   });
 
   /*

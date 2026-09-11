@@ -16,7 +16,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Surface } from 'heroui-native';
+import { Card as HeroCard, Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +47,8 @@ import {
 } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -63,6 +65,7 @@ import { useParamTab } from '@/lib/hooks/useParamTab';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 
 // ---------------------------------------------------------------------------
 // Type filter options
@@ -281,18 +284,21 @@ function FilterPill({
   onPress,
   primary,
   theme,
+  disabled = false,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
   primary: string;
   theme: ReturnType<typeof useTheme>;
+  disabled?: boolean;
 }) {
   return (
     <HeroButton
       size="sm"
       variant={selected ? 'primary' : 'secondary'}
       onPress={onPress}
+      isDisabled={disabled}
     >
       <HeroButton.Label>{label}</HeroButton.Label>
       {selected ? <AccentIcon name="checkmark-outline" size={13} /> : <Ionicons name="add-outline" size={13} color={theme.textSecondary} />}
@@ -331,7 +337,13 @@ function ApplicationCard({
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<JobApplicationHistoryEntry[]>([]);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const actionPending = useRef(false);
+  const mountedRef = useRef(true);
   const { confirm, confirmDialog } = useConfirm();
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
   const statusColor: Record<JobApplication['status'], string> = {
     pending: theme.warning,
@@ -384,19 +396,36 @@ function ApplicationCard({
     past the offer stage, vacancy closed — the member saw one fixed sentence and no
     explanation of which had happened. Found by the 2026-09-07 audit (E/F-11).
   */
-  const runWithdraw = async () => {
+  const runApplicationAction = async (
+    action: () => Promise<void>,
+    onSuccess: () => void,
+    fallbackError = t('applications.actionFailed'),
+  ) => {
+    if (actionPending.current) return;
+    actionPending.current = true;
     setActionLoading(true);
     setStatusMessage(null);
     try {
-      await withdrawJobApplication(item.id);
-      setStatusMessage(t('applications.withdrawSuccess'));
-      onApplicationChanged();
+      await action();
+      if (!mountedRef.current) return;
+      onSuccess();
     } catch (err) {
-      setStatusMessage(describeApiError(err, t('applications.withdrawError')));
+      if (!mountedRef.current) return;
+      setStatusMessage(describeApiError(err, fallbackError));
     } finally {
-      setActionLoading(false);
+      actionPending.current = false;
+      if (mountedRef.current) setActionLoading(false);
     }
   };
+
+  const runWithdraw = () => runApplicationAction(
+    () => withdrawJobApplication(item.id).then(() => undefined),
+    () => {
+      setStatusMessage(t('applications.withdrawSuccess'));
+      onApplicationChanged();
+    },
+    t('applications.withdrawError'),
+  );
 
   const handleWithdraw = () => {
     confirm({
@@ -464,18 +493,10 @@ function ApplicationCard({
               variant="primary"
               className="rounded-lg"
               isDisabled={actionLoading}
-              onPress={async () => {
-                setActionLoading(true);
-                setStatusMessage(null);
-                try {
-                  await acceptInterview(interview.id);
-                  onInterviewAccepted(interview.id);
-                } catch (err) {
-                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
-                } finally {
-                  setActionLoading(false);
-                }
-              }}
+              onPress={() => runApplicationAction(
+                () => acceptInterview(interview.id),
+                () => onInterviewAccepted(interview.id),
+              )}
               accessibilityLabel={t('applications.accept_interview')}
             >
               <HeroButton.Label>{t('applications.accept_interview')}</HeroButton.Label>
@@ -485,18 +506,10 @@ function ApplicationCard({
               variant="danger"
               className="rounded-lg"
               isDisabled={actionLoading}
-              onPress={async () => {
-                setActionLoading(true);
-                setStatusMessage(null);
-                try {
-                  await declineInterview(interview.id);
-                  onInterviewDeclined(interview.id);
-                } catch (err) {
-                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
-                } finally {
-                  setActionLoading(false);
-                }
-              }}
+              onPress={() => runApplicationAction(
+                () => declineInterview(interview.id),
+                () => onInterviewDeclined(interview.id),
+              )}
               accessibilityLabel={t('applications.decline_interview')}
             >
               <HeroButton.Label>{t('applications.decline_interview')}</HeroButton.Label>
@@ -526,18 +539,10 @@ function ApplicationCard({
               className="rounded-lg"
               style={{ backgroundColor: theme.success }}
               isDisabled={actionLoading}
-              onPress={async () => {
-                setActionLoading(true);
-                setStatusMessage(null);
-                try {
-                  await acceptOffer(offer.id);
-                  onOfferAccepted(offer.id);
-                } catch (err) {
-                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
-                } finally {
-                  setActionLoading(false);
-                }
-              }}
+              onPress={() => runApplicationAction(
+                () => acceptOffer(offer.id),
+                () => onOfferAccepted(offer.id),
+              )}
               accessibilityLabel={t('applications.accept_offer')}
             >
               <HeroButton.Label>{t('applications.accept_offer')}</HeroButton.Label>
@@ -547,18 +552,10 @@ function ApplicationCard({
               variant="danger"
               className="rounded-lg"
               isDisabled={actionLoading}
-              onPress={async () => {
-                setActionLoading(true);
-                setStatusMessage(null);
-                try {
-                  await rejectOffer(offer.id);
-                  onOfferRejected(offer.id);
-                } catch (err) {
-                  setStatusMessage(describeApiError(err, t('applications.actionFailed')));
-                } finally {
-                  setActionLoading(false);
-                }
-              }}
+              onPress={() => runApplicationAction(
+                () => rejectOffer(offer.id),
+                () => onOfferRejected(offer.id),
+              )}
               accessibilityLabel={t('applications.decline_offer')}
             >
               <HeroButton.Label>{t('applications.decline_offer')}</HeroButton.Label>
@@ -769,7 +766,14 @@ function JobAlertsPanel({
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const createPending = useRef(false);
+  const createAttempt = useRef<{ payload: string; key: string } | null>(null);
+  const mountedRef = useRef(true);
   const { confirm, confirmDialog } = useConfirm();
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
   const resetForm = () => {
     setKeywords('');
@@ -781,6 +785,8 @@ function JobAlertsPanel({
   };
 
   const handleCreate = async () => {
+    if (createPending.current) return;
+
     const payload: CreateJobAlertPayload = {};
     if (keywords.trim()) payload.keywords = keywords.trim();
     if (categories.trim()) payload.categories = categories.trim();
@@ -789,17 +795,30 @@ function JobAlertsPanel({
     if (alertCommitment) payload.commitment = alertCommitment;
     if (remoteOnly) payload.is_remote_only = true;
 
+    const payloadSignature = JSON.stringify(payload);
+    if (createAttempt.current?.payload !== payloadSignature) {
+      createAttempt.current = {
+        payload: payloadSignature,
+        key: mutationIdempotencyKey('mobile-job-alert-create'),
+      };
+    }
+
+    createPending.current = true;
     setBusyKey('create');
     setStatusMessage(null);
     try {
-      await createJobAlert(payload);
+      await createJobAlert({ ...payload, idempotency_key: createAttempt.current.key });
+      if (!mountedRef.current) return;
+      createAttempt.current = null;
       resetForm();
       setStatusMessage(t('alerts.createSuccess'));
       onRefresh();
     } catch {
+      if (!mountedRef.current) return;
       setStatusMessage(t('alerts.createError'));
     } finally {
-      setBusyKey(null);
+      createPending.current = false;
+      if (mountedRef.current) setBusyKey(null);
     }
   };
 
@@ -893,6 +912,7 @@ function JobAlertsPanel({
                 placeholder={t('alerts.keywordsPlaceholder')}
                 value={keywords}
                 onChangeText={setKeywords}
+                editable={busyKey !== 'create'}
                 autoCorrect={false}
                 autoCapitalize="none"
               />
@@ -901,6 +921,7 @@ function JobAlertsPanel({
                 placeholder={t('alerts.categoriesPlaceholder')}
                 value={categories}
                 onChangeText={setCategories}
+                editable={busyKey !== 'create'}
                 autoCorrect={false}
               />
               <Input
@@ -908,6 +929,7 @@ function JobAlertsPanel({
                 placeholder={t('alerts.locationPlaceholder')}
                 value={location}
                 onChangeText={setLocation}
+                editable={busyKey !== 'create'}
                 autoCorrect={false}
               />
 
@@ -922,6 +944,7 @@ function JobAlertsPanel({
                       onPress={() => setAlertType(alertType === type ? null : type)}
                       primary={primary}
                       theme={theme}
+                      disabled={busyKey === 'create'}
                     />
                   ))}
                 </View>
@@ -938,12 +961,18 @@ function JobAlertsPanel({
                       onPress={() => setAlertCommitment(alertCommitment === commitment ? null : commitment)}
                       primary={primary}
                       theme={theme}
+                      disabled={busyKey === 'create'}
                     />
                   ))}
                 </View>
               </View>
 
-              <Toggle value={remoteOnly} onValueChange={setRemoteOnly} label={t('alerts.remoteOnly')} />
+              <Toggle
+                value={remoteOnly}
+                onValueChange={setRemoteOnly}
+                label={t('alerts.remoteOnly')}
+                disabled={busyKey === 'create'}
+              />
 
               {statusMessage ? (
                 <Text className="text-sm text-muted-foreground" accessibilityLiveRegion="polite">{statusMessage}</Text>
@@ -1479,4 +1508,11 @@ function JobsScreen() {
   );
 }
 
-export default withRouteGate(JobsScreen, 'jobs');
+function JobsRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const identityKey = `${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`;
+  return <JobsScreen key={identityKey} />;
+}
+
+export default withRouteGate(JobsRoute, 'jobs');

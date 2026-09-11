@@ -4,10 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback } from 'react';
-import { BackHandler, Platform, Text, View } from 'react-native';
+import { BackHandler, Platform, Text, View, useWindowDimensions } from 'react-native';
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Surface } from 'heroui-native';
+import { Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -38,6 +39,7 @@ export default function AppTopBar({
 }: AppTopBarProps) {
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
 
   const goBack = useCallback(() => {
     if (onBack) {
@@ -81,7 +83,7 @@ export default function AppTopBar({
     <Surface variant="default" className="mx-4 mt-2 mb-3 flex-row items-center gap-3 rounded-panel-inner px-3 py-2">
       <HeroButton variant="secondary" accessibilityLabel={backLabel} onPress={goBack}>
         <Ionicons name="arrow-back-outline" size={18} color={primary} />
-        <HeroButton.Label maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}>{backLabel}</HeroButton.Label>
+        <HeroButton.Label key={fontScale} maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}>{backLabel}</HeroButton.Label>
       </HeroButton>
 
       {/*
@@ -92,6 +94,7 @@ export default function AppTopBar({
         Ordinary body text inside screens is deliberately left uncapped; see lib/ui/textScale.ts.
       */}
       <Text
+        key={fontScale}
         accessibilityRole="header"
         className="min-w-0 flex-1 text-base font-semibold"
         style={{ color: theme.text }}

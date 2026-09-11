@@ -4,10 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 const mockPush = jest.fn();
 let mockRouteParams: Record<string, string> = { id: '5' };
+let mockDeclineNoteRequired = false;
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -98,7 +101,7 @@ jest.mock('@/lib/haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light' },
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+  useTenant: () => ({ tenant: { slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired } }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     bg: '#fff',
@@ -164,7 +167,7 @@ jest.mock('@/lib/api/volunteering', () => ({
   verifyVolunteerHours: jest.fn().mockResolvedValue({ data: {} }),
 }));
 
-import { depositOrganisationWallet } from '@/lib/api/volunteering';
+import { depositOrganisationWallet, handleVolunteerApplication } from '@/lib/api/volunteering';
 import VolunteeringOrgDashboard from './volunteering-org-dashboard';
 
 function mockDashboardApis() {
@@ -219,6 +222,7 @@ describe('VolunteeringOrgDashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRouteParams = { id: '5' };
+    mockDeclineNoteRequired = false;
     mockDashboardApis();
   });
 
@@ -236,6 +240,22 @@ describe('VolunteeringOrgDashboard', () => {
 
     expect(getByText('Alex Volunteer')).toBeTruthy();
     expect(getByText('I can help')).toBeTruthy();
+  });
+
+  it('preserves a rejected decision note and sends it again on retry', async () => {
+    mockDeclineNoteRequired = true;
+    mockRouteParams = { id: '5', tab: 'applications' };
+    jest.mocked(handleVolunteerApplication).mockRejectedValueOnce(new Error('Offline'));
+    const screen = render(<VolunteeringOrgDashboard />);
+    expect(screen.getByText('applications.decisionNoteRequired')).toBeTruthy();
+    fireEvent.press(screen.getByText('Decline'));
+    expect(handleVolunteerApplication).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByLabelText('applications.decisionNoteLabel'), 'Please try the next session.');
+    await act(async () => { fireEvent.press(screen.getByText('Decline')); });
+    expect(handleVolunteerApplication).toHaveBeenCalledWith(7, 'decline', 'Please try the next session.');
+    expect(screen.getByLabelText('applications.decisionNoteLabel').props.value).toBe('Please try the next session.');
+    await act(async () => { fireEvent.press(screen.getByText('Decline')); });
+    expect(handleVolunteerApplication).toHaveBeenCalledTimes(2);
   });
 
   it('switches through organiser workflow tabs', () => {
@@ -300,6 +320,18 @@ describe('VolunteeringOrgDashboard', () => {
     expect(second[3]).toBe(first[3]);
   });
 
+  it('clears a confirmed deposit even when secure-store cleanup fails', async () => {
+    jest.mocked(SecureStore.deleteItemAsync).mockRejectedValueOnce(new Error('Secure storage unavailable'));
+    mockRouteParams = { id: '5', tab: 'wallet' };
+    const screen = render(<VolunteeringOrgDashboard />);
+    fireEvent.changeText(screen.getByPlaceholderText('Amount'), '5');
+    fireEvent.press(screen.getByTestId('org-wallet-deposit'));
+    fireEvent.press(screen.getByTestId('org-wallet-confirm-deposit'));
+    await waitFor(() => expect(depositOrganisationWallet).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByPlaceholderText('Amount').props.value).toBe(''));
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(expect.any(String), expect.stringContaining('"completed":true'));
+  });
+
   it('🔴 accepts a comma decimal, which the amount field used to reject outright', async () => {
     mockRouteParams = { id: '5', tab: 'wallet' };
     const { getByPlaceholderText, getByTestId } = render(<VolunteeringOrgDashboard />);
@@ -341,4 +373,14 @@ describe('VolunteeringOrgDashboard', () => {
     expect(queryByText('No applications to review.')).toBeNull();
     expect(queryByText('No wallet transactions yet.')).toBeNull();
   });
+});
+
+import * as SecureStore from 'expo-secure-store';
+jest.mock('@/lib/storage', () => ({ storage: { get: async () => 'hour-timebank', getJson: async () => ({ id: 674 }) } }));
+jest.mock('expo-crypto', () => ({ CryptoDigestAlgorithm: { SHA256: 'SHA256' }, digestStringAsync: async (_: unknown, text: string) => require('crypto').createHash('sha256').update(text).digest('hex') }));
+beforeEach(() => {
+  const persisted = new Map<string, string>();
+  jest.mocked(SecureStore.getItemAsync).mockImplementation(async key => persisted.get(key) ?? null);
+  jest.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => { persisted.set(key, value); });
+  jest.mocked(SecureStore.deleteItemAsync).mockImplementation(async key => { persisted.delete(key); });
 });

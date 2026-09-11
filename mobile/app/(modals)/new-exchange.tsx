@@ -13,7 +13,9 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner } from 'heroui-native';
+import { Card as HeroCard, Spinner } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import {
   createExchange,
@@ -191,7 +193,7 @@ function NewExchangeModalInner() {
       });
       const generated = response.data?.description?.trim();
       if (generated) {
-        setDescription(generated);
+        setDescription(current => current === description ? generated : current);
         if (fieldErrors.description) setFieldErrors((current) => ({ ...current, description: undefined }));
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -688,7 +690,7 @@ function FormSection({
           <View className="h-8 w-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
             <Ionicons name={icon} size={17} color={primary} />
           </View>
-          <Text style={{ color: theme.text }} className="text-base font-bold">{title}</Text>
+          <Text style={{ color: theme.text }} className="flex-1 text-base font-bold">{title}</Text>
         </View>
         {children}
       </HeroCard.Body>

@@ -32,6 +32,7 @@ export interface TenantConfig {
   branding: TenantBranding;
   features: Record<string, boolean>;
   modules: Record<string, boolean>;
+  volunteering_config?: Record<string, unknown>;
   config: {
     time_unit: string;
     time_unit_plural: string;

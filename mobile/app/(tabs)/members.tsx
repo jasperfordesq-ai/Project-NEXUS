@@ -8,7 +8,8 @@ import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';

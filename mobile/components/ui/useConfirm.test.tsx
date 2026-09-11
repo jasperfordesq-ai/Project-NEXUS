@@ -18,7 +18,7 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { act, render, screen } from '@testing-library/react-native';
 
 import { useConfirm, type ConfirmOptions } from './useConfirm';
 
@@ -27,10 +27,11 @@ jest.mock('./ConfirmDialog', () => {
   const { Text, View } = require('react-native');
   return {
     __esModule: true,
-    default: ({ visible, variant }: { visible: boolean; variant?: string }) =>
+    default: ({ visible, variant, onConfirm }: { visible: boolean; variant?: string; onConfirm: () => Promise<void> }) =>
       visible ? (
         <View>
           <Text testID="confirm-variant">{variant}</Text>
+          <Text testID="confirm-action" onPress={onConfirm}>Confirm</Text>
         </View>
       ) : null,
   };
@@ -54,6 +55,18 @@ function Harness({ options }: { options: ConfirmOptions }) {
 }
 
 describe('useConfirm — the warning colour is reserved', () => {
+  it('runs a pending confirmation only once even when two events arrive together', async () => {
+    let finish!: () => void;
+    const action = jest.fn(() => new Promise<void>(resolve => { finish = resolve; }));
+    render(<Harness options={{ ...baseOptions, onConfirm: action }} />);
+    const confirm = screen.getByTestId('confirm-action').props.onPress;
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    act(() => { first = confirm(); second = confirm(); });
+    expect(action).toHaveBeenCalledTimes(1);
+    await act(async () => { finish(); await Promise.all([first, second]); });
+    expect(screen.queryByTestId('confirm-action')).toBeNull();
+  });
   it('is not red unless the caller asks for red', () => {
     render(<Harness options={baseOptions} />);
 

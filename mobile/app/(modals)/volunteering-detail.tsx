@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -14,7 +14,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -164,6 +166,7 @@ function ShiftCard({
   onCancel,
   signingUp,
   cancelling,
+  busy,
   canSignUp,
   isMine,
 }: {
@@ -172,6 +175,7 @@ function ShiftCard({
   onCancel: () => void;
   signingUp: boolean;
   cancelling: boolean;
+  busy: boolean;
   canSignUp: boolean;
   /**
    * 🔴 The shift this member is actually on. Without it every card looked
@@ -217,7 +221,7 @@ function ShiftCard({
           <HeroButton
             size="sm"
             variant="tertiary"
-            isDisabled={cancelling}
+            isDisabled={busy}
             onPress={onCancel}
             testID={`shift-cancel-${shift.id}`}
             accessibilityState={{ busy: cancelling }}
@@ -227,7 +231,7 @@ function ShiftCard({
           </HeroButton>
         ) : null}
         {canSignUp && !isMine ? (
-          <HeroButton size="sm" variant="secondary" isDisabled={signingUp} onPress={onSignUp} accessibilityState={{ busy: signingUp }}>
+          <HeroButton size="sm" variant="secondary" isDisabled={busy} onPress={onSignUp} accessibilityState={{ busy: signingUp }}>
             {signingUp ? <Spinner size="sm" /> : null}
             <HeroButton.Label>{t('signUpForShift')}</HeroButton.Label>
           </HeroButton>
@@ -255,13 +259,16 @@ function ApplicationCard({
 }: {
   application: OpportunityApplication;
   actionId: number | null;
-  onAction: (applicationId: number, action: 'approve' | 'decline') => void;
+  onAction: (applicationId: number, action: 'approve' | 'decline', orgNote?: string) => void;
 }) {
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
   const primary = usePrimaryColor();
   const isPending = application.status === 'pending';
   const isActing = actionId === application.id;
+  const [decisionNote, setDecisionNote] = useState('');
+  const { tenant } = useTenant();
+  const declineNoteRequired = tenant?.volunteering_config?.['volunteering.require_org_note_on_decline'] === true;
   const statusKey = applicationStatusLabelKey(application.status);
 
   return (
@@ -302,13 +309,28 @@ function ApplicationCard({
         ) : null}
 
         {isPending ? (
+          <Input
+            label={t('applications.decisionNoteLabel')}
+            placeholder={t('applications.decisionNotePlaceholder')}
+            accessibilityLabel={t('applications.decisionNoteLabel')}
+            value={decisionNote}
+            onChangeText={setDecisionNote}
+            editable={actionId === null}
+            multiline
+            maxLength={2000}
+          />
+        ) : null}
+        {isPending && declineNoteRequired ? (
+          <Text style={{ color: theme.textSecondary }}>{t('applications.decisionNoteRequired')}</Text>
+        ) : null}
+        {isPending ? (
           <View className="flex-row gap-2">
             <HeroButton
               className="flex-1"
               size="sm"
               variant="secondary"
-              isDisabled={isActing}
-              onPress={() => onAction(application.id, 'decline')}
+              isDisabled={actionId !== null || (declineNoteRequired && !decisionNote.trim())}
+              onPress={() => onAction(application.id, 'decline', decisionNote)}
               accessibilityState={{ busy: isActing }}
             >
               {isActing ? <Spinner size="sm" /> : null}
@@ -317,8 +339,8 @@ function ApplicationCard({
             <HeroButton
               className="flex-1"
               size="sm"
-              isDisabled={isActing}
-              onPress={() => onAction(application.id, 'approve')}
+              isDisabled={actionId !== null}
+              onPress={() => onAction(application.id, 'approve', decisionNote)}
               accessibilityState={{ busy: isActing }}
             >
               {isActing ? <Spinner size="sm" /> : null}
@@ -332,9 +354,10 @@ function ApplicationCard({
 }
 
 function VolunteeringDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   return (
     <ModalErrorBoundary>
-      <VolunteeringDetailScreenInner />
+      <VolunteeringDetailScreenInner key={id} />
     </ModalErrorBoundary>
   );
 }
@@ -349,11 +372,14 @@ function VolunteeringDetailScreenInner() {
   const { show: showToast } = useAppToast();
   const [interestSent, setInterestSent] = useState(false);
   const [interestLoading, setInterestLoading] = useState(false);
+  const interestPending = useRef(false);
   const [applySheetOpen, setApplySheetOpen] = useState(false);
   const [applyMessage, setApplyMessage] = useState('');
   const [signingShiftId, setSigningShiftId] = useState<number | null>(null);
   const [cancellingShiftId, setCancellingShiftId] = useState<number | null>(null);
+  const shiftPending = useRef(false);
   const [applicationActionId, setApplicationActionId] = useState<number | null>(null);
+  const applicationActionPending = useRef(false);
   const { confirm, confirmDialog } = useConfirm();
 
   const opportunityId = Number(id);
@@ -379,7 +405,9 @@ function VolunteeringDetailScreenInner() {
   const org = opportunity ? organizationFor(opportunity) : null;
   const skills = useMemo(() => normalizedSkills(opportunity?.skills_needed ?? null), [opportunity?.skills_needed]);
   const shifts = opportunity?.shifts ?? [];
-  const hasApplied = interestSent || Boolean(opportunity?.has_applied || opportunity?.application);
+  const hasApplied = interestSent || Boolean(opportunity?.has_applied)
+    || opportunity?.application?.status === 'pending'
+    || opportunity?.application?.status === 'approved';
   const open = opportunity ? isOpenOpportunity(opportunity) : false;
   const canSignUpForShifts = Boolean(opportunity?.application?.status === 'approved' && !opportunity.is_owner);
 
@@ -422,17 +450,18 @@ function VolunteeringDetailScreenInner() {
   }
 
   async function handleApply() {
-    if (!opportunity || interestLoading || hasApplied) return;
+    if (!opportunity || interestPending.current || hasApplied) return;
     if (!isAuthenticated) {
       showToast({ title: t('signInRequiredTitle'), description: t('signInRequiredMessage'), variant: 'warning' });
       return;
     }
 
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    interestPending.current = true;
     setInterestLoading(true);
-    setInterestSent(true); // optimistic — reverted in catch
     try {
       await expressInterest(opportunity.id, applyMessage.trim() || undefined);
+      setInterestSent(true);
       setApplyMessage('');
       setApplySheetOpen(false);
       refresh();
@@ -449,11 +478,14 @@ function VolunteeringDetailScreenInner() {
         variant: 'danger',
       });
     } finally {
+      interestPending.current = false;
       setInterestLoading(false);
     }
   }
 
   async function performSignUpForShift(shiftId: number) {
+    if (shiftPending.current) return;
+    shiftPending.current = true;
     setSigningShiftId(shiftId);
     try {
       await signUpForShift(shiftId);
@@ -469,11 +501,13 @@ function VolunteeringDetailScreenInner() {
         variant: 'danger',
       });
     } finally {
+      shiftPending.current = false;
       setSigningShiftId(null);
     }
   }
 
   function handleSignUpForShift(shiftId: number) {
+    if (shiftPending.current || myShiftsApi.isLoading || myShiftsApi.error) return;
     if (!isAuthenticated) {
       showToast({ title: t('signInRequiredTitle'), description: t('signInRequiredMessage'), variant: 'warning' });
       return;
@@ -501,6 +535,7 @@ function VolunteeringDetailScreenInner() {
   }
 
   function handleCancelShift(shiftId: number) {
+    if (shiftPending.current) return;
     // 🔴 Destructive: one tap used to release the place with no way back (S4-16).
     confirm({
       title: t('myShifts.cancelConfirmTitle'),
@@ -514,6 +549,8 @@ function VolunteeringDetailScreenInner() {
   }
 
   async function performCancelShift(shiftId: number) {
+    if (shiftPending.current) return;
+    shiftPending.current = true;
     setCancellingShiftId(shiftId);
     try {
       await cancelShiftSignup(shiftId);
@@ -529,14 +566,21 @@ function VolunteeringDetailScreenInner() {
         variant: 'danger',
       });
     } finally {
+      shiftPending.current = false;
       setCancellingShiftId(null);
     }
   }
 
-  async function handleApplicationAction(applicationId: number, action: 'approve' | 'decline') {
+  async function handleApplicationAction(applicationId: number, action: 'approve' | 'decline', orgNote?: string) {
+    if (applicationActionPending.current) return;
+    applicationActionPending.current = true;
     setApplicationActionId(applicationId);
     try {
-      await handleVolunteerApplication(applicationId, action);
+      if (orgNote?.trim()) {
+        await handleVolunteerApplication(applicationId, action, orgNote.trim());
+      } else {
+        await handleVolunteerApplication(applicationId, action);
+      }
       ownerApplicationsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({
@@ -548,6 +592,7 @@ function VolunteeringDetailScreenInner() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('applications.actionFailed')), variant: 'danger' });
     } finally {
+      applicationActionPending.current = false;
       setApplicationActionId(null);
     }
   }
@@ -749,12 +794,16 @@ function VolunteeringDetailScreenInner() {
                   shift={shift}
                   signingUp={signingShiftId === shift.id}
                   cancelling={cancellingShiftId === shift.id}
-                  canSignUp={canSignUpForShifts}
+                  busy={signingShiftId !== null || cancellingShiftId !== null}
+                  canSignUp={canSignUpForShifts && !myShiftsApi.isLoading && !myShiftsApi.error}
                   isMine={myShiftForThisOpportunity?.id === shift.id}
                   onSignUp={() => handleSignUpForShift(shift.id)}
                   onCancel={() => handleCancelShift(shift.id)}
                 />
               ))}
+              {canSignUpForShifts && myShiftsApi.error ? (
+                <ErrorState onRetry={myShiftsApi.refresh} isRetrying={myShiftsApi.isLoading} />
+              ) : canSignUpForShifts && myShiftsApi.isLoading ? <LoadingSpinner /> : null}
             </HeroCard.Body>
           </HeroCard>
         ) : null}
@@ -801,7 +850,7 @@ function VolunteeringDetailScreenInner() {
                       key={application.id}
                       application={application}
                       actionId={applicationActionId}
-                      onAction={(applicationId, action) => void handleApplicationAction(applicationId, action)}
+                      onAction={(applicationId, action, orgNote) => void handleApplicationAction(applicationId, action, orgNote)}
                     />
                   ))
                 ) : (
@@ -853,6 +902,7 @@ function VolunteeringDetailScreenInner() {
           </View>
           <Input
             value={applyMessage}
+            editable={!interestLoading}
             onChangeText={setApplyMessage}
             placeholder={t('coverMessagePlaceholder')}
             placeholderTextColor={theme.textMuted}

@@ -19,7 +19,8 @@ import { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import * as Haptics from '@/lib/haptics';
@@ -29,6 +30,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import FeatureGate from '@/components/FeatureGate';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
@@ -101,15 +103,11 @@ function CourseGradingScreen() {
     round trip they did not ask for.
   */
   const [gradedIds, setGradedIds] = useState<number[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const attempts = (data ?? []).filter((attempt) => !gradedIds.includes(attempt.id));
 
   const onRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    setGradedIds([]);
     refresh();
-    setIsRefreshing(false);
   }, [refresh]);
 
   const onGraded = useCallback((attemptId: number) => {
@@ -117,7 +115,7 @@ function CourseGradingScreen() {
   }, []);
 
   function body() {
-    if (isLoading) {
+    if (isLoading && !data) {
       return (
         <View className="py-12">
           <LoadingSpinner />
@@ -136,7 +134,7 @@ function CourseGradingScreen() {
         />
       );
     }
-    if (error) {
+    if (error && !data) {
       return (
         <ErrorState
           subtitle={error}
@@ -178,7 +176,7 @@ function CourseGradingScreen() {
           keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl
-              refreshing={isRefreshing}
+              refreshing={isLoading && Boolean(data)}
               onRefresh={onRefresh}
               tintColor={primary}
               colors={[primary]}
@@ -194,6 +192,7 @@ function CourseGradingScreen() {
               </Text>
             </HeroCard.Body>
           </HeroCard>
+          <RefreshFailedNotice error={data && !isRefusalStatus(errorStatus) ? error : null} onRetry={refresh} isRetrying={isLoading} />
           {body()}
         </ScrollView>
       </KeyboardAvoidingView>
@@ -312,6 +311,7 @@ function GradeCard({
           label={t('grading.score')}
           value={score}
           onChangeText={setScore}
+          editable={!isSaving}
           keyboardType="number-pad"
           style={{ color: theme.text }}
           accessibilityLabel={t('grading.score')}
@@ -319,6 +319,7 @@ function GradeCard({
         <Toggle
           value={passed}
           onValueChange={setPassed}
+          disabled={isSaving}
           label={t('grading.passed')}
           accessibilityLabel={t('grading.passed')}
         />
@@ -326,6 +327,7 @@ function GradeCard({
           label={t('grading.feedback')}
           value={feedback}
           onChangeText={setFeedback}
+          editable={!isSaving}
           placeholder={t('grading.feedback')}
           placeholderTextColor={theme.textMuted}
           style={{ color: theme.text }}

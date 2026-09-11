@@ -21,7 +21,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ text: '#111', textSecondary: '#555', border: '#ddd', error: '#b00' }),
 }));
 jest.mock('@/components/ui/Icon', () => ({ Ionicons: 'Ionicons' }));
-jest.mock('expo-av', () => ({ ResizeMode: { CONTAIN: 'contain' }, Video: 'Video' }));
+jest.mock('@/components/media/NativeVideo', () => 'NativeVideo');
 jest.mock('@/components/courses/LessonQuiz', () => 'LessonQuiz');
 
 import LessonContent from './LessonContent';
@@ -73,8 +73,8 @@ describe('LessonContent', () => {
     // warning that becomes an intermittent failure on a slower CI runner.
     const emit = (positionMillis: number) => {
       act(() => {
-        getByTestId('lesson-video').props.onPlaybackStatusUpdate({
-          isLoaded: true, positionMillis, durationMillis: 100_000,
+        getByTestId('lesson-video').props.onProgress({
+          currentTime: positionMillis / 1000, duration: 100,
         });
       });
     };
@@ -94,8 +94,8 @@ describe('LessonContent', () => {
     );
 
     act(() => {
-      getByTestId('lesson-video').props.onPlaybackStatusUpdate({
-        isLoaded: true, positionMillis: 99_400, durationMillis: 100_000, didJustFinish: true,
+      getByTestId('lesson-video').props.onProgress({
+        currentTime: 99.4, duration: 100, finished: true,
       });
     });
 

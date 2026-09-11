@@ -256,9 +256,11 @@ describe('marketplace api', () => {
   it('uploads listing images to the marketplace images endpoint', async () => {
     (api.upload as jest.Mock).mockResolvedValue({ data: [{ id: 1, url: '/uploads/marketplace/a.jpg' }] });
 
-    await uploadMarketplaceImages(8, ['file:///tmp/a.jpg']);
+    await uploadMarketplaceImages(8, ['file:///tmp/a.jpg'], 'photo-operation');
 
     expect(api.upload).toHaveBeenCalledWith('/api/v2/marketplace/listings/8/images', expect.any(FormData));
+    const formData = (api.upload as jest.Mock).mock.calls[0][1] as FormData;
+    expect(formData.get('idempotency_key')).toBe('photo-operation');
   });
 
   it('wires marketplace listing video upload and removal endpoints', async () => {

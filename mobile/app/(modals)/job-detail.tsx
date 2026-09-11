@@ -6,13 +6,15 @@
 import ErrorState from '@/components/ui/ErrorState';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { buildWebUrl } from '@/lib/utils/webUrl';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -41,6 +43,13 @@ import { withRouteGate } from '@/components/withRouteGate';
 
 
 function JobDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <JobDetailContent key={`${tenant?.id ?? tenant?.slug}:${user?.id}:${id}`} />;
+}
+
+function JobDetailContent() {
   const { t } = useTranslation(['jobs', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
@@ -66,11 +75,16 @@ function JobDetailScreen() {
   const [applyModalVisible, setApplyModalVisible] = useState(false);
   const [coverMessage, setCoverMessage] = useState('');
   const [applyLoading, setApplyLoading] = useState(false);
+  const applicationPending = useRef(false);
+  const cvPickerPending = useRef(false);
+  const [cvPicking, setCvPicking] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
 
   // Saved profile (one-click apply)
   const [savedProfile, setSavedProfile] = useState<{ cv_filename?: string; cover_text?: string } | null>(null);
+  const [savedProfileState, setSavedProfileState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
+  const savedProfileRequest = useRef(0);
   /*
     🔴 The application went out with a covering message and nothing else. The endpoint
     has always accepted a `cv` part; the phone never sent one, and a member who had saved
@@ -87,15 +101,30 @@ function JobDetailScreen() {
     }
   }, [job]);
 
-  // Load saved profile when apply modal opens
-  useEffect(() => {
-    if (!applyModalVisible) return;
-    getSavedProfile().then((profile) => {
+  const loadSavedProfile = useCallback(async () => {
+    const requestId = ++savedProfileRequest.current;
+    setSavedProfileState('loading');
+    try {
+      const profile = await getSavedProfile();
+      if (savedProfileRequest.current !== requestId) return;
       setSavedProfile(profile);
-    }).catch(() => {
-      // Silently ignore — saved profile is optional
-    });
-  }, [applyModalVisible]);
+      setSavedProfileState('loaded');
+    } catch {
+      if (savedProfileRequest.current !== requestId) return;
+      setSavedProfile(null);
+      setSavedProfileState('error');
+    }
+  }, []);
+
+  // Load saved profile when apply modal opens and ignore a result after it closes.
+  useEffect(() => {
+    if (!applyModalVisible) {
+      savedProfileRequest.current += 1;
+      setSavedProfileState('idle');
+      return;
+    }
+    void loadSavedProfile();
+  }, [applyModalVisible, loadSavedProfile]);
 
   const isOwner = !!job && user?.id === (job.user_id ?? job.creator.id);
   const ownerApplicationsApi = useApi(
@@ -190,23 +219,34 @@ function JobDetailScreen() {
   }
 
   async function chooseCv() {
-    const result = await pickCvFile();
-    if (result.status === 'picked') {
-      setCvFile(result.file);
-      return;
+    if (applicationPending.current || cvPickerPending.current) return;
+    cvPickerPending.current = true;
+    setCvPicking(true);
+    try {
+      const result = await pickCvFile();
+      if (result.status === 'picked') {
+        setCvFile(result.file);
+        return;
+      }
+      if (result.status === 'cancelled') return;
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: result.status === 'too_large'
+          ? t('apply.cvTooLarge', { maxMb: CV_MAX_MB })
+          : t('apply.cvUnsupported'),
+        variant: 'warning',
+      });
+    } catch {
+      showToast({ title: t('common:errors.alertTitle'), description: t('common:errors.generic'), variant: 'danger' });
+    } finally {
+      cvPickerPending.current = false;
+      setCvPicking(false);
     }
-    if (result.status === 'cancelled') return;
-    showToast({
-      title: t('common:errors.alertTitle'),
-      description: result.status === 'too_large'
-        ? t('apply.cvTooLarge', { maxMb: CV_MAX_MB })
-        : t('apply.cvUnsupported'),
-      variant: 'warning',
-    });
   }
 
   async function handleSubmitApplication() {
-    if (!job || applyLoading || !coverMessage.trim()) return;
+    if (!job || isOwner || job.status !== 'open' || job.accepting_applications === false || applicationPending.current || cvPickerPending.current || !coverMessage.trim()) return;
+    applicationPending.current = true;
     setApplyLoading(true);
     try {
       await applyToJob(job.id, coverMessage.trim(), cvFile);
@@ -226,13 +266,18 @@ function JobDetailScreen() {
         variant: 'danger',
       });
     } finally {
+      applicationPending.current = false;
       setApplyLoading(false);
     }
   }
 
   function handleCloseModal() {
+    if (applicationPending.current || cvPickerPending.current) return;
     setApplyModalVisible(false);
-    setCoverMessage('');
+    if (applySuccess) {
+      setCoverMessage('');
+      setCvFile(null);
+    }
     setApplySuccess(false);
   }
 
@@ -284,7 +329,7 @@ function JobDetailScreen() {
     return t('detail.closesIn', { count: deadlineDaysLeft });
   })();
 
-  const isClosed = job.status !== 'open';
+  const isClosed = job.status !== 'open' || job.accepting_applications === false;
 
   const matchPct = job.match_percentage ?? null;
   const matchColor =
@@ -520,7 +565,7 @@ function JobDetailScreen() {
         {/* Only the DISABLED tone is set below. The enabled branch used to repeat the
             community colour, which variant="primary" already paints — and repeating it meant
             the fill and the label came from different sources. */}
-        <HeroButton
+        {!isOwner ? <HeroButton
           variant="primary"
           accessibilityLabel={hasApplied ? t('detail.applied') : t('detail.apply')}
           isDisabled={hasApplied || isClosed}
@@ -531,7 +576,7 @@ function JobDetailScreen() {
         >
           <AccentIcon name={hasApplied ? 'checkmark-circle' : 'send-outline'} size={18} />
           <HeroButton.Label>{hasApplied ? t('detail.applied') : t('detail.apply')}</HeroButton.Label>
-        </HeroButton>
+        </HeroButton> : null}
       </Surface>
 
       {/* Apply sheet */}
@@ -545,7 +590,7 @@ function JobDetailScreen() {
           <HeroButton
             variant="primary"
             onPress={() => void handleSubmitApplication()}
-            isDisabled={coverMessage.trim().length === 0 || applyLoading}
+            isDisabled={coverMessage.trim().length === 0 || applyLoading || cvPicking}
             testID="job-apply-submit"
           >
             {applyLoading ? (
@@ -581,8 +626,21 @@ function JobDetailScreen() {
                   <View className="mb-3 flex-row items-center gap-2" testID="job-apply-cv-attached">
                     <Ionicons name="document-attach-outline" size={16} color={primary} />
                     <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.text }} numberOfLines={1}>{cvFile.name}</Text>
-                    <HeroButton size="sm" variant="ghost" onPress={() => setCvFile(null)}>
+                    <HeroButton size="sm" variant="ghost" isDisabled={applyLoading} onPress={() => setCvFile(null)}>
                       <HeroButton.Label>{t('apply.cvRemove')}</HeroButton.Label>
+                    </HeroButton>
+                  </View>
+                ) : savedProfileState === 'loading' ? (
+                  <Text className="mb-3 text-xs leading-4" style={{ color: theme.textSecondary }} accessibilityLiveRegion="polite">
+                    {t('apply.cvProfileLoading')}
+                  </Text>
+                ) : savedProfileState === 'error' ? (
+                  <View className="mb-3 gap-2" accessibilityLiveRegion="polite">
+                    <Text className="text-xs leading-4" style={{ color: theme.error }}>
+                      {t('apply.cvProfileError')}
+                    </Text>
+                    <HeroButton size="sm" variant="secondary" onPress={() => void loadSavedProfile()}>
+                      <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
                     </HeroButton>
                   </View>
                 ) : (
@@ -596,6 +654,7 @@ function JobDetailScreen() {
                   variant="secondary"
                   style={{ alignSelf: 'flex-start', marginBottom: 12 }}
                   testID="job-apply-attach-cv"
+                  isDisabled={applyLoading || cvPicking}
                   onPress={() => void chooseCv()}
                 >
                   <Ionicons name="attach-outline" size={14} color={primary} />
@@ -612,6 +671,7 @@ function JobDetailScreen() {
                       marginBottom: 12,
                     }}
                     onPress={() => setCoverMessage(savedProfile.cover_text ?? '')}
+                    isDisabled={applyLoading}
                   >
                     <Ionicons name="flash-outline" size={14} color={primary} />
                     <HeroButton.Label>{t('saved_profile.use')}</HeroButton.Label>
@@ -627,6 +687,7 @@ function JobDetailScreen() {
                   placeholder={t('apply.messagePlaceholder')}
                   placeholderTextColor={theme.textMuted}
                   value={coverMessage}
+                  editable={!applyLoading}
                   onChangeText={setCoverMessage}
                   multiline
                   numberOfLines={6}
@@ -832,13 +893,16 @@ function OwnerApplicationCard({
 }) {
   const { show: showToast } = useAppToast();
   const [isUpdating, setIsUpdating] = useState(false);
+  const updatePending = useRef(false);
+  const terminal = ['accepted', 'rejected', 'withdrawn'].includes(application.stage ?? application.status);
   const applicantName = application.applicant?.name?.trim() || t('owner.unknownApplicant');
   const submitted = application.created_at
     ? new Date(application.created_at).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
 
   async function updateStatus(status: JobOwnerApplication['status']) {
-    if (isUpdating) return;
+    if (updatePending.current || terminal) return;
+    updatePending.current = true;
     setIsUpdating(true);
     try {
       await updateJobApplication(application.id, { status });
@@ -847,6 +911,7 @@ function OwnerApplicationCard({
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.updateError')), variant: 'danger' });
     } finally {
+      updatePending.current = false;
       setIsUpdating(false);
     }
   }
@@ -868,7 +933,7 @@ function OwnerApplicationCard({
           {application.message}
         </Text>
       ) : null}
-      <View className="flex-row flex-wrap gap-2">
+      {!terminal ? <View className="flex-row flex-wrap gap-2">
         <HeroButton size="sm" variant="secondary" isDisabled={isUpdating} onPress={() => void updateStatus('reviewed')}>
           <HeroButton.Label>{t('owner.markReviewed')}</HeroButton.Label>
         </HeroButton>
@@ -883,7 +948,7 @@ function OwnerApplicationCard({
           <AccentIcon name="calendar-outline" size={14} />
           <HeroButton.Label>{t('owner.moveToInterview')}</HeroButton.Label>
         </HeroButton>
-      </View>
+      </View> : null}
     </Surface>
   );
 }

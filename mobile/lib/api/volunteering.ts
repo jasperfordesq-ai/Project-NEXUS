@@ -490,8 +490,12 @@ export function getOpportunityApplications(
 export function handleVolunteerApplication(
   id: number,
   action: 'approve' | 'decline',
+  orgNote?: string,
 ): Promise<{ data: unknown }> {
-  return api.put<{ data: unknown }>(`${API_V2}/volunteering/applications/${id}`, { action });
+  return api.put<{ data: unknown }>(`${API_V2}/volunteering/applications/${id}`, {
+    action,
+    ...(orgNote?.trim() ? { org_note: orgNote.trim() } : {}),
+  });
 }
 
 export function verifyVolunteerHours(id: number, action: 'approve' | 'decline'): Promise<{ data: unknown }> {

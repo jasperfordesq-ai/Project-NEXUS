@@ -6,7 +6,9 @@
 import { useState } from 'react';
 import { Linking, Text, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button, Card, Chip } from 'heroui-native';
+import { Card } from 'heroui-native';
+import { Button } from '@/components/ui/NativeButton';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import { useAppToast } from '@/components/ui/AppToast';

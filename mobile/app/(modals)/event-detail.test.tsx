@@ -9,6 +9,8 @@ import { Linking, ScrollView, StyleSheet } from 'react-native';
 
 // --- Mocks ---
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 const mockRouterPush = jest.fn();
 const mockConfirm = jest.fn((opts: { onConfirm: () => void | Promise<void> }) => {
   void opts.onConfirm();

@@ -19,7 +19,8 @@ import { useTranslation } from 'react-i18next';
 import { router, useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Alert, Button as HeroButton, Card as HeroCard } from 'heroui-native';
+import { Alert, Card as HeroCard } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 
 import { extractToken, getRegistrationResult, register as apiRegister, resendVerificationByEmail, type LoginUser, type RegisterResult } from '@/lib/api/auth';

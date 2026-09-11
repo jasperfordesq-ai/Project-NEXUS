@@ -788,6 +788,20 @@ describe('NewEventRoute', () => {
     expect(mockUploadEventImage).toHaveBeenCalledWith(7, 'file:///tmp/event-cover.jpg');
   });
 
+  it('retains a failed event image for retry without creating another event', async () => {
+    mockUploadEventImage.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ data: {} });
+    const ui = render(<NewEventRoute />);
+    fillValidEvent(ui);
+    fireEvent.press(ui.getByText('Add image'));
+    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
+    fireEvent.press(ui.getByText('Create event'));
+    fireEvent.press(await ui.findByText('mediaRecovery.retry'));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalled());
+    expect(mockCreateEvent).toHaveBeenCalledTimes(1);
+    expect(mockUploadEventImage).toHaveBeenCalledTimes(2);
+    expect(mockUploadEventImage).toHaveBeenLastCalledWith(6, 'file:///tmp/event-cover.jpg');
+  });
+
   function fillValidEvent(screen: ReturnType<typeof render>) {
     fireEvent.changeText(screen.getByPlaceholderText('What is happening?'), 'Repair workshop');
     fireEvent.changeText(screen.getByPlaceholderText('Tell members what to expect.'), 'Bring something small to mend together.');

@@ -10,7 +10,6 @@
       "assets/**/*"
     ],
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "locales": {
       "de": "./native-locales/de.json",
       "en": "./native-locales/en.json",
@@ -217,6 +216,14 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-audio",
+        {
+          "microphonePermission": "Record a voice message when you choose to send one.",
+          "enableBackgroundPlayback": true,
+          "enableBackgroundRecording": false
+        }
+      ],
+      [
         "expo-local-authentication",
         {
           "faceIDPermission": "Use Face ID to unlock the Timebank Global session already saved on this device."
@@ -301,6 +308,7 @@
         }
       ],
       "./plugins/with-android-network-security",
+      "./plugins/with-android-font-scale",
       [
         "expo-build-properties",
         {

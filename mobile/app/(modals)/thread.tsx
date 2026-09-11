@@ -21,10 +21,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Audio } from 'expo-av';
+import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from '@/lib/haptics';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { useTranslation } from 'react-i18next';
 import { deleteMessage, displayName, getMessagingRestrictionStatus, getOrCreateThread, getThread, markConversationRead, sendMessage, sendMessageWithAttachments, sendVoiceMessage as sendVoiceMessageApi, toggleMessageReaction, updateMessage, type Message, type ConversationOtherUser, type MessageAttachmentUpload, type MessagingRestrictionStatus, type SendMessageOptions } from '@/lib/api/messages';
@@ -40,6 +42,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import ActionSheet from '@/components/ui/ActionSheet';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import Avatar from '@/components/ui/Avatar';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -156,6 +159,18 @@ function ThreadScreenInner() {
   }, []);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [failedDrafts, setFailedDrafts] = useState<{ body: string; attachments: PendingAttachment[] }[]>([]);
+  const attachmentsRef = useRef(pendingAttachments);
+  attachmentsRef.current = pendingAttachments;
+  useUnsavedChangesGuard({
+    isDirty: Boolean(inputText || pendingAttachments.length || failedDrafts.length),
+    isSaving: isSending,
+    confirm,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false);
   /*
     🔴 A photo upload showed a spinner with no number, no estimate and no way out: the
@@ -176,7 +191,10 @@ function ThreadScreenInner() {
   const [voiceUri, setVoiceUri] = useState<string | null>(null);
   const flatListRef = useRef<FlatList<Message>>(null);
   const inputTextRef = useRef(inputText);
-  const recordingRef = useRef<Audio.Recording | null>(null);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recordingRef = useRef<typeof audioRecorder | null>(null);
+  const recordingStartRef = useRef(false);
+  const recordingMountedRef = useRef(true);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   inputTextRef.current = inputText;
 
@@ -366,11 +384,15 @@ function ThreadScreenInner() {
     };
   }, [isValidId]);
 
-  useEffect(() => () => {
+  useEffect(() => {
+    recordingMountedRef.current = true;
+    return () => {
+    recordingMountedRef.current = false;
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
     }
-    void recordingRef.current?.stopAndUnloadAsync().catch(() => null);
+    void recordingRef.current?.stop().catch(() => null);
+    };
   }, []);
 
   const resolvedRecipientId = useMemo(() => {
@@ -412,7 +434,7 @@ function ThreadScreenInner() {
             : message
         )));
         setEditingMessage(null);
-        setInputText('');
+        setInputText((current) => current.trim() === body ? '' : current);
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } catch (err) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -475,8 +497,14 @@ function ThreadScreenInner() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setMessages((prev) => prev.filter((message) => message.id !== optimistic.id));
-      setInputText(body);
-      setPendingAttachments(pendingAttachments);
+      if (!inputTextRef.current && attachmentsRef.current.length === 0) {
+        setInputText(body);
+        setPendingAttachments(pendingAttachments);
+      } else {
+        // The composer may already contain the NEXT message. Keep the failed
+        // send separately so neither text nor attachments overwrite that draft.
+        setFailedDrafts((drafts) => [...drafts, { body, attachments: pendingAttachments }]);
+      }
 
       /**
        * 🔴 A refusal is not a failure, and must not invite a retry.
@@ -540,16 +568,19 @@ function ThreadScreenInner() {
   }, [editingMessage, isSending, messagingRestriction?.messaging_disabled, newConversationOptions, pendingAttachments, resolvedRecipientId, showToast, t]);
 
   const startEditingMessage = useCallback((message: Message) => {
-    if (!message.is_own || message.is_voice || message.is_deleted) return;
+    if (!message.is_own || message.is_voice || message.is_deleted || isSending || editingMessage) return;
+    const draft = { body: inputTextRef.current, attachments: attachmentsRef.current };
+    if (draft.body || draft.attachments.length) setFailedDrafts((drafts) => [...drafts, draft]);
     setEditingMessage(message);
     setPendingAttachments([]);
     setInputText(message.body || message.content || '');
-  }, []);
+  }, [editingMessage, isSending]);
 
   const cancelEditingMessage = useCallback(() => {
+    if (isSending) return;
     setEditingMessage(null);
     setInputText('');
-  }, []);
+  }, [isSending]);
 
   const handleDeleteMessage = useCallback((message: Message, scope: 'self' | 'everyone') => {
     confirm({
@@ -628,22 +659,27 @@ function ThreadScreenInner() {
   }, []);
 
   const handleStartRecording = useCallback(async () => {
-    if (isRecording || inputTextRef.current.trim() || pendingAttachments.length > 0 || editingMessage) return;
+    if (recordingStartRef.current || isRecording || inputTextRef.current.trim() || pendingAttachments.length > 0 || editingMessage) return;
+    recordingStartRef.current = true;
     try {
-      const permission = await Audio.requestPermissionsAsync();
+      const permission = await AudioModule.requestRecordingPermissionsAsync();
+      if (!recordingMountedRef.current) return;
       if (!permission.granted) {
         showToast({ title: t('thread.voice.permissionTitle'), description: t('thread.voice.permissionMessage'), variant: 'warning' });
         return;
       }
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-        staysActiveInBackground: false,
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
+        interruptionMode: 'duckOthers',
+        shouldRouteThroughEarpiece: false,
+        shouldPlayInBackground: false,
       });
-      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-      recordingRef.current = recording;
+      if (!recordingMountedRef.current) return;
+      await audioRecorder.prepareToRecordAsync();
+      if (!recordingMountedRef.current) return;
+      audioRecorder.record();
+      recordingRef.current = audioRecorder;
       setVoiceUri(null);
       setRecordingSeconds(0);
       setIsRecording(true);
@@ -652,20 +688,24 @@ function ThreadScreenInner() {
       }, 1000);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (err) {
+      if (!recordingMountedRef.current) return;
       stopRecordingTimer();
       setIsRecording(false);
       recordingRef.current = null;
       showToast({ title: t('thread.voice.failedTitle'), description: describeApiError(err, t('thread.voice.startFailed')), variant: 'danger' });
+    } finally {
+      recordingStartRef.current = false;
     }
-  }, [editingMessage, isRecording, pendingAttachments.length, showToast, stopRecordingTimer, t]);
+  }, [audioRecorder, editingMessage, isRecording, pendingAttachments.length, showToast, stopRecordingTimer, t]);
 
   const handleStopRecording = useCallback(async () => {
     const recording = recordingRef.current;
     if (!recording) return;
     try {
       stopRecordingTimer();
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
+      await recording.stop();
+      if (!recordingMountedRef.current) return;
+      const uri = recording.uri;
       recordingRef.current = null;
       setIsRecording(false);
       if (uri) {
@@ -686,7 +726,7 @@ function ThreadScreenInner() {
     setIsRecording(false);
     setVoiceUri(null);
     setRecordingSeconds(0);
-    await recording?.stopAndUnloadAsync().catch(() => null);
+    await recording?.stop().catch(() => null);
   }, [stopRecordingTimer]);
 
   const handleSendVoice = useCallback(async () => {
@@ -729,6 +769,7 @@ function ThreadScreenInner() {
     } catch (err) {
       setMessages((prev) => prev.filter((message) => message.id !== optimistic.id));
       setVoiceUri(voiceUri);
+      setRecordingSeconds(voiceSeconds);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('errors.sendFailed'), description: describeApiError(err, t('thread.voice.sendFailed')), variant: 'danger' });
     } finally {
@@ -917,7 +958,7 @@ function ThreadScreenInner() {
               <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('thread.editing')}</Text>
               <Text className="text-xs" style={{ color: theme.textMuted }} numberOfLines={1}>{editingMessage.body || editingMessage.content}</Text>
             </View>
-            <HeroButton isIconOnly size="sm" variant="ghost" accessibilityLabel={t('thread.cancelEdit')} onPress={cancelEditingMessage}>
+            <HeroButton isIconOnly size="sm" variant="ghost" isDisabled={isSending} accessibilityLabel={t('thread.cancelEdit')} onPress={cancelEditingMessage}>
               <Ionicons name="close-circle-outline" size={18} color={theme.textMuted} />
             </HeroButton>
           </Surface>
@@ -961,6 +1002,22 @@ function ThreadScreenInner() {
             stop: the number alone still leaves someone on a slow connection with no
             choice but to force-quit the app.
           */}
+          {failedDrafts.length > 0 ? (
+            <View className="mb-2 gap-2 rounded-xl border border-warning p-3">
+              <Text accessibilityLiveRegion="polite" style={{ color: theme.text }}>{t('thread.unsentDrafts', { count: failedDrafts.length })}</Text>
+              <Text numberOfLines={2} selectable style={{ color: theme.textSecondary }}>{failedDrafts[0].body}</Text>
+              <HeroButton variant="secondary" isDisabled={isSending || Boolean(editingMessage)} style={{ minHeight: 48 }}
+                onPress={() => {
+                  const first = failedDrafts[0];
+                  const current = { body: inputTextRef.current, attachments: attachmentsRef.current };
+                  setFailedDrafts((drafts) => [...drafts.slice(1), ...(current.body || current.attachments.length ? [current] : [])]);
+                  setInputText(first.body);
+                  setPendingAttachments(first.attachments);
+                }}>
+                {t('thread.editUnsentDraft')}
+              </HeroButton>
+            </View>
+          ) : null}
           {uploadPercent !== null ? (
             <View className="mb-2 gap-1.5" testID="thread-upload-progress">
               <View className="flex-row items-center justify-between">
@@ -1070,7 +1127,7 @@ function ThreadScreenInner() {
         visible={Boolean(optionsMessage)}
         onClose={() => setOptionsMessage(null)}
         title={t('thread.messageOptions')}
-        actions={buildMessageActions(optionsMessage, t, startEditingMessage, handleDeleteMessage)}
+        actions={buildMessageActions(optionsMessage, t, startEditingMessage, handleDeleteMessage, !isSending && !editingMessage)}
       />
       {confirmDialog}
     </SafeAreaView>
@@ -1182,10 +1239,11 @@ function buildMessageActions(
   t: (key: string, options?: Record<string, unknown>) => string,
   startEditingMessage: (message: Message) => void,
   handleDeleteMessage: (message: Message, scope: 'self' | 'everyone') => void,
+  canEdit: boolean,
 ) {
   if (!message) return [];
   return [
-    ...(message.is_own ? [{
+    ...(message.is_own && canEdit ? [{
       label: t('thread.edit'),
       icon: 'pencil-outline',
       onPress: () => startEditingMessage(message),

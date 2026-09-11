@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Timebank Global",
-    "NSCameraUsageDescription": "Scannen Sie einen Marktplatz-QR-Code, wenn Sie den Scanner verwenden.",
+    "NSCameraUsageDescription": "Scannen Sie einen Marktplatz-QR-Code oder einen Veranstaltungs-Check-in-Code, wenn Sie den Scanner öffnen.",
     "NSPhotoLibraryUsageDescription": "Wählen Sie ein Foto aus Ihrer Mediathek für Ihr Profil oder einen Beitrag aus.",
     "NSMicrophoneUsageDescription": "Nehmen Sie eine Sprachnachricht auf, wenn Sie eine senden möchten.",
     "NSFaceIDUsageDescription": "Verwenden Sie Face ID, um die bereits auf diesem Gerät gespeicherte Timebank-Global-Sitzung zu entsperren.",

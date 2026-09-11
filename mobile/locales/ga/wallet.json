@@ -99,7 +99,8 @@
     "confirmDonationTitle": "An uaireanta seo a bhronnadh?",
     "confirmDonationMessage": "Tá tú ar tí {{amount}} uair a bhronnadh ar {{name}}. Ní féidir é seo a chealú.",
     "recipientResolving": "Ag seiceáil an fhaighteora…",
-    "recipientUnresolved": "Níorbh fhéidir an comhalta sin a aimsiú. Cuardaigh an faighteoir ina ionad."
+    "recipientUnresolved": "Níorbh fhéidir an comhalta sin a aimsiú. Cuardaigh an faighteoir ina ionad.",
+    "unresolvedOperation": "Níl aistriú roimhe seo deimhnithe fós. Seiceáil stair do sparáin agus déan teagmháil le do chomhordaitheoir sula seolann tú arís é."
   },
   "status": {
     "completed": "Críochnaithe",

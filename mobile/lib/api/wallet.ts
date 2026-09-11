@@ -244,6 +244,13 @@ export function transferWalletCredits(payload: WalletTransferPayload): Promise<W
   return api.post<WalletMutationResponse>(`${API_V2}/wallet/transfer`, payload, options);
 }
 
+export type WalletOperationKind = 'transfer' | 'donation' | 'organisation-deposit' | 'federation';
+
+/** Read-only: an unknown result is not permission to create a replacement debit. */
+export function getWalletOperationStatus(kind: WalletOperationKind, key: string, intent: unknown[]): Promise<{ data: { status: 'confirmed' | 'unknown' } }> {
+  return api.post(`${API_V2}/wallet/operation-status`, { kind, idempotency_key: key, intent });
+}
+
 /**
  * POST /api/v2/wallet/donate
  * Donates time credits to the community fund or another member.

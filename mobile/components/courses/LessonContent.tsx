@@ -30,8 +30,8 @@
 
 import { useCallback, useState } from 'react';
 import { Linking, Text, View } from 'react-native';
-import { ResizeMode, Video, type AVPlaybackStatus } from 'expo-av';
-import { Button as HeroButton } from 'heroui-native';
+import NativeVideo, { type VideoProgress } from '@/components/media/NativeVideo';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import LessonQuiz from '@/components/courses/LessonQuiz';
@@ -154,16 +154,16 @@ export default function LessonContent({ lesson, onWatchPercentChange }: LessonCo
    */
   const [watched, setWatched] = useState(0);
 
-  const onPlaybackStatus = useCallback((status: AVPlaybackStatus) => {
-    if (!status.isLoaded || !status.durationMillis) return;
-    const percent = Math.min(100, (status.positionMillis / status.durationMillis) * 100);
+  const onPlaybackStatus = useCallback((status: VideoProgress) => {
+    if (!status.duration) return;
+    const percent = Math.min(100, (status.currentTime / status.duration) * 100);
     setWatched((current) => {
       const next = Math.max(current, percent);
       if (next > current) onWatchPercentChange?.(next);
       return next;
     });
     // A video played to its end counts as fully watched even if the last tick lands short.
-    if (status.didJustFinish) {
+    if (status.finished) {
       setWatched(100);
       onWatchPercentChange?.(100);
     }
@@ -175,14 +175,12 @@ export default function LessonContent({ lesson, onWatchPercentChange }: LessonCo
       if (!videoUrl) return <MissingMedia message={t('player.video_unavailable')} />;
       return (
         <View className="gap-3">
-          <Video
+          <NativeVideo
             testID="lesson-video"
             accessibilityLabel={lesson.title}
-            onPlaybackStatusUpdate={onPlaybackStatus}
-            resizeMode={ResizeMode.CONTAIN}
+            onProgress={onPlaybackStatus}
             source={{ uri: videoUrl }}
             style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: 10, backgroundColor: '#000' }}
-            useNativeControls
           />
           <Text className="text-xs" style={{ color: theme.textSecondary }}>
             {t('player.watched', { percent: Math.round(watched) })}

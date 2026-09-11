@@ -26,6 +26,12 @@ jest.mock('@/components/ui/Icon', () => ({ Ionicons: 'View' }));
 import RemoteImage from './RemoteImage';
 
 describe('RemoteImage', () => {
+  it('tries a replacement image after the previous URI failed', () => {
+    const screen = render(<RemoteImage uri="https://example.test/gone.jpg" testID="photo" />);
+    fireEvent(screen.getByTestId('photo'), 'error');
+    screen.rerender(<RemoteImage uri="https://example.test/replacement.jpg" testID="photo" />);
+    expect(screen.getByTestId('photo').props.source.uri).toBe('https://example.test/replacement.jpg');
+  });
   it('renders the picture when there is one', () => {
     const { getByTestId, queryByTestId } = render(
       <RemoteImage uri="https://example.test/photo.jpg" testID="listing-photo" style={{ width: 100, height: 100 }} />,

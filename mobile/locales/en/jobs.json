@@ -136,6 +136,8 @@
     "cvLabel": "CV or résumé",
     "cvNone": "No CV attached. Applications sent from this app include only your message unless you add one.",
     "cvSavedNotice": "You have {{name}} saved to your jobs profile. It is not attached for you — add a file below if you want the employer to see it.",
+    "cvProfileLoading": "Checking your saved jobs profile…",
+    "cvProfileError": "We could not check your saved CV or cover letter. Retry, or attach a CV and write your message below.",
     "cvAttach": "Attach a CV",
     "cvReplace": "Choose a different file",
     "cvRemove": "Remove",

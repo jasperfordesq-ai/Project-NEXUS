@@ -53,6 +53,9 @@ describe('StatusChip', () => {
     );
 
     expect(recordedProps()[0].focusable).toBe(false);
+    expect(recordedProps()[0].disabled).toBe(true);
+    expect(recordedProps()[0].accessibilityRole).toBe('text');
+    expect(recordedProps()[0].accessibilityState).toEqual({ disabled: false });
   });
 
   it('leaves an interactive chip alone', () => {
@@ -97,7 +100,7 @@ describe('StatusChip', () => {
     );
 
     const style = recordedProps()[0].style as { minHeight?: number }[];
-    expect(style[0].minHeight).toBe(24);
+    expect(style[1].minHeight).toBe(48);
   });
 
   it('does not stretch a decorative chip', () => {

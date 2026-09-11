@@ -56,13 +56,14 @@ export default function SourceRepositoryLink({ className = 'mt-2' }: SourceRepos
         testID="source-repository-link"
         feedback="highlight"
         className="rounded-panel-inner px-3 py-2"
+        style={{ maxWidth: '100%' }}
         onPress={() => void openExternal(PROJECT_NEXUS_REPO_URL)}
       >
         <View className="min-h-[44px] flex-row items-center justify-center gap-2">
           <Ionicons name="logo-github" size={14} color={theme.textSecondary} />
           <Text
             className="text-center text-[11px] font-semibold leading-4 underline"
-            style={{ color: theme.textSecondary }}
+            style={{ color: theme.textSecondary, flexShrink: 1 }}
           >
             {t('sourceRepo.builtOn')}
           </Text>

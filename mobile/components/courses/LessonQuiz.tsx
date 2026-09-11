@@ -19,7 +19,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { Button as HeroButton } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import LoadingSpinner from '@/components/ui/LoadingSpinner';

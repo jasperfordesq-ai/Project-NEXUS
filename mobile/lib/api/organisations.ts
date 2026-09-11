@@ -45,6 +45,7 @@ export interface CreateOrganisationPayload {
   description: string;
   contact_email: string;
   website?: string;
+  idempotency_key?: string;
 }
 
 /**
@@ -72,5 +73,10 @@ export function getOrganisation(id: number): Promise<{ data: Organisation }> {
  * POST /api/v2/volunteering/organisations — register a new volunteer organisation.
  */
 export function createOrganisation(payload: CreateOrganisationPayload): Promise<{ data: Organisation }> {
+  if (payload.idempotency_key) {
+    return api.post<{ data: Organisation }>(`${API_V2}/volunteering/organisations`, payload, {
+      headers: { 'Idempotency-Key': payload.idempotency_key },
+    });
+  }
   return api.post<{ data: Organisation }>(`${API_V2}/volunteering/organisations`, payload);
 }

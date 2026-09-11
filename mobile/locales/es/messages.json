@@ -93,7 +93,11 @@
       "stopFailed": "No se pudo guardar esta grabación. Inténtalo de nuevo.",
       "sendFailed": "No se pudo enviar el mensaje de voz. Inténtalo de nuevo."
     },
-    "notFound": "Esta conversación ya no está disponible."
+    "notFound": "Esta conversación ya no está disponible.",
+    "unsentDrafts": "Borradores sin enviar: {{count}}",
+    "editUnsentDraft": "Editar borrador sin enviar",
+    "unsentDrafts_one": "Borrador sin enviar: {{count}}",
+    "unsentDrafts_other": "Borradores sin enviar: {{count}}"
   },
   "context": {
     "regarding": "Referente a",

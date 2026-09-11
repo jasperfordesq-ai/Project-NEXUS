@@ -37,6 +37,7 @@ export interface JobVacancy {
   contact_phone?: string | null;
   blind_hiring?: boolean;
   deadline: string | null;
+  accepting_applications?: boolean;
   status: 'open' | 'closed' | 'filled' | 'draft';
   views_count: number;
   applications_count: number;
@@ -209,6 +210,8 @@ export interface CreateJobPayload {
   video_url?: string | null;
   company_size?: string | null;
   benefits?: string[];
+  /** Reused for retries of one intended creation so a lost response cannot duplicate it. */
+  idempotency_key?: string;
 }
 
 export type UpdateJobPayload = Partial<Omit<CreateJobPayload, 'status'>> & {
@@ -222,6 +225,8 @@ export interface CreateJobAlertPayload {
   commitment?: JobAlert['commitment'];
   location?: string;
   is_remote_only?: boolean;
+  /** Reused for retries of one intended alert so a lost response cannot duplicate it. */
+  idempotency_key?: string;
 }
 
 /**
@@ -243,6 +248,11 @@ export function getJobs(params: {
 }
 
 export function createJob(payload: CreateJobPayload): Promise<{ data: JobVacancy }> {
+  if (payload.idempotency_key) {
+    return api.post<{ data: JobVacancy }>(`${API_V2}/jobs`, payload, {
+      headers: { 'Idempotency-Key': payload.idempotency_key },
+    });
+  }
   return api.post<{ data: JobVacancy }>(`${API_V2}/jobs`, payload);
 }
 
@@ -391,6 +401,11 @@ export function getJobAlerts(): Promise<JobAlertsResponse> {
  * POST /api/v2/jobs/alerts — create a saved job alert.
  */
 export function createJobAlert(payload: CreateJobAlertPayload): Promise<{ data: { id: number; message: string } }> {
+  if (payload.idempotency_key) {
+    return api.post<{ data: { id: number; message: string } }>(`${API_V2}/jobs/alerts`, payload, {
+      headers: { 'Idempotency-Key': payload.idempotency_key },
+    });
+  }
   return api.post<{ data: { id: number; message: string } }>(`${API_V2}/jobs/alerts`, payload);
 }
 
@@ -488,10 +503,6 @@ export async function rejectOffer(offerId: number): Promise<void> {
  * GET /api/v2/jobs/saved-profile — retrieve the user's saved application profile (CV / cover letter).
  */
 export async function getSavedProfile(): Promise<{ cv_filename?: string; cover_text?: string } | null> {
-  try {
-    const response = await api.get<{ profile?: { cv_filename?: string; cover_text?: string } }>(`${API_V2}/jobs/saved-profile`);
-    return response?.profile ?? null;
-  } catch {
-    return null;
-  }
+  const response = await api.get<{ data?: { profile?: { cv_filename?: string; cover_text?: string } | null } }>(`${API_V2}/jobs/saved-profile`);
+  return response?.data?.profile ?? null;
 }

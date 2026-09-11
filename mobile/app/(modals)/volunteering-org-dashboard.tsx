@@ -8,7 +8,9 @@ import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -31,7 +33,7 @@ import {
 } from '@/lib/api/volunteering';
 import * as Haptics from '@/lib/haptics';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -43,7 +45,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
-import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
+import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -194,17 +196,27 @@ function ApplicationsPanel({ applications, loading, onRefresh }: { applications:
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [actioningId, setActioningId] = useState<number | null>(null);
+  const [decisionNotes, setDecisionNotes] = useState<Record<number, string>>({});
+  const decisionPending = useRef(false);
+  const { tenant } = useTenant();
+  const declineNoteRequired = tenant?.volunteering_config?.['volunteering.require_org_note_on_decline'] === true;
 
   async function act(id: number, action: 'approve' | 'decline') {
+    if (decisionPending.current) return;
+    if (action === 'decline' && declineNoteRequired && !decisionNotes[id]?.trim()) return;
+    decisionPending.current = true;
     setActioningId(id);
     try {
-      await handleVolunteerApplication(id, action);
+      const note = decisionNotes[id]?.trim();
+      if (note) await handleVolunteerApplication(id, action, note);
+      else await handleVolunteerApplication(id, action);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.applications.actionError')), variant: 'danger' });
     } finally {
+      decisionPending.current = false;
       setActioningId(null);
     }
   }
@@ -242,12 +254,27 @@ function ApplicationsPanel({ applications, loading, onRefresh }: { applications:
               </View>
             </View>
             {application.status === 'pending' ? (
+              <Input
+                label={t('applications.decisionNoteLabel')}
+                accessibilityLabel={t('applications.decisionNoteLabel')}
+                placeholder={t('applications.decisionNotePlaceholder')}
+                value={decisionNotes[application.id] ?? ''}
+                onChangeText={(value) => setDecisionNotes((notes) => ({ ...notes, [application.id]: value }))}
+                editable={actioningId === null}
+                multiline
+                maxLength={2000}
+              />
+            ) : null}
+            {application.status === 'pending' && declineNoteRequired ? (
+              <Text style={{ color: theme.textSecondary }}>{t('applications.decisionNoteRequired')}</Text>
+            ) : null}
+            {application.status === 'pending' ? (
               <View className="flex-row gap-2">
-                <HeroButton className="flex-1" size="sm" variant="secondary" isDisabled={actioningId === application.id} onPress={() => void act(application.id, 'approve')}>
+                <HeroButton className="flex-1" size="sm" variant="secondary" isDisabled={actioningId !== null} onPress={() => void act(application.id, 'approve')}>
                   {actioningId === application.id ? <Spinner size="sm" /> : <Ionicons name="checkmark-outline" size={16} color={primary} />}
                   <HeroButton.Label>{t('applications.approve')}</HeroButton.Label>
                 </HeroButton>
-                <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId === application.id} onPress={() => void act(application.id, 'decline')}>
+                <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId !== null || (declineNoteRequired && !decisionNotes[application.id]?.trim())} onPress={() => void act(application.id, 'decline')}>
                   <HeroButton.Label>{t('applications.decline')}</HeroButton.Label>
                 </HeroButton>
               </View>
@@ -399,27 +426,23 @@ function WalletPanel({
     The key is thrown away once the deposit is confirmed saved, and whenever the amount or
     note changes, because that is a different deposit and must go through on its own.
   */
-  const depositKeyRef = useRef<string | null>(null);
-  const depositIntentRef = useRef<string>('');
+  const depositInFlight = useRef(false);
 
   async function runDeposit(parsed: number, trimmedNote: string) {
     const intent = JSON.stringify([orgId, parsed, trimmedNote]);
-    if (depositIntentRef.current !== intent) {
-      depositIntentRef.current = intent;
-      depositKeyRef.current = null;
-    }
-    depositKeyRef.current ??= mutationIdempotencyKey('mobile-org-wallet-deposit');
+    if (depositInFlight.current) return;
+    depositInFlight.current = true;
 
     setSaving(true);
     try {
+      const operation = await reserveWalletOperation('organisation-deposit', intent);
       await depositOrganisationWallet(
         orgId,
         parsed,
         trimmedNote || undefined,
-        depositKeyRef.current,
+        operation.key,
       );
-      depositKeyRef.current = null;
-      depositIntentRef.current = '';
+      await completeWalletOperation(operation);
       setAmount('');
       setNote('');
       onRefresh();
@@ -436,6 +459,7 @@ function WalletPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.wallet.depositError')), variant: 'danger' });
     } finally {
+      depositInFlight.current = false;
       setSaving(false);
     }
   }

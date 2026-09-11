@@ -3,13 +3,16 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
-import { Button as HeroButton, Card as HeroCard, Chip, Surface, Tabs } from 'heroui-native';
+import { Card as HeroCard, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Tabs } from '@/components/ui/NativeTabs';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import { getJobApplications, updateJobApplication } from '@/lib/api/jobs';
@@ -31,7 +34,7 @@ import AccentIcon from '@/components/ui/AccentIcon';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
 
-const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected'] as const;
+const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected', 'withdrawn'] as const;
 type PipelineStatus = (typeof PIPELINE_COLUMNS)[number];
 
 function JobPipelineScreen() {
@@ -55,7 +58,7 @@ function JobPipelineScreen() {
   );
   const grouped = useMemo(() => {
     return PIPELINE_COLUMNS.reduce<Record<PipelineStatus, JobOwnerApplication[]>>((acc, status) => {
-      acc[status] = applications.filter((application) => normalizeStatus(application.status) === status);
+      acc[status] = applications.filter((application) => normalizeStatus(application.stage ?? application.status) === status);
       return acc;
     }, {} as Record<PipelineStatus, JobOwnerApplication[]>);
   }, [applications]);
@@ -249,8 +252,9 @@ function StageSummary({
   onPress: () => void;
 }) {
   return (
+    <View style={{ width: '100%' }}>
     <HeroButton
-      className="min-w-[46%] flex-1"
+      style={{ width: '100%' }}
       variant={active ? 'primary' : 'secondary'}
       onPress={onPress}
       testID={`pipeline-stage-${status}`}
@@ -260,6 +264,7 @@ function StageSummary({
         <Chip.Label>{count}</Chip.Label>
       </Chip>
     </HeroButton>
+    </View>
   );
 }
 
@@ -279,8 +284,10 @@ function PipelineApplicationCard({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [isUpdating, setIsUpdating] = useState(false);
+  const movePending = useRef(false);
   const applicantName = application.applicant?.name?.trim() || t('owner.unknownApplicant');
-  const currentStatus = normalizeStatus(application.status);
+  const currentStatus = normalizeStatus(application.stage ?? application.status);
+  const terminal = ['accepted', 'rejected', 'withdrawn'].includes(currentStatus);
 
   /**
    * The stage that follows this one, or null at the end of the run.
@@ -289,15 +296,15 @@ function PipelineApplicationCard({
    * accepted candidate is offered no "next".
    */
   const nextStatus: PipelineStatus | null = (() => {
-    if (currentStatus === 'accepted' || currentStatus === 'rejected') return null;
+    if (terminal) return null;
     const index = PIPELINE_COLUMNS.indexOf(currentStatus);
     const candidate = PIPELINE_COLUMNS[index + 1];
     return candidate && candidate !== 'rejected' ? candidate : null;
   })();
 
   /** Every other stage they could be moved to. Rejecting has its own confirmed button. */
-  const otherStatuses = PIPELINE_COLUMNS.filter(
-    (status) => status !== currentStatus && status !== nextStatus && status !== 'rejected',
+  const otherStatuses = terminal ? [] : PIPELINE_COLUMNS.filter(
+    (status) => status !== currentStatus && status !== nextStatus && status !== 'rejected' && status !== 'withdrawn',
   );
 
   function confirmReject() {
@@ -313,7 +320,8 @@ function PipelineApplicationCard({
   }
 
   async function moveTo(status: PipelineStatus) {
-    if (isUpdating || status === currentStatus) return;
+    if (movePending.current || terminal || status === currentStatus) return;
+    movePending.current = true;
     setIsUpdating(true);
     try {
       await updateJobApplication(application.id, { status });
@@ -322,6 +330,7 @@ function PipelineApplicationCard({
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.updateError')), variant: 'danger' });
     } finally {
+      movePending.current = false;
       setIsUpdating(false);
     }
   }
@@ -373,7 +382,7 @@ function PipelineApplicationCard({
               <HeroButton.Label>{t(`applications.status.${status}`)}</HeroButton.Label>
             </HeroButton>
           ))}
-          {currentStatus === 'rejected' ? null : (
+          {terminal ? null : (
             <HeroButton size="sm" variant="danger" isDisabled={isUpdating} onPress={confirmReject} testID={`pipeline-reject-${application.id}`}>
               <HeroButton.Label>{t('owner.reject')}</HeroButton.Label>
             </HeroButton>
@@ -385,7 +394,7 @@ function PipelineApplicationCard({
   );
 }
 
-function normalizeStatus(status: JobOwnerApplication['status']): PipelineStatus {
+function normalizeStatus(status: string): PipelineStatus {
   if (status === 'applied') return 'pending';
   if (PIPELINE_COLUMNS.includes(status as PipelineStatus)) return status as PipelineStatus;
   return 'pending';

@@ -4,14 +4,17 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 // --- Mocks ---
 
+let mockJobId = '1';
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => false) },
-  useLocalSearchParams: () => ({ id: '1' }),
+  useLocalSearchParams: () => ({ id: mockJobId }),
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -79,6 +82,8 @@ jest.mock('react-i18next', () => ({
         'apply.cvLabel': 'CV or résumé',
         'apply.cvNone': 'No CV attached. Applications sent from this app include only your message unless you add one.',
         'apply.cvSavedNotice': `You have ${String(opts?.name ?? '')} saved to your jobs profile. It is not attached for you.`,
+        'apply.cvProfileLoading': 'Checking your saved jobs profile…',
+        'apply.cvProfileError': 'We could not check your saved CV or cover letter.',
         'apply.cvAttach': 'Attach a CV',
         'apply.cvReplace': 'Choose a different file',
         'apply.cvRemove': 'Remove',
@@ -106,6 +111,7 @@ jest.mock('react-i18next', () => ({
         'common:errors.alertTitle': 'Error',
         'common:back': 'Back',
         'common:close': 'Close',
+        'common:buttons.retry': 'Retry',
       };
       return map[key] ?? key;
     },
@@ -118,8 +124,10 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' } }),
 }));
 
+let mockCurrentUserId = 3;
+
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 2, name: 'Current User' } }),
+  useAuth: () => ({ user: { id: mockCurrentUserId, name: 'Current User' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -172,9 +180,9 @@ jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ui/BottomSheet', () => ({
   __esModule: true,
   // The apply button lives in the sheet's sticky `footer`, so the mock must render it too.
-  default: ({ visible, title, children, footer }: { visible: boolean; title?: string; children: React.ReactNode; footer?: React.ReactNode }) => {
-    const { Text, View } = require('react-native');
-    return visible ? <View>{title ? <Text>{title}</Text> : null}{children}{footer}</View> : null;
+  default: ({ visible, title, children, footer, onClose }: { visible: boolean; title?: string; children: React.ReactNode; footer?: React.ReactNode; onClose: () => void }) => {
+    const { Text, View, Pressable } = require('react-native');
+    return visible ? <View><Pressable testID="job-sheet-close" onPress={onClose} />{title ? <Text>{title}</Text> : null}{children}{footer}</View> : null;
   },
 }));
 
@@ -238,6 +246,8 @@ const mockJob = {
 };
 
 beforeEach(() => {
+  mockJobId = '1';
+  mockCurrentUserId = 3;
   mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
   jest.clearAllMocks();
 });
@@ -308,7 +318,16 @@ describe('JobDetailScreen', () => {
     expect(getByText('Apply Now')).toBeTruthy();
   });
 
+  it('prevents opening an application when the server marks an open vacancy expired', () => {
+    mockUseApi.mockReturnValue({ data: { data: { ...mockJob, status: 'open', accepting_applications: false } }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    expect(screen.queryByTestId('job-sheet-close')).toBeNull();
+    expect(applyToJob).not.toHaveBeenCalled();
+  });
+
   it('opens the edit route for the job owner', () => {
+    mockCurrentUserId = 2;
     mockUseApi.mockReturnValue({
       data: { data: mockJob },
       isLoading: false,
@@ -316,13 +335,15 @@ describe('JobDetailScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { getAllByText } = render(<JobDetailScreen />);
+    const { getAllByText, queryByText } = render(<JobDetailScreen />);
+    expect(queryByText('Apply Now')).toBeNull();
     fireEvent.press(getAllByText('Edit')[0]);
 
     expect(router.push).toHaveBeenCalledWith({ pathname: '/(modals)/edit-job', params: { id: '1' } });
   });
 
   it('opens the native analytics route for the job owner', () => {
+    mockCurrentUserId = 2;
     mockUseApi.mockReturnValue({
       data: { data: mockJob },
       isLoading: false,
@@ -337,6 +358,7 @@ describe('JobDetailScreen', () => {
   });
 
   it('opens the native pipeline route for the job owner', () => {
+    mockCurrentUserId = 2;
     mockUseApi.mockReturnValue({
       data: { data: mockJob },
       isLoading: false,
@@ -351,6 +373,7 @@ describe('JobDetailScreen', () => {
   });
 
   it('renders owner applications and updates candidate status', async () => {
+    mockCurrentUserId = 2;
     mockUseApi
       .mockReturnValueOnce({
         data: { data: mockJob },
@@ -378,14 +401,29 @@ describe('JobDetailScreen', () => {
 
     expect(getByText('Applications')).toBeTruthy();
     expect(getByText('Ava Candidate')).toBeTruthy();
-    fireEvent.press(getByText('Shortlist'));
+    await act(async () => {
+      fireEvent.press(getByText('Shortlist'));
+      fireEvent.press(getByText('Reject'));
+    });
 
     await waitFor(() => {
       expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'shortlisted' });
     });
+    expect(updateJobApplication).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['accepted', 'rejected', 'withdrawn'])('does not offer progression actions for a %s application', (status) => {
+    mockCurrentUserId = 2;
+    mockUseApi.mockReturnValueOnce({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() })
+      .mockReturnValueOnce({ data: { data: [{ id: 44, vacancy_id: 1, applicant: { id: 9, name: 'Ava Candidate' }, status, stage: status, created_at: '2026-03-11T00:00:00Z' }] }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<JobDetailScreen />);
+    expect(screen.getByText('Ava Candidate')).toBeTruthy();
+    expect(screen.queryByText('Shortlist')).toBeNull();
+    expect(screen.queryByText('Reject')).toBeNull();
   });
 
   it('closes an open owner vacancy from owner tools', async () => {
+    mockCurrentUserId = 2;
     const refresh = jest.fn();
     mockUseApi
       .mockReturnValueOnce({
@@ -462,6 +500,149 @@ describe('JobDetailScreen', () => {
     await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
 
     expect(getByText('No CV attached. Applications sent from this app include only your message unless you add one.')).toBeTruthy();
+  });
+
+  it('shows saved-profile loading instead of claiming there is no CV before the lookup finishes', async () => {
+    let resolve!: (value: unknown) => void;
+    (getSavedProfile as jest.Mock).mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    expect(screen.getByText('Checking your saved jobs profile…')).toBeTruthy();
+    expect(screen.queryByText('No CV attached. Applications sent from this app include only your message unless you add one.')).toBeNull();
+
+    await act(async () => { resolve(null); });
+    expect(screen.getByText('No CV attached. Applications sent from this app include only your message unless you add one.')).toBeTruthy();
+  });
+
+  it('shows a saved-profile failure and lets the member retry it', async () => {
+    (getSavedProfile as jest.Mock)
+      .mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValueOnce({ cv_filename: 'retry-cv.pdf' });
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(screen.getByText('We could not check your saved CV or cover letter.')).toBeTruthy());
+    expect(screen.queryByText('No CV attached. Applications sent from this app include only your message unless you add one.')).toBeNull();
+
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.getByText('You have retry-cv.pdf saved to your jobs profile. It is not attached for you.')).toBeTruthy());
+    expect(getSavedProfile).toHaveBeenCalledTimes(2);
+  });
+
+  it('locks the submitted cover message until a rejected request restores editing', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+    let reject!: (error: Error) => void;
+    (applyToJob as jest.Mock).mockImplementationOnce(() => new Promise((_, fail) => { reject = fail; }));
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('Cover Message'), 'I would like to help.');
+    fireEvent.press(screen.getByText('Submit Application'));
+    expect(screen.getByLabelText('Cover Message').props.editable).toBe(false);
+    await act(async () => { reject(new Error('Offline')); });
+    expect(screen.getByLabelText('Cover Message').props.editable).toBe(true);
+    expect(screen.getByLabelText('Cover Message').props.value).toBe('I would like to help.');
+  });
+
+  it('preserves the draft when a vacancy closes after the application sheet opens', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+    (applyToJob as jest.Mock).mockRejectedValueOnce(new ApiResponseError(400, 'This vacancy is no longer accepting applications.'));
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('Cover Message'), 'My carefully written application.');
+    fireEvent.press(screen.getByText('Submit Application'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'This vacancy is no longer accepting applications.' })));
+    expect(screen.getByLabelText('Cover Message').props.value).toBe('My carefully written application.');
+    expect(screen.getByLabelText('Cover Message').props.editable).toBe(true);
+    fireEvent.press(screen.getByTestId('job-sheet-close'));
+    await act(async () => { fireEvent.press(screen.getByText('Apply Now')); });
+    expect(screen.getByLabelText('Cover Message').props.value).toBe('My carefully written application.');
+    expect(applyToJob).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for the CV picker before sending the application', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+    let resolve!: (result: unknown) => void;
+    mockPickCvFile.mockImplementationOnce(() => new Promise((done) => { resolve = done; }));
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('Cover Message'), 'Please see my CV.');
+    fireEvent.press(screen.getByTestId('job-apply-attach-cv'));
+    fireEvent.press(screen.getByText('Submit Application'));
+    expect(applyToJob).not.toHaveBeenCalled();
+    const file = { uri: 'file:///tmp/cv.pdf', name: 'cv.pdf', mimeType: 'application/pdf', size: 1024 };
+    await act(async () => { resolve({ status: 'picked', file }); });
+    await act(async () => { fireEvent.press(screen.getByText('Submit Application')); });
+    expect(applyToJob).toHaveBeenCalledWith(1, 'Please see my CV.', file);
+  });
+
+  it('recovers from a rejected CV picker without losing the covering message', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+    mockPickCvFile.mockRejectedValueOnce(new Error('Picker unavailable'));
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('Cover Message'), 'Please see my CV.');
+    await act(async () => { fireEvent.press(screen.getByTestId('job-apply-attach-cv')); });
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+    expect(screen.getByLabelText('Cover Message').props.value).toBe('Please see my CV.');
+    const file = { uri: 'file:///tmp/retry.pdf', name: 'retry.pdf', mimeType: 'application/pdf', size: 1024 };
+    mockPickCvFile.mockResolvedValueOnce({ status: 'picked', file });
+    await act(async () => { fireEvent.press(screen.getByTestId('job-apply-attach-cv')); });
+    expect(screen.getByText('retry.pdf')).toBeTruthy();
+    await act(async () => { fireEvent.press(screen.getByText('Submit Application')); });
+    expect(applyToJob).toHaveBeenCalledWith(1, 'Please see my CV.', file);
+  });
+
+  it('keeps the covering message when a failed application sheet is reopened', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+    (applyToJob as jest.Mock).mockRejectedValueOnce(new Error('Offline'));
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('Cover Message'), 'My application draft.');
+    await act(async () => { fireEvent.press(screen.getByText('Submit Application')); });
+    fireEvent.press(screen.getByTestId('job-sheet-close'));
+    await act(async () => { fireEvent.press(screen.getByText('Apply Now')); });
+    expect(screen.getByLabelText('Cover Message').props.value).toBe('My application draft.');
+  });
+
+  it('does not carry an application draft into another job', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('Cover Message'), 'Only for the first job.');
+    fireEvent.press(screen.getByTestId('job-sheet-close'));
+    mockJobId = '2';
+    mockUseApi.mockReturnValue({ data: { data: { ...mockJob, id: 2 } }, isLoading: false, error: null, refresh: jest.fn() });
+    screen.rerender(<JobDetailScreen />);
+    await act(async () => { fireEvent.press(screen.getByText('Apply Now')); });
+    expect(screen.getByLabelText('Cover Message').props.value).toBe('');
+  });
+
+  it('does not apply an old submission response to the newly opened job', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+    let resolve!: () => void;
+    (applyToJob as jest.Mock).mockImplementationOnce(() => new Promise<void>((done) => { resolve = done; }));
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByLabelText('Cover Message'), 'First job application.');
+    fireEvent.press(screen.getByText('Submit Application'));
+    mockJobId = '2';
+    mockUseApi.mockReturnValue({ data: { data: { ...mockJob, id: 2 } }, isLoading: false, error: null, refresh: jest.fn() });
+    screen.rerender(<JobDetailScreen />);
+    await act(async () => { resolve(); });
+    expect(screen.getByText('Apply Now')).toBeTruthy();
+    expect(screen.queryByTestId('job-sheet-close')).toBeNull();
+    expect(applyToJob).toHaveBeenCalledTimes(1);
+    expect(applyToJob).toHaveBeenCalledWith(1, 'First job application.', null);
   });
 
   it('sends the CV the member attached, not just the message', async () => {

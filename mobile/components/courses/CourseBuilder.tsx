@@ -22,7 +22,8 @@
 import { useState } from 'react';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { View } from 'react-native';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import { Ionicons } from '@/components/ui/Icon';

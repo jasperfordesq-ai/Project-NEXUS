@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, Platform, View } from 'react-native';
+import { Keyboard, Platform, View, useWindowDimensions } from 'react-native';
 import { BottomSheet as HeroBottomSheet } from 'heroui-native';
 import { BottomSheetFooter, BottomSheetScrollView, type BottomSheetFooterProps } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from 'expo-router';
@@ -95,6 +95,13 @@ export default function BottomSheet({
 }: BottomSheetProps) {
   const { mounted: sheetMounted, open: sheetOpen, shouldHonorClose } = useDeferredBottomSheetState(visible);
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  useEffect(() => {
+    if (!visible) return undefined;
+    // Closing or unmounting an active form must release its keyboard too.
+    // An initially hidden sheet must not dismiss another screen's keyboard.
+    return () => Keyboard.dismiss();
+  }, [visible]);
 
   /**
    * 🔴 Close when the screen underneath goes away.
@@ -197,7 +204,7 @@ export default function BottomSheet({
         >
           {title ? (
             <View className="items-center border-b border-border px-4 pb-3 pt-2">
-              <HeroBottomSheet.Title className="text-center">{title}</HeroBottomSheet.Title>
+              <HeroBottomSheet.Title key={fontScale} className="text-center">{title}</HeroBottomSheet.Title>
             </View>
           ) : null}
           {body}

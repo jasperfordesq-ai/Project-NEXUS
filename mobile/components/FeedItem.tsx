@@ -9,7 +9,8 @@ import { Animated, Linking, Platform, Pressable, Share, Text, useWindowDimension
 import RemoteImage from '@/components/ui/RemoteImage';
 import { Ionicons } from '@/components/ui/Icon';
 import { router } from 'expo-router';
-import { Button as HeroButton, Card as HeroCard, Separator, Surface } from 'heroui-native';
+import { Card as HeroCard, Separator, Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import * as Haptics from '@/lib/haptics';
 

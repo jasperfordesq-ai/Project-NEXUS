@@ -5,7 +5,7 @@
 
 import { contrastText } from '@/lib/utils/color';
 import React from 'react';
-import { Chip } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import type { ChipSize } from 'heroui-native';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 

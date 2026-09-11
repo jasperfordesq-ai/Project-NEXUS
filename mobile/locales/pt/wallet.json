@@ -99,7 +99,8 @@
     "confirmDonationTitle": "Doar estas horas?",
     "confirmDonationMessage": "Está prestes a doar {{amount}} horas a {{name}}. Esta ação não pode ser anulada.",
     "recipientResolving": "A verificar o destinatário…",
-    "recipientUnresolved": "Esse membro não foi encontrado. Procure o destinatário."
+    "recipientUnresolved": "Esse membro não foi encontrado. Procure o destinatário.",
+    "unresolvedOperation": "Uma transferência anterior continua por confirmar. Consulte o histórico e contacte o coordenador antes de a enviar novamente."
   },
   "status": {
     "completed": "Concluído",

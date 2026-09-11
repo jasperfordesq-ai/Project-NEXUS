@@ -20,7 +20,8 @@ import { useCallback, useMemo } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { Button as HeroButton, Spinner, Surface } from 'heroui-native';
+import { Spinner, Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 

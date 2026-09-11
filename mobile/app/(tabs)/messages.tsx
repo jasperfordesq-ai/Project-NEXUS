@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { contrastText , withAlpha } from '@/lib/utils/color';
+import { contrastText } from '@/lib/utils/color';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Platform, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,7 +11,8 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from '@/lib/haptics';
-import { Button as HeroButton, Card as HeroCard, Separator, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Separator, Spinner, Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
@@ -382,63 +383,26 @@ function MessagesHeader({
 }) {
   return (
     <View className="gap-3 pb-2">
-      <HeroCard variant="default" className="mx-4 mt-4 overflow-hidden">
-        <View className="h-1 w-full" style={{ backgroundColor: primary }} />
-        <HeroCard.Body className="gap-4 px-4 py-4">
-          <View className="flex-row items-start justify-between gap-4">
-            <View className="min-w-0 flex-1">
-              <View className="mb-2 flex-row items-center gap-2">
-                <View className="h-8 w-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
-                  <Ionicons name="chatbubbles-outline" size={18} color={primary} />
-                </View>
-                <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
-                  {t('heroEyebrow')}
-                </Text>
-              </View>
-              <Text className="text-2xl font-bold leading-8" style={{ color: theme.text }}>
-                {t('title')}
-              </Text>
-              <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }}>
-                {t('subtitle')}
-              </Text>
-            </View>
-            <View className="flex-row gap-2">
-              <HeroButton
-                isIconOnly
-                variant="secondary"
-                accessibilityLabel={t('newGroup')}
-                onPress={onNewGroup}
-              >
-                <Ionicons name="people-outline" size={18} color={primary} />
-              </HeroButton>
-              <HeroButton
-                isIconOnly
-                variant="primary"
-                accessibilityLabel={t('newMessage')}
-                onPress={onNewMessage}
-              >
-                <AccentIcon name="create-outline" size={18} />
-              </HeroButton>
-            </View>
-          </View>
-
-          <View className="flex-row flex-wrap gap-2">
-            <Chip size="sm" variant="soft" color="accent">
-              <Ionicons name="mail-unread-outline" size={12} color={primary} />
-              <Chip.Label>{t('unreadCount', { count: totalUnread })}</Chip.Label>
-            </Chip>
-            <Chip size="sm" variant="soft" color="default">
-              <Ionicons name="people-outline" size={12} color={theme.textMuted} />
-              <Chip.Label>{isLoading ? t('resultsLoading') : t('conversationCount', { count: totalCount })}</Chip.Label>
-            </Chip>
-          </View>
-        </HeroCard.Body>
-      </HeroCard>
+      <View className="mx-4 mt-3 flex-row items-center gap-3">
+        <View className="min-w-0 flex-1">
+          <Text accessibilityRole="header" className="text-2xl font-bold" style={{ color: theme.text }}>{t('title')}</Text>
+          <Text className="text-sm" style={{ color: theme.textSecondary }}>
+            {isLoading ? t('resultsLoading') : totalUnread ? t('unreadCount', { count: totalUnread }) : t('conversationCount', { count: totalCount })}
+          </Text>
+        </View>
+        <HeroButton isIconOnly variant="secondary" style={{ minHeight: 48, minWidth: 48 }} accessibilityLabel={t('newGroup')} onPress={onNewGroup}>
+          <Ionicons name="people-outline" size={20} color={primary} />
+        </HeroButton>
+        <HeroButton isIconOnly variant="primary" style={{ minHeight: 48, minWidth: 48 }} accessibilityLabel={t('newMessage')} onPress={onNewMessage}>
+          <AccentIcon name="create-outline" size={20} />
+        </HeroButton>
+      </View>
 
       <Surface variant="default" className="mx-4 gap-3 rounded-panel-inner p-3">
         <View className="flex-row gap-2">
           <HeroButton
             className="flex-1"
+            style={{ minHeight: 48 }}
             size="sm"
             variant={activeTab === 'inbox' ? 'primary' : 'secondary'}
             accessibilityState={{ selected: activeTab === 'inbox' }}
@@ -449,6 +413,7 @@ function MessagesHeader({
           </HeroButton>
           <HeroButton
             className="flex-1"
+            style={{ minHeight: 48 }}
             size="sm"
             variant={activeTab === 'archived' ? 'primary' : 'secondary'}
             accessibilityState={{ selected: activeTab === 'archived' }}
@@ -460,14 +425,6 @@ function MessagesHeader({
         </View>
 
         <View className="flex-row items-center justify-between gap-3">
-          <View className="min-w-0 flex-1">
-            <Text className="text-base font-semibold" style={{ color: theme.text }}>
-              {activeTab === 'archived' ? t('tabs.archived') : t('inbox')}
-            </Text>
-            <Text className="mt-0.5 text-sm" style={{ color: theme.textSecondary }} numberOfLines={2}>
-              {t('filtersIntro')}
-            </Text>
-          </View>
           {/* "N shown" only means something while a search is narrowing the list. */}
           {activeTab === 'archived' || searchQuery.trim() ? (
             <Chip size="sm" variant="soft" color="default">

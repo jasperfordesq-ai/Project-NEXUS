@@ -9,7 +9,8 @@ import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
-import { Accordion, Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Accordion, Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 
 import { useAuth } from '@/lib/hooks/useAuth';

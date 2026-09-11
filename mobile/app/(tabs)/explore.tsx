@@ -8,7 +8,10 @@ import { RefreshControl, ScrollView, Text, View, useWindowDimensions } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Tabs } from 'heroui-native';
+import { Card as HeroCard, Spinner } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Tabs } from '@/components/ui/NativeTabs';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import {

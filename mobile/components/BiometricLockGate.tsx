@@ -6,10 +6,8 @@
 /**
  * Holds the app closed until the phone proves it is the member — journey 1.6.
  *
- * Only stands in the way when all three are true: the member turned the lock on, there is
- * a stored session to protect, and the phone can actually authenticate. Any one of those
- * missing and this renders its children untouched — a member must never be shut out of
- * their own account by a lock they cannot satisfy.
+ * Protects an existing session when the member enabled the lock. If the sensor or saved
+ * preference is unavailable, keep the session locked and offer retry or sign-out.
  *
  * The lock is an OVERLAY: `children` render from the very first frame and the lock is
  * painted on top of them — opaque, absolutely positioned, covering the screen while the
@@ -40,13 +38,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button as HeroButton, Text } from 'heroui-native';
+import { Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import { Ionicons } from '@/components/ui/Icon';
 import {
   authenticate,
-  biometricCapability,
+  biometricFailureKey,
   isBiometricLockEnabled,
   type BiometricFailure,
 } from '@/lib/biometricLock';
@@ -59,7 +58,7 @@ type GateState = 'checking' | 'locked' | 'open';
 
 export default function BiometricLockGate({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation(['settings', 'common']);
-  const { isAuthenticated, isLoading, logout } = useAuthContext();
+  const { isAuthenticated, isLoading, sessionRestoreFailed, logout } = useAuthContext();
   const theme = useTheme();
   const primary = usePrimaryColor();
 
@@ -98,27 +97,33 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
    */
   useEffect(() => {
     if (isLoading || isAuthenticated) return;
-    decided.current = true;
+    // A failed restore can later recover the stored session without a password.
+    // Only a real signed-out state completes the startup decision.
+    decided.current = !sessionRestoreFailed;
     setIsPrompting(false);
     setFailure(null);
     setState('open');
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, sessionRestoreFailed]);
 
   useEffect(() => {
     if (decided.current || isLoading || !isAuthenticated) return;
 
     let cancelled = false;
     void (async () => {
-      const [enabled, capability] = await Promise.all([
-        isBiometricLockEnabled(),
-        biometricCapability(),
-      ]);
+      let enabled: boolean;
+      try {
+        enabled = await isBiometricLockEnabled();
+      } catch {
+        if (cancelled) return;
+        decided.current = true;
+        setFailure('unavailable');
+        setState('locked');
+        return;
+      }
       if (cancelled) return;
       decided.current = true;
 
-      // 🔴 Enabled but the phone can no longer authenticate — biometrics removed, a work
-      // profile policy, a broken sensor. Let the member in rather than trapping them.
-      if (!enabled || !capability.usable) {
+      if (!enabled) {
         setState('open');
         return;
       }
@@ -132,10 +137,18 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
     };
   }, [isAuthenticated, isLoading, unlock]);
 
+  const covered = state !== 'open' || (isAuthenticated && !decided.current);
+
   return (
     <View style={{ flex: 1 }}>
-      {children}
-      {state === 'open' ? null : (
+      <View
+        style={{ flex: 1 }}
+        accessibilityElementsHidden={covered}
+        importantForAccessibility={covered ? 'no-hide-descendants' : 'auto'}
+      >
+        {children}
+      </View>
+      {!covered ? null : (
         /*
           Opaque and absolutely positioned. React Native hands a touch to the topmost view,
           so this also swallows taps meant for the screen underneath — without needing a
@@ -144,6 +157,7 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
         */
         <SafeAreaView
           testID="biometric-lock-gate"
+          accessibilityViewIsModal
           style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.bg }]}
         >
           <View className="flex-1 items-center justify-center gap-5 px-8" style={{ flex: 1 }}>
@@ -167,7 +181,7 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
                     className="text-center text-sm leading-5"
                     style={{ color: theme.error }}
                   >
-                    {t(`settings:biometricLock.errors.${failure}`)}
+                    {t(`settings:biometricLock.errors.${biometricFailureKey(failure)}`)}
                   </Text>
                 ) : null}
                 {/*

@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2728,
-  "api_route_rows": 2693,
-  "distinct_api_paths": 2238,
+  "total_registered_routes": 2731,
+  "api_route_rows": 2696,
+  "distinct_api_paths": 2241,
   "route_source_fingerprint": {
-    "digest": "ff16a19edf3f48bae4b8f4f4e9bd26254fc560e10c6bbeb98be2967e8cc8ec79",
+    "digest": "fbace8fa35489180059da025bb329ad5d3054cc3991634b255140f985e6dedaa",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "f495137b4acd845a979f88207746c272b84abb5e5c1a50deec0a90f4d66065e3"
+        "sha256": "39ffc47c0742efd5c8dde49da122cae2c28c0f28b0c52e4b083e4e4674b785d6"
       },
       {
         "file": "routes/channels.php",
@@ -3461,11 +3461,17 @@
     "/api/v2/auth/2fa/disable": [
       "POST"
     ],
+    "/api/v2/auth/2fa/recovery-codes": [
+      "POST"
+    ],
     "/api/v2/auth/2fa/setup": [
       "POST"
     ],
     "/api/v2/auth/2fa/status": [
       "GET"
+    ],
+    "/api/v2/auth/2fa/trusted-devices/revoke": [
+      "POST"
     ],
     "/api/v2/auth/2fa/verify": [
       "POST"
@@ -7113,6 +7119,9 @@
     ],
     "/api/v2/wallet/donations": [
       "GET"
+    ],
+    "/api/v2/wallet/operation-status": [
+      "POST"
     ],
     "/api/v2/wallet/pending-count": [
       "GET"

@@ -351,6 +351,18 @@ describe('NewExchangeModal', () => {
     expect(getByPlaceholderText('Add more details...').props.value).toBe('Generated listing body');
   });
 
+  it('preserves description edits made while generation is pending', async () => {
+    let finish!: (value: unknown) => void;
+    mockGenerateExchangeDescription.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const ui = render(<NewExchangeModal />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you offering?'), 'Gardening help');
+    fireEvent.press(ui.getByText('Help write description'));
+    await waitFor(() => expect(mockGenerateExchangeDescription).toHaveBeenCalled());
+    fireEvent.changeText(ui.getByPlaceholderText('Add more details...'), 'My newer description');
+    await act(async () => { finish({ data: { description: 'Generated earlier' } }); });
+    expect(ui.getByPlaceholderText('Add more details...').props.value).toBe('My newer description');
+  });
+
   it('adds optional service details into the saved description', async () => {
     const { getAllByText, getByPlaceholderText, getByText } = render(<NewExchangeModal />);
     fireEvent.changeText(getByPlaceholderText('What are you offering?'), 'Music lesson');

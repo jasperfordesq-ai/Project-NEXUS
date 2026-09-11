@@ -117,4 +117,20 @@ describe('createOrganisation', () => {
     expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/organisations', payload);
     expect(result.data.name).toBe('Community Care Ltd');
   });
+
+  it('sends the creation idempotency key in the request header and body', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: mockOrganisation });
+    const payload = {
+      name: 'Community Care Ltd',
+      description: 'A care-focused community organisation.',
+      contact_email: 'hello@example.org',
+      idempotency_key: 'organisation-attempt-123',
+    };
+
+    await createOrganisation(payload);
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/organisations', payload, {
+      headers: { 'Idempotency-Key': 'organisation-attempt-123' },
+    });
+  });
 });

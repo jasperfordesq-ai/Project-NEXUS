@@ -3,8 +3,15 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+jest.mock('@/lib/walletOperation', () => ({
+  reserveWalletOperation: jest.fn().mockResolvedValue({ key: 'saved-federation-key', storageKey: 'saved', createdAt: 1 }),
+  completeWalletOperation: jest.fn().mockResolvedValue(undefined),
+}));
+
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
 
 // --- Mocks ---
 
@@ -438,7 +445,7 @@ describe('MemberProfileScreen', () => {
     expect(getByText('Send Message')).toBeTruthy();
   });
 
-  it('blocks a same-community member from their profile and leaves the hidden profile', async () => {
+  it.each([false, true])('handles confirmed member blocking with rejection: %s', async (reject) => {
     mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
     const { router } = require('expo-router');
     const { getByTestId, getByText } = render(<MemberProfileScreen />);
@@ -446,11 +453,13 @@ describe('MemberProfileScreen', () => {
     fireEvent.press(getByText('Block member'));
     // Blocking is irreversible from here, so it asks first.
     expect(blockUser).not.toHaveBeenCalled();
-    fireEvent.press(getByTestId('member-profile-confirm'));
+    if (reject) jest.mocked(blockUser).mockRejectedValueOnce(new Error('Blocking refused'));
+    await act(async () => { fireEvent.press(getByTestId('member-profile-confirm')); });
 
     await waitFor(() => {
       expect(blockUser).toHaveBeenCalledWith(7);
-      expect(router.replace).toHaveBeenCalledWith('/(modals)/members');
+      if (reject) expect(router.replace).not.toHaveBeenCalled();
+      else expect(router.replace).toHaveBeenCalledWith('/(modals)/members');
     });
   });
 
@@ -665,13 +674,16 @@ describe('MemberProfileScreen', () => {
       expect(sendFederationTransaction).toHaveBeenCalledWith({
         receiver_id: 272,
         receiver_tenant_id: 5,
+        idempotency_key: 'saved-federation-key',
         amount: 2,
         description: 'Repair help',
       });
     });
   });
-  it('🔴 does not send cross-community credits until the transfer is confirmed', async () => {
+  it.each([false, true])('confirms cross-community credits and retains retry identity after response loss=%s', async (loseResponse) => {
     (sendFederationTransaction as jest.Mock).mockClear();
+    jest.mocked(completeWalletOperation).mockClear();
+    if (loseResponse) jest.mocked(sendFederationTransaction).mockRejectedValueOnce(new Error('Response lost'));
     mockParams = { id: '272', tenant_id: '5' };
     mockUseApi.mockReturnValue({
       data: {
@@ -699,12 +711,20 @@ describe('MemberProfileScreen', () => {
     // reversible from the app (G/F-4).
     expect(sendFederationTransaction).not.toHaveBeenCalled();
 
-    fireEvent.press(getByTestId('federation-confirm-transfer'));
-
+    await act(async () => { fireEvent.press(getByTestId('federation-confirm-transfer')); });
+    if (loseResponse) {
+      expect(completeWalletOperation).not.toHaveBeenCalled();
+      expect(getByPlaceholderText('What are these credits for?').props.value).toBe('Repair help');
+      fireEvent.press(getByTestId('federation-send-credits'));
+      await act(async () => { fireEvent.press(getByTestId('federation-confirm-transfer')); });
+    }
+    expect(reserveWalletOperation).toHaveBeenCalledWith('federation', '[272,5,2,"Repair help"]');
+    expect(completeWalletOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'saved-federation-key' }));
     await waitFor(() => {
       expect(sendFederationTransaction).toHaveBeenCalledWith({
         receiver_id: 272,
         receiver_tenant_id: 5,
+        idempotency_key: 'saved-federation-key',
         amount: 2,
         description: 'Repair help',
       });

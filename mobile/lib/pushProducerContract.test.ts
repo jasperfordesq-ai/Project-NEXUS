@@ -50,6 +50,7 @@ const STATIC_ROUTE_EXPECTATIONS: Record<string, StaticRouteExpectation> = {
   '/premium/manage': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/reviews': { notification_link: '/reviews', native_href: '/(modals)/reviews' },
   '/settings/security': { notification_link: '/settings/security', native_href: '/(modals)/settings' },
+  '/settings?tab=security': { notification_link: '/settings?tab=security', native_href: '/(modals)/settings?tab=security' },
   '/settings/verification': { notification_link: '/settings/verification', native_href: '/(modals)/verify-identity' },
   '/volunteering': { notification_link: '/volunteering', native_href: '/(modals)/volunteering' },
   '/volunteering/opportunities/1': { notification_link: '/volunteering/opportunities/1', native_href: '/(modals)/volunteering-detail?id=1' },
@@ -111,7 +112,7 @@ describe('complete backend push producer route contract', () => {
       const type = literalType(producer.type_expression);
       const expectation = STATIC_TYPE_OVERRIDES[`${input}\u0000${type}`]
         ?? STATIC_ROUTE_EXPECTATIONS[input];
-      expect(expectation).toBeDefined();
+      expect({ input, reviewed: expectation !== undefined }).toEqual({ input, reviewed: true });
       const notificationLink = getNotificationLink({ schema_version: '1', type, link: input });
       expect({
         notification_link: notificationLink,

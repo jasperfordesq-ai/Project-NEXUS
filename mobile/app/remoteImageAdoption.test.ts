@@ -91,7 +91,7 @@ describe('remote pictures have a failure state', () => {
   it('RemoteImage still handles the error it exists for', () => {
     const source = fs.readFileSync(path.join(MOBILE_ROOT, 'components/ui/RemoteImage.tsx'), 'utf8');
     expect(source).toContain('onError=');
-    expect(source).toContain('setFailed(true)');
+    expect(source).toContain('setFailedUri(uri');
   });
 });
 

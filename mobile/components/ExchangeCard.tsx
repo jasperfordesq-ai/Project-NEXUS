@@ -11,7 +11,8 @@ import RemoteImage from '@/components/ui/RemoteImage';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Separator, Surface } from 'heroui-native';
+import { Card as HeroCard, Separator, Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 
 import { type Exchange } from '@/lib/api/exchanges';

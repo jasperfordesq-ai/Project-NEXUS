@@ -363,6 +363,45 @@ describe('NewGroupRoute', () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/group-detail', params: { id: '484' } }));
   });
 
+  it.each(['retry', 'replace', 'continue'])('recovers a failed group image with %s without creating another group', async (action) => {
+    mockUploadGroupImage.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ data: {} });
+    const ui = render(<NewGroupRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('Name your group'), 'Repair club');
+    fireEvent.changeText(ui.getByPlaceholderText('What is this group for?'), 'A group for sharing repair skills and local mending sessions.');
+    fireEvent.press(ui.getByText('Add image'));
+    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
+    fireEvent.press(ui.getByText('Create group'));
+    await ui.findByText('mediaRecovery.retry');
+    expect(mockReplace).not.toHaveBeenCalled();
+    if (action === 'replace') {
+      mockLaunchImageLibraryAsync.mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///tmp/replacement.jpg', mimeType: 'image/jpeg', fileSize: 1024 }] });
+      fireEvent.press(ui.getByText('mediaRecovery.choose'));
+      await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalledTimes(2));
+    }
+    fireEvent.press(ui.getByText(action === 'continue' ? 'mediaRecovery.continue' : 'mediaRecovery.retry'));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalled());
+    expect(mockCreateGroup).toHaveBeenCalledTimes(1);
+    expect(mockUploadGroupImage).toHaveBeenCalledTimes(action === 'continue' ? 1 : 2);
+    expect(mockUploadGroupImage).toHaveBeenLastCalledWith(484, action === 'replace' ? 'file:///tmp/replacement.jpg' : 'file:///tmp/group.jpg');
+  });
+
+  it('does not navigate from an image retry after the recovery screen unmounts', async () => {
+    let release!: () => void;
+    mockUploadGroupImage.mockRejectedValueOnce(new Error('offline'))
+      .mockImplementationOnce(() => new Promise<void>(resolve => { release = resolve; }));
+    const ui = render(<NewGroupRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('Name your group'), 'Repair club');
+    fireEvent.changeText(ui.getByPlaceholderText('What is this group for?'), 'A group for sharing repair skills and local mending sessions.');
+    fireEvent.press(ui.getByText('Add image'));
+    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
+    fireEvent.press(ui.getByText('Create group'));
+    fireEvent.press(await ui.findByText('mediaRecovery.retry'));
+    await waitFor(() => expect(mockUploadGroupImage).toHaveBeenCalledTimes(2));
+    ui.unmount();
+    await act(async () => { release(); });
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
   it('loads an existing group and submits updates in edit mode', async () => {
     mockSearchParams = { id: '9' };
     mockGetGroup.mockResolvedValue({

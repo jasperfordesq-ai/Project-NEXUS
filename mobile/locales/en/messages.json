@@ -93,7 +93,11 @@
       "stopFailed": "Could not save this recording. Please try again.",
       "sendFailed": "Voice message could not be sent. Please try again."
     },
-    "notFound": "This conversation is no longer available."
+    "notFound": "This conversation is no longer available.",
+    "unsentDrafts": "Unsent drafts: {{count}}",
+    "editUnsentDraft": "Edit unsent draft",
+    "unsentDrafts_one": "Unsent draft: {{count}}",
+    "unsentDrafts_other": "Unsent drafts: {{count}}"
   },
   "context": {
     "regarding": "Regarding",

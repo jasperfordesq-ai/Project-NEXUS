@@ -85,9 +85,9 @@ export async function biometricCapability(): Promise<BiometricCapability> {
   }
 }
 
-/** Has the member turned this on? Absent, unreadable or anything but "1" means no. */
+/** Missing means off; an unreadable security preference must not bypass the lock. */
 export async function isBiometricLockEnabled(): Promise<boolean> {
-  return (await storage.get(BIOMETRIC_LOCK_ENABLED_KEY)) === '1';
+  return (await storage.get(BIOMETRIC_LOCK_ENABLED_KEY, { required: true })) === '1';
 }
 
 /**
@@ -103,8 +103,7 @@ export async function setBiometricLockEnabled(
   promptMessage: string,
 ): Promise<{ ok: boolean; reason?: BiometricFailure }> {
   if (!enabled) {
-    await storage.remove(BIOMETRIC_LOCK_ENABLED_KEY);
-    return { ok: true };
+    return savePreference(false);
   }
 
   const capability = await biometricCapability();
@@ -115,8 +114,16 @@ export async function setBiometricLockEnabled(
   const result = await authenticate(promptMessage);
   if (!result.ok) return result;
 
-  await storage.set(BIOMETRIC_LOCK_ENABLED_KEY, '1');
-  return { ok: true };
+  return savePreference(true);
+}
+
+async function savePreference(enabled: boolean): Promise<{ ok: boolean; reason?: BiometricFailure }> {
+  try {
+    await storage.set(BIOMETRIC_LOCK_ENABLED_KEY, enabled ? '1' : '0', { required: true });
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: 'unavailable' };
+  }
 }
 
 export type BiometricFailure =
@@ -126,6 +133,11 @@ export type BiometricFailure =
   | 'lockout'
   | 'failed'
   | 'unavailable';
+
+/** Native error codes use underscores; the existing locale keys use camel case. */
+export function biometricFailureKey(reason: BiometricFailure): string {
+  return reason === 'no_hardware' ? 'noHardware' : reason === 'not_enrolled' ? 'notEnrolled' : reason;
+}
 
 function failureFrom(error: string | undefined): BiometricFailure {
   switch (error) {

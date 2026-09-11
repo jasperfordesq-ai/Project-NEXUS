@@ -5,7 +5,9 @@
 
 import { Text, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import type { EventAnalyticsSummary } from '@/lib/api/eventAnalytics';
 import type { Theme } from '@/lib/hooks/useTheme';

@@ -103,6 +103,33 @@ export interface LoginPayload {
   password: string;
 }
 
+/** A password challenge is not an authenticated session. Keep it in memory only. */
+export interface LoginChallenge {
+  success: false;
+  two_factor_token: string;
+  requires_2fa?: boolean;
+  requires_2fa_setup?: boolean;
+  methods?: ('totp' | 'backup_code')[];
+}
+
+export type MfaSession = Omit<AuthResponse, 'user'> & { user?: LoginUser; backup_codes?: string[] };
+
+export function beginMfaSetup(challenge: string): Promise<{ data: { secret: string } }> {
+  return api.post(`${API_V2}/auth/2fa/setup`, { two_factor_token: challenge }, { anonymous: true });
+}
+
+export async function verifyMfa(challenge: LoginChallenge, code: string, backup: boolean): Promise<MfaSession> {
+  if (challenge.requires_2fa_setup) {
+    const response = await api.post<{ data: MfaSession }>(`${API_V2}/auth/2fa/verify`, {
+      two_factor_token: challenge.two_factor_token, code,
+    }, { anonymous: true });
+    return response.data;
+  }
+  return api.post('/api/totp/verify', {
+    two_factor_token: challenge.two_factor_token, code, use_backup_code: backup,
+  }, { anonymous: true });
+}
+
 export interface RegisterPayload {
   first_name: string;
   last_name: string;
@@ -176,8 +203,8 @@ export interface VerifyEmailResponse {
 }
 
 /** POST /api/auth/login — token-based auth (Bearer, mobile-safe, 1-year token) */
-export function login(payload: LoginPayload): Promise<AuthResponse> {
-  return api.post<AuthResponse>('/api/auth/login', {
+export function login(payload: LoginPayload): Promise<AuthResponse | LoginChallenge> {
+  return api.post<AuthResponse | LoginChallenge>('/api/auth/login', {
     ...payload,
     // Tell the server this is a mobile client so it issues a long-lived token
     platform: 'mobile',
@@ -263,8 +290,8 @@ export function logout(): Promise<void> {
 }
 
 /** GET /api/v2/users/me — full profile with balance, validates token */
-export function getMe(): Promise<{ data: User }> {
-  return api.get<{ data: User }>(`${API_V2}/users/me`);
+export function getMe(options?: { skipAuthRefresh?: boolean }): Promise<{ data: User }> {
+  return api.get<{ data: User }>(`${API_V2}/users/me`, undefined, options);
 }
 
 /** POST /api/auth/refresh-token */
@@ -276,7 +303,7 @@ export function refreshToken(token: string): Promise<AuthResponse> {
  * Extract the bearer token string from an AuthResponse.
  * Throws if no token is present — callers must not proceed with an empty token.
  */
-export function extractToken(response: AuthResponse): string {
+export function extractToken<T extends Pick<AuthResponse, 'access_token' | 'token'>>(response: T): string {
   const token = response.access_token ?? response.token;
   if (!token) {
     throw new Error(i18n.t('auth:errors.unableToSignIn'));

@@ -9,16 +9,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Card,
-  Chip,
-  ControlField,
-  Description,
-  Dialog,
-  Label,
-  Spinner,
-} from 'heroui-native';
+import { Card, ControlField, Description, Dialog, Label, Spinner,  } from 'heroui-native';
+import { Button } from '@/components/ui/NativeButton';
+import { Chip } from '@/components/ui/StatusChip';
 
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';

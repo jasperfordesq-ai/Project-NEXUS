@@ -498,9 +498,11 @@ function main() {
     endpoints: verified.map(({ http, endpoint, status, matchedVia, sites }) => ({ http, endpoint, status, matched_via: matchedVia, sites })),
   };
 
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(OUT_DIR, 'mobile-api-consumer-ledger.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-  fs.writeFileSync(path.join(OUT_DIR, 'mobile-api-consumer-ledger.md'), renderMarkdown(report), 'utf8');
+  if (!CHECK) {
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(OUT_DIR, 'mobile-api-consumer-ledger.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(path.join(OUT_DIR, 'mobile-api-consumer-ledger.md'), renderMarkdown(report), 'utf8');
+  }
 
   const s = report.summary;
   console.log(

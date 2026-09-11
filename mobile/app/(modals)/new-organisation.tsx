@@ -3,17 +3,18 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Spinner, Surface, Text } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
 
 import { createOrganisation } from '@/lib/api/organisations';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { withAlpha } from '@/lib/utils/color';
@@ -26,6 +27,8 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 type FormField = 'name' | 'description' | 'contact_email' | 'website' | 'terms';
 type FormErrors = Partial<Record<FormField, string>>;
@@ -53,8 +56,10 @@ function isValidWebsite(value: string) {
 }
 
 function NewOrganisationScreen() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`}>
       <NewOrganisationInner />
     </ModalErrorBoundary>
   );
@@ -70,7 +75,15 @@ function NewOrganisationInner() {
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitPending = useRef(false);
+  const createAttempt = useRef<{ payload: string; key: string } | null>(null);
+  const mountedRef = useRef(true);
   const [hasSaved, setHasSaved] = useState(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   // 🔴 Cancel and Back used to drop a half-written registration without a word (S4-04).
   const isDirty = form.name !== '' || form.description !== '' || form.contact_email !== '' || form.website !== '' || agreedTerms;
@@ -131,29 +144,44 @@ function NewOrganisationInner() {
   }
 
   async function submit() {
+    if (submitPending.current) return;
     if (!validate()) return;
 
+    submitPending.current = true;
     setIsSubmitting(true);
     try {
-      const response = await createOrganisation({
+      const payload = {
         name: trimmed.name,
         description: trimmed.description,
         contact_email: trimmed.contact_email,
         ...(trimmed.website ? { website: trimmed.website } : {}),
-      });
+      };
+      const payloadSignature = JSON.stringify(payload);
+      if (createAttempt.current?.payload !== payloadSignature) {
+        createAttempt.current = {
+          payload: payloadSignature,
+          key: mutationIdempotencyKey('mobile-organisation-create'),
+        };
+      }
+      const response = await createOrganisation({ ...payload, idempotency_key: createAttempt.current.key });
+      if (!mountedRef.current) return;
       const organisation = response.data;
       setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
+      createAttempt.current = null;
       showToast({ title: t('register.successTitle'), description: t('register.successMessage'), variant: 'success' });
       router.replace({
         pathname: '/(modals)/volunteering',
         params: { tab: 'organisations', submitted: String(organisation.id) },
       });
     } catch (error) {
+      if (!mountedRef.current) return;
       const message = describeApiError(error, t('register.saveFailedMessage'));
       showToast({ title: t('register.saveFailedTitle'), description: message, variant: 'danger' });
     } finally {
-      setIsSubmitting(false);
+      submitPending.current = false;
+      if (mountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -196,6 +224,7 @@ function NewOrganisationInner() {
               error={errors.name}
               theme={theme}
               autoCapitalize="words"
+              editable={!isSubmitting}
             />
 
             <FormInput
@@ -207,6 +236,7 @@ function NewOrganisationInner() {
               theme={theme}
               multiline
               minHeight={120}
+              editable={!isSubmitting}
             />
 
             <FormInput
@@ -219,6 +249,7 @@ function NewOrganisationInner() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              editable={!isSubmitting}
             />
 
             <FormInput
@@ -231,6 +262,7 @@ function NewOrganisationInner() {
               keyboardType="url"
               autoCapitalize="none"
               autoCorrect={false}
+              editable={!isSubmitting}
             />
 
             <TermsCard
@@ -243,6 +275,7 @@ function NewOrganisationInner() {
                 setAgreedTerms((current) => !current);
                 setErrors((current) => ({ ...current, terms: undefined }));
               }}
+              disabled={isSubmitting}
             />
 
             <Surface variant="secondary" className="flex-row items-start gap-3 rounded-panel-inner p-4">
@@ -282,6 +315,7 @@ function FormInput({
   keyboardType,
   autoCapitalize,
   autoCorrect,
+  editable,
 }: {
   label: string;
   value: string;
@@ -294,6 +328,7 @@ function FormInput({
   keyboardType?: 'default' | 'email-address' | 'url';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   autoCorrect?: boolean;
+  editable?: boolean;
 }) {
   return (
     <View>
@@ -313,6 +348,7 @@ function FormInput({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
         autoCorrect={autoCorrect}
+        editable={editable}
       />
     </View>
   );
@@ -325,6 +361,7 @@ function TermsCard({
   theme,
   t,
   onToggle,
+  disabled,
 }: {
   agreedTerms: boolean;
   error?: string;
@@ -332,6 +369,7 @@ function TermsCard({
   theme: Theme;
   t: (key: string, opts?: Record<string, unknown>) => string;
   onToggle: () => void;
+  disabled?: boolean;
 }) {
   return (
     <Surface variant="secondary" className="gap-3 rounded-panel-inner p-4">
@@ -340,7 +378,7 @@ function TermsCard({
         <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('register.termsTitle')}</Text>
       </View>
       <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('register.termsSummary')}</Text>
-      <Checkbox checked={agreedTerms} onPress={onToggle} label={t('register.termsAgreement')} />
+      <Checkbox checked={agreedTerms} onPress={onToggle} label={t('register.termsAgreement')} disabled={disabled} />
       {error ? <Text className="text-xs" style={{ color: theme.error }}>{error}</Text> : null}
     </Surface>
   );

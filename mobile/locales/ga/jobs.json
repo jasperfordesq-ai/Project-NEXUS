@@ -136,6 +136,8 @@
     "cvLabel": "CV",
     "cvNone": "Níl aon CV ceangailte. Ní bhíonn in iarratais a sheoltar ón aip seo ach do theachtaireacht, mura gcuireann tú ceann leis.",
     "cvSavedNotice": "Tá {{name}} sábháilte agat i do phróifíl poist. Ní cheanglaítear leis go huathoibríoch é — cuir comhad leis thíos más mian leat go bhfeicfeadh an fostóir é.",
+    "cvProfileLoading": "Do phróifíl poist shábháilte á seiceáil…",
+    "cvProfileError": "Níorbh fhéidir linn do CV ná do litir chumhdaigh shábháilte a sheiceáil. Bain triail eile as, nó ceangail CV agus scríobh do theachtaireacht thíos.",
     "cvAttach": "Ceangail CV",
     "cvReplace": "Roghnaigh comhad eile",
     "cvRemove": "Bain",

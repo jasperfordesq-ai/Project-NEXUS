@@ -21,7 +21,8 @@
 
 import React from 'react';
 import { View } from 'react-native';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { Ionicons } from '@/components/ui/Icon';
 import { useTheme } from '@/lib/hooks/useTheme';

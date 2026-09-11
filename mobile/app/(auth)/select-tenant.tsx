@@ -11,7 +11,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button as HeroButton, Card as HeroCard, Separator, Spinner } from 'heroui-native';
+import { Card as HeroCard, Separator, Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 
 import { getTenantConfigFor, listTenants, type TenantListItem } from '@/lib/api/tenant';

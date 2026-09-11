@@ -15,12 +15,14 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Text } from 'heroui-native';
+import { Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { createJob, generateJobDescription, getJobDetail, updateJob, type CreateJobPayload, type JobVacancy } from '@/lib/api/jobs';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
@@ -30,6 +32,7 @@ import { FormHero, FormSection, SummaryTile } from '@/components/ui/FormSection'
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { parseDecimalInput } from '@/lib/utils/decimal';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type JobType = CreateJobPayload['type'];
@@ -59,9 +62,12 @@ function optionalNumber(value: string): number | null {
 }
 
 function NewJobRoute() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
     <ModalErrorBoundary>
-      <NewJobScreen />
+      <NewJobScreen key={`${tenant?.id ?? tenant?.slug}:${user?.id}:${id ?? 'new'}`} />
     </ModalErrorBoundary>
   );
 }
@@ -98,14 +104,22 @@ function NewJobScreen() {
   const [deadline, setDeadline] = useState('');
   const [isRemote, setIsRemote] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitPending = useRef(false);
+  const createAttempt = useRef<{ payload: string; key: string } | null>(null);
+  const mountedRef = useRef(true);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { confirm, confirmDialog } = useConfirm();
+  const formSnapshot = JSON.stringify({ title, description, type, commitment, location, category, skills, hours, credits, contactEmail, contactPhone, salaryMin, salaryMax, salaryCurrency, salaryType, salaryNegotiable, blindHiring, tagline, videoUrl, companySize, benefits, deadline, isRemote });
+  const [initialSnapshot, setInitialSnapshot] = useState(formSnapshot);
+  const generationInput = JSON.stringify({ title, skills, type, commitment, description });
+  const latestGenerationInput = useRef(generationInput);
+  latestGenerationInput.current = generationInput;
   /*
     🔴 S5: a long description, a price and chosen photos were lost to a stray Back with
     no prompt — the same fault the two listing forms had before the 5 September audit.
   */
   useUnsavedChangesGuard({
-    isDirty: Boolean(title.trim() || description.trim()),
+    isDirty: formSnapshot !== initialSnapshot,
     isSaving: isSubmitting,
     hasSaved: hasSubmitted,
     confirm,
@@ -114,6 +128,10 @@ function NewJobScreen() {
     discardLabel: t('create.discard'),
     cancelLabel: t('common:buttons.cancel'),
   });
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
   /*
@@ -160,6 +178,31 @@ function NewJobScreen() {
   }, [editRetryToken, hasHydratedEdit, isEditing, jobId, showToast, t]);
 
   function hydrateFromJob(job: JobVacancy) {
+    setInitialSnapshot(JSON.stringify({
+      title: job.title ?? '',
+      description: job.description ?? '',
+      type: job.type ?? 'volunteer',
+      commitment: job.commitment ?? 'flexible',
+      location: job.location ?? '',
+      category: job.category ?? '',
+      skills: (job.skills ?? []).join(', '),
+      hours: job.hours_per_week !== null && job.hours_per_week !== undefined ? String(job.hours_per_week) : '',
+      credits: job.time_credits !== null && job.time_credits !== undefined ? String(job.time_credits) : '',
+      contactEmail: job.contact_email ?? '',
+      contactPhone: job.contact_phone ?? '',
+      salaryMin: job.salary_min !== null && job.salary_min !== undefined ? String(job.salary_min) : '',
+      salaryMax: job.salary_max !== null && job.salary_max !== undefined ? String(job.salary_max) : '',
+      salaryCurrency: job.salary_currency ?? '',
+      salaryType: job.salary_type ?? 'annual',
+      salaryNegotiable: Boolean(job.salary_negotiable),
+      blindHiring: Boolean(job.blind_hiring),
+      tagline: job.tagline ?? '',
+      videoUrl: job.video_url ?? '',
+      companySize: companySizes.includes(job.company_size as CompanySize) ? job.company_size as CompanySize : '',
+      benefits: (job.benefits ?? []).join(', '),
+      deadline: job.deadline ? job.deadline.slice(0, 10) : '',
+      isRemote: Boolean(job.is_remote),
+    }));
     setTitle(job.title ?? '');
     setDescription(job.description ?? '');
     setType(job.type ?? 'volunteer');
@@ -186,6 +229,7 @@ function NewJobScreen() {
   }
 
   async function submit() {
+    if (submitPending.current) return;
     if (!title.trim() || !description.trim()) {
       showToast({ title: t('create.validationTitle'), description: t('create.validationRequired'), variant: 'warning' });
       return;
@@ -213,6 +257,7 @@ function NewJobScreen() {
       return;
     }
 
+    submitPending.current = true;
     setIsSubmitting(true);
     try {
       const payload: Omit<CreateJobPayload, 'status'> = {
@@ -240,8 +285,24 @@ function NewJobScreen() {
         company_size: companySize || null,
         benefits: benefits.split(',').map((benefit) => benefit.trim()).filter(Boolean),
       };
-      const result = isEditing ? await updateJob(jobId, payload) : await createJob({ ...payload, status: 'open' });
+      let result;
+      if (isEditing) {
+        result = await updateJob(jobId, payload);
+      } else {
+        const createPayload = { ...payload, status: 'open' as const };
+        const payloadSignature = JSON.stringify(createPayload);
+        if (createAttempt.current?.payload !== payloadSignature) {
+          createAttempt.current = {
+            payload: payloadSignature,
+            key: mutationIdempotencyKey('mobile-job-create'),
+          };
+        }
+        result = await createJob({ ...createPayload, idempotency_key: createAttempt.current.key });
+      }
+      if (!mountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
+      createAttempt.current = null;
       const id = result.data?.id ?? jobId;
       if (id) {
         setHasSubmitted(true);
@@ -250,17 +311,20 @@ function NewJobScreen() {
         router.back();
       }
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({
         title: isEditing ? t('create.editFailedTitle') : t('create.failedTitle'),
         description: describeApiError(error, isEditing ? t('create.editFailedDescription') : t('create.failedDescription')),
         variant: 'danger',
       });
     } finally {
-      setIsSubmitting(false);
+      submitPending.current = false;
+      if (mountedRef.current) setIsSubmitting(false);
     }
   }
 
   async function generateDescription() {
+    const requestedInput = latestGenerationInput.current;
     const cleanTitle = title.trim();
     if (!cleanTitle) {
       showToast({ title: t('create.validationTitle'), description: t('create.generateTitleRequired'), variant: 'warning' });
@@ -275,6 +339,7 @@ function NewJobScreen() {
         type,
         commitment,
       });
+      if (latestGenerationInput.current !== requestedInput) return;
       setDescription(response.data.description);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
@@ -343,19 +408,20 @@ function NewJobScreen() {
         </FormHero>
 
         <FormSection title={t('create.sectionRole')} icon="document-text-outline" testID="job-section-role">
-          <FormField label={t('create.titleLabel')} value={title} onChangeText={setTitle} placeholder={t('create.titlePlaceholder')} theme={theme} />
-          <FormField label={t('create.descriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('create.descriptionPlaceholder')} theme={theme} multiline />
-          <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isGeneratingDescription || !title.trim()}>
+          <FormField disabled={isSubmitting} label={t('create.titleLabel')} value={title} onChangeText={setTitle} placeholder={t('create.titlePlaceholder')} theme={theme} />
+          <FormField disabled={isSubmitting} label={t('create.descriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('create.descriptionPlaceholder')} theme={theme} multiline />
+          <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isSubmitting || isGeneratingDescription || !title.trim()}>
             <Ionicons name="sparkles-outline" size={16} color={primary} />
             <HeroButton.Label>{isGeneratingDescription ? t('create.generatingDescription') : t('create.generateDescription')}</HeroButton.Label>
           </HeroButton>
-          <ButtonGroup label={t('create.typeLabel')} values={jobTypes} selected={type} onSelect={setType} labelFor={(value) => t(`filters.type.${value}`)} />
-          <ButtonGroup label={t('create.commitmentLabel')} values={commitments} selected={commitment} onSelect={setCommitment} labelFor={(value) => t(`filters.commitment.${value}`)} />
+          <ButtonGroup disabled={isSubmitting} label={t('create.typeLabel')} values={jobTypes} selected={type} onSelect={setType} labelFor={(value) => t(`filters.type.${value}`)} />
+          <ButtonGroup disabled={isSubmitting} label={t('create.commitmentLabel')} values={commitments} selected={commitment} onSelect={setCommitment} labelFor={(value) => t(`filters.commitment.${value}`)} />
         </FormSection>
 
         <FormSection title={t('create.sectionDetails')} icon="location-outline" testID="job-section-details">
-          <FormField label={t('create.locationLabel')} value={location} onChangeText={setLocation} placeholder={t('create.locationPlaceholder')} theme={theme} />
+          <FormField disabled={isSubmitting} label={t('create.locationLabel')} value={location} onChangeText={setLocation} placeholder={t('create.locationPlaceholder')} theme={theme} />
           <HeroButton
+            isDisabled={isSubmitting}
             variant={isRemote ? 'primary' : 'secondary'}
             onPress={() => setIsRemote((value) => !value)}
             accessibilityLabel={t('create.remote')}
@@ -365,14 +431,14 @@ function NewJobScreen() {
             <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
           </HeroButton>
           <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.remoteHint')}</Text>
-          <FormField label={t('create.categoryLabel')} value={category} onChangeText={setCategory} placeholder={t('create.categoryPlaceholder')} theme={theme} />
-          <FormField label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
+          <FormField disabled={isSubmitting} label={t('create.categoryLabel')} value={category} onChangeText={setCategory} placeholder={t('create.categoryPlaceholder')} theme={theme} />
+          <FormField disabled={isSubmitting} label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
           <View className="flex-row gap-3">
             <View className="min-w-0 flex-1">
-              <FormField label={t('create.hoursLabel')} value={hours} onChangeText={setHours} placeholder={t('create.hoursPlaceholder')} theme={theme} keyboardType="decimal-pad" />
+              <FormField disabled={isSubmitting} label={t('create.hoursLabel')} value={hours} onChangeText={setHours} placeholder={t('create.hoursPlaceholder')} theme={theme} keyboardType="decimal-pad" />
             </View>
             <View className="min-w-0 flex-1">
-              <FormField label={t('create.creditsLabel')} value={credits} onChangeText={setCredits} placeholder={t('create.creditsPlaceholder')} theme={theme} keyboardType="decimal-pad" />
+              <FormField disabled={isSubmitting} label={t('create.creditsLabel')} value={credits} onChangeText={setCredits} placeholder={t('create.creditsPlaceholder')} theme={theme} keyboardType="decimal-pad" />
             </View>
           </View>
         </FormSection>
@@ -381,15 +447,16 @@ function NewJobScreen() {
           <FormSection title={t('create.sectionPay')} icon="cash-outline" testID="job-section-pay">
             <View className="flex-row gap-3">
               <View className="min-w-0 flex-1">
-                <FormField label={t('create.salaryMinLabel')} value={salaryMin} onChangeText={setSalaryMin} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
+                <FormField disabled={isSubmitting} label={t('create.salaryMinLabel')} value={salaryMin} onChangeText={setSalaryMin} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
               </View>
               <View className="min-w-0 flex-1">
-                <FormField label={t('create.salaryMaxLabel')} value={salaryMax} onChangeText={setSalaryMax} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
+                <FormField disabled={isSubmitting} label={t('create.salaryMaxLabel')} value={salaryMax} onChangeText={setSalaryMax} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
               </View>
             </View>
-            <FormField label={t('create.salaryCurrencyLabel')} value={salaryCurrency} onChangeText={setSalaryCurrency} placeholder={t('create.salaryCurrencyPlaceholder')} theme={theme} />
-            <ButtonGroup label={t('create.salaryTypeLabel')} values={salaryTypes} selected={salaryType} onSelect={setSalaryType} labelFor={(value) => t(`create.salaryType.${value}`)} />
+            <FormField disabled={isSubmitting} label={t('create.salaryCurrencyLabel')} value={salaryCurrency} onChangeText={setSalaryCurrency} placeholder={t('create.salaryCurrencyPlaceholder')} theme={theme} />
+            <ButtonGroup disabled={isSubmitting} label={t('create.salaryTypeLabel')} values={salaryTypes} selected={salaryType} onSelect={setSalaryType} labelFor={(value) => t(`create.salaryType.${value}`)} />
             <HeroButton
+              isDisabled={isSubmitting}
               variant={salaryNegotiable ? 'primary' : 'secondary'}
               onPress={() => setSalaryNegotiable((value) => !value)}
               accessibilityState={{ selected: salaryNegotiable }}
@@ -401,13 +468,14 @@ function NewJobScreen() {
         ) : null}
 
         <FormSection title={t('create.sectionContact')} icon="mail-outline" testID="job-section-contact">
-          <FormField label={t('create.contactEmailLabel')} value={contactEmail} onChangeText={setContactEmail} placeholder={t('create.contactEmailPlaceholder')} theme={theme} keyboardType="email-address" />
-          <FormField label={t('create.contactPhoneLabel')} value={contactPhone} onChangeText={setContactPhone} placeholder={t('create.contactPhonePlaceholder')} theme={theme} keyboardType="phone-pad" />
-          <FormField label={t('create.deadlineLabel')} value={deadline} onChangeText={setDeadline} placeholder={t('create.deadlinePlaceholder')} theme={theme} />
+          <FormField disabled={isSubmitting} label={t('create.contactEmailLabel')} value={contactEmail} onChangeText={setContactEmail} placeholder={t('create.contactEmailPlaceholder')} theme={theme} keyboardType="email-address" />
+          <FormField disabled={isSubmitting} label={t('create.contactPhoneLabel')} value={contactPhone} onChangeText={setContactPhone} placeholder={t('create.contactPhonePlaceholder')} theme={theme} keyboardType="phone-pad" />
+          <FormField disabled={isSubmitting} label={t('create.deadlineLabel')} value={deadline} onChangeText={setDeadline} placeholder={t('create.deadlinePlaceholder')} theme={theme} />
         </FormSection>
 
         <FormSection title={t('create.sectionExtras')} icon="sparkles-outline" testID="job-section-extras">
           <HeroButton
+            isDisabled={isSubmitting}
             variant={blindHiring ? 'primary' : 'secondary'}
             onPress={() => setBlindHiring((value) => !value)}
             accessibilityState={{ selected: blindHiring }}
@@ -416,10 +484,10 @@ function NewJobScreen() {
             <HeroButton.Label>{t('create.blindHiring')}</HeroButton.Label>
           </HeroButton>
           <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.blindHiringHint')}</Text>
-          <FormField label={t('create.taglineLabel')} value={tagline} onChangeText={setTagline} placeholder={t('create.taglinePlaceholder')} theme={theme} />
-          <FormField label={t('create.videoUrlLabel')} value={videoUrl} onChangeText={setVideoUrl} placeholder={t('create.videoUrlPlaceholder')} theme={theme} keyboardType="url" />
-          <ButtonGroup label={t('create.companySizeLabel')} values={companySizes} selected={companySize} onSelect={setCompanySize} labelFor={(value) => t(`create.companySize.${value}`)} />
-          <FormField label={t('create.benefitsLabel')} value={benefits} onChangeText={setBenefits} placeholder={t('create.benefitsPlaceholder')} theme={theme} />
+          <FormField disabled={isSubmitting} label={t('create.taglineLabel')} value={tagline} onChangeText={setTagline} placeholder={t('create.taglinePlaceholder')} theme={theme} />
+          <FormField disabled={isSubmitting} label={t('create.videoUrlLabel')} value={videoUrl} onChangeText={setVideoUrl} placeholder={t('create.videoUrlPlaceholder')} theme={theme} keyboardType="url" />
+          <ButtonGroup disabled={isSubmitting} label={t('create.companySizeLabel')} values={companySizes} selected={companySize} onSelect={setCompanySize} labelFor={(value) => t(`create.companySize.${value}`)} />
+          <FormField disabled={isSubmitting} label={t('create.benefitsLabel')} value={benefits} onChangeText={setBenefits} placeholder={t('create.benefitsPlaceholder')} theme={theme} />
         </FormSection>
       </ScrollView>
       <FormActionFooter
@@ -446,17 +514,19 @@ function ButtonGroup<T extends string>({
   selected,
   onSelect,
   labelFor,
+  disabled = false,
 }: {
   label: string;
   values: T[];
   selected: T | '';
   onSelect: (value: T) => void;
   labelFor: (value: T) => string;
+  disabled?: boolean;
 }) {
   return (
     <ChoiceChips
       label={label}
-      options={toOptions(values, labelFor)}
+      options={toOptions(values, labelFor).map(option => ({ ...option, disabled }))}
       selected={selected}
       onSelect={(value) => { if (value) onSelect(value); }}
     />
@@ -469,6 +539,7 @@ function FormField({
   onChangeText,
   placeholder,
   theme,
+  disabled = false,
   multiline = false,
   keyboardType,
 }: {
@@ -477,6 +548,7 @@ function FormField({
   onChangeText: (value: string) => void;
   placeholder: string;
   theme: ReturnType<typeof useTheme>;
+  disabled?: boolean;
   multiline?: boolean;
   keyboardType?: 'default' | 'decimal-pad' | 'email-address' | 'phone-pad' | 'url';
 }) {
@@ -484,6 +556,7 @@ function FormField({
     <View>
       <Input
         label={label}
+        editable={!disabled}
         style={{ color: theme.text, minHeight: multiline ? 112 : undefined, textAlignVertical: multiline ? 'top' : 'center' }}
         placeholder={placeholder}
         placeholderTextColor={theme.textMuted}

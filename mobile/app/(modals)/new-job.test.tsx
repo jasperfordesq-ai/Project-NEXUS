@@ -4,13 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 const mockCreateJob = jest.fn().mockResolvedValue({ data: { id: 301 } });
 const mockGetJobDetail = jest.fn();
 const mockGenerateJobDescription = jest.fn();
 const mockReplace = jest.fn();
 let mockSearchParams: Record<string, string> = {};
+let mockUserId = 21;
+let mockTenantId = 2;
+const mockDraftGuard = jest.fn();
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({ useUnsavedChangesGuard: (options: unknown) => mockDraftGuard(options) }));
 
 // The form guards against a stray Back (audit 2026-09-06); the confirmation is inert here.
 jest.mock('@/components/ui/useConfirm', () => ({
@@ -122,7 +127,8 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+  useTenant: () => ({ tenant: { id: mockTenantId, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     bg: '#ffffff',
@@ -154,10 +160,11 @@ jest.mock('@/components/ui/AppToast', () => {
 jest.mock('@/components/ui/FormActionFooter', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
-  return function MockFormActionFooter({ submitLabel, onSubmit }: { submitLabel: string; onSubmit: () => void }) {
+  return function MockFormActionFooter({ submitLabel, isSubmitting, isDisabled, onSubmit }: { submitLabel: string; isSubmitting: boolean; isDisabled?: boolean; onSubmit: () => void }) {
+    const disabled = isSubmitting || isDisabled;
     return (
       <View>
-        <Pressable accessibilityRole="button" onPress={onSubmit}>
+        <Pressable accessibilityRole="button" accessibilityLabel={submitLabel} disabled={disabled} accessibilityState={{ disabled }} onPress={onSubmit}>
           <Text>{submitLabel}</Text>
         </Pressable>
       </View>
@@ -167,8 +174,8 @@ jest.mock('@/components/ui/FormActionFooter', () => {
 jest.mock('heroui-native', () => {
   const React = require('react');
   const { Pressable, Text, TextInput, View } = require('react-native');
-  const Button = ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) => (
-    <Pressable onPress={onPress}>
+  const Button = ({ children, onPress, isDisabled, accessibilityState, ...props }: { children: React.ReactNode; onPress?: () => void; isDisabled?: boolean; accessibilityState?: Record<string, unknown>; [key: string]: unknown }) => (
+    <Pressable {...props} disabled={isDisabled} accessibilityState={{ ...accessibilityState, disabled: Boolean(isDisabled) }} onPress={onPress}>
       <View>{children}</View>
     </Pressable>
   );
@@ -210,10 +217,157 @@ import { useAppToast } from '@/components/ui/AppToast';
 
 const showToast = useAppToast().show as jest.Mock;
 
+function accessibilityStateFor(node: { parent?: unknown; props?: { accessibilityState?: Record<string, unknown> } } | null) {
+  let current = node as typeof node;
+  while (current) {
+    if (current.props?.accessibilityState) return current.props.accessibilityState;
+    current = current.parent as typeof node;
+  }
+  return undefined;
+}
+
 describe('NewJobRoute', () => {
+  it('retains a rejected job draft and allows retry with the same values', async () => {
+    mockCreateJob.mockRejectedValueOnce(new ApiResponseError(422, 'Please review the role.'));
+    const screen = render(<NewJobRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('Role title'), 'Garden coordinator');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the role, expectations, and next steps.'), 'Coordinate weekly sessions.');
+    fireEvent.changeText(screen.getByPlaceholderText('Where is the role based?'), 'Riverside');
+    await act(async () => { fireEvent.press(screen.getByText('Create job')); });
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Garden coordinator')).toBeTruthy();
+    expect(screen.getByDisplayValue('Riverside')).toBeTruthy();
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(true);
+    await act(async () => { fireEvent.press(screen.getByText('Create job')); });
+    expect(mockCreateJob).toHaveBeenCalledTimes(2);
+    expect(mockCreateJob.mock.calls[1][0]).toEqual(mockCreateJob.mock.calls[0][0]);
+    expect(mockReplace).toHaveBeenCalled();
+  });
+  it('reuses the creation key when the result is unknown and a retry confirms the job', async () => {
+    mockCreateJob.mockRejectedValueOnce(new ApiResponseError(0, 'The request result is unknown.'));
+    const screen = render(<NewJobRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('Role title'), 'Response-loss coordinator');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the role, expectations, and next steps.'), 'Coordinate the response-loss test.');
+
+    await act(async () => { fireEvent.press(screen.getByText('Create job')); });
+    const firstPayload = mockCreateJob.mock.calls[0][0] as { idempotency_key?: string };
+    expect(firstPayload.idempotency_key).toEqual(expect.any(String));
+    expect(firstPayload.idempotency_key!.length).toBeGreaterThanOrEqual(8);
+    expect(mockReplace).not.toHaveBeenCalled();
+
+    await act(async () => { fireEvent.press(screen.getByText('Create job')); });
+    const retryPayload = mockCreateJob.mock.calls[1][0] as { idempotency_key?: string };
+    expect(retryPayload.idempotency_key).toBe(firstPayload.idempotency_key);
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/job-detail', params: { id: '301' } });
+  });
+  it('uses a new creation key after the rejected draft changes', async () => {
+    mockCreateJob.mockRejectedValueOnce(new ApiResponseError(422, 'Please review the role.'));
+    const screen = render(<NewJobRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('Role title'), 'First title');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the role, expectations, and next steps.'), 'A complete description.');
+    await act(async () => { fireEvent.press(screen.getByText('Create job')); });
+    const firstKey = mockCreateJob.mock.calls[0][0].idempotency_key;
+
+    fireEvent.changeText(screen.getByDisplayValue('First title'), 'Corrected title');
+    await act(async () => { fireEvent.press(screen.getByText('Create job')); });
+    expect(mockCreateJob.mock.calls[1][0].idempotency_key).not.toBe(firstKey);
+  });
+  it('does not navigate a replacement account when the previous account creation finishes', async () => {
+    let resolve!: (value: unknown) => void;
+    mockCreateJob.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+    const screen = render(<NewJobRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('Role title'), 'Original account role');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the role, expectations, and next steps.'), 'Created by the original account.');
+    fireEvent.press(screen.getByText('Create job'));
+    await waitFor(() => expect(mockCreateJob).toHaveBeenCalledTimes(1));
+
+    mockUserId = 99;
+    screen.rerender(<NewJobRoute />);
+    expect(screen.queryByDisplayValue('Original account role')).toBeNull();
+    await act(async () => { resolve({ data: { id: 654 } }); });
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.getByPlaceholderText('Role title')).toHaveProp('value', '');
+  });
+  it('dispatches one creation for rapid repeated submit actions', async () => {
+    const screen = render(<NewJobRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('Role title'), 'Garden coordinator');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the role, expectations, and next steps.'), 'Coordinate weekly garden sessions.');
+    await act(async () => {
+      fireEvent.press(screen.getByText('Create job'));
+      fireEvent.press(screen.getByText('Create job'));
+    });
+    expect(mockCreateJob).toHaveBeenCalledTimes(1);
+  });
+  it('locks the submitted draft while creation is pending and restores it after failure', async () => {
+    let reject!: (reason: unknown) => void;
+    mockCreateJob.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    const screen = render(<NewJobRoute />);
+    const title = screen.getByPlaceholderText('Role title');
+    const description = screen.getByPlaceholderText('Describe the role, expectations, and next steps.');
+    fireEvent.changeText(title, 'Garden coordinator');
+    fireEvent.changeText(description, 'Coordinate weekly garden sessions.');
+
+    fireEvent.press(screen.getByRole('button', { name: 'Create job' }));
+    await waitFor(() => expect(mockCreateJob).toHaveBeenCalledTimes(1));
+
+    expect(screen.getByDisplayValue('Garden coordinator').props.isDisabled).toBe(true);
+    expect(screen.getByDisplayValue('Coordinate weekly garden sessions.').props.isDisabled).toBe(true);
+    expect(screen.getByLabelText('Remote role').props.accessibilityState.disabled).toBe(true);
+    expect(screen.getByLabelText('Paid').props.accessibilityState.disabled).toBe(true);
+    expect(accessibilityStateFor(screen.getByText('Generate with AI'))?.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Create job' }).props.accessibilityState.disabled).toBe(true);
+
+    fireEvent.press(screen.getByLabelText('Remote role'));
+    fireEvent.press(screen.getByLabelText('Paid'));
+    fireEvent.press(screen.getByText('Generate with AI'));
+    fireEvent.press(screen.getByRole('button', { name: 'Create job' }));
+    expect(mockCreateJob).toHaveBeenCalledTimes(1);
+    expect(mockGenerateJobDescription).not.toHaveBeenCalled();
+
+    await act(async () => { reject(new ApiResponseError(422, 'Please review the role.')); });
+    expect(screen.getByDisplayValue('Garden coordinator').props.isDisabled).toBe(false);
+    expect(screen.getByLabelText('Remote role').props.accessibilityState.disabled).toBe(false);
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(true);
+  });
+  it('preserves employer edits made while an AI description is pending', async () => {
+    let resolve!: (value: unknown) => void;
+    mockGenerateJobDescription.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+    const screen = render(<NewJobRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('Role title'), 'Community coordinator');
+    fireEvent.press(screen.getByText('Generate with AI'));
+    fireEvent.changeText(screen.getByPlaceholderText('Role title'), 'Updated role title');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the role, expectations, and next steps.'), 'My own carefully written description');
+    await act(async () => { resolve({ data: { description: 'Outdated generated copy' } }); });
+    expect(screen.queryByDisplayValue('Outdated generated copy')).toBeNull();
+    expect(screen.getByDisplayValue('My own carefully written description')).toBeTruthy();
+  });
+  it('loads a new edit target instead of retaining the previous job draft', async () => {
+    mockSearchParams = { id: '301' };
+    mockGetJobDetail.mockResolvedValueOnce({ data: { id: 301, title: 'First job', description: 'First description' } });
+    const screen = render(<NewJobRoute />);
+    await waitFor(() => expect(screen.getByDisplayValue('First job')).toBeTruthy());
+    fireEvent.changeText(screen.getByDisplayValue('First job'), 'First job draft');
+    mockGetJobDetail.mockResolvedValueOnce({ data: { id: 302, title: 'Second job', description: 'Second description' } });
+    mockSearchParams = { id: '302' };
+    screen.rerender(<NewJobRoute />);
+    await waitFor(() => expect(screen.getByDisplayValue('Second job')).toBeTruthy());
+    expect(screen.queryByDisplayValue('First job draft')).toBeNull();
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(false);
+  });
+  it('tracks a location-only draft and clearing it back to the initial value', () => {
+    const screen = render(<NewJobRoute />);
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(false);
+    fireEvent.changeText(screen.getByPlaceholderText('Where is the role based?'), 'Riverside');
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(true);
+    fireEvent.changeText(screen.getByPlaceholderText('Where is the role based?'), '');
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(false);
+  });
   beforeEach(() => {
     showToast.mockClear();
     mockSearchParams = {};
+    mockUserId = 21;
+    mockTenantId = 2;
     mockCreateJob.mockClear();
     mockGenerateJobDescription.mockReset();
     mockGenerateJobDescription.mockResolvedValue({ data: { description: 'AI generated role description.' } });
@@ -256,15 +410,13 @@ describe('NewJobRoute', () => {
     expect(getByDisplayValue('AI generated role description.')).toBeTruthy();
   });
 
-  it('requires a title before generating a role description', async () => {
+  it('disables description generation until a title is present', () => {
     const { getByText } = render(<NewJobRoute />);
 
+    expect(accessibilityStateFor(getByText('Generate with AI'))?.disabled).toBe(true);
     fireEvent.press(getByText('Generate with AI'));
-
-    await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith({ title: 'Check job details', description: 'Add a title before generating a description.', variant: 'warning' });
-    });
     expect(mockGenerateJobDescription).not.toHaveBeenCalled();
+    expect(showToast).not.toHaveBeenCalled();
   });
 
   it('allows paid roles without salary values when salary is negotiable', async () => {
@@ -421,9 +573,11 @@ describe('NewJobRoute', () => {
     const { getByDisplayValue, getByText } = render(<NewJobRoute />);
 
     await waitFor(() => expect(getByDisplayValue('Existing role')).toBeTruthy());
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(false);
     expect(getByText('Edit Job')).toBeTruthy();
     expect(getByText('Update the role details.')).toBeTruthy();
     fireEvent.changeText(getByDisplayValue('Existing role'), 'Updated role');
+    expect(mockDraftGuard.mock.calls.at(-1)?.[0].isDirty).toBe(true);
     fireEvent.press(getByText('Update job'));
 
     await waitFor(() => {

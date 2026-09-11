@@ -19,11 +19,14 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button as HeroButton, Card as HeroCard } from 'heroui-native';
+import { Alert, Card as HeroCard } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import * as Haptics from '@/lib/haptics';
 import { ApiResponseError } from '@/lib/api/client';
-import { getRegistrationInfo } from '@/lib/api/auth';
+import { describeApiError } from '@/lib/api/describeApiError';
+import { getRegistrationInfo, type LoginChallenge } from '@/lib/api/auth';
+import MfaSignIn from '@/components/auth/MfaSignIn';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -61,6 +64,7 @@ export default function LoginScreen() {
   const {
     control,
     handleSubmit,
+    resetField,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -70,6 +74,7 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [challenge, setChallenge] = useState<LoginChallenge | null>(null);
 
   async function onSubmit(data: LoginFormValues) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -77,11 +82,12 @@ export default function LoginScreen() {
     setGlobalError(null);
 
     try {
-      await authLogin({ email: data.email.trim().toLowerCase(), password: data.password });
+      const pending = await authLogin({ email: data.email.trim().toLowerCase(), password: data.password });
+      if (pending) { resetField('password'); setChallenge(pending); return; }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       if (err instanceof ApiResponseError) {
-        setGlobalError(err.message);
+        setGlobalError(describeApiError(err, t('errors.unableToSignIn')));
       } else {
         setGlobalError(t('errors.unableToSignIn'));
       }
@@ -89,6 +95,8 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   }
+
+  if (challenge) return <MfaSignIn challenge={challenge} onCancel={() => setChallenge(null)} />;
 
   return (
     <KeyboardAvoidingView

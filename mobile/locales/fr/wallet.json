@@ -99,7 +99,8 @@
     "confirmDonationTitle": "Faire don de ces heures ?",
     "confirmDonationMessage": "Vous êtes sur le point de donner {{amount}} heures à {{name}}. Cette action est irréversible.",
     "recipientResolving": "Vérification du destinataire…",
-    "recipientUnresolved": "Ce membre n’a pas été trouvé. Recherchez plutôt le destinataire."
+    "recipientUnresolved": "Ce membre n’a pas été trouvé. Recherchez plutôt le destinataire.",
+    "unresolvedOperation": "Un transfert précédent reste non confirmé. Consultez votre historique et contactez votre coordinateur avant de le renvoyer."
   },
   "status": {
     "completed": "Terminé",

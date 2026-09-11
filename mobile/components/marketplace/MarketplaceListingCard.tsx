@@ -7,7 +7,8 @@ import { memo } from 'react';
 
 import { View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Surface, Text } from 'heroui-native';
+import { Card as HeroCard, Surface, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 

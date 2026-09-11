@@ -93,7 +93,11 @@
       "stopFailed": "Impossible d’enregistrer cet enregistrement. Réessayez.",
       "sendFailed": "Impossible d’envoyer le message vocal. Réessayez."
     },
-    "notFound": "Cette conversation n’est plus disponible."
+    "notFound": "Cette conversation n’est plus disponible.",
+    "unsentDrafts": "Brouillons non envoyés : {{count}}",
+    "editUnsentDraft": "Modifier le brouillon non envoyé",
+    "unsentDrafts_one": "Brouillon non envoyé : {{count}}",
+    "unsentDrafts_other": "Brouillons non envoyés : {{count}}"
   },
   "context": {
     "regarding": "Concernant",

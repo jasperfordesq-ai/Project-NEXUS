@@ -295,7 +295,7 @@
   },
   "biometricLock": {
     "title": "Déverrouiller avec l'empreinte ou le visage",
-    "hint": "Connectez-vous plus rapidement avec votre empreinte digitale, votre visage ou votre code PIN.",
+    "hint": "Verrouille votre session enregistrée au démarrage de l’application. Toute personne dont les données biométriques sont enregistrées sur cet appareil peut la déverrouiller. Le code PIN de l’appareil peut aussi être accepté.",
     "prompt": "Déverrouillez votre compte",
     "lockedTitle": "Verrouillé",
     "lockedSubtitle": "Déverrouillez pour retrouver votre communauté.",
@@ -305,7 +305,7 @@
       "failed": "Cela ne correspond pas. Réessayez.",
       "lockout": "Trop de tentatives. Utilisez le code PIN du téléphone ou réessayez plus tard.",
       "noHardware": "Ce téléphone n'a pas de déverrouillage par empreinte ou par visage.",
-      "notEnrolled": "Configurez d'abord une empreinte, le visage ou un code PIN dans les réglages du téléphone.",
+      "notEnrolled": "Configurez d’abord le déverrouillage par empreinte digitale ou reconnaissance faciale dans les paramètres de votre appareil.",
       "unavailable": "Le déverrouillage n'est pas disponible sur ce téléphone pour le moment."
     }
   },

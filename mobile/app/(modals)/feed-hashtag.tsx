@@ -8,7 +8,8 @@ import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Spinner } from 'heroui-native';
+import { Card as HeroCard, Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import { excludeGamificationMilestones, getHashtagFeed, type FeedItem as FeedItemType } from '@/lib/api/feed';

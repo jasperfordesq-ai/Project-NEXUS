@@ -5,7 +5,8 @@
 
 import { View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Spinner, Surface, Text } from 'heroui-native';
+import { Spinner, Surface, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useTheme } from '@/lib/hooks/useTheme';
 import AccentIcon from '@/components/ui/AccentIcon';

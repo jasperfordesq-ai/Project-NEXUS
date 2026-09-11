@@ -7,13 +7,15 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { parseDecimalInput } from '@/lib/utils/decimal';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as ImagePicker from 'expo-image-picker';
+import { randomUUID } from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
 
@@ -133,6 +135,8 @@ export function MarketplaceListingForm() {
   const [removeExistingVideo, setRemoveExistingVideo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [pendingMedia, setPendingMedia] = useState<{ id: number; tasks: (() => Promise<unknown>)[]; notice: string | null } | null>(null);
+  const mediaRetryInFlight = useRef(false);
   const { confirm, confirmDialog } = useConfirm();
   /*
     🔴 S5: a long description, a price and chosen photos were lost to a stray Back with
@@ -318,31 +322,18 @@ export function MarketplaceListingForm() {
       const response = isEditing
         ? await updateMarketplaceListing(listingId, payload)
         : await createMarketplaceListing(payload);
-      /*
-        🔴 The listing exists from here on. A failed photo or video step used to fall into the
-        outer catch and read as "could not save", leaving the seller on the form — whose next
-        tap on Publish created a SECOND listing. Media failures are reported as partial
-        success and the seller is taken to the listing they did create (audit 2026-09-06).
-      */
-      let mediaFailure: unknown = null;
-      try {
-        if (isEditing && removedImageIds.length > 0) {
-          await Promise.all(removedImageIds.map((imageId) => deleteMarketplaceListingImage(response.data.id, imageId)));
-        }
-        if (imageUris.length > 0) {
-          await uploadMarketplaceImages(response.data.id, imageUris);
-        }
-        if (isEditing && removeExistingVideo && !videoAsset) {
-          await deleteMarketplaceVideo(response.data.id);
-        }
-        if (videoAsset) {
-          await uploadMarketplaceVideo(response.data.id, videoAsset);
-        }
-      } catch (err) {
-        mediaFailure = err;
-      }
-      if (mediaFailure) {
-        showToast({ title: t('forms.mediaSaveFailedTitle'), description: describeApiError(mediaFailure, t('forms.mediaSaveFailedMessage')), variant: 'warning' });
+      const tasks: (() => Promise<unknown>)[] = [];
+      if (isEditing) removedImageIds.forEach(imageId => tasks.push(() => deleteMarketplaceListingImage(response.data.id, imageId)));
+      imageUris.forEach(uri => {
+        const operationKey = randomUUID();
+        tasks.push(() => uploadMarketplaceImages(response.data.id, [uri], operationKey));
+      });
+      if (isEditing && removeExistingVideo && !videoAsset) tasks.push(() => deleteMarketplaceVideo(response.data.id));
+      if (videoAsset) tasks.push(() => uploadMarketplaceVideo(response.data.id, videoAsset));
+      const failed = await runMediaTasks(tasks);
+      if (failed.length) {
+        setPendingMedia({ id: response.data.id, tasks: failed, notice: typeof response.meta?.notice === 'string' ? response.meta.notice : null });
+        return;
       }
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -371,6 +362,34 @@ export function MarketplaceListingForm() {
     }
   }
 
+  async function runMediaTasks(tasks: (() => Promise<unknown>)[]) {
+    const failed: (() => Promise<unknown>)[] = [];
+    for (const task of tasks) {
+      try { await task(); } catch { failed.push(task); }
+    }
+    return failed;
+  }
+
+  function continueSavedListing(id: number, notice: string | null) {
+    if (notice) showToast({ title: t('forms.published'), description: notice, variant: 'default' });
+    setHasSubmitted(true);
+    router.replace({ pathname: '/(modals)/marketplace-detail', params: { id: String(id) } } as unknown as Href);
+  }
+
+  async function retryMedia() {
+    if (!pendingMedia || mediaRetryInFlight.current) return;
+    mediaRetryInFlight.current = true;
+    setIsSubmitting(true);
+    try {
+      const failed = await runMediaTasks(pendingMedia.tasks);
+      if (failed.length) setPendingMedia({ ...pendingMedia, tasks: failed });
+      else continueSavedListing(pendingMedia.id, pendingMedia.notice);
+    } finally {
+      mediaRetryInFlight.current = false;
+      setIsSubmitting(false);
+    }
+  }
+
   async function generateDescription() {
     const cleanTitle = title.trim();
     if (!cleanTitle) {
@@ -386,7 +405,7 @@ export function MarketplaceListingForm() {
         category: selectedCategory?.name,
         condition,
       });
-      setDescription(response.data.description);
+      setDescription(current => current === description ? response.data.description : current);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('forms.generateDescriptionFailed'), variant: 'danger' });
@@ -473,6 +492,25 @@ export function MarketplaceListingForm() {
   }
 
   const totalImageCount = existingImages.length + imageUris.length;
+
+  if (pendingMedia) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+        <AppTopBar title={t('forms.mediaSaveFailedTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
+        <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+          <Text accessibilityLiveRegion="polite" style={{ color: theme.text }}>{t('forms.mediaSaveFailedMessage')}</Text>
+          <HeroButton isDisabled={isSubmitting} onPress={() => void retryMedia()}>
+            <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+          </HeroButton>
+          <HeroButton variant="secondary" isDisabled={isSubmitting}
+            onPress={() => continueSavedListing(pendingMedia.id, pendingMedia.notice)}>
+            <HeroButton.Label>{t('actions.viewListing', { title })}</HeroButton.Label>
+          </HeroButton>
+        </ScrollView>
+        {confirmDialog}
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>

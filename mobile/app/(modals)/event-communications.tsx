@@ -8,16 +8,9 @@ import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import {
-  Alert,
-  Button,
-  Card,
-  Chip,
-  Input,
-  Label,
-  Spinner,
-  TextField,
-} from 'heroui-native';
+import { Alert, Card, Input, Label, Spinner, TextField,  } from 'heroui-native';
+import { Button } from '@/components/ui/NativeButton';
+import { Chip } from '@/components/ui/StatusChip';
 
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';

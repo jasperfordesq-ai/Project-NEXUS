@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockParams: Record<string, string> = {};
 
@@ -70,6 +70,17 @@ describe('VolunteerCheckInScreen', () => {
     await waitFor(() => expect(getByText('Shift has not started')).toBeTruthy());
   });
 
+  it('retries a failed check-in with the same token', async () => {
+    jest.mocked(verifyVolunteerCheckIn).mockRejectedValueOnce(new ApiResponseError(503, 'Temporarily unavailable'));
+    const { getByText } = render(<VolunteerCheckInScreen />);
+    fireEvent.press(getByText('Check in'));
+    await waitFor(() => expect(getByText('Temporarily unavailable')).toBeTruthy());
+    fireEvent.press(getByText('common:buttons.retry'));
+    await waitFor(() => expect(getByText('Checked in Ada Member')).toBeTruthy());
+    expect(verifyVolunteerCheckIn).toHaveBeenNthCalledWith(2, 'shift-token');
+    expect(checkOutVolunteer).not.toHaveBeenCalled();
+  });
+
   it('surfaces a refused check-out', async () => {
     jest.mocked(checkOutVolunteer).mockRejectedValue(new ApiResponseError(422, 'Already checked out'));
     const { getByText } = render(<VolunteerCheckInScreen />);
@@ -79,11 +90,49 @@ describe('VolunteerCheckInScreen', () => {
     await waitFor(() => expect(getByText('Already checked out')).toBeTruthy());
   });
 
+  it('retries checkout without checking the volunteer in again', async () => {
+    jest.mocked(checkOutVolunteer).mockRejectedValueOnce(new ApiResponseError(503, 'Checkout response lost'));
+    const { getByText } = render(<VolunteerCheckInScreen />);
+    fireEvent.press(getByText('Check in'));
+    await waitFor(() => expect(getByText('Check out')).toBeTruthy());
+    fireEvent.press(getByText('Check out'));
+    await waitFor(() => expect(getByText('Checkout response lost')).toBeTruthy());
+    fireEvent.press(getByText('common:buttons.retry'));
+    await waitFor(() => expect(getByText('Checked out Ada Member')).toBeTruthy());
+    expect(checkOutVolunteer).toHaveBeenNthCalledWith(2, 'shift-token');
+    expect(verifyVolunteerCheckIn).toHaveBeenCalledTimes(1);
+  });
+
   it('refuses a check-in with no token at all', () => {
     mockParams = {};
     const { getByText, queryByText } = render(<VolunteerCheckInScreen />);
     expect(getByText('This check-in link is not valid.')).toBeTruthy();
     expect(queryByText('Check in')).toBeNull();
     expect(verifyVolunteerCheckIn).not.toHaveBeenCalled();
+  });
+
+  it('starts a fresh confirmation when another QR token opens', async () => {
+    const screen = render(<VolunteerCheckInScreen />);
+    fireEvent.press(screen.getByText('Check in'));
+    await waitFor(() => expect(screen.getByText('Checked in Ada Member')).toBeTruthy());
+    mockParams = { token: 'another-shift-token' };
+    screen.rerender(<VolunteerCheckInScreen />);
+    expect(screen.queryByText('Checked in Ada Member')).toBeNull();
+    expect(screen.getByText('Check in')).toBeTruthy();
+    fireEvent.press(screen.getByText('Check in'));
+    await waitFor(() => expect(verifyVolunteerCheckIn).toHaveBeenLastCalledWith('another-shift-token'));
+  });
+
+  it('does not apply an old token response to the next confirmation', async () => {
+    let finish!: (value: never) => void;
+    jest.mocked(verifyVolunteerCheckIn).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<VolunteerCheckInScreen />);
+    fireEvent.press(screen.getByText('Check in'));
+    mockParams = { token: 'next-token' };
+    screen.rerender(<VolunteerCheckInScreen />);
+    await act(async () => { finish({ user: { id: 4, name: 'Previous volunteer' } } as never); });
+    expect(screen.queryByText('Checked in Previous volunteer')).toBeNull();
+    expect(screen.getByText('Check in')).toBeTruthy();
+    expect(checkOutVolunteer).not.toHaveBeenCalled();
   });
 });

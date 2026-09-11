@@ -47,7 +47,7 @@ type ChipProps = ComponentProps<typeof HeroChip>;
  * failed the minimum on the app's first screen. Applied only to interactive chips: a
  * decorative one is not a target and does not need the height.
  */
-const MIN_TARGET_DP = 24;
+const MIN_TARGET_DP = 48;
 
 function AccessibleChip(props: ChipProps) {
   const isInteractive = Boolean(props.onPress ?? props.onLongPress);
@@ -55,11 +55,13 @@ function AccessibleChip(props: ChipProps) {
     return (
       <HeroChip
         {...props}
-        style={[{ minHeight: MIN_TARGET_DP }, props.style as never] as never}
+        style={[props.style as never, { minHeight: MIN_TARGET_DP, minWidth: MIN_TARGET_DP }] as never}
       />
     );
   }
-  return <HeroChip focusable={false} {...props} />;
+  // RN 0.81 can still expose a no-op Pressable as clickable with focusable=false.
+  // Disable its press responder while retaining readable status text.
+  return <HeroChip focusable={false} {...props} disabled accessibilityRole="text" accessibilityState={{ ...props.accessibilityState, disabled: false }} />;
 }
 
 export const Chip = Object.assign(AccessibleChip, {

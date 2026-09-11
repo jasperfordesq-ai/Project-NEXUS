@@ -111,6 +111,7 @@ export interface FederationMemberReview {
 }
 
 export interface FederationTransactionPayload {
+  idempotency_key?: string;
   receiver_id: number | string;
   receiver_tenant_id: number | string;
   amount: number;

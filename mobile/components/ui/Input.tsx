@@ -58,7 +58,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
   return (
     <TextField isInvalid={!!error} isDisabled={isDisabled} className={containerClasses}>
       {label ? (
-        <Label className="mb-1.5 text-sm font-semibold">{label}</Label>
+        <Label focusable={false} className="mb-1.5 text-sm font-semibold">{label}</Label>
       ) : null}
       <View className="w-full flex-row items-center">
         {leftIcon ? (
@@ -88,6 +88,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
           ]}
           className={inputClassName ?? 'flex-1'}
           {...rest}
+          accessibilityLabel={rest.accessibilityLabel ?? label}
         />
         {rightIcon ? (
           <View className="pr-3 absolute right-0 z-10">{rightIcon}</View>

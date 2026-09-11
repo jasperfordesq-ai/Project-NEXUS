@@ -4,7 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
@@ -152,6 +154,25 @@ beforeEach(() => {
 });
 
 describe('JobPipelineScreen', () => {
+  it('sends only one candidate move for rapid conflicting actions', async () => {
+    const screen = render(<JobPipelineScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('pipeline-advance-44'));
+      fireEvent.press(screen.getByTestId('pipeline-move-shortlisted-44'));
+    });
+    expect(updateJobApplication).toHaveBeenCalledTimes(1);
+    expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'screening' });
+  });
+  it.each(['accepted', 'rejected', 'withdrawn'])('keeps %s candidates in their terminal stage without decision actions', (status) => {
+    mockUseApi.mockReturnValue({ data: { data: [{ ...applications[0], status: 'pending', stage: status }] }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<JobPipelineScreen />);
+    expect(screen.queryByText('Ava Candidate')).toBeNull();
+    fireEvent.press(screen.getByTestId(`pipeline-stage-${status}`));
+    expect(screen.getByText('Ava Candidate')).toBeTruthy();
+    expect(screen.queryByTestId('pipeline-advance-44')).toBeNull();
+    expect(screen.queryByTestId('pipeline-move-screening-44')).toBeNull();
+    expect(screen.queryByTestId('pipeline-reject-44')).toBeNull();
+  });
   it('renders pipeline stages and current-stage applications', () => {
     const { getByText } = render(<JobPipelineScreen />);
 

@@ -6,7 +6,7 @@
 // Typed as a plain string, not 'light' | 'dark': the store now also passes generated
 // per-community theme names such as `t-agoris-dark`.
 const mockSetTheme = jest.fn<void, [string]>();
-const mockSetColorScheme = jest.fn<void, ['light' | 'dark' | null]>();
+const mockSetColorScheme = jest.fn<void, ['light' | 'dark' | 'unspecified']>();
 const mockGetColorScheme = jest.fn<'light' | 'dark', []>(() => 'dark');
 const mockAddChangeListener = jest.fn<
   { remove: jest.Mock },
@@ -18,7 +18,7 @@ const mockStorageSet = jest.fn<Promise<void>, [string, string]>(async () => unde
 jest.mock('react-native', () => ({
   Appearance: {
     getColorScheme: () => mockGetColorScheme(),
-    setColorScheme: (scheme: 'light' | 'dark' | null) => mockSetColorScheme(scheme),
+    setColorScheme: (scheme: 'light' | 'dark' | 'unspecified') => mockSetColorScheme(scheme),
     addChangeListener: (cb: (p: { colorScheme: 'light' | 'dark' | null }) => void) => mockAddChangeListener(cb),
   },
 }));
@@ -70,7 +70,7 @@ describe('themeStore', () => {
     expect(themeStore.getSnapshot()).toBe('light');
     expect(mockSetTheme).toHaveBeenCalledWith('light');
     // 'system' mode hands colour-scheme control back to the OS.
-    expect(mockSetColorScheme).toHaveBeenCalledWith(null);
+    expect(mockSetColorScheme).toHaveBeenCalledWith('unspecified');
   });
 
   it('setMode() forces a scheme, applies it, and persists the choice', () => {

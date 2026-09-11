@@ -6,6 +6,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { reportToSink } from '@/lib/observability/reportSink';
 import { Platform } from 'react-native';
+import { isPublicStorageKey, publicStorage } from '@/lib/publicStorage';
 
 const memoryStorage = new Map<string, string>();
 const platformOS = Platform.OS;
@@ -29,11 +30,9 @@ const platformOS = Platform.OS;
  * nothing here identifies a person; each is context the app can re-derive on a
  * later launch, so holding it in memory costs nothing and loses nothing.
  *
- * NOTE this is a partial mitigation, not the whole answer. Memory does not
- * survive an app restart. Making these survive properly means storing
- * non-secret values outside the Keychain altogether, which needs a persistence
- * dependency the app does not currently have — an open decision, not an
- * oversight.
+ * These preferences now persist through publicStorage, alongside public tenant
+ * configuration. This fallback still keeps the current session usable if that
+ * file write fails. Credentials and personal profiles never enter that store.
  */
 const MEMORY_FALLBACK_KEYS: ReadonlySet<string> = new Set([
   'nexus_tenant_slug',
@@ -78,8 +77,8 @@ function reportStorageFailure(err: unknown, op: string, key: string, recovered?:
   });
 }
 
-export const storage = {
-  async get(key: string): Promise<string | null> {
+const storageBackend = {
+  async get(key: string, options?: { required?: boolean }): Promise<string | null> {
     try {
       if (canUseWebStorage()) {
         return window.localStorage.getItem(key);
@@ -97,15 +96,33 @@ export const storage = {
         return memoryStorage.get(key) ?? null;
       }
 
+      if (isPublicStorageKey(key)) {
+        const cached = await publicStorage.get(key);
+        if (cached !== null) { memoryStorage.set(key, cached); return cached; }
+        // Read older installations once, then retire the oversized Keychain item.
+        const legacy = await SecureStore.getItemAsync(key);
+        if (legacy !== null) {
+          memoryStorage.set(key, legacy);
+          try {
+            await publicStorage.set(key, legacy);
+            await SecureStore.deleteItemAsync(key);
+          } catch (error) {
+            reportStorageFailure(error, 'migrate', key, true);
+          }
+        }
+        return legacy;
+      }
+
       const value = await SecureStore.getItemAsync(key);
       if (value !== null) memoryStorage.set(key, value);
       return value;
-    } catch {
+    } catch (error) {
+      if (options?.required) throw error;
       return null;
     }
   },
 
-  async set(key: string, value: string): Promise<void> {
+  async set(key: string, value: string, options?: { required?: boolean }): Promise<void> {
     try {
       if (canUseWebStorage()) {
         window.localStorage.setItem(key, value);
@@ -117,7 +134,8 @@ export const storage = {
         return;
       }
 
-      await SecureStore.setItemAsync(key, value);
+      if (isPublicStorageKey(key)) await publicStorage.set(key, value);
+      else await SecureStore.setItemAsync(key, value);
       // Only cache after the encrypted write succeeds. A failed Keychain write
       // must not create a session that disappears on the next app launch.
       memoryStorage.set(key, value);
@@ -125,7 +143,7 @@ export const storage = {
       // A credential is still NOT cached here — see the comment above. But a
       // non-credential on the allowlist is kept for this session rather than
       // silently lost, which is what MEMORY_FALLBACK_KEYS exists for.
-      const recovered = MEMORY_FALLBACK_KEYS.has(key);
+      const recovered = MEMORY_FALLBACK_KEYS.has(key) || isPublicStorageKey(key);
       if (recovered) {
         memoryStorage.set(key, value);
       }
@@ -133,6 +151,7 @@ export const storage = {
       // Diagnose "random logouts". Reported to BOTH Sentry and our own server —
       // Sentry alone has no DSN in any build profile, so this used to go nowhere.
       reportStorageFailure(err, 'set', key, recovered);
+      if (options?.required) throw err;
     }
   },
 
@@ -149,6 +168,7 @@ export const storage = {
       }
 
       memoryStorage.delete(key);
+      if (isPublicStorageKey(key)) await publicStorage.remove(key);
       await SecureStore.deleteItemAsync(key);
     } catch {
       // Already absent or unavailable — not an error
@@ -170,4 +190,26 @@ export const storage = {
       return null;
     }
   },
+};
+
+const pendingOperations = new Map<string, Promise<void>>();
+
+/** Preserve call order per key, including reads that can migrate/cache old data. */
+function inStorageOrder<T>(key: string, operation: () => Promise<T>): Promise<T> {
+  const result = (pendingOperations.get(key) ?? Promise.resolve()).then(operation);
+  const settled = result.then(() => undefined, () => undefined);
+  pendingOperations.set(key, settled);
+  void settled.then(() => {
+    if (pendingOperations.get(key) === settled) pendingOperations.delete(key);
+  });
+  return result;
+}
+
+export const storage = {
+  ...storageBackend,
+  get: (key: string, options?: { required?: boolean }): Promise<string | null> =>
+    inStorageOrder(key, () => storageBackend.get(key, options)),
+  set: (key: string, value: string, options?: { required?: boolean }): Promise<void> =>
+    inStorageOrder(key, () => storageBackend.set(key, value, options)),
+  remove: (key: string): Promise<void> => inStorageOrder(key, () => storageBackend.remove(key)),
 };

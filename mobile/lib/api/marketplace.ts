@@ -650,8 +650,9 @@ export function renewMarketplaceListing(id: number): Promise<MarketplaceDataResp
   return api.post<MarketplaceDataResponse<MarketplaceListingDetail>>(`${API_V2}/marketplace/listings/${id}/renew`, { duration_days: 30 });
 }
 
-export async function uploadMarketplaceImages(id: number, uris: string[]): Promise<MarketplaceDataResponse<MarketplaceImage[]>> {
+export async function uploadMarketplaceImages(id: number, uris: string[], operationKey?: string): Promise<MarketplaceDataResponse<MarketplaceImage[]>> {
   const formData = new FormData();
+  if (operationKey) formData.append('idempotency_key', operationKey);
   await Promise.all(uris.map((uri, index) => appendMarketplaceImageFile(formData, uri, index)));
   return api.upload<MarketplaceDataResponse<MarketplaceImage[]>>(`${API_V2}/marketplace/listings/${id}/images`, formData);
 }

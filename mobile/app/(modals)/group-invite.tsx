@@ -6,7 +6,8 @@
 import { ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
-import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
+import { Card as HeroCard } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 

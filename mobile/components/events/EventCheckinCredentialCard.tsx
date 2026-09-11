@@ -10,7 +10,9 @@ import { Ionicons } from '@/components/ui/Icon';
 import AccentIcon from '@/components/ui/AccentIcon';
 import * as Clipboard from 'expo-clipboard';
 import QRCode from 'react-native-qrcode-svg';
-import { Alert, Button, Card, Chip, Spinner, Surface } from 'heroui-native';
+import { Alert, Card, Spinner, Surface } from 'heroui-native';
+import { Button } from '@/components/ui/NativeButton';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import TextArea from '@/components/ui/TextArea';

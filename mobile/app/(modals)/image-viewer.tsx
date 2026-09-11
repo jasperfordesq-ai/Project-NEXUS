@@ -9,7 +9,8 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button as HeroButton, Surface } from 'heroui-native';
+import { Surface } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 

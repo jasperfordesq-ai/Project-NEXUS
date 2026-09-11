@@ -15,6 +15,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import {
   authenticate,
   biometricCapability,
+  biometricFailureKey,
   BIOMETRIC_LOCK_ENABLED_KEY,
   isBiometricLockEnabled,
   setBiometricLockEnabled,
@@ -109,7 +110,7 @@ describe('turning the lock on', () => {
     const result = await setBiometricLockEnabled(true, 'Unlock your account');
 
     expect(result.ok).toBe(true);
-    expect(store.set).toHaveBeenCalledWith(BIOMETRIC_LOCK_ENABLED_KEY, '1');
+    expect(store.set).toHaveBeenCalledWith(BIOMETRIC_LOCK_ENABLED_KEY, '1', { required: true });
   });
 
   it('will not offer to lock a phone with nothing enrolled', async () => {
@@ -127,7 +128,14 @@ describe('turning the lock on', () => {
 
     expect(result.ok).toBe(true);
     expect(auth.authenticateAsync).not.toHaveBeenCalled();
-    expect(store.remove).toHaveBeenCalledWith(BIOMETRIC_LOCK_ENABLED_KEY);
+    expect(store.set).toHaveBeenCalledWith(BIOMETRIC_LOCK_ENABLED_KEY, '0', { required: true });
+  });
+
+  it.each([true, false])('does not report success when saving %s fails', async (enabled) => {
+    phoneWith();
+    auth.authenticateAsync.mockResolvedValue({ success: true } as never);
+    store.set.mockRejectedValueOnce(new Error('Keychain unavailable'));
+    await expect(setBiometricLockEnabled(enabled, 'Unlock')).resolves.toEqual({ ok: false, reason: 'unavailable' });
   });
 });
 
@@ -145,6 +153,10 @@ describe('reading the preference', () => {
 });
 
 describe('authenticate', () => {
+  it('maps native capability failures to existing translated message keys', () => {
+    expect(biometricFailureKey('no_hardware')).toBe('noHardware');
+    expect(biometricFailureKey('not_enrolled')).toBe('notEnrolled');
+  });
   it('leaves the phone PIN available, so a finger that will not read is not a lockout', async () => {
     auth.authenticateAsync.mockResolvedValue({ success: true } as never);
 

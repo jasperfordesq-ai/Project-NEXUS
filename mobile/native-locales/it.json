@@ -1,7 +1,7 @@
 {
   "ios": {
     "CFBundleDisplayName": "Timebank Global",
-    "NSCameraUsageDescription": "Scansiona un codice QR del marketplace quando scegli di usare lo scanner.",
+    "NSCameraUsageDescription": "Scansiona un codice QR del marketplace o un codice di check-in di un evento quando scegli di aprire lo scanner.",
     "NSPhotoLibraryUsageDescription": "Scegli una foto dalla libreria per il tuo profilo o un post.",
     "NSMicrophoneUsageDescription": "Registra un messaggio vocale quando scegli di inviarne uno.",
     "NSFaceIDUsageDescription": "Usa Face ID per sbloccare la sessione di Timebank Global già salvata su questo dispositivo.",

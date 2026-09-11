@@ -44,6 +44,10 @@ import { holdSplash, releaseSplash } from '@/lib/ui/splash';
 import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
 import * as Sentry from '@sentry/react-native';
 
+// Cold deep links need a screen behind their destination so Back/Cancel can
+// remove it (and trigger the unsaved-changes guard) instead of doing nothing.
+export const unstable_settings = { anchor: '(tabs)' };
+
 // Image lightbox always sits on black regardless of theme.
 const IMAGE_VIEWER_BACKGROUND = '#000000';
 
@@ -122,7 +126,6 @@ holdSplash();
 */
 LogBox.ignoreLogs([
   'expo-notifications',
-  'expo-av',
   'Non-serializable values were found in the navigation state',
   // The session payload genuinely exceeds SecureStore's 2 KB advisory size and stores
   // fine; expo warns on every write. Accepted, not hidden — if the write ever does fail,

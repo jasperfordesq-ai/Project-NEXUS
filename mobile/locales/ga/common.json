@@ -1,4 +1,5 @@
 {
+  "mediaRecovery": {"retry":"Bain triail eile as an íomhá a uaslódáil","choose":"Roghnaigh íomhá eile","continue":"Téigh chuig an mír shábháilte"},
   "appName": "Timebank Global",
   "attribution": "Is bogearraí foinse oscailte é Project NEXUS faoi cheadúnas AGPL-3.0.",
   "sourceRepo": {

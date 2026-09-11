@@ -12,7 +12,8 @@ import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { randomUUID } from 'expo-crypto';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -58,6 +59,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import SavedImageRecovery from '@/components/ui/SavedImageRecovery';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -195,6 +197,7 @@ function NewEventScreen() {
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [existingCoverImage, setExistingCoverImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingImage, setPendingImage] = useState<{ id: number; scope?: 'single' | 'all'; destination: Href } | null>(null);
   const [hasSaved, setHasSaved] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
   const [editLoadFailed, setEditLoadFailed] = useState(false);
@@ -677,16 +680,16 @@ function NewEventScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (id) {
         if (selectedImageUri) {
+          const imageScope = isEditing && isRecurringSeries ? 'single' : createdRecurring ? 'all' : undefined;
           try {
-            const imageScope = isEditing && isRecurringSeries
-              ? 'single'
-              : createdRecurring
-                ? 'all'
-                : undefined;
             if (imageScope) await uploadEventImage(id, selectedImageUri, imageScope);
             else await uploadEventImage(id, selectedImageUri);
           } catch (err) {
             showToast({ title: t('create.imageUploadFailedTitle'), description: describeApiError(err, t('create.imageUploadFailedDescription')), variant: 'danger' });
+            setPendingImage({ id, scope: imageScope, destination: createdRecurring
+              ? '/(tabs)/events'
+              : { pathname: '/(modals)/event-detail', params: { id: String(id) } } });
+            return;
           }
         }
         successDestination = createdRecurring
@@ -781,6 +784,28 @@ function NewEventScreen() {
     (endType) => (endType !== 'never' || recurrenceCapabilities.supports_rolling_never)
       && (endType !== 'after_count' || recurrenceCapabilities.max_occurrences >= 2),
   );
+
+  if (pendingImage !== null) {
+    const continueSaved = () => router.replace(pendingImage.destination);
+    return <SavedImageRecovery
+      title={t('create.imageUploadFailedTitle')}
+      message={t('create.imageUploadFailedDescription')}
+      uri={selectedImageUri}
+      onChoose={pickCoverImage}
+      onContinue={continueSaved}
+      onRetry={async () => {
+        if (!selectedImageUri) return false;
+        try {
+          if (pendingImage.scope) await uploadEventImage(pendingImage.id, selectedImageUri, pendingImage.scope);
+          else await uploadEventImage(pendingImage.id, selectedImageUri);
+          return true;
+        } catch (err) {
+          if (isMountedRef.current) showToast({ title: t('create.imageUploadFailedTitle'), description: describeApiError(err, t('create.imageUploadFailedDescription')), variant: 'danger' });
+          return false;
+        }
+      }}
+    />;
+  }
 
   return (
     <SafeAreaView testID="new-event-screen" className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>

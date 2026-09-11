@@ -99,7 +99,8 @@
     "confirmDonationTitle": "Donare queste ore?",
     "confirmDonationMessage": "Stai per donare {{amount}} ore a {{name}}. L’operazione non può essere annullata.",
     "recipientResolving": "Verifica del destinatario…",
-    "recipientUnresolved": "Membro non trovato. Cerca il destinatario."
+    "recipientUnresolved": "Membro non trovato. Cerca il destinatario.",
+    "unresolvedOperation": "Un trasferimento precedente non è ancora confermato. Controlla la cronologia e contatta il coordinatore prima di inviarlo di nuovo."
   },
   "status": {
     "completed": "Completato",

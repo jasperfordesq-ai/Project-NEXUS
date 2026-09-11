@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
@@ -50,6 +50,7 @@ export interface ConfirmOptions {
 export function useConfirm() {
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const confirmingRef = useRef(false);
 
   const confirm = useCallback((opts: ConfirmOptions) => {
     setOptions(opts);
@@ -61,12 +62,14 @@ export function useConfirm() {
   }, [isConfirming]);
 
   const handleConfirm = useCallback(async () => {
-    if (!options) return;
+    if (!options || confirmingRef.current) return;
+    confirmingRef.current = true;
     const action = options.onConfirm;
     setIsConfirming(true);
     try {
       await action();
     } finally {
+      confirmingRef.current = false;
       setIsConfirming(false);
       setOptions(null);
     }

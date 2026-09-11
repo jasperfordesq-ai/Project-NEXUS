@@ -447,6 +447,8 @@ export interface RequestOptions {
    * stripped below. It only omits the stored one.
    */
   anonymous?: boolean;
+  /** Newly issued sessions must not refresh using credentials from an older account. */
+  skipAuthRefresh?: boolean;
   /**
    * Request body for `api.delete()`, which is the one verb helper with no positional
    * body parameter.
@@ -489,9 +491,10 @@ async function request<T>(
   body?: unknown,
   paramsOrOptions?: Record<string, string> | RequestOptions,
 ): Promise<T> {
+  const requestSessionGeneration = sessionGeneration;
   // Support both legacy params-only signature and new options object
   const options: RequestOptions =
-    paramsOrOptions && ('timeout' in paramsOrOptions || 'isUpload' in paramsOrOptions || 'params' in paramsOrOptions || 'headers' in paramsOrOptions || 'anonymous' in paramsOrOptions || 'body' in paramsOrOptions)
+    paramsOrOptions && ('timeout' in paramsOrOptions || 'isUpload' in paramsOrOptions || 'params' in paramsOrOptions || 'headers' in paramsOrOptions || 'anonymous' in paramsOrOptions || 'skipAuthRefresh' in paramsOrOptions || 'body' in paramsOrOptions)
       ? (paramsOrOptions as RequestOptions)
       : { params: paramsOrOptions as Record<string, string> | undefined };
 
@@ -507,6 +510,11 @@ async function request<T>(
     storage.get(STORAGE_KEYS.AUTH_TOKEN),
     storage.get(STORAGE_KEYS.TENANT_SLUG),
   ]);
+  // Storage can settle after logout or another login. Never dispatch the old
+  // screen's request using the replacement bearer (or a stale stored token).
+  if (!options.anonymous && requestSessionGeneration !== sessionGeneration) {
+    throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+  }
   const token = inProcessAccessToken ?? storedToken;
 
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
@@ -578,8 +586,14 @@ async function request<T>(
 
   // Handle 401: try silent token refresh, then retry once
   let retriedSuccessfully = false;
-  if (response.status === 401 && endpoint !== '/api/auth/login') {
+  if (response.status === 401 && !options.anonymous && !options.skipAuthRefresh && endpoint !== '/api/auth/login') {
+    if (requestSessionGeneration !== sessionGeneration) {
+      throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+    }
     const refresh = await attemptTokenRefresh();
+    if (requestSessionGeneration !== sessionGeneration) {
+      throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+    }
     if (refresh.status === 'refreshed') {
       // Retry the original request with the refreshed token
       const retryHeaders: Record<string, string> = { ...headers, Authorization: `Bearer ${refresh.token}` };
@@ -602,6 +616,9 @@ async function request<T>(
           : new ApiResponseError(0, i18n.t('common:errors.network'));
       }
       clearTimeout(retryTimeoutId);
+      if (retryRes.status === 401 && requestSessionGeneration !== sessionGeneration) {
+        throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+      }
 
       // 🔴 If the retry settled as anything but another 401, adopt it as THE response and
       // fall through to the shared tail below. It used to be parsed and thrown right here,
@@ -694,7 +711,7 @@ async function request<T>(
     );
   }
 
-  if (endpoint === '/api/auth/login') {
+  if (endpoint === '/api/auth/login' && requestSessionGeneration === sessionGeneration) {
     const authData = data as { access_token?: unknown; token?: unknown } | null;
     const issuedToken = typeof authData?.access_token === 'string'
       ? authData.access_token
@@ -702,7 +719,7 @@ async function request<T>(
         ? authData.token
         : null;
     if (issuedToken) installApiSession(issuedToken);
-  } else if (endpoint === '/api/auth/logout') {
+  } else if (endpoint === '/api/auth/logout' && requestSessionGeneration === sessionGeneration) {
     clearApiSession();
   }
 

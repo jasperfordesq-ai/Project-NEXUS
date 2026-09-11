@@ -13,7 +13,8 @@ import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button as HeroButton, Card as HeroCard } from 'heroui-native';
+import { Alert, Card as HeroCard } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { resetPassword } from '@/lib/api/auth';
 import { ApiResponseError } from '@/lib/api/client';

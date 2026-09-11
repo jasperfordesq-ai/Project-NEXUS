@@ -7,7 +7,7 @@ import React, { useCallback } from 'react';
 import { View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
-import { Button as HeroButton } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import { usePrimaryColor } from '@/lib/hooks/useTenant';

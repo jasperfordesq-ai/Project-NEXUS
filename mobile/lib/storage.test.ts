@@ -24,11 +24,61 @@
 
 import type { storage as StorageModule } from './storage';
 
+it('distinguishes an unreadable required security preference from an absent value', async () => {
+  const storage = loadStorageFor('android');
+  mockGetItemAsync.mockRejectedValueOnce(new Error('Keychain unavailable'));
+  await expect(storage.get('nexus_biometric_lock_enabled_v1', { required: true })).rejects.toThrow('Keychain unavailable');
+  mockGetItemAsync.mockResolvedValueOnce(null);
+  await expect(storage.get('nexus_biometric_lock_enabled_v1', { required: true })).resolves.toBeNull();
+});
+
+it('does not let a delayed read repopulate the cache after removal', async () => {
+  const storage = loadStorageFor('android');
+  let finish!: (value: string) => void;
+  mockGetItemAsync.mockImplementationOnce(() => new Promise<string>(resolve => { finish = resolve; }));
+  mockGetItemAsync.mockResolvedValue(null);
+  mockDeleteItemAsync.mockResolvedValue(undefined);
+  const read = storage.get('nexus_auth_token');
+  await Promise.resolve();
+  const remove = storage.remove('nexus_auth_token');
+  finish('old-token');
+  await Promise.all([read, remove]);
+  await expect(storage.get('nexus_auth_token')).resolves.toBeNull();
+});
+
+it('keeps a logout removal after an already-running credential write', async () => {
+  const storage = loadStorageFor('android');
+  const disk = new Map<string, string>();
+  let finish!: () => void;
+  mockSetItemAsync.mockImplementationOnce((key, value) => new Promise<void>(resolve => {
+    finish = () => { disk.set(key, value); resolve(); };
+  }));
+  mockDeleteItemAsync.mockImplementationOnce(async key => { disk.delete(key); });
+  mockGetItemAsync.mockImplementation(async key => disk.get(key) ?? null);
+  const write = storage.set('nexus_auth_token', 'late-token', { required: true });
+  await Promise.resolve();
+  const remove = storage.remove('nexus_auth_token');
+  finish();
+  await Promise.all([write, remove]);
+  expect(disk.has('nexus_auth_token')).toBe(false);
+  await expect(storage.get('nexus_auth_token')).resolves.toBeNull();
+});
+
 const mockGetItemAsync = jest.fn();
 const mockSetItemAsync = jest.fn();
 const mockDeleteItemAsync = jest.fn();
 const mockCaptureException = jest.fn();
 const mockReportException = jest.fn();
+const mockPublicRead = jest.fn();
+const mockPublicWrite = jest.fn();
+const mockPublicInfo = jest.fn();
+jest.mock('expo-file-system/legacy', () => ({
+  documentDirectory: 'file:///documents/',
+  getInfoAsync: (...args: unknown[]) => mockPublicInfo(...args),
+  readAsStringAsync: (...args: unknown[]) => mockPublicRead(...args),
+  writeAsStringAsync: (...args: unknown[]) => mockPublicWrite(...args),
+  deleteAsync: jest.fn(),
+}));
 
 jest.mock('expo-secure-store', () => ({
   getItemAsync: (...args: unknown[]) => mockGetItemAsync(...args),
@@ -75,6 +125,8 @@ describe('secure storage on a native platform', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPublicInfo.mockResolvedValue({ exists: false });
+    mockPublicWrite.mockResolvedValue(undefined);
     storage = loadStorageFor('ios');
   });
 
@@ -151,6 +203,7 @@ describe('secure storage on a native platform', () => {
     // so the community the member was browsing was lost for the whole session.
     const failure = new Error("A required entitlement isn't present.");
     mockSetItemAsync.mockRejectedValue(failure);
+    mockPublicWrite.mockRejectedValue(failure);
 
     await expect(storage.set('nexus_tenant_slug', 'hour-timebank')).resolves.toBeUndefined();
 
@@ -168,6 +221,7 @@ describe('secure storage on a native platform', () => {
 
   it('applies the memory fallback to every allowlisted non-secret key', async () => {
     mockSetItemAsync.mockRejectedValue(new Error('keychain unavailable'));
+    mockPublicWrite.mockRejectedValue(new Error('disk unavailable'));
 
     for (const key of ['nexus_tenant_slug', 'nexus_language', 'nexus_theme_mode']) {
       await storage.set(key, `value-for-${key}`);
@@ -186,6 +240,12 @@ describe('secure storage on a native platform', () => {
     await expect(storage.get('nexus_some_future_key')).resolves.toBeNull();
   });
 
+  it('surfaces required credential write failures to the sign-in caller', async () => {
+    mockSetItemAsync.mockRejectedValueOnce(new Error('Encrypted storage unavailable'));
+    await expect(storage.set('nexus_auth_token', 'credential', { required: true })).rejects.toThrow('Encrypted storage unavailable');
+    expect(mockPublicWrite).not.toHaveBeenCalled();
+  });
+
   it('stays silent when a delete fails, because an absent key is not an error', async () => {
     mockDeleteItemAsync.mockRejectedValue(new Error('not found'));
 
@@ -202,6 +262,27 @@ describe('secure storage on a native platform', () => {
 
     mockGetItemAsync.mockResolvedValue('{"slug":"hour-timebank","id":2}');
     await expect(storage.getJson('tenant')).resolves.toEqual({ slug: 'hour-timebank', id: 2 });
+  });
+
+  it('stores large public configuration in files without writing it to the Keychain', async () => {
+    const config = JSON.stringify({ description: 'a'.repeat(6000) });
+    await storage.set('nexus_tenant_config_test', config);
+    expect(mockPublicWrite).toHaveBeenCalledWith('file:///documents/public-nexus_tenant_config_test.json', config);
+    expect(mockSetItemAsync).not.toHaveBeenCalled();
+    await expect(storage.get('nexus_tenant_config_test')).resolves.toBe(config);
+  });
+
+  it('migrates existing public preferences only after the file write succeeds', async () => {
+    mockGetItemAsync.mockResolvedValue('hour-timebank');
+    await expect(storage.get('nexus_tenant_slug')).resolves.toBe('hour-timebank');
+    expect(mockPublicWrite).toHaveBeenCalledWith('file:///documents/public-nexus_tenant_slug.json', 'hour-timebank');
+    expect(mockDeleteItemAsync).toHaveBeenCalledWith('nexus_tenant_slug');
+    const restarted = loadStorageFor('ios');
+    mockPublicInfo.mockResolvedValue({ exists: true });
+    mockPublicRead.mockResolvedValue('hour-timebank');
+    mockGetItemAsync.mockClear();
+    await expect(restarted.get('nexus_tenant_slug')).resolves.toBe('hour-timebank');
+    expect(mockGetItemAsync).not.toHaveBeenCalled();
   });
 
   it('returns null for a corrupt JSON value instead of throwing at the call site', async () => {

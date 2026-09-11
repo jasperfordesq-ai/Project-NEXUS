@@ -24,6 +24,7 @@ import {
   cancelShiftSignup,
   cancelShiftSwap,
   expressInterest,
+  handleVolunteerApplication,
   generateVolunteerCertificate,
   getShiftSwaps,
   getMyShifts,
@@ -47,6 +48,14 @@ import {
   verifyVolunteerHours,
 } from './volunteering';
 import type { VolunteeringResponse, VolunteerOpportunity } from './volunteering';
+
+it('sends a trimmed organiser decision note using the Laravel org_note field', async () => {
+  jest.mocked(api.put).mockResolvedValueOnce({ data: { id: 7, status: 'declined' } });
+  await handleVolunteerApplication(7, 'decline', '  Please try next session.  ');
+  expect(api.put).toHaveBeenLastCalledWith('/api/v2/volunteering/applications/7', {
+    action: 'decline', org_note: 'Please try next session.',
+  });
+});
 
 const mockOpportunity: VolunteerOpportunity = {
   id: 3,

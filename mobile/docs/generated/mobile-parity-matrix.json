@@ -1,9 +1,9 @@
 {
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
-    "react_member_routes": 256,
+    "react_member_routes": 257,
     "mobile_routes": 172,
-    "native": 169,
+    "native": 170,
     "out_of_scope": 87,
     "gap": 0,
     "needs_review": 0,
@@ -160,6 +160,15 @@
       "status": "out-of-scope",
       "mobile": null,
       "reason": "Browser OAuth redirect target; native OAuth needs its own deep-link design.",
+      "sources": [
+        "AuthRoutes.tsx"
+      ]
+    },
+    {
+      "route": "auth/two-factor/setup",
+      "status": "native",
+      "mobile": "login",
+      "reason": null,
       "sources": [
         "AuthRoutes.tsx"
       ]

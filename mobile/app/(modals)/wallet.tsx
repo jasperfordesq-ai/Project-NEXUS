@@ -13,7 +13,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, CloseButton, Spinner, Surface, Text } from 'heroui-native';
+import { Card as HeroCard, CloseButton, Spinner, Surface, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 
 import { useApi } from '@/lib/hooks/useApi';
@@ -41,7 +42,7 @@ import { ListSkeleton } from '@/components/ui/Skeleton';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
-import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
+import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { getMember } from '@/lib/api/members';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -586,13 +587,6 @@ function WalletModalInner() {
   );
 }
 
-/**
- * One id per transfer the member confirms. Now shared with the organisation wallet
- * deposit, which had no key at all until 2026-09-07 — see `lib/utils/idempotencyKey.ts`.
- */
-function walletMutationKey(): string {
-  return mutationIdempotencyKey('mobile-wallet-transfer');
-}
 
 function WalletActionPanel({
   action,
@@ -676,19 +670,7 @@ function WalletActionPanel({
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const needsRecipient = action === 'transfer' || donationTarget === 'user';
-  /**
-   * 🔴 Audit 2026-09-06, F07. The id below belongs to the transfer the member CONFIRMED,
-   * not to the button press. It survives a retry of that same transfer — which is what
-   * makes an uncertain outcome safe to retry — and is thrown away the moment either the
-   * transfer is confirmed saved or the member changes what they are sending, because that
-   * is a different transfer and must be able to go through on its own.
-   */
-  const transferKeyRef = useRef<string | null>(null);
-  const transferIntentRef = useRef<string>('');
-  // Same discipline for donations. A donation that timed out and was tapped again used to
-  // send a second, unrelated request (audit 2026-09-07, B/F-03).
-  const donationKeyRef = useRef<string | null>(null);
-  const donationIntentRef = useRef<string>('');
+  const submittingRef = useRef(false);
 
   async function runSearch() {
     if (query.trim().length < 2) return;
@@ -740,44 +722,35 @@ function WalletActionPanel({
   }
 
   async function performSubmit(parsedAmount: number) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       if (action === 'transfer') {
         const description = note.trim() || t('actions.defaultTransferDescription');
         const intent = JSON.stringify([selectedUser?.id ?? '', parsedAmount, description]);
-        if (transferIntentRef.current !== intent) {
-          transferIntentRef.current = intent;
-          transferKeyRef.current = null;
-        }
-        transferKeyRef.current ??= walletMutationKey();
+        const operation = await reserveWalletOperation('transfer', intent);
 
         await transferWalletCredits({
           recipient: selectedUser?.id ?? '',
           amount: parsedAmount,
           description,
-          idempotency_key: transferKeyRef.current,
+          idempotency_key: operation.key,
         });
-        // Confirmed. The next transfer is a new one and must claim its own id.
-        transferKeyRef.current = null;
-        transferIntentRef.current = '';
+        await completeWalletOperation(operation);
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({ title: t('actions.transferSuccessTitle'), description: t('actions.transferSuccessMessage'), variant: 'success' });
       } else {
         const donationIntent = JSON.stringify([donationTarget, donationTarget === 'user' ? selectedUser?.id ?? '' : '', parsedAmount, note.trim()]);
-        if (donationIntentRef.current !== donationIntent) {
-          donationIntentRef.current = donationIntent;
-          donationKeyRef.current = null;
-        }
-        donationKeyRef.current ??= walletMutationKey();
+        const operation = await reserveWalletOperation('donation', donationIntent);
         await donateWalletCredits({
           recipient_type: donationTarget,
           recipient_id: donationTarget === 'user' ? selectedUser?.id : undefined,
           amount: parsedAmount,
           message: note.trim(),
-          idempotency_key: donationKeyRef.current,
+          idempotency_key: operation.key,
         });
-        donationKeyRef.current = null;
-        donationIntentRef.current = '';
+        await completeWalletOperation(operation);
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({ title: t('actions.donationSuccessTitle'), description: t('actions.donationSuccessMessage'), variant: 'success' });
       }
@@ -792,6 +765,7 @@ function WalletActionPanel({
       // same operation id, so the server replays the original rather than debiting again.
       onRefresh();
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }

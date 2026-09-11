@@ -113,7 +113,7 @@ function applyScheme(): void {
   // whose name is not 'light'/'dark' makes uniwind write `unspecified` to Appearance
   // to leave adaptive mode; re-asserting here keeps useColorScheme() and native
   // controls on the scheme this store actually resolved.
-  Appearance.setColorScheme(mode === 'system' ? null : scheme);
+  Appearance.setColorScheme(mode === 'system' ? 'unspecified' : scheme);
 }
 
 export const themeStore = {

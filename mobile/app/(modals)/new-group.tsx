@@ -10,7 +10,8 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -32,6 +33,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import SavedImageRecovery from '@/components/ui/SavedImageRecovery';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -73,6 +75,7 @@ function NewGroupScreen() {
   const [existingImage, setExistingImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
+  const [pendingImageId, setPendingImageId] = useState<number | null>(null);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
   const [editLoadFailed, setEditLoadFailed] = useState(false);
   const [editRetryToken, setEditRetryToken] = useState(0);
@@ -280,6 +283,8 @@ function NewGroupScreen() {
             await uploadGroupImage(id, selectedImageUri);
           } catch (err) {
             showToast({ title: t('create.imageUploadFailedTitle'), description: describeApiError(err, t('create.imageUploadFailedDescription')), variant: 'danger' });
+            setPendingImageId(id);
+            return;
           }
         }
         successDestination = { pathname: '/(modals)/group-detail', params: { id: String(id) } };
@@ -320,6 +325,25 @@ function NewGroupScreen() {
         else router.replace('/(modals)/groups');
       }, 0);
     }
+  }
+
+  if (pendingImageId !== null) {
+    const continueSaved = () => router.replace({ pathname: '/(modals)/group-detail', params: { id: String(pendingImageId) } });
+    return <SavedImageRecovery
+      title={t('create.imageUploadFailedTitle')}
+      message={t('create.imageUploadFailedDescription')}
+      uri={selectedImageUri}
+      onChoose={pickGroupImage}
+      onContinue={continueSaved}
+      onRetry={async () => {
+        if (!selectedImageUri) return false;
+        try { await uploadGroupImage(pendingImageId, selectedImageUri); return true; }
+        catch (err) {
+          if (isMountedRef.current) showToast({ title: t('create.imageUploadFailedTitle'), description: describeApiError(err, t('create.imageUploadFailedDescription')), variant: 'danger' });
+          return false;
+        }
+      }}
+    />;
   }
 
   return (

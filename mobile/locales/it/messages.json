@@ -93,7 +93,11 @@
       "stopFailed": "Impossibile salvare questa registrazione. Riprova.",
       "sendFailed": "Impossibile inviare il messaggio vocale. Riprova."
     },
-    "notFound": "Questa conversazione non è più disponibile."
+    "notFound": "Questa conversazione non è più disponibile.",
+    "unsentDrafts": "Bozze non inviate: {{count}}",
+    "editUnsentDraft": "Modifica bozza non inviata",
+    "unsentDrafts_one": "Bozza non inviata: {{count}}",
+    "unsentDrafts_other": "Bozze non inviate: {{count}}"
   },
   "context": {
     "regarding": "Riguardante",

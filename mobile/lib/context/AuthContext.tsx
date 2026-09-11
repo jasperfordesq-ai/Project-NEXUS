@@ -23,6 +23,8 @@ import {
   type User,
   type LoginUser,
   type LoginPayload,
+  type LoginChallenge,
+  type MfaSession,
 } from '@/lib/api/auth';
 import { useTranslation } from 'react-i18next';
 
@@ -63,7 +65,8 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  login: (payload: LoginPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<LoginChallenge | null>;
+  completeMfa: (session: MfaSession) => Promise<void>;
   logout: () => Promise<void>;
   /** Set the in-memory auth state directly (e.g. after registration saves tokens to storage). */
   setSession: (token: string, user: AnyUser) => void;
@@ -114,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const [sessionRestoreFailed, setSessionRestoreFailed] = useState(false);
   const isMountedRef = useRef(true);
+  const sessionVersionRef = useRef(0);
   /** Track whether push notifications were successfully registered */
 
   /**
@@ -131,6 +135,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * names, encrypted under a key tied to this session.
    */
   const handleUnauthorized = useCallback(() => {
+    sessionVersionRef.current += 1;
+    setIsLoading(false);
     void purgeAllMobileOfflineCheckinData();
     clearApiSession();
     setUser(null);
@@ -276,9 +282,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * connection to sign in over, and the offline check-in queue was purged with it.
    */
   const restoreSession = useCallback(async () => {
+    const version = ++sessionVersionRef.current;
+    const isCurrent = () => isMountedRef.current && sessionVersionRef.current === version;
     setIsLoading(true);
     try {
       const storedToken = await storage.get(STORAGE_KEYS.AUTH_TOKEN);
+      if (!isCurrent()) return;
       if (!storedToken) {
         // Nothing to restore, so nothing can have failed. Without this a member who signed
         // out FROM the "could not check your session" screen stayed on it for ever (audit
@@ -289,7 +298,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const cachedUser = await storage.getJson<AnyUser>(STORAGE_KEYS.USER_DATA);
       if (cachedUser) {
-        if (!isMountedRef.current) return;
+        if (!isCurrent()) return;
         setToken(storedToken);
         setUser(cachedUser);
         setSessionRestoreFailed(false);
@@ -298,11 +307,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         try {
           const response = await getMe();
-          if (!isMountedRef.current) return;
+          if (!isCurrent()) return;
           setUser(response.data);
           await cacheUserBestEffort(response.data);
         } catch (err: unknown) {
-          if (!isMountedRef.current) return;
+          if (!isCurrent()) return;
           // Refused, not unreachable. Anything else keeps the cached user so the app
           // stays usable offline.
           if (isCredentialRejection(err)) await discardStoredSession();
@@ -314,28 +323,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // before the app can treat the member as signed in.
       try {
         const response = await getMe();
-        if (!isMountedRef.current) return;
+        if (!isCurrent()) return;
         setToken(storedToken);
         setUser(response.data);
         setSessionRestoreFailed(false);
         await cacheUserBestEffort(response.data);
         registerPushBestEffort();
       } catch (err: unknown) {
+        if (!isCurrent()) return;
         if (isCredentialRejection(err)) {
           await discardStoredSession();
-          if (isMountedRef.current) setSessionRestoreFailed(false);
+          if (isCurrent()) setSessionRestoreFailed(false);
           return;
         }
         // Unreachable, timed out, or a server fault. The credentials stay on the device
         // and `retrySessionRestore` can pick them up again.
-        if (isMountedRef.current) setSessionRestoreFailed(true);
+        if (isCurrent()) setSessionRestoreFailed(true);
       }
     } catch {
       // Reading local storage failed. Nothing has been proven about the token, so
       // nothing is thrown away.
-      if (isMountedRef.current) setSessionRestoreFailed(true);
+      if (isCurrent()) setSessionRestoreFailed(true);
     } finally {
-      if (isMountedRef.current) setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }, [discardStoredSession, registerPushBestEffort]);
 
@@ -352,19 +362,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [restoreSession]);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    const response = await apiLogin(payload);
-    const bearerToken = extractToken(response);
+  const completeMfa = useCallback(async (session: MfaSession) => {
+    const version = ++sessionVersionRef.current;
+    const isCurrent = () => isMountedRef.current && sessionVersionRef.current === version;
+    const bearerToken = extractToken(session);
+    // Setup issues tokens without a profile. Keep React signed out until it loads;
+    // the caller retains the issued session so a network failure can be retried.
+    installApiSession(bearerToken);
+    let response: Omit<MfaSession, 'user'> & { user: AnyUser };
+    try {
+      response = { ...session, user: session.user ?? (await getMe({ skipAuthRefresh: true })).data };
+    } catch (error) {
+      if (!isCurrent()) return;
+      clearApiSession();
+      throw error;
+    }
+    if (!isCurrent()) return;
 
-    await Promise.all([
-      storage.set(STORAGE_KEYS.AUTH_TOKEN, bearerToken),
-      storage.set(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token),
-      storage.setJson<LoginUser>(STORAGE_KEYS.USER_DATA, response.user),
-    ]);
+    try {
+      // A displayed session must survive restart. Profile caching is best effort,
+      // but neither credential may be silently dropped by encrypted storage.
+      await storage.set(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token, { required: true });
+      if (!isCurrent()) return;
+      await storage.set(STORAGE_KEYS.AUTH_TOKEN, bearerToken, { required: true });
+      if (!isCurrent()) return;
+      await storage.setJson<AnyUser>(STORAGE_KEYS.USER_DATA, response.user);
+    } catch (error) {
+      if (!isCurrent()) return;
+      clearApiSession();
+      await Promise.all([storage.remove(STORAGE_KEYS.AUTH_TOKEN), storage.remove(STORAGE_KEYS.REFRESH_TOKEN)]);
+      throw error;
+    }
+    if (!isCurrent()) return;
 
     installApiSession(bearerToken);
     setToken(bearerToken);
     setUser(response.user);
+    setIsLoading(false);
 
     // 🔴 Before navigating, not after. The first screen fires its own requests
     // immediately, and on the mismatch path every one of them is refused — so a switch
@@ -372,6 +406,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // `adoptSignInTenant` never throws: the sign-in has already succeeded by this line
     // and must not be undone by a failure to tidy up which community is showing.
     await adoptSignInCommunity(response.user);
+    if (!isCurrent()) return;
 
     router.replace(response.user.onboarding_completed === false
       ? '/(modals)/onboarding'
@@ -380,6 +415,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Register device for push notifications (non-blocking, best-effort)
     registerPushBestEffort();
   }, [adoptSignInCommunity, registerPushBestEffort]);
+
+  const login = useCallback(async (payload: LoginPayload) => {
+    const version = ++sessionVersionRef.current;
+    const response = await apiLogin(payload);
+    if (!isMountedRef.current || sessionVersionRef.current !== version) return null;
+    if ('two_factor_token' in response) return response;
+    await completeMfa(response);
+    return null;
+  }, [completeMfa]);
 
   /**
    * Adopt a session established outside `login()` — registration is the caller that
@@ -392,6 +436,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * sends" the same thing.
    */
   const setSession = useCallback((newToken: string, newUser: AnyUser) => {
+    sessionVersionRef.current += 1;
+    setIsLoading(false);
     installApiSession(newToken);
     setToken(newToken);
     setUser(newUser);
@@ -402,6 +448,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    const version = ++sessionVersionRef.current;
+    const isCurrent = () => isMountedRef.current && sessionVersionRef.current === version;
+    setIsLoading(false);
     // Unregister push token BEFORE server logout — the server call invalidates the
     // auth token, so push unregister must happen first to avoid a silent 401 failure.
     try {
@@ -409,12 +458,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Best-effort — continue with logout even if push unregister fails
     }
+    if (!isCurrent()) return;
 
     try {
       await apiLogout();
     } catch {
       // Continue with local cleanup even if server call fails
     }
+    if (!isCurrent()) return;
 
     await Promise.all([
       storage.remove(STORAGE_KEYS.AUTH_TOKEN),
@@ -422,8 +473,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       storage.remove(STORAGE_KEYS.USER_DATA),
       purgeAllMobileOfflineCheckinData(),
     ]);
+    if (!isCurrent()) return;
 
-    // 🔴 Unconditional, and NOT reliant on the server logout above having succeeded.
+    // Clear the current session even when the server logout failed. A newer
+    // session must survive any delayed completion from this sign-out.
     // The `catch` on `apiLogout()` means this function completes a sign-out even when the
     // request never reached the server — and before this line, that path left the API
     // client still holding the bearer it had cached, so the app kept making requests as
@@ -452,6 +505,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: !!token && !!user,
       sessionRestoreFailed,
       login,
+      completeMfa,
       logout,
       setSession,
       refreshUser,
@@ -459,7 +513,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       retrySessionRestore,
     }),
     [
-      user, token, isLoading, sessionRestoreFailed, login, logout, setSession,
+      user, token, isLoading, sessionRestoreFailed, login, completeMfa, logout, setSession,
       refreshUser, displayName, retrySessionRestore,
     ],
   );

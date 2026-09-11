@@ -175,9 +175,8 @@ assert(
   'maintained Apple readiness audit must be present',
 );
 assert(
-  app.ios?.infoPlist?.NSCameraUsageDescription
-    === 'Scan a marketplace QR code when you choose to use the scanner.',
-  'iOS camera permission must describe the QR scanner actually used by the app',
+  /marketplace.*QR.*event.*check-in/i.test(app.ios?.infoPlist?.NSCameraUsageDescription ?? ''),
+  'iOS camera permission must describe marketplace and event check-in scanning',
 );
 const developerAdvertisingTypes = privacyDataTypes
   .filter((entry) => entry.NSPrivacyCollectedDataTypePurposes

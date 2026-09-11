@@ -4,13 +4,15 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
 const mockRouterPush = jest.fn();
 
 let mockJobsParams: Record<string, string> = {};
+let mockUser = { id: 1 };
+let mockTenant = { id: 2, slug: 'hour-timebank' };
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
@@ -52,6 +54,14 @@ jest.mock('react-i18next', () => ({
         'detail.salaryMonthly': 'month',
         'detail.salaryHourly': 'hour',
         'applications.withdrawSuccess': 'Application withdrawn.',
+        'applications.withdrawError': 'Could not withdraw application.',
+        'applications.actionFailed': 'Could not update application.',
+        'applications.interview_proposed': 'Interview proposed',
+        'applications.accept_interview': 'Accept interview',
+        'applications.decline_interview': 'Decline interview',
+        'applications.offer_received': 'Offer received',
+        'applications.accept_offer': 'Accept offer',
+        'applications.decline_offer': 'Decline offer',
         'applications.status.applied': 'Applied',
         'applications.status.pending': 'Pending',
         'postings.empty': 'No postings yet',
@@ -108,7 +118,11 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: mockTenant, hasFeature: () => true }),
+}));
+
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: mockUser }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -159,9 +173,14 @@ jest.mock('@/lib/api/jobs', () => ({
     data: [{ id: 1, application_id: 10, from_status: null, to_status: 'pending', notes: null, changed_by: null, changed_by_name: null, changed_at: '2026-03-10T00:00:00Z' }],
   }),
   withdrawJobApplication: jest.fn().mockResolvedValue({ data: { message: 'withdrawn' } }),
+  acceptInterview: jest.fn().mockResolvedValue(undefined),
+  declineInterview: jest.fn().mockResolvedValue(undefined),
+  acceptOffer: jest.fn().mockResolvedValue(undefined),
+  rejectOffer: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 // --- Tests ---
 
@@ -182,8 +201,16 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
 });
 
 import JobsScreen from './jobs';
-import { createJobAlert, deleteJobAlert, getJobApplicationHistory, pauseJobAlert, withdrawJobApplication } from '@/lib/api/jobs';
-import type { JobVacancy, JobApplication, JobAlert } from '@/lib/api/jobs';
+import {
+  acceptInterview,
+  createJobAlert,
+  declineInterview,
+  deleteJobAlert,
+  getJobApplicationHistory,
+  pauseJobAlert,
+  withdrawJobApplication,
+} from '@/lib/api/jobs';
+import type { JobVacancy, JobApplication, JobAlert, CreateJobAlertPayload } from '@/lib/api/jobs';
 
 const defaultPaginatedState = {
   items: [],
@@ -196,6 +223,8 @@ const defaultPaginatedState = {
 };
 
 beforeEach(() => {
+  mockUser = { id: 1 };
+  mockTenant = { id: 2, slug: 'hour-timebank' };
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
   mockUseApi.mockReturnValue({
     data: { data: [] },
@@ -204,6 +233,9 @@ beforeEach(() => {
     refresh: jest.fn(),
   });
   jest.clearAllMocks();
+  (createJobAlert as jest.Mock).mockResolvedValue({ data: { id: 99, message: 'ok' } });
+  (acceptInterview as jest.Mock).mockResolvedValue(undefined);
+  (declineInterview as jest.Mock).mockResolvedValue(undefined);
   mockRouterPush.mockReset();
   mockJobsParams = {};
 });
@@ -452,6 +484,44 @@ describe('JobsScreen', () => {
     expect(refresh).toHaveBeenCalled();
   });
 
+  it('serializes conflicting interview decisions and allows retry after failure', async () => {
+    let rejectAccept!: (reason?: unknown) => void;
+    (acceptInterview as jest.Mock).mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectAccept = reject; }));
+    const application: JobApplication = {
+      ...mockApplication,
+      interview: {
+        id: 44,
+        scheduled_at: '2026-09-20T10:00:00Z',
+        interview_type: 'video',
+        status: 'proposed',
+        duration_mins: 30,
+        location_notes: null,
+      },
+    };
+    let callCount = 0;
+    mockUsePaginatedApi.mockImplementation(() => {
+      callCount += 1;
+      if ((callCount - 2) % 3 === 0) {
+        return { ...defaultPaginatedState, items: [application] };
+      }
+      return defaultPaginatedState;
+    });
+
+    const view = render(<JobsScreen />);
+    fireEvent.press(view.getByText('My Applications'));
+    act(() => {
+      fireEvent.press(view.getByText('Accept interview'));
+      fireEvent.press(view.getByText('Decline interview'));
+    });
+
+    expect(acceptInterview).toHaveBeenCalledTimes(1);
+    expect(declineInterview).not.toHaveBeenCalled();
+
+    await act(async () => rejectAccept(new Error('stale interview')));
+    fireEvent.press(view.getByText('Decline interview'));
+    await waitFor(() => expect(declineInterview).toHaveBeenCalledWith(44));
+  });
+
   it('renders owner postings in My Postings tab', () => {
     let callCount = 0;
     mockUsePaginatedApi.mockImplementation(() => {
@@ -485,15 +555,74 @@ describe('JobsScreen', () => {
     fireEvent.press(getByText('Paid'));
     fireEvent.press(getByText('Create alert'));
 
-    expect(createJobAlert).toHaveBeenCalledWith({
+    expect(createJobAlert).toHaveBeenCalledWith(expect.objectContaining({
       keywords: 'coordinator',
       location: 'Remote',
       type: 'paid',
-    });
+      idempotency_key: expect.any(String),
+    }));
     await waitFor(() => expect(refresh).toHaveBeenCalled());
   });
 
-  it('renders and pauses existing job alerts', () => {
+  it('locks an alert draft while saving and reuses its operation key after an unknown result', async () => {
+    let rejectFirst!: (reason?: unknown) => void;
+    (createJobAlert as jest.Mock)
+      .mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectFirst = reject; }))
+      .mockRejectedValueOnce(new Error('still unknown'))
+      .mockResolvedValueOnce({ data: { id: 99, message: 'ok' } });
+
+    const { getByText, getByPlaceholderText } = render(<JobsScreen />);
+    fireEvent.press(getByText('Alerts'));
+    const keywordsInput = getByPlaceholderText('Role, skill, or employer');
+    fireEvent.changeText(keywordsInput, 'coordinator');
+    fireEvent.press(getByText('Paid'));
+    fireEvent.press(getByText('Create alert'));
+    fireEvent.press(getByText('Creating...'));
+
+    expect(createJobAlert).toHaveBeenCalledTimes(1);
+    expect(getByPlaceholderText('Role, skill, or employer').props.editable).toBe(false);
+    expect(getByPlaceholderText('Community, care, digital').props.editable).toBe(false);
+    expect(getByPlaceholderText('City, region, or remote').props.editable).toBe(false);
+
+    const firstPayload = (createJobAlert as jest.Mock).mock.calls[0][0] as CreateJobAlertPayload;
+    await act(async () => rejectFirst(new Error('response lost')));
+
+    expect(getByPlaceholderText('Role, skill, or employer').props.value).toBe('coordinator');
+    fireEvent.press(getByText('Create alert'));
+    await waitFor(() => expect(createJobAlert).toHaveBeenCalledTimes(2));
+    const retryPayload = (createJobAlert as jest.Mock).mock.calls[1][0] as CreateJobAlertPayload;
+    expect(retryPayload.idempotency_key).toBe(firstPayload.idempotency_key);
+
+    fireEvent.changeText(getByPlaceholderText('Role, skill, or employer'), 'designer');
+    fireEvent.press(getByText('Create alert'));
+    await waitFor(() => expect(createJobAlert).toHaveBeenCalledTimes(3));
+    const changedPayload = (createJobAlert as jest.Mock).mock.calls[2][0] as CreateJobAlertPayload;
+    expect(changedPayload.idempotency_key).not.toBe(firstPayload.idempotency_key);
+  });
+
+  it('resets the alert draft on identity change and ignores the old completion', async () => {
+    let resolveOld!: (value: unknown) => void;
+    (createJobAlert as jest.Mock).mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }));
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: [] }, isLoading: false, error: null, refresh });
+
+    const view = render(<JobsScreen />);
+    fireEvent.press(view.getByText('Alerts'));
+    fireEvent.changeText(view.getByPlaceholderText('Role, skill, or employer'), 'old account alert');
+    fireEvent.press(view.getByText('Create alert'));
+
+    mockUser = { id: 9 };
+    mockTenant = { id: 10, slug: 'replacement' };
+    view.rerender(<JobsScreen />);
+    fireEvent.press(view.getByText('Alerts'));
+
+    expect(view.getByPlaceholderText('Role, skill, or employer').props.value).toBe('');
+    await act(async () => resolveOld({ data: { id: 99, message: 'ok' } }));
+    expect(refresh).not.toHaveBeenCalled();
+    expect(view.getByPlaceholderText('Role, skill, or employer').props.value).toBe('');
+  });
+
+  it('renders and pauses existing job alerts', async () => {
     mockUseApi.mockReturnValue({
       data: { data: [mockAlert] },
       isLoading: false,
@@ -508,7 +637,7 @@ describe('JobsScreen', () => {
     expect(getByText('Active')).toBeTruthy();
 
     fireEvent.press(getByText('Pause'));
-    expect(pauseJobAlert).toHaveBeenCalledWith(77);
+    await waitFor(() => expect(pauseJobAlert).toHaveBeenCalledWith(77));
   });
 
   /**

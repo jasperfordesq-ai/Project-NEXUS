@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -776,7 +778,7 @@ describe('GroupDetailScreen', () => {
     });
   });
 
-  it('lets group admins create announcements from the native announcements tab', async () => {
+  it.each([false, true])('publishes group announcements with an initial rejection: %s', async (rejectFirst) => {
     const refreshAnnouncements = jest.fn();
     const groupState = {
       data: {
@@ -815,7 +817,18 @@ describe('GroupDetailScreen', () => {
     fireEvent.changeText(getByPlaceholderText('Announcement title'), 'Spring update');
     fireEvent.changeText(getByPlaceholderText('Write the announcement...'), 'Seeds arrive Friday.');
     fireEvent.press(getByText('Pin announcement'));
+    if (rejectFirst) jest.mocked(createGroupAnnouncement).mockRejectedValueOnce(new Error('Service unavailable'));
     fireEvent.press(getByText('Publish announcement'));
+    expect(getByPlaceholderText('Announcement title').props.editable).toBe(false);
+    expect(getByPlaceholderText('Write the announcement...').props.editable).toBe(false);
+    if (rejectFirst) {
+      await waitFor(() => expect(getByText('Publish announcement')).toBeTruthy());
+      expect(getByPlaceholderText('Announcement title').props.value).toBe('Spring update');
+      expect(getByPlaceholderText('Write the announcement...').props.value).toBe('Seeds arrive Friday.');
+      expect(getByPlaceholderText('Announcement title').props.editable).toBe(true);
+      expect(refreshAnnouncements).not.toHaveBeenCalled();
+      fireEvent.press(getByText('Publish announcement'));
+    }
 
     await waitFor(() => {
       expect(createGroupAnnouncement).toHaveBeenCalledWith(1, {
@@ -827,7 +840,7 @@ describe('GroupDetailScreen', () => {
     });
   });
 
-  it('lets members start a discussion from the bottom-sheet composer', async () => {
+  it.each([false, true])('lets members publish a discussion with an initial rejection: %s', async (rejectFirst) => {
     const refreshDiscussions = jest.fn();
     const groupState = {
       data: { data: { ...mockGroupDetail, is_member: true } },
@@ -865,7 +878,22 @@ describe('GroupDetailScreen', () => {
 
     fireEvent.changeText(getByPlaceholderText('Discussion title'), 'Compost rota');
     fireEvent.changeText(getByPlaceholderText('Write a message'), 'Who can take the Friday slot?');
+    if (rejectFirst) jest.mocked(createGroupDiscussion).mockRejectedValueOnce(new Error('Service unavailable'));
     fireEvent.press(getByText('Publish discussion'));
+    expect(getByPlaceholderText('Discussion title').props.editable).toBe(false);
+    expect(getByPlaceholderText('Write a message').props.editable).toBe(false);
+
+    if (rejectFirst) {
+      await waitFor(() => expect(createGroupDiscussion).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(getByText('Publish discussion')).toBeTruthy());
+      expect(getByTestId('group-discussion-sheet')).toBeTruthy();
+      expect(getByPlaceholderText('Discussion title').props.value).toBe('Compost rota');
+      expect(getByPlaceholderText('Write a message').props.value).toBe('Who can take the Friday slot?');
+      expect(getByPlaceholderText('Discussion title').props.editable).toBe(true);
+      expect(getByPlaceholderText('Write a message').props.editable).toBe(true);
+      expect(refreshDiscussions).not.toHaveBeenCalled();
+      fireEvent.press(getByText('Publish discussion'));
+    }
 
     await waitFor(() => {
       expect(createGroupDiscussion).toHaveBeenCalledWith(1, {
@@ -1167,7 +1195,7 @@ describe('GroupDetailScreen', () => {
     });
   });
 
-  it('lets members ask questions from the native Q&A tab', async () => {
+  it.each([false, true])('publishes questions with an initial rejection: %s', async (rejectFirst) => {
     const refreshQuestions = jest.fn();
     const groupState = {
       data: { data: { ...mockGroupDetail, is_member: true } },
@@ -1223,7 +1251,19 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Ask'));
     fireEvent.changeText(getByPlaceholderText('Question title'), 'Which compost bin works best?');
     fireEvent.changeText(getByPlaceholderText('Add context...'), 'We need a lidded bin for the shared garden.');
+    if (rejectFirst) jest.mocked(createGroupQuestion).mockRejectedValueOnce(new Error('Rejected'));
     fireEvent.press(getByText('Publish question'));
+    expect(getByPlaceholderText('Question title').props.editable).toBe(false);
+    expect(getByPlaceholderText('Add context...').props.editable).toBe(false);
+    if (rejectFirst) {
+      await waitFor(() => expect(getByText('Publish question')).toBeTruthy());
+      expect(getByPlaceholderText('Question title').props.value).toBe('Which compost bin works best?');
+      expect(getByPlaceholderText('Add context...').props.value).toBe('We need a lidded bin for the shared garden.');
+      expect(getByPlaceholderText('Question title').props.editable).toBe(true);
+      expect(getByPlaceholderText('Add context...').props.editable).toBe(true);
+      expect(refreshQuestions).not.toHaveBeenCalled();
+      fireEvent.press(getByText('Publish question'));
+    }
 
     await waitFor(() => {
       expect(createGroupQuestion).toHaveBeenCalledWith(1, {
@@ -1234,7 +1274,7 @@ describe('GroupDetailScreen', () => {
     });
   });
 
-  it('lets members open a question and post an answer', async () => {
+  it.each([false, true])('posts an answer when subsequent readback fails: %s', async (failReadback) => {
     const refreshQuestions = jest.fn();
     const question = {
       id: 41,
@@ -1307,7 +1347,11 @@ describe('GroupDetailScreen', () => {
     });
 
     fireEvent.changeText(getByPlaceholderText('Write an answer...'), 'Add brown material and keep it covered.');
+    await act(async () => {});
+    refreshQuestions.mockClear();
+    if (failReadback) jest.mocked(getGroupQuestion).mockRejectedValueOnce(new Error('Readback unavailable'));
     fireEvent.press(getByText('Post answer'));
+    expect(getByPlaceholderText('Write an answer...').props.editable).toBe(false);
 
     await waitFor(() => {
       expect(answerGroupQuestion).toHaveBeenCalledWith(1, 41, {

@@ -25,7 +25,7 @@ const password = process.env.E2E_TEST_PASSWORD ?? 'TestPassword123!';
 const actors = {
   primary: ['e2e.user.a@project-nexus.local', password],
   secondary: ['e2e.user.b@project-nexus.local', password],
-  admin: ['e2e.admin@project-nexus.local', process.env.E2E_ADMIN_PASSWORD ?? 'AdminPassword123!'],
+  admin: [process.env.E2E_ADMIN_EMAIL ?? 'e2e.admin@project-nexus.local', process.env.E2E_ADMIN_PASSWORD ?? 'AdminPassword123!'],
 };
 
 async function request(path, { token, method = 'GET', body, headers = {} } = {}) {
@@ -47,10 +47,28 @@ async function request(path, { token, method = 'GET', body, headers = {} } = {})
 
 async function login(label) {
   const [email, actorPassword] = actors[label];
-  const payload = await request('/api/auth/login', { method: 'POST', body: { email, password: actorPassword } });
+  let payload = await request('/api/auth/login', { method: 'POST', body: { email, password: actorPassword } });
+  // A caller may supply a current authenticator code for an enrolled disposable
+  // admin fixture. Never weaken MFA policy or log challenge/session credentials.
+  if (label === 'admin' && payload?.requires_2fa && !payload?.requires_2fa_setup && process.env.E2E_ADMIN_2FA_CODE) {
+    payload = await request('/api/totp/verify', { method: 'POST', body: {
+      two_factor_token: payload.two_factor_token,
+      code: process.env.E2E_ADMIN_2FA_CODE,
+      use_backup_code: false,
+    } });
+  }
+  if (payload?.requires_2fa || payload?.requires_2fa_setup) {
+    console.log(`response-contracts: blocked ${label} requires ${payload.requires_2fa_setup ? 'MFA setup' : 'MFA verification'}`);
+    if (label === 'admin') return null;
+    throw new Error(`${label} fixture requires MFA; member contracts cannot run`);
+  }
   const token = payload?.access_token ?? payload?.data?.access_token;
-  const id = Number(payload?.user?.id ?? payload?.data?.user?.id);
+  const user = payload?.user ?? payload?.data?.user;
+  const id = Number(user?.id);
   if (!token || !Number.isFinite(id)) throw new Error(`${label} login omitted access_token or user.id`);
+  if (label === 'admin' && user?.is_admin !== true && user?.is_admin !== 1 && user?.role !== 'admin') {
+    throw new Error('admin fixture is authenticated but does not have administrator authority');
+  }
   console.log(`response-contracts: ok   ${label} authenticated as user ${id}`);
   return { token, id };
 }
@@ -64,7 +82,7 @@ const checks = [
   ['primary member search', primary.token, '/api/v2/users?q=E2E%20UserB&offset=0', validateMemberSearch],
   ['primary connection mapping', primary.token, `/api/v2/connections/status/${secondary.id}`, validateConnectionStatus],
   ['secondary reverse connection mapping', secondary.token, `/api/v2/connections/status/${primary.id}`, validateConnectionStatus],
-  ['admin member-directory contract', admin.token, '/api/v2/users?q=E2E%20UserA&offset=0', validateMemberSearch],
+  ...(admin ? [['admin member-directory contract', admin.token, '/api/v2/users?q=E2E%20UserA&offset=0', validateMemberSearch]] : []),
   ['primary canonical Events contract', primary.token, '/api/v2/events?when=upcoming&per_page=20', validateCanonicalEvents, { 'X-Events-Contract': '2' }],
   ['primary marketplace fixture contract', primary.token, '/api/v2/marketplace/listings?q=E2E%20Marketplace%20Bicycle%20Helmet&limit=20', validateMarketplaceSearch],
   ['primary volunteering fixture contract', primary.token, '/api/v2/volunteering/opportunities?search=E2E%20Community%20Garden%20Volunteer', validateVolunteeringSearch],
@@ -100,4 +118,5 @@ for (const [label, path, validate] of ownerChecks) {
   accepted += 1;
 }
 
-console.log(`response-contracts: OK — ${accepted} live fixture/role contracts accepted`);
+console.log(`response-contracts: ${admin ? 'OK' : 'INCOMPLETE'} — ${accepted} live fixture/role contracts accepted${admin ? '' : '; admin MFA fixture remains blocked'}`);
+if (!admin) process.exitCode = 2;

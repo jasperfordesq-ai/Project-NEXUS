@@ -22,7 +22,8 @@
 
 import { useState } from 'react';
 import { Text, View } from 'react-native';
-import { Button as HeroButton, Card as HeroCard, Spinner } from 'heroui-native';
+import { Card as HeroCard, Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import Avatar from '@/components/ui/Avatar';

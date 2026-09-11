@@ -10,6 +10,9 @@
   "ownerOpportunityHint": "You manage this opportunity, so volunteer applications are handled from the organiser tools.",
   "editOpportunity": "Edit opportunity",
   "applications": {
+    "decisionNoteRequired": "A note is required before declining.",
+    "decisionNoteLabel": "Decision note",
+    "decisionNotePlaceholder": "Share the reason or next steps for the volunteer.",
     "heading": "Applications",
     "emptyOwner": "No pending applications yet.",
     "loadFailed": "Could not load applications.",

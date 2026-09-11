@@ -10,6 +10,9 @@
   "ownerOpportunityHint": "Gestisci tu questa opportunità, quindi le candidature di volontariato vengono gestite dagli strumenti dell'organizzatore.",
   "editOpportunity": "Modifica opportunità",
   "applications": {
+    "decisionNoteRequired": "È necessaria una nota prima di rifiutare.",
+    "decisionNoteLabel": "Nota decisionale",
+    "decisionNotePlaceholder": "Condividi il motivo o i prossimi passi per il volontario.",
     "heading": "Candidature",
     "emptyOwner": "Ancora nessuna domanda in sospeso.",
     "loadFailed": "Impossibile caricare le candidature.",

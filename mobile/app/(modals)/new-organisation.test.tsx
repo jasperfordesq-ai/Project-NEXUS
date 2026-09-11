@@ -78,8 +78,16 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
+}));
+
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7 } }),
+}));
+
+jest.mock('@/lib/utils/idempotencyKey', () => ({
+  mutationIdempotencyKey: jest.fn(() => 'organisation-attempt-123'),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -212,11 +220,46 @@ describe('NewOrganisationScreen', () => {
       description: 'We coordinate local volunteering opportunities for neighbours.',
       contact_email: 'hello@example.org',
       website: 'https://example.org',
+      idempotency_key: 'organisation-attempt-123',
     }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/(modals)/volunteering',
       params: { tab: 'organisations', submitted: '44' },
     }));
     expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Organisation submitted', variant: 'success' }));
+  });
+
+  it('locks the complete submitted draft, serializes rapid presses and reuses its key after failure', async () => {
+    let rejectRequest!: (reason: unknown) => void;
+    mockCreateOrganisation.mockReturnValueOnce(new Promise((_resolve, reject) => { rejectRequest = reject; }));
+    const { getByText, getByPlaceholderText } = render(<NewOrganisationScreen />);
+    const name = getByPlaceholderText('Community skills network');
+    const description = getByPlaceholderText('Tell members what your organisation does and how volunteers can help.');
+    const email = getByPlaceholderText('contact@example.org');
+    const website = getByPlaceholderText('https://example.org');
+
+    fireEvent.changeText(name, 'Neighbourhood Skills Network');
+    fireEvent.changeText(description, 'We coordinate local volunteering opportunities for neighbours.');
+    fireEvent.changeText(email, 'hello@example.org');
+    fireEvent.changeText(website, 'https://example.org');
+    fireEvent.press(getByText('I confirm I am authorised to register this organisation and the details are accurate.'));
+    fireEvent.press(getByText('Submit for review'));
+    fireEvent.press(getByText('Submit for review'));
+
+    expect(mockCreateOrganisation).toHaveBeenCalledTimes(1);
+    expect(name.props.editable).toBe(false);
+    expect(description.props.editable).toBe(false);
+    expect(email.props.editable).toBe(false);
+    expect(website.props.editable).toBe(false);
+
+    rejectRequest(new Error('response lost'));
+    await waitFor(() => expect(name.props.editable).toBe(true));
+    expect(name.props.value).toBe('Neighbourhood Skills Network');
+
+    mockCreateOrganisation.mockResolvedValueOnce({ data: { id: 44, name: 'Neighbourhood Skills Network' } });
+    fireEvent.press(getByText('Submit for review'));
+    await waitFor(() => expect(mockCreateOrganisation).toHaveBeenCalledTimes(2));
+    expect(mockCreateOrganisation.mock.calls[0][0].idempotency_key).toBe('organisation-attempt-123');
+    expect(mockCreateOrganisation.mock.calls[1][0].idempotency_key).toBe('organisation-attempt-123');
   });
 });

@@ -8,15 +8,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
-import { Card as HeroCard, Chip, Surface } from 'heroui-native';
+import { Card as HeroCard, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import { getJobAnalytics, getJobPredictions } from '@/lib/api/jobs';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import type { JobAnalyticsData, JobPredictionsData } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
@@ -37,7 +39,7 @@ const APPLICATION_STATUSES = new Set([
   'withdrawn',
 ]);
 
-function JobAnalyticsScreen() {
+function JobAnalyticsContent() {
   const { t } = useTranslation(['jobs', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
@@ -139,11 +141,11 @@ function JobAnalyticsScreen() {
           rightAction={{
             accessibilityLabel: t('retry'),
             icon: 'refresh-outline',
-            onPress: analyticsApi.refresh,
+            onPress: () => { analyticsApi.refresh(); predictionsApi.refresh(); },
           }}
         />
 
-        <ScrollView contentContainerStyle={{ gap: 16, padding: 16, paddingBottom: 32 }} refreshControl={<RefreshControl refreshing={analyticsApi.isLoading && Boolean(analyticsApi.data)} onRefresh={() => { analyticsApi.refresh(); predictionsApi.refresh(); }} tintColor={primary} colors={[primary]} />}>
+        <ScrollView contentContainerStyle={{ gap: 16, padding: 16, paddingBottom: 32 }} refreshControl={<RefreshControl refreshing={(analyticsApi.isLoading && Boolean(analyticsApi.data)) || (predictionsApi.isLoading && Boolean(predictionsApi.data))} onRefresh={() => { analyticsApi.refresh(); predictionsApi.refresh(); }} tintColor={primary} colors={[primary]} />}>
           <RefreshFailedNotice error={analyticsApi.data ? analyticsApi.error : null} onRetry={() => { analyticsApi.refresh(); predictionsApi.refresh(); }} />
           <HeroCard className="overflow-hidden rounded-panel p-0">
             <View className="h-1.5" style={{ backgroundColor: primary }} />
@@ -241,6 +243,8 @@ function JobAnalyticsScreen() {
           <PredictionsCard
             predictions={predictions}
             isLoading={predictionsApi.isLoading}
+            error={predictionsApi.error}
+            onRetry={predictionsApi.refresh}
             primary={primary}
             theme={theme}
             t={t}
@@ -376,12 +380,16 @@ function ApplicationsByStageCard({
 function PredictionsCard({
   predictions,
   isLoading,
+  error,
+  onRetry,
   primary,
   theme,
   t,
 }: {
   predictions: JobPredictionsData | null;
   isLoading: boolean;
+  error: string | null;
+  onRetry: () => void;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
@@ -403,6 +411,8 @@ function PredictionsCard({
 
         {isLoading ? (
           <LoadingSpinner />
+        ) : error ? (
+          <RefreshFailedNotice error={error} onRetry={onRetry} testID="job-predictions-error" />
         ) : !predictions ? (
           <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('analytics.no_predictions')}</Text>
         ) : (
@@ -477,6 +487,13 @@ function formatShortDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
+}
+
+function JobAnalyticsScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <JobAnalyticsContent key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id}`} />;
 }
 
 export default withRouteGate(JobAnalyticsScreen, 'job-analytics');

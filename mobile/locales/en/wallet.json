@@ -99,7 +99,8 @@
     "confirmDonationTitle": "Donate these credits?",
     "confirmDonationMessage": "You are about to donate {{amount}} hours to {{name}}. This cannot be undone.",
     "recipientResolving": "Checking the recipient…",
-    "recipientUnresolved": "That member could not be found. Search for the recipient instead."
+    "recipientUnresolved": "That member could not be found. Search for the recipient instead.",
+    "unresolvedOperation": "An earlier transfer is still unconfirmed. Check your wallet history and contact your coordinator before sending it again."
   },
   "status": {
     "completed": "Completed",

@@ -18,7 +18,7 @@
  * The Create Listing screen never had the problem because it used HeroUI Native's `Button`
  * (`size="sm"` = 40dp, a full accent fill when selected, and the library picks the label
  * colour that contrasts with THAT community's accent). This component is that idiom, shared,
- * with the target raised to 44dp so it clears both guidelines.
+ * with the target raised to 48dp so it clears both guidelines.
  *
  * Rules, all guarded by tests:
  *  - one component for single AND multiple selection, so the two never drift apart again;
@@ -34,13 +34,13 @@
  */
 
 import { View, Text } from 'react-native';
-import { Button as HeroButton } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { useTheme } from '@/lib/hooks/useTheme';
 import { CHROME_MAX_FONT_SCALE } from '@/lib/ui/textScale';
 
-/** Android's 48dp guidance is the target; 44dp is the iOS HIG floor and what fits a form row. */
-export const MIN_TARGET_DP = 44;
+/** Use the larger native target so the same control works on both platforms. */
+export const MIN_TARGET_DP = 48;
 
 export interface ChoiceOption<T extends string> {
   value: T;

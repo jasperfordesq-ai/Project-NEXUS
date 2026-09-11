@@ -47,7 +47,8 @@ export default function RemoteImage({
   testID,
 }: RemoteImageProps) {
   const theme = useTheme();
-  const [failed, setFailed] = useState(false);
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  const failed = Boolean(uri) && failedUri === uri;
 
   if (!uri || failed) {
     return (
@@ -69,7 +70,7 @@ export default function RemoteImage({
       style={style}
       className={className}
       contentFit={contentFit}
-      onError={() => setFailed(true)}
+      onError={() => setFailedUri(uri ?? null)}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     />

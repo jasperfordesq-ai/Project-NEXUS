@@ -89,7 +89,7 @@ describe('ChoiceChips — single selection', () => {
 
     expect(MIN_TARGET_DP).toBeGreaterThanOrEqual(44);
     for (const props of buttonProps) {
-      expect((props.style as { minHeight: number }).minHeight).toBe(MIN_TARGET_DP);
+      expect(require('react-native').StyleSheet.flatten(props.style).minHeight).toBe(MIN_TARGET_DP);
     }
   });
 

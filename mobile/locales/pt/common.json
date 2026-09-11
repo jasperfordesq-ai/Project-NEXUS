@@ -1,4 +1,5 @@
 {
+  "mediaRecovery": {"retry":"Tentar enviar a imagem novamente","choose":"Escolher outra imagem","continue":"Ver o item guardado"},
   "appName": "Timebank Global",
   "attribution": "Project NEXUS é software de código aberto sob licença AGPL-3.0.",
   "sourceRepo": {

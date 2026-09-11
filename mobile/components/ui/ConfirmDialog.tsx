@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { View } from 'react-native';
-import { Button as HeroButton, Dialog, Spinner } from 'heroui-native';
+import { Platform, View } from 'react-native';
+import { Dialog, Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -42,6 +43,9 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog
+      // Android Fabric can crash while removing an animated dialog portal and
+      // its screen together (confirmed by the unsaved-course discard journey).
+      animation={Platform.OS === 'android' ? 'disable-all' : undefined}
       isOpen={visible}
       onOpenChange={(open) => {
         if (!open) onClose();

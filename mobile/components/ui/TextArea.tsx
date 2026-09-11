@@ -32,7 +32,7 @@ const TextArea = forwardRef<TextInput, TextAreaProps>(function TextArea(
   return (
     <TextField isInvalid={!!error} isDisabled={isDisabled} className={containerClassName ?? 'mb-3'}>
       {label ? (
-        <Label className="mb-1.5 text-sm font-semibold">{label}</Label>
+        <Label focusable={false} className="mb-1.5 text-sm font-semibold">{label}</Label>
       ) : null}
       <HeroTextArea
         ref={ref}
@@ -43,6 +43,7 @@ const TextArea = forwardRef<TextInput, TextAreaProps>(function TextArea(
         style={[{ textAlignVertical: 'top' }, style]}
         className={inputClassName ?? 'min-h-28'}
         {...rest}
+        accessibilityLabel={rest.accessibilityLabel ?? label}
       />
       {error ? (
         <FieldError className="mt-1 text-xs">{error}</FieldError>

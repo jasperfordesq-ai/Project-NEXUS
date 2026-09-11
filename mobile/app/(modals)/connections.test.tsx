@@ -3,8 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -184,10 +186,11 @@ describe('ConnectionsRoute', () => {
     removes the row from the tab it is in, so the row is dropped locally instead - the known
     outcome of a request that already succeeded, not an optimistic guess.
   */
-  it('removes an accepted request without discarding the pages already loaded', async () => {
+  it.each([false, true])('handles accepted requests when changing tabs before completion: %s', async (switchTab) => {
     const { acceptConnection } = require('@/lib/api/connections');
     acceptConnection.mockClear();
-    acceptConnection.mockResolvedValue({ data: {} });
+    let finish!: (value: unknown) => void;
+    acceptConnection.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
     const refresh = jest.fn();
     const pending = {
       connection_id: 77,
@@ -203,8 +206,13 @@ describe('ConnectionsRoute', () => {
     fireEvent.press(getByText('Accept'));
 
     await waitFor(() => expect(acceptConnection).toHaveBeenCalledWith(77));
+    if (switchTab) fireEvent.press(getByText('Connected'));
+    await act(async () => { finish({ data: {} }); });
     // Gone from the list...
-    await waitFor(() => expect(queryByText('Nina Ito')).toBeNull());
+    await waitFor(() => {
+      if (switchTab) expect(queryByText('Nina Ito')).not.toBeNull();
+      else expect(queryByText('Nina Ito')).toBeNull();
+    });
     // ...without a reload, which would have dropped every page after the first.
     expect(refresh).not.toHaveBeenCalled();
   });

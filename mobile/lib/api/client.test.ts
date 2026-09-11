@@ -56,9 +56,91 @@ function mockResponse(
 
 // ---- setup / teardown ----
 
+it('preserves anonymous MFA refusals without refreshing or deleting the current session', async () => {
+  fetchMock.mockResolvedValue(mockResponse({ errors: [{ code: 'AUTH_2FA_INVALID', message: 'Invalid code' }] }, { status: 401 }));
+  await expect(api.post('/api/totp/verify', { code: '123456' }, { anonymous: true }))
+    .rejects.toMatchObject({ status: 401, code: 'AUTH_2FA_INVALID', message: 'Invalid code' });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock.mock.calls[0][1].headers.Authorization).toBeUndefined();
+  expect(mockStorage.remove).not.toHaveBeenCalled();
+});
+
+it.each(['/api/auth/login', '/api/auth/logout'])('does not let a late %s response replace the active bearer', async endpoint => {
+  installApiSession('account-A');
+  let finish!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  const pending = api.post(endpoint, {});
+  for (let attempt = 0; attempt < 20 && !finish; attempt += 1) await Promise.resolve();
+  expect(finish).toBeDefined();
+  installApiSession('account-B');
+  finish(mockResponse({ access_token: 'late-account-A' }));
+  await pending;
+  fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
+  await api.get('/api/v2/feed');
+  expect(fetchMock.mock.calls.at(-1)[1].headers.Authorization).toBe('Bearer account-B');
+});
+
+it('recognizes skipAuthRefresh as a request option when it is the only option', async () => {
+  fetchMock.mockResolvedValue(mockResponse({ message: 'Refused' }, { status: 401 }));
+  await expect(api.post('/api/v2/example', {}, { skipAuthRefresh: true })).rejects.toMatchObject({ status: 401 });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock.mock.calls[0][0]).not.toContain('skipAuthRefresh');
+});
+
 let fetchMock: jest.Mock;
 
+it('preserves replacement credentials when an already-dispatched retry returns 401', async () => {
+  installApiSession('original-account');
+  let finishRetry!: (response: Response) => void;
+  fetchMock.mockResolvedValueOnce(mockResponse({}, { status: 401 }));
+  fetchMock.mockResolvedValueOnce(mockResponse({ access_token: 'renewed-original' }));
+  fetchMock.mockImplementationOnce(() => new Promise<Response>(resolve => { finishRetry = resolve; }));
+  const pending = api.post('/api/v2/wallet/transfer', { recipient: 2, amount: 3 });
+  for (let attempt = 0; attempt < 80 && !finishRetry; attempt += 1) await Promise.resolve();
+  expect(finishRetry).toBeDefined();
+  installApiSession('replacement-account');
+  finishRetry(mockResponse({}, { status: 401 }));
+  await expect(pending).rejects.toMatchObject({ status: 401 });
+  expect(mockStorage.remove).not.toHaveBeenCalled();
+  fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
+  await api.get('/api/v2/feed');
+  expect(fetchMock.mock.calls.at(-1)[1].headers.Authorization).toBe('Bearer replacement-account');
+});
+
+it('does not refresh or clear a replacement session after an old request returns 401', async () => {
+  installApiSession('original-account');
+  let finish!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  fetchMock.mockResolvedValue(mockResponse({ message: 'Expired' }, { status: 401 }));
+  const pending = api.post('/api/v2/wallet/transfer', { recipient: 2, amount: 3 });
+  for (let attempt = 0; attempt < 20 && !finish; attempt += 1) await Promise.resolve();
+  expect(finish).toBeDefined();
+  installApiSession('replacement-account');
+  finish(mockResponse({ message: 'Expired' }, { status: 401 }));
+  await expect(pending).rejects.toMatchObject({ status: 401 });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(mockStorage.remove).not.toHaveBeenCalled();
+});
+
+it.each(['replace', 'clear'])('does not send a pending mutation after credentials %s during storage reads', async change => {
+  installApiSession('original-account');
+  let finishToken!: (token: string) => void;
+  mockStorage.get.mockImplementation(async key => {
+    if (key === 'nexus_auth_token') return new Promise<string>(resolve => { finishToken = resolve; });
+    return 'hour-timebank';
+  });
+  fetchMock.mockResolvedValue(mockResponse({ data: { success: true } }));
+  const pending = api.post('/api/v2/wallet/transfer', { recipient: 2, amount: 3 });
+  if (change === 'replace') installApiSession('new-account');
+  else clearApiSession();
+  finishToken('original-account');
+  await expect(pending).rejects.toMatchObject({ status: 401 });
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(mockStorage.remove).not.toHaveBeenCalled();
+});
+
 beforeEach(() => {
+  jest.clearAllMocks();
   // 🔴 The refresh promise is cached for 2s after it settles (a deliberate grace window so
   // a late 401 reuses the fresh token). Without this reset a test inherits the previous
   // test's refresh result — which is precisely how the three-way-result change first

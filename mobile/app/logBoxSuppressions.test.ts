@@ -40,7 +40,6 @@ const layoutSource = fs.readFileSync(path.join(__dirname, '_layout.tsx'), 'utf8'
 /** The substrings `LogBox.ignoreLogs([...])` is allowed to contain, and why each is there. */
 const PERMITTED: Record<string, string> = {
   'expo-notifications': 'Known and accepted library warning, documented in _layout.tsx.',
-  'expo-av': 'Known and accepted library warning; goes with the expo-audio port.',
   'Non-serializable values were found in the navigation state':
     'React Navigation warns about function params the app passes deliberately.',
   'Value being stored in SecureStore is larger than 2048 bytes':

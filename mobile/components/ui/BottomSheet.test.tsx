@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Text } from 'react-native';
+import { Keyboard, Text } from 'react-native';
 import { act, render, waitFor } from '@testing-library/react-native';
 
 import BottomSheet from './BottomSheet';
@@ -50,6 +50,17 @@ jest.mock('heroui-native', () => {
 });
 
 describe('BottomSheet', () => {
+  it('dismisses the form keyboard on close but not when initially hidden', () => {
+    const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
+    const { rerender, unmount } = render(<BottomSheet visible={false} onClose={jest.fn()}><Text>Form</Text></BottomSheet>);
+    expect(dismiss).not.toHaveBeenCalled();
+    rerender(<BottomSheet visible onClose={jest.fn()}><Text>Form</Text></BottomSheet>);
+    expect(dismiss).not.toHaveBeenCalled();
+    rerender(<BottomSheet visible={false} onClose={jest.fn()}><Text>Form</Text></BottomSheet>);
+    expect(dismiss).toHaveBeenCalledTimes(1);
+    unmount();
+    dismiss.mockRestore();
+  });
   beforeEach(() => {
     contentProps.length = 0;
     rootProps.length = 0;

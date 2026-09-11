@@ -10,6 +10,9 @@
   "ownerOpportunityHint": "Bainistíonn tú an deis seo, mar sin láimhseáiltear feidhmchláir dheonacha ó na huirlisí eagraí.",
   "editOpportunity": "Cuir deis in eagar",
   "applications": {
+    "decisionNoteRequired": "Tá nóta ag teastáil sula ndiúltaítear don iarratas.",
+    "decisionNoteLabel": "Nóta faoin gCinneadh",
+    "decisionNotePlaceholder": "Roinn an chúis nó na chéad chéimeanna eile don oibrí deonach.",
     "heading": "Feidhmchláir",
     "emptyOwner": "Níl feidhmchlár ar feitheamh fós.",
     "loadFailed": "Níorbh fhéidir feidhmchláir a lódáil.",

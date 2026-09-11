@@ -9,13 +9,17 @@ import { FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 
 // --- Mocks ---
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 let mockThreadSearchParams: Record<string, string> = { id: '5', name: 'Alice' };
 const mockRouterPush = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
 const mockAudioRecording = {
-  stopAndUnloadAsync: jest.fn().mockResolvedValue(undefined),
-  getURI: jest.fn(() => 'file:///tmp/voice.m4a'),
+  stop: jest.fn().mockResolvedValue(undefined),
+  uri: 'file:///tmp/voice.m4a',
+  record: jest.fn(),
+  prepareToRecordAsync: (...args: unknown[]) => mockCreateRecordingAsync(...args),
 };
 const mockCreateRecordingAsync = jest.fn().mockResolvedValue({ recording: mockAudioRecording });
 const mockRequestAudioPermissionsAsync = jest.fn().mockResolvedValue({ granted: true });
@@ -98,6 +102,7 @@ jest.mock('react-i18next', () => ({
         'thread.attachments.permissionMessage': 'Allow photo access to attach images.',
         'thread.attachmentName': `Attachment ${String(options?.index ?? '')}`,
         'thread.edit': 'Edit',
+        'thread.editUnsentDraft': 'Edit unsent draft',
         'thread.editing': 'Editing message',
         'thread.saveEdit': 'Save edit',
         'thread.cancelEdit': 'Cancel edit',
@@ -233,15 +238,11 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: (...args: unknown[]) => mockLaunchImageLibraryAsync(...args),
 }));
 
-jest.mock('expo-av', () => ({
-  Audio: {
-    requestPermissionsAsync: (...args: unknown[]) => mockRequestAudioPermissionsAsync(...args),
-    setAudioModeAsync: (...args: unknown[]) => mockSetAudioModeAsync(...args),
-    Recording: {
-      createAsync: (...args: unknown[]) => mockCreateRecordingAsync(...args),
-    },
-    RecordingOptionsPresets: { HIGH_QUALITY: 'HIGH_QUALITY' },
-  },
+jest.mock('expo-audio', () => ({
+  AudioModule: { requestRecordingPermissionsAsync: (...args: unknown[]) => mockRequestAudioPermissionsAsync(...args) },
+  setAudioModeAsync: (...args: unknown[]) => mockSetAudioModeAsync(...args),
+  useAudioRecorder: () => mockAudioRecording,
+  RecordingPresets: { HIGH_QUALITY: 'HIGH_QUALITY' },
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
@@ -355,8 +356,8 @@ beforeEach(() => {
   mockDeleteMessage.mockClear();
   mockSendMessageWithAttachments.mockClear();
   mockSendVoiceMessage.mockClear();
-  mockAudioRecording.stopAndUnloadAsync.mockClear();
-  mockAudioRecording.getURI.mockClear();
+  mockAudioRecording.stop.mockClear();
+  mockAudioRecording.record.mockClear();
   mockCreateRecordingAsync.mockClear();
   mockRequestAudioPermissionsAsync.mockClear();
   mockSetAudioModeAsync.mockClear();
@@ -641,6 +642,39 @@ describe('ThreadScreen', () => {
     });
   });
 
+  it('retains a failed photo with its own draft while the next text draft is being written', async () => {
+    let rejectUpload!: (reason: Error) => void;
+    mockSendMessageWithAttachments.mockImplementation(() => new Promise((_resolve, reject) => { rejectUpload = reject; }));
+    const screen = await attachAPhoto();
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Photo caption');
+    fireEvent.press(screen.getByLabelText('Send'));
+    await waitFor(() => expect(mockSendMessageWithAttachments).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Next text draft');
+    await act(async () => rejectUpload(new Error('Upload disconnected')));
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Next text draft');
+    expect(screen.queryByLabelText('Remove photo.jpg')).toBeNull();
+    fireEvent.press(screen.getByText('Edit unsent draft'));
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Photo caption');
+    expect(screen.getByLabelText('Remove photo.jpg')).toBeTruthy();
+    fireEvent.press(screen.getByText('Edit unsent draft'));
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Next text draft');
+    expect(screen.queryByLabelText('Remove photo.jpg')).toBeNull();
+  });
+
+
+  it('preserves a composer draft and photo when editing an older message', async () => {
+    const screen = await attachAPhoto();
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Unsent photo caption');
+    fireEvent.press(screen.getAllByLabelText('Message actions')[1]);
+    fireEvent.press(screen.getAllByLabelText('Message options')[0]);
+    fireEvent.press(screen.getByLabelText('Edit'));
+    expect(screen.queryByLabelText('Remove photo.jpg')).toBeNull();
+    fireEvent.press(screen.getByLabelText('Cancel edit'));
+    fireEvent.press(screen.getByText('Edit unsent draft'));
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Unsent photo caption');
+    expect(screen.getByLabelText('Remove photo.jpg')).toBeTruthy();
+  });
+
   /** Opens the thread, picks one photo from the library, and returns the screen. */
   async function attachAPhoto() {
     mockLaunchImageLibraryAsync.mockResolvedValue({
@@ -813,19 +847,19 @@ describe('ThreadScreen', () => {
     await waitFor(() => {
       expect(mockRequestAudioPermissionsAsync).toHaveBeenCalled();
       expect(mockSetAudioModeAsync).toHaveBeenCalledWith(expect.objectContaining({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
+        allowsRecording: true,
+        playsInSilentMode: true,
+        interruptionMode: 'duckOthers',
+        shouldRouteThroughEarpiece: false,
       }));
-      expect(mockCreateRecordingAsync).toHaveBeenCalledWith('HIGH_QUALITY');
+      expect(mockCreateRecordingAsync).toHaveBeenCalled();
       expect(getByText('Recording voice message')).toBeTruthy();
     });
 
     fireEvent.press(getByLabelText('Stop'));
 
     await waitFor(() => {
-      expect(mockAudioRecording.stopAndUnloadAsync).toHaveBeenCalled();
+      expect(mockAudioRecording.stop).toHaveBeenCalled();
       expect(getByText('Voice message ready')).toBeTruthy();
     });
 
@@ -843,6 +877,56 @@ describe('ThreadScreen', () => {
        */
       expect(mockSendVoiceMessage).toHaveBeenCalledWith(42, 'file:///tmp/voice.m4a', undefined, 0);
     });
+  });
+
+  it('does not start a recorder when permission returns after leaving', async () => {
+    let finish!: (value: { granted: boolean }) => void;
+    mockRequestAudioPermissionsAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<ThreadScreen />);
+    fireEvent.press(screen.getByLabelText('Record voice message'));
+    screen.unmount();
+    await act(async () => { finish({ granted: true }); });
+    expect(mockCreateRecordingAsync).not.toHaveBeenCalled();
+    expect(mockAudioRecording.record).not.toHaveBeenCalled();
+  });
+
+  it('prevents overlapping record requests while permission is pending', async () => {
+    let finish!: (value: { granted: boolean }) => void;
+    mockRequestAudioPermissionsAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<ThreadScreen />);
+    fireEvent.press(screen.getByLabelText('Record voice message'));
+    fireEvent.press(screen.getByLabelText('Record voice message'));
+    expect(mockRequestAudioPermissionsAsync).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ granted: true }); });
+    expect(mockAudioRecording.record).toHaveBeenCalledTimes(1);
+    screen.unmount();
+  });
+
+  it('preserves a recorded voice duration when a failed upload is retried', async () => {
+    jest.useFakeTimers();
+    try {
+      mockUseApi.mockReturnValue({
+        data: { data: mockMessages, meta: { conversation: { other_user: { id: 42, name: 'Alice' } } } },
+        isLoading: false, error: null, refresh: jest.fn(),
+      });
+      mockSendVoiceMessage.mockRejectedValueOnce(new Error('Network unavailable'));
+      const ui = render(<ThreadScreen />);
+      fireEvent.press(ui.getByLabelText('Record voice message'));
+      await waitFor(() => expect(ui.getByText('Recording voice message')).toBeTruthy());
+      act(() => { jest.advanceTimersByTime(7000); });
+      fireEvent.press(ui.getByLabelText('Stop'));
+      await waitFor(() => expect(ui.getByText('Voice message ready')).toBeTruthy());
+      fireEvent.press(ui.getByLabelText('Send voice message'));
+      await waitFor(() => expect(mockSendVoiceMessage).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(ui.getByText('Voice message ready')).toBeTruthy());
+      fireEvent.press(ui.getByLabelText('Send voice message'));
+      await waitFor(() => expect(mockSendVoiceMessage).toHaveBeenCalledTimes(2));
+      expect(mockSendVoiceMessage.mock.calls[0][3]).toBe(7);
+      expect(mockSendVoiceMessage.mock.calls[1][3]).toBe(7);
+      ui.unmount();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('shows messaging restriction notice and blocks sends when disabled', async () => {
@@ -1184,4 +1268,26 @@ describe('ThreadScreen', () => {
     fireEvent.press(getAllByLabelText('Message actions')[0]);
     expect(queryAllByLabelText(`React with ${thumbsUpReaction}`)).toHaveLength(0);
   });
+});
+
+it('AUDIT keeps the next draft when an earlier send fails', async () => {
+  mockUseApi.mockReturnValue({
+    data: { data: mockMessages, meta: { conversation: { other_user: { id: 42, name: 'Alice' } } } },
+    isLoading: false, error: null, refresh: jest.fn(),
+  });
+
+  let rejectSend!: (reason: Error) => void;
+  (sendMessage as jest.Mock).mockImplementation(() => new Promise((_resolve, reject) => { rejectSend = reject; }));
+  const ui = render(<ThreadScreen />);
+  fireEvent.changeText(ui.getByPlaceholderText('Type a message...'), 'First message');
+  fireEvent.press(ui.getByLabelText('Send'));
+  await waitFor(() => expect(sendMessage).toHaveBeenCalledWith(42, 'First message'));
+  fireEvent.changeText(ui.getByPlaceholderText('Type a message...'), 'Next draft - do not lose this');
+  expect(ui.getByPlaceholderText('Type a message...').props.value).toBe('Next draft - do not lose this');
+  await act(async () => { rejectSend(new Error('Network request failed')); });
+  expect(ui.getByPlaceholderText('Type a message...').props.value).toBe('Next draft - do not lose this');
+  fireEvent.press(ui.getByText('Edit unsent draft'));
+  expect(ui.getByPlaceholderText('Type a message...').props.value).toBe('First message');
+  fireEvent.press(ui.getByText('Edit unsent draft'));
+  expect(ui.getByPlaceholderText('Type a message...').props.value).toBe('Next draft - do not lose this');
 });

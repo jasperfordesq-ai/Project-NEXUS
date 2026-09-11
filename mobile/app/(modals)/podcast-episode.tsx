@@ -7,7 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
-import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
+import { Card as HeroCard } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -78,7 +79,7 @@ function PodcastEpisodeScreen() {
               <View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t(`episode.type.${episode.episode_type}`)}</Chip.Label></Chip>{episode.explicit ? <Chip size="sm" variant="secondary"><Chip.Label>{t('episode.explicit')}</Chip.Label></Chip> : null}</View>
               <Text className="text-2xl font-bold" style={{ color: theme.text }}>{episode.title}</Text>
               {episode.summary ? <Text className="leading-6" style={{ color: theme.textSecondary }}>{episode.summary}</Text> : null}
-              <PodcastAudioPlayer ref={playerRef} episodeId={episode.id} audioUrl={episode.audio_url} durationSeconds={episode.duration_seconds} primaryColor={primary} />
+              <PodcastAudioPlayer ref={playerRef} episodeId={episode.id} audioUrl={episode.audio_url} episodeTitle={episode.title} showTitle={episode.show?.title} durationSeconds={episode.duration_seconds} primaryColor={primary} />
               <View className="flex-row flex-wrap gap-3"><HeroButton variant={reacted ? 'secondary' : 'primary'} isDisabled={savingReaction} onPress={() => void react()}><HeroButton.Label>{t(reacted ? 'episode.reacted' : 'episode.react')}</HeroButton.Label></HeroButton><HeroButton variant="secondary" onPress={() => setReportOpen(true)}><HeroButton.Label>{t('episode.report')}</HeroButton.Label></HeroButton></View>
             </HeroCard.Body></HeroCard>
             {episode.description ? <View className="mt-5 gap-2"><Text className="text-lg font-bold" style={{ color: theme.text }}>{t('episode.description')}</Text><Text className="leading-6" style={{ color: theme.textSecondary }}>{episode.description}</Text></View> : null}

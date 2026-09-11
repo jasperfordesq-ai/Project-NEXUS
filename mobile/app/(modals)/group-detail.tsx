@@ -13,13 +13,16 @@ import {
   Share,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@/components/ui/Icon';
 import { formatEventSchedule } from '@/lib/utils/eventDateTime';
-import { Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
@@ -310,6 +313,7 @@ function GroupDetailScreen() {
 }
 
 function GroupDetailScreenInner() {
+  const { fontScale } = useWindowDimensions();
   const { t } = useTranslation(['groups', 'common', 'marketplace']);
   const { user } = useAuth();
   const { hasFeature } = useTenant();
@@ -1159,6 +1163,7 @@ function GroupDetailScreenInner() {
                         <View className="gap-3">
                           <Input
                             value={announcementTitle}
+                            editable={!creatingAnnouncement}
                             onChangeText={setAnnouncementTitle}
                             placeholder={t('detail.announcementTitlePlaceholder')}
                             placeholderTextColor={theme.textMuted}
@@ -1168,6 +1173,7 @@ function GroupDetailScreenInner() {
                           />
                           <Input
                             value={announcementContent}
+                            editable={!creatingAnnouncement}
                             onChangeText={setAnnouncementContent}
                             placeholder={t('detail.announcementContentPlaceholder')}
                             placeholderTextColor={theme.textMuted}
@@ -1179,6 +1185,7 @@ function GroupDetailScreenInner() {
                           <HeroButton
                             size="sm"
                             variant={announcementPinned ? 'primary' : 'secondary'}
+                            isDisabled={creatingAnnouncement}
                             onPress={() => setAnnouncementPinned((value) => !value)}
                           >
                             {announcementPinned ? <AccentIcon name="pin-outline" size={16} /> : <Ionicons name="pin-outline" size={16} color={primary} />}
@@ -1328,15 +1335,16 @@ function GroupDetailScreenInner() {
         visible={showDiscussionComposer}
         scrollable
         onClose={() => setShowDiscussionComposer(false)}
-        snapPoints={['62%', '88%']}
+        snapPoints={['88%']}
         title={t('detail.startDiscussion')}
       >
         <View className="gap-4 py-2">
-          <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+          <Text key={fontScale} className="text-sm leading-5" style={{ color: theme.textSecondary }}>
             {t('detail.startDiscussionHint')}
           </Text>
           <Input
             value={discussionTitle}
+            editable={!creatingDiscussion}
             onChangeText={setDiscussionTitle}
             placeholder={t('detail.discussionTitlePlaceholder')}
             placeholderTextColor={theme.textMuted}
@@ -1347,6 +1355,7 @@ function GroupDetailScreenInner() {
           />
           <TextArea
             value={discussionContent}
+            editable={!creatingDiscussion}
             onChangeText={setDiscussionContent}
             placeholder={t('detail.discussionContentPlaceholder')}
             placeholderTextColor={theme.textMuted}
@@ -1356,9 +1365,9 @@ function GroupDetailScreenInner() {
             style={{ color: theme.text }}
             accessibilityLabel={t('detail.discussionContentPlaceholder')}
           />
-          <View className="flex-row gap-3">
+          <View className={fontScale > 1.3 ? 'gap-3' : 'flex-row gap-3'}>
             <HeroButton
-              className="flex-1"
+              className={fontScale > 1.3 ? 'w-full' : 'flex-1'}
               variant="secondary"
               isDisabled={creatingDiscussion}
               onPress={() => setShowDiscussionComposer(false)}
@@ -1366,7 +1375,7 @@ function GroupDetailScreenInner() {
               <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
             </HeroButton>
             <HeroButton
-              className="flex-1"
+              className={fontScale > 1.3 ? 'w-full' : 'flex-1'}
               isDisabled={creatingDiscussion}
               onPress={() => void handleCreateDiscussion()}
             >
@@ -1955,10 +1964,15 @@ function GroupQAPanel({
     try {
       await answerGroupQuestion(groupId, expandedId, { body: content });
       setAnswerBody('');
-      const response = await getGroupQuestion(groupId, expandedId);
-      setDetail(response.data);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      try {
+        const response = await getGroupQuestion(groupId, expandedId);
+        setDetail(response.data);
+      } catch {
+        // The answer was accepted. A failed read must not invite another post.
+        showToast({ title: t('common:errors.refreshFailedTitle'), description: t('common:errors.refreshFailedSubtitle'), variant: 'warning' });
+      }
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.answerError')), variant: 'danger' });
@@ -2032,6 +2046,7 @@ function GroupQAPanel({
                 value={title}
                 onChangeText={setTitle}
                 placeholder={t('detail.qa.titlePlaceholder')}
+                editable={!creating}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -2041,6 +2056,7 @@ function GroupQAPanel({
                 value={body}
                 onChangeText={setBody}
                 placeholder={t('detail.qa.bodyPlaceholder')}
+                editable={!creating}
                 placeholderTextColor={theme.textMuted}
                 multiline
                 className="min-h-[104px] text-base"
@@ -2191,6 +2207,7 @@ function GroupQAPanel({
                     )}
                     <Input
                       value={answerBody}
+                      editable={!answering}
                       onChangeText={setAnswerBody}
                       placeholder={t('detail.qa.answerPlaceholder')}
                       placeholderTextColor={theme.textMuted}

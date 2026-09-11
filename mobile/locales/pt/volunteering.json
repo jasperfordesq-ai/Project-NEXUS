@@ -10,6 +10,9 @@
   "ownerOpportunityHint": "Você gerencie esta oportunidade, para que as inscrições de voluntários sejam tratadas nas ferramentas do organizador.",
   "editOpportunity": "Editar oportunidade",
   "applications": {
+    "decisionNoteRequired": "É necessária uma nota antes de recusar.",
+    "decisionNoteLabel": "Nota de decisão",
+    "decisionNotePlaceholder": "Compartilhe o motivo ou os próximos passos do voluntário.",
     "heading": "Inscrições",
     "emptyOwner": "Nenhuma inscrição pendente ainda.",
     "loadFailed": "Não foi possível carregar inscrições.",

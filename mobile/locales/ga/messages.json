@@ -93,7 +93,11 @@
       "stopFailed": "Níorbh fhéidir an taifeadadh seo a shábháil. Bain triail eile as.",
       "sendFailed": "Níorbh fhéidir an teachtaireacht ghutha a sheoladh. Bain triail eile as."
     },
-    "notFound": "Níl an comhrá seo ar fáil a thuilleadh."
+    "notFound": "Níl an comhrá seo ar fáil a thuilleadh.",
+    "unsentDrafts": "Dréachtaí nár seoladh: {{count}}",
+    "editUnsentDraft": "Cuir dréacht nár seoladh in eagar",
+    "unsentDrafts_one": "Dréacht nár seoladh: {{count}}",
+    "unsentDrafts_other": "Dréachtaí nár seoladh: {{count}}"
   },
   "context": {
     "regarding": "Maidir Le",

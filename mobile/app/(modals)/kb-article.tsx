@@ -8,7 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
-import { Card as HeroCard, Chip } from 'heroui-native';
+import { Card as HeroCard } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 
 import { getKbArticle } from '@/lib/api/resources';

@@ -35,6 +35,8 @@ import {
   register,
   resetPassword,
   verifyEmail,
+  beginMfaSetup,
+  verifyMfa,
 } from './auth';
 import type { AuthResponse, LoginUser, RegisterPayload, RegisterResponse } from './auth';
 
@@ -59,6 +61,21 @@ const baseResponse: AuthResponse = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+});
+
+it('uses anonymous challenge-bound setup and preserves its issued session payload', async () => {
+  jest.mocked(api.post).mockResolvedValueOnce({ data: { secret: 'SECRET' } });
+  await beginMfaSetup('challenge');
+  expect(api.post).toHaveBeenLastCalledWith('/api/v2/auth/2fa/setup', { two_factor_token: 'challenge' }, { anonymous: true });
+  const session = { access_token: 'issued', refresh_token: 'refresh', backup_codes: ['CODE'] };
+  jest.mocked(api.post).mockResolvedValueOnce({ data: session });
+  await expect(verifyMfa({ success: false, requires_2fa_setup: true, two_factor_token: 'challenge' }, '123456', false)).resolves.toEqual(session);
+  expect(api.post).toHaveBeenLastCalledWith('/api/v2/auth/2fa/verify', { two_factor_token: 'challenge', code: '123456' }, { anonymous: true });
+});
+
+it('verifies recovery codes through the existing TOTP login endpoint', async () => {
+  await verifyMfa({ success: false, requires_2fa: true, two_factor_token: 'challenge' }, 'BACKUP', true);
+  expect(api.post).toHaveBeenLastCalledWith('/api/totp/verify', { two_factor_token: 'challenge', code: 'BACKUP', use_backup_code: true }, { anonymous: true });
 });
 
 describe('extractToken', () => {

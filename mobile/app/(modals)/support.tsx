@@ -35,7 +35,8 @@ import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { Ionicons } from '@/components/ui/Icon';
 import AppTopBar from '@/components/ui/AppTopBar';

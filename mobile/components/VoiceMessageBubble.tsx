@@ -7,11 +7,10 @@ import { contrastText, withAlpha } from '@/lib/utils/color';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
-import { Button as HeroButton, Spinner } from 'heroui-native';
-// TODO: Migrate from expo-av to expo-audio when SDK 55+ is adopted.
-// expo-av is deprecated but expo-audio's API differs significantly (useAudioPlayer hook-based).
-// The deprecation warning is suppressed via LogBox in _layout.tsx.
-import { Audio, type AVPlaybackStatus } from 'expo-av';
+import { Spinner } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
+import { setAudioModeAsync, type AudioStatus } from 'expo-audio';
+import { loadAudioPlayer } from '@/lib/media/loadAudioPlayer';
 
 import { useTranslation } from 'react-i18next';
 
@@ -44,39 +43,70 @@ export default function VoiceMessageBubble({
   textColorSecondary,
 }: VoiceMessageBubbleProps) {
   const { t } = useTranslation('messages');
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<Awaited<ReturnType<typeof loadAudioPlayer>> | null>(null);
+  const loadController = useRef<AbortController | null>(null);
+  const inFlight = useRef(false);
+  const finished = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [positionMs, setPositionMs] = useState(0);
   const [totalMs, setTotalMs] = useState(durationMs ?? 0);
 
-  // Unload sound on unmount to free resources
+  // A recycled message must never retain another message's audio or a pending load.
   useEffect(() => {
+    const controller = new AbortController();
+    loadController.current = controller;
+    setIsPlaying(false);
+    setIsLoading(false);
+    setPositionMs(0);
+    setTotalMs(durationMs ?? 0);
+    setHasError(false);
+    finished.current = false;
     return () => {
-      soundRef.current?.unloadAsync().catch(() => null);
+      controller.abort();
+      soundRef.current?.release();
+      soundRef.current = null;
+      inFlight.current = false;
     };
-  }, []);
+  }, [audioUrl, durationMs]);
 
-  const onPlaybackStatusUpdate = useCallback((status: AVPlaybackStatus) => {
+  const onPlaybackStatusUpdate = useCallback((status: AudioStatus) => {
+    if (status.playbackState === 'error' || status.playbackState === 'failed') {
+      soundRef.current = null;
+      setHasError(true);
+      setIsPlaying(false);
+      return;
+    }
     if (!status.isLoaded) return;
-    setPositionMs(status.positionMillis);
-    if (status.durationMillis) setTotalMs(status.durationMillis);
+    setPositionMs(status.currentTime * 1000);
+    if (status.duration) setTotalMs(status.duration * 1000);
+    setIsPlaying(status.playing);
     if (status.didJustFinish) {
+      finished.current = true;
       setIsPlaying(false);
       setPositionMs(0);
     }
   }, []);
 
   const handlePlayPause = useCallback(async () => {
+    if (inFlight.current) return;
+    const controller = loadController.current;
+    if (!controller || controller.signal.aborted) return;
+    inFlight.current = true;
     setHasError(false);
     try {
       if (soundRef.current) {
         if (isPlaying) {
-          await soundRef.current.pauseAsync();
+          soundRef.current.player.pause();
           setIsPlaying(false);
         } else {
-          await soundRef.current.playAsync();
+          if (finished.current) {
+            await soundRef.current.player.seekTo(0);
+            finished.current = false;
+          }
+          if (controller.signal.aborted) return;
+          soundRef.current?.player.play();
           setIsPlaying(true);
         }
         return;
@@ -84,20 +114,26 @@ export default function VoiceMessageBubble({
 
       // First play — load the sound
       setIsLoading(true);
-      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false, shouldPlayInBackground: false, shouldRouteThroughEarpiece: false, interruptionMode: 'doNotMix' });
+      if (controller.signal.aborted) return;
       const source = await authenticatedMediaRequest(audioUrl);
-      const { sound } = await Audio.Sound.createAsync(
-        source,
-        { shouldPlay: true },
-        onPlaybackStatusUpdate,
-      );
+      if (controller.signal.aborted) return;
+      const sound = await loadAudioPlayer(source, onPlaybackStatusUpdate, controller.signal);
+      if (controller.signal.aborted) { sound.release(); return; }
       soundRef.current = sound;
+      sound.player.play();
       setIsPlaying(true);
     } catch {
+      if (controller.signal.aborted) return;
+      soundRef.current?.release();
+      soundRef.current = null;
       setHasError(true);
       setIsPlaying(false);
     } finally {
-      setIsLoading(false);
+      if (loadController.current === controller) {
+        inFlight.current = false;
+        if (!controller.signal.aborted) setIsLoading(false);
+      }
     }
   }, [audioUrl, isPlaying, onPlaybackStatusUpdate]);
 

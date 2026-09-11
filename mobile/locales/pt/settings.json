@@ -295,7 +295,7 @@
   },
   "biometricLock": {
     "title": "Desbloquear com impressão digital ou rosto",
-    "hint": "Faça login mais rapidamente com impressão digital, rosto ou PIN.",
+    "hint": "Bloqueia a sessão guardada ao iniciar a aplicação. Qualquer pessoa com dados biométricos registados neste dispositivo pode desbloqueá-la. O PIN do dispositivo também pode ser aceite.",
     "prompt": "Desbloqueie a sua conta",
     "lockedTitle": "Bloqueado",
     "lockedSubtitle": "Desbloqueie para voltar à sua comunidade.",
@@ -305,7 +305,7 @@
       "failed": "Não corresponde. Tente novamente.",
       "lockout": "Demasiadas tentativas. Use o PIN do telefone ou tente novamente mais tarde.",
       "noHardware": "Este telefone não tem desbloqueio por impressão digital ou rosto.",
-      "notEnrolled": "Configure primeiro impressão digital, rosto ou PIN nas definições do telefone.",
+      "notEnrolled": "Configure primeiro o desbloqueio por impressão digital ou reconhecimento facial nas definições do dispositivo.",
       "unavailable": "O desbloqueio não está disponível neste telefone neste momento."
     }
   },

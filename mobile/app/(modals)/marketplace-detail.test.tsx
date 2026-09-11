@@ -133,12 +133,9 @@ jest.mock('@/lib/hooks/useAuth', () => ({
 }));
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
-jest.mock('expo-av', () => {
+jest.mock('@/components/media/NativeVideo', () => {
   const { Text } = require('react-native');
-  return {
-    ResizeMode: { CONTAIN: 'contain' },
-    Video: ({ accessibilityLabel }: { accessibilityLabel?: string }) => <Text>{accessibilityLabel}</Text>,
-  };
+  return ({ accessibilityLabel }: { accessibilityLabel?: string }) => <Text>{accessibilityLabel}</Text>;
 });
 jest.mock('@/lib/haptics', () => ({
   impactAsync: jest.fn(),

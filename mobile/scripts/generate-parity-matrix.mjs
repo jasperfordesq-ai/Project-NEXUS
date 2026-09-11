@@ -193,9 +193,11 @@ function main() {
     rows,
   };
 
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(OUT_DIR, 'mobile-parity-matrix.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-  fs.writeFileSync(path.join(OUT_DIR, 'mobile-parity-matrix.md'), renderMarkdown(report), 'utf8');
+  if (!CHECK) {
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(OUT_DIR, 'mobile-parity-matrix.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(path.join(OUT_DIR, 'mobile-parity-matrix.md'), renderMarkdown(report), 'utf8');
+  }
 
   const s = report.summary;
   console.log(

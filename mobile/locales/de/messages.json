@@ -93,7 +93,11 @@
       "stopFailed": "Diese Aufnahme konnte nicht gespeichert werden. Versuche es erneut.",
       "sendFailed": "Die Sprachnachricht konnte nicht gesendet werden. Versuche es erneut."
     },
-    "notFound": "Diese Unterhaltung ist nicht mehr verfügbar."
+    "notFound": "Diese Unterhaltung ist nicht mehr verfügbar.",
+    "unsentDrafts": "Nicht gesendete Entwürfe: {{count}}",
+    "editUnsentDraft": "Nicht gesendeten Entwurf bearbeiten",
+    "unsentDrafts_one": "Nicht gesendeter Entwurf: {{count}}",
+    "unsentDrafts_other": "Nicht gesendete Entwürfe: {{count}}"
   },
   "context": {
     "regarding": "Bezüglich",

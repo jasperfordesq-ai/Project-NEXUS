@@ -10,7 +10,9 @@ import { useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button as HeroButton, Card as HeroCard, Chip, Spinner, Surface } from 'heroui-native';
+import { Alert, Card as HeroCard, Spinner, Surface } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import {
   getEventAttendanceRoster,

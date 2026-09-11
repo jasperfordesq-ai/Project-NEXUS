@@ -11,9 +11,10 @@ const mockAuthenticate = jest.fn();
 const mockCapability = jest.fn();
 const mockEnabled = jest.fn();
 const mockLogout = jest.fn();
-let mockAuthState = { isAuthenticated: true, isLoading: false };
+let mockAuthState = { isAuthenticated: true, isLoading: false, sessionRestoreFailed: false };
 
 jest.mock('@/lib/biometricLock', () => ({
+  biometricFailureKey: (reason: string) => reason === 'no_hardware' ? 'noHardware' : reason === 'not_enrolled' ? 'notEnrolled' : reason,
   authenticate: (...args: unknown[]) => mockAuthenticate(...args),
   biometricCapability: (...args: unknown[]) => mockCapability(...args),
   isBiometricLockEnabled: (...args: unknown[]) => mockEnabled(...args),
@@ -54,14 +55,14 @@ const SLOW_CI = { timeout: 5000 };
 describe('BiometricLockGate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockAuthState = { isAuthenticated: true, isLoading: false };
+    mockAuthState = { isAuthenticated: true, isLoading: false, sessionRestoreFailed: false };
     mockEnabled.mockResolvedValue(true);
     mockCapability.mockResolvedValue({ usable: true });
     mockAuthenticate.mockResolvedValue({ ok: true });
   });
 
   it('never blocks a signed-out member from reaching the login UI', async () => {
-    mockAuthState = { isAuthenticated: false, isLoading: false };
+    mockAuthState = { isAuthenticated: false, isLoading: false, sessionRestoreFailed: false };
     const { getByText, queryByTestId } = render(
       <BiometricLockGate><Text>Login form</Text></BiometricLockGate>,
     );
@@ -79,7 +80,8 @@ describe('BiometricLockGate', () => {
       <BiometricLockGate><Text>Private account</Text></BiometricLockGate>,
     );
 
-    expect(getByText('Private account')).toBeTruthy();
+    expect(getByText('Private account', { includeHiddenElements: true })).toBeTruthy();
+    expect(() => getByText('Private account')).toThrow();
     expect(getByTestId('biometric-lock-gate')).toBeTruthy();
     await waitFor(() => expect(mockAuthenticate).toHaveBeenCalledWith('settings:biometricLock.prompt'));
 
@@ -135,7 +137,7 @@ describe('BiometricLockGate', () => {
     expect(mockLogout).toHaveBeenCalledTimes(1);
 
     // `logout()` ends the session. Re-render with the state the real provider would publish.
-    mockAuthState = { isAuthenticated: false, isLoading: false };
+    mockAuthState = { isAuthenticated: false, isLoading: false, sessionRestoreFailed: false };
     await act(async () => {
       rerender(<BiometricLockGate><Text>Login form</Text></BiometricLockGate>);
     });
@@ -144,13 +146,35 @@ describe('BiometricLockGate', () => {
     expect(getByText('Login form')).toBeTruthy();
   });
 
-  it('fails open when the phone can no longer authenticate', async () => {
+  it('still locks a stored session recovered after an offline restore failure', async () => {
+    mockAuthState = { isAuthenticated: false, isLoading: false, sessionRestoreFailed: true };
+    mockAuthenticate.mockResolvedValue({ ok: false, reason: 'cancelled' });
+    const view = render(<BiometricLockGate><Text>Private account</Text></BiometricLockGate>);
+    await waitFor(() => expect(view.queryByTestId('biometric-lock-gate')).toBeNull());
+    mockAuthState = { isAuthenticated: true, isLoading: false, sessionRestoreFailed: false };
+    view.rerender(<BiometricLockGate><Text>Private account</Text></BiometricLockGate>);
+    expect(await view.findByTestId('biometric-lock-error')).toBeTruthy();
+    expect(view.queryByText('Private account')).toBeNull();
+  });
+
+  it('requires authentication even when capability detection is unavailable', async () => {
     mockCapability.mockResolvedValue({ usable: false });
-    const { queryByTestId } = render(
+    mockAuthenticate.mockResolvedValue({ ok: false, reason: 'unavailable' });
+    const { findByTestId, queryByText } = render(
       <BiometricLockGate><Text>Private account</Text></BiometricLockGate>,
     );
 
-    await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
-    expect(mockAuthenticate).not.toHaveBeenCalled();
+    expect(await findByTestId('biometric-lock-error')).toBeTruthy();
+    expect(queryByText('Private account')).toBeNull();
+    expect(mockAuthenticate).toHaveBeenCalled();
+  });
+
+  it('keeps the session locked when the saved preference cannot be read', async () => {
+    mockEnabled.mockRejectedValue(new Error('Keychain unavailable'));
+    const { findByTestId, queryByText } = render(
+      <BiometricLockGate><Text>Private account</Text></BiometricLockGate>,
+    );
+    expect(await findByTestId('biometric-lock-error')).toHaveTextContent('settings:biometricLock.errors.unavailable');
+    expect(queryByText('Private account')).toBeNull();
   });
 });

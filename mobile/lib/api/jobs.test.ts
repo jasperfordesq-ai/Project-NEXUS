@@ -296,6 +296,23 @@ describe('acting on a vacancy', () => {
     expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/42', { title: 'Head Gardener' });
   });
 
+  it('sends a stable job creation key in both the body and standard header', async () => {
+    mockPost.mockResolvedValue({ data: { id: 1 } });
+    const payload = {
+      title: 'Gardener',
+      description: 'Help in the garden.',
+      type: 'volunteer',
+      commitment: 'flexible',
+      idempotency_key: 'mobile-job-create-123',
+    } as const;
+
+    await createJob(payload);
+
+    expect(mockPost).toHaveBeenCalledWith('/api/v2/jobs', payload, {
+      headers: { 'Idempotency-Key': 'mobile-job-create-123' },
+    });
+  });
+
   it('changes a vacancy status through a dedicated payload', async () => {
     await updateJobStatus(42, 'filled');
 
@@ -336,11 +353,15 @@ describe('job alerts', () => {
 
   it('creates, lists and deletes an alert on the alerts endpoints', async () => {
     await getJobAlerts();
-    await createJobAlert({ keywords: 'garden' } as never);
+    await createJobAlert({ keywords: 'garden', idempotency_key: 'alert-create-key' } as never);
     await deleteJobAlert(5);
 
     expect(mockGet).toHaveBeenCalledWith('/api/v2/jobs/alerts');
-    expect(mockPost).toHaveBeenCalledWith('/api/v2/jobs/alerts', { keywords: 'garden' });
+    expect(mockPost).toHaveBeenCalledWith(
+      '/api/v2/jobs/alerts',
+      { keywords: 'garden', idempotency_key: 'alert-create-key' },
+      { headers: { 'Idempotency-Key': 'alert-create-key' } },
+    );
     expect(mockDelete).toHaveBeenCalledWith('/api/v2/jobs/alerts/5');
   });
 
@@ -422,23 +443,21 @@ describe('saved application profile', () => {
   });
 
   it('returns the stored CV and covering text', async () => {
-    mockGet.mockResolvedValue({ profile: { cv_filename: 'cv.pdf', cover_text: 'Hello' } });
+    mockGet.mockResolvedValue({ data: { profile: { cv_filename: 'cv.pdf', cover_text: 'Hello' } } });
 
     await expect(getSavedProfile()).resolves.toEqual({ cv_filename: 'cv.pdf', cover_text: 'Hello' });
     expect(mockGet).toHaveBeenCalledWith('/api/v2/jobs/saved-profile');
   });
 
   it('returns null when no profile has been saved', async () => {
-    mockGet.mockResolvedValue({});
+    mockGet.mockResolvedValue({ data: { profile: null } });
 
     await expect(getSavedProfile()).resolves.toBeNull();
   });
 
-  it('returns null rather than throwing when the profile cannot be fetched', async () => {
-    // A member with no saved profile and a member who is offline must both land
-    // on the same empty form rather than an error screen.
+  it('keeps a failed profile lookup distinct from a member with no saved profile', async () => {
     mockGet.mockRejectedValue(new ApiResponseError(500, 'Server error'));
 
-    await expect(getSavedProfile()).resolves.toBeNull();
+    await expect(getSavedProfile()).rejects.toThrow('Server error');
   });
 });

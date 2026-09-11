@@ -7,7 +7,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { BottomSheetFlatList, BottomSheetFooter, type BottomSheetFooterProps } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@/components/ui/Icon';
-import { BottomSheet as HeroBottomSheet, Button as HeroButton, Spinner, Surface, useBottomSheetAwareHandlers } from 'heroui-native';
+import { BottomSheet as HeroBottomSheet, Spinner, Surface, useBottomSheetAwareHandlers } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import * as Haptics from '@/lib/haptics';

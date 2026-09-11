@@ -1053,6 +1053,10 @@
     "verify-identity/callback": {
       "status": "out-of-scope",
       "reason": "Stripe Identity browser redirect target."
+    },
+    "auth/two-factor/setup": {
+      "status": "native",
+      "mobile": "login"
     }
   }
 }

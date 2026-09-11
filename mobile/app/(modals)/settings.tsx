@@ -15,7 +15,8 @@ import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
-import { Button as HeroButton, Card as HeroCard, ListGroup, Text } from 'heroui-native';
+import { Card as HeroCard, ListGroup, Text } from 'heroui-native';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 
 import { api } from '@/lib/api/client';
@@ -34,6 +35,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import {
   biometricCapability,
+  biometricFailureKey,
   isBiometricLockEnabled,
   setBiometricLockEnabled,
 } from '@/lib/biometricLock';
@@ -132,11 +134,12 @@ function SettingsScreen() {
     void (async () => {
       const [capability, enabled] = await Promise.all([
         biometricCapability(),
-        isBiometricLockEnabled(),
+        // Do not display an unreadable security setting as disabled.
+        isBiometricLockEnabled().catch(() => null),
       ]);
       if (cancelled) return;
-      setBiometricUsable(capability.usable);
-      setBiometricLockOn(enabled);
+      setBiometricUsable(enabled !== null && (capability.usable || enabled));
+      if (enabled !== null) setBiometricLockOn(enabled);
     })();
     return () => {
       cancelled = true;
@@ -151,7 +154,7 @@ function SettingsScreen() {
       if (!result.ok) {
         // Say which of the phone's answers it was, rather than a generic failure.
         showToast({
-          title: t(`biometricLock.errors.${result.reason ?? 'failed'}`),
+          title: t(`biometricLock.errors.${biometricFailureKey(result.reason ?? 'failed')}`),
           variant: result.reason === 'cancelled' ? 'warning' : 'danger',
         });
         return;
@@ -484,6 +487,7 @@ function SettingsScreen() {
             {biometricUsable ? (
               <SettingRow
                 label={t('biometricLock.title')}
+                description={t('biometricLock.hint')}
                 value={biometricLockOn}
                 onToggle={() => void toggleBiometricLock()}
                 disabled={biometricBusy}
@@ -809,11 +813,13 @@ function PrivacyVisibilityRow({
 
 function SettingRow({
   label,
+  description,
   value,
   onToggle,
   disabled,
 }: {
   label: string;
+  description?: string;
   value: boolean;
   onToggle: () => void;
   disabled: boolean;
@@ -824,6 +830,7 @@ function SettingRow({
     <ListGroup.Item>
       <ListGroup.ItemContent>
         <ListGroup.ItemTitle numberOfLines={2}>{label}</ListGroup.ItemTitle>
+        {description ? <ListGroup.ItemDescription>{description}</ListGroup.ItemDescription> : null}
       </ListGroup.ItemContent>
       <ListGroup.ItemSuffix>
         <Toggle

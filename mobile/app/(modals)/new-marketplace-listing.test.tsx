@@ -4,8 +4,14 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
+
+jest.mock('expo-crypto', () => {
+  let sequence = 0;
+  return { randomUUID: jest.fn(() => `photo-${++sequence}`) };
+});
 
 let mockParams: Record<string, string> = {};
 let mockTenantCurrency = 'EUR';
@@ -208,6 +214,18 @@ describe('NewMarketplaceListingRoute', () => {
     expect(await findByDisplayValue('Generated mobile marketplace description.')).toBeTruthy();
   });
 
+  it('preserves description edits made while generation is pending', async () => {
+    let finish!: (value: unknown) => void;
+    jest.mocked(generateMarketplaceDescription).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }) as never);
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
+    fireEvent.press(ui.getByText('Generate with AI'));
+    await waitFor(() => expect(generateMarketplaceDescription).toHaveBeenCalled());
+    fireEvent.changeText(ui.getByPlaceholderText('Details'), 'My newer description');
+    await act(async () => { finish({ data: { description: 'Generated earlier' } }); });
+    expect(ui.getByPlaceholderText('Details').props.value).toBe('My newer description');
+  });
+
   it('sends the selected marketplace currency when creating a listing', async () => {
     jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 88 } } as never);
 
@@ -334,6 +352,64 @@ describe('NewMarketplaceListingRoute', () => {
         mimeType: 'video/mp4',
       }));
     });
+  });
+
+  it('retains failed media and retries it against the saved listing without creating another listing', async () => {
+    jest.mocked(ImagePicker.requestMediaLibraryPermissionsAsync).mockResolvedValue({ granted: true } as never);
+    jest.mocked(ImagePicker.launchImageLibraryAsync)
+      .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///tmp/photo.jpg' }] } as never)
+      .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///tmp/demo.mp4', fileName: 'demo.mp4', mimeType: 'video/mp4', fileSize: 1024 }] } as never);
+    jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 77 } } as never);
+    jest.mocked(uploadMarketplaceImages).mockResolvedValueOnce({ data: [] } as never);
+    jest.mocked(uploadMarketplaceVideo).mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({ data: {} } as never);
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
+    fireEvent.changeText(ui.getByPlaceholderText('Details'), 'Description');
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '12');
+    fireEvent.press(ui.getByText('Add images'));
+    await ui.findByLabelText('Listing photo');
+    fireEvent.press(ui.getByText('Add video'));
+    await ui.findByText('demo.mp4');
+    fireEvent.press(ui.getByText('Publish'));
+    await waitFor(() => expect(uploadMarketplaceVideo).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    expect(router.replace).not.toHaveBeenCalled();
+    fireEvent.press(await ui.findByText('common:buttons.retry'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect(createMarketplaceListing).toHaveBeenCalledTimes(1);
+    expect(uploadMarketplaceImages).toHaveBeenCalledTimes(1);
+    expect(uploadMarketplaceVideo).toHaveBeenCalledTimes(2);
+    expect(jest.mocked(uploadMarketplaceVideo).mock.calls.map(call => call[0])).toEqual([77, 77]);
+  });
+
+  it('tracks each photo independently and retries only the rejected photo', async () => {
+    jest.mocked(ImagePicker.requestMediaLibraryPermissionsAsync).mockResolvedValue({ granted: true } as never);
+    jest.mocked(ImagePicker.launchImageLibraryAsync).mockResolvedValueOnce({ canceled: false, assets: [
+      { uri: 'file:///tmp/one.jpg' }, { uri: 'file:///tmp/two.jpg' },
+    ] } as never);
+    jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 78 } } as never);
+    jest.mocked(uploadMarketplaceImages)
+      .mockResolvedValueOnce({ data: [] } as never)
+      .mockRejectedValueOnce(new Error('Invalid image'))
+      .mockResolvedValueOnce({ data: [] } as never);
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
+    fireEvent.changeText(ui.getByPlaceholderText('Details'), 'Description');
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '12');
+    fireEvent.press(ui.getByText('Add images'));
+    await waitFor(() => expect(ui.getAllByLabelText('Listing photo')).toHaveLength(2));
+    fireEvent.press(ui.getByText('Publish'));
+    fireEvent.press(await ui.findByText('common:buttons.retry'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect(createMarketplaceListing).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(uploadMarketplaceImages).mock.calls).toEqual([
+      [78, ['file:///tmp/one.jpg'], expect.any(String)],
+      [78, ['file:///tmp/two.jpg'], expect.any(String)],
+      [78, ['file:///tmp/two.jpg'], expect.any(String)],
+    ]);
+    const calls = jest.mocked(uploadMarketplaceImages).mock.calls;
+    expect(calls[1][2]).toBe(calls[2][2]);
+    expect(calls[0][2]).not.toBe(calls[1][2]);
   });
 
   it('keeps existing edit photos visible and deletes removed server images', async () => {
@@ -496,7 +572,7 @@ describe('NewMarketplaceListingRoute', () => {
     fireEvent.press(getByText('Update'));
 
     await waitFor(() => {
-      expect(uploadMarketplaceImages).toHaveBeenCalledWith(43, ['file:///tmp/new-photo.jpg']);
+      expect(uploadMarketplaceImages).toHaveBeenCalledWith(43, ['file:///tmp/new-photo.jpg'], expect.any(String));
     });
     expect(deleteMarketplaceListingImage).not.toHaveBeenCalled();
   });

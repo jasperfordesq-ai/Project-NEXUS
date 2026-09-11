@@ -10,10 +10,12 @@ import { Linking, ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { ResizeMode, Video } from 'expo-av';
+import NativeVideo from '@/components/media/NativeVideo';
 import { Ionicons } from '@/components/ui/Icon';
 import { randomUUID } from 'expo-crypto';
-import { Button as HeroButton, CloseButton, Card as HeroCard, Chip, Surface, Text } from 'heroui-native';
+import { CloseButton, Card as HeroCard, Surface, Text } from 'heroui-native';
+import { Chip } from '@/components/ui/StatusChip';
+import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
 
@@ -649,13 +651,10 @@ function MarketplaceDetailScreen() {
           <HeroCard.Body className="gap-4 p-4">
             {videoUrl ? (
               <Surface variant="secondary" className="aspect-video overflow-hidden rounded-panel-inner bg-black p-0">
-                <Video
+                <NativeVideo
                   accessibilityLabel={t('detail.video')}
-                  resizeMode={ResizeMode.CONTAIN}
-                  shouldPlay={false}
                   source={{ uri: videoUrl }}
                   style={{ width: '100%', height: '100%' }}
-                  useNativeControls
                 />
               </Surface>
             ) : null}

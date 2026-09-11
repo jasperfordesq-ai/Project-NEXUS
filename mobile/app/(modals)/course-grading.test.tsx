@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { RefreshControl } from 'react-native';
 
 const mockGetCourseGradingQueue = jest.fn();
 const mockGradeCourseAttempt = jest.fn();
@@ -121,6 +122,40 @@ describe('CourseGradingRoute', () => {
     render(<CourseGradingRoute />);
 
     await waitFor(() => expect(mockGetCourseGradingQueue).toHaveBeenCalledWith(42));
+  });
+
+  it('retains a grading draft while refreshing the queue', async () => {
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText('Feedback (optional)'), 'Detailed unsent feedback');
+    let finish!: (value: unknown) => void;
+    mockGetCourseGradingQueue.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    await act(async () => { screen.UNSAFE_getByType(RefreshControl).props.onRefresh(); });
+    expect(screen.getByLabelText('Feedback (optional)').props.value).toBe('Detailed unsent feedback');
+    await act(async () => { finish([attempt]); });
+    expect(screen.getByLabelText('Feedback (optional)').props.value).toBe('Detailed unsent feedback');
+    mockGetCourseGradingQueue.mockRejectedValueOnce(new ApiResponseError(400, 'Refresh failed'));
+    await act(async () => { screen.UNSAFE_getByType(RefreshControl).props.onRefresh(); });
+    expect(screen.getByTestId('refresh-failed-notice')).toBeTruthy();
+    expect(screen.getByLabelText('Feedback (optional)').props.value).toBe('Detailed unsent feedback');
+  });
+
+  it('pauses grade edits while saving and restores the draft after rejection', async () => {
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText('Score (%)'), '85');
+    fireEvent.changeText(screen.getByLabelText('Feedback (optional)'), 'Keep this feedback');
+    let reject!: (reason: Error) => void;
+    mockGradeCourseAttempt.mockImplementationOnce(() => new Promise((_, fail) => { reject = fail; }));
+    fireEvent.press(screen.getByText('Submit grade'));
+    expect(screen.getByLabelText('Score (%)').props.editable).toBe(false);
+    expect(screen.getByLabelText('Feedback (optional)').props.editable).toBe(false);
+    await act(async () => { reject(new ApiResponseError(422, 'Please review the grade')); });
+    expect(screen.getByLabelText('Score (%)').props.editable).toBe(true);
+    expect(screen.getByLabelText('Feedback (optional)').props.value).toBe('Keep this feedback');
+    await act(async () => { fireEvent.press(screen.getByText('Submit grade')); });
+    expect(mockGradeCourseAttempt).toHaveBeenLastCalledWith(900, { score_percent: 85, passed: true, feedback: 'Keep this feedback' });
+    expect(screen.queryByText('Maura Byrne')).toBeNull();
   });
 
   it('shows who is waiting, the question prompts and the member\'s answers in words', async () => {

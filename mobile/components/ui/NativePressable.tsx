@@ -84,7 +84,7 @@ export default function NativePressable({
         hitSlop={hitSlop}
         onLongPress={onLongPress}
         onPress={handlePress}
-        style={style}
+        style={[style, (onPress || onLongPress) ? { minHeight: 48, minWidth: 48 } : undefined]}
         testID={testID}
       >
         {children}
@@ -107,7 +107,7 @@ export default function NativePressable({
       isDisabled={disabled}
       onLongPress={onLongPress}
       onPress={handlePress}
-      style={style}
+      style={[style, (onPress || onLongPress) ? { minHeight: 48, minWidth: 48 } : undefined]}
       testID={testID}
     >
       {useScale && Scale ? (
