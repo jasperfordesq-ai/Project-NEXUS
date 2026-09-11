@@ -83,6 +83,7 @@ public class PasskeysController : ControllerBase
     {
         var user = await GetCurrentUserAsync();
         if (user == null) return Unauthorized(new { error = "User not found" });
+        if (!HasSecurityConfirmation(null, user)) return SecurityConfirmationRequired();
 
         try
         {
@@ -90,7 +91,7 @@ public class PasskeysController : ControllerBase
 
             // Store options by user ID (registration requires auth so this is safe)
             var cacheKey = $"passkey:reg:{user.Id}:{user.TenantId}";
-            _challengeStore.Set(cacheKey, options, ChallengeTtl);
+            _challengeStore.Set(cacheKey, new PasskeyRegistrationChallenge(options, user.Id, user.TenantId), ChallengeTtl);
 
             return Ok(options);
         }
@@ -116,10 +117,11 @@ public class PasskeysController : ControllerBase
     {
         var user = await GetCurrentUserAsync();
         if (user == null) return Unauthorized(new { error = "User not found" });
+        if (!HasSecurityConfirmation(null, user)) return SecurityConfirmationRequired();
 
         // Retrieve stored options (keyed by user ID since registration requires auth)
         var cacheKey = $"passkey:reg:{user.Id}:{user.TenantId}";
-        if (!_challengeStore.TryTake<CredentialCreateOptions>(cacheKey, out var options))
+        if (!_challengeStore.TryTake<PasskeyRegistrationChallenge>(cacheKey, out var challenge))
         {
             return BadRequest(new { error = "Registration session expired or not started. Call begin first." });
         }
@@ -127,7 +129,7 @@ public class PasskeysController : ControllerBase
         try
         {
             var passkey = await _passkeyService.FinishRegistrationAsync(
-                options, request.AttestationResponse, user, request.DisplayName);
+                challenge.Options, request.AttestationResponse, user, request.DisplayName, challenge.StartedAt);
 
             return Ok(new
             {
@@ -169,7 +171,7 @@ public class PasskeysController : ControllerBase
                 StatusCodes.Status401Unauthorized);
         }
 
-        if (!HasSecurityConfirmation(body, user.Id, user.TenantId))
+        if (!HasSecurityConfirmation(body, user))
             return SecurityConfirmationRequired();
 
         try
@@ -221,7 +223,7 @@ public class PasskeysController : ControllerBase
         var user = await GetCurrentUserAsync();
         if (user is null)
             return CanonicalWebAuthnError("AUTH_REQUIRED", "Authentication required", StatusCodes.Status401Unauthorized);
-        if (!HasSecurityConfirmation(body, user.Id, user.TenantId))
+        if (!HasSecurityConfirmation(body, user))
             return SecurityConfirmationRequired();
 
         var challengeId = ReadJsonString(body, "challenge_id");
@@ -276,7 +278,8 @@ public class PasskeysController : ControllerBase
                 challenge.Options,
                 attestation,
                 user,
-                ReadJsonString(body, "device_name"));
+                ReadJsonString(body, "device_name"),
+                challenge.StartedAt);
 
             return CanonicalWebAuthnData(new
             {
@@ -324,7 +327,12 @@ public class PasskeysController : ControllerBase
         var tenantId = await ResolveAuthenticationTenantAsync(request);
         var tenantWasExplicitlyRequested = HasExplicitTenantHint(request);
         var challengeTenantId = tenantId ?? (tenantWasExplicitlyRequested ? 0 : null);
-        var options = await _passkeyService.BeginAuthenticationAsync(challengeTenantId, request?.Email);
+        AssertionOptions options;
+        try { options = await _passkeyService.BeginAuthenticationAsync(challengeTenantId, request?.Email); }
+        catch (InvalidOperationException ex)
+        {
+            return CanonicalWebAuthnError("FEATURE_DISABLED", ex.Message, StatusCodes.Status403Forbidden);
+        }
         var challengeId = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(32));
         _challengeStore.Set(
             $"passkey:auth:{challengeId}",
@@ -395,10 +403,12 @@ public class PasskeysController : ControllerBase
 
         try
         {
+            await using var authenticationTransaction = await _db.Database.BeginTransactionAsync();
             var user = await _passkeyService.FinishAuthenticationAsync(
                 challenge.Options,
                 assertion,
-                challenge.TenantId);
+                challenge.TenantId,
+                challenge.StartedAt);
             var accessToken = _tokenService.GenerateJwt(user, "passkey", "user_verification");
             var (refreshToken, refreshTokenHash) = TokenService.GenerateRefreshToken();
             _db.RefreshTokens.Add(new Entities.RefreshToken
@@ -411,6 +421,7 @@ public class PasskeysController : ControllerBase
                 CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString()
             });
             await _db.SaveChangesAsync();
+            await authenticationTransaction.CommitAsync();
 
             return Ok(new
             {
@@ -427,7 +438,7 @@ public class PasskeysController : ControllerBase
                 refresh_token = refreshToken,
                 token_type = "Bearer",
                 expires_in = _tokenService.AccessTokenExpirySeconds,
-                security_confirmation_token = _tokenService.GenerateSecurityConfirmationToken(user.Id, user.TenantId, "passkey_uv"),
+                security_confirmation_token = _tokenService.GenerateSecurityConfirmationToken(user.Id, user.TenantId, "passkey_uv", user.AuthenticationInvalidatedAt),
                 security_confirmation_expires_in = 300,
                 is_mobile = false
             });
@@ -486,7 +497,12 @@ public class PasskeysController : ControllerBase
             tenantId = await ResolveAuthenticationTenantAsync(request);
         }
 
-        var options = await _passkeyService.BeginAuthenticationAsync(tenantId, email);
+        AssertionOptions options;
+        try { options = await _passkeyService.BeginAuthenticationAsync(tenantId, email); }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = ex.Message });
+        }
 
         // Store options by a session ID for retrieval in finish
         var sessionId = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -526,10 +542,12 @@ public class PasskeysController : ControllerBase
 
         try
         {
+            await using var authenticationTransaction = await _db.Database.BeginTransactionAsync();
             var user = await _passkeyService.FinishAuthenticationAsync(
                 challenge.Options,
                 request.AssertionResponse,
-                challenge.TenantId);
+                challenge.TenantId,
+                challenge.StartedAt);
 
             // Resolve tenant for response
             var tenant = await _db.Tenants.FirstOrDefaultAsync(x => x.Id == user.TenantId);
@@ -550,6 +568,7 @@ public class PasskeysController : ControllerBase
             };
             _db.RefreshTokens.Add(refreshTokenEntity);
             await _db.SaveChangesAsync();
+            await authenticationTransaction.CommitAsync();
 
             return Ok(new
             {
@@ -625,12 +644,13 @@ public class PasskeysController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeletePasskey(int id)
     {
-        var (userId, tenantId) = GetUserContext();
-        if (userId == 0) return Unauthorized(new { error = "Invalid token" });
+        var user = await GetCurrentUserAsync();
+        if (user is null) return Unauthorized(new { error = "Invalid token" });
+        if (!HasSecurityConfirmation(null, user)) return SecurityConfirmationRequired();
 
         try
         {
-            var (deleted, deleteError) = await _passkeyService.DeletePasskeyAsync(id, userId, tenantId);
+            var (deleted, deleteError) = await _passkeyService.DeletePasskeyAsync(id, user.Id, user.TenantId, user.AuthenticationInvalidatedAt);
             if (!deleted) return NotFound(new { error = deleteError ?? "Passkey not found" });
 
             return Ok(new { success = true, message = "Passkey deleted" });
@@ -652,15 +672,16 @@ public class PasskeysController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RenamePasskey(int id, [FromBody] RenamePasskeyRequest request)
     {
-        var (userId, tenantId) = GetUserContext();
-        if (userId == 0) return Unauthorized(new { error = "Invalid token" });
+        var user = await GetCurrentUserAsync();
+        if (user is null) return Unauthorized(new { error = "Invalid token" });
+        if (!HasSecurityConfirmation(null, user)) return SecurityConfirmationRequired();
 
         if (string.IsNullOrWhiteSpace(request.DisplayName))
         {
             return BadRequest(new { error = "display_name is required" });
         }
 
-        var (renamed, renameError) = await _passkeyService.RenamePasskeyAsync(id, userId, tenantId, request.DisplayName.Trim());
+        var (renamed, renameError) = await _passkeyService.RenamePasskeyAsync(id, user.Id, user.TenantId, request.DisplayName.Trim());
         if (!renamed) return NotFound(new { error = renameError ?? "Passkey not found" });
 
         return Ok(new { success = true });
@@ -725,24 +746,29 @@ public class PasskeysController : ControllerBase
         {
             return CanonicalWebAuthnError("AUTH_REQUIRED", "Authentication required", StatusCodes.Status401Unauthorized);
         }
-        if (!HasSecurityConfirmation(body, user.Id, user.TenantId))
+        if (!HasSecurityConfirmation(body, user))
             return SecurityConfirmationRequired();
 
         var credentialId = ReadJsonString(body, "credential_id");
         if (string.IsNullOrWhiteSpace(credentialId))
         {
-            // Laravel retains this legacy behavior for callers predating the
-            // dedicated remove-all route.
-            await _passkeyService.RemoveAllUserPasskeysAsync(user.Id, user.TenantId);
+            return CanonicalWebAuthnError("VALIDATION_ERROR", "credential_id is required", StatusCodes.Status422UnprocessableEntity);
         }
-        else
+        try
         {
-            await _passkeyService.DeleteCredentialAsync(credentialId, user.Id, user.TenantId);
+            var removed = await _passkeyService.DeleteCredentialAsync(credentialId, user.Id, user.TenantId, user.AuthenticationInvalidatedAt);
+            if (!removed)
+                return CanonicalWebAuthnError("RESOURCE_NOT_FOUND", "Credential not found", StatusCodes.Status404NotFound);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return CanonicalWebAuthnError("AUTH_METHOD_REQUIRED", ex.Message, StatusCodes.Status409Conflict);
         }
 
         return CanonicalWebAuthnData(new
         {
-            message = "Credential(s) removed"
+            message = "Credential removed",
+            sessions_revoked = true
         });
     }
 
@@ -756,7 +782,7 @@ public class PasskeysController : ControllerBase
         {
             return CanonicalWebAuthnError("AUTH_REQUIRED", "Authentication required", StatusCodes.Status401Unauthorized);
         }
-        if (!HasSecurityConfirmation(body, user.Id, user.TenantId))
+        if (!HasSecurityConfirmation(body, user))
             return SecurityConfirmationRequired();
 
         var credentialId = ReadJsonString(body, "credential_id");
@@ -797,14 +823,23 @@ public class PasskeysController : ControllerBase
         {
             return CanonicalWebAuthnError("AUTH_REQUIRED", "Authentication required", StatusCodes.Status401Unauthorized);
         }
-        if (!HasSecurityConfirmation(body, user.Id, user.TenantId))
+        if (!HasSecurityConfirmation(body, user))
             return SecurityConfirmationRequired();
 
-        var removedCount = await _passkeyService.RemoveAllUserPasskeysAsync(user.Id, user.TenantId);
+        int removedCount;
+        try
+        {
+            removedCount = await _passkeyService.RemoveAllUserPasskeysAsync(user.Id, user.TenantId, user.AuthenticationInvalidatedAt);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return CanonicalWebAuthnError("AUTH_METHOD_REQUIRED", ex.Message, StatusCodes.Status409Conflict);
+        }
         return CanonicalWebAuthnData(new
         {
             message = $"Removed {removedCount} passkey(s). You can now re-register on any device.",
-            removed_count = removedCount
+            removed_count = removedCount,
+            sessions_revoked = removedCount > 0
         });
     }
 
@@ -861,7 +896,7 @@ public class PasskeysController : ControllerBase
             method);
         return CanonicalWebAuthnData(new
         {
-            security_confirmation_token = _tokenService.GenerateSecurityConfirmationToken(user.Id, user.TenantId, method),
+            security_confirmation_token = _tokenService.GenerateSecurityConfirmationToken(user.Id, user.TenantId, method, user.AuthenticationInvalidatedAt),
             expires_in = 300
         });
     }
@@ -907,11 +942,11 @@ public class PasskeysController : ControllerBase
         return (0, 0);
     }
 
-    private bool HasSecurityConfirmation(JsonElement? body, int userId, int tenantId)
+    private bool HasSecurityConfirmation(JsonElement? body, Entities.User user)
     {
         var token = ReadJsonString(body, "security_confirmation_token")
             ?? Request.Headers["X-Security-Confirmation"].FirstOrDefault();
-        return _tokenService.ValidateSecurityConfirmationToken(token, userId, tenantId);
+        return _tokenService.ValidateSecurityConfirmationToken(token, user.Id, user.TenantId, user.AuthenticationInvalidatedAt);
     }
 
     private bool HasRecentPasskeyUserVerification()
@@ -1112,8 +1147,14 @@ public record RenamePasskeyRequest
 internal sealed record PasskeyRegistrationChallenge(
     CredentialCreateOptions Options,
     int UserId,
-    int TenantId);
+    int TenantId)
+{
+    public DateTime StartedAt { get; init; } = DateTime.UtcNow;
+}
 
 internal sealed record PasskeyAuthenticationChallenge(
     AssertionOptions Options,
-    int? TenantId);
+    int? TenantId)
+{
+    public DateTime StartedAt { get; init; } = DateTime.UtcNow;
+}

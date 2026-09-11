@@ -34,6 +34,31 @@ public class PasskeysControllerTests : IntegrationTestBase
 
     #region Registration Endpoint Tests
 
+    [Theory]
+    [InlineData("POST", "/api/passkeys/register/begin")]
+    [InlineData("POST", "/api/passkeys/register/finish")]
+    [InlineData("DELETE", "/api/passkeys/123")]
+    [InlineData("PUT", "/api/passkeys/123")]
+    public async Task CompatibilityMutation_RequiresSecurityConfirmation(string method, string path)
+    {
+        SetAuthToken(await GetAuthTokenAsync());
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+        request.Content = JsonContent.Create(new
+        {
+            display_name = "Example",
+            attestation_response = new
+            {
+                id = "fake", rawId = "fake", type = "public-key", authenticatorAttachment = "platform",
+                clientExtensionResults = new { },
+                response = new { clientDataJSON = "fake", attestationObject = "fake", transports = new[] { "internal" } }
+            }
+        });
+        using var response = await Client.SendAsync(request);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden, await response.Content.ReadAsStringAsync());
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>();
+        payload.GetProperty("errors")[0].GetProperty("code").GetString().Should().Be("SECURITY_CONFIRMATION_REQUIRED");
+    }
+
     [Fact]
     public async Task BeginRegistration_WithoutAuth_ReturnsUnauthorized()
     {
@@ -51,6 +76,8 @@ public class PasskeysControllerTests : IntegrationTestBase
         var token = await GetAuthTokenAsync();
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/passkeys/register/begin");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        SetAuthToken(token);
+        request.Headers.Add("X-Security-Confirmation", await ConfirmSecurityAsync());
 
         // Act
         var response = await Client.SendAsync(request);
@@ -64,6 +91,8 @@ public class PasskeysControllerTests : IntegrationTestBase
         content.GetProperty("user").GetProperty("name").GetString().Should().NotBeNullOrEmpty();
         content.GetProperty("challenge").GetString().Should().NotBeNullOrEmpty();
         content.GetProperty("pubKeyCredParams").GetArrayLength().Should().BeGreaterThan(0);
+        content.GetProperty("authenticatorSelection").GetProperty("userVerification").GetString().Should().Be("required");
+        content.GetProperty("authenticatorSelection").GetProperty("residentKey").GetString().Should().Be("required");
     }
 
     [Fact]
@@ -73,6 +102,8 @@ public class PasskeysControllerTests : IntegrationTestBase
         var token = await GetAuthTokenAsync();
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/passkeys/register/finish");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        SetAuthToken(token);
+        request.Headers.Add("X-Security-Confirmation", await ConfirmSecurityAsync());
         request.Content = JsonContent.Create(new
         {
             attestation_response = new { id = "fake", rawId = "fake", response = new { clientDataJSON = "fake", attestationObject = "fake" }, type = "public-key" },
@@ -225,7 +256,7 @@ public class PasskeysControllerTests : IntegrationTestBase
         challenge.Should().NotBeNullOrWhiteSpace();
         data.GetProperty("rpId").GetString().Should().NotBeNullOrWhiteSpace();
         data.GetProperty("timeout").GetDouble().Should().BeGreaterThan(0);
-        data.GetProperty("userVerification").GetString().Should().Be("preferred");
+        data.GetProperty("userVerification").GetString().Should().Be("required");
         var challengeId = data.GetProperty("challenge_id").GetString();
         challengeId.Should().NotBeNullOrWhiteSpace();
 
@@ -322,6 +353,8 @@ public class PasskeysControllerTests : IntegrationTestBase
         var token = await GetAuthTokenAsync();
         using var request = new HttpRequestMessage(HttpMethod.Delete, "/api/passkeys/99999");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        SetAuthToken(token);
+        request.Headers.Add("X-Security-Confirmation", await ConfirmSecurityAsync());
 
         // Act
         var response = await Client.SendAsync(request);
@@ -337,6 +370,8 @@ public class PasskeysControllerTests : IntegrationTestBase
         var token = await GetAuthTokenAsync();
         using var request = new HttpRequestMessage(HttpMethod.Put, "/api/passkeys/99999");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        SetAuthToken(token);
+        request.Headers.Add("X-Security-Confirmation", await ConfirmSecurityAsync());
         request.Content = JsonContent.Create(new { display_name = "New Name" });
 
         // Act
@@ -398,14 +433,14 @@ public class PasskeysControllerTests : IntegrationTestBase
                 credential_id = foreignCredential.Id.ToString(),
                 security_confirmation_token = securityToken
             });
-            numericIdAttempt.StatusCode.Should().Be(HttpStatusCode.OK);
+            numericIdAttempt.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
             using var opaqueIdAttempt = await Client.PostAsJsonAsync("/api/webauthn/remove", new
             {
                 credential_id = Base64UrlEncoder.Encode(foreignCredential.CredentialId),
                 security_confirmation_token = securityToken
             });
-            opaqueIdAttempt.StatusCode.Should().Be(HttpStatusCode.OK);
+            opaqueIdAttempt.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
             using var renameAttempt = await Client.PostAsJsonAsync("/api/webauthn/rename", new
             {
@@ -422,6 +457,26 @@ public class PasskeysControllerTests : IntegrationTestBase
             removeAll.StatusCode.Should().Be(HttpStatusCode.OK);
             var removeAllPayload = await removeAll.Content.ReadFromJsonAsync<JsonElement>();
             removeAllPayload.GetProperty("data").GetProperty("removed_count").GetInt32().Should().Be(1);
+            removeAllPayload.GetProperty("data").GetProperty("sessions_revoked").GetBoolean().Should().BeTrue();
+            using var staleAccess = await Client.GetAsync("/api/webauthn/credentials");
+            staleAccess.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            using (var revocationScope = Factory.Services.CreateScope())
+            {
+                var revocationDb = revocationScope.ServiceProvider.GetRequiredService<NexusDbContext>();
+                var sessions = await revocationDb.RefreshTokens.IgnoreQueryFilters()
+                    .Where(t => t.UserId == actor.Id).ToListAsync();
+                sessions.Should().NotBeEmpty();
+                sessions.Should().OnlyContain(t => t.RevokedAt != null && t.RevokedReason == "passkey_removed");
+            }
+
+            SetAuthToken(await GetAccessTokenAsync(actor.Email, TestData.Tenant1.Slug));
+            using var freshAccess = await Client.GetAsync("/api/webauthn/credentials");
+            freshAccess.StatusCode.Should().Be(HttpStatusCode.OK);
+            using var staleProof = await Client.PostAsJsonAsync("/api/webauthn/remove-all", new
+            {
+                security_confirmation_token = securityToken
+            });
+            staleProof.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
             using var verificationScope = Factory.Services.CreateScope();
             var verificationDb = verificationScope.ServiceProvider.GetRequiredService<NexusDbContext>();
@@ -455,10 +510,98 @@ public class PasskeysControllerTests : IntegrationTestBase
         }
     }
 
+    [Fact]
+    public async Task ConcurrentRemovals_CannotConsumeBothPasswordlessCredentials()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+        var actor = new User
+        {
+            TenantId = TestData.Tenant1.Id, Email = $"passkey-race-{Guid.NewGuid():N}@example.test",
+            PasswordHash = "", FirstName = "Race", LastName = "Member", Role = "member",
+            IsActive = true, RegistrationStatus = RegistrationStatus.Active
+        };
+        db.Users.Add(actor);
+        await db.SaveChangesAsync();
+        var keys = new[] { NewStoredPasskey(actor, actor.TenantId, "One"), NewStoredPasskey(actor, actor.TenantId, "Two") };
+        db.UserPasskeys.AddRange(keys);
+        await db.SaveChangesAsync();
+        try
+        {
+            async Task<bool> RemoveAsync(UserPasskey key)
+            {
+                using var requestScope = Factory.Services.CreateScope();
+                var service = requestScope.ServiceProvider.GetRequiredService<PasskeyService>();
+                try { return await service.DeleteCredentialAsync(Base64UrlEncoder.Encode(key.CredentialId), actor.Id, actor.TenantId); }
+                catch (InvalidOperationException) { return false; }
+            }
+            var results = await Task.WhenAll(keys.Select(RemoveAsync));
+            results.Count(result => result).Should().Be(1);
+            (await db.UserPasskeys.IgnoreQueryFilters().CountAsync(p => p.UserId == actor.Id)).Should().Be(1);
+        }
+        finally
+        {
+            await db.UserPasskeys.IgnoreQueryFilters().Where(p => p.UserId == actor.Id).ExecuteDeleteAsync();
+            await db.Users.IgnoreQueryFilters().Where(u => u.Id == actor.Id).ExecuteDeleteAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("single")]
+    [InlineData("all")]
+    [InlineData("numeric")]
+    [InlineData("missing-id")]
+    public async Task Removal_PreservesPasswordlessMembersFinalCredential(string operation)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+        var tokens = scope.ServiceProvider.GetRequiredService<TokenService>();
+        var actor = new User
+        {
+            TenantId = TestData.Tenant1.Id,
+            Email = $"passkey-only-{Guid.NewGuid():N}@example.test",
+            PasswordHash = "",
+            FirstName = "Passkey", LastName = "Only", Role = "member",
+            IsActive = true, RegistrationStatus = RegistrationStatus.Active
+        };
+        db.Users.Add(actor);
+        await db.SaveChangesAsync();
+        var credential = NewStoredPasskey(actor, actor.TenantId, "Only credential");
+        db.UserPasskeys.Add(credential);
+        await db.SaveChangesAsync();
+        try
+        {
+            SetAuthToken(tokens.GenerateJwt(actor, "passkey", "user_verification"));
+            var proof = tokens.GenerateSecurityConfirmationToken(actor.Id, actor.TenantId, "passkey_uv");
+            Client.DefaultRequestHeaders.Add("X-Security-Confirmation", proof);
+            using var response = operation == "numeric"
+                ? await Client.DeleteAsync($"/api/passkeys/{credential.Id}")
+                : await Client.PostAsJsonAsync(operation == "all" ? "/api/webauthn/remove-all" : "/api/webauthn/remove", new
+                {
+                    credential_id = operation == "missing-id" ? null : Base64UrlEncoder.Encode(credential.CredentialId),
+                    security_confirmation_token = proof
+                });
+            response.StatusCode.Should().Be(operation == "missing-id"
+                ? HttpStatusCode.UnprocessableEntity : HttpStatusCode.Conflict);
+            (await db.UserPasskeys.IgnoreQueryFilters().AnyAsync(p => p.Id == credential.Id)).Should().BeTrue();
+            await db.Entry(actor).ReloadAsync();
+            actor.AuthenticationInvalidatedAt.Should().BeNull("a rejected removal must not revoke the member's session");
+            using var access = await Client.GetAsync("/api/webauthn/credentials");
+            access.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        finally
+        {
+            await db.UserPasskeys.IgnoreQueryFilters().Where(p => p.UserId == actor.Id).ExecuteDeleteAsync();
+            await db.Users.IgnoreQueryFilters().Where(u => u.Id == actor.Id).ExecuteDeleteAsync();
+        }
+    }
+
     [Theory]
     [InlineData("inactive")]
     [InlineData("suspended")]
     [InlineData("pending")]
+    [InlineData("disabled")]
+    [InlineData("disabled-legacy")]
     public async Task AuthenticationService_RejectsIneligibleAccountBeforeFidoVerification(string gate)
     {
         using var scope = Factory.Services.CreateScope();
@@ -477,6 +620,8 @@ public class PasskeysControllerTests : IntegrationTestBase
             CreatedAt = DateTime.UtcNow
         };
         var passkey = NewStoredPasskey(user, TestData.Tenant1.Id, $"Gate {gate}");
+        TenantConfig? featureConfig = null;
+        string? originalFeatureValue = null;
 
         db.Users.Add(user);
         await db.SaveChangesAsync();
@@ -499,8 +644,38 @@ public class PasskeysControllerTests : IntegrationTestBase
                 case "pending":
                     user.RegistrationStatus = RegistrationStatus.PendingAdminReview;
                     break;
+                case "disabled":
+                case "disabled-legacy":
+                    var key = gate == "disabled" ? "features.biometric_login" : "feature.biometric_login";
+                    featureConfig = await db.TenantConfigs.IgnoreQueryFilters()
+                        .SingleOrDefaultAsync(c => c.TenantId == user.TenantId && c.Key == key);
+                    if (featureConfig is null)
+                    {
+                        featureConfig = new TenantConfig { TenantId = user.TenantId, Key = key, Value = "false" };
+                        db.TenantConfigs.Add(featureConfig);
+                    }
+                    else
+                    {
+                        originalFeatureValue = featureConfig.Value;
+                        featureConfig.Value = "false";
+                    }
+                    break;
             }
             await db.SaveChangesAsync();
+
+            if (gate.StartsWith("disabled", StringComparison.Ordinal))
+            {
+                Func<Task> begin = async () => await service.BeginAuthenticationAsync(user.TenantId, user.Email);
+                await begin.Should().ThrowAsync<InvalidOperationException>().WithMessage("*disabled*");
+                Func<Task> enrol = async () => await service.BeginRegistrationAsync(user);
+                await enrol.Should().ThrowAsync<InvalidOperationException>().WithMessage("*disabled*");
+                (await service.GetUserPasskeysAsync(user.Id, user.TenantId)).Should().ContainSingle();
+                foreach (var route in new[] { "/api/webauthn/auth-challenge", "/api/passkeys/authenticate/begin" })
+                {
+                    using var rejected = await Client.PostAsJsonAsync(route, new { tenant_slug = TestData.Tenant1.Slug });
+                    rejected.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+                }
+            }
 
             var assertion = JsonSerializer.Deserialize<AuthenticatorAssertionRawResponse>(
                 JsonSerializer.Serialize(new
@@ -530,6 +705,12 @@ public class PasskeysControllerTests : IntegrationTestBase
         }
         finally
         {
+            if (featureConfig is not null)
+            {
+                if (originalFeatureValue is null) db.TenantConfigs.Remove(featureConfig);
+                else featureConfig.Value = originalFeatureValue;
+                await db.SaveChangesAsync();
+            }
             await db.UserPasskeys
                 .IgnoreQueryFilters()
                 .Where(candidate => candidate.Id == passkey.Id)
@@ -590,6 +771,8 @@ public class PasskeysControllerTests : IntegrationTestBase
         // And on passkey register begin
         using var regRequest = new HttpRequestMessage(HttpMethod.Post, "/api/passkeys/register/begin");
         regRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        SetAuthToken(token);
+        regRequest.Headers.Add("X-Security-Confirmation", await ConfirmSecurityAsync());
 
         var regResponse = await Client.SendAsync(regRequest);
         regResponse.StatusCode.Should().Be(HttpStatusCode.OK);

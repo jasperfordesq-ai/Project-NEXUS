@@ -744,6 +744,14 @@ public class AuthController : ControllerBase
         // transient 409 envelope the React client already preserves.
         var rotatedAt = DateTime.UtcNow;
         await using var rotationTransaction = await _db.Database.BeginTransactionAsync();
+        // Share the member lock with credential removal so a concurrent refresh
+        // cannot insert a successor after removal has revoked the token family.
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM users WHERE \"Id\" = {refreshToken.UserId} AND \"TenantId\" = {refreshToken.TenantId} FOR UPDATE");
+        await _db.Entry(refreshToken.User).ReloadAsync();
+        if (refreshToken.User.AuthenticationInvalidatedAt is { } invalidatedAt
+            && refreshToken.CreatedAt <= invalidatedAt)
+            return Unauthorized(new { error = "Refresh token expired or revoked" });
         var claimed = await _db.RefreshTokens
             .IgnoreQueryFilters()
             .Where(t => t.Id == refreshToken.Id && t.RevokedAt == null && t.ExpiresAt > rotatedAt)

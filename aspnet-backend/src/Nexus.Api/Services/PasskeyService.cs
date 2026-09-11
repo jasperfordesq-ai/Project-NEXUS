@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Nexus.Api.Data;
 using Nexus.Api.Entities;
+using Nexus.Api.Support;
 
 namespace Nexus.Api.Services;
 
@@ -42,6 +43,8 @@ public class PasskeyService
     /// </summary>
     public async Task<CredentialCreateOptions> BeginRegistrationAsync(User user)
     {
+        if (!await IsBiometricLoginEnabledAsync(user.TenantId))
+            throw new InvalidOperationException("Passkey authentication is disabled for this community");
         if (!await _authenticationConfiguration.GetBooleanAsync(
                 AuthenticationConfigurationService.PasskeysEnrollmentEnabled,
                 user.TenantId))
@@ -91,8 +94,8 @@ public class PasskeyService
                 ExcludeCredentials = existingCredentials,
                 AuthenticatorSelection = new AuthenticatorSelection
                 {
-                    ResidentKey = ResidentKeyRequirement.Preferred,
-                    UserVerification = UserVerificationRequirement.Preferred,
+                    ResidentKey = ResidentKeyRequirement.Required,
+                    UserVerification = UserVerificationRequirement.Required,
                 },
                 AttestationPreference = AttestationConveyancePreference.None,
                 Extensions = new AuthenticationExtensionsClientInputs
@@ -113,8 +116,27 @@ public class PasskeyService
         CredentialCreateOptions options,
         AuthenticatorAttestationRawResponse attestationResponse,
         User user,
-        string? displayName)
+        string? displayName,
+        DateTime? registrationStartedAt = null)
     {
+        var expectedCutoff = user.AuthenticationInvalidatedAt;
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM users WHERE \"Id\" = {user.Id} AND \"TenantId\" = {user.TenantId} FOR UPDATE");
+        await _db.Entry(user).ReloadAsync();
+        if (user.AuthenticationInvalidatedAt != expectedCutoff
+            || user.AuthenticationInvalidatedAt is { } cutoff
+                && (registrationStartedAt is null || registrationStartedAt <= cutoff))
+            throw new InvalidOperationException("Registration challenge expired after account security changed");
+        if (!await IsBiometricLoginEnabledAsync(user.TenantId)
+            || !await _authenticationConfiguration.GetBooleanAsync(
+                AuthenticationConfigurationService.PasskeysEnrollmentEnabled, user.TenantId))
+            throw new InvalidOperationException("Passkey enrollment is disabled for this community");
+        var count = await _db.UserPasskeys.IgnoreQueryFilters()
+            .CountAsync(p => p.UserId == user.Id && p.TenantId == user.TenantId);
+        var maximum = await _authenticationConfiguration.GetIntegerAsync(
+            AuthenticationConfigurationService.PasskeysMaxCredentials, user.TenantId);
+        if (count >= maximum) throw new InvalidOperationException("Maximum passkey count reached");
         // Re-check the account after the challenge ceremony. An administrator
         // may have suspended the user or tenant while the browser prompt was
         // open, and a stale challenge must not create a credential afterwards.
@@ -122,6 +144,9 @@ public class PasskeyService
         {
             throw new InvalidOperationException("User account is not eligible for passkey registration");
         }
+
+        // Reject in-flight ceremonies created under an older, weaker policy.
+        options.AuthenticatorSelection.UserVerification = UserVerificationRequirement.Required;
 
         // Verify the attestation response
         var credential = await _fido2.MakeNewCredentialAsync(
@@ -172,6 +197,7 @@ public class PasskeyService
 
         _db.UserPasskeys.Add(passkey);
         await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         _logger.LogInformation(
             "Passkey registered for user {UserId} in tenant {TenantId} (credId={CredIdPrefix}...)",
@@ -186,6 +212,8 @@ public class PasskeyService
     /// </summary>
     public async Task<AssertionOptions> BeginAuthenticationAsync(int? tenantId, string? email)
     {
+        if (tenantId is > 0 && !await IsBiometricLoginEnabledAsync(tenantId.Value))
+            throw new InvalidOperationException("Passkey authentication is disabled for this community");
         List<PublicKeyCredentialDescriptor>? allowedCredentials = null;
 
         if (tenantId.HasValue && !string.IsNullOrEmpty(email))
@@ -222,7 +250,7 @@ public class PasskeyService
             new GetAssertionOptionsParams
             {
                 AllowedCredentials = allowedCredentials ?? new List<PublicKeyCredentialDescriptor>(),
-                UserVerification = UserVerificationRequirement.Preferred,
+                UserVerification = UserVerificationRequirement.Required,
             }
         );
 
@@ -236,11 +264,20 @@ public class PasskeyService
     public async Task<User> FinishAuthenticationAsync(
         AssertionOptions options,
         AuthenticatorAssertionRawResponse assertionResponse,
-        int? expectedTenantId = null)
+        int? expectedTenantId = null,
+        DateTime? authenticationStartedAt = null)
     {
         // Look up the stored credential by credential ID
         // In fido2-net-lib v4, assertionResponse.Id is base64url-encoded
         var credentialId = Base64UrlEncoder.DecodeBytes(assertionResponse.Id);
+        await using var transaction = _db.Database.CurrentTransaction is null
+            ? await _db.Database.BeginTransactionAsync() : null;
+        var owner = await _db.UserPasskeys.IgnoreQueryFilters().AsNoTracking()
+            .Where(p => p.CredentialId == credentialId && (!expectedTenantId.HasValue || p.TenantId == expectedTenantId.Value))
+            .Select(p => new { p.UserId, p.TenantId }).FirstOrDefaultAsync();
+        if (owner is null) throw new InvalidOperationException("Unknown credential");
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM users WHERE \"Id\" = {owner.UserId} AND \"TenantId\" = {owner.TenantId} FOR UPDATE");
         var passkeyQuery = _db.UserPasskeys
             .IgnoreQueryFilters()
             .Include(p => p.User)
@@ -259,10 +296,17 @@ public class PasskeyService
             throw new InvalidOperationException("Unknown credential");
         }
 
+        if (passkey.User is not null)
+            await _db.Entry(passkey.User).ReloadAsync();
+        if (passkey.User?.AuthenticationInvalidatedAt is { } cutoff
+            && (authenticationStartedAt is null || authenticationStartedAt <= cutoff))
+            throw new InvalidOperationException("Authentication challenge expired after account security changed");
+
         var tenantIsActive = await _db.Tenants
             .AsNoTracking()
             .AnyAsync(tenant => tenant.Id == passkey.TenantId && tenant.IsActive);
         if (!tenantIsActive
+            || !await IsBiometricLoginEnabledAsync(passkey.TenantId)
             || passkey.User == null
             || passkey.User.TenantId != passkey.TenantId
             || !passkey.User.IsActive
@@ -271,6 +315,10 @@ public class PasskeyService
         {
             throw new InvalidOperationException("Passkey authentication is unavailable for this account");
         }
+
+        // Every token from this path claims local user verification, including
+        // ceremonies started before the policy was tightened.
+        options.UserVerification = UserVerificationRequirement.Required;
 
         // Verify the assertion
         var result = await _fido2.MakeAssertionAsync(
@@ -300,6 +348,7 @@ public class PasskeyService
         passkey.LastUsedAt = DateTime.UtcNow;
         passkey.User.LastLoginAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
+        if (transaction is not null) await transaction.CommitAsync();
 
         _logger.LogInformation(
             "Passkey authentication successful for user {UserId} in tenant {TenantId}",
@@ -323,37 +372,10 @@ public class PasskeyService
     /// <summary>
     /// Delete a passkey (user must own it).
     /// </summary>
-    public async Task<(bool Success, string? Error)> DeletePasskeyAsync(int passkeyId, int userId, int tenantId)
+    public async Task<(bool Success, string? Error)> DeletePasskeyAsync(int passkeyId, int userId, int tenantId, DateTime? expectedInvalidatedAt = null)
     {
-        var passkey = await _db.UserPasskeys
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(p => p.Id == passkeyId && p.UserId == userId && p.TenantId == tenantId);
-
-        if (passkey == null) return (false, "Passkey not found");
-
-        // Guard: don't allow deleting the last passkey if user has no password
-        var user = await _db.Users
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Id == userId && u.TenantId == tenantId);
-
-        if (user != null && string.IsNullOrEmpty(user.PasswordHash))
-        {
-            var passkeyCount = await _db.UserPasskeys
-                .IgnoreQueryFilters()
-                .CountAsync(p => p.UserId == userId && p.TenantId == tenantId);
-
-            if (passkeyCount <= 1)
-            {
-                throw new InvalidOperationException(
-                    "Cannot delete your only passkey when no password is set. Add a password or another passkey first.");
-            }
-        }
-
-        _db.UserPasskeys.Remove(passkey);
-        await _db.SaveChangesAsync();
-
-        _logger.LogInformation("Passkey {PasskeyId} deleted for user {UserId}", passkeyId, userId);
-        return (true, null);
+        var count = await RemovePasskeysAsync(userId, tenantId, p => p.Id == passkeyId, expectedInvalidatedAt, true);
+        return count > 0 ? (true, null) : (false, "Passkey not found");
     }
 
     /// <summary>
@@ -379,27 +401,16 @@ public class PasskeyService
     public async Task<bool> DeleteCredentialAsync(
         string credentialId,
         int userId,
-        int tenantId)
+        int tenantId,
+        DateTime? expectedInvalidatedAt = null)
     {
         if (!TryDecodeCredentialId(credentialId, out var decodedCredentialId))
         {
             return false;
         }
 
-        var passkey = await _db.UserPasskeys
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(candidate =>
-                candidate.CredentialId == decodedCredentialId
-                && candidate.UserId == userId
-                && candidate.TenantId == tenantId);
-        if (passkey is null)
-        {
-            return false;
-        }
-
-        _db.UserPasskeys.Remove(passkey);
-        await _db.SaveChangesAsync();
-        return true;
+        return await RemovePasskeysAsync(userId, tenantId,
+            p => p.CredentialId.SequenceEqual(decodedCredentialId), expectedInvalidatedAt, true) > 0;
     }
 
     /// <summary>
@@ -436,16 +447,45 @@ public class PasskeyService
     /// <summary>
     /// Remove every credential owned by one user in one tenant.
     /// </summary>
-    public async Task<int> RemoveAllUserPasskeysAsync(int userId, int tenantId)
+    public Task<int> RemoveAllUserPasskeysAsync(int userId, int tenantId, DateTime? expectedInvalidatedAt = null)
+        => RemovePasskeysAsync(userId, tenantId, _ => true, expectedInvalidatedAt, true);
+
+    private async Task<int> RemovePasskeysAsync(int userId, int tenantId,
+        Func<UserPasskey, bool> select, DateTime? expectedInvalidatedAt = null, bool checkEpoch = false)
     {
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+        // Serialize all passkey removals for a member, including the numeric-ID
+        // compatibility endpoint. Reload after locking: the controller may have
+        // already loaded this user before another request revoked its proof.
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM users WHERE \"Id\" = {userId} AND \"TenantId\" = {tenantId} FOR UPDATE");
+        var user = await _db.Users.IgnoreQueryFilters()
+            .SingleAsync(u => u.Id == userId && u.TenantId == tenantId);
+        await _db.Entry(user).ReloadAsync();
+        if (checkEpoch && user.AuthenticationInvalidatedAt != expectedInvalidatedAt)
+            throw new InvalidOperationException("Security confirmation expired. Confirm your identity again.");
+
         var passkeys = await _db.UserPasskeys
             .IgnoreQueryFilters()
             .Where(passkey => passkey.UserId == userId && passkey.TenantId == tenantId)
             .ToListAsync();
 
-        _db.UserPasskeys.RemoveRange(passkeys);
+        var selected = passkeys.Where(select).ToList();
+        if (selected.Count == 0) return 0;
+        if (selected.Count == passkeys.Count && string.IsNullOrWhiteSpace(user.PasswordHash))
+            throw new InvalidOperationException(
+                "Cannot delete your only sign-in method. Add a password or another passkey first.");
+
+        _db.UserPasskeys.RemoveRange(selected);
+        var now = DateTime.UtcNow;
+        user.AuthenticationInvalidatedAt = now;
+        await _db.RefreshTokens.IgnoreQueryFilters()
+            .Where(t => t.UserId == userId && t.TenantId == tenantId && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now)
+                .SetProperty(t => t.RevokedReason, "passkey_removed"));
         await _db.SaveChangesAsync();
-        return passkeys.Count;
+        await transaction.CommitAsync();
+        return selected.Count;
     }
 
     /// <summary>
@@ -471,6 +511,15 @@ public class PasskeyService
         var handle = new byte[64];
         System.Security.Cryptography.RandomNumberGenerator.Fill(handle);
         return handle;
+    }
+
+    private async Task<bool> IsBiometricLoginEnabledAsync(int tenantId)
+    {
+        var keys = TenantFeatureKeys.BothKeys("biometric_login");
+        var flags = await _db.TenantConfigs.IgnoreQueryFilters().AsNoTracking()
+            .Where(c => c.TenantId == tenantId && keys.Contains(c.Key))
+            .ToDictionaryAsync(c => c.Key, c => c.Value);
+        return TenantFeatureKeys.Read(flags, "biometric_login", true);
     }
 
     private async Task<bool> IsEligibleUserAsync(int userId, int tenantId)

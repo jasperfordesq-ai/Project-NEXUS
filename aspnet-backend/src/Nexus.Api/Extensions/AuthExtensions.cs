@@ -257,6 +257,12 @@ public static class AuthExtensions
                             return;
                         }
 
+                        if (!Nexus.Api.Services.TokenService.MatchesAuthenticationEpoch(principal, current.AuthenticationInvalidatedAt))
+                        {
+                            context.Fail("access_token_revoked");
+                            return;
+                        }
+
                         // Pending-verification identities are intentionally
                         // inactive until the provider flow succeeds. Their
                         // access token is valid only for the two verification

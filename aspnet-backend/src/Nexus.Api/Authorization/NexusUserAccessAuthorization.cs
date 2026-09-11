@@ -41,6 +41,7 @@ public static class NexusPrivilegeClaimTypes
 /// </summary>
 public sealed class NexusUserAccessSnapshot
 {
+    public DateTime? AuthenticationInvalidatedAt { get; init; }
     public int Id { get; init; }
     public int TenantId { get; init; }
     public string Role { get; init; } = "member";
@@ -81,6 +82,7 @@ public sealed class NexusUserAccessReader : INexusUserAccessReader
             .Select(user => new NexusUserAccessSnapshot
             {
                 Id = user.Id,
+                AuthenticationInvalidatedAt = user.AuthenticationInvalidatedAt,
                 TenantId = user.TenantId,
                 Role = user.Role,
                 IsActive = user.IsActive,

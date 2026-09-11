@@ -63,7 +63,7 @@
     <PackageReference Include="MimeKit" Version="4.15.1" />
 
     <!-- WebAuthn/Passkeys (FIDO2) -->
-    <PackageReference Include="Fido2.AspNet" Version="4.0.0" />
+    <PackageReference Include="Fido2.AspNet" Version="4.0.1" />
 
     <!-- TOTP 2FA -->
     <PackageReference Include="Otp.NET" Version="1.4.1" />

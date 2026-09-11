@@ -46,6 +46,7 @@ public class TokenService
             new Claim("tenant_id", user.TenantId.ToString()),
             new Claim("role", user.Role),
             new Claim("email", user.Email),
+            new Claim("authentication_epoch", AuthenticationEpoch(user.AuthenticationInvalidatedAt)),
             BooleanClaim(NexusPrivilegeClaimTypes.IsAdmin, user.IsAdmin),
             BooleanClaim(NexusPrivilegeClaimTypes.IsSuperAdmin, user.IsSuperAdmin),
             BooleanClaim(NexusPrivilegeClaimTypes.IsTenantSuperAdmin, user.IsTenantSuperAdmin),
@@ -69,7 +70,7 @@ public class TokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string GenerateSecurityConfirmationToken(int userId, int tenantId, string method)
+    public string GenerateSecurityConfirmationToken(int userId, int tenantId, string method, DateTime? invalidatedAt = null)
     {
         var secret = _config["Jwt:Secret"]
             ?? throw new InvalidOperationException("JWT secret not configured");
@@ -83,6 +84,7 @@ public class TokenService
                 new Claim("tenant_id", tenantId.ToString()),
                 new Claim("type", "security_confirmation"),
                 new Claim("method", method),
+                new Claim("authentication_epoch", AuthenticationEpoch(invalidatedAt)),
                 new Claim(JwtRegisteredClaimNames.Jti, Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant()),
                 new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             ],
@@ -94,7 +96,7 @@ public class TokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public bool ValidateSecurityConfirmationToken(string? token, int userId, int tenantId)
+    public bool ValidateSecurityConfirmationToken(string? token, int userId, int tenantId, DateTime? invalidatedAt = null)
     {
         if (string.IsNullOrWhiteSpace(token))
             return false;
@@ -107,6 +109,7 @@ public class TokenService
             return subject == userId.ToString()
                 && principal.FindFirst("tenant_id")?.Value == tenantId.ToString()
                 && principal.FindFirst("type")?.Value == "security_confirmation"
+                && MatchesAuthenticationEpoch(principal, invalidatedAt)
                 && !string.IsNullOrWhiteSpace(principal.FindFirst("method")?.Value);
         }
         catch (SecurityTokenException)
@@ -117,6 +120,24 @@ public class TokenService
         {
             return false;
         }
+    }
+
+    // PostgreSQL timestamps have microsecond precision. Compare the same epoch
+    // before and after persistence, including tokens issued within one second.
+    private static string AuthenticationEpoch(DateTime? invalidatedAt)
+        => ((invalidatedAt?.Ticks ?? 0) / 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    public static bool MatchesAuthenticationEpoch(ClaimsPrincipal principal, DateTime? invalidatedAt)
+    {
+        var epoch = principal.FindFirst("authentication_epoch")?.Value;
+        if (epoch is not null)
+            return epoch == AuthenticationEpoch(invalidatedAt);
+
+        // Previously issued JWTs have no epoch. Preserve them only if they
+        // were issued strictly after the persisted revocation cutoff.
+        return invalidatedAt is null
+            || long.TryParse(principal.FindFirst("iat")?.Value, out var issuedAt)
+                && issuedAt > new DateTimeOffset(DateTime.SpecifyKind(invalidatedAt.Value, DateTimeKind.Utc)).ToUnixTimeSeconds();
     }
 
     public int AccessTokenExpirySeconds

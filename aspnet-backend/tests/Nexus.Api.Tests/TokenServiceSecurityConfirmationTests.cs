@@ -55,4 +55,16 @@ public sealed class TokenServiceSecurityConfirmationTests
         jwt.Claims.Where(claim => claim.Type == "amr").Select(claim => claim.Value)
             .Should().BeEquivalentTo("passkey", "user_verification");
     }
+
+    [Fact]
+    public void ConfirmationEpoch_RejectsOldProofAndAcceptsNewProofInSameSecond()
+    {
+        var oldProof = _service.GenerateSecurityConfirmationToken(41, 7, "password");
+        var cutoff = DateTime.UtcNow;
+        _service.ValidateSecurityConfirmationToken(oldProof, 41, 7, cutoff).Should().BeFalse();
+        var newProof = _service.GenerateSecurityConfirmationToken(41, 7, "password", cutoff);
+        var persistedCutoff = new DateTime(cutoff.Ticks / 10 * 10, DateTimeKind.Utc);
+        _service.ValidateSecurityConfirmationToken(newProof, 41, 7, persistedCutoff).Should().BeTrue();
+        _service.ValidateSecurityConfirmationToken(newProof, 41, 7, cutoff.AddMilliseconds(1)).Should().BeFalse();
+    }
 }
