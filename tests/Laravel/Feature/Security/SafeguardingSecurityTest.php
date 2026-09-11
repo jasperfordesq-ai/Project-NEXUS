@@ -88,6 +88,22 @@ class SafeguardingSecurityTest extends TestCase
         $this->assertContains($response->getStatusCode(), [401, 403]);
     }
 
+    /**
+     * Administrators must hold a verified second factor (mandatory since the
+     * E-004 baseline); a stateful session carries no MFA claims and is refused
+     * with AUTH_MFA_REQUIRED. Mint the bearer a real administrator holds instead.
+     *
+     * @return array<string,string>
+     */
+    private function verifiedAdminBearer(User $admin): array
+    {
+        return ['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id,
+            $admin->tenant_id,
+            \App\Services\TwoFactorPolicy::claims('totp')
+        )];
+    }
+
     public function test_admin_can_read_member_safeguarding_data(): void
     {
         $target = $this->createUserWithSafeguardingPrefs();
@@ -96,9 +112,9 @@ class SafeguardingSecurityTest extends TestCase
             'status' => 'active',
             'is_approved' => true,
         ]);
-        Sanctum::actingAs($admin, ['*']);
+        $headers = $this->verifiedAdminBearer($admin);
 
-        $response = $this->apiGet("/v2/admin/safeguarding/member-preferences");
+        $response = $this->apiGet("/v2/admin/safeguarding/member-preferences", $headers);
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -110,14 +126,14 @@ class SafeguardingSecurityTest extends TestCase
             'status' => 'active',
             'is_approved' => true,
         ]);
-        Sanctum::actingAs($admin, ['*']);
+        $headers = $this->verifiedAdminBearer($admin);
 
         // Clear existing logs
         DB::table('activity_log')
             ->where('action', 'safeguarding_preferences_list_viewed')
             ->delete();
 
-        $this->apiGet("/v2/admin/safeguarding/member-preferences");
+        $this->apiGet("/v2/admin/safeguarding/member-preferences", $headers);
 
         // Verify audit log was created
         $log = DB::table('activity_log')

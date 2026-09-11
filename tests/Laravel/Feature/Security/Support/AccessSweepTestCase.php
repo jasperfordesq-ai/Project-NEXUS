@@ -629,7 +629,26 @@ abstract class AccessSweepTestCase extends TestCase
             'is_tenant_super_admin' => false,
         ], $attributes));
 
-        Sanctum::actingAs($user, ['*']);
+        // Every sweep switches actor several times in one test. Drop the previous
+        // actor's stateful guard user and bearer header before installing the next.
+        auth()->forgetGuards();
+        $this->flushHeaders();
+
+        // Since the MFA rewrite (E-004 baseline), accounts that TwoFactorPolicy
+        // requires to hold a second factor are refused with AUTH_MFA_REQUIRED on
+        // the stateful path, because a session carries no MFA claims. Those actors
+        // must present a bearer token minted with verified MFA claims — the same
+        // credential a real administrator holds after completing the challenge.
+        // Members keep the stateful path so the sweep still exercises that guard.
+        if (app(\App\Services\TwoFactorPolicy::class)->required($user)) {
+            $this->withHeader('Authorization', 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+                $user->id,
+                $user->tenant_id,
+                \App\Services\TwoFactorPolicy::claims('totp')
+            ));
+        } else {
+            Sanctum::actingAs($user, ['*']);
+        }
 
         return $user;
     }
