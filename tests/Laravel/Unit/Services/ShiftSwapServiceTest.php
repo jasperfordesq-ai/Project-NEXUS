@@ -53,7 +53,7 @@ class ShiftSwapServiceTest extends TestCase
 
     public function test_respond_fails_when_swap_not_found(): void
     {
-        DB::shouldReceive('table->where->where->where->first')->andReturnNull();
+        DB::shouldReceive('table->where->where->first')->andReturnNull();
 
         $result = ShiftSwapService::respond(999, 1, 'accept');
         $this->assertFalse($result);
@@ -70,7 +70,7 @@ class ShiftSwapServiceTest extends TestCase
 
     public function test_adminDecision_fails_when_not_pending(): void
     {
-        DB::shouldReceive('table->where->where->where->first')->andReturnNull();
+        DB::shouldReceive('table->where->where->first')->andReturnNull();
 
         $result = ShiftSwapService::adminDecision(999, 1, 'approve');
         $this->assertFalse($result);
@@ -80,7 +80,7 @@ class ShiftSwapServiceTest extends TestCase
 
     public function test_cancel_fails_when_not_found(): void
     {
-        DB::shouldReceive('table->where->where->whereIn->where->first')->andReturnNull();
+        DB::shouldReceive('table->where->where->where->first')->andReturnNull();
 
         $result = ShiftSwapService::cancel(999, 1, $this->testTenantId);
         $this->assertFalse($result);
