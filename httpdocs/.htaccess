@@ -12,6 +12,19 @@ RewriteRule ^uploads/(?:tenants/[^/]+/)?vetting/documents(?:/|$) - [F,L,NC]
 # an application-level upload validation regression is introduced later.
 RewriteRule ^storage/.*\.(?:php[0-9]?|phtml|pht|phar)(?:/|$) - [F,L,NC]
 
+# The same guard for the uploads tree, which had none. Measured 2026-09-11 in
+# the dev container (same AllowOverride All as the production images): a .php
+# file placed in httpdocs/uploads/ answered 200 and RAN, while the identical
+# request under /storage/ answered 403. Upload validation is the first line;
+# this is the second, so a validation regression can never become code
+# execution. Written as <If> + Require rather than a RewriteRule because
+# uploads/.htaccess switches RewriteEngine on and per-directory rewrite rules
+# are not inherited by default — a root RewriteRule would be silently skipped
+# there. <If> sections merge last, so a child .htaccess cannot re-grant.
+<If "%{REQUEST_URI} =~ m#^/uploads/.*\.(php[0-9]?|phtml|pht|phar|phps)(/|$)#i">
+    Require all denied
+</If>
+
 # APK MIME Type - Force Download
 <FilesMatch "\.apk$">
     ForceType application/vnd.android.package-archive
