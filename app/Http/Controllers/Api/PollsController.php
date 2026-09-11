@@ -206,6 +206,14 @@ class PollsController extends BaseApiController
             $success = $this->pollService->vote($id, (int) $optionId, $userId);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
+        } catch (\InvalidArgumentException $e) {
+            // The option is not one of THIS poll's options. The service throws;
+            // uncaught, that was a 500 carrying the exception class and file path
+            // under debug. Found by SameCommunityAccessSweepTest, 2026-09-11.
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.invalid_input'), 'option_id', 422);
+        } catch (\App\Exceptions\PollClosedException $e) {
+            // Same finding, second path: voting after the end date was a 500 too.
+            return $this->respondWithError('RESOURCE_CONFLICT', __('api.invalid_input'), null, 409);
         }
 
         if (! $success) {

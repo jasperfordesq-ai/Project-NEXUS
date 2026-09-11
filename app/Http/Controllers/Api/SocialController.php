@@ -907,6 +907,12 @@ class SocialController extends BaseApiController
             $success = $this->pollService->vote((int) $id, $optionId, $userId);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
+        } catch (\InvalidArgumentException $e) {
+            // As in PollsController::vote(): an option from another poll made the
+            // service throw and this endpoint answer 500. SameCommunityAccessSweepTest, 2026-09-11.
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.invalid_input'), 'option_id', 422);
+        } catch (\App\Exceptions\PollClosedException $e) {
+            return $this->respondWithError('RESOURCE_CONFLICT', __('api.invalid_input'), null, 409);
         }
 
         if (! $success) {

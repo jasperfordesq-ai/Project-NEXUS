@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Exceptions\PollClosedException;
 use App\Models\Poll;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
@@ -311,7 +312,9 @@ class PollService
 
             // C5: Prevent voting on expired polls
             if (!empty($poll->end_date) && strtotime($poll->end_date) <= time()) {
-                throw new \RuntimeException('This poll has closed');
+                // Typed so the controllers can answer 409 without catching
+                // RuntimeException at large (QueryException is one too).
+                throw new PollClosedException('This poll has closed');
             }
 
             // C4: Validate that the option belongs to this poll and tenant
