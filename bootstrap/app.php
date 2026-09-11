@@ -617,7 +617,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             // stack on purpose: a build too old to be trusted should be refused
             // before it can authenticate, resolve anything, or mutate data. It acts
             // ONLY on a request carrying X-Nexus-Mobile-Version and fails open, so
-            // it cannot affect the web frontend or the Capacitor wrapper.
+            // it cannot affect the web frontend.
             \App\Http\Middleware\EnforceMobileMinimumVersion::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SeoRedirectMiddleware::class,

@@ -6,7 +6,7 @@
 /**
  * useWebPush — PWA Web Push (W3C Push API) subscription lifecycle.
  *
- * Distinct from `usePushNotifications` (Capacitor / FCM native push).
+ * Native push registration belongs to the Expo client in mobile/.
  * This hook handles the browser path:
  *   1. Notification.requestPermission()
  *   2. registration.pushManager.subscribe({ applicationServerKey: VAPID_PUB })

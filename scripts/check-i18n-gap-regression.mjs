@@ -62,7 +62,6 @@ const NO_TRANSLATE_VALUES = new Set([
   'Laravel 12 + PHP 8.2+',
   'MariaDB 10.11',
   'Meilisearch v1.7',
-  'Capacitor (iOS + Android)',
   'OpenAI text-embedding-3-small',
   'Pusher WebSockets, Firebase Cloud Messaging',
   // Social network names. Brand names are not translated, and the single-word

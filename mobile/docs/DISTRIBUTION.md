@@ -137,14 +137,6 @@ iOS prerequisite for this Expo notification path.
 from there since at least June 2026 (`timebank-global-2026-06-12-v8.apk`), and that is
 where the owner's phone downloads from.
 
-🔴 **`config/mobile.php` advertises a DIFFERENT path that 404s.** Checked 2026-08-20:
-`https://api.project-nexus.ie/downloads/nexus-latest.apk` returns **404** — the folder is
-under `uploads/`, not at the web root. That dead URL is what the CAPACITOR client's
-force-update prompt sends people to (`AppController::checkVersion`), so pulling that lever
-today would send them nowhere. Left as a recorded finding rather than silently repointed,
-because changing it changes what that app tells people to download — a decision, not a
-chore.
-
 🔴 **How this folder was missed, because the mistake is repeatable.** A first pass reported
 "there is no downloads folder" after checking `/downloads/` and `httpdocs/downloads`, then
 listing the uploads volume with `ls | head -8`. The volume's entries are tenant-id

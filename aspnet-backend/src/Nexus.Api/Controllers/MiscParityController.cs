@@ -212,10 +212,6 @@ public class MiscParityController : ControllerBase
     [AllowAnonymous]
     public IActionResult AppLog([FromBody] JsonElement body) => Ok(new { accepted = true });
 
-    [HttpGet("app/version")]
-    [AllowAnonymous]
-    public IActionResult AppVersion() => Ok(new { version = "2.0", api = "nexus" });
-
     [HttpPost("appreciations")]
     [Authorize]
     public async Task<IActionResult> CreateAppreciation([FromBody] JsonElement body)

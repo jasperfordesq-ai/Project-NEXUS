@@ -240,7 +240,7 @@ keeps its headroom.
 
 🔴 Which file is authoritative, since getting it backwards sends someone hunting for a
 file that is not in the repository: `mobile/android/` is **gitignored**
-(`mobile/.gitignore:8`, 0 tracked files), like the Capacitor project. The committed
+(`mobile/.gitignore:8`, 0 tracked files). The committed
 **source** — `mobile/android-network-security-config.xml` — is the single source of truth,
 and the Expo plugin copies it into the native project at prebuild on whichever machine
 builds. Editing the source alone is correct and sufficient; git refuses the generated
@@ -924,8 +924,7 @@ service on the next launch, so the block is not sticky.
 
 Design decisions that are load-bearing (all pinned by tests, several mutation-verified):
 
-- **An absent header is allowed.** Everything without it is the web app, the Capacitor
-  wrapper (which polls `/api/app/check-version` instead), or a server-to-server caller.
+- **An absent header is allowed.** Everything without it is the web app (which polls `/api/app/check-version` instead), or a server-to-server caller.
   Refusing unknown callers would take the website down.
 - **It fails open.** Any error while deciding is logged and the request proceeds.
 - **`/api/app/*` is exempt**, so a locked-out copy can still ask what version it needs —
@@ -979,15 +978,7 @@ those restraints.
 
 - **Nothing has ever been distributed.** No artefact has reached a member. This is now the
   only thing between the app and a first install.
-- 🔴 **The Capacitor client's update URL is a 404 — but the download folder DOES exist.**
-  Builds have been distributed from `uploads/downloads/` since at least June 2026, which an
-  earlier pass of this document wrongly reported as "no downloads folder" after reading a
-  `head -8`-truncated directory listing as absence. What is genuinely broken is that
-  `config/mobile.php` advertises `/downloads/nexus-latest.apk` at the web ROOT, which 404s.
-  That is the address `AppController::checkVersion` gives the older Capacitor app when it
-  tells someone to update, so pulling that lever today would send them nowhere. Not
-  repointed here: changing it changes what that app tells people to download, which is an
-  owner decision.
+
 - Fixed earlier this session: the `website` channel — the profile behind the APK that
   `DISTRIBUTION.md` designates for public download, and the only current route to a
   member — had no publish path at all.

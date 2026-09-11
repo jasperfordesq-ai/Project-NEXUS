@@ -1,9 +1,9 @@
 # Consumed-Field Manifest (generated)
 
-Generated: 2026-08-21T13:41:18.924Z
+Generated: 2026-09-11T13:30:02.634Z
 
-- Repository SHA: `b3e9047c66de46190cfb3759d377f15fc1fb6630`
-- Working tree at generation: 37 modified path(s)
+- Repository SHA: `95cfeaab0145590c9e9a45422d727941b5ff9d88`
+- Working tree at generation: 541 modified path(s)
 - Generator: `aspnet-backend/scripts/build-consumed-field-manifest.mjs`
 - Scope authority: [ADR-0004](../../decisions/ADR-0004-journey-equivalence-is-the-target.md)
 
@@ -16,14 +16,14 @@ any client plausibly reads, which clients read it and where.
 
 | Client | Source | Files scanned | Field names seen |
 | --- | --- | ---: | ---: |
-| `react` | `react-frontend/src` | 2658 | 31585 |
-| `web-uk` | `web-uk/src` | 443 | 9672 |
-| `mobile` | `mobile/lib`, `mobile/app`, `mobile/components`, `mobile/types`, `mobile/config` | 538 | 6859 |
+| `react` | `react-frontend/src` | 2668 | 31774 |
+| `web-uk` | `web-uk/src` | 455 | 9907 |
+| `mobile` | `mobile/lib`, `mobile/app`, `mobile/components`, `mobile/types`, `mobile/config` | 770 | 8842 |
 | `openapi` | `openapi.json`, `resources/openapi.json` | 2 | 221 |
 
-- Unique field names across all readers: **40643**
-- Names evidenced ONLY by test files: 3381
-- Total occurrences indexed: 664663
+- Unique field names across all readers: **42121**
+- Names evidenced ONLY by test files: 3816
+- Total occurrences indexed: 710669
 
 ## Files deliberately excluded
 

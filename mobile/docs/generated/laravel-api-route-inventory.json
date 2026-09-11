@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2730,
-  "api_route_rows": 2695,
-  "distinct_api_paths": 2240,
+  "total_registered_routes": 2728,
+  "api_route_rows": 2693,
+  "distinct_api_paths": 2238,
   "route_source_fingerprint": {
-    "digest": "9536e3c291013de50f035e713fedcfd3989ea85b2f93db2d868d515120de2fca",
+    "digest": "ff16a19edf3f48bae4b8f4f4e9bd26254fc560e10c6bbeb98be2967e8cc8ec79",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "36b637a5764d73c127d2bfcc3bc59e8ba4d829a4b5f85b8d4259bafd4325d3e5"
+        "sha256": "f495137b4acd845a979f88207746c272b84abb5e5c1a50deec0a90f4d66065e3"
       },
       {
         "file": "routes/channels.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "6df4d42be1668f149f6be2b699581aa5f650854751efc061ef968881257c0c7c"
+        "sha256": "8a42b1d299355a20a0d149c5812ae6f616aca92a959c3aff93f27a4f0a527cdb"
       }
     ]
   },
@@ -82,14 +82,8 @@
     "/api/ai/test-provider": [
       "POST"
     ],
-    "/api/app/check-version": [
-      "POST"
-    ],
     "/api/app/log": [
       "POST"
-    ],
-    "/api/app/version": [
-      "GET"
     ],
     "/api/auth/admin-session": [
       "GET",

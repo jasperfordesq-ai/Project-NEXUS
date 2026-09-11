@@ -204,8 +204,6 @@ describe('InstallAppPage', () => {
     expect(screen.getByText('One app for both Android and iPhone or iPad')).toBeInTheDocument();
     expect(screen.getByText(/Android is live/)).toBeInTheDocument();
     expect(screen.getByText(/We will add a link here the moment it is available/)).toBeInTheDocument();
-    // The Capacitor wrapper stays off the page while its future is undecided.
-    expect(screen.queryByText(/Capacitor/)).toBeNull();
   });
 
   it('interpolates the tenant brand name instead of leaving the placeholder', () => {

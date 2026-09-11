@@ -1467,7 +1467,7 @@
       },
       "tenant_branded_native_app": {
         "label": "Mietergebrandete native App",
-        "description": "Eine iOS- und Android-Capacitor-App, die unter der Marke des Mieters veröffentlicht wird. Der Quellcode ist AGPL-lizenziert; die Veröffentlichungsinfrastruktur gehört dem Mieter.",
+        "description": "Eine iOS- und Android-Expo-App, die unter der Marke des Mieters veröffentlicht wird. Der Quellcode ist AGPL-lizenziert; die Veröffentlichungsinfrastruktur gehört dem Mieter.",
         "notes": "Apple- und Google-Entwicklerkonten, Signierschlüssel, Build-Pipelines und Store-Review-Workflows sind operative Verantwortlichkeiten außerhalb des Pakets."
       },
       "paid_regional_analytics": {

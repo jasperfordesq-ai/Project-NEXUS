@@ -94,7 +94,7 @@
 
 /* ─────────────────────────────────────────────
    EDGE-TO-EDGE SAFE AREA INSETS
-   Required for Capacitor on Android 15 (API 35) and iOS.
+   Required for display cutouts and standalone PWAs on mobile browsers.
    WindowCompat.setDecorFitsSystemWindows(false) lets the WebView
    draw behind the status bar and navigation bar.
    viewport-fit=cover must be set in index.html (already present).

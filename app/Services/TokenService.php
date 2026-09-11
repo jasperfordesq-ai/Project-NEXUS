@@ -52,16 +52,14 @@ class TokenService
     }
 
     /**
-     * Check if the current request is from a mobile app (Capacitor/native).
+     * Check if the current request is from the Expo mobile app.
      */
     public function isMobileRequest(): bool
     {
         $userAgent = request()->userAgent() ?? '';
 
         return (
-            str_contains($userAgent, 'Capacitor') ||
             str_contains($userAgent, 'nexus-mobile') ||
-            request()->hasHeader('X-Capacitor-App') ||
             request()->hasHeader('X-Nexus-Mobile')
         );
     }

@@ -17,7 +17,7 @@ import { adminSettings } from '../../api/adminApi';
 
 /**
  * Native App Settings
- * Configure mobile app (Capacitor) settings and tenant-branded build readiness.
+ * Configure native mobile app (Expo) settings and tenant-branded build readiness.
  */
 
 

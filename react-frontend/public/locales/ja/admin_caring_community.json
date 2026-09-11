@@ -1466,7 +1466,7 @@
       },
       "tenant_branded_native_app": {
         "label": "テナントブランドのネイティブアプリ",
-        "description": "テナントのブランドで公開されたiOSおよびAndroidのCapacitorアプリ。ソースコードはAGPLライセンスで提供されており、リリースインフラはテナント所有。",
+        "description": "テナントのブランドで公開されたiOSおよびAndroidのExpoアプリ。ソースコードはAGPLライセンスで提供されており、リリースインフラはテナント所有。",
         "notes": "AppleおよびGoogleの開発者アカウント、署名キー、ビルドパイプライン、ストアレビューのワークフローは、パッケージの外部における運用責任。"
       },
       "paid_regional_analytics": {

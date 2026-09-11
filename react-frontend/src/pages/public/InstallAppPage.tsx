@@ -161,9 +161,7 @@ export function InstallAppPage() {
       // by platform: Android's release path is set up (EAS website/production
       // profiles, managed keystore, FCM) while iOS still needs an Apple
       // developer account and App Store review, which is what type_native_status
-      // says. The Capacitor wrapper is deliberately NOT mentioned — it would
-      // give members a third thing to choose between while its future is still
-      // an open question.
+      // says. This is the sole native app for Android and iOS.
       id: 'native',
       // Third of three cards in a two-column grid, so it spans the full row
       // rather than leaving a hole beside it — and it is the longest card.

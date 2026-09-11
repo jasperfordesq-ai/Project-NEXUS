@@ -139,7 +139,6 @@ const HARD_NO_TRANSLATE_PATTERNS = [
   /^Budget\s*\([€$£]\)$/i,
   /^Name\s*\(optional\)$/i,
   /^Onboarding\s+-\s+Broker$/i,
-  /^Capacitor\s+\(iOS\s+\+\s+Android\)$/i,
   /^(?:AI|API|URL|ID|XP|CV|OAuth|GDPR|DSA|FAQ|UTC|HTTP|HTTPS|JSON|CSV|PDF|PNG|JPG|JPEG|WebP|MP4|MOV|WebM|ICS)$/i,
   /^(?:Google|Facebook|Outlook|OpenAI|MariaDB|Meilisearch|Laravel|PHP|React|TypeScript|HeroUI|Tailwind CSS|Firebase Cloud Messaging|Pusher WebSockets|NexusScore|NEXUS|Verein|Vereine|Spitex)(?:\b.*)?$/i,
 ];

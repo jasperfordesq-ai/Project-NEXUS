@@ -753,7 +753,6 @@ class AuthControllerTest extends TestCase
         ], [
             'User-Agent' => 'nexus-mobile',
             'X-Nexus-Mobile' => '1',
-            'X-Capacitor-App' => '1',
         ]);
 
         $response->assertStatus(200)

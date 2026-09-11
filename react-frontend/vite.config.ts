@@ -410,9 +410,6 @@ export default defineConfig(({ command, mode }) => {
     },
     outDir: 'dist',
     rollupOptions: {
-      // Capacitor packages are optional native deps — not installed in web builds.
-      // Guard all usages with window.Capacitor?.isNativePlatform?.() checks.
-      external: ['@capacitor/app', '@capacitor/push-notifications'],
       output: {
         // A stable prefix lets Workbox select only the HTML entry instead of
         // every dynamic chunk whose Rollup name happens to be `index`.

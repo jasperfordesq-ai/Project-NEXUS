@@ -23,7 +23,7 @@ Nothing downstream is reliable without these.
 | --- | --- |
 | GOV.UK styling; an `accessible.*` host, or an `/{tenantSlug}/accessible/...` path | The accessible frontend (`web-uk`) |
 | HeroUI styling on the main app host | The React frontend |
-| A phone | One of **two** mobile codebases — a Capacitor wrapper around the React app, or the separate Expo/React Native client. A screenshot does not distinguish them. Ask. |
+| A phone | The Expo / React Native app in `mobile/`, or the website in a mobile browser/PWA. Establish which surface is affected. |
 
 Check the URL bar, not just the error. See `../DEPLOYMENT.md` for the current host table, including retired hosts that answer 503 with the domain retained — a report against one of those is a report against something switched off.
 

@@ -37,7 +37,7 @@ class MobileVersionGateRegistrationTest extends TestCase
 
     public function test_the_web_frontend_is_untouched_by_the_gate(): void
     {
-        // The web app and the Capacitor wrapper send no version header. If this ever
+        // Web browsers send no version header. If this ever
         // starts failing, the gate has begun refusing unknown callers and the website
         // is down.
         config()->set('mobile.expo.minimum_version', '99.0.0');
@@ -47,15 +47,15 @@ class MobileVersionGateRegistrationTest extends TestCase
         $this->assertNotSame(426, $response->getStatusCode());
     }
 
-    public function test_a_locked_out_build_can_still_ask_what_version_it_needs(): void
+    public function test_a_locked_out_build_can_still_send_diagnostics(): void
     {
-        // The exemption that keeps "please update" from becoming a dead end.
+        // Old builds can still report diagnostics while other API calls are refused.
         config()->set('mobile.expo.minimum_version', '99.0.0');
 
         $response = $this->withHeaders([
             EnforceMobileMinimumVersion::VERSION_HEADER => '1.0.0',
             'Accept' => 'application/json',
-        ])->getJson('/api/app/version');
+        ])->postJson('/api/app/log', ['event' => 'update_required']);
 
         $this->assertNotSame(426, $response->getStatusCode());
     }

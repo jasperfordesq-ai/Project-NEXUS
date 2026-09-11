@@ -131,14 +131,14 @@
 
   <!--
     MOBILE-ONLY: undici WebSocket DoS CVEs in mobile/package-lock.json
-    undici is used by the Capacitor mobile app (mobile/ directory).
+    undici is used by the Expo mobile app (mobile/ directory).
     The mobile app compiles to APK/IPA — it is NOT deployed to the web server.
     Fixed in undici 6.24.0 / 7.24.0. Mobile deps tracked for update separately.
     These GHSAs correspond to CVE-2026-1526, CVE-2026-1528, CVE-2026-2229.
   -->
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: undici in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: undici in mobile/package-lock.json (Expo APK).
       Not deployed to the web server. Will update mobile deps separately.
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/undici@6\.2[0-3]\..*$</packageUrl>
@@ -177,14 +177,14 @@
   </suppress>
 
   <!--
-    MOBILE-ONLY: lodash@4.17.23 in mobile/package-lock.json (Capacitor APK).
+    MOBILE-ONLY: lodash@4.17.23 in mobile/package-lock.json (Expo APK).
     The mobile app compiles to APK/IPA and is NOT deployed to the web server.
     GHSA-r5fr-rjxr-66jc — prototype pollution in lodash. Not reachable from web.
     Tracked for update with mobile deps separately.
   -->
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: lodash@4.17.23 is in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: lodash@4.17.23 is in mobile/package-lock.json (Expo APK).
       Not deployed to the web server. Will update mobile deps separately.
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/lodash@4\.17\.23$</packageUrl>
@@ -192,12 +192,12 @@
   </suppress>
 
   <!--
-    MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Capacitor APK).
+    MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Expo APK).
     Not deployed to the web server.
   -->
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: node-forge@1.3.3 is in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: node-forge@1.3.3 is in mobile/package-lock.json (Expo APK).
       Not deployed to the web server. Will update mobile deps separately.
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/node-forge@1\.3\.3$</packageUrl>
@@ -205,33 +205,33 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Expo APK).
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/node-forge@1\.3\.3$</packageUrl>
     <vulnerabilityName>GHSA-5m6q-g25r-mvwx</vulnerabilityName>
   </suppress>
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Expo APK).
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/node-forge@1\.3\.3$</packageUrl>
     <vulnerabilityName>GHSA-2328-f5f3-gj25</vulnerabilityName>
   </suppress>
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: node-forge@1.3.3 in mobile/package-lock.json (Expo APK).
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/node-forge@1\.3\.3$</packageUrl>
     <vulnerabilityName>GHSA-q67f-28xg-22rw</vulnerabilityName>
   </suppress>
 
   <!--
-    MOBILE-ONLY: picomatch@4.0.3 in mobile/package-lock.json (Capacitor APK).
+    MOBILE-ONLY: picomatch@4.0.3 in mobile/package-lock.json (Expo APK).
     GHSA-c2c7-rcm5-vvqj. Not deployed to the web server.
   -->
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: picomatch@4.0.3 is in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: picomatch@4.0.3 is in mobile/package-lock.json (Expo APK).
       Not deployed to the web server. Will update mobile deps separately.
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/picomatch@4\.0\.3$</packageUrl>
@@ -239,13 +239,13 @@
   </suppress>
 
   <!--
-    MOBILE-ONLY: @xmldom/xmldom@0.8.11 in mobile/package-lock.json (Capacitor APK).
+    MOBILE-ONLY: @xmldom/xmldom@0.8.11 in mobile/package-lock.json (Expo APK).
     GHSA-wh4c-j3r5-mjhp. Not deployed to the web server.
     Note: react-frontend uses 0.8.12+ which is patched.
   -->
   <suppress>
     <notes><![CDATA[
-      MOBILE-ONLY: @xmldom/xmldom@0.8.11 is in mobile/package-lock.json (Capacitor APK).
+      MOBILE-ONLY: @xmldom/xmldom@0.8.11 is in mobile/package-lock.json (Expo APK).
       Not deployed to the web server. react-frontend already uses the patched version.
     ]]></notes>
     <packageUrl regex="true">^pkg:npm/%40xmldom%2Fxmldom@0\.8\.11$</packageUrl>
@@ -417,7 +417,7 @@
     <notes><![CDATA[
       MOBILE-ONLY: undici GHSA-vxpw-j846-p89q in mobile/package-lock.json. undici
       arrives only through the Expo/Metro React-Native dev bundler toolchain in
-      the Capacitor mobile app — it is not in the compiled APK/IPA or on any
+      the Expo mobile app — it is not in the compiled APK/IPA or on any
       server. The prior undici@6.2[0-3] rule predates the 6.26.0 bump; this rule
       covers the whole undici 6.x mobile dev line so it does not go stale on the
       next patch bump. (added 2026-06-24)

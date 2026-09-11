@@ -877,10 +877,6 @@
     "src/components/feed/types.test.ts": {
       "TS2322": 1
     },
-    "src/components/feedback/AppUpdateModal.test.tsx": {
-      "TS2559": 1,
-      "TS2741": 6
-    },
     "src/components/feedback/ErrorBoundary.test.tsx": {
       "TS2532": 1,
       "TS2559": 1,

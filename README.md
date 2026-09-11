@@ -154,9 +154,7 @@ changes behaviour when its backend changes; see
 configures both platforms, but only the Android release path is complete — signing,
 build profiles and push credentials exist for Android, while the iOS submit
 configuration is still a placeholder and Apple additionally requires a developer
-account and review. A Capacitor wrapper also exists historically; its project
-directory is **not** in this repository (removed in `df8bf84d6`, gitignored) and it
-is not what we ship.
+account and review. `mobile/` is the sole native app for Android and iOS.
 
 ### The second backend — a switchable ASP.NET Core 10 stack
 

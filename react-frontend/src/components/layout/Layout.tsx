@@ -8,8 +8,8 @@
  * Wraps all pages with navigation, footer, and background
  */
 
-import { lazy, Suspense, useState, useCallback, useEffect, type CSSProperties } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { lazy, Suspense, useState, useCallback, type CSSProperties } from 'react';
+import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from './Navbar';
 import { MobileDrawer } from './MobileDrawer';
@@ -22,14 +22,11 @@ import { PageTransition } from '@/components/layout/PageTransition';
 import { InstallModalHost } from '@/components/pwa/InstallModalHost';
 import { SessionExpiredModal } from '@/components/feedback/SessionExpiredModal';
 import { SessionTimeoutWarning } from '@/components/feedback/SessionTimeoutWarning';
-import { AppUpdateModal } from '@/components/feedback/AppUpdateModal';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import { useApiErrorHandler } from '@/hooks/useApiErrorHandler';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
-import { useAppUpdate } from '@/hooks/useAppUpdate';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 
@@ -80,73 +77,8 @@ export function Layout({
   // Scroll state for dynamic padding — when utility bar hides, reduce top padding
   const { isUtilityBarVisible } = useHeaderScroll(48);
 
-  // Check for native app updates (Capacitor only, no-ops on web)
-  const { updateInfo, dismiss: dismissUpdate } = useAppUpdate();
-
-  // Register FCM device token for push notifications once user is authenticated.
-  // No-ops on web browsers — only runs inside the Capacitor native app.
-  const { user, isAuthenticated } = useAuth();
-  const { tenantPath, branding, hasFeature } = useTenant();
-  const navigate = useNavigate();
-  usePushNotifications(user?.id ?? null);
-
-  // Handle deep links when the Capacitor app is opened via a URL scheme or universal link.
-  //
-  // Supported formats:
-  //   Universal link:  https://app.project-nexus.ie/{tenant-slug}/listings/42
-  //                    → path already contains slug, tenantPath() returns it unchanged
-  //   Custom scheme:   nexus://{tenant-slug}/listings/42
-  //                    → URL#hostname is the tenant slug, URL#pathname is the page path
-  //                    → we prepend the slug ourselves before navigating
-  //
-  // No-ops on web browsers — window.Capacitor is undefined there.
-  useEffect(() => {
-    if (!window.Capacitor?.isNativePlatform?.()) return;
-
-    let cleanup: (() => void) | undefined;
-
-    const init = async () => {
-      try {
-        const capacitorAppModule = '@capacitor/app';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { App } = await import(/* @vite-ignore */ capacitorAppModule) as any;
-        const listener = await App.addListener('appUrlOpen', (event: { url: string }) => {
-          try {
-            const url = new URL(event.url);
-            let path = url.pathname || '/';
-
-            // Block protocol-relative paths — only allow root-relative
-            if (path.startsWith('//')) return;
-
-            // For custom scheme (nexus://{tenant-slug}/path), the tenant slug is in
-            // the URL hostname. Prepend it so the router lands on the right community.
-            //   nexus://hour-timebank/listings/42  → /hour-timebank/listings/42
-            //   nexus://hour-timebank              → /hour-timebank  (root, pathname='/')
-            //   nexus://hour-timebank/             → /hour-timebank/ (root with trailing slash)
-            // Universal links (https://app.project-nexus.ie/{slug}/path) already have
-            // the slug in the pathname, so no prefix is needed.
-            if (url.protocol === 'nexus:' && url.hostname) {
-              // Avoid double-slash when path is already '/'
-              path = `/${url.hostname}${path === '/' ? '' : path}`;
-            }
-
-            // Final safety check — must be a root-relative path
-            if (!path.startsWith('/')) return;
-
-            navigate(tenantPath(path));
-          } catch {
-            // Malformed URL — ignore silently
-          }
-        });
-        cleanup = () => listener.remove();
-      } catch {
-        // @capacitor/app not available (web build) — ignore
-      }
-    };
-
-    init();
-    return () => cleanup?.();
-  }, [navigate, tenantPath]);
+  const { isAuthenticated } = useAuth();
+  const { branding, hasFeature } = useTenant();
 
   return (
     <div className="min-h-screen max-w-[100vw] flex flex-col overflow-x-clip">
@@ -273,10 +205,6 @@ export function Layout({
       {/* Session Expired Modal */}
       <SessionExpiredModal />
 
-      {/* Native App Update Modal */}
-      {updateInfo && (
-        <AppUpdateModal updateInfo={updateInfo} onDismiss={dismissUpdate} />
-      )}
     </div>
   );
 }

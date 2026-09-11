@@ -225,7 +225,6 @@ e2e/reports/
 /mobile/coverage/
 /mobile/.expo/
 /mobile/.env.local
-/capacitor/
 
 # ─── Old/Quarantined Directories ─────────────────────────────────────────────
 react-frontend__quarantine_*/

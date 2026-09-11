@@ -6353,7 +6353,7 @@ export default interface Resources {
           "notes": ""
         },
         "tenant_branded_native_app": {
-          "description": "An iOS and Android Capacitor app published under the tenant's brand. The source is AGPL-licensed; the release infrastructure is tenant-owned.",
+          "description": "An iOS and Android Expo app published under the tenant's brand. The source is AGPL-licensed; the release infrastructure is tenant-owned.",
           "label": "Tenant-branded native app",
           "notes": "Apple and Google developer accounts, signing keys, build pipelines, and store-review workflows are operational responsibilities outside the package."
         },

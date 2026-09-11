@@ -396,23 +396,6 @@ public class CompatibilityAliasController : ControllerBase
     // App version check
     // ──────────────────────────────────────────────
 
-    /// <summary>
-    /// POST /api/app/check-version — Returns current API version info.
-    /// </summary>
-    [HttpPost("api/app/check-version")]
-    [AllowAnonymous]
-    public IActionResult CheckVersion([FromBody] object? request = null)
-    {
-        return Ok(new
-        {
-            up_to_date = true,
-            current_version = "2.0.0",
-            minimum_version = "1.0.0",
-            update_url = (string?)null,
-            message = (string?)null
-        });
-    }
-
     // ──────────────────────────────────────────────
     // Messaging typing indicator & chatrooms
     // ──────────────────────────────────────────────

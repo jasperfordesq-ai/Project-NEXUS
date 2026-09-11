@@ -48,7 +48,7 @@ the rule is only as meaningful as the list of surfaces. For this platform they a
 | Consumer | Depends on |
 |---|---|
 | `react-frontend/` | The Laravel V2 API response contracts |
-| `mobile/` (Expo) and the Capacitor wrapper | The same V2 API, pinned by the mobile consumer ledger |
+| `mobile/` (Expo, Android and iOS) | The same V2 API, pinned by the mobile consumer ledger |
 | `web-uk/` (accessible frontend) | The same V2 API, plus the `govuk_alpha*` translation catalogues |
 | External federation partners | The federation API and its protocol version |
 | Self-hosting operators | Environment variables, the deployment scripts, the database schema, and the documented upgrade path |

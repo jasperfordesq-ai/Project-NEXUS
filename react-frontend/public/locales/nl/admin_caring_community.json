@@ -1467,7 +1467,7 @@
       },
       "tenant_branded_native_app": {
         "label": "Huurder-merk native app",
-        "description": "Een iOS- en Android-Capacitor-app gepubliceerd onder het merk van de huurder. De bron is AGPL-gelicentieerd; de release-infrastructuur is eigendom van de huurder.",
+        "description": "Een iOS- en Android-Expo-app gepubliceerd onder het merk van de huurder. De bron is AGPL-gelicentieerd; de release-infrastructuur is eigendom van de huurder.",
         "notes": "Apple- en Google-ontwikkelaarsaccounts, ondertekeningssleutels, build-pijplijnen en store-review-workflows zijn operationele verantwoordelijkheden buiten het pakket."
       },
       "paid_regional_analytics": {

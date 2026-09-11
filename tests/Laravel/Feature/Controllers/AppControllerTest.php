@@ -13,7 +13,7 @@ use Laravel\Sanctum\Sanctum;
 use App\Models\User;
 
 /**
- * Feature tests for AppController — Mobile app version check and logging.
+ * Feature tests for AppController — Mobile app event logging.
  */
 class AppControllerTest extends TestCase
 {
@@ -29,33 +29,6 @@ class AppControllerTest extends TestCase
         Sanctum::actingAs($user, ['*']);
 
         return $user;
-    }
-
-    // ------------------------------------------------------------------
-    //  POST /app/check-version
-    // ------------------------------------------------------------------
-
-    public function test_check_version_returns_status(): void
-    {
-        $this->authenticatedUser();
-
-        $response = $this->apiPost('/app/check-version', ['version' => '1.0']);
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-    }
-
-    // ------------------------------------------------------------------
-    //  GET /app/version
-    // ------------------------------------------------------------------
-
-    public function test_version_returns_data(): void
-    {
-        $this->authenticatedUser();
-
-        $response = $this->apiGet('/app/version');
-
-        $response->assertStatus(200);
     }
 
     // ------------------------------------------------------------------

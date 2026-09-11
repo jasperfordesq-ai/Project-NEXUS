@@ -13,8 +13,7 @@ Status: **Maintained — short entry point; detailed evidence lives in the linke
 
 ## What this app is
 
-`mobile/` is the Expo / React Native client built with HeroUI Native and Uniwind. It is not
-the Capacitor wrapper. Android package `ie.project.nexus` is publicly installable from Google
+`mobile/` is the Expo / React Native client built with HeroUI Native and Uniwind. It is the sole native app for Android and iOS. Android package `ie.project.nexus` is publicly installable from Google
 Play.
 
 🔴 **"iOS remains unbuilt" was true until 2026-09-07 and is now wrong.** iOS compiles and

@@ -1487,7 +1487,7 @@
       },
       "tenant_branded_native_app": {
         "label": "Aplikacja natywna oznaczona marką najemcy",
-        "description": "Aplikacja Capacitor na iOS i Androida wydana pod marką najemcy. Źródło jest objęte licencją AGPL; infrastruktura wydania należy do najemcy.",
+        "description": "Aplikacja Expo na iOS i Androida wydana pod marką najemcy. Źródło jest objęte licencją AGPL; infrastruktura wydania należy do najemcy.",
         "notes": "Konta deweloperskie Apple i Google, klucze podpisywania, procesy kompilacji oraz przepływy pracy związane z recenzją w sklepie są odpowiedzialnością operacyjną spoza pakietu."
       },
       "paid_regional_analytics": {

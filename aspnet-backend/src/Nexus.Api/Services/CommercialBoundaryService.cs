@@ -280,7 +280,7 @@ public sealed class CommercialBoundaryService
         new(
             "tenant_branded_native_app",
             "Tenant-branded native app",
-            "iOS / Android Capacitor app published under the tenant brand. The code is AGPL; the build pipeline and store accounts are not.",
+            "iOS / Android Expo app published under the tenant brand. The code is AGPL; the build pipeline and store accounts are not.",
             "mobile_native",
             "private_deployment",
             true,

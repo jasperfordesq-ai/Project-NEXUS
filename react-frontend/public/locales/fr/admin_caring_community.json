@@ -1477,7 +1477,7 @@
       },
       "tenant_branded_native_app": {
         "label": "Application native à l'image du locataire",
-        "description": "Une application Capacitor pour iOS et Android publiée sous la marque du locataire. Le code source est sous licence AGPL ; l'infrastructure de publication appartient au locataire.",
+        "description": "Une application Expo pour iOS et Android publiée sous la marque du locataire. Le code source est sous licence AGPL ; l'infrastructure de publication appartient au locataire.",
         "notes": "Les comptes développeur Apple et Google, les clés de signature, les pipelines de construction et les workflows de validation sur les stores sont des responsabilités opérationnelles en dehors du package."
       },
       "paid_regional_analytics": {

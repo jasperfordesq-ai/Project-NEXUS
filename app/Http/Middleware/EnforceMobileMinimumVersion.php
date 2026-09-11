@@ -23,16 +23,12 @@ use Throwable;
  * release. Ship one build without it and those copies can never be forced forward; a
  * serious bug in them becomes permanent.
  *
- * Push, not pull. `/api/app/check-version` already existed, but it is a pull model: it
- * only works if the app remembers to ask, which an old build might not do, might do
- * badly, or might do and then ignore. This middleware makes the answer unavoidable —
- * every request carries the version, so the server can refuse on any of them.
+ * Every request carries the version, so the server can refuse an outdated build.
  *
  * Deliberate design decisions, each of which is a trap if reversed:
  *
  *  * **An absent header is ALLOWED.** Anything without `X-Nexus-Mobile-Version` is
- *    either the web app, the Capacitor wrapper (which polls instead and does not send
- *    the header), a server-to-server caller, or an Expo build from before the header
+ *    either the web app, a server-to-server caller, or an Expo build from before the header
  *    existed. Refusing unknown callers would take the whole API down for the web
  *    frontend. Enforcement applies only to a client that has *told us* what it is.
  *  * **It fails OPEN.** Any error while deciding is logged and the request proceeds.
@@ -40,10 +36,8 @@ use Throwable;
  *    deliberate instance of the swallow-and-continue idiom, and the one shape of it
  *    that is defensible: the failure mode is "we did not enforce", not "we returned a
  *    success-shaped lie".
- *  * **`/api/app/*` is exempt** (config `mobile.version_gate_exempt_paths`). Without
- *    it a locked-out copy could not even ask what version it needs, turning a
- *    recoverable "please update" into a dead end — precisely the defect class this
- *    lever exists to prevent.
+ *  * **`/api/app/log` is exempt** so outdated builds can still send diagnostics.
+ *    The 426 response itself supplies the required version and update URL.
  *  * **426 Upgrade Required**, not 403. A 403 is indistinguishable from a permissions
  *    problem, and the mobile client already treats 401/403 as a session decision — it
  *    would sign the member out instead of asking them to update.

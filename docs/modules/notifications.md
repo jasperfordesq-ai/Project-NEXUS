@@ -20,7 +20,7 @@ Supported notification workflows:
 - **Web push (VAPID)** — sent via `WebPushService` to `push_subscriptions` rows for browser subscribers.
 - **Native mobile push (Expo/FCM/APNs)** — Laravel sends the Expo token through
   `FCMPushService`; Expo delivers through FCM on Android and APNs on iOS. The distinct
-  React Native client is in `mobile/`. The Capacitor-aware React hook is a separate path.
+  React Native client in `mobile/` is the sole native app for Android and iOS.
 - **Muted-user suppression** — if the acting user is in the recipient's `user_muted_users` list, all channels are suppressed for that sender/recipient pair.
 
 ---
@@ -287,7 +287,6 @@ surface to review.
 | Notification flyout / bell icon (React) | `react-frontend/src/components/layout/NotificationFlyout.tsx` |
 | Notification preferences in Settings (React) | Via `GET/PUT /v2/users/me/notifications` (UsersController) |
 | Per-context digest frequency (React) | Via `GET/POST /v2/notifications/settings` |
-| FCM registration hook (Capacitor) | `react-frontend/src/hooks/usePushNotifications.ts` |
 | Expo registration, response lifecycle and paid-tap queue (React Native) | `mobile/lib/notifications.ts` |
 | Canonical native route mapper | `mobile/app/+native-intent.ts` |
 | Tenant module guard for notification taps | `mobile/lib/navigation/tenantCapabilityStore.ts` |

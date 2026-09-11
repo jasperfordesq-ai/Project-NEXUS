@@ -53,9 +53,6 @@ vi.mock('@/components/feedback', () => ({
 vi.mock('@/components/feedback/SessionExpiredModal', () => ({
   SessionExpiredModal: () => <div data-testid="session-modal">SessionExpired Mock</div>,
 }));
-vi.mock('@/components/feedback/AppUpdateModal', () => ({
-  AppUpdateModal: () => null,
-}));
 vi.mock('@/components/pwa/InstallBanner', () => ({
   InstallBanner: () => null,
 }));
@@ -80,9 +77,6 @@ vi.mock('@/hooks', () => ({
 }));
 vi.mock('@/hooks/useHeaderScroll', () => ({
   useHeaderScroll: vi.fn(() => ({ isScrolled: false, isUtilityBarVisible: true })),
-}));
-vi.mock('@/hooks/useAppUpdate', () => ({
-  useAppUpdate: vi.fn(() => ({ updateInfo: null, dismiss: vi.fn() })),
 }));
 
 // Mock react-router-dom Outlet to render test content

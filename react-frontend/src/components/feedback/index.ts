@@ -10,5 +10,4 @@ export { FeatureErrorBoundary } from './FeatureErrorBoundary';
 export { SessionExpiredModal } from './SessionExpiredModal';
 export { SessionTimeoutWarning } from './SessionTimeoutWarning';
 export { OfflineIndicator } from './OfflineIndicator';
-export { AppUpdateModal } from './AppUpdateModal';
 export { CookieConsentBanner } from './CookieConsentBanner';

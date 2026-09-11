@@ -260,14 +260,6 @@ async function loadAndInitializeSentry(): Promise<void> {
     replaysOnErrorSampleRate: replayOnErrorSampleRate,
     maxBreadcrumbs: 50,
     sendDefaultPii: false,
-    ignoreErrors: [
-      // Capacitor Android WebView bridge teardown race: the native
-      // @JavascriptInterface object is garbage-collected mid-call when the
-      // Activity/WebView is destroyed (app backgrounded, deep-link navigation).
-      // Benign platform noise, not our code (Sentry React 127174715).
-      /Java object is gone/,
-      /Error invoking postMessage/,
-    ],
     integrations: integrations as Parameters<SentryModule['init']>[0]['integrations'],
     // 🔴 SCRUBBING IS NOW LOAD-BEARING, because fault reports are sent WITHOUT
     // analytics consent. Before that, a member who declined sent nothing at all, so

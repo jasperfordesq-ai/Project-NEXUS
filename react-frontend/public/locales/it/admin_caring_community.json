@@ -1477,7 +1477,7 @@
       },
       "tenant_branded_native_app": {
         "label": "App nativa con brand del tenant",
-        "description": "Un'app Capacitor per iOS e Android pubblicata sotto il marchio del tenant. Il codice sorgente è rilasciato sotto licenza AGPL; l'infrastruttura di rilascio è di proprietà del tenant.",
+        "description": "Un'app Expo per iOS e Android pubblicata sotto il marchio del tenant. Il codice sorgente è rilasciato sotto licenza AGPL; l'infrastruttura di rilascio è di proprietà del tenant.",
         "notes": "Account sviluppatore Apple e Google, chiavi di firma, pipeline di build e flussi di lavoro per la revisione sugli store sono responsabilità operative al di fuori del pacchetto."
       },
       "paid_regional_analytics": {

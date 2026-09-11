@@ -101,7 +101,7 @@ class EnforceMobileMinimumVersionTest extends TestCase
     public function test_it_allows_a_request_with_no_version_header(): void
     {
         // 🔴 The load-bearing one. Everything without the header is the web frontend,
-        // the Capacitor wrapper (which polls instead), a server-to-server caller, or
+        // a server-to-server caller, or
         // an Expo build from before the header existed. Refusing unknown callers would
         // take the entire API down for the website.
         $response = $this->dispatch('api/v2/feed', null);
@@ -141,12 +141,10 @@ class EnforceMobileMinimumVersionTest extends TestCase
         ];
     }
 
-    public function test_the_version_endpoints_are_never_blocked(): void
+    public function test_diagnostics_are_never_blocked(): void
     {
-        // 🔴 Without this exemption a locked-out copy could not even ask what version
-        // it needs, turning a recoverable "please update" into a dead end — exactly
-        // the defect class this lever exists to prevent.
-        $response = $this->dispatch('api/app/check-version', '1.0.0');
+        // Keep diagnostics available to builds that need an update.
+        $response = $this->dispatch('api/app/log', '1.0.0');
 
         $this->assertSame(200, $response->getStatusCode());
     }
@@ -179,7 +177,7 @@ class EnforceMobileMinimumVersionTest extends TestCase
 
     public function test_a_two_part_version_still_compares(): void
     {
-        // The Capacitor line uses two-part versions ('1.1'), and a future Expo build
+        // Dotted versions may have two parts ('1.1'), and a future Expo build
         // could too. version_compare handles it; the regex must not reject it.
         config()->set('mobile.expo.minimum_version', '2.0');
 

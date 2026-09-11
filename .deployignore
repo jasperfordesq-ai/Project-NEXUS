@@ -32,7 +32,6 @@ docker-compose*.yml
 Dockerfile
 
 # Mobile app source
-capacitor/
 
 # Build tools (not needed on server)
 purgecss.config.js

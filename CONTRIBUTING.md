@@ -340,7 +340,7 @@ Test environment uses `APP_ENV=testing`, database `nexus_test`, and `CACHE_DRIVE
 
 ## Mobile Contribution Workflow
 
-The mobile app is an Expo (React Native) application in `mobile/`, built and released through EAS. It shares the same React component patterns as the main frontend. It does **not** use Capacitor — Capacitor (`@capacitor/cli`, `@capacitor/core` in the root `package.json`) wraps the React web app, not `mobile/`.
+The sole native mobile app is the Expo (React Native) application in `mobile/`, for both Android and iOS, built and released through EAS. It has its own native components and release configuration.
 
 ### Stack
 

@@ -1497,7 +1497,7 @@
       },
       "tenant_branded_native_app": {
         "label": "Aip dhúchais branda na tionscadail",
-        "description": "Aip Capacitor iOS agus Android a foilsíodh faoin mbranda tionscadail. Tá an foinse faoi cheadúnas AGPL; is úinéireacht na tionscadail í an bonneagar scaoilte.",
+        "description": "Aip Expo iOS agus Android a foilsíodh faoin mbranda tionscadail. Tá an foinse faoi cheadúnas AGPL; is úinéireacht na tionscadail í an bonneagar scaoilte.",
         "notes": "Tá cuntais forbróra Apple agus Google, eochracha sínithe, píblíní tógála, agus sreafaí athbhreithnithe stór mar fhreagrachtaí oibríochta lasmuigh den phacáiste."
       },
       "paid_regional_analytics": {

@@ -164,9 +164,7 @@ import { Button, Card, Input } from "@heroui/react";
 | `useTheme` | via ThemeContext | `theme`, `setTheme('light'/'dark'/'system')` |
 | `useNotifications` | via NotificationsContext | Notification list, unread count, mark-read |
 | `useApiErrorHandler` | `src/hooks/useApiErrorHandler.ts` | App-level API error → toast listener |
-| `useAppUpdate` | `src/hooks/useAppUpdate.ts` | Capacitor native app version check |
 | `useLegalGate` | `src/hooks/useLegalGate.ts` | Legal doc acceptance check & `acceptAll()` |
-| `usePushNotifications` | `src/hooks/usePushNotifications.ts` | FCM push registration (Capacitor only) |
 
 ## Key Components
 

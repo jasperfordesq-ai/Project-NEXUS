@@ -79,7 +79,7 @@ describe('android certificate pinning', () => {
     // sends someone hunting for a file that is not in the repository.
     //
     // `mobile/android/` is GITIGNORED (mobile/.gitignore:8 `android/`, 0 tracked files),
-    // exactly like the Capacitor project. So the file committed here — the SOURCE — is
+    // so the file committed here — the SOURCE — is
     // the single source of truth, and `plugins/with-android-network-security.js` copies
     // it into the native project at prebuild on whichever machine builds. Editing the
     // source alone is therefore correct and sufficient; the generated file must NOT be
