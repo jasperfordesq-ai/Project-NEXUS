@@ -207,7 +207,9 @@ class AuthCallbackIssuanceTest extends TestCase
         $social = Mockery::mock(SocialAuthService::class);
         $social->shouldReceive('issueLoginCallbackCode')
             ->once()
-            ->with(902, $this->testTenantId, 'sso:entra', false, $startedAt, self::BROWSER_CHALLENGE, $identityLink, false)
+            // Since the MFA baseline the controller also forwards the upstream MFA
+            // timestamp (none here) and the SSO provider context (empty here).
+            ->with(902, $this->testTenantId, 'sso:entra', false, $startedAt, self::BROWSER_CHALLENGE, $identityLink, false, null, [])
             ->andReturn(['status' => 'issued', 'callback_code' => 'sso-once']);
 
         TenantContext::reset();
