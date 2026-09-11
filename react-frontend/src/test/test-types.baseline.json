@@ -1271,7 +1271,7 @@
       "TS2532": 3
     },
     "src/lib/webauthn.test.ts": {
-      "TS2532": 10
+      "TS2532": 9
     },
     "src/pages/about/ImpactReportPage.test.tsx": {
       "TS2322": 3
@@ -1947,7 +1947,7 @@
     }
   },
   "totals": {
-    "fileCount": 576,
-    "errorCount": 1771
+    "fileCount": 575,
+    "errorCount": 1763
   }
 }
