@@ -37,6 +37,7 @@ import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ShieldX from 'lucide-react/icons/shield-x';
 import Clock from 'lucide-react/icons/clock';
 import { useTranslation } from 'react-i18next';
+import { safeAuthReturnPath } from '@/lib/safe-auth-return-path';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -144,7 +145,7 @@ export function LoginPage() {
     ?? true;
 
   // Redirect after successful login (preserve tenant slug prefix)
-  const from = (location.state as { from?: string })?.from || tenantPath('/feed');
+  const from = safeAuthReturnPath((location.state as { from?: unknown })?.from, tenantPath('/feed'));
 
   // Clear stale auth tokens on mount — login page should always start clean
   useEffect(() => {
@@ -329,7 +330,7 @@ export function LoginPage() {
     const result = await login({ email, password });
     // Admin without 2FA — route directly into the setup flow.
     if (!result.success && result.requires2FASetup) {
-      navigate(tenantPath('/settings/security?force_2fa_setup=1'), { replace: true });
+      navigate(tenantPath('/auth/two-factor/setup'), { replace: true });
       return;
     }
     if (!result.success && result.errorCode) {

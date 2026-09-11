@@ -642,6 +642,7 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     type: 'feature',
     configSource: 'authentication_config',
     configOptions: [
+      { key: 'two_factor.require_members', type: 'boolean', defaultValue: false, category: 'access' },
       { key: 'two_factor.allow_trusted_devices', type: 'boolean', defaultValue: true, category: 'access' },
       { key: 'two_factor.trusted_device_days', type: 'number', defaultValue: 30, category: 'access', min: 1, max: 365 },
       { key: 'two_factor.backup_code_count', type: 'number', defaultValue: 10, category: 'recovery', min: 1, max: 100 },

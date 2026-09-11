@@ -47,6 +47,7 @@ import type {
 export type AuthStatus =
   | 'idle'           // Not logged in, no action
   | 'loading'        // Auth operation in progress
+  | 'requires_2fa_setup'
   | 'requires_2fa'   // Login succeeded, awaiting 2FA
   | 'authenticated'  // Fully authenticated
   | 'error';         // Auth error occurred
@@ -85,6 +86,7 @@ interface AuthContextValue extends AuthState {
   refreshUser: () => Promise<void>;
   clearError: () => void;
   cancel2FA: () => void;
+  beginTwoFactorChallenge: (token: string, setup: boolean, methods: string[], trustAllowed: boolean) => void;
   /** WCAG 2.2.1 — reschedule the session-expiry warning after a silent token refresh */
   scheduleSessionWarning: (expiresInSeconds: number) => void;
 }
@@ -339,22 +341,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return { success: true, requires2FA: true };
     }
 
-    // Admin without 2FA — store the setup-scoped token as the active
-    // access token so the existing /settings/security UI works for the
-    // first-time setup flow.
-    if (data && 'requires_2fa_setup' in data && (data as { requires_2fa_setup?: boolean }).requires_2fa_setup) {
-      const setupResp = data as { setup_token?: string; two_factor_token?: string };
-      const setupToken = setupResp.setup_token || setupResp.two_factor_token;
-      if (setupToken) {
-        tokenManager.setAccessToken(setupToken);
-      }
-      setState((prev) => ({ ...prev, status: 'idle', error: null }));
-      return {
-        success: false,
-        requires2FA: false,
-        requires2FASetup: true,
-        error: i18n.t('auth:login.admin_twofa_required'),
-      };
+    // A setup challenge is an enrollment capability, never a bearer token.
+    if (data && 'requires_2fa_setup' in data && data.requires_2fa_setup) {
+      const setupResp = data as { two_factor_token?: string };
+      tokenManager.clearTokens();
+      setState((prev) => ({ ...prev, user: null, status: 'requires_2fa_setup', error: null,
+        twoFactorToken: setupResp.two_factor_token || null, twoFactorMethods: ['totp_setup'] }));
+      return { success: false, requires2FA: false, requires2FASetup: true };
     }
 
     // Login successful without 2FA
@@ -607,6 +600,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       twoFactorToken: null,
       twoFactorMethods: [],
     });
+  }, []);
+
+  const beginTwoFactorChallenge = useCallback((token: string, setup: boolean, methods: string[], trustAllowed: boolean) => {
+    tokenManager.clearTokens();
+    setState({ user: null, status: setup ? 'requires_2fa_setup' : 'requires_2fa', error: null,
+      twoFactorToken: token, twoFactorMethods: methods, twoFactorTrustDeviceAllowed: trustAllowed });
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -872,9 +871,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       refreshUser,
       clearError,
       cancel2FA,
+      beginTwoFactorChallenge,
       scheduleSessionWarning,
     }),
-    [state, login, loginWithBiometric, verify2FA, register, logout, refreshUser, clearError, cancel2FA, scheduleSessionWarning]
+    [state, login, loginWithBiometric, verify2FA, register, logout, refreshUser, clearError, cancel2FA, beginTwoFactorChallenge, scheduleSessionWarning]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

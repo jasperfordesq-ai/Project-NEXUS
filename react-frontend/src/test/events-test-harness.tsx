@@ -134,7 +134,7 @@ export function renderEventRoute(
     <HelmetProvider>
       <MemoryRouter
         initialEntries={[route]}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+
       >
         <EventTestRoutes
           routes={routes ?? [{ path, element: ui }]}

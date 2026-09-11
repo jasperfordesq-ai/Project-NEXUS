@@ -20,6 +20,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TextField, Label, Input as HeroInput } from '@heroui/react';
 import {
   Avatar, Button, Chip, Separator, Input, Textarea,
   Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter,
@@ -102,6 +103,7 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
   const [consents, setConsents] = useState<ConsentRow[]>([]);
   // Which action is currently running (disables the relevant button).
   const [busy, setBusy] = useState<string | null>(null);
+  const [resetReason, setResetReason] = useState('');
 
   // Edit form
   const [editing, setEditing] = useState(false);
@@ -191,6 +193,7 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
   }, [toast, t, loadNotes]);
 
   useEffect(() => {
+    setResetReason('');
     if (userId != null) load(userId);
     // `load` is intentionally NOT a dependency: it closes over toast/t, which
     // are not guaranteed to be referentially stable, so keying the effect on
@@ -672,8 +675,12 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
                             onPress={() => run('pwd', () => adminUsers.sendPasswordReset(detail.id), 'member_detail.password_reset_sent', false)}>
                             {t('member_detail.action_send_password_reset')}
                           </Button>
-                          <Button size="sm" variant="tertiary" startContent={<ShieldOff size={14} />} isLoading={busy === '2fa'}
-                            onPress={() => run('2fa', () => adminUsers.reset2fa(detail.id, t('member_detail.reset_2fa_reason')), 'member_detail.reset_2fa_success', false)}>
+                          <TextField value={resetReason} onChange={setResetReason}>
+                            <Label>{t('users.reset_2fa_identity_reason', { ns: 'admin_users' })}</Label>
+                            <HeroInput minLength={10} maxLength={500} />
+                          </TextField>
+                          <Button size="sm" variant="tertiary" startContent={<ShieldOff size={14} />} isLoading={busy === '2fa'} isDisabled={resetReason.trim().length < 10}
+                            onPress={() => run('2fa', () => adminUsers.reset2fa(detail.id, resetReason.trim()), 'member_detail.reset_2fa_success', false)}>
                             {t('member_detail.action_reset_2fa')}
                           </Button>
                           <Button size="sm" color="primary" variant="flat" startContent={<Coins size={14} />}

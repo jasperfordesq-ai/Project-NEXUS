@@ -3144,6 +3144,7 @@
     "banner": "You are viewing this account as an administrator.",
     "banner_named": "You are viewing {{name}}’s account as an administrator.",
     "stop": "Stop viewing",
-    "handoff_failed": "That impersonation link has expired or was already used. Start again from the admin panel."
+    "handoff_failed": "That impersonation link has expired or was already used. Start again from the admin panel.",
+    "read_only": "Read-only support session. Return to your own account to make changes."
   }
 }

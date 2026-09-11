@@ -154,7 +154,7 @@ function renderWithProviders(ui: React.ReactElement) {
     <>
       <MemoryRouter
         initialEntries={['/test-timebank/caring-community']}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+
       >
         {ui}
       </MemoryRouter>

@@ -928,5 +928,17 @@
     "thread_aria": "Comhrá le {{name}}",
     "from_member": "Iadsan",
     "voice_message": "Teachtaireacht ghutha"
+  },
+  "twofa_required_policy": "Tá fíordheimhniú dhá fhachtóir riachtanach do do chuntas agus ní féidir é a dhíchumasú.",
+  "mfa_recovery": {
+    "title": "Cóid athshlánaithe",
+    "warning": "Má athraíonn tú na cóid, ní bheidh na seanchóid nár úsáideadh bailí a thuilleadh. Cuir isteach cód nua ón aip fíordheimhnithe; má tá tú díreach tar éis síniú isteach, fan leis an gcéad chód eile. Má cailleadh an freagra socraithe roimhe seo, is féidir cóid nua a fháil anseo.",
+    "code": "Cód fíordheimhnithe",
+    "replace": "Faigh cóid athshlánaithe nua",
+    "save": "Sábháil na cóid nua in áit shlán sula bhfágann tú an leathanach seo.",
+    "saved": "Tá na cóid seo sábháilte agam",
+    "revoke": "Déan dearmad ar gach gléas iontaofa",
+    "revoked": "Baineadh na gléasanna iontaofa. Beidh fíorú de dhíth orthu ag an gcéad síniú isteach eile.",
+    "failed": "Níorbh fhéidir an gníomh seo a chur i gcrích. Seiceáil do chód agus bain triail eile as."
   }
 }

@@ -179,15 +179,11 @@ vi.mock('@/admin/api/adminApi', () => ({
 
 // ─── Wrapper helpers ─────────────────────────────────────────────────────────
 
-const routerFuture = {
-  v7_startTransition: true,
-  v7_relativeSplatPath: true,
-} as const;
 
 function W({ children, path = '/test/admin' }: { children: React.ReactNode; path?: string }) {
   return (
     <>
-      <MemoryRouter initialEntries={[path]} future={routerFuture}>
+      <MemoryRouter initialEntries={[path]}>
         {children}
       </MemoryRouter>
     </>
@@ -197,7 +193,7 @@ function W({ children, path = '/test/admin' }: { children: React.ReactNode; path
 function WRoute({ children, path, entry }: { children: React.ReactNode; path: string; entry: string }) {
   return (
     <>
-      <MemoryRouter initialEntries={[entry]} future={routerFuture}>
+      <MemoryRouter initialEntries={[entry]}>
         <Routes>
           <Route path={path} element={children} />
         </Routes>

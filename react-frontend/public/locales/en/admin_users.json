@@ -222,7 +222,8 @@
     "permissions_editor_unavailable_title": "Permissions are read-only here",
     "permissions_editor_unavailable_desc": "This page shows the user's role and granted permissions but can't change them. Manage access by changing the user's role on the user edit page.",
     "role_unknown": "Unknown role",
-    "role_tenant_super_admin": "Tenant Super Admin"
+    "role_tenant_super_admin": "Tenant Super Admin",
+    "reset_2fa_identity_reason": "Incident reference and how you verified the account holder’s identity (10–500 characters)"
   },
   "user_edit": {
     "actions": {

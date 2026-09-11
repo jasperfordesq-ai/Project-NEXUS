@@ -30,6 +30,8 @@ import { render, screen, waitFor } from '@/test/test-utils';
 // inside the factory must itself be hoisted via vi.hoisted().
 
 const {
+  mockBeginChallenge,
+  mockNavigate,
   mockSearchParams,
   mockSetAccessToken,
   mockSetRefreshToken,
@@ -37,6 +39,8 @@ const {
   mockGetOAuthBrowserVerifier,
   mockClearOAuthBrowserVerifier,
 } = vi.hoisted(() => ({
+  mockBeginChallenge: vi.fn(),
+  mockNavigate: vi.fn(),
   mockSearchParams: vi.fn(),
   mockSetAccessToken: vi.fn(),
   mockSetRefreshToken: vi.fn(),
@@ -51,10 +55,12 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return {
     ...actual,
     useSearchParams: mockSearchParams,
+    useNavigate: () => mockNavigate,
   };
 });
 
 // ─── @/contexts ───────────────────────────────────────────────────────────────
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ beginTwoFactorChallenge: mockBeginChallenge }) }));
 vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test', slug: 'test' },
@@ -248,6 +254,18 @@ afterEach(() => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('OauthCallbackPage', () => {
+  it.each([false, true])('continues local MFA without installing credentials (setup=%s)', async (setup) => {
+    mockSearchParams.mockReturnValue([new URLSearchParams('code=mfa-code&flow=test-flow'), vi.fn()]);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({
+      success: true, requires_2fa: !setup, requires_2fa_setup: setup,
+      two_factor_token: 'restricted-challenge', methods: setup ? ['totp_setup'] : ['totp'], allow_trusted_device: false,
+    }) }));
+    render(<OauthCallbackPage />);
+    await waitFor(() => expect(mockBeginChallenge).toHaveBeenCalledWith('restricted-challenge', setup, setup ? ['totp_setup'] : ['totp'], false));
+    expect(mockSetAccessToken).not.toHaveBeenCalled();
+    expect(mockSetRefreshToken).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining(setup ? '/auth/two-factor/setup' : '/login'), { replace: true });
+  });
   // ── Loading state ──────────────────────────────────────────────────────────
 
   it('renders the signing-in text while the exchange is in flight', async () => {

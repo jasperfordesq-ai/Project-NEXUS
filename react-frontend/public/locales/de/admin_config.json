@@ -844,7 +844,12 @@
     "module_name_public_events": "Öffentliche Veranstaltungen",
     "module_desc_public_events": "Personen ohne Konto veröffentlichte Veranstaltungen durchsuchen lassen",
     "module_name_event_attendance_credits": "Teilnahmebelohnungen",
-    "module_desc_event_attendance_credits": "Mitgliedern bei bestätigtem Check-in Zeitguthaben gewähren"
+    "module_desc_event_attendance_credits": "Mitgliedern bei bestätigtem Check-in Zeitguthaben gewähren",
+    "two_factor_admin_requirement": "Für alle Administratoren der Plattform ist Zwei-Faktor-Authentifizierung verpflichtend. Gemeinschaften können diese Pflicht nicht abschalten. Betroffene Konten müssen sich bei der Anmeldung verifizieren; gespeicherte Geräte umgehen diese Regel nicht.",
+    "option_two_factor_require_members_label": "Zwei-Faktor-Authentifizierung für alle Mitglieder verlangen",
+    "option_two_factor_require_members_desc": "Wenn aktiviert, müssen Mitglieder vor der Kontonutzung eine Zwei-Faktor-Authentifizierung durchführen. Bestehende Sitzungen ohne Verifizierung müssen sich erneut anmelden. Das Abschalten entfernt keine eingerichteten Authenticator-Apps.",
+    "two_factor_optional_enrollment": "Freiwillige Einrichtung der Zwei-Faktor-Authentifizierung erlauben",
+    "two_factor_enforcement_hint": "Dieser Schalter steuert die freiwillige Einrichtung. Administratoren benötigen immer Mehrfaktor-Authentifizierung. Über Konfigurieren können Sie diese für alle Mitglieder vorschreiben."
   },
   "tenant_features": {
     "refresh": "Aktualisieren",

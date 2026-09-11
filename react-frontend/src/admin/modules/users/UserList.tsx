@@ -11,6 +11,7 @@ import { Select, SelectItem, Dropdown, DropdownTrigger, DropdownMenu, DropdownIt
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { TextField, Label, Input } from '@heroui/react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Plus from 'lucide-react/icons/plus';
@@ -330,6 +331,8 @@ export function UserList() {
     user: AdminUser;
   } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [resetReason, setResetReason] = useState('');
+  useEffect(() => { setResetReason(''); }, [confirmAction]);
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -481,7 +484,7 @@ export function UserList() {
         res = await adminUsers.delete(user.id);
         break;
       case 'reset2fa':
-        res = await adminUsers.reset2fa(user.id, t('users.reset_2fa_reason'));
+        res = await adminUsers.reset2fa(user.id, resetReason.trim());
         break;
       case 'impersonate': {
         res = await adminUsers.impersonate(user.id);
@@ -814,7 +817,13 @@ export function UserList() {
           confirmLabel={confirmMessages[confirmAction.type]?.label ?? ''}
           confirmColor={confirmAction.type === 'approve' || confirmAction.type === 'reactivate' ? 'primary' : 'danger'}
           isLoading={actionLoading}
-        />
+          isConfirmDisabled={confirmAction.type === 'reset2fa' && resetReason.trim().length < 10}
+        >
+          {confirmAction.type === 'reset2fa' && <TextField value={resetReason} onChange={setResetReason} isRequired>
+            <Label>{t('users.reset_2fa_identity_reason')}</Label>
+            <Input minLength={10} maxLength={500} />
+          </TextField>}
+        </ConfirmModal>
       )}
 
       {/* Import Users Modal */}

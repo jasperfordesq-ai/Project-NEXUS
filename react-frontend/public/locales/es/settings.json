@@ -920,5 +920,17 @@
     "thread_aria": "Conversación con {{name}}",
     "from_member": "La persona",
     "voice_message": "Mensaje de voz"
+  },
+  "twofa_required_policy": "La autenticación de dos factores es obligatoria para tu cuenta y no se puede desactivar.",
+  "mfa_recovery": {
+    "title": "Códigos de recuperación",
+    "warning": "Al sustituirlos, los códigos antiguos sin usar dejarán de ser válidos. Introduce un código nuevo de tu aplicación; si acabas de entrar, espera al siguiente. Si se perdió la respuesta de configuración, puedes sustituir tus códigos aquí.",
+    "code": "Código de autenticación",
+    "replace": "Sustituir códigos de recuperación",
+    "save": "Guarda estos nuevos códigos en un lugar seguro antes de salir de esta página.",
+    "saved": "He guardado estos códigos",
+    "revoke": "Olvidar todos los dispositivos de confianza",
+    "revoked": "Dispositivos de confianza eliminados. Deberán verificarse al volver a iniciar sesión.",
+    "failed": "No se pudo completar la acción. Comprueba tu código e inténtalo de nuevo."
   }
 }

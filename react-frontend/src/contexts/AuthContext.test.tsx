@@ -127,6 +127,16 @@ describe('AuthContext', () => {
     localStorage.clear();
   });
 
+  it('keeps a required enrollment challenge out of the bearer token store', async () => {
+    const { api } = await import('@/lib/api');
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { requires_2fa_setup: true, two_factor_token: 'setup-only' } });
+    render(<AuthProvider><TestAuthActions /></AuthProvider>);
+    await userEvent.click(screen.getByRole('button', { name: 'Login', exact: true }));
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('requires_2fa_setup'));
+    expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
+    expect(tokenManager.setRefreshToken).not.toHaveBeenCalled();
+  });
+
   describe('Provider initialization', () => {
     it('starts in loading state and checks for existing token', async () => {
       vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);

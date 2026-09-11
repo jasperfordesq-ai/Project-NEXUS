@@ -1279,7 +1279,7 @@ export interface TenantFeatures {
   event_attendance_credits: boolean;
   /** Authenticator-app 2FA enrollment. Existing enrollments remain enforced when disabled. */
   two_factor_authentication: boolean;
-  /** Passkey enrollment. Existing passkeys remain usable when disabled. */
+  /** Passkey authentication and enrollment. Existing credentials remain manageable when disabled. */
   biometric_login: boolean;
 }
 

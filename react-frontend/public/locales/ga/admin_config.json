@@ -850,7 +850,12 @@
     "module_name_public_events": "Imeachtaí Poiblí",
     "module_desc_public_events": "Lig do dhaoine gan cuntas imeachtaí foilsithe a bhrabhsáil",
     "module_name_event_attendance_credits": "Luach Saothair Freastail",
-    "module_desc_event_attendance_credits": "Bronn creidmheasanna ama ar bhaill ag seiceáil isteach fíoraithe"
+    "module_desc_event_attendance_credits": "Bronn creidmheasanna ama ar bhaill ag seiceáil isteach fíoraithe",
+    "two_factor_admin_requirement": "Tá fíordheimhniú dhá fhachtóir éigeantach do gach riarthóir ar an ardán. Ní féidir le pobail an ceanglas seo a mhúchadh. Ní mór na cuntais lena mbaineann a fhíorú ag síniú isteach; ní sheachnaíonn gléasanna cuimhneáilte an riail seo.",
+    "option_two_factor_require_members_label": "Éiligh fíordheimhniú dhá fhachtóir ar gach ball",
+    "option_two_factor_require_members_desc": "Nuair atá sé seo ar siúl, ní mór do bhaill fíordheimhniú dhá fhachtóir a chríochnú chun a gcuntas a úsáid. Ní mór síniú isteach arís i seisiúin reatha nach bhfuil fíoraithe. Ní bhaintear aipeanna fíordheimhnithe cláraithe nuair a mhúchtar é.",
+    "two_factor_optional_enrollment": "Ceadaigh clárú roghnach le haghaidh fíordheimhniú dhá fhachtóir",
+    "two_factor_enforcement_hint": "Rialaíonn an lasc seo clárú roghnach. Tá fíordheimhniú ilfhachtóra éigeantach do riarthóirí i gcónaí. Úsáid Cumraigh chun é a éileamh ar gach ball."
   },
   "tenant_features": {
     "refresh": "Athnuaigh",

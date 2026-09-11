@@ -3181,7 +3181,8 @@
     "banner": "Vous consultez ce compte en tant qu'administrateur.",
     "banner_named": "Vous consultez le compte de {{name}} en tant qu'administrateur.",
     "stop": "Arrêter de visionner",
-    "handoff_failed": "Ce lien d'usurpation d'identité a expiré ou a déjà été utilisé. Recommencez depuis le panneau d'administration."
+    "handoff_failed": "Ce lien d'usurpation d'identité a expiré ou a déjà été utilisé. Recommencez depuis le panneau d'administration.",
+    "read_only": "Session d’assistance en lecture seule. Revenez à votre compte pour effectuer des modifications."
   },
   "hours_display_many": "{{count}} heures",
   "hours_short_many": "{{count}} h",

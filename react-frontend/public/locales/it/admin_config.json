@@ -846,7 +846,12 @@
     "module_name_public_events": "Eventi pubblici",
     "module_desc_public_events": "Consentire a chi non ha un account di consultare gli eventi pubblicati",
     "module_name_event_attendance_credits": "Ricompense per la partecipazione",
-    "module_desc_event_attendance_credits": "Assegnare crediti di tempo ai membri al check-in verificato"
+    "module_desc_event_attendance_credits": "Assegnare crediti di tempo ai membri al check-in verificato",
+    "two_factor_admin_requirement": "L’autenticazione a due fattori è obbligatoria per tutti gli amministratori della piattaforma. Le comunità non possono disattivare questo requisito. Gli account interessati devono verificarsi all’accesso; i dispositivi ricordati non aggirano questo obbligo.",
+    "option_two_factor_require_members_label": "Richiedi l’autenticazione a due fattori a tutti i membri",
+    "option_two_factor_require_members_desc": "Se attivata, i membri devono completare l’autenticazione a due fattori per usare il proprio account. Le sessioni esistenti senza verifica devono effettuare nuovamente l’accesso. Disattivarla non rimuove gli autenticatori registrati.",
+    "two_factor_optional_enrollment": "Consenti la configurazione facoltativa dell’autenticazione a due fattori",
+    "two_factor_enforcement_hint": "Questo interruttore controlla la configurazione facoltativa. Gli amministratori devono sempre usare l’autenticazione multifattore. Usa Configura per richiederla a tutti i membri."
   },
   "tenant_features": {
     "refresh": "Aggiorna",

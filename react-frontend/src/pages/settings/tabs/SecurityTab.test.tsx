@@ -93,6 +93,12 @@ describe('SecurityTab', () => {
     twoFactorEnrollmentAllowed = true;
   });
 
+  it('explains the requirement and hides disable when MFA is mandatory', () => {
+    render(<SecurityTab {...defaultProps} twoFactorEnabled={true} twoFactorRequired={true} />);
+    expect(screen.getByText('twofa_required_policy')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'twofa_disable' })).not.toBeInTheDocument();
+  });
+
   it('renders security settings heading', () => {
     render(<SecurityTab {...defaultProps} />);
     expect(screen.getByText('security_settings')).toBeDefined();

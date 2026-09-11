@@ -3181,7 +3181,8 @@
     "banner": "Você está visualizando esta conta como administrador.",
     "banner_named": "Você está visualizando a conta de {{name}} como administrador.",
     "stop": "Pare de ver",
-    "handoff_failed": "Esse link de representação expirou ou já foi usado. Comece novamente no painel de administração."
+    "handoff_failed": "Esse link de representação expirou ou já foi usado. Comece novamente no painel de administração.",
+    "read_only": "Sessão de suporte só de leitura. Volte à sua conta para fazer alterações."
   },
   "hours_display_many": "{{count}} horas",
   "hours_short_many": "{{count}} h",

@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
@@ -25,9 +25,15 @@ import {
   getOAuthBrowserVerifier,
 } from '@/lib/oauth-browser-binding';
 import { useTenant } from '@/contexts/TenantContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 interface OAuthExchangeResponse {
+  requires_2fa?: boolean;
+  requires_2fa_setup?: boolean;
+  two_factor_token?: string;
+  methods?: string[];
+  allow_trusted_device?: boolean;
   success?: boolean;
   token?: string;
   access_token?: string;
@@ -60,7 +66,7 @@ function exchangeOAuthCode(code: string, flow: string | null): Promise<OAuthExch
     });
     const data = await response.json() as OAuthExchangeResponse;
 
-    if (!response.ok || !data.success || !data.token) {
+    if (!response.ok || !data.success || (!data.token && !data.two_factor_token)) {
       throw new Error(data.message || 'oauth_exchange_failed');
     }
 
@@ -83,6 +89,8 @@ export function OauthCallbackPage() {
   usePageTitle(t('oauth.callback_signing_in'));
   const [params] = useSearchParams();
   const { tenantPath } = useTenant();
+  const { beginTwoFactorChallenge } = useAuth();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -105,6 +113,13 @@ export function OauthCallbackPage() {
     void exchangeOAuthCode(code, flow).then(
       (data) => {
         if (cancelled) return;
+
+        if (data.two_factor_token && (data.requires_2fa || data.requires_2fa_setup)) {
+          clearOAuthBrowserVerifier(flow);
+          beginTwoFactorChallenge(data.two_factor_token, !!data.requires_2fa_setup, data.methods || ['totp'], data.allow_trusted_device === true);
+          navigate(tenantPath(data.requires_2fa_setup ? '/auth/two-factor/setup' : '/login'), { replace: true });
+          return;
+        }
 
         if (data.tenant_id) {
           tokenManager.setTenantId(String(data.tenant_id));
@@ -129,7 +144,7 @@ export function OauthCallbackPage() {
     return () => {
       cancelled = true;
     };
-  }, [params, tenantPath, t]);
+  }, [params, tenantPath, t, beginTwoFactorChallenge, navigate]);
 
   if (error) {
     return (

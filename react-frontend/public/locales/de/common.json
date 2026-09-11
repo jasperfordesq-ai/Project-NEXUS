@@ -3144,6 +3144,7 @@
     "banner": "Sie sehen dieses Konto als Administrator.",
     "banner_named": "Sie sehen das Konto von {{name}} als Administrator.",
     "stop": "Stoppen Sie die Anzeige",
-    "handoff_failed": "Dieser Identitätswechsel-Link ist abgelaufen oder wurde bereits verwendet. Beginnen Sie erneut im Admin-Bereich."
+    "handoff_failed": "Dieser Identitätswechsel-Link ist abgelaufen oder wurde bereits verwendet. Beginnen Sie erneut im Admin-Bereich.",
+    "read_only": "Schreibgeschützte Support-Sitzung. Kehren Sie zu Ihrem eigenen Konto zurück, um Änderungen vorzunehmen."
   }
 }

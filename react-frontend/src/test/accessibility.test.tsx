@@ -126,7 +126,7 @@ vi.mock('@/contexts/TenantContext', () => ({
 function withProviders(ui: React.ReactElement) {
   return render(
     <>
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         {ui}
       </MemoryRouter>
     </>

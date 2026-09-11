@@ -495,7 +495,7 @@ describe('BiometricSettings', () => {
     });
   });
 
-  it('hides all passkey settings when the tenant master switch is disabled', async () => {
+  it('hides empty passkey settings when the tenant master switch is disabled', async () => {
     passkeyAuthenticationEnabled = false;
     render(<BiometricSettings />);
 
@@ -503,6 +503,18 @@ describe('BiometricSettings', () => {
       expect(screen.queryByText('Create a passkey')).toBeNull();
       expect(screen.queryByText('Passkey Login')).toBeNull();
     });
+  });
+
+  it('retains credential management when passkey sign-in is disabled', async () => {
+    passkeyAuthenticationEnabled = false;
+    mockGetWebAuthnCredentials.mockResolvedValue([
+      { credential_id: 'existing', device_name: 'Existing key', authenticator_type: 'platform', created_at: '2026-01-01', last_used_at: null },
+    ]);
+    render(<BiometricSettings />);
+    expect(await screen.findByText('Existing key')).toBeDefined();
+    expect(screen.queryByText('Create a passkey')).toBeNull();
+    expect(screen.queryByText('Add another passkey')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Remove Existing key' })).toBeDefined();
   });
 
   it('keeps existing passkeys manageable even when this browser cannot create another', async () => {

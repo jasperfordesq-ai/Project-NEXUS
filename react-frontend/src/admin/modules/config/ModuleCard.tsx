@@ -36,6 +36,7 @@ export default function ModuleCard({ module, enabled, onToggle, onConfigure, tog
   return (
     <Card  className="h-full">
       <CardBody className={`p-4 flex flex-col gap-3 ${!enabled ? 'opacity-60' : ''}`}>
+        {module.id === 'two_factor_authentication' && <p className="text-xs">{t('config.two_factor_enforcement_hint')}</p>}
         {/* Header: icon + name + toggle */}
         <div className="flex items-start gap-3">
           <div
@@ -62,7 +63,7 @@ export default function ModuleCard({ module, enabled, onToggle, onConfigure, tog
                 isSelected={enabled}
                 isDisabled={toggling}
                 onValueChange={(val) => onToggle(module.id, val)}
-                aria-label={t('config.toggle_module', { name: moduleName })}
+                aria-label={module.id === 'two_factor_authentication' ? t('config.two_factor_optional_enrollment') : t('config.toggle_module', { name: moduleName })}
                 className="flex-shrink-0"
               />
             </div>

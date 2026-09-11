@@ -924,5 +924,17 @@
     "thread_aria": "Rozmowa z {{name}}",
     "from_member": "Ta osoba",
     "voice_message": "Wiadomość głosowa"
+  },
+  "twofa_required_policy": "Uwierzytelnianie dwuskładnikowe jest wymagane dla Twojego konta i nie można go wyłączyć.",
+  "mfa_recovery": {
+    "title": "Kody odzyskiwania",
+    "warning": "Wymiana unieważnia stare niewykorzystane kody. Wpisz nowy kod z aplikacji; po zalogowaniu poczekaj na kolejny. Jeśli odpowiedź konfiguracji została utracona, możesz tutaj wymienić kody.",
+    "code": "Kod uwierzytelniający",
+    "replace": "Wymień kody odzyskiwania",
+    "save": "Zapisz nowe kody w bezpiecznym miejscu przed opuszczeniem strony.",
+    "saved": "Kody zostały zapisane",
+    "revoke": "Zapomnij wszystkie zaufane urządzenia",
+    "revoked": "Usunięto zaufane urządzenia. Przy następnym logowaniu będzie wymagana weryfikacja.",
+    "failed": "Nie udało się ukończyć działania. Sprawdź kod i spróbuj ponownie."
   }
 }

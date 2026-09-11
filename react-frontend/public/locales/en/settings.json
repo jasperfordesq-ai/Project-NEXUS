@@ -916,5 +916,17 @@
     "thread_aria": "Conversation with {{name}}",
     "from_member": "Them",
     "voice_message": "Voice message"
+  },
+  "twofa_required_policy": "Two-factor authentication is required for your account and cannot be disabled.",
+  "mfa_recovery": {
+    "title": "Recovery codes",
+    "warning": "Replacing codes invalidates your old unused codes. Enter a new authenticator code; if you just signed in, wait for the next code. If an earlier setup response was lost, you can replace your codes here.",
+    "code": "Authenticator code",
+    "replace": "Replace recovery codes",
+    "save": "Save these replacement codes somewhere secure before leaving this page.",
+    "saved": "I have saved these codes",
+    "revoke": "Forget all trusted devices",
+    "revoked": "Trusted devices removed. They will need verification at the next sign-in.",
+    "failed": "Unable to complete this action. Check your code and try again."
   }
 }

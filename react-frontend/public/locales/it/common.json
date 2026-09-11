@@ -3181,7 +3181,8 @@
     "banner": "Stai visualizzando questo account come amministratore.",
     "banner_named": "Stai visualizzando l'account di {{name}} come amministratore.",
     "stop": "Interrompi la visualizzazione",
-    "handoff_failed": "Il collegamento di rappresentazione è scaduto o è già stato utilizzato. Ricomincia dal pannello di amministrazione."
+    "handoff_failed": "Il collegamento di rappresentazione è scaduto o è già stato utilizzato. Ricomincia dal pannello di amministrazione.",
+    "read_only": "Sessione di assistenza in sola lettura. Torna al tuo account per apportare modifiche."
   },
   "hours_display_many": "{{count}} ore",
   "hours_short_many": "{{count}}h",

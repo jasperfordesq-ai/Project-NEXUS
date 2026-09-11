@@ -330,6 +330,12 @@ describe('TenantShell', () => {
       expect(screen.getByTestId('auth-provider')).toBeInTheDocument();
     });
 
+    it('loads the auth registry for mandatory enrollment rather than the protected app', async () => {
+      renderWithRouter('/auth/two-factor/setup');
+      expect(await screen.findByTestId('auth-routes')).toBeInTheDocument();
+      expect(screen.queryByTestId('app-routes')).not.toBeInTheDocument();
+    });
+
     it('does not render stale app routes after navigating to an auth route', async () => {
       mockDetectTenantFromUrl.mockReturnValue({ slug: null, source: null });
       let navigateTo: ReturnType<typeof useNavigate> | null = null;

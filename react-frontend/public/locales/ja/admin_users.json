@@ -222,7 +222,8 @@
     "role_unknown": "不明なロール",
     "role_tenant_super_admin": "テナントのスーパー管理者",
     "role_super_admin_short": "スーパー管理者",
-    "reset_2fa_reason": "管理者によってリセットされました"
+    "reset_2fa_reason": "管理者によってリセットされました",
+    "reset_2fa_identity_reason": "インシデント番号とアカウント所有者の本人確認方法（10～500文字）"
   },
   "user_edit": {
     "actions": {

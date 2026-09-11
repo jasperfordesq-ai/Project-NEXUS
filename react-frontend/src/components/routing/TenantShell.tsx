@@ -286,6 +286,7 @@ const authPaths = [
   'verify-email',
   'verify-identity',
   'auth/oauth/callback',
+  'auth/two-factor/setup',
 ];
 
 function isAuthEntryPath(pathname: string, slugPrefix?: string): boolean {

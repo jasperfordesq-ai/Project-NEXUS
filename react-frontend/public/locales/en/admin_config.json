@@ -844,7 +844,12 @@
     "option_count_one": "{{count}} options",
     "option_count_other": "{{count}} options",
     "planned_count_one": "{{count}} planned",
-    "planned_count_other": "{{count}} planned"
+    "planned_count_other": "{{count}} planned",
+    "two_factor_admin_requirement": "Two-factor authentication is required for all administrators across the platform. Communities cannot turn this requirement off. Required accounts must verify at sign-in; remembered devices do not bypass enforcement.",
+    "option_two_factor_require_members_label": "Require two-factor authentication for all members",
+    "option_two_factor_require_members_desc": "When on, members must complete two-factor authentication before using their account. Existing sessions without verification must sign in again. Turning this off does not remove enrolled authenticators.",
+    "two_factor_optional_enrollment": "Allow optional two-factor enrollment",
+    "two_factor_enforcement_hint": "This switch controls optional enrollment. Administrators always require MFA. Use Configure to require it for all members."
   },
   "tenant_features": {
     "refresh": "Refresh",

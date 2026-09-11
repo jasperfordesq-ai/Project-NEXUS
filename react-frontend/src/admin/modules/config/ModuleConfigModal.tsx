@@ -102,6 +102,7 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
 
   // Authentication config state (TOTP and passkey enrollment policies)
   const [authenticationConfig, setAuthenticationConfig] = useState<Record<string, boolean | number | string> | null>(null);
+  const [authenticationWritableKeys, setAuthenticationWritableKeys] = useState<string[]>([]);
   const [authenticationLoadError, setAuthenticationLoadError] = useState(false);
 
   // ── Loaders ───────────────────────────────────────────────────────────────
@@ -211,6 +212,7 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
       const res = await adminConfig.getAuthenticationConfig();
       if (res.success && res.data) {
         setAuthenticationConfig(res.data.config);
+        setAuthenticationWritableKeys(res.data.writable_keys ?? Object.keys(res.data.config));
       } else {
         setAuthenticationConfig(null);
         setAuthenticationLoadError(true);
@@ -414,7 +416,7 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
     if (!authenticationConfig) return;
     setSaving(true);
     try {
-      const res = await adminConfig.updateAuthenticationConfigBulk(authenticationConfig);
+      const res = await adminConfig.updateAuthenticationConfigBulk(Object.fromEntries(Object.entries(authenticationConfig).filter(([key]) => authenticationWritableKeys.includes(key))));
       if (res.success) {
         toast.success(t('config.modal_authentication_saved'));
         setHasChanges(false);
@@ -577,6 +579,11 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
             </Card>
           )}
 
+          {module.id === 'two_factor_authentication' && (
+            <p className="mb-4 rounded-lg border border-border p-4 text-sm" role="note">
+              {t('config.two_factor_admin_requirement')}
+            </p>
+          )}
           {/* Config options grouped by category */}
           {!isLinkOut && (!isEditable || !loading) && !authenticationLoadError && categories.map(category => {
             const categoryOptions = module.configOptions.filter(o => o.category === category);
@@ -632,7 +639,7 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
                               updateAuthenticationValue(option.key, val);
                             }
                           }}
-                          disabled={option.comingSoon === true || (isBroker && !brokerConfig) || (isGroupConfig && !groupConfig) || (isListingConfig && !listingConfig) || (isVolunteeringConfig && !volunteeringConfig) || (isJobConfig && !jobConfig) || (isPodcastConfig && !podcastConfig) || (isIdentityConfig && !identityConfig) || (isAuthenticationConfig && !authenticationConfig)}
+                          disabled={(isAuthenticationConfig && !authenticationWritableKeys.includes(option.key)) || option.comingSoon === true || (isBroker && !brokerConfig) || (isGroupConfig && !groupConfig) || (isListingConfig && !listingConfig) || (isVolunteeringConfig && !volunteeringConfig) || (isJobConfig && !jobConfig) || (isPodcastConfig && !podcastConfig) || (isIdentityConfig && !identityConfig) || (isAuthenticationConfig && !authenticationConfig)}
                         />
                       </div>
                     );

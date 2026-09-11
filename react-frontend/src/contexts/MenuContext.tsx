@@ -46,7 +46,7 @@ function useMenuRuntimeValue(): MenuContextValue {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { tenant, isLoading: tenantLoading } = useTenant();
   const location = useLocation();
-  const isAuthRoute = /(^|\/)(login|register|verify-email|password\/forgot|password\/reset)(\/|$)/.test(
+  const isAuthRoute = /(^|\/)(login|register|verify-email|password\/forgot|password\/reset|auth\/two-factor\/setup)(\/|$)/.test(
     location.pathname
   );
   const shouldLoadMenus = !isAuthRoute && !authLoading && !tenantLoading;

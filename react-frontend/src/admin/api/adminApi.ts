@@ -512,7 +512,7 @@ export const adminConfig = {
     ),
 
   getAuthenticationConfig: () =>
-    api.get<{ config: Record<string, boolean | number | string>; defaults: Record<string, boolean | number | string> }>(
+    api.get<{ writable_keys?: string[]; policy?: { administrators_required: boolean }; config: Record<string, boolean | number | string>; defaults: Record<string, boolean | number | string> }>(
       '/v2/admin/config/authentication'
     ),
 

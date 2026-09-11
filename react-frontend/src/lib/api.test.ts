@@ -329,6 +329,16 @@ describe('API Client', () => {
       expect(response.data).toEqual({ id: 1, name: 'Test' });
     });
 
+    it('preserves restricted enrollment as a partial login result without installing tokens', async () => {
+      const payload = { success: false, requires_2fa_setup: true, two_factor_token: 'setup-challenge' };
+      vi.mocked(fetch).mockResolvedValueOnce({ ok: true, status: 200, headers: new Headers(),
+        json: () => Promise.resolve(payload) } as Response);
+      const result = await api.post('/auth/login', { email: 'admin@example.test', password: 'password' }, { skipAuth: true });
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(payload);
+      expect(tokenManager.getAccessToken()).not.toBe('setup-challenge');
+    });
+
     it('preserves application-level failure envelopes returned with HTTP 2xx', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,

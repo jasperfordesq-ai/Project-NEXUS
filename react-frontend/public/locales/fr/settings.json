@@ -920,5 +920,17 @@
     "thread_aria": "Conversation avec {{name}}",
     "from_member": "La personne",
     "voice_message": "Message vocal"
+  },
+  "twofa_required_policy": "L’authentification à deux facteurs est obligatoire pour votre compte et ne peut pas être désactivée.",
+  "mfa_recovery": {
+    "title": "Codes de récupération",
+    "warning": "Le remplacement invalide vos anciens codes inutilisés. Saisissez un nouveau code de votre application ; après connexion, attendez le suivant. Si la réponse de configuration a été perdue, vous pouvez remplacer vos codes ici.",
+    "code": "Code de vérification",
+    "replace": "Remplacer les codes de récupération",
+    "save": "Conservez ces nouveaux codes en lieu sûr avant de quitter cette page.",
+    "saved": "J’ai enregistré ces codes",
+    "revoke": "Oublier tous les appareils de confiance",
+    "revoked": "Appareils de confiance supprimés. Une vérification sera nécessaire à la prochaine connexion.",
+    "failed": "Impossible de terminer cette action. Vérifiez votre code et réessayez."
   }
 }

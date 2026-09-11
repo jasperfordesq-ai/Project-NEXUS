@@ -115,6 +115,7 @@ export const twoFactorRequiredSchema = z.object({
 export const loginResponseSchema = z.union([
   loginSuccessResponseSchema,
   twoFactorRequiredSchema,
+  z.object({ requires_2fa_setup: z.literal(true), two_factor_token: z.string().min(1) }).passthrough(),
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1277,10 +1277,10 @@ export class ApiClient {
 
         if (typeof data === 'object' && data !== null && 'success' in data && data.success === false) {
           // 2FA-required is a partial success: HTTP 200 with success:false but
-          // requires_2fa:true. Pass the payload through as data so the caller
+          // requires_2fa:true or requires_2fa_setup:true. Pass the payload through so the caller
           // (AuthContext) can branch on requires_2fa instead of treating it as
           // a login error.
-          if (data.requires_2fa === true) {
+          if (data.requires_2fa === true || data.requires_2fa_setup === true) {
             return { success: true, data: data as T, message: data.message, meta: data.meta };
           }
 

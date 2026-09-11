@@ -848,7 +848,12 @@
     "module_name_public_events": "Wydarzenia publiczne",
     "module_desc_public_events": "Umożliwienie osobom bez konta przeglądania opublikowanych wydarzeń",
     "module_name_event_attendance_credits": "Nagrody za udział",
-    "module_desc_event_attendance_credits": "Przyznawanie kredytów czasu członkom po potwierdzonej obecności"
+    "module_desc_event_attendance_credits": "Przyznawanie kredytów czasu członkom po potwierdzonej obecności",
+    "two_factor_admin_requirement": "Uwierzytelnianie dwuskładnikowe jest obowiązkowe dla wszystkich administratorów platformy. Społeczności nie mogą wyłączyć tego wymogu. Konta objęte wymogiem muszą przejść weryfikację podczas logowania; zapamiętane urządzenia nie omijają tej zasady.",
+    "option_two_factor_require_members_label": "Wymagaj uwierzytelniania dwuskładnikowego od wszystkich członków",
+    "option_two_factor_require_members_desc": "Po włączeniu członkowie muszą przejść uwierzytelnianie dwuskładnikowe przed użyciem konta. Istniejące sesje bez weryfikacji wymagają ponownego logowania. Wyłączenie nie usuwa zarejestrowanych aplikacji uwierzytelniających.",
+    "two_factor_optional_enrollment": "Zezwalaj na dobrowolne włączenie uwierzytelniania dwuskładnikowego",
+    "two_factor_enforcement_hint": "Ten przełącznik steruje dobrowolną konfiguracją. Administratorzy zawsze muszą korzystać z uwierzytelniania wieloskładnikowego. Użyj opcji Konfiguruj, aby wymagać go od wszystkich członków."
   },
   "tenant_features": {
     "refresh": "Odśwież",

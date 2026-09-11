@@ -202,12 +202,6 @@ export function BiometricSettings() {
   }, []);
 
   useEffect(() => {
-    if (!passkeyAuthenticationEnabled) {
-      setSupported(false);
-      setLoading(false);
-      return;
-    }
-
     setSupported(isWebAuthnSupported());
     void loadCredentials();
   }, [loadCredentials, passkeyAuthenticationEnabled]);
@@ -479,7 +473,8 @@ export function BiometricSettings() {
     }
   };
 
-  if (!passkeyAuthenticationEnabled) return null;
+  // Disabling sign-in must not prevent revoking credentials already enrolled.
+  if (!passkeyAuthenticationEnabled && !loading && !loadError && credentials.length === 0) return null;
 
   // Still checking
   if (supported === null || loading) {

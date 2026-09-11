@@ -222,7 +222,8 @@
     "role_unknown": "Rôle inconnu",
     "role_tenant_super_admin": "Super-administrateur du locataire",
     "role_super_admin_short": "Super Administrateur",
-    "reset_2fa_reason": "Réinitialisé par un administrateur"
+    "reset_2fa_reason": "Réinitialisé par un administrateur",
+    "reset_2fa_identity_reason": "Référence de l’incident et méthode de vérification de l’identité du titulaire (10–500 caractères)"
   },
   "user_edit": {
     "actions": {

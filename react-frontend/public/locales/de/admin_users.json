@@ -222,7 +222,8 @@
     "role_super_admin_short": "Super-Administrator",
     "reset_2fa_reason": "Zurückgesetzt durch einen Administrator",
     "label_bio": "Biografie",
-    "role_moderator": "Moderator"
+    "role_moderator": "Moderator",
+    "reset_2fa_identity_reason": "Vorfallsreferenz und Prüfung der Identität des Kontoinhabers (10–500 Zeichen)"
   },
   "user_edit": {
     "actions": {

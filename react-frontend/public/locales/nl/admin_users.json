@@ -222,7 +222,8 @@
     "role_tenant_super_admin": "Superbeheerder van tenant",
     "role_super_admin_short": "Superbeheerder",
     "reset_2fa_reason": "Reset door een beheerder",
-    "role_moderator": "Moderator"
+    "role_moderator": "Moderator",
+    "reset_2fa_identity_reason": "Incidentreferentie en hoe u de identiteit van de accounthouder hebt gecontroleerd (10–500 tekens)"
   },
   "user_edit": {
     "actions": {

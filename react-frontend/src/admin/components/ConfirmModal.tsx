@@ -32,6 +32,7 @@ interface ConfirmModalProps {
   cancelLabel?: string;
   confirmColor?: ConfirmColor;
   isLoading?: boolean;
+  isConfirmDisabled?: boolean;
   children?: React.ReactNode;
 }
 
@@ -57,6 +58,7 @@ export function ConfirmModal({
   cancelLabel,
   confirmColor = 'danger',
   isLoading = false,
+  isConfirmDisabled = false,
   children,
 }: ConfirmModalProps) {
   const { t } = useTranslation('common');
@@ -71,7 +73,7 @@ export function ConfirmModal({
     inFlightRef.current = false;
   }
   const handleConfirm = () => {
-    if (inFlightRef.current || isLoading) return;
+    if (inFlightRef.current || isLoading || isConfirmDisabled) return;
     inFlightRef.current = true;
     onConfirm();
   };
@@ -117,7 +119,7 @@ export function ConfirmModal({
             variant={confirmVariant(confirmColor)}
             onPress={handleConfirm}
             isLoading={isLoading}
-            isDisabled={isLoading || inFlightRef.current}
+            isDisabled={isLoading || isConfirmDisabled || inFlightRef.current}
             data-testid="confirm-modal-confirm"
           >
             {resolvedConfirmLabel}

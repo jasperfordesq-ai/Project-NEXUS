@@ -29,6 +29,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Description } from '@/components/ui/Description';
 import { Label } from '@/components/ui/Label';
 import { BiometricSettings } from '@/components/security/BiometricSettings';
+import { TwoFactorRecovery } from '@/components/security/TwoFactorRecovery';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
 
@@ -53,6 +54,8 @@ export interface TwoFactorSetup {
 
 interface SecurityTabProps {
   // 2FA
+  twoFactorRequired?: boolean;
+  onRecoveryCodesChanged?: (count: number) => void;
   twoFactorEnabled: boolean;
   twoFactorLoading: boolean;
   twoFactorSetupData: TwoFactorSetup | null;
@@ -125,6 +128,8 @@ const modalClassNames = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function SecurityTab({
+  twoFactorRequired = false,
+  onRecoveryCodesChanged,
   twoFactorEnabled,
   twoFactorLoading,
   twoFactorSetupData,
@@ -170,7 +175,7 @@ export function SecurityTab({
 }: SecurityTabProps) {
   const { t } = useTranslation('settings');
   const { hasFeature } = useTenant();
-  const twoFactorEnrollmentAllowed = hasFeature('two_factor_authentication');
+  const twoFactorEnrollmentAllowed = twoFactorRequired || hasFeature('two_factor_authentication');
 
   return (
     <>
@@ -232,7 +237,7 @@ export function SecurityTab({
                 </div>
                 {!twoFactorLoading && (
                   <div>
-                    {twoFactorEnabled ? (
+                    {twoFactorRequired && twoFactorEnabled ? <p className="text-sm">{t('twofa_required_policy')}</p> : twoFactorEnabled ? (
                       <Button
                         size="sm"
                         variant="danger-soft"
@@ -256,6 +261,7 @@ export function SecurityTab({
             )}
 
             {/* Biometric / Passkey Authentication */}
+            {twoFactorEnabled && <TwoFactorRecovery onCodesChanged={onRecoveryCodesChanged} />}
             <BiometricSettings />
           </div>
         </GlassCard>

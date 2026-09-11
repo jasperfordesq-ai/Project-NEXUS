@@ -58,7 +58,7 @@ describe('EventGuardianConsentPage', () => {
     render(
       <MemoryRouter
         initialEntries={['/events/101/guardian-consent?token=private-capability']}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+
       >
         <EventGuardianConsentPage />
       </MemoryRouter>,
@@ -89,7 +89,7 @@ describe('EventGuardianConsentPage', () => {
     render(
       <MemoryRouter
         initialEntries={['/events/101/guardian-consent']}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+
       >
         <EventGuardianConsentPage />
       </MemoryRouter>,

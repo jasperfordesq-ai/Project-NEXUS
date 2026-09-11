@@ -846,7 +846,12 @@
     "module_name_public_events": "Événements publics",
     "module_desc_public_events": "Permettre aux personnes sans compte de consulter les événements publiés",
     "module_name_event_attendance_credits": "Récompenses de participation",
-    "module_desc_event_attendance_credits": "Accorder des crédits temps aux membres lors d'un enregistrement vérifié"
+    "module_desc_event_attendance_credits": "Accorder des crédits temps aux membres lors d'un enregistrement vérifié",
+    "two_factor_admin_requirement": "L’authentification à deux facteurs est obligatoire pour tous les administrateurs de la plateforme. Les communautés ne peuvent pas désactiver cette obligation. Les comptes concernés doivent se vérifier à la connexion ; les appareils mémorisés ne permettent pas de contourner cette règle.",
+    "option_two_factor_require_members_label": "Exiger l’authentification à deux facteurs pour tous les membres",
+    "option_two_factor_require_members_desc": "Si cette option est activée, les membres doivent effectuer une authentification à deux facteurs pour utiliser leur compte. Les sessions non vérifiées doivent se reconnecter. Désactiver cette option ne supprime pas les authentificateurs enregistrés.",
+    "two_factor_optional_enrollment": "Autoriser l’inscription facultative à l’authentification à deux facteurs",
+    "two_factor_enforcement_hint": "Cet interrupteur contrôle l’inscription facultative. Les administrateurs doivent toujours utiliser l’authentification multifacteur. Utilisez Configurer pour l’exiger pour tous les membres."
   },
   "tenant_features": {
     "refresh": "Actualiser",

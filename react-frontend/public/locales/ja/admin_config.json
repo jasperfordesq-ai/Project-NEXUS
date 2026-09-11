@@ -844,7 +844,12 @@
     "module_name_public_events": "公開イベント",
     "module_desc_public_events": "アカウントのない方でも公開済みイベントを閲覧できるようにします",
     "module_name_event_attendance_credits": "参加報酬",
-    "module_desc_event_attendance_credits": "参加が確認された会員にタイムクレジットを付与します"
+    "module_desc_event_attendance_credits": "参加が確認された会員にタイムクレジットを付与します",
+    "two_factor_admin_requirement": "プラットフォームのすべての管理者に二要素認証が義務付けられています。コミュニティはこの要件を無効にできません。対象のアカウントはログイン時に認証が必要です。記憶された端末でもこの要件は免除されません。",
+    "option_two_factor_require_members_label": "すべてのメンバーに二要素認証を必須にする",
+    "option_two_factor_require_members_desc": "有効にすると、メンバーはアカウントを使用する前に二要素認証を完了する必要があります。未認証の既存セッションは再ログインが必要です。無効にしても登録済みの認証アプリは削除されません。",
+    "two_factor_optional_enrollment": "任意の二要素認証登録を許可",
+    "two_factor_enforcement_hint": "このスイッチは任意の登録を制御します。管理者には常に多要素認証が必要です。すべてのメンバーに必須にするには「設定」を使用してください。"
   },
   "tenant_features": {
     "refresh": "リフレッシュ",

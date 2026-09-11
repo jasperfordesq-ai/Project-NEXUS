@@ -3181,7 +3181,8 @@
     "banner": "Estás viendo esta cuenta como administrador.",
     "banner_named": "Estás viendo la cuenta de {{name}} como administrador.",
     "stop": "dejar de ver",
-    "handoff_failed": "Ese enlace de suplantación ha caducado o ya se ha utilizado. Comience de nuevo desde el panel de administración."
+    "handoff_failed": "Ese enlace de suplantación ha caducado o ya se ha utilizado. Comience de nuevo desde el panel de administración.",
+    "read_only": "Sesión de soporte de solo lectura. Vuelve a tu cuenta para realizar cambios."
   },
   "hours_display_many": "{{count}} horas",
   "hours_short_many": "{{count}} h",

@@ -135,6 +135,7 @@ describe('module registry authentication modules', () => {
     expect(passkeys?.configSource).toBe('authentication_config');
 
     expect(twoFactor?.configOptions.map(option => option.key)).toEqual([
+      'two_factor.require_members',
       'two_factor.allow_trusted_devices',
       'two_factor.trusted_device_days',
       'two_factor.backup_code_count',

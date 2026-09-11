@@ -265,29 +265,12 @@ export async function registerBiometric(
     };
 
     // Step 3: Trigger browser biometric prompt
-    // If platform attachment fails (Windows Hello unavailable), retry without it
-    // so the browser shows the generic picker (phone/security key options)
+    // NotAllowedError also means the member cancelled. Respect it and let
+    // them explicitly choose another device instead of reopening the prompt.
     let credential: RegistrationResponseJSON;
     const ceremonyOwner = claimCeremony('registration');
     try {
       credential = await startRegistration({ optionsJSON });
-    } catch (firstErr: unknown) {
-      const msg = firstErr instanceof Error ? firstErr.message : '';
-      const isNotAllowed = msg.includes('NotAllowedError') || msg.includes('not allowed') || msg.includes('timed out');
-      if (isNotAllowed && attachment === 'platform') {
-        // Platform authenticator not available — retry without restriction
-        const fallbackOptions: PublicKeyCredentialCreationOptionsJSON = {
-          ...optionsJSON,
-          authenticatorSelection: {
-            ...optionsJSON.authenticatorSelection,
-            authenticatorAttachment: undefined,
-          },
-          hints: undefined,
-        };
-        credential = await startRegistration({ optionsJSON: fallbackOptions });
-      } else {
-        throw firstErr;
-      }
     } finally {
       releaseCeremony(ceremonyOwner);
     }

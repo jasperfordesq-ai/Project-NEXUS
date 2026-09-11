@@ -3218,7 +3218,8 @@
     "banner": "Przeglądasz to konto jako administrator.",
     "banner_named": "Oglądasz konto {{name}} jako administrator.",
     "stop": "Przestań oglądać",
-    "handoff_failed": "Link do podszywania się wygasł lub był już używany. Zacznij od nowa z panelu administracyjnego."
+    "handoff_failed": "Link do podszywania się wygasł lub był już używany. Zacznij od nowa z panelu administracyjnego.",
+    "read_only": "Sesja pomocy tylko do odczytu. Wróć do swojego konta, aby wprowadzić zmiany."
   },
   "hours_display_few": "{{count}} godzin",
   "hours_display_many": "{{count}} godzin",

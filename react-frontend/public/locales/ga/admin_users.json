@@ -222,7 +222,8 @@
     "role_tenant_super_admin": "Sár-riarthóir tionónta",
     "role_super_admin_short": "Super Fheidhmeannach",
     "reset_2fa_reason": "Athshocraithe ag riarthóir",
-    "label_tagline": "Slogán"
+    "label_tagline": "Slogán",
+    "reset_2fa_identity_reason": "Tagairt na heachtra agus conas a d’fhíoraigh tú céannacht shealbhóir an chuntais (10–500 carachtar)"
   },
   "user_edit": {
     "actions": {

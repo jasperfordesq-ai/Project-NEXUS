@@ -279,15 +279,14 @@ describe("registerBiometric", () => {
     expect(result).toEqual({ success: false, error: "Invalid credential" });
   });
 
-  it("retries without platform restriction on NotAllowedError with platform attachment", async () => {
+  it("respects cancellation without opening a second platform registration prompt", async () => {
     mockApiPost.mockResolvedValueOnce({ success: true, data: MOCK_CHALLENGE_DATA }).mockResolvedValueOnce({ success: true });
     mockStartRegistration.mockRejectedValueOnce(new Error("NotAllowedError: operation not allowed")).mockResolvedValueOnce(MOCK_CREDENTIAL);
     const result = await registerBiometric("PC", "platform");
-    expect(result.success).toBe(true);
-    expect(mockStartRegistration).toHaveBeenCalledTimes(2);
-    const fallback = mockStartRegistration.mock.calls[1][0].optionsJSON;
-    expect(fallback.authenticatorSelection?.authenticatorAttachment).toBeUndefined();
-    expect(fallback.hints).toBeUndefined();
+    expect(result.success).toBe(false);
+    expect(result.errorCode).toBe('cancelled');
+    expect(mockStartRegistration).toHaveBeenCalledTimes(1);
+    expect(mockApiPost).toHaveBeenCalledTimes(1);
   });
 
   it("does NOT retry on NotAllowedError with cross-platform attachment", async () => {

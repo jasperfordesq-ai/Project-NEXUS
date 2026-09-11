@@ -222,7 +222,8 @@
     "role_unknown": "دور غير معروف",
     "role_tenant_super_admin": "مسؤول أعلى للمستأجر",
     "role_super_admin_short": "المشرف الأعلى",
-    "reset_2fa_reason": "تم إعادة التعيين بواسطة مسؤول"
+    "reset_2fa_reason": "تم إعادة التعيين بواسطة مسؤول",
+    "reset_2fa_identity_reason": "مرجع الحادث وكيف تحققت من هوية صاحب الحساب (10–500 حرف)"
   },
   "user_edit": {
     "actions": {

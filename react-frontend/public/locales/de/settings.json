@@ -916,5 +916,17 @@
     "thread_aria": "Unterhaltung mit {{name}}",
     "from_member": "Die Person",
     "voice_message": "Sprachnachricht"
+  },
+  "twofa_required_policy": "Für Ihr Konto ist Zwei-Faktor-Authentifizierung vorgeschrieben und kann nicht deaktiviert werden.",
+  "mfa_recovery": {
+    "title": "Wiederherstellungscodes",
+    "warning": "Neue Codes machen Ihre alten unbenutzten Codes ungültig. Geben Sie einen neuen Authenticator-Code ein; warten Sie nach der Anmeldung auf den nächsten Code. Wenn die Einrichtungsantwort verloren ging, können Sie hier neue Codes erstellen.",
+    "code": "Authenticator-Code",
+    "replace": "Wiederherstellungscodes ersetzen",
+    "save": "Speichern Sie diese neuen Codes sicher, bevor Sie diese Seite verlassen.",
+    "saved": "Ich habe diese Codes gespeichert",
+    "revoke": "Alle vertrauenswürdigen Geräte vergessen",
+    "revoked": "Vertrauenswürdige Geräte entfernt. Bei der nächsten Anmeldung ist eine Überprüfung erforderlich.",
+    "failed": "Die Aktion konnte nicht abgeschlossen werden. Prüfen Sie den Code und versuchen Sie es erneut."
   }
 }

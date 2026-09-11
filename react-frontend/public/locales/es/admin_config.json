@@ -846,7 +846,12 @@
     "module_name_public_events": "Eventos públicos",
     "module_desc_public_events": "Permitir que personas sin cuenta consulten los eventos publicados",
     "module_name_event_attendance_credits": "Recompensas por asistencia",
-    "module_desc_event_attendance_credits": "Conceder créditos de tiempo a los miembros al registrar su asistencia verificada"
+    "module_desc_event_attendance_credits": "Conceder créditos de tiempo a los miembros al registrar su asistencia verificada",
+    "two_factor_admin_requirement": "La autenticación de dos factores es obligatoria para todos los administradores de la plataforma. Las comunidades no pueden desactivar este requisito. Las cuentas afectadas deben verificarse al iniciar sesión; los dispositivos recordados no evitan esta obligación.",
+    "option_two_factor_require_members_label": "Exigir autenticación de dos factores a todos los miembros",
+    "option_two_factor_require_members_desc": "Al activarlo, los miembros deben completar la autenticación de dos factores para utilizar su cuenta. Las sesiones existentes sin verificación deberán volver a iniciar sesión. Desactivarlo no elimina los autenticadores registrados.",
+    "two_factor_optional_enrollment": "Permitir la configuración opcional de la autenticación de dos factores",
+    "two_factor_enforcement_hint": "Este interruptor controla la configuración opcional. Los administradores siempre deben usar autenticación multifactor. Usa Configurar para exigirla a todos los miembros."
   },
   "tenant_features": {
     "refresh": "Actualizar",

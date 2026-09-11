@@ -3144,6 +3144,7 @@
     "banner": "U bekijkt dit account als beheerder.",
     "banner_named": "Je bekijkt het account van {{name}} als beheerder.",
     "stop": "Stop met kijken",
-    "handoff_failed": "Die imitatielink is verlopen of werd al gebruikt. Begin opnieuw vanuit het beheerdersdashboard."
+    "handoff_failed": "Die imitatielink is verlopen of werd al gebruikt. Begin opnieuw vanuit het beheerdersdashboard.",
+    "read_only": "Ondersteuningssessie met alleen leestoegang. Ga terug naar uw eigen account om wijzigingen aan te brengen."
   }
 }

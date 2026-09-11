@@ -59,6 +59,7 @@ export function ImpersonationBanner() {
           ? t('impersonation.banner_named', { name: context.userName })
           : t('impersonation.banner')}
       </span>
+      <span>{t('impersonation.read_only')}</span>
       <Button
         size="sm"
         variant="secondary"

@@ -282,6 +282,7 @@ export function SettingsPage() {
   const [privacyError, setPrivacyError] = useState<string | null>(null);
 
   // 2FA state
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [twoFactorLoading, setTwoFactorLoading] = useState(true);
   const [twoFactorSetupData, setTwoFactorSetupData] = useState<TwoFactorSetup | null>(null);
@@ -478,10 +479,12 @@ export function SettingsPage() {
       setTwoFactorLoading(true);
       const response = await api.get<{
         enabled: boolean;
+        enforcement_required?: boolean;
         backup_codes_remaining: number;
       }>('/v2/auth/2fa/status');
       if (response.success && response.data) {
         setTwoFactorEnabled(response.data.enabled);
+        setTwoFactorRequired(response.data.enforcement_required === true);
         setBackupCodesRemaining(response.data.backup_codes_remaining);
       }
     } catch (error) {
@@ -922,6 +925,9 @@ export function SettingsPage() {
         toast.success(t('toasts.twofa_disabled'), t('toasts.twofa_disabled_desc'));
         twoFactorDisableModal.onClose();
         setTwoFactorDisablePassword('');
+        // Factor removal revokes every session, including this one.
+        await logout();
+        navigate(tenantPath('/login'), { replace: true });
       } else {
         toast.error(t('toasts.twofa_disable_failed'), response.error || t('toasts.twofa_disable_failed_desc'));
       }
@@ -1284,6 +1290,8 @@ export function SettingsPage() {
         {/* SECURITY TAB */}
         {activeTab === 'security' && (
           <SecurityTab
+            onRecoveryCodesChanged={setBackupCodesRemaining}
+            twoFactorRequired={twoFactorRequired}
             twoFactorEnabled={twoFactorEnabled}
             twoFactorLoading={twoFactorLoading}
             twoFactorSetupData={twoFactorSetupData}

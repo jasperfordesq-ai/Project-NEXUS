@@ -222,7 +222,8 @@
     "role_tenant_super_admin": "Super amministratore del tenant",
     "role_super_admin_short": "Super Amministratore",
     "reset_2fa_reason": "Ripristinato da un amministratore",
-    "label_bio": "Bio"
+    "label_bio": "Bio",
+    "reset_2fa_identity_reason": "Riferimento dell’incidente e modalità di verifica dell’identità del titolare (10–500 caratteri)"
   },
   "user_edit": {
     "actions": {

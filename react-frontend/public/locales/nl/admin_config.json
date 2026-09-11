@@ -844,7 +844,12 @@
     "module_name_public_events": "Openbare evenementen",
     "module_desc_public_events": "Mensen zonder account gepubliceerde evenementen laten bekijken",
     "module_name_event_attendance_credits": "Deelnamebeloningen",
-    "module_desc_event_attendance_credits": "Leden tijdcredits toekennen bij een bevestigde check-in"
+    "module_desc_event_attendance_credits": "Leden tijdcredits toekennen bij een bevestigde check-in",
+    "two_factor_admin_requirement": "Tweefactorauthenticatie is verplicht voor alle beheerders op het platform. Gemeenschappen kunnen deze verplichting niet uitschakelen. Deze accounts moeten bij het aanmelden worden geverifieerd; onthouden apparaten omzeilen deze regel niet.",
+    "option_two_factor_require_members_label": "Tweefactorauthenticatie voor alle leden verplichten",
+    "option_two_factor_require_members_desc": "Als dit aanstaat, moeten leden tweefactorauthenticatie voltooien voordat ze hun account gebruiken. Bestaande sessies zonder verificatie moeten zich opnieuw aanmelden. Uitschakelen verwijdert geen ingestelde authenticators.",
+    "two_factor_optional_enrollment": "Vrijwillig instellen van tweefactorauthenticatie toestaan",
+    "two_factor_enforcement_hint": "Deze schakelaar regelt vrijwillige registratie. Beheerders moeten altijd multifactorauthenticatie gebruiken. Gebruik Configureren om dit voor alle leden te verplichten."
   },
   "tenant_features": {
     "refresh": "Vernieuwen",

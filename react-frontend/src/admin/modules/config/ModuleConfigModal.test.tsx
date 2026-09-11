@@ -272,6 +272,24 @@ describe('ModuleConfigModal', () => {
     mockAdminConfig.updateAuthenticationConfigBulk.mockResolvedValue({ success: true });
   });
 
+  it('shows fixed admin enforcement and saves the tenant member requirement', async () => {
+    const { default: ModuleConfigModal } = await import('./ModuleConfigModal');
+    const { getFeatureModules } = await import('./moduleRegistry');
+    const module = getFeatureModules().find(item => item.id === 'two_factor_authentication')!;
+    mockAdminConfig.getAuthenticationConfig.mockResolvedValue({ success: true, data: {
+      config: { 'two_factor.require_members': false, 'two_factor.allow_trusted_devices': true },
+      writable_keys: ['two_factor.require_members']
+    } });
+    render(<ModuleConfigModal module={module} isOpen={true} onClose={vi.fn()} />);
+    await waitFor(() => expect(mockAdminConfig.getAuthenticationConfig).toHaveBeenCalled());
+    expect(await screen.findByText(/Communities cannot turn this requirement off/)).toBeInTheDocument();
+    const toggle = await screen.findByRole('checkbox', { name: 'Require two-factor authentication for all members' });
+    fireEvent.click(toggle);
+    const save = screen.getAllByRole('button').find(button => button.textContent?.toLowerCase().includes('save'))!;
+    fireEvent.click(save);
+    await waitFor(() => expect(mockAdminConfig.updateAuthenticationConfigBulk).toHaveBeenCalledWith(expect.objectContaining({ 'two_factor.require_members': true })));
+  });
+
   it('renders nothing visible when module prop is null', async () => {
     const translationSpy = vi.spyOn(i18n, 't');
     const { default: ModuleConfigModal } = await import('./ModuleConfigModal');

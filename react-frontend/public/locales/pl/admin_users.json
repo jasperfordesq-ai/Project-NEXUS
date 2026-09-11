@@ -222,7 +222,8 @@
     "reset_2fa_reason": "Zresetowane przez administratora",
     "import_role_broker": "Pośrednik",
     "label_bio": "Bio",
-    "role_moderator": "Moderator"
+    "role_moderator": "Moderator",
+    "reset_2fa_identity_reason": "Numer zgłoszenia i sposób weryfikacji tożsamości właściciela konta (10–500 znaków)"
   },
   "user_edit": {
     "actions": {

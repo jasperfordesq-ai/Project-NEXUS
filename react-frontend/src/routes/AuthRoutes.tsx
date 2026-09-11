@@ -15,9 +15,12 @@ const VerifyEmailPage = lazyWithRetry(() => import('@/pages/auth/VerifyEmailPage
 const VerifyIdentityPage = lazyWithRetry(() => import('@/pages/auth/VerifyIdentityPage'));
 const OauthCallbackPage = lazyWithRetry(() => import('@/pages/auth/OauthCallbackPage'));
 
+const TwoFactorSetupPage = lazyWithRetry(() => import('@/pages/auth/TwoFactorSetupPage'));
+
 export function AuthRoutes() {
   return (
     <Route element={<AuthLayout />}>
+      <Route path="auth/two-factor/setup" element={<TwoFactorSetupPage />} />
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
       <Route path="password/forgot" element={<ForgotPasswordPage />} />

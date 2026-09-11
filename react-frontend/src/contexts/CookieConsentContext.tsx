@@ -86,6 +86,7 @@ function isAuthEntryPath(pathname: string): boolean {
     '/verify-email',
     '/verify-identity',
     '/auth/oauth/callback',
+    '/auth/two-factor/setup',
     '/oauth/callback',
   ]);
 

@@ -47,7 +47,7 @@ describe('Button — rendering', () => {
 
   it('renders a router destination as one styled link without a nested button', () => {
     renderBare(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <Button as={RouterLink} to="/settings" className="flex-1 w-full">
           Settings
         </Button>

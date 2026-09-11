@@ -362,6 +362,7 @@ vi.mock('@/lib/motion', async () => {
 
 import { SettingsPage } from './SettingsPage';
 import { api } from '@/lib/api';
+import { useAuth } from '@/contexts';
 
 function Wrapper({ children }: { children: ReactNode }) {
   return (
@@ -447,6 +448,22 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('tab', { name: 'Notifications' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Privacy' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Security' })).toBeInTheDocument();
+  });
+
+  it('clears local authentication after disabling two-factor authentication', async () => {
+    const originalGet = vi.mocked(api.get).getMockImplementation()!;
+    vi.mocked(api.get).mockImplementation((url: string) => url.includes('/v2/auth/2fa/status')
+      ? Promise.resolve({ success: true, data: { enabled: true, backup_codes_remaining: 10 } })
+      : originalGet(url));
+    vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: {} });
+    const user = userEvent.setup();
+    render(<SettingsPage />, { wrapper: Wrapper });
+    await user.click(screen.getByRole('tab', { name: 'Security' }));
+    await user.click(await screen.findByRole('button', { name: 'twofa_disable' }));
+    await user.type(screen.getByLabelText('twofa_confirm_password'), 'CurrentPassword!123');
+    await user.click(screen.getByRole('button', { name: 'twofa_disable_confirm' }));
+    await waitFor(() => expect(useAuth().logout).toHaveBeenCalledOnce());
+    expect(api.post).toHaveBeenCalledWith('/v2/auth/2fa/disable', { password: 'CurrentPassword!123' });
   });
 
   it('hides Profile and Notifications tabs when their modules are disabled', () => {
