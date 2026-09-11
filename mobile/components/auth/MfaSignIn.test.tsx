@@ -63,6 +63,32 @@ it('returns to password sign-in if issued credentials are rejected while loading
   expect(view.getByText('Return to sign in')).toBeTruthy();
 });
 
+// Two-factor security review (E-004): one code submission per press, no matter
+// how many times the button is hit while the request is in flight.
+it('submits a code once while the verification request is still in flight', async () => {
+  let release: (value: typeof session) => void = () => {};
+  jest.mocked(verifyMfa).mockReturnValueOnce(new Promise((resolve) => { release = resolve as never; }));
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.changeText(view.getByDisplayValue(''), '123456');
+  fireEvent.press(view.getByText('Verify'));
+  fireEvent.press(view.getByText('Verify'));
+  fireEvent.press(view.getByText('Verify'));
+  expect(verifyMfa).toHaveBeenCalledTimes(1);
+  await act(async () => { release(session); });
+  await waitFor(() => expect(mockComplete).toHaveBeenCalledTimes(0));
+  expect(view.getByText('RECOVERY-ONE')).toBeTruthy();
+});
+
+// E-004: the setup secret is requested exactly once and never again on re-render or edits.
+it('does not request a second setup secret when the code field changes', async () => {
+  const view = render(<MfaSignIn challenge={{ ...challenge, requires_2fa_setup: true }} onCancel={jest.fn()} />);
+  await view.findByText('SETUPKEY');
+  fireEvent.changeText(view.getByDisplayValue(''), '1');
+  fireEvent.changeText(view.getByDisplayValue('1'), '12');
+  view.rerender(<MfaSignIn challenge={{ ...challenge, requires_2fa_setup: true }} onCancel={jest.fn()} />);
+  expect(beginMfaSetup).toHaveBeenCalledTimes(1);
+});
+
 it('keeps server failures readable without exposing an internal exception', async () => {
   jest.mocked(beginMfaSetup).mockRejectedValueOnce(new ApiResponseError(500, 'SQLSTATE internal database failure'));
   const view = render(<MfaSignIn challenge={{ ...challenge, requires_2fa_setup: true }} onCancel={jest.fn()} />);

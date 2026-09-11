@@ -36,6 +36,23 @@ it('keeps credentials out of storage until the recovery codes are acknowledged',
   expect(mocks.refresh).toHaveBeenCalledWith('refresh');
 });
 
+// Two-factor security review (E-004): cancelling forgets the challenge, and an
+// expired challenge never leaves a credential behind.
+it('forgets the challenge on cancel and stores nothing when the challenge has expired', async () => {
+  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'expiring-key' } });
+  render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
+  const code = await screen.findByRole('textbox', { name: 'Six-digit verification code' });
+  mocks.post.mockResolvedValueOnce({ success: false, code: 'AUTH_2FA_TOKEN_EXPIRED', error: 'Your session expired' });
+  fireEvent.change(code, { target: { value: '123456' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
+  await screen.findByRole('alert');
+  expect(mocks.access).not.toHaveBeenCalled();
+  expect(mocks.refresh).not.toHaveBeenCalled();
+  expect(mocks.user).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Return to sign in' }));
+  expect(mocks.cancel).toHaveBeenCalledTimes(1);
+});
+
 it('preserves the scanned key and allows retry after a rejected verification', async () => {
   mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'same-key' } });
   render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
