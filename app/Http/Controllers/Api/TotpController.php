@@ -407,6 +407,9 @@ class TotpController extends BaseApiController
         }
 
         $jsonResponse = response()->json($response);
+        // Carries live credentials; never storable by a browser, proxy or CDN.
+        $jsonResponse->headers->set('Cache-Control', 'private, no-store');
+        $jsonResponse->headers->set('Pragma', 'no-cache');
         if ($trustedDeviceToken && ! $isMobile) {
             $secure = request()->secure() || app()->environment('production');
             $jsonResponse->withCookie(cookie(

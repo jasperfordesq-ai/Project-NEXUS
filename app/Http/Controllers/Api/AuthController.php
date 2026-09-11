@@ -26,6 +26,12 @@ class AuthController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * Login answers carry either live credentials or a two-factor challenge
+     * token. Neither may be stored by a browser, proxy or CDN (review F-014).
+     */
+    private const NO_STORE_HEADERS = ['Cache-Control' => 'private, no-store', 'Pragma' => 'no-cache'];
+
     public function __construct(
         private readonly RateLimitService $rateLimitService,
         private readonly TenantSettingsService $tenantSettingsService,
@@ -263,7 +269,7 @@ class AuthController extends BaseApiController
                         'first_name' => $user['first_name'],
                         'email_masked' => $this->maskEmail($user['email']),
                     ],
-                ], 200);
+                ], 200, self::NO_STORE_HEADERS);
             }
 
             // 2FA CHECK — ENFORCED FOR ALL USERS WHO HAVE IT ENABLED
@@ -311,7 +317,7 @@ class AuthController extends BaseApiController
                         'first_name' => $user['first_name'],
                         'email_masked' => $this->maskEmail($user['email'])
                     ]
-                ], 200);
+                ], 200, self::NO_STORE_HEADERS);
             }
 
             // NO 2FA or TRUSTED DEVICE - Complete login normally
@@ -434,7 +440,7 @@ class AuthController extends BaseApiController
                     'token' => $accessToken,
                     'sanctum_token' => null,
                     'config' => json_decode($user['configuration'] ?? '{"modules": {"events": true, "polls": true, "goals": true, "volunteering": true, "resources": true}}', true)
-                ]);
+                ], 200, self::NO_STORE_HEADERS);
             }
         }
 
@@ -1262,18 +1268,16 @@ class AuthController extends BaseApiController
      */
     public function validateToken(): JsonResponse
     {
-        $token = null;
+        // Authorization header first (request()->bearerToken() also works under
+        // the test kernel, where $_SERVER['HTTP_AUTHORIZATION'] is not populated).
+        $token = request()->bearerToken();
 
-        // Check Authorization header first
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-        if (preg_match('/Bearer\s+(.+)$/i', $authHeader, $matches)) {
-            $token = $matches[1];
-        }
-
-        // Fallback to request body
+        // Fallback to the request BODY only. Never read the token from the query
+        // string: URLs are written to proxy, CDN and web-server logs, so a token
+        // in ?token= is a token in plain text on disk (security review F-010).
         if (!$token) {
-            $data = $this->getAllInput();
-            $token = $data['token'] ?? $data['access_token'] ?? '';
+            $body = request()->isJson() ? (array) request()->json()->all() : request()->request->all();
+            $token = $body['token'] ?? $body['access_token'] ?? '';
             if (!is_string($token)) {
                 $token = '';
             }
