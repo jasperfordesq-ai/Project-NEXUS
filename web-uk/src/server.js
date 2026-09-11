@@ -693,8 +693,14 @@ function inlineScriptJson(value) {
 }
 
 function normalizeRequestHost(req) {
-  const forwardedHost = String(req.headers['x-forwarded-host'] || '').split(',')[0].trim();
-  const raw = String(forwardedHost || req.hostname || req.headers.host || '').trim().toLowerCase();
+  // Last forwarded value, not first: the proxy appends its own Host after any
+  // client-supplied X-Forwarded-Host (see requestHost() in tenant-routing.js).
+  const forwarded = String(req.headers['x-forwarded-host'] || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const forwardedHost = forwarded.length > 0 ? forwarded[forwarded.length - 1] : '';
+  const raw = String(forwardedHost || req.headers.host || '').trim().toLowerCase();
   if (!raw) return '';
 
   const withoutProtocol = raw.replace(/^https?:\/\//, '');
@@ -2147,6 +2153,9 @@ app.get('/login', authRoutes);
 app.post('/login', authLimiter, doubleCsrfProtection, authRoutes);
 app.get('/login/two-factor', authRoutes);
 app.post('/login/two-factor', authLimiter, doubleCsrfProtection, authRoutes);
+app.get('/login/two-factor/setup', authRoutes);
+app.post('/login/two-factor/setup', authLimiter, doubleCsrfProtection, authRoutes);
+app.post('/login/two-factor/setup/complete', authLimiter, doubleCsrfProtection, authRoutes);
 app.post('/login/resend-verification', authLimiter, doubleCsrfProtection, authRoutes);
 app.get('/register', authRoutes);
 app.post('/register', authLimiter, doubleCsrfProtection, authRoutes);

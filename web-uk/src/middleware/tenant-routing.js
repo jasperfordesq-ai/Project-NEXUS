@@ -269,9 +269,25 @@ function normalizeHost(host) {
   return withoutPort.replace(/^www\./, '');
 }
 
+/**
+ * The host this request was addressed to, as seen by OUR proxy.
+ *
+ * Apache's mod_proxy_http (ProxyAddHeaders, on by default) MERGES
+ * X-Forwarded-Host: a value the client sent arrives first and the Host the
+ * proxy actually saw is appended LAST. Taking the first value therefore let
+ * whoever sent the request choose which community this middleware resolved.
+ * Take the last value — the one the proxy wrote — and otherwise fall back to
+ * the Host header, which ProxyPreserveHost keeps intact. `req.hostname` is
+ * deliberately not used: Express also takes the FIRST forwarded value.
+ * Security audit, 2026-09-11.
+ */
 function requestHost(req) {
-  const forwardedHost = String(req.headers['x-forwarded-host'] || '').split(',')[0].trim();
-  return normalizeHost(forwardedHost || req.hostname || req.headers.host);
+  const forwarded = String(req.headers['x-forwarded-host'] || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const forwardedHost = forwarded.length > 0 ? forwarded[forwarded.length - 1] : '';
+  return normalizeHost(forwardedHost || req.headers.host);
 }
 
 function shouldResolveCustomAccessibleDomain(host) {
