@@ -1,5 +1,9 @@
 # ASP.NET Edition — Plain-English Roadmap
 
+> 🔴 **Paused on 11 September 2026 (owner decision).** Not abandoned: work resumes
+> when the rest of the platform is more mature. Nothing below is being worked on
+> until then; see [ADR-0005](decisions/ADR-0005-aspnet-edition-halted.md).
+
 Status: **Canonical current - owner-facing summary** (technical detail lives in
 [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md); the work
 list is [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md))

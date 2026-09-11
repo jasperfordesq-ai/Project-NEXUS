@@ -1,6 +1,14 @@
 # NEXUS ASP.NET Backend
 
-Status: **committed product edition - not yet certified for production**.
+Status: 🔴 **PAUSED — owner decision, 2026-09-11. Not abandoned: development
+resumes when the rest of the platform is more mature.** Until then: no
+development, testing, CI runs or parity work. The code, ledger and ADRs stay
+untouched. See
+[`docs/decisions/ADR-0005-aspnet-edition-halted.md`](docs/decisions/ADR-0005-aspnet-edition-halted.md)
+for what was switched off and how to resume. Everything below this line
+describes the state at the pause and is kept for the record.
+
+Status at the pause: committed product edition - not yet certified for production.
 
 This directory is a clean source snapshot of the former standalone ASP.NET
 repository. Laravel at the repository root remains the production behavior and

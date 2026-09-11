@@ -1,6 +1,15 @@
 # React Dual-Backend Portability
 
-Last reviewed: 2026-08-21
+Last reviewed: 2026-09-11
+
+> 🔴 **Status 2026-09-11: the ASP.NET edition is paused by owner decision — not
+> abandoned; it resumes when the rest of the platform is more mature.** Until then
+> Laravel is the only backend. This document is kept because its backend-neutrality rules
+> for the React frontend remain good practice and are still enforced by
+> `npm run check:backend-guardrails`; everything it says about ASP.NET parity,
+> certification and a second edition is **historical**. See
+> [`ADR-0005`](../aspnet-backend/docs/decisions/ADR-0005-aspnet-edition-halted.md)
+> for the decision, what was switched off, and what would re-open it.
 
 This document defines the guardrails for making the React frontend able to run
 against either the Laravel API or the ASP.NET API while keeping Laravel as the

@@ -122,9 +122,8 @@ jobs:
         run: ./scripts/verify-platform-contracts.ps1 -SkipDotNet -SkipReact -SkipWebUk
       # The markdown link checker takes one root at a time, so both siblings get
       # their own pass. Not previously run by any workflow, while failing.
-      - name: Markdown links resolve (ASP.NET)
-        shell: pwsh
-        run: ./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./aspnet-backend
+      # The ASP.NET markdown-link pass was removed on 2026-09-11 with the halt
+      # of that edition (ADR-0005); the checker script itself is reused for Web UK.
       - name: Markdown links resolve (Web UK)
         shell: pwsh
         run: ./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./web-uk
@@ -136,13 +135,14 @@ jobs:
           path: .local-docs-archive/platform-contracts/latest
           if-no-files-found: warn
 
+  # 🔴 ASP.NET edition HALTED by the owner on 2026-09-11 (ADR-0005). The four
+  # aspnet-* jobs below are pinned `if: false` so no runner minutes are spent on
+  # them on push, schedule or dispatch. Re-enabling is a deliberate decision:
+  # restore the previous `needs.changes.outputs.aspnet` conditions in one commit.
   aspnet-build:
     name: ASP.NET build
     needs: changes
-    if: >-
-      needs.changes.outputs.aspnet == 'true'
-      || github.event_name == 'workflow_dispatch'
-      || github.event_name == 'schedule'
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -197,10 +197,7 @@ jobs:
     # the field is absent. aspnet-build and aspnet-messaging-tests are
     # deliberately NOT gated — they are short, and a draft should still get a
     # compile-and-smoke signal.
-    if: >-
-      (needs.changes.outputs.aspnet == 'true' && github.event.pull_request.draft != true)
-      || github.event_name == 'workflow_dispatch'
-      || github.event_name == 'schedule'
+    if: false  # ASP.NET edition halted 2026-09-11 (ADR-0005)
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
@@ -240,10 +237,7 @@ jobs:
   aspnet-messaging-tests:
     name: ASP.NET Messaging tests
     needs: changes
-    if: >-
-      needs.changes.outputs.aspnet == 'true'
-      || github.event_name == 'workflow_dispatch'
-      || github.event_name == 'schedule'
+    if: false  # ASP.NET edition halted 2026-09-11 (ADR-0005)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -289,10 +283,7 @@ jobs:
   aspnet-docker-build:
     name: ASP.NET image builds
     needs: changes
-    if: >-
-      (needs.changes.outputs.aspnet == 'true' && github.event.pull_request.draft != true)
-      || github.event_name == 'workflow_dispatch'
-      || github.event_name == 'schedule'
+    if: false  # ASP.NET edition halted 2026-09-11 (ADR-0005)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native volunteering now preserves expense, donation-pledge and hour drafts across tab changes, warns before leaving with unsaved or pending input, serializes rapid submissions, and retries certificate, expense, pledge and hour writes with the same content-bound operation identity. Laravel durably returns the original record after response loss, preventing duplicate records and duplicate hour credits.
+
+- Administrator shift-swap approve/reject decisions now have one atomic winner. Retrying the committed decision succeeds without repeating notifications or assignments, while the opposite decision returns a conflict.
+
+- Native organisation settings preserve dirty edits across refresh and tab changes, guard navigation while dirty or saving, and retain rejected clears for retry. Optional description, contact email and website fields can now be cleared through the Laravel update contract.
+
 - Native organisation dashboards now keep successful panel data visible when a later applications, hours, volunteers or wallet refresh fails, with a panel-specific Retry warning instead of a false empty state. Hour decisions, wallet inputs and settings fields also lock synchronously while their writes are pending, and the dashboard resets when the account, community or organisation changes.
 
 - Volunteer-hours decisions now have one atomic winner across concurrent approve/decline requests. Retrying the winning decision after response loss succeeds without paying twice, while the conflicting decision returns HTTP 409 instead of reporting contradictory success.
@@ -256,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **ASP.NET edition paused (owner decision, 11 September 2026) — not abandoned; it resumes when the rest of the platform is more mature.** The four ASP.NET jobs in the platform-contracts workflow are pinned off so no runner minutes are spent on them, the ASP.NET markdown-link pass is removed from the shared inventory job, and `AGENTS.md`, `react-frontend/CLAUDE.md`, `docs/REACT-DUAL-BACKEND.md` and the ASP.NET README state the pause at the top. Code, ledger and earlier decision records are untouched; ADR-0005 records what was switched off and how to resume.
 - Updated the native app to Expo SDK 55 and React Native 0.83, including the system-appearance API adjustment and explicit background audio configuration.
 
 - Native voice messages, podcasts and lesson/marketplace video now use Expo's separate audio and video modules. Audio loading has a bounded timeout and cancellation on leaving the screen; podcasts seek to their saved position before playing and activate lock-screen controls. Voice recording prevents overlapping starts while permission is pending and late starts after leaving the screen.
