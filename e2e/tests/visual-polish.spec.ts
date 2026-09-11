@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { completeTwoFactorIfChallenged } from '../helpers/two-factor';
 import {
   DEFAULT_TENANT,
   dismissBlockingModals,
@@ -45,7 +46,13 @@ async function primeAdminAuth(page: Page): Promise<void> {
 
   expect(response.ok()).toBeTruthy();
 
-  const loginData = await response.json();
+  // An administrator's login hands over a two-factor step since the MFA baseline.
+  const loginData = await completeTwoFactorIfChallenged(await response.json(), {
+    request: page.request,
+    apiBaseUrl,
+    tenantSlug: DEFAULT_TENANT,
+    email,
+  });
   const accessToken = loginData?.data?.access_token || loginData?.access_token;
   const refreshToken = loginData?.data?.refresh_token || loginData?.refresh_token;
   const tenantId = loginData?.data?.tenant_id || loginData?.tenant_id;

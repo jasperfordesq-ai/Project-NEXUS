@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { seedTwoActors } from './helpers/seed';
-import { totpCode } from './helpers/totp';
+import { completeTwoFactorIfChallenged } from './helpers/two-factor';
 
 // Load environment variables from .env.test
 dotenv.config({ path: path.join(__dirname, '.env.test') });
@@ -109,63 +109,6 @@ async function dismissDevNoticeModal(page: any): Promise<void> {
 }
 
 /**
- * Turn a two-factor login answer into a completed login.
- *
- * Returns the body that carries the tokens: the original body when no second
- * factor was asked for, the enrolment-completion body (`data.access_token`)
- * after `requires_2fa_setup`, or the challenge-completion body
- * (`access_token`) after `requires_2fa`.
- */
-async function completeTwoFactorIfChallenged(authPage: any, apiBaseUrl: string, loginData: any): Promise<any> {
-  const challenge = typeof loginData?.two_factor_token === 'string' ? loginData.two_factor_token : '';
-  const headers = { 'Content-Type': 'application/json', 'X-Tenant-Slug': TENANT_SLUG };
-
-  if (loginData?.requires_2fa_setup === true && challenge !== '') {
-    console.log('   Login handed over the mandatory two-factor enrolment; completing it...');
-    const setup = await authPage.request.post(`${apiBaseUrl}/api/v2/auth/2fa/setup`, {
-      data: { two_factor_token: challenge },
-      headers,
-    });
-    const setupBody = await setup.json();
-    const secret = setupBody?.data?.secret;
-    if (!setup.ok() || typeof secret !== 'string' || secret === '') {
-      throw new Error(`Two-factor setup failed (${setup.status()}): ${JSON.stringify(setupBody)}`);
-    }
-    const verify = await authPage.request.post(`${apiBaseUrl}/api/v2/auth/2fa/verify`, {
-      data: { two_factor_token: challenge, code: totpCode(secret) },
-      headers,
-    });
-    const verifyBody = await verify.json();
-    if (!verify.ok() || verifyBody?.data?.login_complete !== true) {
-      throw new Error(`Two-factor enrolment failed (${verify.status()}): ${JSON.stringify(verifyBody)}`);
-    }
-    return verifyBody;
-  }
-
-  if (loginData?.requires_2fa === true && challenge !== '') {
-    const secret = process.env.E2E_ADMIN_TOTP_SECRET || '';
-    if (secret === '') {
-      throw new Error(
-        'Login asked for a two-factor code but E2E_ADMIN_TOTP_SECRET is not set. ' +
-          'This account is already enrolled on this database; export its authenticator secret or reset its factor.'
-      );
-    }
-    console.log('   Login asked for a two-factor code; answering from E2E_ADMIN_TOTP_SECRET...');
-    const verify = await authPage.request.post(`${apiBaseUrl}/api/totp/verify`, {
-      data: { two_factor_token: challenge, code: totpCode(secret) },
-      headers,
-    });
-    const verifyBody = await verify.json();
-    if (!verify.ok() || verifyBody?.success !== true) {
-      throw new Error(`Two-factor challenge failed (${verify.status()}): ${JSON.stringify(verifyBody)}`);
-    }
-    return verifyBody;
-  }
-
-  return loginData;
-}
-
-/**
  * Authenticate a React user via the API (JWT-based).
  *
  * The React app uses JWT tokens stored in localStorage,
@@ -227,14 +170,19 @@ async function authenticateViaApi(
   let loginData = await loginResponse.json();
 
   // Since the MFA baseline (security register E-004) an administrator cannot
-  // receive a credential from the password step alone. On a fresh CI database
-  // the seeded administrator has no second factor yet, so login answers with
-  // requires_2fa_setup and a five-minute challenge token; complete the
-  // enrolment exactly as the React setup page does (setup → code → tokens).
-  // An administrator who is already enrolled answers requires_2fa instead;
-  // that needs the shared secret, which a persistent local database can supply
-  // through E2E_ADMIN_TOTP_SECRET.
-  loginData = await completeTwoFactorIfChallenged(authPage, apiBaseUrl, loginData);
+  // receive a credential from the password step alone: login hands over the
+  // enrolment (fresh CI database) or a code challenge (already enrolled). The
+  // helper completes either and remembers the secret for the specs that sign
+  // in again during the run.
+  if (loginData?.two_factor_token) {
+    console.log('   Login handed over a two-factor step; completing it...');
+  }
+  loginData = await completeTwoFactorIfChallenged(loginData, {
+    request: authPage.request,
+    apiBaseUrl,
+    tenantSlug: TENANT_SLUG,
+    email: credentials.email,
+  });
 
   // Extract tokens from response — API returns {success, data: {access_token, refresh_token, user, tenant_id}}
   const accessToken = loginData?.data?.access_token || loginData?.access_token;

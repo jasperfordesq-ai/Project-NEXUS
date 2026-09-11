@@ -5,6 +5,7 @@
 
 import { test, expect } from '@playwright/test';
 import type { APIRequestContext } from '@playwright/test';
+import { completeTwoFactorIfChallenged } from '../../helpers/two-factor';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
@@ -51,7 +52,13 @@ async function getAdminToken(request: APIRequestContext): Promise<string | null>
   });
 
   if (!res.ok()) return null;
-  const body = await res.json();
+  // An administrator's login hands over a two-factor step since the MFA baseline.
+  const body = await completeTwoFactorIfChallenged(await res.json(), {
+    request,
+    apiBaseUrl: API_BASE,
+    tenantSlug: TENANT_SLUG,
+    email,
+  });
   return body?.data?.access_token || body?.access_token || null;
 }
 

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { expect, test, type APIRequestContext } from '@playwright/test';
+import { completeTwoFactorIfChallenged } from '../../helpers/two-factor';
 import {
   dismissBlockingModals,
   pinSpaApiToCandidate,
@@ -38,14 +39,21 @@ async function login(request: APIRequestContext, email: string, password: string
       'X-Tenant-Slug': TENANT_SLUG,
     },
   });
-  const body = await response.json() as ApiEnvelope<{
+  const raw = await response.json();
+  expect(response.ok(), `Login failed for ${email}: ${JSON.stringify(raw)}`).toBeTruthy();
+  // An administrator's login hands over a two-factor step since the MFA baseline.
+  const body = await completeTwoFactorIfChallenged(raw, {
+    request,
+    apiBaseUrl: API_BASE,
+    tenantSlug: TENANT_SLUG,
+    email,
+  }) as ApiEnvelope<{
     access_token?: string;
     user?: { id?: number };
   }> & {
     access_token?: string;
     user?: { id?: number };
   };
-  expect(response.ok(), `Login failed for ${email}: ${JSON.stringify(body)}`).toBeTruthy();
   const token = body.data?.access_token || body.access_token;
   const userId = Number(body.data?.user?.id || body.user?.id);
   if (!token || !Number.isInteger(userId) || userId <= 0) {

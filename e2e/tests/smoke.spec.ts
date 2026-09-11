@@ -4,6 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { test, expect, type Page } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   tenantUrl,
   goToTenantPage,
@@ -12,6 +14,7 @@ import {
   pinSpaApiToCandidate,
   DEFAULT_TENANT,
 } from '../helpers/test-utils';
+import { completeTwoFactorIfChallenged } from '../helpers/two-factor';
 
 /**
  * Smoke Test Suite — Deployment Gate
@@ -59,12 +62,42 @@ type CachedAuth = {
 // when parallel workers share the runner IP.
 const authTokenCache = new Map<'user' | 'admin', CachedAuth>();
 
+/**
+ * The global setup has already signed this role in and saved the tokens in its
+ * storage-state file (the same file `test.use({ storageState })` loads). Reuse
+ * them rather than logging in again: since the MFA baseline an administrator's
+ * login hands over a two-factor step, and every extra login is one more
+ * single-use code for the workers to contend over.
+ */
+function tokensFromStorageState(kind: 'user' | 'admin'): CachedAuth | null {
+  try {
+    const file = path.resolve(__dirname, '..', 'fixtures', '.auth', `${kind}.json`);
+    const state = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const entries: Array<{ name: string; value: string }> = (state?.origins ?? []).flatMap(
+      (origin: { localStorage?: Array<{ name: string; value: string }> }) => origin.localStorage ?? []
+    );
+    const read = (name: string) => entries.find((entry) => entry.name === name)?.value;
+    const accessToken = read('nexus_access_token');
+    if (!accessToken) {
+      return null;
+    }
+    return { accessToken, refreshToken: read('nexus_refresh_token'), tenantId: read('nexus_tenant_id') };
+  } catch {
+    return null;
+  }
+}
+
 async function loginForRole(page: Page, kind: 'user' | 'admin'): Promise<CachedAuth> {
   const email = kind === 'admin' ? process.env.E2E_ADMIN_EMAIL : process.env.E2E_USER_EMAIL;
   const password = kind === 'admin' ? process.env.E2E_ADMIN_PASSWORD : process.env.E2E_USER_PASSWORD;
 
   if (!email || !password) {
     throw new Error(`Missing E2E ${kind} credentials`);
+  }
+
+  const saved = tokensFromStorageState(kind);
+  if (saved) {
+    return saved;
   }
 
   const maxAttempts = 5;
@@ -85,7 +118,12 @@ async function loginForRole(page: Page, kind: 'user' | 'admin'): Promise<CachedA
     });
 
     if (response.ok()) {
-      const loginData = await response.json();
+      const loginData = await completeTwoFactorIfChallenged(await response.json(), {
+        request: page.request,
+        apiBaseUrl,
+        tenantSlug: DEFAULT_TENANT,
+        email,
+      });
       const accessToken = loginData?.data?.access_token || loginData?.access_token;
       const refreshToken = loginData?.data?.refresh_token || loginData?.refresh_token;
       const tenantId = loginData?.data?.tenant_id || loginData?.tenant_id;
