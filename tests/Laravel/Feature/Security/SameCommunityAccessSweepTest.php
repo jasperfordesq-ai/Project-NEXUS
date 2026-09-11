@@ -59,7 +59,9 @@ use Tests\Laravel\Feature\Security\Support\AccessSweepTestCase;
  *
  * HONEST LIMITS
  * -------------
- *  - One path parameter only. Multi-parameter routes are not covered here.
+ *  - The read and write sweeps take one path parameter. Multi-parameter
+ *    routes have their own method below (person routes with a third member,
+ *    child routes with B's parent and child), probed with an EMPTY body.
  *  - The row comparison sees B's TARGET row. Rows created elsewhere by a
  *    designed interaction (A's "save" row) are invisible and are exactly why
  *    ACCEPTED entries are read by a human before being allowlisted.
@@ -337,6 +339,223 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
             fn (string $key) => (bool) array_filter($this->writes, static fn ($r) => $r['method'] . ' ' . $r['uri'] === $key && $r['verdict'] === 'MUTATED')
         ));
         fwrite(STDERR, 'KNOWN_MUTATED_BY_DESIGN reproduced this run: ' . ($reproduced === [] ? 'none' : implode(', ', $reproduced)) . PHP_EOL);
+    }
+
+    // ================================================================
+    // Multi-parameter routes: B's record as the outer id
+    // ================================================================
+
+    /**
+     * Routes with two or more path parameters, requested by member A with
+     * member B's record(s) in the record slots. For PERSON routes the person is
+     * a third member C who genuinely belongs to B's records (member of B's group,
+     * participant in B's conversation…) so "remove C from B's group" reaches the
+     * ownership check instead of failing on membership. For CHILD routes every
+     * slot is B's (B's course, B's lesson). Controls use A's own records and the
+     * same person, and relationships are re-seeded before EVERY endpoint.
+     *
+     * Detectors: every row referencing C (person-shaped foreign keys across the
+     * schema) before and after, plus B's deepest target row, compared regardless
+     * of status. Body is empty JSON, as in the cross-community multi-parameter
+     * sweeps; validation-stopped writes are reported, never counted as passes.
+     */
+    public function test_no_multi_parameter_route_reaches_another_members_records(): void
+    {
+        $personRoutes = array_values(array_filter($this->multiParamPersonEndpoints(), static fn ($e) => ! str_starts_with($e['prefix'], 'admin/')));
+        $childRoutes = array_values(array_filter($this->multiParamChildEndpoints(), static fn ($e) => ! str_starts_with($e['prefix'], 'admin/')));
+        $this->assertNotEmpty($personRoutes, 'Person-route enumeration produced nothing — the sweep would pass vacuously.');
+        $this->assertNotEmpty($childRoutes, 'Child-route enumeration produced nothing — the sweep would pass vacuously.');
+
+        $this->prepareActors();
+        $actor = $this->actor;
+        $victim = $this->victim;
+        $this->assertNotNull($actor);
+        $this->assertNotNull($victim);
+
+        // C: a third member, A's seeded 'user' fixture. Related to BOTH A's and B's records.
+        $person = User::find($this->controlIds['user'] ?? 0);
+        $this->assertNotNull($person, "third-member fixture 'user' missing");
+        $personId = (int) $person->id;
+        $refs = $this->personReferenceColumns();
+        $this->assertNotEmpty($refs, 'No person-shaped foreign keys found — the mutation detector would be blind.');
+
+        $results = [];
+        $probe = function (array $e, string $kind, string $probeUri, string $controlUri, ?string $table, ?int $targetId) use (&$results, $refs, $personId): void {
+            $row = $e + ['kind' => $kind, 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => '', 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
+            $before = $this->personReferenceFingerprints($refs, $personId)['fingerprints'];
+            $beforeRow = ($table !== null && $targetId !== null) ? DB::table($table)->where('id', $targetId)->first() : null;
+
+            $status = null;
+            $fullBody = '';
+            $error = '';
+            try {
+                $response = $this->json($e['method'], '/' . ltrim($probeUri, '/'), [], $this->withTenantHeader());
+                $status = $response->getStatusCode();
+                $fullBody = (string) $response->getContent();
+            } catch (\Throwable $ex) {
+                $error = 'threw ' . class_basename($ex) . ': ' . mb_substr($ex->getMessage(), 0, 160);
+            }
+
+            $after = $this->personReferenceFingerprints($refs, $personId)['fingerprints'];
+            $moved = [];
+            foreach ($after as $where => $fingerprint) {
+                if (($before[$where] ?? null) !== $fingerprint) {
+                    $moved[] = "{$where}: " . var_export($before[$where] ?? null, true) . " -> {$fingerprint}";
+                }
+            }
+            $changed = [];
+            $deleted = false;
+            if ($beforeRow !== null) {
+                $afterRow = DB::table($table)->where('id', $targetId)->first();
+                if ($afterRow === null) {
+                    $deleted = true;
+                } else {
+                    foreach ((array) $afterRow as $column => $value) {
+                        if ((string) (((array) $beforeRow)[$column] ?? '') !== (string) $value && ! $this->isCounterColumn((string) $column)) {
+                            $changed[] = (string) $column;
+                        }
+                    }
+                }
+            }
+
+            $controlStatus = null;
+            try {
+                $controlStatus = $this->json($e['method'], '/' . ltrim($controlUri, '/'), [], $this->withTenantHeader())->getStatusCode();
+            } catch (\Throwable) {
+                $controlStatus = null;
+            }
+            $controlOk = $controlStatus !== null && $controlStatus >= 200 && $controlStatus < 300;
+            $controlPassedPermission = in_array($controlStatus, [400, 409, 422], true);
+            $isRead = $e['method'] === 'GET';
+            $emailInBody = $this->victim !== null && str_contains($fullBody, (string) $this->victim->email);
+
+            [$verdict, $note] = match (true) {
+                $deleted => ['MUTATED', "B's record was DELETED (response " . ($status ?? 'exception') . ')'],
+                $changed !== [] => ['MUTATED', "B's record CHANGED: " . implode(', ', $changed) . ' (response ' . ($status ?? 'exception') . ')'],
+                $moved !== [] => ['MUTATED', 'rows referencing the person moved (response ' . ($status ?? 'exception') . '): ' . implode('; ', $moved)],
+                $status === null => ['INCONCLUSIVE', $error],
+                $isRead && $status >= 200 && $status < 300 && $this->responseCarriesData($fullBody) && $controlOk => ['SERVED', ''],
+                $isRead && $status >= 200 && $status < 300 && $this->responseCarriesData($fullBody) => ['SERVED', "served B's record although own answered {$controlStatus}"],
+                $isRead && $status >= 200 && $status < 300 && $controlOk => ['EMPTY_200', 'answered 200 with no records'],
+                $status >= 200 && $status < 300 => ['ACCEPTED', "2xx for B's record, nothing moved — designed interaction or a misleading success"],
+                in_array($status, self::REFUSED, true) && $controlOk => ['REFUSED', ''],
+                $status === 403 && $controlPassedPermission => ['REFUSED_PERMISSION', "B's record refused 403 while own record passed the permission gate ({$controlStatus})"],
+                in_array($status, self::REFUSED, true) => ['INCONCLUSIVE', "own record also answered {$controlStatus} — endpoint not exercised"],
+                in_array($status, [400, 422], true) => ['VALIDATION_FIRST', 'validation rejected the empty body first — not a pass'],
+                $status === 405 => ['SKIPPED', 'method not allowed at runtime'],
+                default => ['INCONCLUSIVE', "status {$status}"],
+            };
+
+            $results[] = array_merge($row, [
+                'status' => $status,
+                'control_status' => $controlStatus,
+                'verdict' => $verdict,
+                'note' => $note,
+                'moved' => $moved,
+                'changed_columns' => $changed,
+                'body_excerpt' => $verdict === 'REFUSED' ? '' : mb_substr($fullBody, 0, 300),
+                'victim_email_in_body' => $emailInBody,
+            ]);
+        };
+
+        // PERSON routes: outer = B's records, person = C (related to B's records and to A's).
+        foreach ($personRoutes as $e) {
+            if ($e['skip'] !== null) {
+                $results[] = $e + ['kind' => 'person', 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => $e['skip'], 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
+                continue;
+            }
+            // A control request is a real request: put C back into everyone's records first.
+            $this->seedControlRelationships($person, $victim, $this->victimIds);
+            $this->seedControlRelationships($person, $actor, $this->controlIds);
+            [$probeUri, $missing] = $this->fillMultiParamUri($e['plan'], $e['uri'], $this->victimIds, $personId);
+            [$controlUri, $missingControl] = $this->fillMultiParamUri($e['plan'], $e['uri'], $this->controlIds, $personId);
+            if ($missing !== null || $missingControl !== null) {
+                $results[] = $e + ['kind' => 'person', 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => $missing ?? $missingControl, 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
+                continue;
+            }
+            $outerKey = null;
+            foreach ($e['plan'] as $slot) {
+                if ($slot[0] === 'fixture') {
+                    $outerKey = $slot[1];
+                    break;
+                }
+            }
+            $probe($e, 'person', $probeUri, $controlUri, $this->fixtureTable($outerKey), $outerKey !== null ? ($this->victimIds[$outerKey] ?? null) : null);
+        }
+
+        // CHILD routes: every slot is B's; the deepest row is the target.
+        foreach ($childRoutes as $e) {
+            if ($e['skip'] !== null) {
+                $results[] = $e + ['kind' => 'child', 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => $e['skip'], 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
+                continue;
+            }
+            if (! $this->recordsStillExist($e['keys'], $this->victimIds)) {
+                $this->victimIds = $this->seedRecords($this->testTenantId, $victim);
+                $this->pinPublicVisibility($this->victimIds);
+            }
+            if (! $this->recordsStillExist($e['keys'], $this->controlIds)) {
+                $this->controlIds = $this->seedRecords($this->testTenantId, $actor);
+                $this->pinPublicVisibility($this->controlIds);
+            }
+            $victimSlots = array_map(fn (string $k) => $this->victimIds[$k] ?? null, $e['keys']);
+            $controlSlots = array_map(fn (string $k) => $this->controlIds[$k] ?? null, $e['keys']);
+            if (in_array(null, $victimSlots, true) || in_array(null, $controlSlots, true)) {
+                $results[] = $e + ['kind' => 'child', 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => 'a fixture could not be created', 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
+                continue;
+            }
+            [$probeUri] = $this->fillFromIds($e['uri'], $victimSlots);
+            [$controlUri] = $this->fillFromIds($e['uri'], $controlSlots);
+            $deepest = $e['keys'][count($e['keys']) - 1];
+            $probe($e, 'child', $probeUri, $controlUri, $this->fixtureTable($deepest), $this->victimIds[$deepest] ?? null);
+        }
+
+        $this->writeEvidence('same-community-multiparam-sweep.json', $results,
+            'Every v2 route with two or more path parameters (member-facing). PERSON routes: record slots filled with member B\'s records, the person slot with a third member C related to both A\'s and B\'s records; CHILD routes: every slot B\'s. Controls use A\'s own records. Rows referencing C and B\'s target row compared before/after regardless of status. Empty JSON body.');
+        $this->printMultiSummary($results);
+
+        $key = static fn ($r) => $r['method'] . ' ' . $r['uri'];
+        $this->assertSame([], array_values(array_map($key, array_filter($results, static fn ($r) => $r['victim_email_in_body'] && in_array($r['verdict'], ['SERVED', 'ACCEPTED', 'MUTATED'], true)))), 'A multi-parameter route disclosed another member\'s e-mail address.');
+        $this->assertSame([], array_values(array_map($key, array_filter($results, fn ($r) => $r['verdict'] === 'MUTATED' && ! array_key_exists($key($r), self::KNOWN_MUTATED_BY_DESIGN)))), 'A multi-parameter route CHANGED another member\'s record or moved rows referencing the person. Read same-community-multiparam-sweep.json.');
+        $this->assertSame([], array_values(array_map($key, array_filter($results, fn ($r) => $r['verdict'] === 'ACCEPTED' && ! array_key_exists($key($r), self::ACCEPTED_BY_DESIGN)))), 'A multi-parameter route acknowledged another member\'s record with 2xx and is not a registered interaction.');
+        $this->assertSame([], array_values(array_map($key, array_filter($results, fn ($r) => $r['verdict'] === 'SERVED' && ! array_key_exists($key($r), self::PUBLIC_BY_DESIGN_READ)))), 'A multi-parameter read served another member\'s record and is not registered as public by design.');
+    }
+
+    private function printMultiSummary(array $results): void
+    {
+        $lines = ['', '=== SAME-COMMUNITY MULTI-PARAMETER SWEEP (member A -> member B\'s records; person C) ==='];
+        foreach (['person', 'child'] as $kind) {
+            $t = ['SERVED' => 0, 'EMPTY_200' => 0, 'REFUSED' => 0, 'REFUSED_PERMISSION' => 0, 'VALIDATION_FIRST' => 0, 'ACCEPTED' => 0, 'MUTATED' => 0, 'INCONCLUSIVE' => 0, 'SKIPPED' => 0];
+            foreach ($results as $r) {
+                if ($r['kind'] === $kind) {
+                    $t[$r['verdict']]++;
+                }
+            }
+            $lines[] = '';
+            $lines[] = strtoupper($kind) . ' routes: ' . array_sum($t);
+            $lines[] = sprintf('  probed                                    : %d', array_sum($t) - $t['SKIPPED']);
+            $lines[] = sprintf('    refused, own record worked              : %d', $t['REFUSED']);
+            $lines[] = sprintf('    refused 403, own passed permission gate : %d', $t['REFUSED_PERMISSION']);
+            $lines[] = sprintf('    validation rejected first (not a pass)  : %d', $t['VALIDATION_FIRST']);
+            $lines[] = sprintf('    SERVED B\'s record (reads)               : %d', $t['SERVED']);
+            $lines[] = sprintf('    answered 200 with no records            : %d', $t['EMPTY_200']);
+            $lines[] = sprintf('    ACCEPTED (2xx, nothing moved)           : %d', $t['ACCEPTED']);
+            $lines[] = sprintf('    MUTATED                                 : %d', $t['MUTATED']);
+            $lines[] = sprintf('    inconclusive                            : %d', $t['INCONCLUSIVE']);
+            $lines[] = sprintf('  skipped                                   : %d', $t['SKIPPED']);
+        }
+        $lines[] = '';
+        foreach (['MUTATED', 'ACCEPTED', 'SERVED', 'INCONCLUSIVE'] as $bucket) {
+            $rows = array_filter($results, static fn ($r) => $r['verdict'] === $bucket);
+            if ($rows === []) {
+                continue;
+            }
+            $lines[] = $bucket . ':';
+            foreach ($rows as $r) {
+                $lines[] = sprintf('  %s %-6s %s -> %s/%s  %s  %s', $r['kind'] === 'person' ? 'P' : 'C', $r['method'], $r['uri'], $r['status'] ?? 'exception', $r['control_status'] ?? '-', $r['note'], preg_replace('/\s+/', ' ', mb_substr($r['body_excerpt'], 0, 120)));
+            }
+            $lines[] = '';
+        }
+        fwrite(STDERR, implode(PHP_EOL, $lines) . PHP_EOL);
     }
 
     // ================================================================
