@@ -5,9 +5,9 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-29T15:45:51.471Z
-- Laravel commit SHA: `e415eb066c548a5a718a7d757215dd572cf8f59c`
-- Web UK repository commit SHA: `e415eb066c548a5a718a7d757215dd572cf8f59c`
+- Generated: 2026-09-11T14:37:31.654Z
+- Laravel commit SHA: `aa19256b742a4b5681125be11a2673a36674aef5`
+- Web UK repository commit SHA: `aa19256b742a4b5681125be11a2673a36674aef5`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -23,9 +23,9 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique helpers without direct API-helper assertions: 0
 - State-changing rows without direct API-helper assertions: 0
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
-- API source SHA-256: `5cd3fc6ea59b94da8f7ff31901c92970c15812be2ce33c65eb4b1142c0449517`
+- API source SHA-256: `d201b70c6282f7bcb49d81224681e41c92b3dc98b819ca46da6256eedc4948de`
 - Laravel OpenAPI SHA-256: `f452d2ee220e8deff05412bf9d2c625ab63b829d73322eed28e21d8f271af5bb`
-- Laravel API routes SHA-256: `4313a27f302a536747a1b0c894295f226730834b13d164257b74f6e4fb7b9247`
+- Laravel API routes SHA-256: `5ab6c68a14cb8b8141ab800b36b6edd971442661fed5988f3790bd5eb59997da`
 
 The JSON companion contains the full request/response, status/error, redirect, side-effect, cleanup, Laravel implementation, consumer, and test fields.
 
@@ -616,7 +616,7 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/skills/categories/{param}` | `getSkillCategory` | documented | read-only by HTTP method<br>not applicable | src/routes/skills.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/skills/members?{query}` | `getSkillMembers` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/skills.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/support/reports` | `submitSupportReport` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/contact-support.js | tests/api.test.js<br>tests/contact-turnstile-parity.test.js<br>tests/shared-accessible-shell.test.js |
-| GET | `/api/v2/tenant/bootstrap?{query}` | `getTenantBootstrap` | documented | read-only by HTTP method<br>not applicable | src/middleware/tenant-routing.js<br>src/routes/auth.js<br>src/server.js | tests/api.test.js<br>tests/auth-route-localization.test.js<br>tests/auth-tenant-authority.test.js<br>tests/authenticated-no-store-cache.test.js<br>tests/backend-contract.test.js<br>tests/feed-excludes-gamification-milestones.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/gds-conventions.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/localization.test.js<br>tests/registration-contract.test.js<br>tests/relative-date-future-values.test.js<br>tests/routes.test.js<br>tests/runtime/tenant-module-gates.spec.js<br>tests/session-touch.test.js<br>tests/shared-accessible-shell.test.js<br>tests/tenant-bootstrap-cache.test.js<br>tests/tenant-mount-authority.test.js<br>tests/tenant-routing-unknown-community.test.js |
+| GET | `/api/v2/tenant/bootstrap?{query}` | `getTenantBootstrap` | documented | read-only by HTTP method<br>not applicable | src/middleware/tenant-routing.js<br>src/routes/auth.js<br>src/server.js | tests/api.test.js<br>tests/auth-route-localization.test.js<br>tests/auth-tenant-authority.test.js<br>tests/authenticated-no-store-cache.test.js<br>tests/backend-contract.test.js<br>tests/feed-excludes-gamification-milestones.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/gds-conventions.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/localization.test.js<br>tests/registration-contract.test.js<br>tests/relative-date-future-values.test.js<br>tests/routes.test.js<br>tests/runtime/tenant-module-gates.spec.js<br>tests/session-touch.test.js<br>tests/shared-accessible-shell.test.js<br>tests/tenant-bootstrap-cache.test.js<br>tests/tenant-mount-authority.test.js<br>tests/tenant-routing-forwarded-host.test.js<br>tests/tenant-routing-protocol-relative-redirect.test.js<br>tests/tenant-routing-unknown-community.test.js |
 | GET | `/api/v2/tenants?{query}` | `getTenants` | documented | read-only by HTTP method<br>not applicable | src/server.js | tests/api.test.js<br>tests/authenticated-no-store-cache.test.js<br>tests/relative-date-future-values.test.js<br>tests/routes.test.js<br>tests/session-touch.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/ugc-translate` | `callUgcTranslateApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/events.js | tests/api.test.js<br>tests/form-field-error-targeting-more.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/users?{query}` | `getMembersV2` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js | tests/api.test.js<br>tests/caring-caregiver-consent.test.js<br>tests/jobs-owner-lookup.test.js<br>tests/shared-accessible-shell.test.js |

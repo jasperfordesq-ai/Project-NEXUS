@@ -2,20 +2,20 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-29T15:45:50.793Z
-Laravel commit SHA: `e415eb066c548a5a718a7d757215dd572cf8f59c`
-Web UK repository commit SHA: `e415eb066c548a5a718a7d757215dd572cf8f59c`
-Laravel working tree dirty: yes
-Web UK repository working tree dirty: yes
-Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
+Generated: 2026-09-11T14:37:23.188Z
+Laravel commit SHA: `aa19256b742a4b5681125be11a2673a36674aef5`
+Web UK repository commit SHA: `aa19256b742a4b5681125be11a2673a36674aef5`
+Laravel working tree dirty: no
+Web UK repository working tree dirty: no
+Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
 
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 737 |
+| web-uk routes | 740 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 27 |
+| Extra web-uk routes | 30 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -61,7 +61,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | legal | 6 | 0 | 3 | 0 |
 | legal-acceptance | 0 | 0 | 2 | 0 |
 | listings | 19 | 0 | 1 | 0 |
-| login | 7 | 0 | 0 | 0 |
+| login | 7 | 0 | 3 | 0 |
 | logout | 1 | 0 | 0 | 0 |
 | marketplace | 50 | 0 | 2 | 0 |
 | matches | 4 | 0 | 0 | 0 |
@@ -129,6 +129,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/legal/{param}/versions/{param}` | legal | legal/version | web-uk/src/routes/legal.js |
 | GET | `/legal/{param}/versions/compare` | legal | legal/compare | web-uk/src/routes/legal.js |
 | GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
+| GET | `/login/two-factor/setup` | login |  | web-uk/src/server.js |
+| POST | `/login/two-factor/setup` | login |  | web-uk/src/server.js |
+| POST | `/login/two-factor/setup/complete` | login |  | web-uk/src/server.js |
 | GET | `/marketplace/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-actions.js |
 | POST | `/marketplace/offers/{param}/accept-counter` | marketplace |  | web-uk/src/routes/marketplace-actions.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
