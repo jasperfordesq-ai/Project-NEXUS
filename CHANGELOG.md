@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The Play upload-key signing configuration and the `-PplayVersionCode` override are now generated into the Android project by a config plugin (`plugins/with-android-play-signing`) instead of living only in one machine's git-ignored Gradle file, so a bundle built from a clean checkout is signed with the upload key rather than the debug key.
+
 - A web sign-in page that is out of date no longer answers "Sign-in failed" when the server sends an answer it cannot read: the update reload is applied at once on sign-in, registration, password and two-factor pages instead of waiting for the cursor to leave a field, an unrecognised sign-in answer on a stale bundle says the page was out of date and refreshes it immediately, and a live session ended because the account now requires two-factor authentication is explained as such rather than as an expired session. Seen on the first web sign-in after mandatory administrator two-factor went live.
 
 - Android release builds no longer fail on Windows when Node crashes while shutting down after the update-manifest step: every Node process the Gradle build starts now exits cleanly the moment its work is done (`plugins/with-android-node-clean-exit`). Seen in two of three builds of the first Expo SDK 55 bundle.
