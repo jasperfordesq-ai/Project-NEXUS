@@ -309,6 +309,7 @@
       ],
       "./plugins/with-android-network-security",
       "./plugins/with-android-font-scale",
+      "./plugins/with-android-node-clean-exit",
       [
         "expo-build-properties",
         {

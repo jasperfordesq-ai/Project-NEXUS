@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Android release builds no longer fail on Windows when Node crashes while shutting down after the update-manifest step: every Node process the Gradle build starts now exits cleanly the moment its work is done (`plugins/with-android-node-clean-exit`). Seen in two of three builds of the first Expo SDK 55 bundle.
+
 - Native volunteering now preserves expense, donation-pledge and hour drafts across tab changes, warns before leaving with unsaved or pending input, serializes rapid submissions, and retries certificate, expense, pledge and hour writes with the same content-bound operation identity. Laravel durably returns the original record after response loss, preventing duplicate records and duplicate hour credits.
 
 - Administrator shift-swap approve/reject decisions now have one atomic winner. Retrying the committed decision succeeds without repeating notifications or assignments, while the opposite decision returns a conflict.
