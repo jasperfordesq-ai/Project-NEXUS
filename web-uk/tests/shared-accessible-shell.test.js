@@ -32476,12 +32476,16 @@ describe('shared accessible frontend shell', () => {
       code: '123456'
     });
 
+    // Turning the factor off needs the current authenticator code as well as the
+    // password (API rule since 12 September 2026); both are forwarded.
     const disable2faResponse = await post('/profile/two-factor/disable', {
-      password: 'current-password'
+      password: 'current-password',
+      code: '654321'
     });
     expect(disable2faResponse.headers.location).toBe('/login?status=2fa-disabled');
     expect(api.callProfileApi).toHaveBeenLastCalledWith('test-token', 'POST', '/auth/2fa/disable', {
-      password: 'current-password'
+      password: 'current-password',
+      code: '654321'
     });
 
     const deleteResponse = await post('/profile/delete-account', {

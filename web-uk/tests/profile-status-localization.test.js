@@ -215,11 +215,13 @@ describe('request-scoped profile status localization', () => {
     const response = await request(createApp('en'))
       .post('/profile/two-factor/disable')
       .type('form')
-      .send({ password: 'current-password' });
+      // Password AND a current authenticator code since 12 September 2026.
+      .send({ password: 'current-password', code: '654321' });
 
     expect(response.headers.location).toBe('/login?status=2fa-disabled');
     expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/disable', {
-      password: 'current-password'
+      password: 'current-password',
+      code: '654321'
     });
     expect(auth.clearAuthCookies).toHaveBeenCalledTimes(1);
   });
