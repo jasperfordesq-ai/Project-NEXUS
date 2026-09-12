@@ -10,12 +10,12 @@ import { Input } from '@heroui/react/input';
 import { Label } from '@heroui/react/label';
 import { TextField } from '@heroui/react/textfield';
 import { useTranslation } from 'react-i18next';
-import i18n from 'i18next';
 // Auth startup surface: direct context modules, never the @/contexts barrel (bundle budget).
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { api, tokenManager } from '@/lib/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { getFormattingLocale } from '@/lib/helpers';
 import { downloadRecoveryCodes, recoveryCodesFilename } from '@/lib/recoveryCodes';
 
 interface Setup { qr_code_url: string; secret: string }
@@ -96,7 +96,9 @@ export default function TwoFactorSetupPage() {
       downloadRecoveryCodes({
         title: t('mandatory_setup.recovery_file_title'),
         generated: t('mandatory_setup.recovery_file_generated', {
-          date: new Date().toLocaleDateString(i18n.language),
+          // getFormattingLocale(), never i18n.language: the helper adds the community's
+          // region, so a date reads the way the member expects. A contract check enforces it.
+          date: new Date().toLocaleDateString(getFormattingLocale()),
         }),
         guidance: t('mandatory_setup.recovery_file_guidance'),
         codes: completion.backup_codes,
