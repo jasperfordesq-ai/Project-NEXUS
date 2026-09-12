@@ -72,8 +72,11 @@ class PollServiceTest extends TestCase
 
     public function test_vote_inserts_and_returns_true(): void
     {
+        // Twice, not once: vote() wraps the whole cast, and the XP award inside it
+        // opens its own transaction (GamificationService::awardXP), which against a
+        // real connection nests as a savepoint.
         DB::shouldReceive('transaction')
-            ->once()
+            ->twice()
             ->andReturnUsing(fn (callable $cb) => $cb());
 
         DB::shouldReceive('selectOne')
@@ -94,6 +97,15 @@ class PollServiceTest extends TestCase
         DB::shouldReceive('affectingStatement')
             ->once()
             ->andReturn(1);
+
+        // After awarding XP the vote re-reads user_xp_log to confirm the award
+        // actually persisted before reporting success, so the facade must offer
+        // table(). A partial DB mock has to cover every method the real chain
+        // calls or Mockery raises BadMethodCallException.
+        $xpLogQuery = Mockery::mock();
+        $xpLogQuery->shouldReceive('where')->andReturnSelf();
+        $xpLogQuery->shouldReceive('exists')->andReturn(true);
+        DB::shouldReceive('table')->with('user_xp_log')->andReturn($xpLogQuery);
 
         $result = PollService::vote(1, 10, 1);
         $this->assertTrue($result);

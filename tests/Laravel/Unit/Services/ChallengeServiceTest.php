@@ -200,9 +200,18 @@ class ChallengeServiceTest extends TestCase
     {
         $progressQuery = Mockery::mock();
         $progressQuery->shouldReceive('where')->andReturnSelf();
+        // claimWithResult() reads the progress row FOR UPDATE so two concurrent
+        // claims cannot both award. A partial DB mock has to offer every method
+        // the real chain calls, or Mockery raises BadMethodCallException.
+        $progressQuery->shouldReceive('lockForUpdate')->andReturnSelf();
         $progressQuery->shouldReceive('first')->andReturn($progress);
         $progressQuery->shouldReceive('update')->andReturn($updated);
         DB::shouldReceive('table')->with('user_challenge_progress')->andReturn($progressQuery);
+
+        // The claim + award now commit together, so the facade must offer
+        // transaction(). Run the closure inline: these are unit tests with a
+        // mocked connection, so there is no real transaction to open.
+        DB::shouldReceive('transaction')->andReturnUsing(static fn (callable $callback) => $callback());
 
         return $progressQuery;
     }
