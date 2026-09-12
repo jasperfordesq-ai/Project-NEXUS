@@ -42,6 +42,17 @@ emphatically not EAS's remote counter.**
 
 Check it at **Play Console → Production → Track summary → Latest release**.
 
+Then record what you read in `mobile/live-store-build.json` once the new build is
+released (commit it was built from, version code, version name = runtime version,
+"Released on" time). Since 2026-09-12 that file is what `npm run verify:release` uses
+to refuse a version code below the live one, and what `scripts/publish-update.mjs`
+uses to refuse an over-the-air update whose native dependencies differ from the
+binary members have — the near-miss that made this necessary is in
+[`DISTRIBUTION.md`](DISTRIBUTION.md), "What an over-the-air update cannot do".
+🔴 Bump `expo.version` whenever `package.json` dependencies or `app.json` plugins
+change, not only for user-visible changes: the runtime version is derived from it,
+and it is the only thing that stops an old binary from taking an update it cannot run.
+
 Measured on 2026-09-09: Play was live on **7**, while `eas build:version:get`
 reported the remote counter as **4**. The `production` EAS profile has
 `autoIncrement: true` with `appVersionSource: "remote"`, so an EAS build that day

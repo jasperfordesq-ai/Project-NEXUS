@@ -13,10 +13,16 @@ const network = fs.readFileSync(new URL('../android-network-security-config.xml'
 const failures = [];
 const assert = (condition, message) => { if (!condition) failures.push(message); };
 assert(app.version === pkg.version, 'app.json and package.json versions must match');
-// 🔴 This proves the code is set and past 1 — NOT that it incremented since the last
-// release, which is the failure Play actually rejects. Detecting that needs a committed
-// record of the last shipped code; tracked as a journey item rather than faked here.
+// The committed record of the last shipped code is `live-store-build.json` (since
+// 2026-09-12). Equal is allowed — the tree is at the live build between releases;
+// below is the downgrade Play rejects. It still cannot know whether Play has moved on
+// without the record being updated, so read the Console before every release.
+const liveBuild = JSON.parse(fs.readFileSync(new URL('../live-store-build.json', import.meta.url), 'utf8'));
 assert(Number.isInteger(app.android?.versionCode) && app.android.versionCode > 1, 'Android versionCode must be incremented');
+assert(
+  app.android?.versionCode >= liveBuild.android.versionCode,
+  `Android versionCode ${app.android?.versionCode} is below the live store build ${liveBuild.android.versionCode} (live-store-build.json) — Play would reject it as a downgrade`,
+);
 assert(app.runtimeVersion?.policy === 'appVersion', 'runtimeVersion must use appVersion policy');
 assert(app.updates?.enabled === true && app.updates?.checkAutomatically === 'ON_LOAD', 'OTA checks must be enabled on load');
 assert(eas.build?.production?.channel === 'production', 'production build must be pinned to production OTA channel');

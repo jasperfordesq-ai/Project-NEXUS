@@ -183,6 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Over-the-air mobile updates are now refused when the native surface (dependencies, Expo plugins, permissions, update channel) differs from the store build members have installed, recorded in `mobile/live-store-build.json`; `verify:release` also refuses an Android version code below the live one. Added after the two-factor lockout fix was nearly published as an update that the SDK 54 store build could not have run.
+
 - Published [`docs/SECURITY-ASSURANCE.md`](docs/SECURITY-ASSURANCE.md), a public description of how security assessment works on the platform: what gets tested, how findings are recorded and tracked in the private register, how evidence is handled, and what a customer with a supplier-assurance obligation can ask for. It states process only and deliberately contains no findings. Linked from the documentation index and the published site navigation, with contributor and agent guidance pointing at it so security assessment is maintained as an ongoing record rather than a one-off audit.
 
 - Repeatable real-backend MFA journeys for React, the accessible website (with JavaScript disabled), and the Android debug emulator, using dedicated synthetic accounts in the isolated end-to-end database. Browser tests cover enrollment, recovery acknowledgment, recovery sign-in and rejected code reuse; Android additionally checks session restoration after process restart.

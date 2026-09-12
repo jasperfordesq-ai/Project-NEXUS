@@ -282,6 +282,28 @@ Anything native — permissions, push, camera, location, the certificate pins in
 `android-network-security-config.xml` — needs a new binary. An OTA update cannot replace
 packaged native configuration.
 
+🔴 **The runtime version does not prove compatibility, and the update service will not
+check for you.** The policy is `appVersion`, so two builds share a runtime version whenever
+`expo.version` is the same — regardless of what is inside them. On 2026-09-12 the store
+build (version code 9, from `773562745`) was on Expo SDK 54 / React Native 0.81 with
+`expo-av`, while `main` had moved to SDK 55 / React Native 0.83 with `expo-audio` and
+`expo-video` — at the same `expo.version` 1.4.0. An OTA of `main`, which was the planned fix
+for administrators locked out by mandatory two-factor, would have been served to build 9
+and every member's app would have failed on its next cold start; expo-updates' error
+recovery is documented by Expo as "not a full safety net". It was caught by diffing
+`package.json` against the live build's commit, not by any tool.
+
+Two things now stand in the way of a repeat. `live-store-build.json` records the commit,
+version code and runtime version of the build members actually have; update it by hand the
+moment a new build is released on Play. `scripts/publish-update.mjs` compares the native
+surface (every dependency name, the version of every Expo/React Native/native package,
+`app.json` plugins, permissions, `newArchEnabled`, update URL and channel — see
+`scripts/native-surface-lib.cjs`) between that commit and the tree, and **refuses** a
+`production` or `website` publish on any difference. There is no override: the remedy is a
+new store build with a new `expo.version`, which is also what moves the runtime version so
+the old binary stops listening. Bump `expo.version` whenever the native surface changes,
+even when nothing user-visible did.
+
 ## Sentry source maps
 
 The EAS build profiles currently set `SENTRY_DISABLE_AUTO_UPLOAD=true` so Sentry source-map upload cannot block APK/AAB packaging while Sentry organization/project/token values are not configured. Runtime Sentry reporting can still be configured separately. Re-enable source-map upload only after setting `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` in EAS.

@@ -18,6 +18,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 /**
  * Channel → EAS environment.
@@ -78,6 +79,48 @@ if (status.status !== 0 || status.stdout.trim() || (requiresMain && branch.stdou
 }
 
 const sha = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim();
+
+/**
+ * 🔴 An update can only replace JavaScript. If anything native differs between the
+ * build members have installed and the code about to be published, the update
+ * service will still serve it (the runtime version is derived from `expo.version`,
+ * which nobody is forced to bump) and the app fails on the next cold start.
+ *
+ * That very nearly happened on 2026-09-12: the store build was on Expo SDK 54 with
+ * expo-av; `main` was on SDK 55 with expo-audio and expo-video, at the same
+ * `expo.version`. `live-store-build.json` records the commit the live build came
+ * from; the surface of that commit is compared with the working tree here, and a
+ * public channel is refused on any difference. The remedy is a new store build —
+ * there is deliberately no override.
+ */
+if (requiresMain) {
+  const { nativeSurface, nativeSurfaceDifferences } = await import('./native-surface-lib.cjs');
+  const record = JSON.parse(readFileSync(new URL('../live-store-build.json', import.meta.url), 'utf8'));
+  const liveCommit = record.android.commit;
+  const show = (file) => {
+    const out = spawnSync('git', ['show', `${liveCommit}:mobile/${file}`], { encoding: 'utf8' });
+    if (out.status !== 0) {
+      console.error(`Cannot read mobile/${file} at the live store build's commit ${liveCommit}: ${out.stderr.trim()}`);
+      process.exit(1);
+    }
+    return JSON.parse(out.stdout);
+  };
+  const live = nativeSurface(show('package.json'), show('app.json'));
+  const candidate = nativeSurface(
+    JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')),
+    JSON.parse(readFileSync(new URL('../app.json', import.meta.url), 'utf8'))
+  );
+  const differences = nativeSurfaceDifferences(live, candidate);
+  if (differences.length > 0) {
+    console.error(
+      `REFUSED: the native surface differs from the store build members have installed ` +
+        `(version code ${record.android.versionCode}, commit ${liveCommit.slice(0, 9)}). ` +
+        'An over-the-air update cannot deliver this; ship a new store build, then update live-store-build.json.'
+    );
+    for (const difference of differences) console.error(`  - ${difference}`);
+    process.exit(78);
+  }
+}
 
 /**
  * 🔴 On Windows this runs through a shell (`npx` is a .cmd), and `spawnSync` with
