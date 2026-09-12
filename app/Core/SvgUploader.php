@@ -53,7 +53,17 @@ class SvgUploader
     private const CSS_FORBIDDEN = [
         'javascript:', 'expression(', '@import', 'url(', 'behavior:',
         '-moz-binding', '<',
+        // Any CSS escape. `\75rl(` is `url(` to the CSS parser and slips past the
+        // token matching above; logo styles have no legitimate need for escapes.
+        '\\',
     ];
+
+    /**
+     * SMIL animation elements. They can rewrite ANY attribute of their target
+     * at render time, including event handlers and href, which would sidestep
+     * the attribute scrub — so their `attributeName` target is checked too.
+     */
+    private const ANIMATION_ELEMENTS = ['animate', 'animatetransform', 'animatemotion', 'animatecolor', 'set'];
 
     /**
      * Validate, sanitise, and store an uploaded SVG.
@@ -187,6 +197,13 @@ class SvgUploader
                 continue;
             }
 
+            // Declarative animation that targets an event handler, href or style
+            // would re-introduce exactly what scrubAttributes() removes.
+            if (\in_array($tag, self::ANIMATION_ELEMENTS, true) && self::animatesDangerousAttribute($child)) {
+                $node->removeChild($child);
+                continue;
+            }
+
             // <style> bodies: keep only if the CSS is free of dangerous tokens.
             if ($tag === 'style') {
                 if (self::cssIsDangerous($child->textContent ?? '')) {
@@ -241,6 +258,27 @@ class SvgUploader
                 $el->removeAttributeNode($attr);
             }
         }
+    }
+
+    /**
+     * True when a SMIL element's `attributeName` names an event handler, an
+     * href (plain or namespaced) or `style` — the attributes whose values are
+     * otherwise vetted and which animation could set freely.
+     */
+    private static function animatesDangerousAttribute(\DOMElement $el): bool
+    {
+        foreach ($el->attributes as $attr) {
+            if (\strtolower($attr->localName ?? $attr->nodeName) !== 'attributename') {
+                continue;
+            }
+            $target = \strtolower(\trim((string) $attr->nodeValue));
+            $colon = \strrpos($target, ':');
+            $local = $colon === false ? $target : \substr($target, $colon + 1);
+
+            return \str_starts_with($local, 'on') || \in_array($local, ['href', 'style'], true);
+        }
+
+        return false;
     }
 
     private static function cssIsDangerous(string $css): bool

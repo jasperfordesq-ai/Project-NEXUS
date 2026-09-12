@@ -58,6 +58,51 @@ class SvgUploaderTest extends TestCase
         $this->assertStringContainsString('<rect', $out);
     }
 
+    /**
+     * E-005, F-018. `\75rl(` is `url(` once the CSS parser decodes the escape,
+     * so token matching on the raw text missed it in both a <style> body and an
+     * inline style attribute.
+     */
+    public function test_css_escapes_cannot_smuggle_a_forbidden_token(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg">'
+            . '<style>rect{fill:\75rl(https://evil.example/track.png)}</style>'
+            . '<rect width="10" height="10" style="fill:\\75 rl(https://evil.example/b.png)"/>'
+            . '<circle r="4" style="opacity:0.5"/></svg>';
+
+        $out = SvgUploader::sanitize($svg);
+
+        $this->assertStringNotContainsString('<style', $out);
+        $this->assertStringNotContainsString('evil.example', $out);
+        $this->assertStringContainsString('<rect', $out);
+        $this->assertStringContainsString('style="opacity:0.5"', $out);
+    }
+
+    /**
+     * E-005, F-018. SMIL can set any attribute of its target at render time,
+     * so an <animate>/<set> aimed at an event handler or href re-created what
+     * the attribute scrub had removed. Harmless animation is kept.
+     */
+    public function test_removes_smil_animation_that_targets_event_handlers_or_href(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
+            . '<rect id="r" width="10" height="10">'
+            . '<set attributeName="onload" to="alert(1)"/>'
+            . '<animate attributeName="opacity" from="0" to="1" dur="1s"/>'
+            . '</rect>'
+            . '<use href="#r"><animate attributeName="xlink:href" to="https://evil.example/x.svg#p"/></use>'
+            . '<circle r="2"><set ATTRIBUTENAME="style" to="fill:\\75rl(https://evil.example/c)"/></circle>'
+            . '</svg>';
+
+        $out = SvgUploader::sanitize($svg);
+
+        $this->assertStringNotContainsString('<set', $out);
+        $this->assertStringNotContainsString('alert(1)', $out);
+        $this->assertStringNotContainsString('evil.example', $out);
+        $this->assertStringContainsString('attributeName="opacity"', $out);
+        $this->assertStringContainsString('<use', $out);
+    }
+
     public function test_removes_foreign_object(): void
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg">'
