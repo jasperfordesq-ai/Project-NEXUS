@@ -10,11 +10,13 @@ import { Input } from '@heroui/react/input';
 import { Label } from '@heroui/react/label';
 import { TextField } from '@heroui/react/textfield';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 // Auth startup surface: direct context modules, never the @/contexts barrel (bundle budget).
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { api, tokenManager } from '@/lib/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { downloadRecoveryCodes, recoveryCodesFilename } from '@/lib/recoveryCodes';
 
 interface Setup { qr_code_url: string; secret: string }
 interface Completion {
@@ -33,6 +35,7 @@ export default function TwoFactorSetupPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [copied, setCopied] = useState(false);
   usePageTitle(t('mandatory_setup.title'));
 
   useEffect(() => {
@@ -71,6 +74,39 @@ export default function TwoFactorSetupPage() {
     finally { setBusy(false); }
   }
 
+  /**
+   * 🔴 Both of these read the codes straight out of component state and go no further.
+   * Nothing is sent, nothing is logged, and the failure paths say so on screen rather
+   * than to the console — a recovery code in a log is a password in a log.
+   */
+  async function copyCodes() {
+    if (!completion) return;
+    try {
+      await navigator.clipboard.writeText(completion.backup_codes.join('\n'));
+      setCopied(true);
+      setError('');
+    } catch {
+      setError(t('mandatory_setup.recovery_copy_failed'));
+    }
+  }
+
+  function saveCodes() {
+    if (!completion) return;
+    try {
+      downloadRecoveryCodes({
+        title: t('mandatory_setup.recovery_file_title'),
+        generated: t('mandatory_setup.recovery_file_generated', {
+          date: new Date().toLocaleDateString(i18n.language),
+        }),
+        guidance: t('mandatory_setup.recovery_file_guidance'),
+        codes: completion.backup_codes,
+      }, recoveryCodesFilename());
+      setError('');
+    } catch {
+      setError(t('mandatory_setup.recovery_download_failed'));
+    }
+  }
+
   async function finish() {
     if (!completion) return;
     setBusy(true);
@@ -89,9 +125,21 @@ export default function TwoFactorSetupPage() {
       {completion ? <>
         <h2 className="text-xl font-semibold">{t('mandatory_setup.recovery_title')}</h2>
         <p>{t('mandatory_setup.recovery_help')}</p>
-        <ul className="grid grid-cols-2 gap-2 font-mono" aria-label={t('mandatory_setup.recovery_title')}>
+        <p role="alert" className="rounded-md border border-warning-500 bg-warning-50 px-3 py-2 text-sm dark:bg-warning-950">
+          {t('mandatory_setup.recovery_once')}
+        </p>
+        <ul
+          className="grid grid-cols-2 gap-2 rounded-md border border-theme-default bg-theme-elevated p-4 font-mono select-all"
+          aria-label={t('mandatory_setup.recovery_title')}
+        >
           {completion.backup_codes.map(value => <li key={value}>{value}</li>)}
         </ul>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onPress={() => void copyCodes()}>
+            {t(copied ? 'mandatory_setup.recovery_copied' : 'mandatory_setup.recovery_copy')}
+          </Button>
+          <Button variant="secondary" onPress={saveCodes}>{t('mandatory_setup.recovery_download')}</Button>
+        </div>
         <Button onPress={() => void finish()} isDisabled={busy}>{t('mandatory_setup.saved')}</Button>
       </> : setup ? <form onSubmit={verify} className="space-y-5">
         <p>{t('mandatory_setup.scan')}</p>

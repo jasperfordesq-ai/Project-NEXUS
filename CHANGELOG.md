@@ -220,6 +220,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Two-factor recovery codes can now be saved. The enrolment screen warns that the codes are shown once, and offers a copy button and a plain-text download built entirely in the page, so the codes are never requested, never logged and never left behind in an address that could be fetched again. Translated into all eleven languages.
+
 - Over-the-air mobile updates are now refused when the native surface (dependencies, Expo plugins, permissions, update channel) differs from the store build members have installed, recorded in `mobile/live-store-build.json`; `verify:release` also refuses an Android version code below the live one. Added after the two-factor lockout fix was nearly published as an update that the SDK 54 store build could not have run.
 
 - **`docs/SECURITY-ASSURANCE.md` — how security assessment works here, and the register behind
