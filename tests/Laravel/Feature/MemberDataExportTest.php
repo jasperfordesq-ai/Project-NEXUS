@@ -451,4 +451,26 @@ class MemberDataExportTest extends TestCase
         $response = $this->apiPost('/v2/me/data-export', ['format' => 'json']);
         $response->assertStatus(429);
     }
+
+    /**
+     * E-005, F-017. A replayed Idempotency-Key writes no new audit row, so the
+     * database-backed count alone let a member rebuild and re-download the
+     * archive as often as they liked. Every build counts against the day.
+     */
+    public function test_replaying_an_export_key_still_counts_against_the_daily_build_limit(): void
+    {
+        $userId = $this->makeUser(self::PRIMARY_TENANT_ID);
+        Sanctum::actingAs(User::query()->findOrFail($userId));
+        $headers = $this->withTenantHeader(['Idempotency-Key' => 'mobile-export-replay-cap-1']);
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->get('/api/v2/me/data-export?format=json', $headers)->assertStatus(200);
+        }
+
+        // Still one audit row: the four repeats were genuine replays…
+        $this->assertSame(1, DB::table('member_data_exports')->where('user_id', $userId)->count());
+
+        // …but the archive was built five times, which is the whole daily allowance.
+        $this->get('/api/v2/me/data-export?format=json', $headers)->assertStatus(429);
+    }
 }

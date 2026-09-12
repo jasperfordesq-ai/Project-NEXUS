@@ -44,6 +44,12 @@ class MemberDataExportController extends BaseApiController
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('mfa.impersonation_read_only'), null, 403);
         }
 
+        // Every archive build counts here, replays included. The database-backed
+        // count further down only sees new export rows, so a replayed
+        // Idempotency-Key could rebuild and re-download the archive without
+        // limit (E-005, F-017). Same allowance as the durable check: 5 per day.
+        $this->rateLimit('member_data_export_build', 5, 86400);
+
         $format = (string) $request->input('format', 'json');
         if (!in_array($format, ['json', 'zip'], true)) {
             $format = 'json';
