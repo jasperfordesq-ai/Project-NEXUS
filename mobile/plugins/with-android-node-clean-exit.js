@@ -21,7 +21,7 @@ const REACT_BLOCK = /^([ 	]*)react[ 	]*\{[ 	]*$/m;
 
 function injectNodeCleanExit(gradleSource, preloadPath) {
   const forwardSlashes = preloadPath.replace(/\\/g, '/');
-  const line = `nodeExecutableAndArgs = ["node", "--require", "${forwardSlashes}"]`;
+  const line = `nodeExecutableAndArgs = ["node", "${forwardSlashes}"]`;
   // Only an ACTIVE setting counts. The template Expo generates carries a commented
   // `// nodeExecutableAndArgs = ["node"]`; a plain `includes()` matched that on the
   // first build, replaced nothing, and the crash it was meant to stop happened again.
@@ -42,8 +42,10 @@ module.exports = function withAndroidNodeCleanExit(config) {
   // `@expo/config-plugins` drags in an ESM-only `uuid` that Jest cannot parse.
   const { withAppBuildGradle } = require('@expo/config-plugins');
   return withAppBuildGradle(config, (modConfig) => {
-    const preload = path.join(modConfig.modRequest.projectRoot, 'scripts', 'node-clean-exit.cjs');
-    modConfig.modResults.contents = injectNodeCleanExit(modConfig.modResults.contents, preload);
+    // The wrapper preloads scripts/node-clean-exit.cjs itself and retries the one
+    // script that still crashes at teardown even with the preload (see its header).
+    const wrapper = path.join(modConfig.modRequest.projectRoot, 'scripts', 'node-retrying.cjs');
+    modConfig.modResults.contents = injectNodeCleanExit(modConfig.modResults.contents, wrapper);
     return modConfig;
   });
 };

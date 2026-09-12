@@ -26,8 +26,8 @@ const generated = [
 
 describe('with-android-node-clean-exit', () => {
   it('adds the preload to the react block with forward slashes, so Groovy reads a Windows path', () => {
-    const out = injectNodeCleanExit(generated, 'C:\\tmp\\nexus\\mobile\\scripts\\node-clean-exit.cjs');
-    expect(out).toContain('react {\n    nodeExecutableAndArgs = ["node", "--require", "C:/tmp/nexus/mobile/scripts/node-clean-exit.cjs"]');
+    const out = injectNodeCleanExit(generated, 'C:\\tmp\\nexus\\mobile\\scripts\\node-retrying.cjs');
+    expect(out).toContain('react {\n    nodeExecutableAndArgs = ["node", "C:/tmp/nexus/mobile/scripts/node-retrying.cjs"]');
     expect(out).toContain('bundleCommand = "export:embed"');
     // The template's commented example must not count as an existing setting.
     expect(out.match(/^\s*nodeExecutableAndArgs\s*=/gm)).toHaveLength(1);
@@ -35,10 +35,10 @@ describe('with-android-node-clean-exit', () => {
   });
 
   it('replaces an existing setting instead of adding a second one', () => {
-    const once = injectNodeCleanExit(generated, '/a/scripts/node-clean-exit.cjs');
-    const twice = injectNodeCleanExit(once, '/b/scripts/node-clean-exit.cjs');
+    const once = injectNodeCleanExit(generated, '/a/scripts/node-retrying.cjs');
+    const twice = injectNodeCleanExit(once, '/b/scripts/node-retrying.cjs');
     expect(twice.match(/^\s*nodeExecutableAndArgs\s*=/gm)).toHaveLength(1);
-    expect(twice).toContain('"/b/scripts/node-clean-exit.cjs"');
+    expect(twice).toContain('"/b/scripts/node-retrying.cjs"');
   });
 
   it('refuses a build.gradle without a react block rather than silently doing nothing', () => {
@@ -49,5 +49,6 @@ describe('with-android-node-clean-exit', () => {
     const app = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'app.json'), 'utf8')).expo;
     expect(app.plugins).toContain('./plugins/with-android-node-clean-exit');
     expect(fs.existsSync(path.join(__dirname, '..', 'scripts', 'node-clean-exit.cjs'))).toBe(true);
+    expect(fs.existsSync(path.join(__dirname, '..', 'scripts', 'node-retrying.cjs'))).toBe(true);
   });
 });
