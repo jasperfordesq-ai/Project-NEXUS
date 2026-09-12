@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Android release builds no longer fail on Windows when Node crashes while shutting down after the update-manifest step: the Gradle build now runs Node through a wrapper that exits that one script cleanly the moment its work is done and retries it, bounded, if Node still crashes at teardown (`plugins/with-android-node-clean-exit`, `scripts/node-retrying.cjs`). Seen in two of three builds of the first Expo SDK 55 bundle.
+
+- A web sign-in page that is out of date no longer answers "Sign-in failed" when the server sends an answer it cannot read: the update reload is applied at once on sign-in, registration, password and two-factor pages instead of waiting for the cursor to leave a field, an unrecognised sign-in answer on a stale bundle says the page was out of date and refreshes it immediately, and a live session ended because the account now requires two-factor authentication is explained as such rather than as an expired session. Seen on the first web sign-in after mandatory administrator two-factor went live.
+
+- The Play upload-key signing configuration and the `-PplayVersionCode` override are now generated into the Android project by a config plugin (`plugins/with-android-play-signing`) instead of living only in one machine's git-ignored Gradle file, so a bundle built from a clean checkout is signed with the upload key rather than the debug key.
+
 - **XP-shop purchases from the web app and the accessible site would have failed once the current
   code shipped.** The purchase endpoint started requiring an 8–191 character operation key
   (`c03aeefe6`, so a retried request replays the original purchase instead of spending XP
@@ -214,6 +220,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Over-the-air mobile updates are now refused when the native surface (dependencies, Expo plugins, permissions, update channel) differs from the store build members have installed, recorded in `mobile/live-store-build.json`; `verify:release` also refuses an Android version code below the live one. Added after the two-factor lockout fix was nearly published as an update that the SDK 54 store build could not have run.
+
 - **`docs/SECURITY-ASSURANCE.md` — how security assessment works here, and the register behind
   it.** Project NEXUS hosts communities for public-sector bodies with supplier-assurance
   obligations, so security work is now a maintained record rather than a series of one-off
@@ -322,6 +330,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - It also requires `--version-code` rather than defaulting, because Play refuses a version code it has already seen.
 
 ### Changed
+
+- Native app version 1.5.0, Android version code 10: the store release carrying the two-factor sign-in and the Expo SDK 55 upgrade. The bump also gives the build a new over-the-air runtime version, so an update built for SDK 55 can never be served to the SDK 54 build 9 still installed on phones.
 
 - The member directory's explanation of why it lists fewer people than have joined the community is now a single collapsible line. It shows the count on one row with a "Why?" control, and only opens the visibility rules, the closing note and the privacy-settings link when a member asks for them. As an always-open alert it pushed the first row of member cards below the fold on desktop and took several lines on phones.
 
