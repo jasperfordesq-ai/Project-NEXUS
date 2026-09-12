@@ -1,11 +1,11 @@
 {
   "_comment": "The store build members actually have installed. Updated by hand when a new build goes live on Google Play (Production track, 'Released on' time). scripts/publish-update.mjs refuses a public over-the-air update when the native surface (package.json dependencies, app.json plugins/permissions) differs between android.commit and the code being published — see scripts/native-surface-lib.cjs. verify:release checks the version code being built is not below this one.",
   "android": {
-    "versionCode": 9,
-    "versionName": "1.4.0",
-    "runtimeVersion": "1.4.0",
-    "commit": "773562745c1105033e57e5aa2ced3409828d9153",
-    "releasedOn": "2026-09-10T12:24:00+01:00",
-    "expoSdk": "54"
+    "versionCode": 10,
+    "versionName": "1.5.0",
+    "runtimeVersion": "1.5.0",
+    "commit": "823846339ec91742191885ee461dd95c54cfd500",
+    "releasedOn": "2026-09-12T12:36:00+01:00",
+    "expoSdk": "55"
   }
 }
