@@ -17,6 +17,22 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 
+// The disable-two-factor dialog uses HeroUI's InputOTP. Behind it, input-otp
+// polls document.elementFromPoint on a timer once the field has been focused
+// (password-manager badge detection). jsdom has no layout and leaves that
+// function undefined, so the timer throws AFTER the test that typed a code has
+// finished and Vitest reports an unhandled error that reds the whole shard.
+// The stub lives here, not in the shared setup: axe-core also branches on this
+// function, and a global stub made the caring-community a11y suite report a
+// false aria-hidden-focus violation. Each test file has its own jsdom document.
+if (typeof document.elementFromPoint !== 'function') {
+  Object.defineProperty(document, 'elementFromPoint', {
+    writable: true,
+    configurable: true,
+    value: () => null,
+  });
+}
+
 const webPushMocks = vi.hoisted(() => ({
   subscribe: vi.fn().mockResolvedValue(true),
   unsubscribe: vi.fn().mockResolvedValue(true),

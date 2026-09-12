@@ -222,20 +222,12 @@ Object.defineProperty(window, 'IntersectionObserver', {
   value: MockIntersectionObserver,
 });
 
-// jsdom has no layout, so it does not implement document.elementFromPoint.
-// `input-otp` (behind HeroUI's InputOTP) polls it on a timer once the field has
-// been focused, to detect password-manager badges. Without this stub the timer
-// throws AFTER a test has finished, and Vitest reports an unhandled error that
-// reds the whole shard even though every test passed (React Full Suite shard 3
-// on 1498a67a3, first seen when SettingsPage.test typed into the disable code
-// field). Returning null means "nothing under that point", which is true here.
-if (typeof document.elementFromPoint !== 'function') {
-  Object.defineProperty(document, 'elementFromPoint', {
-    writable: true,
-    configurable: true,
-    value: () => null,
-  });
-}
+// 🔴 Do NOT stub document.elementFromPoint here. jsdom leaves it undefined and
+// axe-core branches on that: with a stub returning null the caring-community
+// a11y suite reported a false aria-hidden-focus violation (React Build & Tests
+// on d2defb96b). A test that types into HeroUI's InputOTP needs the stub
+// (input-otp polls elementFromPoint on a timer after focus) — add it at the top
+// of THAT test file, where the jsdom document is file-scoped.
 
 // Mock ResizeObserver
 class MockResizeObserver {
