@@ -42,6 +42,7 @@ import {
   getOrganisationWalletTransactions,
   submitVolunteerExpense,
   submitVolunteerDonation,
+  logVolunteerHours,
   respondToShiftSwap,
   depositOrganisationWallet,
   updateOrganisation,
@@ -217,8 +218,12 @@ describe('certificate helpers', () => {
   it('generates a volunteer certificate', async () => {
     const response = { data: { id: 9, verification_code: 'ABC123' } };
     (api.post as jest.Mock).mockResolvedValue(response);
-    const result = await generateVolunteerCertificate();
-    expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/certificates', {});
+    const result = await generateVolunteerCertificate('certificate-key');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/certificates',
+      { idempotency_key: 'certificate-key' },
+      { headers: { 'Idempotency-Key': 'certificate-key' } },
+    );
     expect(result.data.verification_code).toBe('ABC123');
   });
 });
@@ -243,8 +248,12 @@ describe('expense helpers', () => {
       description: 'Bus ticket',
     };
     (api.post as jest.Mock).mockResolvedValue({ data: { id: 3 } });
-    await submitVolunteerExpense(payload);
-    expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/expenses', payload);
+    await submitVolunteerExpense(payload, 'expense-key');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/expenses',
+      { ...payload, idempotency_key: 'expense-key' },
+      { headers: { 'Idempotency-Key': 'expense-key' } },
+    );
   });
 });
 
@@ -277,8 +286,22 @@ describe('donation helpers', () => {
       is_anonymous: true,
     };
     (api.post as jest.Mock).mockResolvedValue({ data: { id: 4 } });
-    await submitVolunteerDonation(payload);
-    expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/donations', payload);
+    await submitVolunteerDonation(payload, 'donation-key');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/donations',
+      { ...payload, idempotency_key: 'donation-key' },
+      { headers: { 'Idempotency-Key': 'donation-key' } },
+    );
+  });
+
+  it('sends a stable idempotency key with logged hours', async () => {
+    const payload = { organization_id: 5, date: '2026-09-10', hours: 2.5, description: 'Garden shift' };
+    await logVolunteerHours(payload, 'hours-key');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/hours',
+      { ...payload, idempotency_key: 'hours-key' },
+      { headers: { 'Idempotency-Key': 'hours-key' } },
+    );
   });
 });
 

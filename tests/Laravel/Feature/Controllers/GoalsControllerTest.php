@@ -9,6 +9,7 @@ namespace Tests\Laravel\Feature\Controllers;
 use App\Models\Goal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -309,6 +310,58 @@ class GoalsControllerTest extends TestCase
         $response = $this->apiPost("/v2/goals/{$goal->id}/complete");
 
         $this->assertContains($response->getStatusCode(), [200, 201]);
+    }
+
+    public function test_complete_goal_replay_does_not_repeat_history_xp_or_notifications(): void
+    {
+        $user = $this->authenticatedUser(['xp' => 0]);
+        $goal = $this->createGoal([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'current_value' => 0,
+            'target_value' => 10,
+        ]);
+
+        $first = $this->apiPost("/v2/goals/{$goal->id}/complete");
+        $replay = $this->apiPost("/v2/goals/{$goal->id}/complete");
+
+        $first->assertOk()->assertJsonPath('data.idempotent_replay', false);
+        $replay->assertOk()->assertJsonPath('data.idempotent_replay', true);
+        $this->assertSame(1, DB::table('goal_progress_history')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('goal_id', $goal->id)
+            ->where('event_type', 'completed')
+            ->count());
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('action', 'complete_goal')
+            ->where('source_reference', 'goal:' . $goal->id)
+            ->count());
+        $this->assertSame(1, DB::table('notifications')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('type', 'goal_completed')
+            ->count());
+    }
+
+    public function test_generic_completed_update_uses_the_canonical_completion_transition(): void
+    {
+        $user = $this->authenticatedUser(['xp' => 0]);
+        $goal = $this->createGoal(['user_id' => $user->id, 'status' => 'active']);
+
+        $this->apiPut("/v2/goals/{$goal->id}", ['status' => 'completed'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'completed');
+
+        $this->assertSame(1, DB::table('goal_progress_history')
+            ->where('goal_id', $goal->id)
+            ->where('event_type', 'completed')
+            ->count());
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('user_id', $user->id)
+            ->where('source_reference', 'goal:' . $goal->id)
+            ->count());
     }
 
     public function test_complete_nonexistent_goal_returns_404(): void

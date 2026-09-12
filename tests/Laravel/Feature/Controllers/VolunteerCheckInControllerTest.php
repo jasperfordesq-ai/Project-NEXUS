@@ -66,10 +66,6 @@ class VolunteerCheckInControllerTest extends TestCase
 
     public function test_active_org_admin_can_verify_shift_checkin(): void
     {
-        $this->markTestSkipped(
-            'Quarantine [isolation-debt]: order-dependent — passes in full-suite run order, fails when run in a sharded subset under CI. Re-enable after fixing test isolation. Tracked in PR #130.'
-        );
-
         $owner = User::factory()->forTenant($this->testTenantId)->create();
         $admin = User::factory()->forTenant($this->testTenantId)->create();
         $volunteer = User::factory()->forTenant($this->testTenantId)->create();
@@ -133,6 +129,13 @@ class VolunteerCheckInControllerTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertSame('checked_in', DB::table('vol_shift_checkins')->where('qr_token', $token)->value('status'));
+        $webhooks = \Mockery::mock(\App\Services\WebhookDispatchService::class);
+        $webhooks->shouldReceive('dispatch')->once()->with('shift.completed', ['user_id' => $volunteer->id, 'shift_id' => $shiftId]);
+        $this->app->instance(\App\Services\WebhookDispatchService::class, $webhooks);
+        $this->apiPost('/v2/volunteering/checkin/checkout/' . $token)->assertOk();
+        $checkedOutAt = DB::table('vol_shift_checkins')->where('qr_token', $token)->value('checked_out_at');
+        $this->apiPost('/v2/volunteering/checkin/checkout/' . $token)->assertOk();
+        $this->assertSame($checkedOutAt, DB::table('vol_shift_checkins')->where('qr_token', $token)->value('checked_out_at'));
     }
 
     /**

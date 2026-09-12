@@ -24,6 +24,7 @@ import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import {
+  completeGoal,
   createGoal,
   createGoalFromTemplate,
   getGoalTemplateCategories,
@@ -234,6 +235,7 @@ function GoalCard({
   t,
   onComplete,
   onAbandon,
+  isPending,
 }: {
   goal: ApiGoal;
   primary: string;
@@ -241,6 +243,7 @@ function GoalCard({
   t: (key: string, opts?: Record<string, unknown>) => string;
   onComplete: (id: number) => void;
   onAbandon: (id: number) => void;
+  isPending: boolean;
 }) {
   const { confirm, confirmDialog } = useConfirm();
   const target = getGoalTarget(goal);
@@ -329,6 +332,7 @@ function GoalCard({
               className="flex-1"
               size="sm"
               variant="secondary"
+              isDisabled={isPending}
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 onComplete(goal.id);
@@ -341,7 +345,7 @@ function GoalCard({
               <Ionicons name="open-outline" size={15} color={primary} />
               <HeroButton.Label>{t('details')}</HeroButton.Label>
             </HeroButton>
-            <HeroButton className="flex-1" size="sm" variant="tertiary" onPress={handleAbandon}>
+            <HeroButton className="flex-1" size="sm" variant="tertiary" onPress={handleAbandon} isDisabled={isPending}>
               <Ionicons name="close-outline" size={15} color={theme.textMuted} />
               <HeroButton.Label>{t('abandon')}</HeroButton.Label>
             </HeroButton>
@@ -390,11 +394,14 @@ function CreateGoalSheet({
   const [description, setDescription] = useState('');
   const [targetValue, setTargetValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   async function handleSubmit() {
+    if (submittingRef.current) return;
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return;
 
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       const parsed = targetValue.trim() !== '' ? (parseDecimalInput(targetValue) ?? Number.NaN) : undefined;
@@ -410,6 +417,7 @@ function CreateGoalSheet({
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('create.error')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }
@@ -417,14 +425,16 @@ function CreateGoalSheet({
   return (
     <BottomSheet
       visible={visible}
-      onClose={onCancel}
+      onClose={() => {
+        if (!submitting) onCancel();
+      }}
       snapPoints={['75%', '92%']}
       title={t('create.title')}
       scrollable
       testID="goal-composer"
       footer={
         <View className="flex-row gap-2">
-          <HeroButton className="flex-1" variant="tertiary" onPress={onCancel} testID="goal-composer-cancel">
+          <HeroButton className="flex-1" variant="tertiary" onPress={onCancel} isDisabled={submitting} testID="goal-composer-cancel">
             <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
           </HeroButton>
           <HeroButton
@@ -450,6 +460,7 @@ function CreateGoalSheet({
           placeholderTextColor={theme.textMuted}
           value={title}
           onChangeText={setTitle}
+          editable={!submitting}
           returnKeyType="next"
           containerClassName="mb-0"
         />
@@ -461,6 +472,7 @@ function CreateGoalSheet({
           placeholderTextColor={theme.textMuted}
           value={description}
           onChangeText={setDescription}
+          editable={!submitting}
           multiline
           containerClassName="mb-0"
         />
@@ -472,6 +484,7 @@ function CreateGoalSheet({
           placeholderTextColor={theme.textMuted}
           value={targetValue}
           onChangeText={setTargetValue}
+          editable={!submitting}
           keyboardType="decimal-pad"
           returnKeyType="done"
           containerClassName="mb-0"
@@ -499,6 +512,7 @@ function GoalTemplatesPanel({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creatingFromId, setCreatingFromId] = useState<number | null>(null);
+  const creatingRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -534,6 +548,8 @@ function GoalTemplatesPanel({
     : templates;
 
   async function applyTemplate(template: GoalTemplate) {
+    if (creatingRef.current) return;
+    creatingRef.current = true;
     setCreatingFromId(template.id);
     try {
       const result = await createGoalFromTemplate(template.id);
@@ -543,6 +559,7 @@ function GoalTemplatesPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('templates.createError')), variant: 'danger' });
     } finally {
+      creatingRef.current = false;
       setCreatingFromId(null);
     }
   }
@@ -671,6 +688,8 @@ function GoalsScreen() {
   const [goals, setGoals] = useState<ApiGoal[]>([]);
   const [initialized, setInitialized] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const pendingGoalIdsRef = useRef(new Set<number>());
+  const [pendingGoalIds, setPendingGoalIds] = useState<Set<number>>(new Set());
 
   const { data, isLoading, error, refresh } = useApi(() => getGoals(null), []);
 
@@ -711,11 +730,19 @@ function GoalsScreen() {
   }
 
   async function handleUpdateStatus(id: number, status: 'completed' | 'abandoned') {
+    if (pendingGoalIdsRef.current.has(id)) return;
+    pendingGoalIdsRef.current.add(id);
+    setPendingGoalIds(new Set(pendingGoalIdsRef.current));
     try {
-      const result = await updateGoalStatus(id, status);
+      const result = status === 'completed'
+        ? await completeGoal(id)
+        : await updateGoalStatus(id, status);
       setGoals((prev) => prev.map((goal) => (goal.id === id ? result.data as ApiGoal : goal)));
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('goals:updateError')), variant: 'danger' });
+    } finally {
+      pendingGoalIdsRef.current.delete(id);
+      setPendingGoalIds(new Set(pendingGoalIdsRef.current));
     }
   }
 
@@ -825,6 +852,7 @@ function GoalsScreen() {
                   t={t}
                   onComplete={(id) => void handleUpdateStatus(id, 'completed')}
                   onAbandon={(id) => void handleUpdateStatus(id, 'abandoned')}
+                  isPending={pendingGoalIds.has(item.id)}
                 />
               )}
             />

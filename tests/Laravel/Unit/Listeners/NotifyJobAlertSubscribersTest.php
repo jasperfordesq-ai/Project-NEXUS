@@ -231,6 +231,51 @@ class NotifyJobAlertSubscribersTest extends TestCase
         $this->assertTrue(true);
     }
 
+    public function test_handle_matches_one_of_the_saved_categories(): void
+    {
+        $subscriber = $this->seedUser();
+        $creator = $this->seedUser();
+        $vacancy = $this->seedVacancy($creator, ['category' => 'Community care']);
+        $this->seedAlert($subscriber, ['categories' => 'digital, care']);
+
+        $this->notificationAlias->shouldReceive('createNotification')->once();
+        $this->emailServiceAlias->shouldReceive('sendImmediateAlert')->once()->andReturn(true);
+
+        (new NotifyJobAlertSubscribers())->handle($this->makeEvent($vacancy, $creator));
+
+        $this->assertTrue(true);
+    }
+
+    public function test_handle_skips_alert_when_saved_categories_do_not_match(): void
+    {
+        $subscriber = $this->seedUser();
+        $creator = $this->seedUser();
+        $vacancy = $this->seedVacancy($creator, ['category' => 'Community care']);
+        $this->seedAlert($subscriber, ['categories' => 'digital, gardening']);
+
+        $this->notificationAlias->shouldReceive('createNotification')->never();
+        $this->emailServiceAlias->shouldReceive('sendImmediateAlert')->never();
+
+        (new NotifyJobAlertSubscribers())->handle($this->makeEvent($vacancy, $creator));
+
+        $this->assertTrue(true);
+    }
+
+    public function test_handle_skips_location_alert_when_vacancy_has_no_location(): void
+    {
+        $subscriber = $this->seedUser();
+        $creator = $this->seedUser();
+        $vacancy = $this->seedVacancy($creator, ['location' => null]);
+        $this->seedAlert($subscriber, ['location' => 'Dublin']);
+
+        $this->notificationAlias->shouldReceive('createNotification')->never();
+        $this->emailServiceAlias->shouldReceive('sendImmediateAlert')->never();
+
+        (new NotifyJobAlertSubscribers())->handle($this->makeEvent($vacancy, $creator));
+
+        $this->assertTrue(true);
+    }
+
     // -------------------------------------------------------------------------
     // Remote-only filter — vacancy not remote
     // -------------------------------------------------------------------------

@@ -50,6 +50,25 @@ class JobAlertEmailServiceTest extends TestCase
         $this->assertStringContainsString('Backend Engineer', $mailer->sends[0]['subject']);
     }
 
+    public function test_sendImmediateAlert_localises_role_commitment_and_date_for_irish_recipient(): void
+    {
+        $mailer = $this->fakeEmailDispatchService();
+        $recipient = $this->makeUser(5, 'sean@example.com', 'Seán');
+        $recipient->preferred_language = 'ga';
+        $vacancy = $this->makeVacancy(10, 'Forbróir Sinsearach');
+        $alert = $this->makeAlert();
+
+        $result = JobAlertEmailService::sendImmediateAlert($recipient, $vacancy, $alert);
+
+        $this->assertTrue($result);
+        $this->assertStringContainsString('Post nua ag teacht le do fholáireamh', $mailer->sends[0]['subject']);
+        $this->assertStringContainsString('Íoctha', $mailer->sends[0]['body']);
+        $this->assertStringContainsString('Lánaimseartha', $mailer->sends[0]['body']);
+        $this->assertStringContainsString('1 Méit 2026', $mailer->sends[0]['body']);
+        $this->assertStringNotContainsString('Full time', $mailer->sends[0]['body']);
+        $this->assertStringNotContainsString('01 Jun 2026', $mailer->sends[0]['body']);
+    }
+
     public function test_sendImmediateAlert_returns_false_on_mail_exception(): void
     {
         Log::shouldReceive('warning')->once();

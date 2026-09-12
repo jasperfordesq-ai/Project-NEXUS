@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -55,6 +55,9 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 import RemoteImage from '@/components/ui/RemoteImage';
+import ErrorState from '@/components/ui/ErrorState';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -1728,7 +1731,8 @@ function FederationComposeCard({
 
 function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useTheme>; primary: string; t: (key: string, opts?: Record<string, unknown>) => string }) {
   const { show: showToast } = useAppToast();
-  const { data, isLoading, refresh } = useApi(() => getFederationSettings(), []);
+  const { confirm, confirmDialog } = useConfirm();
+  const { data, isLoading, error, refresh } = useApi(() => getFederationSettings(), []);
   const payload = unwrapSettings(data);
   const [draft, setDraft] = useState<FederationSettings | null>(null);
   const current = draft ?? payload.settings;
@@ -1736,19 +1740,38 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
   const federationEnabled = enabledOverride ?? payload.enabled;
   const [isSaving, setIsSaving] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const mutationInFlight = useRef(false);
+  const isDirty = draft !== null && JSON.stringify(draft) !== JSON.stringify(payload.settings);
+
+  useUnsavedChangesGuard({
+    isDirty,
+    isSaving: isSaving || isTogglingStatus,
+    confirm,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   async function save() {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     setIsSaving(true);
     try {
       await updateFederationSettings(current);
       setDraft(null);
       refresh();
+    } catch (err) {
+      showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('directory.settings.statusFailedDescription')), variant: 'danger' });
     } finally {
+      mutationInFlight.current = false;
       setIsSaving(false);
     }
   }
 
   async function toggleFederationStatus() {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     setIsTogglingStatus(true);
     try {
       if (federationEnabled) {
@@ -1763,12 +1786,16 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
     } catch (err) {
       showToast({ title: t('directory.settings.statusFailedTitle'), description: describeApiError(err, t('directory.settings.statusFailedDescription')), variant: 'danger' });
     } finally {
+      mutationInFlight.current = false;
       setIsTogglingStatus(false);
     }
   }
 
   if (isLoading) {
     return <View className="items-center py-8"><Spinner size="lg" /></View>;
+  }
+  if (error && !data) {
+    return <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading} testID="federation-settings-error" />;
   }
 
   return (
@@ -1803,7 +1830,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
           <HeroButton
             variant={federationEnabled ? 'danger-soft' : 'primary'}
             onPress={() => void toggleFederationStatus()}
-            isDisabled={isTogglingStatus}
+            isDisabled={isTogglingStatus || isSaving}
             accessibilityLabel={federationEnabled ? t('directory.settings.disable') : t('directory.settings.enable')}
           >
             {isTogglingStatus ? <Spinner size="sm" /> : federationEnabled ? <Ionicons name="shield-outline" size={16} color={theme.error} /> : <AccentIcon name="shield-checkmark-outline" size={16} />}
@@ -1841,6 +1868,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
                   size="sm"
                   accessibilityLabel={t(`directory.settings.${key}.label`)}
                   onValueChange={(value) => setDraft((prev) => ({ ...(prev ?? current), [key]: value }))}
+                  disabled={isSaving || isTogglingStatus}
                 />
               </Surface>
             );
@@ -1860,6 +1888,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
                 size="sm"
                 variant={current.service_reach === reach ? 'primary' : 'secondary'}
                 onPress={() => setDraft((prev) => ({ ...(prev ?? current), service_reach: reach }))}
+                isDisabled={isSaving || isTogglingStatus}
               >
                 {current.service_reach === reach ? <AccentIcon name={reachIcon(reach)} size={14} /> : <Ionicons name={reachIcon(reach)} size={14} color={primary} />}
                 <HeroButton.Label>{t(`directory.settings.reach.${reach}`)}</HeroButton.Label>
@@ -1870,7 +1899,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
           <HeroButton
             variant="primary"
             onPress={save}
-            isDisabled={isSaving}
+            isDisabled={isSaving || isTogglingStatus || !isDirty}
             accessibilityLabel={t('directory.settings.save')}
           >
             {isSaving ? <Spinner size="sm" /> : <AccentIcon name="save-outline" size={16} />}
@@ -1878,6 +1907,7 @@ function SettingsScreen({ theme, primary, t }: { theme: ReturnType<typeof useThe
           </HeroButton>
         </HeroCard.Body>
       </HeroCard>
+      {confirmDialog}
     </View>
   );
 }

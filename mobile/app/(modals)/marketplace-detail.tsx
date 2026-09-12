@@ -126,6 +126,7 @@ function MarketplaceDetailScreen() {
   const [reportReason, setReportReason] = useState<ReportReason>('misleading');
   const [reportDescription, setReportDescription] = useState('');
   const checkoutIdempotencyKeyRef = useRef<string | null>(null);
+  const checkoutSubmittingRef = useRef(false);
 
   useEffect(() => {
     checkoutIdempotencyKeyRef.current = null;
@@ -401,7 +402,8 @@ function MarketplaceDetailScreen() {
   }
 
   async function completePurchase() {
-    if (!listing) return;
+    if (!listing || checkoutSubmittingRef.current) return;
+    checkoutSubmittingRef.current = true;
     setIsActionLoading(true);
     try {
       const idempotencyKey = checkoutIdempotencyKeyRef.current ?? `mobile-marketplace-${randomUUID()}`;
@@ -508,6 +510,7 @@ function MarketplaceDetailScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.orderFailed')), variant: 'danger' });
     } finally {
+      checkoutSubmittingRef.current = false;
       setIsActionLoading(false);
     }
   }

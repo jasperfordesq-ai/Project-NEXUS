@@ -104,6 +104,37 @@ class CourseControllerTest extends TestCase
         $this->assertSame(403, $response->status());
     }
 
+    public function test_grading_preserves_fractional_score_and_stored_feedback(): void
+    {
+        $this->enableCourses();
+        $author = $this->authenticatedUser();
+        $learner = User::factory()->forTenant($this->testTenantId)->create();
+        $course = $this->publishedCourse(['author' => $author]);
+        $quiz = \App\Models\CourseQuiz::create(['course_id' => $course->id, 'title' => 'Review', 'pass_mark_percent' => 50]);
+        $attempt = \App\Models\CourseQuizAttempt::create([
+            'quiz_id' => $quiz->id, 'user_id' => $learner->id, 'answers' => [],
+            'grading_status' => 'pending_review', 'score_percent' => 0, 'passed' => false, 'submitted_at' => now(),
+        ]);
+        $this->apiPost('/v2/courses/attempts/' . $attempt->id . '/grade', [
+            'score_percent' => 82.5, 'passed' => true, 'feedback' => 'Clear explanation',
+        ])->assertOk();
+        $this->assertEquals(82.5, (float) $attempt->fresh()->score_percent);
+        $this->assertSame('Clear explanation', $attempt->fresh()->feedback);
+        $this->assertSame($author->id, $attempt->fresh()->graded_by);
+        foreach (['invalid', -1, 101] as $invalidScore) {
+            $this->apiPost('/v2/courses/attempts/' . $attempt->id . '/grade', [
+                'score_percent' => $invalidScore, 'passed' => false, 'feedback' => 'Must not replace',
+            ])->assertStatus(422);
+            $this->assertEquals(82.5, (float) $attempt->fresh()->score_percent);
+            $this->assertSame('Clear explanation', $attempt->fresh()->feedback);
+        }
+        $this->authenticatedUser();
+        $this->apiPost('/v2/courses/attempts/' . $attempt->id . '/grade', [
+            'score_percent' => 10, 'passed' => false,
+        ])->assertStatus(403);
+        $this->assertEquals(82.5, (float) $attempt->fresh()->score_percent);
+    }
+
     public function test_browse_requires_authentication_when_enabled(): void
     {
         $this->enableCourses(true);

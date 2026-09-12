@@ -54,6 +54,31 @@ class JobVacanciesControllerTest extends TestCase
         return JobVacancy::factory()->forTenant($this->testTenantId)->create($overrides);
     }
 
+    public function test_detail_application_availability_respects_deadline_end_of_day(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Http::fake();
+        $owner = $this->authenticatedUser();
+        $applicant = $this->authenticatedUser();
+        $this->travelTo(now()->startOfDay()->addHours(12));
+        try {
+            foreach ([[-1, false], [0, true], [1, true]] as [$days, $expected]) {
+                $job = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open', 'moderation_status' => 'approved', 'deadline' => now()->addDays($days)->toDateString()]);
+                Sanctum::actingAs($owner, ['*']);
+                $this->apiGet('/v2/jobs/' . $job->id)->assertOk()->assertJsonPath('data.accepting_applications', $expected);
+                Sanctum::actingAs($applicant, ['*']);
+                $this->apiGet('/v2/jobs/' . $job->id)->assertStatus($expected ? 200 : 404);
+                $this->apiPost('/v2/jobs/' . $job->id . '/apply', ['message' => 'Deadline boundary application'])
+                    ->assertStatus($expected ? 201 : 400);
+                $this->assertSame($expected ? 1 : 0, JobApplication::where('tenant_id', $this->testTenantId)
+                    ->where('vacancy_id', $job->id)->where('user_id', $applicant->id)->count());
+            }
+        } finally {
+            $this->travelBack();
+        }
+    }
+
     // =====================================================================
     // CORE CRUD — GET /v2/jobs (index)
     // =====================================================================
@@ -302,6 +327,54 @@ class JobVacanciesControllerTest extends TestCase
             'tagline' => 'Grow with your neighbours',
             'status' => 'open',
         ]);
+    }
+
+    public function test_store_replays_an_accepted_creation_without_making_a_second_vacancy(): void
+    {
+        $user = $this->authenticatedUser();
+        $payload = [
+            'title' => 'Response-loss coordinator',
+            'description' => 'A role submitted with a stable mobile retry key.',
+            'type' => 'volunteer',
+            'commitment' => 'flexible',
+        ];
+        $headers = ['Idempotency-Key' => 'mobile-job-create-replay-test'];
+
+        $first = $this->apiPost('/v2/jobs', $payload, $headers)->assertCreated();
+        $replay = $this->apiPost('/v2/jobs', $payload, $headers)->assertCreated();
+
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, DB::table('job_vacancies')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('title', 'Response-loss coordinator')
+            ->count());
+        $this->assertArrayNotHasKey('creation_idempotency_key_hash', $replay->json('data'));
+        $this->assertArrayNotHasKey('creation_request_hash', $replay->json('data'));
+    }
+
+    public function test_store_rejects_reusing_a_creation_key_for_changed_content(): void
+    {
+        $user = $this->authenticatedUser();
+        $headers = ['Idempotency-Key' => 'mobile-job-create-conflict-test'];
+        $payload = [
+            'title' => 'Original keyed role',
+            'description' => 'Original description.',
+            'type' => 'volunteer',
+            'commitment' => 'flexible',
+        ];
+
+        $this->apiPost('/v2/jobs', $payload, $headers)->assertCreated();
+        $payload['title'] = 'Changed keyed role';
+        $this->apiPost('/v2/jobs', $payload, $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+
+        $this->assertSame(1, DB::table('job_vacancies')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->whereIn('title', ['Original keyed role', 'Changed keyed role'])
+            ->count());
     }
 
     public function test_store_preserves_draft_status(): void
@@ -584,18 +657,26 @@ class JobVacanciesControllerTest extends TestCase
 
     public function test_apply_duplicate_returns_409(): void
     {
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Http::fake();
         $owner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
         $vacancy = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open']);
 
         $applicant = $this->authenticatedUser();
 
         // First application
-        $this->apiPost("/v2/jobs/{$vacancy->id}/apply", ['message' => 'First try']);
+        $this->apiPost("/v2/jobs/{$vacancy->id}/apply", ['message' => 'First try'])->assertStatus(201);
 
         // Second application — should be conflict
         $response = $this->apiPost("/v2/jobs/{$vacancy->id}/apply", ['message' => 'Second try']);
 
         $response->assertStatus(409);
+        $applications = JobApplication::where('tenant_id', $this->testTenantId)
+            ->where('vacancy_id', $vacancy->id)->where('user_id', $applicant->id)->get();
+        $this->assertCount(1, $applications);
+        $this->assertSame('First try', $applications->first()->message);
+        $this->apiGet("/v2/jobs/{$vacancy->id}")->assertOk()->assertJsonPath('data.has_applied', true);
     }
 
     public function test_apply_to_nonexistent_vacancy(): void
@@ -675,14 +756,19 @@ class JobVacanciesControllerTest extends TestCase
 
     public function test_update_application_status_as_owner(): void
     {
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Http::fake();
         $owner = $this->authenticatedUser();
         $vacancy = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open']);
 
         $applicant = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
         $application = JobApplication::factory()->create([
+            'tenant_id' => $this->testTenantId,
             'vacancy_id' => $vacancy->id,
             'user_id' => $applicant->id,
-            'status' => 'submitted',
+            'status' => 'pending',
+            'stage' => 'applied',
         ]);
 
         $response = $this->apiPut("/v2/jobs/applications/{$application->id}", [
@@ -691,11 +777,64 @@ class JobVacanciesControllerTest extends TestCase
         ]);
 
         $response->assertStatus(200);
+        $this->assertSame('shortlisted', $application->fresh()->status);
+        $this->assertSame('shortlisted', $application->fresh()->stage);
+        $listing = $this->apiGet("/v2/jobs/{$vacancy->id}/applications")->assertOk();
+        $saved = collect($listing->json('data'))->firstWhere('id', $application->id);
+        $this->assertNotNull($saved);
+        $this->assertSame('shortlisted', $saved['status']);
+        $vacancy->update(['applications_count' => 7]);
+        $this->apiGet("/v2/jobs/{$vacancy->id}")->assertOk()->assertJsonPath('data.applications_count', 1);
+        $this->apiGet("/v2/jobs/{$vacancy->id}/analytics")->assertOk()->assertJsonPath('data.total_applications', 1);
+        $vacancy->update(['title' => 'Audit count consistency fixture', 'moderation_status' => 'approved', 'deadline' => null]);
+        $this->apiGet('/v2/jobs?search=Audit%20count%20consistency%20fixture')->assertOk()->assertJsonPath('data.0.applications_count', 1);
+        $this->authenticatedUser();
+        $this->apiPut("/v2/jobs/applications/{$application->id}", ['status' => 'rejected'])->assertStatus(403);
+        $this->assertSame('shortlisted', $application->fresh()->status);
     }
 
     // =====================================================================
     // CV DOWNLOAD — GET /v2/jobs/applications/{id}/cv
     // =====================================================================
+
+    public function test_cv_upload_survives_duplicate_application_without_orphaning_the_retry_file(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Http::fake();
+        $owner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $vacancy = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open']);
+        $applicant = $this->authenticatedUser();
+        $bytes = "%PDF-1.4\nOriginal CV\n%%EOF";
+        $this->post("/api/v2/jobs/{$vacancy->id}/apply", [
+            'message' => 'Original covering message',
+            'cv' => \Illuminate\Http\UploadedFile::fake()->createWithContent('original.pdf', $bytes),
+        ], $this->withTenantHeader(['Accept' => 'application/json']))->assertStatus(201);
+        $application = JobApplication::where('vacancy_id', $vacancy->id)->where('user_id', $applicant->id)->firstOrFail();
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        $this->assertSame($bytes, $disk->get($application->cv_path));
+
+        $this->post("/api/v2/jobs/{$vacancy->id}/apply", [
+            'message' => 'Retry message',
+            'cv' => \Illuminate\Http\UploadedFile::fake()->createWithContent('retry.pdf', "%PDF-1.4\nRetry CV\n%%EOF"),
+        ], $this->withTenantHeader(['Accept' => 'application/json']))->assertStatus(409);
+        $this->assertSame([$application->cv_path], $disk->allFiles('job-applications'));
+        $this->assertSame($bytes, $disk->get($application->cv_path));
+        $this->assertSame('Original covering message', $application->fresh()->message);
+        $download = $this->apiGet("/v2/jobs/applications/{$application->id}/cv");
+        $download->assertOk();
+        $this->assertSame($bytes, file_get_contents($download->baseResponse->getFile()->getPathname()));
+
+        $this->authenticatedUser();
+        $this->apiGet("/v2/jobs/applications/{$application->id}/cv")->assertStatus(403);
+        Sanctum::actingAs($owner, ['*']);
+        $this->apiGet("/v2/jobs/applications/{$application->id}/cv")->assertOk();
+        $vacancy->forceFill(['blind_hiring' => true])->save();
+        $this->apiGet("/v2/jobs/applications/{$application->id}/cv")->assertStatus(403);
+        Sanctum::actingAs($applicant, ['*']);
+        $this->apiGet("/v2/jobs/applications/{$application->id}/cv")->assertOk();
+    }
 
     public function test_download_cv_returns_the_stored_file(): void
     {
@@ -938,6 +1077,41 @@ class JobVacanciesControllerTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonStructure(['data' => ['id']]);
+    }
+
+    public function test_alert_creation_replays_the_same_result_for_the_same_key_and_content(): void
+    {
+        $user = $this->authenticatedUser();
+        $payload = [
+            'keywords' => 'community coordinator',
+            'type' => 'volunteer',
+            'is_remote_only' => true,
+        ];
+        $headers = ['Idempotency-Key' => 'mobile-job-alert-replay-test'];
+
+        $first = $this->apiPost('/v2/jobs/alerts', $payload, $headers)->assertCreated();
+        $replay = $this->apiPost('/v2/jobs/alerts', $payload, $headers)->assertCreated();
+
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, JobAlert::withoutGlobalScopes()
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('keywords', 'community coordinator')
+            ->count());
+        $this->assertArrayNotHasKey('creation_idempotency_key_hash', JobAlert::withoutGlobalScopes()
+            ->findOrFail($first->json('data.id'))
+            ->toArray());
+    }
+
+    public function test_alert_creation_rejects_reusing_a_key_for_changed_content(): void
+    {
+        $this->authenticatedUser();
+        $headers = ['Idempotency-Key' => 'mobile-job-alert-conflict-test'];
+
+        $this->apiPost('/v2/jobs/alerts', ['keywords' => 'gardener'], $headers)->assertCreated();
+        $response = $this->apiPost('/v2/jobs/alerts', ['keywords' => 'designer'], $headers);
+
+        $response->assertStatus(409)->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
     }
 
     // =====================================================================
@@ -1197,6 +1371,39 @@ class JobVacanciesControllerTest extends TestCase
         $response = $this->apiGet("/v2/jobs/{$vacancy->id}/analytics");
 
         $response->assertStatus(200);
+    }
+
+    public function test_predictions_use_actual_tenant_scoped_application_rows_instead_of_stored_counters(): void
+    {
+        $owner = $this->authenticatedUser();
+        $current = $this->createVacancy([
+            'user_id' => $owner->id,
+            'type' => 'audit_prediction_count',
+            'status' => 'open',
+            'applications_count' => 40,
+            'views_count' => 10,
+        ]);
+        $similar = $this->createVacancy([
+            'user_id' => $owner->id,
+            'type' => 'audit_prediction_count',
+            'status' => 'filled',
+            'applications_count' => 90,
+            'views_count' => 30,
+        ]);
+
+        JobApplication::factory()->forTenant($this->testTenantId)->create([
+            'vacancy_id' => $current->id,
+        ]);
+        JobApplication::factory()->count(3)->forTenant($this->testTenantId)->create([
+            'vacancy_id' => $similar->id,
+        ]);
+
+        $this->apiGet("/v2/jobs/{$current->id}/predictions")
+            ->assertOk()
+            ->assertJsonPath('data.expected_applications.current', 1)
+            ->assertJsonPath('data.expected_applications.value', 3)
+            ->assertJsonPath('data.conversion_rate.yours', 10)
+            ->assertJsonPath('data.conversion_rate.average', 10);
     }
 
     public function test_analytics_as_non_owner_returns_403(): void

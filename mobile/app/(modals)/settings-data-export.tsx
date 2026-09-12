@@ -5,7 +5,7 @@
 
 import ErrorState from '@/components/ui/ErrorState';
 import { formatDecimal } from '@/lib/utils/decimal';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
@@ -26,6 +26,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 
 function formatBytes(bytes: number | null): string {
   if (!bytes) return '-';
@@ -57,6 +58,8 @@ export default function SettingsDataExportScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRequesting, setIsRequesting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const requestInFlight = useRef(false);
+  const requestAttempt = useRef<{ format: DataExportFormat; key: string } | null>(null);
 
   const loadHistory = useCallback(async () => {
     setIsLoading(true);
@@ -86,14 +89,21 @@ export default function SettingsDataExportScreen() {
   );
 
   async function handleRequest() {
+    if (requestInFlight.current) return;
+    requestInFlight.current = true;
+    if (!requestAttempt.current || requestAttempt.current.format !== format) {
+      requestAttempt.current = { format, key: mutationIdempotencyKey('mobile-data-export') };
+    }
     setIsRequesting(true);
     try {
-      await requestDataExport(format);
+      await requestDataExport(format, requestAttempt.current.key);
+      requestAttempt.current = null;
       showToast({ title: t('dataExport.downloaded'), description: t('dataExport.downloadedBody'), variant: 'success' });
       await loadHistory();
     } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.requestError')), variant: 'danger' });
     } finally {
+      requestInFlight.current = false;
       setIsRequesting(false);
     }
   }
@@ -132,6 +142,7 @@ export default function SettingsDataExportScreen() {
                     key={option.value}
                     variant={isSelected ? 'primary' : 'secondary'}
                     onPress={() => setFormat(option.value)}
+                    isDisabled={isRequesting}
                     accessibilityLabel={option.label}
                   >
                     <HeroButton.Label>{option.label}</HeroButton.Label>

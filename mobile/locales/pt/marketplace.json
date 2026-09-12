@@ -498,7 +498,7 @@
       "unknown": "Este pedido está em um status do aplicativo ainda não reconhece."
     },
     "confirmDeliveryTitle": "Confirma que recebeu isto?",
-    "confirmDeliveryMessage": "Isto liberta o pagamento da encomenda {{order}} para o vendedor e termina a sua proteção de comprador. Confirme apenas quando tiver o artigo e este for o esperado.",
+    "confirmDeliveryMessage": "Isto regista a encomenda {{order}} como entregue e inicia um prazo de 14 dias para abrir uma disputa antes de o pagamento ser libertado. Confirme apenas quando tiver o artigo e este for o esperado.",
     "confirmDeliveryAction": "Confirmar receção",
     "paymentTakenTitle": "O seu pagamento foi efetuado",
     "paymentTakenHint": "Ainda estamos a confirmar a encomenda {{order}}. Não pague novamente — atualize dentro de um minuto.",

@@ -15,7 +15,8 @@ use App\Services\GroupConfigurationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\Sanctum;
+use App\Services\TokenService;
+use App\Services\TwoFactorPolicy;
 use Tests\Laravel\TestCase;
 
 final class GroupQAControllerTest extends TestCase
@@ -84,6 +85,16 @@ final class GroupQAControllerTest extends TestCase
         $this->apiPost("/v2/groups/{$this->activeGroupId}/qa/vote", [])->assertUnauthorized();
     }
 
+    public function test_administrator_bearer_without_mfa_cannot_read_questions(): void
+    {
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $this->tenantAdmin->id, $this->tenantAdmin->tenant_id,
+        )]);
+        $this->apiGet("/v2/groups/{$this->activeGroupId}/questions")
+            ->assertUnauthorized()
+            ->assertJsonPath('code', 'AUTH_MFA_REQUIRED');
+    }
+
     public function test_read_access_requires_active_membership_and_active_same_tenant_parent(): void
     {
         $this->authenticate($this->nonMember);
@@ -127,6 +138,13 @@ final class GroupQAControllerTest extends TestCase
             "/v2/groups/{$this->activeGroupId}/questions/{$questionId}/answers",
             ['body' => 'A useful answer.'],
         )->assertCreated();
+
+        $readback = $this->apiGet("/v2/groups/{$this->activeGroupId}/questions/{$questionId}")
+            ->assertOk();
+        self::assertSame($payload['title'], $readback->json('data.title'));
+        self::assertSame($payload['body'], $readback->json('data.body'));
+        self::assertSame('A useful answer.', $readback->json('data.answers.0.body'));
+        self::assertSame(1, count($readback->json('data.answers')));
 
         $archivedQuestion = $this->insertQuestion($this->archivedGroupId, $this->questionAuthor);
         $this->apiPost(
@@ -304,7 +322,12 @@ final class GroupQAControllerTest extends TestCase
 
     private function authenticate(User $user): void
     {
-        Sanctum::actingAs($user, ['*']);
+        // Exercise the same signed bearer boundary as the native client. These
+        // authorization fixtures represent completed MFA where policy requires it.
+        $claims = app(TwoFactorPolicy::class)->required($user) ? TwoFactorPolicy::claims('totp') : [];
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $user->id, $user->tenant_id, $claims,
+        )]);
     }
 
     private function enableGroupRoutes(string $tabConfigKey): void

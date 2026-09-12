@@ -313,9 +313,12 @@ describe('XP shop', () => {
   it('purchases a shop item', async () => {
     (api.post as jest.Mock).mockResolvedValue({ data: {} });
 
-    await purchaseShopItem(12);
+    await purchaseShopItem(12, 'xp-purchase-attempt-12');
 
-    expect(api.post).toHaveBeenCalledWith('/api/v2/gamification/shop/purchase', { item_id: 12 });
+    expect(api.post).toHaveBeenCalledWith('/api/v2/gamification/shop/purchase', {
+      item_id: 12,
+      idempotency_key: 'xp-purchase-attempt-12',
+    }, { headers: { 'Idempotency-Key': 'xp-purchase-attempt-12' } });
   });
 });
 

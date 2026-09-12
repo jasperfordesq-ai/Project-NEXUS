@@ -139,6 +139,9 @@ jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/EmptyState', () => 'View');
 jest.mock('@/components/ui/Input', () => 'View');
 jest.mock('@/components/ui/Toggle', () => 'View');
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: jest.fn(), confirmDialog: null }),
+}));
 
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
@@ -152,6 +155,8 @@ import FederationSettingsScreen from './federation-settings';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockOptInFederation.mockReset().mockResolvedValue({ data: { success: true } });
+  mockOptOutFederation.mockReset().mockResolvedValue({ data: { success: true } });
   mockUseApi.mockReturnValue({
     data: {
       data: {
@@ -197,5 +202,43 @@ describe('FederationSettingsScreen', () => {
     });
     expect(mockRefreshSettings).toHaveBeenCalled();
     expect(getByText('Federation inactive')).toBeTruthy();
+  });
+
+  it('does not render writable defaults when federation settings fail to load', () => {
+    const failedSettings = {
+      data: null,
+      isLoading: false,
+      error: 'Could not load federation settings.',
+      refresh: mockRefreshSettings,
+    };
+    const ordinaryQuery = {
+      data: null,
+      isLoading: false,
+      error: null,
+      refresh: mockRefreshSettings,
+    };
+    let call = 0;
+    mockUseApi.mockImplementation(() => (++call === 3 ? failedSettings : ordinaryQuery));
+
+    const { getByTestId, queryByLabelText } = render(<FederationSettingsScreen />);
+
+    expect(getByTestId('federation-settings-error')).toBeTruthy();
+    expect(queryByLabelText('Save settings')).toBeNull();
+  });
+
+  it('serializes rapid federation status changes', async () => {
+    let release!: () => void;
+    mockOptOutFederation.mockImplementationOnce(() => new Promise((resolve) => {
+      release = () => resolve({ data: { success: true } });
+    }));
+    const { getByLabelText } = render(<FederationSettingsScreen />);
+    const disable = getByLabelText('Disable federation');
+
+    fireEvent.press(disable);
+    fireEvent.press(disable);
+
+    expect(mockOptOutFederation).toHaveBeenCalledTimes(1);
+    release();
+    await waitFor(() => expect(mockRefreshSettings).toHaveBeenCalledTimes(1));
   });
 });

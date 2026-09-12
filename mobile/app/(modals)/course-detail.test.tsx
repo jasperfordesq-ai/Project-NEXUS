@@ -69,6 +69,27 @@ describe('CourseDetailScreen', () => {
     expect(enrollInCourse).toHaveBeenCalledWith(7);
   });
 
+  it('serializes repeated paid-enrolment confirmations before React re-renders', async () => {
+    jest.mocked(getCourse).mockResolvedValue({ id: 7, slug: 'basics', title: 'Timebanking basics', summary: 'Start here.', description: 'Learn how exchanges work.', level: 'beginner', credit_cost: '2.50', enrollment_count: 12, is_enrolled: false, sections: [] });
+    let finishEnrollment!: () => void;
+    jest.mocked(enrollInCourse).mockImplementation(() => new Promise((resolve) => {
+      finishEnrollment = () => resolve({ id: 3, course_id: 7, status: 'active', progress_percent: 0 });
+    }));
+
+    const { getByText } = render(<CourseDetailScreen />);
+    await waitFor(() => expect(getByText('Timebanking basics')).toBeTruthy());
+    fireEvent.press(getByText('Enroll'));
+
+    const confirmed = mockConfirm.mock.calls[0][0].onConfirm;
+    const first = confirmed();
+    const second = confirmed();
+
+    expect(enrollInCourse).toHaveBeenCalledTimes(1);
+    finishEnrollment();
+    await Promise.all([first, second]);
+    expect(mockPush).toHaveBeenCalledTimes(1);
+  });
+
   it('enrols straight away when the course is free, with nothing to weigh up', async () => {
     const { getByText, queryByText } = render(<CourseDetailScreen />);
     await waitFor(() => expect(getByText('Timebanking basics')).toBeTruthy());

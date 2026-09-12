@@ -77,6 +77,9 @@ jest.mock('@/lib/api/settings', () => ({
   getDataExportHistory: jest.fn(),
   requestDataExport: jest.fn(),
 }));
+jest.mock('@/lib/utils/idempotencyKey', () => ({
+  mutationIdempotencyKey: jest.fn(() => 'mobile-export-key-1'),
+}));
 
 jest.mock('@/components/ui/AppToast', () => {
   const show = jest.fn();
@@ -121,6 +124,40 @@ describe('SettingsDataExportScreen', () => {
       fireEvent.press(getByText('Request export'));
     });
 
-    await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledWith('zip'));
+    await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledWith('zip', 'mobile-export-key-1'));
+  });
+
+  it('starts only one archive download for rapid repeated taps', async () => {
+    let release!: () => void;
+    mockGetDataExportHistory.mockResolvedValue([]);
+    mockRequestDataExport.mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+
+    const { getByText } = render(<SettingsDataExportScreen />);
+    await waitFor(() => expect(getByText('Request export')).toBeTruthy());
+    const requestButton = getByText('Request export');
+    fireEvent.press(requestButton);
+    fireEvent.press(requestButton);
+
+    expect(mockRequestDataExport).toHaveBeenCalledTimes(1);
+    release();
+    await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledTimes(1));
+  });
+
+  it('reuses the same export key when a lost response is retried', async () => {
+    mockGetDataExportHistory.mockResolvedValue([]);
+    mockRequestDataExport.mockRejectedValueOnce(new Error('connection lost')).mockResolvedValueOnce(undefined);
+    const { getByText } = render(<SettingsDataExportScreen />);
+    await waitFor(() => expect(getByText('Request export')).toBeTruthy());
+
+    fireEvent.press(getByText('Request export'));
+    await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getByText('Request export')).toBeTruthy());
+    fireEvent.press(getByText('Request export'));
+
+    await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledTimes(2));
+    expect(mockRequestDataExport.mock.calls).toEqual([
+      ['json', 'mobile-export-key-1'],
+      ['json', 'mobile-export-key-1'],
+    ]);
   });
 });

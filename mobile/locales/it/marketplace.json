@@ -498,7 +498,7 @@
       "unknown": "Questo ordine è in uno stato che l'app non riconosce ancora."
     },
     "confirmDeliveryTitle": "Confermi di averlo ricevuto?",
-    "confirmDeliveryMessage": "Questo rilascia il pagamento dell’ordine {{order}} al venditore e termina la tua protezione acquirente. Conferma solo quando hai l’articolo ed è come te lo aspettavi.",
+    "confirmDeliveryMessage": "Questo registra l’ordine {{order}} come consegnato e avvia un periodo di 14 giorni per aprire una contestazione prima che il pagamento venga rilasciato. Conferma solo quando hai l’articolo ed è come te lo aspettavi.",
     "confirmDeliveryAction": "Conferma ricezione",
     "paymentTakenTitle": "Il pagamento è andato a buon fine",
     "paymentTakenHint": "Stiamo ancora confermando l’ordine {{order}}. Non pagare di nuovo: aggiorna tra un minuto.",

@@ -91,6 +91,7 @@ class VolunteerExpenseController extends BaseApiController
 
         $data = $this->getAllInput();
         unset($data['receipt'], $data['receipt_path'], $data['receipt_filename']);
+        $data['idempotency_key'] = $request->header('Idempotency-Key') ?? $this->input('idempotency_key');
 
         $storedReceiptPath = null;
         $receipt = request()->file('receipt');
@@ -103,16 +104,26 @@ class VolunteerExpenseController extends BaseApiController
 
         try {
             $result = $this->volunteerExpenseService->submitExpense($userId, $data);
+            if ($storedReceiptPath !== null && ($result['receipt_path'] ?? null) !== $storedReceiptPath) {
+                $this->deleteStoredReceipt($storedReceiptPath);
+            }
         } catch (\InvalidArgumentException $e) {
             $this->deleteStoredReceipt($storedReceiptPath);
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
         } catch (\RuntimeException $e) {
             $this->deleteStoredReceipt($storedReceiptPath);
             $status = (int) $e->getCode();
-            if (!in_array($status, [403, 404], true)) {
+            if (!in_array($status, [403, 404, 409, 429], true)) {
                 $status = 400;
             }
-            return $this->respondWithError($status === 403 ? 'FORBIDDEN' : 'NOT_FOUND', $e->getMessage(), null, $status);
+            $code = match ($status) {
+                403 => 'FORBIDDEN',
+                404 => 'NOT_FOUND',
+                409 => 'IDEMPOTENCY_CONFLICT',
+                429 => 'TOO_MANY_ATTEMPTS',
+                default => 'VALIDATION_ERROR',
+            };
+            return $this->respondWithError($code, $e->getMessage(), null, $status);
         }
 
         if (isset($result['error'])) {

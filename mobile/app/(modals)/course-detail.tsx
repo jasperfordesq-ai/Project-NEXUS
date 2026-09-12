@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -35,13 +35,15 @@ function CourseDetailScreen() {
   const { show } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [enrolling, setEnrolling] = useState(false);
+  const enrollingRef = useRef(false);
   const { data: course, isLoading, error, errorStatus, refresh } = useApi(() => getCourse(id || ''), [id], { enabled: Boolean(id) });
   /* 🔴 A course a member is not enrolled on, or one taken down, answers 403/404. That
      was rendered as a load failure with a Retry that can never succeed (audit F/F-8). */
   const refused = isRefusalStatus(errorStatus);
 
   async function enroll() {
-    if (!course || enrolling) return;
+    if (!course || enrollingRef.current) return;
+    enrollingRef.current = true;
     setEnrolling(true);
     try {
       await enrollInCourse(course.id);
@@ -55,6 +57,7 @@ function CourseDetailScreen() {
       */
       show({ title: t('detail.enroll_error'), description: describeApiError(err, ''), variant: 'danger' });
     } finally {
+      enrollingRef.current = false;
       setEnrolling(false);
     }
   }

@@ -600,8 +600,12 @@ export function getVolunteerCertificates(): Promise<VolunteerCertificatesRespons
   return api.get<VolunteerCertificatesResponse>(`${API_V2}/volunteering/certificates`, { per_page: '20' });
 }
 
-export function generateVolunteerCertificate(): Promise<{ data: VolunteerCertificate }> {
-  return api.post<{ data: VolunteerCertificate }>(`${API_V2}/volunteering/certificates`, {});
+export function generateVolunteerCertificate(idempotencyKey?: string): Promise<{ data: VolunteerCertificate }> {
+  return api.post<{ data: VolunteerCertificate }>(
+    `${API_V2}/volunteering/certificates`,
+    idempotencyKey ? { idempotency_key: idempotencyKey } : {},
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
 }
 
 export function getVolunteerExpenses(cursor?: string | null): Promise<VolunteerExpensesResponse> {
@@ -611,8 +615,12 @@ export function getVolunteerExpenses(cursor?: string | null): Promise<VolunteerE
   });
 }
 
-export function submitVolunteerExpense(payload: SubmitVolunteerExpensePayload): Promise<{ data: VolunteerExpense }> {
-  return api.post<{ data: VolunteerExpense }>(`${API_V2}/volunteering/expenses`, payload);
+export function submitVolunteerExpense(payload: SubmitVolunteerExpensePayload, idempotencyKey?: string): Promise<{ data: VolunteerExpense }> {
+  return api.post<{ data: VolunteerExpense }>(
+    `${API_V2}/volunteering/expenses`,
+    { ...payload, ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) },
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
 }
 
 export function getVolunteerGivingDays(): Promise<VolunteerGivingDaysResponse> {
@@ -662,8 +670,12 @@ export function cancelShiftSwap(id: number): Promise<void> {
   return api.delete<void>(`${API_V2}/volunteering/swaps/${id}`);
 }
 
-export function submitVolunteerDonation(payload: SubmitVolunteerDonationPayload): Promise<{ data: VolunteerDonation }> {
-  return api.post<{ data: VolunteerDonation }>(`${API_V2}/volunteering/donations`, payload);
+export function submitVolunteerDonation(payload: SubmitVolunteerDonationPayload, idempotencyKey?: string): Promise<{ data: VolunteerDonation }> {
+  return api.post<{ data: VolunteerDonation }>(
+    `${API_V2}/volunteering/donations`,
+    { ...payload, ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) },
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
 }
 
 export function createOpportunity(payload: CreateOpportunityPayload): Promise<{ data: VolunteerOpportunity }> {
@@ -679,8 +691,12 @@ export function logVolunteerHours(payload: {
   date: string;
   hours: number;
   description?: string;
-}): Promise<{ data: { id: number; status: string; message: string } }> {
-  return api.post<{ data: { id: number; status: string; message: string } }>(`${API_V2}/volunteering/hours`, payload);
+}, idempotencyKey?: string): Promise<{ data: { id: number; status: string; message: string } }> {
+  return api.post<{ data: { id: number; status: string; message: string } }>(
+    `${API_V2}/volunteering/hours`,
+    { ...payload, ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) },
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
 }
 
 export function expressInterest(id: number, message?: string): Promise<{ message: string }> {

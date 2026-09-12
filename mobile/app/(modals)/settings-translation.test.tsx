@@ -142,4 +142,23 @@ describe('SettingsTranslationScreen', () => {
     // The translation target is not the interface language (audit 2026-09-07, B/F-16).
     expect(mockChangeLanguage).not.toHaveBeenCalled();
   });
+
+  it('starts only one save for rapid repeated taps', async () => {
+    let release!: () => void;
+    mockGetUserPreferences.mockResolvedValue({
+      feed: { prefers_chronological: false },
+      translation: { auto_translate_ugc: true, auto_translate_target_locale: 'en' },
+    });
+    mockSaveUserPreferences.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({}); }));
+
+    const { getByText } = render(<SettingsTranslationScreen />);
+    await waitFor(() => expect(getByText('Save preferences')).toBeTruthy());
+    const saveButton = getByText('Save preferences');
+    fireEvent.press(saveButton);
+    fireEvent.press(saveButton);
+
+    expect(mockSaveUserPreferences).toHaveBeenCalledTimes(1);
+    release();
+    await waitFor(() => expect(mockSaveUserPreferences).toHaveBeenCalledTimes(1));
+  });
 });

@@ -52,12 +52,16 @@ describe('downloadAuthenticatedFile', () => {
   });
 
   it('sends the bearer token and tenant header, then opens the share sheet', async () => {
-    await downloadAuthenticatedFile('/api/v2/groups/1/files/31/download', 'Planting guide.pdf');
+    await downloadAuthenticatedFile(
+      '/api/v2/groups/1/files/31/download',
+      'Planting guide.pdf',
+      { 'Idempotency-Key': 'download-key-1' },
+    );
 
     expect(mockDownloadAsync).toHaveBeenCalledWith(
       'https://api.example.test/api/v2/groups/1/files/31/download',
       expect.stringMatching(/^file:\/\/\/cache\/nexus-download-\d+-Planting_guide\.pdf$/),
-      { headers: expect.objectContaining({ Authorization: 'Bearer token-123', 'X-Tenant-Slug': 'hour-timebank' }) },
+      { headers: expect.objectContaining({ Authorization: 'Bearer token-123', 'X-Tenant-Slug': 'hour-timebank', 'Idempotency-Key': 'download-key-1' }) },
     );
     expect(mockShareAsync).toHaveBeenCalledWith('file:///cache/nexus-download-1-guide.pdf');
   });

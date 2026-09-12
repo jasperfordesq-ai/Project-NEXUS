@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import ErrorState from '@/components/ui/ErrorState';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
@@ -25,6 +25,8 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const WEB_TRANSLATION_LOCALES = ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'] as const;
 const MOBILE_TRANSLATION_LOCALES = WEB_TRANSLATION_LOCALES.filter((locale) => SUPPORTED_LANGUAGES.includes(locale));
@@ -49,6 +51,9 @@ export default function SettingsTranslationScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+  const saveInFlight = useRef(false);
+  const { confirm, confirmDialog } = useConfirm();
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -58,6 +63,11 @@ export default function SettingsTranslationScreen() {
       setPrefersChronological(Boolean(preferences.feed?.prefers_chronological));
       setAutoTranslate(Boolean(preferences.translation?.auto_translate_ugc));
       setTargetLocale(normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale));
+      setSavedSnapshot(JSON.stringify({
+        feed: Boolean(preferences.feed?.prefers_chronological),
+        autoTranslate: Boolean(preferences.translation?.auto_translate_ugc),
+        targetLocale: normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale),
+      }));
     } catch (err) {
       /*
         🔴 S3-16: the form used to render its DEFAULTS after a failed load with Save enabled,
@@ -83,7 +93,22 @@ export default function SettingsTranslationScreen() {
     [t],
   );
 
+  const currentSnapshot = JSON.stringify({ feed: prefersChronological, autoTranslate, targetLocale });
+  const isDirty = savedSnapshot !== null && currentSnapshot !== savedSnapshot;
+  useUnsavedChangesGuard({
+    isDirty,
+    isSaving,
+    confirm,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
   async function handleSave() {
+    if (saveInFlight.current) return;
+    saveInFlight.current = true;
+    const submittedSnapshot = currentSnapshot;
     setIsSaving(true);
     try {
       await saveUserPreferences({
@@ -93,6 +118,7 @@ export default function SettingsTranslationScreen() {
           auto_translate_target_locale: targetLocale,
         },
       });
+      setSavedSnapshot(submittedSnapshot);
       /*
         🔴 S3-29 made this conditional on auto-translate; the audit of 2026-09-07 (B/F-16)
         removed it entirely. The target is what other members' words get translated INTO;
@@ -102,6 +128,7 @@ export default function SettingsTranslationScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.saveError')), variant: 'danger' });
     } finally {
+      saveInFlight.current = false;
       setIsSaving(false);
     }
   }
@@ -192,6 +219,7 @@ export default function SettingsTranslationScreen() {
 
           <SourceRepositoryLink />
         </ScrollView>
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );

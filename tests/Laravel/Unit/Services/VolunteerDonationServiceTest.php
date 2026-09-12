@@ -74,6 +74,26 @@ class VolunteerDonationServiceTest extends TestCase
         );
     }
 
+    public function test_response_loss_retry_returns_original_donation_pledge(): void
+    {
+        $payload = [
+            'amount' => 18.50,
+            'payment_method' => 'bank_transfer',
+            'message' => 'Community garden appeal',
+            'idempotency_key' => 'mobile-donation-retry-1',
+        ];
+
+        $first = VolunteerDonationService::createDonation(1, $payload);
+        $replay = VolunteerDonationService::createDonation(1, $payload);
+
+        $this->assertSame($first['id'], $replay['id']);
+        $this->assertSame(1, DB::table('vol_donations')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', 1)
+            ->where('creation_idempotency_key_hash', hash('sha256', 'mobile-donation-retry-1'))
+            ->count());
+    }
+
     public function test_createDonation_throws_for_missing_payment_method(): void
     {
         $this->expectException(\InvalidArgumentException::class);

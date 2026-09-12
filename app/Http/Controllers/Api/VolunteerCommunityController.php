@@ -774,6 +774,7 @@ class VolunteerCommunityController extends BaseApiController
         $this->rateLimit('vol_donation_create', 10, 60);
 
         $data = $this->getAllInput();
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? $this->input('idempotency_key');
         if ($userId) {
             $data['user_id'] = $userId;
         }
@@ -783,6 +784,9 @@ class VolunteerCommunityController extends BaseApiController
             return $this->respondWithData($result, null, 201);
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (\RuntimeException $e) {
+            $status = (int) $e->getCode() === 409 ? 409 : 400;
+            return $this->respondWithError($status === 409 ? 'IDEMPOTENCY_CONFLICT' : 'VALIDATION_ERROR', $e->getMessage(), null, $status);
         }
     }
 

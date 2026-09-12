@@ -8,6 +8,8 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 let mockParams: Record<string, string> = {};
 /*
   The real sheet renders through heroui's portal, which react-test-renderer does not mount.
@@ -249,6 +251,11 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({ isAuthenticated: true }),
 }));
 
+const mockUnsavedGuard = jest.fn();
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
+  useUnsavedChangesGuard: (options: unknown) => mockUnsavedGuard(options),
+}));
+
 const mockUseApi = jest.fn();
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
@@ -385,7 +392,7 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
   };
 });
 
-import { cancelShiftSignup, logVolunteerHours } from '@/lib/api/volunteering';
+import { cancelShiftSignup, logVolunteerHours, respondToShiftSwap, submitVolunteerDonation } from '@/lib/api/volunteering';
 import VolunteeringScreen from './volunteering';
 import { useAppToast } from '@/components/ui/AppToast';
 
@@ -427,6 +434,49 @@ describe('VolunteeringScreen', () => {
     mockParams = {};
   });
 
+  describe('tab load failures', () => {
+    function stubFailure(slot: number) {
+      const refresh = jest.fn();
+      const emptyTop = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+      const emptyNested = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+      const responses: Record<string, unknown>[] = [
+        emptyTop,
+        emptyNested,
+        { data: { data: { total_verified: 0, total_pending: 0, total_declined: 0, by_organization: [], by_month: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+        emptyTop,
+        emptyNested,
+        { data: { data: { items: [], expenses: [], stats: {}, cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() },
+        emptyTop,
+        { data: { data: { items: [], next_cursor: null } }, isLoading: false, error: null, refresh: jest.fn() },
+        { data: { data: { swaps: [] } }, isLoading: false, error: null, refresh: jest.fn() },
+      ];
+      responses[slot] = { data: null, isLoading: false, error: 'Network unavailable', refresh };
+      let call = 0;
+      mockUseApi.mockImplementation(() => responses[call++ % responses.length]);
+      return refresh;
+    }
+
+    it.each([
+      ['applications', 0, 'volunteering-applications-error', 'No applications yet.'],
+      ['shifts', 1, 'volunteering-shifts-error', 'No confirmed shifts yet.'],
+      ['hours', 2, 'volunteering-hours-error', null],
+      ['organisations', 3, 'volunteering-organisations-error', 'No managed organisations yet'],
+      ['certificates', 4, 'volunteering-certificates-error', 'No certificates yet'],
+      ['expenses', 5, 'volunteering-expenses-error', 'No expenses yet'],
+      ['donations', 6, 'volunteering-donations-error', 'No donations yet'],
+      ['swaps', 8, 'volunteering-swaps-error', 'No shift swaps yet'],
+    ])('shows a retryable %s failure without claiming the result is empty', (tab, slot, testID, emptyText) => {
+      const refresh = stubFailure(slot as number);
+      mockParams = { tab: tab as string };
+      const screen = render(<VolunteeringScreen />);
+
+      expect(screen.getByTestId(testID as string)).toBeTruthy();
+      if (emptyText) expect(screen.queryByText(emptyText as string)).toBeNull();
+      fireEvent.press(screen.getByLabelText('common:buttons.retry'));
+      expect(refresh).toHaveBeenCalled();
+    });
+  });
+
   /*
     A link that names a tab has to land on it. This asserts the SCREEN's half of that: given
     the parameter, the donations panel is what renders. The intent mapper's half is covered
@@ -451,6 +501,46 @@ describe('VolunteeringScreen', () => {
         expect.objectContaining({ title: 'Pledge recorded', variant: 'success' }),
       ),
     );
+    await waitFor(() => expect(getByPlaceholderText('Amount').props.value).toBe(''));
+  });
+
+  it('serializes donation taps and reuses the same intent key after a lost response', async () => {
+    mockParams = { tab: 'donations' };
+    let rejectFirst!: (reason: Error) => void;
+    jest.mocked(submitVolunteerDonation)
+      .mockReset()
+      .mockReturnValueOnce(new Promise((_resolve, reject) => { rejectFirst = reject; }))
+      .mockResolvedValueOnce({ data: {} as never });
+    const screen = render(<VolunteeringScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Amount'), '25');
+
+    const submitButton = screen.getByText('Submit donation');
+    fireEvent.press(submitButton);
+    fireEvent.press(submitButton);
+    expect(submitVolunteerDonation).toHaveBeenCalledTimes(1);
+    const firstKey = jest.mocked(submitVolunteerDonation).mock.calls[0]?.[1];
+    expect(firstKey).toEqual(expect.any(String));
+
+    rejectFirst(new Error('response lost'));
+    await waitFor(() => expect(screen.getByText('Submit donation')).toBeTruthy());
+    fireEvent.press(screen.getByText('Submit donation'));
+    await waitFor(() => expect(submitVolunteerDonation).toHaveBeenCalledTimes(2));
+    expect(jest.mocked(submitVolunteerDonation).mock.calls[1]?.[1]).toBe(firstKey);
+    await waitFor(() => expect(screen.getByPlaceholderText('Amount').props.value).toBe(''));
+  });
+
+  it('keeps a donation draft across tab switches and protects route leave', async () => {
+    mockParams = { tab: 'donations' };
+    const screen = render(<VolunteeringScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Amount'), '31.50');
+    await waitFor(() => expect(mockUnsavedGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true })));
+
+    const opportunitiesTab = screen.getAllByText('Opportunities').at(-1);
+    expect(opportunitiesTab).toBeDefined();
+    fireEvent.press(opportunitiesTab!);
+    fireEvent.press(screen.getByText('Donations'));
+
+    expect(screen.getByPlaceholderText('Amount').props.value).toBe('31.50');
   });
 
   /**
@@ -802,8 +892,9 @@ describe('VolunteeringScreen', () => {
     fireEvent.press(getByText('Submit hours'));
 
     await waitFor(() =>
-      expect(logVolunteerHours).toHaveBeenCalledWith(expect.objectContaining({ hours: 1.5 })),
+      expect(logVolunteerHours).toHaveBeenCalledWith(expect.objectContaining({ hours: 1.5 }), expect.any(String)),
     );
+    await waitFor(() => expect(getByPlaceholderText('Hours').props.value).toBe(''));
   });
 
   it('🔴 records the day the work was actually done, and says it needs checking', async () => {
@@ -851,13 +942,14 @@ describe('VolunteeringScreen', () => {
     fireEvent.press(getByText('Submit hours'));
 
     await waitFor(() =>
-      expect(logVolunteerHours).toHaveBeenCalledWith(expect.objectContaining({ date: '2020-03-04', hours: 2 })),
+      expect(logVolunteerHours).toHaveBeenCalledWith(expect.objectContaining({ date: '2020-03-04', hours: 2 }), expect.any(String)),
     );
     await waitFor(() =>
       expect((useAppToast() as unknown as { show: jest.Mock }).show).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Hours sent for checking', variant: 'success' }),
       ),
     );
+    await waitFor(() => expect(getByPlaceholderText('Hours').props.value).toBe(''));
   });
 
   it('🔴 refuses a date in the future rather than sending it', async () => {
@@ -1391,6 +1483,23 @@ describe('VolunteeringScreen', () => {
     expect(getByTestId('swap-own-detail-77').props.children.join('')).toContain('Green Spaces');
     expect(getByTestId('swap-other-label-77').props.children).toBe('Proposed shift');
     expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Care Hub');
+  });
+
+  it('serializes rapid conflicting responses to one received shift swap', async () => {
+    let resolveResponse!: (value: { data: unknown }) => void;
+    jest.mocked(respondToShiftSwap).mockClear();
+    jest.mocked(respondToShiftSwap).mockReturnValueOnce(new Promise((resolve) => { resolveResponse = resolve; }));
+    swapPanelApi('received');
+    const screen = render(<VolunteeringScreen />);
+    fireEvent.press(screen.getByText('Swaps'));
+
+    fireEvent.press(screen.getByText('Accept'));
+    fireEvent.press(screen.getByText('Reject'));
+    expect(respondToShiftSwap).toHaveBeenCalledTimes(1);
+    expect(respondToShiftSwap).toHaveBeenCalledWith(77, 'accept');
+
+    resolveResponse({ data: {} });
+    await waitFor(() => expect(screen.getByText('Accept')).toBeTruthy());
   });
   it('🔴 tells a member their organisation registration was refused', () => {
     // A declined registration used to slide out of the amber "awaiting approval" block

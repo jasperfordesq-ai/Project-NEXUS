@@ -498,7 +498,7 @@
       "unknown": "Este pedido se encuentra en un estado que la aplicación aún no reconoce."
     },
     "confirmDeliveryTitle": "¿Confirmas que lo recibiste?",
-    "confirmDeliveryMessage": "Esto libera el pago del pedido {{order}} a la persona vendedora y finaliza tu protección de comprador. Confirma solo cuando tengas el artículo y sea lo que esperabas.",
+    "confirmDeliveryMessage": "Esto registra el pedido {{order}} como entregado e inicia un plazo de 14 días para abrir una disputa antes de que se libere el pago. Confirma solo cuando tengas el artículo y sea lo que esperabas.",
     "confirmDeliveryAction": "Confirmar recepción",
     "paymentTakenTitle": "Tu pago se realizó",
     "paymentTakenHint": "Todavía estamos confirmando el pedido {{order}}. No pagues otra vez: actualiza en un minuto.",

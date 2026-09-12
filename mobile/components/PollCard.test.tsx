@@ -108,6 +108,21 @@ describe('PollCard', () => {
     await waitFor(() => expect(onVoted).toHaveBeenCalledWith(updatedPoll));
   });
 
+  it('serializes rapid taps before the voting state renders', async () => {
+    let resolveVote!: (value: { data: PollData }) => void;
+    const updated = { ...withheld(141), user_vote_option_id: 141 };
+    mockVoteFeedPoll.mockImplementationOnce(() => new Promise((resolve) => { resolveVote = resolve; }));
+
+    const { getByLabelText } = render(<PollCard pollData={withheld(null)} itemId={41} />);
+    const option = getByLabelText('Saturday morning');
+    fireEvent.press(option);
+    fireEvent.press(option);
+
+    expect(mockVoteFeedPoll).toHaveBeenCalledTimes(1);
+    resolveVote({ data: updated });
+    await waitFor(() => expect(mockVoteFeedPoll).toHaveBeenCalledTimes(1));
+  });
+
   /**
    * 🔴 The server withholds the tallies from everyone but the poll's creator while the
    * poll is open — `total_votes` and every `vote_count`/`percentage` arrive as null. Seen

@@ -242,6 +242,8 @@ class DailyRewardService
             'claimed_today'   => $todayReward !== null,
             'claimed_at'      => $todayReward->claimed_at ?? null,
             'xp_earned_today' => $todayReward ? (int) $todayReward->xp_earned : 0,
+            'base_xp_today' => $todayReward ? (int) $todayReward->xp_earned - (int) $todayReward->milestone_bonus : 0,
+            'milestone_bonus_today' => $todayReward ? (int) $todayReward->milestone_bonus : 0,
             'current_streak'  => $currentStreak,
             'longest_streak'  => (int) ($user->longest_streak ?? 0),
             'total_xp'        => (int) ($user->xp ?? 0),

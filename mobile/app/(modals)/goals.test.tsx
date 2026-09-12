@@ -155,6 +155,7 @@ jest.mock('@/lib/api/goals', () => ({
   createGoalFromTemplate: jest.fn().mockResolvedValue({
     data: { id: 100, title: 'Volunteer starter', status: 'active', progress_hours: 0, target_hours: null, target_value: 10, due_date: null, created_at: '2026-01-01T00:00:00Z' },
   }),
+  completeGoal: jest.fn().mockResolvedValue({ data: { id: 1, title: 'Learn React Native', status: 'completed', progress_hours: 10, target_hours: 10, due_date: null } }),
   updateGoalStatus: jest.fn().mockResolvedValue({ data: {} }),
 }));
 
@@ -210,7 +211,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
 // --- Tests ---
 
 import GoalsScreen from './goals';
-import { createGoalFromTemplate, getGoalTemplateCategories, getGoalTemplates } from '@/lib/api/goals';
+import { completeGoal, createGoalFromTemplate, getGoalTemplateCategories, getGoalTemplates, updateGoalStatus } from '@/lib/api/goals';
 
 const defaultApiState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
 
@@ -300,6 +301,23 @@ describe('GoalsScreen', () => {
     expect(getByText('Mark complete')).toBeTruthy();
     expect(getByText('Details')).toBeTruthy();
     expect(getByText('Abandon')).toBeTruthy();
+  });
+
+  it('uses the canonical completion endpoint and serializes rapid completion taps', async () => {
+    let resolveCompletion!: (value: { data: typeof mockCompletedGoal }) => void;
+    (completeGoal as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { resolveCompletion = resolve; }));
+    mockUseApi.mockReturnValue({ data: { data: [mockGoal] }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText } = render(<GoalsScreen />);
+    const completeButton = getByText('Mark complete');
+    fireEvent.press(completeButton);
+    fireEvent.press(completeButton);
+
+    expect(completeGoal).toHaveBeenCalledTimes(1);
+    expect(completeGoal).toHaveBeenCalledWith(1);
+    expect(updateGoalStatus).not.toHaveBeenCalled();
+    resolveCompletion({ data: mockCompletedGoal });
+    await waitFor(() => expect(getByText('Finish Community Garden')).toBeTruthy());
   });
 
   it('renders Completed status badge and no action buttons on completed goals', () => {

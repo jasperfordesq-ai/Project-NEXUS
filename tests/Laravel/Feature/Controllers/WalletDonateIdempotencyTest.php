@@ -37,13 +37,30 @@ class WalletDonateIdempotencyTest extends TestCase
         return $user;
     }
 
-    public function test_a_repeated_donation_with_the_same_key_debits_once(): void
+    public static function cacheResultAvailability(): array
+    {
+        return [[false, 'community_fund'], [true, 'community_fund'], [true, 'user']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('cacheResultAvailability')]
+    public function test_a_repeated_donation_with_the_same_key_debits_once(bool $cacheResultFails, string $recipientType): void
     {
         Cache::flush();
         $user = $this->authenticatedUser();
+        $recipient = $recipientType === 'user'
+            ? User::factory()->forTenant($this->testTenantId)->create(['balance' => 5])
+            : null;
+
+        if ($cacheResultFails) {
+            $cache = \Mockery::mock(Cache::getFacadeRoot());
+            $cache->shouldReceive('put')->withArgs(fn ($key) => str_starts_with($key, 'wallet_donate:idem:'))
+                ->andThrow(new \RuntimeException('Lost cache result'));
+            Cache::swap($cache);
+        }
 
         $payload = [
-            'recipient_type'  => 'community_fund',
+            'recipient_type'  => $recipientType,
+            'recipient_id'    => $recipient?->id,
             'amount'          => 2.0,
             'message'         => 'Timed out on the phone',
             'idempotency_key' => 'mobile-donation-abc123',
@@ -54,13 +71,16 @@ class WalletDonateIdempotencyTest extends TestCase
 
         $second = $this->apiPost('/v2/wallet/donate', $payload);
         $second->assertStatus(201);
-        $second->assertJsonPath('data.replayed', true);
 
         $this->assertEquals(
             8.0,
             (float) DB::table('users')->where('id', $user->id)->value('balance'),
             'A replayed donation must not debit the member again.'
         );
+        $second->assertJsonPath('data.replayed', true);
+        if ($recipient) {
+            $this->assertEquals(7, $recipient->fresh()->balance);
+        }
         $this->assertSame(
             1,
             DB::table('credit_donations')
@@ -115,5 +135,24 @@ class WalletDonateIdempotencyTest extends TestCase
         ])->assertStatus(201);
 
         $this->assertEquals(8.5, (float) DB::table('users')->where('id', $user->id)->value('balance'));
+    }
+
+    public function test_donation_ledger_failure_rolls_back_and_can_retry(): void
+    {
+        $user = $this->authenticatedUser();
+        $interrupt = true;
+        DB::listen(function ($query) use (&$interrupt): void {
+            if ($interrupt && str_starts_with($query->sql, 'insert into `credit_donations`')) {
+                $interrupt = false;
+                throw new \RuntimeException('Donation receipt interrupted');
+            }
+        });
+        $payload = ['recipient_type' => 'community_fund', 'amount' => 2, 'idempotency_key' => 'rollback-donation'];
+        $this->apiPost('/v2/wallet/donate', $payload)->assertStatus(400);
+        $this->assertEquals(10, $user->fresh()->balance);
+        $this->assertSame(0, DB::table('credit_donations')->where('donor_id', $user->id)->count());
+        $this->assertSame(0, DB::table('transactions')->where('sender_id', $user->id)->count());
+        $this->apiPost('/v2/wallet/donate', $payload)->assertStatus(201);
+        $this->assertEquals(8, $user->fresh()->balance);
     }
 }

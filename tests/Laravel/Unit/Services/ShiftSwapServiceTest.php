@@ -70,7 +70,7 @@ class ShiftSwapServiceTest extends TestCase
 
     public function test_adminDecision_fails_when_not_pending(): void
     {
-        DB::shouldReceive('table->where->where->where->first')->andReturnNull();
+        DB::shouldReceive('table->where->where->first')->andReturnNull();
 
         $result = ShiftSwapService::adminDecision(999, 1, 'approve');
         $this->assertFalse($result);

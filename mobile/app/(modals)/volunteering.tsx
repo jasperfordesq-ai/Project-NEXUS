@@ -72,7 +72,7 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { canPostAnyOpportunity } from '@/lib/volunteering/postingPermission';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -90,6 +90,9 @@ import AccentIcon from '@/components/ui/AccentIcon';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
 
@@ -104,6 +107,23 @@ const TAB_KEYS: readonly TabKey[] = [
 ];
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const EXPENSE_TYPES: VolunteerExpenseType[] = ['travel', 'meals', 'supplies', 'equipment', 'parking', 'other'];
+type DraftState = { isDirty: boolean; isSaving: boolean };
+
+function useMutationAttempt(prefix: string) {
+  const attempt = useRef<{ fingerprint: string; key: string } | null>(null);
+  return {
+    keyFor(payload: unknown) {
+      const fingerprint = JSON.stringify(payload);
+      if (attempt.current?.fingerprint !== fingerprint) {
+        attempt.current = { fingerprint, key: mutationIdempotencyKey(prefix) };
+      }
+      return attempt.current.key;
+    },
+    clear() {
+      attempt.current = null;
+    },
+  };
+}
 
 function formatDate(value?: string | null) {
   if (!value) return null;
@@ -382,9 +402,13 @@ function HeroHeader({
 function OrganisationsPanel({
   organisations,
   isLoading,
+  error,
+  onRefresh,
 }: {
   organisations: VolunteeringOrganisation[];
   isLoading: boolean;
+  error: string | null;
+  onRefresh: () => void;
 }) {
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
@@ -408,11 +432,11 @@ function OrganisationsPanel({
   const pending = organisations.filter((org) => org.status === 'pending');
   const declined = organisations.filter(isDeclined);
 
-  if (isLoading) {
+  if (isLoading && organisations.length === 0) {
     return <ListSkeleton rows={3} testID="volunteering-organisations-skeleton" />;
   }
 
-  if (managed.length === 0 && pending.length === 0 && declined.length === 0) {
+  if (!error && managed.length === 0 && pending.length === 0 && declined.length === 0) {
     return (
       <EmptyState
         icon="business-outline"
@@ -426,6 +450,7 @@ function OrganisationsPanel({
 
   return (
     <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-organisations-error" />
       {pending.length > 0 ? (
         <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(theme.warning, 0.14) }}>
           <View className="h-1" style={{ backgroundColor: theme.warning }} />
@@ -678,10 +703,12 @@ function TabLoadMore({ hasMore, isLoadingMore, onPress, testID }: {
 function ApplicationsPanel({
   applications,
   isLoading,
+  error,
   onRefresh,
 }: {
   applications: VolunteerApplication[];
   isLoading: boolean;
+  error: string | null;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation('volunteering');
@@ -689,6 +716,7 @@ function ApplicationsPanel({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
+  const withdrawPending = useRef(false);
 
   /*
     🔴 Withdrawing asks first. One tap on this list used to pull the application with no way
@@ -707,6 +735,8 @@ function ApplicationsPanel({
   }
 
   async function runWithdraw(id: number) {
+    if (withdrawPending.current) return;
+    withdrawPending.current = true;
     setWithdrawingId(id);
     try {
       await withdrawApplication(id);
@@ -716,20 +746,22 @@ function ApplicationsPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('withdrawError')), variant: 'danger' });
     } finally {
+      withdrawPending.current = false;
       setWithdrawingId(null);
     }
   }
 
-  if (isLoading) {
+  if (isLoading && applications.length === 0) {
     return <ListSkeleton rows={3} testID="volunteering-applications-skeleton" />;
   }
 
-  if (applications.length === 0) {
+  if (!error && applications.length === 0) {
     return <EmptyState icon="send-outline" title={t('noApplications')} />;
   }
 
   return (
     <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-applications-error" />
       {applications.map((application) => {
         const statusTone = application.status === 'approved' ? theme.success : application.status === 'declined' ? theme.error : theme.warning;
         return (
@@ -758,7 +790,7 @@ function ApplicationsPanel({
                 <HeroButton
                   size="sm"
                   variant="secondary"
-                  isDisabled={withdrawingId === application.id}
+                  isDisabled={withdrawingId !== null}
                   onPress={() => handleWithdraw(application.id, application.opportunity?.title ?? '')}
                   testID={`volunteering-withdraw-${application.id}`}
                 >
@@ -777,10 +809,12 @@ function ApplicationsPanel({
 function ShiftsPanel({
   shifts,
   isLoading,
+  error,
   onRefresh,
 }: {
   shifts: VolunteerShiftRegistration[];
   isLoading: boolean;
+  error: string | null;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation('volunteering');
@@ -789,6 +823,7 @@ function ShiftsPanel({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const cancelPending = useRef(false);
 
   /**
    * 🔴 Asking for a swap did not exist anywhere on the platform until 2026-08-24 — not in
@@ -804,8 +839,12 @@ function ShiftsPanel({
   const [swapOptions, setSwapOptions] = useState<VolunteerShift[] | null>(null);
   const [swapOptionsError, setSwapOptionsError] = useState<string | null>(null);
   const [sendingSwapFor, setSendingSwapFor] = useState<number | null>(null);
+  const swapPending = useRef(false);
+  const swapOptionsRequest = useRef(0);
 
   async function openSwapSheet(shift: VolunteerShiftRegistration) {
+    if (swapPending.current || cancelPending.current) return;
+    const request = ++swapOptionsRequest.current;
     setSwapForShift(shift);
     setSwapOptions(null);
     setSwapOptionsError(null);
@@ -817,15 +856,18 @@ function ShiftsPanel({
         && (candidate.signup_count ?? 0) > 0
         && new Date(candidate.start_time).getTime() > now
       ));
+      if (request !== swapOptionsRequest.current) return;
       setSwapOptions(options);
     } catch (err) {
+      if (request !== swapOptionsRequest.current) return;
       setSwapOptionsError(describeApiError(err, t('swaps.optionsError')));
       setSwapOptions([]);
     }
   }
 
   async function handleRequestSwap(target: VolunteerShift) {
-    if (!swapForShift) return;
+    if (!swapForShift || swapPending.current || cancelPending.current) return;
+    swapPending.current = true;
     setSendingSwapFor(target.id);
     try {
       await requestShiftSwap({ from_shift_id: swapForShift.id, to_shift_id: target.id });
@@ -846,6 +888,7 @@ function ShiftsPanel({
         variant: 'danger',
       });
     } finally {
+      swapPending.current = false;
       setSendingSwapFor(null);
     }
   }
@@ -871,6 +914,8 @@ function ShiftsPanel({
   }
 
   async function runCancel(id: number) {
+    if (cancelPending.current || swapPending.current) return;
+    cancelPending.current = true;
     setCancellingId(id);
     try {
       await cancelShiftSignup(id);
@@ -880,20 +925,22 @@ function ShiftsPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('myShifts.cancelError')), variant: 'danger' });
     } finally {
+      cancelPending.current = false;
       setCancellingId(null);
     }
   }
 
-  if (isLoading) {
+  if (isLoading && shifts.length === 0) {
     return <LoadingSpinner />;
   }
 
-  if (shifts.length === 0) {
+  if (!error && shifts.length === 0) {
     return <EmptyState icon="calendar-outline" title={t('myShifts.empty')} />;
   }
 
   return (
     <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-shifts-error" />
       {shifts.map((shift) => {
         const date = formatDate(shift.start_time);
         const start = formatTime(shift.start_time);
@@ -940,7 +987,7 @@ function ShiftsPanel({
                   className="flex-1"
                   size="sm"
                   variant="danger-soft"
-                  isDisabled={cancellingId === shift.id}
+                  isDisabled={cancellingId !== null || sendingSwapFor !== null}
                   onPress={() => handleCancel(shift.id)}
                   accessibilityLabel={t('myShifts.cancelLabel', { title: shift.opportunity_title })}
                   testID={`volunteering-cancel-shift-${shift.id}`}
@@ -952,6 +999,7 @@ function ShiftsPanel({
               <HeroButton
                 size="sm"
                 variant="tertiary"
+                isDisabled={cancellingId !== null || sendingSwapFor !== null}
                 onPress={() => void openSwapSheet(shift)}
                 accessibilityLabel={t('swaps.askLabel', { title: shift.opportunity_title })}
                 testID={`shift-swap-ask-${shift.id}`}
@@ -964,7 +1012,11 @@ function ShiftsPanel({
         );
       })}
 
-      <BottomSheet visible={swapForShift !== null} onClose={() => setSwapForShift(null)}>
+      <BottomSheet visible={swapForShift !== null} onClose={() => {
+        if (swapPending.current) return;
+        swapOptionsRequest.current += 1;
+        setSwapForShift(null);
+      }}>
         <View className="gap-3 p-4">
           <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('swaps.askTitle')}</Text>
           <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('swaps.askBody')}</Text>
@@ -1021,10 +1073,12 @@ function swapStatusTone(status: string, theme: ReturnType<typeof useTheme>) {
 function SwapsPanel({
   swaps,
   isLoading,
+  error,
   onRefresh,
 }: {
   swaps: VolunteerShiftSwap[];
   isLoading: boolean;
+  error: string | null;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation('volunteering');
@@ -1033,12 +1087,15 @@ function SwapsPanel({
   const { show: showToast } = useAppToast();
   const [filter, setFilter] = useState<'all' | 'sent' | 'received'>('all');
   const [actioningId, setActioningId] = useState<number | null>(null);
+  const actionPending = useRef(false);
 
   const filteredSwaps = swaps.filter((swap) => (filter === 'all' ? true : swap.direction === filter));
   const sentCount = swaps.filter((swap) => swap.direction === 'sent').length;
   const receivedCount = swaps.filter((swap) => swap.direction === 'received').length;
 
   async function handleRespond(id: number, action: 'accept' | 'reject') {
+    if (actionPending.current) return;
+    actionPending.current = true;
     setActioningId(id);
     try {
       await respondToShiftSwap(id, action);
@@ -1048,11 +1105,14 @@ function SwapsPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(action === 'accept' ? 'swaps.acceptError' : 'swaps.rejectError')), variant: 'danger' });
     } finally {
+      actionPending.current = false;
       setActioningId(null);
     }
   }
 
   async function handleCancel(id: number) {
+    if (actionPending.current) return;
+    actionPending.current = true;
     setActioningId(id);
     try {
       await cancelShiftSwap(id);
@@ -1062,16 +1122,18 @@ function SwapsPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('swaps.cancelError')), variant: 'danger' });
     } finally {
+      actionPending.current = false;
       setActioningId(null);
     }
   }
 
-  if (isLoading) {
+  if (isLoading && swaps.length === 0) {
     return <LoadingSpinner />;
   }
 
   return (
     <View className="gap-4">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-swaps-error" />
       <HeroCard className="rounded-panel p-0">
         <HeroCard.Body className="gap-3 p-4">
           <View className="flex-row items-start justify-between gap-3">
@@ -1112,7 +1174,7 @@ function SwapsPanel({
         </HeroCard.Body>
       </HeroCard>
 
-      {filteredSwaps.length === 0 ? (
+      {!error && filteredSwaps.length === 0 ? (
         <EmptyState icon="swap-horizontal-outline" title={t('swaps.emptyTitle')} />
       ) : (
         filteredSwaps.map((swap) => {
@@ -1190,17 +1252,17 @@ function SwapsPanel({
 
                 {swap.direction === 'received' && swap.status === 'pending' ? (
                   <View className="flex-row gap-2">
-                    <HeroButton className="flex-1" size="sm" isDisabled={actioningId === swap.id} onPress={() => void handleRespond(swap.id, 'accept')}>
+                    <HeroButton className="flex-1" size="sm" isDisabled={actioningId !== null} onPress={() => void handleRespond(swap.id, 'accept')}>
                       {actioningId === swap.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('swaps.accept')}</HeroButton.Label>}
                     </HeroButton>
-                    <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId === swap.id} onPress={() => void handleRespond(swap.id, 'reject')}>
+                    <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void handleRespond(swap.id, 'reject')}>
                       <HeroButton.Label>{t('swaps.reject')}</HeroButton.Label>
                     </HeroButton>
                   </View>
                 ) : null}
 
                 {swap.direction === 'sent' && swap.status === 'pending' ? (
-                  <HeroButton size="sm" variant="danger-soft" isDisabled={actioningId === swap.id} onPress={() => void handleCancel(swap.id)}>
+                  <HeroButton size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void handleCancel(swap.id)}>
                     {actioningId === swap.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('swaps.cancel')}</HeroButton.Label>}
                   </HeroButton>
                 ) : null}
@@ -1216,10 +1278,12 @@ function SwapsPanel({
 function CertificatesPanel({
   certificates,
   isLoading,
+  error,
   onRefresh,
 }: {
   certificates: VolunteerCertificate[];
   isLoading: boolean;
+  error: string | null;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation('volunteering');
@@ -1227,17 +1291,23 @@ function CertificatesPanel({
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [generating, setGenerating] = useState(false);
+  const generatePending = useRef(false);
+  const generateAttempt = useMutationAttempt('volunteer-certificate');
 
   async function handleGenerate() {
+    if (generatePending.current) return;
+    generatePending.current = true;
     setGenerating(true);
     try {
-      await generateVolunteerCertificate();
+      await generateVolunteerCertificate(generateAttempt.keyFor({ scope: 'all' }));
+      generateAttempt.clear();
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('certificates.generateError')), variant: 'danger' });
     } finally {
+      generatePending.current = false;
       setGenerating(false);
     }
   }
@@ -1260,12 +1330,13 @@ function CertificatesPanel({
     }
   }
 
-  if (isLoading) {
+  if (isLoading && certificates.length === 0) {
     return <LoadingSpinner />;
   }
 
   return (
     <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-certificates-error" />
       <HeroCard className="rounded-panel p-0">
         <HeroCard.Body className="gap-3 p-4">
           <View className="flex-row items-start justify-between gap-3">
@@ -1288,7 +1359,7 @@ function CertificatesPanel({
         </HeroCard.Body>
       </HeroCard>
 
-      {certificates.length === 0 ? (
+      {!error && certificates.length === 0 ? (
         <EmptyState icon="ribbon-outline" title={t('certificates.emptyTitle')} />
       ) : (
         certificates.map((certificate) => {
@@ -1343,12 +1414,16 @@ function ExpensesPanel({
   expenses,
   organisations,
   isLoading,
+  error,
   onRefresh,
+  onDraftStateChange,
 }: {
   expenses: VolunteerExpense[];
   organisations: VolunteeringOrganisation[];
   isLoading: boolean;
+  error: string | null;
   onRefresh: () => void;
+  onDraftStateChange: (state: DraftState) => void;
 }) {
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
@@ -1360,6 +1435,15 @@ function ExpensesPanel({
   const [currency, setCurrency] = useState('EUR');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const submitPending = useRef(false);
+  const submitAttempt = useMutationAttempt('volunteer-expense');
+
+  useEffect(() => {
+    onDraftStateChange({
+      isDirty: amount.trim() !== '' || description.trim() !== '',
+      isSaving: submitting,
+    });
+  }, [amount, description, onDraftStateChange, submitting]);
 
   useEffect(() => {
     if (selectedOrgId === null && organisations.length > 0) {
@@ -1368,6 +1452,7 @@ function ExpensesPanel({
   }, [organisations, selectedOrgId]);
 
   async function handleSubmit() {
+    if (submitPending.current) return;
     // The shared parser: "1,5" from a German or French keypad used to be rejected outright (E/F-7).
     const parsedAmount = parseDecimalInput(amount) ?? Number.NaN;
     if (!selectedOrgId || !Number.isFinite(parsedAmount) || parsedAmount <= 0 || description.trim().length === 0) {
@@ -1375,15 +1460,18 @@ function ExpensesPanel({
       return;
     }
 
+    submitPending.current = true;
     setSubmitting(true);
     try {
-      await submitVolunteerExpense({
+      const payload = {
         organization_id: selectedOrgId,
         expense_type: expenseType,
         amount: parsedAmount,
         currency: currency.trim() || 'EUR',
         description: description.trim(),
-      });
+      };
+      await submitVolunteerExpense(payload, submitAttempt.keyFor(payload));
+      submitAttempt.clear();
       setAmount('');
       setDescription('');
       onRefresh();
@@ -1392,11 +1480,12 @@ function ExpensesPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('expenses.submitError')), variant: 'danger' });
     } finally {
+      submitPending.current = false;
       setSubmitting(false);
     }
   }
 
-  if (isLoading) {
+  if (isLoading && expenses.length === 0 && organisations.length === 0) {
     return <LoadingSpinner />;
   }
 
@@ -1407,6 +1496,7 @@ function ExpensesPanel({
 
   return (
     <View className="gap-4">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-expenses-error" />
       <View className="flex-row flex-wrap gap-3">
         <StatTile label={t('expenses.stats.claimed')} value={formatMoney(claimed, currency)} tone={primary} />
         <StatTile label={t('expenses.stats.approved')} value={formatMoney(approved, currency)} tone="#22c55e" />
@@ -1433,6 +1523,7 @@ function ExpensesPanel({
                       key={org.id}
                       size="sm"
                       variant={selected ? 'primary' : 'secondary'}
+                      isDisabled={submitting}
                       onPress={() => setSelectedOrgId(org.id)}
                       style={selected ? { backgroundColor: withAlpha(primary, 0.18) } : undefined}
                     >
@@ -1451,6 +1542,7 @@ function ExpensesPanel({
                       key={type}
                       size="sm"
                       variant={selected ? 'primary' : 'secondary'}
+                      isDisabled={submitting}
                       onPress={() => setExpenseType(type)}
                       style={selected ? { backgroundColor: withAlpha(primary, 0.18) } : undefined}
                     >
@@ -1477,6 +1569,7 @@ function ExpensesPanel({
                   className="text-base"
                   style={{ color: theme.text }}
                   accessibilityLabel={t('expenses.amountPlaceholder')}
+                  editable={!submitting}
                 />
                 <Input
                   value={currency}
@@ -1488,6 +1581,7 @@ function ExpensesPanel({
                   className="text-base"
                   style={{ color: theme.text }}
                   accessibilityLabel={t('expenses.currencyPlaceholder')}
+                  editable={!submitting}
                 />
               </View>
               <Input
@@ -1499,6 +1593,7 @@ function ExpensesPanel({
                 className="min-h-[92px] text-base"
                 style={{ color: theme.text, textAlignVertical: 'top' }}
                 accessibilityLabel={t('expenses.descriptionPlaceholder')}
+                editable={!submitting}
               />
               <HeroButton isDisabled={submitting} onPress={() => void handleSubmit()}>
                 {submitting ? <Spinner size="sm" /> : <HeroButton.Label>{t('expenses.submit')}</HeroButton.Label>}
@@ -1508,7 +1603,7 @@ function ExpensesPanel({
         </HeroCard.Body>
       </HeroCard>
 
-      {expenses.length === 0 ? (
+      {!error && expenses.length === 0 ? (
         <EmptyState icon="receipt-outline" title={t('expenses.emptyTitle')} />
       ) : (
         expenses.map((expense) => {
@@ -1547,12 +1642,16 @@ function DonationsPanel({
   givingDays,
   donations,
   isLoading,
+  error,
   onRefresh,
+  onDraftStateChange,
 }: {
   givingDays: VolunteerGivingDay[];
   donations: VolunteerDonation[];
   isLoading: boolean;
+  error: string | null;
   onRefresh: () => void;
+  onDraftStateChange: (state: DraftState) => void;
 }) {
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
@@ -1564,24 +1663,37 @@ function DonationsPanel({
   const [message, setMessage] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submitPending = useRef(false);
+  const submitAttempt = useMutationAttempt('volunteer-donation');
+
+  useEffect(() => {
+    onDraftStateChange({
+      isDirty: amount.trim() !== '' || message.trim() !== '' || anonymous || selectedDayId !== null,
+      isSaving: submitting,
+    });
+  }, [amount, anonymous, message, onDraftStateChange, selectedDayId, submitting]);
 
   async function handleSubmit() {
+    if (submitPending.current) return;
     // The shared parser: "1,5" from a German or French keypad used to be rejected outright (E/F-7).
     const parsedAmount = parseDecimalInput(amount) ?? Number.NaN;
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       showToast({ title: t('common:errors.alertTitle'), description: t('donations.validation'), variant: 'warning' });
       return;
     }
+    submitPending.current = true;
     setSubmitting(true);
     try {
-      await submitVolunteerDonation({
+      const payload = {
         giving_day_id: selectedDayId,
         amount: parsedAmount,
         currency: currency.trim() || 'EUR',
         payment_method: 'bank_transfer',
         message: message.trim() || null,
         is_anonymous: anonymous,
-      });
+      };
+      await submitVolunteerDonation(payload, submitAttempt.keyFor(payload));
+      submitAttempt.clear();
       setAmount('');
       setMessage('');
       onRefresh();
@@ -1604,11 +1716,12 @@ function DonationsPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('donations.submitError')), variant: 'danger' });
     } finally {
+      submitPending.current = false;
       setSubmitting(false);
     }
   }
 
-  if (isLoading) {
+  if (isLoading && givingDays.length === 0 && donations.length === 0) {
     return <LoadingSpinner />;
   }
 
@@ -1617,6 +1730,7 @@ function DonationsPanel({
 
   return (
     <View className="gap-4">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-donations-error" />
       <View className="flex-row flex-wrap gap-3">
         <StatTile label={t('donations.stats.raised')} value={formatMoney(raised, currency)} tone="#e11d48" />
         <StatTile label={t('donations.stats.donors')} value={String(donorCount)} tone={primary} />
@@ -1652,6 +1766,7 @@ function DonationsPanel({
                   <HeroButton
                     size="sm"
                     variant={selectedDayId === day.id ? 'primary' : 'secondary'}
+                    isDisabled={submitting}
                     onPress={() => setSelectedDayId(selectedDayId === day.id ? null : day.id)}
                   >
                     <HeroButton.Label>{selectedDayId === day.id ? t('donations.selected') : t('donations.selectCampaign')}</HeroButton.Label>
@@ -1681,6 +1796,7 @@ function DonationsPanel({
               className="text-base"
               style={{ color: theme.text }}
               accessibilityLabel={t('donations.amountPlaceholder')}
+              editable={!submitting}
             />
             <Input
               value={currency}
@@ -1692,6 +1808,7 @@ function DonationsPanel({
               className="text-base"
               style={{ color: theme.text }}
               accessibilityLabel={t('expenses.currencyPlaceholder')}
+              editable={!submitting}
             />
           </View>
           <Input
@@ -1703,8 +1820,9 @@ function DonationsPanel({
             className="min-h-[86px] text-base"
             style={{ color: theme.text, textAlignVertical: 'top' }}
             accessibilityLabel={t('donations.messagePlaceholder')}
+            editable={!submitting}
           />
-          <HeroButton size="sm" variant={anonymous ? 'primary' : 'secondary'} onPress={() => setAnonymous((value) => !value)}>
+          <HeroButton size="sm" variant={anonymous ? 'primary' : 'secondary'} isDisabled={submitting} onPress={() => setAnonymous((value) => !value)}>
             {anonymous ? <AccentIcon name="eye-off-outline" size={16} /> : <Ionicons name="eye-outline" size={16} color={primary} />}
             <HeroButton.Label>{anonymous ? t('donations.anonymousOn') : t('donations.anonymousOff')}</HeroButton.Label>
           </HeroButton>
@@ -1714,7 +1832,7 @@ function DonationsPanel({
         </HeroCard.Body>
       </HeroCard>
 
-      {donations.length === 0 ? (
+      {!error && donations.length === 0 ? (
         <EmptyState icon="heart-outline" title={t('donations.emptyTitle')} />
       ) : (
         donations.map((donation) => (
@@ -1746,12 +1864,16 @@ function HoursPanel({
   summary,
   organisations,
   isLoading,
+  error,
   onRefresh,
+  onDraftStateChange,
 }: {
   summary: VolunteerHoursSummary | null;
   organisations: VolunteeringOrganisation[];
   isLoading: boolean;
+  error: string | null;
   onRefresh: () => void;
+  onDraftStateChange: (state: DraftState) => void;
 }) {
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
@@ -1761,6 +1883,8 @@ function HoursPanel({
   const [hours, setHours] = useState('');
   const [description, setDescription] = useState('');
   const [logging, setLogging] = useState(false);
+  const logPending = useRef(false);
+  const logAttempt = useMutationAttempt('volunteer-hours');
   /*
     🔴 The date the work was done, not the date it is being recorded.
 
@@ -1773,6 +1897,14 @@ function HoursPanel({
   const [workedOn, setWorkedOn] = useState(() =>
     eventIsoToLocalInput(new Date().toISOString(), localEventTimeZone()).slice(0, 10),
   );
+  const initialWorkedOn = useRef(workedOn);
+
+  useEffect(() => {
+    onDraftStateChange({
+      isDirty: hours.trim() !== '' || description.trim() !== '' || workedOn !== initialWorkedOn.current,
+      isSaving: logging,
+    });
+  }, [description, hours, logging, onDraftStateChange, workedOn]);
 
   useEffect(() => {
     if (selectedOrgId === null && organisations.length > 0) {
@@ -1781,6 +1913,7 @@ function HoursPanel({
   }, [organisations, selectedOrgId]);
 
   async function handleLogHours() {
+    if (logPending.current) return;
     // The shared parser: "1,5" from a German or French keypad used to be rejected outright (E/F-7).
     const parsedHours = parseDecimalInput(hours) ?? Number.NaN;
     if (!selectedOrgId || !Number.isFinite(parsedHours) || parsedHours <= 0) {
@@ -1802,14 +1935,17 @@ function HoursPanel({
       return;
     }
 
+    logPending.current = true;
     setLogging(true);
     try {
-      await logVolunteerHours({
+      const payload = {
         organization_id: selectedOrgId,
         date,
         hours: parsedHours,
         description: description.trim() || undefined,
-      });
+      };
+      await logVolunteerHours(payload, logAttempt.keyFor(payload));
+      logAttempt.clear();
       setHours('');
       setDescription('');
       setWorkedOn(today);
@@ -1839,11 +1975,12 @@ function HoursPanel({
         variant: 'danger',
       });
     } finally {
+      logPending.current = false;
       setLogging(false);
     }
   }
 
-  if (isLoading) {
+  if (isLoading && !summary && organisations.length === 0) {
     return <LoadingSpinner />;
   }
 
@@ -1853,11 +1990,14 @@ function HoursPanel({
 
   return (
     <View className="gap-4">
-      <View className="flex-row flex-wrap gap-3">
-        <StatTile label={t('hoursStats.verified')} value={String(verified)} tone="#22c55e" />
-        <StatTile label={t('hoursStats.pending')} value={String(pending)} tone="#f59e0b" />
-        <StatTile label={t('hoursStats.declined')} value={String(declined)} tone="#ef4444" />
-      </View>
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-hours-error" />
+      {summary ? (
+        <View className="flex-row flex-wrap gap-3">
+          <StatTile label={t('hoursStats.verified')} value={String(verified)} tone="#22c55e" />
+          <StatTile label={t('hoursStats.pending')} value={String(pending)} tone="#f59e0b" />
+          <StatTile label={t('hoursStats.declined')} value={String(declined)} tone="#ef4444" />
+        </View>
+      ) : null}
 
       <HeroCard className="rounded-panel p-0">
         <HeroCard.Body className="gap-4 p-4">
@@ -1880,6 +2020,7 @@ function HoursPanel({
                       key={org.id}
                       size="sm"
                       variant={selected ? 'primary' : 'secondary'}
+                      isDisabled={logging}
                       onPress={() => setSelectedOrgId(org.id)}
                       style={selected ? { backgroundColor: withAlpha(primary, 0.18) } : undefined}
                     >
@@ -1900,6 +2041,7 @@ function HoursPanel({
                 style={{ color: theme.text }}
                 accessibilityLabel={t('hoursDateLabel')}
                 testID="volunteering-hours-date"
+                editable={!logging}
               />
               <Input
                 value={hours}
@@ -1910,6 +2052,7 @@ function HoursPanel({
                 className="text-base"
                 style={{ color: theme.text }}
                 accessibilityLabel={t('hoursPlaceholder')}
+                editable={!logging}
               />
               <Input
                 value={description}
@@ -1920,6 +2063,7 @@ function HoursPanel({
                 className="min-h-[92px] text-base"
                 style={{ color: theme.text, textAlignVertical: 'top' }}
                 accessibilityLabel={t('hoursDescriptionPlaceholder')}
+                editable={!logging}
               />
               <HeroButton isDisabled={logging} onPress={() => void handleLogHours()}>
                 {logging ? <Spinner size="sm" /> : <HeroButton.Label>{t('submitHours')}</HeroButton.Label>}
@@ -1953,8 +2097,10 @@ function HoursPanel({
 }
 
 function VolunteeringScreen() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`}>
       <VolunteeringScreenInner />
     </ModalErrorBoundary>
   );
@@ -1999,6 +2145,31 @@ function VolunteeringScreenInner() {
     written for `jobs`. A member's own tap still wins; see the hook's own note.
   */
   const [activeTab, setActiveTab] = useParamTab<TabKey>(params.tab, resolveTab, 'opportunities');
+  const [hoursDraft, setHoursDraft] = useState<DraftState>({ isDirty: false, isSaving: false });
+  const [expensesDraft, setExpensesDraft] = useState<DraftState>({ isDirty: false, isSaving: false });
+  const [donationsDraft, setDonationsDraft] = useState<DraftState>({ isDirty: false, isSaving: false });
+  const updateHoursDraft = useCallback((state: DraftState) => setHoursDraft((current) => (
+    current.isDirty === state.isDirty && current.isSaving === state.isSaving ? current : state
+  )), []);
+  const updateExpensesDraft = useCallback((state: DraftState) => setExpensesDraft((current) => (
+    current.isDirty === state.isDirty && current.isSaving === state.isSaving ? current : state
+  )), []);
+  const updateDonationsDraft = useCallback((state: DraftState) => setDonationsDraft((current) => (
+    current.isDirty === state.isDirty && current.isSaving === state.isSaving ? current : state
+  )), []);
+  const { confirm: confirmDraftLeave, confirmDialog: draftLeaveDialog } = useConfirm();
+  const hasMemberDraft = hoursDraft.isDirty || expensesDraft.isDirty || donationsDraft.isDirty;
+  const isMemberDraftSaving = hoursDraft.isSaving || expensesDraft.isSaving || donationsDraft.isSaving;
+
+  useUnsavedChangesGuard({
+    isDirty: hasMemberDraft,
+    isSaving: isMemberDraftSaving,
+    confirm: confirmDraftLeave,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   /*
     The effect that used to live here applied the parameter ONCE, via a `hasHonouredLink`
@@ -2225,6 +2396,7 @@ function VolunteeringScreenInner() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+      {draftLeaveDialog}
       <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/home" />
       <FlatList<VolunteerOpportunity>
         data={activeTab === 'opportunities' ? opportunities : []}
@@ -2321,6 +2493,7 @@ function VolunteeringScreenInner() {
               <ApplicationsPanel
                 applications={applications}
                 isLoading={applicationsApi.isLoading}
+                error={applicationsApi.error}
                 onRefresh={applicationsApi.refresh}
               />
               <TabLoadMore hasMore={applicationsApi.hasMore} isLoadingMore={applicationsApi.isLoadingMore} onPress={applicationsApi.loadMore} testID="volunteering-applications-load-more" />
@@ -2332,16 +2505,23 @@ function VolunteeringScreenInner() {
               <OrganisationsPanel
                 organisations={organisations}
                 isLoading={organisationsApi.isLoading}
+                error={organisationsApi.error}
+                onRefresh={organisationsApi.refresh}
               />
               <TabLoadMore hasMore={organisationsApi.hasMore} isLoadingMore={organisationsApi.isLoadingMore} onPress={organisationsApi.loadMore} testID="volunteering-organisations-load-more" />
               </>
             ) : null}
 
-            {activeTab === 'hours' ? (
+            <View
+              style={activeTab === 'hours' ? undefined : { display: 'none' }}
+              accessibilityElementsHidden={activeTab !== 'hours'}
+              importantForAccessibility={activeTab === 'hours' ? 'auto' : 'no-hide-descendants'}
+            >
               <HoursPanel
                 summary={summary}
                 organisations={loggableOrganisations}
                 isLoading={hoursApi.isLoading || organisationsApi.isLoading}
+                error={hoursApi.error || organisationsApi.error}
                 onRefresh={() => {
                   applicationsApi.refresh();
                   shiftsApi.refresh();
@@ -2352,14 +2532,16 @@ function VolunteeringScreenInner() {
                   givingDaysApi.refresh();
                   donationsApi.refresh();
                 }}
+                onDraftStateChange={updateHoursDraft}
               />
-            ) : null}
+            </View>
 
             {activeTab === 'shifts' ? (
               <>
               <ShiftsPanel
                 shifts={shifts}
                 isLoading={shiftsApi.isLoading}
+                error={shiftsApi.error}
                 onRefresh={shiftsApi.refresh}
               />
               <TabLoadMore hasMore={shiftsApi.hasMore} isLoadingMore={shiftsApi.isLoadingMore} onPress={shiftsApi.loadMore} testID="volunteering-shifts-load-more" />
@@ -2370,6 +2552,7 @@ function VolunteeringScreenInner() {
               <SwapsPanel
                 swaps={swaps}
                 isLoading={swapsApi.isLoading}
+                error={swapsApi.error}
                 onRefresh={swapsApi.refresh}
               />
             ) : null}
@@ -2378,36 +2561,48 @@ function VolunteeringScreenInner() {
               <CertificatesPanel
                 certificates={certificates}
                 isLoading={certificatesApi.isLoading}
+                error={certificatesApi.error}
                 onRefresh={certificatesApi.refresh}
               />
             ) : null}
 
-            {activeTab === 'expenses' ? (
-              <>
+            <View
+              style={activeTab === 'expenses' ? undefined : { display: 'none' }}
+              accessibilityElementsHidden={activeTab !== 'expenses'}
+              importantForAccessibility={activeTab === 'expenses' ? 'auto' : 'no-hide-descendants'}
+            >
               <ExpensesPanel
                 expenses={expenses}
                 organisations={loggableOrganisations}
                 isLoading={expensesApi.isLoading || organisationsApi.isLoading}
-                onRefresh={expensesApi.refresh}
+                error={expensesApi.error || organisationsApi.error}
+                onRefresh={() => {
+                  expensesApi.refresh();
+                  organisationsApi.refresh();
+                }}
+                onDraftStateChange={updateExpensesDraft}
               />
               <TabLoadMore hasMore={expensesApi.hasMore} isLoadingMore={expensesApi.isLoadingMore} onPress={expensesApi.loadMore} testID="volunteering-expenses-load-more" />
-              </>
-            ) : null}
+            </View>
 
-            {activeTab === 'donations' ? (
-              <>
+            <View
+              style={activeTab === 'donations' ? undefined : { display: 'none' }}
+              accessibilityElementsHidden={activeTab !== 'donations'}
+              importantForAccessibility={activeTab === 'donations' ? 'auto' : 'no-hide-descendants'}
+            >
               <DonationsPanel
                 givingDays={givingDays}
                 donations={donations}
                 isLoading={givingDaysApi.isLoading || donationsApi.isLoading}
+                error={givingDaysApi.error || donationsApi.error}
                 onRefresh={() => {
                   givingDaysApi.refresh();
                   donationsApi.refresh();
                 }}
+                onDraftStateChange={updateDonationsDraft}
               />
               <TabLoadMore hasMore={donationsApi.hasMore} isLoadingMore={donationsApi.isLoadingMore} onPress={donationsApi.loadMore} testID="volunteering-donations-load-more" />
-              </>
-            ) : null}
+            </View>
 
             {activeTab === 'opportunities' && opportunitiesApi.error ? (
               <HeroCard className="rounded-panel p-0">

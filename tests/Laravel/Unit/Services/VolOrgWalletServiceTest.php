@@ -212,12 +212,51 @@ class VolOrgWalletServiceTest extends TestCase
      * trail. The personal wallet transfer and donate have carried an idempotency
      * key for months; the organisation deposit was the outlier.
      */
-    public function test_duplicate_deposit_with_the_same_key_moves_credits_once(): void
+    public static function depositCacheAvailability(): array
+    {
+        return [[false], [true]];
+    }
+
+    public function test_failed_receipt_rolls_back_and_allows_the_same_deposit_to_retry(): void
+    {
+        $user = User::factory()->forTenant(2)->create(['balance' => 100]);
+        $orgId = $this->makeOrg(2, 50);
+        $this->pinTenant();
+        $interrupt = true;
+        DB::listen(function ($query) use (&$interrupt): void {
+            if ($interrupt && str_starts_with($query->sql, 'insert into `vol_org_deposit_receipts`')) {
+                $interrupt = false;
+                throw new \RuntimeException('Receipt interrupted');
+            }
+        });
+        $key = 'receipt-rollback-' . $user->id;
+        try {
+            VolOrgWalletService::depositFromUser($user->id, $orgId, 25, null, $key);
+            $this->fail('The interrupted receipt must abort the deposit');
+        } catch (\RuntimeException $error) {
+            $this->assertSame('Receipt interrupted', $error->getMessage());
+        }
+        $this->assertEquals(100, $user->fresh()->balance);
+        $this->assertEquals(50, DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
+        $this->assertSame(0, DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->count());
+        $retry = VolOrgWalletService::depositFromUser($user->id, $orgId, 25, null, $key);
+        $this->assertTrue($retry['success'], $retry['message'] ?? '');
+        $this->assertEquals(75, $user->fresh()->balance);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('depositCacheAvailability')]
+    public function test_duplicate_deposit_with_the_same_key_moves_credits_once(bool $cacheUnavailable): void
     {
         $user = User::factory()->forTenant(2)->create(['balance' => 100]);
         $orgId = $this->makeOrg(2, 50.00);
         $this->pinTenant();
 
+        if ($cacheUnavailable) {
+            $cache = \Mockery::mock(\Illuminate\Support\Facades\Cache::getFacadeRoot());
+            $cache->shouldReceive('add')->withArgs(fn ($key) => str_starts_with($key, 'volorgdeposit:idem:'))
+                ->andThrow(new \RuntimeException('Replay cache unavailable'));
+            \Illuminate\Support\Facades\Cache::swap($cache);
+        }
         $key = 'idem-' . bin2hex(random_bytes(8));
         $first = VolOrgWalletService::depositFromUser($user->id, $orgId, 25.0, null, $key);
         $second = VolOrgWalletService::depositFromUser($user->id, $orgId, 25.0, null, $key);

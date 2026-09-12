@@ -288,6 +288,20 @@ describe('SettingsScreen', () => {
     });
   });
 
+  it('serializes rapid preference taps before the disabled state re-renders', async () => {
+    let release!: () => void;
+    (api.put as jest.Mock).mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+    const { getByLabelText } = render(<SettingsScreen />);
+    const messages = getByLabelText('Email Messages');
+
+    fireEvent(messages, 'valueChange', false);
+    fireEvent(messages, 'valueChange', false);
+
+    expect(api.put).toHaveBeenCalledTimes(1);
+    release();
+    await waitFor(() => expect(api.put).toHaveBeenCalledTimes(1));
+  });
+
   it('navigates to change-password when Change Password is pressed', () => {
     const { router } = require('expo-router');
     const { getByText } = render(<SettingsScreen />);

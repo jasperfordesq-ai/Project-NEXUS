@@ -312,6 +312,52 @@ class FederationV2InternalTransferTest extends TestCase
             ->count(), 'A double-submit must create exactly one federated transaction');
     }
 
+    public function test_explicit_key_survives_loss_of_replay_cache(): void
+    {
+        $sender = $this->makeFederatedUser(self::SOURCE_TENANT_ID, 25);
+        $receiver = $this->makeFederatedUser($this->destinationTenantId, 0);
+        $key = 'internal-replay-' . $sender;
+        $first = $this->callSendTransaction($sender, $receiver, $this->destinationTenantId, 10, 'Moving help', $key);
+        $this->assertSame(201, $first->getStatusCode(), (string) $first->getContent());
+
+        // A committed transfer must remain replayable after cache eviction/restart.
+        Cache::flush();
+        $retry = $this->callSendTransaction($sender, $receiver, $this->destinationTenantId, 10, 'Moving help', $key);
+        $this->assertSame(201, $retry->getStatusCode(), (string) $retry->getContent());
+        $this->assertEqualsWithDelta(15, $this->balanceOf($sender), 0.001);
+        $this->assertEqualsWithDelta(10, $this->balanceOf($receiver), 0.001);
+        $this->assertSame(json_decode($first->getContent(), true)['data']['transaction_id'], json_decode($retry->getContent(), true)['data']['transaction_id']);
+        $payload = ['kind' => 'federation', 'idempotency_key' => $key, 'intent' => [$receiver, $this->destinationTenantId, 10, 'Moving help']];
+        $this->apiPost('/v2/wallet/operation-status', $payload)->assertOk()->assertJsonPath('data.status', 'confirmed');
+        $this->apiPost('/v2/wallet/operation-status', [...$payload, 'idempotency_key' => 'unknown'])->assertOk()->assertJsonPath('data.status', 'unknown');
+        $this->apiPost('/v2/wallet/operation-status', [...$payload, 'intent' => [$receiver, $this->destinationTenantId, 9, 'Moving help']])->assertOk()->assertJsonPath('data.status', 'unknown');
+        $otherSender = $this->makeFederatedUser(self::SOURCE_TENANT_ID, 25);
+        $this->actingAs(User::query()->findOrFail($otherSender));
+        $this->apiPost('/v2/wallet/operation-status', $payload)->assertOk()->assertJsonPath('data.status', 'unknown');
+        $otherTransfer = $this->callSendTransaction($otherSender, $receiver, $this->destinationTenantId, 10, 'Moving help', $key);
+        $this->assertSame(201, $otherTransfer->getStatusCode(), (string) $otherTransfer->getContent());
+        $this->assertEqualsWithDelta(15, $this->balanceOf($otherSender), 0.001);
+        $this->assertEqualsWithDelta(15, $this->balanceOf($sender), 0.001);
+        $this->assertEqualsWithDelta(20, $this->balanceOf($receiver), 0.001);
+    }
+
+    public function test_explicit_key_rejects_changed_payload_but_distinct_key_allows_repeat(): void
+    {
+        $sender = $this->makeFederatedUser(self::SOURCE_TENANT_ID, 25);
+        $receiver = $this->makeFederatedUser($this->destinationTenantId, 0);
+        $first = $this->callSendTransaction($sender, $receiver, $this->destinationTenantId, 10, 'Moving help', 'first');
+        $this->assertSame(201, $first->getStatusCode());
+        foreach ([[9, 'Moving help'], [10, 'Different work']] as [$amount, $description]) {
+            $changed = $this->callSendTransaction($sender, $receiver, $this->destinationTenantId, $amount, $description, 'first');
+            $this->assertSame(409, $changed->getStatusCode(), (string) $changed->getContent());
+            $this->assertEqualsWithDelta(15, $this->balanceOf($sender), 0.001);
+        }
+        $repeat = $this->callSendTransaction($sender, $receiver, $this->destinationTenantId, 10, 'Moving help', 'second');
+        $this->assertSame(201, $repeat->getStatusCode(), (string) $repeat->getContent());
+        $this->assertEqualsWithDelta(5, $this->balanceOf($sender), 0.001);
+        $this->assertEqualsWithDelta(20, $this->balanceOf($receiver), 0.001);
+    }
+
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
@@ -331,6 +377,7 @@ class FederationV2InternalTransferTest extends TestCase
             'password'           => password_hash('password', PASSWORD_BCRYPT),
             'balance'            => $balance,
             'status'             => 'active',
+            'is_approved'        => true,
             'preferred_language' => 'en',
             'created_at'         => now(),
             'updated_at'         => now(),
@@ -355,7 +402,8 @@ class FederationV2InternalTransferTest extends TestCase
         $receiverId,
         $receiverTenantId,
         $amount,
-        string $description
+        string $description,
+        ?string $idempotencyKey = null
     ): JsonResponse {
         TenantContext::setById(self::SOURCE_TENANT_ID);
         $sender = User::query()->find($senderId);
@@ -374,6 +422,7 @@ class FederationV2InternalTransferTest extends TestCase
                 'receiver_tenant_id' => $receiverTenantId,
                 'amount'             => $amount,
                 'description'        => $description,
+                'idempotency_key'    => $idempotencyKey,
             ])
         ));
 

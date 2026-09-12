@@ -9,10 +9,12 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature;
 
 use App\Core\TenantContext;
+use App\Events\GdprActionOccurred;
 use App\Models\User;
 use App\Services\MemberDataExportService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 use ZipArchive;
@@ -377,6 +379,35 @@ class MemberDataExportTest extends TestCase
         $this->assertStringContainsString('attachment', (string) $response->headers->get('Content-Disposition'));
         $this->assertStringContainsString('.json', (string) $response->headers->get('Content-Disposition'));
         $this->assertSame($before + 1, DB::table('member_data_exports')->where('user_id', $userId)->count());
+    }
+
+    public function test_get_replays_a_completed_export_after_response_loss_without_a_second_record_or_event(): void
+    {
+        Event::fake([GdprActionOccurred::class]);
+        $userId = $this->makeUser(self::PRIMARY_TENANT_ID);
+        Sanctum::actingAs(User::query()->findOrFail($userId));
+        $headers = $this->withTenantHeader(['Idempotency-Key' => 'mobile-export-response-loss-1']);
+
+        $first = $this->get('/api/v2/me/data-export?format=json', $headers);
+        $second = $this->get('/api/v2/me/data-export?format=json', $headers);
+
+        $first->assertStatus(200);
+        $second->assertStatus(200);
+        $this->assertSame($first->headers->get('X-Export-Id'), $second->headers->get('X-Export-Id'));
+        $this->assertSame(1, DB::table('member_data_exports')->where('user_id', $userId)->count());
+        Event::assertDispatchedTimes(GdprActionOccurred::class, 1);
+    }
+
+    public function test_get_rejects_reusing_an_export_key_for_a_different_format(): void
+    {
+        $userId = $this->makeUser(self::PRIMARY_TENANT_ID);
+        Sanctum::actingAs(User::query()->findOrFail($userId));
+        $headers = $this->withTenantHeader(['Idempotency-Key' => 'mobile-export-format-conflict-1']);
+
+        $this->get('/api/v2/me/data-export?format=json', $headers)->assertStatus(200);
+        $this->get('/api/v2/me/data-export?format=zip', $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
     }
 
     public function test_unauthenticated_get_returns_401(): void

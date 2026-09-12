@@ -21,6 +21,8 @@ class VolExpense extends Model
 
     protected $fillable = [
         'user_id',
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
         'organization_id',
         'opportunity_id',
         'shift_id',

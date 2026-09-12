@@ -21,7 +21,7 @@ class UserXpPurchase extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'tenant_id', 'user_id', 'item_id', 'xp_spent', 'is_active', 'expires_at',
+        'tenant_id', 'user_id', 'creation_idempotency_key_hash', 'item_id', 'xp_spent', 'is_active', 'expires_at',
     ];
 
     protected $casts = [

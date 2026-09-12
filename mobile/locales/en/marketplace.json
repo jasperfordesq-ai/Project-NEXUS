@@ -498,7 +498,7 @@
       "unknown": "This order is in a status the app does not recognise yet."
     },
     "confirmDeliveryTitle": "Confirm you received this?",
-    "confirmDeliveryMessage": "This releases payment for order {{order}} to the seller and ends your buyer protection. Only confirm once the item is in your hands and is what you expected.",
+    "confirmDeliveryMessage": "This records order {{order}} as delivered and starts a 14-day period to raise a dispute before payment is released. Only confirm once the item is in your hands and is what you expected.",
     "confirmDeliveryAction": "Confirm receipt",
     "paymentTakenTitle": "Your payment went through",
     "paymentTakenHint": "We are still confirming order {{order}}. Do not pay again — pull to refresh in a minute.",

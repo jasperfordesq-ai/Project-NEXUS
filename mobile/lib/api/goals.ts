@@ -175,6 +175,10 @@ export function updateGoalStatus(
   return api.put<{ data: Goal }>(`${API_V2}/goals/${id}`, { status });
 }
 
+export function completeGoal(id: number): Promise<{ data: Goal & { idempotent_replay?: boolean } }> {
+  return api.post<{ data: Goal & { idempotent_replay?: boolean } }>(`${API_V2}/goals/${id}/complete`);
+}
+
 export function updateGoalProgress(id: number, increment: number): Promise<{ data: Goal }> {
   return api.post<{ data: Goal }>(`${API_V2}/goals/${id}/progress`, { increment });
 }

@@ -384,57 +384,24 @@ class GamificationV2Controller extends BaseApiController
         $this->rateLimit('gamification_claim_challenge', 10, 60);
 
         try {
-            // Resolve the model, not an array: the reward is awarded by the
-            // shared ChallengeService::awardChallengeReward(), which needs the
-            // whole challenge (including badge_reward).
-            $challenge = $this->challengeService->getModelById($id, $this->getTenantId());
+            $result = $this->challengeService->claimWithResult($id, $userId, $this->getTenantId());
 
-            if (!$challenge) {
+            if ($result['status'] === 'not_found') {
                 return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.challenge_not_found'), null, 404);
             }
-
-            $progressRow = DB::selectOne(
-                "SELECT * FROM user_challenge_progress WHERE challenge_id = ? AND user_id = ? AND tenant_id = ?",
-                [$id, $userId, $this->getTenantId()]
-            );
-            $progress = $progressRow ? (array)$progressRow : null;
-
-            if (!$progress) {
+            if ($result['status'] === 'not_started') {
                 return $this->respondWithError('CHALLENGE_NOT_STARTED', __('api.gamification_challenge_not_started'), null, 400);
             }
-
-            if (!empty($progress['reward_claimed'])) {
-                return $this->respondWithError('CHALLENGE_ALREADY_CLAIMED', __('api.gamification_challenge_already_claimed'), null, 400);
-            }
-
-            if (empty($progress['completed_at'])) {
+            if ($result['status'] === 'not_completed') {
                 return $this->respondWithError('CHALLENGE_NOT_COMPLETED', __('api.gamification_challenge_not_completed'), null, 400);
             }
 
-            // Atomic claim: UPDATE only if reward_claimed is still 0 to prevent
-            // double-award under concurrent requests (TOCTOU race condition).
-            // `claimed_at` is stamped here too so this path leaves the same
-            // ledger row as ChallengeService::claim() — it was omitted, so every
-            // React claim left claimed_at NULL while accessible claims set it.
-            $affected = DB::update(
-                "UPDATE user_challenge_progress SET reward_claimed = 1, claimed_at = NOW() WHERE challenge_id = ? AND user_id = ? AND tenant_id = ? AND reward_claimed = 0",
-                [$id, $userId, $this->getTenantId()]
-            );
-
-            if ($affected === 0) {
-                return $this->respondWithError('CHALLENGE_ALREADY_CLAIMED', __('api.gamification_challenge_already_claimed'), null, 400);
-            }
-
-            // 🔴 Award via the ONE shared routine — do not award anything here.
-            // This path used to award XP inline and ignored challenges.badge_reward
-            // entirely, so the same challenge granted a badge and a notification on
-            // the accessible frontend and neither here. Any new reward belongs in
-            // ChallengeService::awardChallengeReward() so both frontends get it.
-            $reward = $this->challengeService->awardChallengeReward($userId, $challenge);
+            $reward = $result['reward'];
 
             return $this->respondWithData([
                 'claimed' => true,
                 'challenge_id' => $id,
+                'idempotent_replay' => $result['status'] === 'already_claimed',
                 'reward' => [
                     'xp' => $reward['xp'],
                     'badge' => $reward['badge'],
@@ -491,6 +458,24 @@ class GamificationV2Controller extends BaseApiController
             $reward = $this->dailyRewardService->checkAndAwardDailyReward($userId);
 
             if ($reward === null) {
+                // A daily reward is naturally one operation per user and day.
+                // Return its committed result when the client retries after a
+                // lost success response.
+                $status = $this->dailyRewardService->getTodayStatus($userId);
+                if (! empty($status['claimed_today'])) {
+                    return $this->respondWithData([
+                        'claimed' => true,
+                        'idempotent_replay' => true,
+                        'reward' => [
+                            'xp_earned' => (int) $status['xp_earned_today'],
+                            'base_xp' => (int) $status['base_xp_today'],
+                            'milestone_bonus' => (int) $status['milestone_bonus_today'],
+                            'streak_day' => (int) $status['current_streak'],
+                            'longest_streak' => (int) $status['longest_streak'],
+                        ],
+                    ]);
+                }
+
                 return $this->respondWithError('RESOURCE_CONFLICT', __('api.gamification_daily_already_claimed'), null, 409);
             }
 
@@ -528,18 +513,23 @@ class GamificationV2Controller extends BaseApiController
         $this->rateLimit('gamification_purchase', 10, 60);
 
         $itemId = $this->input('item_id');
+        $idempotencyKey = trim((string) ($this->input('idempotency_key') ?? request()->header('Idempotency-Key', '')));
 
         if (empty($itemId)) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.gamification_item_id_required'), 'item_id', 400);
         }
+        if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), 'idempotency_key', 422);
+        }
 
         try {
-            $result = $this->xpShopService->purchaseItem($userId, $itemId);
+            $result = $this->xpShopService->purchaseItem($userId, $itemId, $idempotencyKey);
 
             if ($result['success'] ?? false) {
                 return $this->respondWithData($result);
             } else {
-                return $this->respondWithError('RESOURCE_CONFLICT', $result['error'] ?? __('api.purchase_failed'), null, 400);
+                $status = !empty($result['idempotency_conflict']) ? 409 : 400;
+                return $this->respondWithError('RESOURCE_CONFLICT', $result['error'] ?? __('api.purchase_failed'), null, $status);
             }
         } catch (\Throwable $e) {
             return $this->respondWithError('SERVER_INTERNAL_ERROR', __('api.gamification_purchase_failed'), null, 500);

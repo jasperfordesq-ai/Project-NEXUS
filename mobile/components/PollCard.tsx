@@ -40,6 +40,7 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
   const safePollData = pollData && pollData.options ? pollData : null;
   const [poll, setPoll] = useState<PollData | null>(safePollData);
   const [isVoting, setIsVoting] = useState(false);
+  const votingRef = useRef(false);
 
   // Keep local poll in sync if parent updates pollData prop
   useEffect(() => {
@@ -73,8 +74,9 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
   const knownTotal = poll && poll.total_votes != null ? poll.total_votes : null;
 
   const handleVote = useCallback(async (optionId: number) => {
-    if (!poll || isVoting || hasVoted || !poll.is_active) return;
+    if (!poll || votingRef.current || hasVoted || !poll.is_active) return;
 
+    votingRef.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsVoting(true);
 
@@ -115,6 +117,7 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
         variant: 'danger',
       });
     } finally {
+      votingRef.current = false;
       setIsVoting(false);
     }
   }, [isVoting, hasVoted, poll, itemId, onVoted, showToast, t]);

@@ -49,9 +49,21 @@ class MemberDataExportController extends BaseApiController
             $format = 'json';
         }
 
+        $idempotencyKey = trim((string) $request->header('Idempotency-Key', ''));
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), 'idempotency_key', 422);
+        }
+        $idempotencyKey = $idempotencyKey !== '' ? $idempotencyKey : null;
+
+        try {
+            $exportId = $this->exporter->findIdempotentExport($userId, $format, $idempotencyKey);
+        } catch (\RuntimeException $e) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'), null, 409);
+        }
+
         // Rate limit: 5 per 24h per user (DB-backed so it survives container restarts)
-        $recent = $this->exporter->countRecentRequests($userId);
-        if ($recent >= 5) {
+        $recent = $exportId === null ? $this->exporter->countRecentRequests($userId) : 0;
+        if ($exportId === null && $recent >= 5) {
             return $this->respondWithError(
                 'RATE_LIMIT_EXCEEDED',
                 __('api.data_export_rate_limit', [], app()->getLocale())
@@ -61,7 +73,14 @@ class MemberDataExportController extends BaseApiController
             );
         }
 
-        $exportId = $this->exporter->recordExportRequest($userId, $format);
+        try {
+            $exportId ??= $this->exporter->recordExportRequest($userId, $format, $idempotencyKey);
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'IDEMPOTENCY_CONFLICT') {
+                return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'), null, 409);
+            }
+            throw $e;
+        }
 
         try {
             $built = $format === 'zip'
@@ -82,18 +101,20 @@ class MemberDataExportController extends BaseApiController
 
         // Notify tenant admins that a member downloaded a copy of their personal
         // data (GDPR right of access). Best-effort — never block the download.
-        try {
-            \App\Events\GdprActionOccurred::dispatch(
-                $userId,
-                (int) $this->getTenantId(),
-                \App\Events\GdprActionOccurred::ACTION_DATA_EXPORT,
-                $format,
-            );
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('[MemberDataExport] admin-notification dispatch failed', [
-                'user_id' => $userId,
-                'error'   => $e->getMessage(),
-            ]);
+        if ($this->exporter->claimCompletionEvent($exportId)) {
+            try {
+                \App\Events\GdprActionOccurred::dispatch(
+                    $userId,
+                    (int) $this->getTenantId(),
+                    \App\Events\GdprActionOccurred::ACTION_DATA_EXPORT,
+                    $format,
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('[MemberDataExport] admin-notification dispatch failed', [
+                    'user_id' => $userId,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
         }
 
         $contentType = $format === 'zip' ? 'application/zip' : 'application/json';

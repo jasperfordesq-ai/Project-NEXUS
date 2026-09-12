@@ -388,12 +388,20 @@ class ShiftSwapService
 
         $swap = DB::table('vol_shift_swap_requests')
             ->where('id', $swapId)
-            ->where('status', 'admin_pending')
             ->where('tenant_id', $tenantId)
             ->first();
 
         if (! $swap) {
             self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.shift_swap_not_found_or_not_pending')];
+            return false;
+        }
+
+        if ($swap->status !== 'admin_pending') {
+            $matches = $action === 'approve'
+                ? $swap->status === 'admin_approved'
+                : $swap->status === 'admin_rejected';
+            if ($matches) return true;
+            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
             return false;
         }
 
@@ -414,31 +422,57 @@ class ShiftSwapService
         }
 
         try {
-            if ($action === 'reject') {
-                DB::table('vol_shift_swap_requests')
+            $transitioned = false;
+            $fromUserId = (int) $swap->from_user_id;
+            $toUserId = (int) $swap->to_user_id;
+            $result = DB::transaction(function () use ($swapId, $tenantId, $adminId, $action, &$transitioned, &$fromUserId, &$toUserId): bool {
+                $locked = DB::table('vol_shift_swap_requests')
                     ->where('id', $swapId)
                     ->where('tenant_id', $tenantId)
-                    ->update(['status' => 'admin_rejected', 'admin_id' => $adminId]);
+                    ->lockForUpdate()
+                    ->first();
+                if (! $locked) {
+                    self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.shift_swap_not_found_or_not_pending')];
+                    return false;
+                }
+                $fromUserId = (int) $locked->from_user_id;
+                $toUserId = (int) $locked->to_user_id;
+                if ($locked->status !== 'admin_pending') {
+                    $matches = $action === 'approve'
+                        ? $locked->status === 'admin_approved'
+                        : $locked->status === 'admin_rejected';
+                    if ($matches) return true;
+                    self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
+                    return false;
+                }
 
-                // Notify both parties
-                self::notifySwap((int) $swap->from_user_id, 'vol_swap_declined', 'svc_notifications.shift_swap.declined_by_admin', '/volunteering?tab=swaps');
-                self::notifySwap((int) $swap->to_user_id, 'vol_swap_declined', 'svc_notifications.shift_swap.accepted_swap_declined_by_admin', '/volunteering?tab=swaps');
+                if ($action === 'reject') {
+                    DB::table('vol_shift_swap_requests')
+                        ->where('id', $swapId)
+                        ->where('tenant_id', $tenantId)
+                        ->update(['status' => 'admin_rejected', 'admin_id' => $adminId]);
+                    $transitioned = true;
+                    return true;
+                }
 
-                return true;
-            }
-
-            // Execute the swap — use admin_approved status
-            $result = self::executeSwap($swap, $tenantId, 'admin_approved');
-
-            if ($result) {
+                $approved = self::executeSwap($locked, $tenantId, 'admin_approved');
+                if (! $approved) return false;
                 DB::table('vol_shift_swap_requests')
                     ->where('id', $swapId)
                     ->where('tenant_id', $tenantId)
                     ->update(['admin_id' => $adminId]);
+                $transitioned = true;
+                return true;
+            });
 
-                // Notify both parties
-                self::notifySwap((int) $swap->from_user_id, 'vol_swap_approved', 'svc_notifications.shift_swap.approved_by_admin', '/volunteering?tab=swaps');
-                self::notifySwap((int) $swap->to_user_id, 'vol_swap_approved', 'svc_notifications.shift_swap.accepted_swap_approved_by_admin', '/volunteering?tab=swaps');
+            if ($result && $transitioned) {
+                if ($action === 'approve') {
+                    self::notifySwap($fromUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.approved_by_admin', '/volunteering?tab=swaps');
+                    self::notifySwap($toUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.accepted_swap_approved_by_admin', '/volunteering?tab=swaps');
+                } else {
+                    self::notifySwap($fromUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.declined_by_admin', '/volunteering?tab=swaps');
+                    self::notifySwap($toUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.accepted_swap_declined_by_admin', '/volunteering?tab=swaps');
+                }
             }
 
             return $result;

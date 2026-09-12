@@ -217,14 +217,12 @@ class PollsController extends BaseApiController
         }
 
         if (! $success) {
-            return $this->respondWithError('RESOURCE_CONFLICT', __('api.poll_already_voted'), null, 409);
-        }
-
-        // Award XP for voting on a poll
-        try {
-            \App\Services\GamificationService::awardXP($userId, \App\Services\GamificationService::XP_VALUES['vote_poll'], 'vote_poll', 'Voted on a poll');
-        } catch (\Throwable $e) {
-            \Log::warning('Gamification XP award failed', ['action' => 'vote_poll', 'user' => $userId, 'error' => $e->getMessage()]);
+            $poll = $this->pollService->getById($id, $userId);
+            if ((int) ($poll['user_vote_option_id'] ?? 0) !== (int) $optionId) {
+                return $this->respondWithError('RESOURCE_CONFLICT', __('api.poll_already_voted'), null, 409);
+            }
+            $poll['idempotent_replay'] = true;
+            return $this->respondWithData($poll);
         }
 
         // Notify poll creator of the vote

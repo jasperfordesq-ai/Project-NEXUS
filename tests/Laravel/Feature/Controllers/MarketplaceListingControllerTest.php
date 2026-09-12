@@ -20,6 +20,61 @@ class MarketplaceListingControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    public function test_replayed_photo_upload_does_not_add_a_second_image(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Mail::fake();
+        $this->enableMarketplaceFeature();
+        $seller = $this->authenticatedUser();
+        $listingId = $this->createMarketplaceListing($seller, $this->createMarketplaceCategory());
+        $this->mock(\App\Services\ImageUploadService::class, function ($mock): void {
+            $mock->shouldReceive('upload')->andReturn([
+                'url' => '/uploads/marketplace/retry-test.png',
+                'thumbnail_url' => null,
+            ]);
+        });
+
+        // The client did not receive the first success and retries the same operation.
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $response = $this->apiPost("/v2/marketplace/listings/{$listingId}/images", [
+                'image' => \Illuminate\Http\UploadedFile::fake()->image('photo.png'),
+                'idempotency_key' => 'mobile-photo-retry-test',
+            ]);
+            $response->assertStatus(201);
+        }
+
+        $this->assertSame(1, DB::table('marketplace_images')
+            ->where('marketplace_listing_id', $listingId)->count());
+
+        // A changed payload cannot silently reuse a successful operation.
+        $this->apiPost("/v2/marketplace/listings/{$listingId}/images", [
+            'image' => \Illuminate\Http\UploadedFile::fake()->image('photo.png', 20, 30),
+            'idempotency_key' => 'mobile-photo-retry-test',
+        ])->assertStatus(409);
+        $this->assertSame(1, DB::table('marketplace_images')
+            ->where('marketplace_listing_id', $listingId)->count());
+
+        // Replays are resolved before the capacity check, even if other uploads
+        // filled the listing after the response was lost.
+        $maximum = \App\Services\MarketplaceConfigurationService::maxImages();
+        for ($index = 1; $index < $maximum; $index++) {
+            $this->addMarketplaceImage($listingId, "/uploads/filler-{$index}.png", false, $index);
+        }
+        $this->apiPost("/v2/marketplace/listings/{$listingId}/images", [
+            'image' => \Illuminate\Http\UploadedFile::fake()->image('photo.png'),
+            'idempotency_key' => 'mobile-photo-retry-test',
+        ])->assertStatus(201);
+        $this->assertSame($maximum, DB::table('marketplace_images')
+            ->where('marketplace_listing_id', $listingId)->count());
+
+        // A receipt never bypasses the listing's ownership check.
+        $this->authenticatedUser();
+        $this->apiPost("/v2/marketplace/listings/{$listingId}/images", [
+            'image' => \Illuminate\Http\UploadedFile::fake()->image('photo.png'),
+            'idempotency_key' => 'mobile-photo-retry-test',
+        ])->assertStatus(403);
+    }
+
     public function test_csv_import_row_errors_are_translated_in_every_locale(): void
     {
         $source = file_get_contents(app_path('Http/Controllers/Api/MarketplaceListingController.php'));

@@ -721,6 +721,32 @@ class MemberDataExportServiceTest extends TestCase
         $this->assertSame(12345, (int) $row->file_size_bytes);
     }
 
+    public function test_export_request_idempotency_replays_one_ledger_row_and_rejects_a_different_format(): void
+    {
+        $userId = $this->insertUser();
+        $key = 'mobile-export-response-loss-unit-1';
+
+        $first = $this->svc->recordExportRequest($userId, 'json', $key);
+        $replay = $this->svc->recordExportRequest($userId, 'json', $key);
+
+        $this->assertSame($first, $replay);
+        $this->assertSame($first, $this->svc->findIdempotentExport($userId, 'json', $key));
+        $this->assertSame(1, DB::table('member_data_exports')->where('user_id', $userId)->count());
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('IDEMPOTENCY_CONFLICT');
+        $this->svc->findIdempotentExport($userId, 'zip', $key);
+    }
+
+    public function test_only_one_completion_event_claim_wins_for_an_export(): void
+    {
+        $userId = $this->insertUser();
+        $exportId = $this->svc->recordExportRequest($userId, 'json', 'mobile-export-event-claim-1');
+
+        $this->assertTrue($this->svc->claimCompletionEvent($exportId));
+        $this->assertFalse($this->svc->claimCompletionEvent($exportId));
+    }
+
     public function test_countRecentRequests_returns_zero_when_none(): void
     {
         $userId = $this->insertUser();

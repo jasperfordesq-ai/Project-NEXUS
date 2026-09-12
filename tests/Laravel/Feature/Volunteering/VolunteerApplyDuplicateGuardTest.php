@@ -10,6 +10,7 @@ namespace Tests\Laravel\Feature\Volunteering;
 
 use App\Core\TenantContext;
 use App\Services\VolunteerService;
+use App\Services\VolunteeringConfigurationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -126,5 +127,47 @@ class VolunteerApplyDuplicateGuardTest extends TestCase
             1,
             (int) DB::table('vol_applications')->where('opportunity_id', $oppId)->where('user_id', $user)->count()
         );
+    }
+
+    public function test_declined_application_allows_reapplication_and_detail_reads_back_the_new_note(): void
+    {
+        $creator = $this->makeUser();
+        $user = $this->makeUser();
+        $oppId = $this->makeOpportunity($creator);
+        $previous = VolunteerService::apply($oppId, $user, ['message' => 'Original availability']);
+        DB::table('vol_applications')->where('id', $previous->id)->update(['status' => 'declined']);
+
+        $before = VolunteerService::getOpportunityById($oppId, $user);
+        $this->assertFalse($before['has_applied']);
+        $this->assertSame('declined', $before['application']['status']);
+
+        $next = VolunteerService::apply($oppId, $user, ['message' => 'New Saturday availability']);
+        $this->assertNotSame($previous->id, $next->id);
+        $after = VolunteerService::getOpportunityById($oppId, $user);
+        $this->assertTrue($after['has_applied']);
+        $this->assertSame((int) $next->id, $after['application']['id']);
+        $this->assertSame('New Saturday availability', $after['application']['message']);
+        $this->assertSame('Original availability', DB::table('vol_applications')->where('id', $previous->id)->value('message'));
+    }
+
+    public function test_required_decline_note_rejects_blank_then_persists_the_explanation(): void
+    {
+        $creator = $this->makeUser();
+        $user = $this->makeUser();
+        $oppId = $this->makeOpportunity($creator);
+        $application = VolunteerService::apply($oppId, $user);
+        $key = VolunteeringConfigurationService::CONFIG_REQUIRE_ORG_NOTE_ON_DECLINE;
+        $previous = VolunteeringConfigurationService::get($key, false);
+        VolunteeringConfigurationService::set($key, true);
+        try {
+            $this->assertFalse(VolunteerService::handleApplication($application->id, $creator, 'decline', '   '));
+            $this->assertSame('pending', DB::table('vol_applications')->where('id', $application->id)->value('status'));
+            $this->assertTrue(VolunteerService::handleApplication($application->id, $creator, 'decline', 'Please apply for the next session.'));
+            $saved = DB::table('vol_applications')->where('id', $application->id)->first();
+            $this->assertSame('declined', $saved->status);
+            $this->assertSame('Please apply for the next session.', $saved->org_note);
+        } finally {
+            VolunteeringConfigurationService::set($key, $previous);
+        }
     }
 }

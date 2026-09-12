@@ -23,6 +23,7 @@ import { api } from '@/lib/api/client';
 import {
   createGoal,
   createGoalFromTemplate,
+  completeGoal,
   getGoalTemplateCategories,
   getGoalTemplates,
   getGoals,
@@ -164,5 +165,19 @@ describe('updateGoalStatus', () => {
     (api.put as jest.Mock).mockResolvedValue({ data: abandonedGoal });
     await updateGoalStatus(7, 'abandoned');
     expect(api.put).toHaveBeenCalledWith('/api/v2/goals/7', { status: 'abandoned' });
+  });
+});
+
+describe('completeGoal', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('uses the canonical completion endpoint', async () => {
+    const completedGoal: Goal = { ...mockGoal, status: 'completed' };
+    (api.post as jest.Mock).mockResolvedValue({ data: completedGoal });
+
+    const result = await completeGoal(1);
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/goals/1/complete');
+    expect(result.data.status).toBe('completed');
   });
 });

@@ -191,6 +191,12 @@ class GoalsController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('goal_update', 20, 60);
 
+        // Completion has history, milestone, XP and notification effects. A
+        // generic status update must not bypass that canonical transition.
+        if ($this->input('status') === 'completed') {
+            return $this->complete($id);
+        }
+
         $goal = $this->goalService->update($id, $userId, $this->getAllInput());
 
         if (! $goal) {
@@ -306,56 +312,55 @@ class GoalsController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('goal_complete', 10, 60);
 
-        $goal = $this->goalService->complete($id, $userId);
+        $completion = $this->goalService->completeWithResult($id, $userId);
+        $goal = $completion['goal'];
 
         if (! $goal) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.goal_not_found_or_not_owned'), null, 404);
         }
 
-        // Award XP for completing a goal
-        try {
-            \App\Services\GamificationService::awardXP($userId, \App\Services\GamificationService::XP_VALUES['complete_goal'], 'complete_goal', 'Completed a goal');
-        } catch (\Throwable $e) {
-            \Log::warning('Gamification XP award failed', ['action' => 'complete_goal', 'user' => $userId, 'error' => $e->getMessage()]);
-        }
-
         // Notify the goal owner (achievement notification)
-        try {
-            $goalTitle = $goal->title ?? 'your goal';
-            Notification::createNotification(
-                $userId,
-                __('api_controllers_3.goals.completed_self', ['title' => $goalTitle]),
-                "/goals/{$id}",
-                'goal_completed'
-            );
-            \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'goal_completed', __('api_controllers_3.goals.completed_self', ['title' => $goalTitle]), "/goals/{$id}");
-        } catch (\Throwable $e) {
-            \Log::warning('Goal completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
+        if (! $completion['replay']) {
+            try {
+                $goalTitle = $goal->title ?? 'your goal';
+                Notification::createNotification(
+                    $userId,
+                    __('api_controllers_3.goals.completed_self', ['title' => $goalTitle]),
+                    "/goals/{$id}",
+                    'goal_completed'
+                );
+                \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'goal_completed', __('api_controllers_3.goals.completed_self', ['title' => $goalTitle]), "/goals/{$id}");
+            } catch (\Throwable $e) {
+                \Log::warning('Goal completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
+            }
         }
 
         // Notify the buddy/mentor if one exists
-        try {
-            $mentorId = $goal->mentor_id ? (int) $goal->mentor_id : null;
-            if ($mentorId && $mentorId !== $userId) {
-                $owner = User::find($userId);
-                $mentor = User::find($mentorId);
-                LocaleContext::withLocale($mentor, function () use ($owner, $goal, $mentorId, $id) {
-                    $ownerName = $owner->name ?? __('emails.common.fallback_someone');
-                    Notification::createNotification(
-                        $mentorId,
-                        __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goal->title]),
-                        "/goals/{$id}",
-                        'goal_completed'
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $mentorId, 'goal_completed', __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goal->title]), "/goals/{$id}");
-                });
+        if (! $completion['replay']) {
+            try {
+                $mentorId = $goal->mentor_id ? (int) $goal->mentor_id : null;
+                if ($mentorId && $mentorId !== $userId) {
+                    $owner = User::find($userId);
+                    $mentor = User::find($mentorId);
+                    LocaleContext::withLocale($mentor, function () use ($owner, $goal, $mentorId, $id) {
+                        $ownerName = $owner->name ?? __('emails.common.fallback_someone');
+                        Notification::createNotification(
+                            $mentorId,
+                            __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goal->title]),
+                            "/goals/{$id}",
+                            'goal_completed'
+                        );
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $mentorId, 'goal_completed', __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goal->title]), "/goals/{$id}");
+                    });
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Goal buddy completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
             }
-        } catch (\Throwable $e) {
-            \Log::warning('Goal buddy completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
         }
 
         $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'mentor:id,first_name,last_name,profile_type,organization_name,avatar_url'])->toArray());
         $data['is_owner'] = true;
+        $data['idempotent_replay'] = $completion['replay'];
 
         return $this->respondWithData($data);
     }

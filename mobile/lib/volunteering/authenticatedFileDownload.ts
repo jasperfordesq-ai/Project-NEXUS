@@ -28,7 +28,11 @@ export const SHARING_UNAVAILABLE = 'sharing_unavailable';
  * Lives under `lib/volunteering/` because that directory was in scope for the audit fix;
  * the group files tab imports it too. Move it to `lib/` once the concurrent work settles.
  */
-export async function downloadAuthenticatedFile(path: string, filename: string): Promise<void> {
+export async function downloadAuthenticatedFile(
+  path: string,
+  filename: string,
+  headers: Record<string, string> = {},
+): Promise<void> {
   const base = new URL(API_BASE_URL);
   const resolved = new URL(path, `${base.origin}/`);
   if (resolved.origin !== base.origin) {
@@ -48,6 +52,7 @@ export async function downloadAuthenticatedFile(path: string, filename: string):
       'X-Tenant-Slug': tenantSlug?.trim() || DEFAULT_TENANT,
       'X-Nexus-Mobile': '1',
       'X-Nexus-Mobile-Version': APP_VERSION,
+      ...headers,
     },
   });
 

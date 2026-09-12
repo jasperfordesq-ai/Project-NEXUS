@@ -916,8 +916,13 @@ class SocialController extends BaseApiController
         }
 
         if (! $success) {
-            $errors = $this->pollService->getErrors();
-            return $this->respondWithErrors($errors, 400);
+            $poll = $this->pollService->getById((int) $id, $userId);
+            if ((int) ($poll['user_vote_option_id'] ?? 0) !== $optionId) {
+                $errors = $this->pollService->getErrors();
+                return $this->respondWithErrors($errors, 400);
+            }
+            $poll['idempotent_replay'] = true;
+            return $this->respondWithData($poll);
         }
 
         $poll = $this->pollService->getById((int) $id, $userId);

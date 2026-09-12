@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -526,6 +526,21 @@ describe('GamificationScreen', () => {
     expect(mockToastShow).toHaveBeenCalledWith({ title: 'Reward claimed', description: 'You earned 20 XP.', variant: 'success' });
   });
 
+  it('serializes rapid daily reward taps before React state updates', async () => {
+    let resolveClaim!: (value: { data: { claimed: boolean; reward: { xp_earned: number; streak_day: number } } }) => void;
+    (claimDailyReward as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { resolveClaim = resolve; }));
+    mockLoadedGamification();
+
+    const { getByText } = render(<GamificationScreen />);
+    const button = getByText('Claim reward');
+    fireEvent.press(button);
+    fireEvent.press(button);
+
+    expect(claimDailyReward).toHaveBeenCalledTimes(1);
+    resolveClaim({ data: { claimed: true, reward: { xp_earned: 20, streak_day: 4 } } });
+    await waitFor(() => expect(mockToastShow).toHaveBeenCalled());
+  });
+
   it('renders challenges and claims a completed challenge reward', async () => {
     mockLoadedGamification({ challenges: mockChallenges });
 
@@ -543,6 +558,22 @@ describe('GamificationScreen', () => {
     expect(claimChallengeReward).toHaveBeenCalledWith(11);
     await Promise.resolve();
     expect(mockToastShow).toHaveBeenCalledWith({ title: 'Challenge claimed', description: 'Challenge reward claimed.', variant: 'success' });
+  });
+
+  it('serializes rapid claims of the same challenge before React state updates', async () => {
+    let resolveClaim!: (value: { data: Record<string, never> }) => void;
+    (claimChallengeReward as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { resolveClaim = resolve; }));
+    mockLoadedGamification({ challenges: mockChallenges });
+
+    const { getByText } = render(<GamificationScreen />);
+    fireEvent.press(getByText('Challenges'));
+    const button = getByText('Claim 25 XP');
+    fireEvent.press(button);
+    fireEvent.press(button);
+
+    expect(claimChallengeReward).toHaveBeenCalledTimes(1);
+    resolveClaim({ data: {} });
+    await waitFor(() => expect(mockToastShow).toHaveBeenCalled());
   });
 
   it('renders badge collection journeys with progress and completion state', () => {
@@ -579,7 +610,7 @@ describe('GamificationScreen', () => {
     expect(purchaseShopItem).not.toHaveBeenCalled();
     fireEvent.press(getByTestId('gamification-confirm-purchase'));
 
-    expect(purchaseShopItem).toHaveBeenCalledWith(12);
+    expect(purchaseShopItem).toHaveBeenCalledWith(12, expect.any(String));
     await Promise.resolve();
     expect(mockToastShow).toHaveBeenCalledWith({ title: 'Purchase complete', description: 'Profile Sparkle is yours.', variant: 'success' });
   });
@@ -662,7 +693,29 @@ describe('GamificationScreen', () => {
     expect(purchaseShopItem).not.toHaveBeenCalled();
 
     fireEvent.press(getByTestId('gamification-confirm-purchase'));
+    fireEvent.press(getByTestId('gamification-confirm-purchase'));
     expect(purchaseShopItem).toHaveBeenCalledTimes(1);
+  });
+
+  it('reuses the XP purchase key after an uncertain failure', async () => {
+    mockLoadedGamification({ shopItems: mockShopItems, shopXp: 250 });
+    (purchaseShopItem as jest.Mock)
+      .mockRejectedValueOnce(new Error('response lost'))
+      .mockResolvedValueOnce({ data: {} });
+
+    const screen = render(<GamificationScreen />);
+    fireEvent.press(screen.getByText('Shop'));
+    fireEvent.press(screen.getByText('Purchase'));
+    fireEvent.press(screen.getByTestId('gamification-confirm-purchase'));
+    await waitFor(() => expect(purchaseShopItem).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockToastShow).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+
+    fireEvent.press(screen.getByText('Purchase'));
+    fireEvent.press(await screen.findByTestId('gamification-confirm-purchase'));
+    await waitFor(() => expect(purchaseShopItem).toHaveBeenCalledTimes(2));
+
+    expect((purchaseShopItem as jest.Mock).mock.calls[1][1])
+      .toBe((purchaseShopItem as jest.Mock).mock.calls[0][1]);
   });
 
   it('🔴 shows the date a badge was awarded', () => {

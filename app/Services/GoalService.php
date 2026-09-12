@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Models\Goal;
 use App\Models\GoalCheckin;
+use App\Models\UserXpLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\GoalMilestoneEmailService;
@@ -394,22 +395,57 @@ class GoalService
      */
     public function complete(int $id, int $userId): ?Goal
     {
-        $goal = $this->goal->newQuery()->find($id);
+        return $this->completeWithResult($id, $userId)['goal'];
+    }
 
-        if (! $goal || (int) $goal->user_id !== $userId) {
-            return null;
+    /** @return array{goal: Goal|null, replay: bool} */
+    public function completeWithResult(int $id, int $userId): array
+    {
+        $result = DB::transaction(function () use ($id, $userId): array {
+            $goal = $this->goal->newQuery()->lockForUpdate()->find($id);
+
+            if (! $goal || (int) $goal->user_id !== $userId) {
+                return ['goal' => null, 'replay' => false];
+            }
+
+            if ($goal->status === 'completed') {
+                return ['goal' => $goal, 'replay' => true];
+            }
+
+            $target = (float) ($goal->target_value ?? 1);
+            $goal->current_value = $target;
+            $goal->status = 'completed';
+            $goal->completed_at = now();
+            $goal->save();
+            $this->recordHistory($goal, 'completed', __('api_controllers_3.goals.history_completed'), [
+                'progress_value' => 100,
+                'new_value' => (float) $goal->current_value,
+            ], $userId);
+            app(GoalProgressService::class)->syncMilestones($goal);
+
+            $xpReference = 'goal:' . $id;
+            GamificationService::awardXP(
+                $userId,
+                GamificationService::XP_VALUES['complete_goal'],
+                'complete_goal',
+                'Completed a goal',
+                $xpReference,
+            );
+            if (! UserXpLog::query()
+                ->where('user_id', $userId)
+                ->where('action', 'complete_goal')
+                ->where('source_reference', $xpReference)
+                ->exists()) {
+                throw new \RuntimeException('Goal completion XP did not persist.');
+            }
+
+            return ['goal' => $goal, 'replay' => false];
+        });
+
+        $goal = $result['goal'];
+        if (! $goal || $result['replay']) {
+            return $result;
         }
-
-        $target = (float) ($goal->target_value ?? 1);
-        $goal->current_value = $target;
-        $goal->status = 'completed';
-        $goal->completed_at = now();
-        $goal->save();
-        $this->recordHistory($goal, 'completed', __('api_controllers_3.goals.history_completed'), [
-            'progress_value' => 100,
-            'new_value' => (float) $goal->current_value,
-        ], $userId);
-        app(GoalProgressService::class)->syncMilestones($goal);
 
         // Send goal-completed email
         try {
@@ -455,7 +491,7 @@ class GoalService
             Log::warning('[GoalService] completed email failed: ' . $e->getMessage());
         }
 
-        return $goal;
+        return $result;
     }
 
     /**

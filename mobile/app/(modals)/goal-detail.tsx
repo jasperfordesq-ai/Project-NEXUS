@@ -5,7 +5,7 @@
 
 import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -123,6 +123,7 @@ function GoalDetailScreen() {
   const [progressIncrement, setProgressIncrement] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const savingRef = useRef(false);
 
   const [loadError, setLoadError] = useState<string | null>(null);
   const load = useCallback(async () => {
@@ -196,6 +197,7 @@ function GoalDetailScreen() {
     Audit 2026-09-07, fixed 2026-09-08.
   */
   async function handleProgressSave() {
+    if (savingRef.current) return;
     const requested = parseDecimalInput(progressIncrement) ?? Number.NaN;
     if (!goal || !Number.isFinite(requested) || requested === 0) return;
 
@@ -205,6 +207,7 @@ function GoalDetailScreen() {
     const increment = requested < 0 ? Math.max(requested, -currentValue) : requested;
     if (increment === 0) return;
 
+    savingRef.current = true;
     setIsSaving(true);
     try {
       const result = await updateGoalProgress(goal.id, increment);
@@ -214,6 +217,7 @@ function GoalDetailScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.progressError')), variant: 'danger' });
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
     }
   }
@@ -223,7 +227,8 @@ function GoalDetailScreen() {
   }
 
   async function handleReminderSave(enabled: boolean) {
-    if (!goal) return;
+    if (!goal || savingRef.current) return;
+    savingRef.current = true;
     setIsSaving(true);
     try {
       if (!enabled) {
@@ -236,6 +241,7 @@ function GoalDetailScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.reminderError')), variant: 'danger' });
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
     }
   }
@@ -340,6 +346,7 @@ function GoalDetailScreen() {
                   label={t('detail.progressIncrement')}
                   value={progressIncrement}
                   onChangeText={setProgressIncrement}
+                  editable={!isSaving}
                   /*
                     🔴 `decimal-pad` has no minus key on iOS. A field that accepts a
                     correction the keyboard cannot type is not a correction at all.

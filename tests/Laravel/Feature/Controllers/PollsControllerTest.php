@@ -154,6 +154,44 @@ class PollsControllerTest extends TestCase
         $this->assertSame(0, DB::table('poll_votes')->where('poll_id', $pollId)->count(), 'No vote may be recorded on a closed poll.');
     }
 
+    public function test_vote_replay_returns_committed_choice_without_repeating_xp(): void
+    {
+        $user = $this->authenticatedUser();
+        DB::table('users')->where('id', $user->id)->update(['xp' => 0]);
+        [$pollId, $optionId] = $this->createPollWithOptions();
+
+        $first = $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $optionId]);
+        $replay = $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $optionId]);
+
+        $first->assertOk();
+        $replay->assertOk()->assertJsonPath('data.idempotent_replay', true);
+        $this->assertSame($optionId, (int) $replay->json('data.user_vote_option_id'));
+        $this->assertSame(1, DB::table('poll_votes')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('poll_id', $pollId)
+            ->where('user_id', $user->id)
+            ->count());
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('action', 'vote_poll')
+            ->where('source_reference', 'poll:' . $pollId)
+            ->count());
+    }
+
+    public function test_vote_cannot_replay_as_a_different_choice(): void
+    {
+        $this->authenticatedUser();
+        [$pollId, $optionId] = $this->createPollWithOptions();
+        $otherOptionId = (int) DB::table('poll_options')
+            ->where('poll_id', $pollId)
+            ->where('id', '!=', $optionId)
+            ->value('id');
+
+        $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $optionId])->assertOk();
+        $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $otherOptionId])->assertStatus(409);
+    }
+
     public function test_feed_vote_with_an_option_from_another_poll_is_rejected_not_a_server_error(): void
     {
         $this->enablePollsFeature();
@@ -178,6 +216,25 @@ class PollsControllerTest extends TestCase
 
         $response->assertStatus(409);
         $response->assertJsonPath('errors.0.code', 'RESOURCE_CONFLICT');
+    }
+
+    public function test_feed_vote_replay_returns_the_committed_choice(): void
+    {
+        $this->enablePollsFeature();
+        $user = $this->authenticatedUser();
+        [$pollId, $optionId] = $this->createPollWithOptions();
+
+        $this->apiPost("/v2/feed/polls/{$pollId}/vote", ['option_id' => $optionId])->assertOk();
+        $replay = $this->apiPost("/v2/feed/polls/{$pollId}/vote", ['option_id' => $optionId]);
+
+        $replay->assertOk()
+            ->assertJsonPath('data.idempotent_replay', true)
+            ->assertJsonPath('data.user_vote_option_id', $optionId);
+        $this->assertSame(1, DB::table('poll_votes')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('poll_id', $pollId)
+            ->where('user_id', $user->id)
+            ->count());
     }
 
     /**

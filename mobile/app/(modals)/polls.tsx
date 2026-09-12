@@ -63,6 +63,7 @@ function PollsScreen() {
   const [description, setDescription] = useState('');
   const [options, setOptions] = useState(['', '']);
   const [isCreating, setIsCreating] = useState(false);
+  const creatingRef = useRef(false);
   const wasRefreshingRef = useRef(false);
 
   const fetchPolls = useCallback(
@@ -116,6 +117,7 @@ function PollsScreen() {
   }, [shouldOpenCreate]);
 
   async function handleCreatePoll() {
+    if (creatingRef.current) return;
     const trimmedQuestion = question.trim();
     const validOptions = options.map((option) => option.trim()).filter(Boolean);
 
@@ -128,6 +130,7 @@ function PollsScreen() {
       return;
     }
 
+    creatingRef.current = true;
     setIsCreating(true);
     try {
       await createPoll({
@@ -146,6 +149,7 @@ function PollsScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('pollsScreen.createError')), variant: 'danger' });
     } finally {
+      creatingRef.current = false;
       setIsCreating(false);
     }
   }
@@ -213,6 +217,7 @@ function PollsScreen() {
 
                   <HeroButton
                     variant={showCreate ? 'secondary' : 'primary'}
+                    isDisabled={isCreating}
                     onPress={() => setShowCreate((value) => !value)}
                     accessibilityLabel={t('pollsScreen.createPoll')}
                   >
@@ -236,12 +241,14 @@ function PollsScreen() {
                       label={t('pollsScreen.questionLabel')}
                       value={question}
                       onChangeText={setQuestion}
+                      editable={!isCreating}
                       placeholder={t('pollsScreen.questionPlaceholder')}
                     />
                     <Input
                       label={t('pollsScreen.descriptionLabel')}
                       value={description}
                       onChangeText={setDescription}
+                      editable={!isCreating}
                       placeholder={t('pollsScreen.descriptionPlaceholder')}
                       multiline
                     />
@@ -253,6 +260,7 @@ function PollsScreen() {
                             containerClassName="mb-0 flex-1"
                             value={option}
                             onChangeText={(value) => updateOption(index, value)}
+                            editable={!isCreating}
                             placeholder={t('pollsScreen.optionPlaceholder', { number: index + 1 })}
                           />
                           {options.length > 2 ? (
@@ -261,6 +269,7 @@ function PollsScreen() {
                               isIconOnly
                               variant="danger-soft"
                               onPress={() => removeOption(index)}
+                              isDisabled={isCreating}
                               accessibilityLabel={t('pollsScreen.removeOption', { number: index + 1 })}
                             >
                               <Ionicons name="trash-outline" size={16} color={theme.error} />
@@ -270,7 +279,7 @@ function PollsScreen() {
                       ))}
                     </View>
                     <View className="gap-2">
-                      <HeroButton variant="secondary" isDisabled={options.length >= 6} onPress={addOption}>
+                      <HeroButton variant="secondary" isDisabled={isCreating || options.length >= 6} onPress={addOption}>
                         <Ionicons name="add-outline" size={16} color={primary} />
                         <HeroButton.Label>{t('pollsScreen.addOption')}</HeroButton.Label>
                       </HeroButton>

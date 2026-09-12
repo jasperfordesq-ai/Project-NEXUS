@@ -202,6 +202,21 @@ describe('SettingsLinkedAccountsRoute', () => {
     expect(mockRefresh).toHaveBeenCalled();
   });
 
+  it('starts only one linked-account request for rapid repeated taps', async () => {
+    let release!: () => void;
+    mockRequestSubAccount.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({}); }));
+    const { getByPlaceholderText, getByText } = render(<SettingsLinkedAccountsRoute />);
+    fireEvent.changeText(getByPlaceholderText('member@example.com'), 'child@example.com');
+
+    const sendButton = getByText('Send request');
+    fireEvent.press(sendButton);
+    fireEvent.press(sendButton);
+
+    expect(mockRequestSubAccount).toHaveBeenCalledTimes(1);
+    release();
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
+  });
+
   it('approves pending requests, revokes relationships, and updates permissions', async () => {
     const { getAllByText, getByLabelText, getByText } = render(<SettingsLinkedAccountsRoute />);
 
@@ -209,10 +224,12 @@ describe('SettingsLinkedAccountsRoute', () => {
     // an EXPLICIT tier — never a boolean, which the backend maps to act-alone.
     fireEvent(getByLabelText('Toggle View activity for Alex Managed'), 'selectedChange', false);
     await waitFor(() => expect(mockUpdateSubAccountTiers).toHaveBeenCalledWith(11, { activity: 'none' }));
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
     expect(mockUpdateSubAccountPermissions).not.toHaveBeenCalled();
 
     fireEvent.press(getByText('Approve'));
     await waitFor(() => expect(mockApproveSubAccount).toHaveBeenCalledWith(12));
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(2));
 
     fireEvent.press(getAllByText('Remove')[0]);
     await waitFor(() => expect(mockRevokeSubAccount).toHaveBeenCalledWith(11));

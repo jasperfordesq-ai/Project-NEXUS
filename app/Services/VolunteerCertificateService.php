@@ -51,6 +51,34 @@ class VolunteerCertificateService
         self::$errors = [];
         $tenantId = TenantContext::getId();
 
+        $idempotencyKey = trim((string) ($options['idempotency_key'] ?? ''));
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.validation_failed'), 'field' => 'idempotency_key'];
+                return null;
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode([
+                'organization_id' => !empty($options['organization_id']) ? (int) $options['organization_id'] : null,
+                'date_from' => $options['date_from'] ?? null,
+                'date_to' => $options['date_to'] ?? null,
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $replay = DB::table('vol_certificates')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('creation_idempotency_key_hash', $keyHash)
+                ->first(['verification_code', 'creation_request_hash']);
+            if ($replay) {
+                if (!hash_equals((string) $replay->creation_request_hash, $requestHash)) {
+                    self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                    return null;
+                }
+                return self::verify((string) $replay->verification_code);
+            }
+        }
+
         // Build the hours query with optional filters
         $query = DB::table('vol_logs')
             ->where('user_id', $userId)
@@ -138,6 +166,8 @@ class VolunteerCertificateService
             $id = DB::table('vol_certificates')->insertGetId([
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
+                'creation_idempotency_key_hash' => $keyHash,
+                'creation_request_hash' => $requestHash,
                 'verification_code' => $verificationCode,
                 'total_hours' => round($totalHours, 2),
                 'date_range_start' => $dateRangeStart,
@@ -147,6 +177,16 @@ class VolunteerCertificateService
                 'updated_at' => now(),
             ]);
         } catch (\Throwable $e) {
+            if ($keyHash !== null) {
+                $winner = DB::table('vol_certificates')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->where('creation_idempotency_key_hash', $keyHash)
+                    ->first(['verification_code', 'creation_request_hash']);
+                if ($winner && hash_equals((string) $winner->creation_request_hash, (string) $requestHash)) {
+                    return self::verify((string) $winner->verification_code);
+                }
+            }
             \Illuminate\Support\Facades\Log::warning("VolunteerCertificateService::generate error: " . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.vol_certificate_generate_failed')];
             return null;

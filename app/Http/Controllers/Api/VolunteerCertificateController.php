@@ -42,6 +42,7 @@ class VolunteerCertificateController extends BaseApiController
             if ($code === 'NOT_FOUND') return 404;
             if ($code === 'FORBIDDEN') return 403;
             if ($code === 'ALREADY_EXISTS') return 409;
+            if ($code === 'IDEMPOTENCY_CONFLICT') return 409;
             if ($code === 'FEATURE_DISABLED') return 403;
         }
         return 400;
@@ -89,6 +90,7 @@ class VolunteerCertificateController extends BaseApiController
         if ($this->inputInt('organization_id')) {
             $options['organization_id'] = $this->inputInt('organization_id');
         }
+        $options['idempotency_key'] = request()->header('Idempotency-Key') ?? $this->input('idempotency_key');
 
         $cert = $this->volunteerCertificateService->generate($userId, $options);
 

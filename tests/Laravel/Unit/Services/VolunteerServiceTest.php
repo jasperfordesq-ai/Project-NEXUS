@@ -211,9 +211,24 @@ class VolunteerServiceTest extends TestCase
         $this->assertTrue(VolunteerService::verifyHours($logId, $admin->id, 'approve'));
         $this->assertSame('paid', VolunteerService::getLastPaymentOutcome());
 
-        // Second approval: the log is no longer pending, so the pre-transaction
-        // "only pending can be verified" guard rejects it — no re-credit.
-        $this->assertFalse(VolunteerService::verifyHours($logId, $admin->id, 'approve'));
+        // 🔴 Re-pin the tenant before the retry. Approval dispatches
+        // VolLogStatusChanged, and AwardXpOnVolLogApproved ends with
+        // TenantContext::restoreAfterScopedListener(), which deliberately calls
+        // reset() under CLI so a queued job can never inherit a stale tenant.
+        // Under phpunit that leaves $tenant null, getId() falls back to the master
+        // tenant (1), and the retry below would look for a tenant-2 log as tenant 1
+        // and get NOT_FOUND. Over HTTP — the path this test is describing —
+        // runningInConsole() is false and the caller's tenant IS restored, so the
+        // retry really is idempotent there. Same re-pin as the note in
+        // tests/Laravel/Unit/Listeners/AwardXpOnVolLogApprovedTest.php.
+        TenantContext::setById(2);
+
+        // A lost response can be retried as the same decision, without re-credit.
+        $this->assertTrue(VolunteerService::verifyHours($logId, $admin->id, 'approve'));
+        $this->assertSame('already_processed', VolunteerService::getLastPaymentOutcome());
+        // The opposite decision cannot claim success after approval won.
+        TenantContext::setById(2);
+        $this->assertFalse(VolunteerService::verifyHours($logId, $admin->id, 'decline'));
 
         // Credited exactly once.
         $this->assertEquals(2, (int) DB::table('users')->where('id', $volunteer->id)->value('balance'));

@@ -498,7 +498,7 @@
       "unknown": "Tá an t-ordú seo i stádas nach n-aithníonn an aip fós."
     },
     "confirmDeliveryTitle": "Deimhnigh gur bhfuair tú é seo?",
-    "confirmDeliveryMessage": "Scaoileann sé seo an íocaíocht as ordú {{order}} chuig an díoltóir agus cuireann sé deireadh le do chosaint ceannaitheora. Ná deimhnigh ach nuair atá an mhír agat agus í mar a bhí súil agat.",
+    "confirmDeliveryMessage": "Déantar ordú {{order}} a thaifeadadh mar ordú seachadta leis seo agus cuirtear tús le tréimhse 14 lá chun díospóid a dhéanamh sula scaoiltear an íocaíocht. Ná deimhnigh ach nuair atá an mhír agat agus í mar a bhí súil agat.",
     "confirmDeliveryAction": "Deimhnigh an fháltas",
     "paymentTakenTitle": "D’éirigh le d’íocaíocht",
     "paymentTakenHint": "Táimid fós ag deimhniú ordú {{order}}. Ná híoc arís — athnuaigh i gceann nóiméid.",

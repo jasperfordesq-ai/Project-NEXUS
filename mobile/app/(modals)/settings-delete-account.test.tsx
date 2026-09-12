@@ -183,6 +183,21 @@ describe('SettingsDeleteAccountScreen', () => {
     expect(mockLogout).toHaveBeenCalledTimes(1);
   });
 
+  it('sends only one irreversible deletion for rapid repeated taps', async () => {
+    let release!: () => void;
+    mockDelete.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({}); }));
+    const screen = render(<SettingsDeleteAccountScreen />);
+    fill(screen, { confirmation: 'DELETE', password: 'hunter2' });
+
+    const deleteButton = screen.getByTestId('delete-account-submit');
+    fireEvent.press(deleteButton);
+    fireEvent.press(deleteButton);
+
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+    release();
+    await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
+  });
+
   it('does NOT sign the member out when the server refuses', async () => {
     // The case this protects: a wrong password. Signing out here would strand a member on
     // the sign-in screen believing their account was deleted when it still exists.

@@ -453,12 +453,10 @@ describe('marketplace api', () => {
     await shipMarketplaceOrder(14, {
       tracking_number: 'TRACK123',
       tracking_url: 'https://tracking.test/TRACK123',
-      shipping_method: 'tracked',
     });
     expect(api.put).toHaveBeenCalledWith('/api/v2/marketplace/orders/14/ship', {
       tracking_number: 'TRACK123',
       tracking_url: 'https://tracking.test/TRACK123',
-      shipping_method: 'tracked',
     });
 
     await confirmMarketplaceOrderDelivery(14);

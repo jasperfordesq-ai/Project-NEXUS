@@ -5,7 +5,7 @@
 
 import { useConfirm } from '@/components/ui/useConfirm';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
@@ -24,6 +24,7 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import {
   approveSubAccount,
   getManagedSubAccounts,
@@ -84,14 +85,27 @@ function SettingsLinkedAccountsScreen() {
   const [email, setEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const mutationInFlight = useRef(false);
   const query = useApi(loadLinkedAccounts, []);
 
+  useUnsavedChangesGuard({
+    isDirty: email.trim().length > 0,
+    isSaving: isSending,
+    confirm,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
   async function sendRequest() {
+    if (mutationInFlight.current) return;
     const trimmed = email.trim();
     if (!trimmed) {
       showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.emailRequired'), variant: 'warning' });
       return;
     }
+    mutationInFlight.current = true;
     try {
       setIsSending(true);
       await requestSubAccount(trimmed);
@@ -100,11 +114,14 @@ function SettingsLinkedAccountsScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.requestFailed')), variant: 'danger' });
     } finally {
+      mutationInFlight.current = false;
       setIsSending(false);
     }
   }
 
   async function approve(item: SubAccountRelationship) {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     try {
       setBusyId(item.relationship_id);
       await approveSubAccount(item.relationship_id);
@@ -112,6 +129,7 @@ function SettingsLinkedAccountsScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.approveFailed')), variant: 'danger' });
     } finally {
+      mutationInFlight.current = false;
       setBusyId(null);
     }
   }
@@ -133,6 +151,8 @@ function SettingsLinkedAccountsScreen() {
   }
 
   async function performRevoke(item: SubAccountRelationship) {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     try {
       setBusyId(item.relationship_id);
       await revokeSubAccount(item.relationship_id);
@@ -140,6 +160,7 @@ function SettingsLinkedAccountsScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.revokeFailed')), variant: 'danger' });
     } finally {
+      mutationInFlight.current = false;
       setBusyId(null);
     }
   }
@@ -159,6 +180,7 @@ function SettingsLinkedAccountsScreen() {
    * when disabling. This screen can therefore never escalate anything.
    */
   async function togglePermission(item: SubAccountRelationship, permission: SubAccountPermission, asMember = false) {
+    if (mutationInFlight.current) return;
     const capability: SupportTierCapability | null =
       permission === 'can_view_activity' ? 'activity'
       : permission === 'can_manage_listings' ? 'listings'
@@ -169,6 +191,7 @@ function SettingsLinkedAccountsScreen() {
     const currentTier = resolveSupportTiers(item.permissions)[capability];
     const nextTier: SupportTier = currentTier !== 'none' ? 'none' : 'assist';
 
+    mutationInFlight.current = true;
     try {
       setBusyId(item.relationship_id);
       if (asMember) {
@@ -182,6 +205,7 @@ function SettingsLinkedAccountsScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.permissionFailed')), variant: 'danger' });
     } finally {
+      mutationInFlight.current = false;
       setBusyId(null);
     }
   }
@@ -225,8 +249,9 @@ function SettingsLinkedAccountsScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              editable={!isSending && busyId === null}
             />
-            <HeroButton variant="primary" onPress={sendRequest} isDisabled={isSending}>
+            <HeroButton variant="primary" onPress={sendRequest} isDisabled={isSending || busyId !== null}>
               <HeroButton.Label>{isSending ? t('linkedAccounts.sending') : t('linkedAccounts.sendRequest')}</HeroButton.Label>
             </HeroButton>
           </HeroCard.Body>
@@ -246,7 +271,7 @@ function SettingsLinkedAccountsScreen() {
               empty={t('linkedAccounts.managedEmpty')}
               items={managed}
               canManagePermissions
-              busyId={busyId}
+              busyId={isSending ? -1 : busyId}
               onApprove={approve}
               onRevoke={revoke}
               onTogglePermission={togglePermission}
@@ -257,7 +282,7 @@ function SettingsLinkedAccountsScreen() {
               empty={t('linkedAccounts.managersEmpty')}
               items={managers}
               canApprove
-              busyId={busyId}
+              busyId={isSending ? -1 : busyId}
               onApprove={approve}
               onRevoke={revoke}
               onTogglePermission={togglePermission}
@@ -310,7 +335,7 @@ function RelationshipSection({
           <View className="gap-3">
             {items.map((item) => {
               const name = displayName(item, t('linkedAccounts.unknownMember'));
-              const isBusy = busyId === item.relationship_id;
+              const isBusy = busyId !== null;
               return (
                 <Surface key={item.relationship_id} variant="secondary" className="gap-3 rounded-panel-inner p-3">
                   <View className="flex-row items-start gap-3">

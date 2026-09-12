@@ -194,6 +194,18 @@ class ConnectionsControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.status', 'connected');
+        $this->apiGet("/v2/connections/status/{$requester->id}")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'connected')
+            ->assertJsonPath('data.connection_id', $connection->id);
+        $accepted = $this->apiGet('/v2/connections?status=accepted')->assertOk();
+        self::assertContains($requester->id, array_column(array_column($accepted->json('data'), 'user'), 'id'));
+        $this->apiDelete("/v2/connections/{$connection->id}")->assertSuccessful();
+        $this->apiGet("/v2/connections/status/{$requester->id}")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'none');
+        $remaining = $this->apiGet('/v2/connections?status=accepted')->assertOk();
+        self::assertNotContains($requester->id, array_column(array_column($remaining->json('data'), 'user'), 'id'));
     }
 
     public function test_accept_requires_authentication(): void

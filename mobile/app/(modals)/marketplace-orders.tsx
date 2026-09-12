@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useState, type ComponentProps } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { FlatList, Linking, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -61,7 +61,6 @@ type OrderMode = 'purchases' | 'sales';
 type OrderStatusTab = 'all' | 'active' | 'completed' | 'cancelled';
 type DisputeReason = 'not_received' | 'not_as_described' | 'damaged' | 'wrong_item' | 'other';
 type OrderStatusTone = 'default' | 'success' | 'warning' | 'danger' | 'accent';
-const SHIPPING_METHODS = ['standard', 'express', 'tracked', 'hand_delivery', 'other'];
 const DISPUTE_REASONS: DisputeReason[] = ['not_received', 'not_as_described', 'damaged', 'wrong_item', 'other'];
 const ORDER_STATUSES = new Set(['pending', 'pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'disputed', 'refunded']);
 const DELIVERY_STATUSES = new Set(['pending', 'accepted', 'declined', 'completed', 'cancelled']);
@@ -161,7 +160,6 @@ function MarketplaceOrdersScreen() {
   const [isLoadingDeliveryOffers, setIsLoadingDeliveryOffers] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
   const [trackingUrl, setTrackingUrl] = useState('');
-  const [shippingMethod, setShippingMethod] = useState('standard');
   const [cancelReason, setCancelReason] = useState('');
   const [rating, setRating] = useState(5);
   const [ratingComment, setRatingComment] = useState('');
@@ -169,6 +167,7 @@ function MarketplaceOrdersScreen() {
   const [disputeReason, setDisputeReason] = useState<DisputeReason>('not_received');
   const [disputeDescription, setDisputeDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const canLoadOrders = !isAuthLoading && isAuthenticated;
   const orders = usePaginatedApi<MarketplaceOrder, Awaited<ReturnType<typeof getMarketplaceOrders>>>(
     (cursor) => getMarketplaceOrders(mode, cursor, ORDER_STATUS_FILTERS[statusTab]),
@@ -204,7 +203,6 @@ function MarketplaceOrdersScreen() {
     setShipOrder(order);
     setTrackingNumber(order.tracking_number ?? '');
     setTrackingUrl(order.tracking_url ?? '');
-    setShippingMethod(order.shipping_method ?? 'standard');
   }
 
   function openCancelModal(order: MarketplaceOrder) {
@@ -240,26 +238,27 @@ function MarketplaceOrdersScreen() {
   }
 
   async function submitShipment() {
-    if (!shipOrder) return;
+    if (!shipOrder || submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       await shipMarketplaceOrder(shipOrder.id, {
         tracking_number: trackingNumber.trim() || null,
         tracking_url: trackingUrl.trim() || null,
-        shipping_method: shippingMethod,
       });
       setShipOrder(null);
       orders.refresh();
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
 
   /*
-    🔴 The irreversible one: it moves the order to delivered and releases the seller's
-    money, and it sat next to "Dispute" with no dialog (audit 2026-09-07, D/F-6).
+    🔴 This starts the 14-day dispute window, so it needs an explicit confirmation and an
+    accurate explanation of the protection that remains (audit 2026-09-07, D/F-6).
   */
   function confirmDelivery(order: MarketplaceOrder) {
     confirm({
@@ -273,6 +272,8 @@ function MarketplaceOrdersScreen() {
   }
 
   async function runConfirmDelivery(order: MarketplaceOrder) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       await confirmMarketplaceOrderDelivery(order.id);
@@ -280,11 +281,14 @@ function MarketplaceOrdersScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
 
   async function continuePayment(order: MarketplaceOrder) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       const payment = await createMarketplacePaymentIntent(order.id);
@@ -324,6 +328,7 @@ function MarketplaceOrdersScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.paymentFailed')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -333,6 +338,8 @@ function MarketplaceOrdersScreen() {
       showToast({ title: t('common:errors.alertTitle'), description: t('orders.cancelReasonRequired'), variant: 'warning' });
       return;
     }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       await cancelMarketplaceOrder(cancelOrder.id, cancelReason.trim());
@@ -342,6 +349,7 @@ function MarketplaceOrdersScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -351,6 +359,8 @@ function MarketplaceOrdersScreen() {
       showToast({ title: t('common:errors.alertTitle'), description: t('orders.ratingRequired'), variant: 'warning' });
       return;
     }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       await rateMarketplaceOrder(rateOrder.id, {
@@ -364,6 +374,7 @@ function MarketplaceOrdersScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -373,6 +384,8 @@ function MarketplaceOrdersScreen() {
       showToast({ title: t('common:errors.alertTitle'), description: t('orders.disputeDescriptionRequired'), variant: 'warning' });
       return;
     }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       await disputeMarketplaceOrder(disputeOrder.id, {
@@ -385,12 +398,14 @@ function MarketplaceOrdersScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
 
   async function updateDeliveryOffer(offer: MarketplaceDeliveryOffer, action: 'accept' | 'confirm') {
-    if (!deliveryOrder) return;
+    if (!deliveryOrder || submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       if (action === 'accept') {
@@ -404,6 +419,7 @@ function MarketplaceOrdersScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -522,16 +538,6 @@ function MarketplaceOrdersScreen() {
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('orders.shipHint')}</Text>
               <OrderInput label={t('orders.trackingNumber')} value={trackingNumber} onChangeText={setTrackingNumber} placeholder={t('orders.trackingNumberPlaceholder')} />
               <OrderInput label={t('orders.trackingUrl')} value={trackingUrl} onChangeText={setTrackingUrl} placeholder={t('orders.trackingUrlPlaceholder')} />
-              <View className="gap-2">
-                <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{t('orders.shippingMethod')}</Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {SHIPPING_METHODS.map((method) => (
-                    <HeroButton key={method} className="min-w-[46%] flex-1" size="sm" variant={shippingMethod === method ? 'primary' : 'secondary'} onPress={() => setShippingMethod(method)}>
-                      <HeroButton.Label>{t(`orders.shippingMethods.${method}`)}</HeroButton.Label>
-                    </HeroButton>
-                  ))}
-                </View>
-              </View>
               <HeroButton variant="primary" isDisabled={isSubmitting} onPress={() => void submitShipment()}>
                 <AccentIcon name="car-outline" size={17} />
                 <HeroButton.Label>{t('orders.confirmShipped')}</HeroButton.Label>

@@ -21,6 +21,8 @@ class VolDonation extends Model
 
     protected $fillable = [
         'user_id',
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
         'opportunity_id',
         'community_project_id',
         'giving_day_id',

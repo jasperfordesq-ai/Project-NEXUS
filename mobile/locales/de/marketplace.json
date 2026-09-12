@@ -498,7 +498,7 @@
       "unknown": "Diese Bestellung hat einen Status, den die App noch nicht erkennt."
     },
     "confirmDeliveryTitle": "Bestätigen, dass du das erhalten hast?",
-    "confirmDeliveryMessage": "Damit wird die Zahlung für Bestellung {{order}} an die verkaufende Person freigegeben und dein Käuferschutz endet. Bestätige erst, wenn der Artikel bei dir ist und deinen Erwartungen entspricht.",
+    "confirmDeliveryMessage": "Damit wird Bestellung {{order}} als zugestellt erfasst und eine 14-tägige Frist für Reklamationen gestartet, bevor die Zahlung freigegeben wird. Bestätige erst, wenn der Artikel bei dir ist und deinen Erwartungen entspricht.",
     "confirmDeliveryAction": "Erhalt bestätigen",
     "paymentTakenTitle": "Deine Zahlung war erfolgreich",
     "paymentTakenHint": "Wir bestätigen Bestellung {{order}} noch. Zahle nicht erneut — aktualisiere in einer Minute.",

@@ -86,6 +86,38 @@ class CourseCreditTest extends TestCase
         $this->assertEqualsWithDelta(5.0, (float) $learner->fresh()->balance, 0.01);
     }
 
+    public function test_stale_enrolment_retry_does_not_repeat_course_completion(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create();
+        $learner = User::factory()->forTenant($this->testTenantId)->create();
+        $course = $this->paidCourse($author->id, 0);
+        $lesson = \App\Models\CourseLesson::create(['course_id' => $course->id, 'title' => 'Finish', 'content_type' => 'text', 'position' => 1]);
+        $enrolment = CourseEnrollmentService::enroll($course->id, $learner->id, null, false);
+        $stale = $enrolment->fresh();
+        $first = \App\Services\CourseProgressService::completeLesson($enrolment, $lesson->id, $learner->id);
+        $retry = \App\Services\CourseProgressService::completeLesson($stale, $lesson->id, $learner->id);
+        $this->assertTrue($first['course_completed']);
+        $this->assertFalse($retry['course_completed']);
+        $this->assertEquals(1, $course->fresh()->completion_count);
+    }
+
+    public function test_rejected_paid_enrolment_creates_no_enrolment_or_credit_movement(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'balance' => 0]);
+        $learner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'balance' => 1]);
+        $course = $this->paidCourse($author->id, 5);
+        try {
+            CourseEnrollmentService::enrollWithPayment($course, $learner->id);
+            $this->fail('An unpaid enrolment must not be accepted.');
+        } catch (\RuntimeException $error) {
+            $this->assertNotSame('', $error->getMessage());
+        }
+        $this->assertFalse(CourseEnrollmentService::isEnrolled($course->id, $learner->id));
+        $this->assertEquals(1, $learner->fresh()->balance);
+        $this->assertEquals(0, $author->fresh()->balance);
+        $this->assertSame(0, \Illuminate\Support\Facades\DB::table('transactions')->where('sender_id', $learner->id)->count());
+    }
+
     public function test_enrolling_twice_does_not_double_charge(): void
     {
         // Idempotency is enforced at the controller layer (isEnrolled short-circuit);

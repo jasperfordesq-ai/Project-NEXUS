@@ -198,6 +198,40 @@ class ShiftSwapRequestByShiftTest extends TestCase
         $this->assertSame((int) $freeHolder->id, (int) $row->to_user_id);
     }
 
+    public function test_retry_after_response_loss_returns_the_original_request_instead_of_choosing_another_holder(): void
+    {
+        [$opportunityId, $shiftA, $shiftB] = $this->makeOpportunityWithTwoShifts();
+        DB::table('vol_shifts')->where('id', $shiftB)->update(['capacity' => 3]);
+        $asker = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $firstHolder = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $secondHolder = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $this->approveOnShift($asker->id, $opportunityId, $shiftA);
+        $this->approveOnShift($firstHolder->id, $opportunityId, $shiftB);
+        $this->approveOnShift($secondHolder->id, $opportunityId, $shiftB);
+
+        $firstId = ShiftSwapService::requestSwap($asker->id, [
+            'from_shift_id' => $shiftA,
+            'to_shift_id' => $shiftB,
+            'message' => 'Could we trade shifts?',
+        ]);
+        $retryId = ShiftSwapService::requestSwap($asker->id, [
+            'from_shift_id' => $shiftA,
+            'to_shift_id' => $shiftB,
+            'message' => 'Could we trade shifts?',
+        ]);
+
+        $this->assertNotNull($firstId, json_encode(ShiftSwapService::getErrors()));
+        $this->assertSame($firstId, $retryId);
+        $this->assertSame(1, DB::table('vol_shift_swap_requests')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('from_user_id', $asker->id)
+            ->where('from_shift_id', $shiftA)
+            ->where('to_shift_id', $shiftB)
+            ->whereIn('status', ['pending', 'admin_pending'])
+            ->count());
+        $this->assertSame((int) $firstHolder->id, (int) DB::table('vol_shift_swap_requests')->where('id', $firstId)->value('to_user_id'));
+    }
+
     public function test_an_explicit_to_user_id_still_works(): void
     {
         [$opportunityId, $shiftA, $shiftB] = $this->makeOpportunityWithTwoShifts();

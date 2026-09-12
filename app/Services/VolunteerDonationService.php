@@ -175,16 +175,49 @@ class VolunteerDonationService
             }
         }
 
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                throw new \InvalidArgumentException(__('api.validation_failed'));
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode([
+                'opportunity_id' => $opportunityId,
+                'giving_day_id' => $givingDayId,
+                'amount' => number_format($amount, 2, '.', ''),
+                'currency' => $currency,
+                'payment_method' => $paymentMethod,
+                'payment_reference' => $paymentReference,
+                'message' => $message,
+                'is_anonymous' => $isAnonymous,
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $replay = VolDonation::where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('creation_idempotency_key_hash', $keyHash)
+                ->first();
+            if ($replay) {
+                if (!hash_equals((string) $replay->creation_request_hash, $requestHash)) {
+                    throw new \RuntimeException(__('event_registration.idempotency_conflict'), 409);
+                }
+                return self::donationResponse($replay);
+            }
+        }
+
         $now = now();
 
-        $donation = DB::transaction(function () use (
+        try {
+            $donation = DB::transaction(function () use (
             $tenantId, $userId, $opportunityId, $givingDayId, $amount,
             $currency, $paymentMethod, $paymentReference, $message,
-            $isAnonymous, $status, $now
-        ) {
+            $isAnonymous, $status, $now, $keyHash, $requestHash
+            ) {
             $donation = VolDonation::create([
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
+                'creation_idempotency_key_hash' => $keyHash,
+                'creation_request_hash' => $requestHash,
                 'opportunity_id' => $opportunityId,
                 'giving_day_id' => $givingDayId,
                 'amount' => $amount,
@@ -205,22 +238,41 @@ class VolunteerDonationService
             }
 
             return $donation;
-        });
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($keyHash === null) {
+                throw $e;
+            }
+            $winner = VolDonation::where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('creation_idempotency_key_hash', $keyHash)
+                ->first();
+            if (!$winner || !hash_equals((string) $winner->creation_request_hash, (string) $requestHash)) {
+                throw $e;
+            }
+            $donation = $winner;
+        }
 
+        return self::donationResponse($donation);
+    }
+
+    /** @return array<string, mixed> */
+    private static function donationResponse(VolDonation $donation): array
+    {
         return [
-            'id' => $donation->id,
-            'tenant_id' => $tenantId,
-            'user_id' => $userId,
-            'opportunity_id' => $opportunityId,
-            'giving_day_id' => $givingDayId,
-            'amount' => number_format($amount, 2, '.', ''),
-            'currency' => $currency,
-            'payment_method' => $paymentMethod,
-            'payment_reference' => $paymentReference,
-            'message' => $message,
-            'is_anonymous' => $isAnonymous,
-            'status' => $status,
-            'created_at' => $now->toDateTimeString(),
+            'id' => (int) $donation->id,
+            'tenant_id' => (int) $donation->tenant_id,
+            'user_id' => (int) $donation->user_id,
+            'opportunity_id' => $donation->opportunity_id !== null ? (int) $donation->opportunity_id : null,
+            'giving_day_id' => $donation->giving_day_id !== null ? (int) $donation->giving_day_id : null,
+            'amount' => number_format((float) $donation->amount, 2, '.', ''),
+            'currency' => (string) $donation->currency,
+            'payment_method' => (string) $donation->payment_method,
+            'payment_reference' => (string) ($donation->payment_reference ?? ''),
+            'message' => (string) ($donation->message ?? ''),
+            'is_anonymous' => (int) $donation->is_anonymous,
+            'status' => (string) $donation->status,
+            'created_at' => $donation->created_at?->toDateTimeString() ?? (string) $donation->getRawOriginal('created_at'),
         ];
     }
 

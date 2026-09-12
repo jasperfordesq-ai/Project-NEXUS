@@ -138,6 +138,36 @@ class VolunteerExpenseService
             }
         }
 
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                throw new \InvalidArgumentException(__('api.validation_failed'));
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode([
+                'organization_id' => $organizationId,
+                'opportunity_id' => $opportunityId,
+                'shift_id' => !empty($data['shift_id']) ? (int) $data['shift_id'] : null,
+                'expense_type' => (string) $data['expense_type'],
+                'amount' => number_format($amount, 2, '.', ''),
+                'description' => trim((string) $data['description']),
+                'receipt_filename' => $data['receipt_filename'] ?? null,
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+            $replay = VolExpense::where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('creation_idempotency_key_hash', $keyHash)
+                ->first(['id', 'creation_request_hash']);
+            if ($replay) {
+                if (!hash_equals((string) $replay->creation_request_hash, $requestHash)) {
+                    throw new \RuntimeException(__('event_registration.idempotency_conflict'), 409);
+                }
+                return self::getExpense((int) $replay->id) ?? [];
+            }
+        }
+
         // Serialise the monthly-cap read + insert under an atomic lock keyed on
         // (tenant, user, org, month). Without this, two concurrent submissions
         // can each read the same pre-insert monthly total, both pass the
@@ -205,6 +235,8 @@ class VolunteerExpenseService
             $expense = VolExpense::create([
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
+                'creation_idempotency_key_hash' => $keyHash,
+                'creation_request_hash' => $requestHash,
                 'organization_id' => $organizationId,
                 'opportunity_id' => $opportunityId,
                 'shift_id' => $data['shift_id'] ?? null,
@@ -217,6 +249,18 @@ class VolunteerExpenseService
                 'status' => 'pending',
                 'submitted_at' => now(),
             ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($keyHash === null) {
+                throw $e;
+            }
+            $winner = VolExpense::where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('creation_idempotency_key_hash', $keyHash)
+                ->first(['id', 'creation_request_hash']);
+            if (!$winner || !hash_equals((string) $winner->creation_request_hash, (string) $requestHash)) {
+                throw $e;
+            }
+            $expense = $winner;
         } finally {
             $capLock->release();
         }

@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Models\XpShopItem;
 use App\Models\UserXpPurchase;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -119,9 +120,20 @@ class XPShopService
     /**
      * Purchase an item for a user (uses TenantContext for tenant scoping).
      */
-    public static function purchaseItem(int $userId, $itemId): array
+    public static function purchaseItem(int $userId, $itemId, ?string $idempotencyKey = null): array
     {
         $tenantId = TenantContext::getId();
+        $itemId = (int) $itemId;
+        $idempotencyKey = trim((string) $idempotencyKey);
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
+            return ['success' => false, 'error' => __('api.validation_failed')];
+        }
+        $keyHash = $idempotencyKey !== '' ? hash('sha256', $idempotencyKey) : null;
+
+        if ($keyHash !== null) {
+            $replay = self::findPurchaseReplay($tenantId, $userId, $keyHash, $itemId);
+            if ($replay !== null) return $replay;
+        }
 
         $item = DB::table('xp_shop_items')
             ->where('id', $itemId)
@@ -190,6 +202,7 @@ class XPShopService
             DB::table('user_xp_purchases')->insert([
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
+                'creation_idempotency_key_hash' => $keyHash,
                 'item_id' => $itemId,
                 'xp_spent' => $item->xp_cost,
                 'expires_at' => $expiresAt,
@@ -197,6 +210,14 @@ class XPShopService
             ]);
 
             DB::commit();
+        } catch (QueryException $e) {
+            DB::rollBack();
+            if ($keyHash !== null) {
+                $replay = self::findPurchaseReplay($tenantId, $userId, $keyHash, $itemId);
+                if ($replay !== null) return $replay;
+            }
+            Log::error('XPShopService::purchaseItem error: ' . $e->getMessage());
+            return ['success' => false, 'error' => __('api.purchase_failed')];
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('XPShopService::purchaseItem error: ' . $e->getMessage());
@@ -207,6 +228,31 @@ class XPShopService
             'success' => true,
             'item' => $itemArr,
             'xp_spent' => $item->xp_cost,
+        ];
+    }
+
+    /** Resolve a completed retry or reject reuse of its key for another item. */
+    private static function findPurchaseReplay(int $tenantId, int $userId, string $keyHash, int $itemId): ?array
+    {
+        $purchase = DB::table('user_xp_purchases')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('creation_idempotency_key_hash', $keyHash)
+            ->first(['item_id', 'xp_spent']);
+        if (!$purchase) return null;
+        if ((int) $purchase->item_id !== $itemId) {
+            return [
+                'success' => false,
+                'error' => __('event_registration.idempotency_conflict'),
+                'idempotency_conflict' => true,
+            ];
+        }
+
+        return [
+            'success' => true,
+            'item' => ['id' => $itemId],
+            'xp_spent' => (int) $purchase->xp_spent,
+            'idempotent_replay' => true,
         ];
     }
 

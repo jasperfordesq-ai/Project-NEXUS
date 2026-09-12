@@ -355,6 +355,26 @@ class PollService
                 [$tenantId, $pollId, $optionId, $userId]
             );
 
+            if ($affected > 0) {
+                $reference = 'poll:' . $pollId;
+                GamificationService::awardXP(
+                    $userId,
+                    GamificationService::XP_VALUES['vote_poll'],
+                    'vote_poll',
+                    'Voted on a poll',
+                    $reference,
+                );
+                $xpPersisted = DB::table('user_xp_log')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->where('action', 'vote_poll')
+                    ->where('source_reference', $reference)
+                    ->exists();
+                if (! $xpPersisted) {
+                    throw new \RuntimeException('Poll vote XP did not persist.');
+                }
+            }
+
             return $affected > 0;
         });
     }

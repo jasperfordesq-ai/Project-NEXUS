@@ -150,7 +150,7 @@ class MemberDataExportService
      * Persist an export-request audit row. Called both before the archive is
      * built (rate-limit + forensic record) and again on completion (size).
      */
-    public function recordExportRequest(int $userId, string $format): int
+    public function recordExportRequest(int $userId, string $format, ?string $idempotencyKey = null): int
     {
         $tenantId = (int) TenantContext::getId();
         $format   = $format === 'zip' ? 'zip' : 'json';
@@ -162,16 +162,52 @@ class MemberDataExportService
         $ip = request()?->ip();
         $ua = request()?->userAgent();
 
-        return (int) DB::table('member_data_exports')->insertGetId([
+        $keyHash = $idempotencyKey !== null ? hash('sha256', $idempotencyKey) : null;
+        $requestHash = $keyHash !== null ? hash('sha256', $format) : null;
+        try {
+            return (int) DB::table('member_data_exports')->insertGetId([
             'tenant_id'    => $tenantId,
             'user_id'      => $userId,
+            'creation_idempotency_key_hash' => $keyHash,
+            'creation_request_hash' => $requestHash,
             'format'       => $format,
             'requested_at' => now(),
             'ip_address'   => $ip ? substr((string) $ip, 0, 45) : null,
             'user_agent'   => $ua ? substr((string) $ua, 0, 500) : null,
             'created_at'   => now(),
             'updated_at'   => now(),
-        ]);
+            ]);
+        } catch (\Throwable $e) {
+            if ($keyHash !== null) {
+                $winner = DB::table('member_data_exports')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->where('creation_idempotency_key_hash', $keyHash)
+                    ->first(['id', 'creation_request_hash']);
+                if ($winner) {
+                    if (!hash_equals((string) $winner->creation_request_hash, (string) $requestHash)) {
+                        throw new \RuntimeException('IDEMPOTENCY_CONFLICT', 0, $e);
+                    }
+                    return (int) $winner->id;
+                }
+            }
+            throw $e;
+        }
+    }
+
+    public function findIdempotentExport(int $userId, string $format, ?string $idempotencyKey): ?int
+    {
+        if ($idempotencyKey === null) return null;
+        $row = DB::table('member_data_exports')
+            ->where('tenant_id', (int) TenantContext::getId())
+            ->where('user_id', $userId)
+            ->where('creation_idempotency_key_hash', hash('sha256', $idempotencyKey))
+            ->first(['id', 'creation_request_hash']);
+        if (!$row) return null;
+        if (!hash_equals((string) $row->creation_request_hash, hash('sha256', $format))) {
+            throw new \RuntimeException('IDEMPOTENCY_CONFLICT');
+        }
+        return (int) $row->id;
     }
 
     /**
@@ -190,6 +226,16 @@ class MemberDataExportService
                 'file_size_bytes' => $sizeBytes,
                 'updated_at'      => now(),
             ]);
+    }
+
+    /** Atomically elect the one request that emits the GDPR admin event. */
+    public function claimCompletionEvent(int $exportId): bool
+    {
+        if ($exportId <= 0 || !Schema::hasTable('member_data_exports')) return true;
+        return DB::table('member_data_exports')
+            ->where('id', $exportId)
+            ->whereNull('event_dispatched_at')
+            ->update(['event_dispatched_at' => now(), 'updated_at' => now()]) === 1;
     }
 
     /**

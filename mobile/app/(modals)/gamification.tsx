@@ -5,7 +5,7 @@
 
 import AccentIcon from '@/components/ui/AccentIcon';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -58,6 +58,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -1159,11 +1160,15 @@ function GamificationScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [dailyRewardOverride, setDailyRewardOverride] = useState<DailyRewardStatus | null>(null);
   const [isClaimingReward, setIsClaimingReward] = useState(false);
+  const dailyRewardClaimRef = useRef(false);
   const [challengeOverrides, setChallengeOverrides] = useState<Record<number, Partial<Challenge>>>({});
   const [claimingChallengeId, setClaimingChallengeId] = useState<number | null>(null);
+  const challengeClaimsRef = useRef(new Set<number>());
   const [shopBalanceOverride, setShopBalanceOverride] = useState<number | null>(null);
   const [shopItemOverrides, setShopItemOverrides] = useState<Record<number, Partial<ShopItem>>>({});
   const [purchasingShopItemId, setPurchasingShopItemId] = useState<number | null>(null);
+  const purchasingShopItemRef = useRef(false);
+  const shopPurchaseKeysRef = useRef(new Map<number, string>());
   const [showcaseKeysOverride, setShowcaseKeysOverride] = useState<Set<string> | null>(null);
   const [isSavingShowcase, setIsSavingShowcase] = useState(false);
 
@@ -1301,6 +1306,8 @@ function GamificationScreen() {
   }
 
   async function handleClaimDailyReward() {
+    if (dailyRewardClaimRef.current) return;
+    dailyRewardClaimRef.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsClaimingReward(true);
     try {
@@ -1320,11 +1327,14 @@ function GamificationScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('dailyReward.claimError')), variant: 'danger' });
     } finally {
+      dailyRewardClaimRef.current = false;
       setIsClaimingReward(false);
     }
   }
 
   async function handleClaimChallengeReward(challengeId: number) {
+    if (challengeClaimsRef.current.has(challengeId)) return;
+    challengeClaimsRef.current.add(challengeId);
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setClaimingChallengeId(challengeId);
     try {
@@ -1339,6 +1349,7 @@ function GamificationScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('challenges.claimError')), variant: 'danger' });
     } finally {
+      challengeClaimsRef.current.delete(challengeId);
       setClaimingChallengeId(null);
     }
   }
@@ -1350,9 +1361,9 @@ function GamificationScreen() {
    * reverse it — while merely rotating a venue QR code, which costs nothing, has been
    * behind a confirmation for months. Found by the 2026-09-07 audit (F/F-1).
    *
-   * Deliberately NO idempotency key: `GamificationV2Controller::purchase()` reads only
-   * `item_id` and has no `Idempotency-Key` handling, so sending one would be theatre. The
-   * double tap is blocked by `purchasingShopItemId`.
+   * One durable key identifies the confirmed purchase and remains in place after an
+   * uncertain failure. A successful purchase clears it so a later intentional repeat can
+   * buy an unlimited item again.
    */
   function handlePurchaseShopItem(item: ShopItem) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1375,9 +1386,15 @@ function GamificationScreen() {
   }
 
   async function runPurchaseShopItem(item: ShopItem, cost: number, currentBalance: number) {
+    if (purchasingShopItemRef.current) return;
+    purchasingShopItemRef.current = true;
     setPurchasingShopItemId(item.id);
     try {
-      await purchaseShopItem(item.id);
+      const idempotencyKey = shopPurchaseKeysRef.current.get(item.id)
+        ?? mutationIdempotencyKey('mobile-xp-shop');
+      shopPurchaseKeysRef.current.set(item.id, idempotencyKey);
+      await purchaseShopItem(item.id, idempotencyKey);
+      shopPurchaseKeysRef.current.delete(item.id);
       setShopItemOverrides((current) => ({
         ...current,
         [item.id]: { user_purchases: numberOrFallback(item.user_purchases) + 1, can_purchase: false },
@@ -1389,6 +1406,7 @@ function GamificationScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('shop.purchaseError')), variant: 'danger' });
     } finally {
+      purchasingShopItemRef.current = false;
       setPurchasingShopItemId(null);
     }
   }

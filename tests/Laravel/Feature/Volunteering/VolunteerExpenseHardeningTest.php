@@ -107,4 +107,28 @@ class VolunteerExpenseHardeningTest extends TestCase
             $held->release();
         }
     }
+
+    public function test_response_loss_retry_returns_original_expense_claim(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        $orgId = $this->createApprovedOrgOwnedBy((int) $user->id);
+        TenantContext::setById($this->testTenantId);
+        $payload = [
+            'organization_id' => $orgId,
+            'expense_type' => 'travel',
+            'amount' => 12.50,
+            'description' => 'Return bus ticket',
+            'idempotency_key' => 'mobile-expense-retry-1',
+        ];
+
+        $first = VolunteerExpenseService::submitExpense((int) $user->id, $payload);
+        $replay = VolunteerExpenseService::submitExpense((int) $user->id, $payload);
+
+        $this->assertSame($first['id'], $replay['id']);
+        $this->assertSame(1, DB::table('vol_expenses')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('creation_idempotency_key_hash', hash('sha256', 'mobile-expense-retry-1'))
+            ->count());
+    }
 }

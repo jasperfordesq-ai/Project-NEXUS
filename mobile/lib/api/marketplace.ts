@@ -738,7 +738,7 @@ export function getMarketplaceOrder(id: number): Promise<MarketplaceDataResponse
 
 export function shipMarketplaceOrder(
   id: number,
-  payload: { tracking_number?: string | null; tracking_url?: string | null; shipping_method?: string | null },
+  payload: { tracking_number?: string | null; tracking_url?: string | null },
 ): Promise<MarketplaceDataResponse<MarketplaceOrder>> {
   return api.put<MarketplaceDataResponse<MarketplaceOrder>>(`${API_V2}/marketplace/orders/${id}/ship`, payload);
 }

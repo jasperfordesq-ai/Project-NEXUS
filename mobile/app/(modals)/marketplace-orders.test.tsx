@@ -29,7 +29,7 @@ jest.mock('react-i18next', () => ({
         'common:back': 'Back',
         'orders.confirmDelivery': 'Confirm delivery',
         'orders.confirmDeliveryTitle': 'Confirm you received this?',
-        'orders.confirmDeliveryMessage': 'This releases payment and ends buyer protection.',
+        'orders.confirmDeliveryMessage': 'This starts a 14-day dispute period before payment is released.',
         'orders.confirmDeliveryAction': 'Confirm receipt',
         'orders.paymentTakenTitle': 'Your payment went through',
         'orders.paymentTakenHint': 'We are still confirming it.',
@@ -568,8 +568,8 @@ describe('MarketplaceOrdersRoute', () => {
   });
 
   /**
-   * 🔴 D/F-6. "Confirm delivery" releases the seller's payment and ends the buyer's
-   * protection. It fired on a single tap, next to "Dispute".
+   * 🔴 D/F-6. "Confirm delivery" starts the buyer's 14-day dispute window. It fired on a
+   * single tap next to "Dispute", and its confirmation used to misstate that protection.
    */
   it('asks before confirming delivery, because that releases the seller\'s money', async () => {
     (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({
@@ -591,13 +591,47 @@ describe('MarketplaceOrdersRoute', () => {
       meta: { cursor: null, has_more: false },
     });
 
-    const { findByText, getByTestId } = render(<MarketplaceOrdersRoute />);
+    const { findByText, getByTestId, getByText } = render(<MarketplaceOrdersRoute />);
 
     fireEvent.press(await findByText('Confirm delivery'));
     expect(confirmMarketplaceOrderDelivery).not.toHaveBeenCalled();
+    expect(getByText('This starts a 14-day dispute period before payment is released.')).toBeTruthy();
 
     fireEvent.press(getByTestId('marketplace-confirm-delivery'));
     await waitFor(() => expect(confirmMarketplaceOrderDelivery).toHaveBeenCalledWith(51));
+  });
+
+  it('serializes repeated delivery confirmations before the loading state re-renders', async () => {
+    (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({
+      data: [{
+        id: 51,
+        order_number: 'MKT-000051',
+        quantity: 1,
+        unit_price: 30,
+        total_price: 30,
+        currency: 'EUR',
+        status: 'shipped',
+        created_at: '2026-05-25T10:00:00Z',
+        listing: { id: 81, title: 'Shipped lamp', image: null, delivery_method: 'shipping' },
+        seller: { id: 2, name: 'Pat Seller', avatar_url: null },
+        ratings: [],
+      }],
+      meta: { cursor: null, has_more: false },
+    });
+    let finishConfirmation!: () => void;
+    (confirmMarketplaceOrderDelivery as jest.Mock).mockImplementation(() => new Promise((resolve) => {
+      finishConfirmation = () => resolve({ data: {} });
+    }));
+
+    const screen = render(<MarketplaceOrdersRoute />);
+    fireEvent.press(await screen.findByText('Confirm delivery'));
+    const confirmButton = screen.getByTestId('marketplace-confirm-delivery');
+    fireEvent.press(confirmButton);
+    fireEvent.press(confirmButton);
+
+    expect(confirmMarketplaceOrderDelivery).toHaveBeenCalledTimes(1);
+    finishConfirmation();
+    await waitFor(() => expect(getMarketplaceOrders).toHaveBeenCalledTimes(2));
   });
 
   it('shows seller-side payment and delivery status actions', async () => {

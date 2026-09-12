@@ -498,7 +498,7 @@
       "unknown": "Cette commande est dans un statut que l'application ne reconnaît pas encore."
     },
     "confirmDeliveryTitle": "Confirmer la réception ?",
-    "confirmDeliveryMessage": "Cela verse le paiement de la commande {{order}} au vendeur et met fin à votre protection acheteur. Ne confirmez qu’une fois l’article reçu et conforme.",
+    "confirmDeliveryMessage": "Cela enregistre la commande {{order}} comme livrée et ouvre un délai de 14 jours pour signaler un litige avant le versement du paiement. Confirmez uniquement après avoir reçu l’article et vérifié qu’il est conforme.",
     "confirmDeliveryAction": "Confirmer la réception",
     "paymentTakenTitle": "Votre paiement est passé",
     "paymentTakenHint": "Nous confirmons encore la commande {{order}}. Ne payez pas à nouveau — actualisez dans une minute.",

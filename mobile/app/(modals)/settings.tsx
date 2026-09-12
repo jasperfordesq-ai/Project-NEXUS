@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import ErrorState from '@/components/ui/ErrorState';
-import { Children, Fragment, useCallback, useEffect, useState } from 'react';
+import { Children, Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -172,6 +172,10 @@ function SettingsScreen() {
   const [saving, setSaving] = useState(false);
   const [devicePushEnabled, setDevicePushEnabled] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
+  // State-driven disabled props are one render behind a tap. These refs close that
+  // window so two rapid switches cannot race and restore stale whole-form state.
+  const notificationWriteInFlight = useRef(false);
+  const privacyWriteInFlight = useRef(false);
   const constants = Constants as typeof Constants & { default?: typeof Constants };
   const appVersion = Constants.expoConfig?.version ?? constants.default?.expoConfig?.version ?? t('unknownVersion');
 
@@ -188,7 +192,8 @@ function SettingsScreen() {
   }, []);
 
   async function toggle(key: keyof NotificationPrefs) {
-    if (!current) return;
+    if (!current || notificationWriteInFlight.current) return;
+    notificationWriteInFlight.current = true;
     // Haptic feedback is handled by the Toggle component
     const updated = { ...current, [key]: !current[key] };
     setPrefs(updated);
@@ -200,12 +205,14 @@ function SettingsScreen() {
       setPrefs(current);
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('saveError')), variant: 'danger' });
     } finally {
+      notificationWriteInFlight.current = false;
       setSaving(false);
     }
   }
 
   async function toggleDevicePush() {
-    if (!current) return;
+    if (!current || notificationWriteInFlight.current) return;
+    notificationWriteInFlight.current = true;
     const currentlyEnabled = current.push_enabled && devicePushEnabled;
     setSaving(true);
     try {
@@ -239,12 +246,14 @@ function SettingsScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('saveError')), variant: 'danger' });
     } finally {
+      notificationWriteInFlight.current = false;
       setSaving(false);
     }
   }
 
   async function updatePrivacy(nextPrefs: PrivacyPrefs) {
-    if (!currentPrivacy) return;
+    if (!currentPrivacy || privacyWriteInFlight.current) return;
+    privacyWriteInFlight.current = true;
     setPrivacyPrefs(nextPrefs);
     setSavingPrivacy(true);
     try {
@@ -253,6 +262,7 @@ function SettingsScreen() {
       setPrivacyPrefs(currentPrivacy);
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('privacy.saveError')), variant: 'danger' });
     } finally {
+      privacyWriteInFlight.current = false;
       setSavingPrivacy(false);
     }
   }

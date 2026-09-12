@@ -385,6 +385,32 @@ describe('VolunteeringOrgDashboard', () => {
     fireEvent.press(screen.getByText('Settings'));
     expect(screen.getByPlaceholderText('Description').props.value).toBe('Remote refresh value');
   });
+
+  it('keeps a rejected settings draft, clears optional fields, and becomes clean after retry succeeds', async () => {
+    jest.mocked(updateOrganisation)
+      .mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValueOnce({ data: { id: 5, name: 'Green Spaces' } } as never);
+    mockRouteParams = { id: '5', tab: 'settings' };
+    const screen = render(<VolunteeringOrgDashboard />);
+    fireEvent.changeText(screen.getByPlaceholderText('Description'), '');
+    fireEvent.changeText(screen.getByPlaceholderText('Contact email'), '');
+    fireEvent.changeText(screen.getByPlaceholderText('Website'), '');
+
+    await act(async () => { fireEvent.press(screen.getByText('Save organisation')); });
+    expect(updateOrganisation).toHaveBeenLastCalledWith(5, {
+      name: 'Green Spaces',
+      description: null,
+      contact_email: null,
+      website: null,
+    });
+    expect(screen.getByPlaceholderText('Description').props.value).toBe('');
+
+    await act(async () => { fireEvent.press(screen.getByText('Save organisation')); });
+    await waitFor(() => expect(screen.getByPlaceholderText('Organisation name').props.editable).toBe(true));
+    expect(updateOrganisation).toHaveBeenCalledTimes(2);
+    fireEvent.press(screen.getByText('Overview'));
+    expect(screen.queryByText('Leave without saving?')).toBeNull();
+  });
   it('🔴 does not move credits until the deposit is confirmed', async () => {
     mockRouteParams = { id: '5', tab: 'wallet' };
     const { getByPlaceholderText, getByTestId } = render(<VolunteeringOrgDashboard />);

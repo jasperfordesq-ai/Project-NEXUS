@@ -348,6 +348,23 @@ describe('MarketplaceDetailRoute', () => {
     });
   });
 
+  it('serializes rapid checkout taps before the loading state re-renders', async () => {
+    let finishOrder!: () => void;
+    (createMarketplaceOrder as jest.Mock).mockImplementation(() => new Promise((resolve) => {
+      finishOrder = () => resolve({ data: { id: 44, order_number: 'MKT-000044', status: 'pending_payment' } });
+    }));
+    (createMarketplacePaymentIntent as jest.Mock).mockRejectedValue(new Error('Checkout unavailable'));
+
+    const screen = render(<MarketplaceDetailRoute />);
+    const buyNow = await screen.findByText(/^Buy for /);
+    fireEvent.press(buyNow);
+    fireEvent.press(buyNow);
+
+    expect(createMarketplaceOrder).toHaveBeenCalledTimes(1);
+    finishOrder();
+    await waitFor(() => expect(createMarketplacePaymentIntent).toHaveBeenCalledTimes(1));
+  });
+
   it('checks out an accepted offer as cash with the offer context and no substitutions', async () => {
     mockRouteParams = { id: '9', offer_id: '31', offer_amount: '37' };
     (getMarketplaceListing as jest.Mock).mockResolvedValueOnce({

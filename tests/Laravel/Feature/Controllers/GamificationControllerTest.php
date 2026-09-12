@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -191,14 +192,23 @@ class GamificationControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_claim_daily_reward_succeeds_or_conflicts(): void
+    public function test_claim_daily_reward_replay_returns_committed_reward_without_paying_twice(): void
     {
-        $this->authenticatedUser();
+        $user = $this->authenticatedUser(['xp' => 0]);
 
-        $response = $this->apiPost('/v2/gamification/daily-reward');
+        $first = $this->apiPost('/v2/gamification/daily-reward');
+        $replay = $this->apiPost('/v2/gamification/daily-reward');
 
-        // May return 200 (claimed) or 409 (already claimed)
-        $this->assertContains($response->getStatusCode(), [200, 409]);
+        $first->assertOk();
+        $replay->assertOk()
+            ->assertJsonPath('data.claimed', true)
+            ->assertJsonPath('data.idempotent_replay', true)
+            ->assertJsonPath('data.reward.xp_earned', $first->json('data.reward.xp_earned'));
+        $this->assertSame((int) $first->json('data.reward.xp_earned'), (int) $user->fresh()->xp);
+        $this->assertSame(1, DB::table('daily_rewards')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->count());
     }
 
     // ------------------------------------------------------------------
@@ -280,6 +290,82 @@ class GamificationControllerTest extends TestCase
         $response = $this->apiPost('/v2/gamification/shop/purchase', []);
 
         $response->assertStatus(400);
+    }
+
+    public function test_purchase_requires_idempotency_key(): void
+    {
+        $this->authenticatedUser();
+
+        $response = $this->apiPost('/v2/gamification/shop/purchase', ['item_id' => 1]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.field', 'idempotency_key');
+    }
+
+    public function test_purchase_replay_returns_the_original_purchase_without_spending_xp_twice(): void
+    {
+        $user = $this->authenticatedUser(['xp' => 100]);
+        $itemId = (int) DB::table('xp_shop_items')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'item_key' => 'mobile-replay-' . uniqid(),
+            'name' => 'Replay-safe reward',
+            'description' => 'Test reward',
+            'item_type' => 'perk',
+            'xp_cost' => 10,
+            'stock_limit' => null,
+            'per_user_limit' => null,
+            'is_active' => 1,
+            'display_order' => 0,
+        ]);
+        $payload = ['item_id' => $itemId, 'idempotency_key' => 'mobile-xp-replay-attempt-1'];
+
+        $first = $this->apiPost('/v2/gamification/shop/purchase', $payload);
+        $replay = $this->apiPost('/v2/gamification/shop/purchase', $payload);
+
+        $first->assertOk();
+        $replay->assertOk()->assertJsonPath('data.idempotent_replay', true);
+        $this->assertSame(90, (int) $user->fresh()->xp);
+        $this->assertSame(1, DB::table('user_xp_purchases')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('item_id', $itemId)
+            ->count());
+    }
+
+    public function test_purchase_rejects_reusing_a_key_for_another_item(): void
+    {
+        $user = $this->authenticatedUser(['xp' => 100]);
+        $itemIds = [];
+        foreach (['first', 'second'] as $suffix) {
+            $itemIds[] = (int) DB::table('xp_shop_items')->insertGetId([
+                'tenant_id' => $this->testTenantId,
+                'item_key' => 'mobile-conflict-' . $suffix . '-' . uniqid(),
+                'name' => ucfirst($suffix) . ' reward',
+                'description' => 'Test reward',
+                'item_type' => 'perk',
+                'xp_cost' => 10,
+                'stock_limit' => null,
+                'per_user_limit' => null,
+                'is_active' => 1,
+                'display_order' => 0,
+            ]);
+        }
+        $key = 'mobile-xp-conflict-attempt-1';
+
+        $this->apiPost('/v2/gamification/shop/purchase', [
+            'item_id' => $itemIds[0],
+            'idempotency_key' => $key,
+        ])->assertOk();
+        $this->apiPost('/v2/gamification/shop/purchase', [
+            'item_id' => $itemIds[1],
+            'idempotency_key' => $key,
+        ])->assertStatus(409);
+
+        $this->assertSame(90, (int) $user->fresh()->xp);
+        $this->assertSame(1, DB::table('user_xp_purchases')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->count());
     }
 
     // ------------------------------------------------------------------

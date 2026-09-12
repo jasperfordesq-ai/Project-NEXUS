@@ -26,7 +26,7 @@
  * written to server logs, proxy logs and crash reports.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
@@ -59,6 +59,7 @@ export default function SettingsDeleteAccountScreen() {
   const [confirmation, setConfirmation] = useState('');
   const [password, setPassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const deletionInFlight = useRef(false);
 
   const keyword = t('deleteAccount.keyword');
   const canDelete = isDeleteConfirmed(confirmation, keyword) && password.length > 0;
@@ -66,6 +67,7 @@ export default function SettingsDeleteAccountScreen() {
   async function handleDelete() {
     // Defensive: the button is disabled, but a stale press or a future refactor must not
     // reach the server with an unconfirmed request.
+    if (deletionInFlight.current) return;
     if (!canDelete) {
       showToast({
         title: t('deleteAccount.confirmRequired'),
@@ -75,20 +77,10 @@ export default function SettingsDeleteAccountScreen() {
       return;
     }
 
+    deletionInFlight.current = true;
     setIsDeleting(true);
     try {
       await deleteAccount(password);
-      setPassword('');
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast({
-        title: t('deleteAccount.done'),
-        description: t('deleteAccount.doneBody'),
-        variant: 'success',
-      });
-      // logout() clears the stored token, purges local offline data and returns to the
-      // sign-in screen. The server has already revoked the token, so its own logout call
-      // will fail — that is handled inside logout() and must not stop the sign-out.
-      await logout();
     } catch (err) {
       // Worth distinguishing: "wrong password" and "you tried this a moment ago" are both
       // recoverable, and a generic message hides which one it is.
@@ -106,8 +98,22 @@ export default function SettingsDeleteAccountScreen() {
           : describeApiError(err, t('deleteAccount.failedBody')),
         variant: 'danger',
       });
+      deletionInFlight.current = false;
       setIsDeleting(false);
+      return;
     }
+    setPassword('');
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    showToast({
+      title: t('deleteAccount.done'),
+      description: t('deleteAccount.doneBody'),
+      variant: 'success',
+    });
+    // Keep logout outside the deletion catch. If local sign-out ever fails after the
+    // server has erased the account, we must never tell the member it was not deleted.
+    // logout() owns its cleanup/recovery and normally resolves even when its server call
+    // sees the already-revoked token.
+    await logout();
     // No `finally`: on success this screen is being torn down behind the sign-out, and
     // clearing the loading flag there would briefly re-enable a button for a deleted
     // account.

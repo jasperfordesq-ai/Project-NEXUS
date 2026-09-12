@@ -270,9 +270,13 @@ class ChallengeRewardParityTest extends TestCase
         $reactAfterFirst = $this->awardSnapshot((int) $reactUser->id);
         $accessibleAfterFirst = $this->awardSnapshot((int) $accessibleUser->id);
 
-        // Second claim on each path must be refused.
+        // The HTTP route treats the same completed operation as a successful
+        // replay, while the legacy boolean service API remains false because
+        // it reports whether this invocation performed the claim.
         Sanctum::actingAs($reactUser, ['*']);
-        $this->apiPost("/v2/gamification/challenges/{$challengeId}/claim")->assertStatus(400);
+        $this->apiPost("/v2/gamification/challenges/{$challengeId}/claim")
+            ->assertOk()
+            ->assertJsonPath('data.idempotent_replay', true);
 
         $this->assertFalse(
             ChallengeService::claim($challengeId, (int) $accessibleUser->id, $this->testTenantId),
@@ -282,5 +286,10 @@ class ChallengeRewardParityTest extends TestCase
         // ...and must not have awarded anything further.
         $this->assertEquals($reactAfterFirst, $this->awardSnapshot((int) $reactUser->id), 'React path paid out twice.');
         $this->assertEquals($accessibleAfterFirst, $this->awardSnapshot((int) $accessibleUser->id), 'Accessible path paid out twice.');
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('user_id', $reactUser->id)
+            ->where('action', 'challenge_complete')
+            ->where('source_reference', 'challenge:' . $challengeId)
+            ->count());
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Challenge;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\UserChallengeProgress;
+use App\Models\UserXpLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -324,56 +325,64 @@ class ChallengeService
      */
     public static function claim(int $challengeId, int $userId, int $tenantId): bool
     {
-        // Verify user belongs to this tenant
+        return self::claimWithResult($challengeId, $userId, $tenantId)['status'] === 'claimed';
+    }
+
+    /**
+     * Claim and durably award a completed challenge in one transaction.
+     *
+     * @return array{status: 'claimed'|'already_claimed'|'not_found'|'not_started'|'not_completed', reward?: array{xp: int, badge: string|null}}
+     */
+    public static function claimWithResult(int $challengeId, int $userId, int $tenantId): array
+    {
         $userInTenant = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
             ->exists();
-        if (!$userInTenant) {
-            return false;
-        }
-
-        // Validate by id + tenant only, exactly as the React path does — both
-        // now share getModelById(). `challenges` has no `status` column —
-        // filtering on one (as this method used to) throws before the claim can
-        // even be attempted. `is_active` and the date range are the real
-        // predicates, and they gate whether the challenge was listed at all.
         $challenge = self::getModelById($challengeId, $tenantId);
 
-        if (! $challenge) {
-            return false;
+        if (! $userInTenant || ! $challenge) {
+            return ['status' => 'not_found'];
         }
 
-        $progress = DB::table('user_challenge_progress')
-            ->where('challenge_id', $challengeId)
-            ->where('user_id', $userId)
-            ->where('tenant_id', $tenantId)
-            ->first();
+        return DB::transaction(function () use ($challengeId, $userId, $tenantId, $challenge): array {
+            $progress = DB::table('user_challenge_progress')
+                ->where('challenge_id', $challengeId)
+                ->where('user_id', $userId)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first();
 
-        // Not started, not finished, or already claimed — nothing to award.
-        if (! $progress || empty($progress->completed_at) || ! empty($progress->reward_claimed)) {
-            return false;
-        }
+            if (! $progress) {
+                return ['status' => 'not_started'];
+            }
 
-        // Atomic claim: only the request that flips reward_claimed 0 -> 1 gets
-        // to award the reward, so a double submit cannot pay out twice.
-        $affected = DB::table('user_challenge_progress')
-            ->where('challenge_id', $challengeId)
-            ->where('user_id', $userId)
-            ->where('tenant_id', $tenantId)
-            ->where('reward_claimed', 0)
-            ->update([
-                'reward_claimed' => 1,
-                'claimed_at'     => now(),
-            ]);
+            $configuredReward = self::configuredReward($challenge);
+            if (! empty($progress->reward_claimed)) {
+                return ['status' => 'already_claimed', 'reward' => $configuredReward];
+            }
 
-        if ($affected === 0) {
-            return false;
-        }
+            if (empty($progress->completed_at)) {
+                return ['status' => 'not_completed'];
+            }
 
-        self::awardChallengeReward($userId, $challenge);
+            // Award first and mark claimed last, inside the same transaction.
+            // A failed durable write therefore cannot strand a member with a
+            // claimed ledger row and no reward. The progress-row lock also
+            // serializes concurrent claims.
+            $reward = self::awardChallengeReward($userId, $challenge);
 
-        return true;
+            DB::table('user_challenge_progress')
+                ->where('challenge_id', $challengeId)
+                ->where('user_id', $userId)
+                ->where('tenant_id', $tenantId)
+                ->update([
+                    'reward_claimed' => 1,
+                    'claimed_at'     => now(),
+                ]);
+
+            return ['status' => 'claimed', 'reward' => $reward];
+        });
     }
 
     /**
@@ -546,8 +555,9 @@ class ChallengeService
      * for a separate decision; this is that decision. Adding a reward here
      * reaches both frontends — adding one at a call site recreates the bug.
      *
-     * Callers are responsible for winning the conditional `reward_claimed`
-     * 0 -> 1 UPDATE *before* calling this, so a double submit cannot pay twice.
+     * Called inside claimWithResult()'s progress-row lock and transaction. The
+     * stable XP source reference makes the durable award idempotent as an
+     * additional guard against retries.
      *
      * @return array{xp: int, badge: string|null} What the challenge is
      *         configured to award: its XP, and its `badge_reward` key (null
@@ -557,16 +567,31 @@ class ChallengeService
      */
     public static function awardChallengeReward(int $userId, Challenge $challenge): array
     {
-        $xp = max(0, (int) $challenge->xp_reward);
-        $badgeKey = ! empty($challenge->badge_reward) ? (string) $challenge->badge_reward : null;
+        $reward = self::configuredReward($challenge);
+        $xp = $reward['xp'];
+        $badgeKey = $reward['badge'];
 
         if ($xp > 0) {
+            $reference = 'challenge:' . (int) $challenge->id;
             GamificationService::awardXP(
                 $userId,
                 $xp,
                 'challenge_complete',
-                "Challenge: {$challenge->title}"
+                "Challenge: {$challenge->title}",
+                $reference
             );
+
+            // awardXP() is intentionally fault-tolerant for background callers
+            // and logs unexpected failures. A claim is stricter: do not stamp
+            // reward_claimed unless the referenced XP ledger row exists.
+            $xpPersisted = UserXpLog::query()
+                ->where('user_id', $userId)
+                ->where('action', 'challenge_complete')
+                ->where('source_reference', $reference)
+                ->exists();
+            if (! $xpPersisted) {
+                throw new \RuntimeException('Challenge XP reward did not persist.');
+            }
         }
 
         if ($badgeKey !== null) {
@@ -589,6 +614,15 @@ class ChallengeService
             \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'achievement', __('svc_notifications.challenge.complete_earned', ['title' => $challenge->title, 'xp' => $challenge->xp_reward]), '/achievements');
         });
 
-        return ['xp' => $xp, 'badge' => $badgeKey];
+        return $reward;
+    }
+
+    /** @return array{xp: int, badge: string|null} */
+    private static function configuredReward(Challenge $challenge): array
+    {
+        return [
+            'xp' => max(0, (int) $challenge->xp_reward),
+            'badge' => ! empty($challenge->badge_reward) ? (string) $challenge->badge_reward : null,
+        ];
     }
 }

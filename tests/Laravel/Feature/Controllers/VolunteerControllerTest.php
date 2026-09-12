@@ -11,6 +11,7 @@ use App\Services\VolunteerService;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Laravel\Sanctum\Sanctum;
 use App\Models\User;
 
@@ -360,6 +361,46 @@ public function test_apply_requires_auth(): void
         $this->assertSame(2, (int) $walletTransaction->amount);
     }
 
+    public function test_hour_log_response_loss_retry_returns_original_log_without_second_credit(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0]);
+        $volunteer = User::factory()->forTenant($this->testTenantId)->create(['balance' => 2]);
+        $orgId = $this->createVolunteerOrganisation($owner->id, 0.00, false);
+        $this->addVolunteerToOrganisation($volunteer->id, $orgId);
+        $this->setCaringWorkflowApprovalRequired(false);
+        TenantContext::setById($this->testTenantId);
+        $payload = [
+            'organization_id' => $orgId,
+            'date' => now()->subDays(4)->toDateString(),
+            'hours' => 2.25,
+            'description' => 'Food parcel delivery',
+            'idempotency_key' => 'mobile-hours-retry-1',
+        ];
+
+        $firstId = VolunteerService::logHours($volunteer->id, $payload);
+        // Auto-approval listeners may resolve another tenant while handling the
+        // first call; a real retry is a new HTTP request and middleware restores it.
+        TenantContext::setById($this->testTenantId);
+        $replayId = VolunteerService::logHours($volunteer->id, $payload);
+
+        $this->assertNotNull($replayId, json_encode([
+            'errors' => VolunteerService::getErrors(),
+            'stored' => DB::table('vol_logs')->where('id', $firstId)->first(),
+        ], JSON_THROW_ON_ERROR));
+        $this->assertSame($firstId, $replayId);
+        $this->assertSame(1, DB::table('vol_logs')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $volunteer->id)
+            ->where('creation_idempotency_key_hash', hash('sha256', 'mobile-hours-retry-1'))
+            ->count());
+        $this->assertSame(1, DB::table('transactions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('receiver_id', $volunteer->id)
+            ->where('transaction_type', 'volunteer')
+            ->count());
+        $this->assertEquals(4, (int) DB::table('users')->where('id', $volunteer->id)->value('balance'));
+    }
+
     public function test_auto_approved_hours_with_insufficient_org_balance_still_credit_volunteer_and_go_negative(): void
     {
         // Credit conservation: approved hours are ALWAYS minted to the volunteer,
@@ -472,6 +513,59 @@ public function test_apply_requires_auth(): void
         $response = $this->apiGet('/v2/volunteering/organisations');
 
         $response->assertStatus(200);
+    }
+
+    public function test_organisation_creation_replays_the_same_operation_after_response_loss(): void
+    {
+        Event::fake();
+        $user = $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+        $payload = [
+            'name' => 'Replay-safe organisation ' . uniqid(),
+            'description' => 'A sufficiently detailed organisation registration for replay testing.',
+            'contact_email' => 'replay@example.test',
+            'website' => 'https://example.test/replay',
+            'idempotency_key' => 'organisation-replay-key-123',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $first = $this->apiPost('/v2/volunteering/organisations', $payload, $headers)->assertCreated();
+        $second = $this->apiPost('/v2/volunteering/organisations', $payload, $headers)->assertCreated();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, DB::table('vol_organizations')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('name', $payload['name'])
+            ->count());
+        $this->assertArrayNotHasKey('creation_idempotency_key_hash', $second->json('data'));
+        $this->assertArrayNotHasKey('creation_request_hash', $second->json('data'));
+    }
+
+    public function test_organisation_creation_rejects_changed_content_under_the_same_operation_key(): void
+    {
+        Event::fake();
+        $user = $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+        $payload = [
+            'name' => 'Conflict-safe organisation ' . uniqid(),
+            'description' => 'A sufficiently detailed organisation registration for conflict testing.',
+            'contact_email' => 'conflict@example.test',
+            'idempotency_key' => 'organisation-conflict-key-123',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $this->apiPost('/v2/volunteering/organisations', $payload, $headers)->assertCreated();
+        $this->apiPost('/v2/volunteering/organisations', [
+            ...$payload,
+            'description' => 'Changed organisation details must not reuse an earlier operation key.',
+        ], $headers)->assertStatus(409);
+
+        $this->assertSame(1, DB::table('vol_organizations')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('name', $payload['name'])
+            ->count());
     }
 
     public function test_organisations_public_contract_is_opt_in(): void
@@ -855,6 +949,43 @@ public function test_apply_requires_auth(): void
         $response->assertStatus(422);
     }
 
+    public function test_verify_hours_replays_the_same_decision_and_rejects_the_opposite_decision(): void
+    {
+        $this->enableVolunteeringFeature();
+        $owner = $this->authenticatedUser();
+        $volunteer = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0]);
+        $orgId = $this->createVolunteerOrganisation($owner->id, 5.00, false);
+        $logId = (int) DB::table('vol_logs')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $volunteer->id,
+            'organization_id' => $orgId,
+            'opportunity_id' => null,
+            'date_logged' => now()->subDay()->toDateString(),
+            'hours' => 2,
+            'description' => 'Response-loss replay fixture.',
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        TenantContext::setById($this->testTenantId);
+
+        $this->apiPut("/v2/volunteering/hours/{$logId}/verify", ['action' => 'approve'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'approved')
+            ->assertJsonPath('data.payment_result', 'paid');
+        $this->apiPut("/v2/volunteering/hours/{$logId}/verify", ['action' => 'approve'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'approved')
+            ->assertJsonPath('data.payment_result', 'already_processed');
+        $this->apiPut("/v2/volunteering/hours/{$logId}/verify", ['action' => 'decline'])
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'DECISION_CONFLICT');
+
+        $this->assertSame('approved', DB::table('vol_logs')->where('id', $logId)->value('status'));
+        $this->assertSame(2, (int) DB::table('users')->where('id', $volunteer->id)->value('balance'));
+        $this->assertSame(1, DB::table('vol_org_transactions')->where('vol_log_id', $logId)->where('type', 'volunteer_payment')->count());
+    }
+
     // ------------------------------------------------------------------
     //  POST /v2/volunteering/organisations/{id}/wallet/deposit
     //  (money-moving endpoint — authorization + conservation)
@@ -1009,8 +1140,34 @@ public function test_apply_requires_auth(): void
         );
     }
 
+    public function test_update_organisation_can_clear_optional_public_details(): void
+    {
+        $owner = $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+        $orgId = $this->createPublicOrganisation($owner);
+
+        $this->apiPut("/v2/volunteering/organisations/{$orgId}", [
+            'name' => 'Neighbourhood Care Collective',
+            'description' => null,
+            'contact_email' => null,
+            'website' => null,
+        ])->assertOk()
+            ->assertJsonPath('data.description', null)
+            ->assertJsonPath('data.contact_email', null)
+            ->assertJsonPath('data.website', null);
+
+        $stored = DB::table('vol_organizations')->where('id', $orgId)->first();
+        $this->assertNotNull($stored);
+        $this->assertNull($stored->description);
+        $this->assertNull($stored->contact_email);
+        $this->assertNull($stored->website);
+    }
+
     public function test_second_application_decision_is_noop_and_fires_no_new_notification(): void
     {
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Http::fake();
         $owner = $this->authenticatedUser();
         $this->enableVolunteeringFeature();
         $orgId = $this->createVolunteerOrganisation($owner->id, 0.00, false);
@@ -1052,5 +1209,11 @@ public function test_apply_requires_auth(): void
         $second->assertStatus(409);
         $this->assertSame('approved', DB::table('vol_applications')->where('id', $appId)->value('status'));
         $this->assertSame($notificationsAfterFirst, DB::table('notifications')->count());
+        $detail = $this->apiGet("/v2/volunteering/opportunities/{$oppId}/applications");
+        $detail->assertOk();
+        $items = $detail->json('data.items');
+        $saved = collect($items)->firstWhere('id', $appId);
+        $this->assertNotNull($saved);
+        $this->assertSame('approved', $saved['status']);
     }
 }

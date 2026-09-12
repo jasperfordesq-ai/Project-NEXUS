@@ -508,6 +508,7 @@ class VolunteerController extends BaseApiController
             'date'            => $this->input('date'),
             'hours'           => (float) $this->input('hours'),
             'description'     => trim($this->input('description', '')),
+            'idempotency_key' => $request->header('Idempotency-Key') ?? $this->input('idempotency_key'),
         ];
 
         $logId = $this->volunteerService->logHours($userId, $data);

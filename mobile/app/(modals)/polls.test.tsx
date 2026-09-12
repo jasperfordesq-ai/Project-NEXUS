@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockPollSearchParams: Record<string, string | string[]> = {};
 
@@ -237,6 +237,27 @@ describe('PollsScreen', () => {
       variant: 'success',
     });
     expect(refresh).toHaveBeenCalled();
+  });
+
+  it('serializes rapid publish taps before the creating state renders', async () => {
+    let resolveCreate!: (value: { data: { id: number } }) => void;
+    (createPoll as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { resolveCreate = resolve; }));
+    mockUsePaginatedApi.mockReturnValue({ ...defaultState, refresh: jest.fn() });
+    const { getByPlaceholderText, getByText } = render(<PollsScreen />);
+
+    fireEvent.press(getByText('Create poll'));
+    fireEvent.changeText(getByPlaceholderText('Ask a question'), 'Which lunch should we host?');
+    fireEvent.changeText(getByPlaceholderText('Option 1'), 'Soup');
+    fireEvent.changeText(getByPlaceholderText('Option 2'), 'Sandwiches');
+    const publish = getByText('Publish poll');
+    fireEvent.press(publish);
+    fireEvent.press(publish);
+
+    expect(createPoll).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveCreate({ data: { id: 99 } });
+    });
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
   });
 
   it('opens the native create panel from the create deep-link flag', () => {

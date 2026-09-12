@@ -283,6 +283,32 @@ class VolunteerCertificateControllerTest extends TestCase
         $this->assertMatchesRegularExpression('/^[A-Z0-9]{16}$/', (string) $cert['verification_code']);
     }
 
+    public function test_certificate_response_loss_retry_returns_the_original_certificate(): void
+    {
+        $user = $this->authenticatedUser();
+        DB::table('vol_logs')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'organization_id' => null,
+            'date_logged' => now()->toDateString(),
+            'hours' => 4.0,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $headers = ['Idempotency-Key' => 'mobile-certificate-retry-1'];
+        $first = $this->apiPost('/v2/volunteering/certificates', [], $headers)->assertCreated();
+        $replay = $this->apiPost('/v2/volunteering/certificates', [], $headers)->assertCreated();
+
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, DB::table('vol_certificates')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('creation_idempotency_key_hash', hash('sha256', 'mobile-certificate-retry-1'))
+            ->count());
+    }
+
     public function test_verify_certificate_is_tenant_scoped(): void
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([

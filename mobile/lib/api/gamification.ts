@@ -290,8 +290,11 @@ export function getShopItems(): Promise<ShopResponse> {
  * POST /api/v2/gamification/shop/purchase
  * Purchases an XP shop item.
  */
-export function purchaseShopItem(itemId: number): Promise<{ data?: unknown }> {
-  return api.post<{ data?: unknown }>(`${API_V2}/gamification/shop/purchase`, { item_id: itemId });
+export function purchaseShopItem(itemId: number, idempotencyKey: string): Promise<{ data?: unknown }> {
+  return api.post<{ data?: unknown }>(`${API_V2}/gamification/shop/purchase`, {
+    item_id: itemId,
+    idempotency_key: idempotencyKey,
+  }, { headers: { 'Idempotency-Key': idempotencyKey } });
 }
 
 /**

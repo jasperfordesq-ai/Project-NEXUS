@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import ErrorState from '@/components/ui/ErrorState';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
@@ -43,6 +43,7 @@ export default function SettingsBlockedUsersScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [unblockingId, setUnblockingId] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const unblockInFlight = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -76,6 +77,8 @@ export default function SettingsBlockedUsersScreen() {
   }
 
   async function handleUnblock(user: BlockedUser) {
+    if (unblockInFlight.current !== null) return;
+    unblockInFlight.current = user.user_id;
     setUnblockingId(user.user_id);
     try {
       await unblockUser(user.user_id);
@@ -84,6 +87,7 @@ export default function SettingsBlockedUsersScreen() {
     } catch (err) {
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('blockedUsers.unblockError')), variant: 'danger' });
     } finally {
+      unblockInFlight.current = null;
       setUnblockingId(null);
     }
   }

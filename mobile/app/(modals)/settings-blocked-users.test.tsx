@@ -148,4 +148,23 @@ describe('SettingsBlockedUsersScreen', () => {
     await waitFor(() => expect(mockUnblockUser).toHaveBeenCalledWith(42));
     await waitFor(() => expect(queryByText('Sam Carter')).toBeNull());
   });
+
+  it('does not send two unblock writes for rapid repeated confirmation', async () => {
+    let release!: () => void;
+    mockGetBlockedUsers.mockResolvedValue([{
+      block_id: 1, user_id: 42, name: 'Sam Carter', first_name: 'Sam', last_name: 'Carter',
+      avatar_url: null, reason: null, blocked_at: '2026-05-01T10:00:00Z',
+    }]);
+    mockUnblockUser.mockImplementationOnce(() => new Promise((resolve) => { release = () => resolve({}); }));
+
+    const { getByText } = render(<SettingsBlockedUsersScreen />);
+    await waitFor(() => expect(getByText('Sam Carter')).toBeTruthy());
+    const unblockButton = getByText('Unblock');
+    fireEvent.press(unblockButton);
+    fireEvent.press(unblockButton);
+
+    expect(mockUnblockUser).toHaveBeenCalledTimes(1);
+    release();
+    await waitFor(() => expect(mockUnblockUser).toHaveBeenCalledTimes(1));
+  });
 });

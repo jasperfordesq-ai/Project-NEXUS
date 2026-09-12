@@ -1825,6 +1825,37 @@ class VolunteerService
             return null;
         }
 
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.validation_failed'), 'field' => 'idempotency_key'];
+                return null;
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode([
+                'organization_id' => $organizationId,
+                'opportunity_id' => $oppId,
+                'date' => (string) $data['date'],
+                'hours' => number_format((float) $data['hours'], 2, '.', ''),
+                'description' => trim((string) ($data['description'] ?? '')),
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $replay = DB::table('vol_logs')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('creation_idempotency_key_hash', $keyHash)
+                ->first(['id', 'status', 'creation_request_hash']);
+            if ($replay) {
+                if (!hash_equals((string) $replay->creation_request_hash, $requestHash)) {
+                    self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                    return null;
+                }
+                self::$lastLogStatus = (string) $replay->status;
+                return (int) $replay->id;
+            }
+        }
+
         // Serialise the duplicate-check + insert (+ optional auto-pay) under an
         // atomic lock keyed on the natural duplicate key. Without this, two
         // concurrent identical submissions can both pass the existence check and
@@ -1858,13 +1889,15 @@ class VolunteerService
             $status = self::resolveCaringHourLogStatus($userId, $tenantId, $policy);
             $logId = null;
 
-            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, &$logId): void {
+            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, $keyHash, $requestHash, &$logId): void {
                 DB::insert(
-                    "INSERT INTO vol_logs (tenant_id, user_id, organization_id, opportunity_id, date_logged, hours, description, status, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())",
+                    "INSERT INTO vol_logs (tenant_id, user_id, creation_idempotency_key_hash, creation_request_hash, organization_id, opportunity_id, date_logged, hours, description, status, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
                     [
                         $tenantId,
                         $userId,
+                        $keyHash,
+                        $requestHash,
                         $organizationId,
                         $oppId,
                         $data['date'],
@@ -1913,6 +1946,17 @@ class VolunteerService
 
             return $logId;
         } catch (\Exception $e) {
+            if ($keyHash !== null) {
+                $winner = DB::table('vol_logs')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->where('creation_idempotency_key_hash', $keyHash)
+                    ->first(['id', 'status', 'creation_request_hash']);
+                if ($winner && hash_equals((string) $winner->creation_request_hash, (string) $requestHash)) {
+                    self::$lastLogStatus = (string) $winner->status;
+                    return (int) $winner->id;
+                }
+            }
             Log::warning("VolunteerService::logHours error: " . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.volunteer_log_failed')];
             return null;
