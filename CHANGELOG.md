@@ -270,6 +270,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The member directory's explanation of why it lists fewer people than have joined the community is now a single collapsible line. It shows the count on one row with a "Why?" control, and only opens the visibility rules, the closing note and the privacy-settings link when a member asks for them. As an always-open alert it pushed the first row of member cards below the fold on desktop and took several lines on phones.
+
 - Native app version 1.5.0, Android version code 10: the store release carrying the two-factor sign-in and the Expo SDK 55 upgrade. The bump also gives the build a new over-the-air runtime version, so an update built for SDK 55 can never be served to the SDK 54 build 9 still installed on phones.
 
 - **ASP.NET edition paused (owner decision, 11 September 2026) — not abandoned; it resumes when the rest of the platform is more mature.** The four ASP.NET jobs in the platform-contracts workflow are pinned off so no runner minutes are spent on them, the ASP.NET markdown-link pass is removed from the shared inventory job, and `AGENTS.md`, `react-frontend/CLAUDE.md`, `docs/REACT-DUAL-BACKEND.md` and the ASP.NET README state the pause at the top. Code, ledger and earlier decision records are untouched; ADR-0005 records what was switched off and how to resume.

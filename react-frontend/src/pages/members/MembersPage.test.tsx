@@ -388,6 +388,32 @@ describe('MembersPage', () => {
       ).toBeInTheDocument();
     });
 
+    it('keeps the visibility rules collapsed until the member asks for them', async () => {
+      withCoverage({
+        total_items: 12,
+        community_total: 369,
+        directory_criteria: ['directory_opt_in'],
+      });
+
+      render(<MembersPage />);
+
+      // The count is always readable; the explanation behind it is not, so the
+      // note costs one line until someone wants the detail.
+      const summary = await screen.findByText('You are seeing 12 of the 369 people who have joined');
+      expect(summary).toBeVisible();
+      expect(
+        screen.getByText(/anyone can turn this off in their privacy settings/),
+      ).not.toBeVisible();
+
+      fireEvent.click(screen.getByRole('button', { name: /Why\?/ }));
+
+      await waitFor(() =>
+        expect(
+          screen.getByText(/anyone can turn this off in their privacy settings/),
+        ).toBeVisible(),
+      );
+    });
+
     it('stays silent when every member is listed', async () => {
       withCoverage({
         total_items: 369,

@@ -388,6 +388,7 @@
     "results_count": "{{count}} membri mostrati",
     "results_showing_of": "Visualizzazione di {{shown}} su {{total}} membri",
     "coverage_title": "Stai vedendo {{listed}} delle {{joined}} persone che si sono iscritte",
+    "coverage_why": "Perché?",
     "coverage_intro": "Non tutti scelgono di essere elencati. Un membro viene visualizzato in questa directory quando:",
     "coverage_criteria": {
       "directory_opt_in": "sono felici di essere trovati: chiunque può disattivare questa funzionalità nelle proprie impostazioni sulla privacy",

@@ -3,7 +3,6 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { Alert } from '@/components/ui/Alert';
 import { AlgorithmLabel, useAlgorithmInfo } from '@/components/ui/AlgorithmLabel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +18,13 @@ import { persistRadiusPreference, useSavedRadiusKm } from '@/hooks/useSavedRadiu
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { Chip } from '@/components/ui/Chip';
+import {
+  Disclosure,
+  DisclosureTrigger,
+  DisclosureContent,
+  DisclosureBody,
+  DisclosureIndicator,
+} from '@/components/ui/Disclosure';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
 import { Select, SelectItem } from '@/components/ui/Select';
@@ -942,17 +948,32 @@ export function MembersPage() {
                   when members really are held back, so a community with nothing
                   hidden never explains an absence that isn't there. Suppressed
                   while searching or in Near me, where the shortfall the member
-                  is looking at is their own filter, not this. */}
+                  is looking at is their own filter, not this.
+
+                  Collapsed to a single line by default. The count is the part
+                  every visitor needs; the four visibility rules behind it are
+                  the part one visitor in fifty wants, and as an always-open
+                  alert they pushed the first row of members below the fold on
+                  both desktop and phones. */}
               {showCoverageNote && (
-                <Alert
-                  color="secondary"
-                  icon={<Users className="h-4 w-4" aria-hidden="true" />}
-                  title={t('members.coverage_title', {
-                    listed: totalCount!.toLocaleString(getFormattingLocale()),
-                    joined: communityTotal!.toLocaleString(getFormattingLocale()),
-                  })}
-                  description={
-                    <div className="space-y-2">
+                <Disclosure className="rounded-xl border border-theme-default bg-theme-elevated px-3">
+                  <DisclosureTrigger className="flex w-full min-h-11 items-center justify-between gap-3 py-2 text-left text-sm text-theme-muted transition-colors hover:text-theme-primary">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Users className="h-4 w-4 shrink-0 text-theme-subtle" aria-hidden="true" />
+                      <span className="min-w-0">
+                        {t('members.coverage_title', {
+                          listed: totalCount!.toLocaleString(getFormattingLocale()),
+                          joined: communityTotal!.toLocaleString(getFormattingLocale()),
+                        })}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1 font-medium text-accent">
+                      {t('members.coverage_why')}
+                      <DisclosureIndicator />
+                    </span>
+                  </DisclosureTrigger>
+                  <DisclosureContent>
+                    <DisclosureBody className="space-y-2 pb-3 text-sm text-theme-muted">
                       <p>{t('members.coverage_intro')}</p>
                       <ul className="list-disc list-outside ms-5 space-y-1">
                         {directoryCriteria.map((criterion) => (
@@ -968,9 +989,9 @@ export function MembersPage() {
                           {t('members.coverage_check_own')}
                         </Link>
                       )}
-                    </div>
-                  }
-                />
+                    </DisclosureBody>
+                  </DisclosureContent>
+                </Disclosure>
               )}
 
               {viewMode === 'map' ? (

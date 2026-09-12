@@ -422,6 +422,7 @@
     "hours_short_two": "{{count}} u",
     "results_showing_of": "{{shown}} as {{total}} ball á dtaispeáint",
     "coverage_title": "Tá {{listed}} as {{joined}} duine a chláraigh le feiceáil agat",
+    "coverage_why": "Cén fáth?",
     "coverage_intro": "Ní roghnaíonn gach duine a bheith ar an liosta. Bíonn ball le feiceáil san eolaire seo nuair:",
     "coverage_outro": "Is baill iomlána den phobal iad gach duine eile fós. Níl siad le feiceáil anseo, sin an méid.",
     "coverage_check_own": "Seiceáil an bhfuil tú ar an liosta",

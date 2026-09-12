@@ -391,6 +391,7 @@
     "results_count": "{{count}} عضو معروض",
     "results_showing_of": "عرض {{shown}} من {{total}} الأعضاء",
     "coverage_title": "أنت تشاهد {{listed}} من الأشخاص {{joined}} الذين انضموا",
+    "coverage_why": "لماذا؟",
     "coverage_intro": "لا يختار الجميع أن يتم إدراجهم في القائمة. يظهر العضو في هذا الدليل عندما:",
     "coverage_criteria": {
       "directory_opt_in": "سيكونون سعداء بالعثور عليهم - ويمكن لأي شخص إيقاف تشغيل هذا في إعدادات الخصوصية الخاصة به",

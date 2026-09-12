@@ -387,6 +387,7 @@
     "results_count": "{{count}} members shown",
     "results_showing_of": "Showing {{shown}} of {{total}} members",
     "coverage_title": "You are seeing {{listed}} of the {{joined}} people who have joined",
+    "coverage_why": "Why?",
     "coverage_intro": "Not everyone chooses to be listed. A member appears in this directory when:",
     "coverage_criteria": {
       "directory_opt_in": "they are happy to be found — anyone can turn this off in their privacy settings",

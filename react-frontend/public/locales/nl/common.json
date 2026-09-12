@@ -387,6 +387,7 @@
     "results_count": "{{count}} leden getoond",
     "results_showing_of": "Toont {{shown}} van {{total}} leden",
     "coverage_title": "Je ziet {{listed}} van de {{joined}} mensen die zich hebben aangemeld",
+    "coverage_why": "Waarom?",
     "coverage_intro": "Niet iedereen kiest ervoor om vermeld te worden. Een lid verschijnt in deze directory wanneer:",
     "coverage_criteria": {
       "directory_opt_in": "ze zijn blij om gevonden te worden; iedereen kan dit uitschakelen in zijn privacy-instellingen",
