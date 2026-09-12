@@ -268,8 +268,11 @@ describe('AchievementsPage', () => {
   // no web purchase could succeed. The key lets a retried request replay the
   // original purchase instead of spending XP twice.
   it('sends an operation key with every XP shop purchase, which the API requires', async () => {
-    const previous = vi.mocked(api.get).getMockImplementation();
-    vi.mocked(api.get).mockImplementation((url: string) => {
+    const mockedGet = vi.mocked(api.get);
+    const previous = mockedGet.getMockImplementation();
+    // api.get is generic, so a concrete shop payload is not assignable to its
+    // return type without a cast; cast the whole implementation once.
+    mockedGet.mockImplementation(((url: string) => {
       if (url.includes('/v2/gamification/shop')) {
         return Promise.resolve({
           success: true,
@@ -292,7 +295,7 @@ describe('AchievementsPage', () => {
         });
       }
       return previous ? previous(url) : Promise.resolve({ success: true, data: [], meta: {} });
-    });
+    }) as unknown as typeof api.get);
     vi.mocked(api.post).mockResolvedValue({ success: true, data: { success: true } });
 
     render(<AchievementsPage />);
@@ -306,7 +309,8 @@ describe('AchievementsPage', () => {
         expect.objectContaining({ item_id: 7 }),
       );
     });
-    const body = vi.mocked(api.post).mock.calls.at(-1)?.[1] as { idempotency_key?: unknown };
+    const calls = vi.mocked(api.post).mock.calls;
+    const body = calls[calls.length - 1]?.[1] as { idempotency_key?: unknown };
     expect(typeof body.idempotency_key).toBe('string');
     expect((body.idempotency_key as string).length).toBeGreaterThanOrEqual(8);
     expect((body.idempotency_key as string).length).toBeLessThanOrEqual(191);
