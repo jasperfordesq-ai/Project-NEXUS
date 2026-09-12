@@ -20,7 +20,16 @@
  * `beforeExit` fires only when the loop has drained and the process was about to
  * exit on its own, so nothing that is still running is cut short, and the exit
  * code a script set is preserved.
+ *
+ * 🔴 Scoped to the one script that crashes. The first version applied to every
+ * Node process the build starts, and Expo's bundler (`export:embed`) has moments
+ * when its event loop is empty while work is still pending — the preload ended
+ * it early and `:app:createBundleReleaseJsAndAssets` failed with exit code 5.
+ * Everything else the build runs shuts down cleanly on its own and is left alone.
  */
-process.on('beforeExit', () => {
-  process.exit(process.exitCode ?? 0);
-});
+const script = String(process.argv[1] || '').split('\\').join('/');
+if (script.endsWith('/expo-updates/utils/build/createUpdatesResources.js')) {
+  process.on('beforeExit', () => {
+    process.exit(process.exitCode ?? 0);
+  });
+}
