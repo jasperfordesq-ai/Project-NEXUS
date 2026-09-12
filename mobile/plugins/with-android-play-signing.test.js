@@ -57,7 +57,7 @@ describe('with-android-play-signing', () => {
   });
 
   it('lets -PplayVersionCode override the version code, with app.json as the default', () => {
-    expect(out).toContain("versionCode (findProperty('playVersionCode') ?: '10').toString().toInteger()");
+    expect(out).toContain("versionCode Integer.parseInt((findProperty('playVersionCode') ?: '10').toString())");
     expect(out).toContain('versionName "1.5.0"');
   });
 

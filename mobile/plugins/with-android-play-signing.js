@@ -58,9 +58,12 @@ function injectPlaySigning(gradleSource) {
   out = head + tail.replace(releaseSigning, `$1${RELEASE_SIGNING}`);
 
   // `-PplayVersionCode=N` from the build script wins; app.json's value is the default.
+  // 🔴 Command form with a method call, never `versionCode (a ?: b).toInteger()`:
+  // Groovy parses that as `(versionCode(a ?: b)).toInteger()` and Gradle fails
+  // with "Value is null" — the fourth 1.5.0 build died on exactly that line.
   out = out.replace(
     /^([ \t]*)versionCode (\d+)[ \t]*$/m,
-    "$1versionCode (findProperty('playVersionCode') ?: '$2').toString().toInteger()",
+    "$1versionCode Integer.parseInt((findProperty('playVersionCode') ?: '$2').toString())",
   );
   return out;
 }
