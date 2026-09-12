@@ -15,6 +15,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **XP-shop purchases from the web app and the accessible site would have failed once the current
+  code shipped.** The purchase endpoint started requiring an 8–191 character operation key
+  (`c03aeefe6`, so a retried request replays the original purchase instead of spending XP
+  twice), but only the native app sent one; the React achievements page and the accessible
+  shop form sent just `item_id` and would have received 422 on every purchase. Both now send a
+  per-purchase key (the accessible form carries a per-render key per item, and the route mints
+  one if a cached form omits it). Tests: `AchievementsPage.test.tsx`, web-uk `api.test.js` and
+  `shared-accessible-shell.test.js`. Found in the 2026-09-12 review before deployment;
+  production was unaffected. *(E-005, O-019; commit `63b5f1134`)*
+- **Voting on a poll with an option from a different poll, or on a poll whose end date has
+  passed, answered 500 instead of a proper status.** `PollService::vote()` threw
+  `InvalidArgumentException('Invalid poll option')` and `RuntimeException('This poll has
+  closed')`; neither `PollsController::vote()` nor `SocialController::votePollV2()` caught
+  them, so both cases surfaced as a server error (with the exception class and file path in
+  the body under debug). Both controllers now answer 422 `VALIDATION_INVALID_VALUE` for a
+  foreign option and 409 `RESOURCE_CONFLICT` for a closed poll. The closed case is a new
+  typed `App\Exceptions\PollClosedException` (extends `RuntimeException`, so nothing that
+  caught the old type breaks); a broad `catch (\RuntimeException)` was deliberately not used
+  because `QueryException` is one too. No new translation key — both messages reuse
+  `api.invalid_input`. Regression tests: four new cases in
+  `tests/Laravel/Feature/Controllers/PollsControllerTest.php`. Found by the same-community
+  access sweep. *(E-003, F-001; commit `a49671ea9`)*
+
 - Federation hub, partner-detail and member-card actions in the native app now use enforced responsive columns instead of compressing controls into unreadable rows. Labels keep a readable size and may wrap to two lines, large-text and narrow-screen layouts become full-width, partner metadata and feature chips use the medium size, and directory filters no longer cap partner names and translations to one 136dp line.
 
 - Android release builds no longer fail when Node crashes while shutting down after the JavaScript bundle step. The same Windows shutdown crash that the build already retried for the update-manifest step was seen in the Metro bundle step, after the bundle and source map had both been written in full. That step is now retried on the same bounded terms; an ordinary bundling failure is still reported on the first attempt rather than repeated, and other commands of the same tool are not retried.
@@ -190,6 +213,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Confirmed wallet payments survive local cleanup failures.** A failed secure-storage deletion no longer reports an accepted transfer or donation as failed. Completion is retained so intentional repeats can receive a new durable operation ID while uncertain requests keep duplicate protection.
 
 ### Added
+
+- **`docs/SECURITY-ASSURANCE.md` — how security assessment works here, and the register behind
+  it.** Project NEXUS hosts communities for public-sector bodies with supplier-assurance
+  obligations, so security work is now a maintained record rather than a series of one-off
+  exercises: a private Security Assurance Register holds every engagement, every finding with a
+  permanent identifier and a status vocabulary that distinguishes "a fix exists" from "the fix
+  works in production", the cross-document reconciliation, and the evidence-freezing rules. The
+  public document describes the process and deliberately carries no findings. The rule that
+  security work must read and update that register is binding in `AGENTS.md` (MANDATORY RULES)
+  and `CLAUDE.md`, and `SECURITY.md` now points a discloser or a buyer at the process.
+  *(E-003; commit `aa19256b7`)*
+- **`tests/Laravel/Feature/Security/SameCommunityAccessSweepTest.php` — can member A reach
+  member B's records inside the SAME community?** Every earlier sweep kept actor and record
+  in different communities, where `TenantScope` does the work; this one asks the question
+  the per-endpoint ownership checks have to answer. Reads: every v2 GET with one path
+  parameter, B's record vs A's own as control; a 200 carrying data must be registered as
+  public by design (exact route, with a reason) or it fails, and B's e-mail address in any
+  body always fails. Writes: every v2 non-GET with one path parameter, body grown from the
+  API's own validation messages, B's row compared column by column after every request
+  regardless of status; a changed or deleted row fails unless only counter columns moved,
+  and a 2xx that leaves B's row alone must be a registered interaction. Consumed fixtures
+  are re-seeded before the next endpoint (a control request is a real request). A third
+  method covers **multi-parameter routes** (person routes with a third member seeded into
+  both members' records; child routes with B's parent and child): first run 46 combinations
+  probed, 25 refused with a working control, 7 refused at the permission gate, 0
+  served/accepted/changed. Shared machinery (fixture maps, seeding, id-type resolution,
+  request helpers, multi-parameter enumerators) moved verbatim from
+  `CrossCommunityAccessSweepTest` into
+  `tests/Laravel/Feature/Security/Support/AccessSweepTestCase.php`; the cross-community
+  sweep's behaviour and figures are unchanged. *(E-003; commits `068dc7551`, `95cfeaab0`)*
 
 - Published [`docs/SECURITY-ASSURANCE.md`](docs/SECURITY-ASSURANCE.md), a public description of how security assessment works on the platform: what gets tested, how findings are recorded and tracked in the private register, how evidence is handled, and what a customer with a supplier-assurance obligation can ask for. It states process only and deliberately contains no findings. Linked from the documentation index and the published site navigation, with contributor and agent guidance pointing at it so security assessment is maintained as an ongoing record rather than a one-off audit.
 
@@ -370,6 +423,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Platform-tier prefixes are excluded from the population and the document now says so: the total is of *selected* routes, not of every route.
 
 ### Security
+
+- **Two volunteering endpoints could echo raw database error text to the caller.** Recording an
+  offline donation (`POST /v2/volunteering/donations`) and submitting an expense
+  (`POST /v2/volunteering/expenses`) mapped every `RuntimeException` to a 400 that repeated the
+  exception message. Laravel's `QueryException` is a `RuntimeException`, and both services
+  rethrow it when the request carries no idempotency key, so a database failure (reachable in
+  practice only through a same-key race) would have answered with the full SQL statement, its
+  bindings and the connection name. Both controllers now answer a generic 500 `SERVER_ERROR`
+  and log the detail server-side. Regression test:
+  `tests/Laravel/Feature/Security/VolunteeringDatabaseErrorDisclosureTest.php`. *(E-005, F-016;
+  commit `a304ef718`)*
+- **A member could rebuild and download their personal-data export without limit by replaying an
+  idempotency key.** The 5-per-24-hours cap counted only new audit rows, and a replayed
+  `Idempotency-Key` writes none, so every replay rebuilt the archive with no bound and the
+  admin GDPR notice fired once. Every build now also counts against a per-member daily limit,
+  replays included. Regression test in `tests/Laravel/Feature/MemberDataExportTest.php`.
+  *(E-005, F-017; commit `453aeaa27`)*
+- **The SVG logo sanitiser closes two bypass classes.** A CSS escape (`\75rl(` reads as `url(` to
+  the browser) slipped past the forbidden-token check in `<style>` bodies and `style`
+  attributes, and a SMIL `<set>`/`<animate>` aimed at an event handler, `href` or `style`
+  could re-create what the attribute scrub removed. Backslashes are now refused in CSS, and
+  animation elements targeting those attributes are removed. Admin-only upload, served as an
+  image, so defence in depth. Two new cases in `tests/Laravel/Unit/Core/SvgUploaderTest.php`.
+  *(E-005, F-018; commit `657810aa0`)*
+- **The last CSV writer goes through the formula-neutralising sanitiser.** The administrator
+  import-template download (`AdminUsersController::importTemplate`) was the one remaining bare
+  `fputcsv()`, deferred on 2026-09-11 because the file was being edited; its content is
+  constant, so this closes F-005 rather than fixing an exposure. The coverage test's pending
+  allowlist entry is removed. *(E-005; commit `a3750df1f`)*
+- **A script file placed in the web-served uploads folder would have run as PHP; the web
+  server now refuses it.** Proven in the dev container: a `.php` written into
+  `httpdocs/uploads/` answered 200 and executed, while the same request under `/storage/`
+  answered 403, because the root `.htaccess` guarded `^storage/` only. Upload validation
+  (which checks content) was the only layer. `httpdocs/.htaccess` now carries an `<If>`
+  block denying `.php/.php[0-9]/.phtml/.pht/.phar/.phps` under `/uploads/`, written as
+  `<If>` rather than a `RewriteRule` because `uploads/.htaccess` enables its own rewrite
+  engine and per-directory rules are not inherited. It sits in the root file because
+  production mounts a volume over `httpdocs/uploads`. Re-probed: every script variant 403,
+  images and the API unaffected. Guard: `tests/Laravel/Feature/Security/WebRootHardeningTest.php`.
+  Re-checked on the live API host on 2026-09-12 after release: `GET /uploads/anything.php`
+  answers 403. *(E-003, F-003; commit `61fa20fc3`)*
+- **Every CSV export now neutralises spreadsheet formulas.** Nineteen exporters wrote
+  member-supplied text with a bare `fputcsv()` and one only quoted cells, while the shared
+  `CsvExportSanitizer` was used by twelve. New `CsvExportSanitizer::put()` is a drop-in for
+  `fputcsv()`; all 32 exporting files use it. `CsvExportSanitizerCoverageTest` fails on any
+  future bare `fputcsv()` in `app/`. The one file deferred at the time (`AdminUsersController`,
+  off-limits during the audit) was converted on 2026-09-12 — see the E-005 entry above.
+  *(E-003, F-005; commit `259be739c`)*
+- **The accessible site resolved the community from a client-controllable
+  `X-Forwarded-Host`.** Apache merges a client-sent value in front of the real one; web-uk
+  took the first. `requestHost()` and `normalizeRequestHost()` now take the last (proxy-
+  written) value, falling back to `Host`. Test: `web-uk/tests/tenant-routing-forwarded-host.test.js`.
+  Recommended at host level: `RequestHeader unset X-Forwarded-Host` in the Plesk vhosts.
+  *(E-003, F-006; commit `8733cb941`)*
 
 - Turning two-factor authentication off now requires a current authenticator code as well as the account password (`POST /v2/auth/2fa/disable` takes `code`; 422 without it, 403 with `field: code` when refused). The code is checked with the same single-use 30-second step as login, so a code already spent on any other proof is refused, and it is only looked at after the password is accepted. The React settings dialog and the accessible site's two-factor page ask for both. Owner decision, 12 September 2026 (security register E-004 §7).
 - Session validation no longer accepts the token from the URL query string; only the `Authorization` header or the request body is read, so tokens cannot end up in proxy, CDN or web-server logs (two-factor review F-010).
