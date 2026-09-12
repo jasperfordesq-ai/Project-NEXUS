@@ -33,10 +33,6 @@ class CsvExportSanitizerCoverageTest extends TestCase
         // Own neutraliser, same rule (leading = + - @ tab CR).
         'app/Services/ReportExportService.php' => 'sanitizeCsvCell() neutralises every cell before fputcsv()',
         'app/Http/Controllers/Api/AdminLegalDocController.php' => 'sanitizeCsvValue() neutralises every cell before fputcsv()',
-        // 🔴 Pending: this file was being edited by the concurrent MFA workstream
-        // on 2026-09-11 and was off-limits to the audit. Convert its one fputcsv()
-        // to CsvExportSanitizer::put() and delete this line.
-        'app/Http/Controllers/Api/AdminUsersController.php' => 'PENDING — off-limits during the 2026-09-11 audit; convert and remove',
     ];
 
     public function test_put_writes_a_neutralised_row_with_fputcsv_semantics(): void

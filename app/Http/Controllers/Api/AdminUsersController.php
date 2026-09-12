@@ -25,6 +25,7 @@ use App\Services\TokenService;
 use App\Core\EmailTemplateBuilder;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
+use App\Support\CsvExportSanitizer;
 
 /**
  * AdminUsersController — Admin user management (list, view, create, update, approve, suspend, ban, etc.).
@@ -2076,7 +2077,7 @@ class AdminUsersController extends BaseApiController
         // UTF-8 BOM for Excel compatibility
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
         foreach ($csvLines as $line) {
-            fputcsv($output, $line);
+            CsvExportSanitizer::put($output, $line);
         }
         rewind($output);
         $csv = stream_get_contents($output);
