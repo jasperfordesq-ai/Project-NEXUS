@@ -62,6 +62,7 @@ interface SecurityTabProps {
   twoFactorVerifyCode: string;
   isVerifying2FA: boolean;
   twoFactorDisablePassword: string;
+  twoFactorDisableCode: string;
   isDisabling2FA: boolean;
   backupCodes: string[];
   backupCodesRemaining: number;
@@ -103,6 +104,7 @@ interface SecurityTabProps {
   onDisable2FA: () => void;
   onTwoFactorVerifyCodeChange: (value: string) => void;
   onTwoFactorDisablePasswordChange: (value: string) => void;
+  onTwoFactorDisableCodeChange: (value: string) => void;
   onCopyBackupCodes: () => void;
 }
 
@@ -136,6 +138,7 @@ export function SecurityTab({
   twoFactorVerifyCode,
   isVerifying2FA,
   twoFactorDisablePassword,
+  twoFactorDisableCode,
   isDisabling2FA,
   backupCodes,
   backupCodesRemaining,
@@ -171,6 +174,7 @@ export function SecurityTab({
   onDisable2FA,
   onTwoFactorVerifyCodeChange,
   onTwoFactorDisablePasswordChange,
+  onTwoFactorDisableCodeChange,
   onCopyBackupCodes,
 }: SecurityTabProps) {
   const { t } = useTranslation('settings');
@@ -600,6 +604,29 @@ export function SecurityTab({
                 autoComplete="current-password"
                 classNames={inputClassNames}
               />
+              {/* Possession of the factor being removed: a current code, like login. */}
+              <div className="flex flex-col gap-2 items-center">
+                <Label className="self-start text-sm">{t('twofa_verification_code')}</Label>
+                <InputOTP
+                  maxLength={6}
+                  name="disable-code"
+                  value={twoFactorDisableCode}
+                  onChange={(val) => onTwoFactorDisableCodeChange(val.replace(/\D/g, '').slice(0, 6))}
+                >
+                  <InputOTP.Group>
+                    <InputOTP.Slot index={0} />
+                    <InputOTP.Slot index={1} />
+                    <InputOTP.Slot index={2} />
+                  </InputOTP.Group>
+                  <InputOTP.Separator />
+                  <InputOTP.Group>
+                    <InputOTP.Slot index={3} />
+                    <InputOTP.Slot index={4} />
+                    <InputOTP.Slot index={5} />
+                  </InputOTP.Group>
+                </InputOTP>
+                <Description className="self-start">{t('twofa_code_description')}</Description>
+              </div>
             </div>
           </ModalBody>
           <ModalFooter>
@@ -610,7 +637,7 @@ export function SecurityTab({
               variant="danger"
               onPress={onDisable2FA}
               isLoading={isDisabling2FA}
-              isDisabled={!twoFactorDisablePassword}
+              isDisabled={!twoFactorDisablePassword || twoFactorDisableCode.length < 6}
             >
               {t('twofa_disable_confirm')}
             </Button>

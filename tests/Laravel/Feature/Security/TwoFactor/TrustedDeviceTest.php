@@ -106,8 +106,9 @@ class TrustedDeviceTest extends TwoFactorAuditTestCase
 
     public function test_disabling_the_factor_revokes_remembered_devices(): void
     {
-        [$member, , $device] = $this->memberWithTrustedNativeDevice();
-        $this->apiPost('/v2/auth/2fa/disable', ['password' => 'test-password'], $this->bearer($member, true))->assertOk();
+        [$member, $secret, $device] = $this->memberWithTrustedNativeDevice();
+        // The device was trusted with this step's code; the next step is a fresh proof.
+        $this->apiPost('/v2/auth/2fa/disable', ['password' => 'test-password', 'code' => $this->code($secret, 1)], $this->bearer($member, true))->assertOk();
         $this->assertSame(0, DB::table('user_trusted_devices')->where('user_id', $member->id)->where('is_revoked', 0)->count());
         $this->assertNotSame('', $device);
     }

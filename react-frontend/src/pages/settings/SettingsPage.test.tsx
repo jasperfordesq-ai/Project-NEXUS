@@ -461,9 +461,15 @@ describe('SettingsPage', () => {
     await user.click(screen.getByRole('tab', { name: 'Security' }));
     await user.click(await screen.findByRole('button', { name: 'twofa_disable' }));
     await user.type(screen.getByLabelText('twofa_confirm_password'), 'CurrentPassword!123');
+    // Turning the factor off needs the current authenticator code as well as
+    // the password; the confirm button stays disabled until both are present.
+    expect(screen.getByRole('button', { name: 'twofa_disable_confirm' })).toBeDisabled();
+    const codeInput = document.querySelector('input[name="disable-code"]');
+    expect(codeInput).not.toBeNull();
+    await user.type(codeInput as HTMLInputElement, '123456');
     await user.click(screen.getByRole('button', { name: 'twofa_disable_confirm' }));
     await waitFor(() => expect(useAuth().logout).toHaveBeenCalledOnce());
-    expect(api.post).toHaveBeenCalledWith('/v2/auth/2fa/disable', { password: 'CurrentPassword!123' });
+    expect(api.post).toHaveBeenCalledWith('/v2/auth/2fa/disable', { password: 'CurrentPassword!123', code: '123456' });
   });
 
   it('hides Profile and Notifications tabs when their modules are disabled', () => {

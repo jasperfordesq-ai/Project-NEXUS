@@ -45,6 +45,7 @@ const defaultProps = {
   twoFactorVerifyCode: '',
   isVerifying2FA: false,
   twoFactorDisablePassword: '',
+  twoFactorDisableCode: '',
   isDisabling2FA: false,
   backupCodes: [],
   backupCodesRemaining: 0,
@@ -84,6 +85,7 @@ const defaultProps = {
   onDisable2FA: vi.fn(),
   onTwoFactorVerifyCodeChange: vi.fn(),
   onTwoFactorDisablePasswordChange: vi.fn(),
+  onTwoFactorDisableCodeChange: vi.fn(),
   onCopyBackupCodes: vi.fn(),
 };
 

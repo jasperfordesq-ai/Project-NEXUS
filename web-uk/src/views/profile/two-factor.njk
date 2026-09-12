@@ -83,6 +83,12 @@
             <label class="govuk-label" for="password">{{ t("security_2fa.password_label") }}</label>
             <input class="govuk-input govuk-input--width-20" id="password" name="password" type="password" autocomplete="current-password" spellcheck="false">
           </div>
+          {# Turning the factor off also needs a current authenticator code (API rule since 12 September 2026). #}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="disable-code">{{ t("security_2fa.code_label") }}</label>
+            <div id="disable-code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
+            <input class="govuk-input govuk-input--width-10" id="disable-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-describedby="disable-code-hint">
+          </div>
           <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("security_2fa.disable_button") }}</button>
         </form>
         {% endif %}

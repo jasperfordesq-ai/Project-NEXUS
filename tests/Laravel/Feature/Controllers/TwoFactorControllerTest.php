@@ -7,9 +7,11 @@
 namespace Tests\Laravel\Feature\Controllers;
 
 use App\Core\TenantContext;
+use App\Core\TotpEncryption;
 use App\Models\User;
 use App\Services\TenantFeatureConfig;
 use App\Services\TokenService;
+use App\Services\TotpService;
 use App\Services\TwoFactorChallengeManager;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
@@ -60,12 +62,14 @@ class TwoFactorControllerTest extends TestCase
         TenantContext::setById($this->testTenantId);
     }
 
-    private function enableTwoFactorFor(User $user): void
+    /** Enrols a real secret and returns it: disabling now needs a current code. */
+    private function enableTwoFactorFor(User $user): string
     {
+        $secret = TotpService::generateSecret();
         DB::table('user_totp_settings')->insert([
             'user_id' => $user->id,
             'tenant_id' => $this->testTenantId,
-            'totp_secret_encrypted' => 'not-read-by-these-tests',
+            'totp_secret_encrypted' => TotpEncryption::encrypt($secret),
             'is_enabled' => 1,
             'is_pending_setup' => 0,
         ]);
@@ -74,6 +78,8 @@ class TwoFactorControllerTest extends TestCase
             'totp_enabled' => 1,
             'totp_setup_required' => 0,
         ]);
+
+        return $secret;
     }
 
     // ------------------------------------------------------------------
@@ -277,13 +283,13 @@ class TwoFactorControllerTest extends TestCase
         $user = $this->authenticatedUser([
             'password_hash' => Hash::make('correct-password'),
         ]);
-        $this->enableTwoFactorFor($user);
+        $secret = $this->enableTwoFactorFor($user);
         $this->setTwoFactorEnrollmentAllowed(false);
         $tokens = app(TokenService::class);
         $accessToken = $tokens->generateToken((int) $user->id, $this->testTenantId);
         $refreshToken = $tokens->generateRefreshToken((int) $user->id, $this->testTenantId);
 
-        $this->apiPost('/v2/auth/2fa/disable', ['password' => 'correct-password'])
+        $this->apiPost('/v2/auth/2fa/disable', ['password' => 'correct-password', 'code' => TOTP::createFromSecret($secret)->now()])
             ->assertOk();
 
         $this->assertDatabaseMissing('user_totp_settings', [
@@ -310,7 +316,7 @@ class TwoFactorControllerTest extends TestCase
         $user = $this->authenticatedUser([
             'password_hash' => Hash::make('correct-password'),
         ]);
-        $this->enableTwoFactorFor($user);
+        $secret = $this->enableTwoFactorFor($user);
         DB::table('user_backup_codes')->insert([
             'user_id' => $user->id,
             'tenant_id' => $this->testTenantId,
@@ -325,7 +331,7 @@ class TwoFactorControllerTest extends TestCase
             ->andReturn(0);
         $this->app->instance(TokenService::class, $tokenService);
 
-        $this->apiPost('/v2/auth/2fa/disable', ['password' => 'correct-password'])
+        $this->apiPost('/v2/auth/2fa/disable', ['password' => 'correct-password', 'code' => TOTP::createFromSecret($secret)->now()])
             ->assertStatus(403);
 
         $this->assertDatabaseHas('user_totp_settings', [

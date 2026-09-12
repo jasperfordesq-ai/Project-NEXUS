@@ -1897,9 +1897,14 @@ router.post('/two-factor/disable', asyncRoute(async (req, res) => {
   if (password === '') {
     return redirectTo(res, twoFactorRedirect('2fa-password-required'));
   }
+  // Turning the factor off needs a current authenticator code as well as the
+  // password (API rule since 12 September 2026). Same shape check as the other
+  // code fields, so a malformed value never reaches the API.
+  const code = trimmed(req.body.code);
+  if (!/^[0-9]{6}$/.test(code)) return redirectTo(res, twoFactorRedirect('2fa-code-required'));
 
   try {
-    await callProfile(token, 'POST', '/auth/2fa/disable', { password });
+    await callProfile(token, 'POST', '/auth/2fa/disable', { password, code });
     clearTrustedDeviceCookie(res);
     invalidateUserCache(token);
     await destroyRequestSession(req);
@@ -1907,6 +1912,11 @@ router.post('/two-factor/disable', asyncRoute(async (req, res) => {
     return redirectTo(res, '/login?status=2fa-disabled');
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    // The API names the field it refused: a wrong or spent code gets the code
+    // message, anything else keeps the password-oriented one.
+    if (error instanceof ApiError && error.status === 403 && error.data?.errors?.[0]?.field === 'code') {
+      return redirectTo(res, twoFactorRedirect('2fa-code-invalid'));
+    }
     return redirectTo(res, twoFactorRedirect('2fa-disable-failed'));
   }
 }));

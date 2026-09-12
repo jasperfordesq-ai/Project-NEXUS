@@ -289,6 +289,7 @@ export function SettingsPage() {
   const [twoFactorVerifyCode, setTwoFactorVerifyCode] = useState('');
   const [isVerifying2FA, setIsVerifying2FA] = useState(false);
   const [twoFactorDisablePassword, setTwoFactorDisablePassword] = useState('');
+  const [twoFactorDisableCode, setTwoFactorDisableCode] = useState('');
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [backupCodesRemaining, setBackupCodesRemaining] = useState(0);
@@ -912,11 +913,18 @@ export function SettingsPage() {
       toast.error(t('toasts.password_required'), t('toasts.password_required_desc'));
       return;
     }
+    // Turning the factor off needs the current authenticator code as well as
+    // the password (server rule since 12 September 2026).
+    if (!/^\d{6}$/.test(twoFactorDisableCode)) {
+      toast.error(t('toasts.twofa_disable_failed'), t('twofa_code_description'));
+      return;
+    }
 
     try {
       setIsDisabling2FA(true);
       const response = await api.post('/v2/auth/2fa/disable', {
         password: twoFactorDisablePassword,
+        code: twoFactorDisableCode,
       });
 
       if (response.success) {
@@ -925,6 +933,7 @@ export function SettingsPage() {
         toast.success(t('toasts.twofa_disabled'), t('toasts.twofa_disabled_desc'));
         twoFactorDisableModal.onClose();
         setTwoFactorDisablePassword('');
+        setTwoFactorDisableCode('');
         // Factor removal revokes every session, including this one.
         await logout();
         navigate(tenantPath('/login'), { replace: true });
@@ -1298,6 +1307,7 @@ export function SettingsPage() {
             twoFactorVerifyCode={twoFactorVerifyCode}
             isVerifying2FA={isVerifying2FA}
             twoFactorDisablePassword={twoFactorDisablePassword}
+            twoFactorDisableCode={twoFactorDisableCode}
             isDisabling2FA={isDisabling2FA}
             backupCodes={backupCodes}
             backupCodesRemaining={backupCodesRemaining}
@@ -1333,6 +1343,7 @@ export function SettingsPage() {
             onDisable2FA={handleDisable2FA}
             onTwoFactorVerifyCodeChange={setTwoFactorVerifyCode}
             onTwoFactorDisablePasswordChange={setTwoFactorDisablePassword}
+            onTwoFactorDisableCodeChange={setTwoFactorDisableCode}
             onCopyBackupCodes={handleCopyBackupCodes}
           />
         )}

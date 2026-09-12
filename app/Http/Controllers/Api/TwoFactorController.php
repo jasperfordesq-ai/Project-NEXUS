@@ -434,13 +434,20 @@ class TwoFactorController extends BaseApiController
             );
         }
 
-        $result = $this->totpService->disable($userId, $password);
+        // Password AND a current authenticator code (owner decision, 12 September
+        // 2026): the code proves possession of the factor being removed.
+        $code = $data['code'] ?? '';
+        if (!is_string($code) || !preg_match('/^[0-9]{6}$/D', $code)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.code_required'), 'code', 422);
+        }
+
+        $result = $this->totpService->disable($userId, $password, $code);
 
         if (!$result['success']) {
             return $this->respondWithError(
                 'DISABLE_FAILED',
                 $result['error'] ?? 'Failed to disable 2FA',
-                'password',
+                $result['field'] ?? 'password',
                 403
             );
         }

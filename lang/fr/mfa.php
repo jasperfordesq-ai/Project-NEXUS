@@ -7,5 +7,6 @@
 return [
     'sign_in_required' => 'Votre compte exige une authentification à deux facteurs. Reconnectez-vous pour continuer.',
     'disable_forbidden' => 'L’authentification à deux facteurs est obligatoire pour votre compte et ne peut pas être désactivée.',
+    'disable_code_invalid' => 'Ce code d’authentification n’a pas été accepté. Saisissez le code actuel affiché dans votre application et réessayez.',
     'impersonation_read_only' => 'Session d’assistance en lecture seule. Revenez à votre compte pour effectuer des modifications.',
 ];

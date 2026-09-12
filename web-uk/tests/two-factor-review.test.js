@@ -116,11 +116,67 @@ describe('P5 — the remembered-device cookie is cleared with the same attribute
     const response = await request(createApp())
       .post('/profile/two-factor/disable')
       .type('form')
-      .send({ password: 'correct-horse' })
+      .send({ password: 'correct-horse', code: '123456' })
       .expect(302);
     const cleared = (response.headers['set-cookie'] || []).find((c) => c.startsWith('nexus_trusted_device='));
     expect(cleared).toBeDefined();
     expect(cleared).toMatch(/;\s*Secure/i);
+  });
+});
+
+describe('P6 — turning the factor off needs the password AND a current authenticator code (owner decision, 12 September 2026)', () => {
+  beforeEach(() => { api.callProfileApi.mockReset(); });
+
+  it('forwards both the password and the code to the API', async () => {
+    api.callProfileApi.mockResolvedValueOnce({ data: { message: 'disabled' } });
+
+    await request(createApp())
+      .post('/profile/two-factor/disable')
+      .type('form')
+      .send({ password: 'correct-horse', code: ' 654321 ' })
+      .expect(302);
+
+    expect(api.callProfileApi).toHaveBeenCalledTimes(1);
+    const [, , , body] = api.callProfileApi.mock.calls[0];
+    expect(body).toEqual({ password: 'correct-horse', code: '654321' });
+  });
+
+  it('refuses a missing or malformed code locally and never calls the API', async () => {
+    for (const code of [undefined, '', '12345', 'abcdef']) {
+      const response = await request(createApp())
+        .post('/profile/two-factor/disable')
+        .type('form')
+        .send(code === undefined ? { password: 'correct-horse' } : { password: 'correct-horse', code })
+        .expect(302);
+      expect(response.headers.location).toMatch(/status=2fa-code-required/);
+    }
+    expect(api.callProfileApi).not.toHaveBeenCalled();
+  });
+
+  it('shows the code message, not the password one, when the API refuses the code', async () => {
+    api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Forbidden', 403, {
+      errors: [{ code: 'DISABLE_FAILED', message: 'That authenticator code was not accepted.', field: 'code' }]
+    }));
+
+    const response = await request(createApp())
+      .post('/profile/two-factor/disable')
+      .type('form')
+      .send({ password: 'correct-horse', code: '000000' })
+      .expect(302);
+    expect(response.headers.location).toMatch(/status=2fa-code-invalid/);
+  });
+
+  it('keeps the password message when the API refuses the password', async () => {
+    api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Forbidden', 403, {
+      errors: [{ code: 'DISABLE_FAILED', message: 'Invalid password.', field: 'password' }]
+    }));
+
+    const response = await request(createApp())
+      .post('/profile/two-factor/disable')
+      .type('form')
+      .send({ password: 'wrong', code: '123456' })
+      .expect(302);
+    expect(response.headers.location).toMatch(/status=2fa-disable-failed/);
   });
 });
 

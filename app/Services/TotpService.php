@@ -556,12 +556,12 @@ class TotpService
      *
      * @return array{success: bool, error?: string}
      */
-    public static function disable(int $userId, string $password = ''): array
+    public static function disable(int $userId, string $password = '', string $code = ''): array
     {
         $tenantId = (int) TenantContext::getId();
 
         try {
-            $disableOutcome = DB::transaction(function () use ($userId, $tenantId, $password): string {
+            $disableOutcome = DB::transaction(function () use ($userId, $tenantId, $password, $code): string {
                 // Match every other credential mutation's lock order: acquire
                 // the tenant user row first, then authoritatively re-check the
                 // password before touching factor or session state.
@@ -579,6 +579,15 @@ class TotpService
 
                 if (app(TwoFactorPolicy::class)->required($user)) {
                     return 'mfa_required';
+                }
+
+                // Owner decision, 12 September 2026 (security register E-004 §7):
+                // removing the factor needs possession of the factor as well as
+                // the password. The same single-use step check as login, so a code
+                // already spent on any other proof is refused here too. Checked
+                // after the password so a wrong password does not spend the step.
+                if (!self::verifyLogin($userId, $code, $tenantId)['success']) {
+                    return 'invalid_code';
                 }
 
                 DB::delete("DELETE FROM user_totp_settings WHERE user_id = ? AND tenant_id = ?", [$userId, $tenantId]);
@@ -615,8 +624,11 @@ class TotpService
         if ($disableOutcome === 'mfa_required') {
             return ['success' => false, 'error' => __('mfa.disable_forbidden')];
         }
+        if ($disableOutcome === 'invalid_code') {
+            return ['success' => false, 'error' => __('mfa.disable_code_invalid'), 'field' => 'code'];
+        }
         if ($disableOutcome !== 'disabled') {
-            return ['success' => false, 'error' => 'Invalid password.'];
+            return ['success' => false, 'error' => 'Invalid password.', 'field' => 'password'];
         }
 
         return ['success' => true];
