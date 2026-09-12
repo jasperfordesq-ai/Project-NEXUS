@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 
 import LogIn from 'lucide-react/icons/log-in';
 import Clock from 'lucide-react/icons/clock';
-import { SESSION_EXPIRED_EVENT } from '@/lib/api';
+import { SESSION_EXPIRED_EVENT, type SessionEndReason, type SessionExpiredDetail } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { Button, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui';
@@ -22,6 +22,10 @@ import { Button, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, Moda
 export function SessionExpiredModal() {
   const { t } = useTranslation('errors');
   const [isOpen, setIsOpen] = useState(false);
+  // Why the session ended. 'mfa_required' means the server refused a live session
+  // because the account now needs a second factor — the member is told that, not
+  // "your session has expired" (mandatory administrator two-factor, 12 Sept 2026).
+  const [reason, setReason] = useState<SessionEndReason>('expired');
   const navigate = useNavigate();
   const { tenantPath } = useTenant();
   const { status } = useAuth();
@@ -35,9 +39,10 @@ export function SessionExpiredModal() {
   }, [status]);
 
   useEffect(() => {
-    function handleSessionExpired() {
+    function handleSessionExpired(event: Event) {
       // Only show modal if user had an active session — not for stale tokens on first visit
       if (wasAuthenticated.current) {
+        setReason((event as CustomEvent<SessionExpiredDetail>).detail?.reason ?? 'expired');
         setIsOpen(true);
       }
     }
@@ -76,7 +81,7 @@ export function SessionExpiredModal() {
                 id="session-expired-title"
                 className="text-xl font-semibold text-theme-primary"
               >
-                {t('session_expired')}
+                {t(reason === 'mfa_required' ? 'session_mfa_required' : 'session_expired')}
               </ModalHeading>
             </ModalHeader>
 
@@ -85,7 +90,7 @@ export function SessionExpiredModal() {
               className="text-center pb-4"
             >
               <p className="text-theme-muted">
-                {t('session_expired_message')}
+                {t(reason === 'mfa_required' ? 'session_mfa_required_message' : 'session_expired_message')}
               </p>
             </ModalBody>
 

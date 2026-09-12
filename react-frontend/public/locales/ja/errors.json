@@ -43,6 +43,8 @@
   "offline_message": "オフラインのようです",
   "session_expired": "セッションの有効期限切れ",
   "session_expired_message": "セッションの有効期限が切れました。続行するには再度ログインしてください。",
+  "session_mfa_required": "二要素認証が必要になりました",
+  "session_mfa_required_message": "お使いのアカウントでは二要素認証が必要になりました。設定するには再度ログインしてください。",
   "session_expiring": "セッションの有効期限が近づいています",
   "session_expiring_message": "セッションは {{seconds}} 秒後に期限切れになります。セッションを延長してログイン状態を維持します。",
   "session_expiring_countdown_aria": "セッションは {{seconds}} 秒後に期限切れになります",

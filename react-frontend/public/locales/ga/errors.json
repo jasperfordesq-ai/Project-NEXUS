@@ -43,6 +43,8 @@
   "offline_message": "Is cosúil go bhfuil tú as líne",
   "session_expired": "Seisiún imithe in éag",
   "session_expired_message": "Tá do sheisiún imithe in éag. Logáil isteach arís chun leanúint ar aghaidh.",
+  "session_mfa_required": "Fíordheimhniú dhá fhachtóir ag teastáil anois",
+  "session_mfa_required_message": "Teastaíonn fíordheimhniú dhá fhachtóir ó do chuntas anois. Logáil isteach arís chun é a shocrú.",
   "session_expiring": "Tá do sheisiún ar tí dul in éag",
   "session_expiring_message": "Rachaidh do sheisiún in éag i {{seconds}} soicind. Leathnaigh do sheisiún chun fanacht logáilte isteach.",
   "session_expiring_countdown_aria": "Rachaidh an seisiún in éag i {{seconds}} soicind",

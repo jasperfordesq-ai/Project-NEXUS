@@ -52,6 +52,9 @@ const DEFAULT_TENANT_ID = import.meta.env.VITE_DEFAULT_TENANT_ID || null;
 
 // Custom events
 export const SESSION_EXPIRED_EVENT = 'nexus:session_expired';
+/** Why a session ended: plain expiry, or the server now requiring a second factor. */
+export type SessionEndReason = 'expired' | 'mfa_required';
+export interface SessionExpiredDetail { reason: SessionEndReason }
 export const SESSION_EXPIRING_EVENT = 'nexus:session_expiring';
 export const API_ERROR_EVENT = 'nexus:api_error';
 
@@ -171,12 +174,44 @@ function checkStaleBuild(response: Response): void {
         mismatch_age_ms: now - firstSeen,
       },
     );
-    try {
-      window.location.replace(RECOVERY_URL);
-    } catch {
-      window.location.href = RECOVERY_URL;
-    }
+    redirectToRecovery();
   }
+}
+
+function redirectToRecovery(): void {
+  try {
+    window.location.replace(RECOVERY_URL);
+  } catch {
+    window.location.href = RECOVERY_URL;
+  }
+}
+
+/**
+ * True once a response has carried a server build that differs from this bundle's
+ * (recorded by `checkStaleBuild`; cleared when the two agree again). Callers use it to
+ * tell "this page is out of date" apart from a genuine server fault before forcing a
+ * recovery — a client that IS current must never be sent round the recovery loop.
+ */
+export function isClientBuildStale(): boolean {
+  try {
+    return localStorage.getItem(BUILD_MISMATCH_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Force the stale-client recovery now instead of after the ten-minute grace. Used when
+ * an out-of-date bundle meets an answer it cannot act on — a sign-in answer of a shape
+ * it does not know is the case seen on 12 September 2026, when the old bundle read the
+ * new two-factor enrolment answer as "Sign-in failed" until the browser was restarted.
+ */
+export function recoverStaleClient(reason: string): void {
+  if (staleRedirectFired) return;
+  staleRedirectFired = true;
+  try { localStorage.removeItem(BUILD_MISMATCH_KEY); } catch { /* non-blocking */ }
+  captureTelemetryMessage('Stale client force-recovered via /api/sw-reset', 'warning', { reason });
+  redirectToRecovery();
 }
 
 // Debounce SESSION_EXPIRED dispatches to prevent 401 cascade loops.
@@ -583,9 +618,28 @@ export class ApiClient {
     });
   }
 
-  private expireSession(): void {
+  private expireSession(reason: SessionEndReason = 'expired'): void {
     tokenManager.clearTokens();
-    this.dispatchSessionExpired();
+    this.dispatchSessionExpired(reason);
+  }
+
+  /**
+   * 🔴 `401 AUTH_MFA_REQUIRED` is not an expired session. It is the server refusing a
+   * live session because the account now needs a second factor (mandatory
+   * administrator two-factor went live on 12 September 2026, and every signed-in
+   * administrator met this answer). A refresh cannot help — the new token carries
+   * no two-factor claims either — so it is not attempted, and the member is told
+   * why they were signed out instead of "your session has expired". Reading the
+   * body here is safe: every path out of the 401 branch returns without it.
+   */
+  private async isTwoFactorRequiredRefusal(response: Response): Promise<boolean> {
+    try {
+      const body = await response.json();
+      return body?.code === 'AUTH_MFA_REQUIRED'
+        || (Array.isArray(body?.errors) && body.errors.some((e: { code?: string }) => e?.code === 'AUTH_MFA_REQUIRED'));
+    } catch {
+      return false;
+    }
   }
 
   private isLogoutInProgress(): boolean {
@@ -605,7 +659,14 @@ export class ApiClient {
     return true;
   }
 
-  private sessionExpiredResponse<T>(): ApiResponse<T> {
+  private sessionExpiredResponse<T>(reason: SessionEndReason = 'expired'): ApiResponse<T> {
+    if (reason === 'mfa_required') {
+      return {
+        success: false,
+        error: i18n.t('session_mfa_required_message', { ns: 'errors' }),
+        code: 'AUTH_MFA_REQUIRED',
+      };
+    }
     return {
       success: false,
       error: i18n.t('session_expired_message', { ns: 'errors' }),
@@ -632,11 +693,11 @@ export class ApiClient {
   /**
    * Dispatch session expired event (debounced — fires at most once per 5 seconds)
    */
-  private dispatchSessionExpired(): void {
+  private dispatchSessionExpired(reason: SessionEndReason = 'expired'): void {
     const now = Date.now();
     if (now - lastSessionExpiredTime > 5000) {
       lastSessionExpiredTime = now;
-      window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+      window.dispatchEvent(new CustomEvent<SessionExpiredDetail>(SESSION_EXPIRED_EVENT, { detail: { reason } }));
     }
   }
 
@@ -1188,6 +1249,10 @@ export class ApiClient {
 
       // Handle 401 Unauthorized with exactly one token refresh and retry.
       if (response.status === 401 && !options.skipAuth) {
+        if (await this.isTwoFactorRequiredRefusal(response)) {
+          this.expireSession('mfa_required');
+          return this.sessionExpiredResponse<T>('mfa_required');
+        }
         if (retryOnUnauthorized) {
           // A response from tenant A must never be retried after the user has
           // switched to tenant B; that could replay a state-changing body in
@@ -1487,6 +1552,10 @@ export class ApiClient {
 
     // Handle 401 with exactly one token refresh and retry.
     if (response.status === 401 && !options.skipAuth) {
+      if (await this.isTwoFactorRequiredRefusal(response)) {
+        this.expireSession('mfa_required');
+        throw new Error(i18n.t('session_mfa_required_message', { ns: 'errors' }));
+      }
       if (retryOnUnauthorized) {
         const outcome = await this.handleTokenRefresh();
         if (outcome === 'refreshed') {
@@ -1643,6 +1712,10 @@ export class ApiClient {
       checkStaleBuild(response);
 
       if (response.status === 401 && !options?.skipAuth) {
+        if (await this.isTwoFactorRequiredRefusal(response)) {
+          this.expireSession('mfa_required');
+          return this.sessionExpiredResponse<T>('mfa_required');
+        }
         if (retryOnUnauthorized) {
           const outcome = await this.handleTokenRefresh();
           if (outcome === 'refreshed') {

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A web sign-in page that is out of date no longer answers "Sign-in failed" when the server sends an answer it cannot read: the update reload is applied at once on sign-in, registration, password and two-factor pages instead of waiting for the cursor to leave a field, an unrecognised sign-in answer on a stale bundle says the page was out of date and refreshes it immediately, and a live session ended because the account now requires two-factor authentication is explained as such rather than as an expired session. Seen on the first web sign-in after mandatory administrator two-factor went live.
+
 - Android release builds no longer fail on Windows when Node crashes while shutting down after the update-manifest step: every Node process the Gradle build starts now exits cleanly the moment its work is done (`plugins/with-android-node-clean-exit`). Seen in two of three builds of the first Expo SDK 55 bundle.
 
 - Native volunteering now preserves expense, donation-pledge and hour drafts across tab changes, warns before leaving with unsaved or pending input, serializes rapid submissions, and retries certificate, expense, pledge and hour writes with the same content-bound operation identity. Laravel durably returns the original record after response loss, preventing duplicate records and duplicate hour credits.

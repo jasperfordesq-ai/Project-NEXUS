@@ -93,4 +93,18 @@ describe('SessionExpiredModal', () => {
     expect(within(footer as HTMLElement).getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
     expect(within(footer as HTMLElement).getByRole('button', { name: 'Log In' })).toBeInTheDocument();
   });
+
+  // 12 September 2026: mandatory administrator two-factor went live and every
+  // signed-in administrator was refused with AUTH_MFA_REQUIRED. The API client
+  // ends the session with reason 'mfa_required'; the modal must say that, not
+  // "session expired", or the member goes looking for a fault that is not there.
+  it('explains a two-factor refusal in its own words', async () => {
+    render(<SessionExpiredModal />);
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('nexus:session_expired', { detail: { reason: 'mfa_required' } }));
+    });
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Two-factor authentication now required')).toBeInTheDocument();
+    expect(within(dialog).getByText(/Your account now requires two-factor authentication/)).toBeInTheDocument();
+  });
 });

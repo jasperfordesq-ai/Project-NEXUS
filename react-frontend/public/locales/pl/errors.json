@@ -43,6 +43,8 @@
   "offline_message": "Wygląda na to, że jesteś offline",
   "session_expired": "Sesja wygasła",
   "session_expired_message": "Twoja sesja wygasła. Zaloguj się ponownie, aby kontynuować.",
+  "session_mfa_required": "Wymagane jest teraz uwierzytelnianie dwuskładnikowe",
+  "session_mfa_required_message": "Twoje konto wymaga teraz uwierzytelniania dwuskładnikowego. Zaloguj się ponownie, aby je skonfigurować.",
   "session_expiring": "Twoja sesja wkrótce wygaśnie",
   "session_expiring_message": "Twoja sesja wygaśnie za {{seconds}} sekund. Przedłuż sesję, aby pozostać zalogowanym.",
   "session_expiring_countdown_aria": "Sesja wygasa za {{seconds}} sekund",

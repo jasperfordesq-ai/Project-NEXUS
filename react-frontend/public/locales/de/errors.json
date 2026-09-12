@@ -43,6 +43,8 @@
   "offline_message": "Sie scheinen offline zu sein",
   "session_expired": "Sitzung abgelaufen",
   "session_expired_message": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an, um fortzufahren.",
+  "session_mfa_required": "Zwei-Faktor-Authentifizierung jetzt erforderlich",
+  "session_mfa_required_message": "Ihr Konto erfordert jetzt eine Zwei-Faktor-Authentifizierung. Bitte melden Sie sich erneut an, um sie einzurichten.",
   "session_expiring": "Ihre Sitzung läuft bald ab",
   "session_expiring_message": "Ihre Sitzung läuft in {{seconds}} Sekunden ab. Verlängern Sie Ihre Sitzung, um angemeldet zu bleiben.",
   "session_expiring_countdown_aria": "Die Sitzung läuft in {{seconds}} Sekunden ab",

@@ -43,6 +43,8 @@
   "offline_message": "Sembra che tu sia offline",
   "session_expired": "Sessione scaduta",
   "session_expired_message": "La sessione è scaduta. Accedi di nuovo per continuare.",
+  "session_mfa_required": "Ora è richiesta l’autenticazione a due fattori",
+  "session_mfa_required_message": "Il tuo account ora richiede l’autenticazione a due fattori. Accedi di nuovo per configurarla.",
   "session_expiring": "La tua sessione sta per scadere",
   "session_expiring_message": "La tua sessione scadrà tra {{seconds}} secondi. Prolunga la tua sessione per rimanere connesso.",
   "session_expiring_countdown_aria": "La sessione scade tra {{seconds}} secondi",

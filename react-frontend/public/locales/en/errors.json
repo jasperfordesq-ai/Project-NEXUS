@@ -61,6 +61,8 @@
   "offline_message": "You appear to be offline",
   "session_expired": "Session expired",
   "session_expired_message": "Your session has expired. Please log in again to continue.",
+  "session_mfa_required": "Two-factor authentication now required",
+  "session_mfa_required_message": "Your account now requires two-factor authentication. Please sign in again to set it up.",
   "idle_logout_title": "Signed out due to inactivity",
   "idle_logout_message": "You were signed out automatically after a period of inactivity. Please log in again to continue.",
   "session_expiring": "Your session is about to expire",

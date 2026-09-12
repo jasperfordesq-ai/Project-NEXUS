@@ -24,7 +24,7 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import { api, tokenManager, isImpersonatedTab, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT } from '@/lib/api';
+import { api, tokenManager, isImpersonatedTab, isClientBuildStale, recoverStaleClient, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT, type SessionExpiredDetail } from '@/lib/api';
 import { logError, logWarn } from '@/lib/logger';
 import i18n from '@/i18n';
 import { validateResponseIfPresent } from '@/lib/api-validation';
@@ -352,6 +352,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Login successful without 2FA
     const loginData = data as LoginSuccessResponse;
+
+    // 🔴 An answer this bundle does not recognise — no session and no challenge it
+    // knows — is almost always THIS PAGE being out of date, not a server fault: on
+    // 12 September 2026 the previous bundle met the new two-factor enrolment answer
+    // and showed "Sign-in failed" until the browser was restarted. When the server
+    // has told us its build differs from ours, say so and force the recovery now
+    // instead of after the ten-minute grace; otherwise fail plainly and report it.
+    if (!loginData?.access_token && !loginData?.token) {
+      const stale = isClientBuildStale();
+      const message = i18n.t(stale ? 'auth:login.stale_client' : 'auth:login.failed');
+      captureTelemetryAuthEvent('failed_login', undefined, {
+        code: stale ? 'STALE_CLIENT_LOGIN_ANSWER' : 'UNRECOGNISED_LOGIN_ANSWER',
+      });
+      setState((prev) => ({ ...prev, user: null, status: 'error', error: message }));
+      if (stale) {
+        window.setTimeout(() => recoverStaleClient('unrecognised-login-answer'), 1500);
+      }
+      return { success: false, requires2FA: false, error: message, errorCode: stale ? 'STALE_CLIENT' : 'UNRECOGNISED_LOGIN_ANSWER' };
+    }
 
     if (loginData.access_token || loginData.token) {
       tokenManager.setAccessToken(loginData.access_token || loginData.token);
@@ -765,17 +784,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    const handleSessionExpired = () => {
+    const handleSessionExpired = (event: Event) => {
       void purgeAllOfflineCheckinData();
       // Cancel any pending warning timer — the session is already gone
       clearSessionWarningTimer();
+      // The server may have ended the session because the account now needs a
+      // second factor (mandatory administrator two-factor, 12 September 2026).
+      // That deserves its own words: "your session has expired" sends the member
+      // hunting for a fault that is not there.
+      const reason = (event as CustomEvent<SessionExpiredDetail>).detail?.reason;
       // Only set error message if user had an active session — stale tokens
       // on first visit should silently clear without showing "session expired"
       if (wasAuthenticated.current) {
         setState({
           user: null,
           status: 'idle',
-          error: i18n.t('errors:session_expired_message'),
+          error: i18n.t(reason === 'mfa_required' ? 'errors:session_mfa_required_message' : 'errors:session_expired_message'),
           twoFactorToken: null,
           twoFactorMethods: [],
         });

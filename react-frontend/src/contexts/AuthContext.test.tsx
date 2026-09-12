@@ -28,6 +28,7 @@ vi.mock('@/lib/api', async () => {
       post: vi.fn(),
       logoutSession: vi.fn(),
     },
+    recoverStaleClient: vi.fn(),
     tokenManager: {
       getAccessToken: vi.fn(),
       setAccessToken: vi.fn(),
@@ -44,7 +45,7 @@ vi.mock('@/lib/api', async () => {
 });
 
 // Import api after mocking
-import { api } from '@/lib/api';
+import { api, recoverStaleClient } from '@/lib/api';
 
 // Test component that displays auth state
 function TestAuthDisplay() {
@@ -136,6 +137,47 @@ describe('AuthContext', () => {
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('requires_2fa_setup'));
     expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
     expect(tokenManager.setRefreshToken).not.toHaveBeenCalled();
+  });
+
+  // 12 September 2026: the pre-release bundle met the new two-factor enrolment answer
+  // (200, no token, no flag it knew) and showed "Sign-in failed" until the browser was
+  // restarted. A login answer without a session and without a recognised challenge is
+  // now named for what it is, and when the server has already reported a build mismatch
+  // the stale bundle recovers itself instead of blaming the member's details.
+  describe('a login answer this bundle cannot read', () => {
+    it('fails plainly, without a session, when the client is current', async () => {
+      vi.mocked(api.post).mockResolvedValue({ success: true, data: { success: false, something_new: true } });
+      render(<AuthProvider><TestAuthActions /></AuthProvider>);
+      await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('error'));
+      expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('auth:login.failed'));
+      expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
+      expect(recoverStaleClient).not.toHaveBeenCalled();
+    });
+
+    it('says the page is out of date and recovers when the server build differs from ours', async () => {
+      localStorage.setItem('nexus_build_mismatch_since', String(Date.now()));
+      vi.mocked(api.post).mockResolvedValue({ success: true, data: { success: false, something_new: true } });
+      render(<AuthProvider><TestAuthActions /></AuthProvider>);
+      await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+      await waitFor(() => expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('auth:login.stale_client')));
+      await waitFor(() => expect(recoverStaleClient).toHaveBeenCalledWith('unrecognised-login-answer'), { timeout: 4000 });
+      expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
+    });
+  });
+
+  // An existing session refused with AUTH_MFA_REQUIRED (mandatory administrator
+  // two-factor, 12 September 2026) is explained as such, not as an expired session.
+  it('names the two-factor requirement when the session ends for that reason', async () => {
+    vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 } });
+    render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: { reason: 'mfa_required' } }));
+    });
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('idle'));
+    expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('errors:session_mfa_required_message'));
   });
 
   describe('Provider initialization', () => {

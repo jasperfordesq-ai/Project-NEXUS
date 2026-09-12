@@ -113,3 +113,58 @@ describe('service-worker upgrade lifecycle', () => {
   });
 });
 
+
+describe('service-worker upgrade on authentication pages', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    document.body.innerHTML = '';
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    window.history.replaceState({}, '', '/');
+  });
+
+  // 12 September 2026: mandatory administrator two-factor went live and the owner's
+  // first web sign-in was refused. The tab held the previous bundle, which could not
+  // read the new sign-in answer; the new worker had activated but its reload was
+  // deferred because the cursor was in the password field. A sign-in form holds
+  // nothing worth protecting, and a stale bundle on it is exactly the failure.
+  it.each(['/login', '/hour-timebank/login', '/register', '/auth/two-factor/setup', '/password/forgot', '/hour-timebank/password/reset'])(
+    'reloads at once on %s even while a field is focused',
+    (pathname) => {
+      window.history.replaceState({}, '', pathname);
+      const worker = workerHarness();
+      const reload = vi.fn();
+      const breadcrumb = vi.fn();
+      const input = document.createElement('input');
+      document.body.append(input);
+      input.focus();
+
+      installServiceWorkerLifecycle({ breadcrumb, schedule: vi.fn(), navigatorRef: worker.navigatorRef, reload });
+
+      worker.dispatchControllerChange();
+      expect(reload).toHaveBeenCalledTimes(1);
+      expect(breadcrumb).toHaveBeenCalledWith(
+        'SW controllerchange — reloading',
+        'pwa',
+        expect.objectContaining({ reason: 'immediate-auth-page' }),
+        'info',
+      );
+    },
+  );
+
+  it('still defers on an ordinary page while a field is focused', () => {
+    window.history.replaceState({}, '', '/hour-timebank/messages');
+    const worker = workerHarness();
+    const reload = vi.fn();
+    const input = document.createElement('input');
+    document.body.append(input);
+    input.focus();
+
+    installServiceWorkerLifecycle({ breadcrumb: vi.fn(), schedule: vi.fn(), navigatorRef: worker.navigatorRef, reload });
+
+    worker.dispatchControllerChange();
+    expect(reload).not.toHaveBeenCalled();
+  });
+});

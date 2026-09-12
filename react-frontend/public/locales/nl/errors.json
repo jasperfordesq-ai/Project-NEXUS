@@ -43,6 +43,8 @@
   "offline_message": "Je lijkt offline te zijn",
   "session_expired": "Sessie verlopen",
   "session_expired_message": "Je sessie is verlopen. Log opnieuw in om door te gaan.",
+  "session_mfa_required": "Twee-factor-authenticatie is nu vereist",
+  "session_mfa_required_message": "Je account vereist nu twee-factor-authenticatie. Log opnieuw in om deze in te stellen.",
   "session_expiring": "Uw sessie loopt bijna af",
   "session_expiring_message": "Uw sessie verloopt over {{seconds}} seconden. Verleng uw sessie om ingelogd te blijven.",
   "session_expiring_countdown_aria": "Sessie verloopt over {{seconds}} seconden",

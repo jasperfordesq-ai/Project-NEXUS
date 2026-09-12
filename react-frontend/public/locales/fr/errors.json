@@ -43,6 +43,8 @@
   "offline_message": "Vous semblez être hors ligne",
   "session_expired": "Session expirée",
   "session_expired_message": "Votre session a expiré. Reconnectez-vous pour continuer.",
+  "session_mfa_required": "Authentification à deux facteurs désormais requise",
+  "session_mfa_required_message": "Votre compte nécessite désormais l’authentification à deux facteurs. Reconnectez-vous pour la configurer.",
   "session_expiring": "Votre session est sur le point d'expirer",
   "session_expiring_message": "Votre session expirera dans {{seconds}} secondes. Prolongez votre session pour rester connecté.",
   "session_expiring_countdown_aria": "La session expire dans {{seconds}} secondes",

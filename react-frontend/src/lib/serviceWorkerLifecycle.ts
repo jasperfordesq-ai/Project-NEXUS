@@ -23,6 +23,18 @@ interface ServiceWorkerLifecycleOptions {
   deferredReloadMs?: number;
 }
 
+/**
+ * Sign-in, registration, password and two-factor pages. A focused field there is
+ * not work worth protecting, and a stale bundle on one of them is exactly the
+ * failure this lifecycle exists to prevent: on 12 September 2026 the previous
+ * bundle could not read the new two-factor sign-in answer, the new worker had
+ * activated, and its reload sat deferred behind the cursor in the password
+ * field until the owner gave up and restarted the browser.
+ */
+export function isAuthenticationPage(pathname: string): boolean {
+  return /(^|\/)(login|register|verify-email|verify-identity|password|auth)(\/|$)/.test(pathname);
+}
+
 function isUserEditing(documentRef: Document): boolean {
   const element = documentRef.activeElement as HTMLElement | null;
   if (!element || element === documentRef.body) return false;
@@ -103,6 +115,10 @@ export function installServiceWorkerLifecycle({
     if (refreshing || deferred) return;
     if (!isUserEditing(documentRef)) {
       performReload('immediate');
+      return;
+    }
+    if (isAuthenticationPage(windowRef.location?.pathname ?? '')) {
+      performReload('immediate-auth-page');
       return;
     }
 

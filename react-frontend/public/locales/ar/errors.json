@@ -43,6 +43,8 @@
   "offline_message": "يبدو أنك غير متصل بالإنترنت",
   "session_expired": "انتهت الجلسة",
   "session_expired_message": "انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى للمتابعة.",
+  "session_mfa_required": "المصادقة الثنائية مطلوبة الآن",
+  "session_mfa_required_message": "يتطلب حسابك الآن المصادقة الثنائية. يرجى تسجيل الدخول مرة أخرى لإعدادها.",
   "session_expiring": "جلستك على وشك الانتهاء",
   "session_expiring_message": "ستنتهي جلستك خلال {{seconds}} ثانية. قم بتمديد جلستك لتظل مسجلاً للدخول.",
   "session_expiring_countdown_aria": "تنتهي صلاحية الجلسة خلال {{seconds}} ثانية",

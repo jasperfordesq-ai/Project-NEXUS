@@ -43,6 +43,8 @@
   "offline_message": "Parece que no tienes conexión",
   "session_expired": "Sesión caducada",
   "session_expired_message": "Tu sesión ha caducado. Inicia sesión de nuevo para continuar.",
+  "session_mfa_required": "Ahora se requiere autenticación de dos factores",
+  "session_mfa_required_message": "Tu cuenta ahora requiere autenticación de dos factores. Inicia sesión de nuevo para configurarla.",
   "session_expiring": "Tu sesión está a punto de caducar",
   "session_expiring_message": "Your session will expire in {{seconds}} seconds. Amplíe su sesión para permanecer conectado.",
   "session_expiring_countdown_aria": "La sesión caduca en {{seconds}} segundos",

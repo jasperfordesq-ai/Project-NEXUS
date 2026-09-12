@@ -339,6 +339,33 @@ describe('API Client', () => {
       expect(tokenManager.getAccessToken()).not.toBe('setup-challenge');
     });
 
+    // 12 September 2026: mandatory administrator two-factor went live. An existing
+    // session without two-factor claims is refused with 401 AUTH_MFA_REQUIRED; a
+    // refresh cannot help (the new token carries no claims either) and the member
+    // deserves to be told why they were signed out, not "session expired".
+    it('ends the session with a two-factor reason on 401 AUTH_MFA_REQUIRED, without trying a refresh', async () => {
+      tokenManager.setAccessToken('old-session');
+      tokenManager.setRefreshToken('old-refresh');
+      const reasons: unknown[] = [];
+      const listener = (event: Event) => reasons.push((event as CustomEvent).detail?.reason);
+      window.addEventListener('nexus:session_expired', listener);
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        headers: new Headers(),
+        json: () => Promise.resolve({ success: false, code: 'AUTH_MFA_REQUIRED', errors: [{ code: 'AUTH_MFA_REQUIRED', message: 'x' }] }),
+      } as Response);
+
+      const result = await api.get('/v2/users/me');
+
+      window.removeEventListener('nexus:session_expired', listener);
+      expect(result.success).toBe(false);
+      expect(result.code).toBe('AUTH_MFA_REQUIRED');
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(tokenManager.getAccessToken()).toBeNull();
+      expect(reasons).toEqual(['mfa_required']);
+    });
+
     it('preserves application-level failure envelopes returned with HTTP 2xx', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -1278,8 +1305,14 @@ describe('API Client', () => {
           json: () => Promise.resolve({ data: { id: 1 } }),
         } as Response);
 
+      // The client registers its refresh waiter a few microtasks after the 401
+      // arrives (it reads the 401 body first, to tell a two-factor refusal from an
+      // expired token). Let the microtask queue drain before publishing — the
+      // storage event is dispatched synchronously, and a waiter registered after
+      // it fires would wait for the fifteen-second lease instead.
       const responsePromise = api.get('/v2/users/me');
       await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       localStorage.setItem('nexus_access_token', 'published-token');
       window.dispatchEvent(new StorageEvent('storage', {
         key: 'nexus_access_token',
