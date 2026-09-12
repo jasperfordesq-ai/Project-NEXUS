@@ -40,6 +40,15 @@
 #      store release. The native project is now regenerated on every build, and
 #      the finished bundle is opened and checked for both values.
 #
+#   5. MINIFICATION. Google Play measures "DEX code optimization" and warns when
+#      obfuscation is under 25%. Ours was 2% on 2026-09-12 because
+#      android/gradle.properties carried no minify setting, so the release build
+#      type compiled with `minifyEnabled false` — which is also why every upload
+#      reported "no deobfuscation file associated with this App Bundle".
+#      app.json now sets enableMinifyInReleaseBuilds, but that is a generated
+#      file away from the bundle and prebuild has silently dropped generated
+#      values before (item 4). So the finished bundle is checked for the mapping.
+#
 # Every one of those is checked below and refuses the build rather than warning.
 #
 # Usage:
@@ -224,6 +233,28 @@ if ! in_bundle base/resources.pb "${APP_VERSION}"; then
 fi
 echo "Update channel     : ${EXPECTED_CHANNEL} (verified in bundle)"
 echo "Runtime version    : ${APP_VERSION} (verified in bundle)"
+
+# ------------------------------- guard 5: prove the code was actually minified
+# R8 writes the obfuscation mapping into the bundle at
+# BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map. That entry
+# exists if and only if minification ran, so it is the proof for BOTH things at
+# once: the code is obfuscated, and Play gets a deobfuscation file (which is what
+# makes the recurring "no deobfuscation file associated with this App Bundle"
+# warning go away and keeps native crash reports readable).
+MAPPING_ENTRY="BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map"
+if ! unzip -l "$AAB" | grep -a -F -c -- "$MAPPING_ENTRY" >/dev/null; then
+  echo "ERROR: the bundle carries no R8 mapping file." >&2
+  echo "  expected entry: ${MAPPING_ENTRY}" >&2
+  echo "That means minification did NOT run, so the DEX is unobfuscated and Play" >&2
+  echo "gets no deobfuscation file. Check that app.json's expo-build-properties" >&2
+  echo "block still sets android.enableMinifyInReleaseBuilds, and that" >&2
+  echo "android/gradle.properties contains android.enableMinifyInReleaseBuilds=true" >&2
+  echo "after prebuild." >&2
+  exit 1
+fi
+MAPPING_LOCAL="android/app/build/outputs/mapping/release/mapping.txt"
+echo "Minification       : ON (mapping verified in bundle)"
+[ -f "$MAPPING_LOCAL" ] && echo "Local mapping copy : $ROOT/$MAPPING_LOCAL"
 
 echo ""
 echo "Bundle: $ROOT/$AAB"

@@ -311,11 +311,14 @@
       "./plugins/with-android-font-scale",
       "./plugins/with-android-node-clean-exit",
       "./plugins/with-android-play-signing",
+      "./plugins/with-android-proguard-rules",
       [
         "expo-build-properties",
         {
           "android": {
-            "useLegacyPackaging": true
+            "useLegacyPackaging": true,
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           },
           "ios": {
             "deploymentTarget": "15.1",

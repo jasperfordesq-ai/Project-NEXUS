@@ -126,6 +126,32 @@ for (const channel of publishableChannels) {
   );
 }
 assert(app.plugins?.includes('./plugins/with-android-network-security'), 'Android network security config plugin is required');
+
+/**
+ * Android minification.
+ *
+ * 🔴 Play warns below 25% "DEX code optimization"; this app measured 2% on
+ * 2026-09-12 because nothing ever set these. The three pieces only work
+ * together, and removing any one of them is silent:
+ *
+ *   enableMinifyInReleaseBuilds          R8 runs at all
+ *   enableShrinkResourcesInReleaseBuilds unused resources dropped (R8 required)
+ *   with-android-proguard-rules          the keep rules no dependency ships for
+ *                                        us — without them R8 renames things the
+ *                                        app looks up by string at RUNTIME, and
+ *                                        almost every such call site upstream is
+ *                                        inside a try/catch, so the feature just
+ *                                        stops working with nothing logged.
+ *
+ * scripts/build-aab-play.sh checks the finished bundle actually carries a
+ * mapping file; this checks the configuration that should produce one.
+ */
+const buildProperties = app.plugins?.find(
+  (plugin) => Array.isArray(plugin) && plugin[0] === 'expo-build-properties'
+)?.[1]?.android;
+assert(buildProperties?.enableMinifyInReleaseBuilds === true, 'expo-build-properties must set android.enableMinifyInReleaseBuilds — without it the release DEX is unobfuscated and Play gets no deobfuscation file');
+assert(buildProperties?.enableShrinkResourcesInReleaseBuilds === true, 'expo-build-properties must set android.enableShrinkResourcesInReleaseBuilds');
+assert(app.plugins?.includes('./plugins/with-android-proguard-rules'), 'the R8 keep-rules plugin is required whenever minification is on — android/ is gitignored, so mobile/android-proguard-rules.pro is the only place those rules survive a prebuild');
 assert(!network.includes('trustkit-config'), 'Android config contains an unsupported TrustKit element');
 assert((network.match(/<pin digest="SHA-256">/g) ?? []).length >= 2, 'certificate pin set needs primary and backup pins');
 const expiry = network.match(/<pin-set expiration="([0-9-]+)"/)?.[1];
