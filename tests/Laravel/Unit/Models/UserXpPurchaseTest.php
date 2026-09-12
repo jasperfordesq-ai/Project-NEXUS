@@ -28,8 +28,11 @@ class UserXpPurchaseTest extends TestCase
 
     public function test_fillable_contains_expected_fields(): void
     {
+        // `creation_idempotency_key_hash` is mass-assigned when an XP-shop purchase
+        // is created, so a retry after a lost response resolves to the committed
+        // row instead of spending XP twice. It must stay fillable.
         $expected = [
-            'tenant_id', 'user_id', 'item_id', 'xp_spent', 'is_active', 'expires_at',
+            'tenant_id', 'user_id', 'creation_idempotency_key_hash', 'item_id', 'xp_spent', 'is_active', 'expires_at',
         ];
         $this->assertEquals($expected, $this->model->getFillable());
     }
