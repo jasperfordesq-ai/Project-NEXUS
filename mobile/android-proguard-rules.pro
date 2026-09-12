@@ -148,6 +148,28 @@
 }
 
 # --------------------------------------------------------------------------
+# Stripe Issuing push provisioning — an OPTIONAL Stripe artifact this app does
+# not depend on and does not use.
+#
+# This is the one rule here that R8 demands at BUILD time rather than one that
+# prevents a silent runtime failure. @stripe/stripe-react-native's
+# DefaultPushProvisioningProxy references com.stripe.android.pushProvisioning.*,
+# which lives in com.stripe:stripe-android-issuing-push-provisioning. That
+# artifact is opt-in and is not in this app's dependency graph, so R8 refuses
+# with "Missing classes detected". Building version code 11 on 2026-09-12 it
+# named exactly five: PushProvisioningActivity$g,
+# PushProvisioningActivityStarter{,$Args,$Error} and
+# PushProvisioningEphemeralKeyProvider.
+#
+# Suppressing the whole package rather than those five: the entire package is in
+# the absent artifact, and Stripe's own guidance is to silence it when Issuing is
+# not used. Nothing in mobile/ calls canAddCardToWallet, isCardInWallet or any
+# push-provisioning API — checked before writing this. If this app ever adds
+# Stripe Issuing, add the dependency and DELETE this rule.
+# --------------------------------------------------------------------------
+-dontwarn com.stripe.android.pushProvisioning.**
+
+# --------------------------------------------------------------------------
 # Keep the source file and line numbers in Java/Kotlin stack traces.
 #
 # sentry-android-core's AAR already asks for this, but it is the difference

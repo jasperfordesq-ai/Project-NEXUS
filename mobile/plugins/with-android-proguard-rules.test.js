@@ -64,6 +64,8 @@ describe('with-android-proguard-rules', () => {
       ['MLKit barcode probe', '-keep class com.google.mlkit.vision.barcode.BarcodeScanning { *; }'],
       ['image crop reflection', 'com.canhub.cropper.CropImageActivity'],
       ['Stripe card brand tint', 'com.stripe.android.view.CardBrandView'],
+      // Not a silent-runtime-failure rule: without it R8 refuses to compile at all.
+      ['absent Stripe Issuing artifact', '-dontwarn com.stripe.android.pushProvisioning.**'],
       ['readable stack traces', '-keepattributes SourceFile,LineNumberTable'],
     ])('keeps the rule for %s', (_label, rule) => {
       expect(text).toContain(rule);

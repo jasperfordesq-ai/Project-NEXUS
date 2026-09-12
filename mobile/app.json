@@ -312,6 +312,7 @@
       "./plugins/with-android-node-clean-exit",
       "./plugins/with-android-play-signing",
       "./plugins/with-android-proguard-rules",
+      "./plugins/with-android-gradle-memory",
       [
         "expo-build-properties",
         {
