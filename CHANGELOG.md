@@ -262,6 +262,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Native app version 1.5.0, Android version code 10: the store release carrying the two-factor sign-in and the Expo SDK 55 upgrade. The bump also gives the build a new over-the-air runtime version, so an update built for SDK 55 can never be served to the SDK 54 build 9 still installed on phones.
+
 - **ASP.NET edition paused (owner decision, 11 September 2026) — not abandoned; it resumes when the rest of the platform is more mature.** The four ASP.NET jobs in the platform-contracts workflow are pinned off so no runner minutes are spent on them, the ASP.NET markdown-link pass is removed from the shared inventory job, and `AGENTS.md`, `react-frontend/CLAUDE.md`, `docs/REACT-DUAL-BACKEND.md` and the ASP.NET README state the pause at the top. Code, ledger and earlier decision records are untouched; ADR-0005 records what was switched off and how to resume.
 - Updated the native app to Expo SDK 55 and React Native 0.83, including the system-appearance API adjustment and explicit background audio configuration.
 

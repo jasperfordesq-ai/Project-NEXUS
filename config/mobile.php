@@ -32,7 +32,7 @@ return [
          * mobile/app.json → expo.version. `npm run check:version` does not cover
          * this yet; the contract test pins the pair instead.
          */
-        'current_version' => env('MOBILE_EXPO_CURRENT_VERSION', '1.4.0'),
+        'current_version' => env('MOBILE_EXPO_CURRENT_VERSION', '1.5.0'),
 
         /*
          * Copies BELOW this are refused with 426 Upgrade Required.
