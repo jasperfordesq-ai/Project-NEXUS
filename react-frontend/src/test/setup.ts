@@ -222,6 +222,21 @@ Object.defineProperty(window, 'IntersectionObserver', {
   value: MockIntersectionObserver,
 });
 
+// jsdom has no layout, so it does not implement document.elementFromPoint.
+// `input-otp` (behind HeroUI's InputOTP) polls it on a timer once the field has
+// been focused, to detect password-manager badges. Without this stub the timer
+// throws AFTER a test has finished, and Vitest reports an unhandled error that
+// reds the whole shard even though every test passed (React Full Suite shard 3
+// on 1498a67a3, first seen when SettingsPage.test typed into the disable code
+// field). Returning null means "nothing under that point", which is true here.
+if (typeof document.elementFromPoint !== 'function') {
+  Object.defineProperty(document, 'elementFromPoint', {
+    writable: true,
+    configurable: true,
+    value: () => null,
+  });
+}
+
 // Mock ResizeObserver
 class MockResizeObserver {
   observe = () => {};
