@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { randomUUID } = require('node:crypto');
 const {
   callGamificationApi,
   claimDailyReward,
@@ -24,6 +25,15 @@ function tokenFrom(req) {
 
 function loginRedirect() {
   return '/login?status=auth-required';
+}
+
+// The shop form carries a per-render operation key so a re-submitted form
+// replays the original purchase server-side. A submission without one (an
+// older cached page) still gets a fresh key: the API refuses purchases
+// without an 8–191 character key.
+function purchaseOperationKey(value) {
+  const key = typeof value === 'string' ? value.trim() : '';
+  return key.length >= 8 && key.length <= 191 ? key : randomUUID();
 }
 
 function redirectTo(res, pathname) {
@@ -466,6 +476,7 @@ router.get('/shop', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_gamification.shop.title'),
     activeNav: 'achievements',
     loadError,
+    purchaseOperationKey: randomUUID(),
     shop: {
       ...normalizeShop(shopPayload, res.locals.t),
       status,
@@ -616,10 +627,11 @@ router.post('/shop/purchase', asyncRoute(async (req, res) => {
   }
 
   const itemId = positiveInteger(req.body.item_id);
+  const idempotencyKey = purchaseOperationKey(req.body.idempotency_key);
   let status = 'purchase-failed';
   if (itemId !== null) {
     try {
-      await purchaseGamificationShopItem(token, itemId);
+      await purchaseGamificationShopItem(token, itemId, idempotencyKey);
       status = 'purchased';
     } catch (error) {
       if (redirectAuthIfNeeded(error, res)) return undefined;

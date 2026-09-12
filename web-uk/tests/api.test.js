@@ -5584,16 +5584,17 @@ describe('API Request Functions', () => {
         json: async () => ({ data: { success: true } })
       });
 
-      await api.purchaseGamificationShopItem('test-token', 42);
+      await api.purchaseGamificationShopItem('test-token', 42, 'shop-op-1234abcd');
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:5000/api/v2/gamification/shop/purchase',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token'
+            Authorization: 'Bearer test-token',
+            'Idempotency-Key': 'shop-op-1234abcd'
           }),
-          body: JSON.stringify({ item_id: 42 })
+          body: JSON.stringify({ item_id: 42, idempotency_key: 'shop-op-1234abcd' })
         })
       );
     });

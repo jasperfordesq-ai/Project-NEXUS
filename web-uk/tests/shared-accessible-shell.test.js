@@ -3303,6 +3303,8 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Buy for 120 XP');
     expect(signed.text).toContain('/achievements/shop/purchase');
     expect(signed.text).toContain('name="item_id" value="9"');
+    // E-005: each purchase form carries a per-render operation key, distinct per item.
+    expect(signed.text).toMatch(/name="idempotency_key" value="[0-9a-f-]{36}-9"/);
     expect(signed.text).toContain('Warm welcome badge');
     expect(signed.text).toContain('Badge');
     expect(signed.text).toContain('Owned');
@@ -11839,12 +11841,15 @@ describe('shared accessible frontend shell', () => {
       .type('form')
       .send({
         _csrf: csrfMatch[1],
-        item_id: '42'
+        item_id: '42',
+        idempotency_key: 'shop-op-1234abcd'
       });
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('/achievements/shop?status=purchased');
-    expect(api.purchaseGamificationShopItem).toHaveBeenCalledWith('test-token', 42);
+    // E-005: the API refuses a purchase without an operation key, so the form's
+    // key must travel through to the Laravel call.
+    expect(api.purchaseGamificationShopItem).toHaveBeenCalledWith('test-token', 42, 'shop-op-1234abcd');
   });
 
   it('redirects invalid Laravel achievement shop purchases with the failed status', async () => {

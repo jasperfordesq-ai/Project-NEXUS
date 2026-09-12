@@ -3656,11 +3656,20 @@ async function claimGamificationChallenge(token, id) {
   });
 }
 
-async function purchaseGamificationShopItem(token, itemId) {
+// The purchase endpoint requires an 8–191 character operation key (422 without
+// one) so a retried request replays the original purchase instead of spending
+// XP twice. Sent as both header and field, like the other keyed writes above.
+async function purchaseGamificationShopItem(token, itemId, idempotencyKey) {
   return request('/api/v2/gamification/shop/purchase', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ item_id: itemId })
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
+    },
+    body: JSON.stringify({
+      item_id: itemId,
+      ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {})
+    })
   });
 }
 

@@ -1007,7 +1007,17 @@ function XpShopTab({ userXp }: { userXp: number }) {
 
     try {
       setPurchasingId(item.id);
-      const res = await api.post('/v2/gamification/shop/purchase', { item_id: item.id });
+      // The purchase endpoint requires a client operation key (8–191 chars) so a
+      // retried request returns the original purchase instead of spending XP
+      // twice. Without one the API answers 422 and no web purchase can succeed.
+      const idempotencyKey =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `xp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const res = await api.post('/v2/gamification/shop/purchase', {
+        item_id: item.id,
+        idempotency_key: idempotencyKey,
+      });
       if (res.success) {
         toastRef.current.success(tRef.current('achievements.shop.purchase_complete'), tRef.current('achievements.shop.purchase_complete_desc', { name: item.name }));
         setItems((prev) =>

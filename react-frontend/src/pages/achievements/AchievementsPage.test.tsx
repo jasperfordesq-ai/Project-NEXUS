@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, userEvent } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -261,6 +261,55 @@ describe('AchievementsPage', () => {
     expect(screen.getByText('Journeys')).toBeInTheDocument();
     expect(screen.getByText('Engagement')).toBeInTheDocument();
     expect(screen.getByText('XP Shop')).toBeInTheDocument();
+  });
+
+  // E-005 (2026-09-12). The purchase endpoint refuses a request without an
+  // 8–191 character operation key (422), and this page sent only item_id, so
+  // no web purchase could succeed. The key lets a retried request replay the
+  // original purchase instead of spending XP twice.
+  it('sends an operation key with every XP shop purchase, which the API requires', async () => {
+    const previous = vi.mocked(api.get).getMockImplementation();
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/v2/gamification/shop')) {
+        return Promise.resolve({
+          success: true,
+          data: [
+            {
+              id: 7,
+              name: 'Golden frame',
+              description: 'A gold accent for your profile',
+              cost_xp: 10,
+              xp_cost: 10,
+              item_type: 'perk',
+              icon: null,
+              can_purchase: true,
+              user_purchases: 0,
+              stock_limit: null,
+              is_active: true,
+            },
+          ],
+          meta: { user_xp: 500 },
+        });
+      }
+      return previous ? previous(url) : Promise.resolve({ success: true, data: [], meta: {} });
+    });
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { success: true } });
+
+    render(<AchievementsPage />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByText('XP Shop'));
+    await user.click(await screen.findByRole('button', { name: 'Purchase' }));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        '/v2/gamification/shop/purchase',
+        expect.objectContaining({ item_id: 7 }),
+      );
+    });
+    const body = vi.mocked(api.post).mock.calls.at(-1)?.[1] as { idempotency_key?: unknown };
+    expect(typeof body.idempotency_key).toBe('string');
+    expect((body.idempotency_key as string).length).toBeGreaterThanOrEqual(8);
+    expect((body.idempotency_key as string).length).toBeLessThanOrEqual(191);
   });
 
   it('shows error state when API fails', async () => {
