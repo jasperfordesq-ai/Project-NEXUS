@@ -11,6 +11,8 @@ use App\Support\CsvExportSanitizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
 use App\Services\ShiftSwapService;
 use App\Services\ShiftWaitlistService;
 use App\Services\ShiftGroupReservationService;
@@ -784,6 +786,11 @@ class VolunteerCommunityController extends BaseApiController
             return $this->respondWithData($result, null, 201);
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (QueryException $e) {
+            // QueryException extends RuntimeException; left to the branch below it
+            // answered 400 with the SQL statement and its bindings in the body (F-016).
+            Log::error('[VolunteerCommunityController] createDonation database failure', ['error' => $e->getMessage()]);
+            return $this->respondWithError('SERVER_ERROR', __('api.unexpected_error'), null, 500);
         } catch (\RuntimeException $e) {
             $status = (int) $e->getCode() === 409 ? 409 : 400;
             return $this->respondWithError($status === 409 ? 'IDEMPOTENCY_CONFLICT' : 'VALIDATION_ERROR', $e->getMessage(), null, $status);

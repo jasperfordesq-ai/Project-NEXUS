@@ -13,6 +13,8 @@ use App\Services\VolunteerExpenseService;
 use App\Services\VolunteeringConfigurationService;
 use App\Core\TenantContext;
 use App\Support\CsvExportSanitizer;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -110,6 +112,12 @@ class VolunteerExpenseController extends BaseApiController
         } catch (\InvalidArgumentException $e) {
             $this->deleteStoredReceipt($storedReceiptPath);
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (QueryException $e) {
+            // QueryException extends RuntimeException; left to the branch below it
+            // answered 400 with the SQL statement and its bindings in the body (F-016).
+            $this->deleteStoredReceipt($storedReceiptPath);
+            Log::error('[VolunteerExpenseController] submitExpense database failure', ['error' => $e->getMessage()]);
+            return $this->respondWithError('SERVER_ERROR', __('api.unexpected_error'), null, 500);
         } catch (\RuntimeException $e) {
             $this->deleteStoredReceipt($storedReceiptPath);
             $status = (int) $e->getCode();
