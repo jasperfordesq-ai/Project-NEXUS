@@ -33,8 +33,12 @@ const SIGNING_CONFIG = [
   '        }',
 ].join('\n');
 
+// 🔴 Explicit call with ONE parenthesised argument. `signingConfig (cond) ? a : b`
+// is read by Groovy as `signingConfig(cond) ? a : b`, and Gradle then refuses the
+// String it was handed ("cannot be cast to SigningConfig") — the fifth 1.5.0
+// build failed on that line.
 const RELEASE_SIGNING =
-  "signingConfig (System.getenv('PLAY_STORE_FILE') ?: findProperty('playStoreFile')) ? signingConfigs.playRelease : signingConfigs.debug";
+  "signingConfig((System.getenv('PLAY_STORE_FILE') ?: findProperty('playStoreFile')) ? signingConfigs.playRelease : signingConfigs.debug)";
 
 function injectPlaySigning(gradleSource) {
   if (gradleSource.includes('playRelease {')) return gradleSource;

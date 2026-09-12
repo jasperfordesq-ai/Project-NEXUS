@@ -49,7 +49,7 @@ describe('with-android-play-signing', () => {
   it('switches only the release build type to the upload key, and only when the values are present', () => {
     const releaseBlock = out.slice(out.indexOf('release {'));
     expect(releaseBlock).toContain(
-      "signingConfig (System.getenv('PLAY_STORE_FILE') ?: findProperty('playStoreFile')) ? signingConfigs.playRelease : signingConfigs.debug",
+      "signingConfig((System.getenv('PLAY_STORE_FILE') ?: findProperty('playStoreFile')) ? signingConfigs.playRelease : signingConfigs.debug)",
     );
     const debugBlock = out.slice(out.indexOf('debug {\n            signingConfig'), out.indexOf('release {'));
     expect(debugBlock).toContain('signingConfig signingConfigs.debug');
