@@ -72,6 +72,7 @@
     "@playwright/test": "^1.59.1",
     "dotenv": "^17.4.2",
     "govuk-frontend": "^6.1.0",
+    "minimatch": "^10.2.6",
     "pa11y": "^9.1.1",
     "picocolors": "^1.1.1",
     "prisma": "^5.22.0",
