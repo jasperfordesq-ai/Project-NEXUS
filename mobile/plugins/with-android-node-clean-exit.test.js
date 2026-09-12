@@ -13,6 +13,7 @@ const generated = [
   'apply plugin: "com.android.application"',
   '',
   'react {',
+  '    // nodeExecutableAndArgs = ["node"]',
   '    entryFile = file(["node", "-e", "require(\'expo/scripts/resolveAppEntry\')", projectRoot, "android", "absolute"].execute(null, rootDir).text.trim())',
   '    cliFile = new File(["node", "--print", "require.resolve(\'@expo/cli\')"].execute(null, rootDir).text.trim())',
   '    bundleCommand = "export:embed"',
@@ -28,12 +29,15 @@ describe('with-android-node-clean-exit', () => {
     const out = injectNodeCleanExit(generated, 'C:\\tmp\\nexus\\mobile\\scripts\\node-clean-exit.cjs');
     expect(out).toContain('react {\n    nodeExecutableAndArgs = ["node", "--require", "C:/tmp/nexus/mobile/scripts/node-clean-exit.cjs"]');
     expect(out).toContain('bundleCommand = "export:embed"');
+    // The template's commented example must not count as an existing setting.
+    expect(out.match(/^\s*nodeExecutableAndArgs\s*=/gm)).toHaveLength(1);
+    expect(out).toContain('// nodeExecutableAndArgs = ["node"]');
   });
 
   it('replaces an existing setting instead of adding a second one', () => {
     const once = injectNodeCleanExit(generated, '/a/scripts/node-clean-exit.cjs');
     const twice = injectNodeCleanExit(once, '/b/scripts/node-clean-exit.cjs');
-    expect(twice.match(/nodeExecutableAndArgs/g)).toHaveLength(1);
+    expect(twice.match(/^\s*nodeExecutableAndArgs\s*=/gm)).toHaveLength(1);
     expect(twice).toContain('"/b/scripts/node-clean-exit.cjs"');
   });
 

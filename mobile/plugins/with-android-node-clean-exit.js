@@ -22,8 +22,12 @@ const REACT_BLOCK = /^([ 	]*)react[ 	]*\{[ 	]*$/m;
 function injectNodeCleanExit(gradleSource, preloadPath) {
   const forwardSlashes = preloadPath.replace(/\\/g, '/');
   const line = `nodeExecutableAndArgs = ["node", "--require", "${forwardSlashes}"]`;
-  if (gradleSource.includes('nodeExecutableAndArgs')) {
-    return gradleSource.replace(/^(\s*)nodeExecutableAndArgs\s*=.*$/m, `$1${line}`);
+  // Only an ACTIVE setting counts. The template Expo generates carries a commented
+  // `// nodeExecutableAndArgs = ["node"]`; a plain `includes()` matched that on the
+  // first build, replaced nothing, and the crash it was meant to stop happened again.
+  const active = /^([ 	]*)nodeExecutableAndArgs[ 	]*=.*$/m;
+  if (active.test(gradleSource)) {
+    return gradleSource.replace(active, `$1${line}`);
   }
   const match = REACT_BLOCK.exec(gradleSource);
   if (!match) {
