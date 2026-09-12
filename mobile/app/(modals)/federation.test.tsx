@@ -208,6 +208,17 @@ describe('FederationScreen', () => {
     expect(getAllByText('Messages').length).toBeGreaterThanOrEqual(1);
   });
 
+  it('keeps explore actions readable in enforced columns without shrinking labels', () => {
+    const { getByTestId } = render(<FederationScreen />);
+
+    expect(getByTestId('federation-quick-link-partners')).toHaveStyle({
+      flexBasis: '100%',
+      flexGrow: 1,
+    });
+    expect(getByTestId('federation-quick-link-label-connections')).toHaveProp('numberOfLines', 2);
+    expect(getByTestId('federation-quick-link-label-connections')).not.toHaveProp('adjustsFontSizeToFit');
+  });
+
   it('renders the empty partner and activity states', () => {
     const { getByText } = render(<FederationScreen />);
     expect(getByText('No partner communities yet')).toBeTruthy();

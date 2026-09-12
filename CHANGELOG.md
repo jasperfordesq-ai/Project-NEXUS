@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Federation hub, partner-detail and member-card actions in the native app now use enforced responsive columns instead of compressing controls into unreadable rows. Labels keep a readable size and may wrap to two lines, large-text and narrow-screen layouts become full-width, partner metadata and feature chips use the medium size, and directory filters no longer cap partner names and translations to one 136dp line.
+
 - Android release builds no longer fail when Node crashes while shutting down after the JavaScript bundle step. The same Windows shutdown crash that the build already retried for the update-manifest step was seen in the Metro bundle step, after the bundle and source map had both been written in full. That step is now retried on the same bounded terms; an ordinary bundling failure is still reported on the first attempt rather than repeated, and other commands of the same tool are not retried.
 
 - Native goal completion now uses the canonical atomic lifecycle transition, preserving completion history, milestones and XP while making retries side-effect safe. Goal forms and actions prevent rapid conflicting edits. Poll votes now commit with XP, return the committed choice after response loss, reject a changed second choice, and serialize rapid native taps; poll creation locks its submitted draft.

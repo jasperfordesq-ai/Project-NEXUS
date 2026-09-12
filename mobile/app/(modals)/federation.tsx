@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useMemo, type ComponentProps, type ReactNode } from 'react';
-import { FlatList, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -35,6 +35,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import { Chip } from '@/components/ui/StatusChip';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withRouteGate } from '@/components/withRouteGate';
+import { responsiveFederationActionStyle } from '@/components/federation/responsiveLayout';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -181,6 +182,7 @@ function QuickLinksSection({
   theme: ReturnType<typeof useTheme>;
   t: (key: string) => string;
 }) {
+  const { width, fontScale } = useWindowDimensions();
   return (
     <View className="mb-4 gap-3">
       <SectionHeading title={t('hub.exploreNetwork')} theme={theme} />
@@ -189,7 +191,9 @@ function QuickLinksSection({
           <NativePressable
             key={link.key}
             accessibilityLabel={t(`hub.quick.${link.key}.title`)}
-            className="min-w-[31%] flex-1 rounded-panel-inner"
+            className="rounded-panel-inner"
+            style={responsiveFederationActionStyle(width, fontScale)}
+            testID={`federation-quick-link-${link.key}`}
             onPress={() => {
               router.push(link.href as Href);
             }}
@@ -197,13 +201,18 @@ function QuickLinksSection({
           >
             <Surface
               variant="secondary"
-              className="min-h-[88px] w-full items-center justify-center gap-2 rounded-panel-inner p-3"
+              className="min-h-[96px] w-full items-center justify-center gap-2 rounded-panel-inner p-3"
               style={{ borderWidth: 1, borderColor: withAlpha(link.tone, 0.14) }}
             >
               <View className="size-10 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(link.tone, 0.13) }}>
                 <Ionicons name={link.icon} size={20} color={link.tone} />
               </View>
-              <Text className="text-center text-xs font-bold leading-4" style={{ color: theme.text }} numberOfLines={1} adjustsFontSizeToFit>
+              <Text
+                className="text-center text-sm font-bold leading-5"
+                style={{ color: theme.text }}
+                numberOfLines={2}
+                testID={`federation-quick-link-label-${link.key}`}
+              >
                 {t(`hub.quick.${link.key}.title`)}
               </Text>
             </Surface>
@@ -270,17 +279,17 @@ function PartnerCard({
 
           <View className="flex-row flex-wrap items-center gap-2 pl-1">
             {item.federation_level_name ? (
-              <Chip size="sm" variant="secondary">
+              <Chip size="md" variant="secondary">
                 <Chip.Label numberOfLines={1}>{item.federation_level_name}</Chip.Label>
               </Chip>
             ) : null}
-            <Chip size="sm" variant="secondary">
-              <Ionicons name="people-outline" size={12} color={primary} />
+            <Chip size="md" variant="secondary">
+              <Ionicons name="people-outline" size={14} color={primary} />
               <Chip.Label>{t('hub.memberCount', { count: item.member_count ?? 0 })}</Chip.Label>
             </Chip>
             {connectedDate ? (
-              <Chip size="sm" variant="secondary">
-                <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
+              <Chip size="md" variant="secondary">
+                <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
                 <Chip.Label>{t('connectedSince', { date: connectedDate })}</Chip.Label>
               </Chip>
             ) : null}

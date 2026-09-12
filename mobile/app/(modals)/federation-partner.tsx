@@ -11,6 +11,7 @@ import {
   ScrollView,
   Share,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,6 +40,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import { responsiveFederationActionStyle } from '@/components/federation/responsiveLayout';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -150,6 +152,7 @@ function PartnerActionGrid({
   t: (key: string, opts?: Record<string, unknown>) => string;
   theme: ReturnType<typeof useTheme>;
 }) {
+  const { width, fontScale } = useWindowDimensions();
   const actions = Object.entries(partnerActionMeta)
     .filter(([permission]) => permissions.includes(permission))
     .map(([permission, meta]) => ({ permission, ...meta }));
@@ -165,8 +168,11 @@ function PartnerActionGrid({
         {actions.map((action) => (
           <HeroButton
             key={action.permission}
+            size="lg"
             variant="secondary"
-            className="min-w-[46%] flex-1"
+            className="justify-start"
+            style={responsiveFederationActionStyle(width, fontScale)}
+            testID={`federation-partner-action-${action.permission}`}
             onPress={() => {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push({ pathname: action.href, params: { partner_id: String(partner.id) } } as unknown as Href);
@@ -174,7 +180,12 @@ function PartnerActionGrid({
             accessibilityLabel={t(action.labelKey)}
           >
             <Ionicons name={action.icon} size={16} color={action.tone} />
-            <HeroButton.Label>{t(action.labelKey)}</HeroButton.Label>
+            <HeroButton.Label
+              numberOfLines={2}
+              testID={`federation-partner-action-label-${action.permission}`}
+            >
+              {t(action.labelKey)}
+            </HeroButton.Label>
           </HeroButton>
         ))}
       </View>
@@ -324,12 +335,12 @@ function FederationPartnerScreen() {
                       </Text>
                     ) : null}
                     <View className="flex-row flex-wrap gap-2">
-                      <Chip size="sm" variant="secondary" color={partner.is_external ? 'warning' : 'success'}>
-                        <Ionicons name={partner.is_external ? 'globe-outline' : 'shield-checkmark-outline'} size={13} color={partner.is_external ? '#f59e0b' : '#22c55e'} />
+                      <Chip size="md" variant="secondary" color={partner.is_external ? 'warning' : 'success'}>
+                        <Ionicons name={partner.is_external ? 'globe-outline' : 'shield-checkmark-outline'} size={14} color={partner.is_external ? '#f59e0b' : '#22c55e'} />
                         <Chip.Label>{partner.is_external ? t('detail.externalPartner') : t('detail.integratedPartner')}</Chip.Label>
                       </Chip>
-                      <Chip size="sm" variant="secondary" color="accent">
-                        <Ionicons name="git-network-outline" size={13} color={primary} />
+                      <Chip size="md" variant="secondary" color="accent">
+                        <Ionicons name="git-network-outline" size={14} color={primary} />
                         <Chip.Label>{levelLabel}</Chip.Label>
                       </Chip>
                     </View>
@@ -400,8 +411,8 @@ function FederationPartnerScreen() {
               <HeroCard className="rounded-panel p-0">
                 <HeroCard.Body className="flex-row flex-wrap gap-2 p-4">
                   {permissions.map((permission) => (
-                    <Chip key={permission} size="sm" variant="secondary">
-                      <Ionicons name={permissionIcons[permission] ?? 'checkmark-circle-outline'} size={13} color={primary} />
+                    <Chip key={permission} size="md" variant="secondary">
+                      <Ionicons name={permissionIcons[permission] ?? 'checkmark-circle-outline'} size={14} color={primary} />
                       <Chip.Label>{t(`detail.permission${permission.charAt(0).toUpperCase()}${permission.slice(1)}`)}</Chip.Label>
                     </Chip>
                   ))}

@@ -223,6 +223,23 @@ describe('FederationPartnerScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/(modals)/federation-settings');
   });
 
+  it('keeps partner actions in readable columns with wrapped labels', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: mockPartner },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<FederationPartnerScreen />);
+
+    expect(getByTestId('federation-partner-action-profiles')).toHaveStyle({
+      flexBasis: '100%',
+      flexGrow: 1,
+    });
+    expect(getByTestId('federation-partner-action-label-profiles')).toHaveProp('numberOfLines', 2);
+  });
+
   it('shares the React partner detail route for deep links', () => {
     const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
     mockUseApi.mockReturnValue({

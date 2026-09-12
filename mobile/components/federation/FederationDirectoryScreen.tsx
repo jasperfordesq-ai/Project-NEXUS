@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -58,6 +58,7 @@ import RemoteImage from '@/components/ui/RemoteImage';
 import ErrorState from '@/components/ui/ErrorState';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { responsiveFederationActionStyle } from '@/components/federation/responsiveLayout';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -339,8 +340,13 @@ function FilterChip({
   tone: string;
 }) {
   return (
-    <HeroButton size="sm" variant={selected ? 'primary' : 'secondary'} className="max-w-[136px]" onPress={onPress}>
-      <HeroButton.Label numberOfLines={1}>{label}</HeroButton.Label>
+    <HeroButton
+      size="md"
+      variant={selected ? 'primary' : 'secondary'}
+      style={{ maxWidth: '100%' }}
+      onPress={onPress}
+    >
+      <HeroButton.Label numberOfLines={2}>{label}</HeroButton.Label>
       {selected ? <AccentIcon name="checkmark-outline" size={13} /> : <Ionicons name="add-outline" size={13} color={tone} />}
     </HeroButton>
   );
@@ -471,19 +477,19 @@ function PartnerCard({ partner, t, theme, primary }: { partner: FederatedTenant;
             </View>
           </View>
           <View className="flex-row flex-wrap gap-2 pl-1">
-            <Chip size="sm" variant="secondary">
-              <Ionicons name="people-outline" size={12} color={primary} />
+            <Chip size="md" variant="secondary">
+              <Ionicons name="people-outline" size={14} color={primary} />
               <Chip.Label>{t('directory.memberCount', { count: partner.member_count ?? 0 })}</Chip.Label>
             </Chip>
             {federationLevel ? (
-              <Chip size="sm" variant="secondary"><Chip.Label numberOfLines={1}>{federationLevel}</Chip.Label></Chip>
+              <Chip size="md" variant="secondary"><Chip.Label numberOfLines={1}>{federationLevel}</Chip.Label></Chip>
             ) : null}
             {shouldShowExternalChip ? (
-              <Chip size="sm" variant="secondary" color="warning"><Chip.Label>{externalLabel}</Chip.Label></Chip>
+              <Chip size="md" variant="secondary" color="warning"><Chip.Label>{externalLabel}</Chip.Label></Chip>
             ) : null}
             {connectedDate ? (
-              <Chip size="sm" variant="secondary">
-                <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
+              <Chip size="md" variant="secondary">
+                <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
                 <Chip.Label>{t('connectedSince', { date: connectedDate })}</Chip.Label>
               </Chip>
             ) : null}
@@ -498,6 +504,7 @@ function PartnerCard({ partner, t, theme, primary }: { partner: FederatedTenant;
 }
 
 function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t: (key: string, opts?: Record<string, unknown>) => string; theme: ReturnType<typeof useTheme>; primary: string }) {
+  const { width, fontScale } = useWindowDimensions();
   const name = displayMemberName(member, t('directory.members.memberFallback'));
   const communityName = member.timebank?.name ?? member.tenant_name ?? t('directory.unknownCommunity');
   const tenantId = member.is_external
@@ -570,7 +577,8 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
             <HeroButton
               size="sm"
               variant="primary"
-              className="min-w-[46%] flex-1"
+              style={responsiveFederationActionStyle(width, fontScale)}
+              testID="federation-member-view-profile"
               onPress={() => router.push({
                 pathname: '/(modals)/federation-member',
                 params: member.is_external
@@ -579,13 +587,19 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
               } as unknown as Href)}
             >
               <AccentIcon name="person-outline" size={14} />
-              <HeroButton.Label>{t('directory.members.viewProfile')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('directory.members.viewProfile')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {tenantId ? (
-            <HeroButton size="sm" variant="secondary" className="min-w-[46%] flex-1" onPress={() => router.push({ pathname: '/(modals)/federation-messages', params: { compose: 'true', to_user: String(member.id), to_tenant: String(tenantId), name, community: communityName } } as unknown as Href)}>
+            <HeroButton
+              size="sm"
+              variant="secondary"
+              style={responsiveFederationActionStyle(width, fontScale)}
+              testID="federation-member-message"
+              onPress={() => router.push({ pathname: '/(modals)/federation-messages', params: { compose: 'true', to_user: String(member.id), to_tenant: String(tenantId), name, community: communityName } } as unknown as Href)}
+            >
               <Ionicons name="chatbubble-ellipses-outline" size={14} color={primary} />
-              <HeroButton.Label>{t('directory.members.message')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('directory.members.message')}</HeroButton.Label>
             </HeroButton>
           ) : null}
         </View>

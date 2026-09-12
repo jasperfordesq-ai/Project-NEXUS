@@ -79,8 +79,8 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('heroui-native', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
-  const Button = ({ children, onPress, accessibilityLabel, isDisabled }: { children: React.ReactNode; onPress?: () => void; accessibilityLabel?: string; isDisabled?: boolean }) => (
-    <Pressable accessibilityLabel={accessibilityLabel} onPress={isDisabled ? undefined : onPress}><View>{children}</View></Pressable>
+  const Button = ({ children, onPress, accessibilityLabel, isDisabled, ...props }: { children: React.ReactNode; onPress?: () => void; accessibilityLabel?: string; isDisabled?: boolean; [key: string]: unknown }) => (
+    <Pressable {...props} accessibilityLabel={accessibilityLabel} onPress={isDisabled ? undefined : onPress}><View>{children}</View></Pressable>
   );
   Button.Label = ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>;
   const Card = ({ children }: { children: React.ReactNode }) => <View>{children}</View>;
@@ -136,6 +136,19 @@ describe('FederationMembersScreen', () => {
     expect(router.push).toHaveBeenCalledWith({
       pathname: '/(modals)/federation-member',
       params: { id: '272', tenant_id: '5' },
+    });
+  });
+
+  it('does not let member actions collapse into one unreadable row', () => {
+    const { getByTestId } = render(<FederationMembersScreen />);
+
+    expect(getByTestId('federation-member-view-profile')).toHaveStyle({
+      flexBasis: '100%',
+      flexGrow: 1,
+    });
+    expect(getByTestId('federation-member-message')).toHaveStyle({
+      flexBasis: '100%',
+      flexGrow: 1,
     });
   });
 
