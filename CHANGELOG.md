@@ -13,6 +13,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING:** Removed the abandoned mobile web wrapper, its native bridge, push/update hooks, update modal, dependencies and `/api/app/version` and `/api/app/check-version` endpoints. The Expo / React Native app in `mobile/` is the sole native Android/iOS client; its version enforcement and native push remain supported. Project documentation and admin descriptions now reflect this scope.
 
+### Added
+
+- **`npm run check:seo-delivery` — an outside-in probe that asks the one question nothing else
+  asked: would a crawler actually receive words?** Every existing prerender check measures
+  snapshot *production* (cache writable, queue moving, renders failing, coverage, scheduler
+  liveness) and all of them were green from 2026-07-11 to 2026-09-13 while every crawler received
+  a 1,950-byte empty shell — because the break sat between "snapshot exists" and "snapshot is
+  served". `scripts/check-prerender-delivery.mjs` fetches public URLs over real HTTP as Googlebot,
+  through whatever CDN and proxy stack is in front, and fails when the response is an empty SPA
+  shell (under 10 KB, empty `<div id="root">`, no `<h1>`, no meta description). It is deliberately
+  cause-agnostic: it would have caught the unterminated sidecar, the absent marker, the orphaned
+  lock and the superseded rebuild equally, on day one. Exit 0 pass / 1 blank / **2 unavailable —
+  never reported as a pass**. Verified against production both ways: passes on `hour-timebank.ie`
+  and `timebank.global`, and correctly fails on `app.project-nexus.ie`, which has no snapshots and
+  genuinely does serve crawlers a blank shell. Runs non-blocking after a deploy when
+  `NEXUS_DELIVERY_ORIGINS` is set in the per-installation env file (hostnames deliberately are not
+  hardcoded in the repo, so a new installation configures its own).
+
 ### Fixed
 
 - **ROOT CAUSE: the authoritative prerender publish could never complete, so crawler-facing

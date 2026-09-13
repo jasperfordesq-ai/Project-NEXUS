@@ -78,6 +78,10 @@ CLAUDE.md
 !/scripts/check-duplicate-security-headers.mjs
 !/scripts/uptime-check.mjs
 !/scripts/uptime-targets.json
+# Outside-in SEO delivery probe. Must be tracked so a fresh installation gets it
+# (and so CI/deploy can run it) — it contains no credentials; origins come from
+# NEXUS_DELIVERY_ORIGINS in the per-installation env file.
+!/scripts/check-prerender-delivery.mjs
 !/scripts/backup-aspnet-db.sh
 !/scripts/check-compose-bootstrap-cache.mjs
 !/scripts/check-host-cron-scripts.mjs

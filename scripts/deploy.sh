@@ -167,6 +167,12 @@ ENV_FILE=".secrets.local/deploy.env"
 [ -f "$ENV_FILE" ] || { echo "===> Missing $ENV_FILE — cannot reach the server."; exit 2; }
 SSH_HOST=$(grep ^PROD_SSH_HOST "$ENV_FILE" | cut -d= -f2-)
 SSH_KEY=$(grep ^PROD_SSH_KEY "$ENV_FILE" | cut -d= -f2-)
+# Comma-separated public origins for the post-deploy SEO delivery probe. Kept in
+# the per-installation env file rather than the repo, so a new deployment sets
+# its own hostnames instead of inheriting this one's. Optional: when unset the
+# probe is skipped and says so.
+NEXUS_DELIVERY_ORIGINS=$(grep ^NEXUS_DELIVERY_ORIGINS "$ENV_FILE" 2>/dev/null | cut -d= -f2- | tr -d '"'"'"'')
+export NEXUS_DELIVERY_ORIGINS
 # 🔴 GIT_TERMINAL_PROMPT=0 is not optional, and it belongs HERE rather than
 # on the server. When GitHub refuses the server's ANONYMOUS fetch it answers
 # with `www-authenticate: Basic realm="GitHub"`, and git then asks for a
@@ -233,6 +239,30 @@ while :; do
     echo "     ...deploy ${STATE:-starting}. Checking again in 60s."
     sleep 60
 done
+
+# --- SEO delivery check ------------------------------------------------------
+# Asks the one question no other check asked: would a crawler get words?
+#
+# From 2026-07-11 to 2026-09-13 every crawler received a 1,950-byte empty shell
+# while the queue, coverage, freshness and health endpoint all reported green,
+# because everything measured snapshot PRODUCTION and nothing measured DELIVERY.
+# This probe is outside-in and cause-agnostic, so it catches that whole class:
+# missing marker, stuck lock, failed publish, bad nginx rule, CDN misroute.
+#
+# Deliberately NON-BLOCKING. SEO delivery is not a reason to fail a deploy that
+# is otherwise healthy for members — but it must be loud, because silence is
+# exactly how this went unnoticed for two months.
+if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
+    echo "===> Checking that crawlers receive real pages (not the empty shell)..."
+    if node scripts/check-prerender-delivery.mjs; then
+        echo "===> ✓ Crawlers are being served real content."
+    else
+        echo "===> ⚠⚠⚠ CRAWLERS ARE BEING SERVED BLANK PAGES — see above for the remedy."
+        echo "===>     The deploy itself is fine; SEO is not. Do not ignore this."
+    fi
+else
+    echo "===> SEO delivery check skipped (set NEXUS_DELIVERY_ORIGINS to enable)."
+fi
 
 if node scripts/postdeploy-watch.mjs; then
     echo "===> ✓ Deploy verified: error levels stayed normal after the switch."
