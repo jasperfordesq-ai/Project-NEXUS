@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Every tenant domain advertised an empty sitemap to search engines.** `location = /robots.txt`
+  rewrites the platform hostname to the requesting host via `sub_filter`, but ran with
+  `sub_filter_once on`. robots.txt opens with the comment
+  `# robots.txt for app.project-nexus.ie (React frontend)`, so the single permitted substitution
+  was spent on line 1 and the `Sitemap:` directive on line 151 was never rewritten. Every
+  community — `hour-timebank.ie`, `pairc-goodman.com`, `uk.timebank.global` and the rest —
+  therefore told crawlers its sitemap was `https://app.project-nexus.ie/sitemap.xml`, which
+  contains **zero** `<url>` entries, while its own correct sitemap (99 URLs for
+  `hour-timebank.ie`) went unadvertised. Now `sub_filter_once off`, so the `Sitemap:` line and
+  the `llms.txt` comment lines are rewritten to the serving host as intended. Both
+  `nginx.bluegreen.conf` and `nginx.conf` carry a comment pinning the value. Verified by byte
+  count against production: the served file was exactly 4 bytes shorter than the file on disk —
+  one `app.project-nexus.ie` → `hour-timebank.ie` substitution, in the wrong place.
+
 - Buying an item in the XP shop works again from the app already on members' phones. The purchase endpoint had begun requiring an operation key that only newer clients send, which would have refused every purchase made from a handset until a new store release. The key is now checked when it is sent and never demanded, so purchases that do send one keep their protection against a double tap buying the same item twice.
 
 - Android release builds no longer fail on Windows when Node crashes while shutting down after the update-manifest step: the Gradle build now runs Node through a wrapper that exits that one script cleanly the moment its work is done and retries it, bounded, if Node still crashes at teardown (`plugins/with-android-node-clean-exit`, `scripts/node-retrying.cjs`). Seen in two of three builds of the first Expo SDK 55 bundle.
