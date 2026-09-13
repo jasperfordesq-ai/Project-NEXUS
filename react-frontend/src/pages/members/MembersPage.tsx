@@ -564,7 +564,10 @@ export function MembersPage() {
         description={t('members.subtitle')}
         icon={<Users className="h-6 w-6" aria-hidden="true" />}
         accent="blue"
-        stats={totalCount != null && !isLoading ? [{ label: t('members.count_label'), value: totalCount.toLocaleString(getFormattingLocale()) }] : undefined}
+        // No count chip here, deliberately, unlike the other directory heroes.
+        // This page states its size once, lower down, next to the explanation
+        // of who is and is not listed — a chip repeating that same number a
+        // screen above it read as a third, contradictory figure.
         action={
           isAuthenticated && user ? (
             <Button
@@ -920,16 +923,18 @@ export function MembersPage() {
             />
           ) : (
             <>
-              {/* Results count with search context */}
-              {(debouncedQuery || totalCount !== null) && (
+              {/* One count line, never two. While searching it reports the
+                  match; otherwise it reports the size of the directory — and
+                  it steps aside entirely when the coverage note below is
+                  showing, because that line already carries the same number
+                  with the context that makes it mean something. How far
+                  through the list you have scrolled is not a count anyone
+                  needs: the Load more button already says how many remain. */}
+              {(debouncedQuery || (!showCoverageNote && totalCount !== null)) && (
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   {debouncedQuery && totalCount !== null ? (
                     <p role="status" className="text-sm text-theme-muted">
                       {t('members.results_matching', { shown: members.length.toLocaleString(getFormattingLocale()), total: totalCount.toLocaleString(getFormattingLocale()), query: debouncedQuery })}
-                    </p>
-                  ) : totalCount !== null && totalCount > members.length ? (
-                    <p role="status" className="text-sm text-theme-muted">
-                      {t('members.results_showing_of', { shown: members.length.toLocaleString(getFormattingLocale()), total: totalCount.toLocaleString(getFormattingLocale()) })}
                     </p>
                   ) : (
                     <p role="status" className="text-sm text-theme-muted">

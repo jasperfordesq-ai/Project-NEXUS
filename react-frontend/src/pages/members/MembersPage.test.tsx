@@ -414,6 +414,47 @@ describe('MembersPage', () => {
       );
     });
 
+    it('is the only count on the page, replacing the loaded-so-far line', async () => {
+      withCoverage({
+        total_items: 12,
+        community_total: 369,
+        directory_criteria: ['directory_opt_in'],
+      });
+
+      render(<MembersPage />);
+
+      await screen.findByText('You are seeing 12 of the 369 people who have joined');
+      // Three counts saying almost the same thing is what made the page
+      // unreadable: the hero chip, "Showing 1 of 12 members", and this line.
+      expect(screen.queryByText(/members shown/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/^Showing /)).not.toBeInTheDocument();
+    });
+
+    it('still counts the matches while searching', async () => {
+      withCoverage({
+        total_items: 12,
+        community_total: 369,
+        directory_criteria: ['directory_opt_in'],
+      });
+
+      render(<MembersPage />);
+      await screen.findByText('You are seeing 12 of the 369 people who have joined');
+
+      fireEvent.change(screen.getByPlaceholderText('Search members...'), {
+        target: { value: 'ada' },
+      });
+
+      // A search result count is real information, so it stays — and the
+      // coverage note steps aside, because the shortfall on screen is now the
+      // member's own filter rather than the directory's rules.
+      expect(
+        await screen.findByText('1 of 12 members matching "ada"', {}, { timeout: 3000 }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/people who have joined/),
+      ).not.toBeInTheDocument();
+    });
+
     it('stays silent when every member is listed', async () => {
       withCoverage({
         total_items: 369,
