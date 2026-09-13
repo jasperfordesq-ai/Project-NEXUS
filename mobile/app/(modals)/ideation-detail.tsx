@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
@@ -52,6 +52,8 @@ function IdeationDetailScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [votingId, setVotingId] = useState<number | null>(null);
+  const submitPendingRef = useRef(false);
+  const votePendingRef = useRef(false);
   const { show: showToast } = useAppToast();
   const challengeState = useApi(() => getIdeationChallenge(challengeId), [challengeId], {
     enabled: hasFeature('ideation_challenges') && challengeId > 0,
@@ -61,7 +63,8 @@ function IdeationDetailScreen() {
   });
 
   async function submitIdea() {
-    if (!title.trim() || !description.trim() || isSubmitting) return;
+    if (!title.trim() || !description.trim() || submitPendingRef.current) return;
+    submitPendingRef.current = true;
     setIsSubmitting(true);
     setStatusMessage(null);
     try {
@@ -74,6 +77,7 @@ function IdeationDetailScreen() {
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : t('ideation:submitFailed'));
     } finally {
+      submitPendingRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -93,7 +97,8 @@ function IdeationDetailScreen() {
     of these correctly.
   */
   async function vote(idea: IdeationIdea) {
-    if (votingId !== null) return;
+    if (votePendingRef.current) return;
+    votePendingRef.current = true;
     setVotingId(idea.id);
     try {
       await voteIdeationIdea(idea.id);
@@ -105,6 +110,7 @@ function IdeationDetailScreen() {
         variant: 'danger',
       });
     } finally {
+      votePendingRef.current = false;
       setVotingId(null);
     }
   }
@@ -226,9 +232,9 @@ function IdeationDetailScreen() {
                   <Text className="text-lg font-bold" style={{ color: theme.text }}>
                     {t('ideation:submitIdea')}
                   </Text>
-                  <Input label={t('ideation:ideaTitleLabel')} value={title} onChangeText={setTitle} placeholder={t('ideation:ideaTitlePlaceholder')} />
+                  <Input label={t('ideation:ideaTitleLabel')} value={title} onChangeText={setTitle} placeholder={t('ideation:ideaTitlePlaceholder')} editable={!isSubmitting} />
                   {/* A real paragraph box: `numberOfLines` alone leaves the field one line tall on Android. */}
-                  <Input label={t('ideation:ideaDescriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('ideation:ideaDescriptionPlaceholder')} multiline numberOfLines={4} style={{ minHeight: 112, textAlignVertical: 'top' }} />
+                  <Input label={t('ideation:ideaDescriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('ideation:ideaDescriptionPlaceholder')} multiline numberOfLines={4} editable={!isSubmitting} style={{ minHeight: 112, textAlignVertical: 'top' }} />
                   {statusMessage ? (
                     <Text className="text-sm" style={{ color: theme.textSecondary }}>
                       {statusMessage}
@@ -253,7 +259,7 @@ function IdeationDetailScreen() {
               </Surface>
 
               {ideas.length > 0 ? (
-                ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} challengeId={challengeId} onVote={vote} isVoting={votingId === idea.id} />)
+                ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} challengeId={challengeId} onVote={vote} isVoting={votingId !== null} />)
               ) : (
                 <EmptyState icon="chatbubble-ellipses-outline" title={t('ideation:noIdeasTitle')} subtitle={t('ideation:noIdeasSubtitle')} />
               )}

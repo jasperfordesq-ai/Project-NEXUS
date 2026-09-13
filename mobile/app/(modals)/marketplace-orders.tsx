@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
-import { FlatList, Linking, RefreshControl, View } from 'react-native';
+import { FlatList, Linking, RefreshControl, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -56,6 +56,7 @@ import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
+import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 
 type OrderMode = 'purchases' | 'sales';
 type OrderStatusTab = 'all' | 'active' | 'completed' | 'cancelled';
@@ -694,6 +695,8 @@ function OrderCard({
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const actionStyle = responsiveActionStyle(width, fontScale);
   const openExternal = useOpenExternalUrl();
   /**
    * 🔴 An order paid in time credits has a cash total of zero, so printing the cash total
@@ -807,40 +810,40 @@ function OrderCard({
         ) : null}
         <View className="flex-row flex-wrap gap-2">
           {mode === 'purchases' && item.status === 'paid' ? (
-            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
+            <Chip className="flex-1" size="md" variant="secondary" style={actionStyle}>
               <Ionicons name="cube-outline" size={14} color={theme.textMuted} />
               <Chip.Label>{t('orders.waitingShipment')}</Chip.Label>
 
             </Chip>
           ) : null}
           {mode === 'purchases' && item.status === 'pending_payment' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onContinuePayment}>
+            <HeroButton testID="marketplace-order-action-continue-payment" className="flex-1" size="md" variant="primary" isDisabled={isSubmitting} onPress={onContinuePayment} style={actionStyle}>
               <AccentIcon name="card-outline" size={14} />
-              <HeroButton.Label>{t('orders.continuePayment')}</HeroButton.Label>
+              <HeroButton.Label testID="marketplace-order-action-continue-payment-label" numberOfLines={2}>{t('orders.continuePayment')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {mode === 'sales' && item.status === 'paid' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onShip}>
+            <HeroButton className="flex-1" size="md" variant="primary" isDisabled={isSubmitting} onPress={onShip} style={actionStyle}>
               <AccentIcon name="car-outline" size={14} />
-              <HeroButton.Label>{t('orders.markShipped')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.markShipped')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {mode === 'sales' && item.status === 'pending_payment' ? (
-            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
+            <Chip className="flex-1" size="md" variant="secondary" style={actionStyle}>
               <Ionicons name="card-outline" size={14} color={theme.textMuted} />
               <Chip.Label>{t('orders.awaitingPayment')}</Chip.Label>
 
             </Chip>
           ) : null}
           {mode === 'sales' && item.status === 'shipped' ? (
-            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
+            <Chip className="flex-1" size="md" variant="secondary" style={actionStyle}>
               <Ionicons name="time-outline" size={14} color={theme.textMuted} />
               <Chip.Label>{t('orders.awaitingConfirmation')}</Chip.Label>
 
             </Chip>
           ) : null}
           {mode === 'sales' && item.status === 'delivered' ? (
-            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
+            <Chip className="flex-1" size="md" variant="secondary" style={actionStyle}>
               <Ionicons name="hourglass-outline" size={14} color={theme.textMuted} />
               <Chip.Label>{t('orders.awaitingCompletion')}</Chip.Label>
 
@@ -848,13 +851,13 @@ function OrderCard({
           ) : null}
           {mode === 'sales' && item.status === 'completed' ? (
             hasBuyerRating ? (
-              <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
+              <Chip className="flex-1" size="md" variant="secondary" style={actionStyle}>
                 <Ionicons name="star" size={14} color={theme.success} />
                 <Chip.Label>{t('orders.buyerRated')}</Chip.Label>
 
               </Chip>
             ) : (
-              <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
+              <Chip className="flex-1" size="md" variant="secondary" style={actionStyle}>
                 <Ionicons name="checkmark-circle-outline" size={14} color={theme.success} />
                 <Chip.Label>{t('orders.saleCompleted')}</Chip.Label>
 
@@ -862,47 +865,47 @@ function OrderCard({
             )
           ) : null}
           {mode === 'sales' && item.status === 'disputed' ? (
-            <Chip className="min-w-[46%] flex-1" size="sm" variant="soft" color="danger">
+            <Chip className="flex-1" size="md" variant="soft" color="danger" style={actionStyle}>
               <Ionicons name="alert-circle-outline" size={14} color={theme.error} />
               <Chip.Label>{t('orders.disputeOpen')}</Chip.Label>
 
             </Chip>
           ) : null}
           {mode === 'purchases' && item.status === 'shipped' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onConfirmDelivery} style={{ backgroundColor: theme.success }}>
+            <HeroButton className="flex-1" size="md" variant="primary" isDisabled={isSubmitting} onPress={onConfirmDelivery} style={[actionStyle, { backgroundColor: theme.success }]}>
               <AccentIcon name="checkmark-circle-outline" size={14} />
-              <HeroButton.Label>{t('orders.confirmDelivery')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.confirmDelivery')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {['pending_payment', 'paid'].includes(item.status) ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="danger" isDisabled={isSubmitting} onPress={onCancel}>
+            <HeroButton className="flex-1" size="md" variant="danger" isDisabled={isSubmitting} onPress={onCancel} style={actionStyle}>
               <Ionicons name="close-circle-outline" size={14} color="#fff" />
-              <HeroButton.Label>{t('orders.cancel')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.cancel')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {mode === 'purchases' && ['delivered', 'completed'].includes(item.status) && !hasCurrentUserRating ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled={isSubmitting} onPress={onRate}>
+            <HeroButton className="flex-1" size="md" variant="secondary" isDisabled={isSubmitting} onPress={onRate} style={actionStyle}>
               <Ionicons name="star-outline" size={14} color={primary} />
-              <HeroButton.Label>{t('orders.rate')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.rate')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {mode === 'purchases' && item.status === 'completed' && hasCurrentUserRating ? (
-            <Chip className="min-w-[46%] flex-1" size="sm" variant="secondary">
+            <Chip className="flex-1" size="md" variant="secondary" style={actionStyle}>
               <Ionicons name="star" size={14} color={theme.success} />
               <Chip.Label>{t('orders.rated')}</Chip.Label>
 
             </Chip>
           ) : null}
           {mode === 'purchases' && ['paid', 'processing', 'shipped', 'delivered'].includes(item.status) ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled={isSubmitting} onPress={onDispute}>
+            <HeroButton className="flex-1" size="md" variant="secondary" isDisabled={isSubmitting} onPress={onDispute} style={actionStyle}>
               <Ionicons name="alert-circle-outline" size={14} color={theme.error} />
-              <HeroButton.Label>{t('orders.dispute')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.dispute')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {canManageCommunityDelivery ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="secondary" isDisabled={isSubmitting} onPress={onDeliveryOffers}>
+            <HeroButton className="flex-1" size="md" variant="secondary" isDisabled={isSubmitting} onPress={onDeliveryOffers} style={actionStyle}>
               <Ionicons name="people-outline" size={14} color={primary} />
-              <HeroButton.Label>{t('orders.deliveryOffers')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.deliveryOffers')}</HeroButton.Label>
             </HeroButton>
           ) : null}
         </View>
@@ -924,6 +927,8 @@ function DeliveryOfferCard({
 }) {
   const { t } = useTranslation('marketplace');
   const theme = useTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const actionStyle = responsiveActionStyle(width, fontScale);
   const delivererName = offer.deliverer?.name?.trim() || t('orders.deliveryUnknown');
   const avatarUri = offer.deliverer?.avatar_url ?? null;
   const isVerified = Boolean(offer.deliverer?.is_verified);
@@ -954,15 +959,15 @@ function DeliveryOfferCard({
         ) : null}
         <View className="flex-row flex-wrap gap-2">
           {offer.status === 'pending' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onAccept}>
+            <HeroButton className="flex-1" size="md" variant="primary" isDisabled={isSubmitting} onPress={onAccept} style={actionStyle}>
               <AccentIcon name="checkmark-circle-outline" size={14} />
-              <HeroButton.Label>{t('orders.acceptDeliveryOffer')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.acceptDeliveryOffer')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {offer.status === 'accepted' ? (
-            <HeroButton className="min-w-[46%] flex-1" size="sm" variant="primary" isDisabled={isSubmitting} onPress={onConfirm} style={{ backgroundColor: theme.success }}>
+            <HeroButton className="flex-1" size="md" variant="primary" isDisabled={isSubmitting} onPress={onConfirm} style={[actionStyle, { backgroundColor: theme.success }]}>
               <AccentIcon name="flag-outline" size={14} />
-              <HeroButton.Label>{t('orders.confirmDeliveryOffer')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2}>{t('orders.confirmDeliveryOffer')}</HeroButton.Label>
             </HeroButton>
           ) : null}
         </View>

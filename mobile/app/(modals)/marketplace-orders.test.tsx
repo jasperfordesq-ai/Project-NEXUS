@@ -444,7 +444,7 @@ describe('MarketplaceOrdersRoute', () => {
       meta: { cursor: null, has_more: false },
     });
 
-    const { getAllByText, getByText, unmount } = render(<MarketplaceOrdersRoute />);
+    const { getAllByText, getByTestId, getByText, unmount } = render(<MarketplaceOrdersRoute />);
 
     await waitFor(() => {
       expect(getByText('Pending payment lamp')).toBeTruthy();
@@ -453,6 +453,11 @@ describe('MarketplaceOrdersRoute', () => {
     expect(getAllByText('Pending payment').length).toBeGreaterThan(0);
     expect(getByText('Payment is not complete yet. Continue checkout to keep this purchase moving.')).toBeTruthy();
     expect(getByText('Continue payment')).toBeTruthy();
+    expect(getByTestId('marketplace-order-action-continue-payment')).toHaveStyle({
+      flexBasis: '100%',
+      flexGrow: 1,
+    });
+    expect(getByTestId('marketplace-order-action-continue-payment-label')).toHaveProp('numberOfLines', 2);
     unmount();
   });
 

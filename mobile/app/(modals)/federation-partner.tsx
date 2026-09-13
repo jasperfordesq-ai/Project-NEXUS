@@ -40,7 +40,7 @@ import { dateLocale } from '@/lib/utils/dateLocale';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
-import { responsiveFederationActionStyle } from '@/components/federation/responsiveLayout';
+import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -171,7 +171,7 @@ function PartnerActionGrid({
             size="lg"
             variant="secondary"
             className="justify-start"
-            style={responsiveFederationActionStyle(width, fontScale)}
+            style={responsiveActionStyle(width, fontScale)}
             testID={`federation-partner-action-${action.permission}`}
             onPress={() => {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

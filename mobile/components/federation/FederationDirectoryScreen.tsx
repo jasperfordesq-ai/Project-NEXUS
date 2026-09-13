@@ -58,7 +58,7 @@ import RemoteImage from '@/components/ui/RemoteImage';
 import ErrorState from '@/components/ui/ErrorState';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { responsiveFederationActionStyle } from '@/components/federation/responsiveLayout';
+import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -577,7 +577,7 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
             <HeroButton
               size="sm"
               variant="primary"
-              style={responsiveFederationActionStyle(width, fontScale)}
+          style={responsiveActionStyle(width, fontScale)}
               testID="federation-member-view-profile"
               onPress={() => router.push({
                 pathname: '/(modals)/federation-member',
@@ -594,7 +594,7 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
             <HeroButton
               size="sm"
               variant="secondary"
-              style={responsiveFederationActionStyle(width, fontScale)}
+          style={responsiveActionStyle(width, fontScale)}
               testID="federation-member-message"
               onPress={() => router.push({ pathname: '/(modals)/federation-messages', params: { compose: 'true', to_user: String(member.id), to_tenant: String(tenantId), name, community: communityName } } as unknown as Href)}
             >

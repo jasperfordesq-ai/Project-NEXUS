@@ -5,8 +5,11 @@
 
 import type { ViewStyle } from 'react-native';
 
-/** Keep action labels readable instead of allowing flexbox to squeeze a whole row together. */
-export function responsiveFederationActionStyle(width: number, fontScale: number): ViewStyle {
+/**
+ * Give action rows a definite width that HeroUI's animated button wrapper cannot
+ * collapse. Large text and very narrow windows become a single readable column.
+ */
+export function responsiveActionStyle(width: number, fontScale: number): ViewStyle {
   return {
     flexBasis: width < 320 || fontScale > 1.3 ? '100%' : '47%',
     flexGrow: 1,

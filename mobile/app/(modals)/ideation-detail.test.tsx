@@ -191,9 +191,13 @@ describe('IdeationDetailScreen', () => {
 
     expect(getByTestId('ideation-vote-44').props.accessibilityState?.disabled).toBeFalsy();
 
-    fireEvent.press(getByTestId('ideation-vote-44'));
+    act(() => {
+      fireEvent.press(getByTestId('ideation-vote-44'));
+      fireEvent.press(getByTestId('ideation-vote-44'));
+    });
 
     expect(getByTestId('ideation-vote-44').props.accessibilityState).toMatchObject({ disabled: true });
+    expect(mockVoteIdea).toHaveBeenCalledTimes(1);
 
     await act(async () => { resolveVote?.(); });
   });

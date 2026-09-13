@@ -35,7 +35,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import { Chip } from '@/components/ui/StatusChip';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withRouteGate } from '@/components/withRouteGate';
-import { responsiveFederationActionStyle } from '@/components/federation/responsiveLayout';
+import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -192,7 +192,7 @@ function QuickLinksSection({
             key={link.key}
             accessibilityLabel={t(`hub.quick.${link.key}.title`)}
             className="rounded-panel-inner"
-            style={responsiveFederationActionStyle(width, fontScale)}
+                style={responsiveActionStyle(width, fontScale)}
             testID={`federation-quick-link-${link.key}`}
             onPress={() => {
               router.push(link.href as Href);

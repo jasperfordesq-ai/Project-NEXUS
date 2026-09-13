@@ -44,7 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tests/Laravel/Feature/Controllers/PollsControllerTest.php`. Found by the same-community
   access sweep. *(E-003, F-001; commit `a49671ea9`)*
 
-- Federation hub, partner-detail and member-card actions in the native app now use enforced responsive columns instead of compressing controls into unreadable rows. Labels keep a readable size and may wrap to two lines, large-text and narrow-screen layouts become full-width, partner metadata and feature chips use the medium size, and directory filters no longer cap partner names and translations to one 136dp line.
+- Native ideation submissions, votes, comments, edits and deletions now use synchronous pending guards, preventing rapid taps from dispatching conflicting or duplicate requests before React renders its loading state. Submitted idea, edit and comment fields lock for the duration of their write so a successful response cannot discard changes made after dispatch.
+
+- Federation hub, partner-detail, member-card and marketplace-order actions in the native app now use enforced responsive columns instead of compressing controls into unreadable rows. Labels keep a readable size and may wrap to two lines, large-text and narrow-screen layouts become full-width, partner and order chips use the medium size, and federation directory filters no longer cap partner names and translations to one 136dp line.
 
 - Android release builds no longer fail when Node crashes while shutting down after the JavaScript bundle step. The same Windows shutdown crash that the build already retried for the update-manifest step was seen in the Metro bundle step, after the bundle and source map had both been written in full. That step is now retried on the same bounded terms; an ordinary bundling failure is still reported on the first attempt rather than repeated, and other commands of the same tool are not retried.
 

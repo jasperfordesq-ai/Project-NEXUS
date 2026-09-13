@@ -163,6 +163,24 @@ describe('IdeationIdeaScreen', () => {
     await waitFor(() => expect(getIdeationComments).toHaveBeenCalledTimes(2));
   });
 
+  it('serializes same-frame comment submissions and locks the draft', async () => {
+    let finish: (() => void) | null = null;
+    jest.mocked(addIdeationComment).mockImplementationOnce(
+      () => new Promise((resolve) => { finish = () => resolve({} as never); }),
+    );
+    const { getByPlaceholderText, getByTestId, getByText } = render(<IdeationIdeaScreen />);
+    await waitFor(() => expect(getByText('Post comment')).toBeTruthy());
+    const field = getByPlaceholderText('Share your thoughts');
+    fireEvent.changeText(field, 'One comment');
+    act(() => {
+      fireEvent.press(getByTestId('ideation-comment-submit'));
+      fireEvent.press(getByTestId('ideation-comment-submit'));
+    });
+    expect(addIdeationComment).toHaveBeenCalledTimes(1);
+    expect(getByPlaceholderText('Share your thoughts')).toHaveProp('editable', false);
+    await act(async () => { finish?.(); });
+  });
+
   it('does not post an empty comment', async () => {
     const { getByText, getByPlaceholderText } = render(<IdeationIdeaScreen />);
     await waitFor(() => expect(getByText('Post comment')).toBeTruthy());

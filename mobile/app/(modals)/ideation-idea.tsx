@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, router, useLocalSearchParams } from 'expo-router';
@@ -61,9 +61,11 @@ function IdeationIdeaScreen() {
     Audit 2026-09-07 F-19, fixed 2026-09-08.
   */
   const [isDeleting, setIsDeleting] = useState(false);
+  const deletePendingRef = useRef(false);
 
   async function removeIdea() {
-    if (isDeleting) return;
+    if (deletePendingRef.current) return;
+    deletePendingRef.current = true;
     setIsDeleting(true);
     try {
       await deleteIdeationIdea(ideaId);
@@ -77,6 +79,7 @@ function IdeationIdeaScreen() {
         variant: 'danger',
       });
     } finally {
+      deletePendingRef.current = false;
       setIsDeleting(false);
     }
   }
@@ -94,7 +97,8 @@ function IdeationIdeaScreen() {
   }
 
   async function removeComment(commentId: number) {
-    if (isDeleting) return;
+    if (deletePendingRef.current) return;
+    deletePendingRef.current = true;
     setIsDeleting(true);
     try {
       await deleteIdeationComment(commentId);
@@ -106,6 +110,7 @@ function IdeationIdeaScreen() {
         variant: 'danger',
       });
     } finally {
+      deletePendingRef.current = false;
       setIsDeleting(false);
     }
   }
@@ -128,6 +133,9 @@ function IdeationIdeaScreen() {
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const votePendingRef = useRef(false);
+  const commentPendingRef = useRef(false);
+  const savePendingRef = useRef(false);
 
   useEffect(() => {
     if (!idea) return;
@@ -136,7 +144,8 @@ function IdeationIdeaScreen() {
   }, [idea]);
 
   async function vote() {
-    if (!idea || isVoting) return;
+    if (!idea || votePendingRef.current) return;
+    votePendingRef.current = true;
     setIsVoting(true);
     try {
       const result = await voteIdeationIdea(idea.id);
@@ -145,13 +154,15 @@ function IdeationIdeaScreen() {
     } catch (error) {
       showToast({ title: t('ideation:voteFailed'), description: error instanceof Error ? error.message : t('ideation:toast.error_generic'), variant: 'danger' });
     } finally {
+      votePendingRef.current = false;
       setIsVoting(false);
     }
   }
 
   async function postComment() {
     const body = comment.trim();
-    if (!body || isPosting) return;
+    if (!body || commentPendingRef.current) return;
+    commentPendingRef.current = true;
     setIsPosting(true);
     try {
       await addIdeationComment(ideaId, body);
@@ -161,12 +172,14 @@ function IdeationIdeaScreen() {
     } catch (error) {
       showToast({ title: t('ideation:comments.load_error'), description: error instanceof Error ? error.message : t('ideation:toast.error_generic'), variant: 'danger' });
     } finally {
+      commentPendingRef.current = false;
       setIsPosting(false);
     }
   }
 
   async function saveIdea() {
-    if (!idea || !editTitle.trim() || !editDescription.trim() || isSaving) return;
+    if (!idea || !editTitle.trim() || !editDescription.trim() || savePendingRef.current) return;
+    savePendingRef.current = true;
     setIsSaving(true);
     try {
       await updateIdeationIdea(idea.id, { title: editTitle.trim(), description: editDescription.trim() });
@@ -176,6 +189,7 @@ function IdeationIdeaScreen() {
     } catch (error) {
       showToast({ title: t('ideation:toast.error_generic'), description: error instanceof Error ? error.message : undefined, variant: 'danger' });
     } finally {
+      savePendingRef.current = false;
       setIsSaving(false);
     }
   }
@@ -214,10 +228,10 @@ function IdeationIdeaScreen() {
               <View className="gap-4">
                 <HeroCard className="rounded-panel"><HeroCard.Body className="gap-3 p-5">
                   {isEditing ? <>
-                    <Input label={t('ideation:form.title_label')} value={editTitle} onChangeText={setEditTitle} />
-                    <Input label={t('ideation:form.description_label')} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={6} style={{ minHeight: 132, textAlignVertical: 'top' }} />
+                    <Input label={t('ideation:form.title_label')} value={editTitle} onChangeText={setEditTitle} editable={!isSaving} />
+                    <Input label={t('ideation:form.description_label')} value={editDescription} onChangeText={setEditDescription} multiline numberOfLines={6} editable={!isSaving} style={{ minHeight: 132, textAlignVertical: 'top' }} />
                     <View className="flex-row gap-2">
-                      <HeroButton className="flex-1" variant="secondary" onPress={() => setIsEditing(false)}><HeroButton.Label>{t('ideation:form.cancel')}</HeroButton.Label></HeroButton>
+                      <HeroButton className="flex-1" variant="secondary" isDisabled={isSaving} onPress={() => setIsEditing(false)}><HeroButton.Label>{t('ideation:form.cancel')}</HeroButton.Label></HeroButton>
                       <HeroButton className="flex-1" isDisabled={isSaving || !editTitle.trim() || !editDescription.trim()} onPress={() => void saveIdea()}><HeroButton.Label>{isSaving ? t('ideation:form.saving') : t('ideation:form.save')}</HeroButton.Label></HeroButton>
                     </View>
                   </> : <>
@@ -244,8 +258,8 @@ function IdeationIdeaScreen() {
 
                 <HeroCard className="rounded-panel"><HeroCard.Body className="gap-3 p-5">
                   <Text accessibilityRole="header" className="text-lg font-bold" style={{ color: theme.text }}>{t('ideation:comments.title')}</Text>
-                  <Input label={t('ideation:comments.add_label')} value={comment} onChangeText={setComment} placeholder={t('ideation:comments.add_placeholder')} multiline numberOfLines={3} style={{ minHeight: 88, textAlignVertical: 'top' }} />
-                  <HeroButton isDisabled={!comment.trim() || isPosting} onPress={() => void postComment()}><HeroButton.Label>{isPosting ? t('ideation:form.saving') : t('ideation:comments.add_button')}</HeroButton.Label></HeroButton>
+                  <Input label={t('ideation:comments.add_label')} value={comment} onChangeText={setComment} placeholder={t('ideation:comments.add_placeholder')} multiline numberOfLines={3} editable={!isPosting} style={{ minHeight: 88, textAlignVertical: 'top' }} />
+                  <HeroButton testID="ideation-comment-submit" isDisabled={!comment.trim() || isPosting} onPress={() => void postComment()}><HeroButton.Label>{isPosting ? t('ideation:form.saving') : t('ideation:comments.add_button')}</HeroButton.Label></HeroButton>
                   {commentsState.isLoading && !commentsState.data ? <LoadingSpinner /> : commentsState.error ? <EmptyState icon="warning-outline" title={t('ideation:comments.load_error')} subtitle={commentsState.error} actionLabel={t('ideation:actions.retry')} onAction={commentsState.refresh} /> : (commentsState.data?.items.length ?? 0) === 0 ? <EmptyState icon="chatbubble-outline" title={t('ideation:comments.empty_title')} subtitle={t('ideation:comments.empty_description')} /> : commentsState.data?.items.map((item) => (
                     <View key={item.id} className="gap-1 border-t border-divider py-3">
                       <Text className="text-sm font-semibold" style={{ color: theme.text }}>{item.author?.name ?? t('common:unknown')}</Text>
