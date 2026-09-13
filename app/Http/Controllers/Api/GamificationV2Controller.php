@@ -518,7 +518,14 @@ class GamificationV2Controller extends BaseApiController
         if (empty($itemId)) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.gamification_item_id_required'), 'item_id', 400);
         }
-        if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+        // 🔴 Validate the key when one is sent; never demand it. The app on members'
+        // phones (1.5.0 / version code 10, built from 823846339) predates the key and
+        // sends `item_id` alone, so requiring it refuses every purchase made from a
+        // handset until a new store release. `XPShopService::purchaseItem` already
+        // accepts `?string $idempotencyKey = null` and guards every use, so a caller
+        // without a key simply gets no replay protection — the behaviour it has today.
+        // `MemberDataExportController` treats the same header identically.
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), 'idempotency_key', 422);
         }
 

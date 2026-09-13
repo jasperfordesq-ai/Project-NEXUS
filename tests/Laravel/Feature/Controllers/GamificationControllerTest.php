@@ -292,11 +292,59 @@ class GamificationControllerTest extends TestCase
         $response->assertStatus(400);
     }
 
-    public function test_purchase_requires_idempotency_key(): void
+    /**
+     * 🔴 The idempotency key is OPTIONAL, and has to stay optional.
+     *
+     * It was briefly mandatory (`c03aeefe6`, 12 September 2026). That refuses every
+     * purchase made from the app already on members' phones: version 1.5.0 / version
+     * code 10 was built from `823846339`, before the key existed, and its
+     * `purchaseShopItem()` sends `item_id` alone. Shipping a server that demands the
+     * key would have broken the XP shop on every handset until a new store release —
+     * the same cross-client break that locked administrators out of the app that
+     * morning, caught before deploy this time.
+     *
+     * Nothing is lost by accepting the request. `XPShopService::purchaseItem` already
+     * declares `?string $idempotencyKey = null` and guards every use of it, so a
+     * caller that sends no key simply gets no replay protection, which is exactly the
+     * behaviour those clients have today. `MemberDataExportController` treats the same
+     * header the same way.
+     */
+    public function test_purchase_without_an_idempotency_key_still_succeeds_for_older_clients(): void
+    {
+        $user = $this->authenticatedUser(['xp' => 100]);
+        $itemId = (int) DB::table('xp_shop_items')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'item_key' => 'legacy-client-' . uniqid(),
+            'name' => 'Reward bought without a key',
+            'description' => 'Test reward',
+            'item_type' => 'perk',
+            'xp_cost' => 10,
+            'stock_limit' => null,
+            'per_user_limit' => null,
+            'is_active' => 1,
+            'display_order' => 0,
+        ]);
+
+        $response = $this->apiPost('/v2/gamification/shop/purchase', ['item_id' => $itemId]);
+
+        $response->assertOk();
+        $this->assertSame(90, (int) $user->fresh()->xp);
+        $this->assertSame(1, DB::table('user_xp_purchases')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('item_id', $itemId)
+            ->count());
+    }
+
+    /** A key that IS sent still has to be usable as one; a two-character key is a bug, not a legacy client. */
+    public function test_purchase_rejects_a_malformed_idempotency_key(): void
     {
         $this->authenticatedUser();
 
-        $response = $this->apiPost('/v2/gamification/shop/purchase', ['item_id' => 1]);
+        $response = $this->apiPost('/v2/gamification/shop/purchase', [
+            'item_id' => 1,
+            'idempotency_key' => 'ab',
+        ]);
 
         $response->assertStatus(422);
         $response->assertJsonPath('errors.0.field', 'idempotency_key');
