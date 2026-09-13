@@ -492,27 +492,33 @@ export function FederationMemberProfilePage() {
                 </Button>
               </div>
 
-              {/* Disabled-action reasons — tooltips don't exist on touch, so
-                  surface them as visible helper text on phones.
+              {/* Why an action above is unavailable — one line per distinct
+                  reason, and none of them `sm:hidden`.
 
-                  🔴 The safeguarding line is NOT `sm:hidden`, unlike the two
-                  below it. A disabled HeroUI Button computes
-                  `pointer-events: none`, so it never receives hover or focus and
-                  its Tooltip cannot open — verified in a browser, not assumed.
-                  A phones-only reason would therefore leave a desktop member
-                  looking at three dead buttons with no explanation anywhere,
-                  which is the exact failure this change exists to remove. The
-                  Tooltip is kept for the day the component can show one. */}
+                  🔴 These used to be phones-only, on the reasoning that a
+                  desktop member gets the Tooltip instead. They do not: a
+                  disabled HeroUI Button computes `pointer-events: none`, so it
+                  receives neither hover nor focus and the Tooltip wrapping it
+                  can never open. Verified in a browser, not inferred. Visible
+                  text is the only thing that actually reaches the member, at
+                  any width. The Tooltips are kept for the day the component can
+                  show one. */}
               {isAuthenticated && safeguardingBlocked && safeguardingTooltip && (
                 <p className="mt-2 text-xs text-theme-muted max-w-prose">{safeguardingTooltip}</p>
               )}
               {isAuthenticated && userOptedIn === false && actionDisabledTooltip && (
-                <p className="sm:hidden mt-2 text-xs text-theme-muted">{actionDisabledTooltip}</p>
+                <p className="mt-2 text-xs text-theme-muted max-w-prose">{actionDisabledTooltip}</p>
               )}
-              {/* Guarded against safeguarding: transactionTooltip falls back to the
-                  safeguarding sentence, which the line above already shows. */}
-              {isAuthenticated && !safeguardingBlocked && !canTransactWithMember && transactionTooltip && (
-                <p className="sm:hidden mt-2 text-xs text-theme-muted">{transactionTooltip}</p>
+              {/* The recipient's own transfer setting, which blocks Send Credits
+                  alone. Stated directly rather than through `transactionTooltip`:
+                  that falls back to whichever broader reason applies, so it
+                  printed the line above a second time whenever the viewer had
+                  not opted in, and the safeguarding sentence a second time
+                  whenever contact was refused. */}
+              {isAuthenticated && !safeguardingBlocked && member.transactions_enabled === false && (
+                <p className="mt-2 text-xs text-theme-muted max-w-prose">
+                  {t('member_profile.transactions_disabled_tooltip')}
+                </p>
               )}
             </div>
           </div>

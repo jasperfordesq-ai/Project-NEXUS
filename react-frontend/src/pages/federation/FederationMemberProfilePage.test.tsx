@@ -123,10 +123,16 @@ const mockMember = {
 
 const mockConnectionStatus = { status: 'none', connection_id: null };
 
-function setupMocks(memberOverrides: Record<string, unknown> = {}) {
+function setupMocks(
+  memberOverrides: Record<string, unknown> = {},
+  statusOverrides: Record<string, unknown> = {},
+) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url.includes('/v2/federation/status')) {
-      return Promise.resolve({ success: true, data: { enabled: true, federation_optin: true } });
+      return Promise.resolve({
+        success: true,
+        data: { enabled: true, federation_optin: true, ...statusOverrides },
+      });
     }
     if (url.includes('/v2/federation/members/20/reviews')) {
       return Promise.resolve({ success: true, data: [] });
@@ -372,6 +378,63 @@ describe('FederationMemberProfilePage', () => {
 
     expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: 'member_profile.send_message' })).not.toBeDisabled();
+  });
+
+  // The two older reasons on this row had the same defect as the safeguarding
+  // one: a disabled HeroUI Button computes pointer-events: none, so its Tooltip
+  // can never open, and the text was sm:hidden. On a desktop the member saw
+  // greyed-out buttons and no reason at all.
+
+  it('shows the opt-in reason as visible text at every screen size', async () => {
+    setupMocks({}, { enabled: false, federation_optin: false });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Maria Green').length).toBeGreaterThanOrEqual(1);
+    });
+
+    const reasons = await screen.findAllByText('member_profile.optin_required_tooltip');
+    // Exactly one line. transactionTooltip falls back to this same string when
+    // the viewer has not opted in, which used to render it a second time.
+    expect(reasons).toHaveLength(1);
+    expect(reasons[0]).not.toHaveClass('sm:hidden');
+
+    expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'member_profile.connect' })).toBeDisabled();
+  });
+
+  it('shows the transfers-disabled reason as visible text at every screen size', async () => {
+    setupMocks({ transactions_enabled: false });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Maria Green').length).toBeGreaterThanOrEqual(1);
+    });
+
+    const reasons = await screen.findAllByText('member_profile.transactions_disabled_tooltip');
+    expect(reasons).toHaveLength(1);
+    expect(reasons[0]).not.toHaveClass('sm:hidden');
+
+    // Only Send Credits is affected by the recipient's own transfer setting.
+    expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'member_profile.send_message' })).not.toBeDisabled();
+  });
+
+  it('does not repeat the safeguarding sentence as a transfer reason', async () => {
+    setupMocks({ ...restrictedSafeguarding, transactions_enabled: false });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(RESTRICTED_DETAIL)).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText(RESTRICTED_DETAIL)).toHaveLength(1);
+    // Contact is refused outright, so the recipient's transfer setting is not
+    // the thing standing in the way and must not be offered as the reason.
+    expect(screen.queryByText('member_profile.transactions_disabled_tooltip')).not.toBeInTheDocument();
   });
 
   // An older cached response, or an external partner member, carries no

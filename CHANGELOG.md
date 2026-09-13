@@ -70,9 +70,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with the server's explanation shown as visible text beneath them. That text is deliberately not
   phone-only: walking the page in a browser showed a disabled HeroUI Button computes
   `pointer-events: none`, so it never receives hover or focus and its tooltip cannot open at all —
-  the existing `transactions_disabled_tooltip` pattern has the same flaw, and pairing a phones-only
-  reason with it would have left a desktop member facing three dead buttons and no explanation
-  anywhere. Connect is included because
+  the two older reasons on the same row (`transactions_disabled_tooltip` and
+  `optin_required_tooltip`) had the same flaw and are fixed alongside it, so every reason an action
+  is unavailable is now readable on any screen. Fixing that also exposed a duplicate: the
+  transfer-reason line fell back to whichever broader reason applied, printing the opt-in sentence
+  twice whenever the viewer had not opted into federation. It now states only the recipient's own
+  transfer setting. Connect is included because
   `FederatedConnectionService::sendRequest()` applies the same gate and failed the same way. The
   server-side checks are unchanged and stay authoritative; this only tells the member sooner.
 
