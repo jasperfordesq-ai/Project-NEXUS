@@ -20,7 +20,9 @@ use Tests\Laravel\TestCase;
  * Tests for the prerender:plan-routes Artisan command.
  *
  * The command:
- *   1. Queries the `tenants` table for active tenants (id <> 1).
+ *   1. Queries the `tenants` table for ALL active tenants, master (id=1) included.
+ *      Master is planned at the app host with no slug prefix; every other tenant
+ *      uses its own domain, else its parent's domain + /slug, else the app host.
  *   2. For each tenant calls PrerenderService::routesForTenant() for the static floor.
  *   3. Optionally calls SitemapService::generateForTenant() for dynamic routes.
  *   4. Outputs JSON: { "tenants": [ { tenant_id, slug, host, prefix, routes } ] }.
@@ -111,6 +113,48 @@ class PrerenderPlanRoutesTest extends TestCase
                     . htmlspecialchars($home, ENT_XML1 | ENT_QUOTES, 'UTF-8')
                     . '</loc></url></urlset>';
             });
+    }
+
+    // =========================================================================
+    // The platform master (id=1) is planned, at the APP HOST.
+    // =========================================================================
+
+    /**
+     * Regression: the query carried `->where('id', '<>', 1)`, so the master
+     * tenant was never planned and `app.project-nexus.ie` — its public front
+     * page, which lists every community — had no snapshots at all while taking
+     * ~156 crawler visits a day, every one served the empty SPA shell.
+     *
+     * Master must also NOT be planned at its own `tenants.domain`
+     * (`project-nexus.ie`): Apache routes that hostname to the separate
+     * sales-site container, so snapshots written there are never read. 48 such
+     * orphans accumulated before this was found.
+     */
+    public function test_master_tenant_is_planned_at_the_app_host_not_its_own_domain(): void
+    {
+        DB::table('tenants')->where('id', 1)->update([
+            'domain'    => 'project-nexus.ie',
+            'is_active' => 1,
+        ]);
+
+        $this->prerenderMock->shouldReceive('routesForTenant')->andReturn(['/']);
+        $this->expectValidHomepageSitemap();
+
+        $decoded = $this->callAndDecode(['--include-sitemap' => 0]);
+
+        $master = null;
+        foreach ($decoded['tenants'] ?? [] as $t) {
+            if ((int) ($t['tenant_id'] ?? 0) === 1) { $master = $t; break; }
+        }
+
+        $this->assertNotNull($master, 'The platform master (id=1) must appear in the route plan');
+        $this->assertSame('', $master['prefix'], 'Master is served at the host root, with no slug prefix');
+        $this->assertNotSame(
+            'project-nexus.ie',
+            $master['host'],
+            'Master must NOT be planned at its own domain — that hostname belongs to the sales site'
+        );
+        $this->assertNotEmpty($master['routes'], 'Master must have routes planned');
     }
 
     // =========================================================================

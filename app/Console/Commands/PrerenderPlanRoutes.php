@@ -64,9 +64,18 @@ class PrerenderPlanRoutes extends Command
             return self::FAILURE;
         }
 
+        // 🔴 The platform master (id=1) IS prerendered. It was excluded here until
+        // 2026-09-13, which meant `app.project-nexus.ie` — the master tenant's
+        // public front page, the one that lists every community — had never been
+        // prerendered at all, while still taking ~156 crawler visits a day and
+        // serving every one of them the empty SPA shell.
+        //
+        // It is rendered at the APP HOST, never at its own `tenants.domain`.
+        // Master's domain is `project-nexus.ie`, which Apache routes to the
+        // separate sales-site container; snapshots written under that hostname
+        // are never read by anything (48 such orphans were found and archived).
         $query = DB::table('tenants')
             ->where('is_active', 1)
-            ->where('id', '<>', 1)
             ->orderBy('id');
         if ($tenantFilter !== '') $query->where('slug', $tenantFilter);
 
@@ -92,7 +101,11 @@ class PrerenderPlanRoutes extends Command
 
         $tenants = [];
         foreach ($query->get(['id', 'slug', 'domain', 'features', 'configuration']) as $t) {
-            if (TenantContext::isReservedPathSegment((string) $t->slug)) {
+            // Master is served at the app host root with no slug prefix, so its
+            // slug never becomes a path segment and cannot collide with one.
+            // Without this guard, renaming master's slug to any reserved word
+            // would abort route planning for EVERY tenant, not just master.
+            if ((int) $t->id !== 1 && TenantContext::isReservedPathSegment((string) $t->slug)) {
                 $this->error("Route planning failed for tenant {$t->slug}: slug collides with a reserved platform path");
                 return self::FAILURE;
             }
@@ -101,7 +114,12 @@ class PrerenderPlanRoutes extends Command
                 ? ''
                 : (PrerenderService::normalizeHost($rawDomain) ?? $rawDomain);
             $parentDomain = $parentDomainMap[(int) $t->id] ?? '';
-            if ($domain !== '') {
+            if ((int) $t->id === 1) {
+                // Master is reached at the app host with no slug prefix. Its own
+                // `domain` belongs to the sales site — see the note on the query.
+                $host   = $appHost;
+                $prefix = '';
+            } elseif ($domain !== '') {
                 $host   = $domain;
                 $prefix = '';
             } elseif ($parentDomain !== '') {

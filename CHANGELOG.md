@@ -33,6 +33,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The platform master tenant was excluded from prerendering entirely, so
+  `app.project-nexus.ie` — the public front page that lists every community — had never had a
+  single snapshot.** `PrerenderPlanRoutes` carried `->where('id', '<>', 1)`, skipping master in
+  every route plan ever produced. That hostname takes roughly **156 crawler visits a day** and
+  served every one of them the empty SPA shell. Master is now planned like any other tenant, with
+  one deliberate difference: it renders at the **app host** (`FRONTEND_URL`), never at its own
+  `tenants.domain`. Master's domain is `project-nexus.ie`, which Apache routes to the separate
+  sales-site container — snapshots written under that hostname are read by nothing, and 48 such
+  orphans had quietly accumulated. The reserved-slug guard is skipped for master because it is
+  served at the host root with no slug prefix; without that, renaming master's slug to a reserved
+  word would have aborted route planning for **every** tenant. Regression test in
+  `PrerenderPlanRoutesTest`, verified to fail with the exclusion restored.
+
 - **ROOT CAUSE: the authoritative prerender publish could never complete, so crawler-facing
   prerendering was off platform-wide from 2026-07-11 to 2026-09-13.** The publisher validates
   each staged page against its checksum sidecar with
