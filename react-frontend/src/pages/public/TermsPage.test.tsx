@@ -68,6 +68,15 @@ vi.mock('@/components/legal/CustomLegalDocument', () => ({
   default: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
   CustomLegalDocument: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
 }));
+// Stubbed so the SEO props can be asserted directly. The real PageMeta writes
+// into <head> via react-helmet-async, which is awkward to assert and not what
+// this file is testing — what matters is that the component is rendered at all
+// on the custom-document branch, with the right title and description.
+vi.mock('@/components/seo/PageMeta', () => ({
+  PageMeta: ({ title, description }: { title?: string; description?: string }) => (
+    <div data-testid="page-meta" data-title={title} data-description={description} />
+  ),
+}));
 vi.mock('@/lib/motion', () => {
   const proxy = new Proxy({}, {
     get: (_t: object, prop: string | symbol) => {
@@ -84,9 +93,27 @@ vi.mock('@/lib/motion', () => {
 });
 
 import { TermsPage } from './TermsPage';
+import { useLegalDocument, type LegalDocument } from '@/hooks/useLegalDocument';
+
+const customTermsDoc: LegalDocument = {
+  id: 1,
+  document_id: 1,
+  type: 'terms',
+  title: 'Our Own Terms',
+  content: '<p>Tenant-authored terms.</p>',
+  version_number: '1.0',
+  effective_date: '2026-01-01',
+  summary_of_changes: null,
+  has_previous_versions: false,
+};
 
 describe('TermsPage', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Re-assert the default explicitly: clearAllMocks keeps implementations, so
+    // a mockReturnValue set by one test would otherwise leak into the next.
+    vi.mocked(useLegalDocument).mockReturnValue({ document: null, loading: false });
+  });
 
   it('renders without crashing', () => {
     render(<TermsPage />);
@@ -108,5 +135,23 @@ describe('TermsPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: /^8\s*Changes to These Terms$/ })).toBeInTheDocument();
     // …and the tenant custom-document branch was NOT taken.
     expect(screen.queryByTestId('custom-legal')).not.toBeInTheDocument();
+  });
+
+  // Regression: a tenant with its own uploaded terms took the customDoc branch,
+  // which returned CustomLegalDocument bare — no PageMeta, so no meta
+  // description, no canonical link and no Open Graph tags. Every such tenant's
+  // /terms was served to crawlers with a bare title and nothing else. Found
+  // 2026-09-13 by auditing the production prerender snapshots.
+  it('still renders SEO tags when the tenant has its own terms document', () => {
+    vi.mocked(useLegalDocument).mockReturnValue({ document: customTermsDoc, loading: false });
+
+    render(<TermsPage />);
+
+    // The custom-document branch is the one under test.
+    expect(screen.getByTestId('custom-legal')).toBeInTheDocument();
+
+    const meta = screen.getByTestId('page-meta');
+    expect(meta).toHaveAttribute('data-title', 'Terms of Service');
+    expect(meta.getAttribute('data-description')).toBeTruthy();
   });
 });

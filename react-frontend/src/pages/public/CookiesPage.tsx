@@ -164,8 +164,16 @@ export function CookiesPage() {
     );
   }
 
+  // A tenant's own uploaded document still needs its SEO tags — see the note
+  // in TermsPage. Without this, /cookies had no description, canonical or
+  // Open Graph on every tenant with a custom policy.
   if (customDoc) {
-    return <CustomLegalDocument document={customDoc} accentColor="amber" />;
+    return (
+      <>
+        <PageMeta title={t('cookies.page_title')} description={t('cookies.meta_description')} />
+        <CustomLegalDocument document={customDoc} accentColor="amber" />
+      </>
+    );
   }
 
   return (

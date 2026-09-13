@@ -68,6 +68,12 @@ vi.mock('@/components/legal/CustomLegalDocument', () => ({
   default: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
   CustomLegalDocument: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
 }));
+// Stubbed so the SEO props can be asserted directly — see TermsPage.test.tsx.
+vi.mock('@/components/seo/PageMeta', () => ({
+  PageMeta: ({ title, description }: { title?: string; description?: string }) => (
+    <div data-testid="page-meta" data-title={title} data-description={description} />
+  ),
+}));
 vi.mock('@/lib/motion', () => ({
   motion: {
     div: ({ children, ...props }: Record<string, unknown>) => {
@@ -81,9 +87,40 @@ vi.mock('@/lib/motion', () => ({
 }));
 
 import { CookiesPage } from './CookiesPage';
+import { useLegalDocument, type LegalDocument } from '@/hooks/useLegalDocument';
+
+const customCookiesDoc: LegalDocument = {
+  id: 3,
+  document_id: 3,
+  type: 'cookies',
+  title: 'Our Own Cookie Policy',
+  content: '<p>Tenant-authored cookie policy.</p>',
+  version_number: '1.0',
+  effective_date: '2026-01-01',
+  summary_of_changes: null,
+  has_previous_versions: false,
+};
 
 describe('CookiesPage', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // clearAllMocks keeps implementations, so re-assert the default explicitly.
+    vi.mocked(useLegalDocument).mockReturnValue({ document: null, loading: false });
+  });
+
+  // Regression: the customDoc branch returned CustomLegalDocument bare, so
+  // /cookies had no meta description, no canonical and no Open Graph on every
+  // tenant with its own policy. Found 2026-09-13 auditing prerender snapshots.
+  it('still renders SEO tags when the tenant has its own cookie document', () => {
+    vi.mocked(useLegalDocument).mockReturnValue({ document: customCookiesDoc, loading: false });
+
+    render(<CookiesPage />);
+
+    expect(screen.getByTestId('custom-legal')).toBeInTheDocument();
+    const meta = screen.getByTestId('page-meta');
+    expect(meta.getAttribute('data-title')).toBeTruthy();
+    expect(meta.getAttribute('data-description')).toBeTruthy();
+  });
 
   it('renders without crashing', () => {
     render(<CookiesPage />);

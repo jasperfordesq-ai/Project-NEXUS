@@ -69,8 +69,17 @@ export function TermsPage() {
     );
   }
 
+  // A tenant's own uploaded document still needs its SEO tags. Returning
+  // CustomLegalDocument bare left /terms with no description, no canonical and
+  // no Open Graph on every tenant that has one — see AcceptableUsePage, which
+  // has always done this correctly.
   if (customDoc) {
-    return <CustomLegalDocument document={customDoc} accentColor="blue" />;
+    return (
+      <>
+        <PageMeta title={t('terms.page_title')} description={t('terms.meta_description')} />
+        <CustomLegalDocument document={customDoc} accentColor="blue" />
+      </>
+    );
   }
 
   // Default fallback — generic terms content

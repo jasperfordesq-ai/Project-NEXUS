@@ -183,8 +183,16 @@ export function PrivacyPage() {
     );
   }
 
+  // A tenant's own uploaded document still needs its SEO tags — see the note
+  // in TermsPage. Without this, /privacy had no description, canonical or
+  // Open Graph on every tenant with a custom policy.
   if (customDoc) {
-    return <CustomLegalDocument document={customDoc} accentColor="indigo" />;
+    return (
+      <>
+        <PageMeta title={t('privacy.page_title')} description={t('privacy.meta_description')} />
+        <CustomLegalDocument document={customDoc} accentColor="indigo" />
+      </>
+    );
   }
 
   return (

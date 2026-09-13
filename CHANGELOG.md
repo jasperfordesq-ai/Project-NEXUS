@@ -15,6 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`/terms`, `/privacy` and `/cookies` had no meta description, canonical link or Open Graph
+  tags on any tenant that uploaded its own legal document.** All three pages branch three ways —
+  loading, tenant custom document, default content — but only the default branch rendered
+  `<PageMeta>`. A tenant with a custom policy took the middle branch, which returned
+  `<CustomLegalDocument>` bare, so the page reached crawlers with a title from `usePageTitle()`
+  and nothing else. `AcceptableUsePage` has always rendered `PageMeta` on both branches and was
+  used as the reference. Confirmed against a freshly rendered production snapshot of
+  `hour-timebank.ie/terms`: `<title>Terms of Service</title>`, zero description tags, zero
+  canonical tags. Regression tests added to `TermsPage.test.tsx`, `PrivacyPage.test.tsx` and
+  `CookiesPage.test.tsx`, each verified to fail without the fix.
+
 - **Every tenant domain advertised an empty sitemap to search engines.** `location = /robots.txt`
   rewrites the platform hostname to the requesting host via `sub_filter`, but ran with
   `sub_filter_once on`. robots.txt opens with the comment

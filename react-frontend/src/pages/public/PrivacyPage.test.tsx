@@ -46,6 +46,12 @@ vi.mock('@/components/legal/CustomLegalDocument', () => ({
   default: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
   CustomLegalDocument: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
 }));
+// Stubbed so the SEO props can be asserted directly — see TermsPage.test.tsx.
+vi.mock('@/components/seo/PageMeta', () => ({
+  PageMeta: ({ title, description }: { title?: string; description?: string }) => (
+    <div data-testid="page-meta" data-title={title} data-description={description} />
+  ),
+}));
 vi.mock('@/lib/motion', () => ({
   motion: {
     div: ({ children, ...props }: Record<string, unknown>) => {
@@ -59,9 +65,40 @@ vi.mock('@/lib/motion', () => ({
 }));
 
 import { PrivacyPage } from './PrivacyPage';
+import { useLegalDocument, type LegalDocument } from '@/hooks/useLegalDocument';
+
+const customPrivacyDoc: LegalDocument = {
+  id: 2,
+  document_id: 2,
+  type: 'privacy',
+  title: 'Our Own Privacy Policy',
+  content: '<p>Tenant-authored privacy policy.</p>',
+  version_number: '1.0',
+  effective_date: '2026-01-01',
+  summary_of_changes: null,
+  has_previous_versions: false,
+};
 
 describe('PrivacyPage', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // clearAllMocks keeps implementations, so re-assert the default explicitly.
+    vi.mocked(useLegalDocument).mockReturnValue({ document: null, loading: false });
+  });
+
+  // Regression: the customDoc branch returned CustomLegalDocument bare, so
+  // /privacy had no meta description, no canonical and no Open Graph on every
+  // tenant with its own policy. Found 2026-09-13 auditing prerender snapshots.
+  it('still renders SEO tags when the tenant has its own privacy document', () => {
+    vi.mocked(useLegalDocument).mockReturnValue({ document: customPrivacyDoc, loading: false });
+
+    render(<PrivacyPage />);
+
+    expect(screen.getByTestId('custom-legal')).toBeInTheDocument();
+    const meta = screen.getByTestId('page-meta');
+    expect(meta.getAttribute('data-title')).toBeTruthy();
+    expect(meta.getAttribute('data-description')).toBeTruthy();
+  });
 
   it('renders without crashing', () => {
     render(<PrivacyPage />);
