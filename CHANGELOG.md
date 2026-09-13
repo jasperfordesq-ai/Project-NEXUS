@@ -67,8 +67,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   recipient tenant's safeguarding policy is evaluated separately at send time — the live case is a
   Timebanking UK member with two safeguarding options carrying `restricts_messaging`, correctly
   refused with 403 `SAFEGUARDING_CONTACT_RESTRICTED`. All three buttons are now disabled up front,
-  with the server's explanation in a tooltip and as visible helper text on touch devices, where
-  tooltips do not exist. Connect is included because
+  with the server's explanation shown as visible text beneath them. That text is deliberately not
+  phone-only: walking the page in a browser showed a disabled HeroUI Button computes
+  `pointer-events: none`, so it never receives hover or focus and its tooltip cannot open at all —
+  the existing `transactions_disabled_tooltip` pattern has the same flaw, and pairing a phones-only
+  reason with it would have left a desktop member facing three dead buttons and no explanation
+  anywhere. Connect is included because
   `FederatedConnectionService::sendRequest()` applies the same gate and failed the same way. The
   server-side checks are unchanged and stay authoritative; this only tells the member sooner.
 

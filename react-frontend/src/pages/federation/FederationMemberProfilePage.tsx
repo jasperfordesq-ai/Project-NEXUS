@@ -493,9 +493,18 @@ export function FederationMemberProfilePage() {
               </div>
 
               {/* Disabled-action reasons — tooltips don't exist on touch, so
-                  surface them as visible helper text on phones */}
+                  surface them as visible helper text on phones.
+
+                  🔴 The safeguarding line is NOT `sm:hidden`, unlike the two
+                  below it. A disabled HeroUI Button computes
+                  `pointer-events: none`, so it never receives hover or focus and
+                  its Tooltip cannot open — verified in a browser, not assumed.
+                  A phones-only reason would therefore leave a desktop member
+                  looking at three dead buttons with no explanation anywhere,
+                  which is the exact failure this change exists to remove. The
+                  Tooltip is kept for the day the component can show one. */}
               {isAuthenticated && safeguardingBlocked && safeguardingTooltip && (
-                <p className="sm:hidden mt-2 text-xs text-theme-muted">{safeguardingTooltip}</p>
+                <p className="mt-2 text-xs text-theme-muted max-w-prose">{safeguardingTooltip}</p>
               )}
               {isAuthenticated && userOptedIn === false && actionDisabledTooltip && (
                 <p className="sm:hidden mt-2 text-xs text-theme-muted">{actionDisabledTooltip}</p>

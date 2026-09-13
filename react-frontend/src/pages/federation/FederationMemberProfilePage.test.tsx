@@ -314,7 +314,7 @@ describe('FederationMemberProfilePage', () => {
     expect(screen.getByRole('button', { name: 'member_profile.connect' })).toBeDisabled();
   });
 
-  it('explains the safeguarding refusal in visible helper text for touch devices', async () => {
+  it('explains the safeguarding refusal in visible text on every screen size', async () => {
     setupMocks(restrictedSafeguarding);
 
     render(<FederationMemberProfilePage />);
@@ -324,7 +324,15 @@ describe('FederationMemberProfilePage', () => {
     });
 
     // The sentence must appear once, not once per disabled action.
-    expect(screen.getAllByText(RESTRICTED_DETAIL)).toHaveLength(1);
+    const reasons = screen.getAllByText(RESTRICTED_DETAIL);
+    expect(reasons).toHaveLength(1);
+
+    // It must NOT be phone-only. A disabled HeroUI Button computes
+    // pointer-events: none, so it never receives hover or focus and its
+    // Tooltip cannot open - verified in a browser. Hiding the reason above
+    // the sm breakpoint would leave a desktop member with three dead buttons
+    // and no explanation at all, which is the bug this page is fixing.
+    expect(reasons[0]).not.toHaveClass('sm:hidden');
   });
 
   it('does not open the transfer modal while safeguarding refuses contact', async () => {
