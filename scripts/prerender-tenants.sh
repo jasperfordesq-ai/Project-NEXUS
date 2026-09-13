@@ -1367,7 +1367,17 @@ inject_rendered_pages() {
                     echo "Missing checksum sidecar: $rel" >&2
                     exit 1
                 }
-                read -r recorded_hash recorded_bytes < "$checksum"
+                # `read` returns non-zero at EOF when the line has no trailing
+                # newline, even though it assigned both variables correctly.
+                # The worker wrote these sidecars without one, so under
+                # `set -e` this aborted the whole authoritative publish on the
+                # FIRST page it validated — silently, with no message and no
+                # partial state. That is why `.tenant-identity-v1` was never
+                # written and prerendering stayed off from 2026-07-11 to
+                # 2026-09-13. A short read is still caught: the malformed and
+                # mismatch checks immediately below reject empty or garbage
+                # values, so tolerating the EOF status loses no validation.
+                read -r recorded_hash recorded_bytes < "$checksum" || true
                 actual_hash="$(sha256sum "$index" | cut -d" " -f1)"
                 actual_bytes="$(wc -c < "$index" | tr -d " ")"
                 case "$recorded_hash" in

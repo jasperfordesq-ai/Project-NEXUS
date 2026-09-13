@@ -826,8 +826,16 @@ async function main() {
       // tampering, bit rot) without re-hashing megabytes on every inspect.
       // Format: "<hex>  <byte-count>" — same shape as `sha256sum` output
       // so an operator can verify by hand.
+      //
+      // The trailing newline is REQUIRED, and `sha256sum` emits one too. POSIX
+      // `read` returns non-zero at EOF on an unterminated final line even when
+      // it assigned every variable, so a sidecar without it made the publisher's
+      // `read -r recorded_hash recorded_bytes < "$checksum"` abort the entire
+      // authoritative publish under `set -e` — silently. The reader now
+      // tolerates that status as well, but do not drop this newline: it is what
+      // makes the file well-formed.
       const sha = createHash('sha256').update(html, 'utf-8').digest('hex');
-      writeFileSync(`${outputDir}/index.html.sha256`, `${sha}  ${Buffer.byteLength(html, 'utf-8')}`, 'utf-8');
+      writeFileSync(`${outputDir}/index.html.sha256`, `${sha}  ${Buffer.byteLength(html, 'utf-8')}\n`, 'utf-8');
       // Persist immutable ownership beside the snapshot. Hostnames and path
       // prefixes can later be reassigned; reconciliation must distinguish an
       // old tenant's HTML from a valid snapshot for the new owner.

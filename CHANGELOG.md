@@ -15,6 +15,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ROOT CAUSE: the authoritative prerender publish could never complete, so crawler-facing
+  prerendering was off platform-wide from 2026-07-11 to 2026-09-13.** The publisher validates
+  each staged page against its checksum sidecar with
+  `read -r recorded_hash recorded_bytes < "$checksum"`. POSIX `read` returns non-zero at EOF
+  when the final line has no trailing newline — even though it assigned both variables
+  correctly — and `prerender-worker.mjs` wrote those sidecars **without** one. Under `set -eu`
+  the publish therefore aborted on the *first* page it validated, with no message, no partial
+  state and exit code 1. Because `.tenant-identity-v1` is written only at the end of a
+  successful authoritative publish, and nginx fails closed without it, every crawler received
+  the 1,950-byte empty SPA shell: across the whole retained bot-access log, **0 snapshots were
+  served to any bot out of ~4,400 visits**. Google indexed `hour-timebank.ie` with the app's own
+  "Unable to connect" error as its description. The reader now tolerates the EOF status (the
+  malformed/mismatch checks immediately after still reject empty or wrong values) and the worker
+  now terminates the sidecar, matching `sha256sum` output.
+
+- **The regression test for that publish existed, passed, and proved nothing — and CI never ran
+  it.** `scripts/test/test-prerender-authoritative-publish.sh` wrote its checksum fixtures *with*
+  a trailing newline while the real worker wrote them *without*, so the one byte that mattered
+  was never exercised; and the script was not referenced by any workflow. The fixture now covers
+  both shapes (verified: the test exits 1 with the reader fix reverted, 0 with it), and the test
+  runs as a BLOCKING step in the existing `Migration Safety Gate` job — no new required job, so
+  the deploy verifier's job list is unchanged.
+
 - **The prerender health report could not see that prerendering was switched off.** nginx fails
   closed on `.tenant-identity-v1`: while that marker is absent it serves the empty SPA shell to
   every crawler regardless of how fresh or complete the snapshots are. Every existing check in

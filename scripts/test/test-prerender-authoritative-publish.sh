@@ -74,12 +74,25 @@ docker() {
 
 write_snapshot() {
     local root="$1" host="$2" body="$3" tenant_id="${4:-1}" tenant_slug="${5:-alpha}"
+    local sidecar_newline="${6:-1}"
     mkdir -p "$root/$host"
     printf '%s\n' "$body" > "$root/$host/index.html"
     local hash bytes
     hash="$(sha256sum "$root/$host/index.html" | cut -d' ' -f1)"
     bytes="$(wc -c < "$root/$host/index.html" | tr -d ' ')"
-    printf '%s  %s\n' "$hash" "$bytes" > "$root/$host/index.html.sha256"
+    # 🔴 Both shapes must publish. This fixture wrote the checksum sidecar WITH
+    # a trailing newline while prerender-worker.mjs wrote it WITHOUT one, and
+    # that single byte is why this test stayed green for two months while the
+    # real authoritative publish could never complete even once: POSIX `read`
+    # returns non-zero at EOF on an unterminated final line, so
+    # `read -r recorded_hash recorded_bytes < "$checksum"` aborted the publisher
+    # under `set -e` on the first page it validated, silently. Cover the
+    # unterminated shape so a revert of that tolerance fails here.
+    if [ "$sidecar_newline" = "1" ]; then
+        printf '%s  %s\n' "$hash" "$bytes" > "$root/$host/index.html.sha256"
+    else
+        printf '%s  %s' "$hash" "$bytes" > "$root/$host/index.html.sha256"
+    fi
     printf '{"tenantId":%s,"tenantSlug":"%s","host":"%s"}\n' \
         "$tenant_id" "$tenant_slug" "$host" > "$root/$host/_tenant.json"
 }
@@ -92,8 +105,10 @@ mkdir -p "$PRERENDER_DIR/status-only.example.test"
 printf '503\n' > "$PRERENDER_DIR/status-only.example.test/_status"
 printf 'old metadata\n' > "$PRERENDER_DIR/.last-run.json"
 
-write_snapshot "$OUTPUT_DIR" "alpha.example.test" "new-alpha" 1 alpha
-write_snapshot "$OUTPUT_DIR" "bravo.example.test" "new-bravo" 2 bravo
+# alpha carries a newline-terminated sidecar, bravo an unterminated one — the
+# exact shape prerender-worker.mjs produced in production. Both must publish.
+write_snapshot "$OUTPUT_DIR" "alpha.example.test" "new-alpha" 1 alpha 1
+write_snapshot "$OUTPUT_DIR" "bravo.example.test" "new-bravo" 2 bravo 0
 printf '503\n' > "$OUTPUT_DIR/bravo.example.test/_status"
 printf '{"success":2}\n' > "$OUTPUT_DIR/.prerender-results.json"
 printf '%s\n' '{"urls":[' \

@@ -951,6 +951,16 @@ jobs:
       - name: "BLOCKING: Prerender cron installer runtime test"
         run: bash tests/scripts/install-prerender-cron-test.sh
 
+      # 🔴 This test existed but nothing ran it. The authoritative publish —
+      # the only path that writes `.tenant-identity-v1` and therefore the only
+      # thing that can turn crawler-facing prerendering on — was broken in
+      # production from 2026-07-11 to 2026-09-13 and no CI job would have
+      # noticed, because this script is not invoked anywhere. Needs jq + flock,
+      # both present on ubuntu-latest; the harness stubs docker and setfacl and
+      # runs entirely in a temp directory.
+      - name: "BLOCKING: Prerender authoritative publish transaction test"
+        run: bash scripts/test/test-prerender-authoritative-publish.sh
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
