@@ -123,7 +123,7 @@ const mockMember = {
 
 const mockConnectionStatus = { status: 'none', connection_id: null };
 
-function setupMocks() {
+function setupMocks(memberOverrides: Record<string, unknown> = {}) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url.includes('/v2/federation/status')) {
       return Promise.resolve({ success: true, data: { enabled: true, federation_optin: true } });
@@ -134,7 +134,7 @@ function setupMocks() {
     if (url.includes('/v2/federation/connections/status/')) {
       return Promise.resolve({ success: true, data: mockConnectionStatus });
     }
-    return Promise.resolve({ success: true, data: mockMember });
+    return Promise.resolve({ success: true, data: { ...mockMember, ...memberOverrides } });
   });
 }
 
@@ -276,5 +276,109 @@ describe('FederationMemberProfilePage', () => {
       'member_profile.tx_failed',
       'This member has limited who can contact them.',
     ));
+  });
+
+  // The page used to offer Message and Send Credits to every member whose
+  // federation settings allowed them, and only the send revealed that the
+  // recipient's community safeguarding policy refuses contact. The profile
+  // endpoint now reports that decision, and the page must act on it.
+  const RESTRICTED_DETAIL =
+    'This member is not available for direct messages because their safeguarding '
+    + 'preferences require coordinator-mediated contact.';
+
+  const restrictedSafeguarding = {
+    safeguarding: {
+      contact_allowed: false,
+      status: 'deny',
+      code: 'SAFEGUARDING_CONTACT_RESTRICTED',
+      title: 'Coordinator arrangement needed',
+      detail: RESTRICTED_DETAIL,
+      message: 'Your message has not been sent.',
+      can_request_coordinator: true,
+      retryable: false,
+    },
+  };
+
+  it('disables Send Credits and Message when safeguarding refuses contact', async () => {
+    setupMocks(restrictedSafeguarding);
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Maria Green').length).toBeGreaterThanOrEqual(1);
+    });
+
+    expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'member_profile.send_message' })).toBeDisabled();
+    // Same gate (FederatedConnectionService::sendRequest), same refusal.
+    expect(screen.getByRole('button', { name: 'member_profile.connect' })).toBeDisabled();
+  });
+
+  it('explains the safeguarding refusal in visible helper text for touch devices', async () => {
+    setupMocks(restrictedSafeguarding);
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(RESTRICTED_DETAIL)).toBeInTheDocument();
+    });
+
+    // The sentence must appear once, not once per disabled action.
+    expect(screen.getAllByText(RESTRICTED_DETAIL)).toHaveLength(1);
+  });
+
+  it('does not open the transfer modal while safeguarding refuses contact', async () => {
+    setupMocks(restrictedSafeguarding);
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Maria Green').length).toBeGreaterThanOrEqual(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'member_profile.send_credits' }));
+
+    expect(screen.queryByLabelText('member_profile.amount_hours')).not.toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('leaves the actions available when safeguarding allows contact', async () => {
+    setupMocks({
+      safeguarding: {
+        contact_allowed: true,
+        status: 'allow',
+        code: null,
+        title: null,
+        detail: null,
+        message: null,
+        can_request_coordinator: false,
+        retryable: false,
+      },
+    });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Maria Green').length).toBeGreaterThanOrEqual(1);
+    });
+
+    expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'member_profile.send_message' })).not.toBeDisabled();
+  });
+
+  // An older cached response, or an external partner member, carries no
+  // advisory at all. Absent must not read as denied — the send endpoints stay
+  // authoritative either way.
+  it('treats a missing safeguarding advisory as no advisory, not as a refusal', async () => {
+    setupMocks();
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Maria Green').length).toBeGreaterThanOrEqual(1);
+    });
+
+    expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'member_profile.send_message' })).not.toBeDisabled();
   });
 });

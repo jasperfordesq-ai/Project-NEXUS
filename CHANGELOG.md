@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`safeguarding` on the federated member profile response — the API now says whether contact with
+  this member would be refused, before the member tries.** `GET /v2/federation/members/{id}` returns
+  `contact_allowed`, the refusal `code` and `status`, a member-readable `title`/`detail`/`message`,
+  `can_request_coordinator` and `retryable`, derived from the same
+  `SafeguardingInteractionPolicy::evaluateCrossTenantContact()` decision that `sendMessage()`,
+  `sendTransaction()` and `FederatedConnectionService::sendRequest()` enforce. Wording comes from
+  `MessageService::buildSafeguardingError()`, so the sentence shown on the profile is the sentence
+  that would have come back with the refusal, in the viewer's locale. It is **advisory only** — all
+  three write paths re-evaluate the policy and remain the authoritative boundary, so a stale or
+  absent value cannot let a refused interaction through. It fails closed: a policy lookup that
+  throws reports not-allowed with the retryable `SAFEGUARDING_POLICY_UNAVAILABLE` code rather than
+  advertising an action the server is about to refuse. Deliberately **not** added to the member list
+  endpoint, which would cost a preference lookup per row on a paginated page.
+
 - **`npm run check:spa-shell` — the SPA-shell contract guard, now wired into something that runs.**
   `scripts/test/test-spa-shell-fallback.mjs` had existed since the shell contract was written and
   was invoked by nothing: not `package.json`, not a workflow, not `preflight.mjs`. Run by hand it
@@ -44,6 +58,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hardcoded in the repo, so a new installation configures its own).
 
 ### Fixed
+
+- **The federated member profile offered Connect, Message and Send Credits to members whose
+  community safeguarding policy refuses contact, so the member only found out after composing a
+  transfer.** The profile payload carried only `messaging_enabled` and `transactions_enabled`, both
+  read from `federation_user_settings`, and the page enabled every action from those two fields
+  alone. A recipient can have both settings switched on and still be unreachable, because the
+  recipient tenant's safeguarding policy is evaluated separately at send time — the live case is a
+  Timebanking UK member with two safeguarding options carrying `restricts_messaging`, correctly
+  refused with 403 `SAFEGUARDING_CONTACT_RESTRICTED`. All three buttons are now disabled up front,
+  with the server's explanation in a tooltip and as visible helper text on touch devices, where
+  tooltips do not exist. Connect is included because
+  `FederatedConnectionService::sendRequest()` applies the same gate and failed the same way. The
+  server-side checks are unchanged and stay authoritative; this only tells the member sooner.
 
 - **A refused federated credit transfer said only "Unknown error", hiding the one sentence that
   explained it.** `FederationMemberProfilePage` discarded the API's error body and always rendered

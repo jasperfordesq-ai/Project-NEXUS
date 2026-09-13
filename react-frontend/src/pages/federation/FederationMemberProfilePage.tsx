@@ -304,12 +304,36 @@ export function FederationMemberProfilePage() {
 
   const skills = member.skills ?? [];
   const canUseFederationActions = isAuthenticated && userOptedIn === true;
-  const canMessageMember = canUseFederationActions && member.messaging_enabled === true;
-  const canTransactWithMember = canUseFederationActions && member.transactions_enabled === true;
+
+  // The recipient's community safeguarding policy is the last gate the send
+  // endpoints apply, and it refuses with 403/503. The profile used to offer both
+  // actions regardless, so a restricted member looked reachable until the send
+  // failed. The server's advisory says whether contact would be allowed and
+  // carries the sentence to show; it is absent for external members and on older
+  // responses, so only an explicit `false` disables anything.
+  const safeguardingBlocked = member.safeguarding?.contact_allowed === false;
+  const safeguardingTooltip = safeguardingBlocked
+    ? (member.safeguarding?.detail || member.safeguarding?.message || undefined)
+    : undefined;
+
+  // Connect is gated by the same policy — FederatedConnectionService::sendRequest
+  // calls evaluateCrossTenantContact too, so it fails for exactly these members.
+  const canConnectWithMember = canUseFederationActions && !safeguardingBlocked;
+  const canMessageMember =
+    canUseFederationActions && member.messaging_enabled === true && !safeguardingBlocked;
+  const canTransactWithMember =
+    canUseFederationActions && member.transactions_enabled === true && !safeguardingBlocked;
   const actionDisabledTooltip = userOptedIn === false ? t('member_profile.optin_required_tooltip') : undefined;
-  const transactionTooltip = member.transactions_enabled === false
-    ? t('member_profile.transactions_disabled_tooltip')
-    : actionDisabledTooltip;
+
+  // Safeguarding outranks the other reasons: it is the one the member cannot fix
+  // by changing their own settings, and it names the next step (ask a coordinator).
+  // Connect and Message have no reason of their own beyond these two, so they
+  // share one string; Send Credits adds the settings-derived reason below it.
+  const contactActionTooltip = safeguardingTooltip ?? actionDisabledTooltip;
+  const transactionTooltip = safeguardingTooltip
+    ?? (member.transactions_enabled === false
+      ? t('member_profile.transactions_disabled_tooltip')
+      : actionDisabledTooltip);
 
   return (
     <div className="space-y-6">
@@ -386,14 +410,14 @@ export function FederationMemberProfilePage() {
               <div className="flex flex-wrap gap-3 mt-4">
                 {isAuthenticated && connectionStatus === 'none' && (
                   <Tooltip
-                    content={actionDisabledTooltip}
-                    isDisabled={userOptedIn !== false}
+                    content={contactActionTooltip}
+                    isDisabled={!contactActionTooltip}
                   >
                     <Button
                       variant="primary"
                       startContent={<UserPlus className="w-4 h-4" aria-hidden="true" />}
                       isLoading={connectLoading}
-                      isDisabled={!canUseFederationActions}
+                      isDisabled={!canConnectWithMember}
                       onPress={handleConnect}
                     >
                       {t('member_profile.connect')}
@@ -420,8 +444,8 @@ export function FederationMemberProfilePage() {
                 )}
                 {isAuthenticated && member.messaging_enabled && (
                   <Tooltip
-                    content={actionDisabledTooltip}
-                    isDisabled={userOptedIn !== false}
+                    content={contactActionTooltip}
+                    isDisabled={!contactActionTooltip}
                   >
                     <Button
                       variant="primary"
@@ -470,10 +494,15 @@ export function FederationMemberProfilePage() {
 
               {/* Disabled-action reasons — tooltips don't exist on touch, so
                   surface them as visible helper text on phones */}
+              {isAuthenticated && safeguardingBlocked && safeguardingTooltip && (
+                <p className="sm:hidden mt-2 text-xs text-theme-muted">{safeguardingTooltip}</p>
+              )}
               {isAuthenticated && userOptedIn === false && actionDisabledTooltip && (
                 <p className="sm:hidden mt-2 text-xs text-theme-muted">{actionDisabledTooltip}</p>
               )}
-              {isAuthenticated && !canTransactWithMember && transactionTooltip && (
+              {/* Guarded against safeguarding: transactionTooltip falls back to the
+                  safeguarding sentence, which the line above already shows. */}
+              {isAuthenticated && !safeguardingBlocked && !canTransactWithMember && transactionTooltip && (
                 <p className="sm:hidden mt-2 text-xs text-theme-muted">{transactionTooltip}</p>
               )}
             </div>

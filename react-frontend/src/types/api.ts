@@ -1845,6 +1845,26 @@ export interface FederatedMember {
   service_reach?: string;
   messaging_enabled?: boolean;
   transactions_enabled?: boolean;
+  /**
+   * Advisory safeguarding contact state from the single-member profile endpoint.
+   *
+   * Lets the UI disable Message / Send Credits and explain why, instead of the
+   * member discovering the refusal as a 403 after composing. It is NOT an
+   * authorisation signal — the send endpoints re-evaluate the policy themselves
+   * and stay authoritative. Absent on the member list and on external members,
+   * so treat `undefined` as "no advisory available", never as "denied".
+   */
+  safeguarding?: {
+    contact_allowed: boolean;
+    status: string;
+    code: string | null;
+    title: string | null;
+    /** Member-readable sentence for the tooltip / helper text. */
+    detail: string | null;
+    message: string | null;
+    can_request_coordinator: boolean;
+    retryable: boolean;
+  };
   tenant_id?: number | string;
   tenant_name?: string;
   timebank: {

@@ -1877,6 +1877,31 @@ class FederationV2Controller extends BaseApiController
                 $currentUserId, (int) $m['id'], (int) $m['tenant_id']
             );
 
+            // Tell the viewer up front when the recipient's community safeguarding
+            // policy will refuse contact. sendMessage() and sendTransaction() both
+            // gate on evaluateCrossTenantContact() and answer 403/503; without this
+            // the profile offered Message and Send Credits as though they worked and
+            // the member only found out after composing a transfer.
+            //
+            // Advisory only. Both write paths re-evaluate the policy themselves and
+            // remain the authoritative boundary, so a stale or absent flag here can
+            // never let a refused interaction through.
+            //
+            // Evaluated once, not once per channel: the decision is a function of
+            // (sender, recipient) and the channel argument only labels the log line
+            // (SafeguardingInteractionPolicy::evaluateResolvedState). If a channel
+            // ever changes the outcome, this must become per-channel.
+            //
+            // Deliberately NOT done in the member LIST endpoint: that would add a
+            // preference lookup per row on a paginated page, for a warning the
+            // member does not need until they open a profile.
+            $member['safeguarding'] = $this->safeguardingContactStateFor(
+                $currentUserId,
+                $tenantId,
+                (int) $m['id'],
+                (int) $m['tenant_id'],
+            );
+
             // Add member's active listings (if partnership allows listings)
             if (!empty($m['listings_enabled'])) {
                 $memberListings = DB::select(
@@ -1898,6 +1923,79 @@ class FederationV2Controller extends BaseApiController
             \Illuminate\Support\Facades\Log::warning("FederationV2Api::member error: " . $e->getMessage());
             return $this->respondWithError('INTERNAL_ERROR', __('api.fed_member_profile_failed'), null, 500);
         }
+    }
+
+    /**
+     * Advisory safeguarding contact state for a federated member profile.
+     *
+     * Mirrors the gate sendMessage() and sendTransaction() apply, so the UI can
+     * disable an action and explain why instead of letting the member walk into a
+     * 403. Never used to authorise anything: both write paths re-evaluate.
+     *
+     * Fails closed. A policy lookup that throws is reported as not allowed with
+     * the retryable SAFEGUARDING_POLICY_UNAVAILABLE code — the same answer the
+     * write paths give (503). It must never fall back to "allowed", because that
+     * would advertise an action the server is about to refuse.
+     *
+     * Wording comes from MessageService::buildSafeguardingError() so what a member
+     * reads on the profile is what they would have read in the refusal, rendered
+     * in the viewer's locale by the global SetLocale middleware.
+     *
+     * @return array{contact_allowed: bool, status: string, code: string|null,
+     *     title: string|null, detail: string|null, message: string|null,
+     *     can_request_coordinator: bool, retryable: bool}
+     */
+    private function safeguardingContactStateFor(
+        int $senderId,
+        int $senderTenantId,
+        int $recipientId,
+        int $recipientTenantId,
+    ): array {
+        $decision = null;
+
+        try {
+            $decision = app(SafeguardingInteractionPolicy::class)->evaluateCrossTenantContact(
+                $senderId,
+                $senderTenantId,
+                $recipientId,
+                $recipientTenantId,
+                'federated_message',
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning(
+                'FederationV2Api::member safeguarding advisory failed: ' . $e->getMessage()
+            );
+        }
+
+        if ($decision !== null && $decision->isAllowed()) {
+            return [
+                'contact_allowed' => true,
+                'status' => 'allow',
+                'code' => null,
+                'title' => null,
+                'detail' => null,
+                'message' => null,
+                'can_request_coordinator' => false,
+                'retryable' => false,
+            ];
+        }
+
+        $error = MessageService::buildSafeguardingError([
+            'code' => $decision?->code ?? 'SAFEGUARDING_POLICY_UNAVAILABLE',
+            'required_vetting_types' => $decision?->requiredAttestationCodes ?? [],
+            'required_vetting_labels' => $decision?->requiredAttestationLabels ?? [],
+        ]);
+
+        return [
+            'contact_allowed' => false,
+            'status' => $decision?->status ?? 'unavailable',
+            'code' => (string) $error['code'],
+            'title' => isset($error['title']) ? (string) $error['title'] : null,
+            'detail' => isset($error['detail']) ? (string) $error['detail'] : null,
+            'message' => isset($error['message']) ? (string) $error['message'] : null,
+            'can_request_coordinator' => $decision?->canRequestCoordinator ?? true,
+            'retryable' => (bool) ($error['retryable'] ?? false),
+        ];
     }
 
     private function externalMemberDetail(string $id, int $tenantId): JsonResponse

@@ -282,6 +282,166 @@ class FederationV2ControllerTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    //  GET /v2/federation/members/{id} — safeguarding advisory
+    //
+    //  sendMessage() and sendTransaction() refuse a restricted recipient with
+    //  403 SAFEGUARDING_CONTACT_RESTRICTED, but the profile payload carried no
+    //  safeguarding information, so the UI offered Message and Send Credits and
+    //  the member only found out after composing a transfer. The payload must
+    //  report the decision. It stays advisory — the write paths re-evaluate.
+    // ------------------------------------------------------------------
+
+    /**
+     * Create a safeguarding option owned by the given tenant. Options and
+     * preferences are both tenant-scoped, and the RECIPIENT's tenant is
+     * authoritative for a cross-tenant decision — so this must not be seeded
+     * against $this->testTenantId, which is the sender's.
+     */
+    private function seedSafeguardingOptionForTenant(int $tenantId, array $triggers): int
+    {
+        return (int) DB::table('tenant_safeguarding_options')->insertGetId([
+            'tenant_id' => $tenantId,
+            'option_key' => 'coordinator_contact_' . uniqid(),
+            'option_type' => 'checkbox',
+            'label' => 'Test safeguarding option',
+            'description' => 'Test safeguarding option',
+            'sort_order' => 0,
+            'is_active' => 1,
+            'is_required' => 0,
+            'triggers' => json_encode($triggers),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function selectSafeguardingOption(int $tenantId, int $userId, int $optionId): void
+    {
+        DB::table('user_safeguarding_preferences')->insert([
+            'tenant_id' => $tenantId,
+            'user_id' => $userId,
+            'option_id' => $optionId,
+            'selected_value' => '1',
+            'consent_given_at' => now(),
+            'consent_ip' => '127.0.0.1',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \App\Services\SafeguardingTriggerService::invalidateCache($userId, $tenantId);
+    }
+
+    public function test_member_profile_reports_safeguarding_contact_restriction(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Safeguarding Partner');
+        $this->seedPartnership($partnerTenantId);
+        $viewer = $this->seedFederatedUser($this->testTenantId);
+        $member = $this->seedFederatedUser($partnerTenantId);
+
+        $optionId = $this->seedSafeguardingOptionForTenant($partnerTenantId, [
+            'restricts_messaging' => true,
+        ]);
+        $this->selectSafeguardingOption($partnerTenantId, (int) $member->id, $optionId);
+
+        Sanctum::actingAs($viewer, ['*']);
+        $response = $this->apiGet('/v2/federation/members/' . $member->id . '?tenant_id=' . $partnerTenantId);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.safeguarding.contact_allowed', false);
+        $response->assertJsonPath('data.safeguarding.code', 'SAFEGUARDING_CONTACT_RESTRICTED');
+        $response->assertJsonPath('data.safeguarding.status', 'deny');
+        $response->assertJsonPath('data.safeguarding.can_request_coordinator', true);
+        $response->assertJsonPath('data.safeguarding.retryable', false);
+
+        // The advisory carries a member-readable sentence, not a raw lang key —
+        // the UI shows this text verbatim in the tooltip and mobile helper line.
+        $detail = $response->json('data.safeguarding.detail');
+        $this->assertIsString($detail);
+        $this->assertNotSame('', $detail);
+        $this->assertStringNotContainsString('safeguarding.errors.', $detail);
+
+        // The settings-derived flags are unchanged: this member HAS federated
+        // messaging and transactions enabled. Only the policy refuses, which is
+        // exactly the case the old payload could not express.
+        $response->assertJsonPath('data.messaging_enabled', true);
+        $response->assertJsonPath('data.transactions_enabled', true);
+    }
+
+    public function test_member_profile_safeguarding_advisory_matches_the_transaction_refusal(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Safeguarding Parity Partner');
+        $this->seedPartnership($partnerTenantId);
+        $viewer = $this->seedFederatedUser($this->testTenantId);
+        $member = $this->seedFederatedUser($partnerTenantId);
+
+        $optionId = $this->seedSafeguardingOptionForTenant($partnerTenantId, [
+            'restricts_messaging' => true,
+        ]);
+        $this->selectSafeguardingOption($partnerTenantId, (int) $member->id, $optionId);
+
+        Sanctum::actingAs($viewer, ['*']);
+
+        $profile = $this->apiGet('/v2/federation/members/' . $member->id . '?tenant_id=' . $partnerTenantId);
+        $profile->assertOk();
+
+        // The advisory is only worth anything if it predicts the real refusal.
+        $transfer = $this->apiPost('/v2/federation/transactions', [
+            'receiver_id' => $member->id,
+            'receiver_tenant_id' => $partnerTenantId,
+            'amount' => 1,
+            'description' => 'Thanks for the help',
+        ]);
+
+        $transfer->assertStatus(403);
+        $this->assertSame(
+            $profile->json('data.safeguarding.code'),
+            $transfer->json('errors.0.code'),
+            'The profile advisory must name the same refusal the transfer endpoint gives.',
+        );
+    }
+
+    public function test_member_profile_allows_contact_when_no_safeguarding_restriction_applies(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Unrestricted Partner');
+        $this->seedPartnership($partnerTenantId);
+        $viewer = $this->seedFederatedUser($this->testTenantId);
+        $member = $this->seedFederatedUser($partnerTenantId);
+
+        Sanctum::actingAs($viewer, ['*']);
+        $response = $this->apiGet('/v2/federation/members/' . $member->id . '?tenant_id=' . $partnerTenantId);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.safeguarding.contact_allowed', true);
+        $response->assertJsonPath('data.safeguarding.code', null);
+        $response->assertJsonPath('data.safeguarding.detail', null);
+    }
+
+    /**
+     * A safeguarding option belonging to the SENDER's tenant must not travel to
+     * a member in another tenant. Preferences and options are both scoped to
+     * the recipient's tenant; reading them against the wrong one would either
+     * restrict an unrestricted member or miss a real restriction.
+     */
+    public function test_member_profile_safeguarding_advisory_is_scoped_to_the_recipient_tenant(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Scoping Partner');
+        $this->seedPartnership($partnerTenantId);
+        $viewer = $this->seedFederatedUser($this->testTenantId);
+        $member = $this->seedFederatedUser($partnerTenantId);
+
+        // Restriction recorded in the SENDER's tenant against the same user id.
+        $foreignOptionId = $this->seedSafeguardingOptionForTenant($this->testTenantId, [
+            'restricts_messaging' => true,
+        ]);
+        $this->selectSafeguardingOption($this->testTenantId, (int) $member->id, $foreignOptionId);
+
+        Sanctum::actingAs($viewer, ['*']);
+        $response = $this->apiGet('/v2/federation/members/' . $member->id . '?tenant_id=' . $partnerTenantId);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.safeguarding.contact_allowed', true);
+    }
+
+    // ------------------------------------------------------------------
     //  GET /v2/federation/listings
     // ------------------------------------------------------------------
 
