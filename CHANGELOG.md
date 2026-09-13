@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The prerender health report could not see that prerendering was switched off.** nginx fails
+  closed on `.tenant-identity-v1`: while that marker is absent it serves the empty SPA shell to
+  every crawler regardless of how fresh or complete the snapshots are. Every existing check in
+  `PrerenderService::health()` measures snapshot *production* — cache readable/writable, route
+  planning, circuit breaker, queue age, recent failures, stuck jobs, coverage, scheduler
+  liveness — and none measured *delivery*. The marker was absent in production from 2026-07-11
+  (commit `f62b85fa4`, which introduced the gate) to 2026-09-13, and across the whole retained
+  bot-access log **zero** snapshots were served to any crawler while this endpoint reported
+  green. A new `serving_enabled` check now reports red, with the exact remedy, whenever the
+  marker is missing — and states that only a full authoritative rebuild writes it, so the
+  condition cannot self-heal, and that the file must never be created by hand because its
+  presence also activates strict missing-sidecar enforcement. Regression tests in
+  `tests/Laravel/Feature/PrerenderServiceTest.php`, both verified to fail without the check.
+
 - **`/terms`, `/privacy` and `/cookies` had no meta description, canonical link or Open Graph
   tags on any tenant that uploaded its own legal document.** All three pages branch three ways —
   loading, tenant custom document, default content — but only the default branch rendered

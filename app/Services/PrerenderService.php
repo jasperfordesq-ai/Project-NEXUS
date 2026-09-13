@@ -4263,6 +4263,32 @@ class PrerenderService
             $bump('red');
         }
 
+        // 1b. Is prerendering actually being SERVED?
+        //
+        // nginx fails closed on `.tenant-identity-v1`: while that marker is
+        // absent it serves the live SPA shell to EVERY crawler, no matter how
+        // fresh or complete the snapshots are. Nothing else in this report
+        // notices, because every other check measures snapshot PRODUCTION —
+        // cache writability, queue age, coverage, failures — and none measures
+        // DELIVERY. The marker was absent from 2026-07-11 to 2026-09-13 and in
+        // that time not one snapshot reached a bot, while this endpoint stayed
+        // green throughout. That is the gap this check closes.
+        if (is_file($this->cachePath . '/.tenant-identity-v1')) {
+            $checks[] = [
+                'name'   => 'serving_enabled',
+                'status' => 'green',
+                'detail' => 'Snapshots are being served to crawlers',
+            ];
+        } else {
+            $checks[] = [
+                'name'   => 'serving_enabled',
+                'status' => 'red',
+                'detail' => 'Prerendering is DISABLED — .tenant-identity-v1 is absent, so every crawler receives the empty SPA shell regardless of snapshot freshness',
+                'action' => 'Run a full authoritative rebuild: sudo bash scripts/prerender-tenants.sh --force. Only that writes the marker; targeted/drift refreshes never do, so this cannot self-heal. Do NOT create the file by hand — its presence also activates strict missing-sidecar enforcement and would quarantine legacy snapshots.',
+            ];
+            $bump('red');
+        }
+
         // 2. Tenant-aware route planner. Sample live tenants so broken JSON
         // feature flags, schema drift, or a bad planner regression shows up as
         // an operator-facing health problem before the worker fans out.

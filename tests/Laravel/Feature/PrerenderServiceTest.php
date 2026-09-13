@@ -938,6 +938,64 @@ HTML;
         $service->resetBreaker();
     }
 
+    /**
+     * Regression: nginx fails closed on `.tenant-identity-v1`. While it is
+     * absent, every crawler receives the empty SPA shell no matter how fresh
+     * the snapshots are — and until 2026-09-13 nothing in health() noticed,
+     * because every other check measures snapshot PRODUCTION and none measured
+     * DELIVERY. Production served zero snapshots to bots from 2026-07-11 to
+     * 2026-09-13 with this endpoint green throughout.
+     */
+    public function test_health_is_red_when_snapshot_serving_is_disabled(): void
+    {
+        $service = new PrerenderService();
+        $service->resetBreaker();
+
+        // The marker is absent in the temp cache by default.
+        $this->assertFileDoesNotExist($this->tmpCache . '/.tenant-identity-v1');
+
+        $health = $service->health();
+
+        $serving = null;
+        foreach ($health['checks'] as $check) {
+            if (($check['name'] ?? '') === 'serving_enabled') {
+                $serving = $check;
+                break;
+            }
+        }
+
+        $this->assertNotNull($serving, 'health() must report a serving_enabled check');
+        $this->assertSame('red', $serving['status']);
+        $this->assertSame('red', $health['status'], 'disabled serving must make the whole report red');
+        // The operator must be told the remedy, and that only --force writes it.
+        $this->assertStringContainsString('--force', $serving['action']);
+    }
+
+    public function test_health_serving_check_is_green_once_the_marker_exists(): void
+    {
+        $service = new PrerenderService();
+        $service->resetBreaker();
+
+        file_put_contents($this->tmpCache . '/.tenant-identity-v1', "v1\n");
+
+        try {
+            $health = $service->health();
+
+            $serving = null;
+            foreach ($health['checks'] as $check) {
+                if (($check['name'] ?? '') === 'serving_enabled') {
+                    $serving = $check;
+                    break;
+                }
+            }
+
+            $this->assertNotNull($serving);
+            $this->assertSame('green', $serving['status']);
+        } finally {
+            @unlink($this->tmpCache . '/.tenant-identity-v1');
+        }
+    }
+
     public function test_health_reports_stuck_jobs(): void
     {
         $service = new PrerenderService();
