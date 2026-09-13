@@ -42,9 +42,14 @@ emphatically not EAS's remote counter.**
 
 Check it at **Play Console → Production → Track summary → Latest release**.
 🔴 The Console belongs to the owner's Google account, and its `u/N` slot in the URL
-moves with the browser profile's sign-in order (`u/1` on 2026-09-10, `u/2` on
-2026-09-12). Read the page title — "Production | Timebank Global" — before trusting
-a page; on 2026-09-12 `u/1` opened a *different, closed* developer account.
+moves with the browser profile's sign-in order — measured `u/1` on 2026-09-10,
+`u/2` on 2026-09-12, `u/0` on 2026-09-13. **Never memorise the slot; try each and
+read the page title** — "Production | Timebank Global" is the right one. The wrong
+slots are not merely empty: on 2026-09-12 `u/1` opened a *different, closed*
+developer account, and on 2026-09-13 both `u/1` and `u/2` opened a **"New Play
+Console Terms of Service" page for a different signed-in account**. Do not accept
+those terms — accepting them on the wrong account is not what anyone asked for;
+just move to the next slot.
 
 Then record what you read in `mobile/live-store-build.json` once the new build is
 released (commit it was built from, version code, version name = runtime version,
@@ -78,8 +83,9 @@ bash mobile/scripts/build-aab-play.sh --version-code 8
 ```
 
 Output: `mobile/android/app/build/outputs/bundle/release/app-release.aab`
-(~91 MB minified; the build itself took **1m 45s** unminified and **2m 14s** with
-R8 on a warm cache, no EAS quota spent).
+(~91 MB minified; the build itself took **1m 45s** unminified, **2m 14s** with R8
+on a warm cache, and **5m 44s** with R8 from a cold clean checkout — 2026-09-13,
+version code 11. No EAS quota spent.)
 
 That script exists because five separate failures here are silent, and each
 produces a normal-looking `app-release.aab`. It refuses rather than warns:
@@ -94,6 +100,16 @@ produces a normal-looking `app-release.aab`. It refuses rather than warns:
 
 The script also verifies the finished bundle's certificate against the upload key
 before reporting success.
+
+#### `verify:network-security` can refuse for a reason that is not a fault
+
+It inspects the **generated** `android/` project, not just the two committed source
+files. If `android/` is missing or stale — after a clean-up, or a fresh clone — it
+reports the debug config as MISSING and refuses to certify, which reads alarmingly
+like a pinning regression. Seen on 2026-09-13. Run `npx expo prebuild --platform
+android` and re-run it before investigating anything else; the committed
+`android-network-security-config*.xml` pair is the actual source of truth, and
+`build-aab-play.sh` prebuilds on every run anyway.
 
 ### Minification (R8)
 
