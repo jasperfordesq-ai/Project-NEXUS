@@ -27,6 +27,7 @@ import User from 'lucide-react/icons/user';
 import UserPlus from 'lucide-react/icons/user-plus';
 import Coins from 'lucide-react/icons/coins';
 import Star from 'lucide-react/icons/star';
+import Settings from 'lucide-react/icons/settings';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -73,6 +74,8 @@ export function FederationMemberProfilePage() {
   const [member, setMember] = useState<FederatedMember | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /** API error code behind `error`, so the error state can explain the real cause. */
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   const toast = useToast();
 
@@ -128,12 +131,21 @@ export function FederationMemberProfilePage() {
       if (controller.signal.aborted) return;
       if (response.success && response.data) {
         setMember(response.data);
+        setErrorCode(null);
       } else {
+        // Not every refusal is a missing member. The endpoint gates on the
+        // CALLER first: a viewer who has not opted into federation is refused
+        // with 403 FEDERATION_NOT_ENABLED before any lookup happens, and
+        // reporting that as "Member not found" sent them looking for a person
+        // who exists and is reachable. Keep the code so the error state can say
+        // what actually needs doing.
+        setErrorCode(response.code ?? null);
         setError(tRef.current('member_profile.not_found_error'));
       }
     } catch (err) {
       if (controller.signal.aborted) return;
       logError('Failed to load federated member profile', err);
+      setErrorCode(null);
       setError(tRef.current('member_profile.load_error'));
     } finally {
       setIsLoading(false);
@@ -263,6 +275,14 @@ export function FederationMemberProfilePage() {
 
   // Error
   if (error || !member) {
+    // The endpoint gates the CALLER before it looks anything up, so a 403 here
+    // is not a statement about the member. A viewer who has not opted into
+    // federation was being told the member does not exist — the member does
+    // exist, is reachable, and the viewer needs one switch in their own
+    // settings. Retrying cannot help, so that button is replaced by the one
+    // that can.
+    const needsFederationOptIn = errorCode === 'FEDERATION_NOT_ENABLED';
+
     return (
       <div className="space-y-6">
         <Breadcrumbs
@@ -275,10 +295,14 @@ export function FederationMemberProfilePage() {
         <GlassCard role="alert" className="p-8 text-center">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-theme-primary mb-2">
-            {t('member_profile.not_found_heading')}
+            {needsFederationOptIn
+              ? t('member_profile.optin_required_heading')
+              : t('member_profile.not_found_heading')}
           </h2>
           <p className="text-theme-muted mb-4">
-            {error || t('member_profile.not_found_description')}
+            {needsFederationOptIn
+              ? t('member_profile.optin_required_tooltip')
+              : (error || t('member_profile.not_found_description'))}
           </p>
           <div className="flex gap-3 justify-center">
             <Button
@@ -289,13 +313,23 @@ export function FederationMemberProfilePage() {
             >
               {t('member_profile.back_to_members')}
             </Button>
-            <Button
-              variant="primary"
-              startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-              onPress={loadMember}
-            >
-              {t('member_profile.try_again')}
-            </Button>
+            {needsFederationOptIn ? (
+              <Button
+                variant="primary"
+                startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
+                onPress={() => navigate(tenantPath('/federation/settings'))}
+              >
+                {t('member_profile.optin_required_action')}
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
+                onPress={loadMember}
+              >
+                {t('member_profile.try_again')}
+              </Button>
+            )}
           </div>
         </GlassCard>
       </div>

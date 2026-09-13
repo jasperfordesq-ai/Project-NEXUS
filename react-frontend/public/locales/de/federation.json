@@ -554,6 +554,8 @@
     "reach_remote_ok": "Fernbedienung OK",
     "reach_travel_ok": "Werde reisen",
     "optin_required_tooltip": "Aktivieren Sie die Föderation in Ihren Einstellungen, um sich mit Mitgliedern auf Partnerzeitbanken zu verbinden.",
+    "optin_required_heading": "Föderation ist für Ihr Konto nicht aktiviert",
+    "optin_required_action": "Föderationseinstellungen",
     "transactions_disabled_tooltip": "Dieses Mitglied akzeptiert keine Verbundüberweisungen.",
     "connect": "Verbinden",
     "connected": "Verbunden",

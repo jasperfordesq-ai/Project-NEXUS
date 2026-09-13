@@ -618,6 +618,8 @@
     "reach_remote_ok": "موافق عن بعد",
     "reach_travel_ok": "سوف يسافر",
     "optin_required_tooltip": "قم بتمكين الاتحاد في إعداداتك للتواصل مع الأعضاء في بنوك الوقت الشريكة.",
+    "optin_required_heading": "الاتحاد غير مُفعَّل في حسابك",
+    "optin_required_action": "إعدادات الاتحاد",
     "transactions_disabled_tooltip": "لا يقبل هذا العضو التحويلات الائتمانية الفيدرالية.",
     "connect": "يتصل",
     "connected": "متصل",

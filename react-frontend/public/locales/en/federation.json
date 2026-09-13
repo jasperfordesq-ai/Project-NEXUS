@@ -554,6 +554,8 @@
     "reach_remote_ok": "Remote OK",
     "reach_travel_ok": "Will travel",
     "optin_required_tooltip": "Enable federation in your settings to connect with members on partner timebanks.",
+    "optin_required_heading": "Federation is not switched on for your account",
+    "optin_required_action": "Federation settings",
     "transactions_disabled_tooltip": "This member does not accept federated credit transfers.",
     "connect": "Connect",
     "connected": "Connected",

@@ -570,6 +570,8 @@
     "reach_remote_ok": "Télécommande OK",
     "reach_travel_ok": "Voyagera",
     "optin_required_tooltip": "Activez la fédération dans vos paramètres pour vous connecter avec les membres des banques de temps partenaires.",
+    "optin_required_heading": "La fédération n’est pas activée sur votre compte",
+    "optin_required_action": "Paramètres de fédération",
     "transactions_disabled_tooltip": "Ce membre n'accepte pas les virements fédérés.",
     "connect": "Connecter",
     "connected": "Connecté",

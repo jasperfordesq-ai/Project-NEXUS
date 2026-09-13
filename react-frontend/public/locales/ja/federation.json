@@ -554,6 +554,8 @@
     "reach_remote_ok": "リモートOK",
     "reach_travel_ok": "旅行します",
     "optin_required_tooltip": "設定でフェデレーションを有効にして、パートナー タイムバンクのメンバーと接続します。",
+    "optin_required_heading": "フェデレーションが有効になっていません",
+    "optin_required_action": "フェデレーション設定",
     "transactions_disabled_tooltip": "このメンバーは、フェデレーション クレジット転送を受け入れません。",
     "connect": "接続する",
     "connected": "接続済み",

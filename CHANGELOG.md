@@ -59,6 +59,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A member who had not opted into federation was told a federated member did not exist.**
+  `GET /v2/federation/members/{id}` gates the CALLER before it looks anything up, refusing a
+  viewer who has not opted in with 403 `FEDERATION_NOT_ENABLED`. `FederationMemberProfilePage`
+  mapped every unsuccessful response to `member_profile.not_found_error`, so that refusal
+  rendered as "Member not found" — sending the member to look for a person who exists, is
+  reachable, and is one switch in their own settings away. The page now keeps the error code
+  and, for that one code, says federation is not switched on for their account, repeats the
+  sentence the disabled buttons already use, and replaces Try Again (which cannot help) with a
+  button to Federation settings. A genuine 404 is unchanged. Adds
+  `member_profile.optin_required_heading` and `member_profile.optin_required_action` in all
+  eleven locales.
+
 - **The federated member profile offered Connect, Message and Send Credits to members whose
   community safeguarding policy refuses contact, so the member only found out after composing a
   transfer.** The profile payload carried only `messaging_enabled` and `transactions_enabled`, both

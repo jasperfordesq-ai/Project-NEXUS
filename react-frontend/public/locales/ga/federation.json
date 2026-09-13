@@ -602,6 +602,8 @@
     "reach_remote_ok": "Is féidir go cianda",
     "reach_travel_ok": "Sásta taisteal",
     "optin_required_tooltip": "Cumasaigh an Chónaidhm i do shocruithe chun nascadh le baill i mbainc ama chomhpháirtíochta.",
+    "optin_required_heading": "Níl an Chónaidhm cumasaithe ar do chuntas",
+    "optin_required_action": "Socruithe cónaidhme",
     "transactions_disabled_tooltip": "Ní ghlacann an ball seo le haistrithe creidmheasa Cónaidhme.",
     "connect": "Ceangail",
     "connected": "Ceangailte",

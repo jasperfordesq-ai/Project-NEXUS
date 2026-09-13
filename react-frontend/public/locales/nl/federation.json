@@ -554,6 +554,8 @@
     "reach_remote_ok": "Op afstand oké",
     "reach_travel_ok": "Zal reizen",
     "optin_required_tooltip": "Schakel federatie in uw instellingen in om verbinding te maken met leden op partnertijdbanken.",
+    "optin_required_heading": "Federatie is niet ingeschakeld voor uw account",
+    "optin_required_action": "Federatie-instellingen",
     "transactions_disabled_tooltip": "Dit lid accepteert geen federatieve overboekingen.",
     "connect": "Verbinden",
     "connected": "Aangesloten",

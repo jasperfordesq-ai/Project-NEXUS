@@ -586,6 +586,8 @@
     "reach_remote_ok": "Zdalne OK",
     "reach_travel_ok": "Będzie podróżować",
     "optin_required_tooltip": "Włącz federację w swoich ustawieniach, aby łączyć się z członkami w partnerskich bankach czasu.",
+    "optin_required_heading": "Federacja nie jest włączona na Twoim koncie",
+    "optin_required_action": "Ustawienia federacji",
     "transactions_disabled_tooltip": "Ten członek nie akceptuje federacyjnych poleceń przelewu.",
     "connect": "Łączyć",
     "connected": "Połączony",

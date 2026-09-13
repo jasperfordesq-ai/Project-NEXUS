@@ -570,6 +570,8 @@
     "reach_remote_ok": "Remoto OK",
     "reach_travel_ok": "viajará",
     "optin_required_tooltip": "Habilite la federación en su configuración para conectarse con miembros en bancos de tiempo de socios.",
+    "optin_required_heading": "La federación no está habilitada en su cuenta",
+    "optin_required_action": "Configuración de federación",
     "transactions_disabled_tooltip": "Este miembro no acepta transferencias de crédito federadas.",
     "connect": "Conectar",
     "connected": "Conectado",

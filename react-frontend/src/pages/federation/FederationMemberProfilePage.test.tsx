@@ -26,11 +26,13 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+const navigateMock = vi.hoisted(() => vi.fn());
+
 vi.mock('react-router-dom', async () => {
   const actual = await import('react-router-dom');
   return {
     ...actual,
-    useNavigate: () => vi.fn(),
+    useNavigate: () => navigateMock,
     useParams: () => ({ id: '20' }),
     useSearchParams: () => [new URLSearchParams('tenant_id=5'), vi.fn()],
   };
@@ -180,6 +182,67 @@ describe('FederationMemberProfilePage', () => {
     await waitFor(() => {
       expect(screen.getByText('member_profile.not_found_heading')).toBeInTheDocument();
     });
+  });
+
+  // The endpoint gates the CALLER before it looks anything up: a viewer who has
+  // not opted into federation is refused with 403 FEDERATION_NOT_ENABLED. That
+  // was rendered as "Member not found", sending them to look for a person who
+  // exists and is reachable.
+  it('tells a viewer who has not opted into federation what to do, not that the member is missing', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: false,
+      error: 'You must opt in to federation first.',
+      code: 'FEDERATION_NOT_ENABLED',
+    });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('member_profile.optin_required_heading')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('member_profile.optin_required_tooltip')).toBeInTheDocument();
+    expect(screen.queryByText('member_profile.not_found_heading')).not.toBeInTheDocument();
+
+    // Retrying cannot help until the viewer opts in, so that button is replaced
+    // by the one that takes them somewhere useful.
+    expect(screen.getByRole('button', { name: 'member_profile.optin_required_action' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'member_profile.try_again' })).not.toBeInTheDocument();
+  });
+
+  it('sends the opt-in action to federation settings', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: false,
+      error: 'You must opt in to federation first.',
+      code: 'FEDERATION_NOT_ENABLED',
+    });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('member_profile.optin_required_heading')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'member_profile.optin_required_action' }));
+    expect(navigateMock).toHaveBeenCalledWith('/test/federation/settings');
+  });
+
+  // A genuine miss must still read as a genuine miss.
+  it('still reports a missing member as not found', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: false,
+      error: 'Member not found',
+      code: 'MEMBER_NOT_FOUND',
+    });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('member_profile.not_found_heading')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('member_profile.optin_required_heading')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'member_profile.try_again' })).toBeInTheDocument();
   });
 
   it('shows Connect button when connection status is none', async () => {
