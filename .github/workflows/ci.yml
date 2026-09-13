@@ -556,6 +556,19 @@ jobs:
         # non-zero cap is headroom for silent regressions, not tolerance.
         run: npx eslint src --max-warnings 0
 
+      # 🔴 This guard existed since the SPA-shell contract was written and
+      # NOTHING invoked it — the same blind spot as the prerender publish test
+      # in migration-gate. It also only grepped the config text, so even when
+      # run by hand it passed while `X-Nexus-Spa-Shell` was declared in an
+      # nginx block whose response is generated elsewhere and discarded. The
+      # marker therefore never reached a browser: the service worker cached no
+      # fresh shell, fell back to the precached index.html of the build that
+      # installed it, and after a deploy asked for asset filenames the server
+      # had deleted — the app failed to boot on the root error boundary.
+      # Fixed and wired up 2026-09-13. Node-only, no build needed.
+      - name: SPA Shell Fallback Contract (BLOCKING)
+        run: npm run check:spa-shell
+
       - name: Component Accessibility Gate (BLOCKING)
         working-directory: react-frontend
         run: npm run test:a11y -- --run

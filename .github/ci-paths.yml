@@ -64,6 +64,12 @@ php:
 
 frontend:
   - 'react-frontend/**'
+  # The SPA-shell contract guard lives under root scripts/ but asserts against
+  # react-frontend/nginx*.conf, vite.config.ts and scripts/prerender.mjs. Name
+  # it here so editing the GUARD itself re-runs it — 'scripts/**' appears only
+  # in the php list, so without this line a change to the guard would wake the
+  # PHP cluster and not the job that actually invokes it.
+  - 'scripts/test/test-spa-shell-fallback.mjs'
   - 'contracts/**'
   # e2e/** woke NOTHING until 2026-08-05 — the same blind-spot class as
   # contracts/** above. The frontend cluster is what RUNS these specs

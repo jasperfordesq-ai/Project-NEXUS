@@ -270,6 +270,13 @@ if (areas.php.length) {
 
 // --- React frontend -----------------------------------------------------------
 if (areas.frontend.length) {
+  // Pure fs/regex over the nginx + vite config, so it runs before the
+  // node_modules check and costs nothing. It guards the marker that lets the
+  // service worker cache a FRESH HTML shell; without it the worker falls back
+  // to the precached index.html of the build that installed it and the app
+  // cannot boot after a deploy.
+  sh('SPA shell fallback contract', 'node scripts/test/test-spa-shell-fallback.mjs');
+
   const feDir = path.join(ROOT, 'react-frontend');
   if (!existsSync(path.join(feDir, 'node_modules'))) {
     record('frontend checks', 'UNAVAILABLE', 'react-frontend/node_modules missing — run npm ci first');

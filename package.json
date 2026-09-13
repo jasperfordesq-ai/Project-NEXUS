@@ -66,7 +66,8 @@
     "test:e2e:report": "npx playwright show-report e2e/reports/html",
     "test:e2e:codegen": "npx playwright codegen http://localhost:5173/hour-timebank",
     "test:load": "node scripts/load-test.mjs",
-    "check:seo-delivery": "node scripts/check-prerender-delivery.mjs"
+    "check:seo-delivery": "node scripts/check-prerender-delivery.mjs",
+    "check:spa-shell": "node scripts/test/test-spa-shell-fallback.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
