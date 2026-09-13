@@ -289,17 +289,26 @@ Two Console behaviours worth knowing before you click:
 
 ## 5. How long the review actually takes
 
-Measured, three times:
+Measured, four times:
 
 | Submission | Submitted for review | Published | Review time |
 | --- | --- | --- | --- |
 | 7 (version code 8), 2026-09-09 | 7:32 PM | 8:05 PM | **33 minutes** |
 | 8 (version code 9), 2026-09-10 | 11:57 AM | 12:24 PM | **27 minutes** |
 | 9 (version code 10), 2026-09-12 | 12:05 PM | 12:36 PM | **31 minutes** |
+| 10 (version code 11), 2026-09-13 | 11:55 AM | _(fill in from Submission activity)_ | |
 
 Submission 9's quick checks on Publishing overview ran for about 13 minutes ("up to
 14 minutes remaining" → "Your changes can now be sent for review") before Submit was
 pressed; a second, ~2-minute quick-check pass then ran under "Changes in review".
+
+Submission 10 behaved the same way and is the confirmation that both waits are
+routine, not one-offs: the pre-submit bar quoted "up to 14 minutes remaining",
+counted down through 12, and cleared **well inside** the quoted time, ending with
+**"Your changes can now be sent for review"**. The post-submit bar quoted "up to 8
+minutes" and ended with **"Your changes are now in review"**. Neither reported an
+issue. 🔴 Both sentences are the signal to act on — not the bar disappearing from
+view, and never the Submit button becoming clickable, which it is throughout.
 
 The confirmation dialog's "typically completed within 7 days" is a worst case; an
 established app making a routine update is reviewed largely automatically. Plan
