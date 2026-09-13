@@ -47,6 +47,30 @@ function originsFromArgs() {
   return null;
 }
 
+/**
+ * Does the document carry a usable <meta name="description">?
+ *
+ * 🔴 Deliberately NOT a single regex over the whole tag. The first version used
+ *   content=["'][^"']{10,}
+ * which stops at the first quote character of EITHER kind — so a description
+ * beginning "You've reached..." matched only three characters and was reported
+ * as missing. That false negative sent a real, correct page to the top of a
+ * FAIL list. An apostrophe must never break a safety check.
+ *
+ * This finds each description meta tag, then reads its content attribute with
+ * the opening quote captured and back-referenced, so quotes of the other kind
+ * inside the value are just text. Attribute order does not matter either.
+ */
+function hasMetaDescription(body) {
+  const tags = body.match(/<meta\b[^>]*>/gi) || [];
+  for (const tag of tags) {
+    if (!/\bname\s*=\s*(["'])\s*description\s*\1/i.test(tag)) continue;
+    const content = tag.match(/\bcontent\s*=\s*(["'])([\s\S]*?)\1/i);
+    if (content && content[2].trim().length >= 10) return true;
+  }
+  return false;
+}
+
 async function probe(origin, path) {
   const url = `${origin}${path}${path.includes('?') ? '&' : '?'}nexus_delivery_check=${Date.now()}`;
   const ctrl = new AbortController();
@@ -62,11 +86,16 @@ async function probe(origin, path) {
 
     // Signals a crawler actually uses. An empty SPA shell has none of them.
     const hasH1 = /<h1[\s>]/i.test(body);
-    const hasDescription = /<meta[^>]+name=["']description["'][^>]+content=["'][^"']{10,}/i.test(body);
     const emptyRoot = /<div id="root"><\/div>/i.test(body);
+    const hasDescription = hasMetaDescription(body);
 
-    const real = res.ok && bytes >= MIN_BYTES && hasH1 && hasDescription && !emptyRoot;
-    return { url, status: res.status, bytes, hasH1, hasDescription, emptyRoot, real, error: null };
+    // Two distinct failures, not one. A blank shell means prerendering is not
+    // being served at all — a platform-wide fault. A real page missing a tag is
+    // one page's SEO defect. Reporting them identically sends whoever reads this
+    // hunting the wrong thing; the first version of this script did exactly that.
+    const isShell = !res.ok || bytes < MIN_BYTES || emptyRoot;
+    const real = !isShell && hasH1 && hasDescription;
+    return { url, status: res.status, bytes, hasH1, hasDescription, emptyRoot, isShell, real, error: null };
   } catch (err) {
     return { url, status: 0, bytes: 0, hasH1: false, hasDescription: false,
              emptyRoot: false, real: false, error: String(err && err.message || err) };
@@ -87,7 +116,8 @@ async function main() {
   console.log(`check-prerender-delivery: probing ${origins.length} origin(s) as Googlebot`);
   console.log(`  paths: ${PATHS.join(', ')}   minimum real-page size: ${MIN_BYTES} bytes\n`);
 
-  let failures = 0;
+  let shells = 0;      // served the empty SPA shell — platform-wide fault
+  let seoGaps = 0;     // real page, but missing a tag a crawler uses
   let probed = 0;
   let unavailable = 0;
 
@@ -102,16 +132,21 @@ async function main() {
       }
       if (r.real) {
         console.log(`  ok ${origin}${path} — ${r.bytes} bytes, h1 + description present`);
-      } else {
-        failures += 1;
+      } else if (r.isShell) {
+        shells += 1;
         const why = [
           !r.status || r.status >= 400 ? `http ${r.status}` : null,
           r.bytes < MIN_BYTES ? `only ${r.bytes} bytes` : null,
-          r.emptyRoot ? 'empty <div id="root"> (SPA shell)' : null,
+          r.emptyRoot ? 'empty <div id="root">' : null,
+        ].filter(Boolean).join(', ');
+        console.log(`  BLANK ${origin}${path} — ${why}`);
+      } else {
+        seoGaps += 1;
+        const why = [
           !r.hasH1 ? 'no <h1>' : null,
           !r.hasDescription ? 'no meta description' : null,
         ].filter(Boolean).join(', ');
-        console.log(`  FAIL ${origin}${path} — ${why}`);
+        console.log(`  SEO  ${origin}${path} — real page (${r.bytes} bytes) but ${why}`);
       }
     }
   }
@@ -122,14 +157,24 @@ async function main() {
     console.error('  Not reporting this as a pass. Exit 2.');
     process.exit(2);
   }
-  if (failures > 0) {
-    console.error(`check-prerender-delivery: FAIL — ${failures} of ${probed} probed page(s) reached a crawler as an empty shell.`);
+  if (shells > 0) {
+    console.error(`check-prerender-delivery: FAIL — ${shells} of ${probed} probed page(s) reached a crawler as an empty shell.`);
     console.error('  Crawlers are being served pages with no content. Search engines will index nothing.');
+    console.error('  This is a PLATFORM-WIDE serving fault, not a per-page problem.');
     console.error('  First thing to check: does the serving marker exist?');
     console.error('    docker exec <react-container> test -f /usr/share/nginx/html/prerendered/.tenant-identity-v1');
     console.error('  If absent, prerendering is switched off platform-wide. Remedy:');
     console.error('    sudo bash scripts/prerender-tenants.sh --force');
     console.error('  (only a full authoritative rebuild writes that marker; targeted refreshes never do)');
+    if (seoGaps > 0) console.error(`  Separately, ${seoGaps} real page(s) are missing an SEO tag — see the SEO lines above.`);
+    process.exit(1);
+  }
+  if (seoGaps > 0) {
+    console.error(`check-prerender-delivery: FAIL — ${seoGaps} of ${probed} probed page(s) are real but missing an SEO tag.`);
+    console.error('  Prerendering IS working — crawlers are receiving content. Do not go looking for the marker.');
+    console.error('  These are per-page defects: the page renders, but a tag a crawler uses is absent.');
+    console.error('  Fix the page component that omits it, then re-render just those routes:');
+    console.error('    sudo bash scripts/prerender-tenants.sh --routes <comma,separated,routes>');
     process.exit(1);
   }
   console.log(`check-prerender-delivery: OK — ${probed - unavailable} page(s) served real content to a crawler.`);
