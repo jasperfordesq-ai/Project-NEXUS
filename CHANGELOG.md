@@ -337,6 +337,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Android version code 11: the store release carrying the minified, resource-shrunk build. The version name stays 1.5.0 because no native dependency changed between the two builds — only how the release binary is compiled — so the over-the-air runtime version stays compatible with the build already on phones. This is the release that answers Google Play's "DEX code optimization is below our threshold" warning against version code 10.
+
 - Native app version 1.5.0, Android version code 10: the store release carrying the two-factor sign-in and the Expo SDK 55 upgrade. The bump also gives the build a new over-the-air runtime version, so an update built for SDK 55 can never be served to the SDK 54 build 9 still installed on phones.
 
 - The member directory's explanation of why it lists fewer people than have joined the community is now a single collapsible line. It shows the count on one row with a "Why?" control, and only opens the visibility rules, the closing note and the privacy-settings link when a member asks for them. As an always-open alert it pushed the first row of member cards below the fold on desktop and took several lines on phones.
