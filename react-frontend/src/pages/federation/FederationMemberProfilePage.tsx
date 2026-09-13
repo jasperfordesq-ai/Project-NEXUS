@@ -605,9 +605,15 @@ export function FederationMemberProfilePage() {
                           setTxDescription('');
                           onClose();
                         } else {
+                          // The API refuses a transfer for reasons the member can
+                          // act on — a safeguarding contact restriction, a
+                          // partnership that does not allow transfers, a recipient
+                          // who has switched federated transfers off. Showing
+                          // "Unknown error" for all of them hides the one piece of
+                          // information that explains what happened.
                           toast.error(
                             t('member_profile.tx_failed'),
-                            t('member_profile.tx_unknown_error')
+                            res.error || t('member_profile.tx_unknown_error')
                           );
                         }
                       } catch (err) {

@@ -45,6 +45,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A refused federated credit transfer said only "Unknown error", hiding the one sentence that
+  explained it.** `FederationMemberProfilePage` discarded the API's error body and always rendered
+  `member_profile.tx_unknown_error`, so every distinct refusal looked identical: a safeguarding
+  contact restriction on the recipient, a partnership with transfers switched off, a recipient who
+  has disabled federated transactions, and a sender who has not opted in all produced the same
+  dead-end toast. Observed on production sending from TimeBank Ireland to a Timebanking UK member
+  who has two safeguarding options carrying `restricts_messaging`, where the API correctly returned
+  403 `SAFEGUARDING_CONTACT_RESTRICTED` with a member-readable message. The toast now shows the
+  server's message and falls back to the generic string only when the response carries none. The
+  refusal itself is correct and unchanged — this restores the explanation, it does not weaken the
+  safeguarding boundary.
+
 - **The app failed to boot after every deploy for anyone whose browser had the site installed: the
   service worker was serving a previous build's `index.html`, whose asset filenames the deploy had
   already deleted.** Workbox only stores a navigation response as the reusable HTML shell when it

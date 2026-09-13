@@ -250,4 +250,31 @@ describe('FederationMemberProfilePage', () => {
       'member_profile.tx_pending_detail',
     ));
   });
+  it('surfaces the server reason when a transfer is refused', async () => {
+    setupMocks();
+    vi.mocked(api.post).mockResolvedValue({
+      success: false,
+      error: 'This member has limited who can contact them.',
+      code: 'SAFEGUARDING_CONTACT_RESTRICTED',
+    });
+
+    render(<FederationMemberProfilePage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Maria Green').length).toBeGreaterThanOrEqual(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'member_profile.send_credits' }));
+    fireEvent.change(screen.getByLabelText('member_profile.amount_hours'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('member_profile.description'), { target: { value: 'Helped with setup' } });
+    const sendButtons = screen.getAllByRole('button', { name: 'member_profile.send_credits' });
+    const confirmButton = sendButtons[sendButtons.length - 1];
+    if (!confirmButton) throw new Error('confirm button not rendered');
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => expect(toastMock.error).toHaveBeenCalledWith(
+      'member_profile.tx_failed',
+      'This member has limited who can contact them.',
+    ));
+  });
 });
