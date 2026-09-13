@@ -232,7 +232,22 @@ If the bundle is already uploaded (e.g. it was uploaded to another track), use
 The final button on this track is **"Save and publish"**, and it means it: there
 is no review. The Console says changes "usually appear on Google Play within
 1 hour". Measured 2026-09-09: published at 7:47 PM, available to the 11-member
-internal tester list.
+internal tester list. Measured again 2026-09-12 (version code 10, 11:48 AM) and
+2026-09-13 (**version code 11, 11:40 AM**, same 11-member list).
+
+🔴 **No quick-checks bar appeared on this track on 2026-09-13.** The review step
+showed "Ready to release" with no "Running quick checks" progress bar anywhere,
+and "Save and publish" → the confirm dialog published immediately. That bar
+belongs to the **Publishing overview** used by the Production submission flow. The
+rule below still stands — *if* a bar is showing, wait for it — but do not go
+hunting for one here and conclude something is wrong when there is none.
+
+🔴 **The review step before "Save and publish" is worth reading, not clicking
+past.** It carries the **"Changes to your supported devices"** table, which is the
+same check the production promote page shows: the **"Devices no longer supported"
+column must be 0 on every row**. On version code 11 it read Phone 12,405 / Tablet
+6,408 / TV 3 with 0 lost on each — the proof that the single-architecture trap did
+not happen, available here *before* production is involved at all.
 
 🔴 **Uploading is where a release most easily goes wrong in practice.** The file
 is ~90 MB and takes a minute or two. **Do not navigate, reload or interact with
