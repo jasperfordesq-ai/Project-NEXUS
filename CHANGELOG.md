@@ -657,7 +657,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Native app version 1.6.0, Android version code 12: the store binary for the completed mobile reliability and federation layout audit. The new runtime version is required because the audit added a native dependency surface that cannot be delivered safely to the 1.5.0 binary by an over-the-air update.
+- Native app version 1.6.0, Android version code 12: the store binary for the completed mobile reliability and federation layout audit. The new runtime version is required because the audit added a native dependency surface that cannot be delivered safely to the 1.5.0 binary by an over-the-air update; the API now advertises the matching current version while preserving the existing minimum-version floor.
 
 - Android version code 11: the store release carrying the minified, resource-shrunk build. The version name stays 1.5.0 because no native dependency changed between the two builds — only how the release binary is compiled — so the over-the-air runtime version stays compatible with the build already on phones. This is the release that answers Google Play's "DEX code optimization is below our threshold" warning against version code 10.
 
