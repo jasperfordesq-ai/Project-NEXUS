@@ -331,6 +331,96 @@ class EmailVerificationControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [200, 429]);
     }
 
+    /**
+     * F-024 (E-013): the public resend-verification-by-email endpoint must not
+     * leak account existence through response timing. It returns an identical
+     * generic message either way, but sending the verification email inline —
+     * only for an existing, unverified account — made that address answer
+     * measurably slower than an unknown one. The reset work must be dispatched
+     * to the queue and run out-of-process, and the request must dispatch the job
+     * IDENTICALLY whether or not the account exists.
+     */
+    public function test_resend_verification_by_email_queues_identically_and_never_sends_inline(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+        $this->ensureEmailVerificationTokenTable();
+
+        $existing = 'verify-queue-' . uniqid('', true) . '@example.test';
+        User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $existing,
+            'email_verified_at' => null,
+            'is_verified' => false,
+        ]);
+        $missing = 'no-such-' . uniqid('', true) . '@example.test';
+
+        $existingResponse = $this->apiPost('/auth/resend-verification-by-email', ['email' => $existing]);
+        $missingResponse = $this->apiPost('/auth/resend-verification-by-email', ['email' => $missing]);
+
+        $existingResponse->assertStatus(200);
+        $missingResponse->assertStatus(200);
+
+        // Dispatched identically for an account that exists and one that does not,
+        // so response timing reveals nothing (the account lookup lives in the job).
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendEmailVerificationResend::class, 2);
+        \Illuminate\Support\Facades\Queue::assertPushed(
+            \App\Jobs\SendEmailVerificationResend::class,
+            static fn (\App\Jobs\SendEmailVerificationResend $job): bool => $job->email === $existing
+        );
+        \Illuminate\Support\Facades\Queue::assertPushed(
+            \App\Jobs\SendEmailVerificationResend::class,
+            static fn (\App\Jobs\SendEmailVerificationResend $job): bool => $job->email === $missing
+        );
+
+        // Byte-identical responses — no message oracle either.
+        $this->assertSame($existingResponse->getContent(), $missingResponse->getContent());
+    }
+
+    /** The queued job sends and stores a token for an existing, unverified account. */
+    public function test_send_email_verification_resend_job_sends_for_existing_unverified(): void
+    {
+        $this->ensureEmailVerificationTokenTable();
+        $email = 'verify-job-' . uniqid('', true) . '@example.test';
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $email,
+            'email_verified_at' => null,
+            'is_verified' => false,
+        ]);
+        app()->instance(EmailDispatchService::class, new SuccessfulEmailDispatchService());
+
+        (new \App\Jobs\SendEmailVerificationResend($email, $this->testTenantId))
+            ->handle(app(\App\Services\EmailVerificationSender::class));
+
+        TenantContext::setById($this->testTenantId);
+        $this->assertSame(1, DB::table('email_verification_tokens')
+            ->where('user_id', $user->id)
+            ->where('tenant_id', $this->testTenantId)
+            ->count());
+    }
+
+    /** The queued job sends nothing for an unknown address or an already-verified account. */
+    public function test_send_email_verification_resend_job_is_silent_for_verified_or_missing(): void
+    {
+        $this->ensureEmailVerificationTokenTable();
+        $verified = 'verify-done-' . uniqid('', true) . '@example.test';
+        $verifiedUser = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $verified,
+            'email_verified_at' => now(),
+            'is_verified' => true,
+        ]);
+        app()->instance(EmailDispatchService::class, new SuccessfulEmailDispatchService());
+
+        (new \App\Jobs\SendEmailVerificationResend($verified, $this->testTenantId))
+            ->handle(app(\App\Services\EmailVerificationSender::class));
+        (new \App\Jobs\SendEmailVerificationResend('nobody-' . uniqid('', true) . '@example.test', $this->testTenantId))
+            ->handle(app(\App\Services\EmailVerificationSender::class));
+
+        TenantContext::setById($this->testTenantId);
+        $this->assertSame(0, DB::table('email_verification_tokens')
+            ->where('user_id', $verifiedUser->id)
+            ->where('tenant_id', $this->testTenantId)
+            ->count());
+    }
+
     private function ensureEmailVerificationTokenTable(): void
     {
         DB::statement("

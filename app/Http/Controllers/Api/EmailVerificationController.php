@@ -12,11 +12,9 @@ use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
 use App\Core\RateLimiter;
 use App\Core\EmailTemplate;
-use App\Core\EmailTemplateBuilder;
-use App\I18n\LocaleContext;
 use App\Models\ActivityLog;
-use App\Services\EmailDispatchService;
 use App\Services\RateLimitService;
+use App\Jobs\SendEmailVerificationResend;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -254,17 +252,18 @@ class EmailVerificationController extends BaseApiController
             return $this->respondWithData($genericResponse);
         }
 
-        // Look up user (tenant-scoped)
-        $userRow = DB::selectOne(
-            "SELECT id, email, first_name, email_verified_at, tenant_id, preferred_language FROM users WHERE email = ? AND tenant_id = ?",
-            [$email, $tenantId]
-        );
-        $user = $userRow ? (array)$userRow : null;
-
-        // Only send if user exists AND is not yet verified
-        if ($user && empty($user['email_verified_at'])) {
-            $this->sendVerificationEmail($user);
-        }
+        // Do the account lookup and send OFF the request, on the queue worker.
+        //
+        // 🔴 SECURITY (E-013 F-024). The response above is identical whether or
+        // not the address has an account, but sending the verification email
+        // inline — and only for an account that exists AND is unverified — made
+        // that address answer measurably slower than an unknown one, a
+        // response-time oracle for enumerating unverified accounts. We run under
+        // mod_php (no early response flush), so this is dispatched to the queue.
+        // Dispatching UNCONDITIONALLY (the lookup lives in the job, not here)
+        // makes the request path do identical, constant work for every address.
+        // Same fix and reasoning as F-023's SendPasswordResetEmail.
+        SendEmailVerificationResend::dispatch($email, $tenantId);
 
         return $this->respondWithData($genericResponse);
     }
@@ -319,106 +318,18 @@ class EmailVerificationController extends BaseApiController
     }
 
     /**
-     * Send verification email to user
+     * Send the verification email and rotate the token.
+     *
+     * Delegates to EmailVerificationSender so the identical logic runs both here
+     * (registration, authenticated resend, admin resend) and — for the public
+     * resend-verification-by-email endpoint — out of the request on the queue
+     * (SendEmailVerificationResend), which closes the F-024 timing oracle.
+     *
+     * @param array<string,mixed> $user
      */
     private function sendVerificationEmail(array $user): bool
     {
-        $tenantId = (int) ($user['tenant_id'] ?? TenantContext::getId());
-
-        // Ensure the table exists (create if not)
-        $this->ensureTokenTableExists();
-
-        // Generate a secure random token
-        $token = bin2hex(random_bytes(32));
-
-        // Hash the token before storing. SHA-256 (not bcrypt): the token is
-        // 256 bits of CSPRNG output, so key-stretching adds nothing — and a
-        // deterministic hash allows an indexed exact-match lookup. The bcrypt
-        // scheme made verification scan EVERY unexpired token in the tenant
-        // at ~100ms of password_verify() per row, hanging the endpoint once
-        // a registration wave left a few hundred tokens outstanding.
-        $hashedToken = hash('sha256', $token);
-
-        // Calculate expiry time
-        $expiresAt = date('Y-m-d H:i:s', time() + self::TOKEN_EXPIRY_SECONDS);
-
-        // Build verification URL — include tenant base path for correct routing
-        $tenantRouting = TenantContext::runForTenant($tenantId, fn (): array => [
-            'frontend_url' => TenantContext::getFrontendUrl(),
-            'slug_prefix' => TenantContext::getSlugPrefix(),
-        ]);
-        $appUrl = $tenantRouting['frontend_url'];
-        $basePath = $tenantRouting['slug_prefix'];
-        $verifyUrl = $appUrl . $basePath . "/verify-email?token=" . $token;
-
-        // Send verification email
-        try {
-            // Get tenant name
-            $tenantName = 'Project NEXUS';
-            if ($tenantId) {
-                try {
-                    $tenantRow = DB::selectOne(
-                        "SELECT name FROM tenants WHERE id = ?",
-                        [$tenantId]
-                    );
-                    if ($tenantRow) {
-                        $tenantName = $tenantRow->name;
-                    }
-                } catch (\Throwable $e) {
-                    // Use default tenant name
-                }
-            }
-
-            // Render in the recipient's preferred_language so the verification
-            // email arrives in their locale rather than the request caller's.
-            $sent = LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($tenantId, $user, $tenantName, $verifyUrl) {
-                $firstName = $user['first_name'] ?? '';
-                $greeting = $firstName !== ''
-                    ? __('emails_misc.auth.verify_email_greeting', ['name' => htmlspecialchars($firstName, ENT_QUOTES, 'UTF-8'), 'community' => $tenantName])
-                    : __('emails_misc.auth.verify_email_greeting_fallback');
-
-                $html = EmailTemplateBuilder::make()
-                    ->title(__('emails_misc.auth.verify_email_title'))
-                    ->greeting($greeting)
-                    ->paragraph(__('emails_misc.auth.verify_email_body'))
-                    ->paragraph(__('emails_misc.auth.verify_email_ignore'))
-                    ->button(__('emails_misc.auth.verify_email_cta'), $verifyUrl)
-                    ->render();
-
-                return EmailDispatchService::sendRaw(
-                    $user['email'],
-                    __('emails_misc.auth.verify_email_subject', ['community' => $tenantName]),
-                    $html,
-                    null,
-                    null,
-                    null,
-                    'email_verification',
-                    ['tenant_id' => $tenantId]
-                );
-            });
-
-            if (!$sent) {
-                Log::warning('[EmailVerification] Verification email dispatch returned false', [
-                    'user_id' => $user['id'],
-                    'tenant_id' => $tenantId,
-                ]);
-                return false;
-            }
-
-            // Only replace verification tokens after send acceptance. This
-            // preserves any previous valid link if the resend fails.
-            $this->cleanupVerificationTokens($user['id'], $tenantId);
-
-            DB::insert(
-                "INSERT INTO email_verification_tokens (user_id, tenant_id, token, expires_at) VALUES (?, ?, ?, ?)",
-                [$user['id'], $tenantId, $hashedToken, $expiresAt]
-            );
-
-            return true;
-        } catch (\Throwable $e) {
-            Log::warning('[EmailVerification] Verification email failed for user: ' . $e->getMessage(), ['user_id' => $user['id']]);
-            return false;
-        }
+        return app(\App\Services\EmailVerificationSender::class)->send($user);
     }
 
     /**
@@ -494,34 +405,5 @@ class EmailVerificationController extends BaseApiController
         }
 
         return $exists;
-    }
-
-    /**
-     * Create the token table if it doesn't exist
-     */
-    private function ensureTokenTableExists(): void
-    {
-        if ($this->tokenTableExists()) {
-            return;
-        }
-
-        try {
-            DB::statement("
-                CREATE TABLE IF NOT EXISTS `email_verification_tokens` (
-                    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                    `user_id` INT UNSIGNED NOT NULL,
-                    `tenant_id` INT(11) NOT NULL,
-                    `token` VARCHAR(255) NOT NULL,
-                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    `expires_at` TIMESTAMP NOT NULL,
-                    INDEX `idx_user_id` (`user_id`),
-                    INDEX `idx_tenant_id` (`tenant_id`),
-                    INDEX `idx_tenant_user` (`tenant_id`, `user_id`),
-                    INDEX `idx_expires_at` (`expires_at`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-            ");
-        } catch (\Throwable $e) {
-            Log::warning('[EmailVerification] Failed to create email_verification_tokens table: ' . $e->getMessage());
-        }
     }
 }
