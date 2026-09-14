@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The canonical database schema now includes every receipt and outbox table used by the native reliability fixes.** Fresh environments and schema-based CI checks see the same idempotency columns and creation/message-delivery tables that the Laravel migrations install, preventing valid mobile writes from being rejected against a stale bootstrap schema.
+
 - **Native shift-swap requests now survive response loss without creating a second request.** The app reserves an encrypted account/community/content-bound key before transport and reuses it after interruption or restart. Laravel stores the key and request hash on the swap row, returns that original row even after it was accepted, rejected, or cancelled, rejects changed content, serializes simultaneous keyed requests, and does not repeat the recipient notification.
 
 - **Native shift-swap decisions now recover honestly from a lost response.** Accept, reject, and cancel actions replay the exact row-locked decision once, using Laravel's idempotent same-action result. If both responses remain unreadable, the app refreshes the authoritative swap list and explains that the outcome is unknown instead of reporting an ordinary failure. A duplicate English volunteering translation key was also removed.
