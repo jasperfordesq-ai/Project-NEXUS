@@ -37,13 +37,13 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['federation-high', 'federation', 'default', 'search', 'webhooks'],
+            'queue' => ['federation-high', 'federation', 'default', 'search', 'webhooks', 'emails'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
-            // Five queues are listed above. Keep at least one available
+            // Six queues are listed above. Keep at least one available
             // process per queue so a busy default queue cannot starve
             // federation, search, or webhook work.
-            'maxProcesses' => 5,
+            'maxProcesses' => 6,
             'minProcesses' => 1,
             // Recycle hourly rather than every minute. The prior one-minute
             // lifetime caused needless process churn and inflated the steady
