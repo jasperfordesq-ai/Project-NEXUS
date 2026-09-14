@@ -87,6 +87,10 @@ describe('push notification links', () => {
     expect(getNotificationLink(null)).toBeNull();
   });
 
+  it('fails a short malformed notification link closed without throwing', () => {
+    expect(getNotificationLink({ link: '/%E0%A4%A?next=%E0%A4%A' })).toBe('/notifications');
+  });
+
   it.each([
     { link: 'https://evil.example/messages/123' },
     { link: '/admin/gdpr' },

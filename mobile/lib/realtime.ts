@@ -5,8 +5,8 @@
 
 import Pusher from 'pusher-js';
 
-import { API_BASE_URL, STORAGE_KEYS } from '@/lib/constants';
-import { storage } from '@/lib/storage';
+import { authenticatedApiIdentity } from '@/lib/api/client';
+import { API_BASE_URL } from '@/lib/constants';
 
 export interface PusherConfig {
   key: string;
@@ -41,10 +41,7 @@ export function initRealtime(config: PusherConfig): Pusher | null {
     authorizer: (channel) => ({
       authorize: async (socketId, callback) => {
         try {
-          const [token, tenantSlug] = await Promise.all([
-            storage.get(STORAGE_KEYS.AUTH_TOKEN),
-            storage.get(STORAGE_KEYS.TENANT_SLUG),
-          ]);
+          const { token, tenantSlug } = await authenticatedApiIdentity();
 
           const body = [
             `socket_id=${encodeURIComponent(socketId)}`,
@@ -54,8 +51,8 @@ export function initRealtime(config: PusherConfig): Pusher | null {
           const headers: Record<string, string> = {
             'Content-Type': 'application/x-www-form-urlencoded',
           };
-          if (token) headers['Authorization'] = `Bearer ${token}`;
-          if (tenantSlug) headers['X-Tenant-Slug'] = tenantSlug;
+          headers['Authorization'] = `Bearer ${token}`;
+          headers['X-Tenant-Slug'] = tenantSlug;
 
           const res = await fetch(`${API_BASE_URL}/api/pusher/auth`, {
             method: 'POST',

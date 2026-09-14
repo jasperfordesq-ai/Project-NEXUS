@@ -343,51 +343,70 @@ class GoalService
      */
     public function incrementProgress(int $id, int $userId, float $increment): ?Goal
     {
-        $goal = $this->goal->newQuery()->find($id);
+        return $this->updateProgressWithResult($id, $userId, $increment)['goal'];
+    }
 
-        if (! $goal || (int) $goal->user_id !== $userId) {
-            return null;
+    /** @return array{goal:Goal|null,replay:bool,increment:float,old_percent:float,new_percent:float} */
+    public function updateProgressWithResult(
+        int $id,
+        int $userId,
+        float $increment,
+        ?float $expectedCurrent = null,
+        ?float $desiredCurrent = null,
+    ): array {
+        $result = DB::transaction(function () use ($id, $userId, $increment, $expectedCurrent, $desiredCurrent): array {
+            $goal = $this->goal->newQuery()->lockForUpdate()->find($id);
+            if (!$goal || (int) $goal->user_id !== $userId) {
+                return ['goal' => null, 'replay' => false, 'increment' => 0.0, 'old_percent' => 0.0, 'new_percent' => 0.0];
+            }
+
+            $current = (float) ($goal->current_value ?? 0);
+            $target = (float) ($goal->target_value ?? 0);
+            if ($desiredCurrent !== null) {
+                if (abs($current - $desiredCurrent) < 0.000001) {
+                    $percent = $target > 0 ? min(100.0, ($current / $target) * 100) : 0.0;
+                    return ['goal' => $goal, 'replay' => true, 'increment' => 0.0, 'old_percent' => $percent, 'new_percent' => $percent];
+                }
+                if ($expectedCurrent === null || abs($current - $expectedCurrent) >= 0.000001) {
+                    throw new \InvalidArgumentException('Goal progress changed before this update');
+                }
+                $increment = $desiredCurrent - $current;
+            }
+
+            $oldPercent = $target > 0 ? min(100.0, ($current / $target) * 100) : 0.0;
+            $goal->current_value = $current + $increment;
+            if ($target > 0 && $goal->current_value >= $target) $goal->status = 'completed';
+            $goal->save();
+
+            $newPercent = $target > 0 ? min(100.0, ((float) $goal->current_value / $target) * 100) : 0.0;
+            $this->recordHistory($goal, 'progress_update', __('api_controllers_3.goals.history_progress', [
+                'percent' => round($newPercent),
+            ]), [
+                'increment' => $increment, 'old_value' => $current,
+                'new_value' => (float) $goal->current_value, 'progress_value' => round($newPercent, 2),
+            ], $userId);
+            app(GoalProgressService::class)->syncMilestones($goal);
+            return compact('goal', 'increment', 'oldPercent', 'newPercent') + ['replay' => false];
+        });
+
+        if ($result['goal'] && !$result['replay']) {
+            try {
+                GoalMilestoneEmailService::checkAndSendMilestone(
+                    TenantContext::getId(), $userId, $id, (string) ($result['goal']->title ?? ''),
+                    $result['oldPercent'], $result['newPercent'],
+                );
+            } catch (\Throwable $e) {
+                Log::warning('[GoalService] milestone email failed', ['goal' => $id, 'error' => $e->getMessage()]);
+            }
         }
 
-        $current = (float) ($goal->current_value ?? 0);
-        $target  = (float) ($goal->target_value ?? 0);
-
-        $oldPercent = $target > 0 ? min(100.0, ($current / $target) * 100) : 0.0;
-
-        $goal->current_value = $current + $increment;
-
-        if ($target > 0 && $goal->current_value >= $target) {
-            $goal->status = 'completed';
-        }
-
-        $goal->save();
-
-        $newPercent = $target > 0 ? min(100.0, ((float) $goal->current_value / $target) * 100) : 0.0;
-        $this->recordHistory($goal, 'progress_update', __('api_controllers_3.goals.history_progress', [
-            'percent' => round($newPercent),
-        ]), [
-            'increment' => $increment,
-            'old_value' => $current,
-            'new_value' => (float) $goal->current_value,
-            'progress_value' => round($newPercent, 2),
-        ], $userId);
-        app(GoalProgressService::class)->syncMilestones($goal);
-
-        // Fire milestone emails (25 / 50 / 75 / 100%) — silenced to avoid disrupting the response
-        try {
-            GoalMilestoneEmailService::checkAndSendMilestone(
-                TenantContext::getId(),
-                $userId,
-                $id,
-                (string) ($goal->title ?? ''),
-                $oldPercent,
-                $newPercent
-            );
-        } catch (\Throwable $e) {
-            Log::warning('[GoalService] milestone email failed', ['goal' => $id, 'error' => $e->getMessage()]);
-        }
-
-        return $goal->fresh(['user']);
+        return [
+            'goal' => $result['goal']?->fresh(['user']),
+            'replay' => $result['replay'],
+            'increment' => (float) $result['increment'],
+            'old_percent' => (float) ($result['oldPercent'] ?? $result['old_percent']),
+            'new_percent' => (float) ($result['newPercent'] ?? $result['new_percent']),
+        ];
     }
 
     /**

@@ -14,11 +14,21 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Laravel\TestCase;
 
 final class ShiftSwapDecisionConcurrencyTest extends TestCase
 {
-    public function test_simultaneous_requests_return_one_pending_swap(): void
+    public static function requestIdentityModes(): array
+    {
+        return [
+            'legacy pending-intent replay' => [null],
+            'durable request identity' => ['concurrent-shift-swap-request-key'],
+        ];
+    }
+
+    #[DataProvider('requestIdentityModes')]
+    public function test_simultaneous_requests_return_one_pending_swap(?string $idempotencyKey): void
     {
         foreach (['pcntl_fork', 'pcntl_waitpid', 'stream_socket_pair', 'posix_kill'] as $function) {
             if (!function_exists($function)) self::markTestSkipped("{$function} is required for concurrent shift-swap verification.");
@@ -45,19 +55,22 @@ final class ShiftSwapDecisionConcurrencyTest extends TestCase
                         TenantContext::reset();
                         TenantContext::setById($fixture['tenant_id']);
                         $waiting = true;
-                        DB::connection()->beforeExecuting(function (string $query) use (&$waiting, $sockets): void {
+                        DB::connection()->beforeExecuting(function (string $query) use (&$waiting, $sockets, $idempotencyKey): void {
                             $sql = strtolower($query);
-                            if ($waiting && str_contains($sql, 'from `vol_applications`') && str_contains($sql, 'for update')) {
+                            $barrierTable = $idempotencyKey === null ? 'from `vol_applications`' : 'from `users`';
+                            if ($waiting && str_contains($sql, $barrierTable) && str_contains($sql, 'for update')) {
                                 $waiting = false;
                                 fwrite($sockets[1], "ready\n");
                                 if (trim((string) fgets($sockets[1])) !== 'go') throw new \RuntimeException('Swap-request barrier timed out');
                             }
                         });
-                        $id = ShiftSwapService::requestSwap($fixture['requester_id'], [
+                        $payload = [
                             'from_shift_id' => $fixture['requester_shift_id'],
                             'to_shift_id' => $fixture['recipient_shift_id'],
                             'message' => 'Concurrent request fixture',
-                        ]);
+                        ];
+                        if ($idempotencyKey !== null) $payload['idempotency_key'] = $idempotencyKey;
+                        $id = ShiftSwapService::requestSwap($fixture['requester_id'], $payload);
                         fwrite($sockets[1], json_encode(['id' => $id, 'errors' => ShiftSwapService::getErrors()], JSON_THROW_ON_ERROR) . "\n");
                         fclose($sockets[1]);
                         exit(0);
@@ -90,6 +103,11 @@ final class ShiftSwapDecisionConcurrencyTest extends TestCase
                 ->where('to_shift_id', $fixture['recipient_shift_id'])
                 ->whereIn('status', ['pending', 'admin_pending'])
                 ->count());
+            if ($idempotencyKey !== null) {
+                self::assertSame(hash('sha256', $idempotencyKey), DB::table('vol_shift_swap_requests')
+                    ->where('id', $ids[0])
+                    ->value('idempotency_key_hash'));
+            }
         } finally {
             $this->stopWorkers($workers);
             $this->cleanup($fixture);

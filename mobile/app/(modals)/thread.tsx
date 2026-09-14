@@ -33,7 +33,7 @@ import { deleteMessage, displayName, getMessagingRestrictionStatus, getOrCreateT
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import { contrastText, withAlpha } from '@/lib/utils/color';
@@ -55,7 +55,23 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { isUploadAborted } from '@/lib/api/uploadWithProgress';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import AccentIcon from '@/components/ui/AccentIcon';
+import DraftStorageWarning from '@/components/ui/DraftStorageWarning';
 import { withRouteGate } from '@/components/withRouteGate';
+import { completeMessageOperation, reserveMessageOperation } from '@/lib/messageOperation';
+import {
+  clearCreationDraft,
+  loadCreationDraft,
+  saveCreationDraft,
+  type CreationDraftScope,
+} from '@/lib/creationDraftStore';
+import {
+  existingMessageDraftMedia,
+  isManagedMessageDraftMedia,
+  removeMessageDraftMedia,
+  removeMessageDraftMediaBatch,
+  removeTransientMessageMedia,
+  retainMessageDraftMedia,
+} from '@/lib/messageDraftMedia';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const REACTION_EMOJIS = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
@@ -72,10 +88,17 @@ const THREAD_CONTEXT_CONFIG = {
 type ThreadContextType = keyof typeof THREAD_CONTEXT_CONFIG;
 type ThreadContext = { type: ThreadContextType; id: number };
 type PendingAttachment = MessageAttachmentUpload & { id: string; width?: number | null; height?: number | null; size?: number | null };
+type FailedMessageDraft = { body: string; attachments: PendingAttachment[] };
+type PendingVoiceDraft = { uri: string; durationSeconds: number };
+type PersistedMessageDraft = { text: string; attachments?: PendingAttachment[]; failedDrafts?: FailedMessageDraft[]; voice?: PendingVoiceDraft | null };
 
 function ThreadScreen() {
+  const params = useLocalSearchParams<{ id?: string | string[]; recipientId?: string | string[] }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const routeIdentity = firstParam(params.recipientId) || firstParam(params.id) || 'invalid';
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${routeIdentity}`}>
       <ThreadScreenInner />
     </ModalErrorBoundary>
   );
@@ -92,6 +115,7 @@ function ThreadScreenInner() {
     context_id?: string | string[];
   }>();
   const { user: authUser } = useAuth();
+  const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const bottomInset = useBottomInset();
@@ -114,6 +138,21 @@ function ThreadScreenInner() {
   const listingId = parsePositiveInt(firstParam(listing));
   const contextType = firstParam(context_type);
   const contextId = parsePositiveInt(firstParam(context_id));
+  const messageDraftScope = useMemo<CreationDraftScope | null>(() => {
+    const tenantIdentity = tenant?.id ?? tenant?.slug;
+    if (!tenantIdentity || !authUser?.id || !isValidId) return null;
+    const routeContext = isNewConversation
+      ? `recipient:${safeThreadLookupId}:listing:${listingId ?? 0}:context:${contextType ?? 'none'}:${contextId ?? 0}`
+      : `conversation:${safeThreadLookupId}`;
+    return {
+      kind: 'message',
+      tenantId: tenantIdentity,
+      userId: authUser.id,
+      contextId: routeContext,
+    };
+  }, [authUser?.id, contextId, contextType, isNewConversation, isValidId, listingId, safeThreadLookupId, tenant?.id, tenant?.slug]);
+  const messageDraftScopeRef = useRef(messageDraftScope);
+  messageDraftScopeRef.current = messageDraftScope;
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => (isNewConversation ? getOrCreateThread(safeThreadLookupId) : getThread(safeThreadLookupId)),
@@ -146,6 +185,15 @@ function ThreadScreenInner() {
   const [isLoadingEarlier, setIsLoadingEarlier] = useState(false);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const sendInFlightRef = useRef(false);
+  const inputTextRef = useRef(inputText);
+  const draftHydratedRef = useRef(false);
+  const draftChangedRef = useRef(false);
+  const draftDiscardedRef = useRef(false);
+  const hadPersistedDraftRef = useRef(false);
+  const [isFocused, setIsFocused] = useState(true);
+  const isFocusedRef = useRef(true);
+  const appActiveRef = useRef(AppState.currentState === 'active');
   const [messagingRestriction, setMessagingRestriction] = useState<MessagingRestrictionStatus | null>(null);
   /*
     🔴 Which message shows the 👍 ❤️ 😂 ⋯ quick-react row. It used to be EVERY message: the
@@ -159,17 +207,98 @@ function ThreadScreenInner() {
   }, []);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
-  const [failedDrafts, setFailedDrafts] = useState<{ body: string; attachments: PendingAttachment[] }[]>([]);
+  const [failedDrafts, setFailedDrafts] = useState<FailedMessageDraft[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [voiceUri, setVoiceUri] = useState<string | null>(null);
+  const [draftStorageFailed, setDraftStorageFailed] = useState(false);
+  const voiceUriRef = useRef<string | null>(null);
+  const recordingSecondsRef = useRef(0);
+  const discardActiveVoiceRecordingRef = useRef<(() => Promise<void>) | null>(null);
   const attachmentsRef = useRef(pendingAttachments);
+  const failedDraftsRef = useRef(failedDrafts);
   attachmentsRef.current = pendingAttachments;
+  failedDraftsRef.current = failedDrafts;
+  inputTextRef.current = inputText;
+  voiceUriRef.current = voiceUri;
+  recordingSecondsRef.current = recordingSeconds;
+
+  const writeCurrentMessageDraft = useCallback(async (force = false): Promise<boolean> => {
+    if (!messageDraftScope || draftDiscardedRef.current || (!draftHydratedRef.current && !force)) return true;
+    const text = inputTextRef.current;
+    const attachments = attachmentsRef.current.filter((item) => isManagedMessageDraftMedia(item.uri));
+    const retainedFailedDrafts = failedDraftsRef.current
+      .map((draft) => ({
+        body: draft.body,
+        attachments: draft.attachments.filter((item) => isManagedMessageDraftMedia(item.uri)),
+      }))
+      .filter((draft) => draft.body.length > 0 || draft.attachments.length > 0);
+    const voice = voiceUriRef.current && isManagedMessageDraftMedia(voiceUriRef.current)
+      ? { uri: voiceUriRef.current, durationSeconds: recordingSecondsRef.current }
+      : null;
+    if (text.length > 0 || attachments.length > 0 || retainedFailedDrafts.length > 0 || voice) {
+      const saved = await saveCreationDraft<PersistedMessageDraft>(messageDraftScope, {
+        text,
+        attachments,
+        failedDrafts: retainedFailedDrafts,
+        voice,
+      });
+      if (saved) hadPersistedDraftRef.current = true;
+      return saved;
+    }
+    if (!hadPersistedDraftRef.current) return true;
+    const cleared = await clearCreationDraft(messageDraftScope);
+    if (cleared) hadPersistedDraftRef.current = false;
+    return cleared;
+  }, [messageDraftScope]);
+
+  const persistMessageDraft = useCallback(async (): Promise<boolean> => {
+    // The submitted payload remains the recovery source while a send is unresolved.
+    if (sendInFlightRef.current) return true;
+    const saved = await writeCurrentMessageDraft();
+    if (recordingMountedRef.current && messageDraftScopeRef.current === messageDraftScope) setDraftStorageFailed(!saved);
+    return saved;
+  }, [messageDraftScope, writeCurrentMessageDraft]);
+
+  const discardPersistedMessageDraft = useCallback(async (): Promise<boolean> => {
+    draftDiscardedRef.current = true;
+    if (!messageDraftScope) return true;
+    const cleared = await clearCreationDraft(messageDraftScope);
+    if (cleared) {
+      hadPersistedDraftRef.current = false;
+      const ownedUris = [
+        ...attachmentsRef.current.map((item) => item.uri),
+        ...failedDraftsRef.current.flatMap((draft) => draft.attachments.map((item) => item.uri)),
+        ...(voiceUriRef.current ? [voiceUriRef.current] : []),
+      ];
+      await discardActiveVoiceRecordingRef.current?.();
+      await removeMessageDraftMediaBatch(ownedUris);
+      return true;
+    }
+    draftDiscardedRef.current = false;
+    showToast({
+      title: t('common:errors.alertTitle'),
+      description: t('common:errors.generic'),
+      variant: 'danger',
+    });
+    return false;
+  }, [messageDraftScope, showToast, t]);
+
+  const handleInputTextChange = useCallback((text: string) => {
+    draftChangedRef.current = true;
+    inputTextRef.current = text;
+    setInputText(text);
+  }, []);
+
   useUnsavedChangesGuard({
-    isDirty: Boolean(inputText || pendingAttachments.length || failedDrafts.length),
+    isDirty: Boolean(inputText || pendingAttachments.length || failedDrafts.length || isRecording || voiceUri),
     isSaving: isSending,
     confirm,
     title: t('common:unsavedChanges.title'),
     message: t('common:unsavedChanges.message'),
     discardLabel: t('common:unsavedChanges.discard'),
     cancelLabel: t('common:buttons.cancel'),
+    onDiscard: discardPersistedMessageDraft,
   });
   const [attachmentSheetVisible, setAttachmentSheetVisible] = useState(false);
   /*
@@ -186,17 +315,13 @@ function ThreadScreenInner() {
     uploadAbortRef.current?.abort();
   }, []);
   const [optionsMessage, setOptionsMessage] = useState<Message | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingSeconds, setRecordingSeconds] = useState(0);
-  const [voiceUri, setVoiceUri] = useState<string | null>(null);
   const flatListRef = useRef<FlatList<Message>>(null);
-  const inputTextRef = useRef(inputText);
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recordingRef = useRef<typeof audioRecorder | null>(null);
+  const finalizeVoiceRecordingRef = useRef<(() => Promise<void>) | null>(null);
   const recordingStartRef = useRef(false);
   const recordingMountedRef = useRef(true);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  inputTextRef.current = inputText;
 
   const enrichedMessages = useMemo(() => {
     if (!isValidId || !data?.data) return null;
@@ -308,27 +433,99 @@ function ThreadScreenInner() {
     was true, which is what now decides the badge - see `MessageHandler` in
     lib/context/RealtimeContext.tsx.
   */
-  const [isFocused, setIsFocused] = useState(true);
-  const isFocusedRef = useRef(true);
-  const appActiveRef = useRef(AppState.currentState === 'active');
+  useEffect(() => {
+    let active = true;
+    draftHydratedRef.current = false;
+    draftChangedRef.current = false;
+    draftDiscardedRef.current = false;
+    hadPersistedDraftRef.current = false;
+    setDraftStorageFailed(false);
+
+    if (!messageDraftScope) {
+      draftHydratedRef.current = true;
+      return () => { active = false; };
+    }
+
+    void loadCreationDraft<PersistedMessageDraft>(messageDraftScope)
+      .then(async (draft) => {
+        if (!active) return;
+        const savedText = typeof draft?.text === 'string' ? draft.text : '';
+        const restoreExisting = async (items: PendingAttachment[] | undefined) => {
+          const checked = await Promise.all((items ?? []).map(async (item) => (
+            await existingMessageDraftMedia(item.uri) ? item : null
+          )));
+          return checked.filter((item): item is PendingAttachment => item !== null);
+        };
+        const restoredAttachments = await restoreExisting(draft?.attachments);
+        const restoredVoice = draft?.voice && await existingMessageDraftMedia(draft.voice.uri) ? draft.voice : null;
+        const restoredFailed = await Promise.all((draft?.failedDrafts ?? []).map(async (failed) => ({
+          body: typeof failed.body === 'string' ? failed.body : '',
+          attachments: await restoreExisting(failed.attachments),
+        })));
+        if (!active) return;
+        const usableFailed = restoredFailed.filter((failed) => failed.body.length > 0 || failed.attachments.length > 0);
+        const expectedMediaCount = (draft?.attachments?.length ?? 0) + (draft?.voice ? 1 : 0)
+          + (draft?.failedDrafts ?? []).reduce((count, failed) => count + (failed.attachments?.length ?? 0), 0);
+        const restoredMediaCount = restoredAttachments.length + (restoredVoice ? 1 : 0)
+          + usableFailed.reduce((count, failed) => count + failed.attachments.length, 0);
+        hadPersistedDraftRef.current = Boolean(draft);
+        if (!draftChangedRef.current) {
+          inputTextRef.current = savedText;
+          setInputText(savedText);
+          attachmentsRef.current = restoredAttachments;
+          setPendingAttachments(restoredAttachments);
+          failedDraftsRef.current = usableFailed;
+          setFailedDrafts(usableFailed);
+          voiceUriRef.current = restoredVoice?.uri ?? null;
+          recordingSecondsRef.current = restoredVoice?.durationSeconds ?? 0;
+          setVoiceUri(restoredVoice?.uri ?? null);
+          setRecordingSeconds(restoredVoice?.durationSeconds ?? 0);
+          if (expectedMediaCount !== restoredMediaCount) void writeCurrentMessageDraft(true);
+        }
+      })
+      .catch(() => null)
+      .finally(() => {
+        if (!active) return;
+        draftHydratedRef.current = true;
+        if (draftChangedRef.current) void persistMessageDraft();
+      });
+
+    return () => { active = false; };
+  }, [messageDraftScope, persistMessageDraft, writeCurrentMessageDraft]);
+
+  useEffect(() => {
+    if (!draftHydratedRef.current || editingMessage || !isFocused || !appActiveRef.current || isSending) return undefined;
+    const timer = setTimeout(() => { void persistMessageDraft(); }, 300);
+    return () => clearTimeout(timer);
+  }, [editingMessage, failedDrafts, inputText, isFocused, isSending, pendingAttachments, persistMessageDraft, voiceUri]);
 
   useFocusEffect(
     useCallback(() => {
       isFocusedRef.current = true;
       setIsFocused(true);
+      draftDiscardedRef.current = false;
       return () => {
+        if (!draftDiscardedRef.current) void persistMessageDraft();
         isFocusedRef.current = false;
         setIsFocused(false);
       };
-    }, []),
+    }, [persistMessageDraft]),
   );
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (next) => {
+      if (appActiveRef.current && next !== 'active' && isFocusedRef.current) {
+        // Finalize into the managed draft directory before Android/iOS can suspend or
+        // kill us. A raw recorder file lives in the Expo cache and is not a draft.
+        void (async () => {
+          if (recordingRef.current) await finalizeVoiceRecordingRef.current?.();
+          await persistMessageDraft();
+        })();
+      }
       appActiveRef.current = next === 'active';
     });
     return () => subscription.remove();
-  }, []);
+  }, [persistMessageDraft]);
 
   useEffect(() => {
     if (!isValidId || !safeThreadLookupId) return undefined;
@@ -418,29 +615,70 @@ function ThreadScreenInner() {
 
   const handleSend = useCallback(async () => {
     const body = inputTextRef.current.trim();
-    if ((!body && pendingAttachments.length === 0) || isSending || resolvedRecipientId === null) return;
+    if ((!body && pendingAttachments.length === 0) || sendInFlightRef.current || resolvedRecipientId === null) return;
     if (messagingRestriction?.messaging_disabled) {
       showToast({ title: t('thread.messagingRestrictedTitle'), description: t('thread.messagingRestrictedContact'), variant: 'warning' });
       return;
     }
+    sendInFlightRef.current = true;
 
     if (editingMessage) {
       setIsSending(true);
       try {
         const response = await updateMessage(editingMessage.id, body);
+        if (!recordingMountedRef.current) return;
         setMessages((prev) => prev.map((message) => (
           message.id === editingMessage.id
             ? { ...message, ...(response.data ?? {}), body, is_edited: true }
             : message
         )));
         setEditingMessage(null);
-        setInputText((current) => current.trim() === body ? '' : current);
+        if (inputTextRef.current.trim() === body) {
+          inputTextRef.current = '';
+          setInputText('');
+        }
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } catch (err) {
+        if (!recordingMountedRef.current) return;
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         showToast({ title: t('errors.editFailedTitle'), description: describeApiError(err, t('errors.editFailed')), variant: 'danger' });
       } finally {
+        sendInFlightRef.current = false;
+        if (recordingMountedRef.current) setIsSending(false);
+      }
+      return;
+    }
+
+    const sendIntent = JSON.stringify([
+      'message',
+      resolvedRecipientId,
+      body,
+      newConversationOptions ?? null,
+      pendingAttachments.map((attachment) => [
+        attachment.uri,
+        attachment.name ?? null,
+        attachment.mimeType ?? null,
+        attachment.size ?? null,
+      ]),
+    ]);
+    // Seal the exact payload before reserving or dispatching it. This closes the
+    // attach-then-immediately-send window before the background debounce runs.
+    const preparedForRecovery = await writeCurrentMessageDraft(true);
+    if (!preparedForRecovery) {
+      sendInFlightRef.current = false;
+      showToast({ title: t('errors.sendFailed'), description: t('errors.sendFailed'), variant: 'danger' });
+      return;
+    }
+    let operation: Awaited<ReturnType<typeof reserveMessageOperation>>;
+    try {
+      setIsSending(true);
+      operation = await reserveMessageOperation(sendIntent);
+      if (!recordingMountedRef.current) return;
+    } catch (err) {
+      sendInFlightRef.current = false;
+      if (recordingMountedRef.current) {
         setIsSending(false);
+        showToast({ title: t('errors.sendFailed'), description: describeApiError(err, t('errors.sendFailed')), variant: 'danger' });
       }
       return;
     }
@@ -467,6 +705,8 @@ function ThreadScreenInner() {
     };
 
     setMessages((prev) => [...prev, optimistic]);
+    inputTextRef.current = '';
+    attachmentsRef.current = [];
     setInputText('');
     setPendingAttachments([]);
     Keyboard.dismiss();
@@ -483,11 +723,17 @@ function ThreadScreenInner() {
             body,
             pendingAttachments,
             newConversationOptions,
-            { onProgress: setUploadPercent, signal: controller?.signal },
+            { onProgress: setUploadPercent, signal: controller?.signal, idempotencyKey: operation.key },
           )
-        : newConversationOptions
-          ? await sendMessage(resolvedRecipientId, body, newConversationOptions)
-          : await sendMessage(resolvedRecipientId, body);
+        : await sendMessage(resolvedRecipientId, body, newConversationOptions ?? {}, operation.key);
+      const mayCompleteOperation = await writeCurrentMessageDraft();
+      // If encrypted-draft cleanup failed, retain the operation identity. A restored
+      // submitted draft will then replay the server receipt instead of creating a duplicate.
+      if (mayCompleteOperation) {
+        await removeMessageDraftMediaBatch(pendingAttachments.map((attachment) => attachment.uri));
+        await completeMessageOperation(operation);
+      }
+      if (!recordingMountedRef.current) return;
       setMessages((prev) => {
         if (prev.some((message) => message.id === res.data.id)) {
           return prev.filter((message) => message.id !== optimistic.id);
@@ -496,14 +742,21 @@ function ThreadScreenInner() {
       });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!recordingMountedRef.current) return;
       setMessages((prev) => prev.filter((message) => message.id !== optimistic.id));
       if (!inputTextRef.current && attachmentsRef.current.length === 0) {
+        inputTextRef.current = body;
+        attachmentsRef.current = pendingAttachments;
         setInputText(body);
         setPendingAttachments(pendingAttachments);
       } else {
         // The composer may already contain the NEXT message. Keep the failed
         // send separately so neither text nor attachments overwrite that draft.
-        setFailedDrafts((drafts) => [...drafts, { body, attachments: pendingAttachments }]);
+        setFailedDrafts((drafts) => {
+          const next = [...drafts, { body, attachments: pendingAttachments }];
+          failedDraftsRef.current = next;
+          return next;
+        });
       }
 
       /**
@@ -561,24 +814,36 @@ function ThreadScreenInner() {
         });
       }
     } finally {
-      setIsSending(false);
-      setUploadPercent(null);
+      sendInFlightRef.current = false;
+      if (recordingMountedRef.current) {
+        setIsSending(false);
+        setUploadPercent(null);
+      }
       uploadAbortRef.current = null;
     }
-  }, [editingMessage, isSending, messagingRestriction?.messaging_disabled, newConversationOptions, pendingAttachments, resolvedRecipientId, showToast, t]);
+  }, [editingMessage, messagingRestriction?.messaging_disabled, newConversationOptions, pendingAttachments, resolvedRecipientId, showToast, t, writeCurrentMessageDraft]);
 
   const startEditingMessage = useCallback((message: Message) => {
     if (!message.is_own || message.is_voice || message.is_deleted || isSending || editingMessage) return;
     const draft = { body: inputTextRef.current, attachments: attachmentsRef.current };
-    if (draft.body || draft.attachments.length) setFailedDrafts((drafts) => [...drafts, draft]);
+    if (draft.body || draft.attachments.length) {
+      setFailedDrafts((drafts) => {
+        const next = [...drafts, draft];
+        failedDraftsRef.current = next;
+        return next;
+      });
+    }
     setEditingMessage(message);
+    attachmentsRef.current = [];
+    inputTextRef.current = message.body || message.content || '';
     setPendingAttachments([]);
-    setInputText(message.body || message.content || '');
+    setInputText(inputTextRef.current);
   }, [editingMessage, isSending]);
 
   const cancelEditingMessage = useCallback(() => {
     if (isSending) return;
     setEditingMessage(null);
+    inputTextRef.current = '';
     setInputText('');
   }, [isSending]);
 
@@ -635,20 +900,45 @@ function ThreadScreenInner() {
       result.assets.slice(0, remaining).map(async (asset) => ({ ...asset, ...(await prepareImageForUpload(asset)) })),
     );
 
-    const nextAttachments = preparedAssets.map((asset, index): PendingAttachment => ({
-      id: `${Date.now()}-${index}`,
-      uri: asset.uri,
-      name: asset.fileName ?? `message-image-${pendingAttachments.length + index + 1}.jpg`,
-      mimeType: asset.mimeType ?? null,
-      width: asset.width,
-      height: asset.height,
-      size: asset.fileSize ?? null,
+    let durableCopyFailed = false;
+    const nextAttachments = await Promise.all(preparedAssets.map(async (asset, index): Promise<PendingAttachment> => {
+      const name = asset.fileName ?? `message-image-${pendingAttachments.length + index + 1}.jpg`;
+      const retainedUri = await retainMessageDraftMedia(asset.uri, name);
+      if (!retainedUri) durableCopyFailed = true;
+      return {
+        id: `${Date.now()}-${index}`,
+        uri: retainedUri ?? asset.uri,
+        name,
+        mimeType: asset.mimeType ?? null,
+        width: asset.width,
+        height: asset.height,
+        size: asset.fileSize ?? null,
+      };
     }));
-    setPendingAttachments((current) => [...current, ...nextAttachments].slice(0, MAX_ATTACHMENTS));
+    draftChangedRef.current = true;
+    setPendingAttachments((current) => {
+      const next = [...current, ...nextAttachments].slice(0, MAX_ATTACHMENTS);
+      attachmentsRef.current = next;
+      return next;
+    });
+    if (durableCopyFailed) {
+      showToast({
+        title: t('thread.attachments.draftStorageTitle'),
+        description: t('thread.attachments.draftStorageWarning'),
+        variant: 'warning',
+      });
+    }
   }, [pendingAttachments.length, showToast, t]);
 
   const removePendingAttachment = useCallback((id: string) => {
-    setPendingAttachments((current) => current.filter((attachment) => attachment.id !== id));
+    draftChangedRef.current = true;
+    setPendingAttachments((current) => {
+      const removed = current.find((attachment) => attachment.id === id);
+      const next = current.filter((attachment) => attachment.id !== id);
+      attachmentsRef.current = next;
+      if (removed) void removeMessageDraftMedia(removed.uri).catch(() => null);
+      return next;
+    });
   }, []);
 
   const stopRecordingTimer = useCallback(() => {
@@ -680,11 +970,17 @@ function ThreadScreenInner() {
       if (!recordingMountedRef.current) return;
       audioRecorder.record();
       recordingRef.current = audioRecorder;
+      voiceUriRef.current = null;
+      recordingSecondsRef.current = 0;
       setVoiceUri(null);
       setRecordingSeconds(0);
       setIsRecording(true);
       recordingTimerRef.current = setInterval(() => {
-        setRecordingSeconds((seconds) => seconds + 1);
+        setRecordingSeconds((seconds) => {
+          const next = seconds + 1;
+          recordingSecondsRef.current = next;
+          return next;
+        });
       }, 1000);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (err) {
@@ -701,15 +997,32 @@ function ThreadScreenInner() {
   const handleStopRecording = useCallback(async () => {
     const recording = recordingRef.current;
     if (!recording) return;
+    // Claim this recorder synchronously so a Stop tap and an AppState transition
+    // cannot both finalize the same native recording.
+    recordingRef.current = null;
+    const durationSeconds = recordingSecondsRef.current;
     try {
       stopRecordingTimer();
       await recording.stop();
       if (!recordingMountedRef.current) return;
       const uri = recording.uri;
-      recordingRef.current = null;
       setIsRecording(false);
       if (uri) {
-        setVoiceUri(uri);
+        const retainedUri = await retainMessageDraftMedia(uri, `voice-${Date.now()}.m4a`);
+        if (retainedUri) await removeTransientMessageMedia(uri).catch(() => null);
+        const nextUri = retainedUri ?? uri;
+        voiceUriRef.current = nextUri;
+        recordingSecondsRef.current = durationSeconds;
+        draftChangedRef.current = true;
+        setVoiceUri(nextUri);
+        if (retainedUri) await writeCurrentMessageDraft(true);
+        if (!retainedUri) {
+          showToast({
+            title: t('thread.voice.draftStorageTitle'),
+            description: t('thread.voice.draftStorageWarning'),
+            variant: 'warning',
+          });
+        }
       }
     } catch (err) {
       recordingRef.current = null;
@@ -717,22 +1030,57 @@ function ThreadScreenInner() {
       setVoiceUri(null);
       showToast({ title: t('thread.voice.failedTitle'), description: describeApiError(err, t('thread.voice.stopFailed')), variant: 'danger' });
     }
-  }, [showToast, stopRecordingTimer, t]);
+  }, [showToast, stopRecordingTimer, t, writeCurrentMessageDraft]);
+  finalizeVoiceRecordingRef.current = handleStopRecording;
 
   const handleCancelVoice = useCallback(async () => {
     stopRecordingTimer();
     const recording = recordingRef.current;
+    const readyVoiceUri = voiceUriRef.current;
     recordingRef.current = null;
     setIsRecording(false);
     setVoiceUri(null);
+    voiceUriRef.current = null;
+    recordingSecondsRef.current = 0;
     setRecordingSeconds(0);
     await recording?.stop().catch(() => null);
+    if (recording?.uri) await removeTransientMessageMedia(recording.uri).catch(() => null);
+    if (readyVoiceUri) await removeMessageDraftMedia(readyVoiceUri).catch(() => null);
   }, [stopRecordingTimer]);
+  discardActiveVoiceRecordingRef.current = handleCancelVoice;
 
   const handleSendVoice = useCallback(async () => {
-    if (!voiceUri || isSending || resolvedRecipientId === null) return;
+    if (!voiceUri || sendInFlightRef.current || resolvedRecipientId === null) return;
     if (messagingRestriction?.messaging_disabled) {
       showToast({ title: t('thread.messagingRestrictedTitle'), description: t('thread.messagingRestrictedContact'), variant: 'warning' });
+      return;
+    }
+    sendInFlightRef.current = true;
+
+    const preparedForRecovery = await writeCurrentMessageDraft(true);
+    if (!preparedForRecovery) {
+      sendInFlightRef.current = false;
+      showToast({ title: t('errors.sendFailed'), description: t('thread.voice.sendFailed'), variant: 'danger' });
+      return;
+    }
+
+    let operation: Awaited<ReturnType<typeof reserveMessageOperation>>;
+    try {
+      setIsSending(true);
+      operation = await reserveMessageOperation(JSON.stringify([
+        'voice',
+        resolvedRecipientId,
+        voiceUri,
+        recordingSeconds,
+        newConversationOptions ?? null,
+      ]));
+      if (!recordingMountedRef.current) return;
+    } catch (err) {
+      sendInFlightRef.current = false;
+      if (recordingMountedRef.current) {
+        setIsSending(false);
+        showToast({ title: t('errors.sendFailed'), description: describeApiError(err, t('thread.voice.sendFailed')), variant: 'danger' });
+      }
       return;
     }
 
@@ -754,6 +1102,8 @@ function ThreadScreenInner() {
 
     setMessages((prev) => [...prev, optimistic]);
     setVoiceUri(null);
+    voiceUriRef.current = null;
+    recordingSecondsRef.current = 0;
     setRecordingSeconds(0);
     setIsSending(true);
 
@@ -763,19 +1113,30 @@ function ThreadScreenInner() {
         voiceUri,
         newConversationOptions,
         voiceSeconds,
+        operation.key,
       );
+      const mayCompleteOperation = await writeCurrentMessageDraft();
+      if (mayCompleteOperation) {
+        await removeMessageDraftMedia(voiceUri);
+        await completeMessageOperation(operation);
+      }
+      if (!recordingMountedRef.current) return;
       setMessages((prev) => prev.map((message) => (message.id === optimistic.id ? { ...response.data, is_own: true } : message)));
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!recordingMountedRef.current) return;
       setMessages((prev) => prev.filter((message) => message.id !== optimistic.id));
       setVoiceUri(voiceUri);
+      voiceUriRef.current = voiceUri;
+      recordingSecondsRef.current = voiceSeconds;
       setRecordingSeconds(voiceSeconds);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('errors.sendFailed'), description: describeApiError(err, t('thread.voice.sendFailed')), variant: 'danger' });
     } finally {
-      setIsSending(false);
+      sendInFlightRef.current = false;
+      if (recordingMountedRef.current) setIsSending(false);
     }
-  }, [isSending, messagingRestriction?.messaging_disabled, newConversationOptions, recordingSeconds, resolvedRecipientId, showToast, t, voiceUri]);
+  }, [messagingRestriction?.messaging_disabled, newConversationOptions, recordingSeconds, resolvedRecipientId, showToast, t, voiceUri, writeCurrentMessageDraft]);
 
   const handleAttachmentOpenFailed = useCallback((err: unknown) => {
     showToast({
@@ -1002,15 +1363,29 @@ function ThreadScreenInner() {
             stop: the number alone still leaves someone on a slow connection with no
             choice but to force-quit the app.
           */}
+          <DraftStorageWarning visible={draftStorageFailed} testID="message-draft-storage-warning" />
           {failedDrafts.length > 0 ? (
             <View className="mb-2 gap-2 rounded-xl border border-warning p-3">
               <Text accessibilityLiveRegion="polite" style={{ color: theme.text }}>{t('thread.unsentDrafts', { count: failedDrafts.length })}</Text>
-              <Text numberOfLines={2} selectable style={{ color: theme.textSecondary }}>{failedDrafts[0].body}</Text>
+              {failedDrafts[0].body ? (
+                <Text numberOfLines={2} selectable style={{ color: theme.textSecondary }}>{failedDrafts[0].body}</Text>
+              ) : null}
+              {failedDrafts[0].attachments.length > 0 ? (
+                <Text numberOfLines={2} selectable style={{ color: theme.textSecondary }}>
+                  {failedDrafts[0].attachments.map((attachment, index) => (
+                    attachment.name || t('thread.attachmentName', { index: index + 1 })
+                  )).join(', ')}
+                </Text>
+              ) : null}
               <HeroButton variant="secondary" isDisabled={isSending || Boolean(editingMessage)} style={{ minHeight: 48 }}
                 onPress={() => {
                   const first = failedDrafts[0];
                   const current = { body: inputTextRef.current, attachments: attachmentsRef.current };
-                  setFailedDrafts((drafts) => [...drafts.slice(1), ...(current.body || current.attachments.length ? [current] : [])]);
+                  const next = [...failedDrafts.slice(1), ...(current.body || current.attachments.length ? [current] : [])];
+                  failedDraftsRef.current = next;
+                  inputTextRef.current = first.body;
+                  attachmentsRef.current = first.attachments;
+                  setFailedDrafts(next);
                   setInputText(first.body);
                   setPendingAttachments(first.attachments);
                 }}>
@@ -1094,7 +1469,7 @@ function ThreadScreenInner() {
               inputClassName="min-h-[44px] max-h-[120px] flex-1 rounded-[22px] border border-border px-4 pb-2.5 pt-2.5 text-[15px]"
               style={{ color: theme.text, backgroundColor: theme.bg }}
               value={inputText}
-              onChangeText={setInputText}
+              onChangeText={handleInputTextChange}
               placeholder={t('thread.inputPlaceholder')}
               placeholderTextColor={theme.textMuted}
               multiline

@@ -77,7 +77,9 @@
       "permissionTitle": "Photo access needed",
       "permissionMessage": "Allow photo access to attach images.",
       "uploading": "Sending photos… {{percent}}%",
-      "cancelUpload": "Cancel"
+      "cancelUpload": "Cancel",
+      "draftStorageTitle": "Photo kept for this session",
+      "draftStorageWarning": "The photo is attached, but it may not survive if the app closes."
     },
     "voice": {
       "record": "Record voice message",
@@ -91,7 +93,9 @@
       "failedTitle": "Voice message failed",
       "startFailed": "Could not start recording. Please try again.",
       "stopFailed": "Could not save this recording. Please try again.",
-      "sendFailed": "Voice message could not be sent. Please try again."
+      "sendFailed": "Voice message could not be sent. Please try again.",
+      "draftStorageTitle": "Voice note kept for this session",
+      "draftStorageWarning": "The voice note is ready, but it may not survive if the app closes."
     },
     "notFound": "This conversation is no longer available.",
     "unsentDrafts": "Unsent drafts: {{count}}",

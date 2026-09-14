@@ -54,7 +54,7 @@
     "newPlaceholder": "Enter new password",
     "confirmLabel": "Confirm new password",
     "confirmPlaceholder": "Re-enter new password",
-    "newHint": "Use at least 8 characters.",
+    "newHint": "Use at least 12 characters.",
     "save": "Save password",
     "saving": "Saving password...",
     "reviewTitle": "Ready to update?",
@@ -63,6 +63,9 @@
     "footerMismatch": "The new password and its confirmation do not match yet.",
     "success": "Password changed",
     "successMessage": "Your password has been updated successfully.",
+    "successSignIn": "Your password was changed. Sign in again with your new password.",
+    "unconfirmedTitle": "Check your password",
+    "unconfirmedMessage": "We could not confirm whether the change completed. Sign in again and try your new password first. If it is not accepted, use your previous password.",
     "validation": {
       "currentRequired": "Please enter your current password.",
       "newRequired": "Please enter a new password.",

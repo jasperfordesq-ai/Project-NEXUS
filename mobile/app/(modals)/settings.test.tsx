@@ -6,6 +6,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 // --- Mocks ---
 
 const mockUseApi = jest.fn();
@@ -88,8 +90,9 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true }),
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 } }) }));
 
 const mockSetThemeMode = jest.fn();
 jest.mock('@/lib/hooks/useTheme', () => ({

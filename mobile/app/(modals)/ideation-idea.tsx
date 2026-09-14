@@ -36,6 +36,8 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
+import { mutationAttemptFor, type MutationAttempt } from '@/lib/utils/idempotencyKey';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 function IdeationIdeaScreen() {
   const { t } = useTranslation(['ideation', 'common']);
@@ -136,6 +138,9 @@ function IdeationIdeaScreen() {
   const votePendingRef = useRef(false);
   const commentPendingRef = useRef(false);
   const savePendingRef = useRef(false);
+  const voteAttemptRef = useRef<MutationAttempt | null>(null);
+  const commentAttemptRef = useRef<MutationAttempt | null>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     if (!idea) return;
@@ -143,37 +148,71 @@ function IdeationIdeaScreen() {
     setEditDescription(idea.description);
   }, [idea]);
 
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
+  const editIsDirty = Boolean(idea && isEditing && (
+    editTitle !== idea.title || editDescription !== idea.description
+  ));
+  useUnsavedChangesGuard({
+    isDirty: Boolean(comment.trim()) || editIsDirty,
+    isSaving: isPosting || isSaving,
+    confirm,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
   async function vote() {
     if (!idea || votePendingRef.current) return;
+    const desiredVoted = !Boolean(idea.has_voted);
+    const attempt = mutationAttemptFor(
+      voteAttemptRef.current,
+      JSON.stringify({ ideaId: idea.id, voted: desiredVoted }),
+      'mobile-idea-vote',
+    );
+    voteAttemptRef.current = attempt;
     votePendingRef.current = true;
     setIsVoting(true);
     try {
-      const result = await voteIdeationIdea(idea.id);
+      const result = await voteIdeationIdea(idea.id, desiredVoted, attempt.key);
+      if (!isMountedRef.current) return;
+      voteAttemptRef.current = null;
       showToast({ title: result.voted ? t('ideation:toast.vote_added') : t('ideation:toast.vote_removed'), variant: 'success' });
       await ideaState.refresh();
     } catch (error) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('ideation:voteFailed'), description: error instanceof Error ? error.message : t('ideation:toast.error_generic'), variant: 'danger' });
     } finally {
       votePendingRef.current = false;
-      setIsVoting(false);
+      if (isMountedRef.current) setIsVoting(false);
     }
   }
 
   async function postComment() {
     const body = comment.trim();
     if (!body || commentPendingRef.current) return;
+    const attempt = mutationAttemptFor(
+      commentAttemptRef.current,
+      JSON.stringify({ body, ideaId }),
+      'mobile-idea-comment',
+    );
+    commentAttemptRef.current = attempt;
     commentPendingRef.current = true;
     setIsPosting(true);
     try {
-      await addIdeationComment(ideaId, body);
+      await addIdeationComment(ideaId, body, attempt.key);
+      if (!isMountedRef.current) return;
+      commentAttemptRef.current = null;
       setComment('');
       showToast({ title: t('ideation:toast.comment_added'), variant: 'success' });
       await Promise.all([commentsState.refresh(), ideaState.refresh()]);
     } catch (error) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('ideation:comments.load_error'), description: error instanceof Error ? error.message : t('ideation:toast.error_generic'), variant: 'danger' });
     } finally {
       commentPendingRef.current = false;
-      setIsPosting(false);
+      if (isMountedRef.current) setIsPosting(false);
     }
   }
 
@@ -183,14 +222,16 @@ function IdeationIdeaScreen() {
     setIsSaving(true);
     try {
       await updateIdeationIdea(idea.id, { title: editTitle.trim(), description: editDescription.trim() });
+      if (!isMountedRef.current) return;
       setIsEditing(false);
       showToast({ title: t('ideation:toast.idea_updated'), variant: 'success' });
       await ideaState.refresh();
     } catch (error) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('ideation:toast.error_generic'), description: error instanceof Error ? error.message : undefined, variant: 'danger' });
     } finally {
       savePendingRef.current = false;
-      setIsSaving(false);
+      if (isMountedRef.current) setIsSaving(false);
     }
   }
 
@@ -295,4 +336,11 @@ function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-export default withRouteGate(IdeationIdeaScreen, 'ideation-idea');
+function IdeationIdeaRoute() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <IdeationIdeaScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`} />;
+}
+
+export default withRouteGate(IdeationIdeaRoute, 'ideation-idea');

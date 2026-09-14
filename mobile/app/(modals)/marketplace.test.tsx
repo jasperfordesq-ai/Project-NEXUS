@@ -28,6 +28,7 @@ jest.mock('react-i18next', () => ({
         'actions.sell': 'Sell item',
         'actions.myListings': 'My listings',
         'actions.orders': 'Orders',
+        'actions.deliveries': 'Community delivery',
         'actions.pickups': 'Pickups',
         'actions.tools': 'Tools',
         'actions.freeItems': 'Free items',
@@ -158,13 +159,27 @@ describe('MarketplaceRoute', () => {
   });
 
   it('shows clear action after typing in the shared input-backed search field', async () => {
-    const { getByLabelText, getByPlaceholderText } = render(<MarketplaceRoute />);
+    const { getByLabelText, getByPlaceholderText, getByText, unmount } = render(<MarketplaceRoute />);
 
     await waitFor(() => {
       expect(getByPlaceholderText('Search marketplace...')).toBeTruthy();
+      expect(getByText('Tools')).toBeTruthy();
     });
 
     fireEvent.changeText(getByPlaceholderText('Search marketplace...'), 'bike');
     expect(getByLabelText('Clear marketplace search')).toBeTruthy();
+    unmount();
+  });
+
+  it('opens the community delivery journey from the marketplace hub', async () => {
+    const { getByText, unmount } = render(<MarketplaceRoute />);
+    await waitFor(() => {
+      expect(getMarketplaceListings).toHaveBeenCalled();
+      expect(getByText('Tools')).toBeTruthy();
+    });
+    fireEvent.press(await waitFor(() => getByText('Community delivery')));
+    const { router } = jest.requireMock('expo-router') as { router: { push: jest.Mock } };
+    expect(router.push).toHaveBeenCalledWith('/(modals)/marketplace-deliveries');
+    unmount();
   });
 });

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 jest.mock('@/lib/api/client', () => ({
-  api: { post: jest.fn() },
+  api: { get: jest.fn(), post: jest.fn() },
 }));
 
 jest.mock('@/lib/constants', () => ({
@@ -12,7 +12,7 @@ jest.mock('@/lib/constants', () => ({
 }));
 
 import { api } from '@/lib/api/client';
-import { createPoll } from './polls';
+import { createPoll, getRankedPollResults, rankPoll } from './polls';
 
 describe('createPoll', () => {
   beforeEach(() => { jest.clearAllMocks(); });
@@ -33,5 +33,32 @@ describe('createPoll', () => {
       options: ['Soup', 'Sandwiches'],
       description: 'Choose one',
     });
+  });
+
+  it('binds a durable creation key in the header and body', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 8 } });
+    await createPoll({ question: 'Rank these', options: ['A', 'B'], poll_type: 'ranked', is_anonymous: true }, 'poll-key-123');
+    expect(api.post).toHaveBeenCalledWith('/api/v2/polls', {
+      question: 'Rank these', options: ['A', 'B'], poll_type: 'ranked', is_anonymous: true,
+      idempotency_key: 'poll-key-123',
+    }, { headers: { 'Idempotency-Key': 'poll-key-123' } });
+  });
+
+  it('serializes a ranked preference order into contiguous server ranks', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: {} });
+    await rankPoll(8, [12, 10, 11]);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/polls/8/rank', {
+      rankings: [
+        { option_id: 12, rank: 1 },
+        { option_id: 10, rank: 2 },
+        { option_id: 11, rank: 3 },
+      ],
+    });
+  });
+
+  it('loads the authoritative ranked results after a poll closes', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: {} });
+    await getRankedPollResults(8);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/polls/8/ranked-results');
   });
 });

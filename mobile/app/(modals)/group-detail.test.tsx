@@ -286,7 +286,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { id: 2, slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -416,6 +416,7 @@ jest.mock('@/lib/api/groups', () => ({
   getGroupWikiRevisions: jest.fn().mockResolvedValue({ data: [] }),
   deleteGroupWikiPage: jest.fn().mockResolvedValue({ data: { message: 'Deleted' } }),
   getGroupTasks: jest.fn().mockResolvedValue({ data: [], meta: { has_more: false, cursor: null } }),
+  getGroupTask: jest.fn().mockResolvedValue({ data: { id: 70, group_id: 1, title: 'Water seedlings', description: null, status: 'in_progress', priority: 'medium', assigned_to: null, due_date: null, created_at: '2026-06-01T00:00:00Z' } }),
   getGroupTaskStats: jest.fn().mockResolvedValue({ data: { total: 0, todo: 0, in_progress: 0, done: 0, overdue: 0 } }),
   createGroupTask: jest.fn().mockResolvedValue({ data: { id: 70, group_id: 1, title: 'Water seedlings', description: null, status: 'todo', priority: 'medium', assigned_to: null, due_date: null, created_at: '2026-06-01T00:00:00Z' } }),
   updateGroupTask: jest.fn().mockResolvedValue({ data: { id: 70, group_id: 1, title: 'Water seedlings', description: null, status: 'in_progress', priority: 'medium', assigned_to: null, due_date: null, created_at: '2026-06-01T00:00:00Z' } }),
@@ -496,6 +497,7 @@ import {
   getGroupTasks,
   getGroupTaskStats,
   getGroupQuestion,
+  getGroup,
   joinGroup,
   updateGroupTask,
   updateGroupWikiPage,
@@ -503,6 +505,7 @@ import {
   uploadGroupMedia,
   voteGroupQA,
 } from '@/lib/api/groups';
+import { ApiResponseError } from '@/lib/api/client';
 import * as ImagePicker from 'expo-image-picker';
 
 const defaultApiState = { data: null, isLoading: true, error: null, refresh: jest.fn() };
@@ -521,11 +524,14 @@ const mockGroupDetail = {
   description: 'A club for gardening enthusiasts.',
   long_description: null,
   visibility: 'public' as const,
+  cover_image: null,
   member_count: 12,
   posts_count: 5,
   is_featured: false,
   is_member: false,
   tags: [],
+  created_at: '2026-01-01T00:00:00Z',
+  recent_members: [],
   /*
     🔴 A REAL `GET /v2/groups/{id}` sends `creator`, never `admin` — measured 2026-08-24.
     The fixture used to carry `admin` only, which is why no test noticed that the "Admin"
@@ -687,6 +693,59 @@ describe('GroupDetailScreen', () => {
     });
   });
 
+  it('serializes rapid membership actions before the busy state renders', async () => {
+    let resolveJoin!: (value: unknown) => void;
+    jest.mocked(joinGroup).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveJoin = resolve as (value: unknown) => void;
+    }));
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: false } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const screen = render(<GroupDetailScreen />);
+
+    act(() => {
+      fireEvent.press(screen.getByText('Join'));
+      fireEvent.press(screen.getByText('Join'));
+    });
+
+    expect(joinGroup).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Leave')).toBeNull();
+    await act(async () => {
+      resolveJoin({ data: { status: 'active', action: 'joined' } });
+    });
+    expect(screen.getByText('Leave')).toBeTruthy();
+  });
+
+  it('accepts a joined state after response loss only when group readback proves it', async () => {
+    jest.mocked(joinGroup).mockRejectedValueOnce(new ApiResponseError(0, 'response lost'));
+    jest.mocked(getGroup).mockResolvedValueOnce({
+      data: {
+        ...mockGroupDetail,
+        is_member: true,
+        member_count: 13,
+        viewer_membership: { status: 'active', role: 'member', is_admin: false },
+      },
+    });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: false } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const screen = render(<GroupDetailScreen />);
+
+    fireEvent.press(screen.getByText('Join'));
+
+    await waitFor(() => {
+      expect(getGroup).toHaveBeenCalledWith(1);
+      expect(screen.getByText('Leave')).toBeTruthy();
+      expect(screen.getByText('13')).toBeTruthy();
+    });
+  });
+
   /**
    * 🔴 A private group answers a join with status "pending". The screen used to show
    * "Joined" and then silently flip back to "Join" (audit 2026-09-07, C/F-2).
@@ -835,7 +894,10 @@ describe('GroupDetailScreen', () => {
         title: 'Spring update',
         content: 'Seeds arrive Friday.',
         is_pinned: true,
-      });
+      }, expect.any(String));
+      if (rejectFirst) {
+        expect(jest.mocked(createGroupAnnouncement).mock.calls[1][2]).toBe(jest.mocked(createGroupAnnouncement).mock.calls[0][2]);
+      }
       expect(refreshAnnouncements).toHaveBeenCalled();
     });
   });
@@ -899,7 +961,10 @@ describe('GroupDetailScreen', () => {
       expect(createGroupDiscussion).toHaveBeenCalledWith(1, {
         title: 'Compost rota',
         content: 'Who can take the Friday slot?',
-      });
+      }, expect.any(String));
+      if (rejectFirst) {
+        expect(jest.mocked(createGroupDiscussion).mock.calls[1][2]).toBe(jest.mocked(createGroupDiscussion).mock.calls[0][2]);
+      }
       expect(refreshDiscussions).toHaveBeenCalled();
       // The sheet closes and fields reset after a successful publish.
       expect(queryByTestId('group-discussion-sheet')).toBeNull();
@@ -1180,7 +1245,10 @@ describe('GroupDetailScreen', () => {
     const { getByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Media'));
-    fireEvent.press(getByText('Upload photo'));
+    act(() => {
+      fireEvent.press(getByText('Upload photo'));
+      fireEvent.press(getByText('Upload photo'));
+    });
 
     await waitFor(() => {
       expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalled();
@@ -1191,7 +1259,9 @@ describe('GroupDetailScreen', () => {
         uri: 'file:///tmp/group-media.jpg',
         fileName: 'group-media.jpg',
         mimeType: 'image/jpeg',
-      }));
+      }), expect.any(String));
+      expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(uploadGroupMedia).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -1269,7 +1339,10 @@ describe('GroupDetailScreen', () => {
       expect(createGroupQuestion).toHaveBeenCalledWith(1, {
         title: 'Which compost bin works best?',
         body: 'We need a lidded bin for the shared garden.',
-      });
+      }, expect.any(String));
+      if (rejectFirst) {
+        expect(jest.mocked(createGroupQuestion).mock.calls[1][2]).toBe(jest.mocked(createGroupQuestion).mock.calls[0][2]);
+      }
       expect(refreshQuestions).toHaveBeenCalled();
     });
   });
@@ -1356,7 +1429,7 @@ describe('GroupDetailScreen', () => {
     await waitFor(() => {
       expect(answerGroupQuestion).toHaveBeenCalledWith(1, 41, {
         body: 'Add brown material and keep it covered.',
-      });
+      }, expect.any(String));
       expect(refreshQuestions).toHaveBeenCalled();
     });
   });
@@ -1664,7 +1737,7 @@ describe('GroupDetailScreen', () => {
       expect(createGroupWikiPage).toHaveBeenCalledWith(1, {
         title: 'Tool care',
         content: 'Clean tools after use.',
-      });
+      }, expect.any(String));
     });
 
     fireEvent.press(getByText('Edit'));
@@ -1677,6 +1750,7 @@ describe('GroupDetailScreen', () => {
         title: 'Tool care',
         content: 'Keep it covered.',
         change_summary: 'Clarified storage.',
+        expected_updated_at: '2026-06-01T00:00:00Z',
       });
     });
   });
@@ -1713,10 +1787,14 @@ describe('GroupDetailScreen', () => {
     expect(await findByText('Water seedlings')).toBeTruthy();
     expect(getByText('Use the small greenhouse cans.')).toBeTruthy();
     expect(getByText('High')).toBeTruthy();
-    fireEvent.press(getByLabelText('To do'));
+    act(() => {
+      fireEvent.press(getByLabelText('To do'));
+      fireEvent.press(getByLabelText('To do'));
+    });
 
     await waitFor(() => {
       expect(updateGroupTask).toHaveBeenCalledWith(70, { status: 'in_progress' });
+      expect(updateGroupTask).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -1856,7 +1934,7 @@ describe('GroupDetailScreen', () => {
         priority: 'high',
         assigned_to: null,
         due_date: '2026-06-30',
-      });
+      }, expect.any(String));
     });
   });
 

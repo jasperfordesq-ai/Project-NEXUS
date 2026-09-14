@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -16,6 +16,8 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { checkOutVolunteer, verifyVolunteerCheckIn } from '@/lib/api/volunteering';
 import { ApiResponseError } from '@/lib/api/client';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useTenant } from '@/lib/hooks/useTenant';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type State = 'confirm' | 'submitting' | 'checked_in' | 'checking_out' | 'checked_out' | 'error';
@@ -26,7 +28,14 @@ function isTemporaryFailure(error: unknown): boolean {
 
 function VolunteerCheckInScreen() {
   const { token = '' } = useLocalSearchParams<{ token?: string }>();
-  return <VolunteerCheckInContent key={token} token={token} />;
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return (
+    <VolunteerCheckInContent
+      key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${token}`}
+      token={token}
+    />
+  );
 }
 
 function VolunteerCheckInContent({ token }: { token: string }) {
@@ -36,23 +45,46 @@ function VolunteerCheckInContent({ token }: { token: string }) {
   const [name, setName] = useState('');
   const [retryAction, setRetryAction] = useState<'checkin' | 'checkout' | null>(null);
   const [error, setError] = useState(t('volunteering:check_in.invalid'));
+  const submitPendingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   async function checkIn() {
+    if (!token || submitPendingRef.current) return;
+    submitPendingRef.current = true;
     setRetryAction(null);
     setState('submitting');
-    try { const result = await verifyVolunteerCheckIn(token); setName(result.user?.name ?? ''); setState('checked_in'); }
+    try {
+      const result = await verifyVolunteerCheckIn(token);
+      if (!isMountedRef.current) return;
+      setName(result.user?.name ?? '');
+      setState('checked_in');
+    }
     catch (caught) {
+      if (!isMountedRef.current) return;
       setRetryAction(isTemporaryFailure(caught) ? 'checkin' : null);
       setError(caught instanceof Error ? caught.message : t('volunteering:check_in.error')); setState('error');
+    } finally {
+      submitPendingRef.current = false;
     }
   }
   async function checkOut() {
+    if (!token || submitPendingRef.current) return;
+    submitPendingRef.current = true;
     setRetryAction(null);
     setState('checking_out');
-    try { await checkOutVolunteer(token); setState('checked_out'); }
+    try {
+      await checkOutVolunteer(token);
+      if (!isMountedRef.current) return;
+      setState('checked_out');
+    }
     catch (caught) {
+      if (!isMountedRef.current) return;
       setRetryAction(isTemporaryFailure(caught) ? 'checkout' : null);
       setError(caught instanceof Error ? caught.message : t('volunteering:check_in.error')); setState('error');
+    } finally {
+      submitPendingRef.current = false;
     }
   }
 

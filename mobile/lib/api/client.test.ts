@@ -29,7 +29,7 @@ jest.mock('@/lib/constants', () => ({
   },
 }));
 
-import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, registerTenantMismatchCallback, attemptTokenRefresh, clearApiSession, installApiSession, __resetRefreshStateForTests } from './client';
+import { ApiResponseError, api, authenticatedMediaRequest, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, registerTenantMismatchCallback, attemptTokenRefresh, clearApiSession, installApiSession, __resetRefreshStateForTests } from './client';
 import { storage } from '@/lib/storage';
 import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
 
@@ -74,7 +74,7 @@ it.each(['/api/auth/login', '/api/auth/logout'])('does not let a late %s respons
   expect(finish).toBeDefined();
   installApiSession('account-B');
   finish(mockResponse({ access_token: 'late-account-A' }));
-  await pending;
+  await expect(pending).rejects.toMatchObject({ status: 401 });
   fetchMock.mockResolvedValueOnce(mockResponse({ data: [] }));
   await api.get('/api/v2/feed');
   expect(fetchMock.mock.calls.at(-1)[1].headers.Authorization).toBe('Bearer account-B');
@@ -137,6 +137,51 @@ it.each(['replace', 'clear'])('does not send a pending mutation after credential
   await expect(pending).rejects.toMatchObject({ status: 401 });
   expect(fetchMock).not.toHaveBeenCalled();
   expect(mockStorage.remove).not.toHaveBeenCalled();
+});
+
+it.each(['replace', 'clear'])('AUDIT refuses a late successful mutation response after credentials %s', async change => {
+  installApiSession('original-account');
+  let finish!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  const pending = api.post('/api/v2/wallet/transfer', { recipient: 2, amount: 3 });
+  for (let attempt = 0; attempt < 20 && !finish; attempt += 1) await Promise.resolve();
+  expect(finish).toBeDefined();
+
+  if (change === 'replace') installApiSession('replacement-account');
+  else clearApiSession();
+  finish(mockResponse({ data: { success: true, transaction_id: 99 } }));
+
+  await expect(pending).rejects.toMatchObject({ status: 401 });
+  expect(mockStorage.remove).not.toHaveBeenCalled();
+});
+
+it('refuses an old-account response when credentials change while its body is parsing', async () => {
+  installApiSession('original-account');
+  let finishBody!: (body: unknown) => void;
+  const response = mockResponse(null);
+  response.json = jest.fn(() => new Promise(resolve => { finishBody = resolve; }));
+  fetchMock.mockResolvedValueOnce(response);
+
+  const pending = api.get('/api/v2/wallet/balance');
+  for (let attempt = 0; attempt < 20 && !finishBody; attempt += 1) await Promise.resolve();
+  expect(finishBody).toBeDefined();
+  installApiSession('replacement-account');
+  finishBody({ data: { balance: 99 } });
+
+  await expect(pending).rejects.toMatchObject({ status: 401 });
+  expect(mockStorage.remove).not.toHaveBeenCalled();
+});
+
+it('allows a public response to finish across an authenticated-session change', async () => {
+  let finish!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  const pending = api.get('/api/v2/tenants', undefined, { anonymous: true });
+  for (let attempt = 0; attempt < 20 && !finish; attempt += 1) await Promise.resolve();
+  expect(finish).toBeDefined();
+  installApiSession('replacement-account');
+  finish(mockResponse({ data: [{ slug: 'hour-timebank' }] }));
+
+  await expect(pending).resolves.toEqual({ data: [{ slug: 'hour-timebank' }] });
 });
 
 beforeEach(() => {
@@ -399,6 +444,40 @@ describe('api.upload', () => {
     expect(options.headers.Accept).toBe('application/json');
     expect(options.body).toBe(formData);
     expect(result).toEqual({ url: '/uploads/file.jpg' });
+  });
+});
+
+describe('authenticated media sessions', () => {
+  it('uses a newly issued bearer before encrypted storage can read it', async () => {
+    installApiSession('fresh-session-token');
+    mockStorage.get.mockImplementation(async key =>
+      key === 'nexus_tenant_slug' ? 'hour-timebank' : null
+    );
+
+    const request = await authenticatedMediaRequest('/api/v2/messages/42/media');
+
+    expect(request.headers.Authorization).toBe('Bearer fresh-session-token');
+    expect(request.headers['X-Tenant-Slug']).toBe('hour-timebank');
+  });
+
+  it.each(['replace', 'clear'])('refuses an old media request when credentials %s during storage reads', async change => {
+    installApiSession('original-account');
+    let finishToken!: (token: string) => void;
+    mockStorage.get.mockImplementation(async key => {
+      if (key === 'nexus_auth_token') {
+        return new Promise<string>(resolve => { finishToken = resolve; });
+      }
+      return 'hour-timebank';
+    });
+
+    const pending = authenticatedMediaRequest('/api/v2/messages/42/media');
+    for (let attempt = 0; attempt < 20 && !finishToken; attempt += 1) await Promise.resolve();
+    expect(finishToken).toBeDefined();
+    if (change === 'replace') installApiSession('replacement-account');
+    else clearApiSession();
+    finishToken('original-account');
+
+    await expect(pending).rejects.toMatchObject({ status: 401 });
   });
 });
 

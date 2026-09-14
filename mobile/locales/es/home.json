@@ -159,7 +159,24 @@
     "resultsHiddenUntilClose": "Resultados revelados cuando cierre la encuesta",
     "voteToSeeResults": "Vota para ver los resultados",
     "voteFailedTitle": "Voto no guardado",
-    "voteFailed": "No se pudo registrar tu voto. Inténtalo de nuevo."
+    "voteFailed": "No se pudo registrar tu voto. Inténtalo de nuevo.",
+    "ranked": "Elección por orden",
+    "rankInstructions": "Ordena todas las opciones según tus preferencias, con tu primera opción arriba.",
+    "rankSubmitted": "Se ha enviado tu orden de preferencias.",
+    "rankingClosed": "Esta encuesta por orden está cerrada.",
+    "moveUp": "Subir {{option}}",
+    "moveDown": "Bajar {{option}}",
+    "submitRankings": "Enviar preferencias",
+    "submittingRankings": "Enviando",
+    "rankFailed": "No se pudieron guardar tus preferencias. Inténtalo de nuevo.",
+    "resultsHeading": "Resultados por orden de preferencia",
+    "resultsLoading": "Cargando resultados…",
+    "resultsLoadFailed": "No se pudieron cargar los resultados.",
+    "retryResults": "Volver a cargar los resultados",
+    "totalVoters": "{{count}} votantes",
+    "totalVoters_one": "{{count}} votante",
+    "firstChoiceVotes": "{{count}} votos de primera opción",
+    "firstChoiceVotes_one": "{{count}} voto de primera opción"
   },
   "pollsScreen": {
     "title": "Encuestas",
@@ -189,7 +206,11 @@
     "createOptionsRequired": "Añade al menos dos opciones.",
     "createdTitle": "Encuesta creada",
     "createdMessage": "Tu encuesta ya está abierta.",
-    "createError": "No se pudo crear la encuesta."
+    "createError": "No se pudo crear la encuesta.",
+    "typeLabel": "Tipo de encuesta",
+    "typeStandard": "Elegir una",
+    "typeRanked": "Ordenar opciones",
+    "anonymous": "Respuestas anónimas"
   },
   "imageViewer": {
     "close": "Cerrar",

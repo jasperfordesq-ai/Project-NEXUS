@@ -235,6 +235,15 @@ describe('FederationDirectoryScreen — refusals are recognised in every languag
   });
 });
 
+describe('FederationDirectoryScreen — large text header reflow', () => {
+  it('does not truncate the directory title or explanation at large text', () => {
+    const { getByTestId } = render(<FederationDirectoryScreen mode="members" />);
+
+    expect(getByTestId('federation-directory-header-title')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-directory-header-subtitle')).toHaveProp('numberOfLines', 0);
+  });
+});
+
 describe('FederationDirectoryScreen — the search does not fire per keystroke', () => {
   /** The dependency string the hook is re-run on. Changing it means a new request. */
   function currentQueryDeps() {

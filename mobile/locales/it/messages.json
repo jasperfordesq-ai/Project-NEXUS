@@ -77,7 +77,9 @@
       "permissionTitle": "È necessario l’accesso alle foto",
       "permissionMessage": "Consenti l’accesso alle foto per allegare immagini.",
       "uploading": "Invio delle foto… {{percent}}%",
-      "cancelUpload": "Annulla"
+      "cancelUpload": "Annulla",
+      "draftStorageTitle": "Foto conservata per questa sessione",
+      "draftStorageWarning": "La foto è allegata, ma potrebbe non essere conservata se l’app si chiude."
     },
     "voice": {
       "record": "Registra messaggio vocale",
@@ -91,7 +93,9 @@
       "failedTitle": "Invio del messaggio vocale non riuscito",
       "startFailed": "Impossibile avviare la registrazione. Riprova.",
       "stopFailed": "Impossibile salvare questa registrazione. Riprova.",
-      "sendFailed": "Impossibile inviare il messaggio vocale. Riprova."
+      "sendFailed": "Impossibile inviare il messaggio vocale. Riprova.",
+      "draftStorageTitle": "Nota vocale conservata per questa sessione",
+      "draftStorageWarning": "La nota vocale è pronta, ma potrebbe non essere conservata se l’app si chiude."
     },
     "notFound": "Questa conversazione non è più disponibile.",
     "unsentDrafts": "Bozze non inviate: {{count}}",

@@ -475,6 +475,12 @@
   "submitting": "Submitting...",
   "submitSuccess": "Ideia apresentada.",
   "submitFailed": "Não foi possível apresentar a ideia.",
+  "submissionUnavailable": {
+    "phase": "Este desafio não está a aceitar novas ideias.",
+    "deadline": "O prazo para apresentação terminou.",
+    "limit": "Atingiu o limite de ideias para este desafio.",
+    "authentication": "Inicie sessão para apresentar uma ideia."
+  },
   "vote": "Vote",
   "voted": "Voted",
   "voteFailed": "Não foi possível atualizar o voto.",

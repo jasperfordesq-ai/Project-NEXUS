@@ -179,31 +179,88 @@ class TeamTaskService
             return null;
         }
 
-        $now = now();
-        GroupService::assertSafeguardingBroadcastAllowed(
-            $groupId,
-            $userId,
-            (int) $tenantId,
-            'team_task_create',
-            trim($title . ' ' . (string) ($data['description'] ?? '')),
-            is_int($assignedTo) && $assignedTo > 0 ? [$assignedTo] : [],
-        );
-
-        $id = DB::table('team_tasks')->insertGetId([
-            'group_id' => $groupId,
-            'tenant_id' => $tenantId,
-            'title' => $title,
-            'description' => $data['description'] ?? null,
+        $description = $data['description'] ?? null;
+        $dueDate = $data['due_date'] ?? null;
+        $identity = GroupContentCreationReceiptService::identity($data['idempotency_key'] ?? null, [
             'assigned_to' => $assignedTo,
-            'status' => $status,
+            'description' => $description,
+            'due_date' => $dueDate,
+            'group_id' => $groupId,
             'priority' => $priority,
-            'due_date' => $data['due_date'] ?? null,
-            'created_by' => $userId,
-            'created_at' => $now,
-            'completed_at' => $status === 'done' ? $now : null,
+            'status' => $status,
+            'title' => $title,
         ]);
+        if ($identity === false) {
+            $this->errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid')];
+            return null;
+        }
 
-        return (int) $id;
+        return DB::transaction(function () use (
+            $assignedTo,
+            $description,
+            $dueDate,
+            $groupId,
+            $identity,
+            $priority,
+            $status,
+            $tenantId,
+            $title,
+            $userId,
+        ): ?int {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor((int) $tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find((int) $tenantId, $userId, 'task', $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        $this->errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                        return null;
+                    }
+                    return (int) $receipt->result_id;
+                }
+            }
+
+            DB::table('groups')->where('id', $groupId)->where('tenant_id', $tenantId)->lockForUpdate()->first();
+            if (! $this->authorizeParent($groupId, $userId, true)) {
+                return null;
+            }
+
+            $now = now();
+            GroupService::assertSafeguardingBroadcastAllowed(
+                $groupId,
+                $userId,
+                (int) $tenantId,
+                'team_task_create',
+                trim($title . ' ' . (string) $description),
+                is_int($assignedTo) && $assignedTo > 0 ? [$assignedTo] : [],
+            );
+
+            $id = (int) DB::table('team_tasks')->insertGetId([
+                'group_id' => $groupId,
+                'tenant_id' => $tenantId,
+                'title' => $title,
+                'description' => $description,
+                'assigned_to' => $assignedTo,
+                'status' => $status,
+                'priority' => $priority,
+                'due_date' => $dueDate,
+                'created_by' => $userId,
+                'created_at' => $now,
+                'completed_at' => $status === 'done' ? $now : null,
+            ]);
+
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    (int) $tenantId,
+                    $userId,
+                    $groupId,
+                    'task',
+                    $identity,
+                    $id,
+                    ['id' => $id],
+                );
+            }
+            return $id;
+        }, 3);
     }
 
     /**

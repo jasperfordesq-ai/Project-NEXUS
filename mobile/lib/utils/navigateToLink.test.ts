@@ -40,6 +40,16 @@ describe('navigateToLink', () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
+  it('replaces the signed-out route when a warm reset link arrives', () => {
+    navigateToLink('nexus://reset-password?token=reset-token');
+
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/(auth)/reset-password',
+      params: { token: 'reset-token' },
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   /**
    * 🔴 The query string is the whole point of these three. This function is what
    * `_layout.tsx` replays a cold-start link through, and it used to push the section
@@ -100,6 +110,21 @@ describe('navigateToLink', () => {
       pathname: '/(modals)/event-detail',
       params: { id: '44' },
     });
+  });
+
+  it('stays put when a loaded community snapshot omits the destination capability', () => {
+    const published: unknown[] = [];
+    const unsubscribe = sessionNoticeStore.subscribe(() => published.push(sessionNoticeStore.getSnapshot()));
+    setNavigationTenantCapabilities({ features: {}, modules: {} });
+
+    navigateToLink('/events/44');
+    unsubscribe();
+
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(published).toHaveLength(1);
+    expect(published[0]).toEqual(expect.objectContaining({ variant: 'warning' }));
+    sessionNoticeStore.consume();
   });
 
   it('never lets a query id override the record named in the path', () => {

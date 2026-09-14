@@ -7,9 +7,8 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import i18n from 'i18next';
 
-import { ApiResponseError } from '@/lib/api/client';
-import { API_BASE_URL, APP_VERSION, DEFAULT_TENANT, STORAGE_KEYS } from '@/lib/constants';
-import { storage } from '@/lib/storage';
+import { ApiResponseError, authenticatedApiIdentity } from '@/lib/api/client';
+import { API_BASE_URL, APP_VERSION } from '@/lib/constants';
 
 export const SHARING_UNAVAILABLE = 'sharing_unavailable';
 
@@ -38,21 +37,17 @@ export async function downloadAuthenticatedFile(
   if (resolved.origin !== base.origin) {
     throw new ApiResponseError(400, i18n.t('common:errors.generic'));
   }
-  const [token, tenantSlug] = await Promise.all([
-    storage.get(STORAGE_KEYS.AUTH_TOKEN),
-    storage.get(STORAGE_KEYS.TENANT_SLUG),
-  ]);
-  if (!token) throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+  const { token, tenantSlug } = await authenticatedApiIdentity();
 
   const safeName = filename.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120) || 'download';
   const target = `${FileSystem.cacheDirectory}nexus-download-${Date.now()}-${safeName}`;
   const result = await FileSystem.downloadAsync(resolved.toString(), target, {
     headers: {
+      ...headers,
       Authorization: `Bearer ${token}`,
-      'X-Tenant-Slug': tenantSlug?.trim() || DEFAULT_TENANT,
+      'X-Tenant-Slug': tenantSlug,
       'X-Nexus-Mobile': '1',
       'X-Nexus-Mobile-Version': APP_VERSION,
-      ...headers,
     },
   });
 

@@ -56,6 +56,7 @@ import {
 } from '@/lib/exchanges/serviceDetails';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { completeListingOperation, reserveListingOperation } from '@/lib/listingOperation';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -257,7 +258,7 @@ function NewExchangeModalInner() {
     // typed (audit 2026-09-05, F01, reproduced with a mocked rejection).
     let created = false;
     try {
-      const createdResponse = await createExchange({
+      const createPayload = {
         title: trimmedTitle,
         description: buildListingDescription(trimmedDescription, {
           experience: experienceLevel,
@@ -269,7 +270,12 @@ function NewExchangeModalInner() {
         category_id: selectedCategoryId,
         location: profileLocation,
         service_type: serviceType,
-      });
+      } as const;
+      // Persist before sending so an app restart or lost response reuses the same
+      // server operation for the same unchanged listing content.
+      const operation = await reserveListingOperation(JSON.stringify(createPayload));
+      const createdResponse = await createExchange(createPayload, operation.key);
+      await completeListingOperation(operation);
       created = true;
       const listingId = createdResponse.data?.id;
       if (listingId) {

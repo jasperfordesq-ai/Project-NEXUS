@@ -45,6 +45,11 @@ jest.mock('react-i18next', () => ({
         'detail.share': 'Share',
         'detail.report': 'Report',
         'detail.reported': 'Reported',
+        'detail.renew': 'Renew',
+        'detail.delete': 'Delete',
+        'detail.deleteTitle': 'Delete listing',
+        'detail.deleteMessage': 'Delete this listing?',
+        'detail.deleteConfirm': 'Delete',
         'detail.reportTitle': 'Report this listing',
         'detail.reportSubmit': 'Submit report',
         'detail.reportDetailsPlaceholder': 'Add details (optional)',
@@ -196,6 +201,17 @@ const defaultApiState = { data: null, isLoading: false, error: null, refresh: je
 
 beforeEach(() => {
   mockUseApi.mockReturnValue(defaultApiState);
+  const exchangeApi = jest.requireMock('@/lib/api/exchanges') as Record<string, jest.Mock>;
+  exchangeApi.getExchange.mockReset();
+  exchangeApi.getExchangeWorkflowConfig.mockReset().mockResolvedValue({ data: { exchange_workflow_enabled: true } });
+  exchangeApi.checkActiveExchange.mockReset().mockResolvedValue({ data: null });
+  exchangeApi.createExchangeRequest.mockReset();
+  exchangeApi.deleteExchange.mockReset();
+  exchangeApi.renewExchange.mockReset();
+  exchangeApi.saveExchange.mockReset();
+  exchangeApi.unsaveExchange.mockReset();
+  exchangeApi.toggleExchangeLike.mockReset();
+  exchangeApi.reportExchange.mockReset();
 });
 
 const mockExchange = {
@@ -354,6 +370,7 @@ describe('ExchangeDetailModal', () => {
   it('submits an exchange request from the bottom sheet and closes it', async () => {
     mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
     const { createExchangeRequest } = require('@/lib/api/exchanges');
+    (createExchangeRequest as jest.Mock).mockClear();
     (createExchangeRequest as jest.Mock).mockResolvedValue({ data: { id: 77, status: 'requested' } });
 
     const { getByLabelText, getByPlaceholderText, getByTestId, queryByTestId } = render(<ExchangeDetailModal />);
@@ -381,6 +398,115 @@ describe('ExchangeDetailModal', () => {
     await waitFor(() => {
       expect(queryByTestId('exchange-request-sheet')).toBeNull();
     });
+  });
+
+  it('sends only one exchange request when two taps arrive before React re-renders', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
+    const { createExchangeRequest } = require('@/lib/api/exchanges');
+    (createExchangeRequest as jest.Mock).mockClear();
+    let resolveRequest!: (value: unknown) => void;
+    (createExchangeRequest as jest.Mock).mockReturnValue(new Promise((resolve) => {
+      resolveRequest = resolve;
+    }));
+
+    const { getByLabelText, getByTestId } = render(<ExchangeDetailModal />);
+    await waitFor(() => expect(getByLabelText('Request exchange')).toBeTruthy());
+    fireEvent.press(getByLabelText('Request exchange'));
+    await waitFor(() => expect(getByTestId('exchange-request-sheet')).toBeTruthy());
+
+    const submit = getByLabelText('Send request');
+    fireEvent.press(submit);
+    fireEvent.press(submit);
+
+    expect(createExchangeRequest).toHaveBeenCalledTimes(1);
+    resolveRequest({ data: { id: 78, status: 'requested' } });
+    await waitFor(() => expect(createExchangeRequest).toHaveBeenCalledTimes(1));
+  });
+
+  it('sends only one bookmark write when two taps arrive before React re-renders', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
+    const { saveExchange } = require('@/lib/api/exchanges');
+    (saveExchange as jest.Mock).mockClear();
+    (saveExchange as jest.Mock).mockReturnValue(new Promise(() => undefined));
+
+    const { getByLabelText } = render(<ExchangeDetailModal />);
+    const save = getByLabelText('Save');
+    fireEvent.press(save);
+    fireEvent.press(save);
+
+    expect(saveExchange).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the intended bookmark state when readback proves a lost response committed', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
+    const { ApiResponseError } = require('@/lib/api/client');
+    const { getExchange, saveExchange } = require('@/lib/api/exchanges');
+    (saveExchange as jest.Mock).mockReset().mockRejectedValue(new ApiResponseError(0, 'Connection lost'));
+    (getExchange as jest.Mock).mockReset().mockResolvedValue({ data: { ...mockExchange, is_favorited: true } });
+
+    const { getByLabelText } = render(<ExchangeDetailModal />);
+    fireEvent.press(getByLabelText('Save'));
+
+    await waitFor(() => expect(getExchange).toHaveBeenCalledWith(5));
+    await waitFor(() => expect(getByLabelText('detail.savedShort')).toBeTruthy());
+  });
+
+  it('recovers an exchange request whose accepted response was lost', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
+    const { ApiResponseError } = require('@/lib/api/client');
+    const { checkActiveExchange, createExchangeRequest } = require('@/lib/api/exchanges');
+    (createExchangeRequest as jest.Mock).mockReset().mockRejectedValue(new ApiResponseError(0, 'Connection lost'));
+    (checkActiveExchange as jest.Mock).mockReset()
+      .mockResolvedValueOnce({ data: null })
+      .mockResolvedValueOnce({ data: { id: 79, status: 'requested' } });
+
+    const { getByLabelText, getByTestId, queryByTestId } = render(<ExchangeDetailModal />);
+    await waitFor(() => expect(getByLabelText('Request exchange')).toBeTruthy());
+    fireEvent.press(getByLabelText('Request exchange'));
+    await waitFor(() => expect(getByTestId('exchange-request-sheet')).toBeTruthy());
+    fireEvent.press(getByLabelText('Send request'));
+
+    await waitFor(() => expect(checkActiveExchange).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(queryByTestId('exchange-request-sheet')).toBeNull());
+    expect(getByLabelText('Exchange open')).toBeTruthy();
+  });
+
+  it('does not publish a request result after the account or route is replaced', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
+    const { createExchangeRequest } = require('@/lib/api/exchanges');
+    const toast = (jest.requireMock('@/components/ui/AppToast') as { useAppToast: () => { show: jest.Mock } }).useAppToast().show;
+    toast.mockClear();
+    let resolveRequest!: (value: unknown) => void;
+    (createExchangeRequest as jest.Mock).mockReturnValue(new Promise((resolve) => { resolveRequest = resolve; }));
+
+    const { getByLabelText, getByTestId, unmount } = render(<ExchangeDetailModal />);
+    await waitFor(() => expect(getByLabelText('Request exchange')).toBeTruthy());
+    fireEvent.press(getByLabelText('Request exchange'));
+    await waitFor(() => expect(getByTestId('exchange-request-sheet')).toBeTruthy());
+    fireEvent.press(getByLabelText('Send request'));
+    await waitFor(() => expect(createExchangeRequest).toHaveBeenCalledTimes(1));
+
+    unmount();
+    resolveRequest({ data: { id: 80, status: 'requested' } });
+    await Promise.resolve();
+
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('leaves a deleted owner listing when a 404 readback resolves a lost response', async () => {
+    const ownerExchange = { ...mockExchange, user_id: 99, renewal_count: 0 };
+    mockUseApi.mockReturnValue({ data: { data: ownerExchange }, isLoading: false, error: null, refresh: jest.fn() });
+    const { ApiResponseError } = require('@/lib/api/client');
+    const { deleteExchange, getExchange } = require('@/lib/api/exchanges');
+    const { router } = require('expo-router');
+    (deleteExchange as jest.Mock).mockReset().mockRejectedValue(new ApiResponseError(0, 'Connection lost'));
+    (getExchange as jest.Mock).mockReset().mockRejectedValue(new ApiResponseError(404, 'Not found'));
+
+    const { getByText } = render(<ExchangeDetailModal />);
+    fireEvent.press(getByText('Delete'));
+
+    await waitFor(() => expect(getExchange).toHaveBeenCalledWith(5));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(tabs)/exchanges'));
   });
 
   it('opens the report listing form as a bottom sheet and submits it', async () => {

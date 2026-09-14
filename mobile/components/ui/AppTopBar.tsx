@@ -40,6 +40,7 @@ export default function AppTopBar({
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
 
   const goBack = useCallback(() => {
     if (onBack) {
@@ -79,38 +80,62 @@ export default function AppTopBar({
     }, [goBack]),
   );
 
-  return (
-    <Surface variant="default" className="mx-4 mt-2 mb-3 flex-row items-center gap-3 rounded-panel-inner px-3 py-2">
+  const backButton = (
       <HeroButton variant="secondary" accessibilityLabel={backLabel} onPress={goBack}>
         <Ionicons name="arrow-back-outline" size={18} color={primary} />
         <HeroButton.Label key={fontScale} maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}>{backLabel}</HeroButton.Label>
       </HeroButton>
+  );
+
+  const rightControl = (
+    <View className="min-w-[40px] items-end">
+      {rightAction ? (
+        <HeroButton isIconOnly variant="secondary" accessibilityLabel={rightAction.accessibilityLabel} onPress={() => void rightAction.onPress()}>
+          <Ionicons name={rightAction.icon} size={18} color={primary} />
+        </HeroButton>
+      ) : null}
+    </View>
+  );
+
+  const titleNode = (
+    <Text
+      key={fontScale}
+      accessibilityRole="header"
+      className={largeText ? 'w-full text-base font-semibold' : 'min-w-0 flex-1 text-base font-semibold'}
+      style={{ color: theme.text }}
+      numberOfLines={largeText ? 0 : 1}
+      maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}
+      testID="app-top-bar-title"
+    >
+      {title}
+    </Text>
+  );
+
+  return (
+    <Surface variant="default" className={`mx-4 mt-2 mb-3 gap-3 rounded-panel-inner px-3 py-2 ${largeText ? '' : 'flex-row items-center'}`}>
+      {largeText ? (
+        <>
+          <View className="w-full flex-row items-center justify-between gap-3">
+            {backButton}
+            {rightControl}
+          </View>
+          {titleNode}
+        </>
+      ) : (
+        <>
+          {backButton}
 
       {/*
-        🔴 Capped, and this one bar decides it for 134 screens. The title shares its row with
-        the Back button and an optional action, so at the OS's largest text setting it either
-        squeezed them out or was itself squeezed to nothing. `numberOfLines={1}` then hid the
-        damage by truncating — the row looked fine and the screen had lost its name.
+        🔴 Capped, and this one bar decides it for 134 screens. At ordinary text sizes the
+        title shares its row with Back and the optional action. At large text it moves below
+        those controls and is allowed to wrap, so neither the controls nor the screen name is
+        squeezed out. The cap keeps navigation chrome usable while body text stays uncapped.
         Ordinary body text inside screens is deliberately left uncapped; see lib/ui/textScale.ts.
       */}
-      <Text
-        key={fontScale}
-        accessibilityRole="header"
-        className="min-w-0 flex-1 text-base font-semibold"
-        style={{ color: theme.text }}
-        numberOfLines={1}
-        maxFontSizeMultiplier={CHROME_MAX_FONT_SCALE}
-      >
-        {title}
-      </Text>
-
-      <View className="min-w-[40px] items-end">
-        {rightAction ? (
-          <HeroButton isIconOnly variant="secondary" accessibilityLabel={rightAction.accessibilityLabel} onPress={() => void rightAction.onPress()}>
-            <Ionicons name={rightAction.icon} size={18} color={primary} />
-          </HeroButton>
-        ) : null}
-      </View>
+          {titleNode}
+          {rightControl}
+        </>
+      )}
     </Surface>
   );
 }

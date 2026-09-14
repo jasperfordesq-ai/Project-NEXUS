@@ -175,5 +175,9 @@
     "title": "Ohne Speichern verlassen?",
     "message": "Deine Änderungen auf diesem Bildschirm wurden noch nicht gespeichert.",
     "discard": "Verlassen"
+  },
+  "draftStorage": {
+    "title": "Entwurf nicht geschützt",
+    "message": "Dieser Entwurf konnte auf diesem Gerät nicht sicher gespeichert werden. Lass die App geöffnet, prüfe den Gerätespeicher und ändere dann etwas, um es erneut zu versuchen."
   }
 }

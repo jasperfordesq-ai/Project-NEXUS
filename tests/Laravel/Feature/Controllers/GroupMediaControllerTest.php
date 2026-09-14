@@ -23,6 +23,8 @@ class GroupMediaControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    private const TINY_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
     private function authenticatedUser(): User
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([
@@ -94,5 +96,51 @@ class GroupMediaControllerTest extends TestCase
             self::assertArrayNotHasKey('file_path', $details);
             self::assertArrayNotHasKey('url', $details);
         }
+    }
+
+    public function test_upload_replays_same_operation_without_duplicate_media_or_storage(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        $owner = $this->authenticatedUser();
+        $group = Group::factory()->forTenant($this->testTenantId)->create([
+            'owner_id' => $owner->id,
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $headers = ['Idempotency-Key' => 'group-media-replay-0001'];
+
+        $first = $this->apiPost("/v2/groups/{$group->id}/media", [
+            'file' => UploadedFile::fake()->createWithContent('replay.png', base64_decode(self::TINY_PNG, true)),
+            'caption' => 'Replay safe',
+        ], $headers)->assertCreated();
+        $second = $this->apiPost("/v2/groups/{$group->id}/media", [
+            'file' => UploadedFile::fake()->createWithContent('replay.png', base64_decode(self::TINY_PNG, true)),
+            'caption' => 'Replay safe',
+        ], $headers)->assertCreated();
+
+        self::assertSame($first->json('data.id'), $second->json('data.id'));
+        self::assertArrayNotHasKey('replayed', (array) $second->json('data'));
+        self::assertSame(1, DB::table('group_media')->where('group_id', $group->id)->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')
+            ->where('group_id', $group->id)
+            ->where('operation_type', 'media')
+            ->count());
+        self::assertCount(1, Storage::disk('local')->allFiles("groups/{$this->testTenantId}/{$group->id}/media"));
+
+        $this->apiPost("/v2/groups/{$group->id}/media", [
+            'file' => UploadedFile::fake()->createWithContent('replay.png', base64_decode(self::TINY_PNG, true)),
+            'caption' => 'Changed caption',
+        ], $headers)->assertStatus(409);
+        self::assertSame(1, DB::table('group_media')->where('group_id', $group->id)->count());
+        self::assertCount(1, Storage::disk('local')->allFiles("groups/{$this->testTenantId}/{$group->id}/media"));
+
+        $mediaId = (int) $first->json('data.id');
+        $this->apiDelete("/v2/groups/{$group->id}/media/{$mediaId}")->assertOk();
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('group_id', $group->id)
+            ->where('operation_type', 'media')
+            ->where('result_id', $mediaId)
+            ->count());
     }
 }

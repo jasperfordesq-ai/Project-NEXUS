@@ -22,6 +22,9 @@ class FederatedConnectionServiceTest extends TestCase
     {
         parent::setUp();
         $this->service = new FederatedConnectionService();
+        DB::shouldReceive('transaction')
+            ->zeroOrMoreTimes()
+            ->andReturnUsing(static fn (callable $callback) => $callback());
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
         $policy->shouldReceive('evaluateCrossTenantContact')
@@ -208,7 +211,14 @@ class FederatedConnectionServiceTest extends TestCase
 
     public function test_removeConnection_succeeds(): void
     {
-        $connection = (object) ['id' => 1];
+        $connection = (object) [
+            'id' => 1,
+            'status' => 'accepted',
+            'requester_user_id' => 5,
+            'requester_tenant_id' => $this->testTenantId,
+            'receiver_user_id' => 7,
+            'receiver_tenant_id' => 3,
+        ];
         DB::shouldReceive('selectOne')->andReturn($connection);
         DB::shouldReceive('delete')->once();
         Log::shouldReceive('info')->once();

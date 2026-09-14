@@ -19,7 +19,7 @@ jest.mock('@/lib/constants', () => ({
   TIMEOUTS: { API_GET: 30_000, API_MUTATION: 15_000, API_UPLOAD: 60_000, API_REQUEST: 15_000 },
 }));
 
-import { ApiResponseError } from './client';
+import { ApiResponseError, clearApiSession, installApiSession } from './client';
 import { storage } from '@/lib/storage';
 import { isUploadAborted, uploadWithProgress } from './uploadWithProgress';
 
@@ -60,6 +60,7 @@ class FakeXhr {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  clearApiSession();
   mockStorage.get.mockImplementation(async (key: string) =>
     key === 'nexus_auth_token' ? 'tok-123' : key === 'nexus_tenant_slug' ? 'hour-timebank' : null);
   (globalThis as unknown as { XMLHttpRequest: unknown }).XMLHttpRequest = FakeXhr;
@@ -96,6 +97,26 @@ describe('uploadWithProgress', () => {
     expect(FakeXhr.last.headers['X-Nexus-Mobile']).toBe('1');
     expect(Object.keys(FakeXhr.last.headers)).not.toContain('Content-Type');
 
+    FakeXhr.last.respond(200, {});
+    await promise;
+  });
+
+  it('uses a newly issued bearer before encrypted storage can read it', async () => {
+    installApiSession('fresh-upload-token');
+    mockStorage.get.mockImplementation(async key =>
+      key === 'nexus_tenant_slug' ? 'hour-timebank' : null);
+    const promise = uploadWithProgress('/v2/podcasts/1/episodes', new FormData());
+    await flush();
+
+    expect(FakeXhr.last.headers.Authorization).toBe('Bearer fresh-upload-token');
+    FakeXhr.last.respond(200, {});
+    await promise;
+  });
+
+  it('sends an explicitly supplied idempotency key', async () => {
+    const promise = uploadWithProgress('/v2/messages', new FormData(), { idempotencyKey: 'message-upload-1' });
+    await flush();
+    expect(FakeXhr.last.headers['Idempotency-Key']).toBe('message-upload-1');
     FakeXhr.last.respond(200, {});
     await promise;
   });

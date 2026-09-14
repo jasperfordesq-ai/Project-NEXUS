@@ -17,6 +17,8 @@
   "connections": {
     "removeConfirmTitle": "Remove this connection?",
     "removeConfirmMessage": "You will both stop appearing in each other's connections. You can connect again later.",
+    "cancelConfirmTitle": "Cancel this request?",
+    "cancelConfirmMessage": "This connection request will be withdrawn. You can send a new request later.",
     "title": "Connections",
     "eyebrow": "Member workflows",
     "subtitle": "Manage your member connections, pending requests, and direct-message routes.",

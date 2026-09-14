@@ -118,7 +118,7 @@ jest.mock('heroui-native', () => {
     Card,
     Chip,
     Spinner: () => null,
-    Surface: ({ children }: { children?: React.ReactNode }) => <View>{children}</View>,
+    Surface: ({ children, ...props }: { children?: React.ReactNode }) => <View {...props}>{children}</View>,
   };
 });
 
@@ -219,6 +219,18 @@ describe('FederationScreen', () => {
     expect(getByTestId('federation-quick-link-label-connections')).not.toHaveProp('adjustsFontSizeToFit');
   });
 
+  it('gives large-text federation statistics a full row and does not clip the hero copy', () => {
+    const { getByTestId } = render(<FederationScreen />);
+
+    expect(getByTestId('federation-stat-partners')).toHaveStyle({
+      flexBasis: '100%',
+      flexGrow: 1,
+    });
+    expect(getByTestId('federation-stat-partners-label')).toHaveProp('numberOfLines', 2);
+    expect(getByTestId('federation-stat-status-value')).toHaveProp('numberOfLines', 2);
+    expect(getByTestId('federation-hero-description')).not.toHaveProp('numberOfLines');
+  });
+
   it('renders the empty partner and activity states', () => {
     const { getByText } = render(<FederationScreen />);
     expect(getByText('No partner communities yet')).toBeTruthy();
@@ -236,6 +248,25 @@ describe('FederationScreen', () => {
     expect(getByText('Cork, Ireland')).toBeTruthy();
     expect(getByText('View community')).toBeTruthy();
   });
+
+  it('keeps populated partner metadata and copy readable at large text', () => {
+    mockUsePaginatedApi.mockReturnValueOnce({
+      ...defaultPaginatedState,
+      items: [mockPartner],
+    });
+
+    const { getByTestId } = render(<FederationScreen />);
+
+    expect(getByTestId('federation-partner-location')).not.toHaveProp('numberOfLines');
+    expect(getByTestId('federation-partner-description')).not.toHaveProp('numberOfLines');
+    expect(getByTestId('federation-partner-meta-members')).toHaveStyle({ width: '100%' });
+    expect(getByTestId('federation-partner-meta-members-label')).toHaveProp(
+      'className',
+      expect.stringContaining('text-sm'),
+    );
+    expect(getByTestId('federation-partner-meta-connected-label')).not.toHaveProp('numberOfLines');
+  });
+
   it('🔴 does not draw zeros and empty states when nothing loaded', () => {
     /*
       All four of the hub’s requests threw their error away, so a 500 or an offline phone

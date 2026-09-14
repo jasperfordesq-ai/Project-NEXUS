@@ -2603,8 +2603,35 @@ class GroupService
             return null;
         }
         $tenantId = (int) TenantContext::getId();
+        $identity = GroupContentCreationReceiptService::identity($data['idempotency_key'] ?? null, [
+            'content' => $content,
+            'group_id' => $groupId,
+            'title' => $title,
+        ]);
+        if ($identity === false) {
+            self::$errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid')];
+            return null;
+        }
 
-        return DB::transaction(function () use ($groupId, $userId, $tenantId, $title, $content): ?array {
+        return DB::transaction(function () use ($groupId, $userId, $tenantId, $title, $content, $identity): ?array {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find($tenantId, $userId, 'discussion', $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                        return null;
+                    }
+                    $payload = GroupContentCreationReceiptService::payload($receipt);
+                    if ($payload === null) {
+                        self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.generic_error')];
+                        return null;
+                    }
+                    $payload['_idempotent_replay'] = true;
+                    return $payload;
+                }
+            }
+
             if (! self::lockWritableDiscussionGroup($groupId, $userId, $tenantId, 'api.group_member_required_create_discussions')) {
                 return null;
             }
@@ -2641,7 +2668,7 @@ class GroupService
             try { GroupChallengeService::incrementProgress($groupId, 'discussions'); } catch (\Throwable $e) { \Log::warning('GroupService: failed to increment challenge progress for discussions', ['group_id' => $groupId, 'error' => $e->getMessage()]); }
             try { GroupMentionService::notifyMentioned($groupId, $userId, $content, 'discussion', $discussion->id); } catch (\Throwable $e) { \Log::warning('GroupService: failed to notify mentioned users in discussion', ['group_id' => $groupId, 'discussion_id' => $discussion->id, 'error' => $e->getMessage()]); }
 
-            return [
+            $result = [
                 'id'            => (int) $discussion->id,
                 'title'         => (string) $discussion->title,
                 'content'       => $content,
@@ -2655,6 +2682,20 @@ class GroupService
                 'created_at'    => $discussion->created_at?->toISOString(),
                 'last_reply_at' => null,
             ];
+
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    $groupId,
+                    'discussion',
+                    $identity,
+                    (int) $discussion->id,
+                    $result,
+                );
+            }
+
+            return $result;
         });
     }
 

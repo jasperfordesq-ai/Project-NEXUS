@@ -163,6 +163,70 @@ class PodcastControllerTest extends TestCase
         $publish->assertJsonPath('data.moderation_status', 'approved');
     }
 
+    public function test_show_creation_replays_one_result_and_rejects_changed_content(): void
+    {
+        $this->enablePodcasts(true);
+        $member = $this->actingAsMember();
+        $headers = ['Idempotency-Key' => 'podcast-show-create-stable-1'];
+        $payload = [
+            'title' => 'One Durable Show',
+            'summary' => 'Created once even if the first response is lost.',
+            'idempotency_key' => 'podcast-show-create-stable-1',
+        ];
+
+        $first = $this->apiPost('/v2/podcasts', $payload, $headers)->assertCreated();
+        $replay = $this->apiPost('/v2/podcasts', $payload, $headers)->assertOk();
+
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, DB::table('podcast_creation_receipts')
+            ->where('actor_user_id', $member->id)
+            ->where('operation_type', 'show')
+            ->count());
+        $this->assertSame(1, DB::table('podcast_shows')
+            ->where('owner_user_id', $member->id)
+            ->where('title', 'One Durable Show')
+            ->count());
+
+        $this->apiPost('/v2/podcasts', array_merge($payload, ['title' => 'Changed Show']), $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.field', 'idempotency_key');
+    }
+
+    public function test_episode_creation_replays_url_and_hosted_audio_without_duplicate_rows(): void
+    {
+        $this->enablePodcasts(true);
+        $this->actingAsMember();
+        $showId = $this->apiPost('/v2/podcasts', ['title' => 'Durable Episodes'])->assertCreated()->json('data.id');
+
+        $urlPayload = [
+            'title' => 'Durable URL Episode',
+            'audio_url' => 'https://example.org/durable.mp3',
+            'idempotency_key' => 'podcast-url-episode-stable-1',
+        ];
+        $urlHeaders = ['Idempotency-Key' => 'podcast-url-episode-stable-1'];
+        $firstUrl = $this->apiPost("/v2/podcasts/{$showId}/episodes", $urlPayload, $urlHeaders)->assertCreated();
+        $replayedUrl = $this->apiPost("/v2/podcasts/{$showId}/episodes", $urlPayload, $urlHeaders)->assertOk();
+        $this->assertSame($firstUrl->json('data.id'), $replayedUrl->json('data.id'));
+
+        Storage::fake('local');
+        $audio = self::tinyWavBytes();
+        $hostedHeaders = $this->withTenantHeader(['Idempotency-Key' => 'podcast-hosted-episode-stable-1']);
+        $firstHosted = $this->post("/api/v2/podcasts/{$showId}/episodes", [
+            'title' => 'Durable Hosted Episode',
+            'idempotency_key' => 'podcast-hosted-episode-stable-1',
+            'audio' => UploadedFile::fake()->createWithContent('durable.wav', $audio),
+        ], $hostedHeaders)->assertCreated();
+        $replayedHosted = $this->post("/api/v2/podcasts/{$showId}/episodes", [
+            'title' => 'Durable Hosted Episode',
+            'idempotency_key' => 'podcast-hosted-episode-stable-1',
+            'audio' => UploadedFile::fake()->createWithContent('durable.wav', $audio),
+        ], $hostedHeaders)->assertOk();
+
+        $this->assertSame($firstHosted->json('data.id'), $replayedHosted->json('data.id'));
+        $this->assertSame(2, DB::table('podcast_episodes')->where('show_id', $showId)->count());
+        $this->assertSame(2, DB::table('podcast_creation_receipts')->where('operation_type', 'episode')->count());
+    }
+
     public function test_show_title_validation_prevents_database_errors(): void
     {
         $this->enablePodcasts(true);
@@ -803,7 +867,6 @@ class PodcastControllerTest extends TestCase
         $episode->assertStatus(201);
         $episodeId = $episode->json('data.id');
         $this->apiPost("/v2/podcasts/{$showId}/episodes/{$episodeId}/publish")->assertStatus(200);
-
         $archive = $this->apiPost("/v2/podcasts/{$showId}/episodes/{$episodeId}/archive");
         $archive->assertStatus(200);
         $archive->assertJsonPath('data.status', 'archived');
@@ -1675,6 +1738,15 @@ class PodcastControllerTest extends TestCase
         ]);
         $subscribe->assertStatus(200);
         $subscribe->assertJsonPath('data.subscribed', true);
+        $this->apiPost("/v2/podcasts/{$showId}/subscribe", [
+            'notify_new_episodes' => true,
+            'subscribed' => true,
+        ])->assertJsonPath('data.subscribed', true);
+        $this->assertSame(1, (int) DB::table('podcast_show_subscriptions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('show_id', $showId)
+            ->where('user_id', $member->id)
+            ->count());
 
         $report = $this->apiPost("/v2/podcasts/episodes/{$episodeId}/report", [
             'reason' => 'safety',
@@ -1881,6 +1953,14 @@ class PodcastControllerTest extends TestCase
 
         $this->apiPost("/v2/podcasts/episodes/{$episodeId}/reaction", ['reaction' => 'like'])
             ->assertJsonPath('data.active', true);
+        $this->apiPost("/v2/podcasts/episodes/{$episodeId}/reaction", [
+            'reaction' => 'like',
+            'active' => true,
+        ])->assertJsonPath('data.active', true);
+        $this->assertSame(1, (int) DB::table('podcast_episode_reactions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('episode_id', $episodeId)
+            ->count());
 
         $after = $this->apiGet("/v2/podcasts/{$showSlug}/{$episodeSlug}");
         $after->assertJsonPath('data.viewer_has_reacted', true);
@@ -1918,6 +1998,9 @@ class PodcastControllerTest extends TestCase
         $episode->assertStatus(201);
         $episodeId = $episode->json('data.id');
         $this->apiPost("/v2/podcasts/{$showId}/episodes/{$episodeId}/publish")->assertStatus(200);
+        // A response-loss retry is the same transition and must not fan out a
+        // second subscriber notification.
+        $this->apiPost("/v2/podcasts/{$showId}/episodes/{$episodeId}/publish")->assertStatus(200);
 
         $this->assertDatabaseHas('notifications', [
             'tenant_id' => $this->testTenantId,
@@ -1925,6 +2008,12 @@ class PodcastControllerTest extends TestCase
             'type' => 'podcast_episode',
             'link' => "/podcasts/subscriber-updates/new-subscriber-episode",
         ]);
+        $this->assertSame(1, DB::table('notifications')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $subscriber->id)
+            ->where('type', 'podcast_episode')
+            ->where('link', '/podcasts/subscriber-updates/new-subscriber-episode')
+            ->count());
     }
 
     public function test_listen_analytics_include_unique_listeners_and_client_breakdown(): void

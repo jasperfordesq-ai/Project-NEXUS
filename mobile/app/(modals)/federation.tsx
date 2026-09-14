@@ -87,27 +87,50 @@ function StatTile({
   value,
   tone,
   theme,
+  width,
+  fontScale,
+  testID,
 }: {
   icon: IoniconName;
   label: string;
   value: string;
   tone: string;
   theme: ReturnType<typeof useTheme>;
+  width: number;
+  fontScale: number;
+  testID: string;
 }) {
+  const largeText = fontScale > 1.3;
+
   return (
     <Surface
+      key={fontScale}
       variant="secondary"
-      className="min-h-[78px] min-w-[46%] flex-1 flex-row items-center gap-3 rounded-panel-inner p-3"
-      style={{ borderWidth: 1, borderColor: withAlpha(tone, 0.14) }}
+      className="min-h-[78px] flex-row items-center gap-3 rounded-panel-inner p-3"
+      style={[
+        responsiveActionStyle(width, fontScale),
+        { borderWidth: 1, borderColor: withAlpha(tone, 0.14) },
+      ]}
+      testID={testID}
     >
       <View className="size-10 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(tone, 0.13) }}>
         <Ionicons name={icon} size={17} color={tone} />
       </View>
       <View className="min-w-0 flex-1 gap-0.5">
-        <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
+        <Text
+          className="text-xl font-bold"
+          style={{ color: theme.text }}
+          numberOfLines={largeText ? 2 : 1}
+          testID={`${testID}-value`}
+        >
           {value}
         </Text>
-        <Text className="text-[11px] font-semibold uppercase leading-4" style={{ color: theme.textSecondary }} numberOfLines={1}>
+        <Text
+          className="text-[11px] font-semibold uppercase leading-4"
+          style={{ color: theme.textSecondary }}
+          numberOfLines={largeText ? 2 : 1}
+          testID={`${testID}-label`}
+        >
           {label}
         </Text>
       </View>
@@ -128,6 +151,8 @@ function FederationHero({
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
+  const { width, fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const enabled = federationEnabled(status);
   const partnerCount = stats?.partner_count ?? status?.partnerships_count ?? 0;
   const messages = stats?.messages_count ?? status?.messages_count ?? 0;
@@ -141,22 +166,28 @@ function FederationHero({
     >
       <View className="h-1.5" style={{ backgroundColor: primary }} />
       <HeroCard.Body className="gap-4 p-4">
-        <View className="flex-row items-start gap-3">
+        <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
           <View className="size-12 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
             <Ionicons name="git-network-outline" size={24} color={primary} />
           </View>
           <View className="min-w-0 flex-1 gap-2">
-            <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            <Text key={`eyebrow-${fontScale}`} className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 2 : 1}>
               {t('hub.eyebrow')}
             </Text>
-            <Text className="text-[23px] font-bold leading-7" style={{ color: theme.text }} numberOfLines={2}>
+            <Text key={`title-${fontScale}`} className="text-[23px] font-bold leading-7" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
               {t('hub.heroTitle')}
             </Text>
-            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={4}>
+            <Text
+              key={`description-${fontScale}`}
+              className="text-sm leading-5"
+              style={{ color: theme.textSecondary }}
+              numberOfLines={largeText ? undefined : 4}
+              testID="federation-hero-description"
+            >
               {t('hub.heroDescription')}
             </Text>
             <View className="items-start">
-              <Chip size="sm" variant="secondary" color={enabled ? 'success' : 'warning'}>
+              <Chip key={`status-${fontScale}`} size="sm" variant="secondary" color={enabled ? 'success' : 'warning'}>
                 <Ionicons name={enabled ? 'checkmark-circle-outline' : 'pause-circle-outline'} size={13} color={enabled ? '#22c55e' : '#f59e0b'} />
                 <Chip.Label>{enabled ? t('hub.statusActive') : t('hub.statusInactive')}</Chip.Label>
               </Chip>
@@ -165,10 +196,10 @@ function FederationHero({
         </View>
 
         <View className="flex-row flex-wrap gap-2">
-          <StatTile icon="globe-outline" label={t('hub.statPartners')} value={String(partnerCount)} tone={primary} theme={theme} />
-          <StatTile icon="chatbubbles-outline" label={t('hub.statMessages')} value={String(messages)} tone="#a855f7" theme={theme} />
-          <StatTile icon="swap-horizontal-outline" label={t('hub.statExchanges')} value={String(transactions)} tone="#06b6d4" theme={theme} />
-          <StatTile icon="pulse-outline" label={t('hub.statStatus')} value={enabled ? t('hub.shortActive') : t('hub.shortInactive')} tone="#22c55e" theme={theme} />
+          <StatTile testID="federation-stat-partners" icon="globe-outline" label={t('hub.statPartners')} value={String(partnerCount)} tone={primary} theme={theme} width={width} fontScale={fontScale} />
+          <StatTile testID="federation-stat-messages" icon="chatbubbles-outline" label={t('hub.statMessages')} value={String(messages)} tone="#a855f7" theme={theme} width={width} fontScale={fontScale} />
+          <StatTile testID="federation-stat-exchanges" icon="swap-horizontal-outline" label={t('hub.statExchanges')} value={String(transactions)} tone="#06b6d4" theme={theme} width={width} fontScale={fontScale} />
+          <StatTile testID="federation-stat-status" icon="pulse-outline" label={t('hub.statStatus')} value={enabled ? t('hub.shortActive') : t('hub.shortInactive')} tone="#22c55e" theme={theme} width={width} fontScale={fontScale} />
         </View>
       </HeroCard.Body>
     </HeroCard>
@@ -189,7 +220,7 @@ function QuickLinksSection({
       <View className="flex-row flex-wrap gap-2">
         {quickLinks.map((link) => (
           <NativePressable
-            key={link.key}
+            key={`${link.key}-${fontScale}`}
             accessibilityLabel={t(`hub.quick.${link.key}.title`)}
             className="rounded-panel-inner"
                 style={responsiveActionStyle(width, fontScale)}
@@ -234,7 +265,19 @@ function PartnerCard({
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const connectedDate = formatDate(item.connected_since ?? item.partnership_since);
+
+  const metadata = [
+    item.federation_level_name
+      ? { key: 'level', label: item.federation_level_name, icon: 'shield-checkmark-outline' as IoniconName }
+      : null,
+    { key: 'members', label: t('hub.memberCount', { count: item.member_count ?? 0 }), icon: 'people-outline' as IoniconName },
+    connectedDate
+      ? { key: 'connected', label: t('connectedSince', { date: connectedDate }), icon: 'time-outline' as IoniconName }
+      : null,
+  ].filter((entry): entry is { key: string; label: string; icon: IoniconName } => entry !== null);
 
   return (
     <NativePressable
@@ -252,47 +295,64 @@ function PartnerCard({
       >
         <HeroCard.Body className="gap-3 p-4">
           <View className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: primary }} />
-          <View className="flex-row items-start gap-3 pl-1">
+          <View className={largeText ? 'items-start gap-3 pl-1 pr-10' : 'flex-row items-start gap-3 pl-1'}>
             <Avatar uri={item.logo} name={item.name} size={48} />
             <View className="min-w-0 flex-1 gap-1">
-              <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={2}>
+              <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
                 {item.name}
               </Text>
               {item.location ? (
-                <View className="flex-row items-center gap-1">
+                <View className="flex-row items-start gap-1">
                   <Ionicons name="location-outline" size={13} color={theme.textSecondary} />
-                  <Text className="min-w-0 flex-1 text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                  <Text
+                    className="min-w-0 flex-1 text-sm leading-5"
+                    style={{ color: theme.textSecondary }}
+                    numberOfLines={largeText ? undefined : 2}
+                    testID="federation-partner-location"
+                  >
                     {item.location}
                   </Text>
                 </View>
               ) : null}
               {item.tagline || item.description ? (
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                <Text
+                  className="text-sm leading-5"
+                  style={{ color: theme.textSecondary }}
+                  numberOfLines={largeText ? undefined : 3}
+                  testID="federation-partner-description"
+                >
                   {item.tagline || item.description}
                 </Text>
               ) : null}
             </View>
-            <View className="size-8 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.1) }}>
+            <View
+              className={largeText ? 'absolute right-0 top-0 size-10 items-center justify-center rounded-2xl' : 'size-8 items-center justify-center rounded-2xl'}
+              style={{ backgroundColor: withAlpha(primary, 0.1) }}
+            >
               <Ionicons name="chevron-forward-outline" size={17} color={primary} />
             </View>
           </View>
 
-          <View className="flex-row flex-wrap items-center gap-2 pl-1">
-            {item.federation_level_name ? (
-              <Chip size="md" variant="secondary">
-                <Chip.Label numberOfLines={1}>{item.federation_level_name}</Chip.Label>
-              </Chip>
-            ) : null}
-            <Chip size="md" variant="secondary">
-              <Ionicons name="people-outline" size={14} color={primary} />
-              <Chip.Label>{t('hub.memberCount', { count: item.member_count ?? 0 })}</Chip.Label>
-            </Chip>
-            {connectedDate ? (
-              <Chip size="md" variant="secondary">
-                <Ionicons name="time-outline" size={14} color={theme.textSecondary} />
-                <Chip.Label>{t('connectedSince', { date: connectedDate })}</Chip.Label>
-              </Chip>
-            ) : null}
+          <View className="flex-row flex-wrap items-stretch gap-2 pl-1">
+            {metadata.map((entry) => (
+              <Surface
+                key={`${entry.key}-${fontScale}`}
+                variant="secondary"
+                className="min-h-11 flex-row items-start gap-2 rounded-2xl px-3 py-2.5"
+                style={largeText ? { width: '100%' } : { maxWidth: '100%' }}
+                testID={`federation-partner-meta-${entry.key}`}
+              >
+                <Ionicons name={entry.icon} size={16} color={entry.key === 'members' ? primary : theme.textSecondary} />
+                <Text
+                  className="min-w-0 flex-shrink text-sm font-semibold leading-5"
+                  style={{ color: theme.text }}
+                  numberOfLines={largeText ? undefined : 2}
+                  testID={`federation-partner-meta-${entry.key}-label`}
+                >
+                  {entry.label}
+                </Text>
+              </Surface>
+            ))}
           </View>
 
           <Text className="pl-1 text-sm font-semibold" style={{ color: primary }} numberOfLines={1}>

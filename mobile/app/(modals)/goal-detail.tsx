@@ -37,10 +37,12 @@ import {
   type GoalReminderFrequency,
 } from '@/lib/api/goals';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -124,9 +126,12 @@ function GoalDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const savingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const loadVersionRef = useRef(0);
 
   const [loadError, setLoadError] = useState<string | null>(null);
   const load = useCallback(async () => {
+    const version = ++loadVersionRef.current;
     if (!Number.isFinite(goalId) || goalId <= 0) {
       setIsLoading(false);
       return;
@@ -140,6 +145,7 @@ function GoalDetailScreen() {
         getGoalInsights(goalId),
         getGoalReminder(goalId),
       ]);
+      if (!mountedRef.current || version !== loadVersionRef.current) return;
 
       if (goalResult.status === 'fulfilled') {
         setGoal(goalResult.value.data);
@@ -157,14 +163,20 @@ function GoalDetailScreen() {
         if (nextReminder?.frequency) setSelectedFrequency(nextReminder.frequency);
       }
     } catch (err) {
+      if (!mountedRef.current || version !== loadVersionRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.loadError')), variant: 'danger' });
     } finally {
-      setIsLoading(false);
+      if (mountedRef.current && version === loadVersionRef.current) setIsLoading(false);
     }
   }, [goalId, t, showToast]);
 
   useEffect(() => {
+    mountedRef.current = true;
     void load();
+    return () => {
+      mountedRef.current = false;
+      loadVersionRef.current += 1;
+    };
   }, [load]);
 
   const percent = goal ? goalPercent(goal) : 0;
@@ -206,19 +218,36 @@ function GoalDetailScreen() {
     const currentValue = numberOrFallback(goal.progress_hours, numberOrFallback(goal.current_value));
     const increment = requested < 0 ? Math.max(requested, -currentValue) : requested;
     if (increment === 0) return;
+    const desiredValue = currentValue + increment;
 
     savingRef.current = true;
     setIsSaving(true);
     try {
-      const result = await updateGoalProgress(goal.id, increment);
+      const result = await updateGoalProgress(goal.id, increment, currentValue, desiredValue);
+      if (!mountedRef.current) return;
       setGoal(result.data);
       setProgressIncrement('');
       await load();
     } catch (err) {
+      if (!mountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = await getGoal(goal.id);
+          if (Math.abs(goalProgress(latest.data) - desiredValue) < 0.000001) {
+            if (mountedRef.current) {
+              setGoal(latest.data);
+              setProgressIncrement('');
+            }
+            return;
+          }
+        } catch {
+          // Keep the original indeterminate transport error when readback fails.
+        }
+      }
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.progressError')), variant: 'danger' });
     } finally {
       savingRef.current = false;
-      setIsSaving(false);
+      if (mountedRef.current) setIsSaving(false);
     }
   }
 
@@ -233,16 +262,33 @@ function GoalDetailScreen() {
     try {
       if (!enabled) {
         await deleteGoalReminder(goal.id);
+        if (!mountedRef.current) return;
         setReminder(null);
       } else {
         const result = await setGoalReminder(goal.id, { frequency: selectedFrequency, enabled: true });
+        if (!mountedRef.current) return;
         setReminder(result.data);
       }
     } catch (err) {
+      if (!mountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = (await getGoalReminder(goal.id)).data;
+          const matches = enabled
+            ? Boolean(latest && latest.enabled !== false && latest.enabled !== 0 && latest.frequency === selectedFrequency)
+            : latest === null || latest.enabled === false || latest.enabled === 0;
+          if (matches) {
+            if (mountedRef.current) setReminder(latest);
+            return;
+          }
+        } catch {
+          // Preserve the original transport error when canonical reminder readback fails.
+        }
+      }
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.reminderError')), variant: 'danger' });
     } finally {
       savingRef.current = false;
-      setIsSaving(false);
+      if (mountedRef.current) setIsSaving(false);
     }
   }
 
@@ -451,4 +497,12 @@ function GoalDetailScreen() {
   );
 }
 
-export default withRouteGate(GoalDetailScreen, 'goal-detail');
+function GoalDetailRoute() {
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const { tenant } = useTenant();
+  const { user } = useAuth();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  return <GoalDetailScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`} />;
+}
+
+export default withRouteGate(GoalDetailRoute, 'goal-detail');

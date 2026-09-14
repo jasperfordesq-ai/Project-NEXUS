@@ -5,7 +5,7 @@
 
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { useMemo, useState, type ComponentProps } from 'react';
+import { useMemo, useRef, useState, type ComponentProps } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -66,6 +66,7 @@ function FederationConnectionsScreen() {
   const { show: showToast } = useAppToast();
   const [tab, setTab] = useState<ConnectionTab>('accepted');
   const [actionId, setActionId] = useState<number | null>(null);
+  const actionPendingRef = useRef(false);
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { data, isLoading, error, refresh } = useApi(() => getFederationConnections(tab), [tab]);
@@ -96,16 +97,19 @@ function FederationConnectionsScreen() {
   }
 
   async function runAction(connection: FederationConnection, action: 'accept' | 'reject' | 'remove') {
+    if (actionPendingRef.current) return;
+    actionPendingRef.current = true;
     setActionId(connection.id);
     try {
       if (action === 'accept') await acceptFederationConnection(connection.id);
       if (action === 'reject') await rejectFederationConnection(connection.id);
-      if (action === 'remove') await removeFederationConnection(connection.id);
+      if (action === 'remove') await removeFederationConnection(connection.id, tab === 'pending_sent' ? 'pending' : 'accepted');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refresh();
     } catch (err) {
       showToast({ title: t('directory.connections.actionFailedTitle'), description: describeApiError(err, t('directory.connections.actionFailedDescription')), variant: 'danger' });
     } finally {
+      actionPendingRef.current = false;
       setActionId(null);
     }
   }
@@ -230,7 +234,7 @@ function FederationConnectionsScreen() {
                 theme={theme}
                 primary={primary}
                 t={t}
-                isActioning={actionId === connection.id}
+                isActioning={actionId !== null}
                 onAction={(action) => requestAction(connection, action)}
               />
             ))}

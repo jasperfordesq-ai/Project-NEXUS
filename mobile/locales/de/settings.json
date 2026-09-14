@@ -54,8 +54,8 @@
     "newPlaceholder": "Neues Passwort eingeben",
     "confirmLabel": "Neues Passwort bestätigen",
     "confirmPlaceholder": "Neues Passwort erneut eingeben",
-    "newHint": "Mindestens 8 Zeichen verwenden.",
-    "save": "Speichern Passwort",
+    "newHint": "Verwenden Sie mindestens 12 Zeichen.",
+    "save": "Passwort speichern",
     "saving": "Passwort wird gespeichert...",
     "reviewTitle": "Bereit zur Aktualisierung?",
     "reviewSubtitle": "Nur speichern, wenn Ihr neues Passwort und Ihre Bestätigung übereinstimmen.",
@@ -63,13 +63,16 @@
     "footerMismatch": "Das neue Passwort und die Bestätigung stimmen noch nicht überein.",
     "success": "Passwort geändert",
     "successMessage": "Ihr Passwort wurde erfolgreich aktualisiert.",
+    "successSignIn": "Ihr Passwort wurde geändert. Melden Sie sich erneut mit Ihrem neuen Passwort an.",
+    "unconfirmedTitle": "Passwort prüfen",
+    "unconfirmedMessage": "Wir konnten nicht bestätigen, ob die Änderung abgeschlossen wurde. Melden Sie sich erneut an und versuchen Sie zuerst Ihr neues Passwort. Falls es nicht akzeptiert wird, verwenden Sie Ihr bisheriges Passwort.",
     "validation": {
       "currentRequired": "Bitte geben Sie Ihr aktuelles Passwort ein.",
       "newRequired": "Bitte geben Sie ein neues Passwort ein.",
       "mismatch": "Neues Passwort und Bestätigung stimmen nicht überein.",
       "tooShort": "Neues Passwort muss mindestens 12 Zeichen lang sein."
     },
-    "changeError": "Konnte nicht geändert werden Passwort. Bitte versuchen Sie es erneut."
+    "changeError": "Das Passwort konnte nicht geändert werden. Bitte versuchen Sie es erneut."
   },
   "identity": {
     "page_title": "Identität verifizieren",

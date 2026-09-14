@@ -22,7 +22,8 @@ import Toggle from '@/components/ui/Toggle';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { getUserPreferences, saveUserPreferences } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -39,7 +40,7 @@ function normalizeLocale(value: string | null | undefined, fallback: string): Mo
     : 'en';
 }
 
-export default function SettingsTranslationScreen() {
+function SettingsTranslationScreen() {
   const { t, i18n } = useTranslation(['settings', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
@@ -53,13 +54,18 @@ export default function SettingsTranslationScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   const saveInFlight = useRef(false);
+  const isMountedRef = useRef(true);
   const { confirm, confirmDialog } = useConfirm();
 
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const load = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsLoading(true);
     setLoadError(null);
     try {
       const preferences = await getUserPreferences();
+      if (!isMountedRef.current) return;
       setPrefersChronological(Boolean(preferences.feed?.prefers_chronological));
       setAutoTranslate(Boolean(preferences.translation?.auto_translate_ugc));
       setTargetLocale(normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale));
@@ -69,6 +75,7 @@ export default function SettingsTranslationScreen() {
         targetLocale: normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale),
       }));
     } catch (err) {
+      if (!isMountedRef.current) return;
       /*
         🔴 S3-16: the form used to render its DEFAULTS after a failed load with Save enabled,
         so one tap wrote `auto_translate: false` and the device's UI language over whatever
@@ -77,7 +84,7 @@ export default function SettingsTranslationScreen() {
       setLoadError(describeApiError(err, t('translation.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.loadError')), variant: 'danger' });
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) setIsLoading(false);
     }
   }, [initialLocale, t, showToast]);
 
@@ -118,6 +125,7 @@ export default function SettingsTranslationScreen() {
           auto_translate_target_locale: targetLocale,
         },
       });
+      if (!isMountedRef.current) return;
       setSavedSnapshot(submittedSnapshot);
       /*
         🔴 S3-29 made this conditional on auto-translate; the audit of 2026-09-07 (B/F-16)
@@ -126,10 +134,11 @@ export default function SettingsTranslationScreen() {
       */
       showToast({ title: t('translation.saved'), description: t('translation.savedBody'), variant: 'success' });
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.saveError')), variant: 'danger' });
     } finally {
       saveInFlight.current = false;
-      setIsSaving(false);
+      if (isMountedRef.current) setIsSaving(false);
     }
   }
 
@@ -223,4 +232,10 @@ export default function SettingsTranslationScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+export default function SettingsTranslationRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <SettingsTranslationScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
 }

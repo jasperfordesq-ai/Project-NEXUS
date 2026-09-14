@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -23,8 +23,10 @@ import { useAppToast } from '@/components/ui/AppToast';
 import { getPodcastEpisode, reportPodcastEpisode, togglePodcastReaction } from '@/lib/api/podcasts';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -33,43 +35,86 @@ const REPORT_REASONS: ReportReason[] = ['safety', 'spam', 'rights', 'other'];
 
 function PodcastEpisodeScreen() {
   const { showSlug, episodeSlug } = useLocalSearchParams<{ showSlug?: string; episodeSlug?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return (
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${showSlug ?? 'invalid'}:${episodeSlug ?? 'invalid'}`}>
+      <PodcastEpisodeScreenInner />
+    </ModalErrorBoundary>
+  );
+}
+
+function PodcastEpisodeScreenInner() {
+  const { showSlug, episodeSlug } = useLocalSearchParams<{ showSlug?: string; episodeSlug?: string }>();
   const { t } = useTranslation(['podcasts', 'common']);
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [reacted, setReacted] = useState(false);
   const [savingReaction, setSavingReaction] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const reactionPendingRef = useRef(false);
+  const reportPendingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const playerRef = useRef<PodcastAudioPlayerHandle>(null);
+  const playbackScope = useMemo(
+    () => ({ tenantId: Number(tenant?.id), userId: Number(user?.id) }),
+    [tenant?.id, user?.id],
+  );
   const state = useApi(() => getPodcastEpisode(showSlug || '', episodeSlug || ''), [showSlug, episodeSlug], { enabled: Boolean(showSlug && episodeSlug) });
   useEffect(() => { if (state.data) setReacted(Boolean(state.data.viewer_has_reacted)); }, [state.data]);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   async function react() {
-    if (!state.data || savingReaction) return;
+    if (!state.data || reactionPendingRef.current) return;
+    reactionPendingRef.current = true;
     setSavingReaction(true);
+    const desired = !reacted;
     try {
-      const result = await togglePodcastReaction(state.data.id);
+      const result = await togglePodcastReaction(state.data.id, desired);
+      if (!isMountedRef.current) return;
       setReacted(result.active);
     } catch (error) {
+      if (!isMountedRef.current) return;
+      if (error instanceof ApiResponseError && error.status === 0) {
+        try {
+          const latest = await getPodcastEpisode(showSlug || '', episodeSlug || '');
+          if (isMountedRef.current && Boolean(latest.viewer_has_reacted) === desired) {
+            setReacted(desired);
+            return;
+          }
+        } catch {
+          // Preserve the original indeterminate result when readback is unavailable.
+        }
+      }
       showToast({ title: t('episode.reaction_failed'), description: describeApiError(error, '') || undefined, variant: 'danger' });
-    } finally { setSavingReaction(false); }
+    } finally {
+      reactionPendingRef.current = false;
+      if (isMountedRef.current) setSavingReaction(false);
+    }
   }
 
   async function report(reason: ReportReason) {
-    if (!state.data) return;
+    if (!state.data || reportPendingRef.current) return;
+    reportPendingRef.current = true;
     try {
       await reportPodcastEpisode(state.data.id, reason);
+      if (!isMountedRef.current) return;
       showToast({ title: t('episode.reported'), variant: 'success' });
     } catch (error) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('episode.report_failed'), description: describeApiError(error, '') || undefined, variant: 'danger' });
+    } finally {
+      reportPendingRef.current = false;
     }
   }
 
   if (state.isLoading) return <SafeAreaView className="flex-1 items-center justify-center bg-background" style={{ flex: 1, backgroundColor: theme.bg }}><LoadingSpinner /></SafeAreaView>;
   const episode = state.data;
   return (
-    <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={episode?.title ?? t('episode.title')} backLabel={t('common:back')} fallbackHref="/(modals)/podcasts" />
         {!episode && isRefusalStatus(state.errorStatus) ? <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} testID="podcast-episode-refused" />
           : !episode ? <EmptyState icon="warning-outline" title={state.error ?? t('episode.not_found')} actionLabel={t('episode.retry')} onAction={() => state.refresh()} /> : <>
@@ -79,7 +124,16 @@ function PodcastEpisodeScreen() {
               <View className="flex-row flex-wrap gap-2"><Chip size="sm" variant="secondary"><Chip.Label>{t(`episode.type.${episode.episode_type}`)}</Chip.Label></Chip>{episode.explicit ? <Chip size="sm" variant="secondary"><Chip.Label>{t('episode.explicit')}</Chip.Label></Chip> : null}</View>
               <Text className="text-2xl font-bold" style={{ color: theme.text }}>{episode.title}</Text>
               {episode.summary ? <Text className="leading-6" style={{ color: theme.textSecondary }}>{episode.summary}</Text> : null}
-              <PodcastAudioPlayer ref={playerRef} episodeId={episode.id} audioUrl={episode.audio_url} episodeTitle={episode.title} showTitle={episode.show?.title} durationSeconds={episode.duration_seconds} primaryColor={primary} />
+              <PodcastAudioPlayer
+                ref={playerRef}
+                playbackScope={playbackScope}
+                episodeId={episode.id}
+                audioUrl={episode.audio_url}
+                episodeTitle={episode.title}
+                showTitle={episode.show?.title}
+                durationSeconds={episode.duration_seconds}
+                primaryColor={primary}
+              />
               <View className="flex-row flex-wrap gap-3"><HeroButton variant={reacted ? 'secondary' : 'primary'} isDisabled={savingReaction} onPress={() => void react()}><HeroButton.Label>{t(reacted ? 'episode.reacted' : 'episode.react')}</HeroButton.Label></HeroButton><HeroButton variant="secondary" onPress={() => setReportOpen(true)}><HeroButton.Label>{t('episode.report')}</HeroButton.Label></HeroButton></View>
             </HeroCard.Body></HeroCard>
             {episode.description ? <View className="mt-5 gap-2"><Text className="text-lg font-bold" style={{ color: theme.text }}>{t('episode.description')}</Text><Text className="leading-6" style={{ color: theme.textSecondary }}>{episode.description}</Text></View> : null}
@@ -88,8 +142,7 @@ function PodcastEpisodeScreen() {
           </ScrollView>
           <ActionSheet visible={reportOpen} onClose={() => setReportOpen(false)} title={t('episode.report_title')} actions={REPORT_REASONS.map((reason) => ({ label: t(`episode.report_reasons.${reason}`), icon: 'flag-outline', onPress: () => void report(reason), destructive: true }))} />
         </>}
-      </SafeAreaView>
-    </ModalErrorBoundary>
+    </SafeAreaView>
   );
 }
 

@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { Linking } from 'react-native';
+import * as ReactNative from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
@@ -203,6 +204,19 @@ describe('OrganisationDetailScreen', () => {
     const { getByText, queryByText } = render(<OrganisationDetailScreen />);
     expect(getByText('Pending review')).toBeTruthy();
     expect(queryByText('pending')).toBeNull();
+  });
+
+  it('stacks the identity, actions and metrics without truncating content at large text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId, getByText } = render(<OrganisationDetailScreen />);
+    expect(getByTestId('organisation-detail-identity').props.className).not.toContain('flex-row');
+    expect(getByTestId('organisation-detail-actions').props.className).not.toContain('flex-row');
+    expect(getByTestId('organisation-detail-stats').props.className).not.toContain('flex-row');
+    expect(getByText('Dublin Community Hub').props.numberOfLines).toBeUndefined();
+
+    dimensions.mockRestore();
   });
 
   it('renders loading state without crashing', () => {

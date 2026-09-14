@@ -154,6 +154,30 @@ class MessagesController extends BaseApiController
         if (count($files) > MessageAttachmentUploader::MAX_FILES) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.message_attachment_too_many', ['max' => MessageAttachmentUploader::MAX_FILES]), 'attachments', 422);
         }
+        foreach ($files as $file) {
+            if (!$file || !$file->isValid()) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.message_attachment_upload_error'), 'attachments', 422);
+            }
+        }
+
+        $idempotencyKey = trim((string) (request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? '')));
+        if ($idempotencyKey !== '') {
+            $requestHash = $this->messageSendRequestHash('message', $recipientId, $body, $data, $files);
+            $data['idempotency_key'] = $idempotencyKey;
+            $data['idempotency_request_hash'] = $requestHash;
+            $replay = $this->messageService->replaySend($userId, $idempotencyKey, $requestHash);
+            if ($replay !== null) {
+                if ($replay === []) {
+                    $errors = $this->messageService->getErrors();
+                    return $this->respondWithErrors($errors, ($errors[0]['code'] ?? null) === 'IDEMPOTENCY_CONFLICT' ? 409 : 422);
+                }
+                unset($replay['_idempotent_replay']);
+                $this->dispatchPendingMessageDelivery($replay);
+                $this->awardMessageXp($userId, $replay);
+                return $this->respondWithData($replay);
+            }
+        }
+
         $attachments = [];
         foreach ($files as $file) {
             if (!$file || !$file->isValid()) {
@@ -197,12 +221,16 @@ class MessagesController extends BaseApiController
             return $this->respondWithErrors($errors, $status);
         }
 
-        // Award XP for sending a message
-        try {
-            \App\Services\GamificationService::awardXP($userId, \App\Services\GamificationService::XP_VALUES['send_message'], 'send_message', 'Sent a message');
-        } catch (\Throwable $e) {
-            \Log::warning('Gamification XP award failed', ['action' => 'send_message', 'user' => $userId, 'error' => $e->getMessage()]);
+        $wasReplay = !empty($message['_idempotent_replay']);
+        unset($message['_idempotent_replay']);
+        if ($wasReplay) {
+            $this->deleteStagedAttachments($attachments);
+            $this->dispatchPendingMessageDelivery($message);
+            $this->awardMessageXp($userId, $message);
+            return $this->respondWithData($message);
         }
+
+        $this->awardMessageXp($userId, $message);
 
         return $this->respondWithData($message, null, 201);
     }
@@ -644,6 +672,23 @@ class MessagesController extends BaseApiController
         if (!$file || !$file->isValid()) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.message_voice_file_required'), 'voice_message', 400);
         }
+        $duration = max(0, (int) request()->input('duration', 0));
+        $idempotencyKey = trim((string) (request()->header('Idempotency-Key') ?? request()->input('idempotency_key', '')));
+        $requestHash = '';
+        if ($idempotencyKey !== '') {
+            $requestHash = $this->messageSendRequestHash('voice', $recipientId, '', request()->all(), [$file], $duration);
+            $replay = $this->messageService->replaySend($userId, $idempotencyKey, $requestHash);
+            if ($replay !== null) {
+                if ($replay === []) {
+                    $errors = $this->messageService->getErrors();
+                    return $this->respondWithErrors($errors, ($errors[0]['code'] ?? null) === 'IDEMPOTENCY_CONFLICT' ? 409 : 422);
+                }
+                unset($replay['_idempotent_replay']);
+                $this->dispatchPendingMessageDelivery($replay);
+                $this->awardMessageXp($userId, $replay);
+                return $this->respondWithData($replay);
+            }
+        }
 
         try {
             // Build a $_FILES-compatible array for AudioUploader::upload()
@@ -673,8 +718,6 @@ class MessagesController extends BaseApiController
              * want for an implausible claim, and it applies its own `max(1, …)` floor when a
              * client sends nothing.
              */
-            $duration = max(0, (int) request()->input('duration', 0));
-
             $audioResult = AudioUploader::upload($fileArray, $duration);
 
             // Send the message with voice attachment
@@ -683,6 +726,8 @@ class MessagesController extends BaseApiController
                 $recipientId,
                 (string) $audioResult['url'],
                 (int) $audioResult['duration'],
+                $idempotencyKey,
+                $requestHash,
             );
 
             if (!$message) {
@@ -693,6 +738,17 @@ class MessagesController extends BaseApiController
                     : 422;
                 return $this->respondWithErrors($errors, $status);
             }
+
+            $wasReplay = !empty($message['_idempotent_replay']);
+            unset($message['_idempotent_replay']);
+            if ($wasReplay) {
+                AudioUploader::delete((string) $audioResult['url']);
+                $this->dispatchPendingMessageDelivery($message);
+                $this->awardMessageXp($userId, $message);
+                return $this->respondWithData($message);
+            }
+
+            $this->awardMessageXp($userId, $message);
 
             // Transcribe the audio (non-blocking — failures are logged, not thrown)
             try {
@@ -728,6 +784,44 @@ class MessagesController extends BaseApiController
     }
 
     /** @param array<string, mixed> $error */
+    /**
+     * Award the send-message XP once for the canonical persisted message.
+     *
+     * A response can be lost after the message transaction commits but before
+     * this controller runs. The message-scoped reference lets a replay repair
+     * a missed award without granting it twice.
+     *
+     * @param array<string, mixed> $message
+     */
+    private function awardMessageXp(int $userId, array $message): void
+    {
+        $messageId = (int) ($message['id'] ?? $message['message_id'] ?? 0);
+        if ($messageId <= 0) {
+            Log::warning('Message XP award skipped because the canonical message ID is missing', [
+                'action' => 'send_message',
+                'user' => $userId,
+            ]);
+            return;
+        }
+
+        try {
+            \App\Services\GamificationService::awardXP(
+                $userId,
+                \App\Services\GamificationService::XP_VALUES['send_message'],
+                'send_message',
+                __('api.gamification_sent_message'),
+                'message:' . $messageId,
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Gamification XP award failed', [
+                'action' => 'send_message',
+                'user' => $userId,
+                'message_id' => $messageId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
     private function preflightErrorStatus(array $error): int
     {
         return match ($error['code'] ?? null) {
@@ -735,8 +829,45 @@ class MessagesController extends BaseApiController
             'VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED', 'BLOCKED',
             'MESSAGING_DISABLED', 'FORBIDDEN' => 403,
             'NOT_FOUND' => 404,
+            'IDEMPOTENCY_CONFLICT' => 409,
             default => 422,
         };
+    }
+
+    /** @param list<\Illuminate\Http\UploadedFile> $files */
+    private function messageSendRequestHash(
+        string $kind,
+        int $recipientId,
+        string $body,
+        array $data,
+        array $files,
+        int $duration = 0,
+    ): string {
+        $fileFingerprints = [];
+        foreach ($files as $file) {
+            $path = $file->getRealPath();
+            $digest = is_string($path) ? hash_file('sha256', $path) : false;
+            if ($digest === false) {
+                throw new \RuntimeException('Unable to fingerprint uploaded message media.');
+            }
+            $fileFingerprints[] = [
+                'name' => $file->getClientOriginalName(),
+                'mime' => $file->getMimeType(),
+                'size' => (int) $file->getSize(),
+                'sha256' => $digest,
+            ];
+        }
+
+        return hash('sha256', json_encode([
+            'kind' => $kind,
+            'recipient_id' => $recipientId,
+            'body' => $body,
+            'listing_id' => isset($data['listing_id']) ? (int) $data['listing_id'] : null,
+            'context_type' => isset($data['context_type']) ? trim((string) $data['context_type']) : null,
+            'context_id' => isset($data['context_id']) ? (int) $data['context_id'] : null,
+            'duration' => $duration,
+            'files' => $fileFingerprints,
+        ], JSON_THROW_ON_ERROR));
     }
 
     /** @param list<array<string, mixed>> $attachments */
@@ -747,6 +878,28 @@ class MessagesController extends BaseApiController
             if (is_string($url) && $url !== '') {
                 MessageAttachmentUploader::delete($url);
             }
+        }
+    }
+
+    /** @param array<string,mixed> $message */
+    private function dispatchPendingMessageDelivery(array $message): void
+    {
+        $messageId = (int) ($message['id'] ?? $message['message_id'] ?? 0);
+        if ($messageId <= 0) {
+            return;
+        }
+
+        try {
+            app(\App\Services\MessageDeliveryOutboxService::class)
+                ->dispatchMessage($this->getTenantId(), $messageId, true);
+        } catch (\Throwable $error) {
+            // The committed outbox row remains authoritative. A replay response
+            // must still return the canonical message while the scheduler retries.
+            Log::warning('Message delivery replay dispatch failed', [
+                'tenant_id' => $this->getTenantId(),
+                'message_id' => $messageId,
+                'error' => $error->getMessage(),
+            ]);
         }
     }
 

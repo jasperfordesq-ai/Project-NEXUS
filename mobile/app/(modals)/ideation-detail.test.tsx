@@ -9,6 +9,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 const mockUseApi = jest.fn();
 const mockSubmitIdea = jest.fn();
 const mockVoteIdea = jest.fn();
+const mockUnsavedGuard = jest.fn();
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -18,6 +19,12 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/lib/hooks/useApi', () => ({
   useApi: (...args: unknown[]) => mockUseApi(...args),
+}));
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
+  useUnsavedChangesGuard: (...args: unknown[]) => mockUnsavedGuard(...args),
+}));
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: jest.fn(), confirmDialog: null }),
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
@@ -74,6 +81,9 @@ jest.mock('react-i18next', () => ({
         'ideation:ideaDescriptionPlaceholder': 'Describe what should happen and why it helps',
         'ideation:submitting': 'Submitting...',
         'ideation:submitSuccess': 'Idea submitted.',
+        'ideation:submissionUnavailable.phase': 'This challenge is not accepting new ideas.',
+        'ideation:submissionUnavailable.deadline': 'The submission deadline has passed.',
+        'ideation:submissionUnavailable.limit': 'You have reached the idea limit for this challenge.',
         'ideation:vote': 'Vote',
         'ideation:voted': 'Voted',
         'ideation:ideaStatus.submitted': 'Submitted',
@@ -173,10 +183,57 @@ describe('IdeationDetailScreen', () => {
     await waitFor(() => expect(mockSubmitIdea).toHaveBeenCalledWith(12, {
       title: 'More benches',
       description: 'Add seating near the playground.',
-    }));
+    }, expect.any(String)));
 
     fireEvent.press(getByText('Vote'));
-    await waitFor(() => expect(mockVoteIdea).toHaveBeenCalledWith(44));
+    await waitFor(() => expect(mockVoteIdea).toHaveBeenCalledWith(44, true, expect.any(String)));
+  });
+
+  it('reuses the same operation identity when an unchanged idea is retried after response loss', async () => {
+    mockSubmitIdea
+      .mockRejectedValueOnce(new Error('Connection lost'))
+      .mockResolvedValueOnce({ id: 99 });
+    const { getAllByText, getByPlaceholderText } = render(<IdeationDetailScreen />);
+    fireEvent.changeText(getByPlaceholderText('Name your idea'), 'More benches');
+    fireEvent.changeText(getByPlaceholderText('Describe what should happen and why it helps'), 'Add seating.');
+
+    fireEvent.press(getAllByText('Submit idea')[1]);
+    await waitFor(() => expect(mockSubmitIdea).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getAllByText('Submit idea')).toHaveLength(2));
+    fireEvent.press(getAllByText('Submit idea')[1]);
+    await waitFor(() => expect(mockSubmitIdea).toHaveBeenCalledTimes(2));
+
+    expect(mockSubmitIdea.mock.calls[1][2]).toBe(mockSubmitIdea.mock.calls[0][2]);
+  });
+
+  it('protects a typed idea while it is dirty and while its save is pending', async () => {
+    let finish: (() => void) | null = null;
+    mockSubmitIdea.mockImplementationOnce(() => new Promise((resolve) => { finish = () => resolve({ id: 99 }); }));
+    const { getAllByText, getByPlaceholderText } = render(<IdeationDetailScreen />);
+    fireEvent.changeText(getByPlaceholderText('Name your idea'), 'More benches');
+    fireEvent.changeText(getByPlaceholderText('Describe what should happen and why it helps'), 'Add seating.');
+    expect(mockUnsavedGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true, isSaving: false }));
+
+    fireEvent.press(getAllByText('Submit idea')[1]);
+    await waitFor(() => expect(mockUnsavedGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true, isSaving: true })));
+    await act(async () => { finish?.(); });
+    await waitFor(() => expect(mockUnsavedGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: false, isSaving: false })));
+  });
+
+  it('reuses the desired vote and key when a lost response is retried', async () => {
+    mockVoteIdea
+      .mockRejectedValueOnce(new Error('Connection lost'))
+      .mockResolvedValueOnce({ voted: true, votes_count: 5 });
+    const { getByTestId } = render(<IdeationDetailScreen />);
+
+    fireEvent.press(getByTestId('ideation-vote-44'));
+    await waitFor(() => expect(mockVoteIdea).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getByTestId('ideation-vote-44').props.accessibilityState?.disabled).toBeFalsy());
+    fireEvent.press(getByTestId('ideation-vote-44'));
+    await waitFor(() => expect(mockVoteIdea).toHaveBeenCalledTimes(2));
+
+    expect(mockVoteIdea.mock.calls[0].slice(0, 2)).toEqual([44, true]);
+    expect(mockVoteIdea.mock.calls[1][2]).toBe(mockVoteIdea.mock.calls[0][2]);
   });
 
   it('🔴 disables Vote while the vote is in flight, and reports a refusal', async () => {
@@ -232,6 +289,35 @@ describe('IdeationDetailScreen', () => {
 
     expect(getAllByText('Improve the park').length).toBeGreaterThan(0);
     expect(getByText('Better lighting')).toBeTruthy();
+  });
+
+  it('hides the submission form and explains a server-owned refusal', () => {
+    mockUseApi.mockReset();
+    let call = 0;
+    mockUseApi.mockImplementation(() => {
+      call += 1;
+      return call % 2 === 1
+        ? {
+            data: {
+              id: 12,
+              title: 'Improve the park',
+              description: 'Ideas please.',
+              status: 'open',
+              accepting_submissions: false,
+              submission_unavailable_reason: 'limit',
+            },
+            isLoading: false,
+            error: null,
+            refresh: jest.fn(),
+          }
+        : { data: { items: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    });
+
+    const { getByTestId, getByText, queryByPlaceholderText } = render(<IdeationDetailScreen />);
+
+    expect(getByTestId('ideation-submission-unavailable')).toBeTruthy();
+    expect(getByText('You have reached the idea limit for this challenge.')).toBeTruthy();
+    expect(queryByPlaceholderText('Name your idea')).toBeNull();
   });
 
   it('still shows a spinner on the very first load, when there is nothing to show yet', () => {

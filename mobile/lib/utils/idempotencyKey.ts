@@ -23,3 +23,19 @@ export function mutationIdempotencyKey(prefix = 'mobile-mutation'): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
+
+export interface MutationAttempt {
+  fingerprint: string;
+  key: string;
+}
+
+/** Keep one key while an unchanged intent is retried after an uncertain result. */
+export function mutationAttemptFor(
+  current: MutationAttempt | null,
+  fingerprint: string,
+  prefix = 'mobile-mutation',
+): MutationAttempt {
+  return current?.fingerprint === fingerprint
+    ? current
+    : { fingerprint, key: mutationIdempotencyKey(prefix) };
+}

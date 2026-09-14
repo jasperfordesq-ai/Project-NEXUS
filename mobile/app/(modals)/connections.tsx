@@ -19,7 +19,9 @@ import { useTranslation } from 'react-i18next';
 
 import {
   acceptConnection,
+  declineConnection,
   getConnections,
+  getConnectionStatus,
   removeConnection,
   type Connection,
   type ConnectionListResponse,
@@ -27,7 +29,8 @@ import {
 } from '@/lib/api/connections';
 import { displayName } from '@/lib/api/messages';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -61,8 +64,10 @@ function formatDate(value?: string | null) {
 }
 
 function ConnectionsRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`}>
       <ConnectionsScreen />
     </ModalErrorBoundary>
   );
@@ -75,6 +80,8 @@ function ConnectionsScreen() {
   const currentTabRef = useRef(tab);
   currentTabRef.current = tab;
   const [actionId, setActionId] = useState<number | null>(null);
+  const actionPendingRef = useRef(false);
+  const isMountedRef = useRef(true);
   /**
    * Rows this member has just accepted, declined, cancelled or disconnected.
    *
@@ -94,6 +101,8 @@ function ConnectionsScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
   /*
     🔴 Paged, not a single call (audit 2026-09-06, F11). The API wrapper asks for 20 at
     a time and the endpoint returns a cursor and `has_more`; this screen called it once,
@@ -148,10 +157,11 @@ function ConnectionsScreen() {
       member's profile has always confirmed first, so the safe and the unsafe route to the
       identical outcome sat side by side.
     */
+    const isPendingCancellation = action === 'remove' && tab === 'pending_sent';
     confirm({
-      title: t('connections.removeConfirmTitle'),
-      message: t('connections.removeConfirmMessage'),
-      confirmLabel: t('connections.remove'),
+      title: t(isPendingCancellation ? 'connections.cancelConfirmTitle' : 'connections.removeConfirmTitle'),
+      message: t(isPendingCancellation ? 'connections.cancelConfirmMessage' : 'connections.removeConfirmMessage'),
+      confirmLabel: t(isPendingCancellation ? 'connections.cancel' : 'connections.remove'),
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: () => void performAction(connection, action),
@@ -160,11 +170,39 @@ function ConnectionsScreen() {
 
   async function performAction(connection: Connection, action: 'accept' | 'remove') {
     const id = connectionId(connection);
-    if (!id) return;
+    if (!id || actionPendingRef.current) return;
+    actionPendingRef.current = true;
     setActionId(id);
     try {
-      if (action === 'accept') await acceptConnection(id);
-      if (action === 'remove') await removeConnection(id);
+      try {
+        if (action === 'accept') await acceptConnection(id);
+        if (action === 'remove' && tab === 'pending_received') await declineConnection(id);
+        if (action === 'remove' && tab !== 'pending_received') {
+          await removeConnection(id, tab === 'pending_sent' ? 'pending' : 'accepted');
+        }
+      } catch (error) {
+        // A transport failure can arrive after Laravel committed the decision. Read the
+        // relationship back before asking the member to retry an operation that already
+        // succeeded (and would otherwise return 404/409 on the next attempt).
+        const status = await getConnectionStatus(connection.user.id).catch(() => null);
+        const authoritativeStatus = status?.data.status;
+        const rowStillBelongsToTab = tab === 'accepted'
+          ? authoritativeStatus === 'connected'
+          : tab === 'pending_sent'
+            ? authoritativeStatus === 'pending_sent'
+            : authoritativeStatus === 'pending_received';
+        if (authoritativeStatus && !rowStillBelongsToTab && isMountedRef.current && currentTabRef.current === tab) {
+          // A competing device may have accepted, declined or cancelled while this row
+          // was visible. Remove the stale row from this tab, but retain the refusal so
+          // the member is not told their different intended action succeeded.
+          setActedOnIds((current) => new Set(current).add(id));
+        }
+        const committed = action === 'accept'
+          ? authoritativeStatus === 'connected'
+          : authoritativeStatus === 'none';
+        if (!committed) throw error;
+      }
+      if (!isMountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       // Drop the row here rather than reloading, which would discard every page after the
       // first. See `actedOnIds`.
@@ -172,10 +210,12 @@ function ConnectionsScreen() {
         setActedOnIds((current) => new Set(current).add(id));
       }
     } catch (err) {
+      if (!isMountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('connections.actionFailedTitle'), description: describeApiError(err, t('connections.actionFailedDescription')), variant: 'danger' });
     } finally {
-      setActionId(null);
+      actionPendingRef.current = false;
+      if (isMountedRef.current) setActionId(null);
     }
   }
 
@@ -267,7 +307,7 @@ function ConnectionsScreen() {
                   theme={theme}
                   primary={primary}
                   t={t}
-                  isActioning={actionId === id}
+                  isActioning={actionId !== null}
                   onAction={(action) => void runAction(connection, action)}
                 />
               );

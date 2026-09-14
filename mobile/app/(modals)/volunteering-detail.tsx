@@ -3,12 +3,13 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
   Share,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,6 +37,7 @@ import {
   type VolunteeringOrganisation,
 } from '@/lib/api/volunteering';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
@@ -143,16 +145,18 @@ function MetaRow({
   tint?: string;
 }) {
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   return (
-    <Surface variant="secondary" className="flex-row items-center gap-3 rounded-panel-inner p-3">
+    <Surface variant="secondary" className={`${largeText ? 'items-start' : 'flex-row items-center'} gap-3 rounded-panel-inner p-3`}>
       <View className="size-9 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(tint ?? theme.textMuted, 0.12) }}>
         <Ionicons name={icon} size={17} color={tint ?? theme.textSecondary} />
       </View>
       <View className="min-w-0 flex-1">
-        <Text className="text-[11px] font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
+        <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 1}>
           {label}
         </Text>
-        <Text className="mt-0.5 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+        <Text className="mt-0.5 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
           {value}
         </Text>
       </View>
@@ -187,6 +191,8 @@ function ShiftCard({
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
   const primary = usePrimaryColor();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const date = formatDate(shift.start_time, 'short');
   const start = formatTime(shift.start_time);
   const end = formatTime(shift.end_time);
@@ -194,18 +200,18 @@ function ShiftCard({
   return (
     <HeroCard className="rounded-panel p-0">
       <HeroCard.Body className="gap-3 p-4" style={{ minHeight: 128 }}>
-        <View className="flex-row items-start gap-3">
+        <View testID={`volunteer-shift-${shift.id}-header`} className={`${largeText ? 'items-start' : 'flex-row items-start'} gap-3`}>
           <View className="size-12 items-center justify-center rounded-panel-inner" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
             <Ionicons name="calendar-outline" size={22} color={primary} />
           </View>
           <View className="min-w-0 flex-1">
-            <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+            <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 1}>
               {date ?? t('shiftDateUnavailable')}
             </Text>
-            <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 1}>
               {[start, end].filter(Boolean).join(' - ')}
             </Text>
-            <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={1}>
+            <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={largeText ? undefined : 1}>
               {shift.spots_available === null
                 ? t('shiftCapacity', { count: shift.signup_count })
                 : t('shiftSpots', { count: shift.spots_available })}
@@ -264,6 +270,8 @@ function ApplicationCard({
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
   const primary = usePrimaryColor();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const isPending = application.status === 'pending';
   const isActing = actionId === application.id;
   const [decisionNote, setDecisionNote] = useState('');
@@ -274,11 +282,11 @@ function ApplicationCard({
   return (
     <HeroCard className="rounded-panel p-0">
       <HeroCard.Body className="gap-3 p-4">
-        <View className="flex-row items-start gap-3">
+        <View className={`${largeText ? 'items-start' : 'flex-row items-start'} gap-3`}>
           <Avatar uri={application.user.avatar_url ?? undefined} name={application.user.name} size={42} />
           <View className="min-w-0 flex-1">
-            <View className="flex-row items-start justify-between gap-2">
-              <Text className="min-w-0 flex-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+            <View className={`${largeText ? 'items-start' : 'flex-row items-start justify-between'} gap-2`}>
+              <Text className="min-w-0 flex-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 1}>
                 {application.user.name}
               </Text>
               <Chip size="sm" variant="secondary" color={isPending ? 'warning' : 'default'}>
@@ -298,9 +306,9 @@ function ApplicationCard({
         </View>
 
         {application.shift ? (
-          <Surface variant="secondary" className="flex-row items-center gap-2 rounded-panel-inner px-3 py-2">
+          <Surface variant="secondary" className={`${largeText ? 'items-start' : 'flex-row items-center'} gap-2 rounded-panel-inner px-3 py-2`}>
             <Ionicons name="calendar-outline" size={16} color={primary} />
-            <Text className="min-w-0 flex-1 text-xs font-medium" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            <Text className="min-w-0 flex-1 text-xs font-medium" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 1}>
               {[formatDate(application.shift.start_time, 'short'), formatTime(application.shift.start_time), formatTime(application.shift.end_time)]
                 .filter(Boolean)
                 .join(' - ')}
@@ -324,9 +332,9 @@ function ApplicationCard({
           <Text style={{ color: theme.textSecondary }}>{t('applications.decisionNoteRequired')}</Text>
         ) : null}
         {isPending ? (
-          <View className="flex-row gap-2">
+          <View className={`${largeText ? '' : 'flex-row'} gap-2`}>
             <HeroButton
-              className="flex-1"
+              className={largeText ? 'w-full' : 'flex-1'}
               size="sm"
               variant="secondary"
               isDisabled={actionId !== null || (declineNoteRequired && !decisionNote.trim())}
@@ -337,7 +345,7 @@ function ApplicationCard({
               <HeroButton.Label>{t('applications.decline')}</HeroButton.Label>
             </HeroButton>
             <HeroButton
-              className="flex-1"
+              className={largeText ? 'w-full' : 'flex-1'}
               size="sm"
               isDisabled={actionId !== null}
               onPress={() => onAction(application.id, 'approve', decisionNote)}
@@ -355,9 +363,11 @@ function ApplicationCard({
 
 function VolunteeringDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
     <ModalErrorBoundary>
-      <VolunteeringDetailScreenInner key={id} />
+      <VolunteeringDetailScreenInner key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id}`} />
     </ModalErrorBoundary>
   );
 }
@@ -369,10 +379,13 @@ function VolunteeringDetailScreenInner() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const [interestSent, setInterestSent] = useState(false);
   const [interestLoading, setInterestLoading] = useState(false);
   const interestPending = useRef(false);
+  const mountedRef = useRef(true);
   const [applySheetOpen, setApplySheetOpen] = useState(false);
   const [applyMessage, setApplyMessage] = useState('');
   const [signingShiftId, setSigningShiftId] = useState<number | null>(null);
@@ -381,6 +394,10 @@ function VolunteeringDetailScreenInner() {
   const [applicationActionId, setApplicationActionId] = useState<number | null>(null);
   const applicationActionPending = useRef(false);
   const { confirm, confirmDialog } = useConfirm();
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
   const opportunityId = Number(id);
   const safeId = Number.isFinite(opportunityId) && opportunityId > 0 ? opportunityId : 0;
@@ -459,27 +476,51 @@ function VolunteeringDetailScreenInner() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     interestPending.current = true;
     setInterestLoading(true);
-    try {
-      await expressInterest(opportunity.id, applyMessage.trim() || undefined);
+    const finishAcceptedApplication = () => {
+      if (!mountedRef.current) return;
       setInterestSent(true);
       setApplyMessage('');
       setApplySheetOpen(false);
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('interestSentTitle'), description: t('interestSentMessage'), variant: 'success' });
+    };
+    try {
+      await expressInterest(opportunity.id, applyMessage.trim() || undefined);
+      finishAcceptedApplication();
     } catch (err) {
+      const uncertain = err instanceof ApiResponseError && err.status === 0;
+      const duplicate = err instanceof ApiResponseError && err.status === 409;
+      if (uncertain || duplicate) {
+        try {
+          const verification = await getOpportunity(opportunity.id);
+          if (!mountedRef.current) return;
+          const latest = verification.data;
+          const applicationActive = latest.has_applied === true
+            || latest.application?.status === 'pending'
+            || latest.application?.status === 'approved';
+          if (applicationActive) {
+            finishAcceptedApplication();
+            return;
+          }
+        } catch {
+          // A failed verification does not prove the write failed. Keep the draft and
+          // present the uncertainty below so the member can inspect the opportunity.
+        }
+      }
+      if (!mountedRef.current) return;
       setInterestSent(false);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: t('common:errors.alertTitle'),
         //  rather than the raw message: it keeps the guards for a 500's
         // internal text, an HTML error page and codes the app answers itself (E/F-16).
-        description: describeApiError(err, t('interestError')),
+        description: uncertain ? t('interestNoAnswer') : describeApiError(err, t('interestError')),
         variant: 'danger',
       });
     } finally {
       interestPending.current = false;
-      setInterestLoading(false);
+      if (mountedRef.current) setInterestLoading(false);
     }
   }
 
@@ -487,17 +528,37 @@ function VolunteeringDetailScreenInner() {
     if (shiftPending.current) return;
     shiftPending.current = true;
     setSigningShiftId(shiftId);
-    try {
-      await signUpForShift(shiftId);
+    const finishConfirmedSignup = () => {
+      if (!mountedRef.current) return;
       refresh();
       myShiftsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('shiftSignupTitle'), description: t('shiftSignupMessage'), variant: 'success' });
+    };
+    try {
+      await signUpForShift(shiftId, myShiftForThisOpportunity?.id ?? null);
+      finishConfirmedSignup();
     } catch (err) {
+      try {
+        const verification = await getOpportunity(safeId);
+        if (!mountedRef.current) return;
+        const confirmed = verification.data?.application?.shift_id === shiftId;
+        if (confirmed) {
+          finishConfirmedSignup();
+          return;
+        }
+      } catch {
+        // An unreadable schedule cannot prove whether an indeterminate write committed.
+      }
+      if (!mountedRef.current) return;
+      refresh();
+      myShiftsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: t('common:errors.alertTitle'),
-        description: describeApiError(err, t('shiftSignupError')),
+        description: err instanceof ApiResponseError && err.status === 0
+          ? t('shiftResultUnknown')
+          : describeApiError(err, t('shiftSignupError')),
         variant: 'danger',
       });
     } finally {
@@ -552,17 +613,37 @@ function VolunteeringDetailScreenInner() {
     if (shiftPending.current) return;
     shiftPending.current = true;
     setCancellingShiftId(shiftId);
-    try {
-      await cancelShiftSignup(shiftId);
+    const finishConfirmedCancellation = () => {
+      if (!mountedRef.current) return;
       refresh();
       myShiftsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('shiftCancelledTitle'), description: t('shiftCancelledMessage'), variant: 'success' });
+    };
+    try {
+      await cancelShiftSignup(shiftId);
+      finishConfirmedCancellation();
     } catch (err) {
+      try {
+        const verification = await getOpportunity(safeId);
+        if (!mountedRef.current) return;
+        const stillRegistered = verification.data?.application?.shift_id === shiftId;
+        if (!stillRegistered) {
+          finishConfirmedCancellation();
+          return;
+        }
+      } catch {
+        // An unreadable schedule cannot prove whether an indeterminate write committed.
+      }
+      if (!mountedRef.current) return;
+      refresh();
+      myShiftsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: t('common:errors.alertTitle'),
-        description: describeApiError(err, t('myShifts.cancelError')),
+        description: err instanceof ApiResponseError && err.status === 0
+          ? t('shiftResultUnknown')
+          : describeApiError(err, t('myShifts.cancelError')),
         variant: 'danger',
       });
     } finally {
@@ -672,12 +753,12 @@ function VolunteeringDetailScreenInner() {
         <HeroCard className="overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: '#e11d48' }} />
           <HeroCard.Body className="gap-5 p-5">
-            <View className="flex-row items-start justify-between gap-3">
+            <View testID="volunteer-hero-identity" className={`${largeText ? 'items-start' : 'flex-row items-start justify-between'} gap-3`}>
               <View className="min-w-0 flex-1">
                 <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
                   {t('opportunityEyebrow')}
                 </Text>
-                <Text className="mt-1 text-2xl font-bold" style={{ color: theme.text }} numberOfLines={3}>
+                <Text className="mt-1 text-2xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 3}>
                   {opportunity.title}
                 </Text>
               </View>
@@ -688,13 +769,13 @@ function VolunteeringDetailScreenInner() {
             </View>
 
             {org ? (
-              <View className="flex-row items-center gap-3">
+              <View className={`${largeText ? 'items-start' : 'flex-row items-center'} gap-3`}>
                 <Avatar uri={org.avatar ?? org.logo_url ?? undefined} name={org.name} size={46} />
                 <View className="min-w-0 flex-1">
-                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 1}>
                     {org.name}
                   </Text>
-                  <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                  <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 1}>
                     {t('detail.organisation')}
                   </Text>
                 </View>
@@ -911,12 +992,12 @@ function VolunteeringDetailScreenInner() {
             style={{ color: theme.text, textAlignVertical: 'top' }}
             accessibilityLabel={t('coverMessagePlaceholder')}
           />
-          <View className="flex-row gap-3">
-            <HeroButton className="flex-1" variant="secondary" isDisabled={interestLoading} onPress={() => setApplySheetOpen(false)}>
+          <View testID="volunteer-apply-actions" className={`${largeText ? '' : 'flex-row'} gap-3`}>
+            <HeroButton className={largeText ? 'w-full' : 'flex-1'} variant="secondary" isDisabled={interestLoading} onPress={() => setApplySheetOpen(false)}>
               <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
             </HeroButton>
             <HeroButton
-              className="flex-1"
+              className={largeText ? 'w-full' : 'flex-1'}
               isDisabled={!open || hasApplied || interestLoading}
               onPress={() => void handleApply()}
             >

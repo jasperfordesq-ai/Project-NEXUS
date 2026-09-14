@@ -20,6 +20,8 @@ import SettingsDeleteAccountScreen from './settings-delete-account';
 import { deleteAccount } from '@/lib/api/settings';
 import { ApiResponseError } from '@/lib/api/client';
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
@@ -82,7 +84,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
 jest.mock('@/lib/api/settings', () => ({ deleteAccount: jest.fn() }));
 
 const mockLogout = jest.fn();
-jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ logout: mockLogout }) }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 }, logout: mockLogout }) }));
 
 const mockShowToast = jest.fn();
 jest.mock('@/components/ui/AppToast', () => ({
@@ -196,6 +198,19 @@ describe('SettingsDeleteAccountScreen', () => {
     expect(mockDelete).toHaveBeenCalledTimes(1);
     release();
     await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
+  });
+
+  it('does not sign out a replacement session when deletion finishes after this route unmounts', async () => {
+    let finishDeletion!: () => void;
+    mockDelete.mockImplementationOnce(() => new Promise((resolve) => { finishDeletion = () => resolve({}); }));
+    const screen = render(<SettingsDeleteAccountScreen />);
+    fill(screen, { confirmation: 'DELETE', password: 'hunter2' });
+    fireEvent.press(screen.getByTestId('delete-account-submit'));
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+
+    screen.unmount();
+    await act(async () => finishDeletion());
+    expect(mockLogout).not.toHaveBeenCalled();
   });
 
   it('does NOT sign the member out when the server refuses', async () => {

@@ -40,7 +40,7 @@ class ShiftSwapService
      * Request a shift swap between two volunteers.
      *
      * @param int   $fromUserId User requesting the swap
-     * @param array $data       [from_shift_id, to_shift_id, to_user_id, message]
+     * @param array $data       [from_shift_id, to_shift_id, to_user_id, message, idempotency_key]
      * @return int|null Swap request ID or null on failure
      */
     public static function requestSwap(int $fromUserId, array $data): ?int
@@ -52,10 +52,42 @@ class ShiftSwapService
         $toShiftId   = (int) ($data['to_shift_id'] ?? 0);
         $toUserId    = (int) ($data['to_user_id'] ?? 0);
         $message     = trim($data['message'] ?? '');
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
 
         if (! $fromShiftId || ! $toShiftId) {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.shift_swap_fields_required')];
             return null;
+        }
+
+        $keyHash = null;
+        $requestHash = null;
+        if ($idempotencyKey !== '') {
+            if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.invalid_input'), 'field' => 'idempotency_key'];
+                return null;
+            }
+            $keyHash = hash('sha256', $idempotencyKey);
+            $requestHash = hash('sha256', json_encode([
+                'from_shift_id' => $fromShiftId,
+                'to_shift_id' => $toShiftId,
+                'to_user_id' => $toUserId ?: null,
+                'message' => $message,
+            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+            // Read the durable result before checking today's assignments. A response-lost
+            // request remains replayable even after it was accepted, rejected or cancelled.
+            $receipt = DB::table('vol_shift_swap_requests')
+                ->where('tenant_id', $tenantId)
+                ->where('from_user_id', $fromUserId)
+                ->where('idempotency_key_hash', $keyHash)
+                ->first(['id', 'request_hash']);
+            if ($receipt) {
+                if (! hash_equals((string) $receipt->request_hash, $requestHash)) {
+                    self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict'), 'field' => 'idempotency_key'];
+                    return null;
+                }
+                return (int) $receipt->id;
+            }
         }
 
         /*
@@ -79,6 +111,9 @@ class ShiftSwapService
           the same shift do not both queue behind one person.
         */
         if (! $toUserId) {
+            // Legacy callers without an explicit identity retain content-based pending
+            // replay. Keyed calls are bound below so their result survives every status.
+            if ($keyHash === null) {
             $existingIntent = DB::table('vol_shift_swap_requests')
                 ->where('tenant_id', $tenantId)
                 ->where('from_user_id', $fromUserId)
@@ -87,6 +122,7 @@ class ShiftSwapService
                 ->whereIn('status', ['pending', 'admin_pending'])
                 ->first(['id']);
             if ($existingIntent) return (int) $existingIntent->id;
+            }
 
             $toUserId = self::resolveCounterpartForShift($toShiftId, $fromUserId, $tenantId);
             if (! $toUserId) {
@@ -152,14 +188,14 @@ class ShiftSwapService
         );
 
         // Check for duplicate pending swap request
-        $duplicate = DB::table('vol_shift_swap_requests')
+        $duplicate = $keyHash === null ? DB::table('vol_shift_swap_requests')
             ->where('from_user_id', $fromUserId)
             ->where('to_user_id', $toUserId)
             ->where('from_shift_id', $fromShiftId)
             ->where('to_shift_id', $toShiftId)
             ->whereIn('status', ['pending', 'admin_pending'])
             ->where('tenant_id', $tenantId)
-            ->exists();
+            ->exists() : false;
 
         if ($duplicate) return (int) DB::table('vol_shift_swap_requests')
             ->where('from_user_id', $fromUserId)
@@ -175,7 +211,30 @@ class ShiftSwapService
 
         try {
             $created = false;
-            $swapId = DB::transaction(function () use ($fromApp, $toApp, $tenantId, $fromUserId, $toUserId, $fromShiftId, $toShiftId, $requiresAdmin, $message, &$created): int {
+            $swapId = DB::transaction(function () use ($fromApp, $toApp, $tenantId, $fromUserId, $toUserId, $fromShiftId, $toShiftId, $requiresAdmin, $message, $keyHash, $requestHash, &$created): int {
+                if ($keyHash !== null) {
+                    // One requester lock serializes same-key calls even if a changed payload
+                    // names different assignment rows and would otherwise take different locks.
+                    DB::table('users')
+                        ->where('tenant_id', $tenantId)
+                        ->where('id', $fromUserId)
+                        ->lockForUpdate()
+                        ->exists();
+
+                    $receipt = DB::table('vol_shift_swap_requests')
+                        ->where('tenant_id', $tenantId)
+                        ->where('from_user_id', $fromUserId)
+                        ->where('idempotency_key_hash', $keyHash)
+                        ->first(['id', 'request_hash']);
+                    if ($receipt) {
+                        if (! hash_equals((string) $receipt->request_hash, (string) $requestHash)) {
+                            self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict'), 'field' => 'idempotency_key'];
+                            return 0;
+                        }
+                        return (int) $receipt->id;
+                    }
+                }
+
                 $lockedAssignments = DB::table('vol_applications')
                     ->whereIn('id', [(int) $fromApp->id, (int) $toApp->id])
                     ->where('tenant_id', $tenantId)
@@ -187,14 +246,14 @@ class ShiftSwapService
                     throw new \RuntimeException('Shift assignment changed while requesting swap');
                 }
 
-                $existing = DB::table('vol_shift_swap_requests')
+                $existing = $keyHash === null ? DB::table('vol_shift_swap_requests')
                     ->where('tenant_id', $tenantId)
                     ->where('from_user_id', $fromUserId)
                     ->where('to_user_id', $toUserId)
                     ->where('from_shift_id', $fromShiftId)
                     ->where('to_shift_id', $toShiftId)
                     ->whereIn('status', ['pending', 'admin_pending'])
-                    ->first(['id']);
+                    ->first(['id']) : null;
                 if ($existing) return (int) $existing->id;
 
                 $created = true;
@@ -207,9 +266,13 @@ class ShiftSwapService
                     'status'                  => 'pending',
                     'requires_admin_approval' => $requiresAdmin ? 1 : 0,
                     'message'                 => $message,
+                    'idempotency_key_hash'    => $keyHash,
+                    'request_hash'            => $requestHash,
                     'created_at'              => now(),
                 ]);
             });
+
+            if ($swapId === 0) return null;
 
             if ($created) {
                 self::notifySwap($toUserId, 'vol_swap_requested', 'svc_notifications.shift_swap.requested', '/volunteering?tab=swaps');

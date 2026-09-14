@@ -4,11 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
-import { getConnections } from './connections';
+import { declineConnection, getConnections, removeConnection } from './connections';
 
 jest.mock('@/lib/api/client', () => ({
   api: {
     get: jest.fn(),
+    post: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
@@ -38,5 +40,23 @@ describe('connections api', () => {
       status: 'pending_received',
       per_page: '20',
     });
+  });
+
+  it('uses the dedicated decline endpoint for received requests', async () => {
+    (api.post as jest.Mock).mockResolvedValueOnce(undefined);
+
+    await declineConnection(42);
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/connections/42/decline', {});
+  });
+
+  it('binds removal to the relationship state shown by the native action', async () => {
+    (api.delete as jest.Mock).mockResolvedValue(undefined);
+
+    await removeConnection(42, 'pending');
+    await removeConnection(43, 'accepted');
+
+    expect(api.delete).toHaveBeenNthCalledWith(1, '/api/v2/connections/42?expected_status=pending');
+    expect(api.delete).toHaveBeenNthCalledWith(2, '/api/v2/connections/43?expected_status=accepted');
   });
 });

@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ApiResponseError } from '@/lib/api/client';
 
 const mockGetAuthoredPodcasts = jest.fn();
 const mockCreatePodcastShow = jest.fn();
@@ -16,6 +17,8 @@ const mockCreatePodcastEpisodeWithAudio = jest.fn();
 const mockPickAudioFile = jest.fn();
 const mockIsUploadAborted = jest.fn((_error?: unknown) => false);
 const mockConfirm = jest.fn();
+const mockReservePodcastCreationOperation = jest.fn();
+const mockCompletePodcastCreationOperation = jest.fn();
 
 const SHOW = {
   id: 7,
@@ -215,6 +218,13 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
 }));
 
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 41 } }) }));
+
+jest.mock('@/lib/podcastCreationOperation', () => ({
+  reservePodcastCreationOperation: (...args: unknown[]) => mockReservePodcastCreationOperation(...args),
+  completePodcastCreationOperation: (...args: unknown[]) => mockCompletePodcastCreationOperation(...args),
+}));
+
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     bg: '#ffffff',
@@ -251,6 +261,9 @@ jest.mock('@/lib/api/podcasts', () => ({
 jest.mock('@/lib/media/pickAudioFile', () => ({
   pickAudioFile: (...args: unknown[]) => mockPickAudioFile(...args),
 }));
+jest.mock('@/lib/media/prepareImageForUpload', () => ({
+  prepareImageForUpload: async (asset: { uri: string }) => asset,
+}));
 
 jest.mock('@/lib/api/uploadWithProgress', () => ({
   isUploadAborted: (error: unknown) => mockIsUploadAborted(error),
@@ -269,6 +282,7 @@ jest.mock('expo-image-picker', () => ({
 
 jest.mock('@/components/ui/Icon', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
+jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@/components/ui/LoadingSpinner', () => 'View');
 jest.mock('@/components/podcasts/PodcastShowStatsPanel', () => 'View');
 
@@ -401,6 +415,8 @@ describe('PodcastStudioRoute', () => {
     mockCreatePodcastEpisodeWithAudio.mockResolvedValue({ id: 45, title: 'Episode one' });
     mockPickAudioFile.mockResolvedValue({ status: 'cancelled' });
     mockIsUploadAborted.mockReturnValue(false);
+    mockReservePodcastCreationOperation.mockResolvedValue({ storageKey: 'podcast-op', key: 'podcast-key-1', createdAt: 1 });
+    mockCompletePodcastCreationOperation.mockResolvedValue(undefined);
   });
 
   it('creates a show with the directory metadata the member typed', async () => {
@@ -425,11 +441,27 @@ describe('PodcastStudioRoute', () => {
         visibility: 'private',
         explicit: true,
         language: 'en',
-      }));
+      }), 'podcast-key-1');
     });
     // The studio reloads after every successful write; wait for it so no
     // state update lands after the test has finished.
     await waitFor(() => expect(mockGetAuthoredPodcasts).toHaveBeenCalledTimes(2));
+  });
+
+  it('serializes same-frame show creation and completes its durable receipt once', async () => {
+    let resolveCreate!: (value: { id: number; title: string }) => void;
+    mockCreatePodcastShow.mockReturnValue(new Promise(resolve => { resolveCreate = resolve; }));
+    const view = render(<PodcastStudioRoute />);
+    await waitFor(() => expect(view.getByPlaceholderText('Show title')).toBeTruthy());
+    fireEvent.changeText(view.getByPlaceholderText('Show title'), 'One show');
+
+    const create = view.getAllByText('Create show').at(-1)!;
+    fireEvent.press(create);
+    fireEvent.press(create);
+    await waitFor(() => expect(mockCreatePodcastShow).toHaveBeenCalledTimes(1));
+
+    await act(async () => { resolveCreate({ id: 12, title: 'One show' }); });
+    await waitFor(() => expect(mockCompletePodcastCreationOperation).toHaveBeenCalledTimes(1));
   });
 
   it('refuses a plain-HTTP audio URL before any request is made', async () => {
@@ -486,7 +518,7 @@ describe('PodcastStudioRoute', () => {
           { title: 'The guest', starts_at_seconds: 3910, position: 1 },
           { title: 'No timestamp here', starts_at_seconds: 0, position: 2 },
         ],
-      }));
+      }), 'podcast-key-1');
     });
     // The studio reloads after every successful write; wait for it so no
     // state update lands after the test has finished.
@@ -527,6 +559,22 @@ describe('PodcastStudioRoute', () => {
     // The studio reloads after every successful write; wait for it so no
     // state update lands after the test has finished.
     await waitFor(() => expect(mockGetAuthoredPodcasts).toHaveBeenCalledTimes(2));
+  });
+
+  it('accepts a lost delete response when the canonical studio reload shows the show is gone', async () => {
+    mockDeletePodcastShow.mockRejectedValue(new ApiResponseError(0, 'Network error'));
+    mockGetAuthoredPodcasts
+      .mockResolvedValueOnce({ shows: [SHOW], capabilities: CAPABILITIES })
+      .mockResolvedValueOnce({ shows: [], capabilities: CAPABILITIES });
+    const view = render(<PodcastStudioRoute />);
+    await waitFor(() => expect(view.getByText('Delete show')).toBeTruthy());
+    fireEvent.press(view.getByText('Delete show'));
+
+    const options = mockConfirm.mock.calls[0][0] as { onConfirm: () => Promise<void> };
+    await act(async () => { await options.onConfirm(); });
+
+    expect(mockDeletePodcastShow).toHaveBeenCalledTimes(1);
+    expect(mockGetAuthoredPodcasts).toHaveBeenCalledTimes(2);
   });
 
   it('shows the feed check result, with per-episode issues collapsed onto a readable sentence', async () => {

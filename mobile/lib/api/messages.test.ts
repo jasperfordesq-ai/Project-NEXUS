@@ -213,6 +213,15 @@ describe('sendMessage', () => {
     });
   });
 
+  it('sends the durable client operation in the idempotency header', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: mockMessage });
+    await sendMessage(2, 'Retry-safe', {}, 'message-operation-1');
+    expect(api.post).toHaveBeenCalledWith('/api/v2/messages', {
+      recipient_id: 2,
+      body: 'Retry-safe',
+    }, { headers: { 'Idempotency-Key': 'message-operation-1' } });
+  });
+
   it('propagates errors from the API', async () => {
     (api.post as jest.Mock).mockRejectedValue(new Error('Forbidden'));
     await expect(sendMessage(2, 'Hi')).rejects.toThrow('Forbidden');
@@ -279,6 +288,17 @@ describe('sendMessageWithAttachments', () => {
       { onProgress: undefined, signal: undefined },
     );
   });
+
+  it('forwards the durable operation through the progress upload', async () => {
+    await sendMessageWithAttachments(2, 'Photo update', [{
+      uri: 'file:///tmp/photo.jpg', name: 'photo.jpg', mimeType: 'image/jpeg',
+    }], {}, { idempotencyKey: 'message-photo-operation-1' });
+    expect(uploadWithProgress).toHaveBeenCalledWith('/api/v2/messages', expect.any(FormData), {
+      onProgress: undefined,
+      signal: undefined,
+      idempotencyKey: 'message-photo-operation-1',
+    });
+  });
 });
 
 describe('sendVoiceMessage', () => {
@@ -308,6 +328,14 @@ describe('sendVoiceMessage', () => {
 
     const formData = (api.upload as jest.Mock).mock.calls.at(-1)?.[1] as FormData;
     expect(formData.get('duration')).toBe('38');
+  });
+
+  it('sends the durable voice operation in the idempotency header', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({ data: { ...mockMessage, is_voice: true } });
+    await sendVoiceMessage(2, 'file:///tmp/voice.m4a', {}, 38, 'message-voice-operation-1');
+    expect(api.upload).toHaveBeenCalledWith('/api/v2/messages/voice', expect.any(FormData), {
+      headers: { 'Idempotency-Key': 'message-voice-operation-1' },
+    });
   });
 
   it('rounds a fractional length rather than sending a decimal', async () => {

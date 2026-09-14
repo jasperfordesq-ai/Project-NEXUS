@@ -175,5 +175,9 @@
     "title": "Quitter sans enregistrer ?",
     "message": "Vos modifications sur cet écran n’ont pas encore été enregistrées.",
     "discard": "Quitter"
+  },
+  "draftStorage": {
+    "title": "Brouillon non protégé",
+    "message": "Ce brouillon n’a pas pu être enregistré de façon sécurisée sur cet appareil. Gardez l’application ouverte, vérifiez l’espace de stockage, puis apportez une autre modification pour réessayer."
   }
 }

@@ -475,6 +475,12 @@
   "submitting": "Submitting...",
   "submitSuccess": "Idée proposée.",
   "submitFailed": "Impossible de proposer l’idée.",
+  "submissionUnavailable": {
+    "phase": "Ce défi n’accepte pas de nouvelles idées.",
+    "deadline": "La date limite de soumission est passée.",
+    "limit": "Vous avez atteint la limite d’idées pour ce défi.",
+    "authentication": "Connectez-vous pour proposer une idée."
+  },
   "vote": "Vote",
   "voted": "Voted",
   "voteFailed": "Impossible de mettre à jour le vote.",

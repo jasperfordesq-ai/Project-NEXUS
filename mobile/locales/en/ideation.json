@@ -470,6 +470,12 @@
   "submitting": "Submitting...",
   "submitSuccess": "Idea submitted.",
   "submitFailed": "Could not submit the idea.",
+  "submissionUnavailable": {
+    "phase": "This challenge is not accepting new ideas.",
+    "deadline": "The submission deadline has passed.",
+    "limit": "You have reached the idea limit for this challenge.",
+    "authentication": "Sign in to submit an idea."
+  },
   "vote": "Vote",
   "voted": "Voted",
   "voteFailed": "Could not update the vote.",

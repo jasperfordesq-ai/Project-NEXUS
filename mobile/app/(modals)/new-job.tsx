@@ -11,7 +11,7 @@ import { isRefusal } from '@/lib/api/refusal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -77,6 +77,8 @@ function NewJobScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const jobId = Number(params.id);
   const isEditing = Number.isFinite(jobId) && jobId > 0;
@@ -401,7 +403,7 @@ function NewJobScreen() {
           subtitle={isEditing ? t('create.editSubtitle') : t('create.subtitle')}
           tone={JOBS_TONE}
         >
-          <View className="mt-1 flex-row gap-2">
+          <View testID="job-form-summary" className={`mt-1 gap-2 ${largeText ? '' : 'flex-row'}`}>
             <SummaryTile label={t('create.summaryType')} value={t(`filters.type.${type}`)} />
             <SummaryTile label={t('create.summaryCommitment')} value={t(`filters.commitment.${commitment}`)} />
           </View>
@@ -433,7 +435,7 @@ function NewJobScreen() {
           <Text className="-mt-2 text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.remoteHint')}</Text>
           <FormField disabled={isSubmitting} label={t('create.categoryLabel')} value={category} onChangeText={setCategory} placeholder={t('create.categoryPlaceholder')} theme={theme} />
           <FormField disabled={isSubmitting} label={t('create.skillsLabel')} value={skills} onChangeText={setSkills} placeholder={t('create.skillsPlaceholder')} theme={theme} />
-          <View className="flex-row gap-3">
+          <View testID="job-hours-credit-fields" className={`${largeText ? '' : 'flex-row'} gap-3`}>
             <View className="min-w-0 flex-1">
               <FormField disabled={isSubmitting} label={t('create.hoursLabel')} value={hours} onChangeText={setHours} placeholder={t('create.hoursPlaceholder')} theme={theme} keyboardType="decimal-pad" />
             </View>
@@ -445,7 +447,7 @@ function NewJobScreen() {
 
         {type === 'paid' ? (
           <FormSection title={t('create.sectionPay')} icon="cash-outline" testID="job-section-pay">
-            <View className="flex-row gap-3">
+            <View testID="job-salary-range-fields" className={`${largeText ? '' : 'flex-row'} gap-3`}>
               <View className="min-w-0 flex-1">
                 <FormField disabled={isSubmitting} label={t('create.salaryMinLabel')} value={salaryMin} onChangeText={setSalaryMin} placeholder={t('create.salaryPlaceholder')} theme={theme} keyboardType="decimal-pad" />
               </View>

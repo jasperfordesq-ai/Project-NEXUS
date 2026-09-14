@@ -159,7 +159,24 @@
     "resultsHiddenUntilClose": "Ergebnisse erscheinen nach Ablauf der Umfrage",
     "voteToSeeResults": "Abstimmen, um Ergebnisse zu sehen",
     "voteFailedTitle": "Stimme nicht gespeichert",
-    "voteFailed": "Deine Stimme konnte nicht erfasst werden. Bitte versuche es erneut."
+    "voteFailed": "Deine Stimme konnte nicht erfasst werden. Bitte versuche es erneut.",
+    "ranked": "Rangwahl",
+    "rankInstructions": "Ordnen Sie alle Optionen nach Ihrer Präferenz, mit Ihrer ersten Wahl oben.",
+    "rankSubmitted": "Ihre Reihenfolge wurde übermittelt.",
+    "rankingClosed": "Diese Rangwahl ist geschlossen.",
+    "moveUp": "{{option}} nach oben verschieben",
+    "moveDown": "{{option}} nach unten verschieben",
+    "submitRankings": "Präferenzen senden",
+    "submittingRankings": "Wird gesendet",
+    "rankFailed": "Ihre Präferenzen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "resultsHeading": "Ergebnisse der Rangwahl",
+    "resultsLoading": "Ergebnisse werden geladen…",
+    "resultsLoadFailed": "Die Ergebnisse konnten nicht geladen werden.",
+    "retryResults": "Ergebnisse erneut laden",
+    "totalVoters": "{{count}} Abstimmende",
+    "totalVoters_one": "{{count}} abstimmende Person",
+    "firstChoiceVotes": "{{count}} Erststimmen",
+    "firstChoiceVotes_one": "{{count}} Erststimme"
   },
   "pollsScreen": {
     "title": "Umfragen",
@@ -189,7 +206,11 @@
     "createOptionsRequired": "Füge mindestens zwei Antwortmöglichkeiten hinzu.",
     "createdTitle": "Umfrage erstellt",
     "createdMessage": "Deine Umfrage ist jetzt geöffnet.",
-    "createError": "Die Umfrage konnte nicht erstellt werden."
+    "createError": "Die Umfrage konnte nicht erstellt werden.",
+    "typeLabel": "Umfragetyp",
+    "typeStandard": "Eine auswählen",
+    "typeRanked": "Optionen ordnen",
+    "anonymous": "Anonyme Antworten"
   },
   "imageViewer": {
     "close": "Schließen",

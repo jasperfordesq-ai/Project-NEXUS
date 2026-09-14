@@ -118,4 +118,28 @@ final class TeamTaskServiceTest extends TestCase
         self::assertSame((int) $this->owner->id, (int) $details['target_user_id']);
         self::assertSame('Audited task deletion', $details['title']);
     }
+
+    public function test_creation_receipt_replays_one_task_and_rejects_changed_intent(): void
+    {
+        $payload = [
+            'title' => 'Water seedlings',
+            'description' => 'Use the small greenhouse cans.',
+            'priority' => 'high',
+            'idempotency_key' => 'group-task-replay-1',
+        ];
+
+        $firstId = $this->service->create($this->groupId, (int) $this->owner->id, $payload);
+        $replayedId = $this->service->create($this->groupId, (int) $this->owner->id, $payload);
+
+        self::assertNotNull($firstId);
+        self::assertSame($firstId, $replayedId);
+        self::assertSame(1, DB::table('team_tasks')->where('id', $firstId)->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')->where('operation_type', 'task')->count());
+
+        self::assertNull($this->service->create($this->groupId, (int) $this->owner->id, [
+            ...$payload,
+            'description' => 'Changed intent.',
+        ]));
+        self::assertSame('IDEMPOTENCY_CONFLICT', $this->service->getErrors()[0]['code'] ?? null);
+    }
 }

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -33,6 +33,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
+import { completeVolunteerOpportunityCreationOperation, reserveVolunteerOpportunityCreationOperation } from '@/lib/volunteerOpportunityCreationOperation';
 
 /** The volunteering module colour used by the quick-create menu and the volunteering list. */
 const VOLUNTEERING_TONE = '#e11d48';
@@ -77,6 +78,8 @@ function NewVolunteeringScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const opportunityId = Number(params.id);
@@ -93,6 +96,7 @@ function NewVolunteeringScreen() {
   const [endDate, setEndDate] = useState('');
   const [isRemote, setIsRemote] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitPending = useRef(false);
   const [hasSaved, setHasSaved] = useState(false);
   const [hasHydratedEdit, setHasHydratedEdit] = useState(false);
   const [editLoadFailed, setEditLoadFailed] = useState(false);
@@ -179,6 +183,7 @@ function NewVolunteeringScreen() {
   }
 
   async function submit() {
+    if (submitPending.current) return;
     if (isEditing && !hasHydratedEdit) {
       showToast({ title: t('create.failedTitle'), description: t('create.loadFailed'), variant: 'danger' });
       return;
@@ -218,6 +223,7 @@ function NewVolunteeringScreen() {
       return;
     }
 
+    submitPending.current = true;
     setIsSubmitting(true);
     try {
       const payload = {
@@ -229,12 +235,19 @@ function NewVolunteeringScreen() {
         start_date: trimmedStartDate || null,
         end_date: trimmedEndDate || null,
       };
+      const creationOperation = isEditing
+        ? null
+        : await reserveVolunteerOpportunityCreationOperation(JSON.stringify({
+          organization_id: organisationId as number,
+          ...payload,
+        }));
       const result = isEditing
         ? await updateOpportunity(opportunityId, payload)
         : await createOpportunity({
           organization_id: organisationId as number,
           ...payload,
-        });
+        }, creationOperation?.key);
+      if (creationOperation) await completeVolunteerOpportunityCreationOperation(creationOperation);
       setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const id = result.data?.id ?? opportunityId;
@@ -250,6 +263,7 @@ function NewVolunteeringScreen() {
         variant: 'danger',
       });
     } finally {
+      submitPending.current = false;
       setIsSubmitting(false);
     }
   }
@@ -301,7 +315,7 @@ function NewVolunteeringScreen() {
           subtitle={isEditing ? t('create.editSubtitle') : t('create.subtitle')}
           tone={VOLUNTEERING_TONE}
         >
-          <View className="mt-1 flex-row gap-2">
+          <View testID="new-volunteering-summary" className={`mt-1 gap-2 ${largeText ? '' : 'flex-row'}`}>
             <SummaryTile label={t('create.summaryOrganisation')} value={selectedOrg?.name ?? t('create.summaryNotSet')} />
             <SummaryTile
               label={t('create.summaryLocation')}
@@ -356,7 +370,7 @@ function NewVolunteeringScreen() {
               : <Ionicons name="globe-outline" size={15} color={primary} />}
             <HeroButton.Label>{t('create.remote')}</HeroButton.Label>
           </HeroButton>
-          <View className="flex-row gap-3">
+          <View testID="new-volunteering-dates" className={`gap-3 ${largeText ? '' : 'flex-row'}`}>
             <View className="min-w-0 flex-1">
               <FormField label={t('create.startLabel')} value={startDate} onChangeText={setStartDate} placeholder={t('create.datePlaceholder')} theme={theme} />
             </View>

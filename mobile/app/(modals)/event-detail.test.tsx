@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Linking, ScrollView, StyleSheet } from 'react-native';
 
 // --- Mocks ---
@@ -335,6 +335,7 @@ jest.mock('@/lib/api/events', () => ({
   getEventPolls: jest.fn().mockResolvedValue({ data: [], meta: { per_page: 50, has_more: false, cursor: null } }),
   voteEventPoll: jest.fn().mockResolvedValue({ data: { id: 91, question: 'Which topic?', total_votes: 1, has_voted: true, voted_option_id: 12, options: [{ id: 12, text: 'Gardening', percentage: 100 }] } }),
   getEventReminders: jest.fn().mockResolvedValue({ data: [] }),
+  deleteEventReminders: jest.fn().mockResolvedValue({ data: [] }),
   getEventRecurrenceCapabilities: jest.fn(),
   updateEventReminders: jest.fn().mockResolvedValue({ data: [{ remind_before_minutes: 60, reminder_type: 'both', status: 'pending', scheduled_for: '2026-05-15T13:00:00Z' }] }),
   submitEventForReview: jest.fn().mockResolvedValue({ data: {} }),
@@ -369,8 +370,9 @@ jest.mock('@/components/ui/useConfirm', () => ({
 // --- Tests ---
 
 import EventDetailScreen from './event-detail';
-import { acceptEventWaitlistOffer, getEventAgenda, joinEventWaitlist, leaveEventWaitlist, publishEvent, rsvpEvent, submitEventForReview, updateEventReminders, voteEventPoll } from '@/lib/api/events';
+import { acceptEventWaitlistOffer, deleteEventReminders, getEvent, getEventAgenda, joinEventWaitlist, leaveEventWaitlist, publishEvent, rsvpEvent, submitEventForReview, updateEventReminders, voteEventPoll } from '@/lib/api/events';
 import { captureEventTemplate, previewEventTemplateCapture } from '@/lib/api/eventTemplates';
+import { ApiResponseError } from '@/lib/api/client';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
@@ -719,6 +721,70 @@ describe('EventDetailScreen', () => {
         expect.stringMatching(/^rsvp-going-7-/),
       );
       expect(getByText(/1 going.*0 interested/)).toBeTruthy();
+    });
+  });
+
+  it('serializes rapid RSVP actions before the busy state renders', async () => {
+    let resolveRsvp!: (value: unknown) => void;
+    (rsvpEvent as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveRsvp = resolve;
+    }));
+    mockUseApi.mockReturnValue({ data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<EventDetailScreen />);
+
+    act(() => {
+      fireEvent.press(screen.getByTestId('event-going-action'));
+      fireEvent.press(screen.getByTestId('event-interested-action'));
+    });
+
+    expect(rsvpEvent).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveRsvp({
+        data: {
+          relationship: mockEvent.relationship,
+          metrics: mockEvent.metrics,
+        },
+      });
+    });
+  });
+
+  it('accepts an RSVP after response loss only when event readback proves it', async () => {
+    (rsvpEvent as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'response lost'));
+    (getEvent as jest.Mock).mockResolvedValueOnce({
+      data: {
+        ...mockEvent,
+        relationship: {
+          ...mockEvent.relationship,
+          registration: {
+            ...mockEvent.relationship.registration,
+            state: 'confirmed',
+            can_register: false,
+            can_withdraw: true,
+          },
+        },
+        metrics: { ...mockEvent.metrics, confirmed_count: 13 },
+      },
+    });
+    let hookIndex = 0;
+    const eventState = { data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() };
+    mockUseApi.mockImplementation(() => {
+      const state = hookIndex % 5 === 0
+        ? eventState
+        : hookIndex % 5 === 1
+          ? reminderPreferencesState
+          : hookIndex % 5 === 4
+            ? emptyAgendaState
+            : { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+      hookIndex += 1;
+      return state;
+    });
+    const screen = render(<EventDetailScreen />);
+
+    fireEvent.press(screen.getByTestId('event-going-action'));
+
+    await waitFor(() => {
+      expect(getEvent).toHaveBeenCalledWith(7);
+      expect(screen.getByText(/13 going.*5 interested/)).toBeTruthy();
     });
   });
 
@@ -1332,6 +1398,37 @@ describe('EventDetailScreen', () => {
     });
   });
 
+  it('serializes rapid poll votes before the busy state renders', async () => {
+    let resolveVote!: (value: unknown) => void;
+    (voteEventPoll as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveVote = resolve;
+    }));
+    let hookIndex = 0;
+    const eventState = { data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() };
+    const pollsState = {
+      data: { data: [{ id: 91, question: 'Choose one', total_votes: 0, has_voted: false, options: [{ id: 12, text: 'Gardening' }, { id: 13, text: 'Cooking' }] }] },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    mockUseApi.mockImplementation(() => {
+      const state = hookIndex % 5 === 0 ? eventState : hookIndex % 5 === 3 ? pollsState : hookIndex % 5 === 4 ? emptyAgendaState : defaultApiState;
+      hookIndex += 1;
+      return state;
+    });
+    const screen = render(<EventDetailScreen />);
+
+    act(() => {
+      fireEvent.press(screen.getByText('Gardening'));
+      fireEvent.press(screen.getByText('Cooking'));
+    });
+
+    expect(voteEventPoll).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveVote({ data: { ...pollsState.data.data[0], has_voted: true, voted_option_id: 12, total_votes: 1, options: [{ id: 12, text: 'Gardening', percentage: 100 }, { id: 13, text: 'Cooking', percentage: 0 }] } });
+    });
+  });
+
   it('renders and updates per-event reminders', async () => {
     let hookIndex = 0;
     const confirmedEvent = {
@@ -1394,6 +1491,44 @@ describe('EventDetailScreen', () => {
           },
         ],
       });
+    });
+  });
+
+  it('serializes save and reset reminder actions before the busy state renders', async () => {
+    let resolveSave!: (value: unknown) => void;
+    (updateEventReminders as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveSave = resolve;
+    }));
+    let hookIndex = 0;
+    const confirmedEvent = {
+      ...mockEvent,
+      relationship: {
+        ...mockEvent.relationship,
+        registration: { ...mockEvent.relationship.registration, state: 'confirmed', can_register: false, can_withdraw: true },
+      },
+    };
+    mockUseApi.mockImplementation(() => {
+      const state = hookIndex % 5 === 0
+        ? { data: { data: confirmedEvent }, isLoading: false, error: null, refresh: jest.fn() }
+        : hookIndex % 5 === 1
+          ? reminderPreferencesState
+          : hookIndex % 5 === 4
+            ? emptyAgendaState
+            : defaultApiState;
+      hookIndex += 1;
+      return state;
+    });
+    const screen = render(<EventDetailScreen />);
+
+    act(() => {
+      fireEvent.press(screen.getByText('Save reminders'));
+      fireEvent.press(screen.getByText('Reset to defaults'));
+    });
+
+    expect(updateEventReminders).toHaveBeenCalledTimes(1);
+    expect(deleteEventReminders).not.toHaveBeenCalled();
+    await act(async () => {
+      resolveSave({ data: reminderPreferences });
     });
   });
 });
@@ -1472,6 +1607,25 @@ describe('EventDetailScreen native template capture', () => {
     await waitFor(() => expect(queryByText('3 copied / 1 left out')).toBeTruthy());
     expect(getByText('Time zone: Europe/Dublin')).toBeTruthy();
     expect(getByText('You still manage the source event')).toBeTruthy();
+  });
+
+  it('serializes rapid template previews before the busy state renders', async () => {
+    let resolvePreview!: (value: unknown) => void;
+    (previewEventTemplateCapture as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => {
+      resolvePreview = resolve;
+    }));
+    mockUseApi.mockReturnValue(manageableEventState());
+    const screen = render(<EventDetailScreen />);
+
+    act(() => {
+      fireEvent.press(screen.getByText('Save as template'));
+      fireEvent.press(screen.getByText('Save as template'));
+    });
+
+    expect(previewEventTemplateCapture).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolvePreview(capturePreview);
+    });
   });
 
   it('captures the reviewed snapshot with one idempotency key and opens the library', async () => {

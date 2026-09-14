@@ -77,7 +77,9 @@
       "permissionTitle": "É necessário acesso às fotografias",
       "permissionMessage": "Permita o acesso às fotografias para anexar imagens.",
       "uploading": "A enviar fotografias… {{percent}}%",
-      "cancelUpload": "Cancelar"
+      "cancelUpload": "Cancelar",
+      "draftStorageTitle": "Fotografia guardada para esta sessão",
+      "draftStorageWarning": "A fotografia está anexada, mas pode perder-se se a aplicação fechar."
     },
     "voice": {
       "record": "Gravar mensagem de voz",
@@ -91,7 +93,9 @@
       "failedTitle": "Falha na mensagem de voz",
       "startFailed": "Não foi possível iniciar a gravação. Tente novamente.",
       "stopFailed": "Não foi possível guardar esta gravação. Tente novamente.",
-      "sendFailed": "Não foi possível enviar a mensagem de voz. Tente novamente."
+      "sendFailed": "Não foi possível enviar a mensagem de voz. Tente novamente.",
+      "draftStorageTitle": "Nota de voz guardada para esta sessão",
+      "draftStorageWarning": "A nota de voz está pronta, mas pode perder-se se a aplicação fechar."
     },
     "notFound": "Esta conversa já não está disponível.",
     "unsentDrafts": "Rascunhos não enviados: {{count}}",

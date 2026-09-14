@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -57,6 +57,7 @@ import CommentSheet from '@/components/comments/CommentSheet';
 import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
 
@@ -138,6 +139,19 @@ function ExchangeDetailModalInner() {
   const [reportReason, setReportReason] = useState('safety_concern');
   const [reportDetails, setReportDetails] = useState('');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  // React state is rendered asynchronously. Two taps delivered before the next
+  // render used to enter the same handler twice and send duplicate writes even
+  // though the button became disabled afterwards. Refs close that same-frame
+  // window; state remains the source of truth for the visible loading UI.
+  const submittingRef = useRef(false);
+  const savingRef = useRef(false);
+  const likingRef = useRef(false);
+  const reportingRef = useRef(false);
+  const renewingRef = useRef(false);
+  const deletingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   const exchangeId = Number(id);
   const safeExchangeId = isNaN(exchangeId) || exchangeId <= 0 ? 0 : exchangeId;
@@ -203,7 +217,8 @@ function ExchangeDetailModalInner() {
 
   const handleAction = useCallback(
     (recipientId: number, recipientName: string) => {
-      if (isSubmitting) return;
+      if (submittingRef.current) return;
+      submittingRef.current = true;
       setIsSubmitting(true);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       router.push({
@@ -211,9 +226,13 @@ function ExchangeDetailModalInner() {
         params: { recipientId: String(recipientId), name: recipientName, listing: String(safeExchangeId) },
       });
       // Reset after navigation begins so the button is re-enabled if user returns
-      setTimeout(() => setIsSubmitting(false), 600);
+      setTimeout(() => {
+        if (!isMountedRef.current) return;
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }, 600);
     },
-    [isSubmitting, safeExchangeId],
+    [safeExchangeId],
   );
 
   if (isNaN(exchangeId) || exchangeId <= 0) {
@@ -305,7 +324,8 @@ function ExchangeDetailModalInner() {
   }
 
   async function handleSaveToggle() {
-    if (isSaving) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
     setIsSaving(true);
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);
@@ -315,17 +335,35 @@ function ExchangeDetailModalInner() {
       } else {
         await unsaveExchange(listing.id);
       }
+      if (!isMountedRef.current) return;
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (err) {
-      setIsSaved(!nextSaved);
-      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.saveFailed')), variant: 'danger' });
+      let recovered = false;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const readback = await getExchange(listing.id);
+          recovered = Boolean(readback.data.is_favorited) === nextSaved;
+        } catch {
+          // Preserve the original uncertain failure below.
+        }
+      }
+      if (!isMountedRef.current) return;
+      if (recovered) {
+        setIsSaved(nextSaved);
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } else {
+        setIsSaved(!nextSaved);
+        showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.saveFailed')), variant: 'danger' });
+      }
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
     }
   }
 
   async function handleLikeToggle() {
-    if (isLiking) return;
+    if (likingRef.current) return;
+    likingRef.current = true;
     setIsLiking(true);
     const wasLiked = isLiked;
     const previousCount = likesCount;
@@ -333,16 +371,34 @@ function ExchangeDetailModalInner() {
     setLikesCount((current) => wasLiked ? Math.max(0, current - 1) : current + 1);
     try {
       const response = await toggleExchangeLike(listing.id);
+      if (!isMountedRef.current) return;
       const payload = (response.data ?? response) as { liked?: boolean; status?: string; action?: string; likes_count?: number };
       const nextLiked = payload.liked ?? (payload.status === 'liked' || payload.action === 'liked' || !wasLiked);
       setIsLiked(Boolean(nextLiked));
       setLikesCount(payload.likes_count ?? previousCount + (nextLiked ? 1 : -1));
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (err) {
-      setIsLiked(wasLiked);
-      setLikesCount(previousCount);
-      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.likeFailed')), variant: 'danger' });
+      let recovered: Exchange | null = null;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const readback = await getExchange(listing.id);
+          if (Boolean(readback.data.is_liked) === !wasLiked) recovered = readback.data;
+        } catch {
+          // Preserve the original uncertain failure below.
+        }
+      }
+      if (!isMountedRef.current) return;
+      if (recovered) {
+        setIsLiked(Boolean(recovered.is_liked));
+        setLikesCount(recovered.likes_count ?? (wasLiked ? Math.max(0, previousCount - 1) : previousCount + 1));
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } else {
+        setIsLiked(wasLiked);
+        setLikesCount(previousCount);
+        showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.likeFailed')), variant: 'danger' });
+      }
     } finally {
+      likingRef.current = false;
       setIsLiking(false);
     }
   }
@@ -353,13 +409,15 @@ function ExchangeDetailModalInner() {
   }
 
   async function handleReportSubmit() {
-    if (isReporting || isReported || !reportReason.trim()) return;
+    if (reportingRef.current || isReported || !reportReason.trim()) return;
+    reportingRef.current = true;
     setIsReporting(true);
     try {
       const response = await reportExchange(listing.id, {
         reason: reportReason.trim(),
         details: reportDetails.trim() || undefined,
       });
+      if (!isMountedRef.current) return;
       if (response.code === 'ALREADY_REPORTED') {
         showToast({ title: t('detail.reportAlreadyTitle'), description: t('detail.reportAlreadyMessage'), variant: 'default' });
       } else {
@@ -373,22 +431,44 @@ function ExchangeDetailModalInner() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.reportFailed')), variant: 'danger' });
     } finally {
+      reportingRef.current = false;
       setIsReporting(false);
     }
   }
 
   async function handleRenew() {
-    if (isRenewing) return;
+    if (renewingRef.current) return;
+    renewingRef.current = true;
     setIsRenewing(true);
     try {
       await renewExchange(listing.id);
+      if (!isMountedRef.current) return;
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.renewedTitle'), description: t('detail.renewedMessage'), variant: 'success' });
     } catch (err) {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.renewFailed')), variant: 'danger' });
+      let recovered = false;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const readback = (await getExchange(listing.id)).data;
+          recovered = Number(readback.renewal_count ?? 0) > Number(listing.renewal_count ?? 0)
+            || Boolean(readback.renewed_at && readback.renewed_at !== listing.renewed_at)
+            || Boolean(readback.expires_at && readback.expires_at !== listing.expires_at);
+        } catch {
+          // Preserve the original uncertain failure below.
+        }
+      }
+      if (!isMountedRef.current) return;
+      if (recovered) {
+        refresh();
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        showToast({ title: t('detail.renewedTitle'), description: t('detail.renewedMessage'), variant: 'success' });
+      } else {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.renewFailed')), variant: 'danger' });
+      }
     } finally {
+      renewingRef.current = false;
       setIsRenewing(false);
     }
   }
@@ -401,15 +481,33 @@ function ExchangeDetailModalInner() {
       cancelLabel: t('detail.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (deletingRef.current) return;
+        deletingRef.current = true;
         setIsDeleting(true);
         try {
           await deleteExchange(listing.id);
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           router.replace('/(tabs)/exchanges' as Href);
         } catch (err) {
-          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.deleteFailed')), variant: 'danger' });
+          let recovered = false;
+          if (err instanceof ApiResponseError && err.status === 0) {
+            try {
+              await getExchange(listing.id);
+            } catch (readbackError) {
+              recovered = readbackError instanceof ApiResponseError && readbackError.status === 404;
+            }
+          }
+          if (!isMountedRef.current) return;
+          if (recovered) {
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            router.replace('/(tabs)/exchanges' as Href);
+          } else {
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.deleteFailed')), variant: 'danger' });
+          }
         } finally {
+          deletingRef.current = false;
           setIsDeleting(false);
         }
       },
@@ -417,7 +515,7 @@ function ExchangeDetailModalInner() {
   }
 
   async function handleRequestExchange() {
-    if (isSubmitting || activeExchange) {
+    if (submittingRef.current || activeExchange) {
       if (activeExchange) {
         openActiveExchange();
       }
@@ -427,6 +525,7 @@ function ExchangeDetailModalInner() {
       showToast({ title: t('detail.actionFailedTitle'), description: t('validation.invalidCredits'), variant: 'warning' });
       return;
     }
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       const response = await createExchangeRequest({
@@ -434,14 +533,33 @@ function ExchangeDetailModalInner() {
         proposed_hours: Number.isFinite(requestHoursValue) && requestHoursValue > 0 ? requestHoursValue : null,
         message: requestMessage.trim() || null,
       });
+      if (!isMountedRef.current) return;
       setActiveExchange(response.data);
       setShowRequestForm(false);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('detail.exchangeRequestedTitle'), description: t('detail.exchangeRequestedMessage'), variant: 'success' });
     } catch (err) {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.exchangeRequestFailed')), variant: 'danger' });
+      let recovered: ActiveExchange | null = null;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const readback = await checkActiveExchange(listing.id);
+          recovered = readback && 'data' in readback ? readback.data : readback;
+        } catch {
+          // Preserve the original uncertain failure below.
+        }
+      }
+      if (!isMountedRef.current) return;
+      if (recovered) {
+        setActiveExchange(recovered);
+        setShowRequestForm(false);
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        showToast({ title: t('detail.exchangeRequestedTitle'), description: t('detail.exchangeRequestedMessage'), variant: 'success' });
+      } else {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.exchangeRequestFailed')), variant: 'danger' });
+      }
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -1083,4 +1201,11 @@ function normalizeRelatedTitle(title: string): string {
   return title.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-export default withRouteGate(ExchangeDetailModal, 'exchange-detail');
+function ExchangeDetailRoute() {
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <ExchangeDetailModal key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${params.id ?? 'invalid'}`} />;
+}
+
+export default withRouteGate(ExchangeDetailRoute, 'exchange-detail');

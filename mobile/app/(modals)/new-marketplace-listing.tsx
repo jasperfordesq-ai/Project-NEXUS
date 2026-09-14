@@ -46,9 +46,14 @@ import {
   type MarketplaceVideoUpload,
 } from '@/lib/api/marketplace';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
+import {
+  completeMarketplaceListingOperation,
+  reserveMarketplaceListingOperation,
+} from '@/lib/marketplaceListingOperation';
 import { MARKETPLACE_MAX_EDGE, prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { withRouteGate } from '@/components/withRouteGate';
 import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
@@ -84,7 +89,7 @@ function normalizeExistingCurrency(value?: string | null): string {
   return /^[A-Z]{3}$/.test(candidate) ? candidate : '';
 }
 
-function NewMarketplaceListingRoute() {
+function MarketplaceListingModal() {
   return (
     <ModalErrorBoundary>
       <MarketplaceListingForm />
@@ -102,6 +107,9 @@ export function MarketplaceListingForm() {
   const listingId = Number(params.id);
   const isEditing = Number.isFinite(listingId) && listingId > 0;
   const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
+  const [categoriesLoadAttempt, setCategoriesLoadAttempt] = useState(0);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categoriesLoadFailed, setCategoriesLoadFailed] = useState(false);
   const [title, setTitle] = useState('');
   const [tagline, setTagline] = useState('');
   const [description, setDescription] = useState('');
@@ -117,6 +125,8 @@ export function MarketplaceListingForm() {
   const [categoryTemplate, setCategoryTemplate] = useState<MarketplaceCategoryTemplateField[]>([]);
   const [templateFields, setTemplateFields] = useState<Record<string, string>>({});
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [templateLoadAttempt, setTemplateLoadAttempt] = useState(0);
+  const [templateLoadFailed, setTemplateLoadFailed] = useState(false);
   const [quantity, setQuantity] = useState('1');
   const [inventoryUnlimited, setInventoryUnlimited] = useState(true);
   const [inventoryCount, setInventoryCount] = useState('0');
@@ -137,6 +147,8 @@ export function MarketplaceListingForm() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [pendingMedia, setPendingMedia] = useState<{ id: number; tasks: (() => Promise<unknown>)[]; notice: string | null } | null>(null);
   const mediaRetryInFlight = useRef(false);
+  const submitInFlight = useRef(false);
+  const isMountedRef = useRef(true);
   const { confirm, confirmDialog } = useConfirm();
   /*
     🔴 S5: a long description, a price and chosen photos were lost to a stray Back with
@@ -157,19 +169,30 @@ export function MarketplaceListingForm() {
   // The footer says what is missing instead of "publish when ready" over an empty form.
   const footerIncomplete = !title.trim() || (priceType !== 'free' && toNumber(price) === null);
 
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
+
   useEffect(() => {
     let mounted = true;
+    setIsLoadingCategories(true);
+    setCategoriesLoadFailed(false);
     getMarketplaceCategories()
       .then((response) => {
         if (mounted) setCategories(response.data);
       })
       .catch(() => {
-        if (mounted) setCategories([]);
+        if (!mounted) return;
+        setCategories([]);
+        setCategoriesLoadFailed(true);
+      })
+      .finally(() => {
+        if (mounted) setIsLoadingCategories(false);
       });
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [categoriesLoadAttempt]);
 
   useEffect(() => {
     if (!isEditing || hydrated) return;
@@ -232,11 +255,13 @@ export function MarketplaceListingForm() {
     if (!categoryId) {
       setCategoryTemplate([]);
       setTemplateFields({});
+      setTemplateLoadFailed(false);
       return;
     }
 
     let mounted = true;
     setIsLoadingTemplate(true);
+    setTemplateLoadFailed(false);
     getMarketplaceCategoryTemplate(categoryId)
       .then((response) => {
         if (!mounted) return;
@@ -253,7 +278,7 @@ export function MarketplaceListingForm() {
       .catch(() => {
         if (!mounted) return;
         setCategoryTemplate([]);
-        setTemplateFields({});
+        setTemplateLoadFailed(true);
       })
       .finally(() => {
         if (mounted) setIsLoadingTemplate(false);
@@ -262,11 +287,25 @@ export function MarketplaceListingForm() {
     return () => {
       mounted = false;
     };
-  }, [categoryId]);
+  }, [categoryId, templateLoadAttempt]);
 
   async function submit() {
+    if (submitInFlight.current) return;
     if (!title.trim() || !description.trim()) {
       showToast({ title: t('forms.validation'), description: t('forms.required'), variant: 'warning' });
+      return;
+    }
+
+    if (categoryId && (isLoadingTemplate || templateLoadFailed)) {
+      showToast({ title: t('forms.validation'), description: t('forms.categoryFieldsUnavailable'), variant: 'warning' });
+      return;
+    }
+
+    const missingRequiredTemplateField = categoryTemplate.some(
+      (field) => field.required && !(templateFields[field.key] ?? '').trim(),
+    );
+    if (missingRequiredTemplateField) {
+      showToast({ title: t('forms.validation'), description: t('forms.categoryFieldsRequired'), variant: 'warning' });
       return;
     }
 
@@ -276,6 +315,7 @@ export function MarketplaceListingForm() {
       return;
     }
 
+    submitInFlight.current = true;
     setIsSubmitting(true);
     try {
       const hasLatitude = latitude.trim().length > 0;
@@ -319,9 +359,14 @@ export function MarketplaceListingForm() {
       if (Object.keys(filledTemplateFields).length > 0) {
         payload.template_data = filledTemplateFields;
       }
+      const creationOperation = isEditing
+        ? null
+        : await reserveMarketplaceListingOperation(JSON.stringify(payload));
       const response = isEditing
         ? await updateMarketplaceListing(listingId, payload)
-        : await createMarketplaceListing(payload);
+        : await createMarketplaceListing(payload, creationOperation?.key);
+      if (creationOperation) await completeMarketplaceListingOperation(creationOperation);
+      if (!isMountedRef.current) return;
       const tasks: (() => Promise<unknown>)[] = [];
       if (isEditing) removedImageIds.forEach(imageId => tasks.push(() => deleteMarketplaceListingImage(response.data.id, imageId)));
       imageUris.forEach(uri => {
@@ -331,6 +376,7 @@ export function MarketplaceListingForm() {
       if (isEditing && removeExistingVideo && !videoAsset) tasks.push(() => deleteMarketplaceVideo(response.data.id));
       if (videoAsset) tasks.push(() => uploadMarketplaceVideo(response.data.id, videoAsset));
       const failed = await runMediaTasks(tasks);
+      if (!isMountedRef.current) return;
       if (failed.length) {
         setPendingMedia({ id: response.data.id, tasks: failed, notice: typeof response.meta?.notice === 'string' ? response.meta.notice : null });
         return;
@@ -356,9 +402,12 @@ export function MarketplaceListingForm() {
 
       router.replace({ pathname: '/(modals)/marketplace-detail', params: { id: String(response.data.id) } } as unknown as Href);
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('forms.saveFailed')), variant: 'danger' });
+      if (isMountedRef.current) {
+        showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('forms.saveFailed')), variant: 'danger' });
+      }
     } finally {
-      setIsSubmitting(false);
+      submitInFlight.current = false;
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -569,11 +618,21 @@ export function MarketplaceListingForm() {
             ) : null}
             <FormField label={t('forms.timeCredits')} value={timeCredits} onChangeText={setTimeCredits} placeholder={t('forms.timeCreditsPlaceholder')} keyboardType="decimal-pad" />
             <ButtonGroup label={t('forms.condition')} values={CONDITIONS} selected={condition} onSelect={setCondition} labelFor={(value) => t(`condition.${value}`)} />
-            <CategoryGroup categories={categories} selected={categoryId} onSelect={setCategoryId} primary={primary} />
+            <CategoryGroup
+              categories={categories}
+              selected={categoryId}
+              onSelect={setCategoryId}
+              primary={primary}
+              isLoading={isLoadingCategories}
+              loadFailed={categoriesLoadFailed}
+              onRetry={() => setCategoriesLoadAttempt((attempt) => attempt + 1)}
+            />
             <TemplateFieldsSection
               fields={categoryTemplate}
               values={templateFields}
               isLoading={isLoadingTemplate}
+              loadFailed={templateLoadFailed}
+              onRetry={() => setTemplateLoadAttempt((attempt) => attempt + 1)}
               onChange={(key, value) => setTemplateFields((current) => ({ ...current, [key]: value }))}
               primary={primary}
             />
@@ -725,13 +784,24 @@ export function MarketplaceListingForm() {
         title={isEditing ? t('forms.footerEditTitle') : t('forms.footerCreateTitle')}
         subtitle={footerIncomplete ? t('forms.footerMissing') : t('forms.footerSubtitle')}
         submitLabel={isEditing ? t('forms.update') : t('forms.publish')}
-        isDisabled={isEditing && !hydrated}
+        isDisabled={(isEditing && !hydrated) || isLoadingTemplate || templateLoadFailed}
         isSubmitting={isSubmitting}
         onSubmit={submit}
       />
       </KeyboardAvoidingView>
       {confirmDialog}
     </SafeAreaView>
+  );
+}
+
+function NewMarketplaceListingRoute() {
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return (
+    <MarketplaceListingModal
+      key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${params.id ?? 'new'}`}
+    />
   );
 }
 
@@ -768,12 +838,40 @@ function SwitchRow({ label, value, onValueChange }: { label: string; value: bool
   );
 }
 
-function CategoryGroup({ categories, selected, onSelect, primary }: { categories: MarketplaceCategory[]; selected: number | null; onSelect: (value: number | null) => void; primary: string }) {
-  const { t } = useTranslation('marketplace');
+function CategoryGroup({
+  categories,
+  selected,
+  onSelect,
+  primary,
+  isLoading,
+  loadFailed,
+  onRetry,
+}: {
+  categories: MarketplaceCategory[];
+  selected: number | null;
+  onSelect: (value: number | null) => void;
+  primary: string;
+  isLoading: boolean;
+  loadFailed: boolean;
+  onRetry: () => void;
+}) {
+  const { t } = useTranslation(['marketplace', 'common']);
   const theme = useTheme();
   return (
     <View className="gap-2">
       <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{t('forms.category')}</Text>
+      {isLoading ? (
+        <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('forms.loadingCategories')}</Text>
+      ) : null}
+      {loadFailed ? (
+        <View className="gap-2 rounded-panel-inner p-3" style={{ borderWidth: 1, borderColor: theme.error, backgroundColor: withAlpha(theme.error, 0.08) }}>
+          <Text className="text-sm leading-5" style={{ color: theme.text }}>{t('forms.categoriesLoadFailed')}</Text>
+          <HeroButton size="sm" variant="secondary" onPress={onRetry}>
+            <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+          </HeroButton>
+        </View>
+      ) : null}
+      {!isLoading && !loadFailed ? (
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 2 }}>
         <HeroButton size="sm" variant={selected === null ? 'primary' : 'secondary'} onPress={() => onSelect(null)}>
           <HeroButton.Label>{t('filters.noCategory')}</HeroButton.Label>
@@ -784,6 +882,7 @@ function CategoryGroup({ categories, selected, onSelect, primary }: { categories
           </HeroButton>
         ))}
       </ScrollView>
+      ) : null}
     </View>
   );
 }
@@ -792,16 +891,20 @@ function TemplateFieldsSection({
   fields,
   values,
   isLoading,
+  loadFailed,
+  onRetry,
   onChange,
   primary,
 }: {
   fields: MarketplaceCategoryTemplateField[];
   values: Record<string, string>;
   isLoading: boolean;
+  loadFailed: boolean;
+  onRetry: () => void;
   onChange: (key: string, value: string) => void;
   primary: string;
 }) {
-  const { t } = useTranslation('marketplace');
+  const { t } = useTranslation(['marketplace', 'common']);
   const theme = useTheme();
 
   if (isLoading) {
@@ -809,6 +912,17 @@ function TemplateFieldsSection({
       <View className="min-h-12 flex-row items-center gap-3 rounded-panel-inner px-3" style={{ borderWidth: 1, borderColor: theme.border, backgroundColor: withAlpha(primary, 0.05) }}>
         <Ionicons name="options-outline" size={18} color={primary} />
         <Text className="min-w-0 flex-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={2}>{t('forms.loadingCategoryFields')}</Text>
+      </View>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <View className="gap-2 rounded-panel-inner p-3" style={{ borderWidth: 1, borderColor: theme.error, backgroundColor: withAlpha(theme.error, 0.08) }}>
+        <Text className="text-sm leading-5" style={{ color: theme.text }}>{t('forms.categoryFieldsLoadFailed')}</Text>
+        <HeroButton size="sm" variant="secondary" onPress={onRetry}>
+          <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+        </HeroButton>
       </View>
     );
   }

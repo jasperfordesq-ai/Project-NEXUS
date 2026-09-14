@@ -22,7 +22,8 @@ import {
 } from '@/lib/api/events';
 import { ApiResponseError } from '@/lib/api/client';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import * as Haptics from '@/lib/haptics';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -51,8 +52,11 @@ function newMutationKey(eventId: number, memberId: number, action: EventAttendan
 }
 
 function EventAttendanceScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`}>
       <EventAttendanceScreenInner />
     </ModalErrorBoundary>
   );
@@ -73,6 +77,8 @@ function EventAttendanceScreenInner() {
   const [filter, setFilter] = useState<AttendanceFilter>('all');
   const [activeMutation, setActiveMutation] = useState<string | null>(null);
   const mutationKeys = useRef(new Map<string, string>());
+  const mutationPendingRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   const rosterApi = useApi(
     () => getEventAttendanceRoster(safeEventId, {
@@ -95,6 +101,10 @@ function EventAttendanceScreenInner() {
     setFilter('all');
   }, [safeEventId]);
 
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
+
   function applySearch() {
     setPage(1);
     setSearch(draftSearch.trim());
@@ -108,6 +118,8 @@ function EventAttendanceScreenInner() {
   }
 
   async function runAttendanceAction(person: EventAttendanceRosterPerson, action: EventAttendanceAction) {
+    if (mutationPendingRef.current) return;
+    mutationPendingRef.current = true;
     const expectedVersion = person.attendance.version ?? 0;
     const operationId = `${person.member.id}:${action}:${expectedVersion}`;
     const idempotencyKey = mutationKeys.current.get(operationId)
@@ -123,6 +135,7 @@ function EventAttendanceScreenInner() {
         idempotencyKey,
       });
       mutationKeys.current.delete(operationId);
+      if (!isMountedRef.current) return;
       showToast({
         title: t('attendance.updated'),
         description: t(`attendance.actions.${action}`),
@@ -130,6 +143,7 @@ function EventAttendanceScreenInner() {
       });
       rosterApi.refresh();
     } catch (error) {
+      if (!isMountedRef.current) return;
       if (error instanceof ApiResponseError && error.status === 409) {
         mutationKeys.current.delete(operationId);
         showToast({
@@ -153,7 +167,8 @@ function EventAttendanceScreenInner() {
         rosterApi.refresh();
       }
     } finally {
-      setActiveMutation(null);
+      mutationPendingRef.current = false;
+      if (isMountedRef.current) setActiveMutation(null);
     }
   }
 

@@ -78,7 +78,13 @@ class IdeationChallengesController extends BaseApiController
             if (in_array($code, ['VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED'], true)) {
                 return 403;
             }
-            if ($code === ApiErrorCodes::RESOURCE_CONFLICT) {
+            if (in_array($code, [
+                ApiErrorCodes::RESOURCE_CONFLICT,
+                'IDEMPOTENCY_CONFLICT',
+                'IDEATION_SUBMISSION_CLOSED',
+                'IDEATION_SUBMISSION_DEADLINE',
+                'IDEATION_SUBMISSION_LIMIT',
+            ], true)) {
                 return 409;
             }
             if (in_array($code, ['GROUP_QUOTA_EXCEEDED', 'TENANT_QUOTA_EXCEEDED'], true)) {
@@ -225,10 +231,16 @@ class IdeationChallengesController extends BaseApiController
         $this->requireInput('title');
 
         $data = $this->getAllInput();
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? null);
         try {
             $ideaId = $this->challengeService->submitIdea($id, $userId, $data);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
+        }
+
+        if ($ideaId === 0) {
+            $errors = $this->challengeService->getErrors();
+            return $this->respondWithErrors($errors, $this->resolveErrorStatus($errors));
         }
 
         return $this->respondWithData(['id' => $ideaId], null, 201);
@@ -418,7 +430,13 @@ class IdeationChallengesController extends BaseApiController
         $this->rateLimit('ideation_vote', 30, 60);
 
         try {
-            $result = $this->challengeService->voteIdea((int) $id, $userId);
+            $desiredVoted = request()->has('voted') ? $this->inputBool('voted') : null;
+            $result = $this->challengeService->voteIdea(
+                (int) $id,
+                $userId,
+                $desiredVoted,
+                request()->header('Idempotency-Key') ?? $this->input('idempotency_key'),
+            );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -501,7 +519,12 @@ class IdeationChallengesController extends BaseApiController
 
         $body = $this->input('body', '');
         try {
-            $commentId = $this->challengeService->addComment((int) $id, $userId, $body);
+            $commentId = $this->challengeService->addComment(
+                (int) $id,
+                $userId,
+                $body,
+                request()->header('Idempotency-Key') ?? $this->input('idempotency_key'),
+            );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -511,8 +534,7 @@ class IdeationChallengesController extends BaseApiController
             return $this->respondWithErrors($errors, $this->resolveErrorStatus($errors));
         }
 
-        $comments = $this->challengeService->getComments((int) $id, ['limit' => 1]);
-        $comment = !empty($comments['items']) ? $comments['items'][0] : ['id' => $commentId];
+        $comment = $this->challengeService->getCommentById($commentId) ?? ['id' => $commentId];
 
         return $this->respondWithData($comment, null, 201);
     }
@@ -1218,6 +1240,7 @@ class IdeationChallengesController extends BaseApiController
         $this->rateLimit('team_task', 20, 60);
 
         $data = $this->getAllInput();
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? null);
         try {
             $taskId = $this->teamTaskService->create((int) $id, $userId, $data);
         } catch (SafeguardingPolicyException $e) {

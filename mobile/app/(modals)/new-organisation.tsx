@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -69,6 +69,8 @@ function NewOrganisationInner() {
   const { t } = useTranslation(['organisations', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -201,7 +203,7 @@ function NewOrganisationInner() {
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: primary }} />
           <HeroCard.Body className="gap-3 p-4">
-            <View className="flex-row items-start gap-3">
+            <View testID="new-organisation-identity" className={`${largeText ? 'gap-3' : 'flex-row items-start gap-3'}`}>
               <View className="size-12 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
                 <Ionicons name="business-outline" size={24} color={primary} />
               </View>
@@ -285,11 +287,11 @@ function NewOrganisationInner() {
               </Text>
             </Surface>
 
-            <View className="flex-row gap-3 pt-2">
-              <HeroButton className="flex-1" variant="secondary" onPress={() => router.back()} isDisabled={isSubmitting}>
+            <View testID="new-organisation-actions" className={`${largeText ? 'gap-3' : 'flex-row gap-3'} pt-2`}>
+              <HeroButton className={largeText ? 'w-full' : 'flex-1'} variant="secondary" onPress={() => router.back()} isDisabled={isSubmitting}>
                 <HeroButton.Label>{t('register.cancel')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" variant="primary" onPress={submit} isDisabled={isSubmitting}>
+              <HeroButton className={largeText ? 'w-full' : 'flex-1'} variant="primary" onPress={submit} isDisabled={isSubmitting}>
                 {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="save-outline" size={16} />}
                 <HeroButton.Label>{t('register.submit')}</HeroButton.Label>
               </HeroButton>

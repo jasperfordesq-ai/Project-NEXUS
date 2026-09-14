@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -44,6 +44,8 @@ function JobAnalyticsContent() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const jobId = Number(id);
   const safeId = Number.isFinite(jobId) && jobId > 0 ? jobId : 0;
 
@@ -150,7 +152,7 @@ function JobAnalyticsContent() {
           <HeroCard className="overflow-hidden rounded-panel p-0">
             <View className="h-1.5" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="gap-4 p-4">
-              <View className="flex-row items-start gap-3">
+              <View className={`${largeText ? 'items-start' : 'flex-row items-start'} gap-3`}>
                 <View className="size-12 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
                   <Ionicons name="analytics-outline" size={24} color={primary} />
                 </View>
@@ -170,10 +172,10 @@ function JobAnalyticsContent() {
           </HeroCard>
 
           <View className="flex-row flex-wrap gap-3">
-            <MetricCard icon="eye-outline" label={t('analytics.total_views')} value={formatNumber(analytics.total_views)} tint={primary} theme={theme} />
-            <MetricCard icon="people-outline" label={t('analytics.unique_viewers')} value={formatNumber(analytics.unique_viewers)} tint={theme.success} theme={theme} />
-            <MetricCard icon="document-text-outline" label={t('analytics.total_applications')} value={formatNumber(analytics.total_applications)} tint={theme.warning} theme={theme} />
-            <MetricCard icon="trending-up-outline" label={t('analytics.conversion_rate')} value={`${analytics.conversion_rate}%`} tint={theme.info ?? primary} theme={theme} />
+            <MetricCard icon="eye-outline" label={t('analytics.total_views')} value={formatNumber(analytics.total_views)} tint={primary} theme={theme} largeText={largeText} testID="job-analytics-total-views" />
+            <MetricCard icon="people-outline" label={t('analytics.unique_viewers')} value={formatNumber(analytics.unique_viewers)} tint={theme.success} theme={theme} largeText={largeText} />
+            <MetricCard icon="document-text-outline" label={t('analytics.total_applications')} value={formatNumber(analytics.total_applications)} tint={theme.warning} theme={theme} largeText={largeText} />
+            <MetricCard icon="trending-up-outline" label={t('analytics.conversion_rate')} value={`${analytics.conversion_rate}%`} tint={theme.info ?? primary} theme={theme} largeText={largeText} />
           </View>
 
           {(analytics.referral_stats || analytics.scorecard_avg !== null) ? (
@@ -199,12 +201,12 @@ function JobAnalyticsContent() {
             </HeroCard>
           ) : null}
 
-          <View className="flex-row gap-3">
+          <View className={`${largeText ? '' : 'flex-row'} gap-3`}>
             {analytics.avg_time_to_apply_hours !== null ? (
-              <MetricCard icon="time-outline" label={t('analytics.avg_time_to_apply')} value={t('analytics.hours_value', { count: analytics.avg_time_to_apply_hours })} tint={theme.textSecondary} theme={theme} />
+              <MetricCard icon="time-outline" label={t('analytics.avg_time_to_apply')} value={t('analytics.hours_value', { count: analytics.avg_time_to_apply_hours })} tint={theme.textSecondary} theme={theme} largeText={largeText} />
             ) : null}
             {analytics.time_to_fill_days !== null ? (
-              <MetricCard icon="hourglass-outline" label={t('analytics.time_to_fill')} value={t('analytics.days_value', { count: analytics.time_to_fill_days })} tint={theme.textSecondary} theme={theme} />
+              <MetricCard icon="hourglass-outline" label={t('analytics.time_to_fill')} value={t('analytics.days_value', { count: analytics.time_to_fill_days })} tint={theme.textSecondary} theme={theme} largeText={largeText} />
             ) : null}
           </View>
 
@@ -219,6 +221,7 @@ function JobAnalyticsContent() {
               maxValue={maxViews}
               tint={primary}
               theme={theme}
+              largeText={largeText}
             />
           ) : null}
 
@@ -233,11 +236,12 @@ function JobAnalyticsContent() {
               maxValue={maxWeeklyApplications}
               tint={theme.warning}
               theme={theme}
+              largeText={largeText}
             />
           ) : null}
 
           {analytics.applications_by_stage.length > 0 ? (
-            <ApplicationsByStageCard analytics={analytics} primary={primary} theme={theme} t={t} />
+            <ApplicationsByStageCard analytics={analytics} primary={primary} theme={theme} t={t} largeText={largeText} />
           ) : null}
 
           <PredictionsCard
@@ -248,6 +252,7 @@ function JobAnalyticsContent() {
             primary={primary}
             theme={theme}
             t={t}
+            largeText={largeText}
           />
         </ScrollView>
       </SafeAreaView>
@@ -261,23 +266,27 @@ function MetricCard({
   value,
   tint,
   theme,
+  largeText,
+  testID,
 }: {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   label: string;
   value: string;
   tint: string;
   theme: ReturnType<typeof useTheme>;
+  largeText: boolean;
+  testID?: string;
 }) {
   return (
-    <HeroCard className="min-w-[46%] flex-1 rounded-panel p-0">
+    <HeroCard testID={testID} className="min-w-[46%] flex-1 rounded-panel p-0" style={{ flexBasis: largeText ? '100%' : '46%' }}>
       <HeroCard.Body className="gap-3 p-4">
         <View className="size-10 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha(tint, 0.14) }}>
           <Ionicons name={icon} size={20} color={tint} />
         </View>
-        <Text className="text-xs font-semibold" style={{ color: theme.textSecondary }} numberOfLines={2}>
+        <Text className="text-xs font-semibold" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>
           {label}
         </Text>
-        <Text className="text-2xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
+        <Text className="text-2xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 1}>
           {value}
         </Text>
       </HeroCard.Body>
@@ -300,12 +309,14 @@ function ChartCard({
   maxValue,
   tint,
   theme,
+  largeText,
 }: {
   title: string;
   items: { key: string; label: string; value: number }[];
   maxValue: number;
   tint: string;
   theme: ReturnType<typeof useTheme>;
+  largeText: boolean;
 }) {
   return (
     <HeroCard className="rounded-panel p-0">
@@ -313,7 +324,17 @@ function ChartCard({
         <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>
           {title}
         </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {largeText ? (
+          <View className="gap-2" testID="job-analytics-chart-rows">
+            {items.map((item) => (
+              <Surface key={item.key} variant="secondary" className="gap-1 rounded-panel-inner p-3" testID={`job-analytics-chart-row-${item.key}`}>
+                <Text className="text-sm font-semibold" style={{ color: theme.text }}>{item.label}</Text>
+                <Text className="text-base font-bold" style={{ color: tint }}>{formatNumber(item.value)}</Text>
+              </Surface>
+            ))}
+          </View>
+        ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} testID="job-analytics-chart-bars">
           <View className="h-44 flex-row items-end gap-2 pb-2">
             {items.map((item) => {
               const height = Math.max(8, Math.round((item.value / maxValue) * 120));
@@ -331,6 +352,7 @@ function ChartCard({
             })}
           </View>
         </ScrollView>
+        )}
       </HeroCard.Body>
     </HeroCard>
   );
@@ -341,11 +363,13 @@ function ApplicationsByStageCard({
   primary,
   theme,
   t,
+  largeText,
 }: {
   analytics: JobAnalyticsData;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
+  largeText: boolean;
 }) {
   const total = analytics.total_applications || 1;
   return (
@@ -358,7 +382,7 @@ function ApplicationsByStageCard({
           const pct = Math.round((Number(item.count) / total) * 100);
           return (
             <View key={item.stage} className="gap-2">
-              <View className="flex-row items-center justify-between gap-3">
+              <View className={`${largeText ? 'items-start' : 'flex-row items-center justify-between'} gap-3`}>
                 <Text className="flex-1 text-sm font-semibold" style={{ color: theme.text }}>
                   {t(getApplicationStatusKey(item.stage))}
                 </Text>
@@ -385,6 +409,7 @@ function PredictionsCard({
   primary,
   theme,
   t,
+  largeText,
 }: {
   predictions: JobPredictionsData | null;
   isLoading: boolean;
@@ -393,11 +418,12 @@ function PredictionsCard({
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
+  largeText: boolean;
 }) {
   return (
     <HeroCard className="rounded-panel p-0">
       <HeroCard.Body className="gap-4 p-4">
-        <View className="flex-row items-center gap-2">
+        <View className={`${largeText ? 'items-start' : 'flex-row items-center'} gap-2`}>
           <Ionicons name="sparkles-outline" size={18} color={primary} />
           <Text className="flex-1 text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>
             {t('analytics.predictions')}
@@ -417,13 +443,14 @@ function PredictionsCard({
           <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('analytics.no_predictions')}</Text>
         ) : (
           <View className="gap-3">
-            <View className="flex-row gap-3">
-              <PredictionTile label={t('analytics.expected_apps')} value={formatNumber(predictions.expected_applications.value)} meta={t('analytics.current_value', { count: predictions.expected_applications.current })} theme={theme} />
+            <View className={`${largeText ? '' : 'flex-row'} gap-3`} testID="job-analytics-prediction-grid">
+              <PredictionTile label={t('analytics.expected_apps')} value={formatNumber(predictions.expected_applications.value)} meta={t('analytics.current_value', { count: predictions.expected_applications.current })} theme={theme} largeText={largeText} />
               <PredictionTile
                 label={t('analytics.conversion_comparison')}
                 value={`${predictions.conversion_rate.yours}%`}
                 meta={t('analytics.avg_value', { value: predictions.conversion_rate.average })}
                 theme={theme}
+                largeText={largeText}
               />
             </View>
             <PredictionTile
@@ -431,6 +458,7 @@ function PredictionsCard({
               value={predictions.estimated_time_to_fill.value ? t('analytics.days_value', { count: predictions.estimated_time_to_fill.value }) : t('analytics.not_available')}
               meta={t('analytics.posted_days_ago', { days: predictions.estimated_time_to_fill.days_posted })}
               theme={theme}
+              largeText={largeText}
             />
             {predictions.salary_comparison ? (
               <PredictionTile
@@ -444,6 +472,7 @@ function PredictionsCard({
                   label: predictions.salary_comparison.label,
                 })}
                 theme={theme}
+                largeText={largeText}
               />
             ) : null}
             {(predictions.ai_insights ?? []).length > 0 ? (
@@ -463,12 +492,12 @@ function PredictionsCard({
   );
 }
 
-function PredictionTile({ label, value, meta, theme }: { label: string; value: string; meta: string; theme: ReturnType<typeof useTheme> }) {
+function PredictionTile({ label, value, meta, theme, largeText }: { label: string; value: string; meta: string; theme: ReturnType<typeof useTheme>; largeText: boolean }) {
   return (
     <Surface variant="secondary" className="min-w-0 flex-1 rounded-panel-inner p-3">
-      <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={2}>{label}</Text>
-      <Text className="mt-1 text-xl font-bold" style={{ color: theme.text }} numberOfLines={2}>{value}</Text>
-      <Text className="mt-1 text-xs" style={{ color: theme.textSecondary }} numberOfLines={2}>{meta}</Text>
+      <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>{label}</Text>
+      <Text className="mt-1 text-xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>{value}</Text>
+      <Text className="mt-1 text-xs" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>{meta}</Text>
     </Surface>
   );
 }

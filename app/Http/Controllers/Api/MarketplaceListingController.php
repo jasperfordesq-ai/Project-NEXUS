@@ -286,13 +286,24 @@ class MarketplaceListingController extends BaseApiController
             'status'             => 'nullable|string|in:draft,active',
             'duration_days'      => 'nullable|integer|min:1|max:90',
             'template_data'      => 'nullable|array',
+            'idempotency_key'    => 'nullable|string|min:8|max:128',
         ]);
 
-        // Ensure the user has a seller profile
-        MarketplaceSellerService::getOrCreateProfile($userId);
+        $idempotencyKey = trim((string) (request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? '')));
+        unset($data['idempotency_key']);
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 128)) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), null, 422);
+        }
 
         try {
-            $listing = MarketplaceListingService::create($userId, $data);
+            $creation = MarketplaceListingService::createWithReceipt($userId, $data, $idempotencyKey ?: null);
+            if ($creation['conflict']) {
+                return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('validation.in', ['attribute' => 'idempotency_key']), 'idempotency_key', 409);
+            }
+            $listing = $creation['listing'];
+            if (!$listing) {
+                return $this->respondWithError('IDEMPOTENCY_RESULT_MISSING', __('api_controllers_2.marketplace_listing.create_failed'), null, 409);
+            }
         } catch (\DomainException $e) {
             if ($e->getMessage() === 'SELLER_SUSPENDED') {
                 return $this->respondWithError('SELLER_SUSPENDED', __('api_controllers_2.marketplace_listing.seller_suspended'), null, 403);
@@ -315,7 +326,7 @@ class MarketplaceListingController extends BaseApiController
             $meta = ['notice' => __('emails_misc.marketplace.listing_pending_notice')];
         }
 
-        return $this->respondWithData($detail, $meta, 201);
+        return $this->respondWithData($detail, $meta, $creation['replayed'] ? 200 : 201);
     }
 
     /**

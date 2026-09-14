@@ -15,6 +15,7 @@ jest.mock('expo-crypto', () => {
 
 let mockParams: Record<string, string> = {};
 let mockTenantCurrency = 'EUR';
+let mockUserId = 41;
 
 // Stable references so screens that put `show` in a useCallback/useEffect
 // dependency array don't re-run their effects on every render.
@@ -61,6 +62,12 @@ jest.mock('react-i18next', () => ({
         'forms.timeCreditsPlaceholder': 'Optional',
         'forms.condition': 'Condition',
         'forms.category': 'Category',
+        'forms.loadingCategories': 'Loading categories',
+        'forms.categoriesLoadFailed': 'Categories could not be loaded. Try again.',
+        'forms.categoriesUnavailable': 'Wait for categories to load, or try loading them again.',
+        'forms.categoryFieldsLoadFailed': 'The fields for this category could not be loaded. Try again.',
+        'forms.categoryFieldsUnavailable': 'Reload the category fields before publishing.',
+        'forms.categoryFieldsRequired': 'Complete all required category fields.',
         'forms.quantity': 'Quantity',
         'forms.quantityPlaceholder': '1',
         'forms.location': 'Location',
@@ -124,6 +131,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
   useTenant: () => ({ tenant: { currency: mockTenantCurrency } }),
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -148,6 +156,10 @@ jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn(),
   NotificationFeedbackType: { Success: 'success' },
 }));
+jest.mock('@/lib/marketplaceListingOperation', () => ({
+  reserveMarketplaceListingOperation: jest.fn().mockResolvedValue({ storageKey: 'marketplace-op', key: 'marketplace-create-key', createdAt: 1 }),
+  completeMarketplaceListingOperation: jest.fn().mockResolvedValue(undefined),
+}));
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
 jest.mock('@/lib/api/marketplace', () => ({
@@ -166,9 +178,15 @@ jest.mock('@/lib/api/marketplace', () => ({
 import NewMarketplaceListingRoute from './new-marketplace-listing';
 import { useAppToast } from '@/components/ui/AppToast';
 import {
+  completeMarketplaceListingOperation,
+  reserveMarketplaceListingOperation,
+} from '@/lib/marketplaceListingOperation';
+import {
   createMarketplaceListing,
   deleteMarketplaceListingImage,
   generateMarketplaceDescription,
+  getMarketplaceCategories,
+  getMarketplaceCategoryTemplate,
   getMarketplaceListing,
   updateMarketplaceListing,
   uploadMarketplaceImages,
@@ -182,6 +200,7 @@ describe('NewMarketplaceListingRoute', () => {
     jest.clearAllMocks();
     mockParams = {};
     mockTenantCurrency = 'EUR';
+    mockUserId = 41;
   });
 
   it('renders optional coordinate fields for nearby search parity', async () => {
@@ -192,6 +211,50 @@ describe('NewMarketplaceListingRoute', () => {
       expect(getByText('Latitude')).toBeTruthy();
       expect(getByText('Longitude')).toBeTruthy();
     });
+  });
+
+  it('shows category load failure and retries without losing the draft', async () => {
+    jest.mocked(getMarketplaceCategories)
+      .mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValueOnce({ data: [{ id: 4, name: 'Tools', slug: 'tools', listing_count: 2 }] } as never);
+
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
+
+    expect(await ui.findByText('Categories could not be loaded. Try again.')).toBeTruthy();
+    fireEvent.press(ui.getByText('common:buttons.retry'));
+
+    expect(await ui.findByText('Tools')).toBeTruthy();
+    expect(ui.getByPlaceholderText('What are you selling?').props.value).toBe('Garden shears');
+    expect(getMarketplaceCategories).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries category fields and requires fields marked by the server', async () => {
+    jest.mocked(getMarketplaceCategories).mockResolvedValueOnce({
+      data: [{ id: 4, name: 'Tools', slug: 'tools', listing_count: 2 }],
+    } as never);
+    jest.mocked(getMarketplaceCategoryTemplate)
+      .mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValueOnce({
+        data: { category_id: 4, fields: [{ key: 'material', label: 'Material', type: 'text', required: true }] },
+      } as never);
+
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
+    fireEvent.changeText(ui.getByPlaceholderText('Details'), 'Lightly used shears.');
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '12');
+    fireEvent.press(await ui.findByText('Tools'));
+
+    expect(await ui.findByText('The fields for this category could not be loaded. Try again.')).toBeTruthy();
+    fireEvent.press(ui.getByText('common:buttons.retry'));
+    expect(await ui.findByText('Material *')).toBeTruthy();
+
+    fireEvent.press(ui.getByText('Publish'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'Complete all required category fields.',
+      variant: 'warning',
+    })));
+    expect(createMarketplaceListing).not.toHaveBeenCalled();
   });
 
   it('generates a marketplace description from the backend AI endpoint', async () => {
@@ -241,8 +304,10 @@ describe('NewMarketplaceListingRoute', () => {
       expect(createMarketplaceListing).toHaveBeenCalledWith(expect.objectContaining({
         price: 12.5,
         price_currency: 'USD',
-      }));
+      }), 'marketplace-create-key');
     });
+    expect(reserveMarketplaceListingOperation).toHaveBeenCalledWith(expect.stringContaining('Garden shears'));
+    expect(completeMarketplaceListingOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'marketplace-create-key' }));
   });
 
   /**
@@ -299,8 +364,40 @@ describe('NewMarketplaceListingRoute', () => {
       expect(createMarketplaceListing).toHaveBeenCalledWith(expect.objectContaining({
         price: 2500,
         price_currency: 'JPY',
-      }));
+      }), 'marketplace-create-key');
     });
+  });
+
+  it('serializes same-frame publish presses into one create request', async () => {
+    let finish!: (value: unknown) => void;
+    jest.mocked(createMarketplaceListing).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }) as never);
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden fork');
+    fireEvent.changeText(ui.getByPlaceholderText('Details'), 'A sturdy garden fork in good condition.');
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '15');
+
+    fireEvent.press(ui.getByText('Publish'));
+    fireEvent.press(ui.getByText('Publish'));
+    await waitFor(() => expect(createMarketplaceListing).toHaveBeenCalledTimes(1));
+    await act(async () => { finish({ data: { id: 92 } }); });
+  });
+
+  it('does not navigate a replacement account when an earlier create finishes', async () => {
+    let finish!: (value: unknown) => void;
+    jest.mocked(createMarketplaceListing).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }) as never);
+    const ui = render(<NewMarketplaceListingRoute />);
+    fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Old account item');
+    fireEvent.changeText(ui.getByPlaceholderText('Details'), 'This belongs only to the original account.');
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '5');
+    fireEvent.press(ui.getByText('Publish'));
+    await waitFor(() => expect(createMarketplaceListing).toHaveBeenCalledTimes(1));
+
+    mockUserId = 99;
+    ui.rerender(<NewMarketplaceListingRoute />);
+    await act(async () => { finish({ data: { id: 93 } }); });
+
+    expect(completeMarketplaceListingOperation).toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 
   it('blocks paid listings without a positive price before calling the API', async () => {

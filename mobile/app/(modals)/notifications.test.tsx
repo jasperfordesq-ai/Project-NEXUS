@@ -7,6 +7,8 @@ import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { RefreshControl } from 'react-native';
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 jest.mock('expo-router', () => ({
   // AppTopBar registers its Android back handler only while the screen is focused
   // (audit 2026-09-06, F10), so every screen mock needs this hook to exist.
@@ -67,8 +69,9 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true }),
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 } }) }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -167,7 +170,7 @@ jest.mock('@/lib/utils/formatRelativeTime', () => ({
 }));
 
 import NotificationsScreen from './notifications';
-import { deleteNotification, markGroupRead, markRead } from '@/lib/api/notifications';
+import { deleteNotification, markAllRead, markGroupRead, markRead } from '@/lib/api/notifications';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
@@ -383,6 +386,21 @@ describe('NotificationsScreen', () => {
 
     await waitFor(() => expect(deleteNotification).toHaveBeenCalledWith(1));
     expect(refresh).toHaveBeenCalled();
+  });
+
+  it('serializes rapid notification mutations before the busy state re-renders', async () => {
+    let finish!: () => void;
+    jest.mocked(deleteNotification).mockImplementationOnce(() => new Promise((resolve) => { finish = () => resolve(undefined); }));
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([mockNotification]));
+    const { getAllByText } = render(<NotificationsScreen />);
+    const deleteAction = getAllByText('Delete')[0];
+
+    fireEvent.press(deleteAction);
+    fireEvent.press(deleteAction);
+    expect(deleteNotification).toHaveBeenCalledTimes(1);
+    expect(markAllRead).not.toHaveBeenCalled();
+    finish();
+    await waitFor(() => expect(deleteNotification).toHaveBeenCalledTimes(1));
   });
 
   it('exposes a swipe action for marking an ungrouped notification read', async () => {

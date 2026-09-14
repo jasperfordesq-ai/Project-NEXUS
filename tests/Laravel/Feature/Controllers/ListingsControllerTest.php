@@ -495,6 +495,58 @@ class ListingsControllerTest extends TestCase
         Event::assertDispatched(ListingCreated::class);
     }
 
+    public function test_store_replays_the_original_listing_after_an_accepted_response_is_lost(): void
+    {
+        Event::fake([ListingCreated::class]);
+        $user = $this->authenticatedUser(['email' => '']);
+        $this->ensureListingCategory();
+        $payload = [
+            'title' => 'Durable garden help',
+            'description' => 'A detailed listing whose first response was lost.',
+            'type' => 'offer',
+            'category_id' => 1,
+            'service_type' => 'hybrid',
+            'idempotency_key' => 'listing-create-response-loss-1',
+        ];
+        $headers = ['Idempotency-Key' => 'listing-create-response-loss-1'];
+
+        $first = $this->apiPost('/v2/listings', $payload, $headers)->assertCreated();
+        $second = $this->apiPost('/v2/listings', $payload, $headers)->assertOk();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, Listing::query()
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('title', 'Durable garden help')
+            ->count());
+        $this->assertDatabaseCount('listing_creation_receipts', 1);
+        Event::assertDispatchedTimes(ListingCreated::class, 1);
+    }
+
+    public function test_store_rejects_changed_content_under_the_same_creation_key(): void
+    {
+        Event::fake([ListingCreated::class]);
+        $this->authenticatedUser(['email' => '']);
+        $this->ensureListingCategory();
+        $payload = [
+            'title' => 'Original listing intent',
+            'description' => 'The first exact listing content for this operation.',
+            'type' => 'offer',
+            'category_id' => 1,
+            'service_type' => 'hybrid',
+            'idempotency_key' => 'listing-create-conflict-1',
+        ];
+        $headers = ['Idempotency-Key' => 'listing-create-conflict-1'];
+
+        $this->apiPost('/v2/listings', $payload, $headers)->assertCreated();
+        $payload['title'] = 'Changed listing intent';
+        $this->apiPost('/v2/listings', $payload, $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+
+        $this->assertDatabaseMissing('listings', ['title' => 'Changed listing intent']);
+    }
+
     public function test_store_marks_listing_pending_when_moderation_is_enabled(): void
     {
         $this->markTestSkipped(

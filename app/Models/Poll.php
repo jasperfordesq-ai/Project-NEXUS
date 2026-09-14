@@ -22,7 +22,7 @@ class Poll extends Model
 
     protected $fillable = [
         'tenant_id', 'user_id', 'event_id', 'question', 'description',
-        'end_date', 'is_active', 'category', 'poll_type',
+        'end_date', 'is_active', 'category', 'poll_type', 'is_anonymous',
     ];
 
     /**
@@ -35,6 +35,7 @@ class Poll extends Model
         'event_id'  => 'integer',
         'end_date'  => 'datetime',
         'is_active' => 'boolean',
+        'is_anonymous' => 'boolean',
     ];
 
     public function user(): BelongsTo

@@ -69,7 +69,6 @@
     "messagePlaceholder": "Optionale Notiz hinzufügen",
     "sendNow": "Credits senden",
     "donateNow": "Credits spenden",
-    "defaultTransferDescription": "Zeitguthaben übertragen",
     "validationTitle": "Überprüfen Sie die Details",
     "validationAmount": "Geben Sie einen Betrag größer als Null ein.",
     "validationInsufficient": "Sie haben nicht genügend Zeitguthaben für diesen Betrag.",
@@ -100,7 +99,10 @@
     "confirmDonationMessage": "Du bist dabei, {{amount}} Stunden an {{name}} zu spenden. Das kann nicht rückgängig gemacht werden.",
     "recipientResolving": "Empfänger wird geprüft …",
     "recipientUnresolved": "Dieses Mitglied wurde nicht gefunden. Suche stattdessen nach dem Empfänger.",
-    "unresolvedOperation": "Eine frühere Überweisung ist noch unbestätigt. Prüfen Sie Ihren Kontoverlauf und kontaktieren Sie Ihre Koordination, bevor Sie erneut senden."
+    "unresolvedOperation": "Eine frühere Wallet-Aktion ist noch unbestätigt. Prüfen Sie den Transaktionsverlauf und kontaktieren Sie Ihre Koordination, bevor Sie erneut Zeitguthaben senden.",
+    "unresolvedTitle": "Wallet-Aktion muss geprüft werden",
+    "reviewHistory": "Transaktionsverlauf prüfen",
+    "contactCommunity": "Community kontaktieren"
   },
   "status": {
     "completed": "Abgeschlossen",

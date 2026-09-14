@@ -1515,6 +1515,7 @@ return [
     // ============================================
     // USER-FACING — GAMIFICATION (additional)
     // ============================================
+    'gamification_sent_message'            => 'Sent a message',
     'gamification_challenges_failed'       => 'Failed to load challenges',
     'gamification_challenge_not_started'   => 'You have not started this challenge',
     'gamification_challenge_already_claimed' => 'You have already claimed this reward',
@@ -1964,6 +1965,7 @@ return [
     'volunteer_shift_not_found'            => 'Shift not found',
     'volunteer_shift_started'              => 'This shift has already started',
     'volunteer_shift_at_capacity'          => 'This shift is at capacity',
+    'volunteer_shift_assignment_changed'   => 'Your shift assignment changed on another device. Refresh and try again.',
     'volunteer_shift_not_full'             => 'This shift still has open places, so you do not need the waitlist yet.',
     'volunteer_approved_application_required' => 'You need an approved application before using this opportunity',
     'volunteer_org_relationship_required'  => 'You need an approved volunteering relationship with this organisation',
@@ -3377,4 +3379,7 @@ return [
     'safeguarding_ward_consented_notification' => ':name has agreed to their guardian arrangement.',
     'safeguarding_ward_declined_notification' => ':name has declined their guardian arrangement.',
     'safeguarding_ward_withdrawn_notification' => ':name has withdrawn their agreement to a guardian arrangement.',
+    'ideation_submission_closed' => 'This challenge is not accepting new ideas.',
+    'ideation_submission_deadline_passed' => 'The submission deadline has passed.',
+    'ideation_submission_limit_reached' => 'You have reached the limit of :limit ideas for this challenge.',
 ];

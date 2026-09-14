@@ -65,6 +65,43 @@ class PollsControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_poll_creation_replay_returns_one_ranked_anonymous_poll(): void
+    {
+        $user = $this->authenticatedUser();
+        $payload = [
+            'question' => 'Rank the workshop topics',
+            'options' => ['Repairs', 'Gardening', 'Cooking'],
+            'poll_type' => 'ranked',
+            'is_anonymous' => true,
+        ];
+        $headers = ['Idempotency-Key' => 'poll-create-operation-123'];
+
+        $first = $this->apiPost('/v2/polls', $payload, $headers);
+        $replay = $this->apiPost('/v2/polls', $payload, $headers);
+
+        $first->assertCreated()->assertJsonPath('data.poll_type', 'ranked')->assertJsonPath('data.is_anonymous', true);
+        $replay->assertOk();
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, DB::table('polls')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)->where('question', 'Rank the workshop topics')->count());
+        $this->assertSame(1, DB::table('poll_creation_receipts')->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $user->id)->count());
+        $this->assertSame(3, DB::table('poll_options')->where('poll_id', $first->json('data.id'))->count());
+
+        $this->apiPost('/v2/polls', $payload + ['description' => 'Changed'], $headers)->assertStatus(409);
+    }
+
+    public function test_store_rejects_unknown_poll_type_and_blank_options(): void
+    {
+        $this->authenticatedUser();
+        $this->apiPost('/v2/polls', [
+            'question' => 'Invalid type', 'options' => ['One', 'Two'], 'poll_type' => 'mystery',
+        ])->assertStatus(422);
+        $this->apiPost('/v2/polls', [
+            'question' => 'Blank choice', 'options' => ['One', '   '],
+        ])->assertStatus(400);
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/polls/categories
     // ------------------------------------------------------------------
@@ -190,6 +227,133 @@ class PollsControllerTest extends TestCase
 
         $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $optionId])->assertOk();
         $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $otherOptionId])->assertStatus(409);
+    }
+
+    public function test_ranked_ballot_replay_is_success_but_a_changed_order_conflicts(): void
+    {
+        $user = $this->authenticatedUser();
+        [$pollId] = $this->createPollWithOptions();
+        DB::table('polls')->where('id', $pollId)->update(['poll_type' => 'ranked']);
+        $options = DB::table('poll_options')->where('poll_id', $pollId)->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $rankings = [
+            ['option_id' => $options[1], 'rank' => 1],
+            ['option_id' => $options[0], 'rank' => 2],
+        ];
+
+        $first = $this->apiPost("/v2/polls/{$pollId}/rank", ['rankings' => $rankings]);
+        $replay = $this->apiPost("/v2/polls/{$pollId}/rank", ['rankings' => $rankings]);
+
+        $first->assertOk()->assertJsonPath('data.idempotent_replay', false);
+        $replay->assertOk()->assertJsonPath('data.idempotent_replay', true);
+        $this->assertSame(2, DB::table('poll_rankings')->where('tenant_id', $this->testTenantId)
+            ->where('poll_id', $pollId)->where('user_id', $user->id)->count());
+        $this->assertSame(1, DB::table('user_xp_log')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)->where('action', 'vote_poll')
+            ->where('source_reference', 'poll:' . $pollId)->count());
+        $this->apiPost("/v2/polls/{$pollId}/rank", ['rankings' => [
+            ['option_id' => $options[0], 'rank' => 1],
+            ['option_id' => $options[1], 'rank' => 2],
+        ]])->assertStatus(409);
+    }
+
+    public function test_ranked_results_stay_hidden_from_non_creators_until_close(): void
+    {
+        $owner = $this->authenticatedUser();
+        $created = $this->apiPost('/v2/polls', [
+            'question' => 'Rank the community projects',
+            'options' => ['Repair cafe', 'Garden'],
+            'poll_type' => 'ranked',
+            'expires_at' => now()->addDay()->toIso8601String(),
+        ])->assertCreated();
+        $pollId = (int) $created->json('data.id');
+        $optionIds = DB::table('poll_options')->where('poll_id', $pollId)
+            ->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        $voter = $this->authenticatedUser();
+        $submission = $this->apiPost("/v2/polls/{$pollId}/rank", ['rankings' => [
+            ['option_id' => $optionIds[1], 'rank' => 1],
+            ['option_id' => $optionIds[0], 'rank' => 2],
+        ]]);
+        $submission->assertOk()
+            ->assertJsonPath('data.results_visible', false)
+            ->assertJsonPath('data.ranked_results', null);
+
+        $hidden = $this->apiGet("/v2/polls/{$pollId}/ranked-results");
+        $hidden->assertOk()
+            ->assertJsonPath('data.results_visible', false)
+            ->assertJsonPath('data.ranked_results', null);
+
+        Sanctum::actingAs($owner, ['*']);
+        $ownerView = $this->apiGet("/v2/polls/{$pollId}/ranked-results");
+        $ownerView->assertOk()
+            ->assertJsonPath('data.results_visible', true)
+            ->assertJsonPath('data.ranked_results.total_voters', 1);
+
+        DB::table('polls')->where('id', $pollId)->update(['is_active' => false]);
+        Sanctum::actingAs($voter, ['*']);
+        $closed = $this->apiGet("/v2/polls/{$pollId}/ranked-results");
+        $closed->assertOk()
+            ->assertJsonPath('data.results_visible', true)
+            ->assertJsonPath('data.ranked_results.total_voters', 1)
+            ->assertJsonPath('data.ranked_results.results.0.votes', 1);
+    }
+
+    public function test_ranked_poll_rejects_the_single_choice_vote_endpoint(): void
+    {
+        $this->authenticatedUser();
+        [$pollId, $optionId] = $this->createPollWithOptions();
+        DB::table('polls')->where('id', $pollId)->update(['poll_type' => 'ranked']);
+
+        $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $optionId])->assertStatus(422);
+        $this->assertSame(0, DB::table('poll_votes')->where('poll_id', $pollId)->count());
+    }
+
+    public function test_anonymous_vote_does_not_disclose_the_voter_in_a_creator_notification(): void
+    {
+        $owner = $this->authenticatedUser();
+        $created = $this->apiPost('/v2/polls', [
+            'question' => 'Anonymous choice', 'options' => ['One', 'Two'], 'is_anonymous' => true,
+        ])->assertCreated();
+        $pollId = (int) $created->json('data.id');
+        $optionId = (int) DB::table('poll_options')->where('poll_id', $pollId)->value('id');
+        $voter = $this->authenticatedUser();
+
+        $this->apiPost("/v2/polls/{$pollId}/vote", ['option_id' => $optionId])->assertOk();
+
+        $this->assertSame(0, DB::table('notifications')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $owner->id)->where('type', 'poll_vote')->count());
+        $this->assertSame(1, DB::table('poll_votes')->where('poll_id', $pollId)->where('user_id', $voter->id)->count());
+    }
+
+    public function test_feed_exposes_ranked_anonymous_mode_and_the_viewers_saved_order(): void
+    {
+        $this->enablePollsFeature();
+        $this->authenticatedUser();
+        $created = $this->apiPost('/v2/polls', [
+            'question' => 'Rank these community priorities',
+            'options' => ['Repair cafe', 'Garden', 'Shared meals'],
+            'poll_type' => 'ranked',
+            'is_anonymous' => true,
+        ])->assertCreated();
+        $pollId = (int) $created->json('data.id');
+        $optionIds = DB::table('poll_options')->where('poll_id', $pollId)
+            ->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $rankings = [
+            ['option_id' => $optionIds[2], 'rank' => 1],
+            ['option_id' => $optionIds[0], 'rank' => 2],
+            ['option_id' => $optionIds[1], 'rank' => 3],
+        ];
+        $this->apiPost("/v2/polls/{$pollId}/rank", ['rankings' => $rankings])->assertOk();
+
+        $feed = $this->apiGet('/v2/feed?type=polls&mode=chronological');
+
+        $feed->assertOk();
+        $item = collect($feed->json('data'))->firstWhere('id', $pollId);
+        $this->assertNotNull($item, 'The newly created poll must be present in the polls feed.');
+        $this->assertSame('ranked', $item['poll_data']['poll_type']);
+        $this->assertTrue($item['poll_data']['is_anonymous']);
+        $this->assertSame($rankings, $item['poll_data']['user_rankings']);
+        $this->assertTrue($item['poll_data']['is_active']);
     }
 
     public function test_feed_vote_with_an_option_from_another_poll_is_rejected_not_a_server_error(): void

@@ -5,11 +5,36 @@
 
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
-import { FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import { AppState, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 
 // --- Mocks ---
 
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+jest.mock('@/lib/messageOperation', () => ({
+  reserveMessageOperation: jest.fn().mockResolvedValue({ storageKey: 'saved-message', key: 'message-operation-123', createdAt: 1 }),
+  completeMessageOperation: jest.fn().mockResolvedValue(undefined),
+}));
+const mockLoadCreationDraft = jest.fn().mockResolvedValue(null);
+const mockSaveCreationDraft = jest.fn().mockResolvedValue(true);
+const mockClearCreationDraft = jest.fn().mockResolvedValue(true);
+jest.mock('@/lib/creationDraftStore', () => ({
+  loadCreationDraft: (...args: unknown[]) => mockLoadCreationDraft(...args),
+  saveCreationDraft: (...args: unknown[]) => mockSaveCreationDraft(...args),
+  clearCreationDraft: (...args: unknown[]) => mockClearCreationDraft(...args),
+}));
+const mockRetainMessageDraftMedia = jest.fn().mockResolvedValue('file:///documents/message-drafts-v1/photo.jpg');
+const mockExistingMessageDraftMedia = jest.fn().mockResolvedValue(true);
+const mockRemoveMessageDraftMedia = jest.fn().mockResolvedValue(undefined);
+const mockRemoveMessageDraftMediaBatch = jest.fn().mockResolvedValue(undefined);
+const mockRemoveTransientMessageMedia = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/lib/messageDraftMedia', () => ({
+  retainMessageDraftMedia: (...args: unknown[]) => mockRetainMessageDraftMedia(...args),
+  existingMessageDraftMedia: (...args: unknown[]) => mockExistingMessageDraftMedia(...args),
+  removeMessageDraftMedia: (...args: unknown[]) => mockRemoveMessageDraftMedia(...args),
+  removeMessageDraftMediaBatch: (...args: unknown[]) => mockRemoveMessageDraftMediaBatch(...args),
+  removeTransientMessageMedia: (...args: unknown[]) => mockRemoveTransientMessageMedia(...args),
+  isManagedMessageDraftMedia: (uri: string) => uri.includes('/message-drafts-v1/'),
+}));
 
 let mockThreadSearchParams: Record<string, string> = { id: '5', name: 'Alice' };
 const mockRouterPush = jest.fn();
@@ -80,6 +105,8 @@ jest.mock('react-i18next', () => ({
         'thread.voice.startFailed': 'Could not start recording. Please try again.',
         'thread.voice.stopFailed': 'Could not save this recording. Please try again.',
         'thread.voice.sendFailed': 'Voice message could not be sent. Please try again.',
+        'thread.voice.draftStorageTitle': 'Voice note kept for this session',
+        'thread.voice.draftStorageWarning': 'The voice note is ready, but it may not survive if the app closes.',
         'thread.sendFailed': 'Message not sent.',
         'thread.goBack': 'Go back',
         'thread.messageCount': '2 messages',
@@ -95,6 +122,8 @@ jest.mock('react-i18next', () => ({
         'thread.attachments.remove': `Remove ${String(options?.name ?? '')}`,
         'thread.attachments.uploading': `Sending photos… ${String(options?.percent ?? '')}%`,
         'thread.attachments.cancelUpload': 'Cancel upload',
+        'thread.attachments.draftStorageTitle': 'Photo kept for this session',
+        'thread.attachments.draftStorageWarning': 'The photo is attached, but it may not survive if the app closes.',
         'thread.attachments.removeLabel': 'Remove',
         'thread.attachments.open': `Open ${String(options?.name ?? '')}`,
         'thread.attachments.file': 'Attachment',
@@ -133,6 +162,8 @@ jest.mock('react-i18next', () => ({
         'errors.reactionFailed': 'Could not update that reaction.',
         'common:buttons.retry': 'Retry',
         'common:labels.you': 'You',
+        'draftStorage.title': 'Draft not protected',
+        'draftStorage.message': 'This draft could not be saved securely.',
       };
       return map[key] ?? key;
     },
@@ -345,6 +376,7 @@ const mockMessages = [
 ];
 
 beforeEach(() => {
+  Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'active' });
   mockThreadSearchParams = { id: '5', name: 'Alice' };
   mockRouterPush.mockClear();
   mockRealtimeCallback = null;
@@ -354,7 +386,20 @@ beforeEach(() => {
   mockGetMessagingRestrictionStatus.mockClear();
   mockUpdateMessage.mockClear();
   mockDeleteMessage.mockClear();
-  mockSendMessageWithAttachments.mockClear();
+  mockSendMessageWithAttachments.mockReset().mockResolvedValue({
+    data: {
+      id: 100,
+      body: 'Photo update',
+      sender: { id: 1, name: 'Me', avatar_url: null },
+      created_at: '2026-03-10T10:03:00Z',
+      is_own: true,
+      is_voice: false,
+      audio_url: null,
+      reactions: {},
+      is_read: false,
+      attachments: [{ id: 8, name: 'photo.jpg', url: 'https://example.test/photo.jpg', type: 'image', size: 2048 }],
+    },
+  });
   mockSendVoiceMessage.mockClear();
   mockAudioRecording.stop.mockClear();
   mockAudioRecording.record.mockClear();
@@ -381,6 +426,19 @@ beforeEach(() => {
   mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
   mockRefreshCounts.mockClear();
   jest.restoreAllMocks();
+  mockLoadCreationDraft.mockReset().mockResolvedValue(null);
+  mockSaveCreationDraft.mockReset().mockResolvedValue(true);
+  mockClearCreationDraft.mockReset().mockResolvedValue(true);
+  mockRetainMessageDraftMedia.mockReset().mockImplementation((_uri: string, filename: string) => Promise.resolve(
+    filename.startsWith('voice-')
+      ? 'file:///documents/message-drafts-v1/voice.m4a'
+      : 'file:///documents/message-drafts-v1/photo.jpg',
+  ));
+  mockExistingMessageDraftMedia.mockReset().mockResolvedValue(true);
+  mockRemoveMessageDraftMedia.mockReset().mockResolvedValue(undefined);
+  mockRemoveMessageDraftMediaBatch.mockReset().mockResolvedValue(undefined);
+  mockRemoveTransientMessageMedia.mockReset().mockResolvedValue(undefined);
+  (useAppToast().show as jest.Mock).mockClear();
 });
 
 describe('ThreadScreen', () => {
@@ -553,8 +611,81 @@ describe('ThreadScreen', () => {
     fireEvent.press(getByLabelText('Send'));
 
     await waitFor(() => {
-      expect(sendMessage).toHaveBeenCalledWith(42, 'Thanks Alice');
+      expect(sendMessage).toHaveBeenCalledWith(42, 'Thanks Alice', {}, 'message-operation-123');
     });
+  });
+
+  it('restores an encrypted text draft for the current account, community and conversation', async () => {
+    mockLoadCreationDraft.mockResolvedValueOnce({ text: 'D62 restored message draft' });
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn(),
+    });
+
+    const screen = render(<ThreadScreen />);
+
+    await waitFor(() => expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('D62 restored message draft'));
+    expect(mockLoadCreationDraft).toHaveBeenCalledWith({
+      kind: 'message',
+      tenantId: 'hour-timebank',
+      userId: 1,
+      contextId: 'conversation:5',
+    });
+  });
+
+  it('does not overwrite text entered while an encrypted draft is still loading', async () => {
+    let finishLoad!: (draft: { text: string }) => void;
+    mockLoadCreationDraft.mockImplementationOnce(() => new Promise((resolve) => { finishLoad = resolve; }));
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn(),
+    });
+    const screen = render(<ThreadScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Newer text wins');
+    await act(async () => { finishLoad({ text: 'Older saved text' }); });
+
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Newer text wins');
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'message', contextId: 'conversation:5' }),
+      { text: 'Newer text wins', attachments: [], failedDrafts: [], voice: null },
+    ));
+  });
+
+  it('autosaves text to the exact conversation and clears it after confirmed send', async () => {
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages, meta: { conversation: { other_user: { id: 42, name: 'Alice' } } } },
+      isLoading: false, error: null, refresh: jest.fn(),
+    });
+    const screen = render(<ThreadScreen />);
+    const scope = { kind: 'message', tenantId: 'hour-timebank', userId: 1, contextId: 'conversation:5' };
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Persist this exact reply');
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+      scope,
+      { text: 'Persist this exact reply', attachments: [], failedDrafts: [], voice: null },
+    ));
+    fireEvent.press(screen.getByLabelText('Send'));
+
+    await waitFor(() => expect(mockClearCreationDraft).toHaveBeenCalledWith(scope));
+  });
+
+  it('sends one message when Send is tapped twice before busy state renders', async () => {
+    let finish!: (value: { data: { id: number } }) => void;
+    (sendMessage as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages, meta: { conversation: { other_user: { id: 42, name: 'Alice' } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const screen = render(<ThreadScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Only once');
+    const send = screen.getByLabelText('Send');
+
+    fireEvent.press(send);
+    fireEvent.press(send);
+    await waitFor(() => expect(sendMessage).toHaveBeenCalledTimes(1));
+    finish({ data: { id: 100 } });
+    await waitFor(() => expect(sendMessage).toHaveBeenCalledTimes(1));
   });
 
   /**
@@ -588,7 +719,7 @@ describe('ThreadScreen', () => {
     await waitFor(() => expect(sendMessage).toHaveBeenCalled());
     expect(useAppToast().show).not.toHaveBeenCalled();
     // The body is restored so accepting and pressing send again loses nothing.
-    expect(getByPlaceholderText('Type a message...').props.value).toBe('Legal gate walk');
+    await waitFor(() => expect(getByPlaceholderText('Type a message...').props.value).toBe('Legal gate walk'));
   });
 
   it('still reports an ordinary send failure', async () => {
@@ -638,7 +769,7 @@ describe('ThreadScreen', () => {
         listing_id: 9,
         context_type: 'job',
         context_id: 44,
-      });
+      }, 'message-operation-123');
     });
   });
 
@@ -659,6 +790,62 @@ describe('ThreadScreen', () => {
     fireEvent.press(screen.getByText('Edit unsent draft'));
     expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Next text draft');
     expect(screen.queryByLabelText('Remove photo.jpg')).toBeNull();
+  });
+
+  it('restores and cycles multiple failed drafts without hiding photo-only content', async () => {
+    mockLoadCreationDraft.mockResolvedValueOnce({
+      text: 'Current draft',
+      failedDrafts: [
+        {
+          body: '',
+          attachments: [{
+            id: 'failed-photo',
+            uri: 'file:///documents/message-drafts-v1/failed-photo.jpg',
+            name: 'failed-photo.jpg',
+            mimeType: 'image/jpeg',
+          }],
+        },
+        { body: 'Second failed draft', attachments: [] },
+      ],
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<ThreadScreen />);
+
+    await waitFor(() => expect(screen.getByText('failed-photo.jpg')).toBeTruthy());
+    fireEvent.press(screen.getByText('Edit unsent draft'));
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('');
+    expect(screen.getByLabelText('Remove failed-photo.jpg')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('Edit unsent draft'));
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Second failed draft');
+    expect(screen.queryByLabelText('Remove failed-photo.jpg')).toBeNull();
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'message', contextId: 'conversation:5' }),
+      expect.objectContaining({
+        text: 'Second failed draft',
+        failedDrafts: [
+          { body: 'Current draft', attachments: [] },
+          expect.objectContaining({ attachments: [expect.objectContaining({ name: 'failed-photo.jpg' })] }),
+        ],
+      }),
+    ));
+  });
+
+  it('keeps a visible warning until encrypted message-draft autosave recovers', async () => {
+    mockSaveCreationDraft.mockImplementation(async (_scope, draft: { text?: string }) => draft.text !== 'Storage-pressure draft');
+    const screen = render(<ThreadScreen />);
+    act(() => { mockFocusCallback.current?.(); });
+    await waitFor(() => expect(mockLoadCreationDraft).toHaveBeenCalled());
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Storage-pressure draft');
+    await waitFor(() => expect(screen.getByTestId('message-draft-storage-warning')).toBeTruthy());
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Storage-pressure draft retry');
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ text: 'Storage-pressure draft retry' }),
+    ));
+    await waitFor(() => expect(screen.queryByTestId('message-draft-storage-warning')).toBeNull());
   });
 
 
@@ -699,11 +886,77 @@ describe('ThreadScreen', () => {
     });
 
     const screen = render(<ThreadScreen />);
+    await waitFor(() => expect(mockLoadCreationDraft).toHaveBeenCalled());
+    await act(async () => {});
     fireEvent.press(screen.getByLabelText('Add attachment'));
     fireEvent.press(screen.getByLabelText('Photo library'));
     await waitFor(() => expect(screen.getByText('photo.jpg')).toBeTruthy());
     return screen;
   }
+
+  it('restores an existing managed photo for the exact conversation after process death', async () => {
+    mockLoadCreationDraft.mockResolvedValueOnce({
+      text: 'Restored caption',
+      attachments: [{
+        id: 'persisted-photo',
+        uri: 'file:///documents/message-drafts-v1/restored.jpg',
+        name: 'restored.jpg',
+        mimeType: 'image/jpeg',
+        width: 800,
+        height: 600,
+        size: 2048,
+      }],
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const screen = render(<ThreadScreen />);
+
+    await waitFor(() => expect(screen.getByLabelText('Remove restored.jpg')).toBeTruthy());
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Restored caption');
+    expect(mockExistingMessageDraftMedia).toHaveBeenCalledWith('file:///documents/message-drafts-v1/restored.jpg');
+  });
+
+  it('drops persisted attachment metadata when its managed file no longer exists', async () => {
+    mockExistingMessageDraftMedia.mockResolvedValueOnce(false);
+    mockLoadCreationDraft.mockResolvedValueOnce({
+      text: '',
+      attachments: [{ id: 'missing', uri: 'file:///documents/message-drafts-v1/missing.jpg', name: 'missing.jpg', mimeType: 'image/jpeg' }],
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const screen = render(<ThreadScreen />);
+
+    await waitFor(() => expect(mockExistingMessageDraftMedia).toHaveBeenCalled());
+    expect(screen.queryByLabelText('Remove missing.jpg')).toBeNull();
+    await waitFor(() => expect(mockClearCreationDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'message', contextId: 'conversation:5' }),
+    ));
+  });
+
+  it('copies a picked photo into managed storage and persists its metadata', async () => {
+    const screen = await attachAPhoto();
+
+    expect(mockRetainMessageDraftMedia).toHaveBeenCalledWith('file:///tmp/photo.jpg', 'photo.jpg');
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'message', contextId: 'conversation:5' }),
+      expect.objectContaining({
+        attachments: [expect.objectContaining({ uri: 'file:///documents/message-drafts-v1/photo.jpg', name: 'photo.jpg' })],
+      }),
+    ));
+    fireEvent.press(screen.getByLabelText('Remove photo.jpg'));
+    expect(mockRemoveMessageDraftMedia).toHaveBeenCalledWith('file:///documents/message-drafts-v1/photo.jpg');
+  });
+
+  it('keeps a picked photo visible and warns when the durable copy fails', async () => {
+    mockRetainMessageDraftMedia.mockResolvedValueOnce(null);
+    const screen = await attachAPhoto();
+
+    expect(screen.getByLabelText('Remove photo.jpg')).toBeTruthy();
+    expect(useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Photo kept for this session',
+      variant: 'warning',
+    }));
+  });
 
   it('attaches images and sends them through the multipart message helper', async () => {
     mockLaunchImageLibraryAsync.mockResolvedValue({
@@ -745,17 +998,38 @@ describe('ThreadScreen', () => {
     fireEvent.press(getByLabelText('Send'));
 
     await waitFor(() => {
+      expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: 'message', contextId: 'conversation:5' }),
+        expect.objectContaining({
+          text: 'Photo update',
+          attachments: [expect.objectContaining({ uri: 'file:///documents/message-drafts-v1/photo.jpg' })],
+        }),
+      );
       expect(mockSendMessageWithAttachments).toHaveBeenCalledWith(
         42,
         'Photo update',
         expect.arrayContaining([
-          expect.objectContaining({ uri: 'file:///tmp/photo.jpg', name: 'photo.jpg', mimeType: 'image/jpeg' }),
+          expect.objectContaining({ uri: 'file:///documents/message-drafts-v1/photo.jpg', name: 'photo.jpg', mimeType: 'image/jpeg' }),
         ]),
         undefined,
         // 🔴 The fifth argument is what makes the upload observable and stoppable.
-        expect.objectContaining({ onProgress: expect.any(Function), signal: expect.anything() }),
+        expect.objectContaining({ onProgress: expect.any(Function), signal: expect.anything(), idempotencyKey: 'message-operation-123' }),
       );
     });
+    await waitFor(() => expect(mockRemoveMessageDraftMediaBatch).toHaveBeenCalledWith([
+      'file:///documents/message-drafts-v1/photo.jpg',
+    ]));
+  });
+
+  it('does not dispatch an immediate photo send when its recovery manifest cannot be saved', async () => {
+    mockSaveCreationDraft.mockResolvedValue(false);
+    const screen = await attachAPhoto();
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Must remain recoverable');
+    fireEvent.press(screen.getByLabelText('Send'));
+
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalled());
+    expect(mockSendMessageWithAttachments).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Remove photo.jpg')).toBeTruthy();
   });
 
   /*
@@ -875,8 +1149,49 @@ describe('ThreadScreen', () => {
        * `lib/api/messages.test.ts` covers the real values, including that 0 means the field
        * is omitted so the server's own floor applies.
        */
-      expect(mockSendVoiceMessage).toHaveBeenCalledWith(42, 'file:///tmp/voice.m4a', undefined, 0);
+      expect(mockSendVoiceMessage).toHaveBeenCalledWith(42, 'file:///documents/message-drafts-v1/voice.m4a', undefined, 0, 'message-operation-123');
     });
+    expect(mockRetainMessageDraftMedia).toHaveBeenCalledWith('file:///tmp/voice.m4a', expect.stringMatching(/^voice-\d+\.m4a$/));
+    expect(mockRemoveTransientMessageMedia).toHaveBeenCalledWith('file:///tmp/voice.m4a');
+    await waitFor(() => expect(mockRemoveMessageDraftMedia).toHaveBeenCalledWith('file:///documents/message-drafts-v1/voice.m4a'));
+  });
+
+  it('finalizes and persists an active recording when the app backgrounds', async () => {
+    let appStateChange: ((state: 'active' | 'background' | 'inactive' | 'unknown' | 'extension') => void) | null = null;
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, listener) => {
+      appStateChange = listener;
+      return { remove: jest.fn() };
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn() });
+    const ui = render(<ThreadScreen />);
+
+    fireEvent.press(ui.getByLabelText('Record voice message'));
+    await waitFor(() => expect(ui.getByText('Recording voice message')).toBeTruthy());
+    await act(async () => { appStateChange?.('background'); });
+
+    await waitFor(() => expect(ui.getByText('Voice message ready')).toBeTruthy());
+    expect(mockAudioRecording.stop).toHaveBeenCalledTimes(1);
+    expect(mockRetainMessageDraftMedia).toHaveBeenCalledWith('file:///tmp/voice.m4a', expect.stringMatching(/^voice-\d+\.m4a$/));
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'message', contextId: 'conversation:5' }),
+      expect.objectContaining({ voice: { uri: 'file:///documents/message-drafts-v1/voice.m4a', durationSeconds: 0 } }),
+    ));
+  });
+
+  it('restores a stopped voice note and its duration from the exact conversation draft', async () => {
+    mockLoadCreationDraft.mockResolvedValueOnce({
+      text: '',
+      voice: { uri: 'file:///documents/message-drafts-v1/restored-voice.m4a', durationSeconds: 12 },
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const ui = render(<ThreadScreen />);
+
+    await waitFor(() => expect(ui.getByText('Voice message ready')).toBeTruthy());
+    expect(ui.getByText('0:12')).toBeTruthy();
+    expect(mockExistingMessageDraftMedia).toHaveBeenCalledWith('file:///documents/message-drafts-v1/restored-voice.m4a');
+    fireEvent.press(ui.getByLabelText('Cancel voice message'));
+    await waitFor(() => expect(mockRemoveMessageDraftMedia).toHaveBeenCalledWith('file:///documents/message-drafts-v1/restored-voice.m4a'));
   });
 
   it('does not start a recorder when permission returns after leaving', async () => {
@@ -1281,7 +1596,7 @@ it('AUDIT keeps the next draft when an earlier send fails', async () => {
   const ui = render(<ThreadScreen />);
   fireEvent.changeText(ui.getByPlaceholderText('Type a message...'), 'First message');
   fireEvent.press(ui.getByLabelText('Send'));
-  await waitFor(() => expect(sendMessage).toHaveBeenCalledWith(42, 'First message'));
+  await waitFor(() => expect(sendMessage).toHaveBeenCalledWith(42, 'First message', {}, 'message-operation-123'));
   fireEvent.changeText(ui.getByPlaceholderText('Type a message...'), 'Next draft - do not lose this');
   expect(ui.getByPlaceholderText('Type a message...').props.value).toBe('Next draft - do not lose this');
   await act(async () => { rejectSend(new Error('Network request failed')); });

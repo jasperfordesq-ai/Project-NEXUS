@@ -69,7 +69,6 @@
     "messagePlaceholder": "Add an optional note",
     "sendNow": "Send credits",
     "donateNow": "Donate credits",
-    "defaultTransferDescription": "Time credit transfer",
     "validationTitle": "Check the details",
     "validationAmount": "Enter an amount greater than zero.",
     "validationInsufficient": "You do not have enough time credits for this amount.",
@@ -100,7 +99,10 @@
     "confirmDonationMessage": "You are about to donate {{amount}} hours to {{name}}. This cannot be undone.",
     "recipientResolving": "Checking the recipient…",
     "recipientUnresolved": "That member could not be found. Search for the recipient instead.",
-    "unresolvedOperation": "An earlier transfer is still unconfirmed. Check your wallet history and contact your coordinator before sending it again."
+    "unresolvedOperation": "An earlier wallet action is still unconfirmed. Check your transaction history and contact your coordinator before sending credits again.",
+    "unresolvedTitle": "Wallet action needs checking",
+    "reviewHistory": "Review transaction history",
+    "contactCommunity": "Contact your community"
   },
   "status": {
     "completed": "Completed",

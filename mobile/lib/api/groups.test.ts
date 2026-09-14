@@ -22,6 +22,7 @@ jest.mock('@/lib/constants', () => ({
 import { api } from '@/lib/api/client';
 import {
   createGroupAnnouncement,
+  createGroupDiscussion,
   acceptGroupAnswer,
   answerGroupQuestion,
   createGroupTask,
@@ -43,6 +44,7 @@ import {
   getGroupQuestions,
   getGroupMedia,
   getGroupTasks,
+  getGroupTask,
   getGroupTaskStats,
   getGroupTemplates,
   getGroupWikiPage,
@@ -223,6 +225,36 @@ describe('group announcement helpers', () => {
     expect(api.post).toHaveBeenCalledWith('/api/v2/groups/7/announcements', payload);
   });
 
+  it('sends durable operation identity with group content creation', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 9 } });
+
+    await createGroupDiscussion(7, { title: 'Rota', content: 'Who is free?' }, 'discussion-key-1');
+    await createGroupAnnouncement(7, { title: 'Update', content: 'Seeds arrived.' }, 'announcement-key-1');
+    await createGroupQuestion(7, { title: 'Which bin?', body: 'Please advise.' }, 'question-key-1');
+    await answerGroupQuestion(7, 8, { body: 'Use a lidded bin.' }, 'answer-key-1');
+    await createGroupWikiPage(7, { title: 'Guide', content: 'Keep tools dry.' }, 'wiki-key-1');
+    await createGroupTask(7, { title: 'Water seedlings', status: 'todo' }, 'task-key-1');
+
+    expect(api.post).toHaveBeenNthCalledWith(1, '/api/v2/groups/7/discussions', {
+      title: 'Rota', content: 'Who is free?', idempotency_key: 'discussion-key-1',
+    }, { headers: { 'Idempotency-Key': 'discussion-key-1' } });
+    expect(api.post).toHaveBeenNthCalledWith(2, '/api/v2/groups/7/announcements', {
+      title: 'Update', content: 'Seeds arrived.', idempotency_key: 'announcement-key-1',
+    }, { headers: { 'Idempotency-Key': 'announcement-key-1' } });
+    expect(api.post).toHaveBeenNthCalledWith(3, '/api/v2/groups/7/questions', {
+      title: 'Which bin?', body: 'Please advise.', idempotency_key: 'question-key-1',
+    }, { headers: { 'Idempotency-Key': 'question-key-1' } });
+    expect(api.post).toHaveBeenNthCalledWith(4, '/api/v2/groups/7/questions/8/answers', {
+      body: 'Use a lidded bin.', idempotency_key: 'answer-key-1',
+    }, { headers: { 'Idempotency-Key': 'answer-key-1' } });
+    expect(api.post).toHaveBeenNthCalledWith(5, '/api/v2/groups/7/wiki', {
+      title: 'Guide', content: 'Keep tools dry.', idempotency_key: 'wiki-key-1',
+    }, { headers: { 'Idempotency-Key': 'wiki-key-1' } });
+    expect(api.post).toHaveBeenNthCalledWith(6, '/api/v2/groups/7/tasks', {
+      title: 'Water seedlings', status: 'todo', idempotency_key: 'task-key-1',
+    }, { headers: { 'Idempotency-Key': 'task-key-1' } });
+  });
+
   it('updates a group announcement', async () => {
     (api.put as jest.Mock).mockResolvedValue({ data: { id: 9, is_pinned: false } });
 
@@ -302,8 +334,28 @@ describe('group media helpers', () => {
       mimeType: 'image/jpeg',
     });
 
-    expect(api.upload).toHaveBeenCalledWith('/api/v2/groups/7/media', expect.any(FormData));
+    expect(api.upload).toHaveBeenCalledWith('/api/v2/groups/7/media', expect.any(FormData), undefined);
     expect(result.data.id).toBe(82);
+  });
+
+  it('sends durable operation identity with a group media upload', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({
+      data: { id: 82, url: '/uploads/groups/media.jpg', type: 'image', uploaded_by: 10, created_at: '2026-06-01T00:00:00Z' },
+    });
+
+    await uploadGroupMedia(7, {
+      uri: 'file:///tmp/group-media.jpg',
+      fileName: 'group-media.jpg',
+      mimeType: 'image/jpeg',
+    }, 'group-media-abc123');
+
+    expect(api.upload).toHaveBeenCalledWith(
+      '/api/v2/groups/7/media',
+      expect.any(FormData),
+      { headers: { 'Idempotency-Key': 'group-media-abc123' } },
+    );
+    const formData = (api.upload as jest.Mock).mock.calls[0][1] as FormData;
+    expect(formData.get('idempotency_key')).toBe('group-media-abc123');
   });
 });
 
@@ -498,6 +550,16 @@ describe('group task helpers', () => {
 
     expect(api.get).toHaveBeenCalledWith('/api/v2/groups/7/task-stats');
     expect(result.data.total).toBe(2);
+  });
+
+  it('loads one group task for exact mutation readback', async () => {
+    const response = { data: { id: 18, group_id: 7, title: 'Water seedlings', status: 'done' } };
+    (api.get as jest.Mock).mockResolvedValue(response);
+
+    const result = await getGroupTask(18);
+
+    expect(api.get).toHaveBeenCalledWith('/api/v2/team-tasks/18');
+    expect(result.data.id).toBe(18);
   });
 
   it('creates a group task', async () => {

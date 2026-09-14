@@ -85,7 +85,11 @@ export default function ForgotPasswordScreen() {
                 className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"
                 style={{ backgroundColor: isSubmitted ? theme.success : primary }}
               >
-                <Ionicons name={isSubmitted ? 'checkmark-outline' : 'mail-outline'} size={32} color={contrastText(primary)} />
+                <Ionicons
+                  name={isSubmitted ? 'checkmark-outline' : 'mail-outline'}
+                  size={32}
+                  color={contrastText(isSubmitted ? theme.success : primary)}
+                />
               </View>
               <HeroCard.Title className="text-center text-2xl font-bold">
                 {isSubmitted ? t('forgotPassword.successTitle') : t('forgotPassword.title')}

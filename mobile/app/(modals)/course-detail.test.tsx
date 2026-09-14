@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 const mockShow = jest.fn();
@@ -13,7 +13,8 @@ jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(), router: { push: (...args: unknown[]) => mockPush(...args) }, useLocalSearchParams: () => ({ id: 'basics' }) }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ 'detail.enroll': 'Enroll', 'detail.enroll_success': "You're enrolled! Time to start learning.", 'detail.enroll_error': 'Could not enroll. Please try again.', 'detail.about': 'About this course', 'detail.syllabus': 'Syllabus', 'detail.free': 'Free', 'detail.enroll_confirm_title': 'Enrol in this course?', 'detail.enroll_confirm_cta': 'Enrol', 'common:buttons.cancel': 'Cancel', 'common:back': 'Back' } as Record<string, string>)[key] ?? key }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 10 } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textSecondary: '#555', border: '#ddd' }) }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
@@ -65,7 +66,7 @@ describe('CourseDetailScreen', () => {
     expect(enrollInCourse).not.toHaveBeenCalled();
 
     // The member says yes.
-    await mockConfirm.mock.calls[0][0].onConfirm();
+    await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
     expect(enrollInCourse).toHaveBeenCalledWith(7);
   });
 
@@ -81,12 +82,18 @@ describe('CourseDetailScreen', () => {
     fireEvent.press(getByText('Enroll'));
 
     const confirmed = mockConfirm.mock.calls[0][0].onConfirm;
-    const first = confirmed();
-    const second = confirmed();
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    act(() => {
+      first = Promise.resolve(confirmed());
+      second = Promise.resolve(confirmed());
+    });
 
     expect(enrollInCourse).toHaveBeenCalledTimes(1);
-    finishEnrollment();
-    await Promise.all([first, second]);
+    await act(async () => {
+      finishEnrollment();
+      await Promise.all([first, second]);
+    });
     expect(mockPush).toHaveBeenCalledTimes(1);
   });
 
@@ -119,5 +126,20 @@ describe('CourseDetailScreen', () => {
       variant: 'danger',
     })));
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('opens the enrolled course when the POST response is lost but canonical readback confirms it', async () => {
+    jest.mocked(enrollInCourse).mockRejectedValue(new ApiResponseError(0, 'Network request failed'));
+    jest.mocked(getCourse)
+      .mockResolvedValueOnce({ id: 7, slug: 'basics', title: 'Timebanking basics', summary: 'Start here.', description: 'Learn how exchanges work.', level: 'beginner', credit_cost: 2, enrollment_count: 12, is_enrolled: false, sections: [] })
+      .mockResolvedValueOnce({ id: 7, slug: 'basics', title: 'Timebanking basics', summary: 'Start here.', description: 'Learn how exchanges work.', level: 'beginner', credit_cost: 2, enrollment_count: 13, is_enrolled: true, sections: [] });
+
+    const { getByText } = render(<CourseDetailScreen />);
+    await waitFor(() => expect(getByText('Timebanking basics')).toBeTruthy());
+    fireEvent.press(getByText('Enroll'));
+    await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/course-player', params: { id: '7' } }));
+    expect(mockShow).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
   });
 });

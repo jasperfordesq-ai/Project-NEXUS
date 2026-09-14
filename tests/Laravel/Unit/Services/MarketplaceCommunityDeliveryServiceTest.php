@@ -18,7 +18,7 @@ class MarketplaceCommunityDeliveryServiceTest extends TestCase
     public function test_has_public_methods(): void
     {
         $ref = new \ReflectionClass(\App\Services\MarketplaceCommunityDeliveryService::class);
-        foreach (['offerDelivery', 'acceptDeliveryOffer', 'confirmDelivery', 'getDeliveryOffers'] as $m) {
+        foreach (['getDeliveryOpportunities', 'offerDelivery', 'acceptDeliveryOffer', 'confirmDelivery', 'getDeliveryOffers'] as $m) {
             $this->assertTrue($ref->hasMethod($m), "Missing method: {$m}");
             $this->assertTrue($ref->getMethod($m)->isPublic(), "Not public: {$m}");
         }

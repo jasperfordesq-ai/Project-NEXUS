@@ -175,5 +175,9 @@
     "title": "¿Salir sin guardar?",
     "message": "Los cambios de esta pantalla todavía no se han guardado.",
     "discard": "Salir"
+  },
+  "draftStorage": {
+    "title": "Borrador sin proteger",
+    "message": "Este borrador no se pudo guardar de forma segura en el dispositivo. Mantén la aplicación abierta, comprueba el almacenamiento y haz otro cambio para volver a intentarlo."
   }
 }

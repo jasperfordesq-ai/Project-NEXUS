@@ -4,7 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
+
+const mockEndSessionLocally = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 // --- Mocks ---
 
@@ -21,7 +25,7 @@ jest.mock('react-i18next', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'password.title': 'Change Password',
-        'password.hint': 'Your new password must be at least 8 characters.',
+        'password.hint': 'Enter your current password, then choose a new one.',
         'password.currentLabel': 'Current Password',
         'password.currentPlaceholder': 'Enter current password',
         'password.newLabel': 'New Password',
@@ -31,12 +35,16 @@ jest.mock('react-i18next', () => ({
         'password.save': 'Save Password',
         'password.success': 'Password Changed',
         'password.successMessage': 'Your password has been updated successfully.',
+        'password.successSignIn': 'Sign in again with your new password.',
+        'password.unconfirmedTitle': 'Check your password',
+        'password.unconfirmedMessage': 'Try your new password first, then your previous password.',
         'password.changeError': 'Failed to change password.',
         'password.validation.currentRequired': 'Current password is required.',
         'password.footerMissing': 'Fill in all three fields to continue.',
         'password.footerMismatch': 'The new password and its confirmation do not match yet.',
         'password.validation.newRequired': 'New password is required.',
-        'password.validation.tooShort': 'Password must be at least 8 characters.',
+        'password.newHint': 'Use at least 12 characters.',
+        'password.validation.tooShort': 'Password must be at least 12 characters.',
         'password.validation.mismatch': 'Passwords do not match.',
         'common:buttons.done': 'Done',
         'common:errors.generic': 'Error',
@@ -49,7 +57,10 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true }),
+}));
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 1 }, endSessionLocally: mockEndSessionLocally }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -98,6 +109,16 @@ jest.mock('@/components/OfflineBanner', () => () => null);
 // --- Tests ---
 
 import ChangePasswordScreen from './change-password';
+import { updatePassword } from '@/lib/api/profile';
+import { ApiResponseError } from '@/lib/api/client';
+
+const mockUpdatePassword = updatePassword as jest.MockedFunction<typeof updatePassword>;
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockUpdatePassword.mockResolvedValue(undefined);
+  mockEndSessionLocally.mockResolvedValue(undefined);
+});
 
 describe('ChangePasswordScreen', () => {
   it('renders without crashing', () => {
@@ -136,6 +157,58 @@ describe('ChangePasswordScreen', () => {
 
   it('shows hint text describing the password requirements', () => {
     const { getByText } = render(<ChangePasswordScreen />);
-    expect(getByText('Your new password must be at least 8 characters.')).toBeTruthy();
+    expect(getByText('Use at least 12 characters.')).toBeTruthy();
+  });
+
+  it('serializes rapid saves and locks all password fields while the submitted credentials are pending', async () => {
+    let finish!: () => void;
+    mockUpdatePassword.mockImplementationOnce(() => new Promise((resolve) => { finish = () => resolve(undefined); }));
+    const screen = render(<ChangePasswordScreen />);
+    fireEvent.changeText(screen.getByLabelText('Current Password'), 'old-password');
+    fireEvent.changeText(screen.getByLabelText('New Password'), 'new-password-123');
+    fireEvent.changeText(screen.getByLabelText('Confirm New Password'), 'new-password-123');
+
+    const save = screen.getByText('Save Password');
+    fireEvent.press(save);
+    fireEvent.press(save);
+    expect(mockUpdatePassword).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(screen.getByLabelText('Current Password')).toHaveProp('editable', false);
+      expect(screen.getByLabelText('New Password')).toHaveProp('editable', false);
+      expect(screen.getByLabelText('Confirm New Password')).toHaveProp('editable', false);
+    });
+
+    await act(async () => finish());
+  });
+
+  it('ends the revoked local session after a confirmed password change', async () => {
+    const screen = render(<ChangePasswordScreen />);
+    fireEvent.changeText(screen.getByLabelText('Current Password'), 'old-password');
+    fireEvent.changeText(screen.getByLabelText('New Password'), 'new-password-123');
+    fireEvent.changeText(screen.getByLabelText('Confirm New Password'), 'new-password-123');
+
+    fireEvent.press(screen.getByText('Save Password'));
+
+    await waitFor(() => expect(mockEndSessionLocally).toHaveBeenCalledWith({
+      title: 'Password Changed',
+      description: 'Sign in again with your new password.',
+      variant: 'success',
+    }));
+  });
+
+  it('ends the session with honest guidance when the password response is lost', async () => {
+    mockUpdatePassword.mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    const screen = render(<ChangePasswordScreen />);
+    fireEvent.changeText(screen.getByLabelText('Current Password'), 'old-password');
+    fireEvent.changeText(screen.getByLabelText('New Password'), 'new-password-123');
+    fireEvent.changeText(screen.getByLabelText('Confirm New Password'), 'new-password-123');
+
+    fireEvent.press(screen.getByText('Save Password'));
+
+    await waitFor(() => expect(mockEndSessionLocally).toHaveBeenCalledWith({
+      title: 'Check your password',
+      description: 'Try your new password first, then your previous password.',
+      variant: 'warning',
+    }));
   });
 });

@@ -72,6 +72,7 @@
   "shiftSignupTitle": "Shift iscritto",
   "shiftSignupMessage": "Ti sei iscritto a questo turno.",
   "shiftSignupError": "Impossibile iscriversi a questo turno.",
+  "shiftResultUnknown": "Non è stato possibile confermare la modifica. Aggiorna i tuoi turni prima di riprovare.",
   "meta": {
     "location": "Posizione",
     "commitment": "Impegno",
@@ -307,6 +308,7 @@
   "interestSentTitle": "Interesse inviato!",
   "interestSentMessage": "L'organizzazione ti contatterà presto.",
   "interestError": "Impossibile manifestare l'interesse.",
+  "interestNoAnswer": "Non è stato possibile confermare il risultato. La tua candidatura potrebbe essere già stata inviata.",
   "skills": "Competenze richieste",
   "commitment": "Impegno richiesto",
   "detail": {

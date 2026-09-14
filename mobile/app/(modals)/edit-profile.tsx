@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { updateAvatar, updateProfile, type UpdateProfilePayload } from '@/lib/api/profile';
 import { getMe, type User } from '@/lib/api/auth';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { storage } from '@/lib/storage';
@@ -74,10 +74,18 @@ function EditProfileScreenInner() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarUri, setAvatarUri] = useState(fullUser?.avatar_url ?? null);
   const latestAvatarUriRef = useRef<string | null>(fullUser?.avatar_url ?? null);
+  const latestUserRef = useRef<User | null>(fullUser);
   const avatarUpdatedLocallyRef = useRef(false);
   const [hydrating, setHydrating] = useState(false);
   const [hasHydratedFullProfile, setHasHydratedFullProfile] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const saveInFlightRef = useRef(false);
+  const avatarInFlightRef = useRef(false);
+  const draftRevisionRef = useRef(0);
+  const hydrationBaselineRevisionRef = useRef(draftRevisionRef.current);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   // Track whether the form has unsaved changes
   const isDirty =
@@ -109,7 +117,9 @@ function EditProfileScreenInner() {
   }
 
   async function handlePickAvatar() {
-    if (uploadingAvatar) return;
+    if (avatarInFlightRef.current || saveInFlightRef.current) return;
+    avatarInFlightRef.current = true;
+      setUploadingAvatar(true);
 
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -126,34 +136,41 @@ function EditProfileScreenInner() {
 
       if (result.canceled || !result.assets?.[0]?.uri) return;
 
-      setUploadingAvatar(true);
       const prepared = await prepareImageForUpload(result.assets[0]);
       const response = await updateAvatar(prepared.uri);
+      if (!isMountedRef.current) return;
       const nextAvatarUrl = withImageVersion(response.data.avatar_url);
       avatarUpdatedLocallyRef.current = true;
       latestAvatarUriRef.current = nextAvatarUrl;
-      setAvatarUri(nextAvatarUrl);
+      if (isMountedRef.current) setAvatarUri(nextAvatarUrl);
 
-      if (fullUser) {
-        const updatedUser = { ...fullUser, avatar_url: nextAvatarUrl };
+      const currentUser = latestUserRef.current;
+      if (currentUser) {
+        const updatedUser = { ...currentUser, avatar_url: nextAvatarUrl };
+        latestUserRef.current = updatedUser;
         refreshUser(updatedUser);
-        await storage.setJson(STORAGE_KEYS.USER_DATA, updatedUser);
+        // The upload is already committed. A failed local cache refresh must not report
+        // the avatar as failed or invite a second upload.
+        await storage.setJson(STORAGE_KEYS.USER_DATA, updatedUser).catch(() => undefined);
       }
 
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (isMountedRef.current) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('uploadFailed'), description: describeApiError(err, t('uploadFailedMessage')), variant: 'danger' });
     } finally {
-      setUploadingAvatar(false);
+      avatarInFlightRef.current = false;
+      if (isMountedRef.current) setUploadingAvatar(false);
     }
   }
 
   useEffect(() => {
-    if (!user || hasHydratedFullProfile) return;
+    if (!latestUserRef.current || hasHydratedFullProfile) return;
     let isMounted = true;
 
     async function hydrateProfile() {
+      const startingDraftRevision = hydrationBaselineRevisionRef.current;
       setHydrating(true);
       try {
         const response = await getMe();
@@ -161,12 +178,17 @@ function EditProfileScreenInner() {
         const nextUser = avatarUpdatedLocallyRef.current
           ? { ...response.data, avatar_url: latestAvatarUriRef.current }
           : response.data;
-        applyProfileData(nextUser);
+        if (draftRevisionRef.current === startingDraftRevision) {
+          applyProfileData(nextUser);
+        }
+        latestUserRef.current = nextUser;
         refreshUser(nextUser);
-        await storage.setJson(STORAGE_KEYS.USER_DATA, nextUser);
+        await storage.setJson(STORAGE_KEYS.USER_DATA, nextUser).catch(() => undefined);
       } catch {
         if (!isMounted) return;
-        applyProfileData(user as Partial<User>);
+        if (draftRevisionRef.current === startingDraftRevision) {
+          applyProfileData((latestUserRef.current ?? {}) as Partial<User>);
+        }
       } finally {
         if (isMounted) {
           setHasHydratedFullProfile(true);
@@ -179,7 +201,7 @@ function EditProfileScreenInner() {
     return () => {
       isMounted = false;
     };
-  }, [hasHydratedFullProfile, refreshUser, user]);
+  }, [hasHydratedFullProfile, refreshUser]);
 
   /*
     🔴 This screen kept its own `beforeRemove` + `preventDefault()` copy of the unsaved
@@ -214,6 +236,7 @@ function EditProfileScreenInner() {
   const firstFooterError = fieldErrors.firstName ?? fieldErrors.phone ?? null;
 
   async function handleSave() {
+    if (saveInFlightRef.current || avatarInFlightRef.current || hydrating) return;
     const errors = validate();
     if (Object.keys(errors).length > 0) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -222,6 +245,7 @@ function EditProfileScreenInner() {
     }
 
     setFieldErrors({});
+    saveInFlightRef.current = true;
     setSaving(true);
     try {
       const payload: UpdateProfilePayload = {
@@ -233,9 +257,11 @@ function EditProfileScreenInner() {
       };
 
       const response = await updateProfile(payload);
+      if (!isMountedRef.current) return;
 
-      // Update cached user data
-      await storage.setJson(STORAGE_KEYS.USER_DATA, response.data);
+      // The server response is authoritative. Cache persistence is best-effort after the
+      // committed update and cannot turn success into a retryable failure.
+      latestUserRef.current = response.data;
       refreshUser(response.data);
       setBaselineProfile({
         firstName: response.data.first_name ?? '',
@@ -244,16 +270,20 @@ function EditProfileScreenInner() {
         location: response.data.location ?? '',
         phone: response.data.phone ?? '',
       });
+      await storage.setJson(STORAGE_KEYS.USER_DATA, response.data).catch(() => undefined);
+      if (!isMountedRef.current) return;
 
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('edit.saved'), description: t('edit.savedMessage'), variant: 'success' });
       router.back();
     } catch (err: unknown) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const msg = describeApiError(err, t('edit.saveError'));
       showToast({ title: t('common:errors.generic'), description: msg, variant: 'danger' });
     } finally {
-      setSaving(false);
+      saveInFlightRef.current = false;
+      if (isMountedRef.current) setSaving(false);
     }
   }
 
@@ -294,7 +324,7 @@ function EditProfileScreenInner() {
                   className="flex-1"
                   variant="secondary"
                   onPress={() => void handlePickAvatar()}
-                  isDisabled={uploadingAvatar}
+                  isDisabled={uploadingAvatar || saving}
                   accessibilityLabel={t('changePhoto')}
                 >
                   {uploadingAvatar ? (
@@ -318,6 +348,7 @@ function EditProfileScreenInner() {
                   label={t('edit.firstName')}
                   value={firstName}
                   onChangeText={(v) => {
+                    draftRevisionRef.current += 1;
                     setFirstName(v);
                     if (fieldErrors.firstName) setFieldErrors((e) => ({ ...e, firstName: undefined }));
                   }}
@@ -327,16 +358,18 @@ function EditProfileScreenInner() {
                   maxLength={50}
                   theme={theme}
                   className="flex-1"
+                  editable={!saving && !uploadingAvatar}
                 />
                 <ProfileField
                   label={t('edit.lastName')}
                   value={lastName}
-                  onChangeText={setLastName}
+                  onChangeText={(value) => { draftRevisionRef.current += 1; setLastName(value); }}
                   placeholder={t('edit.lastName')}
                   autoCapitalize="words"
                   maxLength={50}
                   theme={theme}
                   className="flex-1"
+                  editable={!saving && !uploadingAvatar}
                 />
               </View>
             </HeroCard.Body>
@@ -348,7 +381,7 @@ function EditProfileScreenInner() {
               <ProfileField
                 label={t('edit.aboutYou')}
                 value={bio}
-                onChangeText={setBio}
+                onChangeText={(value) => { draftRevisionRef.current += 1; setBio(value); }}
                 placeholder={t('edit.aboutPlaceholder')}
                 multiline
                 numberOfLines={5}
@@ -356,6 +389,7 @@ function EditProfileScreenInner() {
                 theme={theme}
                 inputClassName="min-h-[124px] pt-3"
                 helper={t('edit.bioHint', { count: Math.max(0, 500 - bio.length) })}
+                editable={!saving && !uploadingAvatar}
               />
             </HeroCard.Body>
           </HeroCard>
@@ -366,15 +400,17 @@ function EditProfileScreenInner() {
               <ProfileField
                 label={t('edit.location')}
                 value={location}
-                onChangeText={setLocation}
+                onChangeText={(value) => { draftRevisionRef.current += 1; setLocation(value); }}
                 placeholder={t('edit.locationPlaceholder')}
                 autoCapitalize="words"
                 theme={theme}
+                editable={!saving && !uploadingAvatar}
               />
               <ProfileField
                 label={t('edit.phoneOptional')}
                 value={phone}
                 onChangeText={(v) => {
+                  draftRevisionRef.current += 1;
                   setPhone(v);
                   if (fieldErrors.phone) setFieldErrors((e) => ({ ...e, phone: undefined }));
                 }}
@@ -382,6 +418,7 @@ function EditProfileScreenInner() {
                 keyboardType="phone-pad"
                 error={fieldErrors.phone}
                 theme={theme}
+                editable={!saving && !uploadingAvatar}
               />
             </HeroCard.Body>
           </HeroCard>
@@ -399,7 +436,7 @@ function EditProfileScreenInner() {
           secondaryLabel={t('edit.cancel')}
           primary={primary}
           isSubmitting={saving}
-          isDisabled={!isDirty}
+          isDisabled={!isDirty || hydrating || uploadingAvatar}
           onSubmit={() => void handleSave()}
           onSecondary={() => router.back()}
         />
@@ -485,4 +522,10 @@ function EditProfileScreen() {
   );
 }
 
-export default withRouteGate(EditProfileScreen, 'edit-profile');
+function EditProfileRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <EditProfileScreen key={`${tenant?.id ?? tenant?.slug ?? 'tenant'}:${user?.id ?? 'guest'}`} />;
+}
+
+export default withRouteGate(EditProfileRoute, 'edit-profile');

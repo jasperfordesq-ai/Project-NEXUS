@@ -7,6 +7,7 @@ import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockToast = jest.fn();
+const mockUnsavedGuard = jest.fn();
 let mockParams: Record<string, string> = {};
 let mockFeatures: Record<string, boolean> = { ideation_challenges: true };
 let mockUser: { id: number } | null = { id: 7 };
@@ -59,6 +60,9 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ hasFeature: (name: string) => Boolean(mockFeatures[name]) }),
 }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser }) }));
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
+  useUnsavedChangesGuard: (...args: unknown[]) => mockUnsavedGuard(...args),
+}));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ bg: '#fff', text: '#111', textSecondary: '#555', textMuted: '#777' }),
 }));
@@ -137,7 +141,7 @@ describe('IdeationIdeaScreen', () => {
     const { getByText } = render(<IdeationIdeaScreen />);
     await waitFor(() => expect(getByText('Vote')).toBeTruthy());
     fireEvent.press(getByText('Vote'));
-    await waitFor(() => expect(voteIdeationIdea).toHaveBeenCalledWith(31));
+    await waitFor(() => expect(voteIdeationIdea).toHaveBeenCalledWith(31, true, expect.any(String)));
     await waitFor(() => expect(mockToast).toHaveBeenCalledWith({ title: 'Vote added', variant: 'success' }));
     await waitFor(() => expect(getIdeationIdea).toHaveBeenCalledTimes(2));
   });
@@ -158,7 +162,7 @@ describe('IdeationIdeaScreen', () => {
     const field = getByPlaceholderText('Share your thoughts');
     fireEvent.changeText(field, '  Great idea  ');
     fireEvent.press(getByText('Post comment'));
-    await waitFor(() => expect(addIdeationComment).toHaveBeenCalledWith(31, 'Great idea'));
+    await waitFor(() => expect(addIdeationComment).toHaveBeenCalledWith(31, 'Great idea', expect.any(String)));
     await waitFor(() => expect(mockToast).toHaveBeenCalledWith({ title: 'Comment added', variant: 'success' }));
     await waitFor(() => expect(getIdeationComments).toHaveBeenCalledTimes(2));
   });
@@ -179,6 +183,63 @@ describe('IdeationIdeaScreen', () => {
     expect(addIdeationComment).toHaveBeenCalledTimes(1);
     expect(getByPlaceholderText('Share your thoughts')).toHaveProp('editable', false);
     await act(async () => { finish?.(); });
+  });
+
+  it('reuses the same comment identity when an unchanged draft is retried after response loss', async () => {
+    jest.mocked(addIdeationComment)
+      .mockRejectedValueOnce(new Error('Connection lost'))
+      .mockResolvedValueOnce({ id: 1 } as never);
+    const { getByPlaceholderText, getByTestId, getByText } = render(<IdeationIdeaScreen />);
+    await waitFor(() => expect(getByText('Post comment')).toBeTruthy());
+    fireEvent.changeText(getByPlaceholderText('Share your thoughts'), 'One comment');
+
+    fireEvent.press(getByTestId('ideation-comment-submit'));
+    await waitFor(() => expect(addIdeationComment).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getByText('Post comment')).toBeTruthy());
+    fireEvent.press(getByTestId('ideation-comment-submit'));
+    await waitFor(() => expect(addIdeationComment).toHaveBeenCalledTimes(2));
+
+    const calls = jest.mocked(addIdeationComment).mock.calls;
+    expect(calls[1][2]).toBe(calls[0][2]);
+  });
+
+  it('protects comment and edit drafts, including while a write is pending', async () => {
+    let finish: (() => void) | null = null;
+    jest.mocked(addIdeationComment).mockImplementationOnce(
+      () => new Promise((resolve) => { finish = () => resolve({ id: 1 } as never); }),
+    );
+    const { getByDisplayValue, getByPlaceholderText, getByTestId, getByText } = render(<IdeationIdeaScreen />);
+    await waitFor(() => expect(getByText('Post comment')).toBeTruthy());
+    fireEvent.changeText(getByPlaceholderText('Share your thoughts'), 'One comment');
+    expect(mockUnsavedGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true, isSaving: false }));
+
+    fireEvent.press(getByTestId('ideation-comment-submit'));
+    await waitFor(() => expect(mockUnsavedGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true, isSaving: true })));
+    await act(async () => { finish?.(); });
+
+    fireEvent.press(getByText('Edit idea'));
+    fireEvent.changeText(getByDisplayValue('Orchard on the green'), 'Changed title');
+    expect(mockUnsavedGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true, isSaving: false }));
+  });
+
+  it('remounts for another idea and suppresses a late comment success from the old route', async () => {
+    let finish: (() => void) | null = null;
+    jest.mocked(addIdeationComment).mockImplementationOnce(
+      () => new Promise((resolve) => { finish = () => resolve({ id: 1 } as never); }),
+    );
+    const rendered = render(<IdeationIdeaScreen />);
+    await waitFor(() => expect(rendered.getByText('Post comment')).toBeTruthy());
+    fireEvent.changeText(rendered.getByPlaceholderText('Share your thoughts'), 'Old route comment');
+    fireEvent.press(rendered.getByTestId('ideation-comment-submit'));
+    await waitFor(() => expect(addIdeationComment).toHaveBeenCalledTimes(1));
+
+    mockParams = { id: '32' };
+    jest.mocked(getIdeationIdea).mockResolvedValue(idea({ id: 32, title: 'Second idea' }) as never);
+    rendered.rerender(<IdeationIdeaScreen />);
+    await waitFor(() => expect(rendered.getByPlaceholderText('Share your thoughts')).toHaveProp('value', ''));
+    await act(async () => { finish?.(); });
+
+    expect(mockToast).not.toHaveBeenCalledWith({ title: 'Comment added', variant: 'success' });
   });
 
   it('does not post an empty comment', async () => {

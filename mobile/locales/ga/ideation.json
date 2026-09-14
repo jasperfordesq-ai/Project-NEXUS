@@ -485,6 +485,12 @@
   "submitting": "Á chur isteach...",
   "submitSuccess": "Cuireadh an smaoineamh isteach.",
   "submitFailed": "Níorbh fhéidir an smaoineamh a chur isteach.",
+  "submissionUnavailable": {
+    "phase": "Níl an dúshlán seo ag glacadh le smaointe nua.",
+    "deadline": "Tá an spriocdháta chun smaointe a chur isteach imithe thart.",
+    "limit": "Tá teorainn na smaointe don dúshlán seo sroichte agat.",
+    "authentication": "Sínigh isteach chun smaoineamh a chur isteach."
+  },
   "vote": "Vótáil",
   "voted": "Vótáilte",
   "voteFailed": "Níorbh fhéidir an vóta a nuashonrú.",

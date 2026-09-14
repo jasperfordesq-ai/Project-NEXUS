@@ -159,7 +159,24 @@
     "resultsHiddenUntilClose": "Nochtfar na torthaí nuair a dhúnfar an phobalbhreith",
     "voteToSeeResults": "Vótáil chun torthaí a fheiceáil",
     "voteFailedTitle": "Níor sábháladh an vóta",
-    "voteFailed": "Níorbh fhéidir do vóta a thaifeadadh. Bain triail eile as."
+    "voteFailed": "Níorbh fhéidir do vóta a thaifeadadh. Bain triail eile as.",
+    "ranked": "Rogha rangaithe",
+    "rankInstructions": "Cuir gach rogha san ord is fearr leat, agus do chéad rogha ag an mbarr.",
+    "rankSubmitted": "Cuireadh ord do roghanna isteach.",
+    "rankingClosed": "Tá an phobalbhreith rangaithe seo dúnta.",
+    "moveUp": "Bog {{option}} suas",
+    "moveDown": "Bog {{option}} síos",
+    "submitRankings": "Cuir roghanna isteach",
+    "submittingRankings": "Á gcur isteach",
+    "rankFailed": "Níorbh fhéidir do roghanna a thaifeadadh. Bain triail eile as.",
+    "resultsHeading": "Torthaí rangaithe",
+    "resultsLoading": "Torthaí á lódáil…",
+    "resultsLoadFailed": "Níorbh fhéidir na torthaí a lódáil.",
+    "retryResults": "Bain triail eile as na torthaí",
+    "totalVoters": "{{count}} vótálaí",
+    "totalVoters_one": "{{count}} vótálaí",
+    "firstChoiceVotes": "{{count}} vóta céadrogha",
+    "firstChoiceVotes_one": "{{count}} vóta céadrogha"
   },
   "pollsScreen": {
     "title": " Pobalbhreith",
@@ -189,7 +206,11 @@
     "createOptionsRequired": "Cuir dhá rogha ar a laghad leis.",
     "createdTitle": "Pobalbhreith cruthaithe",
     "createdMessage": "Tá do phobalbhreith oscailte anois.",
-    "createError": "Níorbh fhéidir an phobalbhreith a chruthú."
+    "createError": "Níorbh fhéidir an phobalbhreith a chruthú.",
+    "typeLabel": "Cineál pobalbhreithe",
+    "typeStandard": "Roghnaigh ceann",
+    "typeRanked": "Rangaigh roghanna",
+    "anonymous": "Freagraí gan ainm"
   },
   "imageViewer": {
     "close": "Dún",

@@ -159,6 +159,11 @@ jest.mock('@/lib/api/client', () => ({
   ApiResponseError: class ApiResponseError extends Error {},
 }));
 
+jest.mock('@/lib/listingOperation', () => ({
+  reserveListingOperation: jest.fn().mockResolvedValue({ storageKey: 'listing-op', key: 'listing-op-1', createdAt: 1 }),
+  completeListingOperation: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn(),
   NotificationFeedbackType: { Success: 'success', Error: 'error', Warning: 'warning' },
@@ -283,7 +288,7 @@ describe('NewExchangeModal', () => {
       category_id: 2,
       location: 'Dublin',
       service_type: 'hybrid',
-    })));
+    }), 'listing-op-1'));
     expect(mockSetExchangeTags).toHaveBeenCalledWith(9, ['gardening', 'pruning']);
     expect(mockUploadExchangeImage).toHaveBeenCalledWith(9, 'file:///tmp/listing.jpg');
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: '9' } }));
@@ -383,7 +388,7 @@ describe('NewExchangeModal', () => {
         "Equipment: I'll provide everything needed",
         'Accessibility: Ground floor room',
       ].join('\n'),
-    })));
+    }), 'listing-op-1'));
   });
 });
 
@@ -543,6 +548,6 @@ describe('NewExchangeModal — audit 2026-09-05 regressions', () => {
 
     fireEvent.press(screen.getByText('Post Offer'));
 
-    await waitFor(() => expect(mockCreateExchange).toHaveBeenCalledWith(expect.objectContaining({ hours_estimate: 1.5 })));
+    await waitFor(() => expect(mockCreateExchange).toHaveBeenCalledWith(expect.objectContaining({ hours_estimate: 1.5 }), 'listing-op-1'));
   });
 });

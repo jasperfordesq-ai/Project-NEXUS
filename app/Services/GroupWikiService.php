@@ -117,6 +117,18 @@ final class GroupWikiService
         }
 
         $tenantId = (int) TenantContext::getId();
+        $identity = GroupContentCreationReceiptService::identity($input['idempotency_key'] ?? null, [
+            'content' => $content,
+            'group_id' => $groupId,
+            'is_published' => $isPublished,
+            'parent_id' => $parentId,
+            'sort_order' => $sortOrder,
+            'title' => $title,
+        ]);
+        if ($identity === false) {
+            $this->addError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'));
+            return null;
+        }
 
         return DB::transaction(function () use (
             $groupId,
@@ -127,7 +139,26 @@ final class GroupWikiService
             $parentId,
             $sortOrder,
             $isPublished,
+            $identity,
         ): ?array {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find($tenantId, $userId, 'wiki_page', $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        $this->addError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'));
+                        return null;
+                    }
+                    $payload = GroupContentCreationReceiptService::payload($receipt);
+                    if ($payload === null) {
+                        $this->addError('SERVER_ERROR', __('api.generic_error'));
+                        return null;
+                    }
+                    $payload['_idempotent_replay'] = true;
+                    return $payload;
+                }
+            }
+
             if (! $this->lockWritableGroup($groupId, $tenantId)) {
                 return null;
             }
@@ -169,8 +200,20 @@ final class GroupWikiService
                 'created_at' => $now,
             ]);
 
-            return self::formatPage($this->findPageById($groupId, $pageId, $tenantId));
-        });
+            $result = self::formatPage($this->findPageById($groupId, $pageId, $tenantId));
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    $groupId,
+                    'wiki_page',
+                    $identity,
+                    $pageId,
+                    $result,
+                );
+            }
+            return $result;
+        }, 3);
     }
 
     /**

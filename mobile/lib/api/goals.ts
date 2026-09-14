@@ -146,8 +146,11 @@ export function createGoal(data: {
   target_value?: number;
   due_date?: string;
   deadline?: string;
-}): Promise<{ data: Goal }> {
-  return api.post<{ data: Goal }>(`${API_V2}/goals`, data);
+}, idempotencyKey?: string): Promise<{ data: Goal }> {
+  if (!idempotencyKey) return api.post<{ data: Goal }>(`${API_V2}/goals`, data);
+  return api.post<{ data: Goal }>(`${API_V2}/goals`, {
+    ...data, idempotency_key: idempotencyKey,
+  }, { headers: { 'Idempotency-Key': idempotencyKey } });
 }
 
 export function getGoalTemplates(category?: string | null): Promise<GoalTemplatesResponse> {
@@ -160,8 +163,11 @@ export function getGoalTemplateCategories(): Promise<{ data: string[] }> {
   return api.get<{ data: string[] }>(`${API_V2}/goals/templates/categories`);
 }
 
-export function createGoalFromTemplate(templateId: number): Promise<{ data: Goal }> {
-  return api.post<{ data: Goal }>(`${API_V2}/goals/from-template/${templateId}`, {});
+export function createGoalFromTemplate(templateId: number, idempotencyKey?: string): Promise<{ data: Goal }> {
+  if (!idempotencyKey) return api.post<{ data: Goal }>(`${API_V2}/goals/from-template/${templateId}`, {});
+  return api.post<{ data: Goal }>(`${API_V2}/goals/from-template/${templateId}`, {
+    idempotency_key: idempotencyKey,
+  }, { headers: { 'Idempotency-Key': idempotencyKey } });
 }
 
 /**
@@ -179,8 +185,17 @@ export function completeGoal(id: number): Promise<{ data: Goal & { idempotent_re
   return api.post<{ data: Goal & { idempotent_replay?: boolean } }>(`${API_V2}/goals/${id}/complete`);
 }
 
-export function updateGoalProgress(id: number, increment: number): Promise<{ data: Goal }> {
-  return api.post<{ data: Goal }>(`${API_V2}/goals/${id}/progress`, { increment });
+export function updateGoalProgress(
+  id: number,
+  increment: number,
+  expectedCurrentValue?: number,
+  desiredCurrentValue?: number,
+): Promise<{ data: Goal & { idempotent_replay?: boolean } }> {
+  return api.post<{ data: Goal & { idempotent_replay?: boolean } }>(`${API_V2}/goals/${id}/progress`, {
+    increment,
+    ...(expectedCurrentValue === undefined ? {} : { expected_current_value: expectedCurrentValue }),
+    ...(desiredCurrentValue === undefined ? {} : { desired_current_value: desiredCurrentValue }),
+  });
 }
 
 export function getGoalHistory(id: number): Promise<GoalHistoryResponse> {

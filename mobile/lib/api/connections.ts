@@ -69,7 +69,12 @@ export function acceptConnection(connectionId: number): Promise<{ data: { connec
   return api.post<{ data: { connection_id: number; status: string } }>(`${API_V2}/connections/${connectionId}/accept`, {});
 }
 
-/** DELETE /api/v2/connections/{id} */
-export function removeConnection(connectionId: number): Promise<void> {
-  return api.delete<void>(`${API_V2}/connections/${connectionId}`);
+/** POST /api/v2/connections/{id}/decline — decline a received pending request */
+export function declineConnection(connectionId: number): Promise<void> {
+  return api.post<void>(`${API_V2}/connections/${connectionId}/decline`, {});
+}
+
+/** DELETE /api/v2/connections/{id}, bound to the relationship state shown to the member. */
+export function removeConnection(connectionId: number, expectedStatus: 'pending' | 'accepted'): Promise<void> {
+  return api.delete<void>(`${API_V2}/connections/${connectionId}?expected_status=${expectedStatus}`);
 }

@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Services\ShiftSwapService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use App\Core\TenantContext;
+use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
@@ -230,6 +232,78 @@ class ShiftSwapRequestByShiftTest extends TestCase
             ->whereIn('status', ['pending', 'admin_pending'])
             ->count());
         $this->assertSame((int) $firstHolder->id, (int) DB::table('vol_shift_swap_requests')->where('id', $firstId)->value('to_user_id'));
+    }
+
+    public function test_keyed_retry_returns_the_original_request_after_rejection_and_rejects_changed_content(): void
+    {
+        [$opportunityId, $shiftA, $shiftB] = $this->makeOpportunityWithTwoShifts();
+        $asker = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $holder = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $this->approveOnShift($asker->id, $opportunityId, $shiftA);
+        $this->approveOnShift($holder->id, $opportunityId, $shiftB);
+        $intent = [
+            'from_shift_id' => $shiftA,
+            'to_shift_id' => $shiftB,
+            'message' => 'Could we trade shifts?',
+            'idempotency_key' => 'shift-swap-response-loss-key',
+        ];
+
+        $firstId = ShiftSwapService::requestSwap($asker->id, $intent);
+        $this->assertNotNull($firstId, json_encode(ShiftSwapService::getErrors()));
+        $notificationsAfterFirst = DB::table('notifications')->where('user_id', $holder->id)->count();
+        $this->assertGreaterThan(0, $notificationsAfterFirst);
+        DB::table('vol_shift_swap_requests')->where('id', $firstId)->update(['status' => 'rejected']);
+
+        $this->assertSame($firstId, ShiftSwapService::requestSwap($asker->id, $intent));
+        $this->assertSame('rejected', DB::table('vol_shift_swap_requests')->where('id', $firstId)->value('status'));
+        $this->assertSame($notificationsAfterFirst, DB::table('notifications')->where('user_id', $holder->id)->count());
+        $this->assertNotNull(DB::table('vol_shift_swap_requests')->where('id', $firstId)->value('idempotency_key_hash'));
+
+        $intent['message'] = 'A different request using the old key';
+        $this->assertNull(ShiftSwapService::requestSwap($asker->id, $intent));
+        $this->assertSame('IDEMPOTENCY_CONFLICT', ShiftSwapService::getErrors()[0]['code'] ?? null);
+        $this->assertSame(1, DB::table('vol_shift_swap_requests')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('from_user_id', $asker->id)
+            ->count());
+    }
+
+    public function test_http_keyed_retry_returns_the_original_request_after_its_response_was_lost(): void
+    {
+        [$opportunityId, $shiftA, $shiftB] = $this->makeOpportunityWithTwoShifts();
+        $asker = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $holder = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $this->approveOnShift($asker->id, $opportunityId, $shiftA);
+        $this->approveOnShift($holder->id, $opportunityId, $shiftB);
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'features' => json_encode(['volunteering' => true, 'organisations' => true]),
+        ]);
+        TenantContext::setById($this->testTenantId);
+        Sanctum::actingAs($asker, ['*']);
+        $payload = [
+            'from_shift_id' => $shiftA,
+            'to_shift_id' => $shiftB,
+            'message' => 'Could we trade shifts?',
+            'idempotency_key' => 'http-shift-swap-response-loss-key',
+        ];
+
+        $first = $this->withHeader('Idempotency-Key', $payload['idempotency_key'])
+            ->apiPost('/v2/volunteering/swaps', $payload)
+            ->assertCreated();
+        $swapId = (int) $first->json('data.id');
+        DB::table('vol_shift_swap_requests')->where('id', $swapId)->update(['status' => 'rejected']);
+
+        $replay = $this->withHeader('Idempotency-Key', $payload['idempotency_key'])
+            ->apiPost('/v2/volunteering/swaps', $payload)
+            ->assertCreated();
+        $this->assertSame($swapId, (int) $replay->json('data.id'));
+        $this->assertSame('rejected', DB::table('vol_shift_swap_requests')->where('id', $swapId)->value('status'));
+
+        $payload['message'] = 'Changed request';
+        $this->withHeader('Idempotency-Key', $payload['idempotency_key'])
+            ->apiPost('/v2/volunteering/swaps', $payload)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
     }
 
     public function test_an_explicit_to_user_id_still_works(): void

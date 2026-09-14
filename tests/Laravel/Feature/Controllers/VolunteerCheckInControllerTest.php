@@ -20,6 +20,8 @@ class VolunteerCheckInControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    private ?User $checkInOwner = null;
+
     private function authenticatedUser(): User
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([
@@ -149,6 +151,7 @@ class VolunteerCheckInControllerTest extends TestCase
         \App\Core\TenantContext::setById($this->testTenantId);
 
         $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $this->checkInOwner = $owner;
         $volunteer = User::factory()->forTenant($this->testTenantId)->create();
 
         $orgId = (int) DB::table('vol_organizations')->insertGetId([
@@ -214,6 +217,22 @@ class VolunteerCheckInControllerTest extends TestCase
         $this->assertNull($result);
         $this->assertNotEmpty($service->getErrors());
         $this->assertSame('VALIDATION_ERROR', $service->getErrors()[0]['code']);
+    }
+
+    public function test_verify_endpoint_preserves_the_window_validation_error(): void
+    {
+        $token = $this->seedApprovedCheckin(now()->subHours(6), now()->subHours(5));
+        $this->assertNotNull($this->checkInOwner);
+        Sanctum::actingAs($this->checkInOwner, ['*']);
+
+        $response = $this->apiPost('/v2/volunteering/checkin/verify/' . $token)
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.code', 'VALIDATION_ERROR');
+
+        $this->assertNotSame(
+            __('api.checkin_not_found_or_completed'),
+            $response->json('errors.0.message'),
+        );
     }
 
     public function test_verify_checkin_allowed_within_grace_window(): void

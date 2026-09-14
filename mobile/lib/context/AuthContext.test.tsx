@@ -99,6 +99,7 @@ jest.mock('@/lib/notifications', () => ({
 import { router } from 'expo-router';
 
 import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
+import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 
 import { AuthProvider, useAuthContext } from './AuthContext';
 
@@ -220,6 +221,7 @@ describe('AuthContext', () => {
     mockTenantContext = showingCommunity(HUB);
     (router.replace as jest.Mock).mockClear();
     communityRepairStore.__resetForTests();
+    sessionNoticeStore.__resetForTests();
   });
 
   it('ignores a password response received after logout', async () => {
@@ -505,6 +507,64 @@ describe('AuthContext', () => {
     expect(result.current.token).toBeNull();
     expect(mockStorageRemove).toHaveBeenCalled();
     expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
+  });
+
+  it('ends a server-revoked session locally without making another authenticated request', async () => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(mockUser);
+    mockGetMe.mockResolvedValue({ data: mockFullUser });
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    await act(async () => {
+      await result.current.endSessionLocally({
+        title: 'Password changed',
+        description: 'Sign in again.',
+        variant: 'success',
+      });
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(mockUnregisterPushNotifications).not.toHaveBeenCalled();
+    expect(mockApiLogout).not.toHaveBeenCalled();
+    expect(mockClearApiSession).toHaveBeenCalledTimes(1);
+    expect(mockStorageRemove).toHaveBeenCalledWith('auth_token');
+    expect(mockStorageRemove).toHaveBeenCalledWith('refresh_token');
+    expect(mockStorageRemove).toHaveBeenCalledWith('user_data');
+    expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
+    expect(sessionNoticeStore.getSnapshot()).toMatchObject({
+      title: 'Password changed',
+      description: 'Sign in again.',
+      variant: 'success',
+    });
+    expect(router.replace).toHaveBeenCalledWith('/(auth)/login');
+  });
+
+  it('does not route a replacement session back to login when local cleanup finishes late', async () => {
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(mockUser);
+    mockGetMe.mockResolvedValue({ data: mockFullUser });
+    let release!: () => void;
+    mockStorageRemove.mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    let ending!: Promise<void>;
+    act(() => {
+      ending = result.current.endSessionLocally({
+        title: 'Password changed',
+        description: 'Sign in again.',
+      });
+    });
+    act(() => result.current.setSession('replacement-token', { id: 2, first_name: 'Bea' } as never));
+    await act(async () => { release(); await ending; });
+
+    expect(result.current.token).toBe('replacement-token');
+    expect(result.current.user?.id).toBe(2);
+    expect(sessionNoticeStore.getSnapshot()).toBeNull();
+    expect(router.replace).not.toHaveBeenCalledWith('/(auth)/login');
   });
 
   it.each(['push', 'server'])('does not clear a newer session when old logout waits for %s', async (stage) => {

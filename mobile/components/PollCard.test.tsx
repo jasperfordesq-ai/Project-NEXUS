@@ -4,15 +4,22 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
 
 import type { PollData } from '@/lib/api/feed';
 import PollCard from './PollCard';
 
 const mockVoteFeedPoll = jest.fn();
+const mockRankPoll = jest.fn();
+const mockGetRankedPollResults = jest.fn();
 
 jest.mock('@/lib/api/feed', () => ({
   voteFeedPoll: (...args: unknown[]) => mockVoteFeedPoll(...args),
+}));
+jest.mock('@/lib/api/polls', () => ({
+  rankPoll: (...args: unknown[]) => mockRankPoll(...args),
+  getRankedPollResults: (...args: unknown[]) => mockGetRankedPollResults(...args),
 }));
 
 jest.mock('@/lib/haptics', () => ({
@@ -46,6 +53,20 @@ jest.mock('react-i18next', () => ({
       if (key === 'poll.closed') return 'Poll closed';
       if (key === 'poll.voteToSeeResults') return 'Vote to see results';
       if (key === 'poll.resultsHiddenUntilClose') return 'Results revealed when poll closes';
+      if (key === 'poll.rankInstructions') return 'Put every option in your preferred order.';
+      if (key === 'poll.rankSubmitted') return 'Your preference order has been submitted.';
+      if (key === 'poll.rankingClosed') return 'This ranked poll is closed.';
+      if (key === 'poll.moveUp') return `Move ${String(opts?.option ?? '')} up`;
+      if (key === 'poll.moveDown') return `Move ${String(opts?.option ?? '')} down`;
+      if (key === 'poll.submitRankings') return 'Submit preferences';
+      if (key === 'poll.submittingRankings') return 'Submitting';
+      if (key === 'poll.ranked') return 'Ranked choice';
+      if (key === 'poll.resultsHeading') return 'Ranked results';
+      if (key === 'poll.resultsLoading') return 'Loading results';
+      if (key === 'poll.resultsLoadFailed') return 'Results could not be loaded.';
+      if (key === 'poll.retryResults') return 'Try results again';
+      if (key === 'poll.totalVoters') return `${String(opts?.count ?? 0)} voters`;
+      if (key === 'poll.firstChoiceVotes') return `${String(opts?.count ?? 0)} first-choice votes`;
       return key;
     },
   }),
@@ -70,6 +91,11 @@ jest.mock('heroui-native', () => {
 describe('PollCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetRankedPollResults.mockReset();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('lets members vote when the API omits user_vote_option_id', async () => {
@@ -121,6 +147,142 @@ describe('PollCard', () => {
     expect(mockVoteFeedPoll).toHaveBeenCalledTimes(1);
     resolveVote({ data: updated });
     await waitFor(() => expect(mockVoteFeedPoll).toHaveBeenCalledTimes(1));
+  });
+
+  it('renders and submits a ranked ballot in the member-selected order', async () => {
+    const ranked: PollData = {
+      ...withheld(null),
+      poll_type: 'ranked',
+      options: [
+        { id: 141, text: 'Saturday morning', vote_count: null, percentage: null },
+        { id: 142, text: 'Thursday evening', vote_count: null, percentage: null },
+      ],
+    };
+    const accepted = { ...ranked, user_rankings: [{ option_id: 142, rank: 1 }, { option_id: 141, rank: 2 }] };
+    mockRankPoll.mockResolvedValue({ data: { poll: accepted, ranked_results: { total_voters: 1, results: [] } } });
+    const { getByLabelText, getByText } = render(<PollCard pollData={ranked} itemId={41} />);
+
+    fireEvent.press(getByLabelText('Move Thursday evening up'));
+    fireEvent.press(getByText('Submit preferences'));
+
+    await waitFor(() => expect(mockRankPoll).toHaveBeenCalledWith(41, [142, 141]));
+    await waitFor(() => expect(getByText('Your preference order has been submitted.')).toBeTruthy());
+  });
+
+  it('never sends a ranked poll through the single-choice endpoint', () => {
+    const ranked: PollData = { ...withheld(null), poll_type: 'ranked' };
+    const { queryByLabelText, getByText } = render(<PollCard pollData={ranked} itemId={41} />);
+
+    expect(queryByLabelText('Saturday morning')).toBeNull();
+    expect(getByText('Submit preferences')).toBeTruthy();
+    expect(mockVoteFeedPoll).not.toHaveBeenCalled();
+  });
+
+  it('serializes two same-frame ranked submissions', async () => {
+    let resolveRank!: (value: unknown) => void;
+    mockRankPoll.mockImplementationOnce(() => new Promise((resolve) => { resolveRank = resolve; }));
+    const ranked: PollData = { ...withheld(null), poll_type: 'ranked' };
+    const { getByText } = render(<PollCard pollData={ranked} itemId={41} />);
+    const submit = getByText('Submit preferences');
+
+    fireEvent.press(submit);
+    fireEvent.press(submit);
+
+    expect(mockRankPoll).toHaveBeenCalledTimes(1);
+    await act(async () => { resolveRank({ data: { poll: { ...ranked, user_rankings: [{ option_id: 141, rank: 1 }, { option_id: 142, rank: 2 }] }, ranked_results: { total_voters: 1, results: [] } } }); });
+    await waitFor(() => expect(mockRankPoll).toHaveBeenCalledTimes(1));
+  });
+
+  it('loads and renders authoritative first-choice totals for a closed ranked poll', async () => {
+    const ranked: PollData = {
+      ...withheld(null),
+      is_active: false,
+      poll_type: 'ranked',
+    };
+    mockGetRankedPollResults.mockResolvedValue({
+      data: {
+        poll: ranked,
+        results_visible: true,
+        my_rankings: null,
+        ranked_results: {
+          total_voters: 3,
+          results: [
+            { option_id: 142, text: 'Thursday evening', votes: 2 },
+            { option_id: 141, text: 'Saturday morning', votes: 1 },
+          ],
+        },
+      },
+    });
+
+    const { findByText, getByText, queryByText } = render(<PollCard pollData={ranked} itemId={41} />);
+
+    expect(await findByText('3 voters')).toBeTruthy();
+    expect(getByText('2 first-choice votes')).toBeTruthy();
+    expect(getByText('1 first-choice votes')).toBeTruthy();
+    expect(mockGetRankedPollResults).toHaveBeenCalledWith(41);
+    expect(queryByText('Submit preferences')).toBeNull();
+  });
+
+  it('keeps a closed ranked-results failure visible and retries it', async () => {
+    const ranked: PollData = {
+      ...withheld(null),
+      is_active: false,
+      poll_type: 'ranked',
+    };
+    mockGetRankedPollResults
+      .mockRejectedValueOnce(new Error('network unavailable'))
+      .mockResolvedValueOnce({
+        data: {
+          poll: ranked,
+          results_visible: true,
+          my_rankings: null,
+          ranked_results: {
+            total_voters: 3,
+            results: [{ option_id: 142, text: 'Thursday evening', votes: 2 }],
+          },
+        },
+      });
+
+    const { findByText, getByText } = render(<PollCard pollData={ranked} itemId={41} />);
+
+    expect(await findByText('Results could not be loaded.')).toBeTruthy();
+    fireEvent.press(getByText('Try results again'));
+
+    expect(await findByText('3 voters')).toBeTruthy();
+    expect(getByText('2 first-choice votes')).toBeTruthy();
+    expect(mockGetRankedPollResults).toHaveBeenCalledTimes(2);
+  });
+
+  it('stacks and unclips closed ranked results at large text', async () => {
+    jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
+      width: 360,
+      height: 800,
+      scale: 3,
+      fontScale: 2,
+    });
+    const ranked: PollData = {
+      ...withheld(null),
+      is_active: false,
+      poll_type: 'ranked',
+    };
+    mockGetRankedPollResults.mockResolvedValue({
+      data: {
+        poll: ranked,
+        results_visible: true,
+        my_rankings: null,
+        ranked_results: {
+          total_voters: 3,
+          results: [{ option_id: 142, text: 'Community transport for isolated neighbours', votes: 2 }],
+        },
+      },
+    });
+
+    const { findByText, getByTestId } = render(<PollCard pollData={ranked} itemId={41} />);
+
+    expect(await findByText('3 voters')).toBeTruthy();
+    expect(getByTestId('ranked-result-142').props.className).toContain('items-start');
+    expect(getByTestId('ranked-result-142').props.className).not.toContain('flex-row');
+    expect(getByTestId('ranked-result-label-142')).toHaveProp('numberOfLines', 0);
   });
 
   /**

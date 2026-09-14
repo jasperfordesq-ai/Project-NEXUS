@@ -48,15 +48,20 @@ final class GroupWikiController extends BaseApiController
             $page = $this->wikiService->createPage(
                 $id,
                 $userId,
-                request()->only(['title', 'content', 'parent_id', 'sort_order', 'is_published']),
+                [
+                    ...request()->only(['title', 'content', 'parent_id', 'sort_order', 'is_published']),
+                    'idempotency_key' => request()->header('Idempotency-Key') ?? request()->input('idempotency_key'),
+                ],
             );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
 
-        return $page === null
-            ? $this->wikiErrorResponse()
-            : $this->successResponse($page, 201);
+        if ($page === null) {
+            return $this->wikiErrorResponse();
+        }
+        unset($page['_idempotent_replay']);
+        return $this->successResponse($page, 201);
     }
 
     public function show(int $id, string $slug): JsonResponse
@@ -138,8 +143,8 @@ final class GroupWikiController extends BaseApiController
         $status = match ($errors[0]['code'] ?? '') {
             'NOT_FOUND' => 404,
             'FORBIDDEN' => 403,
-            'CONFLICT' => 409,
-            'VALIDATION', 'INVALID' => 422,
+            'CONFLICT', 'IDEMPOTENCY_CONFLICT' => 409,
+            'VALIDATION', 'INVALID', 'IDEMPOTENCY_INVALID' => 422,
             default => 400,
         };
 

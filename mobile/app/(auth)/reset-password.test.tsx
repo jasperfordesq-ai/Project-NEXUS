@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ApiResponseError } from '@/lib/api/client';
 
 const mockResetPassword = jest.fn();
 const mockReplace = jest.fn();
@@ -68,5 +69,71 @@ describe('ResetPasswordScreen', () => {
     const { getByText } = render(<ResetPasswordScreen />);
 
     expect(getByText('Invalid reset link')).toBeTruthy();
+  });
+
+  it('replaces an expired-token form with a route to request a new link', async () => {
+    mockResetPassword.mockRejectedValue(
+      new ApiResponseError(400, 'Invalid or expired reset token.', undefined, 'AUTH_TOKEN_INVALID', 'token'),
+    );
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText('New password'), 'NewPassw0rd!');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirm password'), 'NewPassw0rd!');
+    fireEvent.press(screen.getByText('Reset password'));
+
+    expect(await screen.findByText('Invalid reset link')).toBeTruthy();
+    expect(screen.queryByText('Reset password')).toBeNull();
+    fireEvent.press(screen.getByText('Request a new link'));
+    expect(mockReplace).toHaveBeenCalledWith('/forgot-password');
+  });
+
+  it('keeps a correctable password refusal on the form', async () => {
+    mockResetPassword.mockRejectedValue(
+      new ApiResponseError(422, 'Choose a password you have not used before.', undefined, 'VALIDATION_ERROR', 'password'),
+    );
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText('New password'), 'NewPassw0rd!');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirm password'), 'NewPassw0rd!');
+    fireEvent.press(screen.getByText('Reset password'));
+
+    expect(await screen.findByText('Choose a password you have not used before.')).toBeTruthy();
+    expect(screen.getByText('Reset password')).toBeTruthy();
+    expect(screen.queryByText('Invalid reset link')).toBeNull();
+  });
+
+  it('clears the first link state when the route receives a different token', async () => {
+    mockResetPassword.mockResolvedValue({ success: true });
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText('New password'), 'NewPassw0rd!');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirm password'), 'NewPassw0rd!');
+    fireEvent.press(screen.getByText('Reset password'));
+    expect(await screen.findByText('Password updated')).toBeTruthy();
+
+    mockParams = { token: 'replacement-token' };
+    screen.rerender(<ResetPasswordScreen />);
+
+    expect(await screen.findByText('Set a new password')).toBeTruthy();
+    expect(screen.getByPlaceholderText('New password').props.value).toBe('');
+    expect(screen.getByPlaceholderText('Confirm password').props.value).toBe('');
+  });
+
+  it('ignores completion from a token that the route has replaced', async () => {
+    let resolveRequest!: (value: { success: true }) => void;
+    mockResetPassword.mockReturnValue(new Promise((resolve) => { resolveRequest = resolve; }));
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText('New password'), 'NewPassw0rd!');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirm password'), 'NewPassw0rd!');
+    fireEvent.press(screen.getByText('Reset password'));
+    await waitFor(() => expect(mockResetPassword).toHaveBeenCalled());
+
+    mockParams = { token: 'replacement-token' };
+    screen.rerender(<ResetPasswordScreen />);
+    await act(async () => { resolveRequest({ success: true }); });
+
+    expect(screen.queryByText('Password updated')).toBeNull();
+    expect(screen.getByText('Set a new password')).toBeTruthy();
   });
 });

@@ -3,9 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { API_BASE_URL, APP_VERSION, DEFAULT_TENANT, STORAGE_KEYS } from '@/lib/constants';
-import { ApiResponseError } from '@/lib/api/client';
-import { storage } from '@/lib/storage';
+import { API_BASE_URL, APP_VERSION } from '@/lib/constants';
+import { ApiResponseError, authenticatedApiIdentity } from '@/lib/api/client';
 import i18n from 'i18next';
 
 /**
@@ -48,6 +47,8 @@ export interface UploadWithProgressOptions {
    * longer than the 60 s the shared client allows for an upload.
    */
   timeout?: number;
+  /** Stable identity for replay-safe multipart mutations. */
+  idempotencyKey?: string;
 }
 
 /** Raised on cancel, so callers can tell "the member stopped it" from "it broke". */
@@ -94,16 +95,13 @@ export async function uploadWithProgress<T>(
   form: FormData,
   options: UploadWithProgressOptions = {},
 ): Promise<T> {
-  const { onProgress, signal, timeout = DEFAULT_UPLOAD_TIMEOUT_MS } = options;
+  const { onProgress, signal, timeout = DEFAULT_UPLOAD_TIMEOUT_MS, idempotencyKey } = options;
 
   if (signal?.aborted) {
     throw new ApiResponseError(0, i18n.t('common:errors.generic'), undefined, UPLOAD_ABORTED);
   }
 
-  const [token, tenantSlug] = await Promise.all([
-    storage.get(STORAGE_KEYS.AUTH_TOKEN),
-    storage.get(STORAGE_KEYS.TENANT_SLUG),
-  ]);
+  const { token, tenantSlug } = await authenticatedApiIdentity();
 
   return new Promise<T>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -129,9 +127,10 @@ export async function uploadWithProgress<T>(
     xhr.setRequestHeader('Accept', 'application/json');
     xhr.setRequestHeader('X-Nexus-Mobile', '1');
     xhr.setRequestHeader('X-Nexus-Mobile-Version', APP_VERSION);
+    if (idempotencyKey) xhr.setRequestHeader('Idempotency-Key', idempotencyKey);
     // Identity headers come from trusted storage only — never from a caller.
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    xhr.setRequestHeader('X-Tenant-Slug', tenantSlug?.trim() || DEFAULT_TENANT);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.setRequestHeader('X-Tenant-Slug', tenantSlug);
     // Content-Type is deliberately NOT set: React Native appends the multipart boundary.
 
     if (onProgress && xhr.upload) {

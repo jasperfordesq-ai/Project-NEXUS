@@ -90,8 +90,11 @@ function eventMutationKey(action: 'accept-offer' | 'rsvp-going' | 'rsvp-interest
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 function EventDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`}>
       <EventDetailScreenInner />
     </ModalErrorBoundary>
   );
@@ -140,6 +143,8 @@ function EventDetailScreenInner() {
   const [safetyRefreshSignal, setSafetyRefreshSignal] = useState(0);
   const [analyticsRefreshSignal, setAnalyticsRefreshSignal] = useState(0);
   const [registrationRefreshSignal, setRegistrationRefreshSignal] = useState(0);
+  const actionPendingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const acceptOfferMutationKeyRef = useRef<string | null>(null);
   const rsvpMutationKeysRef = useRef<Partial<Record<'going' | 'interested', string>>>({});
 
@@ -149,6 +154,30 @@ function EventDetailScreenInner() {
     acceptOfferMutationKeyRef.current = null;
     rsvpMutationKeysRef.current = {};
   }, [safeEventId]);
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
+
+  async function authoritativeEvent(): Promise<CanonicalEvent | null> {
+    try {
+      return (await getEvent(safeEventId)).data;
+    } catch {
+      return null;
+    }
+  }
+
+  function beginAction(): boolean {
+    if (actionPendingRef.current) return false;
+    actionPendingRef.current = true;
+    if (isMountedRef.current) setUpdating(true);
+    return true;
+  }
+
+  function finishAction() {
+    actionPendingRef.current = false;
+    if (isMountedRef.current) setUpdating(false);
+  }
 
   if (safeEventId <= 0) {
     return (
@@ -275,7 +304,7 @@ function EventDetailScreenInner() {
   }
 
   async function handleRsvp(status: 'going' | 'interested') {
-    if (!event) return;
+    if (!event || actionPendingRef.current) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (currentRsvp === status) {
@@ -286,35 +315,62 @@ function EventDetailScreenInner() {
         cancelLabel: t('common:no'),
         variant: 'danger',
         onConfirm: async () => {
-          setUpdating(true);
+          if (!beginAction()) return;
           try {
             await removeRsvp(event.id);
+            if (!isMountedRef.current) return;
             setRelationship(null);
             setMetrics(null);
             refresh();
           } catch (err) {
+            if (err instanceof ApiResponseError && err.status === 0) {
+              const latest = await authoritativeEvent();
+              const removed = latest
+                && latest.relationship.registration.state !== 'confirmed'
+                && latest.relationship.engagement.state !== 'interested';
+              if (removed && isMountedRef.current) {
+                setRelationship(latest.relationship);
+                setMetrics(latest.metrics);
+                return;
+              }
+            }
+            if (!isMountedRef.current) return;
             showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('rsvpError')), variant: 'danger' });
           } finally {
-            setUpdating(false);
+            finishAction();
           }
         },
       });
       return;
     }
 
-    setUpdating(true);
+    if (!beginAction()) return;
     try {
       const idempotencyKey = rsvpMutationKeysRef.current[status]
         ?? eventMutationKey(`rsvp-${status}`, event.id);
       rsvpMutationKeysRef.current[status] = idempotencyKey;
       const result = await rsvpEvent(event.id, status, idempotencyKey);
       delete rsvpMutationKeysRef.current[status];
+      if (!isMountedRef.current) return;
       setRelationship(result.data.relationship);
       setMetrics(result.data.metrics);
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        const latest = await authoritativeEvent();
+        const accepted = status === 'going'
+          ? latest?.relationship.registration.state === 'confirmed'
+          : latest?.relationship.engagement.state === 'interested';
+        if (accepted && latest && isMountedRef.current) {
+          delete rsvpMutationKeysRef.current[status];
+          setRelationship(latest.relationship);
+          setMetrics(latest.metrics);
+          return;
+        }
+      }
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('rsvpError')), variant: 'danger' });
     } finally {
-      setUpdating(false);
+      finishAction();
     }
   }
 
@@ -362,19 +418,33 @@ function EventDetailScreenInner() {
   }
 
   async function changeWaitlist(leaving: boolean) {
-    if (!event || updating) return;
+    if (!event || !beginAction()) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setUpdating(true);
     try {
       if (leaving) {
         await leaveEventWaitlist(event.id);
+        if (!isMountedRef.current) return;
         refresh();
         return;
       }
 
       await joinEventWaitlist(event.id);
+      if (!isMountedRef.current) return;
       refresh();
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        const latest = await authoritativeEvent();
+        const state = latest?.relationship.registration.state;
+        const accepted = leaving
+          ? state !== 'waitlisted' && state !== 'offered'
+          : state === 'waitlisted' || state === 'offered';
+        if (accepted && latest && isMountedRef.current) {
+          setRelationship(latest.relationship);
+          setMetrics(latest.metrics);
+          return;
+        }
+      }
+      if (!isMountedRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(
@@ -388,7 +458,7 @@ function EventDetailScreenInner() {
         variant: 'danger',
       });
     } finally {
-      setUpdating(false);
+      finishAction();
     }
   }
 
@@ -408,14 +478,14 @@ function EventDetailScreenInner() {
   }
 
   async function performPublication(action: 'submit_for_review' | 'publish') {
-    if (!event || updating) return;
-    setUpdating(true);
+    if (!event || !beginAction()) return;
     try {
       if (action === 'submit_for_review') {
         await submitEventForReview(event.id);
       } else {
         await publishEvent(event.id);
       }
+      if (!isMountedRef.current) return;
       showToast({
         title: t(action === 'submit_for_review'
           ? 'detail.submittedForReview'
@@ -424,13 +494,30 @@ function EventDetailScreenInner() {
       });
       refresh();
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        const latest = await authoritativeEvent();
+        const expected = action === 'submit_for_review' ? 'pending_review' : 'published';
+        if (latest?.schedule.publication_state === expected && isMountedRef.current) {
+          setRelationship(latest.relationship);
+          setMetrics(latest.metrics);
+          showToast({
+            title: t(action === 'submit_for_review'
+              ? 'detail.submittedForReview'
+              : 'detail.publishedSuccessfully'),
+            variant: 'success',
+          });
+          refresh();
+          return;
+        }
+      }
+      if (!isMountedRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, t('detail.publicationFailed')),
         variant: 'danger',
       });
     } finally {
-      setUpdating(false);
+      finishAction();
     }
   }
 
@@ -457,14 +544,14 @@ function EventDetailScreenInner() {
   }
 
   async function handleAcceptWaitlistOffer() {
-    if (!event || updating || !hasActiveWaitlistOffer) return;
+    if (!event || !hasActiveWaitlistOffer || !beginAction()) return;
 
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setUpdating(true);
     try {
       acceptOfferMutationKeyRef.current ??= eventMutationKey('accept-offer', event.id);
       await acceptEventWaitlistOffer(event.id, acceptOfferMutationKeyRef.current);
       acceptOfferMutationKeyRef.current = null;
+      if (!isMountedRef.current) return;
       setRelationship({
         ...currentRelationship,
         registration: {
@@ -494,13 +581,23 @@ function EventDetailScreenInner() {
       });
       refresh();
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        const latest = await authoritativeEvent();
+        if (latest?.relationship.registration.state === 'confirmed' && isMountedRef.current) {
+          acceptOfferMutationKeyRef.current = null;
+          setRelationship(latest.relationship);
+          setMetrics(latest.metrics);
+          return;
+        }
+      }
+      if (!isMountedRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, t('detail.offerAcceptError')),
         variant: 'danger',
       });
     } finally {
-      setUpdating(false);
+      finishAction();
     }
   }
 
@@ -1141,6 +1238,12 @@ function EventReminderCard({
   const [rules, setRules] = useState<EventReminderRule[]>([]);
   const [channels, setChannels] = useState({ email: true, in_app: true, web_push: true, fcm: true });
   const [custom, setCustom] = useState('');
+  const savingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
 
   useEffect(() => {
     if (!preferences) return;
@@ -1202,7 +1305,8 @@ function EventReminderCard({
   }
 
   async function save() {
-    if (!preferences) return;
+    if (!preferences || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setMessage(null);
     try {
@@ -1230,9 +1334,11 @@ function EventReminderCard({
           })),
         },
       );
+      if (!isMountedRef.current) return;
       setMessage(t('reminders.saved'));
       onRefresh();
     } catch (requestError) {
+      if (!isMountedRef.current) return;
       if (requestError instanceof ApiResponseError && requestError.status === 409) {
         setMessage(t('reminders.conflictRefreshed'));
         onRefresh();
@@ -1240,18 +1346,22 @@ function EventReminderCard({
         setMessage(t('reminders.error'));
       }
     } finally {
-      setSaving(false);
+      savingRef.current = false;
+      if (isMountedRef.current) setSaving(false);
     }
   }
 
   async function reset() {
-    if (!preferences) return;
+    if (!preferences || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     try {
       await deleteEventReminders(eventId, preferences.revision);
+      if (!isMountedRef.current) return;
       setMessage(t('reminders.resetSuccess'));
       onRefresh();
     } catch (requestError) {
+      if (!isMountedRef.current) return;
       if (requestError instanceof ApiResponseError && requestError.status === 409) {
         setMessage(t('reminders.conflictRefreshed'));
         onRefresh();
@@ -1259,7 +1369,8 @@ function EventReminderCard({
         setMessage(t('reminders.error'));
       }
     } finally {
-      setSaving(false);
+      savingRef.current = false;
+      if (isMountedRef.current) setSaving(false);
     }
   }
 
@@ -1401,20 +1512,31 @@ function EventPollsCard({
   const { show: showToast } = useAppToast();
   const [localPolls, setLocalPolls] = useState<Record<number, EventPoll>>({});
   const [votingPollId, setVotingPollId] = useState<number | null>(null);
+  const votingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const mergedPolls = polls.map((poll) => localPolls[poll.id] ?? poll).filter((poll) => poll.options?.length);
 
-  async function handleVote(poll: EventPoll, optionId: number) {
-    if (votingPollId !== null || poll.has_voted || poll.voted_option_id || poll.user_vote_option_id || poll.status === 'closed' || poll.is_active === false) return;
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
 
+  async function handleVote(poll: EventPoll, optionId: number) {
+    if (votingRef.current || poll.has_voted || poll.voted_option_id || poll.user_vote_option_id || poll.status === 'closed' || poll.is_active === false) return;
+
+    votingRef.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setVotingPollId(poll.id);
     try {
       const result = await voteEventPoll(poll.id, optionId);
+      if (!isMountedRef.current) return;
       setLocalPolls((prev) => ({ ...prev, [poll.id]: result.data }));
     } catch (err) {
+      if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0) onRefresh();
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.pollVoteError')), variant: 'danger' });
     } finally {
-      setVotingPollId(null);
+      votingRef.current = false;
+      if (isMountedRef.current) setVotingPollId(null);
     }
   }
 
@@ -1608,18 +1730,28 @@ function EventTemplateCaptureTool({
   const [preview, setPreview] = useState<MobileEventTemplateCapturePreview | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const previewPendingRef = useRef(false);
+  const savePendingRef = useRef(false);
+  const isMountedRef = useRef(true);
   // Held across retries so a failed capture replays as the same request, never a duplicate.
   const captureKeyRef = useRef<string | null>(null);
 
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
+
   async function reviewCapture() {
-    if (isPreviewing || isSaving) return;
+    if (previewPendingRef.current || savePendingRef.current) return;
+    previewPendingRef.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsPreviewing(true);
     try {
       const result = await previewEventTemplateCapture(event.id);
+      if (!isMountedRef.current) return;
       captureKeyRef.current = eventMutationKey('capture-template', event.id);
       setPreview(result);
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({
         title: t('event_templates:templates.mobile.capturePreviewFailedTitle'),
         description: describeApiError(
@@ -1629,22 +1761,25 @@ function EventTemplateCaptureTool({
         variant: 'danger',
       });
     } finally {
-      setIsPreviewing(false);
+      previewPendingRef.current = false;
+      if (isMountedRef.current) setIsPreviewing(false);
     }
   }
 
   function cancelCapture() {
-    if (isSaving) return;
+    if (savePendingRef.current) return;
     captureKeyRef.current = null;
     setPreview(null);
   }
 
   async function saveTemplate() {
     const idempotencyKey = captureKeyRef.current;
-    if (!preview || !idempotencyKey || isSaving) return;
+    if (!preview || !idempotencyKey || savePendingRef.current || previewPendingRef.current) return;
+    savePendingRef.current = true;
     setIsSaving(true);
     try {
       const result = await captureEventTemplate(event.id, idempotencyKey);
+      if (!isMountedRef.current) return;
       captureKeyRef.current = null;
       setPreview(null);
       showToast({
@@ -1656,6 +1791,7 @@ function EventTemplateCaptureTool({
       });
       router.push('/(modals)/event-templates' as Href);
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({
         title: t('event_templates:templates.mobile.captureFailedTitle'),
         description: describeApiError(
@@ -1665,7 +1801,8 @@ function EventTemplateCaptureTool({
         variant: 'danger',
       });
     } finally {
-      setIsSaving(false);
+      savePendingRef.current = false;
+      if (isMountedRef.current) setIsSaving(false);
     }
   }
 

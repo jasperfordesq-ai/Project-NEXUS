@@ -240,6 +240,24 @@ describe('FederationPartnerScreen', () => {
     expect(getByTestId('federation-partner-action-label-profiles')).toHaveProp('numberOfLines', 2);
   });
 
+  it('gives large-text partner statistics full rows without clipping their values or labels', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: mockPartner },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId } = render(<FederationPartnerScreen />);
+
+    expect(getByTestId('federation-partner-stat-since')).toHaveStyle({
+      flexBasis: '100%',
+      flexGrow: 1,
+    });
+    expect(getByTestId('federation-partner-stat-since-value')).not.toHaveProp('numberOfLines');
+    expect(getByTestId('federation-partner-stat-since-label')).not.toHaveProp('numberOfLines');
+  });
+
   it('shares the React partner detail route for deep links', () => {
     const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
     mockUseApi.mockReturnValue({

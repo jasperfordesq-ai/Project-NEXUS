@@ -53,7 +53,7 @@ export function navigateToLink(link: string | null): void {
   }
 
   const target = routerTarget(mappedHref);
-  if (mappedHref.startsWith('/(tabs)/')) {
+  if (mappedHref.startsWith('/(tabs)/') || mappedHref.startsWith('/(auth)/')) {
     router.replace(target);
   } else {
     router.push(target);

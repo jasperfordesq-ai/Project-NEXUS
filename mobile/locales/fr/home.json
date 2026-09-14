@@ -159,7 +159,24 @@
     "resultsHiddenUntilClose": "Résultats révélés à la clôture du sondage",
     "voteToSeeResults": "Votez pour voir les résultats",
     "voteFailedTitle": "Vote non enregistré",
-    "voteFailed": "Votre vote n'a pas pu être enregistré. Veuillez réessayer."
+    "voteFailed": "Votre vote n'a pas pu être enregistré. Veuillez réessayer.",
+    "ranked": "Choix classé",
+    "rankInstructions": "Classez toutes les options selon vos préférences, avec votre premier choix en haut.",
+    "rankSubmitted": "Votre ordre de préférence a été envoyé.",
+    "rankingClosed": "Ce sondage classé est fermé.",
+    "moveUp": "Monter {{option}}",
+    "moveDown": "Descendre {{option}}",
+    "submitRankings": "Envoyer les préférences",
+    "submittingRankings": "Envoi en cours",
+    "rankFailed": "Vos préférences n’ont pas pu être enregistrées. Veuillez réessayer.",
+    "resultsHeading": "Résultats du classement",
+    "resultsLoading": "Chargement des résultats…",
+    "resultsLoadFailed": "Les résultats n’ont pas pu être chargés.",
+    "retryResults": "Recharger les résultats",
+    "totalVoters": "{{count}} votants",
+    "totalVoters_one": "{{count}} votant",
+    "firstChoiceVotes": "{{count}} votes de premier choix",
+    "firstChoiceVotes_one": "{{count}} vote de premier choix"
   },
   "pollsScreen": {
     "title": "Sondages",
@@ -189,7 +206,11 @@
     "createOptionsRequired": "Ajoutez au moins deux choix.",
     "createdTitle": "Sondage créé",
     "createdMessage": "Votre sondage est maintenant ouvert.",
-    "createError": "Impossible de créer le sondage."
+    "createError": "Impossible de créer le sondage.",
+    "typeLabel": "Type de sondage",
+    "typeStandard": "Choisir une option",
+    "typeRanked": "Classer les options",
+    "anonymous": "Réponses anonymes"
   },
   "imageViewer": {
     "close": "Fermer",

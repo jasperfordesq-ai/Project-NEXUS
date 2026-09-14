@@ -4,13 +4,14 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Text, Animated } from 'react-native';
+import { View, Text, Animated, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Chip } from '@/components/ui/StatusChip';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
 import { voteFeedPoll, type PollData } from '@/lib/api/feed';
+import { getRankedPollResults, rankPoll, type RankedPollResults } from '@/lib/api/polls';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -36,21 +37,66 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
   const { show: showToast } = useAppToast();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const isLargeText = width < 320 || fontScale > 1.3;
+  const scaleKey = isLargeText ? 'large' : 'compact';
 
   const safePollData = pollData && pollData.options ? pollData : null;
   const [poll, setPoll] = useState<PollData | null>(safePollData);
   const [isVoting, setIsVoting] = useState(false);
+  const [rankedResults, setRankedResults] = useState<RankedPollResults | null>(null);
+  const [rankedResultsLoading, setRankedResultsLoading] = useState(false);
+  const [rankedResultsError, setRankedResultsError] = useState(false);
+  const [rankedResultsAttempt, setRankedResultsAttempt] = useState(0);
   const votingRef = useRef(false);
+  const [rankOrder, setRankOrder] = useState<number[]>(() => {
+    const saved = [...(safePollData?.user_rankings ?? [])].sort((a, b) => a.rank - b.rank).map((ranking) => ranking.option_id);
+    return saved.length ? saved : (safePollData?.options ?? []).map((option) => option.id);
+  });
 
   // Keep local poll in sync if parent updates pollData prop
   useEffect(() => {
     if (pollData && pollData.options) {
       setPoll(pollData);
+      const saved = [...(pollData.user_rankings ?? [])].sort((a, b) => a.rank - b.rank).map((ranking) => ranking.option_id);
+      setRankOrder(saved.length ? saved : pollData.options.map((option) => option.id));
     }
   }, [pollData]);
 
   const selectedOptionId = poll?.user_vote_option_id ?? null;
-  const hasVoted = selectedOptionId !== null;
+  const isRanked = poll?.poll_type === 'ranked';
+  const hasVoted = isRanked ? Boolean(poll?.user_rankings?.length) : selectedOptionId !== null;
+  const pollId = poll?.id;
+  const pollIsActive = poll?.is_active;
+
+  useEffect(() => {
+    if (pollId == null || !isRanked || pollIsActive) {
+      setRankedResults(null);
+      setRankedResultsLoading(false);
+      setRankedResultsError(false);
+      return undefined;
+    }
+
+    let active = true;
+    setRankedResultsLoading(true);
+    setRankedResultsError(false);
+    void getRankedPollResults(pollId)
+      .then((response) => {
+        if (!active) return;
+        if (response.data.results_visible && response.data.ranked_results) {
+          setRankedResults(response.data.ranked_results);
+          return;
+        }
+        setRankedResultsError(true);
+      })
+      .catch(() => {
+        if (active) setRankedResultsError(true);
+      })
+      .finally(() => {
+        if (active) setRankedResultsLoading(false);
+      });
+    return () => { active = false; };
+  }, [isRanked, pollId, pollIsActive, rankedResultsAttempt]);
 
   /**
    * 🔴 The server WITHHOLDS the tallies from anyone but the poll's creator while the poll
@@ -74,7 +120,7 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
   const knownTotal = poll && poll.total_votes != null ? poll.total_votes : null;
 
   const handleVote = useCallback(async (optionId: number) => {
-    if (!poll || votingRef.current || hasVoted || !poll.is_active) return;
+    if (!poll || isRanked || votingRef.current || hasVoted || !poll.is_active) return;
 
     votingRef.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -120,17 +166,145 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
       votingRef.current = false;
       setIsVoting(false);
     }
-  }, [isVoting, hasVoted, poll, itemId, onVoted, showToast, t]);
+  }, [hasVoted, poll, isRanked, itemId, onVoted, showToast, t]);
+
+  const moveRank = useCallback((index: number, direction: -1 | 1) => {
+    if (votingRef.current || hasVoted) return;
+    setRankOrder((current) => {
+      const destination = index + direction;
+      if (destination < 0 || destination >= current.length) return current;
+      const next = [...current];
+      [next[index], next[destination]] = [next[destination], next[index]];
+      return next;
+    });
+  }, [hasVoted]);
+
+  const handleRankedVote = useCallback(async () => {
+    if (!poll || !isRanked || votingRef.current || hasVoted || !poll.is_active || rankOrder.length < 2) return;
+    votingRef.current = true;
+    setIsVoting(true);
+    try {
+      const result = await rankPoll(itemId, rankOrder);
+      const updated = result.data.poll;
+      setPoll(updated);
+      onVoted?.(updated);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      showToast({
+        title: t('poll.voteFailedTitle'),
+        description: describeApiError(err, t('poll.rankFailed')),
+        variant: 'danger',
+      });
+    } finally {
+      votingRef.current = false;
+      setIsVoting(false);
+    }
+  }, [hasVoted, isRanked, itemId, onVoted, poll, rankOrder, showToast, t]);
 
   if (!poll || !poll.options?.length) return null;
 
   return (
-    <View className="gap-3">
+    <View key={`poll-${itemId}-${scaleKey}`} className="gap-3" testID="poll-card-layout">
       {showQuestion ? (
-        <Text className="text-base font-semibold leading-6 text-foreground" numberOfLines={3}>{poll.question}</Text>
+        <Text className="text-base font-semibold leading-6 text-foreground" numberOfLines={isLargeText ? 0 : 3}>{poll.question}</Text>
       ) : null}
 
-      {poll.options.map((option) => (
+      {isRanked ? (
+        <View className="gap-2">
+          <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+            {!poll.is_active ? t('poll.rankingClosed') : hasVoted ? t('poll.rankSubmitted') : t('poll.rankInstructions')}
+          </Text>
+          {!poll.is_active ? (
+            <View className="gap-2" testID="ranked-poll-results">
+              <Text className="text-sm font-semibold" style={{ color: theme.text }}>{t('poll.resultsHeading')}</Text>
+              {rankedResultsLoading ? (
+                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('poll.resultsLoading')}</Text>
+              ) : rankedResultsError || !rankedResults ? (
+                <View className="gap-2">
+                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('poll.resultsLoadFailed')}</Text>
+                  <NativePressable
+                    className="min-h-[48px] items-center justify-center rounded-panel-inner border px-4 py-3"
+                    style={{ borderColor: theme.border }}
+                    onPress={() => setRankedResultsAttempt((attempt) => attempt + 1)}
+                    accessibilityLabel={t('poll.retryResults')}
+                  >
+                    <Text className="font-semibold" style={{ color: primary }}>{t('poll.retryResults')}</Text>
+                  </NativePressable>
+                </View>
+              ) : (
+                <>
+                  <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                    {t('poll.totalVoters', { count: rankedResults.total_voters })}
+                  </Text>
+                  {rankedResults.results.map((result) => (
+                    <View
+                      key={result.option_id}
+                      testID={`ranked-result-${result.option_id}`}
+                      className={`min-h-[56px] gap-3 rounded-panel-inner border px-3 py-2 ${isLargeText ? 'items-start' : 'flex-row items-center'}`}
+                      style={{ borderColor: theme.border }}
+                    >
+                      <View className="size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
+                        <Ionicons name="bar-chart-outline" size={16} color={primary} />
+                      </View>
+                      <Text
+                        testID={`ranked-result-label-${result.option_id}`}
+                        className={`${isLargeText ? 'w-full' : 'min-w-0 flex-1'} text-sm font-semibold leading-5`}
+                        style={{ color: theme.text }}
+                        numberOfLines={isLargeText ? 0 : 3}
+                      >{result.text}</Text>
+                      <Text className={`${isLargeText ? 'w-full' : ''} text-xs font-semibold`} style={{ color: theme.textSecondary }}>
+                        {t('poll.firstChoiceVotes', { count: result.votes })}
+                      </Text>
+                    </View>
+                  ))}
+                </>
+              )}
+            </View>
+          ) : rankOrder.map((optionId, index) => {
+            const option = poll.options.find((candidate) => candidate.id === optionId);
+            if (!option) return null;
+            return (
+              <View key={optionId} className="min-h-[56px] gap-2 rounded-panel-inner border px-3 py-2" style={{ borderColor: theme.border }}>
+                <View className="flex-row items-start gap-2">
+                  <View className="size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
+                    <Text className="text-sm font-bold" style={{ color: primary }}>{index + 1}</Text>
+                  </View>
+                  <Text className={`min-w-0 flex-1 text-sm font-semibold leading-5 ${!isLargeText && !hasVoted && poll.is_active ? 'pr-24' : ''}`} style={{ color: theme.text }} numberOfLines={isLargeText ? 0 : 3}>{option.text}</Text>
+                </View>
+                {!hasVoted && poll.is_active ? <View className={`flex-row gap-2 ${isLargeText ? 'self-stretch justify-end' : 'absolute right-2 top-1'}`}>
+                  <NativePressable
+                    className="size-11 items-center justify-center rounded-full"
+                    disabled={index === 0 || isVoting}
+                    onPress={() => moveRank(index, -1)}
+                    accessibilityLabel={t('poll.moveUp', { option: option.text })}
+                    style={{ opacity: index === 0 ? 0.35 : 1 }}
+                  >
+                    <Ionicons name="chevron-up" size={20} color={theme.textSecondary} />
+                  </NativePressable>
+                  <NativePressable
+                    className="size-11 items-center justify-center rounded-full"
+                    disabled={index === rankOrder.length - 1 || isVoting}
+                    onPress={() => moveRank(index, 1)}
+                    accessibilityLabel={t('poll.moveDown', { option: option.text })}
+                    style={{ opacity: index === rankOrder.length - 1 ? 0.35 : 1 }}
+                  >
+                    <Ionicons name="chevron-down" size={20} color={theme.textSecondary} />
+                  </NativePressable>
+                </View> : null}
+              </View>
+            );
+          })}
+          {!hasVoted && poll.is_active ? <NativePressable
+            className="min-h-[48px] items-center justify-center rounded-panel-inner px-4 py-3"
+            disabled={isVoting}
+            onPress={() => void handleRankedVote()}
+            accessibilityLabel={t('poll.submitRankings')}
+            style={{ backgroundColor: primary, opacity: isVoting ? 0.65 : 1 }}
+          >
+            <Text className="font-semibold" style={{ color: theme.onPrimary }}>{isVoting ? t('poll.submittingRankings') : t('poll.submitRankings')}</Text>
+          </NativePressable> : null}
+        </View>
+      ) : poll.options.map((option) => (
         <PollOptionRow
           key={option.id}
           option={option}
@@ -138,13 +312,21 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
           isUserVote={selectedOptionId === option.id}
           primary={primary}
           theme={theme}
+          isLargeText={isLargeText}
           onPress={() => handleVote(option.id)}
           disabled={isVoting || hasVoted || !poll.is_active}
         />
       ))}
 
       <View className="mt-0.5 flex-row flex-wrap items-center gap-2">
-        {resultsWithheld ? (
+        {isRanked ? (
+          poll.is_active ? (
+            <Chip size="sm" variant="soft">
+              <Ionicons name="eye-off-outline" size={12} color={theme.textSecondary} />
+              <Chip.Label>{t('poll.resultsHiddenUntilClose')}</Chip.Label>
+            </Chip>
+          ) : null
+        ) : resultsWithheld ? (
           <>
             {knownTotal != null && (
               <Chip size="sm" variant="soft">
@@ -169,6 +351,12 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
           <Chip size="sm" variant="secondary" color="accent">
             <Ionicons name="checkmark-circle" size={14} color={primary} />
             <Chip.Label>{t('poll.voted')}</Chip.Label>
+          </Chip>
+        )}
+        {isRanked && (
+          <Chip size="sm" variant="soft">
+            <Ionicons name="list-outline" size={12} color={theme.textSecondary} />
+            <Chip.Label>{t('poll.ranked')}</Chip.Label>
           </Chip>
         )}
         {!poll.is_active && (
@@ -197,9 +385,10 @@ interface PollOptionRowProps {
   };
   onPress: () => void;
   disabled: boolean;
+  isLargeText: boolean;
 }
 
-function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPress, disabled }: PollOptionRowProps) {
+function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPress, disabled, isLargeText }: PollOptionRowProps) {
   const fillAnim = useRef(new Animated.Value(0)).current;
   const reduceMotion = useReducedMotion();
   // Withheld tallies arrive as null; animating to null leaves the bar in an undefined
@@ -251,8 +440,8 @@ function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPres
             borderRadius: 11,
           }}
         />
-        <View className="flex-row items-center justify-between gap-3 px-3 py-3.5">
-          <View className="min-w-0 flex-1 flex-row items-center gap-2.5">
+        <View className={`gap-3 px-3 py-3.5 ${isLargeText ? 'items-start' : 'flex-row items-center justify-between'}`}>
+          <View className={`${isLargeText ? 'w-full' : 'min-w-0 flex-1'} flex-row items-start gap-2.5`}>
             <View
               className="size-7 items-center justify-center rounded-full"
               style={{
@@ -270,12 +459,12 @@ function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPres
             <Text
               className="min-w-0 flex-1 text-sm leading-5"
               style={{ color: isUserVote ? primary : theme.text, fontWeight: isUserVote ? '700' : '500' }}
-              numberOfLines={3}
+              numberOfLines={isLargeText ? 0 : 3}
             >
               {option.text}
             </Text>
           </View>
-          <View className="min-w-[48px] rounded-full px-2 py-1" style={{ backgroundColor: isUserVote ? withAlpha(primary, 0.14) : withAlpha(theme.textSecondary, 0.1) }}>
+          <View className={`${isLargeText ? 'self-start' : 'min-w-[48px]'} rounded-full px-2 py-1`} style={{ backgroundColor: isUserVote ? withAlpha(primary, 0.14) : withAlpha(theme.textSecondary, 0.1) }}>
             <Text
               className="text-center text-xs font-bold"
               style={{ color: isUserVote ? primary : theme.textSecondary }}
@@ -311,7 +500,7 @@ function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPres
         >
           <Ionicons name="ellipse-outline" size={16} color={primary} />
         </View>
-        <Text className="min-w-0 flex-1 text-sm font-semibold leading-5" style={{ color: theme.text }} numberOfLines={3}>
+        <Text className="min-w-0 flex-1 text-sm font-semibold leading-5" style={{ color: theme.text }} numberOfLines={isLargeText ? 0 : 3}>
           {option.text}
         </Text>
       </View>

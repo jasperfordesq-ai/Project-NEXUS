@@ -77,7 +77,9 @@
       "permissionTitle": "Zugriff auf Fotos erforderlich",
       "permissionMessage": "Erlaube den Zugriff auf Fotos, um Bilder anzuhängen.",
       "uploading": "Fotos werden gesendet … {{percent}} %",
-      "cancelUpload": "Abbrechen"
+      "cancelUpload": "Abbrechen",
+      "draftStorageTitle": "Foto nur für diese Sitzung gespeichert",
+      "draftStorageWarning": "Das Foto ist angehängt, bleibt aber möglicherweise nicht erhalten, wenn die App geschlossen wird."
     },
     "voice": {
       "record": "Sprachnachricht aufnehmen",
@@ -91,7 +93,9 @@
       "failedTitle": "Sprachnachricht fehlgeschlagen",
       "startFailed": "Die Aufnahme konnte nicht gestartet werden. Versuche es erneut.",
       "stopFailed": "Diese Aufnahme konnte nicht gespeichert werden. Versuche es erneut.",
-      "sendFailed": "Die Sprachnachricht konnte nicht gesendet werden. Versuche es erneut."
+      "sendFailed": "Die Sprachnachricht konnte nicht gesendet werden. Versuche es erneut.",
+      "draftStorageTitle": "Sprachnachricht nur für diese Sitzung gespeichert",
+      "draftStorageWarning": "Die Sprachnachricht ist bereit, bleibt aber möglicherweise nicht erhalten, wenn die App geschlossen wird."
     },
     "notFound": "Diese Unterhaltung ist nicht mehr verfügbar.",
     "unsentDrafts": "Nicht gesendete Entwürfe: {{count}}",

@@ -63,6 +63,7 @@ module.exports = {
       'react-native-reanimated|' +
       'react-native-gesture-handler|' +
       '@gorhom|' +
+      'decode-uri-component|' +
       'heroui-native|' +
       'tailwind-variants|' +
       'nativewind|' +

@@ -517,6 +517,7 @@ class PodcastService
             throw new \InvalidArgumentException('Podcast media is not ready for publishing');
         }
 
+        $wasPublished = $episode->status === 'published';
         $episode->status = 'published';
         $episode->moderation_status = self::moderationEnabled() ? 'pending' : 'approved';
         if (!$episode->published_at) {
@@ -531,7 +532,7 @@ class PodcastService
         // actually live. A future-scheduled episode is left un-announced here and
         // picked up by `podcasts:release-due` when its scheduled_for arrives, so
         // subscribers are never notified about an episode they can't open yet.
-        if (self::isEpisodeLive($episode)) {
+        if (!$wasPublished && self::isEpisodeLive($episode)) {
             self::announceEpisode($episode);
         } else {
             self::syncEpisodeFeedActivity($episode);
@@ -1001,45 +1002,54 @@ class PodcastService
         }
     }
 
-    public static function toggleReaction(PodcastEpisode $episode, int $userId, string $reaction = 'like'): bool
+    public static function toggleReaction(PodcastEpisode $episode, int $userId, string $reaction = 'like', ?bool $desiredActive = null): bool
     {
         if (!PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_EPISODE_REACTIONS)) {
             return false;
         }
 
-        $reaction = self::normalizeReaction($reaction);
-        $existing = PodcastEpisodeReaction::where('episode_id', $episode->id)
-            ->where('user_id', $userId)
-            ->where('reaction', $reaction)
-            ->first();
+        return DB::transaction(function () use ($episode, $userId, $reaction, $desiredActive): bool {
+            $reaction = self::normalizeReaction($reaction);
+            PodcastEpisode::whereKey($episode->id)->lockForUpdate()->first();
+            $existing = PodcastEpisodeReaction::where('episode_id', $episode->id)
+                ->where('user_id', $userId)
+                ->where('reaction', $reaction)
+                ->first();
 
-        if ($existing) {
-            $existing->delete();
-            return false;
-        }
+            $targetActive = $desiredActive ?? ! $existing;
+            if (! $targetActive) {
+                if ($existing) {
+                    $existing->delete();
+                }
+                return false;
+            }
+            if ($existing) {
+                return true;
+            }
 
-        $authorUserId = (int) $episode->author_user_id;
-        if ($authorUserId > 0 && $authorUserId !== $userId) {
-            app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
-                $userId,
-                $authorUserId,
-                TenantContext::getId(),
-                'podcast_episode_reaction',
-            );
-        }
+            $authorUserId = (int) $episode->author_user_id;
+            if ($authorUserId > 0 && $authorUserId !== $userId) {
+                app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                    $userId,
+                    $authorUserId,
+                    TenantContext::getId(),
+                    'podcast_episode_reaction',
+                );
+            }
 
-        PodcastEpisodeReaction::create([
-            'episode_id' => $episode->id,
-            'user_id' => $userId,
-            'reaction' => $reaction,
-        ]);
+            PodcastEpisodeReaction::create([
+                'episode_id' => $episode->id,
+                'user_id' => $userId,
+                'reaction' => $reaction,
+            ]);
 
-        return true;
+            return true;
+        });
     }
 
-    public static function toggleSubscription(PodcastShow $show, int $userId, bool $notifyNewEpisodes = true): bool
+    public static function toggleSubscription(PodcastShow $show, int $userId, bool $notifyNewEpisodes = true, ?bool $desiredSubscribed = null): bool
     {
-        return DB::transaction(function () use ($show, $userId, $notifyNewEpisodes): bool {
+        return DB::transaction(function () use ($show, $userId, $notifyNewEpisodes, $desiredSubscribed): bool {
             $tenantId = TenantContext::getId();
             // Lock the show row so concurrent subscribe/unsubscribe toggles can't
             // race the recount into a stale subscriber_count.
@@ -1051,13 +1061,20 @@ class PodcastService
                 ->where('user_id', $userId)
                 ->first();
 
-            if ($existing) {
+            $targetSubscribed = $desiredSubscribed ?? ! $existing;
+            if (! $targetSubscribed) {
+                if (! $existing) {
+                    return false;
+                }
                 DB::table('podcast_show_subscriptions')
                     ->where('tenant_id', $tenantId)
                     ->where('id', $existing->id)
                     ->delete();
                 self::refreshSubscriberCount($show);
                 return false;
+            }
+            if ($existing) {
+                return true;
             }
 
             DB::table('podcast_show_subscriptions')->insert([

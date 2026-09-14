@@ -608,8 +608,30 @@ export function getMarketplaceListing(
 
 export function createMarketplaceListing(
   payload: MarketplaceListingPayload,
+  idempotencyKey?: string,
 ): Promise<MarketplaceDataResponse<MarketplaceListingDetail>> {
-  return api.post<MarketplaceDataResponse<MarketplaceListingDetail>>(`${API_V2}/marketplace/listings`, payload);
+  if (!idempotencyKey) {
+    return api.post<MarketplaceDataResponse<MarketplaceListingDetail>>(`${API_V2}/marketplace/listings`, payload);
+  }
+  return api.post<MarketplaceDataResponse<MarketplaceListingDetail>>(
+    `${API_V2}/marketplace/listings`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  );
+}
+
+export interface MarketplaceDeliveryOpportunity {
+  order_id: number;
+  quantity: number;
+  created_at: string;
+  can_offer: boolean;
+  listing: {
+    id: number;
+    title: string;
+    location?: string | null;
+    image?: { url: string; thumbnail_url?: string | null } | null;
+  } | null;
+  my_offer?: MarketplaceDeliveryOffer | null;
 }
 
 export function updateMarketplaceListing(
@@ -771,6 +793,15 @@ export function getMarketplaceOrderRatings(id: number): Promise<MarketplaceDataR
 
 export function getMarketplaceDeliveryOffers(orderId: number): Promise<MarketplaceDataResponse<MarketplaceDeliveryOffer[]>> {
   return api.get<MarketplaceDataResponse<MarketplaceDeliveryOffer[]>>(`${API_V2}/marketplace/orders/${orderId}/delivery-offers`);
+}
+
+export function getMarketplaceDeliveryOpportunities(
+  cursor?: string | null,
+): Promise<MarketplaceCollectionResponse<MarketplaceDeliveryOpportunity>> {
+  const query: Record<string, string> = {};
+  addQueryValue(query, 'cursor', cursor);
+  addQueryValue(query, 'limit', 20);
+  return api.get<MarketplaceCollectionResponse<MarketplaceDeliveryOpportunity>>(`${API_V2}/marketplace/orders/deliveries`, query);
 }
 
 export function createMarketplaceDeliveryOffer(

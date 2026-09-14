@@ -76,6 +76,8 @@ function JobDetailContent() {
   const [coverMessage, setCoverMessage] = useState('');
   const [applyLoading, setApplyLoading] = useState(false);
   const applicationPending = useRef(false);
+  const activeJobId = useRef(safeId);
+  activeJobId.current = safeId;
   const cvPickerPending = useRef(false);
   const [cvPicking, setCvPicking] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
@@ -246,10 +248,12 @@ function JobDetailContent() {
 
   async function handleSubmitApplication() {
     if (!job || isOwner || job.status !== 'open' || job.accepting_applications === false || applicationPending.current || cvPickerPending.current || !coverMessage.trim()) return;
+    const submittedJobId = job.id;
     applicationPending.current = true;
     setApplyLoading(true);
     try {
-      await applyToJob(job.id, coverMessage.trim(), cvFile);
+      await applyToJob(submittedJobId, coverMessage.trim(), cvFile);
+      if (activeJobId.current !== submittedJobId) return;
       setApplySuccess(true);
       setHasApplied(true);
     } catch (err) {
@@ -257,7 +261,28 @@ function JobDetailContent() {
       // several more sending two emails, so a timeout here does NOT mean nothing happened.
       // Telling the member it failed sends them back to a duplicate refusal. Measured at
       // 9.5s against a 15s mutation timeout on 2026-08-23; see TIMEOUTS.API_JOB_APPLY.
+      const alreadyApplied = err instanceof ApiResponseError && err.status === 409;
+      if (alreadyApplied && activeJobId.current === submittedJobId) {
+        setApplySuccess(true);
+        setHasApplied(true);
+        return;
+      }
       const noAnswer = err instanceof ApiResponseError && err.status === 0;
+      if (noAnswer) {
+        try {
+          const verification = await getJobDetail(submittedJobId);
+          if (activeJobId.current !== submittedJobId) return;
+          if (verification.data?.has_applied === true) {
+            setApplySuccess(true);
+            setHasApplied(true);
+            return;
+          }
+        } catch {
+          // Preserve the member's draft and report the uncertainty below when readback
+          // is also unavailable. A failed verification is not evidence of a failed write.
+        }
+      }
+      if (activeJobId.current !== submittedJobId) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: noAnswer
@@ -267,7 +292,7 @@ function JobDetailContent() {
       });
     } finally {
       applicationPending.current = false;
-      setApplyLoading(false);
+      if (activeJobId.current === submittedJobId) setApplyLoading(false);
     }
   }
 

@@ -291,33 +291,48 @@ function HeaderCard({
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const meta = modeMeta[mode];
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   return (
     <HeroCard
+      key={fontScale}
       variant="default"
       className="mb-4 overflow-hidden rounded-panel p-0"
       style={{ borderWidth: 1, borderColor: withAlpha(meta.tone, 0.16) }}
     >
       <View className="h-1.5" style={{ backgroundColor: meta.tone }} />
       <HeroCard.Body className="gap-3 p-4">
-        <View className="flex-row items-start gap-3">
+        <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
           <View className="size-11 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(meta.tone, 0.14) }}>
             <Ionicons name={meta.icon} size={22} color={meta.tone} />
           </View>
           <View className="min-w-0 flex-1 gap-1">
-            <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            <Text key={`eyebrow-${fontScale}`} className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1}>
               {t(`directory.${mode}.eyebrow`)}
             </Text>
-            <Text className="text-xl font-bold leading-7" style={{ color: theme.text }} numberOfLines={2}>
+            <Text
+              key={`title-${fontScale}`}
+              className="text-xl font-bold leading-7"
+              style={{ color: theme.text }}
+              numberOfLines={largeText ? 0 : 2}
+              testID="federation-directory-header-title"
+            >
               {t(`directory.${mode}.title`)}
             </Text>
-            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>
+            <Text
+              key={`subtitle-${fontScale}`}
+              className="text-sm leading-5"
+              style={{ color: theme.textSecondary }}
+              numberOfLines={largeText ? 0 : 2}
+              testID="federation-directory-header-subtitle"
+            >
               {t(`directory.${mode}.subtitle`)}
             </Text>
           </View>
         </View>
         {typeof count === 'number' ? (
           <View className="items-start">
-            <Chip size="sm" variant="secondary">
+            <Chip key={`count-${fontScale}`} size="sm" variant="secondary">
               <Ionicons name="analytics-outline" size={13} color={meta.tone} />
               <Chip.Label>{t('directory.resultsCount', { count })}</Chip.Label>
             </Chip>
@@ -428,6 +443,8 @@ function OptInRequiredCard({
 }
 
 function PartnerCard({ partner, t, theme, primary }: { partner: FederatedTenant; t: (key: string, opts?: Record<string, unknown>) => string; theme: ReturnType<typeof useTheme>; primary: string }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const connectedDate = formatDate(partner.connected_since ?? partner.partnership_since);
   const federationLevel = partner.federation_level_name?.trim();
   const externalLabel = t('directory.external');
@@ -443,13 +460,14 @@ function PartnerCard({ partner, t, theme, primary }: { partner: FederatedTenant;
       feedback="highlight"
     >
       <HeroCard
+        key={fontScale}
         variant="default"
         className="overflow-hidden rounded-panel p-0"
         style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.12) }}
       >
         <HeroCard.Body className="gap-3 p-4">
           <View className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: primary }} />
-          <View className="flex-row items-start gap-3 pl-1">
+          <View className={largeText ? 'items-start gap-3 pl-1' : 'flex-row items-start gap-3 pl-1'}>
             <View
               className="rounded-full p-1"
               style={{ backgroundColor: withAlpha(primary, 0.1), borderWidth: 1, borderColor: withAlpha(primary, 0.18) }}
@@ -457,24 +475,36 @@ function PartnerCard({ partner, t, theme, primary }: { partner: FederatedTenant;
               <Avatar uri={partner.logo} name={partner.name} size={48} />
             </View>
             <View className="min-w-0 flex-1 gap-1">
-              <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={2}>{partner.name}</Text>
+              <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>{partner.name}</Text>
               {partner.location ? (
                 <View className="flex-row items-center gap-1">
                   <Ionicons name="location-outline" size={13} color={theme.textSecondary} />
-                  <Text className="min-w-0 flex-1 text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                  <Text
+                    className="min-w-0 flex-1 text-xs"
+                    style={{ color: theme.textSecondary }}
+                    numberOfLines={largeText ? undefined : 1}
+                    testID={`federation-partner-${partner.id}-location`}
+                  >
                     {partner.location}
                   </Text>
                 </View>
               ) : null}
               {partner.tagline || partner.description ? (
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                <Text
+                  className="text-sm leading-5"
+                  style={{ color: theme.textSecondary }}
+                  numberOfLines={largeText ? undefined : 2}
+                  testID={`federation-partner-${partner.id}-description`}
+                >
                   {partner.tagline || partner.description}
                 </Text>
               ) : null}
             </View>
-            <View className="size-8 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.1) }}>
-              <Ionicons name="chevron-forward-outline" size={17} color={primary} />
-            </View>
+            {!largeText ? (
+              <View className="size-8 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.1) }}>
+                <Ionicons name="chevron-forward-outline" size={17} color={primary} />
+              </View>
+            ) : null}
           </View>
           <View className="flex-row flex-wrap gap-2 pl-1">
             <Chip size="md" variant="secondary">
@@ -482,7 +512,7 @@ function PartnerCard({ partner, t, theme, primary }: { partner: FederatedTenant;
               <Chip.Label>{t('directory.memberCount', { count: partner.member_count ?? 0 })}</Chip.Label>
             </Chip>
             {federationLevel ? (
-              <Chip size="md" variant="secondary"><Chip.Label numberOfLines={1}>{federationLevel}</Chip.Label></Chip>
+              <Chip size="md" variant="secondary"><Chip.Label numberOfLines={largeText ? undefined : 1}>{federationLevel}</Chip.Label></Chip>
             ) : null}
             {shouldShowExternalChip ? (
               <Chip size="md" variant="secondary" color="warning"><Chip.Label>{externalLabel}</Chip.Label></Chip>
@@ -494,7 +524,7 @@ function PartnerCard({ partner, t, theme, primary }: { partner: FederatedTenant;
               </Chip>
             ) : null}
           </View>
-          <Text className="pl-1 text-sm font-semibold" style={{ color: primary }} numberOfLines={1}>
+          <Text className="pl-1 text-sm font-semibold" style={{ color: primary }} numberOfLines={largeText ? undefined : 1}>
             {t('hub.viewCommunity')}
           </Text>
         </HeroCard.Body>
@@ -639,6 +669,8 @@ function ListingCard({
   primary: string;
   onPress: () => void;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const isOffer = listing.type === 'offer';
   const typeColor = isOffer ? '#22c55e' : '#f59e0b';
   const authorName = listingAuthorName(listing, t);
@@ -652,12 +684,13 @@ function ListingCard({
       feedback="highlight"
     >
       <HeroCard
+        key={fontScale}
         className="overflow-hidden rounded-panel p-0"
         style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
       >
         <View className="absolute bottom-0 left-0 top-0 w-1.5" style={{ backgroundColor: typeColor }} />
         <HeroCard.Body className="gap-2.5 p-3.5 pl-5">
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
             <View
               className="h-16 w-16 overflow-hidden rounded-panel-inner"
               style={{ backgroundColor: withAlpha(typeColor, 0.1), borderWidth: 1, borderColor: withAlpha(typeColor, 0.18) }}
@@ -679,22 +712,22 @@ function ListingCard({
                 {listing.is_external ? <Chip size="sm" variant="secondary"><Chip.Label>{t('directory.external')}</Chip.Label></Chip> : null}
               </View>
               <View className="gap-1">
-                <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={2}>{listing.title}</Text>
+              <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2} testID={`federation-listing-${listing.id}-title`}>{listing.title}</Text>
                 <View className="flex-row items-center gap-1">
                   <Ionicons name="person-outline" size={13} color={theme.textMuted} />
-                  <Text className="min-w-0 flex-1 text-xs font-semibold" style={{ color: theme.textMuted }} numberOfLines={1}>{authorName}</Text>
+                  <Text className="min-w-0 flex-1 text-xs font-semibold" style={{ color: theme.textMuted }} numberOfLines={largeText ? 0 : 1} testID={`federation-listing-${listing.id}-author`}>{authorName}</Text>
                 </View>
               </View>
             </View>
-            <View
+            {!largeText ? <View
               className="h-8 w-8 items-center justify-center rounded-2xl"
               style={{ backgroundColor: withAlpha(primary, 0.1), borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}
             >
               <Ionicons name="chevron-forward-outline" size={17} color={primary} />
-            </View>
+            </View> : null}
           </View>
           {listing.description ? (
-            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{listing.description}</Text>
+            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2} testID={`federation-listing-${listing.id}-description`}>{listing.description}</Text>
           ) : null}
           <View className="flex-row flex-wrap gap-2">
             <Chip size="sm" variant="secondary">
@@ -733,6 +766,8 @@ function ListingDetailView({
   primary: string;
   onBack: () => void;
 }) {
+  const { width, fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const isOffer = listing.type === 'offer';
   const typeColor = isOffer ? '#22c55e' : '#f59e0b';
   const tenantId = listing.is_external
@@ -841,7 +876,7 @@ function ListingDetailView({
           <Text className="text-xs font-bold uppercase" style={{ color: theme.textMuted }}>{t('directory.listings.postedBy')}</Text>
           <Surface
             variant="secondary"
-            className="flex-row items-center gap-3 rounded-panel-inner p-3"
+            className={`${largeText ? 'items-start' : 'flex-row items-center'} gap-3 rounded-panel-inner p-3`}
             style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
           >
             <View
@@ -851,21 +886,21 @@ function ListingDetailView({
               <Avatar uri={listing.author?.avatar ?? null} name={authorName} size={48} />
             </View>
             <View className="min-w-0 flex-1">
-              <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={1}>{authorName}</Text>
-              <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>{listingCommunityName(listing, t)}</Text>
+              <Text className="text-base font-bold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1}>{authorName}</Text>
+              <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1}>{listingCommunityName(listing, t)}</Text>
             </View>
           </Surface>
           <View className="flex-row flex-wrap gap-2">
             {canOpenAuthor ? (
-              <HeroButton size="sm" variant="secondary" onPress={openAuthorProfile}>
+              <HeroButton size="sm" variant="secondary" style={responsiveActionStyle(width, fontScale)} onPress={openAuthorProfile}>
                 <Ionicons name="person-outline" size={14} color={primary} />
-                <HeroButton.Label>{t('directory.listings.viewProfile')}</HeroButton.Label>
+                <HeroButton.Label numberOfLines={2}>{t('directory.listings.viewProfile')}</HeroButton.Label>
               </HeroButton>
             ) : null}
             {canMessageAuthor ? (
-              <HeroButton size="sm" variant="primary" onPress={messageAuthor}>
+              <HeroButton size="sm" variant="primary" style={responsiveActionStyle(width, fontScale)} onPress={messageAuthor}>
                 <AccentIcon name="chatbubble-ellipses-outline" size={14} />
-                <HeroButton.Label>{t('directory.listings.contactAuthor')}</HeroButton.Label>
+                <HeroButton.Label numberOfLines={2}>{t('directory.listings.contactAuthor')}</HeroButton.Label>
               </HeroButton>
             ) : null}
           </View>
@@ -888,6 +923,8 @@ function GroupCard({
   primary: string;
   onPress: () => void;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const community = group.timebank?.name ?? group.partner_name ?? t('directory.unknownCommunity');
   const tone = modeMeta.groups.tone;
   return (
@@ -898,6 +935,7 @@ function GroupCard({
       feedback="highlight"
     >
       <HeroCard
+        key={fontScale}
         className="overflow-hidden rounded-panel p-0"
         style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
       >
@@ -906,7 +944,7 @@ function GroupCard({
           <RemoteImage uri={resolvedMediaUrl(group.cover_image)} className="h-32 w-full bg-surface" fallbackIcon="people-outline" />
         ) : null}
         <HeroCard.Body className="gap-3 p-4 pl-5">
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
             <View
               className="size-12 items-center justify-center rounded-2xl"
               style={{ backgroundColor: withAlpha(tone, 0.14), borderWidth: 1, borderColor: withAlpha(tone, 0.18) }}
@@ -914,15 +952,15 @@ function GroupCard({
               <Ionicons name={group.privacy === 'private' ? 'lock-closed-outline' : 'people-circle-outline'} size={24} color={tone} />
             </View>
             <View className="min-w-0 flex-1 gap-1">
-              <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={2}>{group.name}</Text>
-              {group.description ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>{group.description}</Text> : null}
+              <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2} testID={`federation-group-${group.id}-name`}>{group.name}</Text>
+              {group.description ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 3} testID={`federation-group-${group.id}-description`}>{group.description}</Text> : null}
             </View>
-            <View
+            {!largeText ? <View
               className="h-8 w-8 items-center justify-center rounded-2xl"
               style={{ backgroundColor: withAlpha(primary, 0.1), borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}
             >
               <Ionicons name="chevron-forward-outline" size={17} color={primary} />
-            </View>
+            </View> : null}
           </View>
           <View className="flex-row flex-wrap gap-2">
             <Chip size="sm" variant="secondary">
@@ -955,6 +993,8 @@ function GroupDetailView({
   primary: string;
   onBack: () => void;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const community = group.timebank?.name ?? group.partner_name ?? t('directory.unknownCommunity');
   const tone = modeMeta.groups.tone;
   return (
@@ -970,7 +1010,7 @@ function GroupDetailView({
       >
         {resolvedMediaUrl(group.cover_image) ? <RemoteImage uri={resolvedMediaUrl(group.cover_image)} className="h-44 w-full bg-surface" fallbackIcon="people-outline" /> : <View className="h-1.5" style={{ backgroundColor: tone }} />}
         <HeroCard.Body className="gap-4 p-4">
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
             <View
               className="size-13 items-center justify-center rounded-3xl"
               style={{ backgroundColor: withAlpha(tone, 0.14), borderWidth: 1, borderColor: withAlpha(tone, 0.18) }}
@@ -1028,6 +1068,8 @@ function EventCard({
   primary: string;
   onPress: () => void;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const startDate = formatDate(event.start_date);
   const organizerName = event.organizer?.name?.trim() || t('directory.events.organizerFallback');
   const community = event.timebank?.name ?? t('directory.unknownCommunity');
@@ -1040,6 +1082,7 @@ function EventCard({
       feedback="highlight"
     >
       <HeroCard
+        key={fontScale}
         className="overflow-hidden rounded-panel p-0"
         style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
       >
@@ -1048,37 +1091,37 @@ function EventCard({
           {resolvedMediaUrl(event.cover_image) ? (
             <RemoteImage uri={resolvedMediaUrl(event.cover_image)} className="h-36 w-full rounded-panel-inner bg-surface" fallbackIcon="calendar-outline" />
           ) : null}
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
             <Surface
               variant="secondary"
               className="w-16 items-center rounded-panel-inner p-2"
               style={{ backgroundColor: withAlpha(tone, 0.1), borderWidth: 1, borderColor: withAlpha(tone, 0.18) }}
             >
               <Ionicons name="calendar-outline" size={18} color={tone} />
-              <Text className="text-center text-xs font-bold" style={{ color: theme.text }} numberOfLines={2}>{startDate}</Text>
+              <Text className="text-center text-xs font-bold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>{startDate}</Text>
             </Surface>
             <View className="min-w-0 flex-1 gap-1">
-              <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={2}>{event.title}</Text>
-              {event.description ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{event.description}</Text> : null}
+              <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2} testID={`federation-event-${event.id}-title`}>{event.title}</Text>
+              {event.description ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2} testID={`federation-event-${event.id}-description`}>{event.description}</Text> : null}
             </View>
-            <View
+            {!largeText ? <View
               className="h-8 w-8 items-center justify-center rounded-2xl"
               style={{ backgroundColor: withAlpha(primary, 0.1), borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}
             >
               <Ionicons name="chevron-forward-outline" size={17} color={primary} />
-            </View>
+            </View> : null}
           </View>
           <Surface
             variant="secondary"
-            className="flex-row items-center gap-2 rounded-panel-inner p-2.5"
+            className={`${largeText ? 'items-start' : 'flex-row items-center'} gap-2 rounded-panel-inner p-2.5`}
             style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
           >
             <Avatar uri={event.organizer?.avatar ?? null} name={organizerName} size={32} />
             <View className="min-w-0 flex-1">
-              <Text className="text-[11px] font-semibold uppercase" style={{ color: theme.textMuted }} numberOfLines={1}>
+              <Text className="text-[11px] font-semibold uppercase" style={{ color: theme.textMuted }} numberOfLines={largeText ? 0 : 1}>
                 {t('directory.events.organizer')}
               </Text>
-              <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+              <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1} testID={`federation-event-${event.id}-organizer`}>
                 {organizerName}
               </Text>
             </View>
@@ -1121,6 +1164,8 @@ function EventDetailView({
   primary: string;
   onBack: () => void;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const community = event.timebank?.name ?? t('directory.unknownCommunity');
   const organizerName = event.organizer?.name?.trim() || t('directory.events.organizerFallback');
   const tone = modeMeta.events.tone;
@@ -1137,7 +1182,7 @@ function EventDetailView({
       >
         {resolvedMediaUrl(event.cover_image) ? <RemoteImage uri={resolvedMediaUrl(event.cover_image)} className="h-52 w-full bg-surface" fallbackIcon="calendar-outline" /> : <View className="h-1.5" style={{ backgroundColor: tone }} />}
         <HeroCard.Body className="gap-4 p-4">
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
             <View
               className="size-13 items-center justify-center rounded-3xl"
               style={{ backgroundColor: withAlpha(tone, 0.14), borderWidth: 1, borderColor: withAlpha(tone, 0.18) }}
@@ -1155,7 +1200,7 @@ function EventDetailView({
 
           <Surface
             variant="secondary"
-            className="flex-row items-center gap-3 rounded-panel-inner p-3"
+            className={`${largeText ? 'items-start' : 'flex-row items-center'} gap-3 rounded-panel-inner p-3`}
             style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
           >
             <View
@@ -1165,10 +1210,10 @@ function EventDetailView({
               <Avatar uri={event.organizer?.avatar ?? null} name={organizerName} size={42} />
             </View>
             <View className="min-w-0 flex-1">
-              <Text className="text-xs font-bold uppercase" style={{ color: theme.textMuted }} numberOfLines={1}>
+              <Text className="text-xs font-bold uppercase" style={{ color: theme.textMuted }} numberOfLines={largeText ? 0 : 1}>
                 {t('directory.events.organizer')}
               </Text>
-              <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+              <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                 {organizerName}
               </Text>
             </View>
@@ -1222,6 +1267,8 @@ function MessageCard({
   primary: string;
   onPress: () => void;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { partner, lastMessage: message } = thread;
   const partnerName = displayFederationPartnerName(partner, t('directory.messages.unknownSender'));
   const tone = modeMeta.messages.tone;
@@ -1235,12 +1282,13 @@ function MessageCard({
       feedback="highlight"
     >
       <HeroCard
+        key={fontScale}
         className="overflow-hidden rounded-panel p-0"
         style={{ borderWidth: 1, borderColor: theme.borderSubtle }}
       >
         <View className="absolute bottom-0 left-0 top-0 w-1.5" style={{ backgroundColor: tone }} />
         <HeroCard.Body className="gap-2.5 p-3.5 pl-5">
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
             <View
               className="rounded-full p-1"
               style={{ backgroundColor: withAlpha(tone, 0.1), borderWidth: 1, borderColor: withAlpha(tone, 0.18) }}
@@ -1249,10 +1297,10 @@ function MessageCard({
             </View>
             <View className="min-w-0 flex-1 gap-2">
               <View className="min-w-0 gap-1">
-                <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>{partnerName}</Text>
+                <Text className="text-[17px] font-bold leading-6" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1} testID={`federation-message-${message.id}-partner`}>{partnerName}</Text>
                 <View className="flex-row items-center gap-1">
                   <Ionicons name="business-outline" size={13} color={theme.textMuted} />
-                  <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                  <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1} testID={`federation-message-${message.id}-community`}>
                     {partner.tenant_name ?? t('directory.unknownCommunity')}
                   </Text>
                 </View>
@@ -1274,16 +1322,16 @@ function MessageCard({
                 </Chip>
               </View>
               <View className="gap-0.5">
-                {message.subject ? <Text className="text-sm font-bold" style={{ color: theme.text }} numberOfLines={1}>{message.subject}</Text> : null}
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{message.body}</Text>
+                {message.subject ? <Text className="text-sm font-bold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1} testID={`federation-message-${message.id}-subject`}>{message.subject}</Text> : null}
+                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2} testID={`federation-message-${message.id}-body`}>{message.body}</Text>
               </View>
             </View>
-            <View
+            {!largeText ? <View
               className="h-8 w-8 items-center justify-center rounded-2xl"
               style={{ backgroundColor: withAlpha(primary, 0.1), borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}
             >
               <Ionicons name="chevron-forward-outline" size={17} color={primary} />
-            </View>
+            </View> : null}
           </View>
         </HeroCard.Body>
       </HeroCard>
@@ -1309,6 +1357,8 @@ function MessageThreadView({
   onSent: (message?: FederatedMessage) => void;
 }) {
   const { i18n } = useTranslation();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const partnerName = displayFederationPartnerName(thread.partner, t('directory.messages.unknownSender'));
   const [reply, setReply] = useState('');
@@ -1370,7 +1420,7 @@ function MessageThreadView({
       >
         <View className="h-1.5" style={{ backgroundColor: modeMeta.messages.tone }} />
         <HeroCard.Body className="gap-4 p-4">
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? 'items-start gap-3' : 'flex-row items-start gap-3'}>
             <View
               className="rounded-full p-1"
               style={{ backgroundColor: withAlpha(modeMeta.messages.tone, 0.1), borderWidth: 1, borderColor: withAlpha(modeMeta.messages.tone, 0.18) }}
@@ -1381,10 +1431,10 @@ function MessageThreadView({
               <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
                 {t('directory.messages.threadEyebrow')}
               </Text>
-              <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={2}>
+              <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                 {partnerName}
               </Text>
-              <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+              <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1}>
                 {thread.partner.tenant_name ?? t('directory.unknownCommunity')}
               </Text>
             </View>

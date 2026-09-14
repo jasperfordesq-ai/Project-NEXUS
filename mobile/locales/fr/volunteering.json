@@ -72,6 +72,7 @@
   "shiftSignupTitle": "Equipe rejointe",
   "shiftSignupMessage": "Vous vous êtes inscrit à cette équipe.",
   "shiftSignupError": "Impossible de vous inscrire à cette équipe.",
+  "shiftResultUnknown": "Nous n’avons pas pu confirmer la modification. Actualisez vos créneaux avant de réessayer.",
   "meta": {
     "location": "Emplacement",
     "commitment": "Engagement",
@@ -307,6 +308,7 @@
   "interestSentTitle": "Intérêt envoyé !",
   "interestSentMessage": "L'organisation vous contactera bientôt.",
   "interestError": "Impossible de manifester l'intérêt.",
+  "interestNoAnswer": "Nous n'avons pas pu confirmer le résultat. Votre candidature a peut-être déjà été envoyée.",
   "skills": "Compétences requises",
   "commitment": "Engagement",
   "detail": {

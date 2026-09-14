@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { BackHandler, Platform } from 'react-native';
+import * as ReactNative from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 /*
@@ -80,6 +81,22 @@ describe('AppTopBar', () => {
     fireEvent.press(getByLabelText('Back'));
 
     expect(mockRouter.replace).toHaveBeenCalledWith('/(tabs)/groups');
+  });
+
+  it('moves the complete screen title onto its own wrapping row at large text', () => {
+    jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
+      width: 360,
+      height: 800,
+      scale: 3,
+      fontScale: 2,
+    });
+
+    const { getByTestId } = render(
+      <AppTopBar title="Federation Partners" backLabel="Back" fallbackHref="/(modals)/federation" />,
+    );
+
+    expect(getByTestId('app-top-bar-title')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('app-top-bar-title')).toHaveProp('children', 'Federation Partners');
   });
 
   it('maps Android hardware back to the same fallback navigation', () => {

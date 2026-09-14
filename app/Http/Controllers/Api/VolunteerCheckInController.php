@@ -47,6 +47,7 @@ class VolunteerCheckInController extends BaseApiController
             if ($code === 'FORBIDDEN') return 403;
             if ($code === 'ALREADY_EXISTS') return 409;
             if ($code === 'FEATURE_DISABLED') return 403;
+            if ($code === 'INTERNAL_ERROR' || $code === 'SERVER_ERROR') return 500;
         }
         return 400;
     }
@@ -140,7 +141,8 @@ class VolunteerCheckInController extends BaseApiController
         $result = $this->volunteerCheckInService->verifyCheckIn($token);
 
         if ($result === null) {
-            return $this->respondWithError('NOT_FOUND', __('api.checkin_not_found_or_completed'), null, 404);
+            $errors = $this->volunteerCheckInService->getErrors();
+            return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
         }
 
         return $this->respondWithData($result);

@@ -42,6 +42,7 @@ import {
   type MarketplaceOrder,
 } from '@/lib/api/marketplace';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
@@ -129,7 +130,7 @@ function orderHasRating(item: MarketplaceOrder, role: 'buyer' | 'seller'): boole
   return item.ratings?.some((rating) => rating.rater_role === role) ?? false;
 }
 
-function MarketplaceOrdersRoute() {
+function MarketplaceOrdersModal() {
   return (
     <ModalErrorBoundary>
       <MarketplaceOrdersScreen />
@@ -143,7 +144,7 @@ function MarketplaceOrdersScreen() {
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { tenant } = useTenant();
   const params = useLocalSearchParams<{ mode?: string | string[]; order_id?: string | string[] }>();
   const requestedMode = Array.isArray(params.mode) ? params.mode[0] : params.mode;
@@ -169,6 +170,7 @@ function MarketplaceOrdersScreen() {
   const [disputeDescription, setDisputeDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const canLoadOrders = !isAuthLoading && isAuthenticated;
   const orders = usePaginatedApi<MarketplaceOrder, Awaited<ReturnType<typeof getMarketplaceOrders>>>(
     (cursor) => getMarketplaceOrders(mode, cursor, ORDER_STATUS_FILTERS[statusTab]),
@@ -177,7 +179,7 @@ function MarketplaceOrdersScreen() {
       cursor: marketplaceNextCursor(response),
       hasMore: marketplaceHasMore(response),
     }),
-    [mode, statusTab],
+    [mode, statusTab, tenant?.id, tenant?.slug, user?.id],
     { enabled: canLoadOrders },
   );
   const targetOrderState = useApi(
@@ -189,6 +191,24 @@ function MarketplaceOrdersScreen() {
   useEffect(() => {
     setMode(requestedMode === 'sales' ? 'sales' : 'purchases');
   }, [requestedMode]);
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
+
+  async function recoverOrder(
+    error: unknown,
+    orderId: number,
+    matches: (order: MarketplaceOrder) => boolean,
+  ): Promise<boolean> {
+    if (!isMountedRef.current || !(error instanceof ApiResponseError) || error.status !== 0) return false;
+    try {
+      const readback = await getMarketplaceOrder(orderId);
+      return matches(readback.data);
+    } catch {
+      return false;
+    }
+  }
 
   const visibleOrders = useMemo(() => {
     if (requestedOrderId === null) return orders.items;
@@ -230,11 +250,11 @@ function MarketplaceOrdersScreen() {
     setIsLoadingDeliveryOffers(true);
     try {
       const response = await getMarketplaceDeliveryOffers(order.id);
-      setDeliveryOffers(response.data);
+      if (isMountedRef.current) setDeliveryOffers(response.data);
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.deliveryOffersLoadFailed')), variant: 'danger' });
+      if (isMountedRef.current) showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.deliveryOffersLoadFailed')), variant: 'danger' });
     } finally {
-      setIsLoadingDeliveryOffers(false);
+      if (isMountedRef.current) setIsLoadingDeliveryOffers(false);
     }
   }
 
@@ -247,13 +267,26 @@ function MarketplaceOrdersScreen() {
         tracking_number: trackingNumber.trim() || null,
         tracking_url: trackingUrl.trim() || null,
       });
+      if (!isMountedRef.current) return;
       setShipOrder(null);
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      const trackingNumberValue = trackingNumber.trim() || null;
+      const trackingUrlValue = trackingUrl.trim() || null;
+      const recovered = await recoverOrder(err, shipOrder.id, (order) => (
+        order.status === 'shipped'
+        && (order.tracking_number ?? null) === trackingNumberValue
+        && (order.tracking_url ?? null) === trackingUrlValue
+      ));
+      if (isMountedRef.current) {
+        if (recovered) {
+          setShipOrder(null);
+          orders.refresh();
+        } else showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      }
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -278,12 +311,16 @@ function MarketplaceOrdersScreen() {
     setIsSubmitting(true);
     try {
       await confirmMarketplaceOrderDelivery(order.id);
-      orders.refresh();
+      if (isMountedRef.current) orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      const recovered = await recoverOrder(err, order.id, (current) => ['delivered', 'completed'].includes(current.status));
+      if (isMountedRef.current) {
+        if (recovered) orders.refresh();
+        else showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      }
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -292,7 +329,16 @@ function MarketplaceOrdersScreen() {
     submittingRef.current = true;
     setIsSubmitting(true);
     try {
-      const payment = await createMarketplacePaymentIntent(order.id);
+      let payment;
+      try {
+        payment = await createMarketplacePaymentIntent(order.id);
+      } catch (error) {
+        if (!(error instanceof ApiResponseError) || error.status !== 0 || !isMountedRef.current) throw error;
+        // Laravel and Stripe bind this operation to tenant + order. A retry resumes
+        // the existing provider intent when the first response was lost.
+        payment = await createMarketplacePaymentIntent(order.id);
+      }
+      if (!isMountedRef.current) return;
       if (payment.data.checkout_url) {
         await Linking.openURL(payment.data.checkout_url);
       } else if (payment.data.client_secret) {
@@ -301,16 +347,17 @@ function MarketplaceOrdersScreen() {
           merchantDisplayName: t('orders.paymentMerchantDisplayName'),
           tenantSlug: tenant?.slug,
         });
+        if (!isMountedRef.current) return;
         if (paymentResult.status === 'completed' && payment.data.payment_intent_id) {
           // The card has been charged by now. A failure in OUR confirm call is not a failed
           // payment, and saying so invited a second one (audit 2026-09-07, D/F-3).
           try {
             await confirmMarketplacePayment(payment.data.payment_intent_id);
-            showToast({ title: t('orders.paymentCompleteTitle'), description: t('orders.paymentCompleteHint'), variant: 'success' });
+            if (isMountedRef.current) showToast({ title: t('orders.paymentCompleteTitle'), description: t('orders.paymentCompleteHint'), variant: 'success' });
           } catch {
-            showToast({ title: t('orders.paymentTakenTitle'), description: t('orders.paymentTakenHint', { order: order.order_number }), variant: 'warning' });
+            if (isMountedRef.current) showToast({ title: t('orders.paymentTakenTitle'), description: t('orders.paymentTakenHint', { order: order.order_number }), variant: 'warning' });
           }
-          orders.refresh();
+          if (isMountedRef.current) orders.refresh();
           return;
         }
         if (paymentResult.status === 'canceled') {
@@ -327,10 +374,10 @@ function MarketplaceOrdersScreen() {
       }
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.paymentFailed')), variant: 'danger' });
+      if (isMountedRef.current) showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.paymentFailed')), variant: 'danger' });
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -344,14 +391,22 @@ function MarketplaceOrdersScreen() {
     setIsSubmitting(true);
     try {
       await cancelMarketplaceOrder(cancelOrder.id, cancelReason.trim());
+      if (!isMountedRef.current) return;
       setCancelOrder(null);
       setCancelReason('');
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      const recovered = await recoverOrder(err, cancelOrder.id, (order) => order.status === 'cancelled');
+      if (isMountedRef.current) {
+        if (recovered) {
+          setCancelOrder(null);
+          setCancelReason('');
+          orders.refresh();
+        } else showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      }
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -369,14 +424,23 @@ function MarketplaceOrdersScreen() {
         comment: ratingComment.trim() || null,
         is_anonymous: isAnonymousRating,
       });
+      if (!isMountedRef.current) return;
       setRateOrder(null);
       setRatingComment('');
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      const role = mode === 'sales' ? 'seller' : 'buyer';
+      const recovered = await recoverOrder(err, rateOrder.id, (order) => orderHasRating(order, role));
+      if (isMountedRef.current) {
+        if (recovered) {
+          setRateOrder(null);
+          setRatingComment('');
+          orders.refresh();
+        } else showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      }
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -393,14 +457,22 @@ function MarketplaceOrdersScreen() {
         reason: disputeReason,
         description: disputeDescription.trim(),
       });
+      if (!isMountedRef.current) return;
       setDisputeOrder(null);
       setDisputeDescription('');
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      const recovered = await recoverOrder(err, disputeOrder.id, (order) => order.status === 'disputed');
+      if (isMountedRef.current) {
+        if (recovered) {
+          setDisputeOrder(null);
+          setDisputeDescription('');
+          orders.refresh();
+        } else showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      }
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -415,13 +487,31 @@ function MarketplaceOrdersScreen() {
         await confirmMarketplaceDeliveryOffer(deliveryOrder.id, offer.deliverer_id);
       }
       const response = await getMarketplaceDeliveryOffers(deliveryOrder.id);
+      if (!isMountedRef.current) return;
       setDeliveryOffers(response.data);
       orders.refresh();
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      let recoveredOffers: MarketplaceDeliveryOffer[] | null = null;
+      if (isMountedRef.current && err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const response = await getMarketplaceDeliveryOffers(deliveryOrder.id);
+          const expectedStatus = action === 'accept' ? 'accepted' : 'completed';
+          if (response.data.some((candidate) => candidate.deliverer_id === offer.deliverer_id && candidate.status === expectedStatus)) {
+            recoveredOffers = response.data;
+          }
+        } catch {
+          // Preserve the original transport error below when readback is unavailable.
+        }
+      }
+      if (isMountedRef.current) {
+        if (recoveredOffers) {
+          setDeliveryOffers(recoveredOffers);
+          orders.refresh();
+        } else showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('orders.actionFailed')), variant: 'danger' });
+      }
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -652,6 +742,7 @@ function MarketplaceOrdersScreen() {
                   <DeliveryOfferCard
                     key={offer.id}
                     offer={offer}
+                    canManage={mode === 'purchases'}
                     isSubmitting={isSubmitting}
                     onAccept={() => void updateDeliveryOffer(offer, 'accept')}
                     onConfirm={() => void updateDeliveryOffer(offer, 'confirm')}
@@ -663,6 +754,19 @@ function MarketplaceOrdersScreen() {
       </BottomSheet>
       {confirmDialog}
     </SafeAreaView>
+  );
+}
+
+function MarketplaceOrdersRoute() {
+  const params = useLocalSearchParams<{ mode?: string | string[]; order_id?: string | string[] }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const mode = Array.isArray(params.mode) ? params.mode[0] : params.mode;
+  const orderId = Array.isArray(params.order_id) ? params.order_id[0] : params.order_id;
+  return (
+    <MarketplaceOrdersModal
+      key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${mode ?? 'purchases'}:${orderId ?? 'all'}`}
+    />
   );
 }
 
@@ -916,11 +1020,13 @@ function OrderCard({
 
 function DeliveryOfferCard({
   offer,
+  canManage,
   isSubmitting,
   onAccept,
   onConfirm,
 }: {
   offer: MarketplaceDeliveryOffer;
+  canManage: boolean;
   isSubmitting: boolean;
   onAccept: () => void;
   onConfirm: () => void;
@@ -958,17 +1064,20 @@ function DeliveryOfferCard({
           <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={4}>{offer.notes}</Text>
         ) : null}
         <View className="flex-row flex-wrap gap-2">
-          {offer.status === 'pending' ? (
+          {canManage && offer.status === 'pending' ? (
             <HeroButton className="flex-1" size="md" variant="primary" isDisabled={isSubmitting} onPress={onAccept} style={actionStyle}>
               <AccentIcon name="checkmark-circle-outline" size={14} />
               <HeroButton.Label numberOfLines={2}>{t('orders.acceptDeliveryOffer')}</HeroButton.Label>
             </HeroButton>
           ) : null}
-          {offer.status === 'accepted' ? (
+          {canManage && offer.status === 'accepted' ? (
             <HeroButton className="flex-1" size="md" variant="primary" isDisabled={isSubmitting} onPress={onConfirm} style={[actionStyle, { backgroundColor: theme.success }]}>
               <AccentIcon name="flag-outline" size={14} />
               <HeroButton.Label numberOfLines={2}>{t('orders.confirmDeliveryOffer')}</HeroButton.Label>
             </HeroButton>
+          ) : null}
+          {!canManage && ['pending', 'accepted'].includes(offer.status) ? (
+            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('orders.deliveryBuyerDecides')}</Text>
           ) : null}
         </View>
       </HeroCard.Body>

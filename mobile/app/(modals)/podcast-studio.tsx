@@ -43,10 +43,12 @@ import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { isUploadAborted } from '@/lib/api/uploadWithProgress';
 import { pickAudioFile, type PickedAudioFile } from '@/lib/media/pickAudioFile';
 import { feedIssueKey } from '@/lib/podcasts/feedIssues';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -79,6 +81,10 @@ import {
   type PodcastVisibility,
 } from '@/lib/api/podcasts';
 import { withRouteGate } from '@/components/withRouteGate';
+import {
+  completePodcastCreationOperation,
+  reservePodcastCreationOperation,
+} from '@/lib/podcastCreationOperation';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const EPISODE_TYPES: PodcastEpisodeType[] = ['full', 'trailer', 'bonus'];
@@ -296,9 +302,11 @@ function PodcastStudioRoute() {
     reach this screen directly. See components/FeatureGate.tsx.
   */
   const { t } = useTranslation('podcasts');
+  const { tenant } = useTenant();
+  const { user } = useAuth();
   return (
     <FeatureGate feature="podcasts" title={t('studio.title')} fallbackHref="/(modals)/podcasts">
-      <ModalErrorBoundary>
+      <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`}>
         <PodcastStudioScreen />
       </ModalErrorBoundary>
     </FeatureGate>
@@ -347,6 +355,12 @@ function PodcastStudioScreen() {
   const [audioFileError, setAudioFileError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
+  const loadVersionRef = useRef(0);
+  const createShowRef = useRef(false);
+  const createEpisodeRef = useRef(false);
+  const editRef = useRef(false);
+  const actionRefs = useRef(new Set<string>());
 
   const [editingShow, setEditingShow] = useState<PodcastShow | null>(null);
   const [editingShowForm, setEditingShowForm] = useState<ShowFormState>(() => emptyShowForm('en'));
@@ -384,26 +398,36 @@ function PodcastStudioScreen() {
     cancelLabel: t('common:buttons.cancel'),
   });
 
-  const loadShows = useCallback(async (): Promise<void> => {
+  const loadShows = useCallback(async (): Promise<PodcastShow[] | null> => {
+    const version = ++loadVersionRef.current;
     setLoading(true);
     setLoadError(null);
     try {
       const result = await getAuthoredPodcasts();
+      if (!mountedRef.current || version !== loadVersionRef.current) return null;
       setShows(result.shows);
       // Upload limits and feature switches ride in `meta` — see getAuthoredPodcasts.
       setCapabilities((current) => ({ ...current, ...result.capabilities }));
       setSelectedShowId((current) => current ?? (result.shows[0]?.id ?? null));
+      return result.shows;
     } catch (error) {
+      if (!mountedRef.current || version !== loadVersionRef.current) return null;
       setLoadError(describeApiError(error, t('studio.load_failed')));
+      return null;
     } finally {
-      setLoading(false);
+      if (mountedRef.current && version === loadVersionRef.current) setLoading(false);
     }
   }, [t]);
 
   useEffect(() => {
+    mountedRef.current = true;
     void loadShows();
     // A member who backs out mid-upload should not leave a request running.
-    return () => uploadAbortRef.current?.abort();
+    return () => {
+      mountedRef.current = false;
+      loadVersionRef.current += 1;
+      uploadAbortRef.current?.abort();
+    };
   }, [loadShows]);
 
   /*
@@ -487,10 +511,11 @@ function PodcastStudioScreen() {
   }
 
   async function handleCreateShow(): Promise<void> {
-    if (!showForm.title.trim()) return;
+    if (!showForm.title.trim() || createShowRef.current) return;
+    createShowRef.current = true;
     setSavingShow(true);
     try {
-      const created = await createPodcastShow({
+      const payload: CreatePodcastShowPayload = {
         title: showForm.title.trim(),
         summary: showForm.summary,
         description: showForm.description,
@@ -502,7 +527,11 @@ function PodcastStudioScreen() {
         funding_url: showForm.fundingUrl,
         explicit: showForm.explicit,
         visibility: showForm.visibility,
-      });
+      };
+      const operation = await reservePodcastCreationOperation(JSON.stringify(['show', payload]));
+      const created = await createPodcastShow(payload, operation.key);
+      await completePodcastCreationOperation(operation);
+      if (!mountedRef.current) return;
 
       if (showArtworkUri && created?.id) {
         try {
@@ -515,15 +544,18 @@ function PodcastStudioScreen() {
       }
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
       showToast({ title: t('studio.show_created'), variant: 'success' });
       setShowForm(emptyShowForm(defaultLanguage));
       setShowArtworkUri(null);
       await loadShows();
       if (created?.id) setSelectedShowId(created.id);
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('studio.save_failed'), description: describeApiError(error, t('studio.save_failed')), variant: 'danger' });
     } finally {
-      setSavingShow(false);
+      createShowRef.current = false;
+      if (mountedRef.current) setSavingShow(false);
     }
   }
 
@@ -563,11 +595,13 @@ function PodcastStudioScreen() {
   async function handleCreateEpisode(): Promise<void> {
     if (!selectedShow || !episodeForm.title.trim()) return;
     if (!audioFile && !episodeForm.audioUrl.trim()) return;
+    if (createEpisodeRef.current) return;
     if (!audioFile && !isAllowedExternalAudioUrl(episodeForm.audioUrl.trim())) {
       setEpisodeError(t('studio.audio_https_required'));
       return;
     }
 
+    createEpisodeRef.current = true;
     setSavingEpisode(true);
     setEpisodeError(null);
     try {
@@ -588,6 +622,10 @@ function PodcastStudioScreen() {
           ? { transcript: '', transcript_language: '' }
           : { transcript: episodeForm.transcript, transcript_language: episodeForm.transcriptLanguage }),
       };
+      const operation = await reservePodcastCreationOperation(JSON.stringify([
+        'episode', selectedShow.id, payload,
+        audioFile ? { uri: audioFile.uri, name: audioFile.name, mimeType: audioFile.mimeType, size: audioFile.size } : null,
+      ]));
       let created: PodcastEpisode;
       if (audioFile) {
         const abortController = new AbortController();
@@ -601,15 +639,21 @@ function PodcastStudioScreen() {
             selectedShow.id,
             withoutUrl,
             audioFile,
-            { onProgress: setUploadProgress, signal: abortController.signal },
+            {
+              onProgress: (progress) => { if (mountedRef.current) setUploadProgress(progress); },
+              signal: abortController.signal,
+              idempotencyKey: operation.key,
+            },
           );
         } finally {
           uploadAbortRef.current = null;
           setUploadProgress(null);
         }
       } else {
-        created = await createPodcastEpisode(selectedShow.id, payload);
+        created = await createPodcastEpisode(selectedShow.id, payload, operation.key);
       }
+      await completePodcastCreationOperation(operation);
+      if (!mountedRef.current) return;
 
       if (episodeCoverUri && created?.id) {
         try {
@@ -621,6 +665,7 @@ function PodcastStudioScreen() {
       }
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
       showToast({ title: t('studio.episode_created'), variant: 'success' });
       setEpisodeForm(emptyEpisodeForm(defaultLanguage));
       setEpisodeCoverUri(null);
@@ -629,6 +674,7 @@ function PodcastStudioScreen() {
       setChaptersText('');
       await loadShows();
     } catch (error) {
+      if (!mountedRef.current) return;
       if (isUploadAborted(error)) {
         // The member stopped it. Keep the form and the chosen file so they can
         // simply press the button again — this is not a failure to report.
@@ -641,17 +687,38 @@ function PodcastStudioScreen() {
       setEpisodeError(message);
       showToast({ title: t('studio.save_failed'), description: message, variant: 'danger' });
     } finally {
-      setSavingEpisode(false);
+      createEpisodeRef.current = false;
+      if (mountedRef.current) setSavingEpisode(false);
     }
   }
 
-  async function runShowAction(action: () => Promise<unknown>, successKey: string): Promise<void> {
+  async function runShowAction(
+    key: string,
+    action: () => Promise<unknown>,
+    successKey: string,
+    confirmsState: (shows: PodcastShow[]) => boolean,
+  ): Promise<boolean> {
+    if (actionRefs.current.has(key)) return false;
+    actionRefs.current.add(key);
     try {
       await action();
+      if (!mountedRef.current) return false;
       showToast({ title: t(successKey), variant: 'success' });
       await loadShows();
+      return true;
     } catch (error) {
+      if (!mountedRef.current) return false;
+      if (error instanceof ApiResponseError && error.status === 0) {
+        const latest = await loadShows();
+        if (latest && confirmsState(latest)) {
+          if (mountedRef.current) showToast({ title: t(successKey), variant: 'success' });
+          return true;
+        }
+      }
       showToast({ title: t('studio.save_failed'), description: describeApiError(error, t('studio.save_failed')), variant: 'danger' });
+      return false;
+    } finally {
+      actionRefs.current.delete(key);
     }
   }
 
@@ -662,7 +729,14 @@ function PodcastStudioScreen() {
       confirmLabel: t('studio.archive_show'),
       cancelLabel: t('actions.cancel'),
       variant: 'danger',
-      onConfirm: () => runShowAction(() => archivePodcastShow(show.id), 'studio.show_archived'),
+      onConfirm: async () => {
+        await runShowAction(
+          `show:${show.id}:archive`,
+          () => archivePodcastShow(show.id),
+          'studio.show_archived',
+          latest => latest.some(item => item.id === show.id && item.status === 'archived'),
+        );
+      },
     });
   }
 
@@ -674,8 +748,13 @@ function PodcastStudioScreen() {
       cancelLabel: t('actions.cancel'),
       variant: 'danger',
       onConfirm: async () => {
-        setSelectedShowId((current) => (current === show.id ? null : current));
-        await runShowAction(() => deletePodcastShow(show.id), 'studio.show_deleted');
+        const deleted = await runShowAction(
+          `show:${show.id}:delete`,
+          () => deletePodcastShow(show.id),
+          'studio.show_deleted',
+          latest => !latest.some(item => item.id === show.id),
+        );
+        if (deleted && mountedRef.current) setSelectedShowId((current) => (current === show.id ? null : current));
       },
     });
   }
@@ -687,7 +766,14 @@ function PodcastStudioScreen() {
       confirmLabel: t('studio.archive_episode'),
       cancelLabel: t('actions.cancel'),
       variant: 'danger',
-      onConfirm: () => runShowAction(() => archivePodcastEpisode(showId, episode.id), 'studio.episode_archived'),
+      onConfirm: async () => {
+        await runShowAction(
+          `episode:${episode.id}:archive`,
+          () => archivePodcastEpisode(showId, episode.id),
+          'studio.episode_archived',
+          latest => latest.some(show => show.id === showId && show.episodes?.some(item => item.id === episode.id && item.status === 'archived')),
+        );
+      },
     });
   }
 
@@ -698,19 +784,32 @@ function PodcastStudioScreen() {
       confirmLabel: t('studio.delete_episode'),
       cancelLabel: t('actions.cancel'),
       variant: 'danger',
-      onConfirm: () => runShowAction(() => deletePodcastEpisode(showId, episode.id), 'studio.episode_deleted'),
+      onConfirm: async () => {
+        await runShowAction(
+          `episode:${episode.id}:delete`,
+          () => deletePodcastEpisode(showId, episode.id),
+          'studio.episode_deleted',
+          latest => !latest.some(show => show.id === showId && show.episodes?.some(item => item.id === episode.id)),
+        );
+      },
     });
   }
 
   async function handleValidateFeed(show: PodcastShow): Promise<void> {
+    const key = `show:${show.id}:validate`;
+    if (actionRefs.current.has(key)) return;
+    actionRefs.current.add(key);
     setValidatingShowId(show.id);
     try {
       const result = await validatePodcastFeed(show.id);
+      if (!mountedRef.current) return;
       setFeedValidation({ show, result });
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('studio.save_failed'), description: describeApiError(error, t('studio.save_failed')), variant: 'danger' });
     } finally {
-      setValidatingShowId(null);
+      actionRefs.current.delete(key);
+      if (mountedRef.current) setValidatingShowId(null);
     }
   }
 
@@ -733,7 +832,8 @@ function PodcastStudioScreen() {
   }
 
   async function handleUpdateShow(): Promise<void> {
-    if (!editingShow || !editingShowForm.title.trim()) return;
+    if (!editingShow || !editingShowForm.title.trim() || editRef.current) return;
+    editRef.current = true;
     setSavingEdit(true);
     try {
       const payload: Partial<CreatePodcastShowPayload> = {
@@ -757,6 +857,7 @@ function PodcastStudioScreen() {
         delete payload.visibility;
       }
       await updatePodcastShow(editingShow.id, payload);
+      if (!mountedRef.current) return;
 
       if (editingShowArtworkUri) {
         try {
@@ -771,9 +872,11 @@ function PodcastStudioScreen() {
       setEditingShow(null);
       await loadShows();
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('studio.save_failed'), description: describeApiError(error, t('studio.save_failed')), variant: 'danger' });
     } finally {
-      setSavingEdit(false);
+      editRef.current = false;
+      if (mountedRef.current) setSavingEdit(false);
     }
   }
 
@@ -801,7 +904,7 @@ function PodcastStudioScreen() {
   }
 
   async function handleUpdateEpisode(): Promise<void> {
-    if (!editingEpisode || !editingEpisodeForm.title.trim()) return;
+    if (!editingEpisode || !editingEpisodeForm.title.trim() || editRef.current) return;
     const hostedAudio = Boolean(editingEpisode.episode.hosted_audio);
     const audioUrl = editingEpisodeForm.audioUrl.trim();
     if (!hostedAudio && audioUrl && !isAllowedExternalAudioUrl(audioUrl)) {
@@ -809,6 +912,7 @@ function PodcastStudioScreen() {
       return;
     }
 
+    editRef.current = true;
     setSavingEdit(true);
     try {
       const payload: Partial<CreatePodcastEpisodePayload> = {
@@ -836,6 +940,7 @@ function PodcastStudioScreen() {
         delete payload.visibility;
       }
       await updatePodcastEpisode(editingEpisode.showId, editingEpisode.episode.id, payload);
+      if (!mountedRef.current) return;
 
       if (editingEpisodeCoverUri) {
         try {
@@ -855,14 +960,16 @@ function PodcastStudioScreen() {
       setEditingEpisode(null);
       await loadShows();
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('studio.save_failed'), description: describeApiError(error, t('studio.save_failed')), variant: 'danger' });
     } finally {
-      setSavingEdit(false);
+      editRef.current = false;
+      if (mountedRef.current) setSavingEdit(false);
     }
   }
 
   async function handleRetryImageUpload(): Promise<void> {
-    if (!pendingImageUpload) return;
+    if (!pendingImageUpload || retryingImageUpload) return;
     setRetryingImageUpload(true);
     try {
       if (pendingImageUpload.kind === 'show') {
@@ -870,6 +977,7 @@ function PodcastStudioScreen() {
       } else {
         await uploadPodcastEpisodeCover(pendingImageUpload.showId, pendingImageUpload.episodeId, pendingImageUpload.uri);
       }
+      if (!mountedRef.current) return;
       showToast({
         title: pendingImageUpload.kind === 'show' ? t('studio.show_updated') : t('studio.episode_updated'),
         variant: 'success',
@@ -877,12 +985,13 @@ function PodcastStudioScreen() {
       setPendingImageUpload(null);
       await loadShows();
     } catch {
+      if (!mountedRef.current) return;
       showToast({
         title: pendingImageUpload.kind === 'show' ? t('studio.artwork_upload_failed') : t('studio.cover_upload_failed'),
         variant: 'warning',
       });
     } finally {
-      setRetryingImageUpload(false);
+      if (mountedRef.current) setRetryingImageUpload(false);
     }
   }
 
@@ -1168,7 +1277,12 @@ function PodcastStudioScreen() {
                           <HeroButton.Label>{t('studio.edit_show')}</HeroButton.Label>
                         </HeroButton>
                         {show.status === 'draft' ? (
-                          <HeroButton variant="primary" onPress={() => void runShowAction(() => publishPodcastShow(show.id), 'studio.show_published')}>
+                          <HeroButton variant="primary" onPress={() => void runShowAction(
+                            `show:${show.id}:publish`,
+                            () => publishPodcastShow(show.id),
+                            'studio.show_published',
+                            latest => latest.some(item => item.id === show.id && item.status === 'published'),
+                          )}>
                             <HeroButton.Label>{t('studio.publish_show')}</HeroButton.Label>
                           </HeroButton>
                         ) : null}
@@ -1222,7 +1336,12 @@ function PodcastStudioScreen() {
                                   <HeroButton.Label>{t('studio.edit_episode')}</HeroButton.Label>
                                 </HeroButton>
                                 {episode.status === 'draft' ? (
-                                  <HeroButton variant="primary" onPress={() => void runShowAction(() => publishPodcastEpisode(show.id, episode.id), 'studio.episode_published')}>
+                                  <HeroButton variant="primary" onPress={() => void runShowAction(
+                                    `episode:${episode.id}:publish`,
+                                    () => publishPodcastEpisode(show.id, episode.id),
+                                    'studio.episode_published',
+                                    latest => latest.some(parent => parent.id === show.id && parent.episodes?.some(item => item.id === episode.id && item.status === 'published')),
+                                  )}>
                                     <HeroButton.Label>{t('studio.publish_episode')}</HeroButton.Label>
                                   </HeroButton>
                                 ) : null}

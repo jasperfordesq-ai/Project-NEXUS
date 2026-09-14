@@ -176,9 +176,21 @@ class GroupAnnouncementService
         $isPinned = (bool) ($data['is_pinned'] ?? false);
         $priority = max(0, (int) ($data['priority'] ?? 0));
         $expiresAt = !empty($data['expires_at']) ? date('Y-m-d H:i:s', strtotime($data['expires_at'])) : null;
+        $identity = GroupContentCreationReceiptService::identity($data['idempotency_key'] ?? null, [
+            'content' => $content,
+            'expires_at' => $expiresAt,
+            'group_id' => $groupId,
+            'is_pinned' => $isPinned,
+            'priority' => $priority,
+            'title' => $title,
+        ]);
+        if ($identity === false) {
+            $this->errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid')];
+            return null;
+        }
 
         try {
-            $id = DB::transaction(function () use (
+            return DB::transaction(function () use (
                 $groupId,
                 $userId,
                 $tenantId,
@@ -187,7 +199,26 @@ class GroupAnnouncementService
                 $isPinned,
                 $priority,
                 $expiresAt,
-            ): int {
+                $identity,
+            ): ?array {
+                if ($identity !== null) {
+                    GroupContentCreationReceiptService::lockActor((int) $tenantId, $userId);
+                    $receipt = GroupContentCreationReceiptService::find((int) $tenantId, $userId, 'announcement', $identity['key_hash']);
+                    if ($receipt !== null) {
+                        if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                            $this->errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                            return null;
+                        }
+                        $payload = GroupContentCreationReceiptService::payload($receipt);
+                        if ($payload === null) {
+                            $this->errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.generic_error')];
+                            return null;
+                        }
+                        $payload['_idempotent_replay'] = true;
+                        return $payload;
+                    }
+                }
+
                 GroupService::assertSafeguardingBroadcastAllowed(
                     $groupId,
                     $userId,
@@ -196,7 +227,7 @@ class GroupAnnouncementService
                     $title . ' ' . $content,
                 );
 
-                return DB::table('group_announcements')->insertGetId([
+                $id = DB::table('group_announcements')->insertGetId([
                     'group_id'   => $groupId,
                     'tenant_id'  => $tenantId,
                     'title'      => $title,
@@ -207,9 +238,21 @@ class GroupAnnouncementService
                     'created_at' => now(),
                     'expires_at' => $expiresAt,
                 ]);
-            });
 
-            return $this->getById($groupId, $id, $userId);
+                $result = $this->getById($groupId, $id, $userId);
+                if ($result !== null && $identity !== null) {
+                    GroupContentCreationReceiptService::store(
+                        (int) $tenantId,
+                        $userId,
+                        $groupId,
+                        'announcement',
+                        $identity,
+                        (int) $id,
+                        $result,
+                    );
+                }
+                return $result;
+            }, 3);
         } catch (SafeguardingPolicyException $e) {
             throw $e;
         } catch (\Throwable $e) {

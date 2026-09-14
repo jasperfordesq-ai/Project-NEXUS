@@ -29,6 +29,7 @@ import {
 } from '@/lib/api/federation';
 import {
   acceptConnection,
+  declineConnection,
   getConnectionStatus,
   removeConnection,
   sendConnectionRequest,
@@ -60,7 +61,8 @@ import type { Exchange } from '@/lib/api/exchanges';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
-import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
+import { reserveWalletOperation, completeWalletOperation, isUnresolvedWalletOperationError } from '@/lib/walletOperation';
+import WalletReconciliationNotice from '@/components/wallet/WalletReconciliationNotice';
 import { endorseSkill } from '@/lib/api/endorsements';
 import { sendAppreciation } from '@/lib/api/appreciations';
 import { blockUser } from '@/lib/api/settings';
@@ -185,28 +187,46 @@ function MemberProfileScreenInner() {
   // because offering it would send a duplicate request to someone already connected.
   const [connStatusFailed, setConnStatusFailed] = useState(false);
   const [connActionLoading, setConnActionLoading] = useState(false);
+  const connActionPendingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const [isBlocking, setIsBlocking] = useState(false);
   const [showFederationTransfer, setShowFederationTransfer] = useState(false);
 
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
+  function beginConnectionAction(): boolean {
+    if (connActionPendingRef.current) return false;
+    connActionPendingRef.current = true;
+    setConnActionLoading(true);
+    return true;
+  }
+
+  function finishConnectionAction(): void {
+    connActionPendingRef.current = false;
+    if (isMountedRef.current) setConnActionLoading(false);
+  }
+
   const loadConnectionStatus = useCallback(async () => {
     if (!safeMemberId || isOwnProfile) return;
-    setConnLoading(true);
+    if (isMountedRef.current) setConnLoading(true);
     try {
       if (isFederatedProfile && safeTenantId) {
         const res = await getFederationConnectionStatus(safeMemberId, safeTenantId);
+        if (!isMountedRef.current) return;
         setConnStatus(mapFederatedConnectionStatus(res.data));
         setConnId(res.data.connection_id);
       } else {
         const res = await getConnectionStatus(safeMemberId);
+        if (!isMountedRef.current) return;
         setConnStatus(res.data.status);
         setConnId(res.data.connection_id);
       }
       setConnStatusFailed(false);
     } catch {
       // Non-critical for the profile itself, but the connect button must not guess.
-      setConnStatusFailed(true);
+      if (isMountedRef.current) setConnStatusFailed(true);
     } finally {
-      setConnLoading(false);
+      if (isMountedRef.current) setConnLoading(false);
     }
   }, [safeMemberId, safeTenantId, isOwnProfile, isFederatedProfile]);
 
@@ -222,58 +242,88 @@ function MemberProfileScreenInner() {
   }, [member, isFederatedProfile, loadConnectionStatus]);
 
   async function handleConnect() {
+    if (!beginConnectionAction()) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setConnActionLoading(true);
     try {
       if (isFederatedProfile && safeTenantId) {
         const res = await sendFederationConnectionRequest(safeMemberId, safeTenantId);
-        setConnId(res.data.connection_id ?? null);
+        if (isMountedRef.current) setConnId(res.data.connection_id ?? null);
       } else {
         const res = await sendConnectionRequest(safeMemberId);
-        setConnId(res.data.connection_id);
+        if (isMountedRef.current) setConnId(res.data.connection_id);
       }
-      setConnStatus('pending_sent');
+      if (isMountedRef.current) setConnStatus('pending_sent');
     } catch (error) {
+      if (!isMountedRef.current) return;
+      if (!isFederatedProfile) {
+        const status = await getConnectionStatus(safeMemberId).catch(() => null);
+        if (!isMountedRef.current) return;
+        if (status?.data.status === 'pending_sent' || status?.data.status === 'connected') {
+          setConnStatus(status.data.status);
+          setConnId(status.data.connection_id);
+          return;
+        }
+      }
       showToast({ title: t('profile.connectionError'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
-      setConnActionLoading(false);
+      finishConnectionAction();
     }
   }
 
   async function handleAccept() {
-    if (!connId) return;
+    if (!connId || !beginConnectionAction()) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setConnActionLoading(true);
     try {
       if (isFederatedProfile) {
         await acceptFederationConnection(connId);
       } else {
         await acceptConnection(connId);
       }
-      setConnStatus('connected');
+      if (isMountedRef.current) setConnStatus('connected');
     } catch (error) {
+      if (!isMountedRef.current) return;
+      if (!isFederatedProfile) {
+        const status = await getConnectionStatus(safeMemberId).catch(() => null);
+        if (!isMountedRef.current) return;
+        if (status?.data.status === 'connected') {
+          setConnStatus('connected');
+          setConnId(status.data.connection_id);
+          return;
+        }
+      }
       showToast({ title: t('profile.connectionError'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
-      setConnActionLoading(false);
+      finishConnectionAction();
     }
   }
 
   async function handleDecline() {
-    if (!connId) return;
+    if (!connId || !beginConnectionAction()) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setConnActionLoading(true);
     try {
       if (isFederatedProfile) {
         await rejectFederationConnection(connId);
       } else {
-        await removeConnection(connId);
+        await declineConnection(connId);
       }
-      setConnStatus('none');
-      setConnId(null);
+      if (isMountedRef.current) {
+        setConnStatus('none');
+        setConnId(null);
+      }
     } catch (error) {
+      if (!isMountedRef.current) return;
+      if (!isFederatedProfile) {
+        const status = await getConnectionStatus(safeMemberId).catch(() => null);
+        if (!isMountedRef.current) return;
+        if (status?.data.status === 'none') {
+          setConnStatus('none');
+          setConnId(null);
+          return;
+        }
+      }
       showToast({ title: t('profile.connectionError'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
-      setConnActionLoading(false);
+      finishConnectionAction();
     }
   }
 
@@ -286,20 +336,82 @@ function MemberProfileScreenInner() {
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
-        if (!connId) return;
-        setConnActionLoading(true);
+        if (!connId || !beginConnectionAction()) return;
         try {
           if (isFederatedProfile) {
-            await removeFederationConnection(connId);
+            await removeFederationConnection(connId, 'accepted');
           } else {
-            await removeConnection(connId);
+            await removeConnection(connId, 'accepted');
           }
-          setConnStatus('none');
-          setConnId(null);
+          if (isMountedRef.current) {
+            setConnStatus('none');
+            setConnId(null);
+          }
         } catch (error) {
+          if (!isMountedRef.current) return;
+          if (!isFederatedProfile) {
+            const status = await getConnectionStatus(safeMemberId).catch(() => null);
+            if (!isMountedRef.current) return;
+            if (status?.data.status === 'none') {
+              setConnStatus('none');
+              setConnId(null);
+              return;
+            }
+          }
           showToast({ title: t('profile.connectionError'), description: describeApiError(error, '') || undefined, variant: 'danger' });
         } finally {
-          setConnActionLoading(false);
+          finishConnectionAction();
+        }
+      },
+    });
+  }
+
+  function handleCancelRequest() {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    confirm({
+      title: t('connections.cancelConfirmTitle'),
+      message: t('connections.cancelConfirmMessage'),
+      confirmLabel: t('connections.cancel'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: async () => {
+        if (!connId || !beginConnectionAction()) return;
+        try {
+          if (isFederatedProfile) {
+            await removeFederationConnection(connId, 'pending');
+          } else {
+            await removeConnection(connId, 'pending');
+          }
+          if (isMountedRef.current) {
+            setConnStatus('none');
+            setConnId(null);
+          }
+        } catch (error) {
+          if (!isMountedRef.current) return;
+
+          const authoritative = isFederatedProfile && safeTenantId
+            ? await getFederationConnectionStatus(safeMemberId, safeTenantId).then((response) => ({
+                status: mapFederatedConnectionStatus(response.data),
+                connectionId: response.data.connection_id,
+              })).catch(() => null)
+            : await getConnectionStatus(safeMemberId).then((response) => ({
+                status: response.data.status,
+                connectionId: response.data.connection_id,
+              })).catch(() => null);
+
+          if (!isMountedRef.current) return;
+          if (authoritative?.status === 'none') {
+            setConnStatus('none');
+            setConnId(null);
+            return;
+          }
+          if (authoritative && authoritative.status !== 'pending_sent') {
+            setConnStatus(authoritative.status);
+            setConnId(authoritative.connectionId);
+          }
+          showToast({ title: t('profile.connectionError'), description: describeApiError(error, '') || undefined, variant: 'danger' });
+        } finally {
+          finishConnectionAction();
         }
       },
     });
@@ -646,6 +758,7 @@ function MemberProfileScreenInner() {
               onConnect={handleConnect}
               onAccept={handleAccept}
               onDecline={handleDecline}
+              onCancelRequest={handleCancelRequest}
               onDisconnect={handleDisconnect}
             />
           ) : null}
@@ -1045,6 +1158,7 @@ function FederatedTransferCard({
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [operationUnresolved, setOperationUnresolved] = useState(false);
   const submittingRef = useRef(false);
   const tenantId = member.timebank?.id ?? member.tenant_id;
 
@@ -1090,6 +1204,7 @@ function FederatedTransferCard({
     if (submittingRef.current) return;
     submittingRef.current = true;
     setIsSubmitting(true);
+    setOperationUnresolved(false);
     try {
       const transferDescription = description.trim();
       const operation = await reserveWalletOperation('federation', JSON.stringify([Number(member.id), Number(receiverTenantId), parsedAmount, transferDescription]));
@@ -1107,6 +1222,7 @@ function FederatedTransferCard({
       setDescription('');
       onComplete();
     } catch (err) {
+      setOperationUnresolved(isUnresolvedWalletOperationError(err));
       showToast({ title: t('profile.transferFailedTitle'), description: describeApiError(err, t('profile.transferFailedMessage')), variant: 'danger' });
     } finally {
       submittingRef.current = false;
@@ -1138,7 +1254,7 @@ function FederatedTransferCard({
             placeholder={t('profile.amountPlaceholder')}
             placeholderTextColor={theme.textMuted}
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={(value) => { setAmount(value); setOperationUnresolved(false); }}
             editable={!isSubmitting}
             keyboardType="number-pad"
             accessibilityLabel={t('profile.amountHours')}
@@ -1153,14 +1269,18 @@ function FederatedTransferCard({
             placeholder={t('profile.transferDescriptionPlaceholder')}
             placeholderTextColor={theme.textMuted}
             value={description}
-            onChangeText={setDescription}
+            onChangeText={(value) => { setDescription(value); setOperationUnresolved(false); }}
             editable={!isSubmitting}
             multiline
             accessibilityLabel={t('profile.transferDescription')}
           />
         </View>
 
-        <HeroButton variant="primary" isDisabled={isSubmitting} onPress={submit} testID="federation-send-credits">
+        {operationUnresolved ? (
+          <WalletReconciliationNotice onReview={() => router.push('/(modals)/wallet')} />
+        ) : null}
+
+        <HeroButton variant="primary" isDisabled={isSubmitting || operationUnresolved} onPress={submit} testID="federation-send-credits">
           {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name="send-outline" size={16} />}
           <HeroButton.Label>{t('profile.sendCredits')}</HeroButton.Label>
         </HeroButton>
@@ -1310,6 +1430,7 @@ function ConnectionActions({
   onConnect,
   onAccept,
   onDecline,
+  onCancelRequest,
   onDisconnect,
 }: {
   t: TFunction;
@@ -1320,6 +1441,7 @@ function ConnectionActions({
   onConnect: () => Promise<void>;
   onAccept: () => Promise<void>;
   onDecline: () => Promise<void>;
+  onCancelRequest: () => void;
   onDisconnect: () => void;
 }) {
   if (status === 'none') {
@@ -1338,10 +1460,15 @@ function ConnectionActions({
 
   if (status === 'pending_sent') {
     return (
-      <Surface variant="secondary" className="mt-3 flex-row items-center gap-2 rounded-panel-inner px-4 py-3">
-        <Ionicons name="time-outline" size={18} color={theme.textMuted} />
-        <Text className="text-sm font-medium" style={{ color: theme.textSecondary }}>{t('profile.pendingSent')}</Text>
-      </Surface>
+      <HeroCard variant="secondary" className="mt-3">
+        <HeroCard.Body className="gap-3 px-4 py-4">
+          <SectionTitle icon="time-outline" title={t('profile.pendingSent')} primary={primary} theme={theme} />
+          <HeroButton variant="secondary" isDisabled={isLoading} onPress={onCancelRequest}>
+            <Ionicons name="close-circle-outline" size={18} color={theme.error} />
+            <HeroButton.Label>{t('connections.cancel')}</HeroButton.Label>
+          </HeroButton>
+        </HeroCard.Body>
+      </HeroCard>
     );
   }
 
@@ -1369,7 +1496,7 @@ function ConnectionActions({
         <Ionicons name="checkmark-circle" size={18} color={theme.success} />
         <Text className="text-sm font-semibold" style={{ color: theme.success }}>{t('profile.connected')}</Text>
       </View>
-      <HeroButton size="sm" variant="ghost" onPress={onDisconnect}>
+      <HeroButton size="sm" variant="ghost" isDisabled={isLoading} onPress={onDisconnect}>
         <HeroButton.Label>{t('profile.disconnect')}</HeroButton.Label>
       </HeroButton>
     </Surface>
@@ -1937,4 +2064,11 @@ function formatDate(iso: string): string {
   }
 }
 
-export default withRouteGate(MemberProfileScreen, 'member-profile');
+function MemberProfileRoute() {
+  const params = useLocalSearchParams<{ id?: string; tenant_id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <MemberProfileScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${params.tenant_id ?? 'local'}:${params.id ?? 'self'}`} />;
+}
+
+export default withRouteGate(MemberProfileRoute, 'member-profile');

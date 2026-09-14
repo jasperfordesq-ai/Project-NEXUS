@@ -1040,6 +1040,68 @@ class ListingService
     // -----------------------------------------------------------------
 
     /**
+     * Create once for a caller-owned operation key and return the original listing
+     * to any matching retry. A missing key preserves older client behaviour.
+     *
+     * @return array{listing: Listing|null, created: bool, conflict: bool}
+     */
+    public static function createWithReceipt(int $userId, array $data, ?string $idempotencyKey): array
+    {
+        $idempotencyKey = trim((string) $idempotencyKey);
+        if ($idempotencyKey === '') {
+            return ['listing' => self::create($userId, $data), 'created' => true, 'conflict' => false];
+        }
+
+        ksort($data);
+        $keyHash = hash('sha256', $idempotencyKey);
+        $requestHash = hash('sha256', json_encode(
+            $data,
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+        ));
+        $tenantId = TenantContext::getId();
+
+        return DB::transaction(function () use ($data, $keyHash, $requestHash, $tenantId, $userId): array {
+            // This durable row lock serializes independent devices/processes for one
+            // member before either can miss and insert the same receipt.
+            DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $userId)
+                ->lockForUpdate()
+                ->first();
+
+            $receipt = DB::table('listing_creation_receipts')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('idempotency_key_hash', $keyHash)
+                ->first();
+
+            if ($receipt !== null) {
+                if (!hash_equals((string) $receipt->request_hash, $requestHash)) {
+                    return ['listing' => null, 'created' => false, 'conflict' => true];
+                }
+
+                return [
+                    'listing' => Listing::query()->find((int) $receipt->listing_id),
+                    'created' => false,
+                    'conflict' => false,
+                ];
+            }
+
+            $listing = self::create($userId, $data);
+            DB::table('listing_creation_receipts')->insert([
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'idempotency_key_hash' => $keyHash,
+                'request_hash' => $requestHash,
+                'listing_id' => $listing->id,
+                'created_at' => now(),
+            ]);
+
+            return ['listing' => $listing, 'created' => true, 'conflict' => false];
+        }, 3);
+    }
+
+    /**
      * Create a new listing.
      *
      * @param int   $userId Owner of the listing.

@@ -246,6 +246,14 @@ describe('secure storage on a native platform', () => {
     expect(mockPublicWrite).not.toHaveBeenCalled();
   });
 
+  it('propagates required JSON persistence failures to session installers', async () => {
+    mockSetItemAsync.mockRejectedValueOnce(new Error('Keychain unavailable'));
+
+    await expect(storage.setJson('nexus_user_data', { id: 7 }, { required: true }))
+      .rejects.toThrow('Keychain unavailable');
+    await expect(storage.get('nexus_user_data')).resolves.toBeNull();
+  });
+
   it('stays silent when a delete fails, because an absent key is not an error', async () => {
     mockDeleteItemAsync.mockRejectedValue(new Error('not found'));
 

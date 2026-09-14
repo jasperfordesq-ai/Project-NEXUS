@@ -4,10 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { fireEvent, render, waitFor, screen } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockCreateOpportunity = jest.fn();
+const mockReserveCreation = jest.fn();
+const mockCompleteCreation = jest.fn();
 const mockGetOpportunity = jest.fn();
 const mockUpdateOpportunity = jest.fn();
 const mockReplace = jest.fn();
@@ -125,6 +128,11 @@ jest.mock('@/lib/api/volunteering', () => ({
   updateOpportunity: (...args: unknown[]) => mockUpdateOpportunity(...args),
 }));
 
+jest.mock('@/lib/volunteerOpportunityCreationOperation', () => ({
+  reserveVolunteerOpportunityCreationOperation: (...args: unknown[]) => mockReserveCreation(...args),
+  completeVolunteerOpportunityCreationOperation: (...args: unknown[]) => mockCompleteCreation(...args),
+}));
+
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn().mockResolvedValue(undefined),
   impactAsync: jest.fn().mockResolvedValue(undefined),
@@ -200,6 +208,8 @@ describe('NewVolunteeringRoute', () => {
       error: null,
     });
     mockCreateOpportunity.mockReset().mockResolvedValue({ data: { id: 19 } });
+    mockReserveCreation.mockReset().mockResolvedValue({ storageKey: 'vol-op', key: 'vol-op-key', createdAt: 1 });
+    mockCompleteCreation.mockReset().mockResolvedValue(undefined);
     mockGetOpportunity.mockReset();
     mockUpdateOpportunity.mockReset().mockResolvedValue({ data: { id: 19 } });
     mockReplace.mockClear();
@@ -238,8 +248,18 @@ describe('NewVolunteeringRoute', () => {
       expect(mockCreateOpportunity).toHaveBeenCalledWith(expect.objectContaining({
         organization_id: 7,
         title: 'Food bank help',
-      }));
+      }), 'vol-op-key');
     });
+    expect(mockReserveCreation).toHaveBeenCalledWith(expect.stringContaining('"organization_id":7'));
+    expect(mockCompleteCreation).toHaveBeenCalledWith(expect.objectContaining({ key: 'vol-op-key' }));
+  });
+
+  it('stacks summary and date fields at large text', () => {
+    jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const { getByTestId } = render(<NewVolunteeringRoute />);
+
+    expect(getByTestId('new-volunteering-summary').props.className).not.toContain('flex-row');
+    expect(getByTestId('new-volunteering-dates').props.className).not.toContain('flex-row');
   });
 
   it('only offers approved owner or admin organisations for new opportunities', () => {
@@ -448,5 +468,27 @@ describe('NewVolunteeringRoute', () => {
     fireEvent.changeText(getByPlaceholderText('Describe the role, support, and expected impact.'), 'Help pack food parcels for local families every week.');
     expect(getByText('Check before posting.')).toBeTruthy();
     expect(getByTestId('footer-submit').props.accessibilityState.disabled).toBe(false);
+  });
+
+  it('serializes opportunity creation and reuses its durable key after response loss', async () => {
+    let rejectRequest!: (reason: unknown) => void;
+    mockCreateOpportunity.mockReturnValueOnce(new Promise((_resolve, reject) => { rejectRequest = reject; }));
+    const { getByPlaceholderText, getByText } = render(<NewVolunteeringRoute />);
+    fireEvent.changeText(getByPlaceholderText('What help do you need?'), 'Food bank helper');
+    fireEvent.changeText(getByPlaceholderText('Describe the role, support, and expected impact.'), 'Help pack and deliver food parcels for local families.');
+
+    fireEvent.press(getByText('Create opportunity'));
+    fireEvent.press(getByText('Create opportunity'));
+    await waitFor(() => expect(mockCreateOpportunity).toHaveBeenCalledTimes(1));
+
+    rejectRequest(new Error('response lost'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Opportunity not created' })));
+    expect(getByPlaceholderText('What help do you need?').props.value).toBe('Food bank helper');
+
+    mockCreateOpportunity.mockResolvedValueOnce({ data: { id: 19 } });
+    fireEvent.press(getByText('Create opportunity'));
+    await waitFor(() => expect(mockCreateOpportunity).toHaveBeenCalledTimes(2));
+    expect(mockCreateOpportunity.mock.calls[0][1]).toBe('vol-op-key');
+    expect(mockCreateOpportunity.mock.calls[1][1]).toBe('vol-op-key');
   });
 });

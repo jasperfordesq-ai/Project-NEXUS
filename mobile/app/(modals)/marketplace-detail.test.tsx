@@ -42,6 +42,7 @@ jest.mock('react-i18next', () => ({
         'delivery_method.pickup': 'Local pickup',
         'delivery_method.community_delivery': 'Community delivery',
         'detail.save': 'Save',
+        'detail.saved': 'Saved',
         'detail.addToCollection': 'Add to collection',
         'detail.makeOffer': 'Make offer',
         'detail.buyNow': 'Buy now',
@@ -49,13 +50,21 @@ jest.mock('react-i18next', () => ({
         'detail.orderCreatedHint': `Order ${String(opts?.order ?? '')} was created. Payment and delivery details can be managed from orders.`,
         'detail.orderFailed': 'Order could not be created.',
         'detail.reportListing': 'Report listing',
+        'offers.makeTitle': 'Make an offer',
+        'offers.amount': 'Offer amount',
+        'offers.amountPlaceholder': '0.00',
+        'offers.message': 'Message',
+        'offers.messagePlaceholder': 'Optional message',
+        'offers.submit': 'Send offer',
+        'offers.sent': 'Offer sent',
+        'offers.sentHint': 'The seller can now review your offer.',
         'detail.moreFromSeller': `More from ${String(opts?.name ?? 'this seller')}`,
         'communityDelivery.eyebrow': 'Community-powered delivery',
         'communityDelivery.title': 'Community delivery',
         'communityDelivery.description': 'A trusted member can offer to deliver this order for time credits after checkout.',
         'communityDelivery.step1': 'The buyer creates an order for this community-delivery listing.',
         'communityDelivery.step2': 'Eligible community members can offer delivery time and requested credits.',
-        'communityDelivery.step3': 'The buyer or seller accepts an offer, then confirms delivery when the item arrives.',
+        'communityDelivery.step3': 'The buyer accepts an offer, then confirms delivery when the item arrives.',
         'communityDelivery.orderManagedHint': 'Delivery offers are managed from Marketplace orders after checkout.',
         'checkout.title': 'Checkout',
         'checkout.paymentMethodLabel': 'Choose how to pay',
@@ -169,6 +178,7 @@ jest.mock('@/lib/api/marketplace', () => ({
   getMarketplaceSellerListings: jest.fn().mockResolvedValue({ data: [] }),
   getMarketplaceCollections: jest.fn().mockResolvedValue({ data: [] }),
   getMarketplaceListing: jest.fn(),
+  getMarketplaceOffers: jest.fn(),
   makeMarketplaceOffer: jest.fn(),
   reportMarketplaceListing: jest.fn(),
   saveMarketplaceListing: jest.fn(),
@@ -218,9 +228,12 @@ import {
   createMarketplaceOrder,
   createMarketplacePaymentIntent,
   getMarketplaceListing,
+  getMarketplaceOffers,
   getMarketplaceListingPickupSlots,
   getMarketplaceSellerShippingOptions,
   getMarketplaceSellerListings,
+  saveMarketplaceListing,
+  makeMarketplaceOffer,
 } from '@/lib/api/marketplace';
 import { presentMarketplacePayment } from '@/lib/payments/marketplacePayment';
 
@@ -281,6 +294,75 @@ describe('MarketplaceDetailRoute', () => {
       expect(getByText('Material')).toBeTruthy();
       expect(getByText('Oak')).toBeTruthy();
     });
+  });
+
+  it('serializes rapid save presses before rendered state catches up', async () => {
+    let finish!: () => void;
+    (saveMarketplaceListing as jest.Mock).mockImplementationOnce(() => new Promise(resolve => { finish = () => resolve(undefined); }));
+    const ui = render(<MarketplaceDetailRoute />);
+    const save = await ui.findByText('Save');
+
+    fireEvent.press(save);
+    fireEvent.press(save);
+    expect(saveMarketplaceListing).toHaveBeenCalledTimes(1);
+    finish();
+  });
+
+  it('accepts authoritative saved state after the mutation response is lost', async () => {
+    (saveMarketplaceListing as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    (getMarketplaceListing as jest.Mock)
+      .mockResolvedValueOnce({ data: mockListing })
+      .mockResolvedValueOnce({ data: { ...mockListing, is_saved: true, saves_count: 1 } });
+    const ui = render(<MarketplaceDetailRoute />);
+
+    fireEvent.press(await ui.findByText('Save'));
+    expect(await ui.findByText('Saved')).toBeTruthy();
+    expect(getMarketplaceListing).toHaveBeenCalledTimes(2);
+    expect(showToast).not.toHaveBeenCalled();
+  });
+
+  it('serializes rapid offer submissions before rendered state catches up', async () => {
+    let finish!: () => void;
+    jest.mocked(makeMarketplaceOffer).mockImplementationOnce(() => new Promise(resolve => {
+      finish = () => resolve({ data: { id: 70 } } as never);
+    }));
+    const ui = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await ui.findByText('Make offer'));
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '20');
+    const submit = ui.getByText('Send offer');
+
+    fireEvent.press(submit);
+    fireEvent.press(submit);
+    expect(makeMarketplaceOffer).toHaveBeenCalledTimes(1);
+    finish();
+  });
+
+  it('accepts an authoritative pending offer after the create response is lost', async () => {
+    jest.mocked(makeMarketplaceOffer).mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    jest.mocked(getMarketplaceOffers).mockResolvedValueOnce({
+      data: [{
+        id: 71,
+        amount: 20,
+        currency: 'EUR',
+        message: 'Can collect today',
+        status: 'pending',
+        created_at: '2026-05-15T10:30:00Z',
+        listing: { id: 9, title: 'Oak dining table', status: 'active', price: 25, price_currency: 'EUR', image: null },
+      }],
+      meta: { cursor: null, has_more: false },
+    } as never);
+    const ui = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await ui.findByText('Make offer'));
+    fireEvent.changeText(ui.getByPlaceholderText('0.00'), '20');
+    fireEvent.changeText(ui.getByPlaceholderText('Optional message'), 'Can collect today');
+    fireEvent.press(ui.getByText('Send offer'));
+
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith({
+      title: 'Offer sent',
+      description: 'The seller can now review your offer.',
+      variant: 'success',
+    }));
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
   });
 
   it('loads more listings from the same seller and excludes the current listing', async () => {

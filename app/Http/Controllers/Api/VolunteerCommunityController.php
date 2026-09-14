@@ -65,6 +65,7 @@ class VolunteerCommunityController extends BaseApiController
             if ($code === 'FORBIDDEN') return 403;
             if ($code === 'ALREADY_EXISTS') return 409;
             if ($code === 'DECISION_CONFLICT') return 409;
+            if ($code === 'IDEMPOTENCY_CONFLICT') return 409;
             if ($code === 'FEATURE_DISABLED') return 403;
         }
         return 400;
@@ -177,11 +178,18 @@ class VolunteerCommunityController extends BaseApiController
 
         // `to_user_id` is optional: a member asks for a SHIFT, and the service resolves who
         // holds it without ever telling them. See ShiftSwapService::requestSwap().
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = request()->input('idempotency_key');
+        if ($headerKey !== null && $bodyKey !== null && ! hash_equals(trim((string) $headerKey), trim((string) $bodyKey))) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'idempotency_key', 422);
+        }
+
         $data = [
             'from_shift_id' => $this->inputInt('from_shift_id'),
             'to_shift_id'   => $this->inputInt('to_shift_id'),
             'to_user_id'    => $this->inputInt('to_user_id'),
             'message'       => trim($this->input('message', '')),
+            'idempotency_key' => $headerKey ?? $bodyKey,
         ];
 
         try {

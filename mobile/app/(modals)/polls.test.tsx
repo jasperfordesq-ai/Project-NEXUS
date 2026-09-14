@@ -5,12 +5,23 @@
 
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
 
 let mockPollSearchParams: Record<string, string | string[]> = {};
+const mockPollDraftGuard = jest.fn();
+const mockPollConfirm = jest.fn((opts: { onConfirm: () => void | Promise<void> }) => {
+  void opts.onConfirm();
+});
+const mockLoadCreationDraft = jest.fn();
+const mockSaveCreationDraft = jest.fn();
+const mockClearCreationDraft = jest.fn();
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
-  useFocusEffect: jest.fn(),
+  useFocusEffect: (cb: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => cb(), [cb]);
+  },
   router: { back: jest.fn(), canGoBack: jest.fn(() => false), push: jest.fn() },
   useLocalSearchParams: () => mockPollSearchParams,
 }));
@@ -47,10 +58,24 @@ jest.mock('react-i18next', () => ({
         'pollsScreen.createdTitle': 'Poll created',
         'pollsScreen.createdMessage': 'Your poll is now open.',
         'pollsScreen.createError': 'Could not create poll.',
+        'pollsScreen.typeLabel': 'Poll type',
+        'pollsScreen.typeStandard': 'Pick one',
+        'pollsScreen.typeRanked': 'Rank choices',
+        'pollsScreen.anonymous': 'Anonymous responses',
         'common:buttons.retry': 'Retry',
         'common:cancel': 'Cancel',
         'common:errors.alertTitle': 'Something went wrong',
         'common:endOfList': 'End of list',
+        'common:buttons.cancel': 'Cancel',
+        'common:unsavedChanges.title': 'Leave without saving?',
+        'common:unsavedChanges.message': 'Your changes have not been saved.',
+        'common:unsavedChanges.discard': 'Discard',
+        'common:unsavedSaving.title': 'Still saving',
+        'common:unsavedSaving.message': 'Your changes are still being saved.',
+        'common:unsavedSaving.leave': 'Leave anyway',
+        'common:unsavedSaving.wait': 'Keep waiting',
+        'common:draftStorage.title': 'Draft not protected',
+        'common:draftStorage.message': 'This draft could not be saved securely.',
       };
       return map[key] ?? key;
     },
@@ -62,8 +87,19 @@ jest.mock('@expo/vector-icons', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
+}));
+
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 7 } }) }));
+jest.mock('@/lib/pollCreationOperation', () => ({
+  reservePollCreationOperation: jest.fn().mockResolvedValue({ storageKey: 'poll-operation', key: 'poll-key', createdAt: 1 }),
+  completePollCreationOperation: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock('@/lib/creationDraftStore', () => ({
+  loadCreationDraft: (...args: unknown[]) => mockLoadCreationDraft(...args),
+  saveCreationDraft: (...args: unknown[]) => mockSaveCreationDraft(...args),
+  clearCreationDraft: (...args: unknown[]) => mockClearCreationDraft(...args),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -117,6 +153,12 @@ jest.mock('@/components/ui/AppToast', () => {
 });
 
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({ confirm: mockPollConfirm, confirmDialog: null }),
+}));
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
+  useUnsavedChangesGuard: (options: unknown) => mockPollDraftGuard(options),
+}));
 
 jest.mock('@/lib/api/feed', () => ({
   getFeed: jest.fn(),
@@ -129,6 +171,7 @@ jest.mock('@/lib/api/polls', () => ({
 
 import PollsScreen from './polls';
 import { createPoll } from '@/lib/api/polls';
+import { completePollCreationOperation } from '@/lib/pollCreationOperation';
 import { useAppToast } from '@/components/ui/AppToast';
 
 const mockShowToast = useAppToast().show as jest.Mock;
@@ -150,6 +193,19 @@ describe('PollsScreen', () => {
     mockUsePaginatedApi.mockReturnValue(defaultState);
     mockShowToast.mockClear();
     (createPoll as jest.Mock).mockClear();
+    jest.mocked(completePollCreationOperation).mockClear();
+    mockPollDraftGuard.mockClear();
+    mockPollConfirm.mockClear();
+    mockPollConfirm.mockImplementation((opts: { onConfirm: () => void | Promise<void> }) => {
+      void opts.onConfirm();
+    });
+    mockLoadCreationDraft.mockResolvedValue(null);
+    mockSaveCreationDraft.mockResolvedValue(true);
+    mockClearCreationDraft.mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('keeps the native poll list frame full height with an explicit background', () => {
@@ -211,6 +267,37 @@ describe('PollsScreen', () => {
     expect(getByText('4 votes')).toBeTruthy();
   });
 
+  it('stacks and unclips the hero and poll identity at large text', () => {
+    jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
+      width: 360,
+      height: 800,
+      scale: 3,
+      fontScale: 2,
+    });
+    mockUsePaginatedApi.mockReturnValue({
+      ...defaultState,
+      items: [{
+        id: 42,
+        type: 'poll',
+        title: 'Which repair should the community prioritise next?',
+        poll_data: {
+          id: 42,
+          question: 'Which repair should the community prioritise next?',
+          total_votes: 3,
+          user_vote_option_id: null,
+          is_active: false,
+          options: [{ id: 1, text: 'Community transport', vote_count: 2, percentage: 67 }],
+        },
+      }],
+    });
+
+    const { getByTestId } = render(<PollsScreen />);
+
+    expect(getByTestId('polls-hero-layout').props.className).not.toContain('flex-row');
+    expect(getByTestId('poll-feed-header-42').props.className).not.toContain('flex-row');
+    expect(getByTestId('poll-feed-title-42')).toHaveProp('numberOfLines', 0);
+  });
+
   it('creates a standard poll from the native create form', async () => {
     const refresh = jest.fn();
     mockUsePaginatedApi.mockReturnValue({ ...defaultState, refresh });
@@ -223,13 +310,13 @@ describe('PollsScreen', () => {
     fireEvent.changeText(getByPlaceholderText('Option 2'), 'Sandwiches');
     fireEvent.press(getByText('Publish poll'));
 
-    expect(createPoll).toHaveBeenCalledWith({
+    await waitFor(() => expect(createPoll).toHaveBeenCalledWith({
       question: 'Which lunch should we host?',
       description: undefined,
       options: ['Soup', 'Sandwiches'],
       poll_type: 'standard',
       is_anonymous: false,
-    });
+    }, 'poll-key'));
     await Promise.resolve();
     expect(mockShowToast).toHaveBeenCalledWith({
       title: 'Poll created',
@@ -237,6 +324,23 @@ describe('PollsScreen', () => {
       variant: 'success',
     });
     expect(refresh).toHaveBeenCalled();
+  });
+
+  it('creates ranked anonymous polls instead of silently forcing standard named voting', async () => {
+    const { getByPlaceholderText, getByText } = render(<PollsScreen />);
+    fireEvent.press(getByText('Create poll'));
+    fireEvent.press(getByText('Rank choices'));
+    fireEvent.press(getByText('Anonymous responses'));
+    fireEvent.changeText(getByPlaceholderText('Ask a question'), 'Rank the workshop topics');
+    fireEvent.changeText(getByPlaceholderText('Option 1'), 'Repairs');
+    fireEvent.changeText(getByPlaceholderText('Option 2'), 'Gardening');
+    fireEvent.press(getByText('Publish poll'));
+
+    await waitFor(() => expect(createPoll).toHaveBeenCalledWith(expect.objectContaining({
+      question: 'Rank the workshop topics',
+      poll_type: 'ranked',
+      is_anonymous: true,
+    }), 'poll-key'));
   });
 
   it('serializes rapid publish taps before the creating state renders', async () => {
@@ -253,7 +357,7 @@ describe('PollsScreen', () => {
     fireEvent.press(publish);
     fireEvent.press(publish);
 
-    expect(createPoll).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(createPoll).toHaveBeenCalledTimes(1));
     await act(async () => {
       resolveCreate({ data: { id: 99 } });
     });
@@ -267,6 +371,87 @@ describe('PollsScreen', () => {
 
     expect(getByText('Create a poll')).toBeTruthy();
     expect(getByPlaceholderText('Ask a question')).toBeTruthy();
+  });
+
+  it('protects a poll draft on route leave and keeps it until discard is confirmed', async () => {
+    let pendingConfirmation: { onConfirm: () => void | Promise<void> } | undefined;
+    const appStateHandlers: ((state: string) => void)[] = [];
+    jest.spyOn(ReactNative.AppState, 'addEventListener').mockImplementation((_, handler) => {
+      appStateHandlers.push(handler as (state: string) => void);
+      return { remove: jest.fn() };
+    });
+    mockPollConfirm.mockImplementation((options) => { pendingConfirmation = options; });
+    const { getByPlaceholderText, getByText, queryByText } = render(<PollsScreen />);
+
+    fireEvent.press(getByText('Create poll'));
+    fireEvent.changeText(getByPlaceholderText('Ask a question'), 'Where should we meet?');
+
+    expect(mockPollDraftGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true, isSaving: false }));
+    fireEvent.press(getByText('Cancel'));
+    expect(mockPollConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Leave without saving?',
+      confirmLabel: 'Discard',
+      variant: 'danger',
+    }));
+    expect(getByPlaceholderText('Ask a question').props.value).toBe('Where should we meet?');
+
+    await act(async () => {
+      await pendingConfirmation?.onConfirm();
+    });
+    await waitFor(() => expect(queryByText('Create a poll')).toBeNull());
+    mockSaveCreationDraft.mockClear();
+    act(() => { appStateHandlers.forEach((handler) => handler('background')); });
+    expect(mockSaveCreationDraft).not.toHaveBeenCalled();
+    fireEvent.press(getByText('Create poll'));
+    expect(getByPlaceholderText('Ask a question').props.value).toBe('');
+    expect(mockClearCreationDraft).toHaveBeenCalledWith({ kind: 'poll', tenantId: 2, userId: 7 });
+  });
+
+  it('keeps a poll composer and shows a persistent warning when secure discard fails', async () => {
+    mockClearCreationDraft.mockResolvedValue(false);
+    const { getByPlaceholderText, getByText, getByTestId } = render(<PollsScreen />);
+
+    fireEvent.press(getByText('Create poll'));
+    fireEvent.changeText(getByPlaceholderText('Ask a question'), 'Do not resurrect this poll');
+    fireEvent.press(getByText('Cancel'));
+
+    await waitFor(() => expect(mockClearCreationDraft).toHaveBeenCalled());
+    expect(getByPlaceholderText('Ask a question').props.value).toBe('Do not resurrect this poll');
+    expect(getByTestId('poll-draft-storage-warning')).toBeTruthy();
+  });
+
+  it('retains the replay identity and form when an accepted poll cannot clear its local draft', async () => {
+    mockClearCreationDraft.mockResolvedValue(false);
+    const { getByPlaceholderText, getByText, getByTestId } = render(<PollsScreen />);
+
+    fireEvent.press(getByText('Create poll'));
+    fireEvent.changeText(getByPlaceholderText('Ask a question'), 'Accepted poll with failed cleanup');
+    fireEvent.changeText(getByPlaceholderText('Option 1'), 'First');
+    fireEvent.changeText(getByPlaceholderText('Option 2'), 'Second');
+    fireEvent.press(getByText('Publish poll'));
+
+    await waitFor(() => expect(createPoll).toHaveBeenCalled());
+    expect(completePollCreationOperation).not.toHaveBeenCalled();
+    expect(getByPlaceholderText('Ask a question').props.value).toBe('Accepted poll with failed cleanup');
+    expect(getByTestId('poll-draft-storage-warning')).toBeTruthy();
+  });
+
+  it('restores the account-scoped poll draft and opens its composer after a restart', async () => {
+    mockLoadCreationDraft.mockResolvedValueOnce({
+      question: 'Which repair should happen next?',
+      description: 'Keep the background and choices after process death.',
+      options: ['Community hall roof', 'Accessible minibus'],
+      pollType: 'ranked',
+      isAnonymous: true,
+    });
+
+    const { findByPlaceholderText } = render(<PollsScreen />);
+
+    expect((await findByPlaceholderText('Ask a question')).props.value).toBe('Which repair should happen next?');
+    expect((await findByPlaceholderText('Add context')).props.value).toBe('Keep the background and choices after process death.');
+    expect((await findByPlaceholderText('Option 1')).props.value).toBe('Community hall roof');
+    expect((await findByPlaceholderText('Option 2')).props.value).toBe('Accessible minibus');
+    expect(mockLoadCreationDraft).toHaveBeenCalledWith({ kind: 'poll', tenantId: 2, userId: 7 });
   });
 
   /*

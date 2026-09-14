@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -45,7 +45,8 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatDecimal, parseDecimalInput } from '@/lib/utils/decimal';
-import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
+import { reserveWalletOperation, completeWalletOperation, isUnresolvedWalletOperationError } from '@/lib/walletOperation';
+import WalletReconciliationNotice from '@/components/wallet/WalletReconciliationNotice';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -90,17 +91,17 @@ function normaliseItems<T>(payload: { data?: { items?: T[] } | T[]; meta?: unkno
   return [];
 }
 
-function StatCard({ icon, label, value, tone }: { icon: IoniconName; label: string; value: string; tone: string }) {
+function StatCard({ icon, label, value, tone, largeText }: { icon: IoniconName; label: string; value: string; tone: string; largeText: boolean }) {
   const theme = useTheme();
   return (
-    <Surface variant="secondary" className="min-w-[46%] flex-1 gap-2 rounded-panel-inner p-4">
+    <Surface variant="secondary" className={`${largeText ? 'w-full' : 'min-w-[46%] flex-1'} gap-2 rounded-panel-inner p-4`}>
       <View className="size-10 items-center justify-center rounded-panel-inner" style={{ backgroundColor: withAlpha(tone, 0.14) }}>
         <Ionicons name={icon} size={20} color={tone} />
       </View>
-      <Text className="text-2xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
+      <Text className="text-2xl font-bold" style={{ color: theme.text }}>
         {value}
       </Text>
-      <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={2}>
+      <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>
         {label}
       </Text>
     </Surface>
@@ -135,6 +136,8 @@ function OverviewPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
 
   if (!stats) {
     return <EmptyState icon="analytics-outline" title={t('org.statsUnavailable')} />;
@@ -145,29 +148,29 @@ function OverviewPanel({
       <HeroCard className="overflow-hidden rounded-panel p-0">
         <View className="h-1.5" style={{ backgroundColor: primary }} />
         <HeroCard.Body className="gap-4 p-5">
-          <View className="flex-row items-start gap-3">
+          <View testID="org-dashboard-identity" className={`${largeText ? 'gap-3' : 'flex-row items-start gap-3'}`}>
             <Avatar uri={org?.logo_url ?? org?.avatar ?? undefined} name={org?.name ?? stats.org_name} size={48} />
             <View className="min-w-0 flex-1">
               <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
                 {t('org.dashboardEyebrow')}
               </Text>
-              <Text className="mt-1 text-xl font-bold" style={{ color: theme.text }} numberOfLines={2}>
+              <Text className="mt-1 text-xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
                 {org?.name ?? stats.org_name}
               </Text>
               {org?.description ? (
-                <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 3}>
                   {org.description}
                 </Text>
               ) : null}
             </View>
           </View>
-          <View className="flex-row flex-wrap gap-3">
-            <StatCard icon="people-outline" label={t('org.stats.volunteers')} value={String(stats.total_volunteers)} tone="#0ea5e9" />
-            <StatCard icon="clipboard-outline" label={t('org.stats.pendingApplications')} value={String(stats.pending_applications)} tone="#f59e0b" />
-            <StatCard icon="time-outline" label={t('org.stats.pendingHours')} value={String(stats.pending_hours)} tone="#8b5cf6" />
-            <StatCard icon="wallet-outline" label={t('org.stats.walletBalance')} value={t('hoursValue', { count: stats.wallet_balance })} tone="#10b981" />
-            <StatCard icon="checkmark-circle-outline" label={t('org.stats.approvedHours')} value={t('hoursValue', { count: stats.total_approved_hours })} tone="#e11d48" />
-            <StatCard icon="briefcase-outline" label={t('org.stats.activeOpportunities')} value={String(stats.active_opportunities)} tone={primary} />
+          <View testID="org-dashboard-stats" className={`gap-3 ${largeText ? '' : 'flex-row flex-wrap'}`}>
+            <StatCard icon="people-outline" label={t('org.stats.volunteers')} value={String(stats.total_volunteers)} tone="#0ea5e9" largeText={largeText} />
+            <StatCard icon="clipboard-outline" label={t('org.stats.pendingApplications')} value={String(stats.pending_applications)} tone="#f59e0b" largeText={largeText} />
+            <StatCard icon="time-outline" label={t('org.stats.pendingHours')} value={String(stats.pending_hours)} tone="#8b5cf6" largeText={largeText} />
+            <StatCard icon="wallet-outline" label={t('org.stats.walletBalance')} value={t('hoursValue', { count: stats.wallet_balance })} tone="#10b981" largeText={largeText} />
+            <StatCard icon="checkmark-circle-outline" label={t('org.stats.approvedHours')} value={t('hoursValue', { count: stats.total_approved_hours })} tone="#e11d48" largeText={largeText} />
+            <StatCard icon="briefcase-outline" label={t('org.stats.activeOpportunities')} value={String(stats.active_opportunities)} tone={primary} largeText={largeText} />
           </View>
           <View className="flex-row flex-wrap gap-2">
             {stats.pending_applications > 0 ? (
@@ -203,6 +206,8 @@ function ApplicationsPanel({ applications, loading, error, onRefresh }: { applic
   const decisionPending = useRef(false);
   const { tenant } = useTenant();
   const declineNoteRequired = tenant?.volunteering_config?.['volunteering.require_org_note_on_decline'] === true;
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
 
   async function act(id: number, action: 'approve' | 'decline') {
     if (decisionPending.current) return;
@@ -234,22 +239,22 @@ function ApplicationsPanel({ applications, loading, error, onRefresh }: { applic
       {applications.map((application) => (
         <HeroCard key={application.id} className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
-            <View className="flex-row items-start gap-3">
+            <View testID={`org-application-${application.id}-identity`} className={`${largeText ? 'gap-3' : 'flex-row items-start gap-3'}`}>
               <Avatar uri={application.user.avatar_url ?? undefined} name={application.user.name} size={42} />
               <View className="min-w-0 flex-1">
-                <View className="flex-row items-start justify-between gap-2">
+                <View className={`${largeText ? 'gap-2' : 'flex-row items-start justify-between gap-2'}`}>
                   <View className="min-w-0 flex-1">
-                    <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+                    <Text className="text-base font-semibold" style={{ color: theme.text }}>
                       {application.user.name}
                     </Text>
-                    <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                    <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>
                       {application.opportunity.title}
                     </Text>
                   </View>
                   <StatusChip status={application.status} />
                 </View>
                 {application.message ? (
-                  <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                  <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 3}>
                     {application.message}
                   </Text>
                 ) : null}
@@ -274,12 +279,12 @@ function ApplicationsPanel({ applications, loading, error, onRefresh }: { applic
               <Text style={{ color: theme.textSecondary }}>{t('applications.decisionNoteRequired')}</Text>
             ) : null}
             {application.status === 'pending' ? (
-              <View className="flex-row gap-2">
-                <HeroButton className="flex-1" size="sm" variant="secondary" isDisabled={actioningId !== null} onPress={() => void act(application.id, 'approve')}>
+              <View testID={`org-application-${application.id}-actions`} className={`${largeText ? 'gap-2' : 'flex-row gap-2'}`}>
+                <HeroButton className={largeText ? 'w-full' : 'flex-1'} size="sm" variant="secondary" isDisabled={actioningId !== null} onPress={() => void act(application.id, 'approve')}>
                   {actioningId === application.id ? <Spinner size="sm" /> : <Ionicons name="checkmark-outline" size={16} color={primary} />}
                   <HeroButton.Label>{t('applications.approve')}</HeroButton.Label>
                 </HeroButton>
-                <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId !== null || (declineNoteRequired && !decisionNotes[application.id]?.trim())} onPress={() => void act(application.id, 'decline')}>
+                <HeroButton className={largeText ? 'w-full' : 'flex-1'} size="sm" variant="danger-soft" isDisabled={actioningId !== null || (declineNoteRequired && !decisionNotes[application.id]?.trim())} onPress={() => void act(application.id, 'decline')}>
                   <HeroButton.Label>{t('applications.decline')}</HeroButton.Label>
                 </HeroButton>
               </View>
@@ -298,6 +303,8 @@ function HoursPanel({ entries, loading, error, onRefresh }: { entries: Organisat
   const { show: showToast } = useAppToast();
   const [actioningId, setActioningId] = useState<number | null>(null);
   const decisionPending = useRef(false);
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
 
   async function act(id: number, action: 'approve' | 'decline') {
     if (decisionPending.current) return;
@@ -326,10 +333,10 @@ function HoursPanel({ entries, loading, error, onRefresh }: { entries: Organisat
       {entries.map((entry) => (
         <HeroCard key={entry.id} className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
-            <View className="flex-row items-start gap-3">
+            <View testID={`org-hours-${entry.id}-identity`} className={`${largeText ? 'gap-3' : 'flex-row items-start gap-3'}`}>
               <Avatar uri={entry.user.avatar_url ?? undefined} name={entry.user.name} size={42} />
               <View className="min-w-0 flex-1">
-                <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+                <Text className="text-base font-semibold" style={{ color: theme.text }}>
                   {entry.user.name}
                 </Text>
                 <Text className="mt-1 text-xl font-bold" style={{ color: theme.text }}>
@@ -339,23 +346,23 @@ function HoursPanel({ entries, loading, error, onRefresh }: { entries: Organisat
                   {formatDate(entry.date) ?? entry.date}
                 </Text>
                 {entry.opportunity ? (
-                  <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                  <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
                     {entry.opportunity.title}
                   </Text>
                 ) : null}
                 {entry.description ? (
-                  <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                  <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 3}>
                     {entry.description}
                   </Text>
                 ) : null}
               </View>
             </View>
-            <View className="flex-row gap-2">
-              <HeroButton className="flex-1" size="sm" variant="secondary" isDisabled={actioningId !== null} onPress={() => void act(entry.id, 'approve')}>
+            <View testID={`org-hours-${entry.id}-actions`} className={`${largeText ? 'gap-2' : 'flex-row gap-2'}`}>
+              <HeroButton className={largeText ? 'w-full' : 'flex-1'} size="sm" variant="secondary" isDisabled={actioningId !== null} onPress={() => void act(entry.id, 'approve')}>
                 {actioningId === entry.id ? <Spinner size="sm" /> : <Ionicons name="checkmark-outline" size={16} color={primary} />}
                 <HeroButton.Label>{t('org.hours.approve')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void act(entry.id, 'decline')}>
+              <HeroButton className={largeText ? 'w-full' : 'flex-1'} size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void act(entry.id, 'decline')}>
                 <HeroButton.Label>{t('org.hours.decline')}</HeroButton.Label>
               </HeroButton>
             </View>
@@ -369,6 +376,8 @@ function HoursPanel({ entries, loading, error, onRefresh }: { entries: Organisat
 function VolunteersPanel({ volunteers, loading, error, onRefresh }: { volunteers: OrganisationVolunteer[]; loading: boolean; error: string | null; onRefresh: () => void }) {
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   if (loading && volunteers.length === 0) return <LoadingSpinner />;
   if (error && volunteers.length === 0) return <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-volunteers-error" />;
   return (
@@ -377,13 +386,13 @@ function VolunteersPanel({ volunteers, loading, error, onRefresh }: { volunteers
       {volunteers.length === 0 ? <EmptyState icon="people-outline" title={t('org.volunteers.empty')} /> : null}
       {volunteers.map((volunteer) => (
         <HeroCard key={volunteer.id} className="rounded-panel p-0">
-          <HeroCard.Body className="flex-row items-center gap-3 p-4">
+          <HeroCard.Body testID={`org-volunteer-${volunteer.id}`} className={`${largeText ? 'gap-3' : 'flex-row items-center gap-3'} p-4`}>
             <Avatar uri={volunteer.avatar_url ?? undefined} name={volunteer.name} size={42} />
             <View className="min-w-0 flex-1">
-              <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+              <Text className="text-base font-semibold" style={{ color: theme.text }}>
                 {volunteer.name}
               </Text>
-              <Text className="text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+              <Text className="text-sm" style={{ color: theme.textSecondary }}>
                 {t('org.volunteers.summary', {
                   hours: volunteer.total_hours,
                   count: volunteer.applications_count,
@@ -429,6 +438,7 @@ function WalletPanel({
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const [operationUnresolved, setOperationUnresolved] = useState(false);
   /*
     🔴 One id per deposit the member confirms, NOT per button press.
 
@@ -449,6 +459,7 @@ function WalletPanel({
     depositInFlight.current = true;
 
     setSaving(true);
+    setOperationUnresolved(false);
     try {
       const operation = await reserveWalletOperation('organisation-deposit', intent);
       await depositOrganisationWallet(
@@ -471,6 +482,7 @@ function WalletPanel({
         variant: 'success',
       });
     } catch (err) {
+      setOperationUnresolved(isUnresolvedWalletOperationError(err));
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('org.wallet.depositError')), variant: 'danger' });
     } finally {
@@ -535,7 +547,7 @@ function WalletPanel({
           <Input
             keyboardType="decimal-pad"
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={(value) => { setAmount(value); setOperationUnresolved(false); }}
             placeholder={t('org.wallet.amountPlaceholder')}
             placeholderTextColor={theme.textMuted}
             leftIcon={<Ionicons name="add-circle-outline" size={18} color={theme.textMuted} />}
@@ -543,13 +555,14 @@ function WalletPanel({
           />
           <Input
             value={note}
-            onChangeText={setNote}
+            onChangeText={(value) => { setNote(value); setOperationUnresolved(false); }}
             placeholder={t('org.wallet.notePlaceholder')}
             placeholderTextColor={theme.textMuted}
             leftIcon={<Ionicons name="document-text-outline" size={18} color={theme.textMuted} />}
             editable={!saving}
           />
-          <HeroButton isDisabled={saving} onPress={deposit} testID="org-wallet-deposit">
+          {operationUnresolved ? <WalletReconciliationNotice onReview={onRefresh} /> : null}
+          <HeroButton isDisabled={saving || operationUnresolved} onPress={deposit} testID="org-wallet-deposit">
             {saving ? <Spinner size="sm" /> : <AccentIcon name="wallet-outline" size={16} />}
             <HeroButton.Label>{t('org.wallet.deposit')}</HeroButton.Label>
           </HeroButton>

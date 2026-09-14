@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
@@ -20,6 +20,7 @@ import {
   getIdeationIdeas,
   submitIdeationIdea,
   voteIdeationIdea,
+  type IdeationChallenge,
   type IdeationIdea,
   type IdeationSort,
 } from '@/lib/api/ideation';
@@ -37,6 +38,9 @@ import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
+import { mutationAttemptFor, type MutationAttempt } from '@/lib/utils/idempotencyKey';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 function IdeationDetailScreen() {
   const { t } = useTranslation(['ideation', 'common']);
@@ -54,31 +58,56 @@ function IdeationDetailScreen() {
   const [votingId, setVotingId] = useState<number | null>(null);
   const submitPendingRef = useRef(false);
   const votePendingRef = useRef(false);
+  const submitAttemptRef = useRef<MutationAttempt | null>(null);
+  const voteAttemptRef = useRef<MutationAttempt | null>(null);
+  const isMountedRef = useRef(true);
   const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
   const challengeState = useApi(() => getIdeationChallenge(challengeId), [challengeId], {
     enabled: hasFeature('ideation_challenges') && challengeId > 0,
   });
   const ideasState = useApi(() => getIdeationIdeas(challengeId, sort), [challengeId, sort], {
     enabled: hasFeature('ideation_challenges') && challengeId > 0,
   });
+  const challenge = challengeState.data;
+  const submissionUnavailableReason = getSubmissionUnavailableReason(challenge);
+  const acceptingSubmissions = Boolean(challenge) && submissionUnavailableReason === null;
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
+  useUnsavedChangesGuard({
+    isDirty: Boolean(title.trim() || description.trim()),
+    isSaving: isSubmitting,
+    confirm,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   async function submitIdea() {
-    if (!title.trim() || !description.trim() || submitPendingRef.current) return;
+    if (!acceptingSubmissions || !title.trim() || !description.trim() || submitPendingRef.current) return;
+    const payload = { title: title.trim(), description: description.trim() };
+    const attempt = mutationAttemptFor(submitAttemptRef.current, JSON.stringify(payload), 'mobile-idea-submit');
+    submitAttemptRef.current = attempt;
     submitPendingRef.current = true;
     setIsSubmitting(true);
     setStatusMessage(null);
     try {
-      await submitIdeationIdea(challengeId, { title: title.trim(), description: description.trim() });
+      await submitIdeationIdea(challengeId, payload, attempt.key);
+      if (!isMountedRef.current) return;
+      submitAttemptRef.current = null;
       setTitle('');
       setDescription('');
       setStatusMessage(t('ideation:submitSuccess'));
       ideasState.refresh();
       challengeState.refresh();
     } catch (error) {
+      if (!isMountedRef.current) return;
       setStatusMessage(error instanceof Error ? error.message : t('ideation:submitFailed'));
     } finally {
       submitPendingRef.current = false;
-      setIsSubmitting(false);
+      if (isMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -98,12 +127,22 @@ function IdeationDetailScreen() {
   */
   async function vote(idea: IdeationIdea) {
     if (votePendingRef.current) return;
+    const desiredVoted = !Boolean(idea.has_voted);
+    const attempt = mutationAttemptFor(
+      voteAttemptRef.current,
+      JSON.stringify({ ideaId: idea.id, voted: desiredVoted }),
+      'mobile-idea-vote',
+    );
+    voteAttemptRef.current = attempt;
     votePendingRef.current = true;
     setVotingId(idea.id);
     try {
-      await voteIdeationIdea(idea.id);
+      await voteIdeationIdea(idea.id, desiredVoted, attempt.key);
+      if (!isMountedRef.current) return;
+      voteAttemptRef.current = null;
       ideasState.refresh();
     } catch (error) {
+      if (!isMountedRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(error, t('ideation:voteFailed')),
@@ -111,7 +150,7 @@ function IdeationDetailScreen() {
       });
     } finally {
       votePendingRef.current = false;
-      setVotingId(null);
+      if (isMountedRef.current) setVotingId(null);
     }
   }
 
@@ -123,12 +162,12 @@ function IdeationDetailScreen() {
           <View className="px-4 py-8" style={{ flex: 1, backgroundColor: theme.bg }}>
             <EmptyState icon="bulb-outline" title={t('ideation:disabledTitle')} subtitle={t('ideation:disabledSubtitle')} />
           </View>
+          {confirmDialog}
         </SafeAreaView>
       </ModalErrorBoundary>
     );
   }
 
-  const challenge = challengeState.data;
   const ideas = ideasState.data?.items ?? [];
   /*
     🔴 `is_admin`, not the role string.
@@ -227,24 +266,33 @@ function IdeationDetailScreen() {
                 </HeroCard.Body>
               </HeroCard>
 
-              <HeroCard variant="default" className="rounded-panel p-0">
-                <HeroCard.Body className="gap-3 p-4">
-                  <Text className="text-lg font-bold" style={{ color: theme.text }}>
-                    {t('ideation:submitIdea')}
-                  </Text>
-                  <Input label={t('ideation:ideaTitleLabel')} value={title} onChangeText={setTitle} placeholder={t('ideation:ideaTitlePlaceholder')} editable={!isSubmitting} />
-                  {/* A real paragraph box: `numberOfLines` alone leaves the field one line tall on Android. */}
-                  <Input label={t('ideation:ideaDescriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('ideation:ideaDescriptionPlaceholder')} multiline numberOfLines={4} editable={!isSubmitting} style={{ minHeight: 112, textAlignVertical: 'top' }} />
-                  {statusMessage ? (
-                    <Text className="text-sm" style={{ color: theme.textSecondary }}>
-                      {statusMessage}
+              {acceptingSubmissions ? (
+                <HeroCard variant="default" className="rounded-panel p-0">
+                  <HeroCard.Body className="gap-3 p-4">
+                    <Text className="text-lg font-bold" style={{ color: theme.text }}>
+                      {t('ideation:submitIdea')}
                     </Text>
-                  ) : null}
-                  <HeroButton variant="primary" onPress={() => void submitIdea()} isDisabled={!title.trim() || !description.trim() || isSubmitting}>
-                    <HeroButton.Label>{isSubmitting ? t('ideation:submitting') : t('ideation:submitIdea')}</HeroButton.Label>
-                  </HeroButton>
-                </HeroCard.Body>
-              </HeroCard>
+                    <Input label={t('ideation:ideaTitleLabel')} value={title} onChangeText={setTitle} placeholder={t('ideation:ideaTitlePlaceholder')} editable={!isSubmitting} />
+                    {/* A real paragraph box: `numberOfLines` alone leaves the field one line tall on Android. */}
+                    <Input label={t('ideation:ideaDescriptionLabel')} value={description} onChangeText={setDescription} placeholder={t('ideation:ideaDescriptionPlaceholder')} multiline numberOfLines={4} editable={!isSubmitting} style={{ minHeight: 112, textAlignVertical: 'top' }} />
+                    {statusMessage ? (
+                      <Text className="text-sm" style={{ color: theme.textSecondary }}>
+                        {statusMessage}
+                      </Text>
+                    ) : null}
+                    <HeroButton variant="primary" onPress={() => void submitIdea()} isDisabled={!title.trim() || !description.trim() || isSubmitting}>
+                      <HeroButton.Label>{isSubmitting ? t('ideation:submitting') : t('ideation:submitIdea')}</HeroButton.Label>
+                    </HeroButton>
+                  </HeroCard.Body>
+                </HeroCard>
+              ) : (
+                <Surface testID="ideation-submission-unavailable" variant="default" className="flex-row items-start gap-3 rounded-panel-inner p-4">
+                  <Ionicons name="information-circle-outline" size={22} color={theme.info} />
+                  <Text className="min-w-0 flex-1 text-sm leading-5" style={{ color: theme.textSecondary }}>
+                    {t(`ideation:submissionUnavailable.${submissionUnavailableReason ?? 'phase'}`)}
+                  </Text>
+                </Surface>
+              )}
 
               <Surface variant="default" className="rounded-panel-inner p-2">
                 <Tabs value={sort} onValueChange={(value) => setSort(value as IdeationSort)} variant="secondary">
@@ -267,6 +315,7 @@ function IdeationDetailScreen() {
           )}
         </ScrollView>
         </KeyboardAvoidingView>
+        {confirmDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );
@@ -315,4 +364,24 @@ function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-export default withRouteGate(IdeationDetailScreen, 'ideation-detail');
+function IdeationDetailRoute() {
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <IdeationDetailScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${params.id ?? 'invalid'}`} />;
+}
+
+function getSubmissionUnavailableReason(challenge?: IdeationChallenge | null): IdeationChallenge['submission_unavailable_reason'] {
+  if (!challenge) return null;
+  if (challenge.accepting_submissions === true) return null;
+  if (challenge.submission_unavailable_reason) return challenge.submission_unavailable_reason;
+  if (challenge.status !== 'open') return 'phase';
+  if (challenge.submission_deadline && Date.parse(challenge.submission_deadline) <= Date.now()) return 'deadline';
+  if (
+    challenge.max_ideas_per_user != null
+    && (challenge.user_idea_count ?? 0) >= challenge.max_ideas_per_user
+  ) return 'limit';
+  return null;
+}
+
+export default withRouteGate(IdeationDetailRoute, 'ideation-detail');

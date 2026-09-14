@@ -680,10 +680,15 @@ export function deleteGroupMedia(id: number, mediaId: number): Promise<{ data: {
   return api.delete<{ data: { message: string } }>(`${API_V2}/groups/${id}/media/${mediaId}`);
 }
 
-export async function uploadGroupMedia(id: number, asset: GroupMediaUploadAsset): Promise<{ data: GroupMediaItem }> {
+export async function uploadGroupMedia(id: number, asset: GroupMediaUploadAsset, idempotencyKey?: string): Promise<{ data: GroupMediaItem }> {
   const formData = new FormData();
   await appendGroupMediaFile(formData, asset);
-  const response = await api.upload<UploadGroupMediaResponse>(`${API_V2}/groups/${id}/media`, formData);
+  if (idempotencyKey) formData.append('idempotency_key', idempotencyKey);
+  const response = await api.upload<UploadGroupMediaResponse>(
+    `${API_V2}/groups/${id}/media`,
+    formData,
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
   if (!response.data) {
     throw new ApiResponseError(502, response.message ?? i18n.t('common:errors.uploadIncomplete'));
   }
@@ -729,19 +734,31 @@ export function getGroupQuestion(id: number, questionId: number): Promise<{ data
 export function createGroupQuestion(
   id: number,
   payload: { title: string; body: string },
+  idempotencyKey?: string,
 ): Promise<{ data: { id: number; title: string } }> {
-  return api.post<{ data: { id: number; title: string } }>(`${API_V2}/groups/${id}/questions`, payload);
+  return idempotencyKey
+    ? api.post<{ data: { id: number; title: string } }>(
+        `${API_V2}/groups/${id}/questions`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: { id: number; title: string } }>(`${API_V2}/groups/${id}/questions`, payload);
 }
 
 export function answerGroupQuestion(
   id: number,
   questionId: number,
   payload: { body: string },
+  idempotencyKey?: string,
 ): Promise<{ data: { id: number; question_id: number } }> {
-  return api.post<{ data: { id: number; question_id: number } }>(
-    `${API_V2}/groups/${id}/questions/${questionId}/answers`,
-    payload,
-  );
+  const endpoint = `${API_V2}/groups/${id}/questions/${questionId}/answers`;
+  return idempotencyKey
+    ? api.post<{ data: { id: number; question_id: number } }>(
+        endpoint,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: { id: number; question_id: number } }>(endpoint, payload);
 }
 
 export function voteGroupQA(
@@ -769,14 +786,21 @@ export function getGroupWikiPage(id: number, slug: string): Promise<{ data: Grou
 export function createGroupWikiPage(
   id: number,
   payload: { title: string; content: string; parent_id?: number | null },
+  idempotencyKey?: string,
 ): Promise<{ data: GroupWikiPageDetail }> {
-  return api.post<{ data: GroupWikiPageDetail }>(`${API_V2}/groups/${id}/wiki`, payload);
+  return idempotencyKey
+    ? api.post<{ data: GroupWikiPageDetail }>(
+        `${API_V2}/groups/${id}/wiki`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: GroupWikiPageDetail }>(`${API_V2}/groups/${id}/wiki`, payload);
 }
 
 export function updateGroupWikiPage(
   id: number,
   pageId: number,
-  payload: { title?: string; content: string; change_summary?: string },
+  payload: { title?: string; content: string; change_summary?: string; expected_updated_at?: string | null },
 ): Promise<{ data: GroupWikiPageDetail }> {
   return api.put<{ data: GroupWikiPageDetail }>(`${API_V2}/groups/${id}/wiki/${pageId}`, payload);
 }
@@ -806,6 +830,10 @@ export function getGroupTaskStats(id: number): Promise<{ data: GroupTaskStats }>
   return api.get<{ data: GroupTaskStats }>(`${API_V2}/groups/${id}/task-stats`);
 }
 
+export function getGroupTask(taskId: number): Promise<{ data: GroupTask }> {
+  return api.get<{ data: GroupTask }>(`${API_V2}/team-tasks/${taskId}`);
+}
+
 export function createGroupTask(
   id: number,
   payload: {
@@ -816,8 +844,15 @@ export function createGroupTask(
     assigned_to?: number | null;
     due_date?: string | null;
   },
+  idempotencyKey?: string,
 ): Promise<{ data: GroupTask }> {
-  return api.post<{ data: GroupTask }>(`${API_V2}/groups/${id}/tasks`, payload);
+  return idempotencyKey
+    ? api.post<{ data: GroupTask }>(
+        `${API_V2}/groups/${id}/tasks`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: GroupTask }>(`${API_V2}/groups/${id}/tasks`, payload);
 }
 
 export function updateGroupTask(
@@ -837,8 +872,15 @@ export function deleteGroupTask(taskId: number): Promise<void> {
 export function createGroupDiscussion(
   id: number,
   payload: { title: string; content: string },
+  idempotencyKey?: string,
 ): Promise<{ data: GroupDiscussion }> {
-  return api.post<{ data: GroupDiscussion }>(`${API_V2}/groups/${id}/discussions`, payload);
+  return idempotencyKey
+    ? api.post<{ data: GroupDiscussion }>(
+        `${API_V2}/groups/${id}/discussions`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: GroupDiscussion }>(`${API_V2}/groups/${id}/discussions`, payload);
 }
 
 /**
@@ -865,8 +907,15 @@ export function postGroupDiscussionMessage(
 export function createGroupAnnouncement(
   id: number,
   payload: CreateGroupAnnouncementPayload,
+  idempotencyKey?: string,
 ): Promise<{ data: GroupAnnouncement }> {
-  return api.post<{ data: GroupAnnouncement }>(`${API_V2}/groups/${id}/announcements`, payload);
+  return idempotencyKey
+    ? api.post<{ data: GroupAnnouncement }>(
+        `${API_V2}/groups/${id}/announcements`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: GroupAnnouncement }>(`${API_V2}/groups/${id}/announcements`, payload);
 }
 
 /**

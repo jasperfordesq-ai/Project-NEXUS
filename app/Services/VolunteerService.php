@@ -278,6 +278,7 @@ class VolunteerService
         }
 
         $opportunityData = [
+            'tenant_id'       => $tenantId,
             'created_by'      => $userId,
             'organization_id' => $organizationId,
             'title'           => trim($data['title'] ?? ''),
@@ -887,6 +888,9 @@ class VolunteerService
     /** Status assigned by the last successful hour-log operation. */
     private static string $lastLogStatus = 'pending';
 
+    /** Whether the most recent successful shift signup changed the assignment. */
+    private static bool $lastShiftSignupChanged = false;
+
     /** Payment outcome of the last verifyHours() call: paid|no_whole_hours|already_paid|already_processed|null */
     private static ?string $lastPaymentOutcome = null;
 
@@ -912,6 +916,11 @@ class VolunteerService
     public static function getLastLogStatus(): string
     {
         return self::$lastLogStatus;
+    }
+
+    public static function didLastShiftSignupChange(): bool
+    {
+        return self::$lastShiftSignupChanged;
     }
 
     // ========================================
@@ -1384,32 +1393,37 @@ class VolunteerService
         self::$errors = [];
         $tenantId = self::getTenantId();
 
-        $app = DB::selectOne("
-            SELECT a.*, opp.title, opp.id as opportunity_id, org.user_id as org_owner_id
-            FROM vol_applications a
-            JOIN vol_opportunities opp ON a.opportunity_id = opp.id
-            JOIN vol_organizations org ON opp.organization_id = org.id
-            WHERE a.id = ? AND a.tenant_id = ?
-        ", [$applicationId, $tenantId]);
-
-        if (!$app) {
-            self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.job_application_not_found')];
-            return false;
-        }
-
-        if ((int) $app->user_id !== $userId) {
-            self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_application_not_yours')];
-            return false;
-        }
-
-        if ($app->status === 'approved') {
-            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_application_withdraw_approved')];
-            return false;
-        }
-
         try {
-            DB::delete("DELETE FROM vol_applications WHERE id = ? AND tenant_id = ?", [$applicationId, $tenantId]);
-            return true;
+            return DB::transaction(function () use ($applicationId, $userId, $tenantId): bool {
+                // Serialize against a coordinator decision. A stale withdrawal
+                // must never delete an application that has just been approved.
+                $app = DB::table('vol_applications')
+                    ->where('id', $applicationId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$app) {
+                    self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.job_application_not_found')];
+                    return false;
+                }
+
+                if ((int) $app->user_id !== $userId) {
+                    self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_application_not_yours')];
+                    return false;
+                }
+
+                if ($app->status === 'approved') {
+                    self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_application_withdraw_approved')];
+                    return false;
+                }
+
+                return DB::table('vol_applications')
+                    ->where('id', $applicationId)
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->delete() === 1;
+            });
         } catch (\Exception $e) {
             Log::warning("VolunteerService::withdrawApplication error: " . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.volunteer_application_withdraw_failed')];
@@ -1515,9 +1529,15 @@ class VolunteerService
     /**
      * Sign up for a shift (requires approved application).
      */
-    public static function signUpForShift(int $shiftId, int $userId): bool
+    public static function signUpForShift(
+        int $shiftId,
+        int $userId,
+        ?int $expectedShiftId = null,
+        bool $expectedStateProvided = false,
+    ): bool
     {
         self::$errors = [];
+        self::$lastShiftSignupChanged = false;
         $tenantId = self::getTenantId();
 
         // Check user has approved application for this opportunity (outside lock — read-only pre-check)
@@ -1568,11 +1588,6 @@ class VolunteerService
             return false;
         }
 
-        // If the application is already attached to a different shift in this
-        // opportunity, signing up for a new one frees the old shift's slot — we
-        // must offer it to that shift's waitlist after committing.
-        $previousShiftId = $app->shift_id ? (int) $app->shift_id : null;
-
         // Check shift hasn't passed
         if (strtotime($shift->start_time) < time()) {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_shift_started')];
@@ -1585,8 +1600,40 @@ class VolunteerService
         // fanout must not run while the shift FOR UPDATE lock is held.
         try {
             $confirmedShiftStart = null;
+            $previousShiftId = null;
 
-            $ok = DB::transaction(function () use ($shiftId, $tenantId, $app, $shift, &$confirmedShiftStart) {
+            $ok = DB::transaction(function () use ($shiftId, $userId, $opportunityId, $tenantId, $shift, $expectedShiftId, $expectedStateProvided, &$confirmedShiftStart, &$previousShiftId) {
+                // The application is the canonical one-shift assignment. Lock it before
+                // capacity work so retries cannot emit another success/notification and
+                // competing signup requests cannot write it at the same instant.
+                $lockedApplication = DB::table('vol_applications')
+                    ->where('opportunity_id', $opportunityId)
+                    ->where('user_id', $userId)
+                    ->where('status', 'approved')
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$lockedApplication) {
+                    self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_shift_approved_application_required')];
+                    return false;
+                }
+
+                $previousShiftId = $lockedApplication->shift_id ? (int) $lockedApplication->shift_id : null;
+                if ($previousShiftId === $shiftId) {
+                    // The first response may have been lost. This is a successful replay,
+                    // but it must not repeat either recipient's notification.
+                    return true;
+                }
+
+                if ($expectedStateProvided && $previousShiftId !== $expectedShiftId) {
+                    self::$errors[] = [
+                        'code' => 'DECISION_CONFLICT',
+                        'message' => __('api.volunteer_shift_assignment_changed'),
+                    ];
+                    return false;
+                }
+
                 // Lock the shift row to prevent concurrent signups from exceeding capacity
                 $lockedShift = self::getShiftContext($shiftId, $tenantId, true);
 
@@ -1613,8 +1660,9 @@ class VolunteerService
 
                 DB::update(
                     "UPDATE vol_applications SET shift_id = ? WHERE id = ? AND tenant_id = ?",
-                    [$shiftId, $app->id, $tenantId]
+                    [$shiftId, $lockedApplication->id, $tenantId]
                 );
+                self::$lastShiftSignupChanged = true;
 
                 // Capture the raw confirmed shift start; it is formatted inside the
                 // recipient's LocaleContext below so it renders in their language.
@@ -1625,7 +1673,7 @@ class VolunteerService
 
             // Notify volunteer of confirmed shift signup — AFTER the commit so
             // the fanout never runs under the shift row lock.
-            if ($ok) {
+            if ($ok && self::$lastShiftSignupChanged) {
                 try {
                     $shiftStart = $confirmedShiftStart ?? ($shift->start_time ?? null);
                     $recipient = DB::table('users')
@@ -1653,7 +1701,7 @@ class VolunteerService
             // The volunteer moved off $previousShiftId onto $shiftId — that old
             // shift now has a free slot, so offer it to its waitlist (the same
             // courtesy cancelShiftSignup/decline already provide).
-            if ($ok && $previousShiftId && $previousShiftId !== $shiftId) {
+            if ($ok && self::$lastShiftSignupChanged && $previousShiftId && $previousShiftId !== $shiftId) {
                 ShiftWaitlistService::notifyNext($previousShiftId, $tenantId);
             }
 

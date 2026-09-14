@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Concerns\InteractsWithPodcasts;
 use App\Models\PodcastEpisode;
 use App\Models\PodcastShow;
 use App\Services\PodcastConfigurationService;
+use App\Services\PodcastCreationReceiptService;
 use App\Services\PodcastService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -210,6 +211,10 @@ class PodcastController extends BaseApiController
         $this->rateLimit('podcasts_write', 30, 60);
         $userId = $this->requirePodcastShowCreator();
         $input = $this->getAllInput();
+        $identity = $this->podcastCreationIdentity($input);
+        if ($identity === false) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
 
         $titleError = $this->validatePodcastTitle($input['title'] ?? null, 'api_controllers_2.podcasts.title_required');
         if ($titleError) {
@@ -222,12 +227,20 @@ class PodcastController extends BaseApiController
         }
 
         try {
-            $show = PodcastService::createShow($userId, $input);
+            $result = $identity === null
+                ? ['show' => PodcastService::createShow($userId, $input), 'replayed' => false]
+                : PodcastCreationReceiptService::createShow($userId, $input, $identity);
+            $show = $result['show'];
         } catch (\InvalidArgumentException $e) {
+            if (str_contains($e->getMessage(), 'Idempotency key')) {
+                return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('api.invalid_input'), 'idempotency_key', 409);
+            }
             return $this->podcastValidationError($e);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
         }
 
-        return $this->respondWithData($show->makeVisible('owner_email'), null, 201);
+        return $this->respondWithData($show->makeVisible('owner_email'), null, $result['replayed'] ? 200 : 201);
     }
 
     public function update(int $id): JsonResponse
@@ -347,6 +360,21 @@ class PodcastController extends BaseApiController
         $title = trim((string) ($input['title'] ?? ''));
         $audioUrl = trim((string) $this->input('audio_url', ''));
         $audioFile = request()->file('audio');
+        $intent = $input;
+        unset($intent['idempotency_key'], $intent['audio']);
+        if ($audioFile) {
+            $realPath = $audioFile->getRealPath();
+            if (!is_string($realPath) || $realPath === '' || !is_file($realPath)) {
+                return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'audio', 422);
+            }
+            $intent['audio_content_sha256'] = hash_file('sha256', $realPath);
+            $intent['audio_bytes'] = $audioFile->getSize();
+            $intent['audio_mime'] = $audioFile->getMimeType();
+        }
+        $identity = $this->podcastCreationIdentity($intent);
+        if ($identity === false) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
         $titleError = $this->validatePodcastTitle($title, 'api_controllers_2.podcasts.episode_title_required');
         if ($titleError) {
             return $titleError;
@@ -360,12 +388,20 @@ class PodcastController extends BaseApiController
         }
 
         try {
-            $episode = PodcastService::createEpisode($show, $userId, $input, $audioFile);
+            $result = $identity === null
+                ? ['episode' => PodcastService::createEpisode($show, $userId, $input, $audioFile), 'replayed' => false]
+                : PodcastCreationReceiptService::createEpisode($show, $userId, $input, $audioFile, $identity);
+            $episode = $result['episode'];
         } catch (\InvalidArgumentException $e) {
+            if (str_contains($e->getMessage(), 'Idempotency key')) {
+                return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('api.invalid_input'), 'idempotency_key', 409);
+            }
             return $this->podcastValidationError($e);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
         }
 
-        return $this->respondWithData($episode, null, 201);
+        return $this->respondWithData($episode, null, $result['replayed'] ? 200 : 201);
     }
 
     public function updateEpisode(int $showId, int $episodeId): JsonResponse
@@ -528,7 +564,12 @@ class PodcastController extends BaseApiController
         }
 
         try {
-            $active = PodcastService::toggleReaction($episode, $userId, (string) $this->input('reaction', 'like'));
+            $active = PodcastService::toggleReaction(
+                $episode,
+                $userId,
+                (string) $this->input('reaction', 'like'),
+                request()->has('active') ? filter_var($this->input('active'), FILTER_VALIDATE_BOOLEAN) : null,
+            );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -547,7 +588,12 @@ class PodcastController extends BaseApiController
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.podcasts.show_not_found'), null, 404);
         }
 
-        $subscribed = PodcastService::toggleSubscription($show, $userId, filter_var($this->input('notify_new_episodes', true), FILTER_VALIDATE_BOOLEAN));
+        $subscribed = PodcastService::toggleSubscription(
+            $show,
+            $userId,
+            filter_var($this->input('notify_new_episodes', true), FILTER_VALIDATE_BOOLEAN),
+            request()->has('subscribed') ? filter_var($this->input('subscribed'), FILTER_VALIDATE_BOOLEAN) : null,
+        );
 
         return $this->respondWithData(['subscribed' => $subscribed]);
     }
@@ -744,6 +790,18 @@ class PodcastController extends BaseApiController
         }
 
         return $input;
+    }
+
+    /** @return array{key_hash:string,request_hash:string}|null|false */
+    private function podcastCreationIdentity(array $intent): array|null|false
+    {
+        $header = request()->header('Idempotency-Key');
+        $body = $intent['idempotency_key'] ?? request()->input('idempotency_key');
+        if ($header !== null && $body !== null && !hash_equals(trim((string) $header), trim((string) $body))) {
+            return false;
+        }
+        unset($intent['idempotency_key']);
+        return PodcastCreationReceiptService::identity((string) ($header ?? $body ?? ''), $intent);
     }
 
     private function validatePodcastTitle(mixed $value, string $requiredKey): ?JsonResponse

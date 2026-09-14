@@ -3,6 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -153,13 +155,14 @@ jest.mock('@/components/ui/useConfirm', () => ({
 jest.mock('@/components/OfflineBanner', () => () => null);
 jest.mock('@/components/ui/Input', () => {
   const { View, Text, TextInput: RNTextInput } = require('react-native');
-  return function MockInput(props: { value?: string; placeholder?: string; onChangeText?: (t: string) => void; error?: string }) {
+  return function MockInput(props: { value?: string; placeholder?: string; onChangeText?: (t: string) => void; error?: string; editable?: boolean }) {
     return (
       <View>
         <RNTextInput
           value={props.value}
           placeholder={props.placeholder}
           onChangeText={props.onChangeText}
+          editable={props.editable}
           testID={props.placeholder}
         />
         {props.error ? <Text>{props.error}</Text> : null}
@@ -183,10 +186,26 @@ jest.mock('@/components/ui/Button', () => {
 import EditProfileScreen from './edit-profile';
 import { updateAvatar, updateProfile } from '@/lib/api/profile';
 import { getMe } from '@/lib/api/auth';
+import { storage } from '@/lib/storage';
+import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from '@/lib/haptics';
+
+const defaultProfileResponse = {
+  data: {
+    id: 1,
+    first_name: 'Jane',
+    last_name: 'Doe',
+    bio: 'Community builder',
+    location: 'New York',
+    phone: '+1 555 123 4567',
+    avatar_url: null,
+  },
+};
 
 describe('EditProfileScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (getMe as jest.Mock).mockReset().mockResolvedValue(defaultProfileResponse);
   });
 
   it('renders without crashing', () => {
@@ -217,6 +236,32 @@ describe('EditProfileScreen', () => {
     await waitFor(() => expect(mockRefreshUser).toHaveBeenCalledWith(expect.objectContaining({
       avatar_url: expect.stringContaining('/uploads/avatars/jane.jpg?v='),
     })));
+  });
+
+  it('serializes rapid avatar selection before permission or picker state rerenders', async () => {
+    const { getByLabelText } = render(<EditProfileScreen />);
+
+    act(() => {
+      fireEvent.press(getByLabelText('Change profile photo'));
+      fireEvent.press(getByLabelText('Change profile photo'));
+    });
+
+    await waitFor(() => expect(updateAvatar).toHaveBeenCalledTimes(1));
+    expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps an accepted avatar update successful when the local user cache cannot refresh', async () => {
+    const { getByLabelText } = render(<EditProfileScreen />);
+    await waitFor(() => expect(storage.setJson).toHaveBeenCalled());
+    (storage.setJson as jest.Mock).mockClear();
+    (storage.setJson as jest.Mock).mockRejectedValueOnce(new Error('cache unavailable'));
+
+    fireEvent.press(getByLabelText('Change profile photo'));
+
+    await waitFor(() => expect(Haptics.notificationAsync).toHaveBeenCalledWith('success'));
+    expect(mockRefreshUser).toHaveBeenCalledWith(expect.objectContaining({
+      avatar_url: expect.stringContaining('/uploads/avatars/jane.jpg?v='),
+    }));
   });
 
   it('keeps a freshly uploaded avatar if profile hydration returns stale data', async () => {
@@ -254,12 +299,59 @@ describe('EditProfileScreen', () => {
     });
   });
 
+  it('merges a later avatar into the latest hydrated profile', async () => {
+    (getMe as jest.Mock).mockResolvedValueOnce({
+      data: {
+        id: 1,
+        first_name: 'Jane',
+        last_name: 'Doe',
+        bio: 'New biography from the server',
+        location: 'New York',
+        phone: '+1 555 123 4567',
+        avatar_url: null,
+      },
+    });
+    const { getByLabelText } = render(<EditProfileScreen />);
+    await waitFor(() => expect(mockRefreshUser).toHaveBeenCalledWith(expect.objectContaining({
+      bio: 'New biography from the server',
+    })));
+    mockRefreshUser.mockClear();
+
+    fireEvent.press(getByLabelText('Change profile photo'));
+
+    await waitFor(() => expect(mockRefreshUser).toHaveBeenCalledWith(expect.objectContaining({
+      bio: 'New biography from the server',
+      avatar_url: expect.stringContaining('/uploads/avatars/jane.jpg?v='),
+    })));
+  });
+
   it('pre-fills form fields with user data', () => {
     const { getByDisplayValue } = render(<EditProfileScreen />);
     expect(getByDisplayValue('Jane')).toBeTruthy();
     expect(getByDisplayValue('Doe')).toBeTruthy();
     expect(getByDisplayValue('Community builder')).toBeTruthy();
     expect(getByDisplayValue('New York')).toBeTruthy();
+  });
+
+  it('does not overwrite an edit made while the full profile is loading', async () => {
+    let resolveProfile!: (value: unknown) => void;
+    (getMe as jest.Mock).mockReturnValueOnce(new Promise((resolve) => { resolveProfile = resolve; }));
+    const { getByDisplayValue } = render(<EditProfileScreen />);
+
+    fireEvent.changeText(getByDisplayValue('Jane'), 'Janet');
+    await act(async () => resolveProfile({
+      data: {
+        id: 1,
+        first_name: 'Jane',
+        last_name: 'Doe',
+        bio: 'Community builder',
+        location: 'New York',
+        phone: '+1 555 123 4567',
+        avatar_url: null,
+      },
+    }));
+
+    expect(getByDisplayValue('Janet')).toBeTruthy();
   });
 
   it('renders placeholders on inputs', () => {
@@ -282,6 +374,7 @@ describe('EditProfileScreen', () => {
     });
 
     const { getByDisplayValue, getByText } = render(<EditProfileScreen />);
+    await waitFor(() => expect(storage.setJson).toHaveBeenCalled());
 
     fireEvent.changeText(getByDisplayValue('+1 555 123 4567'), '');
     fireEvent.press(getByText('Save Changes'));
@@ -289,5 +382,52 @@ describe('EditProfileScreen', () => {
     await waitFor(() => expect(updateProfile).toHaveBeenCalledWith(expect.objectContaining({
       phone: '',
     })));
+  });
+
+  it('serializes save and locks the submitted fields before React rerenders', async () => {
+    let finish!: (value: unknown) => void;
+    (updateProfile as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const { getByDisplayValue, getByText, getByPlaceholderText } = render(<EditProfileScreen />);
+    await waitFor(() => expect(storage.setJson).toHaveBeenCalled());
+    fireEvent.changeText(getByDisplayValue('Community builder'), 'Updated profile');
+
+    act(() => {
+      fireEvent.press(getByText('Save Changes'));
+      fireEvent.press(getByText('Save Changes'));
+    });
+
+    expect(updateProfile).toHaveBeenCalledTimes(1);
+    expect(getByPlaceholderText('Tell us about yourself...').props.editable).toBe(false);
+    await act(async () => finish({ data: {
+      id: 1,
+      first_name: 'Jane',
+      last_name: 'Doe',
+      bio: 'Updated profile',
+      location: 'New York',
+      phone: '+1 555 123 4567',
+      avatar_url: null,
+    } }));
+  });
+
+  it('does not report a committed profile save as failed when local cache refresh fails', async () => {
+    (updateProfile as jest.Mock).mockResolvedValueOnce({ data: {
+      id: 1,
+      first_name: 'Janet',
+      last_name: 'Doe',
+      bio: 'Community builder',
+      location: 'New York',
+      phone: '+1 555 123 4567',
+      avatar_url: null,
+    } });
+    const { router } = require('expo-router');
+    const { getByDisplayValue, getByText } = render(<EditProfileScreen />);
+    await waitFor(() => expect(storage.setJson).toHaveBeenCalled());
+    (storage.setJson as jest.Mock).mockClear();
+    (storage.setJson as jest.Mock).mockRejectedValueOnce(new Error('cache unavailable'));
+    fireEvent.changeText(getByDisplayValue('Jane'), 'Janet');
+    fireEvent.press(getByText('Save Changes'));
+
+    await waitFor(() => expect(router.back).toHaveBeenCalled());
+    expect(updateProfile).toHaveBeenCalledTimes(1);
   });
 });

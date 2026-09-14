@@ -29,6 +29,7 @@ import {
   markFederationMessagesReadBatch,
   optInFederation,
   optOutFederation,
+  removeFederationConnection,
   sendFederationTransaction,
 } from './federation';
 import type { FederationResponse, FederatedTenant } from './federation';
@@ -150,6 +151,20 @@ describe('sendFederationTransaction', () => {
     await sendFederationTransaction(payload);
 
     expect(api.post).toHaveBeenCalledWith('/api/v2/federation/transactions', payload);
+  });
+});
+
+describe('removeFederationConnection', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('binds cancellation and disconnect to the relationship state shown to the member', async () => {
+    (api.delete as jest.Mock).mockResolvedValue({ data: { success: true } });
+
+    await removeFederationConnection(42, 'pending');
+    await removeFederationConnection(43, 'accepted');
+
+    expect(api.delete).toHaveBeenNthCalledWith(1, '/api/v2/federation/connections/42?expected_status=pending');
+    expect(api.delete).toHaveBeenNthCalledWith(2, '/api/v2/federation/connections/43?expected_status=accepted');
   });
 });
 

@@ -9,6 +9,8 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import SettingsDataExportScreen from './settings-data-export';
 import { getDataExportHistory, requestDataExport } from '@/lib/api/settings';
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
@@ -72,6 +74,10 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
+let mockUserId = 1;
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: mockUserId } }),
+}));
 
 jest.mock('@/lib/api/settings', () => ({
   getDataExportHistory: jest.fn(),
@@ -92,6 +98,7 @@ const mockRequestDataExport = requestDataExport as jest.MockedFunction<typeof re
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockUserId = 1;
 });
 
 describe('SettingsDataExportScreen', () => {
@@ -159,5 +166,21 @@ describe('SettingsDataExportScreen', () => {
       ['json', 'mobile-export-key-1'],
       ['json', 'mobile-export-key-1'],
     ]);
+  });
+
+  it('discards an old account history response when the signed-in account changes', async () => {
+    let resolveOld!: (rows: Awaited<ReturnType<typeof getDataExportHistory>>) => void;
+    mockGetDataExportHistory
+      .mockReturnValueOnce(new Promise((resolve) => { resolveOld = resolve; }))
+      .mockResolvedValueOnce([{ id: 2, format: 'zip', requested_at: null, completed_at: null, file_size_bytes: 4096 }]);
+
+    const screen = render(<SettingsDataExportScreen />);
+    mockUserId = 2;
+    screen.rerender(<SettingsDataExportScreen />);
+    await waitFor(() => expect(screen.getByText('zip')).toBeTruthy());
+
+    await act(async () => resolveOld([{ id: 1, format: 'json', requested_at: null, completed_at: null, file_size_bytes: 1024 }]));
+    expect(screen.queryByText('json')).toBeNull();
+    expect(screen.getByText('zip')).toBeTruthy();
   });
 });

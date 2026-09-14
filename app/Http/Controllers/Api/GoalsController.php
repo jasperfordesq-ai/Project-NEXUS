@@ -12,6 +12,7 @@ use App\Models\Goal;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\GoalService;
+use App\Services\GoalCreationReceiptService;
 use App\Services\GoalCheckinService;
 use App\Services\GoalProgressService;
 use App\Services\GoalTemplateService;
@@ -152,17 +153,33 @@ class GoalsController extends BaseApiController
         $this->rateLimit('goal_create', 10, 60);
 
         $data = $this->getAllInput();
+        $identity = $this->goalCreationIdentity($data);
+        if ($identity === false) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
 
         if (empty(trim($data['title'] ?? ''))) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.title_required'), 'title', 400);
         }
 
-        $goal = $this->goalService->create($userId, $data);
+        try {
+            $creation = $identity === null
+                ? ['goal' => $this->goalService->create($userId, $data), 'replayed' => false]
+                : GoalCreationReceiptService::create(
+                    $userId, 'goal', null, $identity,
+                    fn () => $this->goalService->create($userId, $data),
+                );
+            $goal = $creation['goal'];
+        } catch (\InvalidArgumentException) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('api.invalid_input'), 'idempotency_key', 409);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
+        }
         $result = $this->enrichGoal($goal->load(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'mentor:id,first_name,last_name,profile_type,organization_name,avatar_url'])->toArray());
         $result['is_owner'] = true;
 
         // Record feed activity (only for public goals)
-        if (!empty($data['is_public']) || ($goal->is_public ?? false)) {
+        if (!$creation['replayed'] && (!empty($data['is_public']) || ($goal->is_public ?? false))) {
             try {
                 app(\App\Services\FeedActivityService::class)->recordActivity(
                     \App\Core\TenantContext::getId(),
@@ -179,7 +196,7 @@ class GoalsController extends BaseApiController
             }
         }
 
-        return $this->respondWithData($result, null, 201);
+        return $this->respondWithData($result, null, $creation['replayed'] ? 200 : 201);
     }
 
     // -----------------------------------------------------------------
@@ -237,68 +254,91 @@ class GoalsController extends BaseApiController
         $this->rateLimit('goal_progress', 30, 60);
 
         $increment = $this->input('increment');
+        $expectedCurrent = $this->input('expected_current_value');
+        $desiredCurrent = $this->input('desired_current_value');
 
         if ($increment === null) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.increment_required'), 'increment', 400);
         }
 
-        $goal = $this->goalService->incrementProgress($id, $userId, (float) $increment);
+        if (($desiredCurrent !== null && (!is_numeric($desiredCurrent) || (float) $desiredCurrent < 0))
+            || ($expectedCurrent !== null && !is_numeric($expectedCurrent))) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'desired_current_value', 422);
+        }
+
+        try {
+            $progress = $this->goalService->updateProgressWithResult(
+                $id,
+                $userId,
+                (float) $increment,
+                $expectedCurrent === null ? null : (float) $expectedCurrent,
+                $desiredCurrent === null ? null : (float) $desiredCurrent,
+            );
+        } catch (\InvalidArgumentException) {
+            return $this->respondWithError('GOAL_PROGRESS_CONFLICT', __('api.invalid_input'), 'expected_current_value', 409);
+        }
+        $goal = $progress['goal'];
 
         if (! $goal) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.goal_not_found_or_not_owned'), null, 404);
         }
 
         // Notify the buddy/mentor of progress updates
-        try {
-            $mentorId = $goal->mentor_id ? (int) $goal->mentor_id : null;
-            if ($mentorId && $mentorId !== $userId) {
-                $owner = User::find($userId);
-                $mentor = User::find($mentorId);
-                LocaleContext::withLocale($mentor, function () use ($owner, $goal, $mentorId, $id) {
-                    $ownerName = $owner->name ?? __('emails.common.fallback_someone');
-                    $goalTitle = $goal->title ?? 'their goal';
+        if (!$progress['replay']) {
+            try {
+                $mentorId = $goal->mentor_id ? (int) $goal->mentor_id : null;
+                if ($mentorId && $mentorId !== $userId) {
+                    $owner = User::find($userId);
+                    $mentor = User::find($mentorId);
+                    LocaleContext::withLocale($mentor, function () use ($owner, $goal, $mentorId, $id) {
+                        $ownerName = $owner->name ?? __('emails.common.fallback_someone');
+                        $goalTitle = $goal->title ?? 'their goal';
 
-                    // If progress caused auto-completion, send completion message
-                    if ($goal->status === 'completed') {
-                        Notification::createNotification(
-                            $mentorId,
-                            __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goalTitle]),
-                            "/goals/{$id}",
-                            'goal_completed'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $mentorId, 'goal_completed', __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goalTitle]), "/goals/{$id}");
-                    } else {
-                        Notification::createNotification(
-                            $mentorId,
-                            __('api_controllers_3.goals.progress_mentor', ['name' => $ownerName, 'title' => $goalTitle]),
-                            "/goals/{$id}",
-                            'goal_progress'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $mentorId, 'goal_progress', __('api_controllers_3.goals.progress_mentor', ['name' => $ownerName, 'title' => $goalTitle]), "/goals/{$id}");
-                    }
-                });
+                        // If progress caused auto-completion, send completion message
+                        if ($goal->status === 'completed') {
+                            Notification::createNotification(
+                                $mentorId,
+                                __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goalTitle]),
+                                "/goals/{$id}",
+                                'goal_completed'
+                            );
+                            \App\Services\NotificationDispatcher::fanOutPush((int) $mentorId, 'goal_completed', __('api_controllers_3.goals.completed_mentor', ['name' => $ownerName, 'title' => $goalTitle]), "/goals/{$id}");
+                        } else {
+                            Notification::createNotification(
+                                $mentorId,
+                                __('api_controllers_3.goals.progress_mentor', ['name' => $ownerName, 'title' => $goalTitle]),
+                                "/goals/{$id}",
+                                'goal_progress'
+                            );
+                            \App\Services\NotificationDispatcher::fanOutPush((int) $mentorId, 'goal_progress', __('api_controllers_3.goals.progress_mentor', ['name' => $ownerName, 'title' => $goalTitle]), "/goals/{$id}");
+                        }
+                    });
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Goal progress notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
             }
-        } catch (\Throwable $e) {
-            \Log::warning('Goal progress notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
         }
 
         // If auto-completed via progress, also notify the owner (achievement)
-        try {
-            if ($goal->status === 'completed') {
-                Notification::createNotification(
-                    $userId,
-                    __('api_controllers_3.goals.completed_self', ['title' => $goal->title]),
-                    "/goals/{$id}",
-                    'goal_completed'
-                );
-                \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'goal_completed', __('api_controllers_3.goals.completed_self', ['title' => $goal->title]), "/goals/{$id}");
+        if (!$progress['replay']) {
+            try {
+                if ($goal->status === 'completed') {
+                    Notification::createNotification(
+                        $userId,
+                        __('api_controllers_3.goals.completed_self', ['title' => $goal->title]),
+                        "/goals/{$id}",
+                        'goal_completed'
+                    );
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'goal_completed', __('api_controllers_3.goals.completed_self', ['title' => $goal->title]), "/goals/{$id}");
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Goal auto-completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
             }
-        } catch (\Throwable $e) {
-            \Log::warning('Goal auto-completion notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
         }
 
         $data = $this->enrichGoal($goal->load(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'mentor:id,first_name,last_name,profile_type,organization_name,avatar_url'])->toArray());
         $data['is_owner'] = true;
+        $data['idempotent_replay'] = $progress['replay'];
 
         return $this->respondWithData($data);
     }
@@ -698,7 +738,24 @@ class GoalsController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('goal_create', 10, 60);
 
-        $goal = $this->templateService->createGoalFromTemplate($templateId, $userId, $this->getAllInput());
+        $input = $this->getAllInput();
+        $identity = $this->goalCreationIdentity(['template_id' => $templateId] + $input);
+        if ($identity === false) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
+        try {
+            $creation = $identity === null
+                ? ['goal' => $this->templateService->createGoalFromTemplate($templateId, $userId, $input), 'replayed' => false]
+                : GoalCreationReceiptService::create(
+                    $userId, 'template', $templateId, $identity,
+                    fn () => $this->templateService->createGoalFromTemplate($templateId, $userId, $input),
+                );
+            $goal = $creation['goal'];
+        } catch (\InvalidArgumentException) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('api.invalid_input'), 'idempotency_key', 409);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
+        }
 
         if (! $goal) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.template_not_found'), null, 404);
@@ -707,7 +764,7 @@ class GoalsController extends BaseApiController
         $data = $goal->toArray();
         $data['is_owner'] = true;
 
-        return $this->respondWithData($data, null, 201);
+        return $this->respondWithData($data, null, $creation['replayed'] ? 200 : 201);
     }
 
     // -----------------------------------------------------------------
@@ -750,5 +807,17 @@ class GoalsController extends BaseApiController
         $this->reminderService->deleteReminder($id, $userId);
 
         return $this->noContent();
+    }
+
+    /** @return array{key_hash:string,request_hash:string}|null|false */
+    private function goalCreationIdentity(array $intent): array|null|false
+    {
+        $header = request()->header('Idempotency-Key');
+        $body = $intent['idempotency_key'] ?? request()->input('idempotency_key');
+        if ($header !== null && $body !== null && !hash_equals(trim((string) $header), trim((string) $body))) {
+            return false;
+        }
+        unset($intent['idempotency_key']);
+        return GoalCreationReceiptService::identity((string) ($header ?? $body ?? ''), $intent);
     }
 }

@@ -175,5 +175,9 @@
     "title": "Uscire senza salvare?",
     "message": "Le modifiche su questa schermata non sono ancora state salvate.",
     "discard": "Esci"
+  },
+  "draftStorage": {
+    "title": "Bozza non protetta",
+    "message": "Non è stato possibile salvare questa bozza in modo sicuro sul dispositivo. Tieni aperta l’app, controlla lo spazio disponibile e apporta un’altra modifica per riprovare."
   }
 }

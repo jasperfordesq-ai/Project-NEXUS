@@ -708,6 +708,7 @@ class GroupsController extends BaseApiController
         $this->rateLimit("groups_create_discussion_{$id}", 10, 60);
 
         $data = $this->getAllInput();
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? null);
 
         try {
             $discussion = $this->groupService->createDiscussion($id, $userId, $data);
@@ -719,13 +720,17 @@ class GroupsController extends BaseApiController
             return $this->discussionErrorResponse(422);
         }
 
-        // Notify group members of new discussion
-        try {
-            $discussionTitle = $discussion['title'] ?? $data['title'] ?? __('api.group_new_discussion_fallback');
-            $discussionId = $discussion['id'] ?? 0;
-            $this->groupNotificationService->notifyNewDiscussion($id, $discussionId, $userId, $discussionTitle);
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("Group discussion notification error: " . $e->getMessage());
+        $replayed = (bool) ($discussion['_idempotent_replay'] ?? false);
+        unset($discussion['_idempotent_replay']);
+        if (! $replayed) {
+            // Notify group members only for the committed creation, never for a replay.
+            try {
+                $discussionTitle = $discussion['title'] ?? $data['title'] ?? __('api.group_new_discussion_fallback');
+                $discussionId = $discussion['id'] ?? 0;
+                $this->groupNotificationService->notifyNewDiscussion($id, $discussionId, $userId, $discussionTitle);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Group discussion notification error: " . $e->getMessage());
+            }
         }
 
         return $this->respondWithData($discussion, null, 201);
@@ -795,7 +800,8 @@ class GroupsController extends BaseApiController
             'NOT_FOUND' => 404,
             'FORBIDDEN' => 403,
             'DISCUSSION_LOCKED' => 409,
-            'INVALID_CURSOR', 'VALIDATION_ERROR' => 422,
+            'IDEMPOTENCY_CONFLICT' => 409,
+            'INVALID_CURSOR', 'VALIDATION_ERROR', 'IDEMPOTENCY_INVALID' => 422,
             default => $fallbackStatus,
         };
 
@@ -840,6 +846,7 @@ class GroupsController extends BaseApiController
         $id = (int) $id;
         $userId = $this->requireAuth();
         $data = $this->getAllInput();
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? null);
 
         try {
             $result = $this->groupAnnouncementService->create($id, $userId, $data);
@@ -853,12 +860,16 @@ class GroupsController extends BaseApiController
             return $this->respondWithErrors($errors, $status);
         }
 
-        // Notify group members of new announcement
-        try {
-            $announcementTitle = $result['title'] ?? $data['title'] ?? __('api.group_new_announcement_fallback');
-            $this->groupNotificationService->notifyNewAnnouncement($id, $userId, $announcementTitle);
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("Group announcement notification error: " . $e->getMessage());
+        $replayed = (bool) ($result['_idempotent_replay'] ?? false);
+        unset($result['_idempotent_replay']);
+        if (! $replayed) {
+            // Notify group members only for the committed creation, never for a replay.
+            try {
+                $announcementTitle = $result['title'] ?? $data['title'] ?? __('api.group_new_announcement_fallback');
+                $this->groupNotificationService->notifyNewAnnouncement($id, $userId, $announcementTitle);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Group announcement notification error: " . $e->getMessage());
+            }
         }
 
         return $this->respondWithData($result, null, 201);
@@ -1115,7 +1126,8 @@ class GroupsController extends BaseApiController
             $status = match ($error['code'] ?? '') {
                 'NOT_FOUND' => 404,
                 'FORBIDDEN' => 403,
-                'INVALID_CURSOR', 'VALIDATION', 'VALIDATION_ERROR' => 422,
+                'IDEMPOTENCY_CONFLICT' => 409,
+                'INVALID_CURSOR', 'VALIDATION', 'VALIDATION_ERROR', 'IDEMPOTENCY_INVALID' => 422,
                 default => null,
             };
 

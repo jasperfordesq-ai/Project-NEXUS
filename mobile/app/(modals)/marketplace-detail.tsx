@@ -38,6 +38,7 @@ import {
   getMarketplaceSellerListings,
   getMarketplaceCollections,
   getMarketplaceListing,
+  getMarketplaceOffers,
   makeMarketplaceOffer,
   reportMarketplaceListing,
   saveMarketplaceListing,
@@ -58,13 +59,14 @@ import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
 
-function MarketplaceDetailRoute() {
+function MarketplaceDetailModal() {
   return (
     <ModalErrorBoundary>
       <MarketplaceDetailScreen />
@@ -127,6 +129,13 @@ function MarketplaceDetailScreen() {
   const [reportDescription, setReportDescription] = useState('');
   const checkoutIdempotencyKeyRef = useRef<string | null>(null);
   const checkoutSubmittingRef = useRef(false);
+  const saveSubmittingRef = useRef(false);
+  const offerSubmittingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
 
   useEffect(() => {
     checkoutIdempotencyKeyRef.current = null;
@@ -358,16 +367,33 @@ function MarketplaceDetailScreen() {
   const templateEntries = getListingTemplateEntries(listing.template_data);
 
   async function handleToggleSave() {
-    if (!listing) return;
+    if (!listing || saveSubmittingRef.current) return;
+    saveSubmittingRef.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const previous = listing;
-    setListing({ ...listing, is_saved: !listing.is_saved });
+    const intendedSaved = !listing.is_saved;
+    setListing({ ...listing, is_saved: intendedSaved });
     try {
       if (listing.is_saved) await unsaveMarketplaceListing(listing.id);
       else await saveMarketplaceListing(listing.id);
     } catch (err) {
-      setListing(previous);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common.save_failed')), variant: 'danger' });
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const readback = await getMarketplaceListing(listing.id, acceptedOfferId);
+          if (readback.data.is_saved === intendedSaved) {
+            if (isMountedRef.current) setListing(readback.data);
+            return;
+          }
+        } catch {
+          // Preserve the original transport error below when readback is unavailable.
+        }
+      }
+      if (isMountedRef.current) {
+        setListing(previous);
+        showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common.save_failed')), variant: 'danger' });
+      }
+    } finally {
+      saveSubmittingRef.current = false;
     }
   }
 
@@ -551,25 +577,50 @@ function MarketplaceDetailScreen() {
   }
 
   async function handleSubmitOffer() {
-    if (!listing || isActionLoading) return;
+    if (!listing || offerSubmittingRef.current) return;
     // 🔴 This stripped commas before Number(): a German member's "12,50" was sent as 1250.
     const amount = parseDecimalInput(offerAmount);
     if (amount === null || !Number.isFinite(amount) || amount <= 0) {
       showToast({ title: t('forms.validation'), description: t('offers.amountRequired'), variant: 'warning' });
       return;
     }
+    offerSubmittingRef.current = true;
     setIsActionLoading(true);
     try {
-      await makeMarketplaceOffer(listing.id, { amount, message: offerMessage.trim() || null });
+      const message = offerMessage.trim() || null;
+      let sent = false;
+      try {
+        await makeMarketplaceOffer(listing.id, { amount, message });
+        sent = true;
+      } catch (err) {
+        if (isMountedRef.current && err instanceof ApiResponseError && err.status === 0) {
+          try {
+            const readback = await getMarketplaceOffers('sent');
+            sent = readback.data.some((offer) => (
+              offer.listing?.id === listing.id
+              && offer.status === 'pending'
+              && Number(offer.amount) === amount
+              && (offer.message ?? null) === message
+            ));
+          } catch {
+            // Preserve the original transport error below when readback is unavailable.
+          }
+        }
+        if (!sent) throw err;
+      }
+      if (!isMountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setOfferOpen(false);
       setOfferAmount('');
       setOfferMessage('');
       showToast({ title: t('offers.sent'), description: t('offers.sentHint'), variant: 'success' });
     } catch (err) {
-      showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('offers.failed'), variant: 'danger' });
+      if (isMountedRef.current) {
+        showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('offers.failed'), variant: 'danger' });
+      }
     } finally {
-      setIsActionLoading(false);
+      offerSubmittingRef.current = false;
+      if (isMountedRef.current) setIsActionLoading(false);
     }
   }
 
@@ -1064,6 +1115,17 @@ function MarketplaceDetailScreen() {
       {/* The purchase confirmation for a time-credit or free checkout (D/F-2). */}
       {confirmDialog}
     </SafeAreaView>
+  );
+}
+
+function MarketplaceDetailRoute() {
+  const params = useLocalSearchParams<{ id?: string; offer_id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return (
+    <MarketplaceDetailModal
+      key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${params.id ?? 'invalid'}:${params.offer_id ?? 'no-offer'}`}
+    />
   );
 }
 

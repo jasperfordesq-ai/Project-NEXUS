@@ -77,7 +77,9 @@
       "permissionTitle": "Accès aux photos nécessaire",
       "permissionMessage": "Autorisez l’accès aux photos pour joindre des images.",
       "uploading": "Envoi des photos… {{percent}} %",
-      "cancelUpload": "Annuler"
+      "cancelUpload": "Annuler",
+      "draftStorageTitle": "Photo conservée pour cette session",
+      "draftStorageWarning": "La photo est jointe, mais elle risque de disparaître si l’application se ferme."
     },
     "voice": {
       "record": "Enregistrer un message vocal",
@@ -91,7 +93,9 @@
       "failedTitle": "Échec du message vocal",
       "startFailed": "Impossible de démarrer l’enregistrement. Réessayez.",
       "stopFailed": "Impossible d’enregistrer cet enregistrement. Réessayez.",
-      "sendFailed": "Impossible d’envoyer le message vocal. Réessayez."
+      "sendFailed": "Impossible d’envoyer le message vocal. Réessayez.",
+      "draftStorageTitle": "Note vocale conservée pour cette session",
+      "draftStorageWarning": "La note vocale est prête, mais elle risque de disparaître si l’application se ferme."
     },
     "notFound": "Cette conversation n’est plus disponible.",
     "unsentDrafts": "Brouillons non envoyés : {{count}}",

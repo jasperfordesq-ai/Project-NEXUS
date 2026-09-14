@@ -475,6 +475,12 @@
   "submitting": "Submitting...",
   "submitSuccess": "Idea presentata.",
   "submitFailed": "Impossibile presentare l’idea.",
+  "submissionUnavailable": {
+    "phase": "Questa sfida non accetta nuove idee.",
+    "deadline": "Il termine per le proposte è scaduto.",
+    "limit": "Hai raggiunto il limite di idee per questa sfida.",
+    "authentication": "Accedi per presentare un’idea."
+  },
   "vote": "Vote",
   "voted": "Voted",
   "voteFailed": "Impossibile aggiornare il voto.",

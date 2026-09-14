@@ -13,6 +13,8 @@ const mockApiRegister = jest.fn();
 const mockExtractToken: jest.Mock<any, any> = jest.fn((r: { access_token?: string }) => r.access_token ?? '');
 const mockStorageSet = jest.fn().mockResolvedValue(undefined);
 const mockStorageSetJson = jest.fn().mockResolvedValue(undefined);
+const mockStorageRemove = jest.fn().mockResolvedValue(undefined);
+const mockSetSession = jest.fn();
 
 jest.mock('expo-router', () => {
   const React = require('react');
@@ -67,7 +69,7 @@ jest.mock('@/lib/storage', () => ({
     set: (...args: unknown[]) => mockStorageSet(...args),
     setJson: (...args: unknown[]) => mockStorageSetJson(...args),
     get: jest.fn().mockResolvedValue(null),
-    remove: jest.fn().mockResolvedValue(undefined),
+    remove: (...args: unknown[]) => mockStorageRemove(...args),
     getJson: jest.fn().mockResolvedValue(null),
   },
 }));
@@ -81,7 +83,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({
     user: null, token: null, isLoading: false, isAuthenticated: false,
     login: jest.fn(), logout: jest.fn(), displayName: '',
-    setSession: jest.fn(), refreshUser: jest.fn(),
+    setSession: mockSetSession, refreshUser: jest.fn(),
   }),
 }));
 
@@ -178,6 +180,7 @@ describe('RegisterScreen', () => {
     jest.clearAllMocks();
     mockStorageSet.mockResolvedValue(undefined);
     mockStorageSetJson.mockResolvedValue(undefined);
+    mockStorageRemove.mockResolvedValue(undefined);
   });
 
   it('renders key form elements', () => {
@@ -275,6 +278,28 @@ describe('RegisterScreen', () => {
       form_started_at: expect.any(Number),
     }));
     await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/(modals)/onboarding'));
+    expect(mockStorageSet.mock.calls).toEqual([
+      ['refresh_token', 'ref_xyz', { required: true }],
+      ['auth_token', 'tok_abc', { required: true }],
+    ]);
+    expect(mockSetSession).toHaveBeenCalledWith('tok_abc', mockUser);
+  });
+
+  it('does not display a session when encrypted credential persistence fails', async () => {
+    mockApiRegister.mockResolvedValue(validAuthResponse);
+    mockExtractToken.mockReturnValue('tok_abc');
+    mockStorageSet.mockRejectedValueOnce(new Error('Keychain unavailable'));
+    const screen = render(<RegisterScreen />);
+
+    fillRequiredRegistrationFields(screen.getByTestId, screen.getByText);
+    pressSubmit(screen.getAllByText);
+
+    expect(await screen.findByText(/account was created, but the sign-in could not be saved securely/i)).toBeTruthy();
+    expect(mockSetSession).not.toHaveBeenCalled();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(mockStorageRemove).toHaveBeenCalledWith('auth_token');
+    expect(mockStorageRemove).toHaveBeenCalledWith('refresh_token');
+    expect(mockStorageRemove).toHaveBeenCalledWith('user_data');
   });
 
   it('submits backend-required registration fields and shows pending verification when no token is issued', async () => {

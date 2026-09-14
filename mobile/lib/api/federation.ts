@@ -399,8 +399,8 @@ export function rejectFederationConnection(id: number | string): Promise<{ data?
   return api.post<{ data?: unknown; success?: boolean }>(`${API_V2}/federation/connections/${id}/reject`, {});
 }
 
-export function removeFederationConnection(id: number | string): Promise<{ data?: unknown; success?: boolean }> {
-  return api.delete<{ data?: unknown; success?: boolean }>(`${API_V2}/federation/connections/${id}`);
+export function removeFederationConnection(id: number | string, expectedStatus: 'pending' | 'accepted'): Promise<{ data?: unknown; success?: boolean }> {
+  return api.delete<{ data?: unknown; success?: boolean }>(`${API_V2}/federation/connections/${id}?expected_status=${expectedStatus}`);
 }
 
 export function getFederationConnectionStatus(userId: number | string, tenantId: number | string): Promise<{ data: FederatedConnectionStatus }> {

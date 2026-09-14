@@ -10,6 +10,8 @@ use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Sanctum\Sanctum;
 use App\Models\User;
+use App\Core\TenantContext;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Feature tests for VolunteerCommunityController — swaps, waitlists, donations, community projects.
@@ -28,6 +30,14 @@ class VolunteerCommunityControllerTest extends TestCase
         Sanctum::actingAs($user, ['*']);
 
         return $user;
+    }
+
+    private function enableVolunteeringFeature(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'features' => json_encode(['volunteering' => true, 'organisations' => true]),
+        ]);
+        TenantContext::setById($this->testTenantId);
     }
 
     public function test_get_swap_requests_requires_auth(): void
@@ -58,6 +68,22 @@ class VolunteerCommunityControllerTest extends TestCase
         $response = $this->apiGet('/v2/volunteering/swaps');
 
         $this->assertLessThan(500, $response->status());
+    }
+
+    public function test_swap_request_rejects_mismatched_header_and_body_idempotency_keys(): void
+    {
+        $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+
+        $this->withHeader('Idempotency-Key', 'header-shift-swap-key')
+            ->apiPost('/v2/volunteering/swaps', [
+                'from_shift_id' => 11,
+                'to_shift_id' => 12,
+                'idempotency_key' => 'different-body-key',
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'VALIDATION_ERROR')
+            ->assertJsonPath('errors.0.field', 'idempotency_key');
     }
 
     public function test_get_community_projects_authenticated_smoke(): void

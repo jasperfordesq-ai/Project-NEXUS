@@ -189,8 +189,12 @@ export function getExchangeCategories(): Promise<{ data: ExchangeCategory[] }> {
 }
 
 /** POST /api/v2/listings */
-export function createExchange(payload: CreateExchangePayload): Promise<{ data: Exchange }> {
-  return api.post<{ data: Exchange }>(`${API_V2}/listings`, payload);
+export function createExchange(payload: CreateExchangePayload, idempotencyKey?: string): Promise<{ data: Exchange }> {
+  if (!idempotencyKey) return api.post<{ data: Exchange }>(`${API_V2}/listings`, payload);
+  return api.post<{ data: Exchange }>(`${API_V2}/listings`, {
+    ...payload,
+    idempotency_key: idempotencyKey,
+  }, { headers: { 'Idempotency-Key': idempotencyKey } });
 }
 
 /** PUT /api/v2/listings/:id/tags */

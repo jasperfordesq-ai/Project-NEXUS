@@ -19,6 +19,7 @@ use App\Http\Requests\Volunteering\UpdateOrganisationRequest;
 use App\Http\Requests\Volunteering\VerifyHoursRequest;
 use App\Http\Resources\PublicOrganisationResource;
 use App\Services\VolunteerService;
+use App\Services\VolunteerOpportunityCreationReceiptService;
 use App\Services\VolunteerMatchingService;
 use App\Services\VolunteeringConfigurationService;
 use App\Core\TenantContext;
@@ -145,12 +146,42 @@ class VolunteerController extends BaseApiController
         $this->rateLimit('volunteering_create', 10, 60);
         $data = $this->getAllInput();
         $data['created_by'] = $userId;
-        $opportunity = $this->volunteerService->createOpportunity($userId, $data);
+        $identity = $this->opportunityCreationIdentity($data);
+        if ($identity === false) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
+
+        try {
+            $creation = $identity === null
+                ? ['opportunity' => $this->volunteerService->createOpportunity($userId, $data), 'replayed' => false]
+                : VolunteerOpportunityCreationReceiptService::create(
+                    $userId,
+                    $identity,
+                    fn () => $this->volunteerService->createOpportunity($userId, $data),
+                );
+            $opportunity = $creation['opportunity'];
+        } catch (\InvalidArgumentException) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('api.invalid_input'), 'idempotency_key', 409);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
+        }
         if (!$opportunity) {
             $errors = $this->volunteerService->getErrors();
             return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
         }
         return $this->respondWithData($opportunity, null, 201);
+    }
+
+    /** @return array{key_hash:string,request_hash:string}|null|false */
+    private function opportunityCreationIdentity(array $intent): array|null|false
+    {
+        $header = request()->header('Idempotency-Key');
+        $body = $intent['idempotency_key'] ?? request()->input('idempotency_key');
+        if ($header !== null && $body !== null && ! hash_equals(trim((string) $header), trim((string) $body))) {
+            return false;
+        }
+        unset($intent['idempotency_key'], $intent['created_by']);
+        return VolunteerOpportunityCreationReceiptService::identity((string) ($header ?? $body ?? ''), $intent);
     }
 
     public function updateOpportunity(UpdateOpportunityRequest $request, $id): JsonResponse
@@ -442,7 +473,15 @@ class VolunteerController extends BaseApiController
         }
 
         try {
-            $success = $this->volunteerService->signUpForShift((int) $id, $userId);
+            $input = $this->getAllInput();
+            $expectedStateProvided = array_key_exists('expected_shift_id', $input);
+            $expectedShiftId = $expectedStateProvided ? $this->inputInt('expected_shift_id', null, 1) : null;
+            $success = $this->volunteerService->signUpForShift(
+                (int) $id,
+                $userId,
+                $expectedShiftId,
+                $expectedStateProvided,
+            );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -457,7 +496,8 @@ class VolunteerController extends BaseApiController
             if (!$shift || (int) $shift->tenant_id !== TenantContext::getId()) {
                 throw new \RuntimeException(__('api.tenant_mismatch_error'));
             }
-            if ($shift && $shift->opportunity && $shift->opportunity->created_by && $shift->opportunity->created_by !== $userId) {
+            if ($this->volunteerService->didLastShiftSignupChange()
+                && $shift && $shift->opportunity && $shift->opportunity->created_by && $shift->opportunity->created_by !== $userId) {
                 $volunteer = User::find($userId);
                 $organizer = User::find((int) $shift->opportunity->created_by);
                 LocaleContext::withLocale($organizer, function () use ($volunteer, $shift) {

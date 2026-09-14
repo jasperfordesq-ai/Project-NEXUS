@@ -22,6 +22,8 @@ export interface IdeationChallenge {
   prize_description?: string | null;
   max_ideas_per_user?: number | null;
   user_idea_count?: number;
+  accepting_submissions?: boolean;
+  submission_unavailable_reason?: 'authentication' | 'phase' | 'deadline' | 'limit' | null;
   tags?: string[];
   cover_image?: string | null;
   is_favorited?: boolean;
@@ -198,16 +200,34 @@ export async function getIdeationIdeas(challengeId: number, sort: IdeationSort =
   return normalizeCollection(response);
 }
 
-export async function submitIdeationIdea(challengeId: number, payload: { title: string; description: string }): Promise<{ id: number }> {
-  const response = await api.post<{ data?: { id: number } } | { id: number }>(`${API_V2}/ideation-challenges/${challengeId}/ideas`, payload);
+export async function submitIdeationIdea(
+  challengeId: number,
+  payload: { title: string; description: string },
+  idempotencyKey?: string,
+): Promise<{ id: number }> {
+  const body = idempotencyKey ? { ...payload, idempotency_key: idempotencyKey } : payload;
+  const endpoint = `${API_V2}/ideation-challenges/${challengeId}/ideas`;
+  const response = idempotencyKey
+    ? await api.post<{ data?: { id: number } } | { id: number }>(endpoint, body, { headers: { 'Idempotency-Key': idempotencyKey } })
+    : await api.post<{ data?: { id: number } } | { id: number }>(endpoint, body);
   if (isObjectWithData(response) && response.data) {
     return response.data;
   }
   return response as { id: number };
 }
 
-export async function voteIdeationIdea(ideaId: number): Promise<IdeationVoteResult> {
-  const response = await api.post<{ data?: IdeationVoteResult } | IdeationVoteResult>(`${API_V2}/ideation-ideas/${ideaId}/vote`);
+export async function voteIdeationIdea(
+  ideaId: number,
+  desiredVoted?: boolean,
+  idempotencyKey?: string,
+): Promise<IdeationVoteResult> {
+  const body = desiredVoted === undefined && !idempotencyKey
+    ? undefined
+    : { ...(desiredVoted === undefined ? {} : { voted: desiredVoted }), ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) };
+  const endpoint = `${API_V2}/ideation-ideas/${ideaId}/vote`;
+  const response = idempotencyKey
+    ? await api.post<{ data?: IdeationVoteResult } | IdeationVoteResult>(endpoint, body, { headers: { 'Idempotency-Key': idempotencyKey } })
+    : await api.post<{ data?: IdeationVoteResult } | IdeationVoteResult>(endpoint, body);
   if (isObjectWithData(response) && response.data) {
     return response.data;
   }
@@ -228,8 +248,12 @@ export async function getIdeationComments(ideaId: number, cursor?: string | null
   return normalizeCollection(await api.get<CollectionEnvelope<IdeationComment>>(`${API_V2}/ideation-ideas/${ideaId}/comments`, params));
 }
 
-export async function addIdeationComment(ideaId: number, body: string): Promise<IdeationComment> {
-  return unwrapData(await api.post<{ data?: IdeationComment } | IdeationComment>(`${API_V2}/ideation-ideas/${ideaId}/comments`, { body }));
+export async function addIdeationComment(ideaId: number, body: string, idempotencyKey?: string): Promise<IdeationComment> {
+  const endpoint = `${API_V2}/ideation-ideas/${ideaId}/comments`;
+  const payload = { body, ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) };
+  return unwrapData(idempotencyKey
+    ? await api.post<{ data?: IdeationComment } | IdeationComment>(endpoint, payload, { headers: { 'Idempotency-Key': idempotencyKey } })
+    : await api.post<{ data?: IdeationComment } | IdeationComment>(endpoint, payload));
 }
 
 /**

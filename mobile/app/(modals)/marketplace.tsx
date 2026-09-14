@@ -243,6 +243,7 @@ function MarketplaceScreen() {
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 2 }}>
                   <ShortcutButton label={t('actions.orders')} icon="receipt-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-orders' as Href)} />
+                  <ShortcutButton label={t('actions.deliveries')} icon="car-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-deliveries' as Href)} />
                   <ShortcutButton label={t('actions.pickups')} icon="qr-code-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-pickups' as Href)} />
                   <ShortcutButton label={t('actions.tools')} icon="construct-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-tools' as Href)} />
                   <ShortcutButton label={t('actions.freeItems')} icon="gift-outline" color={theme.success} onPress={() => router.push('/(modals)/marketplace-free' as Href)} />

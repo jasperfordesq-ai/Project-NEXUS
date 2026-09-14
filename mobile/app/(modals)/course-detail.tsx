@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,16 +18,29 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { Chip } from '@/components/ui/StatusChip';
 import { enrollInCourse, getCourse } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function CourseDetailScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return (
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`}>
+      <CourseDetailScreenInner />
+    </ModalErrorBoundary>
+  );
+}
+
+function CourseDetailScreenInner() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation(['courses', 'common']);
   const primary = usePrimaryColor();
@@ -36,7 +49,11 @@ function CourseDetailScreen() {
   const { confirm, confirmDialog } = useConfirm();
   const [enrolling, setEnrolling] = useState(false);
   const enrollingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const { data: course, isLoading, error, errorStatus, refresh } = useApi(() => getCourse(id || ''), [id], { enabled: Boolean(id) });
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
   /* 🔴 A course a member is not enrolled on, or one taken down, answers 403/404. That
      was rendered as a load failure with a Retry that can never succeed (audit F/F-8). */
   const refused = isRefusalStatus(errorStatus);
@@ -47,9 +64,23 @@ function CourseDetailScreen() {
     setEnrolling(true);
     try {
       await enrollInCourse(course.id);
+      if (!isMountedRef.current) return;
       show({ title: t('detail.enroll_success'), variant: 'success' });
       router.push({ pathname: '/(modals)/course-player', params: { id: String(course.id) } });
     } catch (err) {
+      if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = await getCourse(course.id);
+          if (isMountedRef.current && latest.is_enrolled) {
+            show({ title: t('detail.enroll_success'), variant: 'success' });
+            router.push({ pathname: '/(modals)/course-player', params: { id: String(course.id) } });
+            return;
+          }
+        } catch {
+          // Preserve the original indeterminate result when canonical readback is unavailable.
+        }
+      }
       /*
         🔴 The reason was discarded, so the most likely failure by far — not enough time
         credits — reached the member as "Could not enroll. Please try again." Trying again
@@ -58,7 +89,7 @@ function CourseDetailScreen() {
       show({ title: t('detail.enroll_error'), description: describeApiError(err, ''), variant: 'danger' });
     } finally {
       enrollingRef.current = false;
-      setEnrolling(false);
+      if (isMountedRef.current) setEnrolling(false);
     }
   }
 
@@ -85,8 +116,7 @@ function CourseDetailScreen() {
   }
 
   return (
-    <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={course?.title ?? t('title')} backLabel={t('common:back')} fallbackHref="/(modals)/courses" />
         {isLoading && !course ? <View className="flex-1 items-center justify-center"><LoadingSpinner /></View> : refused && !course ? (
           <View className="flex-1 items-center justify-center gap-4 px-6" testID="course-detail-refused">
@@ -136,8 +166,7 @@ function CourseDetailScreen() {
           </ScrollView>
         )}
         {confirmDialog}
-      </SafeAreaView>
-    </ModalErrorBoundary>
+    </SafeAreaView>
   );
 }
 

@@ -200,6 +200,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('events-process-federation');
 
+        // Message rows and this outbox fact commit together. This consumer
+        // repairs a Redis/event enqueue outage without asking the sender to
+        // create another message or silently abandoning recipient delivery.
+        $schedule->command('messages:process-delivery-outbox --limit=100')
+            ->everyMinute()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->name('messages-process-delivery-outbox');
+
         // Retry durable podcast storage deletions. Domain rows never lose the
         // last object pointer before this ledger confirms cleanup succeeded.
         $schedule->command('podcasts:dispatch-media-cleanup --limit=100')

@@ -114,6 +114,27 @@ describe('ideation api', () => {
     expect(mockPut).toHaveBeenNthCalledWith(2, '/api/v2/ideation-challenges/3', { title: 'Greener streets', description: 'Improve public space' });
   });
 
+  it('sends stable ideation mutation identities in the header and body', async () => {
+    mockPost
+      .mockResolvedValueOnce({ data: { id: 9 } })
+      .mockResolvedValueOnce({ data: { voted: true, votes_count: 5 } })
+      .mockResolvedValueOnce({ data: { id: 12, body: 'Me too' } });
+
+    await submitIdeationIdea(3, { title: 'More trees', description: 'Plant them' }, 'idea-submit-key');
+    await voteIdeationIdea(7, true, 'idea-vote-key');
+    await addIdeationComment(7, 'Me too', 'idea-comment-key');
+
+    expect(mockPost).toHaveBeenNthCalledWith(1, '/api/v2/ideation-challenges/3/ideas', {
+      title: 'More trees', description: 'Plant them', idempotency_key: 'idea-submit-key',
+    }, { headers: { 'Idempotency-Key': 'idea-submit-key' } });
+    expect(mockPost).toHaveBeenNthCalledWith(2, '/api/v2/ideation-ideas/7/vote', {
+      voted: true, idempotency_key: 'idea-vote-key',
+    }, { headers: { 'Idempotency-Key': 'idea-vote-key' } });
+    expect(mockPost).toHaveBeenNthCalledWith(3, '/api/v2/ideation-ideas/7/comments', {
+      body: 'Me too', idempotency_key: 'idea-comment-key',
+    }, { headers: { 'Idempotency-Key': 'idea-comment-key' } });
+  });
+
   it('normalizes campaigns and the outcomes dashboard', async () => {
     mockGet
       .mockResolvedValueOnce({ data: [{ id: 4, title: 'Greener town' }], meta: { next_cursor: 'next', has_more: true } })

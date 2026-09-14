@@ -159,7 +159,24 @@
     "resultsHiddenUntilClose": "Results revealed when poll closes",
     "voteToSeeResults": "Vote to see results",
     "voteFailedTitle": "Vote not saved",
-    "voteFailed": "Your vote could not be recorded. Please try again."
+    "voteFailed": "Your vote could not be recorded. Please try again.",
+    "ranked": "Ranked choice",
+    "rankInstructions": "Put every option in your preferred order, with your first choice at the top.",
+    "rankSubmitted": "Your preference order has been submitted.",
+    "rankingClosed": "This ranked poll is closed.",
+    "moveUp": "Move {{option}} up",
+    "moveDown": "Move {{option}} down",
+    "submitRankings": "Submit preferences",
+    "submittingRankings": "Submitting",
+    "rankFailed": "Your preferences could not be recorded. Please try again.",
+    "resultsHeading": "Ranked results",
+    "resultsLoading": "Loading results…",
+    "resultsLoadFailed": "Results could not be loaded.",
+    "retryResults": "Try results again",
+    "totalVoters": "{{count}} voters",
+    "totalVoters_one": "{{count}} voter",
+    "firstChoiceVotes": "{{count}} first-choice votes",
+    "firstChoiceVotes_one": "{{count}} first-choice vote"
   },
   "pollsScreen": {
     "title": "Polls",
@@ -189,7 +206,11 @@
     "createOptionsRequired": "Add at least two options.",
     "createdTitle": "Poll created",
     "createdMessage": "Your poll is now open.",
-    "createError": "Could not create poll."
+    "createError": "Could not create poll.",
+    "typeLabel": "Poll type",
+    "typeStandard": "Pick one",
+    "typeRanked": "Rank choices",
+    "anonymous": "Anonymous responses"
   },
   "imageViewer": {
     "close": "Close",

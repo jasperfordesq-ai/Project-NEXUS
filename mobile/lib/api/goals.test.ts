@@ -27,6 +27,7 @@ import {
   getGoalTemplateCategories,
   getGoalTemplates,
   getGoals,
+  updateGoalProgress,
   updateGoalStatus,
 } from './goals';
 import type { GoalsResponse, Goal } from './goals';
@@ -104,6 +105,17 @@ describe('createGoal', () => {
       due_date: '2026-03-31',
     });
   });
+
+  it('binds a durable operation key in both the header and body', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: mockGoal });
+
+    await createGoal({ title: 'One durable goal' }, 'goal-operation-123');
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/goals', {
+      title: 'One durable goal',
+      idempotency_key: 'goal-operation-123',
+    }, { headers: { 'Idempotency-Key': 'goal-operation-123' } });
+  });
 });
 
 describe('goal templates', () => {
@@ -146,6 +158,32 @@ describe('goal templates', () => {
 
     expect(api.post).toHaveBeenCalledWith('/api/v2/goals/from-template/4', {});
     expect(result.data.id).toBe(mockGoal.id);
+  });
+
+  it('binds a template creation key in both the header and body', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: mockGoal });
+
+    await createGoalFromTemplate(4, 'template-operation-123');
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/goals/from-template/4', {
+      idempotency_key: 'template-operation-123',
+    }, { headers: { 'Idempotency-Key': 'template-operation-123' } });
+  });
+});
+
+describe('updateGoalProgress', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('sends the observed and desired values with the relative increment', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { ...mockGoal, progress_hours: 4.5 } });
+
+    await updateGoalProgress(1, 1.5, 3, 4.5);
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/goals/1/progress', {
+      increment: 1.5,
+      expected_current_value: 3,
+      desired_current_value: 4.5,
+    });
   });
 });
 

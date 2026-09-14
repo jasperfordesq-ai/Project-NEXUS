@@ -13,7 +13,6 @@ use App\Models\PartnerMemberPass;
 use App\Models\PartnerVenue;
 use App\Models\PartnerVenueVisit;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
 
@@ -49,28 +48,18 @@ class PartnerVenueVisitService
         $pass = PartnerMemberPass::query()->where('user_id', $userId)->first();
 
         if ($pass === null) {
-            // Serialise check-then-insert; two concurrent calls would otherwise
-            // both find nothing and race on the (tenant_id, user_id) unique key.
-            $lock = Cache::lock(sprintf('partner_member_pass:%d:%d', $tenantId, $userId), 10);
-
-            if ($lock->get()) {
-                try {
-                    $pass = PartnerMemberPass::query()->where('user_id', $userId)->first();
-
-                    if ($pass === null) {
-                        $pass = new PartnerMemberPass([
-                            'user_id' => $userId,
-                            'token' => bin2hex(random_bytes(32)),
-                            'status' => 'active',
-                        ]);
-                        $pass->tenant_id = $tenantId;
-                        $pass->save();
-                    }
-                } finally {
-                    $lock->release();
-                }
-            } else {
-                // Lost the lock race — the winner has written the row by now.
+            try {
+                $pass = new PartnerMemberPass([
+                    'user_id' => $userId,
+                    'token' => bin2hex(random_bytes(32)),
+                    'status' => 'active',
+                ]);
+                $pass->tenant_id = $tenantId;
+                $pass->save();
+            } catch (UniqueConstraintViolationException) {
+                // The database unique key is the durable concurrency boundary. It keeps
+                // pass creation available when Redis/cache locks are unavailable and lets
+                // a simultaneous loser read the winner's pass.
                 $pass = PartnerMemberPass::query()->where('user_id', $userId)->firstOrFail();
             }
         }

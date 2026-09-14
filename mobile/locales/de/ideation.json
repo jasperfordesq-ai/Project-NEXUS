@@ -470,6 +470,12 @@
   "submitting": "Submitting...",
   "submitSuccess": "Idee eingereicht.",
   "submitFailed": "Die Idee konnte nicht eingereicht werden.",
+  "submissionUnavailable": {
+    "phase": "Diese Herausforderung nimmt keine neuen Ideen an.",
+    "deadline": "Die Einreichungsfrist ist abgelaufen.",
+    "limit": "Sie haben das Ideenlimit für diese Herausforderung erreicht.",
+    "authentication": "Melden Sie sich an, um eine Idee einzureichen."
+  },
   "vote": "Vote",
   "voted": "Voted",
   "voteFailed": "Die Abstimmung konnte nicht aktualisiert werden.",

@@ -224,6 +224,52 @@ class MarketplaceListingControllerTest extends TestCase
         ]);
     }
 
+    public function test_store_replays_one_marketplace_listing_after_response_loss(): void
+    {
+        $this->enableMarketplaceFeature();
+        $seller = $this->authenticatedUser();
+        $payload = [
+            'title' => 'Response-loss marketplace listing',
+            'description' => 'The same mobile operation must create this listing once.',
+            'price_type' => 'free',
+            'idempotency_key' => 'marketplace-create-response-loss-1',
+        ];
+
+        $first = $this->apiPost('/v2/marketplace/listings', $payload);
+        $first->assertCreated();
+        $second = $this->apiPost('/v2/marketplace/listings', $payload);
+        $second->assertOk();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, DB::table('marketplace_listings')
+            ->where('user_id', $seller->id)
+            ->where('title', $payload['title'])
+            ->count());
+        $this->assertSame(1, DB::table('marketplace_listing_creation_receipts')
+            ->where('user_id', $seller->id)
+            ->count());
+    }
+
+    public function test_store_rejects_changed_marketplace_payload_with_same_operation_key(): void
+    {
+        $this->enableMarketplaceFeature();
+        $seller = $this->authenticatedUser();
+        $payload = [
+            'title' => 'Original marketplace listing',
+            'description' => 'The first request owns this operation key.',
+            'price_type' => 'free',
+            'idempotency_key' => 'marketplace-create-conflict-1',
+        ];
+
+        $this->apiPost('/v2/marketplace/listings', $payload)->assertCreated();
+        $payload['title'] = 'Changed marketplace listing';
+        $response = $this->apiPost('/v2/marketplace/listings', $payload);
+
+        $response->assertStatus(409);
+        $this->assertSame('IDEMPOTENCY_CONFLICT', $response->json('errors.0.code'));
+        $this->assertSame(1, DB::table('marketplace_listings')->where('user_id', $seller->id)->count());
+    }
+
     public function test_store_returns_validation_error_for_unsupported_payment_currency(): void
     {
         $this->enableMarketplaceFeature();

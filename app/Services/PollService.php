@@ -111,7 +111,8 @@ class PollService
         // vote lets early voters influence later voters and encourages
         // strategic (rather than sincere) voting. Totals become visible
         // once the poll's end_date has passed.
-        $isClosed = !empty($poll->end_date) && strtotime((string) $poll->end_date) <= time();
+        $isClosed = ! $poll->is_active
+            || (!empty($poll->end_date) && strtotime((string) $poll->end_date) <= time());
         $isCreator = $currentUserId !== null && (int) $poll->user_id === (int) $currentUserId;
         $canSeeCounts = $isClosed || $isCreator;
 
@@ -191,6 +192,16 @@ class PollService
         $data['user_vote_option_id'] = $votedOptionId;
 
         $data['poll_type'] = $data['poll_type'] ?? 'standard';
+        $data['user_rankings'] = $currentUserId && $data['poll_type'] === 'ranked'
+            ? DB::table('poll_rankings')->where('tenant_id', $tenantId)->where('poll_id', $id)
+                ->where('user_id', $currentUserId)->orderBy('rank')->get(['option_id', 'rank'])
+                ->map(static fn ($ranking): array => [
+                    'option_id' => (int) $ranking->option_id, 'rank' => (int) $ranking->rank,
+                ])->all()
+            : [];
+        if ($data['poll_type'] === 'ranked') {
+            $data['has_voted'] = $data['user_rankings'] !== [];
+        }
 
         // Compute status for frontend
         $endDate = $poll->end_date ?? null;
@@ -231,6 +242,7 @@ class PollService
                 'is_active'   => true,
                 'category'    => $data['category'] ?? null,
                 'poll_type'   => $data['poll_type'] ?? 'standard',
+                'is_anonymous' => (bool) ($data['is_anonymous'] ?? false),
             ]);
             $poll->save();
 
@@ -303,11 +315,14 @@ class PollService
 
             // C5: Fetch poll with end_date to enforce expiry check
             $poll = DB::selectOne(
-                'SELECT id, user_id, end_date FROM polls WHERE id = ? AND tenant_id = ?',
+                'SELECT id, user_id, end_date, poll_type FROM polls WHERE id = ? AND tenant_id = ?',
                 [$pollId, $tenantId]
             );
             if (!$poll) {
                 throw new \RuntimeException('Poll not found');
+            }
+            if (($poll->poll_type ?? 'standard') !== 'standard') {
+                throw new \InvalidArgumentException('Ranked polls require a ranked ballot');
             }
 
             // C5: Prevent voting on expired polls

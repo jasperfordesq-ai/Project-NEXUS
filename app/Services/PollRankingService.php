@@ -21,62 +21,79 @@ class PollRankingService
      */
     public function submitRanking(int $pollId, int $userId, array $rankings): bool
     {
-        // Validates tenant ownership via HasTenantScope global scope
-        $poll = Poll::findOrFail($pollId);
+        $result = $this->submitRankingWithResult($pollId, $userId, $rankings);
+        return $result['accepted'] && !$result['replayed'];
+    }
 
-        // Only ranked-type polls accept ranked-choice ballots (the GET page
-        // hides the ballot for standard polls; the POST must enforce the same).
-        if (($poll->poll_type ?? 'standard') !== 'ranked') {
-            return false;
-        }
+    /** @return array{accepted:bool,replayed:bool} */
+    public function submitRankingWithResult(int $pollId, int $userId, array $rankings): array
+    {
+        return DB::transaction(function () use ($pollId, $userId, $rankings): array {
+            $poll = Poll::query()->lockForUpdate()->findOrFail($pollId);
+            if (($poll->poll_type ?? 'standard') !== 'ranked') return ['accepted' => false, 'replayed' => false];
+            if (!$poll->is_active || ($poll->end_date && $poll->end_date->isPast())) {
+                return ['accepted' => false, 'replayed' => false];
+            }
 
-        $exists = DB::table('poll_rankings')
-            ->where('poll_id', $pollId)
-            ->where('user_id', $userId)
-            ->exists();
+            $tenantId = \App\Core\TenantContext::getId();
+            $validOptionIds = DB::table('poll_options')->where('tenant_id', $tenantId)
+                ->where('poll_id', $pollId)->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+            $normalized = array_map(static fn ($ranking): array => [
+                'option_id' => (int) ($ranking['option_id'] ?? 0),
+                'rank' => (int) ($ranking['rank'] ?? 0),
+            ], $rankings);
+            usort($normalized, static fn (array $a, array $b): int => $a['rank'] <=> $b['rank']);
+            $submittedIds = array_column($normalized, 'option_id');
+            $submittedRanks = array_column($normalized, 'rank');
+            if ($submittedIds === []
+                || count($submittedIds) !== count(array_unique($submittedIds))
+                || array_diff($submittedIds, $validOptionIds) !== []
+                || $submittedRanks !== range(1, count($normalized))) {
+                return ['accepted' => false, 'replayed' => false];
+            }
 
-        if ($exists) {
-            return false;
-        }
+            $existing = DB::table('poll_rankings')->where('tenant_id', $tenantId)
+                ->where('poll_id', $pollId)->where('user_id', $userId)->orderBy('rank')
+                ->get(['option_id', 'rank'])->map(static fn ($row): array => [
+                    'option_id' => (int) $row->option_id, 'rank' => (int) $row->rank,
+                ])->all();
+            if ($existing !== []) {
+                $matches = $existing === $normalized;
+                if ($matches) $this->awardVoteXp($tenantId, $pollId, $userId);
+                return ['accepted' => $matches, 'replayed' => $matches];
+            }
 
-        // Every submitted option must belong to THIS poll. $pollId is already
-        // tenant-verified above, so filtering options by poll_id is tenant-safe;
-        // without this, arbitrary option ids would insert and inflate the voter
-        // count and per-option tallies in calculateResults().
-        $validOptionIds = DB::table('poll_options')
-            ->where('poll_id', $pollId)
-            ->pluck('id')
-            ->map(static fn ($id): int => (int) $id)
-            ->all();
-        $submittedOptionIds = array_map(static fn ($r): int => (int) ($r['option_id'] ?? 0), $rankings);
-        if ($submittedOptionIds === [] || array_diff($submittedOptionIds, $validOptionIds) !== []) {
-            return false;
-        }
-
-        $tenantId = \App\Core\TenantContext::getId();
-        if ((int) $poll->user_id !== $userId) {
-            app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
-                $userId,
-                (int) $poll->user_id,
-                (int) $tenantId,
-                'poll_ranking',
-            );
-        }
-
-        DB::transaction(function () use ($pollId, $userId, $rankings, $tenantId) {
-            foreach ($rankings as $ranking) {
+            if ((int) $poll->user_id !== $userId) {
+                app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                    $userId, (int) $poll->user_id, (int) $tenantId, 'poll_ranking',
+                );
+            }
+            foreach ($normalized as $ranking) {
                 DB::table('poll_rankings')->insert([
-                    'poll_id'    => $pollId,
-                    'user_id'    => $userId,
-                    'option_id'  => (int) $ranking['option_id'],
-                    'rank'       => (int) $ranking['rank'],
-                    'tenant_id'  => $tenantId,
-                    'created_at' => now(),
+                    'poll_id' => $pollId, 'user_id' => $userId,
+                    'option_id' => $ranking['option_id'], 'rank' => $ranking['rank'],
+                    'tenant_id' => $tenantId, 'created_at' => now(),
                 ]);
             }
+            $this->awardVoteXp($tenantId, $pollId, $userId);
+            return ['accepted' => true, 'replayed' => false];
         });
+    }
 
-        return true;
+    private function awardVoteXp(int $tenantId, int $pollId, int $userId): void
+    {
+        $reference = 'poll:' . $pollId;
+        GamificationService::awardXP(
+            $userId,
+            GamificationService::XP_VALUES['vote_poll'],
+            'vote_poll',
+            'Voted on a poll',
+            $reference,
+        );
+        if (!DB::table('user_xp_log')->where('tenant_id', $tenantId)->where('user_id', $userId)
+            ->where('action', 'vote_poll')->where('source_reference', $reference)->exists()) {
+            throw new \RuntimeException('Poll ranking XP did not persist.');
+        }
     }
 
     /**

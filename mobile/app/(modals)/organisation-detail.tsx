@@ -9,6 +9,7 @@ import {
   ScrollView,
   Share,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -61,6 +62,7 @@ function ActionPill({
   primary,
   tone = 'secondary',
   accessibilityLabel,
+  fullWidth = false,
 }: {
   label: string;
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -68,6 +70,7 @@ function ActionPill({
   primary: string;
   tone?: 'primary' | 'secondary';
   accessibilityLabel?: string;
+  fullWidth?: boolean;
 }) {
   const theme = useTheme();
   const isPrimary = tone === 'primary';
@@ -79,7 +82,7 @@ function ActionPill({
     <HeroButton
       accessibilityLabel={accessibilityLabel ?? label}
       onPress={onPress}
-      className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
+      className={`min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4 ${fullWidth ? 'w-full' : ''}`}
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
       style={isPrimary ? undefined : {
@@ -89,7 +92,7 @@ function ActionPill({
       }}
     >
       {isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
-      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={1}>
+      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -102,6 +105,8 @@ function OrganisationDetailContent() {
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const isLargeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
 
   const orgId = Number(id);
@@ -255,7 +260,10 @@ function OrganisationDetailContent() {
           <HeroCard className="mb-4 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}>
             <View className="h-1" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="gap-5 p-5">
-              <View className="flex-row items-start gap-4">
+              <View
+                testID="organisation-detail-identity"
+                className={`${isLargeText ? 'gap-3' : 'flex-row items-start gap-4'}`}
+              >
                 <Avatar uri={organisation.logo ?? organisation.logo_url ?? null} name={organisation.name} size={72} />
                 <View className="min-w-0 flex-1 gap-2">
                   <View className="flex-row flex-wrap gap-2">
@@ -271,24 +279,25 @@ function OrganisationDetailContent() {
                       </Chip>
                     ) : null}
                   </View>
-                  <Text className="text-2xl font-bold leading-8" style={{ color: theme.text }} numberOfLines={3}>
+                  <Text className="text-2xl font-bold leading-8" style={{ color: theme.text }} numberOfLines={isLargeText ? undefined : 3}>
                     {organisation.name}
                   </Text>
                   {organisation.description ? (
-                    <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                    <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={isLargeText ? undefined : 3}>
                       {organisation.description}
                     </Text>
                   ) : null}
                 </View>
               </View>
 
-              <View className="flex-row flex-wrap gap-2">
+              <View testID="organisation-detail-actions" className={`${isLargeText ? 'gap-2' : 'flex-row flex-wrap gap-2'}`}>
                 {organisation.website ? (
                   <ActionPill
                     label={t('website')}
                     icon="globe-outline"
                     primary={primary}
                     accessibilityLabel={t('website')}
+                    fullWidth={isLargeText}
                     onPress={() => void handleOpenWebsite()}
                   />
                 ) : null}
@@ -297,16 +306,17 @@ function OrganisationDetailContent() {
                   icon="share-outline"
                   primary={primary}
                   accessibilityLabel={t('detail.share')}
+                  fullWidth={isLargeText}
                   onPress={() => void handleShare()}
                 />
               </View>
             </HeroCard.Body>
           </HeroCard>
 
-          <View className="mb-4 flex-row flex-wrap gap-3">
-            <StatTile icon="people-outline" value={volunteerCount} label={t('volunteers', { count: volunteerCount })} primary={primary} theme={theme} />
-            <StatTile icon="heart-outline" value={opportunityCount} label={t('opportunities', { count: opportunityCount })} primary={primary} theme={theme} />
-            <StatTile icon="time-outline" value={totalHours} label={t('hoursLogged', { hours: totalHours })} primary={primary} theme={theme} />
+          <View testID="organisation-detail-stats" className={`mb-4 gap-3 ${isLargeText ? '' : 'flex-row flex-wrap'}`}>
+            <StatTile icon="people-outline" value={volunteerCount} label={t('volunteers', { count: volunteerCount })} primary={primary} theme={theme} largeText={isLargeText} />
+            <StatTile icon="heart-outline" value={opportunityCount} label={t('opportunities', { count: opportunityCount })} primary={primary} theme={theme} largeText={isLargeText} />
+            <StatTile icon="time-outline" value={totalHours} label={t('hoursLogged', { hours: totalHours })} primary={primary} theme={theme} largeText={isLargeText} />
           </View>
 
           {organisation.location || organisation.contact_email ? (
@@ -350,24 +360,26 @@ function StatTile({
   label,
   primary,
   theme,
+  largeText,
 }: {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   value: number;
   label: string;
   primary: string;
   theme: ReturnType<typeof useTheme>;
+  largeText: boolean;
 }) {
   return (
     <Surface
       variant="secondary"
-      className="min-w-[47%] flex-1 rounded-panel-inner p-3.5"
+      className={`${largeText ? 'w-full' : 'min-w-[47%] flex-1'} rounded-panel-inner p-3.5`}
       style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.12) }}
     >
       <View className="mb-3 size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
         <Ionicons name={icon} size={16} color={primary} />
       </View>
       <Text className="text-xl font-bold" style={{ color: theme.text }}>{value}</Text>
-      <Text className="mt-1 text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>{label}</Text>
+      <Text className="mt-1 text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>{label}</Text>
     </Surface>
   );
 }
@@ -388,7 +400,7 @@ function SectionTitle({
       <View className="size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
         <Ionicons name={icon} size={16} color={primary} />
       </View>
-      <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
+      <Text className="min-w-0 flex-1 text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>
         {label}
       </Text>
     </View>

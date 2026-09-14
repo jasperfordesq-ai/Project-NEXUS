@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { ApiResponseError } from '@/lib/api/client';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockAuthState: {
@@ -70,6 +71,7 @@ jest.mock('react-i18next', () => ({
         'orders.deliveryOffersTitle': 'Community delivery',
         'orders.deliveryVerified': 'Verified',
         'orders.acceptDeliveryOffer': 'Accept offer',
+        'orders.deliveryBuyerDecides': 'The buyer chooses an offer and confirms the completed delivery.',
         'orders.status.paid': 'Paid',
         'orders.status.pending_payment': 'Pending payment',
         'orders.status.shipped': 'Shipped',
@@ -113,7 +115,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => mockAuthState,
+  useAuth: () => ({ ...mockAuthState, user: { id: 41 } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -198,6 +200,7 @@ jest.mock('@/components/ui/AppToast', () => {
 import MarketplaceOrdersRoute from './marketplace-orders';
 import { useAppToast } from '@/components/ui/AppToast';
 import {
+  acceptMarketplaceDeliveryOffer,
   confirmMarketplaceOrderDelivery,
   confirmMarketplacePayment,
   createMarketplacePaymentIntent,
@@ -639,6 +642,63 @@ describe('MarketplaceOrdersRoute', () => {
     await waitFor(() => expect(getMarketplaceOrders).toHaveBeenCalledTimes(2));
   });
 
+  it('accepts authoritative delivered state after the confirmation response is lost', async () => {
+    const shippedOrder = {
+      id: 53,
+      order_number: 'MKT-000053',
+      quantity: 1,
+      unit_price: 30,
+      total_price: 30,
+      currency: 'EUR',
+      status: 'shipped',
+      created_at: '2026-05-25T10:00:00Z',
+      listing: { id: 81, title: 'Shipped lamp', image: null, delivery_method: 'shipping' },
+      seller: { id: 2, name: 'Pat Seller', avatar_url: null },
+      ratings: [],
+    };
+    (getMarketplaceOrders as jest.Mock).mockResolvedValue({
+      data: [shippedOrder],
+      meta: { cursor: null, has_more: false },
+    });
+    jest.mocked(confirmMarketplaceOrderDelivery).mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    jest.mocked(getMarketplaceOrder).mockResolvedValueOnce({ data: { ...shippedOrder, status: 'delivered' } } as never);
+    const ui = render(<MarketplaceOrdersRoute />);
+
+    fireEvent.press(await ui.findByText('Confirm delivery'));
+    fireEvent.press(ui.getByTestId('marketplace-confirm-delivery'));
+
+    await waitFor(() => expect(getMarketplaceOrder).toHaveBeenCalledWith(53));
+    await waitFor(() => expect(getMarketplaceOrders).toHaveBeenCalledTimes(2));
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+  });
+
+  it('resumes the provider-bound payment intent after the first response is lost', async () => {
+    const pendingOrder = {
+      id: 54,
+      order_number: 'MKT-000054',
+      quantity: 1,
+      unit_price: 30,
+      total_price: 30,
+      currency: 'EUR',
+      status: 'pending_payment',
+      created_at: '2026-05-25T10:00:00Z',
+      listing: { id: 81, title: 'Lamp', image: null, delivery_method: 'shipping' },
+      seller: { id: 2, name: 'Pat Seller', avatar_url: null },
+      ratings: [],
+    };
+    (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({ data: [pendingOrder], meta: { cursor: null, has_more: false } });
+    jest.mocked(createMarketplacePaymentIntent)
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'))
+      .mockResolvedValueOnce({ data: { client_secret: 'pi_resumed_secret', payment_intent_id: 'pi_54' } } as never);
+    const ui = render(<MarketplaceOrdersRoute />);
+
+    fireEvent.press(await ui.findByText('Continue payment'));
+
+    await waitFor(() => expect(createMarketplacePaymentIntent).toHaveBeenCalledTimes(2));
+    expect(presentMarketplacePayment).toHaveBeenCalledWith(expect.objectContaining({ clientSecret: 'pi_resumed_secret' }));
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+  });
+
   it('shows seller-side payment and delivery status actions', async () => {
     mockParams = { mode: 'sales' };
     (getMarketplaceOrders as jest.Mock)
@@ -835,6 +895,80 @@ describe('MarketplaceOrdersRoute', () => {
     expect(getByText('I can deliver after lunch.')).toBeTruthy();
     expect(getByText('Accept offer')).toBeTruthy();
     unmount();
+  });
+
+  it('lets sellers review delivery offers without showing buyer-only decisions', async () => {
+    mockParams = { mode: 'sales' };
+    (getMarketplaceOrders as jest.Mock).mockResolvedValueOnce({
+      data: [{
+        id: 33,
+        order_number: 'MKT-000033',
+        quantity: 1,
+        unit_price: 30,
+        total_price: 30,
+        currency: 'EUR',
+        status: 'paid',
+        created_at: '2026-05-21T10:00:00Z',
+        listing: { id: 62, title: 'Community vase', image: null, delivery_method: 'community_delivery' },
+        buyer: { id: 3, name: 'Bay Buyer', avatar_url: null },
+      }],
+      meta: { cursor: null, has_more: false },
+    });
+    (getMarketplaceDeliveryOffers as jest.Mock).mockResolvedValueOnce({
+      data: [{
+        id: 92,
+        order_id: 33,
+        deliverer_id: 77,
+        time_credits: 1.5,
+        estimated_minutes: 45,
+        notes: null,
+        status: 'pending',
+        deliverer: { id: 77, name: 'Dana Deliverer', avatar_url: null, is_verified: true },
+      }],
+    });
+
+    const ui = render(<MarketplaceOrdersRoute />);
+    fireEvent.press(await ui.findByText('Delivery offers'));
+    expect(await ui.findByText('The buyer chooses an offer and confirms the completed delivery.')).toBeTruthy();
+    expect(ui.queryByText('Accept offer')).toBeNull();
+  });
+
+  it('accepts authoritative delivery-offer state after the action response is lost', async () => {
+    const order = {
+      id: 34,
+      order_number: 'MKT-000034',
+      quantity: 1,
+      unit_price: 30,
+      total_price: 30,
+      currency: 'EUR',
+      status: 'paid',
+      created_at: '2026-05-21T10:00:00Z',
+      listing: { id: 62, title: 'Community vase', image: null, delivery_method: 'community_delivery' },
+      seller: { id: 3, name: 'Sam Seller', avatar_url: null },
+    };
+    const offer = {
+      id: 94,
+      order_id: 34,
+      deliverer_id: 77,
+      time_credits: 1.5,
+      estimated_minutes: 45,
+      notes: null,
+      status: 'pending',
+      deliverer: { id: 77, name: 'Dana Deliverer', avatar_url: null, is_verified: true },
+    };
+    (getMarketplaceOrders as jest.Mock).mockResolvedValue({ data: [order], meta: { cursor: null, has_more: false } });
+    (getMarketplaceDeliveryOffers as jest.Mock)
+      .mockResolvedValueOnce({ data: [offer] })
+      .mockResolvedValueOnce({ data: [{ ...offer, status: 'accepted' }] });
+    jest.mocked(acceptMarketplaceDeliveryOffer).mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    const ui = render(<MarketplaceOrdersRoute />);
+
+    fireEvent.press(await ui.findByText('Delivery offers'));
+    fireEvent.press(await ui.findByText('Accept offer'));
+
+    await waitFor(() => expect(getMarketplaceDeliveryOffers).toHaveBeenCalledTimes(2));
+    expect(acceptMarketplaceDeliveryOffer).toHaveBeenCalledWith(34, 77);
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
   });
 
   it('uses a translated fallback for unknown order statuses', async () => {

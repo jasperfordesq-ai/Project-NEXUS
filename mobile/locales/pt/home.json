@@ -159,7 +159,24 @@
     "resultsHiddenUntilClose": "Resultados revelados quando a sondagem fechar",
     "voteToSeeResults": "Vote para ver os resultados",
     "voteFailedTitle": "Voto não guardado",
-    "voteFailed": "Não foi possível registar o teu voto. Tenta novamente."
+    "voteFailed": "Não foi possível registar o teu voto. Tenta novamente.",
+    "ranked": "Escolha ordenada",
+    "rankInstructions": "Ordene todas as opções pela sua preferência, com a primeira escolha no topo.",
+    "rankSubmitted": "A sua ordem de preferência foi enviada.",
+    "rankingClosed": "Esta sondagem ordenada está fechada.",
+    "moveUp": "Mover {{option}} para cima",
+    "moveDown": "Mover {{option}} para baixo",
+    "submitRankings": "Enviar preferências",
+    "submittingRankings": "A enviar",
+    "rankFailed": "Não foi possível registar as preferências. Tente novamente.",
+    "resultsHeading": "Resultados por ordem de preferência",
+    "resultsLoading": "A carregar resultados…",
+    "resultsLoadFailed": "Não foi possível carregar os resultados.",
+    "retryResults": "Tentar carregar os resultados novamente",
+    "totalVoters": "{{count}} votantes",
+    "totalVoters_one": "{{count}} votante",
+    "firstChoiceVotes": "{{count}} votos de primeira escolha",
+    "firstChoiceVotes_one": "{{count}} voto de primeira escolha"
   },
   "pollsScreen": {
     "title": "Enquetes",
@@ -189,7 +206,11 @@
     "createOptionsRequired": "Adicione pelo menos duas opções.",
     "createdTitle": "Sondagem criada",
     "createdMessage": "A sua sondagem está agora aberta.",
-    "createError": "Não foi possível criar a sondagem."
+    "createError": "Não foi possível criar a sondagem.",
+    "typeLabel": "Tipo de sondagem",
+    "typeStandard": "Escolher uma",
+    "typeRanked": "Ordenar opções",
+    "anonymous": "Respostas anónimas"
   },
   "imageViewer": {
     "close": "Fechar",

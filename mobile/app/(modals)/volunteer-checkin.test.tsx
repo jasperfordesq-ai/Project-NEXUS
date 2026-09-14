@@ -7,6 +7,8 @@ import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockParams: Record<string, string> = {};
+let mockUserId = 7;
+let mockTenantId = 2;
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -33,6 +35,8 @@ jest.mock('react-i18next', () => ({
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ bg: '#fff', text: '#111', textSecondary: '#555', textMuted: '#777' }),
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
+jest.mock('@/lib/hooks/useTenant', () => ({ useTenant: () => ({ tenant: { id: mockTenantId } }) }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@/lib/api/volunteering', () => ({
@@ -48,6 +52,8 @@ describe('VolunteerCheckInScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockParams = { token: 'shift-token' };
+    mockUserId = 7;
+    mockTenantId = 2;
     jest.mocked(verifyVolunteerCheckIn).mockResolvedValue({ user: { id: 4, name: 'Ada Member' } } as never);
     jest.mocked(checkOutVolunteer).mockResolvedValue(undefined as never);
   });
@@ -81,6 +87,18 @@ describe('VolunteerCheckInScreen', () => {
     expect(checkOutVolunteer).not.toHaveBeenCalled();
   });
 
+  it('serializes rapid check-in taps before React has re-rendered', async () => {
+    let finish!: (value: never) => void;
+    jest.mocked(verifyVolunteerCheckIn).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const { getByText } = render(<VolunteerCheckInScreen />);
+    act(() => {
+      fireEvent.press(getByText('Check in'));
+      fireEvent.press(getByText('Check in'));
+    });
+    expect(verifyVolunteerCheckIn).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ user: { id: 4, name: 'Ada Member' } } as never); });
+  });
+
   it('surfaces a refused check-out', async () => {
     jest.mocked(checkOutVolunteer).mockRejectedValue(new ApiResponseError(422, 'Already checked out'));
     const { getByText } = render(<VolunteerCheckInScreen />);
@@ -101,6 +119,20 @@ describe('VolunteerCheckInScreen', () => {
     await waitFor(() => expect(getByText('Checked out Ada Member')).toBeTruthy());
     expect(checkOutVolunteer).toHaveBeenNthCalledWith(2, 'shift-token');
     expect(verifyVolunteerCheckIn).toHaveBeenCalledTimes(1);
+  });
+
+  it('serializes rapid check-out taps before React has re-rendered', async () => {
+    let finish!: (value: never) => void;
+    const { getByText } = render(<VolunteerCheckInScreen />);
+    fireEvent.press(getByText('Check in'));
+    await waitFor(() => expect(getByText('Check out')).toBeTruthy());
+    jest.mocked(checkOutVolunteer).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    act(() => {
+      fireEvent.press(getByText('Check out'));
+      fireEvent.press(getByText('Check out'));
+    });
+    expect(checkOutVolunteer).toHaveBeenCalledTimes(1);
+    await act(async () => { finish(undefined as never); });
   });
 
   it('refuses a check-in with no token at all', () => {
@@ -134,5 +166,17 @@ describe('VolunteerCheckInScreen', () => {
     expect(screen.queryByText('Checked in Previous volunteer')).toBeNull();
     expect(screen.getByText('Check in')).toBeTruthy();
     expect(checkOutVolunteer).not.toHaveBeenCalled();
+  });
+
+  it('resets the confirmation and ignores an old response when the account changes', async () => {
+    let finish!: (value: never) => void;
+    jest.mocked(verifyVolunteerCheckIn).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<VolunteerCheckInScreen />);
+    fireEvent.press(screen.getByText('Check in'));
+    mockUserId = 8;
+    screen.rerender(<VolunteerCheckInScreen />);
+    await act(async () => { finish({ user: { id: 4, name: 'Previous volunteer' } } as never); });
+    expect(screen.queryByText('Checked in Previous volunteer')).toBeNull();
+    expect(screen.getByText('Check in')).toBeTruthy();
   });
 });

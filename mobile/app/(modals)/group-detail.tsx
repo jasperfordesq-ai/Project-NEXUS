@@ -6,7 +6,7 @@
 import { downloadAuthenticatedFile, SHARING_UNAVAILABLE } from '@/lib/volunteering/authenticatedFileDownload';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -55,6 +55,7 @@ import {
   getGroupQuestion,
   getGroupQuestions,
   getGroupTasks,
+  getGroupTask,
   getGroupTaskStats,
   getGroupWikiPage,
   getGroupWikiPages,
@@ -125,12 +126,14 @@ import { useParamTab } from '@/lib/hooks/useParamTab';
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
 import { formatDecimal } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
+import { mutationAttemptFor, type MutationAttempt } from '@/lib/utils/idempotencyKey';
 
 const CARD_MIN_HEIGHT = 118;
 
@@ -153,6 +156,30 @@ function isGroupMember(group: ApiGroupDetail) {
 
 function hasPendingJoinRequest(group: ApiGroupDetail) {
   return group.viewer_membership?.status === 'pending';
+}
+
+function useAsyncMutationBoundary() {
+  const isMountedRef = useRef(true);
+  const mutationPendingRef = useRef(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  function beginMutation() {
+    if (mutationPendingRef.current) return false;
+    mutationPendingRef.current = true;
+    return true;
+  }
+
+  function finishMutation() {
+    mutationPendingRef.current = false;
+  }
+
+  return { isMountedRef, beginMutation, finishMutation };
 }
 
 function groupImage(group: ApiGroupDetail) {
@@ -305,8 +332,11 @@ function StateMessage({
 }
 
 function GroupDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`}>
       <GroupDetailScreenInner />
     </ModalErrorBoundary>
   );
@@ -357,10 +387,29 @@ function GroupDetailScreenInner() {
   const [questionTitle, setQuestionTitle] = useState('');
   const [questionBody, setQuestionBody] = useState('');
   const [creatingQuestion, setCreatingQuestion] = useState(false);
+  const discussionCreateAttemptRef = useRef<MutationAttempt | null>(null);
+  const announcementCreateAttemptRef = useRef<MutationAttempt | null>(null);
+  const questionCreateAttemptRef = useRef<MutationAttempt | null>(null);
   // 🔴 Deliberately NOT another useApi in this screen. group-detail.test.tsx stubs
   // useApi positionally, so a seventh call shifts every later result by one on each
   // re-render. The join-request queue loads inside its own component for that reason.
   const [busyMemberId, setBusyMemberId] = useState<number | null>(null);
+  const actionPendingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
+
+  function beginAction(): boolean {
+    if (actionPendingRef.current) return false;
+    actionPendingRef.current = true;
+    return true;
+  }
+
+  function finishAction() {
+    actionPendingRef.current = false;
+  }
 
   useEffect(() => {
     if (group) {
@@ -447,39 +496,45 @@ function GroupDetailScreenInner() {
     Audit 2026-09-07, fixed 2026-09-08.
   */
   async function applyMemberRole(member: GroupMemberListItem, role: 'admin' | 'member') {
-    if (busyMemberId !== null) return;
+    if (busyMemberId !== null || !beginAction()) return;
     setBusyMemberId(member.id);
     try {
       await updateGroupMemberRole(safeGroupId, member.id, role);
+      if (!isMountedRef.current) return;
       showToast({ title: t('detail.manage.roleChanged'), variant: 'success' });
       membersApi.refresh();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, t('detail.manage.actionFailed')),
         variant: 'danger',
       });
     } finally {
-      setBusyMemberId(null);
+      finishAction();
+      if (isMountedRef.current) setBusyMemberId(null);
     }
   }
 
   async function applyMemberRemoval(member: GroupMemberListItem) {
-    if (busyMemberId !== null) return;
+    if (busyMemberId !== null || !beginAction()) return;
     setBusyMemberId(member.id);
     try {
       await removeGroupMember(safeGroupId, member.id);
+      if (!isMountedRef.current) return;
       showToast({ title: t('detail.manage.removed'), variant: 'success' });
       membersApi.refresh();
       refresh();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, t('detail.manage.actionFailed')),
         variant: 'danger',
       });
     } finally {
-      setBusyMemberId(null);
+      finishAction();
+      if (isMountedRef.current) setBusyMemberId(null);
     }
   }
 
@@ -571,16 +626,16 @@ function GroupDetailScreenInner() {
   }
 
   async function handleJoin() {
+    if (!beginAction()) return;
     const prevIsMember = isMember ?? isGroupMember(loadedGroup);
     const prevMemberCount = memberCount ?? loadedGroup.member_count ?? 0;
     setJoining(true);
-    setIsMember(true);
-    setMemberCount(prevMemberCount + 1);
     try {
       const result = await joinGroup(loadedGroup.id);
+      if (!isMountedRef.current) return;
       const status = result?.data?.status;
       if (status === 'pending' || result?.data?.action === 'requested') {
-        // Not a member yet. Undo the optimistic "Joined" and say what actually happened.
+        // Not a member yet. Keep the membership state truthful while organisers decide.
         setIsMember(prevIsMember);
         setMemberCount(prevMemberCount);
         setJoinRequested(true);
@@ -589,6 +644,9 @@ function GroupDetailScreenInner() {
         refresh();
         return;
       }
+      setIsMember(true);
+      setMemberCount(prevMemberCount + 1);
+      setJoinRequested(false);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refresh();
       membersApi.refresh();
@@ -598,12 +656,27 @@ function GroupDetailScreenInner() {
       questionsApi.refresh();
       eventsApi.refresh();
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = (await getGroup(loadedGroup.id)).data as ApiGroupDetail;
+          if (isMountedRef.current && (isGroupMember(latest) || hasPendingJoinRequest(latest))) {
+            setIsMember(isGroupMember(latest));
+            setMemberCount(latest.member_count ?? prevMemberCount);
+            setJoinRequested(hasPendingJoinRequest(latest));
+            return;
+          }
+        } catch {
+          // The original response and authoritative readback are both unknown.
+        }
+      }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setIsMember(prevIsMember);
       setMemberCount(prevMemberCount);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('joinError')), variant: 'danger' });
     } finally {
-      setJoining(false);
+      finishAction();
+      if (isMountedRef.current) setJoining(false);
     }
   }
 
@@ -616,21 +689,38 @@ function GroupDetailScreenInner() {
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (!beginAction()) return;
         const prevIsMember = isMember ?? isGroupMember(loadedGroup);
         const prevMemberCount = memberCount ?? loadedGroup.member_count ?? 0;
         setLeaving(true);
-        setIsMember(false);
-        setMemberCount(Math.max(0, prevMemberCount - 1));
         try {
           await leaveGroup(loadedGroup.id);
+          if (!isMountedRef.current) return;
+          setIsMember(false);
+          setMemberCount(Math.max(0, prevMemberCount - 1));
+          setJoinRequested(false);
           refresh();
         } catch (err) {
+          if (err instanceof ApiResponseError && err.status === 0) {
+            try {
+              const latest = (await getGroup(loadedGroup.id)).data as ApiGroupDetail;
+              if (isMountedRef.current && !isGroupMember(latest) && !hasPendingJoinRequest(latest)) {
+                setIsMember(false);
+                setMemberCount(latest.member_count ?? Math.max(0, prevMemberCount - 1));
+                return;
+              }
+            } catch {
+              // The original response and authoritative readback are both unknown.
+            }
+          }
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           setIsMember(prevIsMember);
           setMemberCount(prevMemberCount);
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('leaveError')), variant: 'danger' });
         } finally {
-          setLeaving(false);
+          finishAction();
+          if (isMountedRef.current) setLeaving(false);
         }
       },
     });
@@ -644,9 +734,14 @@ function GroupDetailScreenInner() {
       return;
     }
 
+    if (!beginAction()) return;
+    const fingerprint = JSON.stringify({ groupId: loadedGroup.id, title, content });
+    discussionCreateAttemptRef.current = mutationAttemptFor(discussionCreateAttemptRef.current, fingerprint, 'group-discussion');
     setCreatingDiscussion(true);
     try {
-      await createGroupDiscussion(loadedGroup.id, { title, content });
+      await createGroupDiscussion(loadedGroup.id, { title, content }, discussionCreateAttemptRef.current.key);
+      if (!isMountedRef.current) return;
+      discussionCreateAttemptRef.current = null;
       setDiscussionTitle('');
       setDiscussionContent('');
       setShowDiscussionComposer(false);
@@ -654,10 +749,12 @@ function GroupDetailScreenInner() {
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.discussionCreateError')), variant: 'danger' });
     } finally {
-      setCreatingDiscussion(false);
+      finishAction();
+      if (isMountedRef.current) setCreatingDiscussion(false);
     }
   }
 
@@ -669,13 +766,18 @@ function GroupDetailScreenInner() {
       return;
     }
 
+    if (!beginAction()) return;
+    const fingerprint = JSON.stringify({ groupId: loadedGroup.id, title, content, isPinned: announcementPinned });
+    announcementCreateAttemptRef.current = mutationAttemptFor(announcementCreateAttemptRef.current, fingerprint, 'group-announcement');
     setCreatingAnnouncement(true);
     try {
       await createGroupAnnouncement(loadedGroup.id, {
         title,
         content,
         is_pinned: announcementPinned,
-      });
+      }, announcementCreateAttemptRef.current.key);
+      if (!isMountedRef.current) return;
+      announcementCreateAttemptRef.current = null;
       setAnnouncementTitle('');
       setAnnouncementContent('');
       setAnnouncementPinned(false);
@@ -684,24 +786,30 @@ function GroupDetailScreenInner() {
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.announcementCreateError')), variant: 'danger' });
     } finally {
-      setCreatingAnnouncement(false);
+      finishAction();
+      if (isMountedRef.current) setCreatingAnnouncement(false);
     }
   }
 
   async function handleToggleAnnouncementPin(announcement: GroupAnnouncement) {
+    if (!beginAction()) return;
     setUpdatingAnnouncementId(announcement.id);
     try {
       await updateGroupAnnouncement(loadedGroup.id, announcement.id, { is_pinned: !announcement.is_pinned });
+      if (!isMountedRef.current) return;
       announcementsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.announcementUpdateError')), variant: 'danger' });
     } finally {
-      setUpdatingAnnouncementId(null);
+      finishAction();
+      if (isMountedRef.current) setUpdatingAnnouncementId(null);
     }
   }
 
@@ -713,17 +821,21 @@ function GroupDetailScreenInner() {
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (!beginAction()) return;
         setUpdatingAnnouncementId(announcement.id);
         try {
           await deleteGroupAnnouncement(loadedGroup.id, announcement.id);
+          if (!isMountedRef.current) return;
           announcementsApi.refresh();
           refresh();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err) {
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.announcementDeleteError')), variant: 'danger' });
         } finally {
-          setUpdatingAnnouncementId(null);
+          finishAction();
+          if (isMountedRef.current) setUpdatingAnnouncementId(null);
         }
       },
     });
@@ -737,19 +849,26 @@ function GroupDetailScreenInner() {
       return;
     }
 
+    if (!beginAction()) return;
+    const fingerprint = JSON.stringify({ groupId: loadedGroup.id, title, body });
+    questionCreateAttemptRef.current = mutationAttemptFor(questionCreateAttemptRef.current, fingerprint, 'group-question');
     setCreatingQuestion(true);
     try {
-      await createGroupQuestion(loadedGroup.id, { title, body });
+      await createGroupQuestion(loadedGroup.id, { title, body }, questionCreateAttemptRef.current.key);
+      if (!isMountedRef.current) return;
+      questionCreateAttemptRef.current = null;
       setQuestionTitle('');
       setQuestionBody('');
       setShowQuestionComposer(false);
       questionsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.createError')), variant: 'danger' });
     } finally {
-      setCreatingQuestion(false);
+      finishAction();
+      if (isMountedRef.current) setCreatingQuestion(false);
     }
   }
 
@@ -1542,6 +1661,7 @@ function GroupFilesPanel({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
 
   function openDownload(file: GroupFileItem) {
     /*
@@ -1566,16 +1686,20 @@ function GroupFilesPanel({
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (!beginMutation()) return;
         setDeletingId(file.id);
         try {
           await deleteGroupFile(groupId, file.id);
+          if (!isMountedRef.current) return;
           onRefresh();
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err) {
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.files.deleteError')), variant: 'danger' });
         } finally {
-          setDeletingId(null);
+          finishMutation();
+          if (isMountedRef.current) setDeletingId(null);
         }
       },
     });
@@ -1692,24 +1816,36 @@ function GroupMediaPanel({
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
+  const loadVersionRef = useRef(0);
+  const loadMorePendingRef = useRef(false);
+  const uploadAttemptRef = useRef<MutationAttempt | null>(null);
 
   const loadMedia = useCallback(async (append = false) => {
     if (!canView) return;
+    if (append && loadMorePendingRef.current) return;
+    const requestVersion = append ? loadVersionRef.current : ++loadVersionRef.current;
+    if (append) loadMorePendingRef.current = true;
     if (append) setIsLoadingMore(true); else setIsLoading(true);
     try {
       const response = await getGroupMedia(groupId, { type: filter, cursor: append ? cursor : null });
+      if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
       const page = response.data.items ?? [];
       setItems((previous) => (append ? [...previous, ...page] : page));
       setCursor(response.data.cursor ?? null);
       setHasMore(Boolean(response.data.has_more));
     } catch (err) {
+      if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, append ? t('detail.media.loadMoreError') : t('detail.media.loadError')),
         variant: 'danger',
       });
     } finally {
-      if (append) setIsLoadingMore(false); else setIsLoading(false);
+      if (append) loadMorePendingRef.current = false;
+      if (isMountedRef.current && requestVersion === loadVersionRef.current) {
+        if (append) setIsLoadingMore(false); else setIsLoading(false);
+      }
     }
     // `cursor` is deliberately absent: including it would restart the list from page one
     // every time a page arrived. Appending reads it through the closure at call time.
@@ -1733,54 +1869,75 @@ function GroupMediaPanel({
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (!beginMutation()) return;
         setDeletingId(item.id);
         try {
           await deleteGroupMedia(groupId, item.id);
+          if (!isMountedRef.current) return;
           await loadMedia();
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err) {
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.media.deleteError')), variant: 'danger' });
         } finally {
-          setDeletingId(null);
+          finishMutation();
+          if (isMountedRef.current) setDeletingId(null);
         }
       },
     });
   }
 
   async function pickMedia(type: GroupMediaType) {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      showToast({ title: t('detail.media.permissionTitle'), description: t('detail.media.permissionMessage'), variant: 'warning' });
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: type === 'video' ? ['videos'] : ['images'],
-      allowsMultipleSelection: false,
-      quality: 0.82,
-    });
-    if (result.canceled) return;
-
-    const asset = result.assets[0];
-    if (!asset?.uri) return;
-
-    setUploadingMediaType(type);
-    // Photos are shrunk before upload; a video is passed through untouched.
-    const prepared = type === 'video' ? asset : await prepareImageForUpload(asset);
+    if (!beginMutation()) return;
     try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!isMountedRef.current) return;
+      if (!permission.granted) {
+        showToast({ title: t('detail.media.permissionTitle'), description: t('detail.media.permissionMessage'), variant: 'warning' });
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: type === 'video' ? ['videos'] : ['images'],
+        allowsMultipleSelection: false,
+        quality: 0.82,
+      });
+      if (!isMountedRef.current || result.canceled) return;
+
+      const asset = result.assets[0];
+      if (!asset?.uri) return;
+
+      setUploadingMediaType(type);
+      // Photos are shrunk before upload; a video is passed through untouched.
+      const prepared = type === 'video' ? asset : await prepareImageForUpload(asset);
+      if (!isMountedRef.current) return;
+      const fingerprint = JSON.stringify({
+        groupId,
+        type,
+        uri: prepared.uri,
+        fileName: asset.fileName ?? null,
+        mimeType: asset.mimeType ?? null,
+      });
+      uploadAttemptRef.current = mutationAttemptFor(uploadAttemptRef.current, fingerprint, 'group-media');
       await uploadGroupMedia(groupId, {
         uri: prepared.uri,
         fileName: asset.fileName,
         mimeType: asset.mimeType,
-      });
+      }, uploadAttemptRef.current.key);
+      if (!isMountedRef.current) return;
+      uploadAttemptRef.current = null;
       await loadMedia();
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.media.uploadError')), variant: 'danger' });
     } finally {
-      setUploadingMediaType(null);
+      finishMutation();
+      if (isMountedRef.current) setUploadingMediaType(null);
     }
   }
 
@@ -1930,26 +2087,33 @@ function GroupQAPanel({
   const [answering, setAnswering] = useState(false);
   const [votingTarget, setVotingTarget] = useState<string | null>(null);
   const [acceptingAnswerId, setAcceptingAnswerId] = useState<number | null>(null);
+  const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
+  const detailRequestVersionRef = useRef(0);
+  const answerAttemptRef = useRef<MutationAttempt | null>(null);
 
   async function toggleQuestion(questionId: number) {
     if (expandedId === questionId) {
+      detailRequestVersionRef.current += 1;
       setExpandedId(null);
       setDetail(null);
       setAnswerBody('');
       return;
     }
 
+    const requestVersion = ++detailRequestVersionRef.current;
     setExpandedId(questionId);
     setDetail(null);
     setLoadingDetail(true);
     try {
       const response = await getGroupQuestion(groupId, questionId);
+      if (!isMountedRef.current || requestVersion !== detailRequestVersionRef.current) return;
       setDetail(response.data);
     } catch (err) {
+      if (!isMountedRef.current || requestVersion !== detailRequestVersionRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.loadError')), variant: 'danger' });
       setExpandedId(null);
     } finally {
-      setLoadingDetail(false);
+      if (isMountedRef.current && requestVersion === detailRequestVersionRef.current) setLoadingDetail(false);
     }
   }
 
@@ -1960,61 +2124,127 @@ function GroupQAPanel({
       return;
     }
 
+    if (!beginMutation()) return;
+    const questionId = expandedId;
+    const fingerprint = JSON.stringify({ groupId, questionId, body: content });
+    answerAttemptRef.current = mutationAttemptFor(answerAttemptRef.current, fingerprint, 'group-answer');
     setAnswering(true);
     try {
-      await answerGroupQuestion(groupId, expandedId, { body: content });
+      await answerGroupQuestion(groupId, questionId, { body: content }, answerAttemptRef.current.key);
+      if (!isMountedRef.current) return;
+      answerAttemptRef.current = null;
       setAnswerBody('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       try {
-        const response = await getGroupQuestion(groupId, expandedId);
+        const response = await getGroupQuestion(groupId, questionId);
+        if (!isMountedRef.current) return;
         setDetail(response.data);
       } catch {
+        if (!isMountedRef.current) return;
         // The answer was accepted. A failed read must not invite another post.
         showToast({ title: t('common:errors.refreshFailedTitle'), description: t('common:errors.refreshFailedSubtitle'), variant: 'warning' });
       }
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = (await getGroupQuestion(groupId, questionId)).data;
+          if (!isMountedRef.current) return;
+          const accepted = latest.answers.some((answer) => answer.author.id === currentUserId && answer.body.trim() === content);
+          if (accepted) {
+            answerAttemptRef.current = null;
+            setAnswerBody('');
+            setDetail(latest);
+            onRefresh();
+            return;
+          }
+        } catch {
+          // Both the response and authoritative readback remain unknown.
+        }
+      }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.answerError')), variant: 'danger' });
     } finally {
-      setAnswering(false);
+      finishMutation();
+      if (isMountedRef.current) setAnswering(false);
     }
   }
 
   async function refreshExpandedQuestion() {
     if (!expandedId) return;
-    const response = await getGroupQuestion(groupId, expandedId);
+    const questionId = expandedId;
+    const requestVersion = ++detailRequestVersionRef.current;
+    const response = await getGroupQuestion(groupId, questionId);
+    if (!isMountedRef.current || requestVersion !== detailRequestVersionRef.current) return;
     setDetail(response.data);
   }
 
   async function voteTarget(type: 'question' | 'answer', targetId: number, vote: 'up' | 'down') {
+    if (!beginMutation()) return;
     const targetKey = `${type}:${targetId}:${vote}`;
     setVotingTarget(targetKey);
     try {
       await voteGroupQA(groupId, { type, target_id: targetId, vote });
+      if (!isMountedRef.current) return;
       onRefresh();
       if (expandedId) await refreshExpandedQuestion();
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0 && expandedId) {
+        try {
+          const latest = (await getGroupQuestion(groupId, expandedId)).data;
+          if (!isMountedRef.current) return;
+          const target = type === 'question' ? latest : latest.answers.find((answer) => answer.id === targetId);
+          if (target?.user_vote === (vote === 'up' ? 1 : -1)) {
+            setDetail(latest);
+            onRefresh();
+            return;
+          }
+        } catch {
+          // Both the response and authoritative readback remain unknown.
+        }
+      }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.voteError')), variant: 'danger' });
     } finally {
-      setVotingTarget(null);
+      finishMutation();
+      if (isMountedRef.current) setVotingTarget(null);
     }
   }
 
   async function acceptAnswer(answerId: number) {
+    if (!beginMutation()) return;
     setAcceptingAnswerId(answerId);
     try {
       await acceptGroupAnswer(groupId, answerId);
+      if (!isMountedRef.current) return;
       onRefresh();
       await refreshExpandedQuestion();
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0 && expandedId) {
+        try {
+          const latest = (await getGroupQuestion(groupId, expandedId)).data;
+          if (!isMountedRef.current) return;
+          if (latest.answers.some((answer) => answer.id === answerId && answer.is_accepted)) {
+            setDetail(latest);
+            onRefresh();
+            return;
+          }
+        } catch {
+          // Both the response and authoritative readback remain unknown.
+        }
+      }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.acceptError')), variant: 'danger' });
     } finally {
-      setAcceptingAnswerId(null);
+      finishMutation();
+      if (isMountedRef.current) setAcceptingAnswerId(null);
     }
   }
 
@@ -2262,28 +2492,37 @@ function GroupWikiPanel({
   const [showRevisions, setShowRevisions] = useState(false);
   const [revisionsLoading, setRevisionsLoading] = useState(false);
   const [deletingPage, setDeletingPage] = useState(false);
+  const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
+  const pageRequestVersionRef = useRef(0);
+  const pagesRequestVersionRef = useRef(0);
+  const createAttemptRef = useRef<MutationAttempt | null>(null);
 
   async function loadPage(slug: string) {
+    const requestVersion = ++pageRequestVersionRef.current;
     setPageLoading(true);
     setEditing(false);
     setShowRevisions(false);
     setRevisions([]);
     try {
       const response = await getGroupWikiPage(groupId, slug);
+      if (!isMountedRef.current || requestVersion !== pageRequestVersionRef.current) return;
       setSelectedPage(response.data);
       setEditContent(response.data.content ?? '');
       setChangeSummary('');
     } catch (err) {
+      if (!isMountedRef.current || requestVersion !== pageRequestVersionRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.pageLoadError')), variant: 'danger' });
     } finally {
-      setPageLoading(false);
+      if (isMountedRef.current && requestVersion === pageRequestVersionRef.current) setPageLoading(false);
     }
   }
 
   async function loadPages(openFirst = false) {
+    const requestVersion = ++pagesRequestVersionRef.current;
     setIsLoading(true);
     try {
       const response = await getGroupWikiPages(groupId);
+      if (!isMountedRef.current || requestVersion !== pagesRequestVersionRef.current) return;
       const items = Array.isArray(response.data) ? response.data : [];
       setPages(items);
       if (openFirst && items.length > 0) {
@@ -2292,9 +2531,10 @@ function GroupWikiPanel({
         setSelectedPage(null);
       }
     } catch (err) {
+      if (!isMountedRef.current || requestVersion !== pagesRequestVersionRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.loadError')), variant: 'danger' });
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current && requestVersion === pagesRequestVersionRef.current) setIsLoading(false);
     }
   }
 
@@ -2311,20 +2551,28 @@ function GroupWikiPanel({
       return;
     }
 
+    if (!beginMutation()) return;
+    const fingerprint = JSON.stringify({ groupId, title, content });
+    createAttemptRef.current = mutationAttemptFor(createAttemptRef.current, fingerprint, 'group-wiki-page');
     setCreating(true);
     try {
-      const response = await createGroupWikiPage(groupId, { title, content });
+      const response = await createGroupWikiPage(groupId, { title, content }, createAttemptRef.current.key);
+      if (!isMountedRef.current) return;
+      createAttemptRef.current = null;
       setNewTitle('');
       setNewContent('');
       setShowComposer(false);
       setSelectedPage(response.data);
       await loadPages(false);
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.createError')), variant: 'danger' });
     } finally {
-      setCreating(false);
+      finishMutation();
+      if (isMountedRef.current) setCreating(false);
     }
   }
 
@@ -2334,37 +2582,64 @@ function GroupWikiPanel({
       return;
     }
 
+    if (!beginMutation()) return;
+    const page = selectedPage;
+    const content = editContent.trim();
     setSaving(true);
     try {
-      const response = await updateGroupWikiPage(groupId, selectedPage.id, {
-        title: selectedPage.title,
-        content: editContent.trim(),
+      const response = await updateGroupWikiPage(groupId, page.id, {
+        title: page.title,
+        content,
         change_summary: changeSummary.trim() || undefined,
+        expected_updated_at: page.updated_at,
       });
+      if (!isMountedRef.current) return;
       setSelectedPage(response.data);
       setEditing(false);
       setChangeSummary('');
       await loadPages(false);
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = (await getGroupWikiPage(groupId, page.slug)).data;
+          if (!isMountedRef.current) return;
+          if (latest.content.trim() === content && latest.title === page.title) {
+            setSelectedPage(latest);
+            setEditing(false);
+            setChangeSummary('');
+            await loadPages(false);
+            return;
+          }
+        } catch {
+          // Both the response and authoritative readback remain unknown.
+        }
+      }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.saveError')), variant: 'danger' });
     } finally {
-      setSaving(false);
+      finishMutation();
+      if (isMountedRef.current) setSaving(false);
     }
   }
 
   async function loadRevisions() {
     if (!selectedPage) return;
+    const pageId = selectedPage.id;
+    const pageVersion = pageRequestVersionRef.current;
     setRevisionsLoading(true);
     try {
-      const response = await getGroupWikiRevisions(groupId, selectedPage.id);
+      const response = await getGroupWikiRevisions(groupId, pageId);
+      if (!isMountedRef.current || pageVersion !== pageRequestVersionRef.current) return;
       setRevisions(response.data ?? []);
       setShowRevisions(true);
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.revisionsError')), variant: 'danger' });
     } finally {
-      setRevisionsLoading(false);
+      if (isMountedRef.current) setRevisionsLoading(false);
     }
   }
 
@@ -2377,20 +2652,40 @@ function GroupWikiPanel({
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
-        if (!selectedPage) return;
+        if (!selectedPage || !beginMutation()) return;
+        const page = selectedPage;
         setDeletingPage(true);
         try {
-          await deleteGroupWikiPage(groupId, selectedPage.id);
+          await deleteGroupWikiPage(groupId, page.id);
+          if (!isMountedRef.current) return;
           setSelectedPage(null);
           setRevisions([]);
           setShowRevisions(false);
           await loadPages(false);
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err) {
+          if (err instanceof ApiResponseError && err.status === 0) {
+            try {
+              const pagesAfterDelete = (await getGroupWikiPages(groupId)).data;
+              if (!isMountedRef.current) return;
+              if (!pagesAfterDelete.some((candidate) => candidate.id === page.id)) {
+                setSelectedPage(null);
+                setPages(pagesAfterDelete);
+                setRevisions([]);
+                setShowRevisions(false);
+                return;
+              }
+            } catch {
+              // Both the response and authoritative readback remain unknown.
+            }
+          }
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.deleteError')), variant: 'danger' });
         } finally {
-          setDeletingPage(false);
+          finishMutation();
+          if (isMountedRef.current) setDeletingPage(false);
         }
       },
     });
@@ -2414,7 +2709,7 @@ function GroupWikiPanel({
               </Text>
             </View>
             {canEdit ? (
-              <HeroButton size="sm" variant={showComposer ? 'secondary' : 'primary'} onPress={() => setShowComposer((value) => !value)}>
+              <HeroButton size="sm" variant={showComposer ? 'secondary' : 'primary'} isDisabled={creating} onPress={() => setShowComposer((value) => !value)}>
                 <HeroButton.Label>{showComposer ? t('common:buttons.cancel') : t('detail.wiki.newPage')}</HeroButton.Label>
               </HeroButton>
             ) : null}
@@ -2426,6 +2721,7 @@ function GroupWikiPanel({
                 value={newTitle}
                 onChangeText={setNewTitle}
                 placeholder={t('detail.wiki.titlePlaceholder')}
+                editable={!creating}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -2435,6 +2731,7 @@ function GroupWikiPanel({
                 value={newContent}
                 onChangeText={setNewContent}
                 placeholder={t('detail.wiki.contentPlaceholder')}
+                editable={!creating}
                 placeholderTextColor={theme.textMuted}
                 multiline
                 className="min-h-[120px] text-base"
@@ -2509,7 +2806,7 @@ function GroupWikiPanel({
               </View>
               {canEdit ? (
                 <View className="flex-row flex-wrap gap-2">
-                  <HeroButton size="sm" variant="secondary" onPress={() => setEditing((value) => !value)}>
+                  <HeroButton size="sm" variant="secondary" isDisabled={saving || deletingPage} onPress={() => setEditing((value) => !value)}>
                     <HeroButton.Label>{editing ? t('common:buttons.cancel') : t('detail.wiki.edit')}</HeroButton.Label>
                   </HeroButton>
                   <HeroButton size="sm" variant="secondary" isDisabled={revisionsLoading} onPress={() => void (showRevisions ? setShowRevisions(false) : loadRevisions())}>
@@ -2532,6 +2829,7 @@ function GroupWikiPanel({
                   value={editContent}
                   onChangeText={setEditContent}
                   placeholder={t('detail.wiki.contentPlaceholder')}
+                  editable={!saving}
                   placeholderTextColor={theme.textMuted}
                   multiline
                   className="min-h-[160px] text-base"
@@ -2542,6 +2840,7 @@ function GroupWikiPanel({
                   value={changeSummary}
                   onChangeText={setChangeSummary}
                   placeholder={t('detail.wiki.changeSummaryPlaceholder')}
+                  editable={!saving}
                   placeholderTextColor={theme.textMuted}
                   className="text-base"
                   style={{ color: theme.text }}
@@ -2621,28 +2920,40 @@ function GroupTasksPanel({
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
+  const loadVersionRef = useRef(0);
+  const loadMorePendingRef = useRef(false);
+  const createAttemptRef = useRef<MutationAttempt | null>(null);
 
   const loadTasks = useCallback(async (append = false) => {
     if (!canView) return;
+    if (append && loadMorePendingRef.current) return;
+    const requestVersion = append ? loadVersionRef.current : ++loadVersionRef.current;
+    if (append) loadMorePendingRef.current = true;
     if (append) setIsLoadingMore(true); else setIsLoading(true);
     try {
       const [taskResponse, statsResponse] = await Promise.all([
         getGroupTasks(groupId, { status: statusFilter, cursor: append ? cursor : null }),
         getGroupTaskStats(groupId),
       ]);
+      if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
       const page = taskResponse.data ?? [];
       setTasks((previous) => (append ? [...previous, ...page] : page));
       setCursor(taskResponse.meta?.cursor ?? null);
       setHasMore(Boolean(taskResponse.meta?.has_more));
       setStats(statsResponse.data);
     } catch (err) {
+      if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, append ? t('detail.tasks.loadMoreError') : t('detail.tasks.loadError')),
         variant: 'danger',
       });
     } finally {
-      if (append) setIsLoadingMore(false); else setIsLoading(false);
+      if (append) loadMorePendingRef.current = false;
+      if (isMountedRef.current && requestVersion === loadVersionRef.current) {
+        if (append) setIsLoadingMore(false); else setIsLoading(false);
+      }
     }
   // Keep loading tied to data inputs. The i18n function can change identity during test/runtime renders.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2653,17 +2964,34 @@ function GroupTasksPanel({
   }, [loadTasks]);
 
   const cycleStatus = async (task: GroupTask) => {
+    if (!beginMutation()) return;
     const nextStatus: GroupTaskStatus = task.status === 'todo' ? 'in_progress' : task.status === 'in_progress' ? 'done' : 'todo';
     setUpdatingTaskId(task.id);
     try {
       await updateGroupTask(task.id, { status: nextStatus });
+      if (!isMountedRef.current) return;
       await loadTasks();
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = (await getGroupTask(task.id)).data;
+          if (!isMountedRef.current) return;
+          if (latest.status === nextStatus) {
+            await loadTasks();
+            return;
+          }
+        } catch {
+          // Both the response and authoritative readback remain unknown.
+        }
+      }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.updateError')), variant: 'danger' });
     } finally {
-      setUpdatingTaskId(null);
+      finishMutation();
+      if (isMountedRef.current) setUpdatingTaskId(null);
     }
   };
 
@@ -2671,16 +2999,34 @@ function GroupTasksPanel({
     task: GroupTask,
     payload: Partial<Pick<GroupTask, 'assigned_to' | 'priority'>>,
   ) => {
+    if (!beginMutation()) return;
     setUpdatingTaskId(task.id);
     try {
       await updateGroupTask(task.id, payload);
+      if (!isMountedRef.current) return;
       await loadTasks();
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = (await getGroupTask(task.id)).data;
+          if (!isMountedRef.current) return;
+          const matches = Object.entries(payload).every(([key, value]) => latest[key as keyof GroupTask] === value);
+          if (matches) {
+            await loadTasks();
+            return;
+          }
+        } catch {
+          // Both the response and authoritative readback remain unknown.
+        }
+      }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.updateError')), variant: 'danger' });
     } finally {
-      setUpdatingTaskId(null);
+      finishMutation();
+      if (isMountedRef.current) setUpdatingTaskId(null);
     }
   };
 
@@ -2691,16 +3037,22 @@ function GroupTasksPanel({
       return;
     }
 
+    if (!beginMutation()) return;
+    const payload = {
+      title: cleanTitle,
+      description: description.trim() || null,
+      status: 'todo' as const,
+      priority,
+      assigned_to: assignedTo,
+      due_date: dueDate.trim() || null,
+    };
+    const fingerprint = JSON.stringify({ groupId, ...payload });
+    createAttemptRef.current = mutationAttemptFor(createAttemptRef.current, fingerprint, 'group-task');
     setCreating(true);
     try {
-      await createGroupTask(groupId, {
-        title: cleanTitle,
-        description: description.trim() || null,
-        status: 'todo',
-        priority,
-        assigned_to: assignedTo,
-        due_date: dueDate.trim() || null,
-      });
+      await createGroupTask(groupId, payload, createAttemptRef.current.key);
+      if (!isMountedRef.current) return;
+      createAttemptRef.current = null;
       setTitle('');
       setDescription('');
       setPriority('medium');
@@ -2708,12 +3060,15 @@ function GroupTasksPanel({
       setDueDate('');
       setShowComposer(false);
       await loadTasks();
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.createError')), variant: 'danger' });
     } finally {
-      setCreating(false);
+      finishMutation();
+      if (isMountedRef.current) setCreating(false);
     }
   };
 
@@ -2725,16 +3080,31 @@ function GroupTasksPanel({
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (!beginMutation()) return;
         setUpdatingTaskId(task.id);
         try {
           await deleteGroupTask(task.id);
+          if (!isMountedRef.current) return;
           await loadTasks();
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err) {
+          if (err instanceof ApiResponseError && err.status === 0) {
+            try {
+              await getGroupTask(task.id);
+            } catch (readError) {
+              if (readError instanceof ApiResponseError && readError.status === 404 && isMountedRef.current) {
+                await loadTasks();
+                return;
+              }
+            }
+          }
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.deleteError')), variant: 'danger' });
         } finally {
-          setUpdatingTaskId(null);
+          finishMutation();
+          if (isMountedRef.current) setUpdatingTaskId(null);
         }
       },
     });
@@ -2757,7 +3127,7 @@ function GroupTasksPanel({
                 {t('detail.tasks.subtitle')}
               </Text>
             </View>
-            <HeroButton size="sm" variant={showComposer ? 'secondary' : 'primary'} onPress={() => setShowComposer((value) => !value)}>
+            <HeroButton size="sm" variant={showComposer ? 'secondary' : 'primary'} isDisabled={creating} onPress={() => setShowComposer((value) => !value)}>
               <HeroButton.Label>{showComposer ? t('common:buttons.cancel') : t('detail.tasks.newTask')}</HeroButton.Label>
             </HeroButton>
           </View>
@@ -2791,6 +3161,7 @@ function GroupTasksPanel({
                 value={title}
                 onChangeText={setTitle}
                 placeholder={t('detail.tasks.titlePlaceholder')}
+                editable={!creating}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -2800,6 +3171,7 @@ function GroupTasksPanel({
                 value={description}
                 onChangeText={setDescription}
                 placeholder={t('detail.tasks.descriptionPlaceholder')}
+                editable={!creating}
                 placeholderTextColor={theme.textMuted}
                 multiline
                 className="min-h-[88px] text-base"
@@ -2810,6 +3182,7 @@ function GroupTasksPanel({
                 value={dueDate}
                 onChangeText={setDueDate}
                 placeholder={t('detail.tasks.dueDatePlaceholder')}
+                editable={!creating}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -2821,7 +3194,7 @@ function GroupTasksPanel({
                 </Text>
                 <View className="flex-row flex-wrap gap-2">
                   {(['low', 'medium', 'high', 'urgent'] as GroupTaskPriority[]).map((value) => (
-                    <HeroButton key={value} size="sm" variant={priority === value ? 'primary' : 'secondary'} onPress={() => setPriority(value)}>
+                    <HeroButton key={value} size="sm" variant={priority === value ? 'primary' : 'secondary'} isDisabled={creating} onPress={() => setPriority(value)}>
                       <HeroButton.Label>{t(`detail.tasks.priority.${value}`)}</HeroButton.Label>
                     </HeroButton>
                   ))}
@@ -2833,7 +3206,7 @@ function GroupTasksPanel({
                     {t('detail.tasks.assigneeLabel')}
                   </Text>
                   <View className="flex-row flex-wrap gap-2">
-                    <HeroButton size="sm" variant={assignedTo === null ? 'primary' : 'secondary'} onPress={() => setAssignedTo(null)}>
+                    <HeroButton size="sm" variant={assignedTo === null ? 'primary' : 'secondary'} isDisabled={creating} onPress={() => setAssignedTo(null)}>
                       <HeroButton.Label>{t('detail.tasks.unassigned')}</HeroButton.Label>
                     </HeroButton>
                     {members.slice(0, 8).map((member) => (
@@ -2841,6 +3214,7 @@ function GroupTasksPanel({
                         key={member.id}
                         size="sm"
                         variant={assignedTo === member.id ? 'primary' : 'secondary'}
+                        isDisabled={creating}
                         onPress={() => setAssignedTo(member.id)}
                       >
                         <HeroButton.Label>{member.name}</HeroButton.Label>

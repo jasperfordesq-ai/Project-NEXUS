@@ -221,6 +221,7 @@ export default function RegisterScreen() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsLoading(true);
     setGlobalError(null);
+    let sessionPersistenceFailed = false;
 
     try {
       const response = await apiRegister({
@@ -250,11 +251,21 @@ export default function RegisterScreen() {
         expires_in: result.expires_in ?? 0,
         user: result.user,
       });
-      await Promise.all([
-        storage.set(STORAGE_KEYS.AUTH_TOKEN, token),
-        storage.set(STORAGE_KEYS.REFRESH_TOKEN, result.refresh_token),
-        storage.setJson(STORAGE_KEYS.USER_DATA, result.user),
-      ]);
+      try {
+        // Do not display a session that cannot survive restart. Save refresh first,
+        // then access, matching the MFA path; remove any partial write on failure.
+        await storage.set(STORAGE_KEYS.REFRESH_TOKEN, result.refresh_token, { required: true });
+        await storage.set(STORAGE_KEYS.AUTH_TOKEN, token, { required: true });
+        await storage.setJson(STORAGE_KEYS.USER_DATA, result.user);
+      } catch (error) {
+        sessionPersistenceFailed = true;
+        await Promise.all([
+          storage.remove(STORAGE_KEYS.AUTH_TOKEN),
+          storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
+          storage.remove(STORAGE_KEYS.USER_DATA),
+        ]);
+        throw error;
+      }
 
       setRegistered(true);
       setSession(token, result.user);
@@ -278,7 +289,9 @@ export default function RegisterScreen() {
        * `status === 0` is what the client uses for "never got an answer" (timeout or network),
        * as opposed to a real HTTP status the server chose.
        */
-      if (err instanceof ApiResponseError && err.status === 0) {
+      if (sessionPersistenceFailed) {
+        setGlobalError(t('register.sessionSaveFailed'));
+      } else if (err instanceof ApiResponseError && err.status === 0) {
         setGlobalError(t('register.noAnswerFromServer'));
       } else if (err instanceof ApiResponseError) {
         const named = err.field ? FIELD_BY_API_NAME[err.field] : undefined;

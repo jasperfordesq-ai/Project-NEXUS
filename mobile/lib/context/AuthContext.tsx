@@ -68,6 +68,12 @@ interface AuthContextValue extends AuthState {
   login: (payload: LoginPayload) => Promise<LoginChallenge | null>;
   completeMfa: (session: MfaSession) => Promise<void>;
   logout: () => Promise<void>;
+  /** End only the device session after a server-side security boundary already revoked it. */
+  endSessionLocally: (notice: {
+    title: string;
+    description: string;
+    variant?: 'success' | 'warning' | 'danger';
+  }) => Promise<void>;
   /** Set the in-memory auth state directly (e.g. after registration saves tokens to storage). */
   setSession: (token: string, user: AnyUser) => void;
   /** Patch the in-memory user after a profile update (avoids a full re-fetch). */
@@ -134,13 +140,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * The purge is still right for a real sign-out: the queue holds a roster of members'
    * names, encrypted under a key tied to this session.
    */
-  const handleUnauthorized = useCallback(() => {
-    sessionVersionRef.current += 1;
+  const endSessionLocally = useCallback(async (notice: {
+    title: string;
+    description: string;
+    variant?: 'success' | 'warning' | 'danger';
+  }) => {
+    const version = ++sessionVersionRef.current;
     setIsLoading(false);
-    void purgeAllMobileOfflineCheckinData();
     clearApiSession();
     setUser(null);
     setToken(null);
+    setSessionRestoreFailed(false);
+
+    // Clear durable credentials and session-bound offline data even though no
+    // further authenticated server call is possible at this point.
+    await Promise.allSettled([
+      storage.remove(STORAGE_KEYS.AUTH_TOKEN),
+      storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
+      storage.remove(STORAGE_KEYS.USER_DATA),
+      purgeAllMobileOfflineCheckinData(),
+    ]);
+
+    if (!isMountedRef.current || sessionVersionRef.current !== version) return;
+    sessionNoticeStore.publish(notice);
+    router.replace('/(auth)/login');
+  }, []);
+
+  const handleUnauthorized = useCallback(() => {
     // Say what happened. Being returned to the login screen with no message is
     // indistinguishable from a crash or an unrequested logout, which is exactly how
     // members describe it when they report it.
@@ -149,13 +175,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // being above it. `SessionNoticeHost`, mounted inside the provider tree, does the
     // showing. See lib/notices/sessionNoticeStore.ts for why the two earlier attempts
     // at this (a direct hook call, then a try/catch hook) were both wrong.
-    sessionNoticeStore.publish({
+    void endSessionLocally({
       title: t('common:errors.sessionEndedTitle'),
       description: t('common:errors.unauthorized'),
       variant: 'warning',
     });
-    router.replace('/(auth)/login');
-  }, [t]);
+  }, [endSessionLocally, t]);
 
   useEffect(() => {
     registerUnauthorizedCallback(handleUnauthorized);
@@ -507,13 +532,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       completeMfa,
       logout,
+      endSessionLocally,
       setSession,
       refreshUser,
       displayName,
       retrySessionRestore,
     }),
     [
-      user, token, isLoading, sessionRestoreFailed, login, completeMfa, logout, setSession,
+      user, token, isLoading, sessionRestoreFailed, login, completeMfa, logout, endSessionLocally, setSession,
       refreshUser, displayName, retrySessionRestore,
     ],
   );

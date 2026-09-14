@@ -39,3 +39,25 @@ describe('mobile Irish settings language preferences', () => {
     }
   });
 });
+
+describe('mobile password guidance', () => {
+  const catalogues = ['de', 'en', 'es', 'fr', 'ga', 'it', 'pt'].map((locale) => ({
+    locale,
+    settings: require(`./${locale}/settings.json`) as {
+      password: Record<string, string>;
+    },
+  }));
+
+  it.each(catalogues)('$locale states the enforced 12-character minimum', ({ settings }) => {
+    expect(settings.password.newHint).toContain('12');
+    expect(settings.password.newHint).not.toMatch(/\b8\b/);
+  });
+
+  it.each(catalogues)('$locale has clean password action and recovery copy', ({ settings }) => {
+    for (const key of ['save', 'successSignIn', 'unconfirmedTitle', 'unconfirmedMessage']) {
+      expect(settings.password[key]).toEqual(expect.any(String));
+      expect(settings.password[key].trim()).not.toBe('');
+      expect(settings.password[key]).not.toMatch(/<|id=/i);
+    }
+  });
+});

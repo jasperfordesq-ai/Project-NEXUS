@@ -50,7 +50,7 @@ describe('useUnsavedChangesGuard', () => {
     expect(mockPreventRemove).toHaveBeenLastCalledWith(true, expect.any(Function));
   });
 
-  it('holds the screen and asks before discarding dirty input', () => {
+  it('holds the screen and asks before discarding dirty input', async () => {
     const confirm = jest.fn();
     renderHook(() => useUnsavedChangesGuard({ isDirty: true, confirm, ...labels }));
 
@@ -62,7 +62,24 @@ describe('useUnsavedChangesGuard', () => {
     expect(mockDispatch).not.toHaveBeenCalled();
 
     // Confirming replays the exact navigation the member asked for.
-    (confirm.mock.calls[0][0] as { onConfirm: () => void }).onConfirm();
+    await (confirm.mock.calls[0][0] as { onConfirm: () => Promise<void> }).onConfirm();
+    expect(mockDispatch).toHaveBeenCalledWith({ type: 'GO_BACK' });
+  });
+
+  it('runs durable discard cleanup before leaving and stays when cleanup fails', async () => {
+    const confirm = jest.fn();
+    const onDiscard = jest.fn().mockResolvedValue(false);
+    renderHook(() => useUnsavedChangesGuard({ isDirty: true, confirm, onDiscard, ...labels }));
+
+    firePrevented();
+    await (confirm.mock.calls[0][0] as { onConfirm: () => Promise<void> }).onConfirm();
+
+    expect(onDiscard).toHaveBeenCalledTimes(1);
+    expect(mockDispatch).not.toHaveBeenCalled();
+
+    onDiscard.mockResolvedValueOnce(true);
+    firePrevented();
+    await (confirm.mock.calls[1][0] as { onConfirm: () => Promise<void> }).onConfirm();
     expect(mockDispatch).toHaveBeenCalledWith({ type: 'GO_BACK' });
   });
 

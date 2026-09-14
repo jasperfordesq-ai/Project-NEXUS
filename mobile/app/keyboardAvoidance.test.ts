@@ -47,6 +47,7 @@ const NO_KEYBOARD_AVOIDANCE: Record<string, string> = {
   'marketplace-map': 'Same: a single search field at the top of the screen.',
   'marketplace-tools': 'Every field is inside a BottomSheet, which extends for the keyboard.',
   'marketplace-orders': 'Every field is inside a BottomSheet, which extends for the keyboard.',
+  'marketplace-deliveries': 'Every field is inside a BottomSheet, which extends for the keyboard.',
   'marketplace-shipping-options': 'Its one field is inside a BottomSheet.',
   'volunteering-detail': 'Its one field is inside a BottomSheet.',
   reviews: 'Its one field is inside a BottomSheet.',

@@ -411,14 +411,46 @@ class VolunteerCheckInService
             return null;
         }
 
-        DB::table('vol_shift_checkins')
+        $checkedInAt = now();
+        $updated = DB::table('vol_shift_checkins')
             ->where('id', $checkin->id)
             ->where('tenant_id', $tenantId)
-            ->update(['status' => 'checked_in', 'checked_in_at' => now(), 'updated_at' => now()]);
+            ->where('status', 'pending')
+            ->update(['status' => 'checked_in', 'checked_in_at' => $checkedInAt, 'updated_at' => $checkedInAt]);
+
+        // Another coordinator may have scanned the same QR code after our read.
+        // Only the pending -> checked_in winner owns the timestamp; a loser must
+        // report the committed row rather than overwrite it with a second time.
+        if ($updated !== 1) {
+            $current = DB::table('vol_shift_checkins')
+                ->where('id', $checkin->id)
+                ->where('tenant_id', $tenantId)
+                ->first(['status', 'checked_in_at']);
+
+            if ($current?->status === 'checked_in') {
+                return [
+                    'status' => 'already_checked_in',
+                    'checked_in_at' => self::dateTimeString($current->checked_in_at),
+                    'user' => [
+                        'id' => (int) $checkin->user_id,
+                        'name' => $checkin->user_name ?? '',
+                        'avatar_url' => $checkin->avatar_url ?? null,
+                    ],
+                    'shift' => [
+                        'id' => (int) $checkin->shift_id,
+                        'start_time' => self::dateTimeString($checkin->start_time),
+                        'end_time' => self::dateTimeString($checkin->end_time),
+                    ],
+                ];
+            }
+
+            $this->addError('VALIDATION_ERROR', __('api.vol_checkin_already_checked_out'));
+            return null;
+        }
 
         return [
             'status' => 'checked_in',
-            'checked_in_at' => now()->toDateTimeString(),
+            'checked_in_at' => $checkedInAt->toDateTimeString(),
             'user' => [
                 'id' => (int) $checkin->user_id,
                 'name' => $checkin->user_name ?? '',

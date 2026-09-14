@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
@@ -146,6 +147,7 @@ const predictions = {
 };
 
 beforeEach(() => {
+  jest.restoreAllMocks();
   jest.clearAllMocks();
   mockUseApi
     .mockReturnValueOnce({ data: { data: analytics }, isLoading: false, error: null, refresh: jest.fn() })
@@ -162,6 +164,17 @@ describe('JobAnalyticsScreen', () => {
     expect(getByText('Applications by stage')).toBeTruthy();
     expect(getByText('Predictions')).toBeTruthy();
     expect(getByText('42 similar roles')).toBeTruthy();
+  });
+
+  it('uses full-width metrics and readable chart rows at large text', () => {
+    jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<JobAnalyticsScreen />);
+
+    expect(ReactNative.StyleSheet.flatten(screen.getByTestId('job-analytics-total-views').props.style)).toEqual(expect.objectContaining({ flexBasis: '100%' }));
+    expect(screen.getAllByTestId('job-analytics-chart-rows')).toHaveLength(2);
+    expect(screen.queryByTestId('job-analytics-chart-bars')).toBeNull();
+    expect(screen.getByTestId('job-analytics-chart-row-2026-03-01')).toBeTruthy();
+    expect(screen.getByTestId('job-analytics-prediction-grid').props.className).not.toContain('flex-row');
   });
 
   it('refreshes analytics and predictions from the top action', () => {

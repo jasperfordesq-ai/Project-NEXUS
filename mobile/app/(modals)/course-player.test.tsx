@@ -12,7 +12,8 @@ jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(), useLocalSearchParams: () => ({ id: '7' }) }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ 'player.mark_complete': 'Mark as complete', 'player.completed': 'Completed', 'player.lesson_completed': 'Lesson completed', 'player.action_failed': "Couldn't save your progress. Please try again.", 'player.course_progress': 'Course progress', 'player.transcript': 'Transcript', 'detail.no_lessons': 'No lessons have been added yet.', 'player.locked': "This lesson isn't available yet.", 'player.locked_until': 'Available from {{date}}', 'player.progress_unavailable': 'We could not load your progress for this course.', 'player.resumed': 'Picked up where you left off', 'player.start_from_beginning': 'Start from the beginning', 'player.next_lesson': 'Next lesson', 'player.prev_lesson': 'Previous lesson', 'player.watched': 'Watched {{percent}}%', 'player.video_unavailable': 'No video has been added to this lesson yet.', 'common:buttons.retry': 'Retry', 'common:back': 'Back' } as Record<string, string>)[key] ?? key }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 10 } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textSecondary: '#555', border: '#ddd', error: '#b00', errorBg: '#fee', success: '#070', successBg: '#efe', warning: '#a40' }) }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
@@ -62,6 +63,20 @@ describe('CoursePlayerScreen', () => {
     })));
     // The lesson must not look complete when the server refused.
     expect(getByText('Mark as complete')).toBeTruthy();
+  });
+
+  it('marks the lesson complete when the POST response is lost but progress readback confirms it', async () => {
+    jest.mocked(completeCourseLesson).mockRejectedValue(new ApiResponseError(0, 'Network request failed'));
+    jest.mocked(getCourseProgress)
+      .mockResolvedValueOnce({ enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 0 }, lessons: [], availability: [{ lesson_id: 12, available: true, unlock_at: null }] })
+      .mockResolvedValueOnce({ enrollment: { id: 3, course_id: 7, status: 'completed', progress_percent: 100 }, lessons: [{ lesson_id: 12, status: 'completed', watch_percent: 100 }], availability: [{ lesson_id: 12, available: true, unlock_at: null }] });
+
+    const { getByText } = render(<CoursePlayerScreen />);
+    await waitFor(() => expect(getByText('Mark as complete')).toBeTruthy());
+    fireEvent.press(getByText('Mark as complete'));
+
+    await waitFor(() => expect(getByText('Completed')).toBeTruthy());
+    expect(mockShow).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
   });
 
   /**

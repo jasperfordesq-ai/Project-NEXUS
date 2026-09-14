@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 const mockToast = jest.fn();
@@ -37,6 +37,7 @@ jest.mock('react-i18next', () => ({
       'pass.no_visits': 'No visits recorded yet.',
       'pass.browse_venues': 'Browse venues',
       'pass.unavailable': 'Pass unavailable',
+      'venues:loading': 'Working…',
       'verify.unavailable': 'Partner venues are not enabled for your community.',
       'common:buttons.retry': 'Retry',
       'common:buttons.cancel': 'Cancel',
@@ -46,9 +47,9 @@ jest.mock('react-i18next', () => ({
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ hasFeature: (name: string) => Boolean(mockFeatures[name]) }),
+  useTenant: () => ({ hasFeature: (name: string) => Boolean(mockFeatures[name]), tenant: { id: 2 } }),
 }));
-jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ displayName: 'Ada Member' }) }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ displayName: 'Ada Member', user: { id: 7 } }) }));
 jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: (...args: unknown[]) => mockToast(...args) }) }));
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
@@ -107,11 +108,48 @@ describe('VenuePassScreen', () => {
     await waitFor(() => expect(mockToast).toHaveBeenCalledWith({ title: 'Could not replace the pass', variant: 'danger' }));
   });
 
+  it('serializes pass replacement and shows the returned pass without waiting for a refresh', async () => {
+    let finish: ((value: unknown) => void) | null = null;
+    jest.mocked(rotatePartnerVenuePass).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }) as never);
+    const { getByText } = render(<VenuePassScreen />);
+    await waitFor(() => expect(getByText('Replace pass')).toBeTruthy());
+
+    act(() => {
+      fireEvent.press(getByText('Replace pass'));
+      fireEvent.press(getByText('Replace pass'));
+    });
+    expect(rotatePartnerVenuePass).toHaveBeenCalledTimes(1);
+
+    await act(async () => finish?.({ token: 'new', qr_url: 'https://example.org/pass/new', status: 'active', last_used_at: null }));
+  });
+
+  it('recovers the current valid pass when replacement committed but its response was lost', async () => {
+    jest.mocked(getPartnerVenuePass)
+      .mockResolvedValueOnce({ token: 'abc', qr_url: 'https://example.org/pass/abc', status: 'active', last_used_at: null } as never)
+      .mockResolvedValueOnce({ token: 'new', qr_url: 'https://example.org/pass/new', status: 'active', last_used_at: null } as never);
+    jest.mocked(rotatePartnerVenuePass).mockRejectedValueOnce(new ApiResponseError(0, 'Connection lost'));
+    const { getByText, getByTestId } = render(<VenuePassScreen />);
+    await waitFor(() => expect(getByText('Replace pass')).toBeTruthy());
+    fireEvent.press(getByText('Replace pass'));
+
+    await waitFor(() => expect(getByTestId('venue-pass-qr').props.accessibilityLabel).toBe('https://example.org/pass/new'));
+    expect(mockToast).toHaveBeenCalledWith({ title: 'Pass replaced', variant: 'success' });
+  });
+
   it('browses the venue directory', async () => {
     const { getByText } = render(<VenuePassScreen />);
     await waitFor(() => expect(getByText('Browse venues')).toBeTruthy());
     fireEvent.press(getByText('Browse venues'));
     expect(mockPush).toHaveBeenCalledWith('/(modals)/venues');
+  });
+
+  it('reports a visit-history failure while retaining the usable pass', async () => {
+    jest.mocked(getPartnerVenueVisits).mockRejectedValue(new ApiResponseError(403, 'Could not load recent visits'));
+    const { getByTestId } = render(<VenuePassScreen />);
+
+    await waitFor(() => expect(getByTestId('venue-pass-qr')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('refresh-failed-notice')).toBeTruthy());
+    expect(getByTestId('venue-pass-qr')).toBeTruthy();
   });
 
   it('says so, and calls nothing, when the community has no partner venues module', async () => {

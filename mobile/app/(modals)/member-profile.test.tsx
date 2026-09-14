@@ -7,6 +7,7 @@ jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 jest.mock('@/lib/walletOperation', () => ({
   reserveWalletOperation: jest.fn().mockResolvedValue({ key: 'saved-federation-key', storageKey: 'saved', createdAt: 1 }),
   completeWalletOperation: jest.fn().mockResolvedValue(undefined),
+  isUnresolvedWalletOperationError: jest.fn((error: { code?: string }) => error?.code === 'WALLET_OPERATION_UNRESOLVED'),
 }));
 
 import React from 'react';
@@ -68,6 +69,10 @@ jest.mock('react-i18next', () => ({
         'profile.connected': 'Connected',
         'profile.disconnect': 'Disconnect',
         'profile.connectionError': 'Connection could not be updated.',
+        'profile.pendingSent': 'Request sent',
+        'connections.cancel': 'Cancel request',
+        'connections.cancelConfirmTitle': 'Cancel this request?',
+        'connections.cancelConfirmMessage': 'This connection request will be withdrawn. You can send a new request later.',
         'profile.sendCredits': 'Send credits',
         'profile.sendCreditsTo': opts ? `Send credits to ${String(opts.name ?? '')}` : 'Send credits',
         'profile.amountHours': 'Amount (hours)',
@@ -82,6 +87,10 @@ jest.mock('react-i18next', () => ({
         'profile.transferSuccessMessage': opts ? `${String(opts.amount ?? '')} hour(s) sent to ${String(opts.name ?? '')}.` : 'Credits sent.',
         'profile.transferFailedTitle': 'Could not send credits',
         'profile.transferFailedMessage': 'Please check federation exchanges are enabled and try again.',
+        'actions.unresolvedTitle': 'Wallet action needs checking',
+        'actions.unresolvedOperation': 'An earlier wallet action is still unconfirmed.',
+        'actions.reviewHistory': 'Review transaction history',
+        'actions.contactCommunity': 'Contact your community',
         'profile.cancelTransfer': 'Cancel transfer',
         'profile.hoursGiven': 'Hours Given',
         'profile.hoursReceived': 'Hours Received',
@@ -199,6 +208,7 @@ jest.mock('@/lib/api/connections', () => ({
   getConnectionStatus: jest.fn().mockResolvedValue({ data: { status: 'none', connection_id: null } }),
   sendConnectionRequest: jest.fn().mockResolvedValue({ data: { connection_id: 10 } }),
   acceptConnection: jest.fn().mockResolvedValue({}),
+  declineConnection: jest.fn().mockResolvedValue({}),
   removeConnection: jest.fn().mockResolvedValue({}),
 }));
 
@@ -318,9 +328,11 @@ import {
   getFederationMember,
   getFederationMemberReviews,
   rejectFederationConnection,
+  removeFederationConnection,
   sendFederationTransaction,
 } from '@/lib/api/federation';
 import { getMember } from '@/lib/api/members';
+import { declineConnection, getConnectionStatus, removeConnection, sendConnectionRequest } from '@/lib/api/connections';
 import { blockUser } from '@/lib/api/settings';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
@@ -443,6 +455,70 @@ describe('MemberProfileScreen', () => {
 
     const { getByText } = render(<MemberProfileScreen />);
     expect(getByText('Send Message')).toBeTruthy();
+  });
+
+  it('uses the dedicated decline endpoint for a local incoming request', async () => {
+    jest.mocked(getConnectionStatus).mockResolvedValueOnce({
+      data: { status: 'pending_received', connection_id: 81, direction: 'received' },
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByText } = render(<MemberProfileScreen />);
+    await waitFor(() => expect(getByText('Decline')).toBeTruthy());
+    fireEvent.press(getByText('Decline'));
+
+    await waitFor(() => expect(declineConnection).toHaveBeenCalledWith(81));
+  });
+
+  it('recovers a lost connect response from authoritative relationship state', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+    const { getByLabelText, getByText } = render(<MemberProfileScreen />);
+    await waitFor(() => expect(getByLabelText('profile.connect')).toBeTruthy());
+
+    jest.mocked(sendConnectionRequest).mockRejectedValueOnce(new Error('connection lost'));
+    jest.mocked(getConnectionStatus).mockResolvedValueOnce({
+      data: { status: 'pending_sent', connection_id: 82, direction: 'sent' },
+    });
+    fireEvent.press(getByLabelText('profile.connect'));
+
+    await waitFor(() => expect(getByText('Request sent')).toBeTruthy());
+    expect(sendConnectionRequest).toHaveBeenCalledWith(7);
+  });
+
+  it('lets the requester cancel a sent request from the member profile with pending-state protection', async () => {
+    jest.mocked(getConnectionStatus).mockResolvedValueOnce({
+      data: { status: 'pending_sent', connection_id: 82, direction: 'sent' },
+    });
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId, getByText, queryByText } = render(<MemberProfileScreen />);
+    await waitFor(() => expect(getByText('Cancel request')).toBeTruthy());
+
+    fireEvent.press(getByText('Cancel request'));
+    expect(removeConnection).not.toHaveBeenCalled();
+    expect(getByText('Cancel this request?')).toBeTruthy();
+
+    await act(async () => { fireEvent.press(getByTestId('member-profile-confirm')); });
+
+    await waitFor(() => expect(removeConnection).toHaveBeenCalledWith(82, 'pending'));
+    await waitFor(() => expect(queryByText('Request sent')).toBeNull());
+  });
+
+  it('shows the accepted state when another device accepts before profile cancellation', async () => {
+    jest.mocked(getConnectionStatus)
+      .mockResolvedValueOnce({ data: { status: 'pending_sent', connection_id: 83, direction: 'sent' } })
+      .mockResolvedValueOnce({ data: { status: 'connected', connection_id: 83, direction: null } });
+    jest.mocked(removeConnection).mockRejectedValueOnce(new Error('state changed'));
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId, getByText } = render(<MemberProfileScreen />);
+    await waitFor(() => expect(getByText('Cancel request')).toBeTruthy());
+    fireEvent.press(getByText('Cancel request'));
+    await act(async () => { fireEvent.press(getByTestId('member-profile-confirm')); });
+
+    await waitFor(() => expect(getByText('Connected')).toBeTruthy());
+    expect(removeConnection).toHaveBeenCalledWith(83, 'pending');
+    expect(getConnectionStatus).toHaveBeenCalledTimes(2);
   });
 
   it.each([false, true])('handles confirmed member blocking with rejection: %s', async (reject) => {
@@ -645,6 +721,31 @@ describe('MemberProfileScreen', () => {
     });
   });
 
+  it('cancels outgoing federated connection requests from the member profile', async () => {
+    mockParams = { id: '272', tenant_id: '5' };
+    mockUseApi.mockReturnValue({
+      data: {
+        data: {
+          ...mockMember,
+          id: 272,
+          tenant_id: 5,
+          timebank: { id: 5, name: 'Partner Demo' },
+          connection_status: { status: 'pending', direction: 'outgoing', connection_id: 79 },
+        },
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByTestId, getByText } = render(<MemberProfileScreen />);
+    await waitFor(() => expect(getByText('Cancel request')).toBeTruthy());
+    fireEvent.press(getByText('Cancel request'));
+    await act(async () => { fireEvent.press(getByTestId('member-profile-confirm')); });
+
+    await waitFor(() => expect(removeFederationConnection).toHaveBeenCalledWith(79, 'pending'));
+  });
+
   it('sends federated time credits from a partner member profile', async () => {
     mockParams = { id: '272', tenant_id: '5' };
     mockUseApi.mockReturnValue({
@@ -729,6 +830,33 @@ describe('MemberProfileScreen', () => {
         description: 'Repair help',
       });
     });
+  });
+
+  it('gives an expired unknown federation transfer persistent reconciliation actions', async () => {
+    jest.mocked(reserveWalletOperation).mockRejectedValueOnce(Object.assign(
+      new Error('An earlier wallet action is still unconfirmed.'),
+      { code: 'WALLET_OPERATION_UNRESOLVED' },
+    ));
+    mockParams = { id: '272', tenant_id: '5' };
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockMember, id: 272, tenant_id: 5, timebank: { id: 5, name: 'Partner Demo' }, transactions_enabled: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const ui = render(<MemberProfileScreen />);
+    fireEvent.press(ui.getAllByText('Send credits')[0]);
+    fireEvent.changeText(ui.getByPlaceholderText('1-100'), '2');
+    fireEvent.changeText(ui.getByPlaceholderText('What are these credits for?'), 'Repair help');
+    fireEvent.press(ui.getByTestId('federation-send-credits'));
+    await act(async () => { fireEvent.press(ui.getByTestId('federation-confirm-transfer')); });
+
+    expect(await ui.findByTestId('wallet-unresolved-operation')).toBeTruthy();
+    expect(ui.getByText('Review transaction history')).toBeTruthy();
+    expect(ui.getByTestId('federation-send-credits')).toBeDisabled();
+    fireEvent.press(ui.getByText('Review transaction history'));
+    expect(require('expo-router').router.push).toHaveBeenCalledWith('/(modals)/wallet');
   });
 
   it('opens external federated member deep links as messageable partner profiles', () => {

@@ -160,6 +160,29 @@ final class GroupDiscussionControllerTest extends TestCase
         ])->assertUnprocessable();
     }
 
+    public function test_discussion_creation_replays_one_committed_result_after_response_loss(): void
+    {
+        $this->authenticate($this->member);
+        $payload = [
+            'title' => 'Response loss rota',
+            'content' => 'This exact operation must create one discussion.',
+            'idempotency_key' => 'group-discussion-replay-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $first = $this->apiPost("/v2/groups/{$this->activeGroupId}/discussions", $payload, $headers)->assertCreated();
+        $replay = $this->apiPost("/v2/groups/{$this->activeGroupId}/discussions", $payload, $headers)->assertCreated();
+
+        self::assertSame($first->json('data.id'), $replay->json('data.id'));
+        self::assertSame(1, DB::table('group_discussions')->where('id', $first->json('data.id'))->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')->where('operation_type', 'discussion')->count());
+
+        $this->apiPost("/v2/groups/{$this->activeGroupId}/discussions", [
+            ...$payload,
+            'content' => 'Changed content cannot reuse the operation.',
+        ], $headers)->assertConflict();
+    }
+
     public function test_pinned_discussion_composite_cursor_never_skips_or_duplicates_equal_timestamps(): void
     {
         $createdAt = now()->subDay()->format('Y-m-d H:i:s');

@@ -172,6 +172,7 @@ export const ROUTE_REQUIREMENTS: Readonly<Record<string, RouteRequirement>> = {
   'marketplace-offers': F('marketplace'),
   'marketplace-order': F('marketplace'),
   'marketplace-orders': F('marketplace'),
+  'marketplace-deliveries': F('marketplace'),
   'marketplace-sales-orders': F('marketplace'),
   'marketplace-pickups': F('marketplace'),
   'marketplace-pickup-slots': F('marketplace'),

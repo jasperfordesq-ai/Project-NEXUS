@@ -78,7 +78,13 @@ class GroupQAController extends BaseApiController
         }
 
         try {
-            $result = $this->qaService->askQuestion($id, $userId, $title, $body);
+            $result = $this->qaService->askQuestion(
+                $id,
+                $userId,
+                $title,
+                $body,
+                request()->header('Idempotency-Key') ?? request()->input('idempotency_key'),
+            );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -87,6 +93,7 @@ class GroupQAController extends BaseApiController
             return $this->qaErrorResponse(__('api_controllers_3.group_qa.failed_create_question'));
         }
 
+        unset($result['_idempotent_replay']);
         return $this->successResponse($result, 201);
     }
 
@@ -130,7 +137,13 @@ class GroupQAController extends BaseApiController
         }
 
         try {
-            $result = $this->qaService->postAnswer($id, $questionId, $userId, $body);
+            $result = $this->qaService->postAnswer(
+                $id,
+                $questionId,
+                $userId,
+                $body,
+                request()->header('Idempotency-Key') ?? request()->input('idempotency_key'),
+            );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -139,6 +152,7 @@ class GroupQAController extends BaseApiController
             return $this->qaErrorResponse(__('api_controllers_3.group_qa.failed_post_answer'));
         }
 
+        unset($result['_idempotent_replay']);
         return $this->successResponse($result, 201);
     }
 
@@ -307,8 +321,8 @@ class GroupQAController extends BaseApiController
         $status = match ($errors[0]['code'] ?? '') {
             'NOT_FOUND' => 404,
             'FORBIDDEN' => 403,
-            'CLOSED', 'CONFLICT' => 409,
-            'VALIDATION', 'INVALID', 'INVALID_CURSOR' => 422,
+            'CLOSED', 'CONFLICT', 'IDEMPOTENCY_CONFLICT' => 409,
+            'VALIDATION', 'INVALID', 'INVALID_CURSOR', 'IDEMPOTENCY_INVALID' => 422,
             default => 400,
         };
 

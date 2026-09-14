@@ -4,7 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ApiResponseError } from '@/lib/api/client';
 
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
@@ -36,6 +38,10 @@ jest.mock('react-i18next', () => ({
         'org.wallet.depositDoneMessage': 'Deposit complete.',
         'org.wallet.validation': 'Enter an amount greater than zero.',
         'org.wallet.depositError': 'Could not deposit credits.',
+        'actions.unresolvedTitle': 'Wallet action needs checking',
+        'actions.unresolvedOperation': 'An earlier wallet action is still unconfirmed.',
+        'actions.reviewHistory': 'Review transaction history',
+        'actions.contactCommunity': 'Contact your community',
         'common:buttons.cancel': 'Cancel',
         'common:unsavedChanges.title': 'Leave without saving?',
         'common:unsavedChanges.message': 'Your changes on this screen have not been saved yet.',
@@ -291,6 +297,30 @@ describe('VolunteeringOrgDashboard', () => {
     expect(getByText('Deposit credits')).toBeTruthy();
   });
 
+  it('stacks populated organiser cards and paired decisions at large text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+
+    const overview = render(<VolunteeringOrgDashboard />);
+    expect(overview.getByTestId('org-dashboard-identity').props.className).not.toContain('flex-row');
+    expect(overview.getByTestId('org-dashboard-stats').props.className).not.toContain('flex-row');
+    overview.unmount();
+
+    mockRouteParams = { id: '5', tab: 'applications' };
+    mockDashboardApis();
+    const applications = render(<VolunteeringOrgDashboard />);
+    expect(applications.getByTestId('org-application-7-identity').props.className).not.toContain('flex-row');
+    expect(applications.getByTestId('org-application-7-actions').props.className).not.toContain('flex-row');
+    applications.unmount();
+
+    mockRouteParams = { id: '5', tab: 'hours' };
+    mockDashboardApis();
+    const hours = render(<VolunteeringOrgDashboard />);
+    expect(hours.getByTestId('org-hours-12-identity').props.className).not.toContain('flex-row');
+    expect(hours.getByTestId('org-hours-12-actions').props.className).not.toContain('flex-row');
+
+    dimensions.mockRestore();
+  });
+
   it.each([
     ['applications', 2, 'org-applications-error', 'No applications to review.'],
     ['hours', 3, 'org-hours-error', 'No hours are waiting for review.'],
@@ -465,6 +495,26 @@ describe('VolunteeringOrgDashboard', () => {
     await waitFor(() => expect(depositOrganisationWallet).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByPlaceholderText('Amount').props.value).toBe(''));
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(expect.any(String), expect.stringContaining('"completed":true'));
+  });
+
+  it('gives an expired unknown organisation deposit persistent reconciliation actions', async () => {
+    jest.mocked(SecureStore.getItemAsync).mockRejectedValueOnce(new ApiResponseError(
+      0,
+      'An earlier wallet action is still unconfirmed.',
+      undefined,
+      'WALLET_OPERATION_UNRESOLVED',
+    ));
+    mockRouteParams = { id: '5', tab: 'wallet' };
+    const screen = render(<VolunteeringOrgDashboard />);
+
+    fireEvent.changeText(screen.getByPlaceholderText('Amount'), '5');
+    fireEvent.press(screen.getByTestId('org-wallet-deposit'));
+    fireEvent.press(screen.getByTestId('org-wallet-confirm-deposit'));
+
+    expect(await screen.findByTestId('wallet-unresolved-operation')).toBeTruthy();
+    expect(screen.getByText('Review transaction history')).toBeTruthy();
+    expect(screen.getByText('Contact your community')).toBeTruthy();
+    expect(screen.getByTestId('org-wallet-deposit')).toBeDisabled();
   });
 
   it('🔴 accepts a comma decimal, which the amount field used to reject outright', async () => {

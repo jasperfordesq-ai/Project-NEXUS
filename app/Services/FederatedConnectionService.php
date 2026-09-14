@@ -232,12 +232,31 @@ class FederatedConnectionService
         }
 
         try {
-            DB::update(
-                "UPDATE federation_connections
-                 SET status = 'accepted', updated_at = NOW()
-                 WHERE id = ? AND receiver_user_id = ? AND receiver_tenant_id = ? AND status = 'pending'",
-                [$connectionId, $userId, $tenantId]
-            );
+            $connection = DB::transaction(function () use ($connectionId, $userId, $tenantId) {
+                $locked = DB::selectOne(
+                    "SELECT * FROM federation_connections
+                     WHERE id = ? AND receiver_user_id = ? AND receiver_tenant_id = ?
+                     FOR UPDATE",
+                    [$connectionId, $userId, $tenantId]
+                );
+                if (! $locked || $locked->status !== 'pending') {
+                    return null;
+                }
+
+                DB::update(
+                    "UPDATE federation_connections SET status = 'accepted', updated_at = NOW() WHERE id = ?",
+                    [$connectionId]
+                );
+                return $locked;
+            });
+
+            if (! $connection) {
+                return [
+                    'success' => false,
+                    'error_code' => 'CONNECTION_STATE_CHANGED',
+                    'error' => __('api.connection_request_not_found_or_processed'),
+                ];
+            }
 
             Log::info('[FederatedConnection] Request accepted', [
                 'connection_id' => $connectionId,
@@ -315,12 +334,31 @@ class FederatedConnectionService
         }
 
         try {
-            DB::update(
-                "UPDATE federation_connections
-                 SET status = 'rejected', updated_at = NOW()
-                 WHERE id = ? AND receiver_user_id = ? AND receiver_tenant_id = ? AND status = 'pending'",
-                [$connectionId, $userId, $tenantId]
-            );
+            $connection = DB::transaction(function () use ($connectionId, $userId, $tenantId) {
+                $locked = DB::selectOne(
+                    "SELECT * FROM federation_connections
+                     WHERE id = ? AND receiver_user_id = ? AND receiver_tenant_id = ?
+                     FOR UPDATE",
+                    [$connectionId, $userId, $tenantId]
+                );
+                if (! $locked || $locked->status !== 'pending') {
+                    return null;
+                }
+
+                DB::update(
+                    "UPDATE federation_connections SET status = 'rejected', updated_at = NOW() WHERE id = ?",
+                    [$connectionId]
+                );
+                return $locked;
+            });
+
+            if (! $connection) {
+                return [
+                    'success' => false,
+                    'error_code' => 'CONNECTION_STATE_CHANGED',
+                    'error' => __('api.connection_request_not_found_or_processed'),
+                ];
+            }
 
             Log::info('[FederatedConnection] Request rejected', [
                 'connection_id' => $connectionId,
@@ -363,32 +401,53 @@ class FederatedConnectionService
     /**
      * Remove an existing connection.
      */
-    public function removeConnection(int $connectionId, int $userId): array
+    public function removeConnection(int $connectionId, int $userId, ?string $expectedStatus = null): array
     {
         $tenantId = TenantContext::getId();
-        $connection = DB::selectOne(
-            "SELECT * FROM federation_connections WHERE id = ? AND ((requester_user_id = ? AND requester_tenant_id = ?) OR (receiver_user_id = ? AND receiver_tenant_id = ?))",
-            [$connectionId, $userId, $tenantId, $userId, $tenantId]
-        );
-
-        if (!$connection) {
-            return ['success' => false, 'error' => __('api.connection_not_found')];
-        }
-
         try {
-            DB::delete(
-                "DELETE FROM federation_connections
-                 WHERE id = ? AND ((requester_user_id = ? AND requester_tenant_id = ?)
-                    OR (receiver_user_id = ? AND receiver_tenant_id = ?))",
-                [$connectionId, $userId, $tenantId, $userId, $tenantId]
-            );
+            $result = DB::transaction(function () use ($connectionId, $userId, $tenantId, $expectedStatus) {
+                $connection = DB::selectOne(
+                    "SELECT * FROM federation_connections
+                     WHERE id = ? AND ((requester_user_id = ? AND requester_tenant_id = ?)
+                        OR (receiver_user_id = ? AND receiver_tenant_id = ?))
+                     FOR UPDATE",
+                    [$connectionId, $userId, $tenantId, $userId, $tenantId]
+                );
+                if (! $connection) {
+                    return [
+                        'success' => false,
+                        'error_code' => 'CONNECTION_ERROR',
+                        'error' => __('api.connection_not_found'),
+                    ];
+                }
+
+                $isRequester = (int) $connection->requester_user_id === $userId
+                    && (int) $connection->requester_tenant_id === $tenantId;
+                if ($expectedStatus !== null && (
+                    $connection->status !== $expectedStatus
+                    || ($expectedStatus === 'pending' && ! $isRequester)
+                )) {
+                    return [
+                        'success' => false,
+                        'error_code' => 'CONNECTION_STATE_CHANGED',
+                        'error' => __('api.connection_request_not_found_or_processed'),
+                    ];
+                }
+
+                DB::delete("DELETE FROM federation_connections WHERE id = ?", [$connectionId]);
+                return ['success' => true];
+            });
+
+            if (! $result['success']) {
+                return $result;
+            }
 
             Log::info('[FederatedConnection] Connection removed', [
                 'connection_id' => $connectionId,
                 'removed_by' => $userId,
             ]);
 
-            return ['success' => true];
+            return $result;
         } catch (\Exception $e) {
             Log::error('[FederatedConnection] removeConnection failed', ['error' => $e->getMessage()]);
             return ['success' => false, 'error' => __('api.connection_remove_failed')];

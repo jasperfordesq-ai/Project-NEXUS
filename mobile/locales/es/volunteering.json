@@ -72,6 +72,7 @@
   "shiftSignupTitle": "Turno unido",
   "shiftSignupMessage": "Te has registrado para este turno.",
   "shiftSignupError": "No se pudo registrar para este turno.",
+  "shiftResultUnknown": "No pudimos confirmar el cambio. Actualice sus turnos antes de volver a intentarlo.",
   "meta": {
     "location": "Ubicación",
     "commitment": "Compromiso",
@@ -307,6 +308,7 @@
   "interestSentTitle": "¡Interés enviado!",
   "interestSentMessage": "La organización se pondrá en contacto contigo pronto.",
   "interestError": "No se pudo manifestar el interés.",
+  "interestNoAnswer": "No pudimos confirmar el resultado. Es posible que tu solicitud ya se haya enviado.",
   "skills": "Habilidades requeridas",
   "commitment": "Dedicación",
   "detail": {

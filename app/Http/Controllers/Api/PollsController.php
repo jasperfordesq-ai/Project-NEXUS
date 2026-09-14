@@ -13,6 +13,7 @@ use App\Models\Notification;
 use App\Models\Poll;
 use App\Models\User;
 use App\Services\PollService;
+use App\Services\PollCreationReceiptService;
 use App\Services\PollRankingService;
 use App\Services\PollExportService;
 use Illuminate\Http\JsonResponse;
@@ -104,12 +105,21 @@ class PollsController extends BaseApiController
         $this->rateLimit('poll_create', 5, 60);
 
         $data = $this->getAllInput();
+        $identity = $this->pollCreationIdentity($data);
+        if ($identity === false) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
 
         if (empty(trim($data['question'] ?? ''))) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.social_question_required'), 'question', 400);
         }
 
-        if (empty($data['options']) || ! is_array($data['options']) || count($data['options']) < 2) {
+        if (empty($data['options']) || ! is_array($data['options'])) {
+            return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.social_min_2_options'), 'options', 400);
+        }
+
+        $data['options'] = array_values(array_map(static fn ($option): string => trim((string) $option), $data['options']));
+        if (count($data['options']) < 2 || in_array('', $data['options'], true)) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.social_min_2_options'), 'options', 400);
         }
 
@@ -117,26 +127,45 @@ class PollsController extends BaseApiController
             return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.too_many_poll_options'), 'options', 422);
         }
 
-        $poll = $this->pollService->create($userId, $data);
+        $data['poll_type'] = $data['poll_type'] ?? 'standard';
+        if (!in_array($data['poll_type'], ['standard', 'ranked'], true)) {
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.invalid_input'), 'poll_type', 422);
+        }
+        $data['is_anonymous'] = filter_var($data['is_anonymous'] ?? false, FILTER_VALIDATE_BOOL);
+
+        try {
+            $creation = $identity === null
+                ? ['poll' => $this->pollService->create($userId, $data), 'replayed' => false]
+                : PollCreationReceiptService::create($userId, $identity, fn () => $this->pollService->create($userId, $data));
+            $poll = $creation['poll'];
+        } catch (\InvalidArgumentException $e) {
+            $field = str_contains($e->getMessage(), 'Idempotency') ? 'idempotency_key' : 'expires_at';
+            $status = $field === 'idempotency_key' ? 409 : 422;
+            return $this->respondWithError($status === 409 ? 'IDEMPOTENCY_CONFLICT' : 'VALIDATION_INVALID_VALUE', __('api.invalid_input'), $field, $status);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
+        }
         $result = $this->pollService->getById($poll->id, $userId);
 
         // Record feed activity
-        try {
-            app(\App\Services\FeedActivityService::class)->recordActivity(
-                \App\Core\TenantContext::getId(),
-                $userId,
-                'poll',
-                $poll->id,
-                [
-                    'title'    => $data['question'] ?? null,
-                    'group_id' => $data['group_id'] ?? null,
-                ]
-            );
-        } catch (\Throwable $e) {
-            \Log::warning('Feed activity recording failed', ['type' => 'poll', 'id' => $poll->id, 'error' => $e->getMessage()]);
+        if (!$creation['replayed']) {
+            try {
+                app(\App\Services\FeedActivityService::class)->recordActivity(
+                    \App\Core\TenantContext::getId(),
+                    $userId,
+                    'poll',
+                    $poll->id,
+                    [
+                        'title'    => $data['question'] ?? null,
+                        'group_id' => $data['group_id'] ?? null,
+                    ]
+                );
+            } catch (\Throwable $e) {
+                \Log::warning('Feed activity recording failed', ['type' => 'poll', 'id' => $poll->id, 'error' => $e->getMessage()]);
+            }
         }
 
-        return $this->respondWithData($result, null, 201);
+        return $this->respondWithData($result, null, $creation['replayed'] ? 200 : 201);
     }
 
     // -----------------------------------------------------------------
@@ -231,12 +260,12 @@ class PollsController extends BaseApiController
             if (!$pollModel || (int) $pollModel->tenant_id !== TenantContext::getId()) {
                 throw new \RuntimeException(__('api.tenant_mismatch_error'));
             }
-            if ($pollModel && (int) $pollModel->user_id !== $userId) {
+            if ($pollModel && !$pollModel->is_anonymous && (int) $pollModel->user_id !== $userId) {
                 $voter = User::find($userId);
                 $recipient = User::find((int) $pollModel->user_id);
                 LocaleContext::withLocale($recipient, function () use ($voter, $pollModel, $id) {
                     $voterName = $voter ? UserDisplayName::resolve($voter) : __('emails.common.fallback_someone');
-                    $pollTitle = $pollModel->question ?? 'your poll';
+                    $pollTitle = (string) $pollModel->question;
                     $message = __('api_controllers_3.polls.vote_received', ['name' => $voterName, 'title' => $pollTitle]);
                     Notification::createNotification((int) $pollModel->user_id, $message, "/polls/{$id}", 'poll_vote');
                     \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $pollModel->user_id), 'poll_vote', $message, "/polls/{$id}");
@@ -266,40 +295,49 @@ class PollsController extends BaseApiController
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.poll_rankings_required'), 'rankings', 400);
         }
 
+        if ($this->pollService->getById($id, $userId) === null) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.poll_not_found'), null, 404);
+        }
+
         try {
-            $success = $this->rankingService->submitRanking($id, $userId, $rankings);
+            $submission = $this->rankingService->submitRankingWithResult($id, $userId, $rankings);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
 
-        if (! $success) {
+        if (! $submission['accepted']) {
             return $this->respondWithError('RESOURCE_CONFLICT', __('api.poll_already_ranked'), null, 409);
         }
 
         // Notify poll creator of ranking submission
-        try {
-            $pollModel = Poll::find($id);
-            if ($pollModel && (int) $pollModel->user_id !== $userId) {
-                $ranker = User::find($userId);
-                $recipient = User::find((int) $pollModel->user_id);
-                LocaleContext::withLocale($recipient, function () use ($ranker, $pollModel, $id) {
-                    $rankerName = $ranker ? UserDisplayName::resolve($ranker) : __('emails.common.fallback_someone');
-                    $pollTitle = $pollModel->question ?? 'your poll';
-                    $message = __('api_controllers_3.polls.ranking_received', ['name' => $rankerName, 'title' => $pollTitle]);
-                    Notification::createNotification((int) $pollModel->user_id, $message, "/polls/{$id}", 'poll_vote');
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $pollModel->user_id), 'poll_vote', $message, "/polls/{$id}");
-                });
+        if (!$submission['replayed']) {
+            try {
+                $pollModel = Poll::find($id);
+                if ($pollModel && !$pollModel->is_anonymous && (int) $pollModel->user_id !== $userId) {
+                    $ranker = User::find($userId);
+                    $recipient = User::find((int) $pollModel->user_id);
+                    LocaleContext::withLocale($recipient, function () use ($ranker, $pollModel, $id) {
+                        $rankerName = $ranker ? UserDisplayName::resolve($ranker) : __('emails.common.fallback_someone');
+                        $pollTitle = (string) $pollModel->question;
+                        $message = __('api_controllers_3.polls.ranking_received', ['name' => $rankerName, 'title' => $pollTitle]);
+                        Notification::createNotification((int) $pollModel->user_id, $message, "/polls/{$id}", 'poll_vote');
+                        \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $pollModel->user_id), 'poll_vote', $message, "/polls/{$id}");
+                    });
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Poll ranking notification failed', ['poll' => $id, 'ranker' => $userId, 'error' => $e->getMessage()]);
             }
-        } catch (\Throwable $e) {
-            \Log::warning('Poll ranking notification failed', ['poll' => $id, 'ranker' => $userId, 'error' => $e->getMessage()]);
         }
 
-        $results = $this->rankingService->calculateResults($id);
         $poll = $this->pollService->getById($id, $userId);
+        $resultsVisible = (bool) ($poll['results_visible'] ?? false);
+        $results = $resultsVisible ? $this->rankingService->calculateResults($id) : null;
 
         return $this->respondWithData([
             'poll'           => $poll,
             'ranked_results' => $results,
+            'results_visible' => $resultsVisible,
+            'idempotent_replay' => $submission['replayed'],
         ]);
     }
 
@@ -320,13 +358,15 @@ class PollsController extends BaseApiController
             return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.poll_not_ranked_choice'), null, 400);
         }
 
-        $results = $this->rankingService->calculateResults($id);
+        $resultsVisible = (bool) ($poll['results_visible'] ?? false);
+        $results = $resultsVisible ? $this->rankingService->calculateResults($id) : null;
         $userRankings = $this->rankingService->getUserRankings($id, $userId);
 
         return $this->respondWithData([
             'poll'           => $poll,
             'ranked_results' => $results,
             'my_rankings'    => $userRankings,
+            'results_visible' => $resultsVisible,
         ]);
     }
 
@@ -362,5 +402,17 @@ class PollsController extends BaseApiController
         $categories = $this->pollService->getCategories();
 
         return $this->respondWithData($categories);
+    }
+
+    /** @return array{key_hash:string,request_hash:string}|null|false */
+    private function pollCreationIdentity(array $intent): array|null|false
+    {
+        $header = request()->header('Idempotency-Key');
+        $body = $intent['idempotency_key'] ?? request()->input('idempotency_key');
+        if ($header !== null && $body !== null && !hash_equals(trim((string) $header), trim((string) $body))) {
+            return false;
+        }
+        unset($intent['idempotency_key']);
+        return PollCreationReceiptService::identity($header ?? $body, $intent);
     }
 }

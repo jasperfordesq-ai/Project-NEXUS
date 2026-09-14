@@ -77,7 +77,9 @@
       "permissionTitle": "Tá rochtain ar ghrianghraif de dhíth",
       "permissionMessage": "Ceadaigh rochtain ar ghrianghraif chun íomhánna a cheangal.",
       "uploading": "Grianghraif á seoladh… {{percent}}%",
-      "cancelUpload": "Cealaigh"
+      "cancelUpload": "Cealaigh",
+      "draftStorageTitle": "Grianghraf coinnithe don seisiún seo",
+      "draftStorageWarning": "Tá an grianghraf ceangailte, ach seans nach mairfidh sé má dhúnann an aip."
     },
     "voice": {
       "record": "Taifead teachtaireacht ghutha",
@@ -91,7 +93,9 @@
       "failedTitle": "Theip ar an teachtaireacht ghutha",
       "startFailed": "Níorbh fhéidir an taifeadadh a thosú. Bain triail eile as.",
       "stopFailed": "Níorbh fhéidir an taifeadadh seo a shábháil. Bain triail eile as.",
-      "sendFailed": "Níorbh fhéidir an teachtaireacht ghutha a sheoladh. Bain triail eile as."
+      "sendFailed": "Níorbh fhéidir an teachtaireacht ghutha a sheoladh. Bain triail eile as.",
+      "draftStorageTitle": "Nóta gutha coinnithe don seisiún seo",
+      "draftStorageWarning": "Tá an nóta gutha réidh, ach seans nach mairfidh sé má dhúnann an aip."
     },
     "notFound": "Níl an comhrá seo ar fáil a thuilleadh.",
     "unsentDrafts": "Dréachtaí nár seoladh: {{count}}",

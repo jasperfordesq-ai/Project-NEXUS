@@ -30,6 +30,8 @@ jest.mock('react-i18next', () => ({
         'directory.connections.status.accepted': 'Connected',
         'directory.connections.message': 'Message',
         'directory.connections.remove': 'Remove',
+        'directory.connections.cancel': 'Cancel request',
+        'directory.connections.accept': 'Accept',
       };
       return map[key] ?? key;
     },
@@ -169,6 +171,43 @@ describe('FederationConnectionsRoute', () => {
     expect(removeFederationConnection).not.toHaveBeenCalled();
 
     fireEvent.press(getByTestId('federation-connection-remove-confirm-8'));
-    await waitFor(() => expect(removeFederationConnection).toHaveBeenCalledWith(8));
+    await waitFor(() => expect(removeFederationConnection).toHaveBeenCalledWith(8, 'accepted'));
+  });
+
+  it('binds an outgoing request cancellation to pending federation state', async () => {
+    const { removeFederationConnection } = require('@/lib/api/federation');
+    mockUseApi.mockReturnValue({
+      data: { data: [{ ...connection, id: 9, status: 'pending' }] },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText } = render(<FederationConnectionsRoute />);
+    fireEvent.press(getByText('Sent'));
+    fireEvent.press(getByText('Cancel request'));
+
+    await waitFor(() => expect(removeFederationConnection).toHaveBeenCalledWith(9, 'pending'));
+  });
+
+  it('serializes repeated federation connection actions synchronously', async () => {
+    const { acceptFederationConnection } = require('@/lib/api/federation');
+    let finish!: () => void;
+    acceptFederationConnection.mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve; }));
+    mockUseApi.mockReturnValue({
+      data: { data: [{ ...connection, id: 10, status: 'pending' }] },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { getByText } = render(<FederationConnectionsRoute />);
+    fireEvent.press(getByText('Received'));
+    fireEvent.press(getByText('Accept'));
+    fireEvent.press(getByText('Accept'));
+
+    expect(acceptFederationConnection).toHaveBeenCalledTimes(1);
+    finish();
+    await waitFor(() => expect(acceptFederationConnection).toHaveBeenCalledWith(10));
   });
 });

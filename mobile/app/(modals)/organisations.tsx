@@ -5,7 +5,7 @@
 
 import AccentIcon from '@/components/ui/AccentIcon';
 import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
-import { FlatList, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -74,6 +74,7 @@ function ActionPill({
   primary,
   tone = 'secondary',
   accessibilityLabel,
+  fullWidth = false,
 }: {
   label: string;
   icon: IoniconName;
@@ -81,6 +82,7 @@ function ActionPill({
   primary: string;
   tone?: 'primary' | 'secondary';
   accessibilityLabel?: string;
+  fullWidth?: boolean;
 }) {
   const theme = useTheme();
   const isPrimary = tone === 'primary';
@@ -89,7 +91,7 @@ function ActionPill({
     <HeroButton
       accessibilityLabel={accessibilityLabel ?? label}
       onPress={onPress}
-      className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
+      className={`min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4 ${fullWidth ? 'w-full' : ''}`}
       size="sm"
       variant={isPrimary ? 'primary' : 'secondary'}
       // Selected pills let HeroUI's primary variant paint the fill AND pick the label colour
@@ -102,7 +104,7 @@ function ActionPill({
       }}
     >
       {isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
-      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={1}>
+      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -115,26 +117,28 @@ function StatTile({
   value,
   tone,
   theme,
+  largeText,
 }: {
   icon: IoniconName;
   label: string;
   value: string;
   tone: string;
   theme: ReturnType<typeof useTheme>;
+  largeText: boolean;
 }) {
   return (
     <Surface
       variant="secondary"
-      className="min-w-[46%] flex-1 rounded-panel-inner p-3.5"
+      className={`${largeText ? 'w-full' : 'min-w-[46%] flex-1'} rounded-panel-inner p-3.5`}
       style={{ borderWidth: 1, borderColor: withAlpha(tone, 0.14) }}
     >
       <View className="mb-3 size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(tone, 0.13) }}>
         <Ionicons name={icon} size={16} color={tone} />
       </View>
-      <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
+      <Text className="text-xl font-bold" style={{ color: theme.text }}>
         {value}
       </Text>
-      <Text className="mt-1 text-[11px] font-semibold uppercase leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
+      <Text className="mt-1 text-xs font-semibold uppercase leading-4" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>
         {label}
       </Text>
     </Surface>
@@ -147,12 +151,14 @@ function OrganisationsHero({
   theme,
   t,
   onRegister,
+  largeText,
 }: {
   organisations: Organisation[];
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
   onRegister: () => void;
+  largeText: boolean;
 }) {
   const verifiedCount = organisations.filter(isVerified).length;
   const opportunitiesCount = organisations.reduce((total, org) => total + opportunityCount(org), 0);
@@ -162,28 +168,28 @@ function OrganisationsHero({
     <HeroCard className="mb-4 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}>
       <View className="h-1" style={{ backgroundColor: primary }} />
       <HeroCard.Body className="gap-5 p-5">
-        <View className="flex-row items-start gap-3">
+        <View testID="organisations-hero-identity" className={`${largeText ? 'gap-3' : 'flex-row items-start gap-3'}`}>
           <View className="size-12 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
             <Ionicons name="business-outline" size={24} color={primary} />
           </View>
           <View className="min-w-0 flex-1 gap-1">
-            <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
               {t('heroEyebrow')}
             </Text>
-            <Text className="text-2xl font-bold" style={{ color: theme.text }} numberOfLines={2}>
+            <Text className="text-2xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
               {t('title')}
             </Text>
-            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 3}>
               {t('subtitle')}
             </Text>
           </View>
         </View>
 
-        <View className="flex-row flex-wrap gap-3">
-          <StatTile icon="business-outline" label={t('stats.organisations')} value={String(organisations.length)} tone={primary} theme={theme} />
-          <StatTile icon="checkmark-circle-outline" label={t('stats.verified')} value={String(verifiedCount)} tone="#22c55e" theme={theme} />
-          <StatTile icon="heart-outline" label={t('stats.opportunities')} value={String(opportunitiesCount)} tone="#f43f5e" theme={theme} />
-          <StatTile icon="people-outline" label={t('stats.volunteers')} value={String(volunteersCount)} tone="#0ea5e9" theme={theme} />
+        <View testID="organisations-hero-stats" className={`gap-3 ${largeText ? '' : 'flex-row flex-wrap'}`}>
+          <StatTile icon="business-outline" label={t('stats.organisations')} value={String(organisations.length)} tone={primary} theme={theme} largeText={largeText} />
+          <StatTile icon="checkmark-circle-outline" label={t('stats.verified')} value={String(verifiedCount)} tone="#22c55e" theme={theme} largeText={largeText} />
+          <StatTile icon="heart-outline" label={t('stats.opportunities')} value={String(opportunitiesCount)} tone="#f43f5e" theme={theme} largeText={largeText} />
+          <StatTile icon="people-outline" label={t('stats.volunteers')} value={String(volunteersCount)} tone="#0ea5e9" theme={theme} largeText={largeText} />
         </View>
         <Text className="text-xs" style={{ color: theme.textMuted }}>{t('stats.loadedNote')}</Text>
 
@@ -194,6 +200,7 @@ function OrganisationsHero({
             onPress={onRegister}
             primary={primary}
             tone="primary"
+            fullWidth={largeText}
           />
         </View>
       </HeroCard.Body>
@@ -228,12 +235,14 @@ function OrganisationCard({
   theme,
   t,
   onPress,
+  largeText,
 }: {
   item: Organisation;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
   onPress: () => void;
+  largeText: boolean;
 }) {
   const openExternal = useOpenExternalUrl();
   const opportunities = opportunityCount(item);
@@ -256,18 +265,18 @@ function OrganisationCard({
     >
       <HeroCard.Body className="gap-4 p-4">
         <View className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: verified ? '#22c55e' : primary }} />
-        <View className="flex-row items-start gap-3 pl-1">
+        <View testID={`organisation-card-${item.id}-identity`} className={`${largeText ? 'gap-3' : 'flex-row items-start gap-3'} pl-1`}>
           <Avatar uri={logoFor(item)} name={item.name} size={56} />
           <View className="min-w-0 flex-1 gap-2">
-            <View className="flex-row items-start gap-2">
+            <View className={`${largeText ? 'gap-2' : 'flex-row items-start gap-2'}`}>
               <View className="min-w-0 flex-1">
-                <Text className="text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={2}>
+                <Text className="text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
                   {item.name}
                 </Text>
                 {item.location ? (
                   <View className="mt-1 flex-row items-center gap-1">
                     <Ionicons name="location-outline" size={13} color={theme.textSecondary} />
-                    <Text className="min-w-0 flex-1 text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                    <Text className="min-w-0 flex-1 text-xs" style={{ color: theme.textSecondary }}>
                       {item.location}
                     </Text>
                   </View>
@@ -283,7 +292,7 @@ function OrganisationCard({
           </View>
         </View>
 
-        <Text className="pl-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+        <Text className="pl-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 3}>
           {item.description || t('noDescription')}
         </Text>
 
@@ -310,7 +319,7 @@ function OrganisationCard({
           ) : null}
         </View>
 
-        <View className="flex-row flex-wrap gap-2 pl-1">
+        <View testID={`organisation-card-${item.id}-actions`} className={`${largeText ? 'gap-2' : 'flex-row flex-wrap gap-2'} pl-1`}>
           {item.website ? (
             <ActionPill
               label={t('website')}
@@ -318,6 +327,7 @@ function OrganisationCard({
               primary={primary}
               onPress={() => void openWebsite()}
               accessibilityLabel={t('website')}
+              fullWidth={largeText}
             />
           ) : null}
           <ActionPill
@@ -325,6 +335,7 @@ function OrganisationCard({
             icon="chevron-forward-outline"
             primary={primary}
             tone="primary"
+            fullWidth={largeText}
             onPress={onPress}
           />
         </View>
@@ -355,6 +366,8 @@ function OrganisationsContent() {
   const { t } = useTranslation(['organisations', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const isLargeText = fontScale > 1.3;
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 350);
 
@@ -416,6 +429,7 @@ function OrganisationsContent() {
               primary={primary}
               theme={theme}
               t={t}
+              largeText={isLargeText}
               onPress={() => openOrganisation(item.id)}
             />
           )}
@@ -431,7 +445,7 @@ function OrganisationsContent() {
           onEndReachedThreshold={0.3}
           ListHeaderComponent={
             <View className="gap-3 pb-3">
-              <OrganisationsHero organisations={organisations} primary={primary} theme={theme} t={t} onRegister={openRegistration} />
+              <OrganisationsHero organisations={organisations} primary={primary} theme={theme} t={t} onRegister={openRegistration} largeText={isLargeText} />
 
               <RefreshFailedNotice error={organisations.length > 0 ? error : null} onRetry={refresh} isRetrying={isLoading} />
 

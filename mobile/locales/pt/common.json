@@ -175,5 +175,9 @@
     "title": "Sair sem guardar?",
     "message": "As suas alterações neste ecrã ainda não foram guardadas.",
     "discard": "Sair"
+  },
+  "draftStorage": {
+    "title": "Rascunho não protegido",
+    "message": "Não foi possível guardar este rascunho em segurança neste dispositivo. Mantenha a aplicação aberta, verifique o armazenamento e faça outra alteração para tentar novamente."
   }
 }

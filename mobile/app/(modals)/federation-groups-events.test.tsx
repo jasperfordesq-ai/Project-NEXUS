@@ -153,12 +153,14 @@ describe('Federation group and event directory actions', () => {
       refresh: jest.fn(),
     });
 
-    const { getByLabelText, getByText } = render(<FederationPartnersScreen />);
+    const { getByLabelText, getByTestId, getByText } = render(<FederationPartnersScreen />);
     fireEvent.press(getByLabelText('Cork Timebank'));
 
     expect(getByText('Federated Partners')).toBeTruthy();
     expect(getByText('Neighbourly help across the city.')).toBeTruthy();
     expect(getByText('Trusted partner')).toBeTruthy();
+    expect(getByTestId('federation-partner-5-location')).not.toHaveProp('numberOfLines');
+    expect(getByTestId('federation-partner-5-description')).not.toHaveProp('numberOfLines');
     expect(jest.requireMock('expo-router').router.push).toHaveBeenCalledWith({
       pathname: '/(modals)/federation-partner',
       params: { id: '5' },
@@ -183,7 +185,9 @@ describe('Federation group and event directory actions', () => {
       refresh: jest.fn(),
     });
 
-    const { getByLabelText, getByText } = render(<FederationGroupsScreen />);
+    const { getByLabelText, getByTestId, getByText } = render(<FederationGroupsScreen />);
+    expect(getByTestId('federation-group-484-name')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-group-484-description')).toHaveProp('numberOfLines', 0);
     fireEvent.press(getByLabelText('Open details for Neighbourhood Helpers'));
 
     expect(getByText('Federated group')).toBeTruthy();
@@ -232,9 +236,12 @@ describe('Federation group and event directory actions', () => {
       refresh: jest.fn(),
     });
 
-    const { getByLabelText, getByText } = render(<FederationEventsScreen />);
+    const { getByLabelText, getByTestId, getByText } = render(<FederationEventsScreen />);
 
     expect(getByText('Pat Organizer')).toBeTruthy();
+    expect(getByTestId('federation-event-6-title')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-event-6-description')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-event-6-organizer')).toHaveProp('numberOfLines', 0);
     fireEvent.press(getByLabelText('Open details for Partner meetup'));
 
     expect(getByText('Federated event')).toBeTruthy();

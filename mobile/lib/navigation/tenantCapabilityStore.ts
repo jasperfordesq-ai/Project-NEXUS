@@ -17,17 +17,19 @@ export function setNavigationTenantCapabilities(value: CapabilitySnapshot | null
 }
 
 /**
- * Return true only when the current tenant explicitly disables a requirement.
- * A missing/offline snapshot remains unknown and must not turn a valid deep link
- * into a false negative while the member is offline.
+ * A wholly missing/offline snapshot remains unknown and must not turn a valid deep
+ * link into a false negative. Once a snapshot has loaded, a missing required key is
+ * off, matching `isRouteAllowed` and the server contract: an older server must not
+ * accidentally enable a capability introduced by a newer app.
  */
 export function isNativeHrefDisabled(href: string): boolean {
-  if (!current) return false;
+  const snapshot = current;
+  if (!snapshot) return false;
   const requirement = requirementForHref(href);
   if (!requirement) return false;
 
-  return (requirement.features ?? []).some((key) => current?.features[key] === false)
-    || (requirement.modules ?? []).some((key) => current?.modules[key] === false);
+  return (requirement.features ?? []).some((key) => snapshot.features?.[key] !== true)
+    || (requirement.modules ?? []).some((key) => snapshot.modules?.[key] !== true);
 }
 
 function requirementForHref(href: string): Requirement | null {

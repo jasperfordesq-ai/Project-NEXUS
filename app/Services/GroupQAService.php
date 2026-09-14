@@ -194,8 +194,8 @@ final class GroupQAService
         return $result;
     }
 
-    /** @return array{id: int, title: string}|null */
-    public function askQuestion(int $groupId, int $userId, string $title, ?string $body = null): ?array
+    /** @return array{id: int, title: string, _idempotent_replay?: bool}|null */
+    public function askQuestion(int $groupId, int $userId, string $title, ?string $body = null, ?string $idempotencyKey = null): ?array
     {
         $this->errors = [];
         if (! $this->requireWriteAccess($groupId, $userId)) {
@@ -209,7 +209,35 @@ final class GroupQAService
         }
 
         $tenantId = (int) TenantContext::getId();
-        $id = DB::transaction(function () use ($groupId, $userId, $tenantId, $title, $body): ?int {
+        $identity = GroupContentCreationReceiptService::identity($idempotencyKey, [
+            'body' => $body,
+            'group_id' => $groupId,
+            'title' => $title,
+        ]);
+        if ($identity === false) {
+            $this->addError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'));
+            return null;
+        }
+
+        return DB::transaction(function () use ($groupId, $userId, $tenantId, $title, $body, $identity): ?array {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find($tenantId, $userId, 'question', $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        $this->addError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'));
+                        return null;
+                    }
+                    $payload = GroupContentCreationReceiptService::payload($receipt);
+                    if ($payload === null) {
+                        $this->addError('SERVER_ERROR', __('api.generic_error'));
+                        return null;
+                    }
+                    $payload['_idempotent_replay'] = true;
+                    return $payload;
+                }
+            }
+
             if (! $this->lockWritableGroup($groupId, $tenantId)) {
                 return null;
             }
@@ -222,7 +250,7 @@ final class GroupQAService
                 $title . ' ' . $body,
             );
 
-            return (int) DB::table('group_questions')->insertGetId([
+            $id = (int) DB::table('group_questions')->insertGetId([
                 'tenant_id' => $tenantId,
                 'group_id' => $groupId,
                 'user_id' => $userId,
@@ -231,13 +259,25 @@ final class GroupQAService
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-        });
 
-        return $id === null ? null : ['id' => $id, 'title' => $title];
+            $result = ['id' => $id, 'title' => $title];
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    $groupId,
+                    'question',
+                    $identity,
+                    $id,
+                    $result,
+                );
+            }
+            return $result;
+        }, 3);
     }
 
-    /** @return array{id: int, question_id: int}|null */
-    public function postAnswer(int $groupId, int $questionId, int $userId, string $body): ?array
+    /** @return array{id: int, question_id: int, _idempotent_replay?: bool}|null */
+    public function postAnswer(int $groupId, int $questionId, int $userId, string $body, ?string $idempotencyKey = null): ?array
     {
         $this->errors = [];
         if (! $this->requireWriteAccess($groupId, $userId)) {
@@ -250,8 +290,35 @@ final class GroupQAService
         }
 
         $tenantId = (int) TenantContext::getId();
+        $identity = GroupContentCreationReceiptService::identity($idempotencyKey, [
+            'body' => $body,
+            'group_id' => $groupId,
+            'question_id' => $questionId,
+        ]);
+        if ($identity === false) {
+            $this->addError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'));
+            return null;
+        }
 
-        return DB::transaction(function () use ($groupId, $questionId, $userId, $body, $tenantId): ?array {
+        return DB::transaction(function () use ($groupId, $questionId, $userId, $body, $tenantId, $identity): ?array {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find($tenantId, $userId, 'answer', $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        $this->addError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'));
+                        return null;
+                    }
+                    $payload = GroupContentCreationReceiptService::payload($receipt);
+                    if ($payload === null) {
+                        $this->addError('SERVER_ERROR', __('api.generic_error'));
+                        return null;
+                    }
+                    $payload['_idempotent_replay'] = true;
+                    return $payload;
+                }
+            }
+
             if (! $this->lockWritableGroup($groupId, $tenantId)) {
                 return null;
             }
@@ -296,8 +363,20 @@ final class GroupQAService
                 ->where('tenant_id', $tenantId)
                 ->increment('answer_count');
 
-            return ['id' => $answerId, 'question_id' => $questionId];
-        });
+            $result = ['id' => $answerId, 'question_id' => $questionId];
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    $groupId,
+                    'answer',
+                    $identity,
+                    $answerId,
+                    $result,
+                );
+            }
+            return $result;
+        }, 3);
     }
 
     /** @return array{id: int, title: string, body: string}|null */

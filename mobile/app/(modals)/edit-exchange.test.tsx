@@ -10,6 +10,7 @@ const mockUseApi = jest.fn();
 const mockBack = jest.fn();
 const mockReplace = jest.fn();
 const mockUpdateExchange = jest.fn();
+const mockGetExchange = jest.fn();
 const mockSetExchangeTags = jest.fn();
 const mockUploadExchangeImage = jest.fn();
 const mockDeleteExchangeImage = jest.fn();
@@ -94,7 +95,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/api/exchanges', () => ({
-  getExchange: jest.fn(),
+  getExchange: (...args: unknown[]) => mockGetExchange(...args),
   getExchangeCategories: jest.fn(),
   setExchangeTags: (...args: unknown[]) => mockSetExchangeTags(...args),
   updateExchange: (...args: unknown[]) => mockUpdateExchange(...args),
@@ -131,6 +132,7 @@ beforeEach(() => {
   mockBack.mockReset();
   mockReplace.mockReset();
   mockUpdateExchange.mockReset().mockResolvedValue({ data: { id: 5 } });
+  mockGetExchange.mockReset();
   mockSetExchangeTags.mockReset().mockResolvedValue({ data: {} });
   mockUploadExchangeImage.mockReset().mockResolvedValue({ data: { image_url: '/uploads/listing.jpg' } });
   mockDeleteExchangeImage.mockReset().mockResolvedValue(undefined);
@@ -366,6 +368,74 @@ describe('EditExchangeModal', () => {
 
     await waitFor(() => expect(mockUpdateExchange).toHaveBeenCalled());
     await waitFor(() => expect(isGuardArmed()).toBe(true));
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('continues with extras when readback proves an uncertain edit was committed', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    mockUpdateExchange.mockRejectedValue(new ApiResponseError(0, 'Connection lost'));
+    mockGetExchange.mockResolvedValue({
+      data: {
+        id: 5,
+        title: 'Updated title',
+        description: 'Listing body with enough detail.',
+        type: 'offer',
+        hours_estimate: 2,
+        category_id: 2,
+        location: 'Skibbereen',
+        service_type: 'hybrid',
+      },
+    });
+
+    const { getByDisplayValue, getByText } = render(<EditExchangeModal />);
+    fireEvent.changeText(getByDisplayValue('Edit me'), 'Updated title');
+    fireEvent.press(getByText('Save changes'));
+
+    await waitFor(() => expect(mockGetExchange).toHaveBeenCalledWith(5));
+    expect(mockSetExchangeTags).toHaveBeenCalledWith(5, ['gardening']);
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/(modals)/exchange-detail', params: { id: '5' },
+    }));
+  });
+
+  it('keeps the edit form when uncertain readback does not match the submitted values', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    mockUpdateExchange.mockRejectedValue(new ApiResponseError(0, 'Connection lost'));
+    mockGetExchange.mockResolvedValue({
+      data: {
+        id: 5,
+        title: 'Edit me',
+        description: 'Listing body with enough detail.',
+        type: 'offer',
+        hours_estimate: 2,
+        category_id: 2,
+        location: 'Skibbereen',
+        service_type: 'hybrid',
+      },
+    });
+
+    const { getByDisplayValue, getByText } = render(<EditExchangeModal />);
+    fireEvent.changeText(getByDisplayValue('Edit me'), 'Updated title');
+    fireEvent.press(getByText('Save changes'));
+
+    await waitFor(() => expect(mockGetExchange).toHaveBeenCalledWith(5));
+    expect(isGuardArmed()).toBe(true);
+    expect(mockSetExchangeTags).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('does not save extras or navigate when an edit completes after the route is replaced', async () => {
+    let resolveSave!: (value: unknown) => void;
+    mockUpdateExchange.mockReturnValue(new Promise((resolve) => { resolveSave = resolve; }));
+    const { getByDisplayValue, getByText, unmount } = render(<EditExchangeModal />);
+    fireEvent.changeText(getByDisplayValue('Edit me'), 'Updated title');
+    fireEvent.press(getByText('Save changes'));
+    await waitFor(() => expect(mockUpdateExchange).toHaveBeenCalled());
+
+    unmount();
+    await act(async () => { resolveSave({ data: { id: 5 } }); });
+
+    expect(mockSetExchangeTags).not.toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
   });
 

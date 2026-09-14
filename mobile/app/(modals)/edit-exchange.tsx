@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import ErrorState from '@/components/ui/ErrorState';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
@@ -44,12 +44,13 @@ import {
 } from '@/lib/exchanges/serviceDetails';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import * as Haptics from '@/lib/haptics';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
@@ -130,6 +131,9 @@ function EditExchangeModalInner() {
    */
   const [partialSave, setPartialSave] = useState<{ extras: ListingExtras; result: ListingExtrasResult } | null>(null);
   const [retryingExtras, setRetryingExtras] = useState(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getExchange(safeListingId),
@@ -209,6 +213,7 @@ function EditExchangeModalInner() {
       });
       if (result.canceled || !result.assets?.[0]?.uri) return;
       const prepared = await prepareImageForUpload(result.assets[0]);
+      if (!isMountedRef.current) return;
       setSelectedImageUri(prepared.uri);
       setRemoveExistingImage(false);
     } catch (err) {
@@ -227,6 +232,7 @@ function EditExchangeModalInner() {
         type,
         notes: description.trim(),
       });
+      if (!isMountedRef.current) return;
       const generated = response.data?.description?.trim();
       if (generated) {
         setDescription(generated);
@@ -278,8 +284,7 @@ function EditExchangeModalInner() {
 
     setFieldErrors({});
     setSaving(true);
-    try {
-      await updateExchange(safeListingId, {
+    const listingPayload = {
         title: trimmedTitle,
         description: buildListingDescription(trimmedDescription, {
           experience: experienceLevel,
@@ -293,7 +298,31 @@ function EditExchangeModalInner() {
         category_id: (categoryId ?? listing?.category_id) as number,
         location: listingLocation,
         service_type: serviceType,
-      });
+    };
+
+    try {
+      try {
+        await updateExchange(safeListingId, listingPayload);
+      } catch (err) {
+        let recovered = false;
+        if (err instanceof ApiResponseError && err.status === 0) {
+          try {
+            const readback = await getExchange(safeListingId);
+            const current = readback.data;
+            recovered = current.title === listingPayload.title
+              && current.description === listingPayload.description
+              && current.type === listingPayload.type
+              && Number(current.hours_estimate ?? current.estimated_hours) === listingPayload.hours_estimate
+              && Number(current.category_id) === listingPayload.category_id
+              && (current.location ?? '') === (listingPayload.location ?? '')
+              && (current.service_type ?? 'hybrid') === listingPayload.service_type;
+          } catch {
+            // Preserve and report the original uncertain result when readback fails.
+          }
+        }
+        if (!recovered) throw err;
+      }
+      if (!isMountedRef.current) return;
       // The listing itself is saved from here on. Its skills and photo are separate
       // requests, each of which can fail on its own — and if one does, this screen is the
       // only place the member's failed input still exists.
@@ -303,6 +332,7 @@ function EditExchangeModalInner() {
         removeImage: removeExistingImage && Boolean(listing?.image_url),
       };
       const result = await saveListingExtras(safeListingId, extras);
+      if (!isMountedRef.current) return;
       if (listingExtrasFailed(result)) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         setPartialSave({ extras, result });
@@ -313,6 +343,7 @@ function EditExchangeModalInner() {
       showToast({ title: t('detail.editSavedTitle'), description: t('detail.editSavedMessage'), variant: 'success' });
       leaveForListing();
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.editSaveFailed')), variant: 'danger' });
     } finally {
@@ -337,6 +368,7 @@ function EditExchangeModalInner() {
     try {
       const outstanding = remainingListingExtras(partialSave.extras, partialSave.result);
       const result = await saveListingExtras(safeListingId, outstanding);
+      if (!isMountedRef.current) return;
       if (listingExtrasFailed(result)) {
         setPartialSave({ extras: outstanding, result });
         return;
@@ -807,4 +839,11 @@ function getProfileLocation(user: unknown): string {
   return '';
 }
 
-export default withRouteGate(EditExchangeModal, 'edit-exchange');
+function EditExchangeRoute() {
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <EditExchangeModal key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${params.id ?? 'invalid'}`} />;
+}
+
+export default withRouteGate(EditExchangeRoute, 'edit-exchange');

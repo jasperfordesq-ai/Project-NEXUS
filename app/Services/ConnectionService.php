@@ -238,21 +238,68 @@ class ConnectionService
     /**
      * Remove/cancel a connection.
      */
-    public static function destroy(int $connectionId, int $userId): bool
+    public static function destroy(int $connectionId, int $userId, ?string $expectedStatus = null): bool
     {
-        /** @var Connection|null $connection */
-        $connection = Connection::query()
-            ->where('id', $connectionId)
-            ->where(fn (Builder $q) => $q->where('requester_id', $userId)->orWhere('receiver_id', $userId))
-            ->first();
+        return DB::transaction(function () use ($connectionId, $userId, $expectedStatus): bool {
+            /** @var Connection|null $connection */
+            $connection = Connection::query()
+                ->where('id', $connectionId)
+                ->where(fn (Builder $query) => $query
+                    ->where('requester_id', $userId)
+                    ->orWhere('receiver_id', $userId))
+                ->lockForUpdate()
+                ->first();
 
-        if (! $connection) {
-            return false;
-        }
+            if (! $connection) {
+                return false;
+            }
 
-        $connection->delete();
+            if ($expectedStatus !== null) {
+                $matchesStatus = $connection->status === $expectedStatus;
+                $canCancelPending = $expectedStatus !== 'pending'
+                    || $connection->requester_id === $userId;
+                if (! $matchesStatus || ! $canCancelPending) {
+                    throw new \UnexpectedValueException(__('api.connection_request_not_found_or_processed'));
+                }
+            }
 
-        return true;
+            $connection->delete();
+
+            return true;
+        });
+    }
+
+    /**
+     * Decline a received pending request as one serialized state transition.
+     *
+     * Returning the deleted row lets the controller notify only for the worker that
+     * actually won the transition. A concurrent accept or decline must lock the same
+     * row before it can decide what state it observed.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function decline(int $connectionId, int $userId): ?array
+    {
+        return DB::transaction(function () use ($connectionId, $userId): ?array {
+            /** @var Connection|null $connection */
+            $connection = Connection::query()
+                ->where('id', $connectionId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $connection) {
+                return null;
+            }
+
+            if ($connection->receiver_id !== $userId || $connection->status !== 'pending') {
+                throw new \RuntimeException(__('api.connection_not_pending'));
+            }
+
+            $existing = $connection->toArray();
+            $connection->delete();
+
+            return $existing;
+        });
     }
 
     /**
@@ -392,9 +439,9 @@ class ConnectionService
     /**
      * Delete a connection (alias for destroy, used by controller).
      */
-    public static function delete(int $connectionId, int $userId): bool
+    public static function delete(int $connectionId, int $userId, ?string $expectedStatus = null): bool
     {
-        return self::destroy($connectionId, $userId);
+        return self::destroy($connectionId, $userId, $expectedStatus);
     }
 
     /**

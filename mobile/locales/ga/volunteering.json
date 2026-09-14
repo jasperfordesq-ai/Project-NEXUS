@@ -72,6 +72,7 @@
   "shiftSignupTitle": "Ceanglaíodh an t-athrú",
   "shiftSignupMessage": " Chláraigh tú don athrú seo.",
   "shiftSignupError": "Níorbh fhéidir clárú don athrú seo.",
+  "shiftResultUnknown": "Níorbh fhéidir linn an t-athrú a dheimhniú. Athlódáil do shealanna oibre sula ndéanfaidh tú iarracht eile.",
   "meta": {
     "location": "Suíomh",
     "commitment": "Tiomantas",
@@ -309,6 +310,7 @@
   "interestSentTitle": "Suim seolta!",
   "interestSentMessage": "Déanfaidh an eagraíocht teagmháil leat go luath.",
   "interestError": "Níorbh fhéidir suim a léiriú.",
+  "interestNoAnswer": "Níorbh fhéidir toradh na hiarrata a dheimhniú. Seans gur seoladh d'iarratas cheana.",
   "skills": "Scileanna riachtanacha",
   "commitment": "Tiomantas",
   "detail": {

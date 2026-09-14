@@ -153,6 +153,48 @@ final class GroupQAControllerTest extends TestCase
         )->assertForbidden();
     }
 
+    public function test_question_creation_replays_one_committed_result_after_response_loss(): void
+    {
+        $this->authenticate($this->member);
+        $payload = [
+            'title' => 'Which compost bin survives winter?',
+            'body' => 'The identical mobile retry must return the first question.',
+            'idempotency_key' => 'group-question-replay-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $first = $this->apiPost("/v2/groups/{$this->activeGroupId}/questions", $payload, $headers)->assertCreated();
+        $replay = $this->apiPost("/v2/groups/{$this->activeGroupId}/questions", $payload, $headers)->assertCreated();
+
+        self::assertSame($first->json('data.id'), $replay->json('data.id'));
+        self::assertSame(1, DB::table('group_questions')->where('id', $first->json('data.id'))->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')->where('operation_type', 'question')->count());
+
+        $this->apiPost("/v2/groups/{$this->activeGroupId}/questions", [
+            ...$payload,
+            'body' => 'Changed intent is a conflict.',
+        ], $headers)->assertConflict();
+
+        $answerPayload = [
+            'body' => 'Use a lidded bin and add brown material.',
+            'idempotency_key' => 'group-answer-replay-1',
+        ];
+        $answerHeaders = ['Idempotency-Key' => $answerPayload['idempotency_key']];
+        $firstAnswer = $this->apiPost(
+            "/v2/groups/{$this->activeGroupId}/questions/{$first->json('data.id')}/answers",
+            $answerPayload,
+            $answerHeaders,
+        )->assertCreated();
+        $replayedAnswer = $this->apiPost(
+            "/v2/groups/{$this->activeGroupId}/questions/{$first->json('data.id')}/answers",
+            $answerPayload,
+            $answerHeaders,
+        )->assertCreated();
+        self::assertSame($firstAnswer->json('data.id'), $replayedAnswer->json('data.id'));
+        self::assertSame(1, DB::table('group_answers')->where('id', $firstAnswer->json('data.id'))->count());
+        self::assertSame(1, (int) DB::table('group_questions')->where('id', $first->json('data.id'))->value('answer_count'));
+    }
+
     public function test_malformed_scalar_fields_resolve_to_validation_errors(): void
     {
         $questionId = $this->insertQuestion($this->activeGroupId, $this->questionAuthor);

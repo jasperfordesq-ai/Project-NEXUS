@@ -54,7 +54,7 @@
     "newPlaceholder": "Digite a nova senha",
     "confirmLabel": "Confirme a nova senha",
     "confirmPlaceholder": "Digite novamente a nova senha",
-    "newHint": "Use pelo menos 8 caracteres.",
+    "newHint": "Use pelo menos 12 caracteres.",
     "save": "Salvar senha",
     "saving": "Salvar senha...",
     "reviewTitle": "Pronto para atualizar?",
@@ -63,6 +63,9 @@
     "footerMismatch": "A nova palavra-passe e a confirmação ainda não coincidem.",
     "success": "Senha alterada",
     "successMessage": "Sua senha foi atualizada com sucesso.",
+    "successSignIn": "Sua senha foi alterada. Entre novamente com a nova senha.",
+    "unconfirmedTitle": "Verifique sua senha",
+    "unconfirmedMessage": "Não foi possível confirmar se a alteração foi concluída. Entre novamente e tente primeiro a nova senha. Se ela não for aceita, use a senha anterior.",
     "validation": {
       "currentRequired": "Insira sua senha atual.",
       "newRequired": "Insira uma nova senha senha.",

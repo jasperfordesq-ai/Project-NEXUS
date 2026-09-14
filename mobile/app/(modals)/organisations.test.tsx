@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
 
 const mockPush = jest.fn();
 
@@ -338,6 +339,23 @@ describe('OrganisationsScreen', () => {
     const { getByText } = render(<OrganisationsScreen />);
     expect(getByText('45 volunteers')).toBeTruthy();
     expect(getByText('12 opportunities')).toBeTruthy();
+  });
+
+  it('stacks hero and organisation card content at large text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    mockUsePaginatedApi.mockReturnValueOnce({
+      ...defaultPaginatedState,
+      items: [mockOrganisation],
+    });
+
+    const { getByTestId, getByText } = render(<OrganisationsScreen />);
+    expect(getByTestId('organisations-hero-identity').props.className).not.toContain('flex-row');
+    expect(getByTestId('organisations-hero-stats').props.className).not.toContain('flex-row');
+    expect(getByTestId('organisation-card-1-identity').props.className).not.toContain('flex-row');
+    expect(getByTestId('organisation-card-1-actions').props.className).not.toContain('flex-row');
+    expect(getByText('Green Dublin').props.numberOfLines).toBeUndefined();
+
+    dimensions.mockRestore();
   });
 
   it('opens the organisation registration route from the hero action', () => {

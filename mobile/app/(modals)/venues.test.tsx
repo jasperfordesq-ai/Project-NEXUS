@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Linking } from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Linking, RefreshControl } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 let mockFeatures: Record<string, boolean> = { partner_venues: true };
@@ -33,8 +33,9 @@ jest.mock('react-i18next', () => ({
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ hasFeature: (name: string) => Boolean(mockFeatures[name]) }),
+  useTenant: () => ({ hasFeature: (name: string) => Boolean(mockFeatures[name]), tenant: { id: 2 } }),
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 7 } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ bg: '#fff', text: '#111', textSecondary: '#555', textMuted: '#777', border: '#ddd' }),
 }));
@@ -117,5 +118,15 @@ describe('VenuesScreen', () => {
     await waitFor(() => expect(getByText('Venues unavailable')).toBeTruthy());
     fireEvent.press(getByText('Retry'));
     await waitFor(() => expect(getPartnerVenues).toHaveBeenCalledTimes(2));
+  });
+
+  it('keeps loaded venues visible and reports a failed refresh', async () => {
+    const rendered = render(<VenuesScreen />);
+    await waitFor(() => expect(rendered.getByText('The Corner Café')).toBeTruthy());
+    jest.mocked(getPartnerVenues).mockRejectedValue(new ApiResponseError(403, 'Could not refresh venues'));
+    act(() => rendered.UNSAFE_getByType(RefreshControl).props.onRefresh());
+
+    await waitFor(() => expect(rendered.getByTestId('refresh-failed-notice')).toBeTruthy());
+    expect(rendered.getByText('The Corner Café')).toBeTruthy();
   });
 });

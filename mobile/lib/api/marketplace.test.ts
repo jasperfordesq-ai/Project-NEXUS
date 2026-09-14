@@ -19,6 +19,7 @@ import {
   createMarketplaceOrder,
   createMarketplaceCollection,
   createMarketplaceDeliveryOffer,
+  getMarketplaceDeliveryOpportunities,
   createMarketplacePaymentIntent,
   createMarketplacePickupSlot,
   createMarketplaceShippingOption,
@@ -209,6 +210,12 @@ describe('marketplace api', () => {
 
     await createMarketplaceListing(payload);
     expect(api.post).toHaveBeenCalledWith('/api/v2/marketplace/listings', payload);
+
+    await createMarketplaceListing(payload, 'marketplace-create-operation');
+    expect(api.post).toHaveBeenCalledWith('/api/v2/marketplace/listings', {
+      ...payload,
+      idempotency_key: 'marketplace-create-operation',
+    }, { headers: { 'Idempotency-Key': 'marketplace-create-operation' } });
 
     await updateMarketplaceListing(1, { title: 'Updated', inventory_count: null });
     expect(api.put).toHaveBeenCalledWith('/api/v2/marketplace/listings/1', { title: 'Updated', inventory_count: null });
@@ -485,6 +492,12 @@ describe('marketplace api', () => {
 
     await getMarketplaceDeliveryOffers(14);
     expect(api.get).toHaveBeenCalledWith('/api/v2/marketplace/orders/14/delivery-offers');
+
+    await getMarketplaceDeliveryOpportunities('next-page');
+    expect(api.get).toHaveBeenCalledWith('/api/v2/marketplace/orders/deliveries', {
+      cursor: 'next-page',
+      limit: '20',
+    });
 
     await createMarketplaceDeliveryOffer(14, { time_credits: 1.5, estimated_minutes: 45, notes: 'I can deliver after lunch' });
     expect(api.post).toHaveBeenCalledWith('/api/v2/marketplace/orders/14/delivery-offers', {

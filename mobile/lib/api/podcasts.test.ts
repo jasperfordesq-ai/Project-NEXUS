@@ -71,6 +71,18 @@ describe('podcasts API', () => {
     expect(api.post).toHaveBeenNthCalledWith(2, '/api/v2/podcasts/episodes/8/reaction', { reaction: 'like' });
     expect(api.post).toHaveBeenNthCalledWith(3, '/api/v2/podcasts/episodes/8/report', { reason: 'safety' });
   });
+
+  it('sends desired follow and reaction states so retries cannot reverse them', async () => {
+    jest.mocked(api.post)
+      .mockResolvedValueOnce({ data: { subscribed: true } })
+      .mockResolvedValueOnce({ data: { active: false } });
+
+    await togglePodcastSubscription(2, true);
+    await togglePodcastReaction(8, false);
+
+    expect(api.post).toHaveBeenNthCalledWith(1, '/api/v2/podcasts/2/subscribe', { notify_new_episodes: true, subscribed: true });
+    expect(api.post).toHaveBeenNthCalledWith(2, '/api/v2/podcasts/episodes/8/reaction', { reaction: 'like', active: false });
+  });
 });
 
 describe('podcast studio API', () => {
@@ -126,6 +138,31 @@ describe('podcast studio API', () => {
     await expect(updatePodcastShow(5, { title: 'Renamed' })).resolves.toMatchObject({ title: 'Renamed' });
     expect(api.post).toHaveBeenCalledWith('/api/v2/podcasts', { title: 'Neighbourhood radio', visibility: 'members' });
     expect(api.put).toHaveBeenCalledWith('/api/v2/podcasts/5', { title: 'Renamed' });
+  });
+
+  it('carries durable creation identity in show, URL episode and hosted-audio requests', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { id: 5 } });
+    jest.mocked(uploadWithProgress).mockResolvedValue({ data: { id: 9 } });
+
+    await createPodcastShow({ title: 'Neighbourhood radio' }, 'show-operation-1');
+    await createPodcastEpisode(5, { title: 'One', audio_url: 'https://example.org/one.mp3' }, 'episode-operation-1');
+    await createPodcastEpisodeWithAudio(
+      5,
+      { title: 'Hosted' },
+      { uri: 'file:///cache/hosted.m4a', name: 'hosted.m4a', mimeType: 'audio/mp4' },
+      { idempotencyKey: 'hosted-operation-1' },
+    );
+
+    expect(api.post).toHaveBeenNthCalledWith(1, '/api/v2/podcasts', {
+      title: 'Neighbourhood radio', idempotency_key: 'show-operation-1',
+    }, { headers: { 'Idempotency-Key': 'show-operation-1' } });
+    expect(api.post).toHaveBeenNthCalledWith(2, '/api/v2/podcasts/5/episodes', {
+      title: 'One', audio_url: 'https://example.org/one.mp3', idempotency_key: 'episode-operation-1',
+    }, { headers: { 'Idempotency-Key': 'episode-operation-1' } });
+    expect(appendSpy).toHaveBeenCalledWith('idempotency_key', 'hosted-operation-1');
+    expect(uploadWithProgress).toHaveBeenCalledWith('/api/v2/podcasts/5/episodes', expect.anything(), {
+      idempotencyKey: 'hosted-operation-1',
+    });
   });
 
   it('creates and updates an episode under its own show', async () => {

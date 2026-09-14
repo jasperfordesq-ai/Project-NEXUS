@@ -225,6 +225,29 @@ final class GroupWikiControllerTest extends TestCase
             ->assertUnprocessable();
     }
 
+    public function test_page_creation_replays_one_page_and_initial_revision_after_response_loss(): void
+    {
+        $this->authenticate($this->author);
+        $payload = [
+            'title' => 'Durable field guide',
+            'content' => 'This exact operation must create one page.',
+            'idempotency_key' => 'group-wiki-page-replay-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $first = $this->apiPost("/v2/groups/{$this->groupId}/wiki", $payload, $headers)->assertCreated();
+        $replay = $this->apiPost("/v2/groups/{$this->groupId}/wiki", $payload, $headers)->assertCreated();
+
+        self::assertSame($first->json('data.id'), $replay->json('data.id'));
+        self::assertSame(1, DB::table('group_wiki_pages')->where('id', $first->json('data.id'))->count());
+        self::assertSame(1, DB::table('group_wiki_revisions')->where('page_id', $first->json('data.id'))->count());
+
+        $this->apiPost("/v2/groups/{$this->groupId}/wiki", [
+            ...$payload,
+            'content' => 'Changed content cannot reuse the operation.',
+        ], $headers)->assertConflict();
+    }
+
     public function test_parent_cycles_cross_group_parents_and_delete_children_resolve_to_safe_statuses(): void
     {
         $parent = $this->page($this->groupId, $this->author, true, 'parent');

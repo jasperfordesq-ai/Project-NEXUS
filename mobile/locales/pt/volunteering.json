@@ -72,6 +72,7 @@
   "shiftSignupTitle": "Turno ingressado",
   "shiftSignupMessage": "Você se inscreveu neste turno.",
   "shiftSignupError": "Não foi possível se inscrever neste turno.",
+  "shiftResultUnknown": "Não foi possível confirmar a alteração. Atualize os seus turnos antes de tentar novamente.",
   "meta": {
     "location": "Local",
     "commitment": "Compromisso",
@@ -307,6 +308,7 @@
   "interestSentTitle": "Interesse enviado!",
   "interestSentMessage": "A organização entrará em contacto contigo em breve.",
   "interestError": "Não foi possível manifestar interesse.",
+  "interestNoAnswer": "Não foi possível confirmar o resultado. A tua candidatura poderá já ter sido enviada.",
   "skills": "Competências necessárias",
   "commitment": "Dedicação",
   "detail": {

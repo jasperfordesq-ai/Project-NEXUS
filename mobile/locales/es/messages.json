@@ -77,7 +77,9 @@
       "permissionTitle": "Se necesita acceso a las fotos",
       "permissionMessage": "Permite el acceso a las fotos para adjuntar imágenes.",
       "uploading": "Enviando fotos… {{percent}} %",
-      "cancelUpload": "Cancelar"
+      "cancelUpload": "Cancelar",
+      "draftStorageTitle": "Foto guardada para esta sesión",
+      "draftStorageWarning": "La foto está adjunta, pero puede perderse si se cierra la aplicación."
     },
     "voice": {
       "record": "Grabar mensaje de voz",
@@ -91,7 +93,9 @@
       "failedTitle": "Error en el mensaje de voz",
       "startFailed": "No se pudo iniciar la grabación. Inténtalo de nuevo.",
       "stopFailed": "No se pudo guardar esta grabación. Inténtalo de nuevo.",
-      "sendFailed": "No se pudo enviar el mensaje de voz. Inténtalo de nuevo."
+      "sendFailed": "No se pudo enviar el mensaje de voz. Inténtalo de nuevo.",
+      "draftStorageTitle": "Nota de voz guardada para esta sesión",
+      "draftStorageWarning": "La nota de voz está lista, pero puede perderse si se cierra la aplicación."
     },
     "notFound": "Esta conversación ya no está disponible.",
     "unsentDrafts": "Borradores sin enviar: {{count}}",

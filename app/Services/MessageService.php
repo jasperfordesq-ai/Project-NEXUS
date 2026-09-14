@@ -8,7 +8,6 @@ namespace App\Services;
 
 use App\Core\AudioUploader;
 use App\Core\TenantContext;
-use App\Events\MessageSent;
 use App\Events\SafeguardingContactAttemptBlocked;
 use App\Events\SafeguardingCoordinationRequested;
 use App\Models\Message;
@@ -106,6 +105,61 @@ class MessageService
         }
 
         return self::buildSafeguardingError($gate);
+    }
+
+    /**
+     * Resolve a completed client send before attachment bytes are staged.
+     *
+     * @return array<string, mixed>|null Null when this key has not completed.
+     */
+    public static function replaySend(int $senderId, string $idempotencyKey, string $requestHash): ?array
+    {
+        self::$errors = [];
+        if ($idempotencyKey === '') {
+            return null;
+        }
+        if (mb_strlen($idempotencyKey) < 8 || mb_strlen($idempotencyKey) > 191
+            || !preg_match('/^[A-Za-z0-9._:-]+$/', $idempotencyKey)
+            || !preg_match('/^[a-f0-9]{64}$/', $requestHash)) {
+            self::$errors = [[
+                'code' => 'VALIDATION_ERROR',
+                'message' => __('api.invalid_input'),
+                'field' => 'idempotency_key',
+            ]];
+
+            return [];
+        }
+
+        $receipt = DB::table('message_send_receipts')
+            ->where('tenant_id', (int) app('tenant.id'))
+            ->where('sender_id', $senderId)
+            ->where('idempotency_key_hash', hash('sha256', $idempotencyKey))
+            ->first(['request_hash', 'message_id']);
+        if ($receipt === null) {
+            return null;
+        }
+        if (!hash_equals((string) $receipt->request_hash, $requestHash)) {
+            self::$errors = [[
+                'code' => 'IDEMPOTENCY_CONFLICT',
+                'message' => __('event_registration.idempotency_conflict'),
+                'field' => 'idempotency_key',
+            ]];
+
+            return [];
+        }
+
+        $message = Message::query()
+            ->with(['sender', 'receiver', 'attachments'])
+            ->whereKey((int) $receipt->message_id)
+            ->where('sender_id', $senderId)
+            ->first();
+        if ($message === null) {
+            throw new \RuntimeException('Stored message send receipt has no canonical message.');
+        }
+        $response = $message->toArray();
+        $response['_idempotent_replay'] = true;
+
+        return $response;
     }
 
     /**
@@ -436,6 +490,8 @@ class MessageService
         int $receiverId,
         string $audioUrl,
         int $audioDuration = 0,
+        string $idempotencyKey = '',
+        string $idempotencyRequestHash = '',
     ): array {
         $tenantId = (int) app('tenant.id');
         if (!AudioUploader::isTenantVoiceFile($audioUrl, $tenantId)) {
@@ -452,6 +508,8 @@ class MessageService
             'is_voice' => true,
             'audio_url' => $audioUrl,
             'audio_duration' => $audioDuration,
+            'idempotency_key' => $idempotencyKey,
+            'idempotency_request_hash' => $idempotencyRequestHash,
         ]);
     }
 
@@ -461,6 +519,7 @@ class MessageService
      */
     private static function sendInternal(int $senderId, int|array $receiverIdOrData, ?array $data = null): array
     {
+        self::$errors = [];
         if (is_array($receiverIdOrData)) {
             // Controller-style call: send($userId, $allInput)
             $data = $receiverIdOrData;
@@ -634,6 +693,16 @@ class MessageService
                 return [];
             }
 
+            $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+            $requestHash = trim((string) ($data['idempotency_request_hash'] ?? ''));
+            if ($idempotencyKey !== '') {
+                $replay = self::replaySend($senderId, $idempotencyKey, $requestHash);
+                if ($replay !== null) {
+                    DB::commit();
+                    return $replay;
+                }
+            }
+
             $lockedGate = self::evaluateLockedSafeguardingContactGate($senderId, $receiverId, $tenantId);
             if ($lockedGate !== null) {
                 DB::rollBack();
@@ -652,31 +721,44 @@ class MessageService
                 return [];
             }
 
-        $message = new Message($attributes);
+            $message = new Message($attributes);
 
-        $message->save();
+            $message->save();
 
-        // Persist file/image attachment rows (tenant_id auto-filled by HasTenantScope).
-        if ($hasAttachments) {
-            foreach ($attachments as $att) {
-                try {
-                    \App\Models\MessageAttachment::create([
-                        'message_id' => $message->id,
-                        'file_url'   => $att['url'],
-                        // file_path is NOT NULL in the message_attachments table
-                        // (created by the 2026_02_07 legacy migration) — must be set.
-                        'file_path'  => $att['path'] ?? $att['url'],
-                        'file_name'  => $att['name'],
-                        'file_type'  => $att['type'] ?? 'file',
-                        'file_size'  => $att['size'],
-                        'mime_type'  => $att['mime'],
-                        'created_at' => now(),
-                    ]);
-                } catch (\Throwable $e) {
-                    Log::warning('Message attachment persist failed', ['error' => $e->getMessage(), 'message_id' => $message->id]);
+            // Persist file/image attachment rows (tenant_id auto-filled by HasTenantScope).
+            if ($hasAttachments) {
+                foreach ($attachments as $att) {
+                    try {
+                        \App\Models\MessageAttachment::create([
+                            'message_id' => $message->id,
+                            'file_url'   => $att['url'],
+                            // file_path is NOT NULL in the message_attachments table
+                            // (created by the 2026_02_07 legacy migration) — must be set.
+                            'file_path'  => $att['path'] ?? $att['url'],
+                            'file_name'  => $att['name'],
+                            'file_type'  => $att['type'] ?? 'file',
+                            'file_size'  => $att['size'],
+                            'mime_type'  => $att['mime'],
+                            'created_at' => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::warning('Message attachment persist failed', ['error' => $e->getMessage(), 'message_id' => $message->id]);
+                    }
                 }
             }
-        }
+
+            $persisted = $message->fresh(['sender', 'receiver', 'attachments'])->toArray();
+            if ($idempotencyKey !== '') {
+                DB::table('message_send_receipts')->insert([
+                    'tenant_id' => (int) $tenantId,
+                    'sender_id' => $senderId,
+                    'idempotency_key_hash' => hash('sha256', $idempotencyKey),
+                    'request_hash' => $requestHash,
+                    'message_id' => (int) $message->id,
+                    'created_at' => now(),
+                ]);
+            }
+            MessageDeliveryOutboxService::record((int) $tenantId, (int) $message->id);
 
             DB::commit();
         } catch (\Throwable $e) {
@@ -686,21 +768,20 @@ class MessageService
             throw $e;
         }
 
-        // Broadcast the new message event for real-time delivery
+        // Try immediately for normal realtime latency. The row committed with
+        // the message remains pending when the event/queue dispatcher is down,
+        // so the scheduled consumer or an idempotent client replay can recover it.
         try {
-            $sender = User::withoutGlobalScopes()->find($senderId);
-            if ($sender) {
-                $ids = [$senderId, $receiverId];
-                sort($ids);
-                $conversationId = crc32(implode('-', $ids));
-
-                MessageSent::dispatch($message, $sender, $conversationId, $message->tenant_id ?? app('tenant.id'));
-            }
-        } catch (\Throwable $e) {
-            Log::warning('MessageSent broadcast failed', ['error' => $e->getMessage(), 'message_id' => $message->id]);
+            app(MessageDeliveryOutboxService::class)->dispatchMessage((int) $tenantId, (int) $message->id);
+        } catch (\Throwable $error) {
+            Log::warning('Message delivery outbox immediate dispatch unavailable', [
+                'tenant_id' => (int) $tenantId,
+                'message_id' => (int) $message->id,
+                'error' => EventNotificationErrorSanitizer::sanitize($error->getMessage(), 255),
+            ]);
         }
 
-        return $message->fresh(['sender', 'receiver', 'attachments'])->toArray();
+        return $persisted;
     }
 
     /**

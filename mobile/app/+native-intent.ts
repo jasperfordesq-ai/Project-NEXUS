@@ -50,6 +50,8 @@ const KNOWN_SECTIONS = new Set([
   // password-reset email opened on a device with the app installed dropped the
   // token and dumped the member on the login screen.
   'password',
+  'reset-password',
+  'forgot-password',
   'login',
   'register',
   'verify-email',
@@ -121,6 +123,7 @@ const BROWSER_ONLY_PATHS = new Set([
 ]);
 
 export function isBrowserOnlyPath(rawPath: string | null): boolean {
+  if (shouldRejectNativeLinkInput(rawPath)) return false;
   const trimmed = rawPath?.trim();
   if (!trimmed) return false;
   let pathname: string;
@@ -169,19 +172,22 @@ const MAX_DEEP_LINK_LENGTH = 2048;
 
 export function redirectSystemPath({ path }: RedirectEvent): string {
   // Refused before it reaches the router's query parser. Returning the app's root is the
-  // safe answer: a link this long is not one of ours.
-  if (typeof path === 'string' && path.length > MAX_DEEP_LINK_LENGTH) return '/';
+  // safe answer: an oversized or malformed link is not one of ours.
+  if (shouldRejectNativeLinkInput(path)) return '/';
   try {
     // Declined on purpose — see BROWSER_ONLY_SECTIONS. Returning the path unchanged
     // lets Android carry on to the browser instead of stranding the member here.
     if (isBrowserOnlyPath(path)) return path ?? '/';
     return mapSystemPathToNativeRoute(path) ?? path ?? '/';
   } catch {
-    return path ?? '/';
+    return '/';
   }
 }
 
 export function mapSystemPathToNativeRoute(rawPath: string | null): string | null {
+  // This helper is also called directly for notification payloads, so it must
+  // enforce the same boundary as Expo Router's redirect hook.
+  if (shouldRejectNativeLinkInput(rawPath)) return null;
   const parsed = parseSystemPath(rawPath);
   if (!parsed) return null;
 
@@ -364,6 +370,12 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     // it through untouched.
     case 'password':
       if (id === 'reset') return appendParams('/(auth)/reset-password', params);
+      return appendParams('/(auth)/forgot-password', params);
+
+    case 'reset-password':
+      return appendParams('/(auth)/reset-password', params);
+
+    case 'forgot-password':
       return appendParams('/(auth)/forgot-password', params);
 
     case 'login':
@@ -612,6 +624,21 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     default:
       return null;
+  }
+}
+
+function shouldRejectNativeLinkInput(rawPath: string | null): boolean {
+  if (typeof rawPath !== 'string') return false;
+  if (rawPath.length > MAX_DEEP_LINK_LENGTH) return true;
+
+  // The bound above keeps this native decoder linear and cheap. Decoding only
+  // validates the input; route parsing still uses the original string so valid
+  // reserved characters retain their meaning.
+  try {
+    decodeURIComponent(rawPath);
+    return false;
+  } catch {
+    return true;
   }
 }
 

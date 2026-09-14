@@ -125,6 +125,26 @@ class GoalsControllerTest extends TestCase
         $response->assertJsonPath('data.is_owner', true);
     }
 
+    public function test_goal_creation_replay_returns_the_same_goal_without_duplicate_rows(): void
+    {
+        $user = $this->authenticatedUser();
+        $payload = ['title' => 'One durable goal', 'description' => 'Created once after a lost response.'];
+        $headers = ['Idempotency-Key' => 'goal-create-operation-123'];
+
+        $first = $this->apiPost('/v2/goals', $payload, $headers);
+        $replay = $this->apiPost('/v2/goals', $payload, $headers);
+
+        $first->assertCreated();
+        $replay->assertOk();
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, DB::table('goals')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)->where('title', 'One durable goal')->count());
+        $this->assertSame(1, DB::table('goal_creation_receipts')->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $user->id)->where('operation_type', 'goal')->count());
+
+        $this->apiPost('/v2/goals', ['title' => 'Changed intent'], $headers)->assertStatus(409);
+    }
+
     public function test_create_requires_authentication(): void
     {
         $response = $this->apiPost('/v2/goals', [
@@ -310,6 +330,34 @@ class GoalsControllerTest extends TestCase
         $response = $this->apiPost("/v2/goals/{$goal->id}/complete");
 
         $this->assertContains($response->getStatusCode(), [200, 201]);
+    }
+
+    public function test_progress_desired_state_replay_does_not_apply_the_increment_twice(): void
+    {
+        $user = $this->authenticatedUser();
+        $goal = $this->createGoal([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'current_value' => 4,
+            'target_value' => 10,
+        ]);
+        $payload = ['increment' => 1.5, 'expected_current_value' => 4, 'desired_current_value' => 5.5];
+
+        $first = $this->apiPost("/v2/goals/{$goal->id}/progress", $payload);
+        $replay = $this->apiPost("/v2/goals/{$goal->id}/progress", $payload);
+
+        $first->assertOk()->assertJsonPath('data.idempotent_replay', false);
+        $replay->assertOk()->assertJsonPath('data.idempotent_replay', true);
+        $this->assertEqualsWithDelta(5.5, (float) $goal->fresh()->current_value, 0.000001);
+        $this->assertSame(1, DB::table('goal_progress_history')->where('tenant_id', $this->testTenantId)
+            ->where('goal_id', $goal->id)->where('event_type', 'progress_update')->count());
+
+        $this->apiPost("/v2/goals/{$goal->id}/progress", [
+            'increment' => 2,
+            'expected_current_value' => 4,
+            'desired_current_value' => 6,
+        ])->assertStatus(409);
+        $this->assertEqualsWithDelta(5.5, (float) $goal->fresh()->current_value, 0.000001);
     }
 
     public function test_complete_goal_replay_does_not_repeat_history_xp_or_notifications(): void
@@ -540,6 +588,39 @@ class GoalsControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
+    }
+
+    public function test_template_goal_creation_replay_returns_the_same_goal(): void
+    {
+        $user = $this->authenticatedUser();
+        $templateId = DB::table('goal_templates')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'title' => 'Durable template',
+            'description' => 'Create this only once.',
+            'default_target_value' => 8,
+            'is_public' => true,
+            'created_by' => $user->id,
+            'created_at' => now(),
+        ]);
+        $headers = ['Idempotency-Key' => 'goal-template-operation-123'];
+
+        $first = $this->apiPost("/v2/goals/from-template/{$templateId}", [], $headers);
+        $replay = $this->apiPost("/v2/goals/from-template/{$templateId}", [], $headers);
+
+        $first->assertCreated();
+        $replay->assertOk();
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, DB::table('goals')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)->where('title', 'Durable template')->count());
+    }
+
+    public function test_missing_template_with_idempotency_key_still_returns_not_found(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPost('/v2/goals/from-template/999999', [], [
+            'Idempotency-Key' => 'missing-template-operation-123',
+        ])->assertNotFound();
     }
 
     public function test_create_template_requires_admin(): void

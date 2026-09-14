@@ -178,5 +178,9 @@
     "title": "Fág gan sábháil?",
     "message": "Níor sábháladh na hathruithe a rinne tú ar an scáileán seo go fóill.",
     "discard": "Fág"
+  },
+  "draftStorage": {
+    "title": "Níl an dréacht cosanta",
+    "message": "Níorbh fhéidir an dréacht seo a shábháil go slán ar an ngléas seo. Coinnigh an aip ar oscailt, seiceáil stóras an ghléis, agus déan athrú eile chun triail eile a bhaint as."
   }
 }

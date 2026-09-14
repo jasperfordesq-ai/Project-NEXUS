@@ -13,6 +13,7 @@ use App\Services\PartnerVenueService;
 use App\Services\PartnerVenueVisitService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Tests\Laravel\TestCase;
 
 /**
@@ -135,6 +136,21 @@ class PartnerVenueVisitTest extends TestCase
             DB::table('partner_member_passes')->where('user_id', $member->id)->count(),
             'Exactly one pass row per member per tenant.'
         );
+    }
+
+    public function test_pass_creation_does_not_depend_on_the_cache_lock_service(): void
+    {
+        $member = $this->member();
+        Cache::shouldReceive('lock')->never();
+
+        $pass = $this->visits->getOrCreatePass((int) $member->id);
+
+        $this->assertSame(64, strlen($pass['token']));
+        $this->assertDatabaseHas('partner_member_passes', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $member->id,
+            'status' => 'active',
+        ]);
     }
 
     public function test_rotating_a_pass_invalidates_the_previous_token(): void

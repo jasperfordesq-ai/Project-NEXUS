@@ -895,6 +895,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('marketplace:orders.title') }}
       />
       <Stack.Screen
+        name="(modals)/marketplace-deliveries"
+        options={{ ...modalOptions, headerShown: false, title: t('marketplace:communityDelivery.title') }}
+      />
+      <Stack.Screen
         name="(modals)/marketplace-order"
         options={{ ...modalOptions, headerShown: false, title: t('marketplace:orders.title') }}
       />

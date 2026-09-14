@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Core\TenantContext;
 use App\Services\FederationFeatureService;
+use App\Services\FederatedConnectionService;
 use Tests\Laravel\TestCase;
 use Tests\Laravel\Concerns\FederationIntegrationHarness;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -268,6 +269,82 @@ class FederationV2ControllerTest extends TestCase
         $response = $this->apiGet('/v2/federation/connections');
 
         $response->assertStatus(401);
+    }
+
+    public function test_pending_cancellation_cannot_remove_an_accepted_federation_connection(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Federation State Partner');
+        $this->seedPartnership($partnerTenantId);
+        $requester = $this->seedFederatedUser($this->testTenantId);
+        $receiver = $this->seedFederatedUser($partnerTenantId);
+        $connectionId = (int) DB::table('federation_connections')->insertGetId([
+            'requester_user_id' => $requester->id,
+            'requester_tenant_id' => $this->testTenantId,
+            'receiver_user_id' => $receiver->id,
+            'receiver_tenant_id' => $partnerTenantId,
+            'status' => 'accepted',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($requester, ['*']);
+
+        $this->apiDelete("/v2/federation/connections/{$connectionId}", [
+            'expected_status' => 'pending',
+        ])->assertConflict()->assertJsonPath('errors.0.code', 'CONNECTION_STATE_CHANGED');
+
+        $this->assertDatabaseHas('federation_connections', [
+            'id' => $connectionId,
+            'status' => 'accepted',
+        ]);
+    }
+
+    public function test_federation_removal_contract_enforces_pending_authority_and_accepted_state(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Federation Removal Partner');
+        $this->seedPartnership($partnerTenantId);
+        $requester = $this->seedFederatedUser($this->testTenantId);
+        $receiver = $this->seedFederatedUser($partnerTenantId);
+
+        $create = function (string $status) use ($requester, $receiver, $partnerTenantId): int {
+            return (int) DB::table('federation_connections')->insertGetId([
+                'requester_user_id' => $requester->id,
+                'requester_tenant_id' => $this->testTenantId,
+                'receiver_user_id' => $receiver->id,
+                'receiver_tenant_id' => $partnerTenantId,
+                'status' => $status,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        };
+
+        Sanctum::actingAs($requester, ['*']);
+        $cancelledId = $create('pending');
+        $this->apiDelete("/v2/federation/connections/{$cancelledId}", [
+            'expected_status' => 'pending',
+        ])->assertOk();
+        $this->assertDatabaseMissing('federation_connections', ['id' => $cancelledId]);
+
+        $pendingId = $create('pending');
+        TenantContext::setById($partnerTenantId);
+        $receiverCancellation = app(FederatedConnectionService::class)->removeConnection(
+            $pendingId,
+            (int) $receiver->id,
+            'pending',
+        );
+        $this->assertFalse($receiverCancellation['success']);
+        $this->assertSame('CONNECTION_STATE_CHANGED', $receiverCancellation['error_code']);
+        $this->assertDatabaseHas('federation_connections', ['id' => $pendingId, 'status' => 'pending']);
+
+        TenantContext::setById($this->testTenantId);
+        Sanctum::actingAs($requester, ['*']);
+        $this->apiDelete("/v2/federation/connections/{$pendingId}", [
+            'expected_status' => 'accepted',
+        ])->assertConflict()->assertJsonPath('errors.0.code', 'CONNECTION_STATE_CHANGED');
+
+        $this->apiDelete("/v2/federation/connections/{$pendingId}", [
+            'expected_status' => 'anything',
+        ])->assertUnprocessable()->assertJsonPath('errors.0.field', 'expected_status');
+        $this->assertDatabaseHas('federation_connections', ['id' => $pendingId, 'status' => 'pending']);
     }
 
     // ------------------------------------------------------------------

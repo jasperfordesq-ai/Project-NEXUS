@@ -17,6 +17,7 @@ import {
   clearPodcastPosition,
   loadPodcastPosition,
   savePodcastPosition,
+  type PodcastPlaybackScope,
 } from '@/lib/podcasts/playbackPositions';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useAccentForeground } from '@/lib/theme/accentForeground';
@@ -51,6 +52,7 @@ export interface PodcastAudioPlayerHandle {
 }
 
 interface PodcastAudioPlayerProps {
+  playbackScope: PodcastPlaybackScope;
   episodeId: number;
   audioUrl: string;
   episodeTitle?: string;
@@ -69,7 +71,7 @@ const BACKGROUND_AUDIO_MODE = {
 } as const;
 
 function PodcastAudioPlayer(
-  { episodeId, audioUrl, episodeTitle, showTitle, durationSeconds, primaryColor }: PodcastAudioPlayerProps,
+  { playbackScope, episodeId, audioUrl, episodeTitle, showTitle, durationSeconds, primaryColor }: PodcastAudioPlayerProps,
   ref: React.Ref<PodcastAudioPlayerHandle>,
 ) {
   const { t } = useTranslation('podcasts');
@@ -100,13 +102,13 @@ function PodcastAudioPlayer(
 
   useEffect(() => {
     let cancelled = false;
-    void loadPodcastPosition(episodeId, durationSeconds ?? null).then((seconds) => {
+    void loadPodcastPosition(playbackScope, episodeId, durationSeconds ?? null).then((seconds) => {
       if (cancelled || !seconds || loadingRef.current || soundRef.current) return;
       setResumeFromMs(seconds * 1000);
       setPosition(seconds * 1000);
     });
     return () => { cancelled = true; };
-  }, [episodeId, durationSeconds]);
+  }, [playbackScope, episodeId, durationSeconds]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -123,11 +125,11 @@ function PodcastAudioPlayer(
       const sound = soundRef.current;
       soundRef.current = null;
       // Save the final playback position when leaving this episode.
-      void savePodcastPosition(episodeId, lastPositionRef.current / 1000, durationRef.current).catch(() => undefined);
+      void savePodcastPosition(playbackScope, episodeId, lastPositionRef.current / 1000, durationRef.current).catch(() => undefined);
       sound?.release();
       loadingRef.current = false;
     };
-  }, [episodeId, audioUrl]);
+  }, [playbackScope, episodeId, audioUrl]);
 
   const update = useCallback((status: AudioStatus) => {
     if (status.playbackState === 'failed' || status.playbackState === 'error') {
@@ -147,16 +149,16 @@ function PodcastAudioPlayer(
     if (status.didJustFinish) {
       const finalMillis = status.duration ? status.duration * 1000 : duration;
       setPosition(finalMillis);
-      void clearPodcastPosition(episodeId).catch(() => undefined);
+      void clearPodcastPosition(playbackScope, episodeId).catch(() => undefined);
       void recordPodcastListen(episodeId, { position_seconds: Math.round(finalMillis / 1000), completed: true }).catch(() => undefined);
       return;
     }
     const now = Date.now();
     if (status.playing && now - lastSaveAtRef.current >= POSITION_SAVE_INTERVAL_MS) {
       lastSaveAtRef.current = now;
-      void savePodcastPosition(episodeId, status.currentTime, durationRef.current).catch(() => undefined);
+      void savePodcastPosition(playbackScope, episodeId, status.currentTime, durationRef.current).catch(() => undefined);
     }
-  }, [duration, episodeId]);
+  }, [duration, episodeId, playbackScope]);
 
   /** Load and seek before playback so a resume never starts audibly at zero. */
   const load = useCallback(async (startAtMillis: number) => {
@@ -206,7 +208,7 @@ function PodcastAudioPlayer(
           setIsPlaying(false);
           // A pause is a deliberate stopping point — record it without waiting for the
           // next interval tick, which would never come.
-          void savePodcastPosition(episodeId, lastPositionRef.current / 1000, durationRef.current).catch(() => undefined);
+          void savePodcastPosition(playbackScope, episodeId, lastPositionRef.current / 1000, durationRef.current).catch(() => undefined);
         } else {
           if (duration > 0 && lastPositionRef.current >= duration) await sound.player.seekTo(0);
           if (controllerRef.current?.signal.aborted) return;
@@ -220,7 +222,7 @@ function PodcastAudioPlayer(
       setFailed(true);
       setIsPlaying(false);
     }
-  }, [duration, episodeId, isPlaying, load, resumeFromMs]);
+  }, [duration, episodeId, isPlaying, load, playbackScope, resumeFromMs]);
 
   const seekTo = useCallback(async (targetMillis: number) => {
     if (loadingRef.current) return;
@@ -239,11 +241,11 @@ function PodcastAudioPlayer(
       if (controllerRef.current?.signal.aborted) return;
       setPosition(target);
       lastPositionRef.current = target;
-      void savePodcastPosition(episodeId, target / 1000, durationRef.current).catch(() => undefined);
+      void savePodcastPosition(playbackScope, episodeId, target / 1000, durationRef.current).catch(() => undefined);
     } catch {
       setFailed(true);
     }
-  }, [duration, episodeId, load]);
+  }, [duration, episodeId, load, playbackScope]);
 
   useImperativeHandle(ref, () => ({
     seekToSeconds(seconds: number) { void seekTo(seconds * 1000); },
@@ -254,9 +256,9 @@ function PodcastAudioPlayer(
     setResumeFromMs(0);
     setPosition(0);
     lastPositionRef.current = 0;
-    await clearPodcastPosition(episodeId).catch(() => undefined);
+    await clearPodcastPosition(playbackScope, episodeId).catch(() => undefined);
     await seekTo(0);
-  }, [episodeId, seekTo]);
+  }, [episodeId, playbackScope, seekTo]);
 
   const percent = duration > 0 ? Math.min(100, Math.max(0, position / duration * 100)) : 0;
   const playLabel = isPlaying

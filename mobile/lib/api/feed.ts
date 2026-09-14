@@ -61,6 +61,9 @@ export interface PollData {
   total_votes: number | null;
   user_vote_option_id: number | null;
   is_active: boolean;
+  poll_type?: 'standard' | 'ranked';
+  is_anonymous?: boolean;
+  user_rankings?: { option_id: number; rank: number }[];
   /**
    * 🔴 Two endpoints say "results are withheld" in two different ways, and a client has to
    * accept both. `PollService` (the vote endpoint) sends `results_visible: false` and still

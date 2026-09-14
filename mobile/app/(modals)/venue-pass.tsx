@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useEffect, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -18,7 +19,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { getPartnerVenuePass, getPartnerVenueVisits, rotatePartnerVenuePass } from '@/lib/api/venues';
+import { getPartnerVenuePass, getPartnerVenueVisits, rotatePartnerVenuePass, type PartnerVenuePass } from '@/lib/api/venues';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -34,6 +35,13 @@ function VenuePassScreen() {
   const { confirm, confirmDialog } = useConfirm();
   const pass = useApi(getPartnerVenuePass, [], { enabled: hasFeature('partner_venues') });
   const visits = useApi(getPartnerVenueVisits, [], { enabled: hasFeature('partner_venues') });
+  const [resolvedPass, setResolvedPass] = useState<PartnerVenuePass | null>(null);
+  const [isRotating, setIsRotating] = useState(false);
+  const rotatePendingRef = useRef(false);
+  const isMountedRef = useRef(true);
+  const currentPass = resolvedPass ?? pass.data;
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   const rotate = () => confirm({
     title: t('pass.rotate'),
@@ -42,12 +50,34 @@ function VenuePassScreen() {
     cancelLabel: t('common:buttons.cancel'),
     variant: 'danger',
     onConfirm: async () => {
+      if (rotatePendingRef.current) return;
+      rotatePendingRef.current = true;
+      setIsRotating(true);
+      const previousToken = currentPass?.token;
       try {
-        await rotatePartnerVenuePass();
-        await pass.refresh();
+        const nextPass = await rotatePartnerVenuePass();
+        if (!isMountedRef.current) return;
+        setResolvedPass(nextPass);
         showToast({ title: t('pass.rotated'), variant: 'success' });
       } catch (error) {
+        // The rotate may have committed before its response was lost. Read back the
+        // authoritative current pass before claiming failure or leaving a stale QR visible.
+        try {
+          const latest = await getPartnerVenuePass();
+          if (!isMountedRef.current) return;
+          setResolvedPass(latest);
+          if (previousToken && latest.token !== previousToken) {
+            showToast({ title: t('pass.rotated'), variant: 'success' });
+            return;
+          }
+        } catch {
+          // Preserve the original mutation error below; the readback is best effort.
+        }
+        if (!isMountedRef.current) return;
         showToast({ title: t('pass.rotate_failed'), description: describeApiError(error, '') || undefined, variant: 'danger' });
+      } finally {
+        rotatePendingRef.current = false;
+        if (isMountedRef.current) setIsRotating(false);
       }
     },
   });
@@ -56,9 +86,9 @@ function VenuePassScreen() {
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('pass.title')} backLabel={t('common:back')} fallbackHref="/(modals)/venues" />
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={pass.isLoading && Boolean(pass.data)} onRefresh={() => { pass.refresh(); visits.refresh(); }} tintColor={primary} colors={[primary]} />}>
-          <RefreshFailedNotice error={pass.data ? pass.error : null} onRetry={() => { pass.refresh(); visits.refresh(); }} />
-          {!hasFeature('partner_venues') ? <EmptyState icon="warning-outline" title={t('verify.unavailable')} /> : pass.isLoading && !pass.data ? <LoadingSpinner /> : !pass.data ? (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={(pass.isLoading || visits.isLoading) && Boolean(currentPass)} onRefresh={() => { setResolvedPass(null); pass.refresh(); visits.refresh(); }} tintColor={primary} colors={[primary]} />}>
+          <RefreshFailedNotice error={currentPass ? (pass.error ?? visits.error) : null} onRetry={() => { pass.refresh(); visits.refresh(); }} />
+          {!hasFeature('partner_venues') ? <EmptyState icon="warning-outline" title={t('verify.unavailable')} /> : pass.isLoading && !currentPass ? <LoadingSpinner /> : !currentPass ? (
             <EmptyState icon="warning-outline" title={pass.error ?? t('pass.unavailable')} actionLabel={t('common:buttons.retry')} onAction={pass.refresh} />
           ) : (
             <View className="gap-4">
@@ -66,12 +96,12 @@ function VenuePassScreen() {
               <HeroCard className="rounded-panel">
                 <HeroCard.Body className="items-center gap-4 p-6">
                   <View className="rounded-panel-inner bg-white p-3" accessibilityRole="image" accessibilityLabel={t('pass.qr_alt')}>
-                    <QRCode value={pass.data.qr_url} size={220} color="#000000" backgroundColor="#ffffff" ecl="M" />
+                    <QRCode value={currentPass.qr_url} size={220} color="#000000" backgroundColor="#ffffff" ecl="M" />
                   </View>
                   {displayName ? <Text className="text-lg font-semibold text-foreground">{displayName}</Text> : null}
                   <Text className="text-sm font-semibold text-success">{t('pass.active')}</Text>
                   <Text className="text-center text-sm leading-5 text-muted-foreground">{t('pass.show_to_staff')}</Text>
-                  <Button variant="outline" onPress={rotate}>{t('pass.rotate')}</Button>
+                  <Button variant="outline" onPress={rotate} disabled={isRotating}>{isRotating ? t('venues:loading') : t('pass.rotate')}</Button>
                 </HeroCard.Body>
               </HeroCard>
               <HeroCard className="rounded-panel">
@@ -95,4 +125,10 @@ function VenuePassScreen() {
   );
 }
 
-export default withRouteGate(VenuePassScreen, 'venue-pass');
+function VenuePassRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <VenuePassScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
+}
+
+export default withRouteGate(VenuePassRoute, 'venue-pass');

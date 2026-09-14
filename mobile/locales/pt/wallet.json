@@ -69,7 +69,6 @@
     "messagePlaceholder": "Adicionar uma nota opcional",
     "sendNow": "Enviar créditos",
     "donateNow": "Doar créditos",
-    "defaultTransferDescription": "Transferência de crédito de tempo",
     "validationTitle": "Verifique os detalhes",
     "validationAmount": "Insira um valor maior que zero.",
     "validationInsufficient": "Você não tem créditos de tempo suficientes para esse valor.",
@@ -100,7 +99,10 @@
     "confirmDonationMessage": "Está prestes a doar {{amount}} horas a {{name}}. Esta ação não pode ser anulada.",
     "recipientResolving": "A verificar o destinatário…",
     "recipientUnresolved": "Esse membro não foi encontrado. Procure o destinatário.",
-    "unresolvedOperation": "Uma transferência anterior continua por confirmar. Consulte o histórico e contacte o coordenador antes de a enviar novamente."
+    "unresolvedOperation": "Uma ação anterior da carteira continua por confirmar. Consulte o histórico de transações e contacte o coordenador antes de voltar a enviar créditos.",
+    "unresolvedTitle": "Ação da carteira por verificar",
+    "reviewHistory": "Consultar histórico de transações",
+    "contactCommunity": "Contactar a sua comunidade"
   },
   "status": {
     "completed": "Concluído",

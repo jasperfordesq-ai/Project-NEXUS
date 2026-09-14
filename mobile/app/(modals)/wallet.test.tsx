@@ -7,6 +7,7 @@ import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { RefreshControl } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { ApiResponseError } from '@/lib/api/client';
 
 // --- Mocks ---
 
@@ -82,6 +83,10 @@ jest.mock('react-i18next', () => ({
         'actions.description': 'Description',
         'actions.descriptionPlaceholder': 'What is this transfer for?',
         'actions.sendNow': 'Send credits',
+        'actions.unresolvedTitle': 'Transfer needs checking',
+        'actions.unresolvedOperation': 'An earlier transfer is still unconfirmed.',
+        'actions.reviewHistory': 'Review transaction history',
+        'actions.contactCommunity': 'Contact your community',
         'actions.loadMoreFailedTitle': 'Could not load more',
         'actions.loadMoreFailedMessage': 'We could not load more transactions right now.',
         'status.completed': 'Completed',
@@ -111,6 +116,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
     borderSubtle: '#eeeeee',
     error: '#e53e3e',
     success: '#22c55e',
+    warning: '#f59e0b',
   }),
 }));
 
@@ -631,6 +637,22 @@ describe('WalletModal', () => {
       await waitFor(() => expect(ui.queryByPlaceholderText('Hours to send')).toBeNull());
     });
 
+    it('AUDIT keeps a blank-note transfer language-neutral for safe retries after a locale change', async () => {
+      jest.mocked(transferWalletCredits).mockResolvedValueOnce({ success: true } as never);
+      const ui = renderTransferPanel();
+      fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+      await ui.findByText('Jasper Ford');
+      fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+
+      await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(1));
+      expect(transferWalletCredits).toHaveBeenCalledWith(expect.objectContaining({
+        recipient: 260,
+        amount: 2,
+        description: '',
+      }));
+    });
+
     it('reuses one operation id when an uncertain transfer is retried', async () => {
       jest.mocked(transferWalletCredits)
         .mockRejectedValueOnce(new Error('Network request failed'))
@@ -726,6 +748,57 @@ describe('WalletModal', () => {
       // The member is told nothing useful by the error alone: what settles it is the
       // balance. The panel stays open so they can retry with the same operation id.
       await waitFor(() => expect(mockRefreshWallet).toHaveBeenCalled());
+    });
+
+    it('AUDIT gives an expired unknown transfer persistent reconciliation actions', async () => {
+      jest.mocked(SecureStore.getItemAsync).mockRejectedValueOnce(new ApiResponseError(
+        0,
+        'An earlier transfer is still unconfirmed.',
+        undefined,
+        'WALLET_OPERATION_UNRESOLVED',
+      ));
+
+      const ui = renderTransferPanel();
+      fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+      await ui.findByText('Jasper Ford');
+      fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+
+      expect(await ui.findByTestId('wallet-unresolved-operation')).toBeTruthy();
+      expect(ui.getByText('Review transaction history')).toBeTruthy();
+      expect(ui.getByText('Contact your community')).toBeTruthy();
+      expect(ui.getByTestId('wallet-action-submit')).toBeDisabled();
+
+      fireEvent.press(ui.getByText('Contact your community'));
+      expect(require('expo-router').router.push).toHaveBeenCalledWith({
+        pathname: '/(modals)/static-page',
+        params: { key: 'contact' },
+      });
+
+      fireEvent.press(ui.getByText('Review transaction history'));
+      expect(ui.queryByTestId('wallet-unresolved-operation')).toBeNull();
+      expect(ui.getByText('Transaction history')).toBeTruthy();
+    });
+
+    it('allows a different wallet intent after showing the unresolved-operation warning', async () => {
+      jest.mocked(SecureStore.getItemAsync).mockRejectedValueOnce(new ApiResponseError(
+        0,
+        'An earlier wallet action is still unconfirmed.',
+        undefined,
+        'WALLET_OPERATION_UNRESOLVED',
+      ));
+
+      const ui = renderTransferPanel();
+      const amountInput = ui.getByPlaceholderText('Hours to send');
+      fireEvent.changeText(amountInput, '2');
+      await ui.findByText('Jasper Ford');
+      fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+      expect(await ui.findByTestId('wallet-unresolved-operation')).toBeTruthy();
+
+      fireEvent.changeText(amountInput, '3');
+      expect(ui.queryByTestId('wallet-unresolved-operation')).toBeNull();
+      expect(ui.getByTestId('wallet-action-submit')).not.toBeDisabled();
     });
   });
 

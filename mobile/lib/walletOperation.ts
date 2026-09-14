@@ -13,9 +13,23 @@ import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 import { getWalletOperationStatus, type WalletOperationKind } from '@/lib/api/wallet';
 
 export interface WalletOperation { storageKey: string; key: string; createdAt: number }
+export const WALLET_OPERATION_UNRESOLVED_CODE = 'WALLET_OPERATION_UNRESOLVED';
 const reservations = new Map<string, Promise<WalletOperation>>();
 const completedKeys = new Set<string>();
 const storageWrites = new Map<string, Promise<void>>();
+
+function unresolvedWalletOperation(): ApiResponseError {
+  return new ApiResponseError(
+    0,
+    i18n.t('wallet:actions.unresolvedOperation'),
+    undefined,
+    WALLET_OPERATION_UNRESOLVED_CODE,
+  );
+}
+
+export function isUnresolvedWalletOperationError(error: unknown): boolean {
+  return error instanceof ApiResponseError && error.code === WALLET_OPERATION_UNRESOLVED_CODE;
+}
 
 function withOperationStorage<T>(key: string, action: () => Promise<T>): Promise<T> {
   const result = (storageWrites.get(key) ?? Promise.resolve()).then(action);
@@ -43,7 +57,7 @@ export async function reserveWalletOperation(kind: WalletOperationKind, intent: 
     if (currentUser?.id !== user.id || currentTenant !== tenant) {
       // Keep the original account's retry record; a changed session must not
       // continue this submission with another account's credentials.
-      throw new ApiResponseError(0, i18n.t('wallet:actions.unresolvedOperation'));
+      throw unresolvedWalletOperation();
     }
     return operation;
   };
@@ -63,7 +77,7 @@ export async function reserveWalletOperation(kind: WalletOperationKind, intent: 
         return next;
       }
       if (!saved.key || !Number.isFinite(saved.createdAt)) {
-        throw new ApiResponseError(0, i18n.t('wallet:actions.unresolvedOperation'));
+        throw unresolvedWalletOperation();
       }
       // Older servers used expiring cache receipts. Beyond that window only a
       // positive durable-ledger check permits replay, always with the SAME key.
@@ -78,7 +92,7 @@ export async function reserveWalletOperation(kind: WalletOperationKind, intent: 
         } catch {
           // Offline, old API, or unreadable response: preserve the unresolved key.
         }
-        if (!confirmed) throw new ApiResponseError(0, i18n.t('wallet:actions.unresolvedOperation'));
+        if (!confirmed) throw unresolvedWalletOperation();
       }
       return { ...saved, storageKey };
     }

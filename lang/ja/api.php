@@ -802,6 +802,7 @@ return [
     'listing_no_image_uploaded' => '画像ファイルがアップロードされていないか、アップロードエラーが発生しました',
     'listing_image_upload_failed' => '画像のアップロードに失敗しました',
     'listing_renewal_failed' => 'リストを更新できませんでした',
+    'gamification_sent_message' => 'メッセージを送信しました',
     'gamification_challenges_failed' => 'チャレンジをロードできませんでした',
     'gamification_challenge_not_started' => 'このチャレンジはまだ開始されていません',
     'gamification_challenge_already_claimed' => 'あなたはすでにこの報酬を受け取りました',
@@ -1825,6 +1826,7 @@ return [
     'volunteer_shift_not_found' => 'シフトが見つかりません',
     'volunteer_shift_started' => 'このシフトはすでに始まっています',
     'volunteer_shift_at_capacity' => 'このシフトは定員に達しています',
+    'volunteer_shift_assignment_changed' => '別の端末でシフトの割り当てが変更されました。更新してもう一度お試しください。',
     'volunteer_shift_not_full' => 'このシフトにはまだ空きがあるため、まだ順番待ちリストは必要ありません。',
     'volunteer_approved_application_required' => 'この機会を利用するには承認された申請が必要です',
     'volunteer_org_relationship_required' => 'この組織との承認されたボランティア関係が必要です',
@@ -2853,4 +2855,7 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'safeguarding_ward_consented_notification' => ':name は後見人の取り決めに同意しました。',
     'safeguarding_ward_declined_notification' => ':name は後見人の手配を拒否しました。',
     'safeguarding_ward_withdrawn_notification' => ':name は後見人契約への同意を撤回しました。',
+    'ideation_submission_closed' => 'このチャレンジでは新しいアイデアを受け付けていません。',
+    'ideation_submission_deadline_passed' => 'アイデアの提出期限を過ぎています。',
+    'ideation_submission_limit_reached' => 'このチャレンジに提出できるアイデア数の上限（:limit件）に達しました。',
 ];

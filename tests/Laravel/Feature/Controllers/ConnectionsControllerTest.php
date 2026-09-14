@@ -241,6 +241,35 @@ class ConnectionsControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [403, 404]);
     }
 
+    public function test_receiver_can_decline_pending_request_once(): void
+    {
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $receiver = $this->authenticatedUser();
+        $connection = Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $requester->id,
+            'receiver_id' => $receiver->id,
+            'status' => 'pending',
+        ]);
+
+        $this->apiPost("/v2/connections/{$connection->id}/decline")->assertNoContent();
+        $this->assertDatabaseMissing('connections', ['id' => $connection->id]);
+        $this->apiPost("/v2/connections/{$connection->id}/decline")->assertNotFound();
+    }
+
+    public function test_accepted_connection_cannot_be_declined(): void
+    {
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $receiver = $this->authenticatedUser();
+        $connection = Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $requester->id,
+            'receiver_id' => $receiver->id,
+            'status' => 'accepted',
+        ]);
+
+        $this->apiPost("/v2/connections/{$connection->id}/decline")->assertConflict();
+        $this->assertDatabaseHas('connections', ['id' => $connection->id, 'status' => 'accepted']);
+    }
+
     // ------------------------------------------------------------------
     //  DESTROY
     // ------------------------------------------------------------------
@@ -259,6 +288,94 @@ class ConnectionsControllerTest extends TestCase
         $response = $this->apiDelete("/v2/connections/{$connection->id}");
 
         $this->assertContains($response->getStatusCode(), [200, 204]);
+    }
+
+    public function test_pending_cancellation_cannot_delete_a_connection_accepted_before_the_delete_arrives(): void
+    {
+        $requester = $this->authenticatedUser();
+        $receiver = User::factory()->forTenant($this->testTenantId)->create();
+        $connection = Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $requester->id,
+            'receiver_id' => $receiver->id,
+            'status' => 'accepted',
+        ]);
+
+        $this->apiDelete("/v2/connections/{$connection->id}", [
+            'expected_status' => 'pending',
+        ])->assertConflict()->assertJsonPath('errors.0.code', 'CONNECTION_STATE_CHANGED');
+
+        $this->assertDatabaseHas('connections', [
+            'id' => $connection->id,
+            'status' => 'accepted',
+        ]);
+    }
+
+    public function test_requester_can_cancel_only_the_pending_request_they_sent(): void
+    {
+        $requester = $this->authenticatedUser();
+        $receiver = User::factory()->forTenant($this->testTenantId)->create();
+        $connection = Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $requester->id,
+            'receiver_id' => $receiver->id,
+            'status' => 'pending',
+        ]);
+
+        $this->apiDelete("/v2/connections/{$connection->id}", [
+            'expected_status' => 'pending',
+        ])->assertNoContent();
+
+        $this->assertDatabaseMissing('connections', ['id' => $connection->id]);
+    }
+
+    public function test_receiver_cannot_bypass_decline_workflow_with_pending_cancel_contract(): void
+    {
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $receiver = $this->authenticatedUser();
+        $connection = Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $requester->id,
+            'receiver_id' => $receiver->id,
+            'status' => 'pending',
+        ]);
+
+        $this->apiDelete("/v2/connections/{$connection->id}", [
+            'expected_status' => 'pending',
+        ])->assertConflict()->assertJsonPath('errors.0.code', 'CONNECTION_STATE_CHANGED');
+
+        $this->assertDatabaseHas('connections', ['id' => $connection->id, 'status' => 'pending']);
+    }
+
+    public function test_accepted_disconnect_contract_refuses_a_pending_request(): void
+    {
+        $requester = $this->authenticatedUser();
+        $receiver = User::factory()->forTenant($this->testTenantId)->create();
+        $connection = Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $requester->id,
+            'receiver_id' => $receiver->id,
+            'status' => 'pending',
+        ]);
+
+        $this->apiDelete("/v2/connections/{$connection->id}", [
+            'expected_status' => 'accepted',
+        ])->assertConflict()->assertJsonPath('errors.0.code', 'CONNECTION_STATE_CHANGED');
+
+        $this->assertDatabaseHas('connections', ['id' => $connection->id, 'status' => 'pending']);
+    }
+
+    public function test_delete_rejects_an_unknown_expected_state(): void
+    {
+        $user = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $connection = Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $user->id,
+            'receiver_id' => $other->id,
+            'status' => 'accepted',
+        ]);
+
+        $this->apiDelete("/v2/connections/{$connection->id}", [
+            'expected_status' => 'anything',
+        ])->assertUnprocessable()->assertJsonPath('errors.0.field', 'expected_status');
+
+        $this->assertDatabaseHas('connections', ['id' => $connection->id, 'status' => 'accepted']);
     }
 
     public function test_delete_requires_authentication(): void

@@ -175,5 +175,9 @@
     "title": "Leave without saving?",
     "message": "Your changes on this screen have not been saved yet.",
     "discard": "Leave"
+  },
+  "draftStorage": {
+    "title": "Draft not protected",
+    "message": "This draft could not be saved securely on this device. Keep the app open, check your device storage, then make another change to try again."
   }
 }

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { contrastText } from '@/lib/utils/color';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,22 +49,39 @@ export default function ResetPasswordScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const schema = useMemo(() => makeResetPasswordSchema(t), [t]);
+  const routeTokenRef = useRef(token);
+  routeTokenRef.current = token;
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isTokenInvalid, setIsTokenInvalid] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const {
     control,
     handleSubmit,
+    reset: resetForm,
     formState: { errors },
   } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(schema),
     defaultValues: { password: '', passwordConfirmation: '' },
   });
 
+  useEffect(() => {
+    // Expo Router can replace the query on the existing screen instance. A second
+    // recovery credential must never inherit the first credential's secret fields,
+    // success state or refusal state.
+    resetForm({ password: '', passwordConfirmation: '' });
+    setIsLoading(false);
+    setIsSubmitted(false);
+    setIsTokenInvalid(false);
+    setSubmitError(null);
+    setShowPassword(false);
+  }, [resetForm, token]);
+
   async function onSubmit(data: ResetPasswordFormValues) {
     if (!token) return;
+    const submittedToken = token;
     setIsLoading(true);
     setSubmitError(null);
     try {
@@ -73,27 +90,40 @@ export default function ResetPasswordScreen() {
         password: data.password,
         password_confirmation: data.passwordConfirmation,
       });
+      if (routeTokenRef.current !== submittedToken) return;
       if (response.success === false) {
+        if (response.code === 'AUTH_TOKEN_INVALID') {
+          setIsTokenInvalid(true);
+          return;
+        }
         setSubmitError(response.error ?? t('resetPassword.genericError'));
         return;
       }
       setIsSubmitted(true);
     } catch (err) {
+      if (routeTokenRef.current !== submittedToken) return;
+      if (err instanceof ApiResponseError && err.code === 'AUTH_TOKEN_INVALID') {
+        setIsTokenInvalid(true);
+        return;
+      }
       setSubmitError(err instanceof ApiResponseError ? err.message : t('resetPassword.genericError'));
     } finally {
-      setIsLoading(false);
+      if (routeTokenRef.current === submittedToken) setIsLoading(false);
     }
   }
 
-  if (!token) {
+  if (!token || isTokenInvalid) {
     return (
       <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }} className="flex-grow">
           <View className="flex-1 justify-center px-5 py-10">
             <HeroCard className="overflow-hidden">
               <HeroCard.Header className="items-center px-6 pt-8 pb-4">
-                <View className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl bg-danger">
-                  <Ionicons name="alert-outline" size={32} color={contrastText(primary)} />
+                <View
+                  className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"
+                  style={{ backgroundColor: theme.error }}
+                >
+                  <Ionicons name="alert-outline" size={32} color={contrastText(theme.error)} />
                 </View>
                 <HeroCard.Title className="text-center text-2xl font-bold">{t('resetPassword.invalidTitle')}</HeroCard.Title>
                 <HeroCard.Description className="mt-1 text-center">{t('resetPassword.invalidSubtitle')}</HeroCard.Description>
@@ -125,7 +155,11 @@ export default function ResetPasswordScreen() {
                 className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"
                 style={{ backgroundColor: isSubmitted ? theme.success : primary }}
               >
-                <Ionicons name={isSubmitted ? 'checkmark-outline' : 'lock-closed-outline'} size={32} color={contrastText(primary)} />
+                <Ionicons
+                  name={isSubmitted ? 'checkmark-outline' : 'lock-closed-outline'}
+                  size={32}
+                  color={contrastText(isSubmitted ? theme.success : primary)}
+                />
               </View>
               <HeroCard.Title className="text-center text-2xl font-bold">
                 {isSubmitted ? t('resetPassword.successTitle') : t('resetPassword.title')}

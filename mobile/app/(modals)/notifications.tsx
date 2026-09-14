@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -30,7 +30,8 @@ import {
   type NotificationListResponse,
 } from '@/lib/api/notifications';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import ActionSheet from '@/components/ui/ActionSheet';
@@ -90,6 +91,10 @@ function NotificationsScreen() {
   const [actingId, setActingId] = useState<number | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [actionSheet, setActionSheet] = useState<{ title: string; options: NotificationAction[] } | null>(null);
+  const mutationInFlight = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   /*
     🔴 S3-03: this fetched exactly one page of 25 with no load-more and no footer. A member
@@ -148,15 +153,20 @@ function NotificationsScreen() {
       cancelLabel: t('common:no'),
       variant: 'primary',
       onConfirm: async () => {
+        if (mutationInFlight.current) return;
+        mutationInFlight.current = true;
         setMarkingAll(true);
         try {
           await markAllRead();
+          if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           refreshAll();
         } catch (err) {
+          if (!isMountedRef.current) return;
           showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('markError')), variant: 'danger' });
         } finally {
-          setMarkingAll(false);
+          mutationInFlight.current = false;
+          if (isMountedRef.current) setMarkingAll(false);
         }
       },
     });
@@ -165,13 +175,21 @@ function NotificationsScreen() {
   function handleNotificationPress(item: Notification) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     // 🔴 S3-38: this went to console.warn — the member tapped, the dot stayed, nothing said why.
-    void markRead(item.id)
-      .then(() => refreshAll())
-      .catch((err) => showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('markError')), variant: 'danger' }));
+    if (!item.is_read && !mutationInFlight.current) {
+      mutationInFlight.current = true;
+      void markRead(item.id)
+        .then(() => { if (isMountedRef.current) refreshAll(); })
+        .catch((err) => {
+          if (isMountedRef.current) showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('markError')), variant: 'danger' });
+        })
+        .finally(() => { mutationInFlight.current = false; });
+    }
     navigateToLink(item.link ?? null);
   }
 
   async function handleMarkRead(item: Notification) {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     setActingId(item.id);
     try {
       if (isGroupedNotification(item) && item.group_key) {
@@ -179,25 +197,33 @@ function NotificationsScreen() {
       } else {
         await markRead(item.id);
       }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refreshAll();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('markError')), variant: 'danger' });
     } finally {
-      setActingId(null);
+      mutationInFlight.current = false;
+      if (isMountedRef.current) setActingId(null);
     }
   }
 
   async function handleDelete(item: Notification) {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     setActingId(item.id);
     try {
       await deleteNotification(item.id);
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refreshAll();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('deleteError')), variant: 'danger' });
     } finally {
-      setActingId(null);
+      mutationInFlight.current = false;
+      if (isMountedRef.current) setActingId(null);
     }
   }
 
@@ -707,4 +733,10 @@ function categoryColor(category: string | undefined | null, fallback: string, th
   }
 }
 
-export default withRouteGate(NotificationsScreen, 'notifications');
+function NotificationsRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <NotificationsScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
+}
+
+export default withRouteGate(NotificationsRoute, 'notifications');

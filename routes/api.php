@@ -1423,6 +1423,7 @@ Route::get('/v2/marketplace/seller/onboard/status', [\App\Http\Controllers\Api\M
 Route::post('/v2/marketplace/orders', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'store']);
 Route::get('/v2/marketplace/orders/purchases', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'purchases']);
 Route::get('/v2/marketplace/orders/sales', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'sales']);
+Route::get('/v2/marketplace/orders/deliveries', [\App\Http\Controllers\Api\MarketplaceCommunityDeliveryController::class, 'opportunities']);
 Route::get('/v2/marketplace/orders/{id}', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'show']);
 Route::put('/v2/marketplace/orders/{id}/ship', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'ship']);
 Route::put('/v2/marketplace/orders/{id}/confirm-delivery', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'confirmDelivery']);

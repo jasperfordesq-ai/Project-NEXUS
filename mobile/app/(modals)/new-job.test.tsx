@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 const mockCreateJob = jest.fn().mockResolvedValue({ data: { id: 301 } });
@@ -227,6 +228,17 @@ function accessibilityStateFor(node: { parent?: unknown; props?: { accessibility
 }
 
 describe('NewJobRoute', () => {
+  it('stacks paired inputs and summary tiles at large text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<NewJobRoute />);
+
+    expect(screen.getByTestId('job-form-summary').props.className).not.toContain('flex-row');
+    expect(screen.getByTestId('job-hours-credit-fields').props.className).not.toContain('flex-row');
+    fireEvent.press(screen.getByLabelText('Paid'));
+    expect(screen.getByTestId('job-salary-range-fields').props.className).not.toContain('flex-row');
+    dimensions.mockRestore();
+  });
+
   it('retains a rejected job draft and allows retry with the same values', async () => {
     mockCreateJob.mockRejectedValueOnce(new ApiResponseError(422, 'Please review the role.'));
     const screen = render(<NewJobRoute />);

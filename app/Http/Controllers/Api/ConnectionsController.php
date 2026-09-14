@@ -213,21 +213,17 @@ class ConnectionsController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('connections_decline', 30, 60);
 
-        // Fetch the connection before deleting so we can notify the requester
-        $existing = $this->connectionService->getById($id, $userId);
+        try {
+            $existing = $this->connectionService->decline($id, $userId);
+        } catch (\RuntimeException) {
+            return $this->respondWithError('INVALID_STATE', __('api.connection_not_pending'), null, 409);
+        }
 
         if ($existing === null) {
             return $this->respondWithError('NOT_FOUND', __('api.connection_not_found'), null, 404);
         }
 
-        // Only the receiver can decline a pending request
-        if (($existing['receiver_id'] ?? null) !== $userId || ($existing['status'] ?? '') !== 'pending') {
-            return $this->respondWithError('INVALID_STATE', __('api.connection_not_pending'), null, 409);
-        }
-
         $requesterId = $existing['requester_id'] ?? null;
-
-        $this->connectionService->delete($id, $userId);
 
         // Notify the requester that their connection request was not accepted
         if ($requesterId) {
@@ -310,13 +306,20 @@ class ConnectionsController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('connections_delete', 30, 60);
 
-        $existing = $this->connectionService->getById($id, $userId);
-
-        if ($existing === null) {
-            return $this->respondWithError('NOT_FOUND', __('api.connection_not_found'), null, 404);
+        $expectedStatus = request()->input('expected_status');
+        if ($expectedStatus !== null && ! in_array($expectedStatus, ['pending', 'accepted'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'expected_status', 422);
         }
 
-        $this->connectionService->delete($id, $userId);
+        try {
+            $deleted = $this->connectionService->delete($id, $userId, $expectedStatus);
+        } catch (\UnexpectedValueException $error) {
+            return $this->respondWithError('CONNECTION_STATE_CHANGED', $error->getMessage(), null, 409);
+        }
+
+        if (! $deleted) {
+            return $this->respondWithError('NOT_FOUND', __('api.connection_not_found'), null, 404);
+        }
 
         return $this->noContent();
     }

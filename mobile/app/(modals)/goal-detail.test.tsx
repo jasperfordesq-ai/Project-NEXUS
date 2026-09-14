@@ -16,6 +16,7 @@ import {
   setGoalReminder,
   updateGoalProgress,
 } from '@/lib/api/goals';
+import { ApiResponseError } from '@/lib/api/client';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -99,8 +100,12 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
+}));
+
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7 } }),
 }));
 
 jest.mock('@/lib/api/goals', () => ({
@@ -188,7 +193,33 @@ describe('GoalDetailScreen', () => {
       fireEvent.press(getByText('Save progress'));
     });
 
-    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, 1.5));
+    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, 1.5, 4, 5.5));
+  });
+
+  it('accepts progress after response loss only when canonical readback proves the desired value', async () => {
+    const { getByText, getByPlaceholderText } = render(<GoalDetailScreen />);
+    await waitFor(() => expect(getByText('Save progress')).toBeTruthy());
+    mockUpdateGoalProgress.mockRejectedValueOnce(new ApiResponseError(0, 'Response lost'));
+    mockGetGoal.mockResolvedValueOnce({ data: { ...goal, progress_hours: 5.5 } });
+
+    fireEvent.changeText(getByPlaceholderText('e.g. 1.5'), '1.5');
+    await act(async () => { fireEvent.press(getByText('Save progress')); });
+
+    await waitFor(() => expect(mockGetGoal).toHaveBeenCalledTimes(2));
+    expect(getByPlaceholderText('e.g. 1.5').props.value).toBe('');
+  });
+
+  it('serializes two same-frame progress presses', async () => {
+    let resolveProgress!: (value: Awaited<ReturnType<typeof updateGoalProgress>>) => void;
+    mockUpdateGoalProgress.mockImplementationOnce(() => new Promise(resolve => { resolveProgress = resolve; }));
+    const { getByTestId } = render(<GoalDetailScreen />);
+    await waitFor(() => expect(getByTestId('goal-progress-save')).toBeTruthy());
+    fireEvent.changeText(getByTestId('goal-progress-input'), '1');
+
+    fireEvent.press(getByTestId('goal-progress-save'));
+    fireEvent.press(getByTestId('goal-progress-save'));
+    expect(mockUpdateGoalProgress).toHaveBeenCalledTimes(1);
+    await act(async () => { resolveProgress({ data: { ...goal, progress_hours: 5 } }); });
   });
 
   it('updates and disables reminders', async () => {
@@ -225,7 +256,7 @@ describe('GoalDetailScreen', () => {
     fireEvent.changeText(getByTestId('goal-progress-input'), '-1.5');
     await act(async () => { fireEvent.press(getByTestId('goal-progress-save')); });
 
-    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -1.5));
+    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -1.5, 4, 2.5));
   });
 
   it('will not drive the recorded total below zero', async () => {
@@ -237,7 +268,7 @@ describe('GoalDetailScreen', () => {
     fireEvent.changeText(getByTestId('goal-progress-input'), '-10');
     await act(async () => { fireEvent.press(getByTestId('goal-progress-save')); });
 
-    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -4));
+    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -4, 4, 0));
   });
 
   it('sends nothing for zero', async () => {
@@ -259,6 +290,6 @@ describe('GoalDetailScreen', () => {
     fireEvent.changeText(getByTestId('goal-progress-input'), '-1,5');
     await act(async () => { fireEvent.press(getByTestId('goal-progress-save')); });
 
-    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -1.5));
+    await waitFor(() => expect(mockUpdateGoalProgress).toHaveBeenCalledWith(1, -1.5, 4, 2.5));
   });
 });

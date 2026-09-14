@@ -20,7 +20,8 @@ import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import Toggle from '@/components/ui/Toggle';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -69,8 +70,10 @@ async function loadLinkedAccounts() {
 }
 
 export default function SettingsLinkedAccountsRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`}>
       <SettingsLinkedAccountsScreen />
     </ModalErrorBoundary>
   );
@@ -86,7 +89,10 @@ function SettingsLinkedAccountsScreen() {
   const [isSending, setIsSending] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const mutationInFlight = useRef(false);
+  const isMountedRef = useRef(true);
   const query = useApi(loadLinkedAccounts, []);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   useUnsavedChangesGuard({
     isDirty: email.trim().length > 0,
@@ -109,13 +115,15 @@ function SettingsLinkedAccountsScreen() {
     try {
       setIsSending(true);
       await requestSubAccount(trimmed);
+      if (!isMountedRef.current) return;
       setEmail('');
       query.refresh();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.requestFailed')), variant: 'danger' });
     } finally {
       mutationInFlight.current = false;
-      setIsSending(false);
+      if (isMountedRef.current) setIsSending(false);
     }
   }
 
@@ -125,12 +133,14 @@ function SettingsLinkedAccountsScreen() {
     try {
       setBusyId(item.relationship_id);
       await approveSubAccount(item.relationship_id);
+      if (!isMountedRef.current) return;
       query.refresh();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.approveFailed')), variant: 'danger' });
     } finally {
       mutationInFlight.current = false;
-      setBusyId(null);
+      if (isMountedRef.current) setBusyId(null);
     }
   }
 
@@ -156,12 +166,14 @@ function SettingsLinkedAccountsScreen() {
     try {
       setBusyId(item.relationship_id);
       await revokeSubAccount(item.relationship_id);
+      if (!isMountedRef.current) return;
       query.refresh();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.revokeFailed')), variant: 'danger' });
     } finally {
       mutationInFlight.current = false;
-      setBusyId(null);
+      if (isMountedRef.current) setBusyId(null);
     }
   }
 
@@ -201,12 +213,14 @@ function SettingsLinkedAccountsScreen() {
         if (currentTier === 'none') return;
         await updateSubAccountTiers(item.relationship_id, { [capability]: nextTier });
       }
+      if (!isMountedRef.current) return;
       query.refresh();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('linkedAccounts.permissionFailed')), variant: 'danger' });
     } finally {
       mutationInFlight.current = false;
-      setBusyId(null);
+      if (isMountedRef.current) setBusyId(null);
     }
   }
 

@@ -18,6 +18,13 @@ describe('notification destination tenant capabilities', () => {
     expect(isNativeHrefDisabled('/route-with-no-capability')).toBe(false);
   });
 
+  it('treats a missing required key in a loaded snapshot as off, like the screen gate', () => {
+    setNavigationTenantCapabilities({ features: {}, modules: {} });
+
+    expect(isNativeHrefDisabled('/events/44')).toBe(true);
+    expect(isNativeHrefDisabled('/wallet')).toBe(true);
+  });
+
   it.each([
     ['/feed-item-detail?id=1&type=poll', 'polls', 'feature'],
     ['/feed-item-detail?id=1&type=resource', 'resources', 'feature'],

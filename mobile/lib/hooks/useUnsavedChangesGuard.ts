@@ -27,6 +27,8 @@ interface UnsavedChangesGuardOptions {
   message: string;
   discardLabel: string;
   cancelLabel: string;
+  /** Runs after the member confirms a discard. Returning false keeps the screen open. */
+  onDiscard?: () => boolean | void | Promise<boolean | void>;
 }
 
 /**
@@ -70,6 +72,7 @@ export function useUnsavedChangesGuard({
   message,
   discardLabel,
   cancelLabel,
+  onDiscard,
 }: UnsavedChangesGuardOptions): void {
   const navigation = useNavigation();
   const { t } = useTranslation('common');
@@ -104,10 +107,13 @@ export function useUnsavedChangesGuard({
         confirmLabel: discardLabel,
         cancelLabel,
         variant: 'danger',
-        onConfirm: leave,
+        onConfirm: async () => {
+          const discarded = await onDiscard?.();
+          if (discarded !== false) leave();
+        },
       });
     },
-    [cancelLabel, confirm, discardLabel, isSaving, message, navigation, t, title],
+    [cancelLabel, confirm, discardLabel, isSaving, message, navigation, onDiscard, t, title],
   );
 
   usePreventRemove(isDirty && !hasSaved, onPrevented);

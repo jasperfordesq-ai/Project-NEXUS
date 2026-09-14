@@ -26,6 +26,8 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useTenant } from '@/lib/hooks/useTenant';
 
 function formatBlockedDate(value: string | null): string {
   if (!value) return '';
@@ -34,7 +36,7 @@ function formatBlockedDate(value: string | null): string {
   return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function SettingsBlockedUsersScreen() {
+function SettingsBlockedUsersScreen() {
   const { t } = useTranslation(['settings', 'common']);
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -44,19 +46,26 @@ export default function SettingsBlockedUsersScreen() {
   const [unblockingId, setUnblockingId] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const unblockInFlight = useRef<number | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   const load = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsLoading(true);
     setLoadError(null);
     try {
-      setUsers(await getBlockedUsers());
+      const nextUsers = await getBlockedUsers();
+      if (!isMountedRef.current) return;
+      setUsers(nextUsers);
     } catch (err) {
+      if (!isMountedRef.current) return;
       // 🔴 S3-15: the toast faded and the screen then said "No blocked users" and "0
       // blocked" — a confident, wrong answer with no way to try again.
       setLoadError(describeApiError(err, t('blockedUsers.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('blockedUsers.loadError')), variant: 'danger' });
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) setIsLoading(false);
     }
   }, [t, showToast]);
 
@@ -82,13 +91,15 @@ export default function SettingsBlockedUsersScreen() {
     setUnblockingId(user.user_id);
     try {
       await unblockUser(user.user_id);
+      if (!isMountedRef.current) return;
       setUsers((current) => current.filter((item) => item.user_id !== user.user_id));
       showToast({ title: t('blockedUsers.unblocked'), description: t('blockedUsers.unblockedDesc', { name: user.name }), variant: 'success' });
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('blockedUsers.unblockError')), variant: 'danger' });
     } finally {
       unblockInFlight.current = null;
-      setUnblockingId(null);
+      if (isMountedRef.current) setUnblockingId(null);
     }
   }
 
@@ -165,4 +176,10 @@ export default function SettingsBlockedUsersScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+export default function SettingsBlockedUsersRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <SettingsBlockedUsersScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
 }

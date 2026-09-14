@@ -176,8 +176,8 @@ const storageBackend = {
   },
 
   /** Store a JSON-serialisable object */
-  async setJson<T>(key: string, value: T): Promise<void> {
-    await storage.set(key, JSON.stringify(value));
+  async setJson<T>(key: string, value: T, options?: { required?: boolean }): Promise<void> {
+    await storage.set(key, JSON.stringify(value), options);
   },
 
   /** Retrieve and parse a previously stored JSON object */

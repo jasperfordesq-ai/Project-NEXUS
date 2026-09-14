@@ -231,6 +231,71 @@ class VolunteerControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_create_opportunity_replays_one_result_for_the_same_idempotency_key(): void
+    {
+        Event::fake();
+        $owner = $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+        $orgId = $this->createPublicOrganisation($owner);
+        $payload = [
+            'organization_id' => $orgId,
+            'title' => 'Community garden helper',
+            'description' => 'Help neighbours prepare and maintain the shared community garden.',
+            'location' => 'Community allotments',
+            'idempotency_key' => 'volunteer-opportunity-test-key',
+        ];
+
+        $first = $this->withHeader('Idempotency-Key', $payload['idempotency_key'])
+            ->apiPost('/v2/volunteering/opportunities', $payload)
+            ->assertCreated();
+        $createdId = (int) $first->json('data.id');
+        $receipt = DB::table('volunteer_opportunity_creation_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $owner->id)
+            ->first();
+        $this->assertNotNull($receipt);
+        $this->assertSame($createdId, (int) $receipt->opportunity_id);
+        $this->assertSame($this->testTenantId, (int) DB::table('vol_opportunities')->where('id', $createdId)->value('tenant_id'));
+        $second = $this->withHeader('Idempotency-Key', $payload['idempotency_key'])
+            ->apiPost('/v2/volunteering/opportunities', $payload)
+            ->assertCreated();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, DB::table('vol_opportunities')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('created_by', $owner->id)
+            ->where('title', $payload['title'])
+            ->count());
+        $this->assertDatabaseHas('volunteer_opportunity_creation_receipts', [
+            'tenant_id' => $this->testTenantId,
+            'actor_user_id' => $owner->id,
+            'opportunity_id' => $first->json('data.id'),
+        ]);
+    }
+
+    public function test_create_opportunity_rejects_changed_content_for_an_existing_idempotency_key(): void
+    {
+        Event::fake();
+        $owner = $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+        $orgId = $this->createPublicOrganisation($owner);
+        $payload = [
+            'organization_id' => $orgId,
+            'title' => 'Community garden helper',
+            'description' => 'Help neighbours prepare and maintain the shared community garden.',
+            'idempotency_key' => 'volunteer-opportunity-conflict-key',
+        ];
+
+        $this->withHeader('Idempotency-Key', $payload['idempotency_key'])
+            ->apiPost('/v2/volunteering/opportunities', $payload)
+            ->assertCreated();
+        $payload['title'] = 'Different volunteer role';
+        $this->withHeader('Idempotency-Key', $payload['idempotency_key'])
+            ->apiPost('/v2/volunteering/opportunities', $payload)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/volunteering/opportunities/{id}
     // ------------------------------------------------------------------
@@ -1215,5 +1280,106 @@ public function test_apply_requires_auth(): void
         $saved = collect($items)->firstWhere('id', $appId);
         $this->assertNotNull($saved);
         $this->assertSame('approved', $saved['status']);
+    }
+
+    public function test_approved_application_cannot_be_withdrawn(): void
+    {
+        $owner = $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+        $orgId = $this->createVolunteerOrganisation($owner->id, 0.00, false);
+        $oppId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'organization_id' => $orgId,
+            'created_by' => $owner->id,
+            'title' => 'Approved withdrawal guard',
+            'description' => 'Test',
+            'status' => 'active',
+            'is_active' => 1,
+            'created_at' => now(),
+        ]);
+        $applicant = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $appId = (int) DB::table('vol_applications')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $oppId,
+            'user_id' => $applicant->id,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($applicant, ['*']);
+
+        $this->apiDelete("/v2/volunteering/applications/{$appId}")
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.code', 'VALIDATION_ERROR');
+
+        $this->assertSame('approved', DB::table('vol_applications')->where('id', $appId)->value('status'));
+    }
+
+    public function test_replayed_shift_signup_returns_success_without_duplicate_notifications(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Http::fake();
+        $owner = $this->authenticatedUser();
+        $this->enableVolunteeringFeature();
+        $orgId = $this->createVolunteerOrganisation($owner->id, 0.00, false);
+        $opportunityId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'organization_id' => $orgId,
+            'created_by' => $owner->id,
+            'title' => 'Shift signup replay guard',
+            'description' => 'Test',
+            'status' => 'active',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $shiftId = (int) DB::table('vol_shifts')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $opportunityId,
+            'start_time' => now()->addDays(7),
+            'end_time' => now()->addDays(7)->addHours(2),
+            'capacity' => 5,
+            'created_at' => now(),
+        ]);
+        $applicant = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $applicationId = (int) DB::table('vol_applications')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $opportunityId,
+            'user_id' => $applicant->id,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($applicant, ['*']);
+
+        $this->apiPost("/v2/volunteering/shifts/{$shiftId}/signup")->assertOk();
+        $notificationsAfterFirst = DB::table('notifications')->count();
+        $this->assertGreaterThan(0, $notificationsAfterFirst);
+
+        $this->apiPost("/v2/volunteering/shifts/{$shiftId}/signup")->assertOk();
+
+        $this->assertSame($shiftId, (int) DB::table('vol_applications')->where('id', $applicationId)->value('shift_id'));
+        $this->assertSame($notificationsAfterFirst, DB::table('notifications')->count());
+
+        $otherShiftId = (int) DB::table('vol_shifts')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $opportunityId,
+            'start_time' => now()->addDays(8),
+            'end_time' => now()->addDays(8)->addHours(2),
+            'capacity' => 5,
+            'created_at' => now(),
+        ]);
+        $this->apiPost("/v2/volunteering/shifts/{$otherShiftId}/signup", ['expected_shift_id' => null])
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'DECISION_CONFLICT');
+        $this->assertSame($shiftId, (int) DB::table('vol_applications')->where('id', $applicationId)->value('shift_id'));
+        $this->assertSame($notificationsAfterFirst, DB::table('notifications')->count());
     }
 }

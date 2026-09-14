@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { mapSystemPathToNativeRoute, redirectSystemPath } from './+native-intent';
+import { isBrowserOnlyPath, mapSystemPathToNativeRoute, redirectSystemPath } from './+native-intent';
 
 describe('native intent route rewriting', () => {
   it('maps Android listing and group app links to implemented modal routes', () => {
@@ -20,6 +20,13 @@ describe('native intent route rewriting', () => {
   it('keeps the current-member profile link on the Profile tab', () => {
     expect(mapSystemPathToNativeRoute('/profile')).toBe('/(tabs)/profile');
     expect(mapSystemPathToNativeRoute('/profile/25717')).toBe('/(modals)/member-profile?id=25717');
+  });
+
+  it('maps the signed-out custom-scheme auth aliases with their tokens intact', () => {
+    expect(mapSystemPathToNativeRoute('nexus://reset-password?token=reset-token'))
+      .toBe('/(auth)/reset-password?token=reset-token');
+    expect(mapSystemPathToNativeRoute('nexus://forgot-password'))
+      .toBe('/(auth)/forgot-password');
   });
 
   it('maps push-producer seller and job workflow links to actionable native screens', () => {
@@ -115,6 +122,18 @@ describe('native intent route rewriting', () => {
     const hostile = `/listings?q=${'%E0%A4%A'.repeat(600)}`;
     expect(hostile.length).toBeGreaterThan(2048);
     expect(redirectSystemPath({ path: hostile, initial: false })).toBe('/');
+  });
+
+  it('refuses a short malformed link before Expo Router can parse it', () => {
+    const malformed = '/listings?q=%E0%A4%A';
+    expect(malformed.length).toBeLessThan(2048);
+    expect(redirectSystemPath({ path: malformed, initial: false })).toBe('/');
+  });
+
+  it('keeps the exported link classifiers total for malformed path encoding', () => {
+    const malformed = '/%E0%A4%A';
+    expect(isBrowserOnlyPath(malformed)).toBe(false);
+    expect(mapSystemPathToNativeRoute(malformed)).toBeNull();
   });
 
   it('leaves a long-but-plausible link alone, so the bound cannot break a real one', () => {

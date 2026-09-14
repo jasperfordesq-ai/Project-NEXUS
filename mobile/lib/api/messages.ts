@@ -215,12 +215,15 @@ export function deleteMessage(messageId: number, scope: 'self' | 'everyone' = 's
 }
 
 /** POST /api/v2/messages — send a message to a recipient */
-export function sendMessage(recipientId: number, body: string, options: SendMessageOptions = {}): Promise<{ data: Message }> {
-  return api.post<{ data: Message }>(`${API_V2}/messages`, {
+export function sendMessage(recipientId: number, body: string, options: SendMessageOptions = {}, idempotencyKey?: string): Promise<{ data: Message }> {
+  const payload = {
     recipient_id: recipientId,
     body,
     ...options,
-  });
+  };
+  return idempotencyKey
+    ? api.post<{ data: Message }>(`${API_V2}/messages`, payload, { headers: { 'Idempotency-Key': idempotencyKey } })
+    : api.post<{ data: Message }>(`${API_V2}/messages`, payload);
 }
 
 /**
@@ -244,6 +247,7 @@ export interface SendAttachmentOptions {
   onProgress?: (percent: number) => void;
   /** Abort handle; rejects with an `UPLOAD_ABORTED` `ApiResponseError` when fired. */
   signal?: AbortSignal;
+  idempotencyKey?: string;
 }
 
 export async function sendMessageWithAttachments(
@@ -269,6 +273,7 @@ export async function sendMessageWithAttachments(
   return uploadWithProgress<{ data: Message }>(`${API_V2}/messages`, formData, {
     onProgress: upload.onProgress,
     signal: upload.signal,
+    ...(upload.idempotencyKey ? { idempotencyKey: upload.idempotencyKey } : {}),
   });
 }
 
@@ -288,6 +293,7 @@ export async function sendVoiceMessage(
   uri: string,
   options: SendMessageOptions = {},
   durationSeconds?: number,
+  idempotencyKey?: string,
 ): Promise<{ data: Message }> {
   const formData = new FormData();
   formData.append('recipient_id', String(recipientId));
@@ -301,7 +307,9 @@ export async function sendVoiceMessage(
   });
   await appendMessageVoiceFile(formData, uri);
 
-  return api.upload<{ data: Message }>(`${API_V2}/messages/voice`, formData);
+  return idempotencyKey
+    ? api.upload<{ data: Message }>(`${API_V2}/messages/voice`, formData, { headers: { 'Idempotency-Key': idempotencyKey } })
+    : api.upload<{ data: Message }>(`${API_V2}/messages/voice`, formData);
 }
 
 function getUploadFilename(uri: string, providedName?: string | null): string {

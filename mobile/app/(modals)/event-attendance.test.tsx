@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockRefresh = jest.fn();
 const mockShowToast = jest.fn();
@@ -44,7 +44,10 @@ jest.mock('@/components/ui/useConfirm', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#006FEE' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#006FEE' }));
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 3, name: 'Current User' } }),
+}));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     text: '#111111',
@@ -173,6 +176,24 @@ describe('EventAttendanceScreen', () => {
       });
       expect(mockRefresh).toHaveBeenCalled();
       expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
+    });
+  });
+
+  it('serializes rapid attendance actions before the busy state renders', async () => {
+    let resolveTransition!: (value: unknown) => void;
+    mockTransitionAttendance.mockImplementationOnce(() => new Promise((resolve) => {
+      resolveTransition = resolve;
+    }));
+    const screen = render(<EventAttendanceScreen />);
+
+    act(() => {
+      fireEvent.press(screen.getByText('Check in'));
+      fireEvent.press(screen.getByText('Mark no-show'));
+    });
+
+    expect(mockTransitionAttendance).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveTransition({ data: { mutation: { attendance_version: 1 } } });
     });
   });
 

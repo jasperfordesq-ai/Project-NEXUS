@@ -11,6 +11,7 @@ import {
   RefreshControl,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,6 +35,7 @@ import {
   getMyApplications,
   getMyOrganisations,
   getMyShifts,
+  getOpportunity,
   getOpportunities,
   getVolunteerCertificates,
   getVolunteerDonations,
@@ -69,6 +71,7 @@ import {
 } from '@/lib/api/volunteering';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { canPostAnyOpportunity } from '@/lib/volunteering/postingPermission';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
@@ -93,6 +96,10 @@ import { withRouteGate } from '@/components/withRouteGate';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import {
+  completeShiftSwapRequestOperation,
+  reserveShiftSwapRequestOperation,
+} from '@/lib/shiftSwapRequestOperation';
 
 type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
 
@@ -200,10 +207,17 @@ function statusLabelKey(status: VolunteerOpportunity['status'] | string) {
 }
 
 function StatusChip({ label, tone, icon }: { label: string; tone: string; icon?: IoniconName }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   return (
-    <Chip size="sm" variant="secondary" color="default">
+    <Chip
+      size={largeText ? 'md' : 'sm'}
+      variant="secondary"
+      color="default"
+      style={largeText ? { alignSelf: 'stretch', minHeight: 44, width: '100%' } : undefined}
+    >
       {icon ? <Ionicons name={icon} size={12} color={tone} /> : null}
-      <Chip.Label>{label}</Chip.Label>
+      <Chip.Label numberOfLines={largeText ? 0 : 1} style={largeText ? { flexShrink: 1 } : undefined}>{label}</Chip.Label>
     </Chip>
   );
 }
@@ -229,6 +243,8 @@ function ActionPill({
 }) {
   const theme = useTheme();
   const isPrimary = tone === 'primary';
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
 
   return (
     <HeroButton
@@ -236,20 +252,21 @@ function ActionPill({
       isDisabled={disabled}
       onPress={onPress}
       className="min-h-10 flex-row items-center justify-center gap-2 rounded-full px-4"
-      size="sm"
+      size={largeText ? 'md' : 'sm'}
       variant={isPrimary ? 'primary' : 'secondary'}
       // Selected pills let HeroUI's primary variant paint the fill AND pick the label colour
       // for it: a hardcoded white label is invisible on a pale community colour, and a raw
       // `primary` fill skips the dark-mode lift every other primary button gets.
-      style={isPrimary ? { opacity: disabled ? 0.55 : 1 } : {
+      style={isPrimary ? { opacity: disabled ? 0.55 : 1, ...(largeText ? { width: '100%' as const } : {}) } : {
         backgroundColor: withAlpha(primary, 0.12),
         borderWidth: 1,
         borderColor: withAlpha(primary, 0.22),
         opacity: disabled ? 0.55 : 1,
+        ...(largeText ? { width: '100%' as const } : {}),
       }}
     >
       {loading ? <Spinner size="sm" /> : isPrimary ? <AccentIcon name={icon} size={16} /> : <Ionicons name={icon} size={16} color={primary} />}
-      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={1}>
+      <HeroButton.Label className="text-sm font-semibold" style={isPrimary ? undefined : { color: theme.text }} numberOfLines={largeText ? 0 : 1}>
         {label}
       </HeroButton.Label>
     </HeroButton>
@@ -298,26 +315,31 @@ function StatTile({
   value,
   tone,
   icon = 'stats-chart-outline',
+  testID,
 }: {
   label: string;
   value: string;
   tone: string;
   icon?: IoniconName;
+  testID?: string;
 }) {
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   return (
     <Surface
       variant="secondary"
+      testID={testID}
       className="min-w-[31%] flex-1 rounded-panel-inner p-3.5"
-      style={{ borderWidth: 1, borderColor: withAlpha(tone, 0.14) }}
+      style={{ borderWidth: 1, borderColor: withAlpha(tone, 0.14), ...(largeText ? { width: '100%' } : {}) }}
     >
       <View className="mb-3 size-8 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(tone, 0.12) }}>
         <Ionicons name={icon} size={16} color={tone} />
       </View>
-      <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={1}>
+      <Text className="text-xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1}>
         {value}
       </Text>
-      <Text className="mt-1 text-[11px] font-semibold uppercase leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
+      <Text className="mt-1 text-xs font-semibold uppercase leading-4" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2}>
         {label}
       </Text>
     </Surface>
@@ -338,32 +360,34 @@ function HeroHeader({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
 
   return (
     <HeroCard className="overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha('#e11d48', 0.16) }}>
       <View className="h-1" style={{ backgroundColor: '#e11d48' }} />
       <HeroCard.Body className="gap-5 p-5">
-        <View className="flex-row items-start gap-3">
+        <View testID="volunteering-hero-identity" className={`${largeText ? '' : 'flex-row items-start'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
           <View className="size-12 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha('#e11d48', 0.14) }}>
             <Ionicons name="heart-outline" size={24} color="#e11d48" />
           </View>
           <View className="min-w-0 flex-1">
-            <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1}>
               {t('heroEyebrow')}
             </Text>
-            <Text className="mt-1 text-2xl font-bold" style={{ color: theme.text }} numberOfLines={2}>
+            <Text className="mt-1 text-2xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
               {t('title')}
             </Text>
-            <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+            <Text className="mt-2 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 3}>
               {t('subtitle')}
             </Text>
           </View>
         </View>
 
-        <View className="flex-row flex-wrap gap-3">
-          <StatTile label={t('stats.opportunities')} value={String(activeCount)} tone="#e11d48" icon="briefcase-outline" />
-          <StatTile label={t('stats.applications')} value={String(applicationsCount)} tone={primary} icon="send-outline" />
-          <StatTile label={t('stats.hours')} value={String(verifiedHours)} tone="#22c55e" icon="time-outline" />
+        <View testID="volunteering-hero-stats" className="flex-row flex-wrap gap-3">
+          <StatTile testID="volunteering-stat-opportunities" label={t('stats.opportunities')} value={String(activeCount)} tone="#e11d48" icon="briefcase-outline" />
+          <StatTile testID="volunteering-stat-applications" label={t('stats.applications')} value={String(applicationsCount)} tone={primary} icon="send-outline" />
+          <StatTile testID="volunteering-stat-hours" label={t('stats.hours')} value={String(verifiedHours)} tone="#22c55e" icon="time-outline" />
         </View>
 
         <View className="flex-row flex-wrap gap-2">
@@ -413,6 +437,8 @@ function OrganisationsPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   /*
     🔴 A declined registration used to look approved.
 
@@ -466,19 +492,20 @@ function OrganisationsPanel({
             {pending.map((org) => (
               <View
                 key={org.id}
-                className="flex-row items-center gap-3 rounded-panel-inner p-3"
+                testID={`volunteering-pending-organisation-${org.id}`}
+                className={`${largeText ? '' : 'flex-row items-center'} gap-3 rounded-panel-inner p-3`}
                 style={{ backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderSubtle }}
               >
                 <Avatar uri={org.logo_url ?? org.avatar ?? undefined} name={org.name} size={38} />
                 <View className="min-w-0 flex-1">
-                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1}>
                     {org.name}
                   </Text>
-                  <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                  <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2}>
                     {t('org.pendingDescription')}
                   </Text>
                 </View>
-                <Chip size="sm" variant="secondary" color="default">
+                <Chip size={largeText ? 'md' : 'sm'} variant="secondary" color="default">
                   <Chip.Label>{t('org.status.pending')}</Chip.Label>
                 </Chip>
               </View>
@@ -506,19 +533,20 @@ function OrganisationsPanel({
             {declined.map((org) => (
               <View
                 key={org.id}
-                className="flex-row items-center gap-3 rounded-panel-inner p-3"
+                testID={`volunteering-declined-organisation-${org.id}`}
+                className={`${largeText ? '' : 'flex-row items-center'} gap-3 rounded-panel-inner p-3`}
                 style={{ backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.borderSubtle }}
               >
                 <Avatar uri={org.logo_url ?? org.avatar ?? undefined} name={org.name} size={38} />
                 <View className="min-w-0 flex-1">
-                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+                  <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1}>
                     {org.name}
                   </Text>
-                  <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                  <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 3}>
                     {t('org.declinedDescription')}
                   </Text>
                 </View>
-                <Chip size="sm" variant="secondary" color="default">
+                <Chip size={largeText ? 'md' : 'sm'} variant="secondary" color="default">
                   <Ionicons name="ellipse" size={9} color={theme.error} />
                   <Chip.Label>{t('org.status.declined', { defaultValue: org.status ?? '' })}</Chip.Label>
                 </Chip>
@@ -536,25 +564,25 @@ function OrganisationsPanel({
         >
           <HeroCard.Body className="gap-4 p-4">
             <View className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: withAlpha(primary, 0.75) }} />
-            <View className="flex-row items-start gap-3 pl-1">
+            <View testID={`volunteering-managed-organisation-${org.id}`} className={`${largeText ? '' : 'flex-row items-start'} gap-3 pl-1`} style={largeText ? { flexDirection: 'column' } : undefined}>
               <Avatar uri={org.logo_url ?? org.avatar ?? undefined} name={org.name} size={48} />
               <View className="min-w-0 flex-1 gap-2">
                 <View className="flex-row flex-wrap items-center gap-2">
-                  <Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+                  <Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                     {org.name}
                   </Text>
-                  <Chip size="sm" variant="secondary" color="default">
+                  <Chip size={largeText ? 'md' : 'sm'} variant="secondary" color="default">
                     <Chip.Label>{t(`org.roles.${org.member_role ?? 'member'}`, { defaultValue: org.member_role ?? '' })}</Chip.Label>
                   </Chip>
                 </View>
                 {org.description ? (
-                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 3}>
                     {org.description}
                   </Text>
                 ) : null}
               </View>
             </View>
-            <View className="flex-row flex-wrap items-center justify-between gap-3 pl-1">
+            <View testID={`volunteering-managed-actions-${org.id}`} className={`${largeText ? '' : 'flex-row flex-wrap items-center justify-between'} gap-3 pl-1`}>
               {typeof org.balance === 'number' ? (
                 <Surface variant="secondary" className="flex-row items-center gap-2 rounded-full px-3 py-2">
                   <Ionicons name="wallet-outline" size={15} color={theme.success} />
@@ -596,6 +624,8 @@ function OpportunityCard({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const org = opportunityOrg(item);
   const skills = normalizeSkills(item.skills_needed);
   const statusColor = item.status === 'closed' ? theme.textMuted : item.status === 'filled' ? theme.warning : theme.success;
@@ -605,15 +635,15 @@ function OpportunityCard({
     <HeroCard className="mb-3 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.12) }}>
       <HeroCard.Body className="gap-4 p-4">
         <View className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: statusColor }} />
-        <View className="flex-row items-start justify-between gap-3 pl-1">
+        <View testID={`volunteering-opportunity-identity-${item.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3 pl-1`} style={largeText ? { flexDirection: 'column' } : undefined}>
           <View className="min-w-0 flex-1">
-            <Text className="text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={2}>
+            <Text className="text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
               {item.title}
             </Text>
             {org ? (
               <View className="mt-2 flex-row items-center gap-2">
                 <Avatar uri={org.avatar ?? org.logo_url ?? undefined} name={org.name} size={28} />
-                <Text className="min-w-0 flex-1 text-sm font-medium" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                <Text className="min-w-0 flex-1 text-sm font-medium" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1}>
                   {org.name}
                 </Text>
               </View>
@@ -622,7 +652,7 @@ function OpportunityCard({
           <StatusChip label={t(statusLabelKey(item.status))} tone={statusColor} icon="radio-button-on-outline" />
         </View>
 
-        <Text className="pl-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+        <Text testID={`volunteering-opportunity-description-${item.id}`} className="pl-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 3}>
           {item.description ?? t('noDescription')}
         </Text>
 
@@ -643,8 +673,8 @@ function OpportunityCard({
         {skills.length > 0 ? (
           <View className="flex-row flex-wrap gap-2 pl-1">
             {skills.slice(0, 3).map((skill) => (
-              <Chip key={skill} size="sm" variant="secondary" color="default">
-                <Chip.Label>{skill}</Chip.Label>
+              <Chip key={skill} size={largeText ? 'md' : 'sm'} variant="secondary" color="default" style={largeText ? { minHeight: 44, width: '100%' } : undefined}>
+                <Chip.Label numberOfLines={largeText ? 0 : 1}>{skill}</Chip.Label>
               </Chip>
             ))}
           </View>
@@ -713,6 +743,8 @@ function ApplicationsPanel({
 }) {
   const { t } = useTranslation('volunteering');
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
@@ -743,6 +775,9 @@ function ApplicationsPanel({
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      // Reconcile a lost response or a competing coordinator decision before
+      // the member can act on the stale pending row again.
+      onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('withdrawError')), variant: 'danger' });
     } finally {
@@ -766,23 +801,23 @@ function ApplicationsPanel({
         const statusTone = application.status === 'approved' ? theme.success : application.status === 'declined' ? theme.error : theme.warning;
         return (
           <HeroCard key={application.id} className="rounded-panel p-0">
-            <HeroCard.Body className="gap-3 p-4" style={{ minHeight: 134 }}>
-              <View className="flex-row items-start justify-between gap-3">
+            <HeroCard.Body className="gap-3 p-4" style={largeText ? undefined : { minHeight: 134 }}>
+              <View testID={`volunteering-application-identity-${application.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                 <View className="min-w-0 flex-1">
-                  <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+                  <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                     {application.opportunity.title}
                   </Text>
-                  <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                  <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1}>
                     {application.organization.name}
                   </Text>
                 </View>
                 <StatusChip label={t(`applicationStatus.${application.status}`)} tone={statusTone} icon="ellipse-outline" />
               </View>
-              <Text className="text-xs" style={{ color: theme.textMuted }} numberOfLines={1}>
+              <Text className="text-xs" style={{ color: theme.textMuted }} numberOfLines={largeText ? 0 : 1}>
                 {t('appliedOn', { date: formatDate(application.created_at) ?? '' })}
               </Text>
               {application.org_note ? (
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 3}>
                   {application.org_note}
                 </Text>
               ) : null}
@@ -820,6 +855,8 @@ function ShiftsPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [cancellingId, setCancellingId] = useState<number | null>(null);
@@ -870,7 +907,16 @@ function ShiftsPanel({
     swapPending.current = true;
     setSendingSwapFor(target.id);
     try {
-      await requestShiftSwap({ from_shift_id: swapForShift.id, to_shift_id: target.id });
+      const payload = { from_shift_id: swapForShift.id, to_shift_id: target.id };
+      const operation = await reserveShiftSwapRequestOperation(JSON.stringify(payload));
+      const send = () => requestShiftSwap(payload, operation.key);
+      try {
+        await send();
+      } catch (error) {
+        if (!(error instanceof ApiResponseError) || error.status !== 0) throw error;
+        await send();
+      }
+      await completeShiftSwapRequestOperation(operation);
       setSwapForShift(null);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -884,7 +930,9 @@ function ShiftsPanel({
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: t('common:errors.alertTitle'),
-        description: describeApiError(err, t('swaps.requestError')),
+        description: err instanceof ApiResponseError && err.status === 0
+          ? t('shiftResultUnknown')
+          : describeApiError(err, t('swaps.requestError')),
         variant: 'danger',
       });
     } finally {
@@ -901,7 +949,7 @@ function ShiftsPanel({
     so the identical action a tap away was still unguarded (audit 2026-09-07, E/F-12).
     It reuses the detail screen's own wording.
   */
-  function handleCancel(id: number) {
+  function handleCancel(id: number, opportunityId: number) {
     confirm({
       title: t('myShifts.cancelConfirmTitle'),
       message: t('myShifts.cancelConfirmMessage'),
@@ -909,11 +957,11 @@ function ShiftsPanel({
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       confirmTestID: `volunteering-confirm-cancel-shift-${id}`,
-      onConfirm: () => runCancel(id),
+      onConfirm: () => runCancel(id, opportunityId),
     });
   }
 
-  async function runCancel(id: number) {
+  async function runCancel(id: number, opportunityId: number) {
     if (cancelPending.current || swapPending.current) return;
     cancelPending.current = true;
     setCancellingId(id);
@@ -922,8 +970,26 @@ function ShiftsPanel({
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      try {
+        const verification = await getOpportunity(opportunityId);
+        const stillRegistered = verification.data?.application?.shift_id === id;
+        if (!stillRegistered) {
+          onRefresh();
+          void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          return;
+        }
+      } catch {
+        // An unreadable schedule cannot prove whether an indeterminate write committed.
+      }
+      onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('myShifts.cancelError')), variant: 'danger' });
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: err instanceof ApiResponseError && err.status === 0
+          ? t('shiftResultUnknown')
+          : describeApiError(err, t('myShifts.cancelError')),
+        variant: 'danger',
+      });
     } finally {
       cancelPending.current = false;
       setCancellingId(null);
@@ -948,16 +1014,16 @@ function ShiftsPanel({
         return (
           <HeroCard key={shift.id} className="rounded-panel p-0">
             <HeroCard.Body className="gap-3 p-4">
-              <View className="flex-row items-start justify-between gap-3">
+              <View testID={`volunteering-shift-identity-${shift.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                 <View className="min-w-0 flex-1">
-                  <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+                  <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                     {shift.opportunity_title}
                   </Text>
-                  <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                  <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 1}>
                     {date ? t('myShifts.date', { date }) : t('myShifts.dateUnknown')}
                   </Text>
                 </View>
-                <Chip size="sm" variant="secondary">
+                <Chip size={largeText ? 'md' : 'sm'} variant="secondary">
                   <Ionicons name="calendar-outline" size={12} color={primary} />
                   <Chip.Label>{t('myShifts.confirmed')}</Chip.Label>
                 </Chip>
@@ -972,10 +1038,10 @@ function ShiftsPanel({
                 ) : null}
               </View>
 
-              <View className="flex-row gap-2">
+              <View testID={`volunteering-shift-actions-${shift.id}`} className={`${largeText ? '' : 'flex-row'} gap-2`} style={largeText ? { flexDirection: 'column' } : undefined}>
                 <HeroButton
-                  className="flex-1"
-                  size="sm"
+                  className={largeText ? 'w-full' : 'flex-1'}
+                  size={largeText ? 'md' : 'sm'}
                   variant="secondary"
                   onPress={() => router.push({ pathname: '/(modals)/volunteering-detail', params: { id: String(shift.opportunity_id) } })}
                   accessibilityLabel={t('myShifts.openOpportunityLabel', { title: shift.opportunity_title })}
@@ -984,11 +1050,11 @@ function ShiftsPanel({
                   <HeroButton.Label>{t('viewOpportunity')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton
-                  className="flex-1"
-                  size="sm"
+                  className={largeText ? 'w-full' : 'flex-1'}
+                  size={largeText ? 'md' : 'sm'}
                   variant="danger-soft"
                   isDisabled={cancellingId !== null || sendingSwapFor !== null}
-                  onPress={() => handleCancel(shift.id)}
+                      onPress={() => handleCancel(shift.id, shift.opportunity_id)}
                   accessibilityLabel={t('myShifts.cancelLabel', { title: shift.opportunity_title })}
                   testID={`volunteering-cancel-shift-${shift.id}`}
                 >
@@ -1070,6 +1136,21 @@ function swapStatusTone(status: string, theme: ReturnType<typeof useTheme>) {
   return theme.warning;
 }
 
+/**
+ * A lost mutation response does not tell us whether Laravel committed the decision.
+ * Swap accept/reject/cancel transitions are row-locked and idempotent for the same
+ * action, so one exact replay is the authoritative readback path. Never use this for
+ * swap creation: a request that was already rejected may legitimately be created again.
+ */
+async function replaySwapDecisionOnce<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (!(error instanceof ApiResponseError) || error.status !== 0) throw error;
+    return operation();
+  }
+}
+
 function SwapsPanel({
   swaps,
   isLoading,
@@ -1084,6 +1165,8 @@ function SwapsPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const [filter, setFilter] = useState<'all' | 'sent' | 'received'>('all');
   const [actioningId, setActioningId] = useState<number | null>(null);
@@ -1098,12 +1181,21 @@ function SwapsPanel({
     actionPending.current = true;
     setActioningId(id);
     try {
-      await respondToShiftSwap(id, action);
+      await replaySwapDecisionOnce(() => respondToShiftSwap(id, action));
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      // Two unreadable responses still do not prove whether the row-locked decision
+      // committed. Refresh the canonical list and avoid presenting an ordinary refusal.
+      onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(action === 'accept' ? 'swaps.acceptError' : 'swaps.rejectError')), variant: 'danger' });
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: err instanceof ApiResponseError && err.status === 0
+          ? t('shiftResultUnknown')
+          : describeApiError(err, t(action === 'accept' ? 'swaps.acceptError' : 'swaps.rejectError')),
+        variant: 'danger',
+      });
     } finally {
       actionPending.current = false;
       setActioningId(null);
@@ -1115,12 +1207,19 @@ function SwapsPanel({
     actionPending.current = true;
     setActioningId(id);
     try {
-      await cancelShiftSwap(id);
+      await replaySwapDecisionOnce(() => cancelShiftSwap(id));
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('swaps.cancelError')), variant: 'danger' });
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: err instanceof ApiResponseError && err.status === 0
+          ? t('shiftResultUnknown')
+          : describeApiError(err, t('swaps.cancelError')),
+        variant: 'danger',
+      });
     } finally {
       actionPending.current = false;
       setActioningId(null);
@@ -1211,9 +1310,9 @@ function SwapsPanel({
           return (
             <HeroCard key={swap.id} className="rounded-panel p-0">
               <HeroCard.Body className="gap-4 p-4">
-                <View className="flex-row items-start justify-between gap-3">
+                <View testID={`volunteering-swap-identity-${swap.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                   <View className="min-w-0 flex-1">
-                    <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+                    <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                       {t(swap.direction === 'sent' ? 'swaps.sentTo' : 'swaps.receivedFrom', { name: actorName })}
                     </Text>
                     <Text className="mt-1 text-xs" style={{ color: theme.textMuted }}>
@@ -1226,36 +1325,36 @@ function SwapsPanel({
                 <View className="gap-2">
                   <Surface variant="secondary" className="rounded-panel-inner p-3">
                     <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} testID={`swap-own-label-${swap.id}`}>{t('swaps.yourShift')}</Text>
-                    <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+                    <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                       {ownShift?.opportunity_title}
                     </Text>
-                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={2} testID={`swap-own-detail-${swap.id}`}>
+                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={largeText ? 0 : 2} testID={`swap-own-detail-${swap.id}`}>
                       {ownShift?.organization_name} · {originalDate ?? t('myShifts.dateUnknown')} {originalStart && originalEnd ? t('myShifts.timeRange', { start: originalStart, end: originalEnd }) : ''}
                     </Text>
                   </Surface>
                   <Surface variant="secondary" className="rounded-panel-inner p-3">
                     <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} testID={`swap-other-label-${swap.id}`}>{otherShiftLabel}</Text>
-                    <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={2}>
+                    <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                       {otherShift?.opportunity_title}
                     </Text>
-                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={2} testID={`swap-other-detail-${swap.id}`}>
+                    <Text className="mt-1 text-xs" style={{ color: theme.textMuted }} numberOfLines={largeText ? 0 : 2} testID={`swap-other-detail-${swap.id}`}>
                       {otherShift?.organization_name} · {proposedDate ?? t('myShifts.dateUnknown')} {proposedStart && proposedEnd ? t('myShifts.timeRange', { start: proposedStart, end: proposedEnd }) : ''}
                     </Text>
                   </Surface>
                 </View>
 
                 {swap.message ? (
-                  <Text className="text-sm italic leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>
+                  <Text className="text-sm italic leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 3}>
                     {swap.message}
                   </Text>
                 ) : null}
 
                 {swap.direction === 'received' && swap.status === 'pending' ? (
-                  <View className="flex-row gap-2">
-                    <HeroButton className="flex-1" size="sm" isDisabled={actioningId !== null} onPress={() => void handleRespond(swap.id, 'accept')}>
+                  <View testID={`volunteering-swap-actions-${swap.id}`} className={`${largeText ? '' : 'flex-row'} gap-2`} style={largeText ? { flexDirection: 'column' } : undefined}>
+                    <HeroButton className={largeText ? 'w-full' : 'flex-1'} size={largeText ? 'md' : 'sm'} isDisabled={actioningId !== null} onPress={() => void handleRespond(swap.id, 'accept')}>
                       {actioningId === swap.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('swaps.accept')}</HeroButton.Label>}
                     </HeroButton>
-                    <HeroButton className="flex-1" size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void handleRespond(swap.id, 'reject')}>
+                    <HeroButton className={largeText ? 'w-full' : 'flex-1'} size={largeText ? 'md' : 'sm'} variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void handleRespond(swap.id, 'reject')}>
                       <HeroButton.Label>{t('swaps.reject')}</HeroButton.Label>
                     </HeroButton>
                   </View>
@@ -1289,6 +1388,8 @@ function CertificatesPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const [generating, setGenerating] = useState(false);
   const generatePending = useRef(false);
@@ -1339,7 +1440,7 @@ function CertificatesPanel({
       <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={isLoading} testID="volunteering-certificates-error" />
       <HeroCard className="rounded-panel p-0">
         <HeroCard.Body className="gap-3 p-4">
-          <View className="flex-row items-start justify-between gap-3">
+          <View className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
             <View className="min-w-0 flex-1">
               <Text className="text-base font-semibold" style={{ color: theme.text }}>
                 {t('certificates.title')}
@@ -1368,7 +1469,7 @@ function CertificatesPanel({
           return (
             <HeroCard key={certificate.id} className="rounded-panel p-0">
               <HeroCard.Body className="gap-3 p-4">
-                <View className="flex-row items-start justify-between gap-3">
+                <View testID={`volunteering-certificate-identity-${certificate.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                   <View className="min-w-0 flex-1">
                     <Text className="text-base font-semibold" style={{ color: theme.text }}>
                       {t('certificates.verifiedHours', { count: certificate.total_hours })}
@@ -1377,7 +1478,7 @@ function CertificatesPanel({
                       {start && end ? t('certificates.dateRange', { start, end }) : t('certificates.dateUnknown')}
                     </Text>
                   </View>
-                  <Chip size="sm" variant="secondary">
+                  <Chip size={largeText ? 'md' : 'sm'} variant="secondary" style={largeText ? { minHeight: 44, width: '100%' } : undefined}>
                     <Chip.Label>{certificate.verification_code}</Chip.Label>
                   </Chip>
                 </View>
@@ -1385,8 +1486,8 @@ function CertificatesPanel({
                 {certificate.organizations?.length ? (
                   <View className="flex-row flex-wrap gap-2">
                     {certificate.organizations.slice(0, 3).map((organization) => (
-                      <Chip key={`${certificate.id}-${organization.name}`} size="sm" variant="secondary">
-                        <Chip.Label>{t('certificates.organizationHours', { name: organization.name, hours: organization.hours })}</Chip.Label>
+                      <Chip key={`${certificate.id}-${organization.name}`} size={largeText ? 'md' : 'sm'} variant="secondary" style={largeText ? { minHeight: 44, width: '100%' } : undefined}>
+                        <Chip.Label numberOfLines={largeText ? 0 : 1}>{t('certificates.organizationHours', { name: organization.name, hours: organization.hours })}</Chip.Label>
                       </Chip>
                     ))}
                   </View>
@@ -1428,6 +1529,8 @@ function ExpensesPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const [expenseType, setExpenseType] = useState<VolunteerExpenseType>('travel');
@@ -1553,8 +1656,9 @@ function ExpensesPanel({
                   );
                 })}
               </ScrollView>
-              <View className="flex-row gap-2">
-                <Input
+              <View testID="volunteering-expense-amount-row" className="gap-2" style={{ flexDirection: largeText ? 'column' : 'row' }}>
+                <View style={largeText ? { width: '100%' } : { flex: 1 }}>
+                  <Input
                   value={amount}
                   onChangeText={setAmount}
                   placeholder={t('expenses.amountPlaceholder')}
@@ -1565,24 +1669,27 @@ function ExpensesPanel({
                   // only ever receives `containerClassName`. With `flex-1` on className the
                   // amount box rendered about 40dp wide — too narrow to show "12.50" —
                   // while the class looked correct. See components/ui/Input.tsx.
-                  containerClassName="mb-3 flex-1"
+                  containerClassName="mb-3 w-full"
                   className="text-base"
                   style={{ color: theme.text }}
                   accessibilityLabel={t('expenses.amountPlaceholder')}
                   editable={!submitting}
-                />
-                <Input
+                  />
+                </View>
+                <View style={largeText ? { width: '100%' } : { width: 96 }}>
+                  <Input
                   value={currency}
                   onChangeText={setCurrency}
                   placeholder={t('expenses.currencyPlaceholder')}
                   placeholderTextColor={theme.textMuted}
                   autoCapitalize="characters"
-                  containerClassName="mb-3 w-24"
+                  containerClassName="mb-3 w-full"
                   className="text-base"
                   style={{ color: theme.text }}
                   accessibilityLabel={t('expenses.currencyPlaceholder')}
                   editable={!submitting}
-                />
+                  />
+                </View>
               </View>
               <Input
                 value={description}
@@ -1615,12 +1722,12 @@ function ExpensesPanel({
           return (
             <HeroCard key={expense.id} className="rounded-panel p-0">
               <HeroCard.Body className="gap-2 p-4">
-                <View className="flex-row items-start justify-between gap-3">
+                <View testID={`volunteering-expense-identity-${expense.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                   <View className="min-w-0 flex-1">
                     <Text className="text-base font-semibold" style={{ color: theme.text }}>
                       {formatMoney(expense.amount, expense.currency)}
                     </Text>
-                    <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                    <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2}>
                       {expense.description}
                     </Text>
                   </View>
@@ -1656,6 +1763,8 @@ function DonationsPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const [selectedDayId, setSelectedDayId] = useState<number | null>(null);
   const [amount, setAmount] = useState('');
@@ -1748,14 +1857,14 @@ function DonationsPanel({
             return (
               <HeroCard key={day.id} className="rounded-panel p-0">
                 <HeroCard.Body className="gap-3 p-4">
-                  <View className="flex-row items-start justify-between gap-3">
+                  <View testID={`volunteering-giving-day-identity-${day.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                     <View className="min-w-0 flex-1">
-                      <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>{day.title}</Text>
+                      <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>{day.title}</Text>
                       {day.description ? (
-                        <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{day.description}</Text>
+                        <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2}>{day.description}</Text>
                       ) : null}
                     </View>
-                    <Chip size="sm" variant="secondary"><Chip.Label>{t('donations.progress', { percent: pct })}</Chip.Label></Chip>
+                    <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{t('donations.progress', { percent: pct })}</Chip.Label></Chip>
                   </View>
                   <View className="h-2 overflow-hidden rounded-full" style={{ backgroundColor: withAlpha(primary, 0.12) }}>
                     <View className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: primary }} />
@@ -1784,32 +1893,36 @@ function DonationsPanel({
             <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('donations.makeDonation')}</Text>
             <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }}>{t('donations.makeDonationHint')}</Text>
           </View>
-          <View className="flex-row gap-2">
-            <Input
+          <View testID="volunteering-donation-amount-row" className="gap-2" style={{ flexDirection: largeText ? 'column' : 'row' }}>
+            <View style={largeText ? { width: '100%' } : { flex: 1 }}>
+              <Input
               value={amount}
               onChangeText={setAmount}
               placeholder={t('donations.amountPlaceholder')}
               placeholderTextColor={theme.textMuted}
               keyboardType="decimal-pad"
               // 🔴 See the expenses amount above: width belongs on containerClassName.
-              containerClassName="mb-3 flex-1"
+              containerClassName="mb-3 w-full"
               className="text-base"
               style={{ color: theme.text }}
               accessibilityLabel={t('donations.amountPlaceholder')}
               editable={!submitting}
-            />
-            <Input
+              />
+            </View>
+            <View style={largeText ? { width: '100%' } : { width: 96 }}>
+              <Input
               value={currency}
               onChangeText={setCurrency}
               placeholder={t('expenses.currencyPlaceholder')}
               placeholderTextColor={theme.textMuted}
               autoCapitalize="characters"
-              containerClassName="mb-3 w-24"
+              containerClassName="mb-3 w-full"
               className="text-base"
               style={{ color: theme.text }}
               accessibilityLabel={t('expenses.currencyPlaceholder')}
               editable={!submitting}
-            />
+              />
+            </View>
           </View>
           <Input
             value={message}
@@ -1838,13 +1951,13 @@ function DonationsPanel({
         donations.map((donation) => (
           <HeroCard key={donation.id} className="rounded-panel p-0">
             <HeroCard.Body className="gap-2 p-4">
-              <View className="flex-row items-start justify-between gap-3">
+              <View testID={`volunteering-donation-identity-${donation.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                 <View className="min-w-0 flex-1">
                   <Text className="text-base font-semibold" style={{ color: theme.text }}>
                     {formatMoney(donation.amount, donation.currency)}
                   </Text>
                   {donation.message ? (
-                    <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={2}>{donation.message}</Text>
+                    <Text className="mt-1 text-sm" style={{ color: theme.textSecondary }} numberOfLines={largeText ? 0 : 2}>{donation.message}</Text>
                   ) : null}
                 </View>
                 <StatusChip label={t(`donations.status.${donation.status}`, { defaultValue: String(donation.status) })} tone={donation.status === 'completed' ? theme.success : theme.warning} icon="ellipse-outline" />
@@ -1878,6 +1991,8 @@ function HoursPanel({
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const [hours, setHours] = useState('');
@@ -2080,8 +2195,8 @@ function HoursPanel({
               {t('byOrganisation')}
             </Text>
             {summary.by_organization.slice(0, 5).map((item) => (
-              <View key={item.name} className="flex-row items-center justify-between gap-3">
-                <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.text }} numberOfLines={1}>
+              <View key={item.name} className={`${largeText ? '' : 'flex-row items-center justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
+                <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 1}>
                   {item.name}
                 </Text>
                 <Text className="text-sm font-semibold" style={{ color: theme.text }}>

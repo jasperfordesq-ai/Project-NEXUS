@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FlatList, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
@@ -18,6 +18,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
@@ -47,7 +48,7 @@ import RemoteImage from '@/components/ui/RemoteImage';
 
 type OfferMode = 'sent' | 'received';
 
-function MarketplaceOffersRoute() {
+function MarketplaceOffersModal() {
   return (
     <ModalErrorBoundary>
       <MarketplaceOffersScreen />
@@ -58,14 +59,16 @@ function MarketplaceOffersRoute() {
 function MarketplaceOffersScreen() {
   const { t } = useTranslation(['marketplace', 'common', 'auth']);
   const params = useLocalSearchParams<{ mode?: string | string[] }>();
-  const { hasFeature } = useTenant();
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { hasFeature, tenant } = useTenant();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   // The offer whose accept/decline/withdraw is in flight (audit 2026-09-07, D/F-8).
   const [busyOfferId, setBusyOfferId] = useState<number | null>(null);
+  const busyOfferRef = useRef<number | null>(null);
+  const isMountedRef = useRef(true);
   const [mode, setMode] = useState<OfferMode>(normalizeOfferMode(firstParam(params.mode)));
   const canLoadOffers = !isAuthLoading && isAuthenticated;
   const offers = usePaginatedApi<MarketplaceOffer, Awaited<ReturnType<typeof getMarketplaceOffers>>>(
@@ -75,9 +78,13 @@ function MarketplaceOffersScreen() {
       cursor: marketplaceNextCursor(response),
       hasMore: marketplaceHasMore(response),
     }),
-    [mode],
+    [mode, tenant?.id, tenant?.slug, user?.id],
     { enabled: canLoadOffers },
   );
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
 
   if (!hasFeature('marketplace')) {
     return (
@@ -134,38 +141,76 @@ function MarketplaceOffersScreen() {
   }
 
   async function action(kind: 'accept' | 'decline' | 'withdraw' | 'acceptCounter', offer: MarketplaceOffer) {
+    if (busyOfferRef.current !== null) return;
+    busyOfferRef.current = offer.id;
     setBusyOfferId(offer.id);
     try {
       if (kind === 'accept') await acceptMarketplaceOffer(offer.id);
       if (kind === 'decline') await declineMarketplaceOffer(offer.id);
       if (kind === 'withdraw') await withdrawMarketplaceOffer(offer.id);
       if (kind === 'acceptCounter') await acceptMarketplaceCounterOffer(offer.id);
-      offers.refresh();
+      if (isMountedRef.current) offers.refresh();
     } catch (err) {
-      showToast({
-        title: t('common:errors.alertTitle'),
-        description: describeApiError(err, t('offers.actionFailed')),
-        variant: 'danger',
-      });
+      let recovered = false;
+      if (isMountedRef.current && err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const readback = await getMarketplaceOffers(mode);
+          const authoritative = readback.data.find((candidate) => candidate.id === offer.id);
+          const expectedStatus = kind === 'accept' || kind === 'acceptCounter'
+            ? 'accepted'
+            : kind === 'decline'
+              ? 'declined'
+              : 'withdrawn';
+          recovered = authoritative?.status === expectedStatus;
+        } catch {
+          // Preserve the original transport error below when readback is unavailable.
+        }
+      }
+      if (isMountedRef.current) {
+        if (recovered) offers.refresh();
+        else showToast({
+          title: t('common:errors.alertTitle'),
+          description: describeApiError(err, t('offers.actionFailed')),
+          variant: 'danger',
+        });
+      }
     } finally {
-      setBusyOfferId(null);
+      busyOfferRef.current = null;
+      if (isMountedRef.current) setBusyOfferId(null);
     }
   }
 
   async function counter(offer: MarketplaceOffer, amount: number, message?: string | null) {
-    if (busyOfferId !== null) return;
+    if (busyOfferRef.current !== null) return;
+    busyOfferRef.current = offer.id;
     setBusyOfferId(offer.id);
     try {
       await counterMarketplaceOffer(offer.id, { amount, message });
-      offers.refresh();
+      if (isMountedRef.current) offers.refresh();
     } catch (err) {
-      showToast({
-        title: t('common:errors.alertTitle'),
-        description: describeApiError(err, t('offers.counterFailed')),
-        variant: 'danger',
-      });
+      let recovered = false;
+      if (isMountedRef.current && err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const readback = await getMarketplaceOffers(mode);
+          const authoritative = readback.data.find((candidate) => candidate.id === offer.id);
+          recovered = authoritative?.status === 'countered'
+            && Number(authoritative.counter_amount) === amount
+            && (authoritative.counter_message ?? null) === (message?.trim() || null);
+        } catch {
+          // Preserve the original transport error below when readback is unavailable.
+        }
+      }
+      if (isMountedRef.current) {
+        if (recovered) offers.refresh();
+        else showToast({
+          title: t('common:errors.alertTitle'),
+          description: describeApiError(err, t('offers.counterFailed')),
+          variant: 'danger',
+        });
+      }
     } finally {
-      setBusyOfferId(null);
+      busyOfferRef.current = null;
+      if (isMountedRef.current) setBusyOfferId(null);
     }
   }
 
@@ -235,6 +280,17 @@ function MarketplaceOffersScreen() {
       />
       {confirmDialog}
     </SafeAreaView>
+  );
+}
+
+function MarketplaceOffersRoute() {
+  const params = useLocalSearchParams<{ mode?: string | string[] }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return (
+    <MarketplaceOffersModal
+      key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${firstParam(params.mode) ?? 'sent'}`}
+    />
   );
 }
 

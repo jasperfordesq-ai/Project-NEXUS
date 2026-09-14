@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Linking } from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Linking, RefreshControl } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -32,8 +32,9 @@ jest.mock('react-i18next', () => ({
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { id: 2 } }),
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 7 } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ bg: '#fff', text: '#111', textSecondary: '#555', textMuted: '#777', border: '#ddd' }),
 }));
@@ -110,5 +111,15 @@ describe('ClubsScreen', () => {
     await waitFor(() => expect(getByText('Clubs unavailable')).toBeTruthy(), { timeout: 5000 });
     fireEvent.press(getByText('Retry'));
     await waitFor(() => expect(jest.mocked(getClubs).mock.calls.length).toBeGreaterThan(1));
+  });
+
+  it('keeps loaded clubs visible and reports a failed refresh', async () => {
+    const rendered = render(<ClubsScreen />);
+    await waitFor(() => expect(rendered.getByText('Repair Café')).toBeTruthy());
+    jest.mocked(getClubs).mockRejectedValue(new ApiResponseError(403, 'Could not refresh clubs'));
+    act(() => rendered.UNSAFE_getByType(RefreshControl).props.onRefresh());
+
+    await waitFor(() => expect(rendered.getByTestId('refresh-failed-notice')).toBeTruthy());
+    expect(rendered.getByText('Repair Café')).toBeTruthy();
   });
 });

@@ -3229,7 +3229,9 @@ class FederationV2Controller extends BaseApiController
             $code = (string) ($result['error_code'] ?? 'CONNECTION_ERROR');
             $status = $code === 'SAFEGUARDING_POLICY_UNAVAILABLE'
                 ? 503
-                : (in_array($code, ['VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED'], true) ? 403 : 400);
+                : ($code === 'CONNECTION_STATE_CHANGED'
+                    ? 409
+                    : (in_array($code, ['VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED'], true) ? 403 : 400));
 
             return $this->respondWithError($code, $result['error'], null, $status);
         }
@@ -3248,7 +3250,8 @@ class FederationV2Controller extends BaseApiController
         $result = $this->federatedConnectionService->rejectRequest($id, $userId);
 
         if (!$result['success']) {
-            return $this->respondWithError('CONNECTION_ERROR', $result['error'], null, 400);
+            $code = (string) ($result['error_code'] ?? 'CONNECTION_ERROR');
+            return $this->respondWithError($code, $result['error'], null, $code === 'CONNECTION_STATE_CHANGED' ? 409 : 400);
         }
 
         return $this->respondWithData($result);
@@ -3261,11 +3264,18 @@ class FederationV2Controller extends BaseApiController
             return $blocked;
         }
 
+        $expectedStatus = $this->input('expected_status');
+        if ($expectedStatus !== null && ! in_array($expectedStatus, ['pending', 'accepted'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'expected_status', 422);
+        }
+
         $userId = $this->getUserId();
-        $result = $this->federatedConnectionService->removeConnection($id, $userId);
+        $result = $this->federatedConnectionService->removeConnection($id, $userId, $expectedStatus);
 
         if (!$result['success']) {
-            return $this->respondWithError('CONNECTION_ERROR', $result['error'], null, 404);
+            $code = (string) ($result['error_code'] ?? 'CONNECTION_ERROR');
+            $status = $code === 'CONNECTION_STATE_CHANGED' ? 409 : 404;
+            return $this->respondWithError($code, $result['error'], null, $status);
         }
 
         return $this->respondWithData($result);

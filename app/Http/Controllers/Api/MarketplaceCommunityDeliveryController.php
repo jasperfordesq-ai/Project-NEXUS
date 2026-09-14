@@ -33,6 +33,38 @@ class MarketplaceCommunityDeliveryController extends BaseApiController
     }
 
     /**
+     * GET /v2/marketplace/orders/deliveries
+     *
+     * List privacy-safe community-delivery opportunities for members who are
+     * neither the buyer nor seller. The member's own latest offer is included
+     * so an accepted write can be reconciled after its HTTP response is lost.
+     */
+    public function opportunities(Request $request): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->rateLimit('marketplace_order_read', 30, 60);
+
+        $userId = $request->user()?->id;
+        if (! $userId) {
+            return $this->respondWithError('UNAUTHORIZED', __('api_controllers_2.marketplace_delivery.auth_required'), null, 401);
+        }
+
+        $limit = $this->queryInt('limit', 20, 1, 100);
+        $result = MarketplaceCommunityDeliveryService::getDeliveryOpportunities(
+            (int) $userId,
+            $limit,
+            $this->query('cursor'),
+        );
+
+        return $this->respondWithCollection(
+            $result['items'],
+            $result['cursor'],
+            $limit,
+            $result['has_more'],
+        );
+    }
+
+    /**
      * POST /v2/marketplace/orders/{orderId}/delivery-offers
      *
      * Community member offers to deliver an order for time credits.

@@ -9,6 +9,8 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import SettingsBlockedUsersScreen from './settings-blocked-users';
 import { getBlockedUsers, unblockUser } from '@/lib/api/settings';
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
@@ -68,6 +70,9 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
+}));
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 1 } }),
 }));
 
 jest.mock('@/lib/api/settings', () => ({

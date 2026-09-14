@@ -100,6 +100,10 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+let mockUserId = 1;
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: mockUserId } }),
+}));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
     text: '#000',
@@ -133,6 +137,7 @@ jest.mock('@/lib/api/settings', () => ({
 import SettingsLinkedAccountsRoute from './settings-linked-accounts';
 
 beforeEach(() => {
+  mockUserId = 1;
   mockRefresh.mockReset();
   mockRequestSubAccount.mockReset().mockResolvedValue({});
   mockApproveSubAccount.mockReset().mockResolvedValue({});
@@ -215,6 +220,16 @@ describe('SettingsLinkedAccountsRoute', () => {
     expect(mockRequestSubAccount).toHaveBeenCalledTimes(1);
     release();
     await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
+  });
+
+  it('clears an unsent linked-account email when the signed-in account changes', () => {
+    const screen = render(<SettingsLinkedAccountsRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('member@example.com'), 'private@example.com');
+    expect(screen.getByDisplayValue('private@example.com')).toBeTruthy();
+
+    mockUserId = 2;
+    screen.rerender(<SettingsLinkedAccountsRoute />);
+    expect(screen.queryByDisplayValue('private@example.com')).toBeNull();
   });
 
   it('approves pending requests, revokes relationships, and updates permissions', async () => {

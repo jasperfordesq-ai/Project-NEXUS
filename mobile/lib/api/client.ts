@@ -250,6 +250,21 @@ export function registerTenantMismatchCallback(cb: () => void): void {
   onTenantMismatchCallback = cb;
 }
 
+/** Resolve the identity carried by native transports that cannot use `fetch` through `api`. */
+export async function authenticatedApiIdentity(): Promise<{ token: string; tenantSlug: string }> {
+  const requestSessionGeneration = sessionGeneration;
+  const [storedToken, tenantSlug] = await Promise.all([
+    storage.get(STORAGE_KEYS.AUTH_TOKEN),
+    storage.get(STORAGE_KEYS.TENANT_SLUG),
+  ]);
+  if (requestSessionGeneration !== sessionGeneration) {
+    throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+  }
+  const token = inProcessAccessToken ?? storedToken;
+  if (!token) throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+  return { token, tenantSlug: tenantSlug?.trim() || DEFAULT_TENANT };
+}
+
 /** Build headers for native media players/downloaders without exposing tokens in URLs. */
 export async function authenticatedMediaRequest(path: string): Promise<{ uri: string; headers: Record<string, string> }> {
   const base = new URL(API_BASE_URL);
@@ -257,16 +272,12 @@ export async function authenticatedMediaRequest(path: string): Promise<{ uri: st
   if (resolved.origin !== base.origin || !resolved.pathname.startsWith('/api/v2/messages/')) {
     throw new ApiResponseError(400, i18n.t('common:errors.requestFailed'));
   }
-  const [token, tenantSlug] = await Promise.all([
-    storage.get(STORAGE_KEYS.AUTH_TOKEN),
-    storage.get(STORAGE_KEYS.TENANT_SLUG),
-  ]);
-  if (!token) throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+  const { token, tenantSlug } = await authenticatedApiIdentity();
   return {
     uri: resolved.toString(),
     headers: {
       Authorization: `Bearer ${token}`,
-      'X-Tenant-Slug': tenantSlug?.trim() || DEFAULT_TENANT,
+      'X-Tenant-Slug': tenantSlug,
       'X-Nexus-Mobile': '1',
       'X-Nexus-Mobile-Version': APP_VERSION,
     },
@@ -584,6 +595,15 @@ async function request<T>(
     resolvedTenantSlug,
   );
 
+  // A request can finish after the member signs out or another account becomes active.
+  // Its server-side outcome still belongs to the session that dispatched it, but its body
+  // must not resolve into the replacement account's screen, toast, cache, or navigation.
+  // Throw directly without invoking the unauthorized callback: the current session is not
+  // invalid, and clearing it would destroy the replacement credentials.
+  if (!options.anonymous && requestSessionGeneration !== sessionGeneration) {
+    throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+  }
+
   // Handle 401: try silent token refresh, then retry once
   let retriedSuccessfully = false;
   if (response.status === 401 && !options.anonymous && !options.skipAuthRefresh && endpoint !== '/api/auth/login') {
@@ -664,6 +684,13 @@ async function request<T>(
     data = await response.json();
   } else {
     data = null;
+  }
+
+  // JSON parsing is asynchronous too. Repeat the ownership check at the final consumed
+  // boundary so a session replacement during a large response cannot leak old-account
+  // state through a caller that is still mounted.
+  if (!options.anonymous && requestSessionGeneration !== sessionGeneration) {
+    throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
   }
 
   if (!response.ok) {

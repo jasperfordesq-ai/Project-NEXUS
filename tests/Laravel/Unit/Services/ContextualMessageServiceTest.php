@@ -8,9 +8,7 @@ namespace Tests\Laravel\Unit\Services;
 
 use Tests\Laravel\TestCase;
 use App\Services\ContextualMessageService;
-use App\Models\Message;
 use Illuminate\Support\Facades\DB;
-use Mockery;
 
 class ContextualMessageServiceTest extends TestCase
 {
@@ -20,26 +18,6 @@ class ContextualMessageServiceTest extends TestCase
     {
         parent::setUp();
         $this->service = new ContextualMessageService();
-    }
-
-    public function test_sendWithContext_creates_message_without_context(): void
-    {
-        $this->markTestIncomplete('Requires integration test — Eloquent models cannot use shouldReceive()');
-    }
-
-    public function test_sendWithContext_returns_null_on_failure(): void
-    {
-        $this->markTestIncomplete('Requires integration test — Eloquent models cannot use shouldReceive()');
-    }
-
-    public function test_sendWithContext_ignores_invalid_context_type(): void
-    {
-        $this->markTestIncomplete('Requires integration test — Eloquent models cannot use shouldReceive()');
-    }
-
-    public function test_sendWithContext_ignores_context_type_without_id(): void
-    {
-        $this->markTestIncomplete('Requires integration test — Eloquent models cannot use shouldReceive()');
     }
 
     public function test_getContextInfo_returns_null_for_invalid_type(): void

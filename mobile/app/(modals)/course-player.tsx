@@ -38,6 +38,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import {
   completeCourseLesson,
@@ -47,12 +48,24 @@ import {
   type LessonAvailability,
 } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function CoursePlayerScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return (
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`}>
+      <CoursePlayerScreenInner />
+    </ModalErrorBoundary>
+  );
+}
+
+function CoursePlayerScreenInner() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const courseId = Number(id);
   const { t } = useTranslation(['courses', 'common']);
@@ -60,6 +73,8 @@ function CoursePlayerScreen() {
   const theme = useTheme();
   const { show } = useAppToast();
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const isMountedRef = useRef(true);
   const [completedIds, setCompletedIds] = useState<Set<number>>(new Set());
   const [progressPercent, setProgressPercent] = useState(0);
   const [availability, setAvailability] = useState<Record<number, LessonAvailability>>({});
@@ -69,6 +84,10 @@ function CoursePlayerScreen() {
    * opened as watched.
    */
   const [watchPercent, setWatchPercent] = useState(100);
+
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
 
   const enabled = Number.isFinite(courseId) && courseId > 0;
   const courseState = useApi(() => getCourse(courseId), [courseId], { enabled });
@@ -155,16 +174,34 @@ function CoursePlayerScreen() {
   const isCompleted = lesson ? completedIds.has(lesson.id) : false;
 
   const markComplete = useCallback(async () => {
-    if (!lesson || saving || isLocked) return;
+    if (!lesson || savingRef.current || isLocked) return;
+    savingRef.current = true;
     setSaving(true);
     try {
       // A video lesson sends what was actually played; every other type has no playback of
       // its own and correctly reports 100.
       const result = await completeCourseLesson(courseId, lesson.id, watchPercent);
+      if (!isMountedRef.current) return;
       setCompletedIds((current) => new Set(current).add(lesson.id));
       setProgressPercent(result.progress_percent);
       show({ title: t('player.lesson_completed'), variant: 'success' });
     } catch (err) {
+      if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        try {
+          const latest = await getCourseProgress(courseId);
+          const completed = latest.lessons.some((item) => item.lesson_id === lesson.id && item.status === 'completed');
+          if (completed && isMountedRef.current) {
+            setCompletedIds((current) => new Set(current).add(lesson.id));
+            const percent = Number(latest.enrollment.progress_percent);
+            setProgressPercent(Number.isFinite(percent) ? percent : progressPercent);
+            show({ title: t('player.lesson_completed'), variant: 'success' });
+            return;
+          }
+        } catch {
+          // Keep the original indeterminate error if authoritative progress is unavailable.
+        }
+      }
       // The server's reason was discarded, so "please try again" was the only thing a member
       // ever saw — including when trying again could not work (audit 2026-09-06).
       show({
@@ -173,9 +210,10 @@ function CoursePlayerScreen() {
         variant: 'danger',
       });
     } finally {
-      setSaving(false);
+      savingRef.current = false;
+      if (isMountedRef.current) setSaving(false);
     }
-  }, [courseId, isLocked, lesson, saving, show, t, watchPercent]);
+  }, [courseId, isLocked, lesson, progressPercent, show, t, watchPercent]);
 
   const retryAll = useCallback(() => {
     void courseState.refresh();
@@ -185,8 +223,7 @@ function CoursePlayerScreen() {
   const isLoading = courseState.isLoading || progressState.isLoading;
 
   return (
-    <ModalErrorBoundary>
-      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+    <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar
           title={courseState.data?.title ?? t('title')}
           backLabel={t('common:back')}
@@ -331,8 +368,7 @@ function CoursePlayerScreen() {
             </HeroCard>
           </ScrollView>
         )}
-      </SafeAreaView>
-    </ModalErrorBoundary>
+    </SafeAreaView>
   );
 }
 

@@ -86,11 +86,21 @@ describe('deep-link store agrees with the screen gate for every gated route', ()
       snapshot.features[feature] = false;
       setNavigationTenantCapabilities(snapshot);
       expect(isNativeHrefDisabled(href)).toBe(true);
+
+      const missingSnapshot = ALL_ON();
+      delete missingSnapshot.features[feature];
+      setNavigationTenantCapabilities(missingSnapshot);
+      expect(isNativeHrefDisabled(href)).toBe(true);
     }
     for (const module of requirement.modules ?? []) {
       const snapshot = ALL_ON();
       snapshot.modules[module] = false;
       setNavigationTenantCapabilities(snapshot);
+      expect(isNativeHrefDisabled(href)).toBe(true);
+
+      const missingSnapshot = ALL_ON();
+      delete missingSnapshot.modules[module];
+      setNavigationTenantCapabilities(missingSnapshot);
       expect(isNativeHrefDisabled(href)).toBe(true);
     }
   });

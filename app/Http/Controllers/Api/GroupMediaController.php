@@ -13,6 +13,7 @@ use App\Exceptions\GroupStorageQuarantineException;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Services\GroupAccessService;
 use App\Services\GroupAuditService;
+use App\Services\GroupContentCreationReceiptService;
 use App\Services\GroupFileService;
 use App\Services\GroupService;
 use App\Services\GroupStorageQuarantine;
@@ -152,6 +153,29 @@ final class GroupMediaController extends BaseApiController
 
         /** @var UploadedFile $file */
         $file = $validated['file'];
+        $realPath = $file->getRealPath();
+        if (! is_string($realPath) || $realPath === '') {
+            return $this->respondWithError('UPLOAD_FAILED', __('api.group_media_store_failed'), 'file', 500);
+        }
+        $digest = hash_file('sha256', $realPath);
+        if (! is_string($digest) || $digest === '') {
+            return $this->respondWithError('UPLOAD_FAILED', __('api.group_media_store_failed'), 'file', 500);
+        }
+        $identity = GroupContentCreationReceiptService::identity(
+            request()->header('Idempotency-Key') ?? request()->input('idempotency_key'),
+            [
+                'caption' => $caption,
+                'digest' => $digest,
+                'group_id' => $id,
+                'mime' => $validated['mime'],
+                'name' => $validated['name'],
+                'size' => $validated['size'],
+                'type' => $validated['type'],
+            ],
+        );
+        if ($identity === false) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
         $path = $file->storeAs(
             "groups/{$tenantId}/{$id}/media",
             Str::random(40) . '.' . $validated['extension'],
@@ -162,7 +186,17 @@ final class GroupMediaController extends BaseApiController
         }
 
         try {
-            $mediaId = DB::transaction(function () use ($id, $userId, $tenantId, $path, $validated, $caption): ?int {
+            $mutation = DB::transaction(function () use ($id, $userId, $tenantId, $path, $validated, $caption, $identity): array {
+                if ($identity !== null) {
+                    GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                    $receipt = GroupContentCreationReceiptService::find($tenantId, $userId, 'media', $identity['key_hash']);
+                    if ($receipt !== null) {
+                        return GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])
+                            ? ['id' => (int) $receipt->result_id, 'replayed' => true, 'conflict' => false]
+                            : ['id' => null, 'replayed' => true, 'conflict' => true];
+                    }
+                }
+
                 DB::table('tenants')->where('id', $tenantId)->lockForUpdate()->first();
                 $group = DB::table('groups')
                     ->where('id', $id)
@@ -170,10 +204,10 @@ final class GroupMediaController extends BaseApiController
                     ->lockForUpdate()
                     ->first();
                 if ($group === null || $this->authorizeParent($id, $userId, true) !== null) {
-                    return null;
+                    return ['id' => null, 'replayed' => false, 'conflict' => false];
                 }
                 if (! $this->quotaAvailable($id, $tenantId, $validated['size'])) {
-                    return null;
+                    return ['id' => null, 'replayed' => false, 'conflict' => false];
                 }
 
                 $now = now();
@@ -208,7 +242,19 @@ final class GroupMediaController extends BaseApiController
                     ],
                 );
 
-                return $mediaId;
+                if ($identity !== null) {
+                    GroupContentCreationReceiptService::store(
+                        $tenantId,
+                        $userId,
+                        $id,
+                        'media',
+                        $identity,
+                        $mediaId,
+                        ['id' => $mediaId],
+                    );
+                }
+
+                return ['id' => $mediaId, 'replayed' => false, 'conflict' => false];
             }, 3);
         } catch (Throwable $exception) {
             Storage::disk('local')->delete($path);
@@ -219,6 +265,15 @@ final class GroupMediaController extends BaseApiController
             return $this->respondWithError('UPLOAD_FAILED', __('api.group_media_store_failed'), 'file', 500);
         }
 
+        if ($mutation['conflict']) {
+            Storage::disk('local')->delete($path);
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'), 'idempotency_key', 409);
+        }
+
+        $mediaId = $mutation['id'];
+        if ($mutation['replayed']) {
+            Storage::disk('local')->delete($path);
+        }
         if ($mediaId === null) {
             Storage::disk('local')->delete($path);
             return $this->respondWithError('UPLOAD_FAILED', __('api.group_media_store_failed'), 'file', 409);
@@ -237,6 +292,9 @@ final class GroupMediaController extends BaseApiController
                 'm.updated_at', 'u.name as uploader_name', 'u.avatar_url as uploader_avatar',
             ])
             ->first();
+        if ($row === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.group_media_not_found'), null, 404);
+        }
 
         return $this->successResponse(
             $this->serializeMedia($row, $id, $userId, GroupAccessService::canManage($id, $userId)),
@@ -296,6 +354,13 @@ final class GroupMediaController extends BaseApiController
                 if ($deleted !== 1) {
                     throw new \RuntimeException('Group media metadata delete lost its locked row.');
                 }
+
+                DB::table('group_content_creation_receipts')
+                    ->where('tenant_id', $tenantId)
+                    ->where('group_id', $id)
+                    ->where('operation_type', 'media')
+                    ->where('result_id', $mediaId)
+                    ->delete();
 
                 GroupAuditService::log(
                     GroupAuditService::ACTION_MEDIA_DELETED,

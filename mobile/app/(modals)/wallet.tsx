@@ -42,12 +42,13 @@ import { ListSkeleton } from '@/components/ui/Skeleton';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
-import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
+import { reserveWalletOperation, completeWalletOperation, isUnresolvedWalletOperationError } from '@/lib/walletOperation';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { getMember } from '@/lib/api/members';
 import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
+import WalletReconciliationNotice from '@/components/wallet/WalletReconciliationNotice';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
@@ -176,6 +177,8 @@ function WalletModalInner() {
   const [extraPendingCursor, setExtraPendingCursor] = useState<string | null>(null);
   const [extraPendingHasMore, setExtraPendingHasMore] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const historyYRef = useRef(0);
   /**
    * Bumped by every refresh. A page fetch that started before it and lands after it belongs
    * to a list that no longer exists.
@@ -449,6 +452,7 @@ function WalletModalInner() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('title')} backLabel={t('back')} />
       <ScrollView
+        ref={scrollRef}
         // iOS only: without it the keyboard covers the fields below. Android is already
         // covered by the manifest's windowSoftInputMode="adjustResize". Audit 2026-09-09.
         automaticallyAdjustKeyboardInsets
@@ -490,6 +494,12 @@ function WalletModalInner() {
                   refresh();
                 }}
                 onRefresh={refresh}
+                onReviewHistory={() => {
+                  setActiveAction(null);
+                  requestAnimationFrame(() => {
+                    scrollRef.current?.scrollTo({ y: Math.max(0, historyYRef.current - 16), animated: true });
+                  });
+                }}
                 initialRecipientId={params.to}
                 initialRecipientName={params.name}
               />
@@ -509,8 +519,9 @@ function WalletModalInner() {
               />
             </View>
 
-            <HeroCard className="rounded-panel p-0">
-              <HeroCard.Body className="gap-4 p-4">
+            <View onLayout={(event) => { historyYRef.current = event.nativeEvent.layout.y; }}>
+              <HeroCard className="rounded-panel p-0">
+                <HeroCard.Body className="gap-4 p-4">
                 <View className="flex-row items-center justify-between gap-3">
                   <View className="min-w-0 flex-1">
                     <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('history')}</Text>
@@ -578,8 +589,9 @@ function WalletModalInner() {
                     ) : null}
                   </View>
                 )}
-              </HeroCard.Body>
-            </HeroCard>
+                </HeroCard.Body>
+              </HeroCard>
+            </View>
           </View>
         )}
       </ScrollView>
@@ -597,6 +609,7 @@ function WalletActionPanel({
   onClose,
   onComplete,
   onRefresh,
+  onReviewHistory,
   initialRecipientId,
   initialRecipientName,
 }: {
@@ -609,6 +622,8 @@ function WalletActionPanel({
   onComplete: () => void;
   /** Re-read the wallet without closing the panel, after an outcome we cannot read. */
   onRefresh: () => void;
+  /** Close the form and bring the authoritative transaction history into view. */
+  onReviewHistory: () => void;
   initialRecipientId?: string | string[];
   initialRecipientName?: string | string[];
 }) {
@@ -669,6 +684,7 @@ function WalletActionPanel({
   const [note, setNote] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [operationUnresolved, setOperationUnresolved] = useState(false);
   const needsRecipient = action === 'transfer' || donationTarget === 'user';
   const submittingRef = useRef(false);
 
@@ -725,9 +741,13 @@ function WalletActionPanel({
     if (submittingRef.current) return;
     submittingRef.current = true;
     setIsSubmitting(true);
+    setOperationUnresolved(false);
     try {
       if (action === 'transfer') {
-        const description = note.trim() || t('actions.defaultTransferDescription');
+        // Keep the server payload and durable retry identity independent of the active
+        // display language. Transaction rows already render a localized fallback when
+        // this optional description is blank.
+        const description = note.trim();
         const intent = JSON.stringify([selectedUser?.id ?? '', parsedAmount, description]);
         const operation = await reserveWalletOperation('transfer', intent);
 
@@ -756,6 +776,7 @@ function WalletActionPanel({
       }
       onComplete();
     } catch (error) {
+      setOperationUnresolved(isUnresolvedWalletOperationError(error));
       // The server's own reason when it is fit to show — "not enough credits" beats a raw
       // message or "Action failed" (B/F-17).
       showToast({ title: t('actions.mutationFailedTitle'), description: describeApiError(error, t('actions.mutationFailedMessage')), variant: 'danger' });
@@ -786,10 +807,10 @@ function WalletActionPanel({
           <View className="gap-2">
             <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{t('actions.donateTo')}</Text>
             <View className="flex-row gap-2">
-              <HeroButton className="flex-1" variant={donationTarget === 'community_fund' ? 'primary' : 'secondary'} onPress={() => { setDonationTarget('community_fund'); setSelectedUser(null); }}>
+              <HeroButton className="flex-1" variant={donationTarget === 'community_fund' ? 'primary' : 'secondary'} onPress={() => { setDonationTarget('community_fund'); setSelectedUser(null); setOperationUnresolved(false); }}>
                 <HeroButton.Label>{t('actions.communityFundOption')}</HeroButton.Label>
               </HeroButton>
-              <HeroButton className="flex-1" variant={donationTarget === 'user' ? 'primary' : 'secondary'} onPress={() => setDonationTarget('user')}>
+              <HeroButton className="flex-1" variant={donationTarget === 'user' ? 'primary' : 'secondary'} onPress={() => { setDonationTarget('user'); setOperationUnresolved(false); }}>
                 <HeroButton.Label>{t('actions.memberOption')}</HeroButton.Label>
               </HeroButton>
             </View>
@@ -822,6 +843,7 @@ function WalletActionPanel({
                 onChangeText={(value) => {
                   setQuery(value);
                   setSelectedUser(null);
+                  setOperationUnresolved(false);
                 }}
                 returnKeyType="search"
                 onSubmitEditing={runSearch}
@@ -850,7 +872,7 @@ function WalletActionPanel({
                     feedbackVariant="scale"
                     className="w-full p-0"
                     accessibilityLabel={user.name}
-                    onPress={() => setSelectedUser(user)}
+                    onPress={() => { setSelectedUser(user); setOperationUnresolved(false); }}
                   >
                     <Surface variant="secondary" className="flex-row items-center gap-3 rounded-panel-inner p-3">
                       <Avatar uri={user.avatar_url ?? null} name={user.name} size={36} />
@@ -872,7 +894,7 @@ function WalletActionPanel({
             label={t('actions.amount')}
             placeholder={t('actions.amountPlaceholder')}
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={(value) => { setAmount(value); setOperationUnresolved(false); }}
             keyboardType="decimal-pad"
           />
         </View>
@@ -883,12 +905,14 @@ function WalletActionPanel({
             style={{ minHeight: 80, textAlignVertical: 'top' }}
             placeholder={t(action === 'transfer' ? 'actions.descriptionPlaceholder' : 'actions.messagePlaceholder')}
             value={note}
-            onChangeText={setNote}
+            onChangeText={(value) => { setNote(value); setOperationUnresolved(false); }}
             multiline
           />
         </View>
 
-        <HeroButton variant="primary" onPress={submit} isDisabled={isSubmitting || (needsRecipient && isResolvingRecipient)} testID="wallet-action-submit">
+        {operationUnresolved ? <WalletReconciliationNotice onReview={onReviewHistory} /> : null}
+
+        <HeroButton variant="primary" onPress={submit} isDisabled={isSubmitting || operationUnresolved || (needsRecipient && isResolvingRecipient)} testID="wallet-action-submit">
           {isSubmitting ? <Spinner size="sm" /> : <AccentIcon name={action === 'transfer' ? 'send-outline' : 'heart-outline'} size={16} />}
           <HeroButton.Label>{t(action === 'transfer' ? 'actions.sendNow' : 'actions.donateNow')}</HeroButton.Label>
         </HeroButton>

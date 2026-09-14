@@ -4,7 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { ApiResponseError } from '@/lib/api/client';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+
+let mockOfferMode = 'sent';
 
 let mockAuthState: {
   isAuthenticated: boolean;
@@ -18,7 +21,7 @@ jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
-  useLocalSearchParams: () => ({ mode: 'sent' }),
+  useLocalSearchParams: () => ({ mode: mockOfferMode }),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -41,6 +44,7 @@ jest.mock('react-i18next', () => ({
         'offers.sellerLabel': 'Seller',
         'offers.buyerLabel': 'Buyer',
         'offers.acceptCounter': 'Accept counter',
+        'offers.accept': 'Accept',
         'offers.withdraw': 'Withdraw',
         'offers.decline': 'Decline',
         'offers.countered': 'Countered',
@@ -63,7 +67,14 @@ jest.mock('@/lib/hooks/useTenant', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => mockAuthState,
+  useAuth: () => ({ ...mockAuthState, user: { id: 41 } }),
+}));
+
+jest.mock('@/components/ui/useConfirm', () => ({
+  useConfirm: () => ({
+    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirmDialog: null,
+  }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -106,7 +117,7 @@ jest.mock('@/components/ui/AppToast', () => {
 });
 
 import MarketplaceOffersRoute from './marketplace-offers';
-import { getMarketplaceOffers } from '@/lib/api/marketplace';
+import { acceptMarketplaceOffer, getMarketplaceOffers } from '@/lib/api/marketplace';
 
 describe('MarketplaceOffersRoute', () => {
   beforeEach(() => {
@@ -115,6 +126,7 @@ describe('MarketplaceOffersRoute', () => {
       isAuthenticated: true,
       isLoading: false,
     };
+    mockOfferMode = 'sent';
     (getMarketplaceOffers as jest.Mock).mockResolvedValue({
       data: [
         {
@@ -233,5 +245,54 @@ describe('MarketplaceOffersRoute', () => {
     const { queryByTestId, findByText } = render(<MarketplaceOffersRoute />);
     await findByText('Cordless drill');
     expect(queryByTestId('offer-accepted-pay-32')).toBeNull();
+  });
+
+  it('serializes same-frame offer decisions before busy state renders', async () => {
+    mockOfferMode = 'received';
+    let finish!: () => void;
+    (getMarketplaceOffers as jest.Mock).mockResolvedValueOnce({
+      data: [{
+        id: 51,
+        amount: 40,
+        currency: 'EUR',
+        status: 'pending',
+        created_at: '2026-05-15T10:30:00Z',
+        listing: { id: 12, title: 'Cordless drill', status: 'active' },
+        buyer: { id: 9, name: 'Alex Buyer' },
+      }],
+      meta: { cursor: null, has_more: false },
+    });
+    jest.mocked(acceptMarketplaceOffer).mockImplementationOnce(() => new Promise(resolve => {
+      finish = () => resolve({ data: { id: 51, status: 'accepted' } } as never);
+    }));
+    const ui = render(<MarketplaceOffersRoute />);
+    const accept = await ui.findByText('Accept');
+
+    fireEvent.press(accept);
+    fireEvent.press(accept);
+    expect(acceptMarketplaceOffer).toHaveBeenCalledTimes(1);
+    finish();
+  });
+
+  it('accepts authoritative offer state after an action response is lost', async () => {
+    mockOfferMode = 'received';
+    const pending = {
+      id: 52,
+      amount: 40,
+      currency: 'EUR',
+      status: 'pending',
+      created_at: '2026-05-15T10:30:00Z',
+      listing: { id: 12, title: 'Cordless drill', status: 'active' },
+      buyer: { id: 9, name: 'Alex Buyer' },
+    };
+    (getMarketplaceOffers as jest.Mock)
+      .mockResolvedValueOnce({ data: [pending], meta: { cursor: null, has_more: false } })
+      .mockResolvedValue({ data: [{ ...pending, status: 'accepted' }], meta: { cursor: null, has_more: false } });
+    jest.mocked(acceptMarketplaceOffer).mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    const ui = render(<MarketplaceOffersRoute />);
+
+    fireEvent.press(await ui.findByText('Accept'));
+    await waitFor(() => expect(getMarketplaceOffers).toHaveBeenCalledTimes(3));
+    expect(require('@/components/ui/AppToast').useAppToast().show).not.toHaveBeenCalled();
   });
 });

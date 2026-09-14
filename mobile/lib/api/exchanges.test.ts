@@ -141,6 +141,18 @@ describe('createExchange', () => {
     expect(result.data.id).toBe(5);
   });
 
+  it('binds a listing create retry key in the header and body', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: mockExchange });
+    const payload: CreateExchangePayload = {
+      title: 'Offer: Guitar lessons', description: 'Beginner lessons', type: 'offer', category_id: 3,
+    };
+    await createExchange(payload, 'listing-create-operation');
+    expect(api.post).toHaveBeenCalledWith('/api/v2/listings', {
+      ...payload,
+      idempotency_key: 'listing-create-operation',
+    }, { headers: { 'Idempotency-Key': 'listing-create-operation' } });
+  });
+
   it('propagates errors from the API', async () => {
     (api.post as jest.Mock).mockRejectedValue(new Error('Validation failed'));
     await expect(createExchange({ title: '', description: '', type: 'offer', category_id: 1 }))

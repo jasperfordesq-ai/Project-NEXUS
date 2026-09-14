@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -19,8 +19,10 @@ import { Card as HeroCard, Description, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import { updatePassword } from '@/lib/api/profile';
+import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -34,18 +36,24 @@ function ChangePasswordScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { endSessionLocally } = useAuth();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const submitInFlightRef = useRef(false);
+  const isMountedRef = useRef(true);
   const [fieldErrors, setFieldErrors] = useState<{
     currentPassword?: string;
     newPassword?: string;
     confirmPassword?: string;
   }>({});
 
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   async function handleSubmit() {
+    if (submitInFlightRef.current) return;
     const errors: typeof fieldErrors = {};
     if (!currentPassword.trim()) {
       errors.currentPassword = t('password.validation.currentRequired');
@@ -62,6 +70,7 @@ function ChangePasswordScreenInner() {
       setFieldErrors(errors);
       return;
     }
+    submitInFlightRef.current = true;
     setFieldErrors({});
 
     setIsLoading(true);
@@ -71,16 +80,31 @@ function ChangePasswordScreenInner() {
         new_password: newPassword,
         new_password_confirmation: confirmPassword,
       });
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showToast({ title: t('password.success'), description: t('password.successMessage'), variant: 'success' });
-      router.back();
+      await endSessionLocally({
+        title: t('password.success'),
+        description: t('password.successSignIn'),
+        variant: 'success',
+      });
     } catch (err: unknown) {
+      if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0) {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        await endSessionLocally({
+          title: t('password.unconfirmedTitle'),
+          description: t('password.unconfirmedMessage'),
+          variant: 'warning',
+        });
+        return;
+      }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const message =
         describeApiError(err, t('password.changeError'));
       showToast({ title: t('common:errors.generic'), description: message, variant: 'danger' });
     } finally {
-      setIsLoading(false);
+      submitInFlightRef.current = false;
+      if (isMountedRef.current) setIsLoading(false);
     }
   }
 
@@ -121,6 +145,7 @@ function ChangePasswordScreenInner() {
                 value={currentPassword}
                 onChangeText={(v) => { setCurrentPassword(v); setFieldErrors((e) => ({ ...e, currentPassword: undefined })); }}
                 error={fieldErrors.currentPassword}
+                editable={!isLoading}
                 theme={theme}
               />
               <PasswordField
@@ -130,6 +155,7 @@ function ChangePasswordScreenInner() {
                 onChangeText={(v) => { setNewPassword(v); setFieldErrors((e) => ({ ...e, newPassword: undefined })); }}
                 error={fieldErrors.newPassword}
                 helper={t('password.newHint')}
+                editable={!isLoading}
                 theme={theme}
               />
               <PasswordField
@@ -138,6 +164,7 @@ function ChangePasswordScreenInner() {
                 value={confirmPassword}
                 onChangeText={(v) => { setConfirmPassword(v); setFieldErrors((e) => ({ ...e, confirmPassword: undefined })); }}
                 error={fieldErrors.confirmPassword}
+                editable={!isLoading}
                 theme={theme}
               />
             </HeroCard.Body>
@@ -170,6 +197,7 @@ function PasswordField({
   onChangeText,
   error,
   helper,
+  editable,
   theme,
 }: {
   label: string;
@@ -178,6 +206,7 @@ function PasswordField({
   onChangeText: (value: string) => void;
   error?: string;
   helper?: string;
+  editable: boolean;
   theme: ReturnType<typeof useTheme>;
 }) {
   return (
@@ -194,6 +223,7 @@ function PasswordField({
         value={value}
         onChangeText={onChangeText}
         accessibilityLabel={label}
+        editable={editable}
       />
       {helper ? (
         <Description isInvalid={!!error} hideOnInvalid className="text-xs">{helper}</Description>
@@ -203,8 +233,10 @@ function PasswordField({
 }
 
 export default function ChangePasswordScreen() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`}>
       <ChangePasswordScreenInner />
     </ModalErrorBoundary>
   );

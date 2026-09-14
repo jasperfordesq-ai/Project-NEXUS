@@ -22,11 +22,12 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import { getDataExportHistory, requestDataExport, type DataExportFormat, type DataExportHistoryRow } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 function formatBytes(bytes: number | null): string {
   if (!bytes) return '-';
@@ -48,7 +49,7 @@ function formatDate(value: string | null): string {
   return date.toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-export default function SettingsDataExportScreen() {
+function SettingsDataExportScreen() {
   const { t } = useTranslation(['settings', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
@@ -60,19 +61,26 @@ export default function SettingsDataExportScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const requestInFlight = useRef(false);
   const requestAttempt = useRef<{ format: DataExportFormat; key: string } | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   const loadHistory = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsLoading(true);
     setLoadError(null);
     try {
-      setHistory(await getDataExportHistory());
+      const nextHistory = await getDataExportHistory();
+      if (!isMountedRef.current) return;
+      setHistory(nextHistory);
     } catch (err) {
+      if (!isMountedRef.current) return;
       // 🔴 S3-15: once the toast faded the member was told "No exports yet", which is a
       // different and much more alarming statement than "we could not check".
       setLoadError(describeApiError(err, t('dataExport.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.loadError')), variant: 'danger' });
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) setIsLoading(false);
     }
   }, [t, showToast]);
 
@@ -97,14 +105,16 @@ export default function SettingsDataExportScreen() {
     setIsRequesting(true);
     try {
       await requestDataExport(format, requestAttempt.current.key);
+      if (!isMountedRef.current) return;
       requestAttempt.current = null;
       showToast({ title: t('dataExport.downloaded'), description: t('dataExport.downloadedBody'), variant: 'success' });
       await loadHistory();
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.requestError')), variant: 'danger' });
     } finally {
       requestInFlight.current = false;
-      setIsRequesting(false);
+      if (isMountedRef.current) setIsRequesting(false);
     }
   }
 
@@ -201,4 +211,10 @@ export default function SettingsDataExportScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+export default function SettingsDataExportRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <SettingsDataExportScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
 }

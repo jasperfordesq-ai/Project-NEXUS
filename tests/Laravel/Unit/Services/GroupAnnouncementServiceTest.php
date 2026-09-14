@@ -62,6 +62,53 @@ class GroupAnnouncementServiceTest extends TestCase
         self::assertIsArray($this->service->getErrors());
     }
 
+    public function test_creation_receipt_replays_one_announcement_and_rejects_changed_content(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $groupId = (int) DB::table('groups')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'owner_id' => $owner->id,
+            'name' => 'Announcement replay ' . uniqid('', true),
+            'description' => 'Announcement replay fixture.',
+            'visibility' => 'private',
+            'status' => 'active',
+            'is_active' => true,
+            'cached_member_count' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('group_members')->insert([
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $groupId,
+            'user_id' => $owner->id,
+            'role' => 'owner',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $payload = [
+            'title' => 'Seeds arrived',
+            'content' => 'Collect them from the shed.',
+            'is_pinned' => true,
+            'idempotency_key' => 'group-announcement-replay-1',
+        ];
+
+        $first = $this->service->create($groupId, (int) $owner->id, $payload);
+        $replay = $this->service->create($groupId, (int) $owner->id, $payload);
+
+        self::assertNotNull($first);
+        self::assertSame($first['id'], $replay['id'] ?? null);
+        self::assertTrue((bool) ($replay['_idempotent_replay'] ?? false));
+        self::assertSame(1, DB::table('group_announcements')->where('id', $first['id'])->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')->where('operation_type', 'announcement')->count());
+
+        self::assertNull($this->service->create($groupId, (int) $owner->id, [
+            ...$payload,
+            'content' => 'Changed intent.',
+        ]));
+        self::assertSame('IDEMPOTENCY_CONFLICT', $this->service->getErrors()[0]['code'] ?? null);
+    }
+
     public function test_admin_delete_writes_actor_and_announcement_metadata(): void
     {
         $owner = User::factory()->forTenant($this->testTenantId)->create();

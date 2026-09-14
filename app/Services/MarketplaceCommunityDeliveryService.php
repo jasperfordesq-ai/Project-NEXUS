@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Events\TransactionCompleted;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\MarketplaceOrder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,6 +33,86 @@ use App\Support\UserDisplayName;
  */
 class MarketplaceCommunityDeliveryService
 {
+    /**
+     * List orders a community member can offer to deliver.
+     *
+     * Deliberately returns a narrow DTO: delivery addresses, private delivery
+     * notes, prices, buyer/seller identities and order numbers are participant
+     * data and are not exposed during discovery.
+     *
+     * @return array{items: array<int, array<string, mixed>>, cursor: ?string, has_more: bool}
+     */
+    public static function getDeliveryOpportunities(
+        int $userId,
+        int $limit = 20,
+        ?string $cursor = null,
+    ): array {
+        $query = MarketplaceOrder::with([
+            'listing:id,title,location,delivery_method',
+            'listing.images' => fn ($images) => $images->where('is_primary', true)->limit(1),
+        ])
+            ->where('shipping_method', 'community_delivery')
+            ->whereIn('status', ['paid', 'shipped'])
+            ->where('buyer_id', '!=', $userId)
+            ->where('seller_id', '!=', $userId)
+            ->whereHas('listing', fn ($listing) => $listing->where('delivery_method', 'community_delivery'))
+            ->orderByDesc('id');
+
+        if ($cursor) {
+            $decoded = base64_decode($cursor, true);
+            if ($decoded !== false && ctype_digit($decoded)) {
+                $query->where('id', '<', (int) $decoded);
+            }
+        }
+
+        $orders = $query->limit($limit + 1)->get();
+        $hasMore = $orders->count() > $limit;
+        if ($hasMore) {
+            $orders->pop();
+        }
+
+        $offers = DB::table('marketplace_delivery_offers')
+            ->where('tenant_id', TenantContext::getId())
+            ->where('deliverer_id', $userId)
+            ->whereIn('order_id', $orders->pluck('id')->all())
+            ->orderByDesc('id')
+            ->get()
+            ->unique('order_id')
+            ->keyBy('order_id');
+
+        $items = $orders->map(function (MarketplaceOrder $order) use ($offers): array {
+            $listing = $order->listing;
+            $image = $listing?->relationLoaded('images') ? $listing->images->first() : null;
+            $offer = $offers->get($order->id);
+            $offerStatus = $offer?->status;
+
+            return [
+                'order_id' => $order->id,
+                'quantity' => $order->quantity,
+                'created_at' => $order->created_at?->toISOString(),
+                'can_offer' => ! in_array($offerStatus, ['pending', 'accepted', 'completed'], true),
+                'listing' => $listing ? [
+                    'id' => $listing->id,
+                    'title' => $listing->title,
+                    'location' => $listing->location,
+                    'image' => $image ? [
+                        'url' => $image->image_url,
+                        'thumbnail_url' => $image->thumbnail_url,
+                    ] : null,
+                ] : null,
+                'my_offer' => $offer ? self::formatOffer($offer) : null,
+            ];
+        })->all();
+
+        return [
+            'items' => $items,
+            'cursor' => $hasMore && $orders->isNotEmpty()
+                ? base64_encode((string) $orders->last()->id)
+                : null,
+            'has_more' => $hasMore,
+        ];
+    }
+
     /**
      * Offer to deliver an order for time credits.
      *
@@ -162,14 +243,14 @@ class MarketplaceCommunityDeliveryService
     /**
      * Accept a delivery offer.
      *
-     * Called by the seller or buyer to accept a specific delivery offer.
+     * Called by the buyer to accept a specific delivery offer.
      * Declines all other pending offers for the same order.
      *
      * @param int $orderId
      * @param int $delivererId The deliverer whose offer to accept
      * @return void
      *
-     * @throws AuthorizationException If the actor is not the buyer or seller
+     * @throws AuthorizationException If the actor is not the buyer
      * @throws \RuntimeException If offer not found or invalid state
      */
     public static function acceptDeliveryOffer(int $orderId, int $delivererId, int $actorId): void
@@ -246,14 +327,14 @@ class MarketplaceCommunityDeliveryService
     /**
      * Confirm delivery completion and award time credits to the deliverer.
      *
-     * This is the final step: the buyer/seller confirms the item was delivered,
+     * This is the final step: the buyer confirms the item was delivered,
      * and the deliverer receives the agreed time credits from the buyer.
      *
      * @param int $orderId
      * @param int $delivererId
      * @return void
      *
-     * @throws AuthorizationException If the actor is not the buyer or seller
+     * @throws AuthorizationException If the actor is not the buyer
      * @throws \RuntimeException If offer not found, wrong state, or insufficient balance
      */
     public static function confirmDelivery(int $orderId, int $delivererId, int $actorId): void
@@ -409,15 +490,35 @@ class MarketplaceCommunityDeliveryService
     public static function getDeliveryOffers(int $orderId, int $actorId): array
     {
         $tenantId = TenantContext::getId();
-        self::requireOrderParticipant($orderId, $tenantId, $actorId);
+        $order = DB::table('marketplace_orders')
+            ->where('id', $orderId)
+            ->where('tenant_id', $tenantId)
+            ->first();
+        if (! $order) {
+            throw new \RuntimeException(__('api.marketplace_delivery_order_not_found'));
+        }
+        $isParticipant = (int) $order->buyer_id === $actorId || (int) $order->seller_id === $actorId;
+        $hasOwnOffer = DB::table('marketplace_delivery_offers')
+            ->where('tenant_id', $tenantId)
+            ->where('order_id', $orderId)
+            ->where('deliverer_id', $actorId)
+            ->exists();
+        if (! $isParticipant && ! $hasOwnOffer) {
+            throw new AuthorizationException(__('api.marketplace_delivery_participant_required'));
+        }
 
-        $offers = DB::table('marketplace_delivery_offers as mdo')
+        $query = DB::table('marketplace_delivery_offers as mdo')
             ->leftJoin('users as u', function ($join): void {
                 $join->on('u.id', '=', 'mdo.deliverer_id')
                     ->on('u.tenant_id', '=', 'mdo.tenant_id');
             })
             ->where('mdo.order_id', $orderId)
-            ->where('mdo.tenant_id', $tenantId)
+            ->where('mdo.tenant_id', $tenantId);
+        if (! $isParticipant) {
+            $query->where('mdo.deliverer_id', $actorId);
+        }
+
+        $offers = $query
             ->select(
                 'mdo.*',
                 'u.first_name',

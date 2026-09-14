@@ -48,6 +48,13 @@ interface BottomSheetProps {
   visible: boolean;
   onClose: () => void;
   /**
+   * Whether the overlay and a downward swipe may dismiss the sheet. Forms with
+   * unsaved or in-flight input should set this false and route closure through
+   * their visible Cancel action, where a confirmation can run before the sheet
+   * changes state.
+   */
+  dismissible?: boolean;
+  /**
    * Explicit snap points. Numbers are pixel heights (the bottom safe-area inset
    * is added so content isn't clipped by the home indicator); strings are
    * percentages (e.g. '90%'). Omit entirely to let the library size the sheet
@@ -92,6 +99,7 @@ export default function BottomSheet({
   scrollable = false,
   footer,
   testID,
+  dismissible = true,
 }: BottomSheetProps) {
   const { mounted: sheetMounted, open: sheetOpen, shouldHonorClose } = useDeferredBottomSheetState(visible);
   const theme = useTheme();
@@ -179,11 +187,12 @@ export default function BottomSheet({
       }}
     >
       <HeroBottomSheet.Portal unstable_accessibilityContainerViewIsModal>
-        <HeroBottomSheet.Overlay isCloseOnPress className="bg-black/55" />
+        <HeroBottomSheet.Overlay isCloseOnPress={dismissible} className="bg-black/55" />
         <HeroBottomSheet.Content
           snapPoints={resolvedSnapPoints}
           enableDynamicSizing={!hasSnapPoints}
           enableOverDrag={false}
+          enablePanDownToClose={dismissible}
           keyboardBehavior="extend"
           keyboardBlurBehavior="restore"
           contentContainerClassName={hasSnapPoints ? 'h-full bg-background' : 'bg-background'}

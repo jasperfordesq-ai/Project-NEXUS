@@ -703,6 +703,76 @@ class MarketplaceListingService
     }
 
     /**
+     * Create once across response loss and concurrent retries.
+     *
+     * @return array{listing: MarketplaceListing|null, replayed: bool, conflict: bool}
+     */
+    public static function createWithReceipt(int $userId, array $data, ?string $idempotencyKey): array
+    {
+        if ($idempotencyKey === null || trim($idempotencyKey) === '') {
+            MarketplaceSellerService::getOrCreateProfile($userId);
+            return ['listing' => self::create($userId, $data), 'replayed' => false, 'conflict' => false];
+        }
+
+        $tenantId = (int) TenantContext::getId();
+        $keyHash = hash('sha256', trim($idempotencyKey));
+        $requestHash = hash('sha256', json_encode(self::canonicalReceiptData($data), JSON_THROW_ON_ERROR));
+
+        return DB::transaction(static function () use ($userId, $data, $tenantId, $keyHash, $requestHash): array {
+            DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $userId)
+                ->lockForUpdate()
+                ->exists();
+
+            $receipt = DB::table('marketplace_listing_creation_receipts')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('idempotency_key_hash', $keyHash)
+                ->first();
+            if ($receipt) {
+                if (!hash_equals((string) $receipt->request_hash, $requestHash)) {
+                    return ['listing' => null, 'replayed' => true, 'conflict' => true];
+                }
+                return [
+                    'listing' => MarketplaceListing::query()
+                        ->where('tenant_id', $tenantId)
+                        ->where('user_id', $userId)
+                        ->find((int) $receipt->marketplace_listing_id),
+                    'replayed' => true,
+                    'conflict' => false,
+                ];
+            }
+
+            MarketplaceSellerService::getOrCreateProfile($userId);
+            $listing = self::create($userId, $data);
+            DB::table('marketplace_listing_creation_receipts')->insert([
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'idempotency_key_hash' => $keyHash,
+                'request_hash' => $requestHash,
+                'marketplace_listing_id' => $listing->id,
+                'created_at' => now(),
+            ]);
+
+            return ['listing' => $listing, 'replayed' => false, 'conflict' => false];
+        });
+    }
+
+    private static function canonicalReceiptData(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = self::canonicalReceiptData($value);
+            }
+        }
+        if (!array_is_list($data)) {
+            ksort($data);
+        }
+        return $data;
+    }
+
+    /**
      * Update an existing marketplace listing.
      */
     public static function update(MarketplaceListing $listing, array $data): MarketplaceListing

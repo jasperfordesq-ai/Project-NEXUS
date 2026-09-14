@@ -89,6 +89,18 @@ describe('BottomSheet', () => {
     expect(contentProps[0]?.containerClassName).toBeUndefined();
   });
 
+  it('disables overlay and swipe dismissal while a form must confirm before closing', async () => {
+    const { getByTestId } = render(
+      <BottomSheet visible dismissible={false} onClose={jest.fn()}>
+        <Text>Protected draft</Text>
+      </BottomSheet>,
+    );
+
+    await waitFor(() => expect(getByTestId('bottom-sheet-overlay')).toBeTruthy());
+    expect(getByTestId('bottom-sheet-overlay').props.isCloseOnPress).toBe(false);
+    expect(contentProps[0]?.enablePanDownToClose).toBe(false);
+  });
+
   it('does not render content while closed', () => {
     const { queryByText } = render(
       <BottomSheet visible={false} title="Hidden sheet" onClose={jest.fn()}>

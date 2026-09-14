@@ -1339,6 +1339,7 @@ class FeedService
 
         // Load user's votes
         $userVotes = [];
+        $userRankings = [];
         if ($userId) {
             $votes = DB::table('poll_votes')
                 ->where('user_id', $userId)
@@ -1346,6 +1347,15 @@ class FeedService
                 ->where('tenant_id', $tenantId)
                 ->pluck('option_id', 'poll_id');
             $userVotes = $votes->all();
+            $rankings = DB::table('poll_rankings')->where('user_id', $userId)
+                ->whereIn('poll_id', $pollIds)->where('tenant_id', $tenantId)
+                ->orderBy('rank')->get(['poll_id', 'option_id', 'rank']);
+            foreach ($rankings as $ranking) {
+                $userRankings[(int) $ranking->poll_id][] = [
+                    'option_id' => (int) $ranking->option_id,
+                    'rank' => (int) $ranking->rank,
+                ];
+            }
         }
 
         // Load poll rows for is_active and question
@@ -1407,7 +1417,10 @@ class FeedService
                 'options' => $optionsForResponse,
                 'total_votes' => $totalVotesForResponse,
                 'user_vote_option_id' => $userVotes[$pollId] ?? null,
-                'is_active' => (bool) ($poll->is_active ?? true),
+                'user_rankings' => $userRankings[$pollId] ?? [],
+                'is_active' => (bool) $pollIsOpen,
+                'poll_type' => (string) ($poll->poll_type ?? 'standard'),
+                'is_anonymous' => (bool) ($poll->is_anonymous ?? false),
                 'expires_at' => $poll && !empty($poll->end_date)
                     ? date('c', strtotime((string) $poll->end_date))
                     : null,

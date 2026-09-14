@@ -23,6 +23,7 @@ import { api } from '@/lib/api/client';
 import {
   cancelShiftSignup,
   cancelShiftSwap,
+  createOpportunity,
   expressInterest,
   handleVolunteerApplication,
   generateVolunteerCertificate,
@@ -44,6 +45,8 @@ import {
   submitVolunteerDonation,
   logVolunteerHours,
   respondToShiftSwap,
+  requestShiftSwap,
+  signUpForShift,
   depositOrganisationWallet,
   updateOrganisation,
   verifyVolunteerHours,
@@ -79,6 +82,22 @@ const mockOpportunity: VolunteerOpportunity = {
   deadline: '2026-04-30T00:00:00Z',
   created_at: '2026-03-01T00:00:00Z',
 };
+
+it('sends the same opportunity creation key in the header and body', async () => {
+  jest.mocked(api.post).mockResolvedValueOnce({ data: mockOpportunity });
+  const payload = {
+    organization_id: 2,
+    title: 'Community Garden Helper',
+    description: 'Help maintain the community garden.',
+  };
+
+  await createOpportunity(payload, 'volunteer-opportunity-key');
+
+  expect(api.post).toHaveBeenCalledWith('/api/v2/volunteering/opportunities', {
+    ...payload,
+    idempotency_key: 'volunteer-opportunity-key',
+  }, { headers: { 'Idempotency-Key': 'volunteer-opportunity-key' } });
+});
 
 const mockVolunteeringResponse: VolunteeringResponse = {
   data: [mockOpportunity],
@@ -166,6 +185,15 @@ describe('shift helpers', () => {
     expect(result.data.items).toEqual([]);
   });
 
+  it('binds shift signup to the assignment the member observed', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { shift_id: 42, message: 'Joined' } });
+    await signUpForShift(42, 17);
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/shifts/42/signup',
+      { expected_shift_id: 17 },
+    );
+  });
+
   it('cancels a shift signup', async () => {
     (api.delete as jest.Mock).mockResolvedValue(undefined);
     await cancelShiftSignup(42);
@@ -189,6 +217,16 @@ describe('shift swap helpers', () => {
     (api.get as jest.Mock).mockResolvedValue(response);
     await getShiftSwaps('received');
     expect(api.get).toHaveBeenCalledWith('/api/v2/volunteering/swaps', { direction: 'received' });
+  });
+
+  it('sends the same swap-request key in the header and body', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 3 } });
+    await requestShiftSwap({ from_shift_id: 42, to_shift_id: 43 }, 'shift-swap-request-key');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/volunteering/swaps',
+      { from_shift_id: 42, to_shift_id: 43, idempotency_key: 'shift-swap-request-key' },
+      { headers: { 'Idempotency-Key': 'shift-swap-request-key' } },
+    );
   });
 
   it('responds to a shift swap', async () => {

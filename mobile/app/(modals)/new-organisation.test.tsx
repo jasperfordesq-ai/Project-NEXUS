@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockBack = jest.fn();
@@ -197,6 +198,16 @@ describe('NewOrganisationScreen', () => {
     expect(getByText('Register organisation')).toBeTruthy();
     expect(getByPlaceholderText('Community skills network')).toBeTruthy();
     expect(getByPlaceholderText('contact@example.org')).toBeTruthy();
+  });
+
+  it('stacks the registration identity and actions at large text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const { getByTestId } = render(<NewOrganisationScreen />);
+
+    expect(getByTestId('new-organisation-identity').props.className).not.toContain('flex-row');
+    expect(getByTestId('new-organisation-actions').props.className).not.toContain('flex-row');
+
+    dimensions.mockRestore();
   });
 
   it('shows translated validation errors when required fields are missing', () => {

@@ -10,6 +10,7 @@ import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -17,12 +18,13 @@ import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
 import { getClubs, type Club } from '@/lib/api/clubs';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
 
-export default function ClubsScreen() {
+function ClubsScreen() {
   const { t } = useTranslation(['clubs', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -38,9 +40,10 @@ export default function ClubsScreen() {
           data={clubs.data?.items ?? []}
           keyExtractor={(club) => String(club.id)}
           contentContainerStyle={{ padding: 16, paddingBottom: 40, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={clubs.refresh} tintColor={primary} colors={[primary]} />}
+          refreshControl={<RefreshControl refreshing={clubs.isLoading && Boolean(clubs.data)} onRefresh={clubs.refresh} tintColor={primary} colors={[primary]} />}
           ListHeaderComponent={(
             <View className="mb-4 gap-4">
+              <RefreshFailedNotice error={clubs.data ? clubs.error : null} onRetry={clubs.refresh} />
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('subtitle')}</Text>
               <SearchInput
                 value={search}
@@ -67,6 +70,12 @@ export default function ClubsScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+export default function ClubsRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <ClubsScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
 }
 
 function ClubCard({ club }: { club: Club }) {

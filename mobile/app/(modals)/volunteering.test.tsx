@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -25,6 +26,13 @@ jest.mock('@/components/ui/BottomSheet', () => {
 
 const mockGetOpportunityShifts = jest.fn();
 const mockRequestShiftSwap = jest.fn();
+const mockReserveShiftSwapRequestOperation = jest.fn();
+const mockCompleteShiftSwapRequestOperation = jest.fn();
+
+jest.mock('@/lib/shiftSwapRequestOperation', () => ({
+  reserveShiftSwapRequestOperation: (...args: unknown[]) => mockReserveShiftSwapRequestOperation(...args),
+  completeShiftSwapRequestOperation: (...args: unknown[]) => mockCompleteShiftSwapRequestOperation(...args),
+}));
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
@@ -88,6 +96,7 @@ jest.mock('react-i18next', () => ({
         'withdrawConfirmMessage': 'It cannot be put back.',
         'common:buttons.cancel': 'Cancel',
         'myShifts.cancelError': 'Could not cancel this shift.',
+        'shiftResultUnknown': 'We could not confirm the change. Refresh your shifts before trying again.',
         'myShifts.openOpportunityLabel': opts ? `Open opportunity for ${String(opts.title ?? '')}` : 'Open opportunity',
         'myShifts.cancelLabel': opts ? `Cancel shift for ${String(opts.title ?? '')}` : 'Cancel shift',
         'swaps.heading': 'Shift swaps',
@@ -333,6 +342,7 @@ jest.mock('@/lib/api/volunteering', () => ({
   getOpportunities: jest.fn(),
   getMyApplications: jest.fn(),
   getMyShifts: jest.fn(),
+  getOpportunity: jest.fn(),
   getHoursSummary: jest.fn(),
   getMyOrganisations: jest.fn(),
   getVolunteerCertificates: jest.fn(),
@@ -392,7 +402,7 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
   };
 });
 
-import { cancelShiftSignup, logVolunteerHours, respondToShiftSwap, submitVolunteerDonation } from '@/lib/api/volunteering';
+import { cancelShiftSignup, cancelShiftSwap, getOpportunity, logVolunteerHours, respondToShiftSwap, submitVolunteerDonation, withdrawApplication } from '@/lib/api/volunteering';
 import VolunteeringScreen from './volunteering';
 import { useAppToast } from '@/components/ui/AppToast';
 
@@ -475,6 +485,41 @@ describe('VolunteeringScreen', () => {
       fireEvent.press(screen.getByLabelText('common:buttons.retry'));
       expect(refresh).toHaveBeenCalled();
     });
+  });
+
+  it('refreshes applications after a refused withdrawal so a competing approval is shown', async () => {
+    const refresh = jest.fn();
+    const applicationResponse = {
+      data: [{
+        id: 41,
+        status: 'pending',
+        created_at: '2026-09-14T12:00:00Z',
+        org_note: null,
+        opportunity: { id: 10, title: 'Garden Helper' },
+        organization: { id: 5, name: 'Green Spaces' },
+      }],
+      meta: { cursor: null, has_more: false },
+    };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const call = apiCall++ % 9;
+      return {
+        data: call === 0 ? applicationResponse : null,
+        isLoading: false,
+        error: null,
+        refresh: call === 0 ? refresh : jest.fn(),
+      };
+    });
+    jest.mocked(withdrawApplication).mockRejectedValueOnce(new Error('Application was already approved'));
+    mockParams = { tab: 'applications' };
+    const screen = render(<VolunteeringScreen />);
+
+    fireEvent.press(screen.getByTestId('volunteering-withdraw-41'));
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('volunteering-confirm-withdraw-41'));
+    });
+
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
   });
 
   /*
@@ -567,6 +612,12 @@ describe('VolunteeringScreen', () => {
       mockParams = { tab: 'shifts' };
       mockGetOpportunityShifts.mockReset();
       mockRequestShiftSwap.mockReset().mockResolvedValue({ data: { id: 9 } });
+      mockReserveShiftSwapRequestOperation.mockReset().mockResolvedValue({
+        storageKey: 'shift-swap-storage-key',
+        key: 'shift-swap-request-key',
+        createdAt: 1,
+      });
+      mockCompleteShiftSwapRequestOperation.mockReset().mockResolvedValue(undefined);
       (useAppToast() as unknown as { show: jest.Mock }).show.mockClear();
       mockUseApi.mockImplementation(() => ({
         data: { data: { items: [shiftRow] } },
@@ -607,12 +658,36 @@ describe('VolunteeringScreen', () => {
       await waitFor(() => expect(getByTestId('shift-swap-option-67')).toBeTruthy());
       fireEvent.press(getByTestId('shift-swap-option-67'));
 
-      await waitFor(() => expect(mockRequestShiftSwap).toHaveBeenCalledWith({ from_shift_id: 66, to_shift_id: 67 }));
+      await waitFor(() => expect(mockRequestShiftSwap).toHaveBeenCalledWith(
+        { from_shift_id: 66, to_shift_id: 67 },
+        'shift-swap-request-key',
+      ));
       // 🔴 The load-bearing assertion: no counterpart id is sent, so the app never has to
       // know — and never has to show — who is on the other shift.
       expect(mockRequestShiftSwap.mock.calls[0][0]).not.toHaveProperty('to_user_id');
       // A sent request is invisible until the other person answers, so it must be said.
       expect(show).toHaveBeenCalledWith(expect.objectContaining({ title: 'Swap request sent', variant: 'success' }));
+      expect(mockCompleteShiftSwapRequestOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'shift-swap-request-key' }));
+    });
+
+    it('reuses the durable request key after a lost creation response', async () => {
+      mockGetOpportunityShifts.mockResolvedValue({
+        data: [{ id: 67, start_time: '2099-08-29T10:00:00Z', end_time: '2099-08-29T12:00:00Z', capacity: 1, signup_count: 1, spots_available: 0 }],
+      });
+      const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+      mockRequestShiftSwap
+        .mockRejectedValueOnce(new ApiResponseError(0, 'Response unavailable'))
+        .mockResolvedValueOnce({ data: { id: 9 } });
+
+      const { getByTestId } = render(<VolunteeringScreen />);
+      fireEvent.press(getByTestId('shift-swap-ask-66'));
+      await waitFor(() => expect(getByTestId('shift-swap-option-67')).toBeTruthy());
+      fireEvent.press(getByTestId('shift-swap-option-67'));
+
+      await waitFor(() => expect(mockRequestShiftSwap).toHaveBeenCalledTimes(2));
+      expect(mockRequestShiftSwap).toHaveBeenNthCalledWith(1, { from_shift_id: 66, to_shift_id: 67 }, 'shift-swap-request-key');
+      expect(mockRequestShiftSwap).toHaveBeenNthCalledWith(2, { from_shift_id: 66, to_shift_id: 67 }, 'shift-swap-request-key');
+      expect(mockCompleteShiftSwapRequestOperation).toHaveBeenCalledTimes(1);
     });
 
     it('says so plainly when there is nobody to swap with', async () => {
@@ -722,6 +797,47 @@ describe('VolunteeringScreen', () => {
 
     const { getByText } = render(<VolunteeringScreen />);
     expect(getByText('Open')).toBeTruthy();
+  });
+
+  it('stacks the hub, statistics, opportunity identity and actions at 200% text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
+      width: 360,
+      height: 800,
+      scale: 1,
+      fontScale: 2,
+    });
+    mockUsePaginatedApi.mockReturnValueOnce({
+      items: [{
+        ...mockOpportunity,
+        title: 'A very long community gardening opportunity title that must remain readable',
+        description: 'A deliberately long explanation that must expand instead of being clamped when the member uses enlarged system text.',
+        location: 'A deliberately long community-centre location that must not become a tiny chip',
+      }],
+      isLoading: false,
+      isLoadingMore: false,
+      error: null,
+      hasMore: false,
+      loadMore: jest.fn(),
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<VolunteeringScreen />);
+
+    expect(screen.getByTestId('volunteering-hero-identity')).toHaveStyle({ flexDirection: 'column' });
+    expect(screen.getByTestId('volunteering-stat-opportunities')).toHaveStyle({ width: '100%' });
+    expect(screen.getByTestId('volunteering-stat-applications')).toHaveStyle({ width: '100%' });
+    expect(screen.getByTestId('volunteering-stat-hours')).toHaveStyle({ width: '100%' });
+    expect(screen.getByTestId('volunteering-opportunity-identity-10')).toHaveStyle({ flexDirection: 'column' });
+    expect(screen.getByTestId('volunteering-opportunity-description-10')).toHaveProp('numberOfLines', 0);
+    expect(screen.getByLabelText('openOpportunityLabel')).toHaveStyle({ width: '100%' });
+    expect(screen.getByLabelText('applyOpportunityLabel')).toHaveStyle({ width: '100%' });
+
+    screen.unmount();
+    mockParams = { tab: 'donations' };
+    const donations = render(<VolunteeringScreen />);
+    expect(donations.getByTestId('volunteering-donation-amount-row')).toHaveStyle({ flexDirection: 'column' });
+    donations.unmount();
+    dimensions.mockRestore();
   });
 
   it('renders managed volunteering organisations and dashboard entry points', () => {
@@ -1086,10 +1202,26 @@ describe('VolunteeringScreen', () => {
     expect(getByText('Cancel shift')).toBeTruthy();
   });
 
-  it('🔴 releases a shift place only after a confirmation', async () => {
+  it('🔴 releases a shift place only after confirmation and verifies a lost response', async () => {
     // The DETAIL screen has confirmed this same call since S4-16 — "one tap used to
     // release the place with no way back" — and the hub was never brought along, so the
     // identical action a tap away was still unguarded (E/F-12).
+    const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+    jest.mocked(cancelShiftSignup).mockRejectedValueOnce(new ApiResponseError(0, 'Network unavailable'));
+    jest.mocked(getOpportunity).mockResolvedValueOnce({
+      data: {
+        id: 10,
+        title: 'Garden Helper',
+        description: null,
+        organization: null,
+        location: null,
+        is_remote: false,
+        skills_needed: [],
+        status: 'open',
+        created_at: '2026-01-01T00:00:00Z',
+        application: { id: 21, status: 'approved', shift_id: null },
+      },
+    });
     let apiCall = 0;
     mockUseApi.mockImplementation(() => {
       const responses = [
@@ -1139,6 +1271,7 @@ describe('VolunteeringScreen', () => {
 
     fireEvent.press(getByTestId('volunteering-confirm-cancel-shift-77'));
     await waitFor(() => expect(cancelShiftSignup).toHaveBeenCalledWith(77));
+    await waitFor(() => expect(getOpportunity).toHaveBeenCalledWith(10));
   });
 
   it('renders native volunteer shift swaps and received actions', () => {
@@ -1500,6 +1633,70 @@ describe('VolunteeringScreen', () => {
 
     resolveResponse({ data: {} });
     await waitFor(() => expect(screen.getByText('Accept')).toBeTruthy());
+  });
+
+  it('replays the exact received-swap decision once when its response is lost', async () => {
+    const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+    jest.mocked(respondToShiftSwap)
+      .mockReset()
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Response unavailable'))
+      .mockResolvedValueOnce({ data: { id: 77, status: 'accepted' } });
+    swapPanelApi('received');
+    const screen = render(<VolunteeringScreen />);
+    fireEvent.press(screen.getByText('Swaps'));
+
+    fireEvent.press(screen.getByText('Accept'));
+
+    await waitFor(() => expect(respondToShiftSwap).toHaveBeenCalledTimes(2));
+    expect(respondToShiftSwap).toHaveBeenNthCalledWith(1, 77, 'accept');
+    expect(respondToShiftSwap).toHaveBeenNthCalledWith(2, 77, 'accept');
+  });
+
+  it('replays the exact sent-swap cancellation once when its response is lost', async () => {
+    const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+    jest.mocked(cancelShiftSwap)
+      .mockReset()
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Response unavailable'))
+      .mockResolvedValueOnce(undefined);
+    swapPanelApi('sent');
+    const screen = render(<VolunteeringScreen />);
+    fireEvent.press(screen.getByText('Swaps'));
+
+    fireEvent.press(screen.getByText('Cancel request'));
+
+    await waitFor(() => expect(cancelShiftSwap).toHaveBeenCalledTimes(2));
+    expect(cancelShiftSwap).toHaveBeenNthCalledWith(1, 77);
+    expect(cancelShiftSwap).toHaveBeenNthCalledWith(2, 77);
+  });
+
+  it('refreshes canonical swaps and explains uncertainty when both decision responses are lost', async () => {
+    const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+    const refresh = jest.fn();
+    const { show } = useAppToast() as unknown as { show: jest.Mock };
+    show.mockClear();
+    jest.mocked(respondToShiftSwap)
+      .mockReset()
+      .mockRejectedValue(new ApiResponseError(0, 'Response unavailable'));
+    swapPanelApi('received');
+    // Swaps are the ninth useApi call in this screen.
+    let apiCall = 0;
+    const previousImplementation = mockUseApi.getMockImplementation();
+    mockUseApi.mockImplementation(() => {
+      const response = previousImplementation?.();
+      apiCall += 1;
+      return apiCall % 9 === 0 ? { ...(response as object), refresh } : response;
+    });
+    const screen = render(<VolunteeringScreen />);
+    fireEvent.press(screen.getByText('Swaps'));
+
+    fireEvent.press(screen.getByText('Accept'));
+
+    await waitFor(() => expect(respondToShiftSwap).toHaveBeenCalledTimes(2));
+    expect(refresh).toHaveBeenCalled();
+    expect(show).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'We could not confirm the change. Refresh your shifts before trying again.',
+      variant: 'danger',
+    }));
   });
   it('🔴 tells a member their organisation registration was refused', () => {
     // A declined registration used to slide out of the amber "awaiting approval" block

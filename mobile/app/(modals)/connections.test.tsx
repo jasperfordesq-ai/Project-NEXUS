@@ -40,6 +40,8 @@ jest.mock('react-i18next', () => ({
         'connections.accept': 'Accept',
         'connections.decline': 'Decline',
         'connections.cancel': 'Cancel request',
+        'connections.cancelConfirmTitle': 'Cancel this request?',
+        'connections.cancelConfirmMessage': 'This connection request will be withdrawn. You can send a new request later.',
         'connections.unknownMember': 'Community member',
       };
       return map[key] ?? key;
@@ -52,6 +54,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 7 } }) }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -81,7 +84,9 @@ jest.mock('@/components/ui/useConfirm', () => ({
 
 jest.mock('@/lib/api/connections', () => ({
   acceptConnection: jest.fn(),
+  declineConnection: jest.fn(),
   getConnections: jest.fn(),
+  getConnectionStatus: jest.fn().mockResolvedValue({ data: { status: 'none', connection_id: null } }),
   removeConnection: jest.fn(),
 }));
 
@@ -217,6 +222,105 @@ describe('ConnectionsRoute', () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
+  it('serializes rapid connection decisions before React renders the busy state', async () => {
+    const { acceptConnection } = require('@/lib/api/connections');
+    let finish!: (value: unknown) => void;
+    acceptConnection.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{
+      connection_id: 77,
+      status: 'pending',
+      user: { id: 9, first_name: 'Nina', last_name: 'Ito' },
+      created_at: '2026-09-01T09:00:00Z',
+    }] }));
+
+    const { getByText } = render(<ConnectionsRoute />);
+    fireEvent.press(getByText('Received'));
+    act(() => {
+      fireEvent.press(getByText('Accept'));
+      fireEvent.press(getByText('Accept'));
+    });
+
+    expect(acceptConnection).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ data: {} }));
+  });
+
+  it('uses the decline endpoint for a received request', async () => {
+    const { declineConnection, removeConnection } = require('@/lib/api/connections');
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{
+      connection_id: 78,
+      status: 'pending',
+      user: { id: 10, first_name: 'Omar', last_name: 'Khan' },
+    }] }));
+
+    const { getByText } = render(<ConnectionsRoute />);
+    fireEvent.press(getByText('Received'));
+    fireEvent.press(getByText('Decline'));
+    await act(async () => { mockConfirm.mock.calls[0][0].onConfirm(); });
+
+    await waitFor(() => expect(declineConnection).toHaveBeenCalledWith(78));
+    expect(removeConnection).not.toHaveBeenCalled();
+  });
+
+  it('binds a sent-request cancellation to pending state', async () => {
+    const { removeConnection } = require('@/lib/api/connections');
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{
+      connection_id: 80,
+      status: 'pending',
+      user: { id: 12, first_name: 'Grace', last_name: 'Hopper' },
+    }] }));
+
+    const { getByText } = render(<ConnectionsRoute />);
+    fireEvent.press(getByText('Sent'));
+    fireEvent.press(getByText('Cancel request'));
+    expect(mockConfirm.mock.calls[0][0]).toMatchObject({
+      title: 'Cancel this request?',
+      message: 'This connection request will be withdrawn. You can send a new request later.',
+      confirmLabel: 'Cancel request',
+    });
+    await act(async () => { mockConfirm.mock.calls[0][0].onConfirm(); });
+
+    expect(removeConnection).toHaveBeenCalledWith(80, 'pending');
+  });
+
+  it('removes a stale sent row when another device accepted before cancellation', async () => {
+    const { removeConnection, getConnectionStatus } = require('@/lib/api/connections');
+    removeConnection.mockRejectedValueOnce(new Error('state changed'));
+    getConnectionStatus.mockResolvedValueOnce({
+      data: { status: 'connected', connection_id: 81, direction: null },
+    });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{
+      connection_id: 81,
+      status: 'pending',
+      user: { id: 13, first_name: 'Mary', last_name: 'Jackson' },
+    }] }));
+
+    const { getByText, queryByText } = render(<ConnectionsRoute />);
+    fireEvent.press(getByText('Sent'));
+    fireEvent.press(getByText('Cancel request'));
+    await act(async () => { mockConfirm.mock.calls[0][0].onConfirm(); });
+
+    await waitFor(() => expect(queryByText('Mary Jackson')).toBeNull());
+    expect(getConnectionStatus).toHaveBeenCalledWith(13);
+  });
+
+  it('treats a lost accept response as success when readback is connected', async () => {
+    const { acceptConnection, getConnectionStatus } = require('@/lib/api/connections');
+    acceptConnection.mockRejectedValueOnce(new Error('connection lost'));
+    getConnectionStatus.mockResolvedValueOnce({ data: { status: 'connected', connection_id: 79 } });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{
+      connection_id: 79,
+      status: 'pending',
+      user: { id: 11, first_name: 'Ada', last_name: 'Lovelace' },
+    }] }));
+
+    const { getByText, queryByText } = render(<ConnectionsRoute />);
+    fireEvent.press(getByText('Received'));
+    fireEvent.press(getByText('Accept'));
+
+    await waitFor(() => expect(queryByText('Ada Lovelace')).toBeNull());
+    expect(getConnectionStatus).toHaveBeenCalledWith(11);
+  });
+
   it('does not offer a next page when the server says there is none', () => {
     mockUsePaginatedApi.mockReturnValue(paginated({ items: [connection], hasMore: false }));
 
@@ -257,7 +361,7 @@ describe('ConnectionsRoute', () => {
    *
    * The tab carries the direction that the status cannot, so the label comes from there.
    */
-  it('asks before disconnecting from a member, and only disconnects when the member agrees', () => {
+  it('asks before disconnecting from a member, and only disconnects when the member agrees', async () => {
     /*
       🔴 Remove / Decline / Cancel acted on ONE tap here, while the same disconnect on a
       member's profile has always confirmed first — the safe and the unsafe route to the
@@ -277,8 +381,8 @@ describe('ConnectionsRoute', () => {
     expect(mockConfirm.mock.calls[0][0]).toMatchObject({ variant: 'danger' });
 
     // Saying yes is what disconnects.
-    mockConfirm.mock.calls[0][0].onConfirm();
-    expect(removeConnection).toHaveBeenCalledWith(12);
+    await act(async () => { mockConfirm.mock.calls[0][0].onConfirm(); });
+    expect(removeConnection).toHaveBeenCalledWith(12, 'accepted');
   });
 
   it('labels a pending request from the tab, never from the raw status', () => {

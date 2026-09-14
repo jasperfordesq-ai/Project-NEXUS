@@ -72,6 +72,7 @@
   "shiftSignupTitle": "Schicht beigetreten",
   "shiftSignupMessage": "Sie haben sich für diese Schicht angemeldet.",
   "shiftSignupError": "Konnte sich für diese Schicht nicht anmelden.",
+  "shiftResultUnknown": "Die Änderung konnte nicht bestätigt werden. Aktualisieren Sie Ihre Schichten, bevor Sie es erneut versuchen.",
   "meta": {
     "location": "Standort",
     "commitment": "Arbeitsumfang",
@@ -306,6 +307,7 @@
   "interestSentTitle": "Interesse gesendet!",
   "interestSentMessage": "Die Organisation wird sich bald bei Ihnen melden.",
   "interestError": "Interesse konnte nicht bekundet werden.",
+  "interestNoAnswer": "Das Ergebnis konnte nicht bestätigt werden. Ihre Bewerbung wurde möglicherweise bereits gesendet.",
   "skills": "Benötigte Fähigkeiten",
   "commitment": "Zeitaufwand",
   "detail": {

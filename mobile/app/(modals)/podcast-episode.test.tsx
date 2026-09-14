@@ -8,12 +8,14 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockShow = jest.fn();
 const mockSeekToSeconds = jest.fn();
+const mockPlayerProps = jest.fn();
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(), useLocalSearchParams: () => ({ showSlug: 'time-stories', episodeSlug: 'first-hour' }) }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, vars?: Record<string, string>) => ({ 'episode.react': 'React', 'episode.reacted': 'Reacted', 'episode.reaction_failed': 'Could not react', 'episode.description': 'Description', 'episode.transcript': 'Transcript', 'episode.chapters': 'Chapters', 'episode.report': 'Report', 'episode.report_title': 'Report episode', 'common:back': 'Back', 'player.jump_to_chapter': `Jump to ${vars?.time ?? ''} — ${vars?.title ?? ''}` } as Record<string, string>)[key] ?? key }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 10 } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textSecondary: '#555', textMuted: '#777' }) }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
@@ -26,7 +28,8 @@ jest.mock('@/components/podcasts/PodcastAudioPlayer', () => {
   const { forwardRef, useImperativeHandle } = jest.requireActual('react');
   return {
     __esModule: true,
-    default: forwardRef((_props: unknown, ref: unknown) => {
+    default: forwardRef((props: unknown, ref: unknown) => {
+      mockPlayerProps(props);
       useImperativeHandle(ref, () => ({ seekToSeconds: mockSeekToSeconds }));
       return null;
     }),
@@ -60,9 +63,27 @@ describe('PodcastEpisodeScreen', () => {
   it('loads the episode and saves a reaction before updating its label', async () => {
     const { getByText } = render(<PodcastEpisodeScreen />);
     await waitFor(() => expect(getByText('Full accessible transcript.')).toBeTruthy());
+    expect(mockPlayerProps).toHaveBeenCalledWith(expect.objectContaining({
+      playbackScope: { tenantId: 2, userId: 10 },
+      episodeId: 8,
+    }));
     fireEvent.press(getByText('React'));
-    await waitFor(() => expect(togglePodcastReaction).toHaveBeenCalledWith(8));
+    await waitFor(() => expect(togglePodcastReaction).toHaveBeenCalledWith(8, true));
     expect(getByText('Reacted')).toBeTruthy();
+  });
+
+  it('keeps the intended reaction when the response is lost', async () => {
+    jest.mocked(togglePodcastReaction).mockRejectedValue(new ApiResponseError(0, 'Network request failed'));
+    jest.mocked(getPodcastEpisode)
+      .mockResolvedValueOnce({ id: 8, show_id: 2, title: 'First hour', slug: 'first-hour', audio_url: 'https://audio.example/1.mp3', explicit: false, episode_type: 'full', listen_count: 3, viewer_has_reacted: false })
+      .mockResolvedValueOnce({ id: 8, show_id: 2, title: 'First hour', slug: 'first-hour', audio_url: 'https://audio.example/1.mp3', explicit: false, episode_type: 'full', listen_count: 3, viewer_has_reacted: true });
+
+    const { getByText } = render(<PodcastEpisodeScreen />);
+    await waitFor(() => expect(getByText('React')).toBeTruthy());
+    fireEvent.press(getByText('React'));
+
+    await waitFor(() => expect(getByText('Reacted')).toBeTruthy());
+    expect(mockShow).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
   });
 
   /**

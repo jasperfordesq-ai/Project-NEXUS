@@ -10,6 +10,8 @@ import SettingsTranslationScreen from './settings-translation';
 import { getUserPreferences, saveUserPreferences } from '@/lib/api/settings';
 import { changeLanguage } from '@/lib/i18n';
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
@@ -74,6 +76,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 } }) }));
 
 jest.mock('@/lib/api/settings', () => ({
   getUserPreferences: jest.fn(),

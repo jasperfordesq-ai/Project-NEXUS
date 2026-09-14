@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import * as SecureStore from 'expo-secure-store';
-import { reserveWalletOperation, completeWalletOperation } from './walletOperation';
+import { reserveWalletOperation, completeWalletOperation, WALLET_OPERATION_UNRESOLVED_CODE } from './walletOperation';
 import { getWalletOperationStatus } from '@/lib/api/wallet';
 jest.mock('@/lib/api/wallet', () => ({ getWalletOperationStatus: jest.fn() }));
 const mockIdentity = { user: 1, tenant: 'one' };
@@ -109,7 +109,7 @@ it('refuses to send if encrypted persistence fails or the server replay window h
   await expect(reserveWalletOperation('transfer', 'same')).rejects.toThrow('Disk full');
   const saved = await reserveWalletOperation('transfer', 'same');
   persisted.set(saved.storageKey, JSON.stringify({ ...saved, createdAt: Date.now() - 24 * 60 * 60 * 1000 }));
-  await expect(reserveWalletOperation('transfer', 'same')).rejects.toThrow('earlier transfer');
+  await expect(reserveWalletOperation('transfer', 'same')).rejects.toThrow('earlier wallet action');
   expect(persisted.has(saved.storageKey)).toBe(true);
 });
 
@@ -128,7 +128,9 @@ it.each(['unknown', 'offline'])('keeps an expired %s operation blocked without r
   const saved = await reserveWalletOperation('transfer', intent);
   persisted.set(saved.storageKey, JSON.stringify({ ...saved, createdAt: Date.now() - 48 * 60 * 60 * 1000 }));
   if (state === 'offline') jest.mocked(getWalletOperationStatus).mockRejectedValueOnce(new Error('Offline'));
-  await expect(reserveWalletOperation('transfer', intent)).rejects.toThrow('earlier transfer');
+  await expect(reserveWalletOperation('transfer', intent)).rejects.toMatchObject({
+    code: WALLET_OPERATION_UNRESOLVED_CODE,
+  });
   expect(JSON.parse(persisted.get(saved.storageKey)!).key).toBe(saved.key);
 });
 

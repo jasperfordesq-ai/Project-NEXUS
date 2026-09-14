@@ -69,7 +69,6 @@
     "messagePlaceholder": "Ajouter une note facultative",
     "sendNow": "Envoyer des crédits",
     "donateNow": "Faire un don",
-    "defaultTransferDescription": "Transfert de crédits de temps",
     "validationTitle": "Vérifiez les détails",
     "validationAmount": "Entrez un montant supérieur à zéro.",
     "validationInsufficient": "Vous ne disposez pas de suffisamment de crédits temps pour ce montant.",
@@ -100,7 +99,10 @@
     "confirmDonationMessage": "Vous êtes sur le point de donner {{amount}} heures à {{name}}. Cette action est irréversible.",
     "recipientResolving": "Vérification du destinataire…",
     "recipientUnresolved": "Ce membre n’a pas été trouvé. Recherchez plutôt le destinataire.",
-    "unresolvedOperation": "Un transfert précédent reste non confirmé. Consultez votre historique et contactez votre coordinateur avant de le renvoyer."
+    "unresolvedOperation": "Une opération précédente du portefeuille reste non confirmée. Consultez l’historique des transactions et contactez votre coordinateur avant de renvoyer des crédits.",
+    "unresolvedTitle": "Opération du portefeuille à vérifier",
+    "reviewHistory": "Consulter l’historique des transactions",
+    "contactCommunity": "Contacter votre communauté"
   },
   "status": {
     "completed": "Terminé",

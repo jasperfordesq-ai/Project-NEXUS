@@ -59,6 +59,7 @@ export interface VolunteerOpportunity {
     id: number;
     status: 'pending' | 'approved' | 'declined' | string;
     message?: string | null;
+    shift_id?: number | null;
     created_at?: string | null;
   } | null;
   is_owner?: boolean;
@@ -658,8 +659,12 @@ export function requestShiftSwap(payload: {
   from_shift_id: number;
   to_shift_id: number;
   message?: string;
-}): Promise<{ data: { id: number; message?: string } }> {
-  return api.post<{ data: { id: number; message?: string } }>(`${API_V2}/volunteering/swaps`, payload);
+}, idempotencyKey?: string): Promise<{ data: { id: number; message?: string } }> {
+  return api.post<{ data: { id: number; message?: string } }>(
+    `${API_V2}/volunteering/swaps`,
+    { ...payload, ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) },
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
 }
 
 export function respondToShiftSwap(id: number, action: 'accept' | 'reject'): Promise<{ data: unknown }> {
@@ -678,8 +683,12 @@ export function submitVolunteerDonation(payload: SubmitVolunteerDonationPayload,
   );
 }
 
-export function createOpportunity(payload: CreateOpportunityPayload): Promise<{ data: VolunteerOpportunity }> {
-  return api.post<{ data: VolunteerOpportunity }>(`${API_V2}/volunteering/opportunities`, payload);
+export function createOpportunity(payload: CreateOpportunityPayload, idempotencyKey?: string): Promise<{ data: VolunteerOpportunity }> {
+  return api.post<{ data: VolunteerOpportunity }>(
+    `${API_V2}/volunteering/opportunities`,
+    { ...payload, ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) },
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
 }
 
 export function updateOpportunity(id: number, payload: UpdateOpportunityPayload): Promise<{ data: VolunteerOpportunity }> {
@@ -703,8 +712,11 @@ export function expressInterest(id: number, message?: string): Promise<{ message
   return api.post<{ message: string }>(`${API_V2}/volunteering/opportunities/${id}/apply`, message ? { message } : {});
 }
 
-export function signUpForShift(id: number): Promise<{ data: { shift_id: number; message: string } }> {
-  return api.post<{ data: { shift_id: number; message: string } }>(`${API_V2}/volunteering/shifts/${id}/signup`, {});
+export function signUpForShift(id: number, expectedShiftId: number | null): Promise<{ data: { shift_id: number; message: string } }> {
+  return api.post<{ data: { shift_id: number; message: string } }>(
+    `${API_V2}/volunteering/shifts/${id}/signup`,
+    { expected_shift_id: expectedShiftId },
+  );
 }
 
 export function cancelShiftSignup(id: number): Promise<void> {

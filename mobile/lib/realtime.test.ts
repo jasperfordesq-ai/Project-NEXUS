@@ -47,6 +47,7 @@ jest.mock('@/lib/storage', () => ({
 }));
 
 import { disconnectRealtime, getRealtimeClient, initRealtime } from './realtime';
+import { clearApiSession, installApiSession } from './api/client';
 
 /** Pull the authorizer the module handed to Pusher for a named channel. */
 function authorizeFor(channelName: string) {
@@ -63,6 +64,7 @@ const enabledConfig = { key: 'app-key', cluster: 'eu', enabled: true };
 describe('realtime connection lifecycle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearApiSession();
     disconnectRealtime();
     jest.clearAllMocks();
     mockStorageGet.mockResolvedValue(null);
@@ -129,6 +131,7 @@ describe('realtime connection lifecycle', () => {
 describe('private channel authorisation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearApiSession();
     disconnectRealtime();
     jest.clearAllMocks();
     mockStorageGet.mockImplementation((key: string) =>
@@ -166,6 +169,17 @@ describe('private channel authorisation', () => {
     expect(callback).toHaveBeenCalledWith(null, { auth: 'app-key:signature' });
   });
 
+  it('uses a newly issued bearer before encrypted storage can read it', async () => {
+    installApiSession('fresh-realtime-token');
+    mockStorageGet.mockImplementation((key: string) =>
+      Promise.resolve(key === 'nexus_tenant_slug' ? 'hour-timebank' : null));
+
+    await authorizeFor('private-user.7')('socket-123', jest.fn());
+
+    const headers = (global.fetch as jest.Mock).mock.calls[0][1].headers as Record<string, string>;
+    expect(headers.Authorization).toBe('Bearer fresh-realtime-token');
+  });
+
   it('url-encodes the socket id and channel name into the form body', async () => {
     await authorizeFor('presence-tenant.hour timebank')('socket/123', jest.fn());
 
@@ -173,15 +187,14 @@ describe('private channel authorisation', () => {
     expect(body).toBe('socket_id=socket%2F123&channel_name=presence-tenant.hour%20timebank');
   });
 
-  it('omits the auth headers entirely when no credentials are stored', async () => {
-    // Sending `Authorization: Bearer null` would look authenticated and be
-    // rejected as malformed; omitting the header lets the server answer honestly.
+  it('refuses channel authorisation locally when no credentials are stored', async () => {
     mockStorageGet.mockResolvedValue(null);
+    const callback = jest.fn();
 
-    await authorizeFor('private-user.7')('socket-123', jest.fn());
+    await authorizeFor('private-user.7')('socket-123', callback);
 
-    const headers = (global.fetch as jest.Mock).mock.calls[0][1].headers as Record<string, string>;
-    expect(headers).toEqual({ 'Content-Type': 'application/x-www-form-urlencoded' });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ name: 'ApiResponseError' }), null);
   });
 
   it('reports a rejected authorisation to Pusher with its status code', async () => {

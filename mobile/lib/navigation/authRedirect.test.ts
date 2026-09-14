@@ -184,6 +184,17 @@ describe('signed out', () => {
       decideAuthRedirect({ ...signedOut, pathname: '/members', pendingDeepLink: 'nexus://wallet' })
     ).toEqual({ action: 'replace', href: '/(auth)/login' });
   });
+
+  it('follows a queued password-reset link while signed out on login', () => {
+    expect(decideAuthRedirect({
+      ...signedOut,
+      pathname: '/login',
+      pendingDeepLink: 'nexus://reset-password?token=reset-token',
+    })).toEqual({
+      action: 'deep-link',
+      url: 'nexus://reset-password?token=reset-token',
+    });
+  });
 });
 
 describe('first installation with no selected community', () => {
@@ -209,6 +220,17 @@ describe('first installation with no selected community', () => {
     expect(decideAuthRedirect({ ...freshInstall, pathname: '/select-tenant' })).toEqual({
       action: 'none',
       reason: 'fresh install is choosing a community',
+    });
+  });
+
+  it('selects a community before replaying an account-recovery link', () => {
+    expect(decideAuthRedirect({
+      ...freshInstall,
+      pathname: '/login',
+      pendingDeepLink: 'nexus://reset-password?token=reset-token',
+    })).toEqual({
+      action: 'replace',
+      href: '/(auth)/select-tenant',
     });
   });
 });

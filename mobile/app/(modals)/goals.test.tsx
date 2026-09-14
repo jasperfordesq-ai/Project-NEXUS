@@ -4,7 +4,16 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
+
+const mockGoalDraftGuard = jest.fn();
+const mockGoalConfirm = jest.fn((opts: { onConfirm: () => void | Promise<void> }) => {
+  void opts.onConfirm();
+});
+const mockLoadCreationDraft = jest.fn();
+const mockSaveCreationDraft = jest.fn();
+const mockClearCreationDraft = jest.fn();
 
 // --- Mocks ---
 
@@ -102,6 +111,15 @@ jest.mock('react-i18next', () => ({
         'common:back': 'Back',
         'common:buttons.cancel': 'Cancel',
         'common:errors.alertTitle': 'Error',
+        'common:unsavedChanges.title': 'Leave without saving?',
+        'common:unsavedChanges.message': 'Your changes have not been saved.',
+        'common:unsavedChanges.discard': 'Discard',
+        'common:unsavedSaving.title': 'Still saving',
+        'common:unsavedSaving.message': 'Your changes are still being saved.',
+        'common:unsavedSaving.leave': 'Leave anyway',
+        'common:unsavedSaving.wait': 'Keep waiting',
+        'common:draftStorage.title': 'Draft not protected',
+        'common:draftStorage.message': 'This draft could not be saved securely.',
       };
       return map[key] ?? key;
     },
@@ -111,7 +129,22 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true }),
+}));
+
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 7 } }),
+}));
+
+jest.mock('@/lib/goalCreationOperation', () => ({
+  reserveGoalCreationOperation: jest.fn().mockResolvedValue({ storageKey: 'goal-operation', key: 'goal-key', createdAt: 1 }),
+  completeGoalCreationOperation: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('@/lib/creationDraftStore', () => ({
+  loadCreationDraft: (...args: unknown[]) => mockLoadCreationDraft(...args),
+  saveCreationDraft: (...args: unknown[]) => mockSaveCreationDraft(...args),
+  clearCreationDraft: (...args: unknown[]) => mockClearCreationDraft(...args),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -160,6 +193,7 @@ jest.mock('@/lib/api/goals', () => ({
 }));
 
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
@@ -180,44 +214,59 @@ jest.mock('@/components/ui/AppToast', () => {
 */
 jest.mock('@/components/ui/BottomSheet', () => {
   const React = require('react');
-  const { Text, View } = require('react-native');
-  return function MockBottomSheet({ visible, title, children, footer, scrollable, testID }: {
+  const { Pressable, Text, View } = require('react-native');
+  return function MockBottomSheet({ visible, title, children, footer, scrollable, testID, onClose, dismissible = true }: {
     visible: boolean;
     title?: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
     scrollable?: boolean;
     testID?: string;
+    onClose: () => void;
+    dismissible?: boolean;
   }) {
     if (!visible) return null;
     return (
-      <View testID={testID}>
+      <View testID={testID} accessibilityState={{ disabled: !dismissible }}>
         {title ? <Text>{title}</Text> : null}
         {scrollable ? <View testID={testID ? `${testID}-scroll` : undefined}>{children}</View> : children}
         {footer ? <View testID={testID ? `${testID}-footer` : undefined}>{footer}</View> : null}
+        <Pressable testID={testID ? `${testID}-gesture-close` : undefined} onPress={onClose} />
       </View>
     );
   };
 });
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (opts: { onConfirm: () => void | Promise<void> }) => {
-      void opts.onConfirm();
-    },
+    confirm: mockGoalConfirm,
     confirmDialog: null,
   }),
+}));
+jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
+  useUnsavedChangesGuard: (options: unknown) => mockGoalDraftGuard(options),
 }));
 
 // --- Tests ---
 
 import GoalsScreen from './goals';
-import { completeGoal, createGoalFromTemplate, getGoalTemplateCategories, getGoalTemplates, updateGoalStatus } from '@/lib/api/goals';
+import { completeGoal, createGoal, createGoalFromTemplate, getGoalTemplateCategories, getGoalTemplates, updateGoalStatus } from '@/lib/api/goals';
+import { completeGoalCreationOperation } from '@/lib/goalCreationOperation';
+import { useAppToast } from '@/components/ui/AppToast';
+
+const mockGoalShowToast = useAppToast().show as jest.Mock;
 
 const defaultApiState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
 
 beforeEach(() => {
   mockUseApi.mockReturnValue(defaultApiState);
   jest.clearAllMocks();
+  mockLoadCreationDraft.mockResolvedValue(null);
+  mockSaveCreationDraft.mockResolvedValue(true);
+  mockClearCreationDraft.mockResolvedValue(true);
+  mockGoalShowToast.mockClear();
+  mockGoalConfirm.mockImplementation((opts: { onConfirm: () => void | Promise<void> }) => {
+    void opts.onConfirm();
+  });
 });
 
 const mockGoal = {
@@ -271,6 +320,89 @@ describe('GoalsScreen', () => {
     expect(getByTestId('goal-composer-cancel')).toBeTruthy();
     expect(getByTestId('goal-composer-scroll')).toBeTruthy();
     expect(getByTestId('goal-composer-footer')).toBeTruthy();
+  });
+
+  it('keeps a goal draft when close is cancelled and clears it only after discard', async () => {
+    let pendingConfirmation: { onConfirm: () => void | Promise<void> } | undefined;
+    const appStateHandlers: ((state: string) => void)[] = [];
+    jest.spyOn(ReactNative.AppState, 'addEventListener').mockImplementation((_, handler) => {
+      appStateHandlers.push(handler as (state: string) => void);
+      return { remove: jest.fn() };
+    });
+    mockGoalConfirm.mockImplementation((options) => { pendingConfirmation = options; });
+    const { getAllByText, getByPlaceholderText, getByTestId, queryByTestId } = render(<GoalsScreen />);
+
+    fireEvent.press(getAllByText('Add Goal')[0]);
+    const title = getByPlaceholderText('What do you want to achieve?');
+    fireEvent.changeText(title, 'Grow the community garden');
+
+    expect(mockGoalDraftGuard).toHaveBeenLastCalledWith(expect.objectContaining({ isDirty: true, isSaving: false }));
+    fireEvent.press(getByTestId('goal-composer-cancel'));
+    expect(mockGoalConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Leave without saving?',
+      confirmLabel: 'Discard',
+      variant: 'danger',
+    }));
+    expect(getByTestId('goal-composer').props.accessibilityState).toEqual({ disabled: true });
+    expect(getByPlaceholderText('What do you want to achieve?').props.value).toBe('Grow the community garden');
+
+    await act(async () => {
+      await pendingConfirmation?.onConfirm();
+    });
+    await waitFor(() => expect(queryByTestId('goal-composer')).toBeNull());
+    mockSaveCreationDraft.mockClear();
+    act(() => { appStateHandlers.forEach((handler) => handler('background')); });
+    expect(mockSaveCreationDraft).not.toHaveBeenCalled();
+    fireEvent.press(getAllByText('Add Goal')[0]);
+    expect(getByPlaceholderText('What do you want to achieve?').props.value).toBe('');
+    expect(mockClearCreationDraft).toHaveBeenCalledWith({ kind: 'goal', tenantId: 2, userId: 7 });
+  });
+
+  it('keeps a goal composer open when secure discard cannot be committed', async () => {
+    mockClearCreationDraft.mockResolvedValue(false);
+    const { getAllByText, getByPlaceholderText, getByTestId } = render(<GoalsScreen />);
+
+    fireEvent.press(getAllByText('Add Goal')[0]);
+    fireEvent.changeText(getByPlaceholderText('What do you want to achieve?'), 'Do not resurrect this goal');
+    fireEvent.press(getByTestId('goal-composer-cancel'));
+
+    await waitFor(() => expect(mockClearCreationDraft).toHaveBeenCalled());
+    expect(getByTestId('goal-composer')).toBeTruthy();
+    expect(getByPlaceholderText('What do you want to achieve?').props.value).toBe('Do not resurrect this goal');
+    expect(mockGoalShowToast).toHaveBeenCalledWith({
+      title: 'Draft not protected',
+      description: 'This draft could not be saved securely.',
+      variant: 'warning',
+    });
+  });
+
+  it('retains the replay identity and form when an accepted goal cannot clear its local draft', async () => {
+    mockClearCreationDraft.mockResolvedValue(false);
+    const { getAllByText, getByPlaceholderText, getByTestId } = render(<GoalsScreen />);
+
+    fireEvent.press(getAllByText('Add Goal')[0]);
+    fireEvent.changeText(getByPlaceholderText('What do you want to achieve?'), 'Accepted goal with failed cleanup');
+    fireEvent.press(getByTestId('goal-composer-submit'));
+
+    await waitFor(() => expect(createGoal).toHaveBeenCalled());
+    expect(completeGoalCreationOperation).not.toHaveBeenCalled();
+    expect(getByTestId('goal-composer')).toBeTruthy();
+    expect(getByTestId('goal-draft-storage-warning')).toBeTruthy();
+  });
+
+  it('restores the account-scoped goal draft and opens its composer after a restart', async () => {
+    mockLoadCreationDraft.mockResolvedValueOnce({
+      title: 'Restart-safe community goal',
+      description: 'Preserve this exact context',
+      targetValue: '12.5',
+    });
+
+    const { findByPlaceholderText } = render(<GoalsScreen />);
+
+    expect((await findByPlaceholderText('What do you want to achieve?')).props.value).toBe('Restart-safe community goal');
+    expect((await findByPlaceholderText('Add a little context or a first step.')).props.value).toBe('Preserve this exact context');
+    expect((await findByPlaceholderText('e.g. 10')).props.value).toBe('12.5');
+    expect(mockLoadCreationDraft).toHaveBeenCalledWith({ kind: 'goal', tenantId: 2, userId: 7 });
   });
 
   it('renders a loading spinner when data is loading', () => {
@@ -365,7 +497,7 @@ describe('GoalsScreen', () => {
     fireEvent.press(getByText('Use'));
 
     await waitFor(() => {
-      expect(createGoalFromTemplate).toHaveBeenCalledWith(4);
+      expect(createGoalFromTemplate).toHaveBeenCalledWith(4, 'goal-key');
       expect(getByText('Volunteer starter')).toBeTruthy();
     });
   });

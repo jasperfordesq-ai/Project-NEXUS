@@ -101,6 +101,110 @@ class MarketplaceCommunityDeliveryControllerTest extends TestCase
         $this->assertContains($response->status(), [401, 403]);
     }
 
+    public function test_delivery_opportunities_require_auth(): void
+    {
+        $response = $this->apiGet('/v2/marketplace/orders/deliveries');
+        $this->assertContains($response->status(), [401, 403]);
+    }
+
+    public function test_delivery_opportunities_expose_only_safe_discovery_fields(): void
+    {
+        $this->requireCommunityDeliveryTables();
+        $this->setMarketplaceFeature(true);
+
+        $buyer = User::factory()->forTenant($this->testTenantId)->create();
+        $seller = User::factory()->forTenant($this->testTenantId)->create();
+        $deliverer = $this->authenticatedUser();
+        $orderId = $this->createCommunityDeliveryOrder($buyer, $seller);
+        DB::table('marketplace_orders')->where('id', $orderId)->update([
+            'delivery_address' => json_encode(['line1' => 'Private home']),
+            'delivery_notes' => 'Leave behind the private gate.',
+        ]);
+        DB::table('marketplace_listings')
+            ->where('id', DB::table('marketplace_orders')->where('id', $orderId)->value('marketplace_listing_id'))
+            ->update(['location' => 'Central district']);
+
+        $response = $this->apiGet('/v2/marketplace/orders/deliveries');
+
+        $response->assertOk()
+            ->assertJsonPath('data.0.order_id', $orderId)
+            ->assertJsonPath('data.0.listing.title', 'Community delivery listing')
+            ->assertJsonPath('data.0.listing.location', 'Central district')
+            ->assertJsonPath('data.0.can_offer', true)
+            ->assertJsonMissingPath('data.0.order_number')
+            ->assertJsonMissingPath('data.0.delivery_address')
+            ->assertJsonMissingPath('data.0.delivery_notes')
+            ->assertJsonMissingPath('data.0.buyer')
+            ->assertJsonMissingPath('data.0.seller');
+    }
+
+    public function test_delivery_opportunities_exclude_order_participants_and_include_own_offer_for_readback(): void
+    {
+        $this->requireCommunityDeliveryTables();
+        $this->setMarketplaceFeature(true);
+
+        $buyer = User::factory()->forTenant($this->testTenantId)->create();
+        $seller = User::factory()->forTenant($this->testTenantId)->create();
+        $deliverer = $this->authenticatedUser();
+        $orderId = $this->createCommunityDeliveryOrder($buyer, $seller);
+        DB::table('marketplace_delivery_offers')->insert([
+            'tenant_id' => $this->testTenantId,
+            'order_id' => $orderId,
+            'deliverer_id' => $deliverer->id,
+            'time_credits' => 1.5,
+            'estimated_minutes' => 45,
+            'notes' => 'After lunch',
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->apiGet('/v2/marketplace/orders/deliveries')
+            ->assertOk()
+            ->assertJsonPath('data.0.order_id', $orderId)
+            ->assertJsonPath('data.0.can_offer', false)
+            ->assertJsonPath('data.0.my_offer.time_credits', 1.5)
+            ->assertJsonPath('data.0.my_offer.estimated_minutes', 45)
+            ->assertJsonPath('data.0.my_offer.notes', 'After lunch')
+            ->assertJsonPath('data.0.my_offer.status', 'pending');
+
+        Sanctum::actingAs($buyer, ['*']);
+        $this->apiGet('/v2/marketplace/orders/deliveries')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_deliverer_can_read_back_only_their_own_offer(): void
+    {
+        $this->requireCommunityDeliveryTables();
+        $this->setMarketplaceFeature(true);
+
+        $buyer = User::factory()->forTenant($this->testTenantId)->create();
+        $seller = User::factory()->forTenant($this->testTenantId)->create();
+        $deliverer = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $orderId = $this->createCommunityDeliveryOrder($buyer, $seller);
+        foreach ([[$deliverer, 'Mine'], [$other, 'Private other offer']] as [$member, $notes]) {
+            DB::table('marketplace_delivery_offers')->insert([
+                'tenant_id' => $this->testTenantId,
+                'order_id' => $orderId,
+                'deliverer_id' => $member->id,
+                'time_credits' => 2,
+                'notes' => $notes,
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->apiGet("/v2/marketplace/orders/{$orderId}/delivery-offers")
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.deliverer_id', $deliverer->id)
+            ->assertJsonPath('data.0.notes', 'Mine')
+            ->assertJsonMissing(['notes' => 'Private other offer']);
+    }
+
     public function test_index_requires_auth(): void
     {
         $response = $this->apiGet('/v2/marketplace/orders/1/delivery-offers');

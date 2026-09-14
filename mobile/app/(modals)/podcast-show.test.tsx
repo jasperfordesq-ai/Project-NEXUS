@@ -13,7 +13,8 @@ jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(), router: { push: (...args: unknown[]) => mockPush(...args) }, useLocalSearchParams: () => ({ slug: 'time-stories' }) }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => ({ 'show.subscribe': 'Follow show', 'show.unsubscribe': 'Unfollow show', 'show.episodes': 'Episodes', 'show.no_episodes': 'No published episodes yet.', 'show.subscribe_failed': 'Could not update', 'show.subscribed': 'Show followed.', 'common:back': 'Back' } as Record<string, string>)[key] ?? key }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 10 } }) }));
 jest.mock('@/lib/hooks/useTheme', () => ({ useTheme: () => ({ text: '#111', textSecondary: '#555', textMuted: '#777' }) }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
@@ -23,6 +24,7 @@ jest.mock('@/lib/api/podcasts', () => ({ getPodcastShow: jest.fn(), togglePodcas
 
 import PodcastShowScreen from './podcast-show';
 import { getPodcastShow, togglePodcastSubscription } from '@/lib/api/podcasts';
+import { ApiResponseError } from '@/lib/api/client';
 
 describe('PodcastShowScreen', () => {
   beforeEach(() => {
@@ -35,8 +37,22 @@ describe('PodcastShowScreen', () => {
     const { getByText } = render(<PodcastShowScreen />);
     await waitFor(() => expect(getByText('Time stories')).toBeTruthy());
     fireEvent.press(getByText('Follow show'));
-    await waitFor(() => expect(togglePodcastSubscription).toHaveBeenCalledWith(2));
+    await waitFor(() => expect(togglePodcastSubscription).toHaveBeenCalledWith(2, true));
     fireEvent.press(getByText('First hour'));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/podcast-episode', params: { showSlug: 'time-stories', episodeSlug: 'first-hour' } });
+  });
+
+  it('keeps the intended follow state when the response is lost', async () => {
+    jest.mocked(togglePodcastSubscription).mockRejectedValue(new ApiResponseError(0, 'Network request failed'));
+    jest.mocked(getPodcastShow)
+      .mockResolvedValueOnce({ id: 2, title: 'Time stories', slug: 'time-stories', summary: 'Local voices.', episode_count: 1, subscriber_count: 9, is_subscribed: false, episodes: [] })
+      .mockResolvedValueOnce({ id: 2, title: 'Time stories', slug: 'time-stories', summary: 'Local voices.', episode_count: 1, subscriber_count: 10, is_subscribed: true, episodes: [] });
+
+    const { getByText } = render(<PodcastShowScreen />);
+    await waitFor(() => expect(getByText('Follow show')).toBeTruthy());
+    fireEvent.press(getByText('Follow show'));
+
+    await waitFor(() => expect(getByText('Unfollow show')).toBeTruthy());
+    expect(mockShow).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
   });
 });

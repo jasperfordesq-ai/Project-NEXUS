@@ -29,7 +29,7 @@ jest.mock('@/lib/constants', () => ({
 }));
 jest.mock('i18next', () => ({ t: (key: string) => key }));
 
-import { ApiResponseError } from '@/lib/api/client';
+import { ApiResponseError, clearApiSession, installApiSession } from '@/lib/api/client';
 import { SHARING_UNAVAILABLE, downloadAuthenticatedFile } from './authenticatedFileDownload';
 
 /**
@@ -42,6 +42,7 @@ import { SHARING_UNAVAILABLE, downloadAuthenticatedFile } from './authenticatedF
 describe('downloadAuthenticatedFile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearApiSession();
     mockStorageGet.mockImplementation(async (key: string) => (
       key === 'nexus_auth_token' ? 'token-123' : key === 'nexus_tenant_slug' ? 'hour-timebank' : null
     ));
@@ -64,6 +65,23 @@ describe('downloadAuthenticatedFile', () => {
       { headers: expect.objectContaining({ Authorization: 'Bearer token-123', 'X-Tenant-Slug': 'hour-timebank', 'Idempotency-Key': 'download-key-1' }) },
     );
     expect(mockShareAsync).toHaveBeenCalledWith('file:///cache/nexus-download-1-guide.pdf');
+  });
+
+  it('uses a newly issued bearer and prevents caller identity overrides', async () => {
+    installApiSession('fresh-download-token');
+    mockStorageGet.mockImplementation(async (key: string) => (
+      key === 'nexus_tenant_slug' ? 'hour-timebank' : null
+    ));
+
+    await downloadAuthenticatedFile('/api/v2/groups/1/files/31/download', 'guide.pdf', {
+      Authorization: 'Bearer caller-token',
+      'X-Tenant-Slug': 'other-community',
+    });
+
+    expect(mockDownloadAsync.mock.calls[0][2].headers).toMatchObject({
+      Authorization: 'Bearer fresh-download-token',
+      'X-Tenant-Slug': 'hour-timebank',
+    });
   });
 
   it('refuses without a stored token instead of downloading an "Unauthenticated" page', async () => {

@@ -119,22 +119,46 @@ function StatTile({
   value,
   tone,
   theme,
+  width,
+  fontScale,
+  testID,
 }: {
   icon: IoniconName;
   label: string;
   value: string;
   tone: string;
   theme: ReturnType<typeof useTheme>;
+  width: number;
+  fontScale: number;
+  testID: string;
 }) {
+  const largeText = fontScale > 1.3;
+
   return (
-    <Surface variant="secondary" className="min-w-[46%] flex-1 gap-2 rounded-panel-inner p-4">
+    <Surface
+      key={fontScale}
+      variant="secondary"
+      className="gap-2 rounded-panel-inner p-4"
+      style={responsiveActionStyle(width, fontScale)}
+      testID={testID}
+    >
       <View className="size-9 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(tone, 0.14) }}>
         <Ionicons name={icon} size={18} color={tone} />
       </View>
-      <Text className="text-lg font-bold" style={{ color: theme.text }} numberOfLines={2}>
+      <Text
+        className="text-lg font-bold"
+        style={{ color: theme.text }}
+        numberOfLines={largeText ? undefined : 2}
+        testID={`${testID}-value`}
+      >
         {value}
       </Text>
-      <Text className="text-[11px] font-semibold uppercase" style={{ color: theme.textSecondary }} numberOfLines={2}>
+      <Text
+        className="text-[11px] font-semibold uppercase"
+        style={{ color: theme.textSecondary }}
+        numberOfLines={largeText ? undefined : 2}
+        testID={`${testID}-label`}
+      >
         {label}
       </Text>
     </Surface>
@@ -246,6 +270,8 @@ function FederationPartnerScreen() {
   const primary = usePrimaryColor();
   const { tenant } = useTenant();
   const theme = useTheme();
+  const { width, fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
 
   const partnerId = useMemo(() => {
     const rawId = Array.isArray(id) ? id[0] : id;
@@ -317,16 +343,16 @@ function FederationPartnerScreen() {
             refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />}
             contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
           >
-            <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
+            <HeroCard key={`hero-${fontScale}`} className="mb-4 overflow-hidden rounded-panel p-0">
               <View className="h-1.5" style={{ backgroundColor: primary }} />
               <HeroCard.Body className="gap-5 p-4 pt-0">
-                <View className="flex-row items-start gap-4">
+                <View className={largeText ? 'items-start gap-4' : 'flex-row items-start gap-4'}>
                   <Avatar uri={partner.logo} name={partner.name} size={72} />
                   <View className="min-w-0 flex-1 gap-2">
                     <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
                       {t('detail.eyebrow')}
                     </Text>
-                    <Text className="text-2xl font-bold" style={{ color: theme.text }} numberOfLines={3}>
+                    <Text className="text-2xl font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 3}>
                       {partner.name}
                     </Text>
                     {partner.tagline ? (
@@ -334,7 +360,7 @@ function FederationPartnerScreen() {
                         {partner.tagline}
                       </Text>
                     ) : null}
-                    <View className="flex-row flex-wrap gap-2">
+                    <View key={`chips-${fontScale}`} className="flex-row flex-wrap gap-2">
                       <Chip size="md" variant="secondary" color={partner.is_external ? 'warning' : 'success'}>
                         <Ionicons name={partner.is_external ? 'globe-outline' : 'shield-checkmark-outline'} size={14} color={partner.is_external ? '#f59e0b' : '#22c55e'} />
                         <Chip.Label>{partner.is_external ? t('detail.externalPartner') : t('detail.integratedPartner')}</Chip.Label>
@@ -350,7 +376,7 @@ function FederationPartnerScreen() {
                 {partner.location || partner.country ? (
                   <Surface variant="secondary" className="flex-row items-center gap-2 rounded-panel-inner p-3">
                     <Ionicons name="location-outline" size={17} color={primary} />
-                    <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.text }} numberOfLines={2}>
+                    <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
                       {[partner.location, partner.country].filter(Boolean).join(', ')}
                     </Text>
                   </Surface>
@@ -360,33 +386,45 @@ function FederationPartnerScreen() {
 
             <View className="mb-4 flex-row flex-wrap gap-3">
               <StatTile
+                testID="federation-partner-stat-members"
                 icon="people-outline"
                 label={t('detail.memberTotal')}
                 value={(partner.member_count ?? 0).toLocaleString(dateLocale())}
                 tone={primary}
                 theme={theme}
+                width={width}
+                fontScale={fontScale}
               />
               <StatTile
+                testID="federation-partner-stat-since"
                 icon="calendar-outline"
                 label={t('detail.partnerSinceLabel')}
                 value={connectedDate ? t('detail.connectedDate', { date: connectedDate }) : t('detail.levelUnknown')}
                 tone="#06b6d4"
                 theme={theme}
+                width={width}
+                fontScale={fontScale}
               />
               <StatTile
+                testID="federation-partner-stat-level"
                 icon="shield-outline"
                 label={t('detail.level')}
                 value={levelLabel}
                 tone="#a855f7"
                 theme={theme}
+                width={width}
+                fontScale={fontScale}
               />
               {websiteUrl ? (
                 <StatTile
+                  testID="federation-partner-stat-website"
                   icon="globe-outline"
                   label={t('detail.website')}
                   value={websiteUrl.replace(/^https?:\/\//i, '')}
                   tone="#f59e0b"
                   theme={theme}
+                  width={width}
+                  fontScale={fontScale}
                 />
               ) : null}
             </View>

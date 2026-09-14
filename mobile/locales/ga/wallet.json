@@ -69,7 +69,6 @@
     "messagePlaceholder": "Cuir nóta roghnach leis",
     "sendNow": "Seol creidmheasanna",
     "donateNow": "Tabhair creidmheasanna",
-    "defaultTransferDescription": "Aistriú creidmheasa ama",
     "validationTitle": "Seiceáil na sonraí",
     "validationAmount": "Cuir isteach méid níos mó ná náid.",
     "validationInsufficient": "Níl go leor creidmheasanna ama agat don mhéid seo.",
@@ -100,7 +99,10 @@
     "confirmDonationMessage": "Tá tú ar tí {{amount}} uair a bhronnadh ar {{name}}. Ní féidir é seo a chealú.",
     "recipientResolving": "Ag seiceáil an fhaighteora…",
     "recipientUnresolved": "Níorbh fhéidir an comhalta sin a aimsiú. Cuardaigh an faighteoir ina ionad.",
-    "unresolvedOperation": "Níl aistriú roimhe seo deimhnithe fós. Seiceáil stair do sparáin agus déan teagmháil le do chomhordaitheoir sula seolann tú arís é."
+    "unresolvedOperation": "Níl gníomh sparáin roimhe seo deimhnithe fós. Féach ar stair na n-idirbheart agus déan teagmháil le do chomhordaitheoir sula seolann tú creidmheasanna arís.",
+    "unresolvedTitle": "Ní mór gníomh an sparáin a sheiceáil",
+    "reviewHistory": "Féach ar stair na n-idirbheart",
+    "contactCommunity": "Déan teagmháil le do phobal"
   },
   "status": {
     "completed": "Críochnaithe",

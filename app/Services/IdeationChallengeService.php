@@ -33,6 +33,73 @@ class IdeationChallengeService
         return $this->errors;
     }
 
+    /**
+     * Hash a caller-owned mutation identity and the exact intent it represents.
+     *
+     * A missing key preserves compatibility with older/web clients. Native callers use
+     * this identity to recover an accepted write when the HTTP response is lost.
+     *
+     * @return array{key_hash: string, request_hash: string}|null|false
+     */
+    private function mutationIdentity(?string $idempotencyKey, array $intent): array|null|false
+    {
+        $idempotencyKey = trim((string) $idempotencyKey);
+        if ($idempotencyKey === '') {
+            return null;
+        }
+
+        if (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191) {
+            $this->errors[] = [
+                'code' => 'IDEMPOTENCY_INVALID',
+                'message' => __('event_registration.idempotency_invalid'),
+            ];
+            return false;
+        }
+
+        ksort($intent);
+
+        return [
+            'key_hash' => hash('sha256', $idempotencyKey),
+            'request_hash' => hash('sha256', json_encode(
+                $intent,
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+            )),
+        ];
+    }
+
+    private function mutationReceipt(
+        int $tenantId,
+        int $userId,
+        string $operationType,
+        string $keyHash,
+        bool $lock = false,
+    ): ?object {
+        $query = DB::table('ideation_mutation_receipts')
+            ->where('tenant_id', $tenantId)
+            ->where('actor_user_id', $userId)
+            ->where('operation_type', $operationType)
+            ->where('idempotency_key_hash', $keyHash);
+
+        if ($lock) {
+            $query->lockForUpdate();
+        }
+
+        return $query->first();
+    }
+
+    private function receiptMatches(object $receipt, string $requestHash): bool
+    {
+        if (hash_equals((string) $receipt->request_hash, $requestHash)) {
+            return true;
+        }
+
+        $this->errors[] = [
+            'code' => 'IDEMPOTENCY_CONFLICT',
+            'message' => __('event_registration.idempotency_conflict'),
+        ];
+        return false;
+    }
+
     // ================================================================
     // CHALLENGE METHODS
     // ================================================================
@@ -107,24 +174,7 @@ class IdeationChallengeService
      */
     public function getById(int $id, ?int $viewerId = null): ?array
     {
-        $challenge = DB::table('ideation_challenges')
-            ->where('tenant_id', TenantContext::getId())
-            ->where('id', $id)
-            ->first();
-
-        if (! $challenge) {
-            return null;
-        }
-
-        if (!$this->canViewChallengeRecord($challenge, $viewerId)) {
-            return null;
-        }
-
-        $data = (array) $challenge;
-        $data['tags'] = isset($data['tags']) ? (json_decode($data['tags'], true) ?? []) : [];
-        $data['ideas_count'] = (int) DB::table('challenge_ideas')->where('challenge_id', $id)->count();
-
-        return $data;
+        return $this->getChallengeById($id, $viewerId);
     }
 
     /**
@@ -173,8 +223,14 @@ class IdeationChallengeService
                 ->where('challenge_id', $id)
                 ->where('user_id', $userId)
                 ->exists();
+
+            $reason = $this->ideaSubmissionUnavailableReason($challenge, $userId);
+            $data['accepting_submissions'] = $reason === null;
+            $data['submission_unavailable_reason'] = $reason;
         } else {
             $data['is_favorited'] = false;
+            $data['accepting_submissions'] = false;
+            $data['submission_unavailable_reason'] = 'authentication';
         }
 
         // Format creator
@@ -187,6 +243,35 @@ class IdeationChallengeService
         unset($data['creator_first_name'], $data['creator_last_name'], $data['creator_avatar']);
 
         return $data;
+    }
+
+    /**
+     * Return the stable reason a member cannot add another submitted idea.
+     */
+    private function ideaSubmissionUnavailableReason(object $challenge, int $userId): ?string
+    {
+        if (($challenge->status ?? null) !== 'open') {
+            return 'phase';
+        }
+
+        $deadline = $challenge->submission_deadline ?? null;
+        if ($deadline && now()->greaterThanOrEqualTo($deadline)) {
+            return 'deadline';
+        }
+
+        $limit = (int) ($challenge->max_ideas_per_user ?? 0);
+        if ($limit > 0) {
+            $submitted = DB::table('challenge_ideas')
+                ->where('challenge_id', (int) $challenge->id)
+                ->where('user_id', $userId)
+                ->whereNotIn('status', ['draft', 'withdrawn'])
+                ->count();
+            if ($submitted >= $limit) {
+                return 'limit';
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -402,37 +487,99 @@ class IdeationChallengeService
      */
     public function submitIdea(int $challengeId, int $userId, array $data): int
     {
+        $this->errors = [];
         $tenantId = TenantContext::getId();
-        $challenge = DB::table('ideation_challenges')
-            ->where('id', $challengeId)
-            ->where('tenant_id', $tenantId)
-            ->first();
-        if (!$challenge) {
-            throw new \RuntimeException('Challenge not found');
-        }
-
-        if ((int) $challenge->user_id !== $userId) {
-            app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
-                $userId,
-                (int) $challenge->user_id,
-                (int) $tenantId,
-                'ideation_idea_submission',
-            );
-        }
-
-        $ideaId = DB::table('challenge_ideas')->insertGetId([
+        $title = trim((string) ($data['title'] ?? ''));
+        $description = trim((string) ($data['description'] ?? ''));
+        $identity = $this->mutationIdentity($data['idempotency_key'] ?? null, [
             'challenge_id' => $challengeId,
-            'user_id'      => $userId,
-            'title'        => trim($data['title']),
-            'description'  => trim($data['description'] ?? ''),
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'description' => $description,
+            'title' => $title,
         ]);
+        if ($identity === false) {
+            return 0;
+        }
 
-        // Notify the challenge creator that a new idea was submitted
-        $this->notifyIdeaSubmitted($challengeId, $ideaId, $userId, trim($data['title']));
+        $result = DB::transaction(function () use ($challengeId, $description, $identity, $tenantId, $title, $userId): array {
+            if ($identity !== null) {
+                $receipt = $this->mutationReceipt($tenantId, $userId, 'idea_submit', $identity['key_hash'], true);
+                if ($receipt !== null) {
+                    return [
+                        'id' => $this->receiptMatches($receipt, $identity['request_hash'])
+                            ? (int) $receipt->result_id
+                            : 0,
+                        'created' => false,
+                    ];
+                }
+            }
 
-        return $ideaId;
+            $challenge = DB::table('ideation_challenges')
+                ->where('id', $challengeId)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first();
+            if (!$challenge) {
+                $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.challenge_not_found')];
+                return ['id' => 0, 'created' => false];
+            }
+
+            $unavailableReason = $this->ideaSubmissionUnavailableReason($challenge, $userId);
+            if ($unavailableReason !== null) {
+                $limit = (int) ($challenge->max_ideas_per_user ?? 0);
+                $this->errors[] = [
+                    'code' => match ($unavailableReason) {
+                        'deadline' => 'IDEATION_SUBMISSION_DEADLINE',
+                        'limit' => 'IDEATION_SUBMISSION_LIMIT',
+                        default => 'IDEATION_SUBMISSION_CLOSED',
+                    },
+                    'message' => match ($unavailableReason) {
+                        'deadline' => __('api.ideation_submission_deadline_passed'),
+                        'limit' => __('api.ideation_submission_limit_reached', ['limit' => $limit]),
+                        default => __('api.ideation_submission_closed'),
+                    },
+                ];
+                return ['id' => 0, 'created' => false];
+            }
+
+            if ((int) $challenge->user_id !== $userId) {
+                app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                    $userId,
+                    (int) $challenge->user_id,
+                    $tenantId,
+                    'ideation_idea_submission',
+                );
+            }
+
+            $ideaId = DB::table('challenge_ideas')->insertGetId([
+                'challenge_id' => $challengeId,
+                'user_id'      => $userId,
+                'title'        => $title,
+                'description'  => $description,
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ]);
+
+            if ($identity !== null) {
+                DB::table('ideation_mutation_receipts')->insert([
+                    'tenant_id' => $tenantId,
+                    'actor_user_id' => $userId,
+                    'operation_type' => 'idea_submit',
+                    'resource_id' => $challengeId,
+                    'idempotency_key_hash' => $identity['key_hash'],
+                    'request_hash' => $identity['request_hash'],
+                    'result_id' => $ideaId,
+                    'created_at' => now(),
+                ]);
+            }
+
+            return ['id' => (int) $ideaId, 'created' => true];
+        }, 3);
+
+        if ($result['created']) {
+            $this->notifyIdeaSubmitted($challengeId, $result['id'], $userId, $title);
+        }
+
+        return $result['id'];
     }
 
     /**
@@ -714,7 +861,12 @@ class IdeationChallengeService
     /**
      * Vote on an idea (legacy alias with validation).
      */
-    public function voteIdea(int $ideaId, int $userId): ?array
+    public function voteIdea(
+        int $ideaId,
+        int $userId,
+        ?bool $desiredVoted = null,
+        ?string $idempotencyKey = null,
+    ): ?array
     {
         $this->errors = [];
         $tenantId = TenantContext::getId();
@@ -748,14 +900,45 @@ class IdeationChallengeService
             return null;
         }
 
+        $identity = $this->mutationIdentity($idempotencyKey, [
+            'idea_id' => $ideaId,
+            'voted' => $desiredVoted === null ? 'toggle' : $desiredVoted,
+        ]);
+        if ($identity === false) {
+            return null;
+        }
+
         try {
-            return DB::transaction(function () use ($ideaId, $idea, $userId, $tenantId) {
+            $result = DB::transaction(function () use ($desiredVoted, $ideaId, $idea, $identity, $userId, $tenantId) {
+                if ($identity !== null) {
+                    $receipt = $this->mutationReceipt($tenantId, $userId, 'idea_vote', $identity['key_hash'], true);
+                    if ($receipt !== null) {
+                        if (!$this->receiptMatches($receipt, $identity['request_hash'])) {
+                            return null;
+                        }
+
+                        return [
+                            'voted' => (bool) $receipt->result_state,
+                            'votes_count' => (int) ($receipt->result_count ?? 0),
+                            'changed' => false,
+                        ];
+                    }
+                }
+
+                // Serialize all voters through the idea row so the denormalized count and
+                // each receipt describe the same committed state.
+                DB::table('challenge_ideas')->where('id', $ideaId)->lockForUpdate()->first();
                 $existingVote = DB::table('challenge_idea_votes')
                     ->where('idea_id', $ideaId)
                     ->where('user_id', $userId)
+                    ->lockForUpdate()
                     ->first();
 
-                if ($existingVote) {
+                $currentlyVoted = $existingVote !== null;
+                $voted = $desiredVoted ?? !$currentlyVoted;
+                $changed = $voted !== $currentlyVoted;
+
+                if ($changed && !$voted) {
                     DB::table('challenge_idea_votes')
                         ->where('idea_id', $ideaId)
                         ->where('user_id', $userId)
@@ -763,8 +946,7 @@ class IdeationChallengeService
                     DB::table('challenge_ideas')
                         ->where('id', $ideaId)
                         ->update(['votes_count' => DB::raw('GREATEST(0, votes_count - 1)')]);
-                    $voted = false;
-                } else {
+                } elseif ($changed) {
                     app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                         $userId,
                         (int) $idea['user_id'],
@@ -780,21 +962,40 @@ class IdeationChallengeService
                     DB::table('challenge_ideas')
                         ->where('id', $ideaId)
                         ->increment('votes_count');
-                    $voted = true;
                 }
 
                 $updated = DB::table('challenge_ideas')->where('id', $ideaId)->first();
 
-                // Notify idea author on new vote (not on unvote)
-                if ($voted && $updated) {
-                    $this->notifyIdeaVoted($ideaId, (int) $updated->user_id, $userId, $updated->title ?? '');
+                if ($identity !== null) {
+                    DB::table('ideation_mutation_receipts')->insert([
+                        'tenant_id' => $tenantId,
+                        'actor_user_id' => $userId,
+                        'operation_type' => 'idea_vote',
+                        'resource_id' => $ideaId,
+                        'idempotency_key_hash' => $identity['key_hash'],
+                        'request_hash' => $identity['request_hash'],
+                        'result_state' => $voted,
+                        'result_count' => (int) ($updated->votes_count ?? 0),
+                        'created_at' => now(),
+                    ]);
                 }
 
                 return [
                     'voted'       => $voted,
                     'votes_count' => (int) ($updated->votes_count ?? 0),
+                    'changed'     => $changed,
                 ];
-            });
+            }, 3);
+
+            if ($result !== null && $result['changed'] && $result['voted']) {
+                $this->notifyIdeaVoted($ideaId, (int) $idea['user_id'], $userId, $idea['title'] ?? '');
+            }
+
+            if ($result !== null) {
+                unset($result['changed']);
+            }
+
+            return $result;
         } catch (SafeguardingPolicyException $e) {
             throw $e;
         } catch (\Exception $e) {
@@ -926,10 +1127,50 @@ class IdeationChallengeService
         ];
     }
 
+    /** Return the exact comment created by a mutation receipt. */
+    public function getCommentById(int $commentId): ?array
+    {
+        $tenantId = TenantContext::getId();
+        $item = DB::table('challenge_idea_comments as c')
+            ->join('challenge_ideas as i', 'c.idea_id', '=', 'i.id')
+            ->join('ideation_challenges as ic', 'i.challenge_id', '=', 'ic.id')
+            ->leftJoin('users as u', 'c.user_id', '=', 'u.id')
+            ->where('c.id', $commentId)
+            ->where('ic.tenant_id', $tenantId)
+            ->select(
+                'c.*',
+                'u.first_name as author_first_name',
+                'u.last_name as author_last_name',
+                'u.profile_type as author_profile_type',
+                'u.organization_name as author_organization_name',
+                'u.avatar_url as author_avatar',
+            )
+            ->first();
+
+        if ($item === null) {
+            return null;
+        }
+
+        $data = (array) $item;
+        $data['author'] = [
+            'id' => (int) $item->user_id,
+            'name' => UserDisplayName::resolvePrefixed($item, 'author_'),
+            'avatar_url' => $item->author_avatar ?? null,
+        ];
+        unset($data['author_first_name'], $data['author_last_name'], $data['author_avatar']);
+
+        return $data;
+    }
+
     /**
      * Add a comment to an idea.
      */
-    public function addComment(int $ideaId, int $userId, string $body): ?int
+    public function addComment(
+        int $ideaId,
+        int $userId,
+        string $body,
+        ?string $idempotencyKey = null,
+    ): ?int
     {
         $this->errors = [];
         $body = trim($body);
@@ -950,14 +1191,36 @@ class IdeationChallengeService
             return null;
         }
 
+        $tenantId = TenantContext::getId();
+        $identity = $this->mutationIdentity($idempotencyKey, [
+            'body' => $body,
+            'idea_id' => $ideaId,
+        ]);
+        if ($identity === false) {
+            return null;
+        }
+
         try {
-            $commentId = DB::transaction(function () use ($ideaId, $idea, $userId, $body) {
+            $result = DB::transaction(function () use ($body, $ideaId, $idea, $identity, $tenantId, $userId): array {
+                if ($identity !== null) {
+                    $receipt = $this->mutationReceipt($tenantId, $userId, 'idea_comment', $identity['key_hash'], true);
+                    if ($receipt !== null) {
+                        return [
+                            'id' => $this->receiptMatches($receipt, $identity['request_hash'])
+                                ? (int) $receipt->result_id
+                                : 0,
+                            'created' => false,
+                        ];
+                    }
+                }
+
+                DB::table('challenge_ideas')->where('id', $ideaId)->lockForUpdate()->first();
                 $ideaAuthorId = (int) $idea['user_id'];
                 if ($ideaAuthorId !== $userId) {
                     app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                         $userId,
                         $ideaAuthorId,
-                        (int) TenantContext::getId(),
+                        $tenantId,
                         'idea_comment',
                     );
                 }
@@ -973,13 +1236,31 @@ class IdeationChallengeService
                     ->where('id', $ideaId)
                     ->increment('comments_count');
 
-                return (int) $commentId;
-            });
+                if ($identity !== null) {
+                    DB::table('ideation_mutation_receipts')->insert([
+                        'tenant_id' => $tenantId,
+                        'actor_user_id' => $userId,
+                        'operation_type' => 'idea_comment',
+                        'resource_id' => $ideaId,
+                        'idempotency_key_hash' => $identity['key_hash'],
+                        'request_hash' => $identity['request_hash'],
+                        'result_id' => $commentId,
+                        'created_at' => now(),
+                    ]);
+                }
 
-            // Notify idea author about the comment
-            $this->notifyIdeaCommented($ideaId, (int) $idea['user_id'], $userId, $body);
+                return ['id' => (int) $commentId, 'created' => true];
+            }, 3);
 
-            return $commentId;
+            if ($result['id'] === 0) {
+                return null;
+            }
+
+            if ($result['created']) {
+                $this->notifyIdeaCommented($ideaId, (int) $idea['user_id'], $userId, $body);
+            }
+
+            return $result['id'];
         } catch (SafeguardingPolicyException $e) {
             throw $e;
         } catch (\Exception $e) {

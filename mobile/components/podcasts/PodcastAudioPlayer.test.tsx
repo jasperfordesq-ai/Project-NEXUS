@@ -50,6 +50,8 @@ jest.mock('@/lib/podcasts/playbackPositions', () => ({
 
 import PodcastAudioPlayer from './PodcastAudioPlayer';
 
+const scope = { tenantId: 2, userId: 10 };
+
 describe('PodcastAudioPlayer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -64,7 +66,7 @@ describe('PodcastAudioPlayer', () => {
   });
 
   it('loads and starts the episode only after the member presses Play', async () => {
-    const { getByLabelText } = render(<PodcastAudioPlayer episodeId={8} episodeTitle="Local voices" showTitle="Community show" audioUrl="https://audio.example/one.mp3" durationSeconds={60} primaryColor="#06f" />);
+    const { getByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} episodeTitle="Local voices" showTitle="Community show" audioUrl="https://audio.example/one.mp3" durationSeconds={60} primaryColor="#06f" />);
     expect(mockCreate).not.toHaveBeenCalled();
     fireEvent.press(getByLabelText('Play'));
     await waitFor(() => expect(mockCreate).toHaveBeenCalledWith({ uri: 'https://audio.example/one.mp3' }, expect.any(Function), expect.any(AbortSignal)));
@@ -74,14 +76,14 @@ describe('PodcastAudioPlayer', () => {
 
   it('shows visible feedback and a way to try again if audio loading fails', async () => {
     mockCreate.mockRejectedValue(new Error('offline'));
-    const { getByLabelText, findByText } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
+    const { getByLabelText, findByText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
     fireEvent.press(getByLabelText('Play'));
     expect(await findByText('Audio unavailable')).toBeTruthy();
     expect(await findByText('Retry')).toBeTruthy();
   });
 
   it('offers a fresh load after the native player fails during playback', async () => {
-    const screen = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
+    const screen = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
     fireEvent.press(screen.getByLabelText('Play'));
     await waitFor(() => expect(mockPlay).toHaveBeenCalled());
     act(() => mockCreate.mock.calls[0][1]({ isLoaded: false, playbackState: 'failed' }));
@@ -93,7 +95,7 @@ describe('PodcastAudioPlayer', () => {
   it('does not create a player after leaving during audio session setup', async () => {
     let finish!: () => void;
     mockSetAudioMode.mockReturnValueOnce(new Promise<void>((resolve) => { finish = resolve; }));
-    const screen = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
+    const screen = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
     fireEvent.press(screen.getByLabelText('Play'));
     screen.unmount();
     await act(async () => { finish(); });
@@ -104,7 +106,7 @@ describe('PodcastAudioPlayer', () => {
   it('releases a late player instead of starting audio after leaving', async () => {
     let finish!: (value: unknown) => void;
     mockCreate.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
-    const screen = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
+    const screen = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
     fireEvent.press(screen.getByLabelText('Play'));
     await waitFor(() => expect(mockCreate).toHaveBeenCalled());
     const signal = mockCreate.mock.calls[0][2] as AbortSignal;
@@ -116,7 +118,7 @@ describe('PodcastAudioPlayer', () => {
   });
 
   it('asks for an audio session that survives the phone locking', async () => {
-    const { getByLabelText } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
+    const { getByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" primaryColor="#06f" />);
     fireEvent.press(getByLabelText('Play'));
     await waitFor(() => expect(mockSetAudioMode).toHaveBeenCalled());
     expect(mockSetAudioMode).toHaveBeenCalledWith(expect.objectContaining({
@@ -134,8 +136,9 @@ describe('PodcastAudioPlayer', () => {
 
   it('resumes where the member left off instead of restarting the episode', async () => {
     mockLoadPosition.mockResolvedValue(754);
-    const { findByLabelText } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
+    const { findByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
     const play = await findByLabelText('Resume from 12:34');
+    expect(mockLoadPosition).toHaveBeenCalledWith(scope, 8, 2700);
     fireEvent.press(play);
     await waitFor(() => expect(mockCreate).toHaveBeenCalledWith(
       { uri: 'https://audio.example/one.mp3' },
@@ -147,9 +150,9 @@ describe('PodcastAudioPlayer', () => {
 
   it('start over forgets the saved place and plays from the beginning', async () => {
     mockLoadPosition.mockResolvedValue(754);
-    const { findByLabelText } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
+    const { findByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
     fireEvent.press(await findByLabelText('Start over'));
-    await waitFor(() => expect(mockClearPosition).toHaveBeenCalledWith(8));
+    await waitFor(() => expect(mockClearPosition).toHaveBeenCalledWith(scope, 8));
     await waitFor(() => expect(mockCreate).toHaveBeenCalledWith(
       { uri: 'https://audio.example/one.mp3' },
       expect.any(Function), expect.any(AbortSignal),
@@ -157,7 +160,7 @@ describe('PodcastAudioPlayer', () => {
   });
 
   it('skips forward and back within a loaded episode', async () => {
-    const { getByLabelText } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
+    const { getByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
     fireEvent.press(getByLabelText('Play'));
     await waitFor(() => expect(mockCreate).toHaveBeenCalled());
 
@@ -175,7 +178,7 @@ describe('PodcastAudioPlayer', () => {
   });
 
   it('never seeks past the end or before the start', async () => {
-    const { getByLabelText } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={60} primaryColor="#06f" />);
+    const { getByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={60} primaryColor="#06f" />);
     fireEvent.press(getByLabelText('Play'));
     await waitFor(() => expect(mockCreate).toHaveBeenCalled());
     const onStatus = mockCreate.mock.calls[0][1] as (status: unknown) => void;
@@ -190,23 +193,23 @@ describe('PodcastAudioPlayer', () => {
   });
 
   it('remembers the place when the member leaves the screen', async () => {
-    const { getByLabelText, unmount } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
+    const { getByLabelText, unmount } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
     fireEvent.press(getByLabelText('Play'));
     await waitFor(() => expect(mockCreate).toHaveBeenCalled());
     const onStatus = mockCreate.mock.calls[0][1] as (status: unknown) => void;
     act(() => onStatus({ isLoaded: true, currentTime: 421, duration: 2700, playing: true, didJustFinish: false }));
 
     unmount();
-    expect(mockSavePosition).toHaveBeenCalledWith(8, 421, 2700);
+    expect(mockSavePosition).toHaveBeenCalledWith(scope, 8, 421, 2700);
   });
 
   it('forgets the place once the episode finishes', async () => {
-    const { getByLabelText } = render(<PodcastAudioPlayer episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
+    const { getByLabelText } = render(<PodcastAudioPlayer playbackScope={scope} episodeId={8} audioUrl="https://audio.example/one.mp3" durationSeconds={2700} primaryColor="#06f" />);
     fireEvent.press(getByLabelText('Play'));
     await waitFor(() => expect(mockCreate).toHaveBeenCalled());
     const onStatus = mockCreate.mock.calls[0][1] as (status: unknown) => void;
     act(() => onStatus({ isLoaded: true, currentTime: 2700, duration: 2700, playing: false, didJustFinish: true }));
 
-    await waitFor(() => expect(mockClearPosition).toHaveBeenCalledWith(8));
+    await waitFor(() => expect(mockClearPosition).toHaveBeenCalledWith(scope, 8));
   });
 });

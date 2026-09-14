@@ -5,12 +5,15 @@
 
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
 
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 // --- Mocks ---
 let mockOpportunityId = '10';
 let mockDeclineNoteRequired = false;
+let mockUserId = 7;
+let mockTenantId = 2;
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
@@ -39,6 +42,7 @@ jest.mock('react-i18next', () => ({
         'interestSentTitle': 'Interest sent',
         'interestSentMessage': 'The organisation will be in touch.',
         'interestError': 'Failed to send interest.',
+        'interestNoAnswer': 'We could not confirm the result. Your application may already have been sent.',
         'share': 'Share',
         'opportunityEyebrow': 'Volunteer opportunity',
         'yourOpportunity': 'Your opportunity',
@@ -102,7 +106,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true, tenant: { slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired } } }),
+  useTenant: () => ({ hasFeature: () => true, tenant: { id: mockTenantId, slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired } } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -121,7 +125,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: true }),
+  useAuth: () => ({ isAuthenticated: true, user: { id: mockUserId } }),
 }));
 
 const mockUseApi = jest.fn();
@@ -199,16 +203,23 @@ jest.mock('@/components/ui/AppToast', () => ({
 // --- Tests ---
 
 import VolunteeringDetailScreen from './volunteering-detail';
-import { cancelShiftSignup, expressInterest, signUpForShift } from '@/lib/api/volunteering';
+import { cancelShiftSignup, expressInterest, getMyShifts, getOpportunity, signUpForShift } from '@/lib/api/volunteering';
+import { ApiResponseError } from '@/lib/api/client';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
 beforeEach(() => {
   mockOpportunityId = '10';
   mockDeclineNoteRequired = false;
+  mockUserId = 7;
+  mockTenantId = 2;
   mockUseApi.mockReturnValue(defaultApiState);
   mockHandleVolunteerApplication.mockResolvedValue({ data: {} });
   jest.clearAllMocks();
+  jest.mocked(getMyShifts).mockImplementation(() => {
+    factoryCalls.push('myShifts');
+    return Promise.resolve({ data: { items: [], cursor: null, has_more: false } });
+  });
 });
 
 const mockOpportunity = {
@@ -298,6 +309,18 @@ describe('VolunteeringDetailScreen', () => {
 
     expect(getByTestId('volunteer-apply-sheet')).toBeTruthy();
     expect(getByPlaceholderText(/Tell the organiser/)).toBeTruthy();
+  });
+
+  it('stacks identity, shift and application actions at large text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<VolunteeringDetailScreen />);
+
+    expect(screen.getByTestId('volunteer-hero-identity').props.className).not.toContain('flex-row');
+    expect(screen.getByTestId('volunteer-shift-1-header').props.className).not.toContain('flex-row');
+    fireEvent.press(screen.getByText('Express Interest'));
+    expect(screen.getByTestId('volunteer-apply-actions').props.className).not.toContain('flex-row');
+    dimensions.mockRestore();
   });
 
   it('does not show the apply action for owner-managed opportunities', () => {
@@ -485,6 +508,61 @@ describe('VolunteeringDetailScreen', () => {
     expect(expressInterest).toHaveBeenLastCalledWith(10, 'Available Saturday.');
   });
 
+  it.each([0, 409])('confirms an existing application after apply returns status %s', async (status) => {
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+    jest.mocked(expressInterest).mockRejectedValueOnce(new ApiResponseError(status, status === 0 ? 'timeout' : 'already applied'));
+    jest.mocked(getOpportunity).mockResolvedValueOnce({
+      data: { ...mockOpportunity, has_applied: true, application: { id: 81, status: 'pending' } },
+    });
+    const screen = render(<VolunteeringDetailScreen />);
+    fireEvent.press(screen.getByText('Express Interest'));
+    fireEvent.changeText(screen.getByPlaceholderText(/Tell the organiser/), 'Available after work.');
+    const buttons = screen.getAllByText('Express Interest');
+    fireEvent.press(buttons[buttons.length - 1]);
+
+    await waitFor(() => expect(getOpportunity).toHaveBeenCalledWith(10));
+    expect(screen.queryByTestId('volunteer-apply-sheet')).toBeNull();
+    expect(screen.getByText('Application submitted')).toBeTruthy();
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
+  });
+
+  it('keeps the application draft when submit and verification are both unavailable', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+    jest.mocked(expressInterest).mockRejectedValueOnce(new ApiResponseError(0, 'timeout'));
+    jest.mocked(getOpportunity).mockRejectedValueOnce(new ApiResponseError(0, 'offline'));
+    const screen = render(<VolunteeringDetailScreen />);
+    fireEvent.press(screen.getByText('Express Interest'));
+    fireEvent.changeText(screen.getByPlaceholderText(/Tell the organiser/), 'Please retain this note.');
+    const buttons = screen.getAllByText('Express Interest');
+    fireEvent.press(buttons[buttons.length - 1]);
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: expect.stringContaining('may already have been sent'),
+      variant: 'danger',
+    })));
+    expect(screen.getByPlaceholderText(/Tell the organiser/).props.value).toBe('Please retain this note.');
+    expect(screen.getByPlaceholderText(/Tell the organiser/).props.editable).toBe(true);
+  });
+
+  it('does not apply an old account submission result to a replacement session', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOpportunity }, isLoading: false, error: null, refresh: jest.fn() });
+    let resolve!: () => void;
+    jest.mocked(expressInterest).mockImplementationOnce(() => new Promise<{ message: string }>((done) => { resolve = () => done({ message: 'Accepted' }); }));
+    const screen = render(<VolunteeringDetailScreen />);
+    fireEvent.press(screen.getByText('Express Interest'));
+    const buttons = screen.getAllByText('Express Interest');
+    fireEvent.press(buttons[buttons.length - 1]);
+    await waitFor(() => expect(expressInterest).toHaveBeenCalledTimes(1));
+
+    mockUserId = 99;
+    screen.rerender(<VolunteeringDetailScreen />);
+    await act(async () => { resolve(); });
+
+    expect(screen.queryByText('Application submitted')).toBeNull();
+    expect(screen.getByText('Express Interest')).toBeTruthy();
+    expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
+  });
+
   it.each(['declined', 'withdrawn'])('allows a fresh application after the previous one was %s', async (status) => {
     mockUseApi.mockReturnValue({ data: { data: { ...mockOpportunity, has_applied: false, application: { id: 44, status } } }, isLoading: false, error: null, refresh: jest.fn() });
     const screen = render(<VolunteeringDetailScreen />);
@@ -549,13 +627,29 @@ describe('VolunteeringDetailScreen', () => {
     fireEvent.press(getByText('Sign up for shift'));
 
     await waitFor(() => {
-      expect(signUpForShift).toHaveBeenCalledWith(1);
+      expect(signUpForShift).toHaveBeenCalledWith(1, null);
       expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Shift joined',
         description: 'You joined the shift.',
         variant: 'success',
       }));
     });
+  });
+
+  it('confirms a shift signup from the schedule after its response is lost', async () => {
+    approvedOpportunityWithMyShift(null);
+    jest.mocked(signUpForShift).mockRejectedValueOnce(new ApiResponseError(0, 'Network unavailable'));
+    jest.mocked(getOpportunity).mockResolvedValue({
+      data: { ...mockOpportunity, application: { id: 44, status: 'approved', shift_id: 1 } },
+    });
+    const screen = render(<VolunteeringDetailScreen />);
+
+    fireEvent.press(screen.getAllByText('Sign up for shift')[0]);
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Shift joined',
+      variant: 'success',
+    })));
   });
   /**
    * 🔴 Walked on a device on 2026-08-23 and it was wrong.
@@ -684,6 +778,24 @@ describe('VolunteeringDetailScreen', () => {
     });
   });
 
+  it('confirms a cancelled shift from the schedule after its response is lost', async () => {
+    approvedOpportunityWithMyShift(1);
+    jest.mocked(cancelShiftSignup).mockRejectedValueOnce(new ApiResponseError(0, 'Network unavailable'));
+    jest.mocked(getOpportunity).mockResolvedValue({
+      data: { ...mockOpportunity, application: { id: 44, status: 'approved', shift_id: null } },
+    });
+    const screen = render(<VolunteeringDetailScreen />);
+
+    fireEvent.press(screen.getByTestId('shift-cancel-1'));
+    const options = mockConfirm.mock.calls[0][0] as { onConfirm: () => Promise<void> };
+    await act(async () => { await options.onConfirm(); });
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Shift cancelled',
+      variant: 'success',
+    })));
+  });
+
   it('will not move a member off their shift without asking first', async () => {
     approvedOpportunityWithMyShift(1);
 
@@ -708,6 +820,6 @@ describe('VolunteeringDetailScreen', () => {
       await options.onConfirm();
     });
 
-    expect(signUpForShift).toHaveBeenCalledWith(2);
+    expect(signUpForShift).toHaveBeenCalledWith(2, 1);
   });
 });

@@ -311,10 +311,14 @@ describe('FederationMessagesScreen', () => {
       };
     });
 
-    const { getByText, queryByText } = render(<FederationMessagesScreen />);
+    const { getByTestId, getByText, queryByText } = render(<FederationMessagesScreen />);
 
     expect(getByText('Katherine')).toBeTruthy();
     expect(queryByText('Brendan')).toBeNull();
+    expect(getByTestId('federation-message-101-partner')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-message-101-community')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-message-101-subject')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-message-101-body')).toHaveProp('numberOfLines', 0);
   });
 
   it('shows a partner-specific empty state when a deep-linked inbox has no matching thread', () => {

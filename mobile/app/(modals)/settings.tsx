@@ -21,7 +21,8 @@ import { Chip } from '@/components/ui/StatusChip';
 
 import { api } from '@/lib/api/client';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme, useThemeController } from '@/lib/hooks/useTheme';
 import type { ThemeMode } from '@/lib/theme/themeStore';
 import { API_V2, IDENTITY_VERIFICATION_AVAILABLE_IN_APP } from '@/lib/constants';
@@ -113,6 +114,8 @@ function SettingsScreen() {
   const [biometricUsable, setBiometricUsable] = useState(false);
   const [biometricLockOn, setBiometricLockOn] = useState(false);
   const [biometricBusy, setBiometricBusy] = useState(false);
+  const biometricInFlight = useRef(false);
+  const isMountedRef = useRef(true);
   /*
     Read from the module flag rather than from storage, and kept in step by subscribing:
     `lib/haptics.ts` is called from render callbacks and plain functions all over the app,
@@ -120,6 +123,7 @@ function SettingsScreen() {
   */
   const [hapticsOn, setHapticsOn] = useState(() => Haptics.hapticsEnabled());
   useEffect(() => Haptics.subscribeToHaptics(setHapticsOn), []);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
   const toggleHaptics = useCallback(async () => {
     const next = !Haptics.hapticsEnabled();
     // Fire BEFORE switching off, so turning it on confirms itself and turning it off is
@@ -147,10 +151,13 @@ function SettingsScreen() {
   }, []);
 
   async function toggleBiometricLock() {
+    if (biometricInFlight.current) return;
+    biometricInFlight.current = true;
     const next = !biometricLockOn;
     setBiometricBusy(true);
     try {
       const result = await setBiometricLockEnabled(next, t('biometricLock.prompt'));
+      if (!isMountedRef.current) return;
       if (!result.ok) {
         // Say which of the phone's answers it was, rather than a generic failure.
         showToast({
@@ -161,7 +168,8 @@ function SettingsScreen() {
       }
       setBiometricLockOn(next);
     } finally {
-      setBiometricBusy(false);
+      biometricInFlight.current = false;
+      if (isMountedRef.current) setBiometricBusy(false);
     }
   }
 
@@ -201,12 +209,13 @@ function SettingsScreen() {
     try {
       await savePrefs({ [key]: updated[key] });
     } catch (err) {
+      if (!isMountedRef.current) return;
       // Revert
       setPrefs(current);
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('saveError')), variant: 'danger' });
     } finally {
       notificationWriteInFlight.current = false;
-      setSaving(false);
+      if (isMountedRef.current) setSaving(false);
     }
   }
 
@@ -218,13 +227,16 @@ function SettingsScreen() {
     try {
       if (currentlyEnabled) {
         await savePrefs({ push_enabled: false });
+        if (!isMountedRef.current) return;
         await unregisterPushNotifications();
+        if (!isMountedRef.current) return;
         setPrefs({ ...current, push_enabled: false });
         setDevicePushEnabled(false);
         return;
       }
 
       const result = await registerForPushNotifications(true);
+      if (!isMountedRef.current) return;
       if (result !== 'registered') {
         /*
           🔴 S3-26: every non-registered outcome was reported as "permission needed", which
@@ -241,13 +253,15 @@ function SettingsScreen() {
         return;
       }
       await savePrefs({ push_enabled: true });
+      if (!isMountedRef.current) return;
       setPrefs({ ...current, push_enabled: true });
       setDevicePushEnabled(true);
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('saveError')), variant: 'danger' });
     } finally {
       notificationWriteInFlight.current = false;
-      setSaving(false);
+      if (isMountedRef.current) setSaving(false);
     }
   }
 
@@ -259,11 +273,12 @@ function SettingsScreen() {
     try {
       await savePrivacyPrefs(nextPrefs);
     } catch (err) {
+      if (!isMountedRef.current) return;
       setPrivacyPrefs(currentPrivacy);
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('privacy.saveError')), variant: 'danger' });
     } finally {
       privacyWriteInFlight.current = false;
-      setSavingPrivacy(false);
+      if (isMountedRef.current) setSavingPrivacy(false);
     }
   }
 
@@ -854,4 +869,10 @@ function SettingRow({
   );
 }
 
-export default withRouteGate(SettingsScreen, 'settings');
+function SettingsRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <SettingsScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
+}
+
+export default withRouteGate(SettingsRoute, 'settings');

@@ -146,6 +146,14 @@ export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
     return { action: 'replace', href: '/(auth)/select-tenant' };
   }
 
+  // Foreground URL events arrive after Expo Router has already settled on the current
+  // signed-out route. Replay account-recovery links here so opening an email while the
+  // app is sitting on Login is not silently ignored. Tenant selection still wins above:
+  // reset and verification screens need the community API selected first.
+  if (pendingDeepLink && isSignedOutOnlyLink(pendingDeepLink)) {
+    return { action: 'deep-link', url: pendingDeepLink };
+  }
+
   if (!isPublicAuthPath(pathname)) {
     return { action: 'replace', href: '/(auth)/login' };
   }

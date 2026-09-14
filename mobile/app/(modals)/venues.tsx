@@ -10,6 +10,7 @@ import { Card as HeroCard } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -17,6 +18,7 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import { getPartnerVenues, type PartnerVenue } from '@/lib/api/venues';
 import { useApi } from '@/lib/hooks/useApi';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -37,9 +39,10 @@ function VenuesScreen() {
           data={venues.data ?? []}
           keyExtractor={(venue) => String(venue.id)}
           contentContainerStyle={{ padding: 16, paddingBottom: 40, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={venues.refresh} tintColor={primary} colors={[primary]} />}
+          refreshControl={<RefreshControl refreshing={venues.isLoading && Boolean(venues.data)} onRefresh={venues.refresh} tintColor={primary} colors={[primary]} />}
           ListHeaderComponent={(
             <View className="mb-4 gap-4">
+              <RefreshFailedNotice error={venues.data ? venues.error : null} onRetry={venues.refresh} />
               <Text className="text-sm leading-5 text-muted-foreground">{t('directory.intro')}</Text>
               <Button fullWidth onPress={() => router.push('/(modals)/venue-pass')}>{t('directory.my_pass')}</Button>
             </View>
@@ -57,6 +60,12 @@ function VenuesScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+function VenuesRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <VenuesScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
 }
 
 function VenueCard({ venue }: { venue: PartnerVenue }) {
@@ -84,4 +93,4 @@ function VenueCard({ venue }: { venue: PartnerVenue }) {
   return venue.website ? <NativePressable accessibilityLabel={`${t('directory.visit_website')}: ${venue.name}`} onPress={() => void openExternal(venue.website)} feedback="highlight">{content}</NativePressable> : content;
 }
 
-export default withRouteGate(VenuesScreen, 'venues');
+export default withRouteGate(VenuesRoute, 'venues');

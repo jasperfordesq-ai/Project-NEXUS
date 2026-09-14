@@ -330,11 +330,17 @@ class ListingsController extends BaseApiController
         $this->rateLimit('listing_create', 10, 60);
 
         $data = $this->getAllInput();
+        $idempotencyKey = trim((string) (request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? '')));
+        unset($data['idempotency_key']);
         // image_url must go through the dedicated uploadImage endpoint — strip from user input
         unset($data['image_url']);
 
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), null, 422);
+        }
+
         try {
-            $listing = $this->listingService->create($userId, $data);
+            $creation = $this->listingService->createWithReceipt($userId, $data, $idempotencyKey);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = [];
             foreach ($e->errors() as $field => $messages) {
@@ -345,10 +351,22 @@ class ListingsController extends BaseApiController
             return $this->respondWithErrors($errors, 422);
         }
 
+        if (($creation['conflict'] ?? false) === true) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'), null, 409);
+        }
+
+        $listing = $creation['listing'];
+        if (!$listing) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_UNAVAILABLE', __('api.listing_not_found'), null, 409);
+        }
+
         $result = $this->listingService->getById($listing->id, false, $userId);
 
         // Award XP for creating a listing
         try {
+            if (!($creation['created'] ?? false)) {
+                return $this->respondWithData($result, null, 200);
+            }
             \App\Services\GamificationService::awardXP($userId, \App\Services\GamificationService::XP_VALUES['create_listing'], 'create_listing', __('api.listing_created_activity'));
             \App\Services\GamificationService::runAllBadgeChecks($userId);
         } catch (\Throwable $e) {

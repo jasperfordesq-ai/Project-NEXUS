@@ -26,7 +26,7 @@
  * written to server logs, proxy logs and crash reports.
  */
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
@@ -46,11 +46,12 @@ import { isDeleteConfirmed } from '@/lib/utils/deleteConfirmation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import * as Haptics from '@/lib/haptics';
+import { useTenant } from '@/lib/hooks/useTenant';
 
 /** The five things a member should know before pressing the button, in plain words. */
 const CONSEQUENCE_KEYS = ['profile', 'listings', 'messages', 'credits', 'signIn'] as const;
 
-export default function SettingsDeleteAccountScreen() {
+function SettingsDeleteAccountScreen() {
   const { t } = useTranslation(['settings', 'common']);
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -60,6 +61,9 @@ export default function SettingsDeleteAccountScreen() {
   const [password, setPassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const deletionInFlight = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   const keyword = t('deleteAccount.keyword');
   const canDelete = isDeleteConfirmed(confirmation, keyword) && password.length > 0;
@@ -82,6 +86,7 @@ export default function SettingsDeleteAccountScreen() {
     try {
       await deleteAccount(password);
     } catch (err) {
+      if (!isMountedRef.current) return;
       // Worth distinguishing: "wrong password" and "you tried this a moment ago" are both
       // recoverable, and a generic message hides which one it is.
       //
@@ -102,6 +107,10 @@ export default function SettingsDeleteAccountScreen() {
       setIsDeleting(false);
       return;
     }
+    // An account or community switch remounts this route. The accepted deletion belongs
+    // to the session that sent it; never sign out a replacement session that became active
+    // while the network request was in flight.
+    if (!isMountedRef.current) return;
     setPassword('');
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     showToast({
@@ -234,4 +243,10 @@ export default function SettingsDeleteAccountScreen() {
       </SafeAreaView>
     </ModalErrorBoundary>
   );
+}
+
+export default function SettingsDeleteAccountRoute() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <SettingsDeleteAccountScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
 }

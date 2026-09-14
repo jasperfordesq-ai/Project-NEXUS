@@ -802,6 +802,7 @@ return [
     'listing_no_image_uploaded' => 'لا يوجد ملف صورة تم تحميله أو خطأ في التحميل',
     'listing_image_upload_failed' => 'فشل تحميل الصورة',
     'listing_renewal_failed' => 'فشل تجديد القائمة',
+    'gamification_sent_message' => 'تم إرسال رسالة',
     'gamification_challenges_failed' => 'فشل تحميل التحديات',
     'gamification_challenge_not_started' => 'أنت لم تبدأ هذا التحدي',
     'gamification_challenge_already_claimed' => 'لقد حصلت بالفعل على هذه المكافأة',
@@ -1825,6 +1826,7 @@ return [
     'volunteer_shift_not_found' => 'لم يتم العثور على التحول',
     'volunteer_shift_started' => 'وقد بدأ هذا التحول بالفعل',
     'volunteer_shift_at_capacity' => 'هذا التحول في القدرة',
+    'volunteer_shift_assignment_changed' => 'تم تغيير تعيين ورديتك على جهاز آخر. حدّث الصفحة وحاول مرة أخرى.',
     'volunteer_shift_not_full' => 'لا تزال هناك أماكن مفتوحة لهذا التحول، لذا لا تحتاج إلى قائمة الانتظار بعد.',
     'volunteer_approved_application_required' => 'أنت بحاجة إلى طلب معتمد قبل استخدام هذه الفرصة',
     'volunteer_org_relationship_required' => 'أنت بحاجة إلى علاقة تطوعية معتمدة مع هذه المنظمة',
@@ -2853,4 +2855,7 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'safeguarding_ward_consented_notification' => 'وافق :name على ترتيبات الوصي الخاصة بهم.',
     'safeguarding_ward_declined_notification' => 'لقد رفض :name ترتيب الوصي الخاص به.',
     'safeguarding_ward_withdrawn_notification' => 'قام :name بسحب موافقته على ترتيبات الوصي.',
+    'ideation_submission_closed' => 'هذا التحدي لا يقبل أفكارًا جديدة.',
+    'ideation_submission_deadline_passed' => 'انتهى الموعد النهائي لتقديم الأفكار.',
+    'ideation_submission_limit_reached' => 'لقد وصلت إلى الحد الأقصى البالغ :limit من الأفكار لهذا التحدي.',
 ];

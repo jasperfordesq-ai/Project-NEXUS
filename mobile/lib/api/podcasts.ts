@@ -211,12 +211,18 @@ export async function recordPodcastListen(episodeId: number, payload: { position
   return unwrap(await api.post<Envelope<{ recorded: boolean }>>(`${API_V2}/podcasts/episodes/${episodeId}/listen`, payload));
 }
 
-export async function togglePodcastSubscription(showId: number): Promise<{ subscribed: boolean }> {
-  return unwrap(await api.post<Envelope<{ subscribed: boolean }>>(`${API_V2}/podcasts/${showId}/subscribe`, { notify_new_episodes: true }));
+export async function togglePodcastSubscription(showId: number, subscribed?: boolean): Promise<{ subscribed: boolean }> {
+  return unwrap(await api.post<Envelope<{ subscribed: boolean }>>(`${API_V2}/podcasts/${showId}/subscribe`, {
+    notify_new_episodes: true,
+    ...(subscribed === undefined ? {} : { subscribed }),
+  }));
 }
 
-export async function togglePodcastReaction(episodeId: number): Promise<{ active: boolean }> {
-  return unwrap(await api.post<Envelope<{ active: boolean }>>(`${API_V2}/podcasts/episodes/${episodeId}/reaction`, { reaction: 'like' }));
+export async function togglePodcastReaction(episodeId: number, active?: boolean): Promise<{ active: boolean }> {
+  return unwrap(await api.post<Envelope<{ active: boolean }>>(`${API_V2}/podcasts/episodes/${episodeId}/reaction`, {
+    reaction: 'like',
+    ...(active === undefined ? {} : { active }),
+  }));
 }
 
 export async function reportPodcastEpisode(episodeId: number, reason: 'safety' | 'spam' | 'rights' | 'other'): Promise<unknown> {
@@ -251,8 +257,11 @@ export async function getPodcastShowStats(showId: number, days = 30): Promise<Po
   return unwrap(await api.get<Envelope<PodcastShowStats>>(`${API_V2}/podcasts/${showId}/stats`, { days: String(days) }));
 }
 
-export async function createPodcastShow(payload: CreatePodcastShowPayload): Promise<PodcastShow> {
-  return unwrap(await api.post<Envelope<PodcastShow>>(`${API_V2}/podcasts`, payload));
+export async function createPodcastShow(payload: CreatePodcastShowPayload, idempotencyKey?: string): Promise<PodcastShow> {
+  if (!idempotencyKey) return unwrap(await api.post<Envelope<PodcastShow>>(`${API_V2}/podcasts`, payload));
+  return unwrap(await api.post<Envelope<PodcastShow>>(`${API_V2}/podcasts`, {
+    ...payload, idempotency_key: idempotencyKey,
+  }, { headers: { 'Idempotency-Key': idempotencyKey } }));
 }
 
 export async function updatePodcastShow(showId: number, payload: Partial<CreatePodcastShowPayload>): Promise<PodcastShow> {
@@ -271,8 +280,11 @@ export async function deletePodcastShow(showId: number): Promise<{ deleted: bool
   return unwrap(await api.delete<Envelope<{ deleted: boolean }>>(`${API_V2}/podcasts/${showId}`));
 }
 
-export async function createPodcastEpisode(showId: number, payload: CreatePodcastEpisodePayload): Promise<PodcastEpisode> {
-  return unwrap(await api.post<Envelope<PodcastEpisode>>(`${API_V2}/podcasts/${showId}/episodes`, payload));
+export async function createPodcastEpisode(showId: number, payload: CreatePodcastEpisodePayload, idempotencyKey?: string): Promise<PodcastEpisode> {
+  if (!idempotencyKey) return unwrap(await api.post<Envelope<PodcastEpisode>>(`${API_V2}/podcasts/${showId}/episodes`, payload));
+  return unwrap(await api.post<Envelope<PodcastEpisode>>(`${API_V2}/podcasts/${showId}/episodes`, {
+    ...payload, idempotency_key: idempotencyKey,
+  }, { headers: { 'Idempotency-Key': idempotencyKey } }));
 }
 
 export async function updatePodcastEpisode(showId: number, episodeId: number, payload: Partial<CreatePodcastEpisodePayload>): Promise<PodcastEpisode> {
@@ -360,7 +372,7 @@ export async function createPodcastEpisodeWithAudio(
   showId: number,
   payload: Omit<CreatePodcastEpisodePayload, 'audio_url'>,
   audio: { uri: string; name: string; mimeType: string },
-  options: { onProgress?: (percent: number) => void; signal?: AbortSignal } = {},
+  options: { onProgress?: (percent: number) => void; signal?: AbortSignal; idempotencyKey?: string } = {},
 ): Promise<PodcastEpisode> {
   const formData = new FormData();
 
@@ -370,6 +382,7 @@ export async function createPodcastEpisodeWithAudio(
     if (value === undefined || value === null || value === '') return;
     formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
   });
+  if (options.idempotencyKey) formData.append('idempotency_key', options.idempotencyKey);
 
   if (Platform.OS === 'web') {
     const blob = await (await fetch(audio.uri)).blob();

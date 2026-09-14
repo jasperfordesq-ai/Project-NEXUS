@@ -7,6 +7,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AppState,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -35,7 +36,8 @@ import {
   type GoalTemplate,
 } from '@/lib/api/goals';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha , contrastText } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -45,10 +47,33 @@ import EmptyState from '@/components/ui/EmptyState';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import DraftStorageWarning from '@/components/ui/DraftStorageWarning';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { withRouteGate } from '@/components/withRouteGate';
+import { completeGoalCreationOperation, reserveGoalCreationOperation } from '@/lib/goalCreationOperation';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import {
+  clearCreationDraft,
+  loadCreationDraft,
+  saveCreationDraft,
+  type CreationDraftScope,
+} from '@/lib/creationDraftStore';
+
+interface GoalCreationDraft {
+  title: string;
+  description: string;
+  targetValue: string;
+}
+
+function isGoalCreationDraft(value: unknown): value is GoalCreationDraft {
+  if (!value || typeof value !== 'object') return false;
+  const draft = value as Partial<GoalCreationDraft>;
+  return typeof draft.title === 'string'
+    && typeof draft.description === 'string'
+    && typeof draft.targetValue === 'string';
+}
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type ApiGoal = Goal & {
@@ -382,19 +407,106 @@ function CreateGoalSheet({
   t,
   onCreated,
   onCancel,
+  onDraftStateChange,
+  onDraftRestored,
+  draftScope,
+  discardVersion,
 }: {
   visible: boolean;
   theme: ReturnType<typeof useTheme>;
   t: (key: string) => string;
   onCreated: (goal: Goal) => void;
   onCancel: () => void;
+  onDraftStateChange: (state: { isDirty: boolean; isSaving: boolean }) => void;
+  onDraftRestored: () => void;
+  draftScope: CreationDraftScope;
+  discardVersion: number;
 }) {
   const { show: showToast } = useAppToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetValue, setTargetValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [draftStorageFailed, setDraftStorageFailed] = useState(false);
   const submittingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const draftHydratedRef = useRef(false);
+  const draftEditedRef = useRef(false);
+  const draftSaveEnabledRef = useRef(false);
+  const initialDiscardRef = useRef(true);
+  const screenFocusedRef = useRef(false);
+  const onDraftRestoredRef = useRef(onDraftRestored);
+  const draftSnapshotRef = useRef<GoalCreationDraft>({ title: '', description: '', targetValue: '' });
+  const isDirty = title.trim() !== '' || description.trim() !== '' || targetValue.trim() !== '';
+
+  useEffect(() => () => { mountedRef.current = false; }, []);
+  useFocusEffect(useCallback(() => {
+    screenFocusedRef.current = true;
+    return () => { screenFocusedRef.current = false; };
+  }, []));
+  useEffect(() => { onDraftRestoredRef.current = onDraftRestored; }, [onDraftRestored]);
+  draftSnapshotRef.current = { title, description, targetValue };
+
+  const persistDraft = useCallback(async () => {
+    const saved = await saveCreationDraft(draftScope, draftSnapshotRef.current);
+    if (mountedRef.current) setDraftStorageFailed(!saved);
+    return saved;
+  }, [draftScope]);
+  const clearDraft = useCallback(async () => {
+    const cleared = await clearCreationDraft(draftScope);
+    if (mountedRef.current) setDraftStorageFailed(!cleared);
+    return cleared;
+  }, [draftScope]);
+
+  useEffect(() => {
+    let active = true;
+    setDraftStorageFailed(false);
+    void loadCreationDraft<GoalCreationDraft>(draftScope).then((restored) => {
+      if (!active || draftEditedRef.current || !isGoalCreationDraft(restored)) return;
+      if (!restored.title.trim() && !restored.description.trim() && !restored.targetValue.trim()) return;
+      setTitle(restored.title);
+      setDescription(restored.description);
+      setTargetValue(restored.targetValue);
+      draftSaveEnabledRef.current = true;
+      onDraftRestoredRef.current();
+    }).finally(() => {
+      if (active) draftHydratedRef.current = true;
+    });
+    return () => { active = false; };
+  }, [draftScope]);
+
+  useEffect(() => {
+    onDraftStateChange({ isDirty, isSaving: submitting });
+  }, [isDirty, onDraftStateChange, submitting]);
+  useEffect(() => {
+    if (initialDiscardRef.current) {
+      initialDiscardRef.current = false;
+      return;
+    }
+    draftEditedRef.current = true;
+    draftSaveEnabledRef.current = false;
+    setTitle('');
+    setDescription('');
+    setTargetValue('');
+  }, [discardVersion, draftScope]);
+
+  useEffect(() => {
+    if (!draftHydratedRef.current) return;
+    const timer = setTimeout(() => {
+      if (isDirty && draftSaveEnabledRef.current && screenFocusedRef.current) void persistDraft();
+      else if (!isDirty) void clearDraft();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [clearDraft, description, draftScope, isDirty, persistDraft, targetValue, title]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state !== 'active' && screenFocusedRef.current && draftHydratedRef.current && draftSaveEnabledRef.current && isDirty) {
+        void persistDraft();
+      }
+    });
+    return () => subscription.remove();
+  }, [draftScope, isDirty, persistDraft]);
 
   async function handleSubmit() {
     if (submittingRef.current) return;
@@ -405,20 +517,32 @@ function CreateGoalSheet({
     setSubmitting(true);
     try {
       const parsed = targetValue.trim() !== '' ? (parseDecimalInput(targetValue) ?? Number.NaN) : undefined;
-      const result = await createGoal({
+      const payload = {
         title: trimmedTitle,
         ...(description.trim() ? { description: description.trim() } : {}),
         ...(parsed !== undefined && Number.isFinite(parsed) ? { target_value: parsed } : {}),
-      });
+      };
+      const operation = await reserveGoalCreationOperation(JSON.stringify(['goal', payload]));
+      const result = await createGoal(payload, operation.key);
+      draftSaveEnabledRef.current = false;
+      const cleared = await clearDraft();
+      if (!cleared) {
+        draftSaveEnabledRef.current = true;
+        showToast({ title: t('common:draftStorage.title'), description: t('common:draftStorage.message'), variant: 'warning' });
+        return;
+      }
+      await completeGoalCreationOperation(operation);
+      if (!mountedRef.current) return;
       onCreated(result.data);
       setTitle('');
       setDescription('');
       setTargetValue('');
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('create.error')), variant: 'danger' });
     } finally {
       submittingRef.current = false;
-      setSubmitting(false);
+      if (mountedRef.current) setSubmitting(false);
     }
   }
 
@@ -426,11 +550,12 @@ function CreateGoalSheet({
     <BottomSheet
       visible={visible}
       onClose={() => {
-        if (!submitting) onCancel();
+        onCancel();
       }}
       snapPoints={['75%', '92%']}
       title={t('create.title')}
       scrollable
+      dismissible={!isDirty && !submitting}
       testID="goal-composer"
       footer={
         <View className="flex-row gap-2">
@@ -451,6 +576,7 @@ function CreateGoalSheet({
       }
     >
       <View className="gap-4 py-3">
+        <DraftStorageWarning visible={draftStorageFailed} testID="goal-draft-storage-warning" />
         <Text className="text-sm leading-5 text-muted-foreground">{t('create.subtitle')}</Text>
 
         <Input
@@ -459,7 +585,11 @@ function CreateGoalSheet({
           placeholder={t('create.titlePlaceholder')}
           placeholderTextColor={theme.textMuted}
           value={title}
-          onChangeText={setTitle}
+          onChangeText={(value) => {
+            draftEditedRef.current = true;
+            draftSaveEnabledRef.current = true;
+            setTitle(value);
+          }}
           editable={!submitting}
           returnKeyType="next"
           containerClassName="mb-0"
@@ -471,7 +601,11 @@ function CreateGoalSheet({
           placeholder={t('create.descriptionPlaceholder')}
           placeholderTextColor={theme.textMuted}
           value={description}
-          onChangeText={setDescription}
+          onChangeText={(value) => {
+            draftEditedRef.current = true;
+            draftSaveEnabledRef.current = true;
+            setDescription(value);
+          }}
           editable={!submitting}
           multiline
           containerClassName="mb-0"
@@ -483,7 +617,11 @@ function CreateGoalSheet({
           placeholder={t('create.targetPlaceholder')}
           placeholderTextColor={theme.textMuted}
           value={targetValue}
-          onChangeText={setTargetValue}
+          onChangeText={(value) => {
+            draftEditedRef.current = true;
+            draftSaveEnabledRef.current = true;
+            setTargetValue(value);
+          }}
           editable={!submitting}
           keyboardType="decimal-pad"
           returnKeyType="done"
@@ -513,9 +651,11 @@ function GoalTemplatesPanel({
   const [error, setError] = useState<string | null>(null);
   const [creatingFromId, setCreatingFromId] = useState<number | null>(null);
   const creatingRef = useRef(false);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
     let mounted = true;
+    mountedRef.current = true;
 
     async function loadTemplates() {
       setIsLoading(true);
@@ -538,6 +678,7 @@ function GoalTemplatesPanel({
     void loadTemplates();
     return () => {
       mounted = false;
+      mountedRef.current = false;
     };
     // Keep the template load tied to panel mount. Test/runtime i18n functions can change identity between renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -552,15 +693,19 @@ function GoalTemplatesPanel({
     creatingRef.current = true;
     setCreatingFromId(template.id);
     try {
-      const result = await createGoalFromTemplate(template.id);
+      const operation = await reserveGoalCreationOperation(JSON.stringify(['template', template.id]));
+      const result = await createGoalFromTemplate(template.id, operation.key);
+      await completeGoalCreationOperation(operation);
+      if (!mountedRef.current) return;
       onCreated(result.data);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!mountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('templates.createError')), variant: 'danger' });
     } finally {
       creatingRef.current = false;
-      setCreatingFromId(null);
+      if (mountedRef.current) setCreatingFromId(null);
     }
   }
 
@@ -677,11 +822,12 @@ function GoalTemplatesPanel({
   );
 }
 
-function GoalsScreen() {
+function GoalsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
   const { t } = useTranslation(['goals', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { confirm: confirmGoalDraftLeave, confirmDialog: goalDraftLeaveDialog } = useConfirm();
 
   const [showForm, setShowForm] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -689,9 +835,15 @@ function GoalsScreen() {
   const [initialized, setInitialized] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const pendingGoalIdsRef = useRef(new Set<number>());
+  const mountedRef = useRef(true);
   const [pendingGoalIds, setPendingGoalIds] = useState<Set<number>>(new Set());
+  const [goalDraft, setGoalDraft] = useState({ isDirty: false, isSaving: false });
+  const [goalDraftDiscardVersion, setGoalDraftDiscardVersion] = useState(0);
+  const discardingGoalDraftRef = useRef(false);
 
   const { data, isLoading, error, refresh } = useApi(() => getGoals(null), []);
+
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
   // Progress saved or an exchange created on a child screen was invisible until a pull to
   // refresh (audit 2026-09-05, S2-10). Refetch on every return; the first mount already fetched.
@@ -737,12 +889,13 @@ function GoalsScreen() {
       const result = status === 'completed'
         ? await completeGoal(id)
         : await updateGoalStatus(id, status);
-      setGoals((prev) => prev.map((goal) => (goal.id === id ? result.data as ApiGoal : goal)));
+      if (mountedRef.current) setGoals((prev) => prev.map((goal) => (goal.id === id ? result.data as ApiGoal : goal)));
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('goals:updateError')), variant: 'danger' });
     } finally {
       pendingGoalIdsRef.current.delete(id);
-      setPendingGoalIds(new Set(pendingGoalIdsRef.current));
+      if (mountedRef.current) setPendingGoalIds(new Set(pendingGoalIdsRef.current));
     }
   }
 
@@ -752,12 +905,75 @@ function GoalsScreen() {
     setShowTemplates(false);
   }
 
+  const discardGoalDraft = useCallback(async (afterClose?: () => void) => {
+    if (discardingGoalDraftRef.current) return;
+    discardingGoalDraftRef.current = true;
+    if (goalDraft.isDirty) {
+      setGoalDraft((current) => ({ ...current, isSaving: true }));
+      const cleared = await clearCreationDraft(draftScope);
+      if (!cleared) {
+        discardingGoalDraftRef.current = false;
+        if (mountedRef.current) {
+          setGoalDraft((current) => ({ ...current, isSaving: false }));
+          showToast({ title: t('common:draftStorage.title'), description: t('common:draftStorage.message'), variant: 'warning' });
+        }
+        return;
+      }
+    }
+    setGoalDraft({ isDirty: false, isSaving: false });
+    setGoalDraftDiscardVersion((version) => version + 1);
+    setShowForm(false);
+    discardingGoalDraftRef.current = false;
+    afterClose?.();
+  }, [draftScope, goalDraft.isDirty, showToast, t]);
+
+  const requestCloseGoalForm = useCallback((afterClose?: () => void) => {
+    if (!showForm) return;
+    const close = () => {
+      void discardGoalDraft(afterClose);
+    };
+    if (goalDraft.isSaving) {
+      confirmGoalDraftLeave({
+        title: t('common:unsavedSaving.title'),
+        message: t('common:unsavedSaving.message'),
+        confirmLabel: t('common:unsavedSaving.leave'),
+        cancelLabel: t('common:unsavedSaving.wait'),
+        variant: 'danger',
+        onConfirm: close,
+      });
+      return;
+    }
+    if (goalDraft.isDirty) {
+      confirmGoalDraftLeave({
+        title: t('common:unsavedChanges.title'),
+        message: t('common:unsavedChanges.message'),
+        confirmLabel: t('common:unsavedChanges.discard'),
+        cancelLabel: t('common:buttons.cancel'),
+        variant: 'danger',
+        onConfirm: close,
+      });
+      return;
+    }
+    close();
+  }, [confirmGoalDraftLeave, discardGoalDraft, goalDraft.isDirty, goalDraft.isSaving, showForm, t]);
+
+  useUnsavedChangesGuard({
+    isDirty: showForm && goalDraft.isDirty,
+    isSaving: goalDraft.isSaving,
+    confirm: confirmGoalDraftLeave,
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
+
   const topAction = {
     accessibilityLabel: showForm ? t('goals:create.close') : t('goals:addGoal'),
     icon: (showForm ? 'close-outline' : 'add-outline') as IoniconName,
     onPress: () => {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setShowForm((visible) => !visible);
+      if (showForm) requestCloseGoalForm();
+      else setShowForm(true);
     },
   };
 
@@ -796,7 +1012,8 @@ function GoalsScreen() {
                           onPress={() => {
                             void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             setShowTemplates(false);
-                            setShowForm((visible) => !visible);
+                            if (showForm) requestCloseGoalForm();
+                            else setShowForm(true);
                           }}
                         >
                           <Ionicons name="add-outline" size={16} color={showForm ? contrastText(primary) : primary} />
@@ -807,8 +1024,9 @@ function GoalsScreen() {
                           variant={showTemplates ? 'primary' : 'secondary'}
                           onPress={() => {
                             void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            setShowForm(false);
-                            setShowTemplates((visible) => !visible);
+                            const toggleTemplates = () => setShowTemplates((visible) => !visible);
+                            if (showForm) requestCloseGoalForm(toggleTemplates);
+                            else toggleTemplates();
                           }}
                         >
                           <Ionicons name="sparkles-outline" size={16} color={showTemplates ? contrastText(primary) : primary} />
@@ -866,11 +1084,29 @@ function GoalsScreen() {
           theme={theme}
           t={t}
           onCreated={handleGoalCreated}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => requestCloseGoalForm()}
+          onDraftStateChange={setGoalDraft}
+          onDraftRestored={() => setShowForm(true)}
+          draftScope={draftScope}
+          discardVersion={goalDraftDiscardVersion}
         />
+        {goalDraftLeaveDialog}
       </SafeAreaView>
     </ModalErrorBoundary>
   );
 }
 
-export default withRouteGate(GoalsScreen, 'goals');
+function GoalsRoute() {
+  const { tenant } = useTenant();
+  const { user } = useAuth();
+  const tenantIdentity = tenant?.id ?? tenant?.slug ?? 'no-tenant';
+  const userIdentity = user?.id ?? 'no-user';
+  const draftScope = useMemo<CreationDraftScope>(() => ({
+    kind: 'goal',
+    tenantId: tenantIdentity,
+    userId: userIdentity,
+  }), [tenantIdentity, userIdentity]);
+  return <GoalsScreen key={`${tenantIdentity}:${userIdentity}`} draftScope={draftScope} />;
+}
+
+export default withRouteGate(GoalsRoute, 'goals');

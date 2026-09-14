@@ -133,9 +133,9 @@ export default function VerifyEmailScreen() {
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl" style={{ backgroundColor: tone }}>
                 {state === 'loading' ? (
-                  <Spinner color="white" />
+                  <Spinner color={contrastText(tone)} />
                 ) : (
-                  <Ionicons name={icon} size={32} color={contrastText(primary)} />
+                  <Ionicons name={icon} size={32} color={contrastText(tone)} />
                 )}
               </View>
               <HeroCard.Title className="text-center text-2xl font-bold">{title}</HeroCard.Title>

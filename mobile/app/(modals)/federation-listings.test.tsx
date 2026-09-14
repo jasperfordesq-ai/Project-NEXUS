@@ -167,10 +167,13 @@ beforeEach(() => {
 
 describe('FederationListingsScreen', () => {
   it('renders listing cards with a paginated load-more action', () => {
-    const { getByText } = render(<FederationListingsScreen />);
+    const { getByTestId, getByText } = render(<FederationListingsScreen />);
 
     expect(getByText('Federated Listings')).toBeTruthy();
     expect(getByText('Shared drill')).toBeTruthy();
+    expect(getByTestId('federation-listing-90624-title')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-listing-90624-author')).toHaveProp('numberOfLines', 0);
+    expect(getByTestId('federation-listing-90624-description')).toHaveProp('numberOfLines', 0);
 
     fireEvent.press(getByText('Load more listings'));
     expect(mockLoadMore).toHaveBeenCalledTimes(1);

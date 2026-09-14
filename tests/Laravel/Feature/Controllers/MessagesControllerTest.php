@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Events\SafeguardingContactAttemptBlocked;
 use App\Events\SafeguardingCoordinationRequested;
+use App\Events\MessageSent;
 use App\Models\User;
 use App\Services\SafeguardingTriggerService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\UploadedFile;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -132,6 +134,168 @@ class MessagesControllerTest extends TestCase
         ]);
 
         $this->assertContains($response->getStatusCode(), [200, 201]);
+    }
+
+    public function test_send_message_replays_the_original_result_for_the_same_client_operation(): void
+    {
+        $sender = $this->authenticatedUser();
+        $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $payload = ['recipient_id' => $recipient->id, 'body' => 'Response-loss replay'];
+        $headers = ['Idempotency-Key' => 'mobile-message-response-loss-1'];
+        $startingXp = (int) $sender->fresh()->xp;
+
+        $first = $this->apiPost('/v2/messages', $payload, $headers)->assertStatus(201);
+
+        $messageReference = 'message:' . $first->json('data.id');
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $sender->id)
+            ->where('action', 'send_message')
+            ->where('source_reference', $messageReference)
+            ->count());
+
+        // Model response loss after the message committed but before its
+        // non-critical XP side effect completed. Replay must repair that side
+        // effect and a further replay must remain a no-op.
+        DB::table('user_xp_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $sender->id)
+            ->where('action', 'send_message')
+            ->where('source_reference', $messageReference)
+            ->delete();
+        DB::table('users')->where('id', $sender->id)->decrement(
+            'xp',
+            \App\Services\GamificationService::XP_VALUES['send_message'],
+        );
+
+        $second = $this->apiPost('/v2/messages', $payload, $headers)->assertStatus(200);
+        $third = $this->apiPost('/v2/messages', $payload, $headers)->assertStatus(200);
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame($first->json('data.id'), $third->json('data.id'));
+        $this->assertSame(
+            $startingXp + \App\Services\GamificationService::XP_VALUES['send_message'],
+            (int) $sender->fresh()->xp,
+        );
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $sender->id)
+            ->where('action', 'send_message')
+            ->where('source_reference', $messageReference)
+            ->count());
+        $this->assertSame(1, DB::table('messages')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('sender_id', $sender->id)
+            ->where('receiver_id', $recipient->id)
+            ->where('body', 'Response-loss replay')
+            ->count());
+        $this->assertSame(1, DB::table('message_send_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('sender_id', $sender->id)
+            ->count());
+
+        DB::table('user_first_contacts')->where('first_message_id', $first->json('data.id'))->delete();
+        DB::table('messages')->where('id', $first->json('data.id'))->delete();
+        $this->assertSame(0, DB::table('message_send_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('sender_id', $sender->id)
+            ->count(), 'Deleting the canonical message must remove its content-free replay receipt.');
+    }
+
+    public function test_replay_recovers_message_event_enqueue_after_the_message_was_committed(): void
+    {
+        $sender = $this->authenticatedUser();
+        $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $payload = ['recipient_id' => $recipient->id, 'body' => 'Recover ancillary delivery'];
+        $headers = ['Idempotency-Key' => 'mobile-message-delivery-recovery-1'];
+
+        $first = $this->apiPost('/v2/messages', $payload, $headers)->assertStatus(201);
+        $this->assertSame(1, DB::table('messages')->where('id', $first->json('data.id'))->count());
+        $this->assertSame(1, DB::table('message_delivery_outbox')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('message_id', $first->json('data.id'))
+            ->count());
+
+        // Model a committed message whose first queue enqueue was not accepted.
+        DB::table('message_delivery_outbox')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('message_id', $first->json('data.id'))
+            ->update([
+                'dispatched_at' => null,
+                'claim_until' => null,
+                'next_attempt_at' => now()->addHour(),
+                'last_error' => 'Simulated queue enqueue outage',
+            ]);
+
+        Event::fake([MessageSent::class]);
+
+        $second = $this->apiPost('/v2/messages', $payload, $headers)->assertStatus(200);
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, DB::table('messages')->where('id', $first->json('data.id'))->count());
+        Event::assertDispatched(
+            MessageSent::class,
+            fn (MessageSent $event): bool => (int) $event->message->id === (int) $first->json('data.id'),
+        );
+    }
+
+    public function test_send_message_rejects_reusing_a_client_operation_for_different_content(): void
+    {
+        $sender = $this->authenticatedUser();
+        $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $headers = ['Idempotency-Key' => 'mobile-message-content-conflict-1'];
+
+        $this->apiPost('/v2/messages', [
+            'recipient_id' => $recipient->id,
+            'body' => 'Original content',
+        ], $headers)->assertStatus(201);
+
+        $this->apiPost('/v2/messages', [
+            'recipient_id' => $recipient->id,
+            'body' => 'Changed content',
+        ], $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+
+        $this->assertSame(1, DB::table('messages')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('sender_id', $sender->id)
+            ->where('receiver_id', $recipient->id)
+            ->count());
+    }
+
+    public function test_attachment_replay_returns_the_original_attachment_without_storing_another_copy(): void
+    {
+        $sender = $this->authenticatedUser();
+        $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $headers = $this->withTenantHeader(['Idempotency-Key' => 'mobile-message-attachment-replay-1']);
+        $attachmentUrl = null;
+
+        try {
+            $first = $this->post('/api/v2/messages', [
+                'recipient_id' => $recipient->id,
+                'body' => 'Attached audit note',
+                'attachments' => [UploadedFile::fake()->createWithContent('audit-note.txt', 'same attachment bytes')],
+            ], $headers)->assertStatus(201);
+            $attachmentUrl = $first->json('data.attachments.0.file_url');
+
+            $second = $this->post('/api/v2/messages', [
+                'recipient_id' => $recipient->id,
+                'body' => 'Attached audit note',
+                'attachments' => [UploadedFile::fake()->createWithContent('audit-note.txt', 'same attachment bytes')],
+            ], $headers)->assertStatus(200);
+
+            $this->assertSame($first->json('data.id'), $second->json('data.id'));
+            $this->assertSame($attachmentUrl, $second->json('data.attachments.0.file_url'));
+            $this->assertSame(1, DB::table('message_attachments')
+                ->where('message_id', $first->json('data.id'))
+                ->count());
+            $this->assertFalse(Schema::hasColumn('message_send_receipts', 'response_json'));
+        } finally {
+            if (is_string($attachmentUrl) && $attachmentUrl !== '') {
+                \App\Core\MessageAttachmentUploader::delete($attachmentUrl);
+            }
+        }
     }
 
     public function test_send_message_allows_provider_declaration_that_only_records_required_vetting(): void

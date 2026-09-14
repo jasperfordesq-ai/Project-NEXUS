@@ -213,7 +213,7 @@ import { StyleSheet } from 'react-native';
 import JobDetailScreen from './job-detail';
 import { ApiResponseError } from '@/lib/api/client';
 import { router } from 'expo-router';
-import { applyToJob, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
+import { applyToJob, getJobDetail, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
 
 const mockJob = {
   id: 1,
@@ -713,8 +713,33 @@ describe('JobDetailScreen', () => {
    * server refuses them as a duplicate, so they conclude the platform is broken while the
    * employer already has their application.
    */
+  it('confirms an accepted application after the submit response is lost', async () => {
+    (applyToJob as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'timeout'));
+    (getJobDetail as jest.Mock).mockResolvedValueOnce({
+      data: { ...mockJob, has_applied: true, application_id: 91, application_status: 'pending' },
+    });
+    (getSavedProfile as jest.Mock).mockResolvedValueOnce({ cover_text: 'Cover text.' });
+    mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
+    await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
+    fireEvent.press(screen.getByText('Use Saved Cover Letter'));
+    fireEvent.press(screen.getByText('Submit Application'));
+
+    await waitFor(() => expect(getJobDetail).toHaveBeenCalledWith(1));
+    expect(screen.getByText('Application Sent!')).toBeTruthy();
+    expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({
+      description: expect.stringContaining('may already have been sent'),
+    }));
+
+    fireEvent.press(screen.getByText('Go back'));
+    expect(screen.getByText('Applied')).toBeTruthy();
+  });
+
   it('tells a member their application may already have been sent when the server does not answer', async () => {
     (applyToJob as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'timeout'));
+    (getJobDetail as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'offline'));
     (getSavedProfile as jest.Mock).mockResolvedValueOnce({ cover_text: 'Cover text.' });
     mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
 
@@ -732,23 +757,22 @@ describe('JobDetailScreen', () => {
     });
   });
 
-  it('shows the server’s own refusal rather than a generic failure', async () => {
+  it('reconciles the server’s duplicate refusal to the existing applied state', async () => {
     (applyToJob as jest.Mock).mockRejectedValueOnce(
       new ApiResponseError(409, 'You have already applied to this vacancy'),
     );
     (getSavedProfile as jest.Mock).mockResolvedValueOnce({ cover_text: 'Cover text.' });
     mockUseApi.mockReturnValue({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() });
 
-    const { getByText } = render(<JobDetailScreen />);
-    fireEvent.press(getByText('Apply Now'));
+    const screen = render(<JobDetailScreen />);
+    fireEvent.press(screen.getByText('Apply Now'));
     await waitFor(() => expect(getSavedProfile).toHaveBeenCalled());
-    fireEvent.press(getByText('Use Saved Cover Letter'));
-    fireEvent.press(getByText('Submit Application'));
+    fireEvent.press(screen.getByText('Use Saved Cover Letter'));
+    fireEvent.press(screen.getByText('Submit Application'));
 
-    await waitFor(() => {
-      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
-        description: 'You have already applied to this vacancy',
-      }));
-    });
+    await waitFor(() => expect(screen.getByText('Application Sent!')).toBeTruthy());
+    expect(mockShowToast).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByText('Go back'));
+    expect(screen.getByText('Applied')).toBeTruthy();
   });
 });
