@@ -538,6 +538,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- **"Forgot password" no longer reveals which email addresses have an account.** The page already returned the same message whether or not the address was registered, but it sent the reset email while the caller waited — and only when the account existed — so a registered address answered noticeably slower than an unknown one, which let the two be told apart by timing. The whole reset lookup and email now run on the background queue worker, so every address gets the same fast, identical response and the timing difference is gone. Nothing a member sees changes.
+
 - **Native URL parsing now uses the fixed linear-time percent decoder without changing Expo Router's supported query-string contract.** A maintained compatibility patch unwraps the decoder's ESM default export for the CommonJS router consumers, preventing crafted malformed links from tying up the app. Install-time patch application, hostile-input isolation, query-bearing Android navigation and dependency audits are covered by regressions. The mobile development toolchain also pins the corrected filesystem helper release.
 
 ### Added

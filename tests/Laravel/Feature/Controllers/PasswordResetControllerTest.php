@@ -6,6 +6,7 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Jobs\SendPasswordResetEmail;
 use App\Models\User;
 use App\Services\EmailDispatchService;
 use App\Services\TokenService;
@@ -126,6 +127,108 @@ class PasswordResetControllerTest extends TestCase
             ->where('email', $email)
             ->where('tenant_id', $this->testTenantId)
             ->value('token'));
+    }
+
+    /**
+     * F-023 (E-013): forgot-password must not leak account existence through
+     * response timing. The reset email was sent INLINE, and only for an account
+     * that exists, so an existing address responded measurably slower than an
+     * unknown one — a timing oracle that defeats the deliberately generic
+     * response message. The platform runs under mod_php (no early response
+     * flush), so the reset work is dispatched to the QUEUE and runs
+     * out-of-process. The request must dispatch the job IDENTICALLY whether or
+     * not the account exists (the account lookup lives in the job), so the
+     * request path does the same constant work for every address, and it must
+     * send nothing inline.
+     */
+    public function test_forgot_password_queues_reset_and_never_sends_inline(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+
+        $existing = 'reset-queue-' . uniqid('', true) . '@example.test';
+        User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $existing,
+            'status' => 'active',
+            'is_approved' => true,
+            'password_hash' => Hash::make('old-password-123'),
+        ]);
+        $missing = 'no-such-' . uniqid('', true) . '@example.test';
+
+        // A recording mailer proves nothing is sent inside the request.
+        $mailer = new PasswordResetSuccessfulEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        $existingResponse = $this->apiPost('/auth/forgot-password', ['email' => $existing]);
+        $missingResponse = $this->apiPost('/auth/forgot-password', ['email' => $missing]);
+
+        $existingResponse->assertStatus(200);
+        $missingResponse->assertStatus(200);
+
+        // The email is never sent inside the request for either address — with
+        // Queue::fake() the job is recorded, not run, so an inline send would be
+        // the only way $mailer->calls could be non-empty.
+        $this->assertCount(
+            0,
+            $mailer->calls,
+            'Reset email was sent inside the request — that inline send is the F-023 timing oracle.'
+        );
+
+        // The reset work is dispatched to the queue IDENTICALLY for an account
+        // that exists and one that does not, so response timing reveals nothing.
+        \Illuminate\Support\Facades\Queue::assertPushed(SendPasswordResetEmail::class, 2);
+        \Illuminate\Support\Facades\Queue::assertPushed(
+            SendPasswordResetEmail::class,
+            static fn (SendPasswordResetEmail $job): bool => $job->email === $existing
+        );
+        \Illuminate\Support\Facades\Queue::assertPushed(
+            SendPasswordResetEmail::class,
+            static fn (SendPasswordResetEmail $job): bool => $job->email === $missing
+        );
+
+        // And the response bodies are byte-identical, so there is no message oracle either.
+        $this->assertSame($existingResponse->getContent(), $missingResponse->getContent());
+    }
+
+    /**
+     * The queued job carries out the reset for a real account: it sends the
+     * email and rotates the stored token — the behaviour that used to run inline.
+     */
+    public function test_send_password_reset_email_job_sends_for_an_existing_account(): void
+    {
+        $email = 'reset-job-' . uniqid('', true) . '@example.test';
+        User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $email,
+            'status' => 'active',
+            'is_approved' => true,
+            'password_hash' => Hash::make('old-password-123'),
+        ]);
+
+        $mailer = new PasswordResetSuccessfulEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        (new SendPasswordResetEmail($email, $this->testTenantId))->handle();
+
+        $this->assertCount(1, $mailer->calls);
+        $this->assertSame($email, $mailer->calls[0]['to']);
+        $this->assertSame('password_reset', $mailer->calls[0]['options']['category']);
+        $this->assertSame(1, DB::table('password_resets')
+            ->where('email', $email)
+            ->where('tenant_id', $this->testTenantId)
+            ->count());
+    }
+
+    /**
+     * The queued job sends nothing for an address with no account — the branch
+     * whose absence, when run inline, created the timing difference.
+     */
+    public function test_send_password_reset_email_job_is_silent_for_unknown_account(): void
+    {
+        $mailer = new PasswordResetSuccessfulEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        (new SendPasswordResetEmail('nobody-' . uniqid('', true) . '@example.test', $this->testTenantId))->handle();
+
+        $this->assertCount(0, $mailer->calls);
     }
 
     // ------------------------------------------------------------------
