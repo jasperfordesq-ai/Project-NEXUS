@@ -64,8 +64,10 @@ class IdeationChallengeServiceTest extends TestCase
 
     public function test_getById_returns_null_when_not_found(): void
     {
-        DB::shouldReceive('table')->with('ideation_challenges')->andReturnSelf();
+        DB::shouldReceive('table')->with('ideation_challenges as c')->andReturnSelf();
+        DB::shouldReceive('leftJoin')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('select')->andReturnSelf();
         DB::shouldReceive('first')->andReturn(null);
 
         $this->assertNull($this->service->getById(999));
@@ -73,8 +75,10 @@ class IdeationChallengeServiceTest extends TestCase
 
     public function test_getById_returns_array_with_ideas_count(): void
     {
-        DB::shouldReceive('table')->with('ideation_challenges')->andReturnSelf();
+        DB::shouldReceive('table')->with('ideation_challenges as c')->andReturnSelf();
+        DB::shouldReceive('leftJoin')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('select')->andReturnSelf();
         DB::shouldReceive('first')->andReturn((object) [
             'id' => 1,
             'user_id' => 10,
@@ -84,6 +88,7 @@ class IdeationChallengeServiceTest extends TestCase
 
         DB::shouldReceive('table')->with('challenge_ideas')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('whereNotIn')->andReturnSelf();
         DB::shouldReceive('count')->andReturn(5);
 
         $result = $this->service->getById(1);
