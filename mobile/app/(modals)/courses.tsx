@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
@@ -30,6 +30,8 @@ import { withRouteGate } from '@/components/withRouteGate';
 type CourseTab = 'browse' | 'learning';
 
 function CoursesScreen() {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { tab } = useLocalSearchParams<{ tab?: string }>();
   const { t } = useTranslation(['courses', 'common']);
   const primary = usePrimaryColor();
@@ -106,10 +108,10 @@ function CoursesScreen() {
                     "the feature must not exist" conclusion the 2026-09-06 report
                     was about, one level down.
                   */}
-                  <View className="mt-3 flex-row gap-2">
+                  <View testID="courses-teaching-actions" className={`mt-3 gap-2 ${largeText ? '' : 'flex-row'}`}>
                     <HeroButton
-                      className="flex-1"
-                      size="sm"
+                      className={largeText ? 'w-full' : 'flex-1'}
+                      size={largeText ? 'md' : 'sm'}
                       variant="secondary"
                       testID="courses-my-courses"
                       onPress={() => router.push('/(modals)/course-instructor')}
@@ -117,8 +119,8 @@ function CoursesScreen() {
                       <HeroButton.Label>{t('instructor.my_courses')}</HeroButton.Label>
                     </HeroButton>
                     <HeroButton
-                      className="flex-1"
-                      size="sm"
+                      className={largeText ? 'w-full' : 'flex-1'}
+                      size={largeText ? 'md' : 'sm'}
                       variant="primary"
                       testID="courses-create-course"
                       onPress={() => router.push('/(modals)/new-course')}
@@ -164,12 +166,12 @@ function CoursesScreen() {
               <NativePressable accessibilityLabel={course.title} onPress={() => openCourse(course as Course)} feedback="highlight">
                 <HeroCard className="mb-3 rounded-panel">
                   <HeroCard.Body className="gap-2 p-4">
-                    <View className="flex-row items-center gap-2">
-                      {course.level ? <Chip size="sm" variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip> : null}
-                      {enrollment ? <Chip size="sm" variant="secondary"><Chip.Label>{Math.round(Number(enrollment.progress_percent))}%</Chip.Label></Chip> : null}
+                    <View className="flex-row flex-wrap items-center gap-2">
+                      {course.level ? <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip> : null}
+                      {enrollment ? <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{Math.round(Number(enrollment.progress_percent))}%</Chip.Label></Chip> : null}
                     </View>
                     <Text className="text-lg font-bold" style={{ color: theme.text }}>{course.title}</Text>
-                    {course.summary ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>{course.summary}</Text> : null}
+                    {course.summary ? <Text testID={`course-${course.id}-summary`} className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 3}>{course.summary}</Text> : null}
                     {course.author?.name ? <Text className="text-xs" style={{ color: theme.textMuted }}>{t('card.by_author', { name: course.author.name })}</Text> : null}
                   </HeroCard.Body>
                 </HeroCard>

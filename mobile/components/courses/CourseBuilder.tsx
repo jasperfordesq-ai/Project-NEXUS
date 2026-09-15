@@ -21,7 +21,7 @@
 
 import { useRef, useState } from 'react';
 import { describeApiError } from '@/lib/api/describeApiError';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import { Card as HeroCard, Text } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
@@ -60,6 +60,8 @@ interface CourseBuilderProps {
 }
 
 export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
@@ -252,6 +254,7 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
                     isFirst={lessonIndex === 0}
                     isLast={lessonIndex === (section.lessons?.length ?? 0) - 1}
                     primary={primary}
+                    largeText={largeText}
                     onChange={(next) => updateLessonLocal(section.id, next)}
                     onDelete={() => confirmRemoveLesson(section.id, lesson)}
                     onMove={(direction) => void moveLesson(section.id, lessonIndex, direction)}
@@ -333,6 +336,7 @@ function LessonRow({
   isFirst,
   isLast,
   primary,
+  largeText,
   onChange,
   onDelete,
   onMove,
@@ -342,6 +346,7 @@ function LessonRow({
   isFirst: boolean;
   isLast: boolean;
   primary: string;
+  largeText: boolean;
   onChange: (lesson: CourseLesson) => void;
   onDelete: () => void;
   onMove: (direction: -1 | 1) => void;
@@ -445,7 +450,7 @@ function LessonRow({
       className="gap-2 rounded-2xl border p-3"
       style={{ borderColor: theme.border, backgroundColor: theme.surface }}
     >
-      <View className="flex-row items-center gap-2">
+      <View testID={`course-lesson-${lesson.id}-header`} className={`${largeText ? '' : 'flex-row items-center'} gap-2`}>
         <View className="min-w-0 flex-1">
           <NativePressable
             accessibilityLabel={draft.title || t('builder.untitled_lesson')}
@@ -454,7 +459,7 @@ function LessonRow({
             onPress={() => setIsOpen((open) => !open)}
           >
             <View className="gap-0.5 py-1">
-              <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>
+              <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 1}>
                 {draft.title || t('builder.untitled_lesson')}
               </Text>
               <Text className="text-xs" style={{ color: theme.textMuted }}>
@@ -463,9 +468,11 @@ function LessonRow({
             </View>
           </NativePressable>
         </View>
-        <IconAction icon="chevron-up" label={t('builder.move_up')} disabled={isFirst} onPress={() => onMove(-1)} />
-        <IconAction icon="chevron-down" label={t('builder.move_down')} disabled={isLast} onPress={() => onMove(1)} />
-        <IconAction icon="trash-outline" label={t('builder.delete_lesson')} tone="danger" onPress={onDelete} />
+        <View className="flex-row items-center gap-2">
+          <IconAction icon="chevron-up" label={t('builder.move_up')} disabled={isFirst} onPress={() => onMove(-1)} />
+          <IconAction icon="chevron-down" label={t('builder.move_down')} disabled={isLast} onPress={() => onMove(1)} />
+          <IconAction icon="trash-outline" label={t('builder.delete_lesson')} tone="danger" onPress={onDelete} />
+        </View>
       </View>
 
       {isOpen ? (

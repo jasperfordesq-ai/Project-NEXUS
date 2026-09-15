@@ -18,7 +18,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard, Text } from 'heroui-native';
@@ -54,6 +54,8 @@ function CourseAnalyticsRoute() {
 }
 
 function CourseAnalyticsScreen() {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
   const params = useLocalSearchParams<{ id?: string }>();
   const theme = useTheme();
@@ -132,11 +134,11 @@ function CourseAnalyticsScreen() {
           </HeroCard.Body>
         </HeroCard>
 
-        <View className="mb-4 flex-row flex-wrap gap-2">
+        <View testID="course-analytics-stats" className={`mb-4 gap-2 ${largeText ? '' : 'flex-row flex-wrap'}`}>
           {stats.map((stat) => (
             <View
               key={stat.key}
-              className="min-w-[46%] flex-1 rounded-panel-inner px-3 py-2"
+              className={`${largeText ? 'w-full' : 'min-w-[46%] flex-1'} rounded-panel-inner px-3 py-2`}
               style={{ backgroundColor: withAlpha(primary, 0.08) }}
             >
               <Text className="text-xl font-bold" style={{ color: theme.text }}>{stat.value}</Text>
@@ -153,8 +155,8 @@ function CourseAnalyticsScreen() {
             ) : (
               perLesson.map((lesson) => (
                 <View key={lesson.lesson_id} className="gap-1">
-                  <View className="flex-row items-center justify-between gap-2">
-                    <Text className="min-w-0 flex-1 text-xs" style={{ color: theme.text }} numberOfLines={2}>
+                  <View testID={`course-analytics-lesson-${lesson.lesson_id}`} className={`${largeText ? 'items-start' : 'flex-row items-center justify-between'} gap-2`}>
+                    <Text className="min-w-0 flex-1 text-xs" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
                       {lesson.title}
                     </Text>
                     <Text className="text-xs" style={{ color: theme.textSecondary }}>

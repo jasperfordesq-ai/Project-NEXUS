@@ -10,6 +10,7 @@
  */
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateCourse = jest.fn();
@@ -270,6 +271,17 @@ describe('NewCourseRoute', () => {
     expect(mockCompleteCourseCreationOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'course-create-key' }));
     await waitFor(() => expect(getByText('Course builder')).toBeTruthy());
     expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Saved', variant: 'success' }));
+  });
+
+  it('stacks the course summary and lets its values wrap at large text', async () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<NewCourseRoute />);
+
+    await waitFor(() => expect(mockGetCourseCategories).toHaveBeenCalled());
+    expect(screen.getByTestId('course-form-summary').props.className).not.toContain('flex-row');
+    expect(screen.getByTestId('course-summary-level-value').props.numberOfLines).toBeUndefined();
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   it('protects edits made after the first successful draft save', async () => {

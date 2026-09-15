@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetCourseAnalytics = jest.fn();
@@ -76,6 +77,18 @@ describe('CourseAnalyticsRoute', () => {
     jest.clearAllMocks();
     mockParams = { id: '42' };
     mockGetCourseAnalytics.mockResolvedValue(analytics);
+  });
+
+  it('stacks statistics and unclamps lesson labels at large text', async () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<CourseAnalyticsRoute />);
+
+    await waitFor(() => expect(screen.getByText('Repair skills')).toBeTruthy());
+    expect(screen.getByTestId('course-analytics-stats').props.className).not.toContain('flex-row');
+    expect(screen.getByTestId('course-analytics-lesson-90').props.className).not.toContain('flex-row');
+    expect(screen.getByText('Taking things apart').props.numberOfLines).toBeUndefined();
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   it('reads analytics for the course in the URL', async () => {

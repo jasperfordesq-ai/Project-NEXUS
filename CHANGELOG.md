@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native course screens now remain readable at enlarged system text.** Course summaries, teaching actions, status badges, instructor controls, curriculum lesson controls, analytics tiles, lesson statistics, grading actions and learner navigation reflow into full-width rows at large text sizes, while long summary and lesson text is no longer clipped.
+
 - **Native course drafts now survive a lost creation response without duplicating the course.** The app retains an encrypted community/account/content-bound operation across restart and reuses it until the server confirms success. Laravel stores the course and its durable receipt atomically, returns the original course for exact sequential or simultaneous retries, and rejects reuse of the key for changed content.
 
 - **Native course authoring now keeps later edits protected after the first draft save and ignores rapid duplicate creation gestures.** Saving a new course no longer permanently disables the unsaved-changes warning, and synchronous in-flight guards prevent repeated presses from creating duplicate course drafts, cohorts, curriculum sections, lessons, quiz scaffolds or questions before the disabled state renders.

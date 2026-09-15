@@ -23,7 +23,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
@@ -66,6 +66,8 @@ function CoursePlayerScreen() {
 }
 
 function CoursePlayerScreenInner() {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { id } = useLocalSearchParams<{ id?: string }>();
   const courseId = Number(id);
   const { t } = useTranslation(['courses', 'common']);
@@ -348,8 +350,9 @@ function CoursePlayerScreenInner() {
                   </View>
                 ) : null}
 
-                <View className="flex-row justify-between gap-3">
+                <View testID="course-player-navigation" className={`${largeText ? '' : 'flex-row justify-between'} gap-3`}>
                   <HeroButton
+                    className={largeText ? 'w-full' : undefined}
                     variant="secondary"
                     isDisabled={lessonIndex === 0}
                     onPress={() => setLessonIndex((value) => Math.max(0, value - 1))}
@@ -357,6 +360,7 @@ function CoursePlayerScreenInner() {
                     <HeroButton.Label>{t('player.prev_lesson')}</HeroButton.Label>
                   </HeroButton>
                   <HeroButton
+                    className={largeText ? 'w-full' : undefined}
                     variant="secondary"
                     isDisabled={lessonIndex >= lessons.length - 1}
                     onPress={() => setLessonIndex((value) => Math.min(lessons.length - 1, value + 1))}

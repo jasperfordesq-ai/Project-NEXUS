@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetAuthoredCourses = jest.fn();
@@ -206,6 +207,17 @@ describe('CourseInstructorRoute', () => {
     await waitFor(() => expect(getAllByText('Edit course')).toHaveLength(2));
     expect(getAllByText('Grading')).toHaveLength(2);
     expect(getAllByText('Analytics')).toHaveLength(2);
+  });
+
+  it('gives long titles and every action full-width room at large text', async () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<CourseInstructorRoute />);
+
+    await waitFor(() => expect(screen.getByText('Repair skills')).toBeTruthy());
+    expect(screen.getByTestId('course-instructor-42-title').props.numberOfLines).toBeUndefined();
+    expect(screen.getByTestId('course-instructor-42-actions').props.className).not.toContain('flex-row');
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   it('offers course creation from the empty state', async () => {

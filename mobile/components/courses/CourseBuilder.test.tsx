@@ -11,6 +11,7 @@
  */
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateCourseSection = jest.fn();
@@ -143,6 +144,20 @@ describe('CourseBuilder', () => {
     mockShowToast.mockClear();
     mockUpdateCourseSection.mockResolvedValue({ id: 1 });
     mockUpdateCourseLesson.mockResolvedValue({ id: 90 });
+  });
+
+  it('moves lesson controls below an unclamped lesson title at large text', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const lesson = {
+      id: 90, course_id: 42, section_id: 5, title: 'A deliberately long lesson title that must remain readable',
+      content_type: 'text' as const, body: 'Lesson body', position: 0, is_preview: false,
+    };
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one', [lesson])]} />);
+
+    expect(screen.getByTestId('course-lesson-90-header').props.className).not.toContain('flex-row');
+    expect(screen.getByText(lesson.title).props.numberOfLines).toBeUndefined();
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   it('adds a section through the API and shows it in the curriculum', async () => {

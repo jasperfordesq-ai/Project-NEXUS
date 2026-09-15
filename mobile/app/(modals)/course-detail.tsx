@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
@@ -41,6 +41,8 @@ function CourseDetailScreen() {
 }
 
 function CourseDetailScreenInner() {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t } = useTranslation(['courses', 'common']);
   const primary = usePrimaryColor();
@@ -134,9 +136,9 @@ function CourseDetailScreenInner() {
             <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
               <View className="h-1" style={{ backgroundColor: primary }} />
               <HeroCard.Body className="gap-3 p-5">
-                <View className="flex-row flex-wrap gap-2">
-                  <Chip size="sm" variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip>
-                  <Chip size="sm" variant="secondary"><Chip.Label>{(parseDecimalInput(String(course.credit_cost ?? '')) ?? 0) === 0 ? t('detail.free') : t('detail.cost', { credits: parseDecimalInput(String(course.credit_cost ?? '')) ?? 0 })}</Chip.Label></Chip>
+                <View testID="course-detail-status" className={`${largeText ? 'items-start' : 'flex-row flex-wrap'} gap-2`}>
+                  <Chip testID="course-detail-level" size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{t(`level.${course.level}`)}</Chip.Label></Chip>
+                  <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{(parseDecimalInput(String(course.credit_cost ?? '')) ?? 0) === 0 ? t('detail.free') : t('detail.cost', { credits: parseDecimalInput(String(course.credit_cost ?? '')) ?? 0 })}</Chip.Label></Chip>
                 </View>
                 <Text className="text-2xl font-bold" style={{ color: theme.text }}>{course.title}</Text>
                 {course.summary ? <Text className="text-base leading-6" style={{ color: theme.textSecondary }}>{course.summary}</Text> : null}

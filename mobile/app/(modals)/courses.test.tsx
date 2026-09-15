@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
@@ -92,6 +93,17 @@ describe('CoursesScreen', () => {
 
     fireEvent.press(getByText('Create course'));
     expect(mockPush).toHaveBeenCalledWith('/(modals)/new-course');
+  });
+
+  it('stacks teaching actions and does not clamp course copy at large text', async () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<CoursesScreen />);
+
+    await waitFor(() => expect(screen.getByText('Timebanking basics')).toBeTruthy());
+    expect(screen.getByTestId('courses-teaching-actions').props.className).not.toContain('flex-row');
+    expect(screen.getByTestId('course-7-summary').props.numberOfLines).toBeUndefined();
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   /*

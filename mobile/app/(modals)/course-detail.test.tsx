@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
@@ -38,6 +39,16 @@ describe('CourseDetailScreen', () => {
     jest.clearAllMocks();
     jest.mocked(getCourse).mockResolvedValue({ id: 7, slug: 'basics', title: 'Timebanking basics', summary: 'Start here.', description: 'Learn how exchanges work.', level: 'beginner', credit_cost: 0, enrollment_count: 12, is_enrolled: false, sections: [] });
     jest.mocked(enrollInCourse).mockResolvedValue({ id: 3, course_id: 7, status: 'active', progress_percent: 0 });
+  });
+
+  it('uses readable status chips at large text', async () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<CourseDetailScreen />);
+
+    await waitFor(() => expect(screen.getByText('Timebanking basics')).toBeTruthy());
+    expect(screen.getByTestId('course-detail-status').props.className).not.toContain('flex-row');
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   it('enrols through the API then opens the player', async () => {

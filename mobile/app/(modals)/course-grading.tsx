@@ -16,7 +16,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard, Text } from 'heroui-native';
@@ -257,6 +257,8 @@ function GradeCard({
   onGraded: (attemptId: number) => void;
   onDraftStateChange: (attemptId: number, dirty: boolean, saving: boolean) => void;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
   const theme = useTheme();
   const { show: showToast } = useAppToast();
@@ -419,7 +421,7 @@ function GradeCard({
           style={{ color: theme.text }}
           accessibilityLabel={t('grading.feedback')}
         />
-        <HeroButton size="sm" isDisabled={isSaving} onPress={() => void submit()}>
+        <HeroButton testID={`course-grade-submit-${attempt.id}`} className={largeText ? 'w-full' : undefined} size={largeText ? 'md' : 'sm'} isDisabled={isSaving} onPress={() => void submit()}>
           <HeroButton.Label>{t('grading.submit')}</HeroButton.Label>
         </HeroButton>
       </HeroCard.Body>

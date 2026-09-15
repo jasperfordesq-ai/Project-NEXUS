@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { RefreshControl } from 'react-native';
 
@@ -122,6 +123,16 @@ describe('CourseGradingRoute', () => {
     mockShowToast.mockClear();
     mockGetCourseGradingQueue.mockResolvedValue([attempt]);
     mockGradeCourseAttempt.mockResolvedValue({ ...attempt, grading_status: 'graded' });
+  });
+
+  it('uses a full-width content-height grade action at large text', async () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<CourseGradingRoute />);
+
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+    expect(screen.getByTestId('course-grade-submit-900').props.className).toContain('w-full');
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   it('protects edited grading feedback from Back and native swipe removal', async () => {

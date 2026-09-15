@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from 'heroui-native';
@@ -82,6 +82,8 @@ function NewCourseRoute() {
 }
 
 function NewCourseScreen() {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
   const params = useLocalSearchParams<{ id?: string }>();
   const theme = useTheme();
@@ -369,8 +371,8 @@ function NewCourseScreen() {
                 title={screenTitle}
                 subtitle={isEditing ? t('instructor.edit_subtitle') : t('instructor.create_subtitle')}
               >
-                <View className="mt-1 flex-row gap-2">
-                  <SummaryTile label={t('instructor.summary_level')} value={t(`level.${level}`)} />
+                <View testID="course-form-summary" className={`mt-1 gap-2 ${largeText ? '' : 'flex-row'}`}>
+                  <SummaryTile testID="course-summary-level" label={t('instructor.summary_level')} value={t(`level.${level}`)} />
                   <SummaryTile label={t('instructor.summary_pacing')} value={t(`instructor.enrollment_${enrollmentType}`)} />
                   <SummaryTile label={t('instructor.category_label')} value={selectedCategoryName} />
                 </View>

@@ -74,12 +74,12 @@ export function FieldErrorText({ message, testID }: { message: string; testID?: 
   );
 }
 
-export function SummaryTile({ label, value }: { label: string; value: string }) {
+export function SummaryTile({ label, value, testID }: { label: string; value: string; testID?: string }) {
   const theme = useTheme();
   return (
-    <View className="flex-1 rounded-2xl border px-3 py-3" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+    <View testID={testID} className="flex-1 rounded-2xl border px-3 py-3" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
       <Text className="text-xs font-semibold uppercase" style={{ color: theme.textMuted }}>{label}</Text>
-      <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>{value}</Text>
+      <Text testID={testID ? `${testID}-value` : undefined} className="mt-1 text-sm font-semibold" style={{ color: theme.text }}>{value}</Text>
     </View>
   );
 }

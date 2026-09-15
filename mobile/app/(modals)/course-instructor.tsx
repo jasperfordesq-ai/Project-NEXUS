@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
-import { FlatList, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Card as HeroCard } from 'heroui-native';
@@ -53,6 +53,8 @@ function CourseInstructorRoute() {
 }
 
 function CourseInstructorScreen() {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
@@ -180,38 +182,42 @@ function CourseInstructorScreen() {
           <HeroCard className="mb-3 rounded-panel">
             <HeroCard.Body className="gap-3 p-4">
               <View className="flex-row flex-wrap items-center gap-2">
-                <Chip size="sm" variant="secondary"><Chip.Label>{statusLabel(course)}</Chip.Label></Chip>
+                <Chip size={largeText ? 'md' : 'sm'} variant="secondary"><Chip.Label>{statusLabel(course)}</Chip.Label></Chip>
               </View>
-              <Text className="text-lg font-bold" style={{ color: theme.text }} numberOfLines={2}>
+              <Text testID={`course-instructor-${course.id}-title`} className="text-lg font-bold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>
                 {course.title}
               </Text>
               <Text className="text-xs" style={{ color: theme.textMuted }}>
                 {`${t('instructor.enrollments')}: ${course.enrollment_count ?? 0} · ${t('instructor.completions')}: ${course.completion_count ?? 0}`}
               </Text>
-              <View className="flex-row flex-wrap gap-2">
+              <View testID={`course-instructor-${course.id}-actions`} className={`${largeText ? '' : 'flex-row flex-wrap'} gap-2`}>
                 <HeroButton
-                  size="sm"
+                  className={largeText ? 'w-full' : undefined}
+                  size={largeText ? 'md' : 'sm'}
                   variant="secondary"
                   onPress={() => router.push({ pathname: '/(modals)/new-course', params: { id: String(course.id) } })}
                 >
                   <HeroButton.Label>{t('instructor.edit_course')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton
-                  size="sm"
+                  className={largeText ? 'w-full' : undefined}
+                  size={largeText ? 'md' : 'sm'}
                   variant="secondary"
                   onPress={() => router.push({ pathname: '/(modals)/course-grading', params: { id: String(course.id) } })}
                 >
                   <HeroButton.Label>{t('grading.title')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton
-                  size="sm"
+                  className={largeText ? 'w-full' : undefined}
+                  size={largeText ? 'md' : 'sm'}
                   variant="secondary"
                   onPress={() => router.push({ pathname: '/(modals)/course-analytics', params: { id: String(course.id) } })}
                 >
                   <HeroButton.Label>{t('analytics.title')}</HeroButton.Label>
                 </HeroButton>
                 <HeroButton
-                  size="sm"
+                  className={largeText ? 'w-full' : undefined}
+                  size={largeText ? 'md' : 'sm'}
                   isDisabled={togglingId === course.id}
                   onPress={() => togglePublish(course)}
                   testID={`course-toggle-publish-${course.id}`}

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockShow = jest.fn();
@@ -33,6 +34,16 @@ describe('CoursePlayerScreen', () => {
     jest.mocked(getCourse).mockResolvedValue({ id: 7, slug: 'basics', title: 'Timebanking basics', level: 'beginner', credit_cost: 0, enrollment_count: 1, sections: [{ id: 2, course_id: 7, title: 'Start', position: 1, lessons: [{ id: 12, course_id: 7, section_id: 2, title: 'Your first exchange', content_type: 'text', body: 'Offer one useful skill.', transcript: null, position: 1, is_preview: false }] }] });
     jest.mocked(getCourseProgress).mockResolvedValue({ enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 0 }, lessons: [], availability: [{ lesson_id: 12, available: true, unlock_at: null }] });
     jest.mocked(completeCourseLesson).mockResolvedValue({ progress_percent: 100, course_completed: true });
+  });
+
+  it('stacks lesson navigation at large text', async () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    const screen = render(<CoursePlayerScreen />);
+
+    await waitFor(() => expect(screen.getByText('Offer one useful skill.')).toBeTruthy());
+    expect(screen.getByTestId('course-player-navigation').props.className).not.toContain('flex-row');
+    screen.unmount();
+    dimensions.mockRestore();
   });
 
   it('shows lesson content and saves completion before changing the UI', async () => {
