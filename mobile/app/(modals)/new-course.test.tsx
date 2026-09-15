@@ -21,6 +21,8 @@ const mockCreateCourseCohort = jest.fn();
 const mockPublishCourse = jest.fn();
 const mockUnpublishCourse = jest.fn();
 const mockShowToast = jest.fn();
+const mockReserveCourseCreationOperation = jest.fn();
+const mockCompleteCourseCreationOperation = jest.fn();
 const mockPush = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 
@@ -112,6 +114,10 @@ jest.mock('@/lib/api/courses', () => ({
   deleteCourseLesson: jest.fn(),
   createCourseQuiz: jest.fn(),
   createQuizQuestion: jest.fn(),
+}));
+jest.mock('@/lib/courseCreationOperation', () => ({
+  reserveCourseCreationOperation: (...args: unknown[]) => mockReserveCourseCreationOperation(...args),
+  completeCourseCreationOperation: (...args: unknown[]) => mockCompleteCourseCreationOperation(...args),
 }));
 jest.mock('@/components/ui/FormActionFooter', () => {
   const React = require('react');
@@ -216,6 +222,8 @@ describe('NewCourseRoute', () => {
     mockGetCourse.mockResolvedValue(existingCourse);
     mockCreateCourse.mockResolvedValue({ ...existingCourse, id: 99, title: 'Repair skills', sections: [] });
     mockUpdateCourse.mockResolvedValue({ ...existingCourse });
+    mockReserveCourseCreationOperation.mockResolvedValue({ storageKey: 'course-op', key: 'course-create-key', createdAt: 1 });
+    mockCompleteCourseCreationOperation.mockResolvedValue(undefined);
   });
 
   it('refuses to save a course with no title', async () => {
@@ -258,7 +266,8 @@ describe('NewCourseRoute', () => {
       category_id: 3,
       credit_cost: 2,
       prerequisites: [7, 9],
-    }));
+    }, 'course-create-key'));
+    expect(mockCompleteCourseCreationOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'course-create-key' }));
     await waitFor(() => expect(getByText('Course builder')).toBeTruthy());
     expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Saved', variant: 'success' }));
   });
@@ -286,6 +295,7 @@ describe('NewCourseRoute', () => {
     await waitFor(() => expect(mockGetCourseCategories).toHaveBeenCalled());
     fireEvent.changeText(getByLabelText('Title'), 'Repair skills');
     fireEvent.press(getByTestId('footer-submit'));
+    await waitFor(() => expect(mockCreateCourse).toHaveBeenCalledTimes(1));
     fireEvent.press(getByTestId('footer-submit'));
     fireEvent.press(getByTestId('footer-submit'));
 
@@ -303,6 +313,7 @@ describe('NewCourseRoute', () => {
 
     await waitFor(() => expect(mockCreateCourse).toHaveBeenCalledWith(
       expect.objectContaining({ credit_cost: 1.5 }),
+      'course-create-key',
     ));
   });
 

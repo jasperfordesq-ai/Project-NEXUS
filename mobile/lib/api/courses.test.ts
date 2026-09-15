@@ -123,6 +123,16 @@ describe('courses API', () => {
       expect(api.put).toHaveBeenCalledWith('/api/v2/courses/42', { ...payload, title: 'Repair skills II' });
     });
 
+    it('binds a course creation retry key in the request body and header', async () => {
+      (api.post as jest.Mock).mockResolvedValueOnce({ data: { id: 42, title: 'Repair skills', status: 'draft' } });
+
+      await createCourse({ title: 'Repair skills' }, 'mobile-course-create-123');
+
+      expect(api.post).toHaveBeenCalledWith('/api/v2/courses', {
+        title: 'Repair skills', idempotency_key: 'mobile-course-create-123',
+      }, { headers: { 'Idempotency-Key': 'mobile-course-create-123' } });
+    });
+
     it('publishes and unpublishes with an empty body', async () => {
       (api.post as jest.Mock)
         .mockResolvedValueOnce({ data: { id: 42, status: 'published', moderation_status: 'approved' } })

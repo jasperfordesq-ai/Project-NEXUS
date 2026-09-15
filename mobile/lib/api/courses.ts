@@ -339,8 +339,13 @@ export async function getAuthoredCourses(): Promise<Course[]> {
   return unwrap(await api.get<DataEnvelope<Course[]>>(`${API_V2}/courses/mine`));
 }
 
-export async function createCourse(payload: CourseInput): Promise<Course> {
-  return unwrap(await api.post<DataEnvelope<Course>>(`${API_V2}/courses`, payload));
+export async function createCourse(payload: CourseInput, idempotencyKey?: string): Promise<Course> {
+  if (!idempotencyKey) return unwrap(await api.post<DataEnvelope<Course>>(`${API_V2}/courses`, payload));
+  return unwrap(await api.post<DataEnvelope<Course>>(
+    `${API_V2}/courses`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  ));
 }
 
 export async function updateCourse(courseId: number, payload: CourseInput): Promise<Course> {

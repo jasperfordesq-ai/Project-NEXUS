@@ -57,6 +57,7 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
+import { completeCourseCreationOperation, reserveCourseCreationOperation } from '@/lib/courseCreationOperation';
 
 const LEVELS: CourseLevel[] = ['beginner', 'intermediate', 'advanced'];
 /** `group` visibility is set by the group that owns a course, never here — as on the web. */
@@ -248,7 +249,11 @@ function NewCourseScreen() {
     setIsSaving(true);
     try {
       const payload = buildPayload();
-      const saved = isEditing ? await updateCourse(courseId, payload) : await createCourse(payload);
+      const creationOperation = isEditing ? null : await reserveCourseCreationOperation(JSON.stringify(payload));
+      const saved = isEditing
+        ? await updateCourse(courseId, payload)
+        : await createCourse(payload, creationOperation!.key);
+      if (creationOperation) await completeCourseCreationOperation(creationOperation);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('instructor.saved'), variant: 'success' });
       // What is on screen is now what the server holds, so leaving straight after

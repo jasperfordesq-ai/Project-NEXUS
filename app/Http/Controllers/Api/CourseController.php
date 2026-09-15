@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Concerns\InteractsWithCourses;
 use App\Models\Course;
 use App\Models\CourseReview;
 use App\Services\CourseCategoryService;
+use App\Services\CourseCreationReceiptService;
 use App\Services\CourseEnrollmentService;
 use App\Services\CourseService;
 use Illuminate\Http\JsonResponse;
@@ -140,9 +141,28 @@ class CourseController extends BaseApiController
             return $this->respondWithError('VALIDATION_FAILED', __('api_controllers_2.courses.title_required'), 'title', 422);
         }
 
-        $course = CourseService::create($userId, $this->getAllInput());
+        $input = $this->getAllInput();
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $input['idempotency_key'] ?? null;
+        if ($headerKey !== null && $bodyKey !== null && ! hash_equals(trim((string) $headerKey), trim((string) $bodyKey))) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        $identity = CourseCreationReceiptService::identity((string) ($headerKey ?? $bodyKey ?? ''), $input);
+        if ($identity === false) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
 
-        return $this->respondWithData($course, null, 201);
+        try {
+            $result = $identity === null
+                ? ['course' => CourseService::create($userId, $input), 'replayed' => false]
+                : CourseCreationReceiptService::create($userId, $input, $identity);
+        } catch (\InvalidArgumentException) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'), 'idempotency_key', 409);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
+        }
+
+        return $this->respondWithData($result['course'], null, $result['replayed'] ? 200 : 201);
     }
 
     /** PUT /v2/courses/{id} — update a course. */

@@ -175,6 +175,40 @@ class CourseControllerTest extends TestCase
         $this->assertSame(201, $response->status());
     }
 
+    public function test_course_creation_replays_one_result_and_rejects_changed_content(): void
+    {
+        $this->enableCourses(true);
+        $user = $this->authenticatedUser();
+        $headers = ['Idempotency-Key' => 'mobile-course-create-stable-1'];
+        $payload = [
+            'title' => 'Repair skills ' . uniqid('', true),
+            'summary' => 'One accepted draft despite a lost response.',
+            'idempotency_key' => 'mobile-course-create-stable-1',
+        ];
+
+        $first = $this->apiPost('/v2/courses', $payload, $headers)->assertCreated();
+        $replay = $this->apiPost('/v2/courses', $payload, $headers)->assertOk();
+
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, Course::where('author_user_id', $user->id)->where('title', $payload['title'])->count());
+        $this->assertSame(1, DB::table('course_creation_receipts')->where('actor_user_id', $user->id)->count());
+        $this->assertArrayNotHasKey('idempotency_key_hash', $replay->json('data'));
+        $this->assertArrayNotHasKey('request_hash', $replay->json('data'));
+
+        $this->apiPost('/v2/courses', [...$payload, 'summary' => 'Changed content'], $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+        $this->assertSame(1, Course::where('author_user_id', $user->id)->where('title', $payload['title'])->count());
+
+        $this->apiPost('/v2/courses', [...$payload, 'idempotency_key' => 'different-course-create-key'], $headers)
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_INVALID');
+        $this->apiPost('/v2/courses', [...$payload, 'idempotency_key' => 'short'], ['Idempotency-Key' => 'short'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_INVALID');
+        $this->assertSame(1, Course::where('author_user_id', $user->id)->where('title', $payload['title'])->count());
+    }
+
     public function test_my_enrolled_requires_auth(): void
     {
         $this->enableCourses(true);

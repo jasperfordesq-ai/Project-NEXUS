@@ -2629,6 +2629,24 @@ CREATE TABLE `course_completion_delivery_outbox` (
   CONSTRAINT `course_completion_delivery_outbox_enrollment_id_foreign` FOREIGN KEY (`enrollment_id`) REFERENCES `course_enrollments` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `course_creation_receipts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `course_creation_receipts` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint(20) unsigned NOT NULL,
+  `actor_user_id` bigint(20) unsigned NOT NULL,
+  `idempotency_key_hash` char(64) NOT NULL,
+  `request_hash` char(64) NOT NULL,
+  `course_id` bigint(20) unsigned NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `course_creation_receipt_key_unique` (`tenant_id`,`actor_user_id`,`idempotency_key_hash`),
+  KEY `course_creation_receipt_result_index` (`tenant_id`,`course_id`),
+  KEY `course_creation_receipts_course_id_foreign` (`course_id`),
+  CONSTRAINT `course_creation_receipts_course_id_foreign` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `course_discussions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21419,7 +21437,8 @@ INSERT INTO `laravel_migrations` VALUES
 (438,'2026_09_14_230000_create_message_delivery_outbox',128),
 (439,'2026_09_14_234000_create_volunteer_opportunity_creation_receipts',128),
 (440,'2026_09_14_235000_add_shift_swap_request_idempotency',128),
-(441,'2026_09_15_120000_create_course_completion_delivery_outbox',129);
+(441,'2026_09_15_120000_create_course_completion_delivery_outbox',129),
+(442,'2026_09_15_130000_create_course_creation_receipts',130);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
