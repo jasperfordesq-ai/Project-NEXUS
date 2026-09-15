@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native realtime now recovers after a transient configuration failure at startup.** Returning the app to the foreground retries the full realtime setup when no client could be created, instead of attempting to reconnect a client that never existed and leaving live messages disabled until another sign-in.
+
 - **Native realtime and unread badges now follow the active account through an in-place session replacement.** A replacement account gets a fresh private channel and count refresh, late responses and events from the prior account are discarded, the prior launcher-badge count is never mirrored under the new identity, and logout fully disconnects the socket.
 
 - **Automatic native community repair no longer outlives the account that started it.** If a member signs out or another account replaces the session while the app is correcting a token/community mismatch, the stale repair stops before switching communities and cannot navigate the ended account back into the app.

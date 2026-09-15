@@ -82,6 +82,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   activeSessionIdentityRef.current = sessionIdentity;
   const [messageCount, setMessageCount] = useState({ identity: sessionIdentity, count: 0 });
   const [notificationCount, setNotificationCount] = useState({ identity: sessionIdentity, count: 0 });
+  const [connectionAttempt, setConnectionAttempt] = useState(0);
   // Never expose the preceding account's count during the render in which identity
   // changes. The reset effect runs after render, which is too late for UI and OS badges.
   const unreadMessages = messageCount.identity === sessionIdentity ? messageCount.count : 0;
@@ -244,7 +245,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       }
       disconnectRealtime();
     };
-  }, [sessionIdentity]);
+  }, [connectionAttempt, sessionIdentity]);
 
   // Clear Pusher config cache on logout so next login gets fresh config
   useEffect(() => {
@@ -279,6 +280,11 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       const client = getRealtimeClient();
       if (client && client.connection.state !== 'connected') {
         client.connect();
+      } else if (!client && pusherConfigRef.current === null) {
+        // A startup config request may have failed before any client existed. There is
+        // nothing for `connect()` to revive in that state, so retry the full setup when
+        // the member brings the app back after connectivity may have returned.
+        setConnectionAttempt((attempt) => attempt + 1);
       }
     };
 

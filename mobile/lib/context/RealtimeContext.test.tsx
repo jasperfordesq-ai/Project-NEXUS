@@ -421,6 +421,40 @@ describe('RealtimeContext', () => {
     expect(mockRegisterForPushNotifications).toHaveBeenCalledWith(false);
     expect(connect).toHaveBeenCalledTimes(1);
   });
+
+  it('retries realtime setup on foreground after its initial config request failed', async () => {
+    const channel = { bind: jest.fn(), unbind_all: jest.fn(), name: 'private-user.1' };
+    const client = {
+      subscribe: jest.fn(() => channel),
+      unsubscribe: jest.fn(),
+      connection: { state: 'connected' },
+    };
+    let configAttempts = 0;
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) return Promise.resolve({ data: { count: 0 } });
+      if (url.includes('/notifications/counts')) return Promise.resolve({ data: { total: 0 } });
+      if (url.includes('/pusher/config')) {
+        configAttempts += 1;
+        if (configAttempts === 1) return Promise.reject(new Error('offline at launch'));
+        return Promise.resolve({ enabled: true, key: 'key', channels: { user: 'private-user.1' } });
+      }
+      return Promise.resolve({});
+    });
+    mockInitRealtime.mockReturnValue(client);
+
+    renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(configAttempts).toBe(1));
+    expect(mockInitRealtime).not.toHaveBeenCalled();
+
+    act(() => {
+      mockAppStateHandler!('background');
+      mockAppStateHandler!('active');
+    });
+
+    await waitFor(() => expect(mockInitRealtime).toHaveBeenCalledTimes(1));
+    expect(configAttempts).toBe(2);
+    expect(client.subscribe).toHaveBeenCalledWith('private-user.1');
+  });
 });
 
 describe('isMessagePayload validation', () => {
