@@ -85,8 +85,8 @@ bash mobile/scripts/build-aab-play.sh --version-code 8
 Output: `mobile/android/app/build/outputs/bundle/release/app-release.aab`
 (~91 MB minified; the build itself took **1m 45s** unminified, **2m 14s** with R8
 on a warm cache, and **5m 44s** with R8 from a cold clean checkout — 2026-09-13,
-version code 11. Version code 13 took **5m 55s** with R8 on 2026-09-15. No EAS
-quota spent.)
+version code 11. Version code 13 took **5m 55s** and version code 14 took
+**2m 41s** with R8 on 2026-09-15. No EAS quota spent.)
 
 Do not add Gradle's optional `--clean` step after Expo prebuild on this Windows
 checkout. On version code 13 it reached `externalNativeBuildCleanDebug` before
@@ -246,14 +246,21 @@ Tablet 6,408 / TV 3 / Chromebook 10 / Android XR 1, 0 lost on every row; 32.6 MB
 new install, +97.1 KB on build 11; 3.96 MB update). Version code 13 / 1.7.0 was
 published at **9:21 PM** the same day; the device counts were unchanged with 0
 lost on every row, the new-install size remained 32.6 MB, and the update was
-13.8 MB.
+13.8 MB. Version code 14 / 1.7.1 was published at **10:17 PM** the same day and
+Play reported it as **Available to internal testers**. It was built from source
+commit `3a858535c`; the 95,971,048-byte AAB had SHA-256
+`3028E34896A5F359E8A2A630EB91BE7BF6AE70AC519D610A9A8BB7D824B609FA`. All six
+exact-commit GitHub workflow groups completed successfully before upload. This
+candidate supersedes build 13 and fixes the Android keyboard collapse in shared
+bottom-sheet forms; production remains on build 12 / 1.6.0 pending a physical
+Android walkthrough of the Request exchange form.
 
-**The browser upload route works for the full bundle.** Measured on version code
-13, the file-chooser bridge uploaded the 96 MB AAB, then Play optimized it before
-showing `13 (1.7.0)` in the artifact table. This replaces the earlier 10 MB bridge
-limit. `mobile/google-play-key.json` — the service-account key `eas.json` points
-at — still has never been created, so browser upload remains the available route.
-Two Chrome-driving traps from the earlier run:
+**The browser upload route works for the full bundle.** Measured on version codes
+13 and 14, the file-chooser bridge uploaded the 96 MB AAB, then Play optimized it
+before showing the expected version in the artifact table. This replaces the
+earlier 10 MB bridge limit. `mobile/google-play-key.json` — the service-account
+key `eas.json` points at — still has never been created, so browser upload remains
+the available route. Two Chrome-driving traps from the earlier run:
 
 - **Clicking "Create new release" through its accessibility reference did nothing
   useful** — the page scrolled sideways and the form never opened. A click on the
