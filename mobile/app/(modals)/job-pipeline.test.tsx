@@ -127,7 +127,8 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
 });
 
 import JobPipelineScreen from './job-pipeline';
-import { updateJobApplication } from '@/lib/api/jobs';
+import { getJobApplications, updateJobApplication } from '@/lib/api/jobs';
+import { ApiResponseError } from '@/lib/api/client';
 import * as Haptics from '@/lib/haptics';
 
 const applications = [
@@ -195,7 +196,7 @@ describe('JobPipelineScreen', () => {
       fireEvent.press(screen.getByTestId('pipeline-move-shortlisted-44'));
     });
     expect(updateJobApplication).toHaveBeenCalledTimes(1);
-    expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'screening' });
+    expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'screening', expected_status: 'pending' });
   });
   it.each(['accepted', 'rejected', 'withdrawn'])('keeps %s candidates in their terminal stage without decision actions', (status) => {
     mockUseApi.mockReturnValue({ data: { data: [{ ...applications[0], status: 'pending', stage: status }] }, isLoading: false, error: null, refresh: jest.fn() });
@@ -222,7 +223,7 @@ describe('JobPipelineScreen', () => {
     fireEvent.press(screeningActions[screeningActions.length - 1]);
 
     await waitFor(() => {
-      expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'screening' });
+      expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'screening', expected_status: 'pending' });
     });
   });
   it('🔴 can make an offer, accept and reject once a candidate reaches interview', () => {
@@ -247,8 +248,40 @@ describe('JobPipelineScreen', () => {
 
     fireEvent.press(getByTestId('pipeline-confirm-reject-44'));
     await waitFor(() =>
-      expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'rejected' }),
+      expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'rejected', expected_status: 'pending' }),
     );
+  });
+
+  it('accepts a candidate move after response loss only when authoritative readback proves it', async () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: applications }, isLoading: false, error: null, refresh });
+    (updateJobApplication as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'Response lost'));
+    (getJobApplications as jest.Mock).mockResolvedValueOnce({
+      data: applications.map((application) => application.id === 44
+        ? { ...application, status: 'screening', stage: 'screening' }
+        : application),
+    });
+    const screen = render(<JobPipelineScreen />);
+
+    await act(async () => { fireEvent.press(screen.getByTestId('pipeline-advance-44')); });
+
+    expect(getJobApplications).toHaveBeenCalledWith(1);
+    expect(Haptics.notificationAsync).toHaveBeenCalledWith(Haptics.NotificationFeedbackType.Success);
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes a stale candidate after another owner wins the decision', async () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: applications }, isLoading: false, error: null, refresh });
+    (updateJobApplication as jest.Mock).mockRejectedValueOnce(
+      new ApiResponseError(409, 'This application changed while you were reviewing it.', undefined, 'DECISION_CONFLICT'),
+    );
+    const screen = render(<JobPipelineScreen />);
+
+    await act(async () => { fireEvent.press(screen.getByTestId('pipeline-advance-44')); });
+
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(Haptics.notificationAsync).not.toHaveBeenCalled();
   });
 
   it('🔴 says the vacancy is not yours rather than offering a Retry that cannot work', () => {

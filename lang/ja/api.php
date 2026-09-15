@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => '無効なジョブステータス',
     'job_application_terminal_status' => 'ターミナル状態であるため、:status からステータスを変更できません',
     'job_application_update_failed' => 'アプリケーションの更新に失敗しました',
+    'job_application_decision_conflict' => 'この応募は確認中に変更されました。別の段階を選ぶ前に更新してください。',
     'job_update_failed' => '求人情報を更新できませんでした',
     'job_renew_not_owner' => '自分の求人情報のみを更新できます',
     'listing_ai_generate_failed' => '説明を生成できませんでした。もう一度試してください。',

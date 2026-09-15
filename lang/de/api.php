@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'Ungültiger Jobstatus',
     'job_application_terminal_status' => 'Der Status von :status kann nicht geändert werden, da es sich um einen Endstatus handelt',
     'job_application_update_failed' => 'Die Anwendung konnte nicht aktualisiert werden',
+    'job_application_decision_conflict' => 'Diese Bewerbung wurde während Ihrer Prüfung geändert. Aktualisieren Sie sie, bevor Sie eine andere Phase auswählen.',
     'job_update_failed' => 'Das Stellenangebot konnte nicht aktualisiert werden',
     'job_renew_not_owner' => 'Sie können nur Ihre eigenen offenen Stellen verlängern',
     'listing_ai_generate_failed' => 'Beschreibung konnte nicht generiert werden. Bitte versuchen Sie es erneut.',

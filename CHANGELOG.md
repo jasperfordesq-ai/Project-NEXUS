@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native hiring decisions now survive lost responses and simultaneous reviewers without duplicating or overwriting outcomes.** Candidate updates include the exact stage the owner reviewed, Laravel serializes the transition, exact replays return the committed result without repeating history or notifications, and a stale different decision returns a translated conflict. Android and iOS read the applications back after an unanswered request and refresh stale cards after conflicts.
+
 - **The native hiring pipeline now follows the active account and community.** Replacing a signed-in account while a vacancy pipeline is open clears the previous owner’s selected stage and candidate view, starts the new route lifecycle, and discards late decision feedback or refreshes from the ended account.
 
 - **Native job applications now close on an already-open screen at the server-defined deadline.** The jobs API returns the exact cutoff and the server time used to evaluate it, so Android and iOS can disable an open application sheet at the correct instant without guessing from the phone's timezone. The screen preserves the member's draft while locking submission and editing after closure.

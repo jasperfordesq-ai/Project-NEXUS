@@ -2357,9 +2357,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobVacancyService.php:1602:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/JobVacancyService.php:1598:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobVacancyService.php",
-            "line": 1602,
+            "line": 1598,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $applicantId",

@@ -1626,6 +1626,7 @@ return [
     'job_status_invalid'                   => 'Invalid job status',
     'job_application_terminal_status'      => 'Cannot change status from :status because it is a terminal state',
     'job_application_update_failed'        => 'Failed to update application',
+    'job_application_decision_conflict'    => 'This application changed while you were reviewing it. Refresh it before choosing another stage.',
     'job_update_failed'                    => 'Failed to update job vacancy',
     'job_renew_not_owner'                  => 'You can only renew your own job vacancies',
     'job_scheduled_at_required'            => 'scheduled_at is required',

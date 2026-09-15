@@ -118,6 +118,8 @@ export interface JobAlert {
   created_at: string;
 }
 
+export type JobApplicationStatus = 'applied' | 'pending' | 'screening' | 'reviewed' | 'shortlisted' | 'interview' | 'offer' | 'accepted' | 'rejected' | 'withdrawn';
+
 export interface JobOwnerApplication {
   id: number;
   vacancy_id: number;
@@ -129,8 +131,8 @@ export interface JobOwnerApplication {
     email: string | null;
   };
   message?: string | null;
-  status: 'applied' | 'pending' | 'screening' | 'reviewed' | 'shortlisted' | 'interview' | 'offer' | 'accepted' | 'rejected' | 'withdrawn';
-  stage?: string | null;
+  status: JobApplicationStatus;
+  stage?: JobApplicationStatus | null;
   cv_filename?: string | null;
   created_at: string;
   updated_at?: string;
@@ -303,7 +305,7 @@ export function getJobPredictions(id: number): Promise<{ data: JobPredictionsDat
 
 export function updateJobApplication(
   applicationId: number,
-  payload: { status: JobOwnerApplication['status']; notes?: string | null },
+  payload: { status: JobApplicationStatus; expected_status?: JobApplicationStatus; notes?: string | null },
 ): Promise<{ data: { message: string } }> {
   return api.put<{ data: { message: string } }>(`${API_V2}/jobs/applications/${applicationId}`, payload);
 }

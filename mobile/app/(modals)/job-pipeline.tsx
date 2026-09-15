@@ -16,6 +16,7 @@ import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import { getJobApplications, updateJobApplication } from '@/lib/api/jobs';
+import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import type { JobOwnerApplication } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
@@ -337,13 +338,24 @@ function PipelineApplicationCard({
     movePending.current = true;
     setIsUpdating(true);
     try {
-      await updateJobApplication(application.id, { status });
+      try {
+        await updateJobApplication(application.id, {
+          status,
+          expected_status: application.stage ?? application.status,
+        });
+      } catch (err) {
+        if (!(err instanceof ApiResponseError) || err.status !== 0) throw err;
+        const readback = await getJobApplications(application.vacancy_id);
+        const authoritative = readback.data.find((candidate) => candidate.id === application.id);
+        if ((authoritative?.stage ?? authoritative?.status) !== status) throw err;
+      }
       if (!mountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (!mountedRef.current) return;
       onUpdated();
     } catch (err) {
       if (!mountedRef.current) return;
+      if (err instanceof ApiResponseError && (err.code === 'DECISION_CONFLICT' || err.status === 0)) onUpdated();
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.updateError')), variant: 'danger' });
     } finally {
       movePending.current = false;

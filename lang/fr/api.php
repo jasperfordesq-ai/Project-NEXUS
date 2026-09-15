@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'Statut de travail invalide',
     'job_application_terminal_status' => 'Impossible de changer le statut de :status car il s\'agit d\'un état terminal',
     'job_application_update_failed' => 'Échec de la mise à jour de l\'application',
+    'job_application_decision_conflict' => 'Cette candidature a été modifiée pendant votre examen. Actualisez-la avant de choisir une autre étape.',
     'job_update_failed' => 'Échec de la mise à jour de l\'offre d\'emploi',
     'job_renew_not_owner' => 'Vous ne pouvez renouveler que vos propres offres d\'emploi',
     'listing_ai_generate_failed' => 'Impossible de générer la description. Veuillez réessayer.',

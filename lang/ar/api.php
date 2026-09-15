@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'حالة الوظيفة غير صالحة',
     'job_application_terminal_status' => 'لا يمكن تغيير الحالة من :status لأنها حالة طرفية',
     'job_application_update_failed' => 'فشل في تحديث التطبيق',
+    'job_application_decision_conflict' => 'تم تغيير هذا الطلب أثناء مراجعته. حدّثه قبل اختيار مرحلة أخرى.',
     'job_update_failed' => 'فشل تحديث الوظيفة الشاغرة',
     'job_renew_not_owner' => 'يمكنك فقط تجديد الوظائف الشاغرة الخاصة بك',
     'listing_ai_generate_failed' => 'لا يمكن إنشاء الوصف. يرجى المحاولة مرة أخرى.',

@@ -1037,13 +1037,20 @@ class JobVacanciesController extends BaseApiController
 
         $status = $this->input('status');
         $notes = $this->input('notes');
+        $expectedStatus = $this->input('expected_status');
 
-        if (empty($status)) {
+        if (!is_string($status) || trim($status) === '') {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.job_status_required'), 'status', 400);
+        }
+        if ($expectedStatus !== null && !is_string($expectedStatus)) {
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.job_status_invalid'), 'expected_status', 400);
+        }
+        if ($notes !== null && !is_string($notes)) {
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.invalid_input'), 'notes', 400);
         }
 
         try {
-            $success = $this->jobService->updateApplicationStatus((int) $id, $userId, $status, $notes);
+            $success = $this->jobService->updateApplicationStatus((int) $id, $userId, $status, $notes, $expectedStatus);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -1059,6 +1066,10 @@ class JobVacanciesController extends BaseApiController
                 }
                 if ($error['code'] === 'RESOURCE_FORBIDDEN') {
                     $httpStatus = 403;
+                    break;
+                }
+                if ($error['code'] === 'DECISION_CONFLICT') {
+                    $httpStatus = 409;
                     break;
                 }
             }

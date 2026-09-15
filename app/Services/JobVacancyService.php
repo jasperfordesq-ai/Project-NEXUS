@@ -1457,108 +1457,104 @@ class JobVacancyService
     /**
      * Update an application status/stage.
      */
-    public function updateApplicationStatus(int $applicationId, int $adminId, string $status, ?string $notes = null): bool
+    public function updateApplicationStatus(
+        int $applicationId,
+        int $adminId,
+        string $status,
+        ?string $notes = null,
+        ?string $expectedStatus = null,
+    ): bool
     {
         $this->errors = [];
 
         $validStatuses = ['applied', 'pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected', 'withdrawn'];
-        if (!in_array($status, $validStatuses)) {
+        if (!in_array($status, $validStatuses, true) || ($expectedStatus !== null && !in_array($expectedStatus, $validStatuses, true))) {
             $this->errors[] = ['code' => 'VALIDATION_INVALID_VALUE', 'message' => __('api.job_status_invalid')];
             return false;
         }
 
-        $application = JobApplication::with(['vacancy'])
-            ->where('tenant_id', TenantContext::getId())
-            ->find($applicationId);
-        if (!$application) {
-            $this->errors[] = ['code' => 'RESOURCE_NOT_FOUND', 'message' => __('api.job_application_not_found')];
-            return false;
-        }
-
-        // Must be tenant-scoped
         $tenantId = TenantContext::getId();
-        if (!$application->vacancy || (int) $application->vacancy->tenant_id !== $tenantId) {
-            $this->errors[] = ['code' => 'RESOURCE_NOT_FOUND', 'message' => __('api.job_application_not_found')];
-            return false;
-        }
+        try {
+            $transition = DB::transaction(function () use ($applicationId, $adminId, $status, $notes, $expectedStatus, $tenantId): ?array {
+                $application = JobApplication::with(['vacancy'])
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->find($applicationId);
+                if (!$application || !$application->vacancy || (int) $application->vacancy->tenant_id !== $tenantId) {
+                    $this->errors[] = ['code' => 'RESOURCE_NOT_FOUND', 'message' => __('api.job_application_not_found')];
+                    return null;
+                }
 
-        $isApplicantWithdraw = $status === 'withdrawn' && (int) $application->user_id === $adminId;
+                $isApplicantWithdraw = $status === 'withdrawn' && (int) $application->user_id === $adminId;
+                if (!$isApplicantWithdraw && !$this->canManageVacancy((int) $application->vacancy_id, (int) $application->vacancy->user_id, $adminId)) {
+                    $this->errors[] = ['code' => 'RESOURCE_FORBIDDEN', 'message' => __('api.job_access_denied')];
+                    return null;
+                }
 
-        // Owner, admin, or hiring-team manager — or the applicant withdrawing their own application.
-        if (!$isApplicantWithdraw && !$this->canManageVacancy((int) $application->vacancy_id, (int) $application->vacancy->user_id, $adminId)) {
-            $this->errors[] = ['code' => 'RESOURCE_FORBIDDEN', 'message' => __('api.job_access_denied')];
-            return false;
-        }
+                $previousStatus = $application->stage ?? $application->status ?? 'applied';
+                if ($previousStatus === $status) {
+                    return ['changed' => false, 'application' => $application, 'previous_status' => $previousStatus];
+                }
+                if ($expectedStatus !== null && $previousStatus !== $expectedStatus) {
+                    $this->errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.job_application_decision_conflict')];
+                    return null;
+                }
 
-        $previousStatus = $application->stage ?? $application->status ?? 'applied';
+                if (in_array($previousStatus, ['accepted', 'rejected', 'withdrawn'], true)) {
+                    $this->errors[] = [
+                        'code' => 'INVALID_TRANSITION',
+                        'message' => __('api.job_application_terminal_status', ['status' => $previousStatus]),
+                    ];
+                    return null;
+                }
 
-        // Prevent backwards transitions from terminal states (accepted/rejected/withdrawn)
-        $terminalStatuses = ['accepted', 'rejected', 'withdrawn'];
-        if (in_array($previousStatus, $terminalStatuses, true) && $previousStatus !== $status) {
-            $this->errors[] = [
-                'code' => 'INVALID_TRANSITION',
-                'message' => __('api.job_application_terminal_status', ['status' => $previousStatus]),
-            ];
-            return false;
-        }
-
-        if (! $isApplicantWithdraw) {
-            $applicantId = (int) $application->user_id;
-            $ownerId = (int) $application->vacancy->user_id;
-
-            if ($status === 'rejected') {
-                if ($notes !== null && trim($notes) !== '') {
-                    $decision = app(SafeguardingInteractionPolicy::class)->evaluateLocalContact(
-                        $adminId,
-                        $applicantId,
-                        $tenantId,
-                        'job_application_rejection_note',
-                    );
-                    if (! $decision->isAllowed()) {
-                        $notes = null;
+                $reviewNotes = $notes;
+                if (!$isApplicantWithdraw) {
+                    $applicantId = (int) $application->user_id;
+                    $ownerId = (int) $application->vacancy->user_id;
+                    if ($status === 'rejected') {
+                        if ($reviewNotes !== null && trim($reviewNotes) !== '') {
+                            $decision = app(SafeguardingInteractionPolicy::class)->evaluateLocalContact(
+                                $adminId,
+                                $applicantId,
+                                $tenantId,
+                                'job_application_rejection_note',
+                            );
+                            if (!$decision->isAllowed()) $reviewNotes = null;
+                        }
+                    } else {
+                        app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                            $adminId,
+                            $applicantId,
+                            $tenantId,
+                            'job_application_status_progression',
+                        );
+                        if ($status === 'accepted' && $ownerId > 0 && $ownerId !== $applicantId) {
+                            $policy = app(SafeguardingInteractionPolicy::class);
+                            $policy->assertLocalContactAllowed($ownerId, $applicantId, $tenantId, 'job_application_acceptance');
+                            $policy->assertLocalContactAllowed($applicantId, $ownerId, $tenantId, 'job_application_acceptance');
+                        }
                     }
                 }
-            } else {
-                app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
-                    $adminId,
-                    $applicantId,
-                    $tenantId,
-                    'job_application_status_progression',
-                );
 
-                if (in_array($status, ['accepted'], true) && $ownerId > 0 && $ownerId !== $applicantId) {
-                    $policy = app(SafeguardingInteractionPolicy::class);
-                    $policy->assertLocalContactAllowed(
-                        $ownerId,
-                        $applicantId,
-                        $tenantId,
-                        'job_application_acceptance',
-                    );
-                    $policy->assertLocalContactAllowed(
-                        $applicantId,
-                        $ownerId,
-                        $tenantId,
-                        'job_application_acceptance',
-                    );
+                $updates = ['status' => $status, 'stage' => $status];
+                if (!$isApplicantWithdraw) {
+                    $updates['reviewer_notes'] = $reviewNotes ? trim($reviewNotes) : null;
+                    $updates['reviewed_by'] = $adminId;
+                    $updates['reviewed_at'] = now();
                 }
-            }
-        }
+                $application->update($updates);
+                $this->logApplicationHistory($applicationId, $previousStatus, $status, $adminId, $reviewNotes);
 
-        try {
-            $updates = [
-                'status' => $status,
-                'stage' => $status,
-            ];
+                return ['changed' => true, 'application' => $application, 'previous_status' => $previousStatus];
+            }, 3);
 
-            if (!$isApplicantWithdraw) {
-                $updates['reviewer_notes'] = $notes ? trim($notes) : null;
-                $updates['reviewed_by'] = $adminId;
-                $updates['reviewed_at'] = now();
-            }
+            if ($transition === null) return false;
+            if ($transition['changed'] === false) return true;
 
-            $application->update($updates);
-
-            $this->logApplicationHistory($applicationId, $previousStatus, $status, $adminId, $notes);
+            /** @var JobApplication $application */
+            $application = $transition['application'];
+            $previousStatus = $transition['previous_status'];
 
             // Dispatch webhook for application status change
             try {
@@ -1621,6 +1617,8 @@ class JobVacancyService
             }
 
             return true;
+        } catch (SafeguardingPolicyException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             Log::error('JobVacancyService::updateApplicationStatus failed: ' . $e->getMessage());
             $this->errors[] = ['code' => 'SERVER_INTERNAL_ERROR', 'message' => __('api.job_application_update_failed')];

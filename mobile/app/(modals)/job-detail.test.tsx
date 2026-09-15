@@ -213,7 +213,7 @@ import { StyleSheet } from 'react-native';
 import JobDetailScreen from './job-detail';
 import { ApiResponseError } from '@/lib/api/client';
 import { router } from 'expo-router';
-import { applyToJob, getJobDetail, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
+import { applyToJob, getJobApplications, getJobDetail, getSavedProfile, updateJobApplication, updateJobStatus } from '@/lib/api/jobs';
 
 const mockJob = {
   id: 1,
@@ -442,9 +442,59 @@ describe('JobDetailScreen', () => {
     });
 
     await waitFor(() => {
-      expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'shortlisted' });
+      expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'shortlisted', expected_status: 'pending' });
     });
     expect(updateJobApplication).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts an owner decision after response loss only when the application readback proves it', async () => {
+    mockCurrentUserId = 2;
+    const refreshApplications = jest.fn();
+    mockUseApi
+      .mockReturnValueOnce({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() })
+      .mockReturnValueOnce({
+        data: { data: [{ id: 44, vacancy_id: 1, applicant: { id: 9, name: 'Ava Candidate' }, status: 'pending', created_at: '2026-03-11T00:00:00Z' }] },
+        isLoading: false,
+        error: null,
+        refresh: refreshApplications,
+      });
+    (updateJobApplication as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'Response lost'));
+    (getJobApplications as jest.Mock).mockResolvedValueOnce({
+      data: [{ id: 44, vacancy_id: 1, applicant: { id: 9, name: 'Ava Candidate' }, status: 'shortlisted', stage: 'shortlisted', created_at: '2026-03-11T00:00:00Z' }],
+    });
+    const screen = render(<JobDetailScreen />);
+
+    await act(async () => { fireEvent.press(screen.getByText('Shortlist')); });
+
+    expect(getJobApplications).toHaveBeenCalledWith(1);
+    expect(refreshApplications).toHaveBeenCalledTimes(1);
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it('refreshes the owner application list when another reviewer wins the decision', async () => {
+    mockCurrentUserId = 2;
+    const refreshApplications = jest.fn();
+    mockUseApi
+      .mockReturnValueOnce({ data: { data: mockJob }, isLoading: false, error: null, refresh: jest.fn() })
+      .mockReturnValueOnce({
+        data: { data: [{ id: 44, vacancy_id: 1, applicant: { id: 9, name: 'Ava Candidate' }, status: 'pending', stage: 'applied', created_at: '2026-03-11T00:00:00Z' }] },
+        isLoading: false,
+        error: null,
+        refresh: refreshApplications,
+      });
+    (updateJobApplication as jest.Mock).mockRejectedValueOnce(
+      new ApiResponseError(409, 'This application changed while you were reviewing it.', undefined, 'DECISION_CONFLICT'),
+    );
+    const screen = render(<JobDetailScreen />);
+
+    await act(async () => { fireEvent.press(screen.getByText('Shortlist')); });
+
+    expect(updateJobApplication).toHaveBeenCalledWith(44, { status: 'shortlisted', expected_status: 'applied' });
+    expect(refreshApplications).toHaveBeenCalledTimes(1);
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'This application changed while you were reviewing it.',
+      variant: 'danger',
+    }));
   });
 
   it.each(['accepted', 'rejected', 'withdrawn'])('does not offer progression actions for a %s application', (status) => {

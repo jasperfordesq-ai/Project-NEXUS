@@ -135,15 +135,23 @@ class AdminJobsController extends BaseApiController
         $adminId = $this->requireAdminForJobs();
         $status = $this->input('status');
         $notes = $this->input('notes');
+        $expectedStatus = $this->input('expected_status');
 
-        if (!$status) return $this->respondWithError('VALIDATION_REQUIRED', __('api.status_required'), 'status', 422);
+        if (!is_string($status) || trim($status) === '') return $this->respondWithError('VALIDATION_REQUIRED', __('api.status_required'), 'status', 422);
+        if ($expectedStatus !== null && !is_string($expectedStatus)) {
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.job_status_invalid'), 'expected_status', 422);
+        }
+        if ($notes !== null && !is_string($notes)) {
+            return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.invalid_input'), 'notes', 422);
+        }
 
-        $updated = $this->jobVacancyService->updateApplicationStatus($id, $adminId, $status, $notes);
+        $updated = $this->jobVacancyService->updateApplicationStatus($id, $adminId, $status, $notes, $expectedStatus);
         if ($updated) return $this->respondWithData(['updated' => true, 'id' => $id, 'status' => $status]);
 
         $errors = $this->jobVacancyService->getErrors();
         $first = $errors[0] ?? [];
-        return $this->respondWithError($first['code'] ?? 'UPDATE_FAILED', $first['message'] ?? __('errors.generic.update_failed'), null, 400);
+        $code = $first['code'] ?? 'UPDATE_FAILED';
+        return $this->respondWithError($code, $first['message'] ?? __('errors.generic.update_failed'), null, $code === 'DECISION_CONFLICT' ? 409 : 400);
     }
 
     // =====================================================================

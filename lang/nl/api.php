@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'Ongeldige taakstatus',
     'job_application_terminal_status' => 'Kan de status van :status niet wijzigen omdat het een terminale status is',
     'job_application_update_failed' => 'Kan de applicatie niet updaten',
+    'job_application_decision_conflict' => 'Deze sollicitatie is gewijzigd terwijl u deze beoordeelde. Vernieuw voordat u een andere fase kiest.',
     'job_update_failed' => 'Kan vacature niet bijwerken',
     'job_renew_not_owner' => 'U kunt alleen uw eigen vacatures verlengen',
     'listing_ai_generate_failed' => 'Kan geen beschrijving genereren. Probeer het opnieuw.',

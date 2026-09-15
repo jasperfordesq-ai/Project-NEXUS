@@ -328,9 +328,9 @@ describe('acting on a vacancy', () => {
   });
 
   it('updates an application with the employer decision payload', async () => {
-    await updateJobApplication(900, { status: 'shortlisted' });
+    await updateJobApplication(900, { status: 'shortlisted', expected_status: 'screening' });
 
-    expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/applications/900', { status: 'shortlisted' });
+    expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/applications/900', { status: 'shortlisted', expected_status: 'screening' });
   });
 
   it('asks the API to draft a description rather than composing one locally', async () => {

@@ -968,6 +968,11 @@ function OwnerApplicationCard({
   const { show: showToast } = useAppToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const updatePending = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const terminal = ['accepted', 'rejected', 'withdrawn'].includes(application.stage ?? application.status);
   const applicantName = application.applicant?.name?.trim() || t('owner.unknownApplicant');
   const submitted = application.created_at
@@ -979,14 +984,28 @@ function OwnerApplicationCard({
     updatePending.current = true;
     setIsUpdating(true);
     try {
-      await updateJobApplication(application.id, { status });
+      try {
+        await updateJobApplication(application.id, {
+          status,
+          expected_status: application.stage ?? application.status,
+        });
+      } catch (err) {
+        if (!(err instanceof ApiResponseError) || err.status !== 0) throw err;
+        const readback = await getJobApplications(application.vacancy_id);
+        const authoritative = readback.data.find((candidate) => candidate.id === application.id);
+        if ((authoritative?.stage ?? authoritative?.status) !== status) throw err;
+      }
+      if (!mountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
       onUpdated();
     } catch (err) {
+      if (!mountedRef.current) return;
+      if (err instanceof ApiResponseError && (err.code === 'DECISION_CONFLICT' || err.status === 0)) onUpdated();
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.updateError')), variant: 'danger' });
     } finally {
       updatePending.current = false;
-      setIsUpdating(false);
+      if (mountedRef.current) setIsUpdating(false);
     }
   }
 

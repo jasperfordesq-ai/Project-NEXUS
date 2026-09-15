@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'Status de trabalho inválido',
     'job_application_terminal_status' => 'Não é possível alterar o status de :status porque é um estado terminal',
     'job_application_update_failed' => 'Falha ao atualizar o aplicativo',
+    'job_application_decision_conflict' => 'Esta candidatura foi alterada enquanto a analisava. Atualize-a antes de escolher outra fase.',
     'job_update_failed' => 'Falha ao atualizar a vaga de emprego',
     'job_renew_not_owner' => 'Você só pode renovar suas próprias vagas de emprego',
     'listing_ai_generate_failed' => 'Não foi possível gerar a descrição. Por favor, tente novamente.',

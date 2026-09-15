@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'Estado de trabajo no válido',
     'job_application_terminal_status' => 'No se puede cambiar el estado de :status porque es un estado terminal',
     'job_application_update_failed' => 'No se pudo actualizar la aplicación',
+    'job_application_decision_conflict' => 'Esta solicitud cambió mientras la revisabas. Actualízala antes de elegir otra etapa.',
     'job_update_failed' => 'No se pudo actualizar la vacante de empleo',
     'job_renew_not_owner' => 'Sólo puedes renovar tus propias ofertas de empleo',
     'listing_ai_generate_failed' => 'No se pudo generar la descripción. Por favor inténtalo de nuevo.',

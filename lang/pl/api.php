@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'Nieprawidłowy status zadania',
     'job_application_terminal_status' => 'Nie można zmienić statusu z :status, ponieważ jest to stan terminala',
     'job_application_update_failed' => 'Nie udało się zaktualizować aplikacji',
+    'job_application_decision_conflict' => 'Ta aplikacja zmieniła się podczas przeglądania. Odśwież ją przed wybraniem kolejnego etapu.',
     'job_update_failed' => 'Nie udało się zaktualizować oferty pracy',
     'job_renew_not_owner' => 'Możesz odnowić tylko własne oferty pracy',
     'listing_ai_generate_failed' => 'Nie udało się wygenerować opisu. Spróbuj ponownie.',

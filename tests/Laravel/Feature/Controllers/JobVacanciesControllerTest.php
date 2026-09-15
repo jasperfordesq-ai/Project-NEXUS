@@ -759,6 +759,21 @@ class JobVacanciesControllerTest extends TestCase
         $response->assertStatus(400);
     }
 
+    public function test_update_application_rejects_non_string_status_inputs(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/jobs/applications/1', ['status' => ['shortlisted']])
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.field', 'status');
+        $this->apiPut('/v2/jobs/applications/1', ['status' => 'shortlisted', 'expected_status' => ['pending']])
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.field', 'expected_status');
+        $this->apiPut('/v2/jobs/applications/1', ['status' => 'shortlisted', 'notes' => ['unsafe']])
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.field', 'notes');
+    }
+
     public function test_update_application_status_as_owner(): void
     {
         \Illuminate\Support\Facades\Mail::fake();
@@ -796,6 +811,38 @@ class JobVacanciesControllerTest extends TestCase
         $this->authenticatedUser();
         $this->apiPut("/v2/jobs/applications/{$application->id}", ['status' => 'rejected'])->assertStatus(403);
         $this->assertSame('shortlisted', $application->fresh()->status);
+    }
+
+    public function test_update_application_status_replays_exact_result_and_rejects_a_stale_different_decision(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Queue::fake();
+        \Illuminate\Support\Facades\Http::fake();
+        $owner = $this->authenticatedUser();
+        $vacancy = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open']);
+        $applicant = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $application = JobApplication::factory()->create([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'user_id' => $applicant->id,
+            'status' => 'pending',
+            'stage' => 'applied',
+        ]);
+
+        $payload = ['status' => 'shortlisted', 'expected_status' => 'applied'];
+        $this->apiPut("/v2/jobs/applications/{$application->id}", $payload)->assertOk();
+        $this->apiPut("/v2/jobs/applications/{$application->id}", $payload)->assertOk();
+
+        $this->assertSame(1, DB::table('job_application_history')
+            ->where('application_id', $application->id)
+            ->where('to_status', 'shortlisted')
+            ->count());
+        $this->apiPut("/v2/jobs/applications/{$application->id}", [
+            'status' => 'interview',
+            'expected_status' => 'applied',
+        ])->assertStatus(409)->assertJsonPath('errors.0.code', 'DECISION_CONFLICT');
+        $this->assertSame('shortlisted', $application->fresh()->stage);
+        $this->assertSame(1, DB::table('job_application_history')->where('application_id', $application->id)->count());
     }
 
     // =====================================================================

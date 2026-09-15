@@ -1787,6 +1787,7 @@ return [
     'job_status_invalid' => 'Stádas poist neamhbhailí',
     'job_application_terminal_status' => 'Ní féidir an stádas a athrú ó :status toisc gur stát teirminéil é',
     'job_application_update_failed' => 'Theip ar an bhfeidhmchlár a nuashonrú',
+    'job_application_decision_conflict' => 'Athraíodh an t-iarratas seo agus tú á athbhreithniú. Athnuaigh é sula roghnaíonn tú céim eile.',
     'job_update_failed' => 'Theip ar an bhfolúntas a nuashonrú',
     'job_renew_not_owner' => 'Ní féidir leat ach do chuid folúntais féin a athnuachan',
     'listing_ai_generate_failed' => 'Níorbh fhéidir cur síos a ghiniúint. Bain triail eile as.',
