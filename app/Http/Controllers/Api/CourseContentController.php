@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\InteractsWithCourses;
+use App\Http\Controllers\Api\Concerns\InteractsWithCourseAuthoringCreationReceipts;
 use App\Models\CourseLesson;
 use App\Models\CourseSection;
 use App\Services\CourseLessonService;
@@ -19,6 +20,7 @@ use Illuminate\Http\JsonResponse;
  */
 class CourseContentController extends BaseApiController
 {
+    use InteractsWithCourseAuthoringCreationReceipts;
     use InteractsWithCourses;
 
     protected bool $isV2Api = true;
@@ -30,9 +32,16 @@ class CourseContentController extends BaseApiController
     {
         $userId = $this->guardCourse($courseId);
 
-        $section = CourseSectionService::create($courseId, $this->getAllInput());
+        $input = $this->getAllInput();
+        $result = $this->createCourseAuthoringResource(
+            $userId,
+            $courseId,
+            'section',
+            $input,
+            fn () => CourseSectionService::create($courseId, $input),
+        );
 
-        return $this->respondWithData($section, null, 201);
+        return $this->respondWithData($result['resource'], null, $result['replayed'] ? 200 : 201);
     }
 
     /** PUT /v2/courses/{courseId}/sections/{sectionId} */
@@ -62,11 +71,18 @@ class CourseContentController extends BaseApiController
     /** POST /v2/courses/{courseId}/lessons */
     public function storeLesson(int $courseId): JsonResponse
     {
-        $this->guardCourse($courseId);
+        $userId = $this->guardCourse($courseId);
 
-        $lesson = CourseLessonService::create($courseId, $this->getAllInput());
+        $input = $this->getAllInput();
+        $result = $this->createCourseAuthoringResource(
+            $userId,
+            $courseId,
+            'lesson',
+            $input,
+            fn () => CourseLessonService::create($courseId, $input),
+        );
 
-        return $this->respondWithData($lesson, null, 201);
+        return $this->respondWithData($result['resource'], null, $result['replayed'] ? 200 : 201);
     }
 
     /** PUT /v2/courses/{courseId}/lessons/{lessonId} */

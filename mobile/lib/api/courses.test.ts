@@ -212,6 +212,32 @@ describe('courses API', () => {
       expect(api.post).toHaveBeenCalledWith('/api/v2/courses/42/cohorts', { name: 'Winter' });
     });
 
+    it('binds durable retry keys to every course authoring create request', async () => {
+      (api.post as jest.Mock).mockResolvedValue({ data: { id: 1 } });
+
+      await createCourseSection(42, { title: 'Week one' }, 'section-key');
+      await createCourseLesson(42, { title: 'Intro', content_type: 'text' }, 'lesson-key');
+      await createCourseQuiz(42, { title: 'Quiz' }, 'quiz-key');
+      await createQuizQuestion(42, 11, { type: 'mcq', prompt: 'Ready?' }, 'question-key');
+      await createCourseCohort(42, { name: 'Autumn' }, 'cohort-key');
+
+      expect(api.post).toHaveBeenNthCalledWith(1, '/api/v2/courses/42/sections', {
+        title: 'Week one', idempotency_key: 'section-key',
+      }, { headers: { 'Idempotency-Key': 'section-key' } });
+      expect(api.post).toHaveBeenNthCalledWith(2, '/api/v2/courses/42/lessons', {
+        title: 'Intro', content_type: 'text', idempotency_key: 'lesson-key',
+      }, { headers: { 'Idempotency-Key': 'lesson-key' } });
+      expect(api.post).toHaveBeenNthCalledWith(3, '/api/v2/courses/42/quizzes', {
+        title: 'Quiz', idempotency_key: 'quiz-key',
+      }, { headers: { 'Idempotency-Key': 'quiz-key' } });
+      expect(api.post).toHaveBeenNthCalledWith(4, '/api/v2/courses/42/quizzes/11/questions', {
+        type: 'mcq', prompt: 'Ready?', idempotency_key: 'question-key',
+      }, { headers: { 'Idempotency-Key': 'question-key' } });
+      expect(api.post).toHaveBeenNthCalledWith(5, '/api/v2/courses/42/cohorts', {
+        name: 'Autumn', idempotency_key: 'cohort-key',
+      }, { headers: { 'Idempotency-Key': 'cohort-key' } });
+    });
+
     it('reads the grading queue from the course it belongs to', async () => {
       (api.get as jest.Mock).mockResolvedValueOnce({
         data: [{

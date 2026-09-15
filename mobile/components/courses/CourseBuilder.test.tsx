@@ -23,6 +23,8 @@ const mockDeleteCourseLesson = jest.fn();
 const mockCreateCourseQuiz = jest.fn();
 const mockCreateQuizQuestion = jest.fn();
 const mockShowToast = jest.fn();
+const mockReserveCourseAuthoringCreationOperation = jest.fn();
+const mockCompleteCourseAuthoringCreationOperation = jest.fn();
 
 jest.mock('react-i18next', () => {
   const courses = require('../../locales/en/courses.json');
@@ -75,6 +77,10 @@ jest.mock('@/lib/api/courses', () => ({
   deleteCourseLesson: (...args: unknown[]) => mockDeleteCourseLesson(...args),
   createCourseQuiz: (...args: unknown[]) => mockCreateCourseQuiz(...args),
   createQuizQuestion: (...args: unknown[]) => mockCreateQuizQuestion(...args),
+}));
+jest.mock('@/lib/courseAuthoringCreationOperation', () => ({
+  reserveCourseAuthoringCreationOperation: (...args: unknown[]) => mockReserveCourseAuthoringCreationOperation(...args),
+  completeCourseAuthoringCreationOperation: (...args: unknown[]) => mockCompleteCourseAuthoringCreationOperation(...args),
 }));
 jest.mock('heroui-native', () => {
   const ReactLib = require('react');
@@ -144,6 +150,10 @@ describe('CourseBuilder', () => {
     mockShowToast.mockClear();
     mockUpdateCourseSection.mockResolvedValue({ id: 1 });
     mockUpdateCourseLesson.mockResolvedValue({ id: 90 });
+    mockReserveCourseAuthoringCreationOperation.mockImplementation(async (resource: string) => ({
+      storageKey: `stored-${resource}`, key: `${resource}-key`, createdAt: 1,
+    }));
+    mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
   });
 
   it('moves lesson controls below an unclamped lesson title at large text', () => {
@@ -169,7 +179,8 @@ describe('CourseBuilder', () => {
     fireEvent.press(getByText('Add section'));
 
     await waitFor(() => expect(getByDisplayValue('New section')).toBeTruthy());
-    expect(mockCreateCourseSection).toHaveBeenCalledWith(42, { title: 'New section', position: 0 });
+    expect(mockCreateCourseSection).toHaveBeenCalledWith(42, { title: 'New section', position: 0 }, 'section-key');
+    expect(mockCompleteCourseAuthoringCreationOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'section-key' }));
   });
 
   it('creates one section when Add section is pressed repeatedly before it resolves', async () => {
@@ -178,11 +189,33 @@ describe('CourseBuilder', () => {
     const { getByText } = render(<CourseBuilder courseId={42} initialSections={[]} />);
 
     fireEvent.press(getByText('Add section'));
+    await waitFor(() => expect(mockCreateCourseSection).toHaveBeenCalledTimes(1));
     fireEvent.press(getByText('Add section'));
     fireEvent.press(getByText('Add section'));
 
     expect(mockCreateCourseSection).toHaveBeenCalledTimes(1);
     await act(async () => { release({ id: 5, course_id: 42, title: 'New section', position: 0 }); });
+  });
+
+  it('retries a lost section response with the same durable key', async () => {
+    mockCreateCourseSection
+      .mockRejectedValueOnce(new Error('response lost'))
+      .mockResolvedValueOnce({ id: 5, course_id: 42, title: 'New section', position: 0 });
+    const { getByText, getByDisplayValue } = render(<CourseBuilder courseId={42} initialSections={[]} />);
+
+    fireEvent.press(getByText('Add section'));
+    await waitFor(() => expect(mockCreateCourseSection).toHaveBeenCalledTimes(1));
+    expect(mockCompleteCourseAuthoringCreationOperation).not.toHaveBeenCalled();
+
+    fireEvent.press(getByText('Add section'));
+    await waitFor(() => expect(getByDisplayValue('New section')).toBeTruthy());
+    expect(mockCreateCourseSection).toHaveBeenNthCalledWith(
+      1, 42, { title: 'New section', position: 0 }, 'section-key',
+    );
+    expect(mockCreateCourseSection).toHaveBeenNthCalledWith(
+      2, 42, { title: 'New section', position: 0 }, 'section-key',
+    );
+    expect(mockCompleteCourseAuthoringCreationOperation).toHaveBeenCalledTimes(1);
   });
 
   it('creates one lesson per section when Add lesson is pressed repeatedly before it resolves', async () => {
@@ -191,6 +224,7 @@ describe('CourseBuilder', () => {
     const { getByText } = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one')]} />);
 
     fireEvent.press(getByText('Add lesson'));
+    await waitFor(() => expect(mockCreateCourseLesson).toHaveBeenCalledTimes(1));
     fireEvent.press(getByText('Add lesson'));
     fireEvent.press(getByText('Add lesson'));
 
@@ -286,7 +320,7 @@ describe('CourseBuilder', () => {
     // A quiz lesson is useless without a quiz row, so saving creates one.
     await waitFor(() => expect(mockCreateCourseQuiz).toHaveBeenCalledWith(42, {
       lesson_id: 90, title: 'New lesson', pass_mark_percent: 70, max_attempts: 0,
-    }));
+    }, 'quiz-key'));
 
     fireEvent.changeText(getByLabelText('Question'), 'How many hours?');
     fireEvent.changeText(getByLabelText('Answer options, separated by commas'), 'One, Two');
@@ -299,7 +333,7 @@ describe('CourseBuilder', () => {
       correct: ['a'],
       points: 1,
       position: 1,
-    }));
+    }, 'question-key'));
     await waitFor(() => expect(getByText('• How many hours?')).toBeTruthy());
   });
 

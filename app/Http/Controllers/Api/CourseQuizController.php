@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\MaxAttemptsExceededException;
 use App\Models\CourseLesson;
 use App\Http\Controllers\Api\Concerns\InteractsWithCourses;
+use App\Http\Controllers\Api\Concerns\InteractsWithCourseAuthoringCreationReceipts;
 use App\Models\CourseQuestion;
 use App\Models\CourseQuiz;
 use App\Services\CourseEnrollmentService;
@@ -21,6 +22,7 @@ use Illuminate\Http\JsonResponse;
  */
 class CourseQuizController extends BaseApiController
 {
+    use InteractsWithCourseAuthoringCreationReceipts;
     use InteractsWithCourses;
 
     protected bool $isV2Api = true;
@@ -137,45 +139,62 @@ class CourseQuizController extends BaseApiController
     /** POST /v2/courses/{courseId}/quizzes */
     public function storeQuiz(int $courseId): JsonResponse
     {
-        $this->guardCourse($courseId);
+        $userId = $this->guardCourse($courseId);
 
+        $input = $this->getAllInput();
         $lessonId = $this->inputInt('lesson_id', null, 1);
         if ($lessonId !== null && !CourseLesson::where('id', $lessonId)->where('course_id', $courseId)->exists()) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.courses.not_found'), null, 404);
         }
 
-        $quiz = CourseQuiz::create([
-            'course_id' => $courseId,
-            'lesson_id' => $lessonId,
-            'title' => trim((string) $this->input('title', '')),
-            'description' => $this->input('description'),
-            'pass_mark_percent' => $this->inputInt('pass_mark_percent', 70, 0, 100),
-            'max_attempts' => $this->inputInt('max_attempts', 0, 0),
-            'time_limit_minutes' => $this->inputInt('time_limit_minutes', null, 0),
-            'shuffle_questions' => $this->inputBool('shuffle_questions', false),
-        ]);
+        $result = $this->createCourseAuthoringResource(
+            $userId,
+            $courseId,
+            'quiz',
+            $input,
+            fn () => CourseQuiz::create([
+                'course_id' => $courseId,
+                'lesson_id' => $lessonId,
+                'title' => trim((string) $this->input('title', '')),
+                'description' => $this->input('description'),
+                'pass_mark_percent' => $this->inputInt('pass_mark_percent', 70, 0, 100),
+                'max_attempts' => $this->inputInt('max_attempts', 0, 0),
+                'time_limit_minutes' => $this->inputInt('time_limit_minutes', null, 0),
+                'shuffle_questions' => $this->inputBool('shuffle_questions', false),
+            ]),
+        );
 
-        return $this->respondWithData($quiz, null, 201);
+        return $this->respondWithData($result['resource'], null, $result['replayed'] ? 200 : 201);
     }
 
     /** POST /v2/courses/{courseId}/quizzes/{quizId}/questions */
     public function storeQuestion(int $courseId, int $quizId): JsonResponse
     {
-        $this->guardCourse($courseId);
+        $userId = $this->guardCourse($courseId);
         $this->ensureQuizInCourse($quizId, $courseId);
 
-        $question = CourseQuestion::create([
-            'quiz_id' => $quizId,
-            'type' => $this->input('type', 'mcq'),
-            'prompt' => (string) $this->input('prompt', ''),
-            'options' => $this->input('options'),
-            'correct' => $this->input('correct'),
-            'explanation' => $this->input('explanation'),
-            'points' => $this->inputInt('points', 1, 1),
-            'position' => $this->inputInt('position', 0, 0),
-        ]);
+        $input = $this->getAllInput();
+        // The quiz id lives in the route, so include it in the durable intent.
+        // Otherwise identical question bodies under two quizzes would hash alike.
+        $receiptInput = ['quiz_id' => $quizId] + $input;
+        $result = $this->createCourseAuthoringResource(
+            $userId,
+            $courseId,
+            'question',
+            $receiptInput,
+            fn () => CourseQuestion::create([
+                'quiz_id' => $quizId,
+                'type' => $this->input('type', 'mcq'),
+                'prompt' => (string) $this->input('prompt', ''),
+                'options' => $this->input('options'),
+                'correct' => $this->input('correct'),
+                'explanation' => $this->input('explanation'),
+                'points' => $this->inputInt('points', 1, 1),
+                'position' => $this->inputInt('position', 0, 0),
+            ]),
+        );
 
-        return $this->respondWithData($question, null, 201);
+        return $this->respondWithData($result['resource'], null, $result['replayed'] ? 200 : 201);
     }
 
     /** DELETE /v2/courses/{courseId}/quizzes/{quizId}/questions/{questionId} */

@@ -24,6 +24,8 @@ const mockUnpublishCourse = jest.fn();
 const mockShowToast = jest.fn();
 const mockReserveCourseCreationOperation = jest.fn();
 const mockCompleteCourseCreationOperation = jest.fn();
+const mockReserveCourseAuthoringCreationOperation = jest.fn();
+const mockCompleteCourseAuthoringCreationOperation = jest.fn();
 const mockPush = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 
@@ -119,6 +121,10 @@ jest.mock('@/lib/api/courses', () => ({
 jest.mock('@/lib/courseCreationOperation', () => ({
   reserveCourseCreationOperation: (...args: unknown[]) => mockReserveCourseCreationOperation(...args),
   completeCourseCreationOperation: (...args: unknown[]) => mockCompleteCourseCreationOperation(...args),
+}));
+jest.mock('@/lib/courseAuthoringCreationOperation', () => ({
+  reserveCourseAuthoringCreationOperation: (...args: unknown[]) => mockReserveCourseAuthoringCreationOperation(...args),
+  completeCourseAuthoringCreationOperation: (...args: unknown[]) => mockCompleteCourseAuthoringCreationOperation(...args),
 }));
 jest.mock('@/components/ui/FormActionFooter', () => {
   const React = require('react');
@@ -225,6 +231,8 @@ describe('NewCourseRoute', () => {
     mockUpdateCourse.mockResolvedValue({ ...existingCourse });
     mockReserveCourseCreationOperation.mockResolvedValue({ storageKey: 'course-op', key: 'course-create-key', createdAt: 1 });
     mockCompleteCourseCreationOperation.mockResolvedValue(undefined);
+    mockReserveCourseAuthoringCreationOperation.mockResolvedValue({ storageKey: 'cohort-op', key: 'cohort-key', createdAt: 1 });
+    mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
   });
 
   it('refuses to save a course with no title', async () => {
@@ -408,7 +416,8 @@ describe('NewCourseRoute', () => {
     fireEvent.changeText(getByLabelText('Cohort name'), '  Autumn  ');
     fireEvent.press(getByText('Add cohort'));
 
-    await waitFor(() => expect(mockCreateCourseCohort).toHaveBeenCalledWith(42, { name: 'Autumn' }));
+    await waitFor(() => expect(mockCreateCourseCohort).toHaveBeenCalledWith(42, { name: 'Autumn' }, 'cohort-key'));
+    expect(mockCompleteCourseAuthoringCreationOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'cohort-key' }));
     await waitFor(() => expect(getByText('• Autumn')).toBeTruthy());
   });
 
@@ -481,6 +490,7 @@ describe('NewCourseRoute', () => {
 
     fireEvent.changeText(getByLabelText('Cohort name'), 'September Intake');
     fireEvent.press(getByTestId('course-add-cohort'));
+    await waitFor(() => expect(mockCreateCourseCohort).toHaveBeenCalledTimes(1));
     fireEvent.press(getByTestId('course-add-cohort'));
     fireEvent.press(getByTestId('course-add-cohort'));
 

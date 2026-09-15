@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\InteractsWithCourses;
+use App\Http\Controllers\Api\Concerns\InteractsWithCourseAuthoringCreationReceipts;
 use App\Services\CourseCohortService;
 use Illuminate\Http\JsonResponse;
 
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
  */
 class CourseCohortController extends BaseApiController
 {
+    use InteractsWithCourseAuthoringCreationReceipts;
     use InteractsWithCourses;
 
     protected bool $isV2Api = true;
@@ -41,9 +43,16 @@ class CourseCohortController extends BaseApiController
             return $this->respondWithError('VALIDATION_FAILED', __('api_controllers_2.courses.cohort_name_required'), 'name', 422);
         }
 
-        $cohort = CourseCohortService::create($courseId, $this->getAllInput());
+        $input = $this->getAllInput();
+        $result = $this->createCourseAuthoringResource(
+            $userId,
+            $courseId,
+            'cohort',
+            $input,
+            fn () => CourseCohortService::create($courseId, $input),
+        );
 
-        return $this->respondWithData($cohort, null, 201);
+        return $this->respondWithData($result['resource'], null, $result['replayed'] ? 200 : 201);
     }
 
     /** DELETE /v2/courses/{courseId}/cohorts/{cohortId} */

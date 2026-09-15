@@ -360,8 +360,13 @@ export async function unpublishCourse(courseId: number): Promise<Course> {
   return unwrap(await api.post<DataEnvelope<Course>>(`${API_V2}/courses/${courseId}/unpublish`, {}));
 }
 
-export async function createCourseSection(courseId: number, payload: CourseSectionInput): Promise<CourseSection> {
-  return unwrap(await api.post<DataEnvelope<CourseSection>>(`${API_V2}/courses/${courseId}/sections`, payload));
+export async function createCourseSection(courseId: number, payload: CourseSectionInput, idempotencyKey?: string): Promise<CourseSection> {
+  if (!idempotencyKey) return unwrap(await api.post<DataEnvelope<CourseSection>>(`${API_V2}/courses/${courseId}/sections`, payload));
+  return unwrap(await api.post<DataEnvelope<CourseSection>>(
+    `${API_V2}/courses/${courseId}/sections`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  ));
 }
 
 export async function updateCourseSection(
@@ -381,8 +386,13 @@ export async function deleteCourseSection(courseId: number, sectionId: number): 
   ));
 }
 
-export async function createCourseLesson(courseId: number, payload: CourseLessonInput): Promise<CourseLesson> {
-  return unwrap(await api.post<DataEnvelope<CourseLesson>>(`${API_V2}/courses/${courseId}/lessons`, payload));
+export async function createCourseLesson(courseId: number, payload: CourseLessonInput, idempotencyKey?: string): Promise<CourseLesson> {
+  if (!idempotencyKey) return unwrap(await api.post<DataEnvelope<CourseLesson>>(`${API_V2}/courses/${courseId}/lessons`, payload));
+  return unwrap(await api.post<DataEnvelope<CourseLesson>>(
+    `${API_V2}/courses/${courseId}/lessons`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  ));
 }
 
 export async function updateCourseLesson(
@@ -402,18 +412,30 @@ export async function deleteCourseLesson(courseId: number, lessonId: number): Pr
   ));
 }
 
-export async function createCourseQuiz(courseId: number, payload: CourseQuizInput): Promise<CourseQuiz> {
-  return unwrap(await api.post<DataEnvelope<CourseQuiz>>(`${API_V2}/courses/${courseId}/quizzes`, payload));
+export async function createCourseQuiz(courseId: number, payload: CourseQuizInput, idempotencyKey?: string): Promise<CourseQuiz> {
+  if (!idempotencyKey) return unwrap(await api.post<DataEnvelope<CourseQuiz>>(`${API_V2}/courses/${courseId}/quizzes`, payload));
+  return unwrap(await api.post<DataEnvelope<CourseQuiz>>(
+    `${API_V2}/courses/${courseId}/quizzes`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  ));
 }
 
 export async function createQuizQuestion(
   courseId: number,
   quizId: number,
   payload: QuizQuestionInput,
+  idempotencyKey?: string,
 ): Promise<QuizQuestion> {
+  if (!idempotencyKey) {
+    return unwrap(await api.post<DataEnvelope<QuizQuestion>>(
+      `${API_V2}/courses/${courseId}/quizzes/${quizId}/questions`, payload,
+    ));
+  }
   return unwrap(await api.post<DataEnvelope<QuizQuestion>>(
     `${API_V2}/courses/${courseId}/quizzes/${quizId}/questions`,
-    payload,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
   ));
 }
 
@@ -421,8 +443,13 @@ export async function getCourseCohorts(courseId: number): Promise<CourseCohort[]
   return unwrap(await api.get<DataEnvelope<CourseCohort[]>>(`${API_V2}/courses/${courseId}/cohorts`));
 }
 
-export async function createCourseCohort(courseId: number, payload: CourseCohortInput): Promise<CourseCohort> {
-  return unwrap(await api.post<DataEnvelope<CourseCohort>>(`${API_V2}/courses/${courseId}/cohorts`, payload));
+export async function createCourseCohort(courseId: number, payload: CourseCohortInput, idempotencyKey?: string): Promise<CourseCohort> {
+  if (!idempotencyKey) return unwrap(await api.post<DataEnvelope<CourseCohort>>(`${API_V2}/courses/${courseId}/cohorts`, payload));
+  return unwrap(await api.post<DataEnvelope<CourseCohort>>(
+    `${API_V2}/courses/${courseId}/cohorts`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  ));
 }
 
 // ---------------------------------------------------------------------------

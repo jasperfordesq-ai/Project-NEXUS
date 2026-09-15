@@ -50,6 +50,10 @@ import {
 } from '@/lib/api/courses';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import {
+  completeCourseAuthoringCreationOperation,
+  reserveCourseAuthoringCreationOperation,
+} from '@/lib/courseAuthoringCreationOperation';
 
 const CONTENT_TYPES: LessonContentType[] = ['text', 'video', 'pdf', 'embed', 'quiz'];
 const DRIP_TYPES: LessonDripType[] = ['none', 'days_after_enroll', 'fixed_date'];
@@ -81,10 +85,13 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
     if (addSectionInFlight.current) return;
     addSectionInFlight.current = true;
     try {
-      const created = await createCourseSection(courseId, {
+      const payload = {
         title: t('builder.new_section'),
         position: sections.length,
-      });
+      };
+      const operation = await reserveCourseAuthoringCreationOperation('section', courseId, payload);
+      const created = await createCourseSection(courseId, payload, operation.key);
+      await completeCourseAuthoringCreationOperation(operation);
       setSections((prev) => [...prev, { ...created, lessons: [] }]);
     } catch {
       reportFailure();
@@ -149,12 +156,15 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
     addLessonInFlight.current.add(sectionId);
     const section = sections.find((s) => s.id === sectionId);
     try {
-      const created = await createCourseLesson(courseId, {
+      const payload = {
         section_id: sectionId,
         title: t('builder.new_lesson'),
-        content_type: 'text',
+        content_type: 'text' as const,
         position: section?.lessons?.length ?? 0,
-      });
+      };
+      const operation = await reserveCourseAuthoringCreationOperation('lesson', courseId, payload);
+      const created = await createCourseLesson(courseId, payload, operation.key);
+      await completeCourseAuthoringCreationOperation(operation);
       setSections((prev) => prev.map((s) => (
         s.id === sectionId ? { ...s, lessons: [...(s.lessons ?? []), created] } : s
       )));
@@ -393,12 +403,15 @@ function LessonRow({
         as the web builder does.
       */
       if (next.content_type === 'quiz' && !next.quiz?.id) {
-        const quiz = await createCourseQuiz(courseId, {
+        const payload = {
           lesson_id: lesson.id,
           title: next.title || t('quiz.title'),
           pass_mark_percent: 70,
           max_attempts: 0,
-        });
+        };
+        const operation = await reserveCourseAuthoringCreationOperation('quiz', courseId, payload);
+        const quiz = await createCourseQuiz(courseId, payload, operation.key);
+        await completeCourseAuthoringCreationOperation(operation);
         next = { ...next, quiz: { ...quiz, questions: quiz.questions ?? [] } };
       }
       setDraft(next);
@@ -420,14 +433,17 @@ function LessonRow({
     const options = labels.map((label, index) => ({ id: String.fromCharCode(97 + index), label }));
     const correct = questionCorrect.trim() || options[0]?.id || 'a';
     try {
-      const question = await createQuizQuestion(courseId, quiz.id, {
+      const payload = {
         type: 'mcq',
         prompt: questionPrompt.trim(),
         options,
         correct: [correct],
         points: 1,
         position: (quiz.questions ?? []).length + 1,
-      });
+      } as const;
+      const operation = await reserveCourseAuthoringCreationOperation('question', courseId, { quizId: quiz.id, ...payload });
+      const question = await createQuizQuestion(courseId, quiz.id, payload, operation.key);
+      await completeCourseAuthoringCreationOperation(operation);
       const next: CourseLesson = {
         ...draft,
         quiz: { ...quiz, questions: [...(quiz.questions ?? []), question] },

@@ -8,6 +8,11 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Core\TenantContext;
 use App\Models\Course;
+use App\Models\CourseCohort;
+use App\Models\CourseLesson;
+use App\Models\CourseQuestion;
+use App\Models\CourseQuiz;
+use App\Models\CourseSection;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\User;
@@ -207,6 +212,89 @@ class CourseControllerTest extends TestCase
             ->assertStatus(422)
             ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_INVALID');
         $this->assertSame(1, Course::where('author_user_id', $user->id)->where('title', $payload['title'])->count());
+    }
+
+    public function test_course_authoring_creates_replay_one_child_resource_after_response_loss(): void
+    {
+        $this->enableCourses(true);
+        $user = $this->authenticatedUser();
+        $course = $this->publishedCourse(['author' => $user]);
+
+        $sectionPayload = ['title' => 'Week one', 'position' => 0, 'idempotency_key' => 'course-section-stable-1'];
+        $sectionHeaders = ['Idempotency-Key' => 'course-section-stable-1'];
+        $sectionFirst = $this->apiPost("/v2/courses/{$course->id}/sections", $sectionPayload, $sectionHeaders)->assertCreated();
+        $sectionReplay = $this->apiPost("/v2/courses/{$course->id}/sections", $sectionPayload, $sectionHeaders)->assertOk();
+        $sectionId = (int) $sectionFirst->json('data.id');
+        $this->assertSame($sectionId, (int) $sectionReplay->json('data.id'));
+        $this->assertSame(1, CourseSection::where('course_id', $course->id)->where('title', 'Week one')->count());
+
+        $this->apiPost(
+            "/v2/courses/{$course->id}/sections",
+            [...$sectionPayload, 'title' => 'Changed week'],
+            $sectionHeaders,
+        )->assertStatus(409)->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+        $this->apiPost(
+            "/v2/courses/{$course->id}/lessons",
+            ['title' => 'Cross-endpoint reuse', 'idempotency_key' => 'course-section-stable-1'],
+            $sectionHeaders,
+        )->assertStatus(409)->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+
+        $lessonPayload = [
+            'section_id' => $sectionId,
+            'title' => 'Introduction',
+            'content_type' => 'text',
+            'position' => 0,
+            'idempotency_key' => 'course-lesson-stable-1',
+        ];
+        $lessonHeaders = ['Idempotency-Key' => 'course-lesson-stable-1'];
+        $lessonFirst = $this->apiPost("/v2/courses/{$course->id}/lessons", $lessonPayload, $lessonHeaders)->assertCreated();
+        $lessonReplay = $this->apiPost("/v2/courses/{$course->id}/lessons", $lessonPayload, $lessonHeaders)->assertOk();
+        $lessonId = (int) $lessonFirst->json('data.id');
+        $this->assertSame($lessonId, (int) $lessonReplay->json('data.id'));
+        $this->assertSame(1, CourseLesson::where('course_id', $course->id)->where('title', 'Introduction')->count());
+
+        $quizPayload = [
+            'lesson_id' => $lessonId,
+            'title' => 'Knowledge check',
+            'pass_mark_percent' => 70,
+            'idempotency_key' => 'course-quiz-stable-1',
+        ];
+        $quizHeaders = ['Idempotency-Key' => 'course-quiz-stable-1'];
+        $quizFirst = $this->apiPost("/v2/courses/{$course->id}/quizzes", $quizPayload, $quizHeaders)->assertCreated();
+        $quizReplay = $this->apiPost("/v2/courses/{$course->id}/quizzes", $quizPayload, $quizHeaders)->assertOk();
+        $quizId = (int) $quizFirst->json('data.id');
+        $this->assertSame($quizId, (int) $quizReplay->json('data.id'));
+        $this->assertSame(1, CourseQuiz::where('course_id', $course->id)->where('title', 'Knowledge check')->count());
+
+        $questionPayload = [
+            'type' => 'mcq',
+            'prompt' => 'Which answer is correct?',
+            'options' => [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B']],
+            'correct' => ['b'],
+            'position' => 1,
+            'idempotency_key' => 'course-question-stable-1',
+        ];
+        $questionHeaders = ['Idempotency-Key' => 'course-question-stable-1'];
+        $questionFirst = $this->apiPost(
+            "/v2/courses/{$course->id}/quizzes/{$quizId}/questions", $questionPayload, $questionHeaders,
+        )->assertCreated();
+        $questionReplay = $this->apiPost(
+            "/v2/courses/{$course->id}/quizzes/{$quizId}/questions", $questionPayload, $questionHeaders,
+        )->assertOk();
+        $this->assertSame($questionFirst->json('data.id'), $questionReplay->json('data.id'));
+        $this->assertSame(1, CourseQuestion::where('quiz_id', $quizId)->where('prompt', 'Which answer is correct?')->count());
+
+        $cohortPayload = ['name' => 'Autumn intake', 'idempotency_key' => 'course-cohort-stable-1'];
+        $cohortHeaders = ['Idempotency-Key' => 'course-cohort-stable-1'];
+        $cohortFirst = $this->apiPost("/v2/courses/{$course->id}/cohorts", $cohortPayload, $cohortHeaders)->assertCreated();
+        $cohortReplay = $this->apiPost("/v2/courses/{$course->id}/cohorts", $cohortPayload, $cohortHeaders)->assertOk();
+        $this->assertSame($cohortFirst->json('data.id'), $cohortReplay->json('data.id'));
+        $this->assertSame(1, CourseCohort::where('course_id', $course->id)->where('name', 'Autumn intake')->count());
+
+        $this->assertSame(5, DB::table('course_authoring_creation_receipts')
+            ->where('actor_user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->count());
     }
 
     public function test_my_enrolled_requires_auth(): void

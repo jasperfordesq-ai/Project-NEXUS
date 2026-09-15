@@ -58,6 +58,10 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 import { completeCourseCreationOperation, reserveCourseCreationOperation } from '@/lib/courseCreationOperation';
+import {
+  completeCourseAuthoringCreationOperation,
+  reserveCourseAuthoringCreationOperation,
+} from '@/lib/courseAuthoringCreationOperation';
 
 const LEVELS: CourseLevel[] = ['beginner', 'intermediate', 'advanced'];
 /** `group` visibility is set by the group that owns a course, never here — as on the web. */
@@ -320,7 +324,10 @@ function NewCourseScreen() {
     cohortInFlight.current = true;
     setIsAddingCohort(true);
     try {
-      await createCourseCohort(courseId, { name: cohortName.trim() });
+      const payload = { name: cohortName.trim() };
+      const operation = await reserveCourseAuthoringCreationOperation('cohort', courseId, payload);
+      await createCourseCohort(courseId, payload, operation.key);
+      await completeCourseAuthoringCreationOperation(operation);
       const list = await getCourseCohorts(courseId);
       setCohorts(list ?? []);
       setCohortName('');
