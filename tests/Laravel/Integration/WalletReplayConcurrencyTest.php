@@ -362,4 +362,111 @@ final class WalletReplayConcurrencyTest extends TestCase
             DB::table('users')->whereIn('id', $users)->delete();
         }
     }
+
+    public function test_opposite_direction_transfers_use_consistent_lock_order_without_deadlock(): void
+    {
+        foreach (['pcntl_fork', 'pcntl_waitpid', 'stream_socket_pair', 'posix_kill'] as $function) {
+            if (!function_exists($function)) {
+                self::markTestSkipped("{$function} is required for concurrent wallet verification.");
+            }
+        }
+
+        self::assertSame('nexus_test', DB::connection()->getDatabaseName());
+        self::assertSame('mysql', DB::connection()->getDriverName());
+        $users = [];
+        $workers = [];
+        try {
+            foreach ([20, 20] as $balance) {
+                $users[] = (int) DB::table('users')->insertGetId([
+                    'tenant_id' => $this->testTenantId, 'name' => 'Wallet opposite-direction fixture',
+                    'email' => 'wallet-opposite-' . bin2hex(random_bytes(10)) . '@example.test',
+                    'password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT),
+                    'balance' => $balance, 'role' => 'member', 'status' => 'active',
+                    'is_active' => true, 'is_approved' => true, 'preferred_language' => 'en',
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+            }
+
+            DB::purge();
+            for ($index = 0; $index < 2; $index++) {
+                $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+                self::assertNotFalse($sockets);
+                $pid = pcntl_fork();
+                self::assertNotSame(-1, $pid);
+                if ($pid === 0) {
+                    fclose($sockets[0]);
+                    stream_set_timeout($sockets[1], 15);
+                    try {
+                        DB::reconnect();
+                        DB::statement('SET SESSION innodb_lock_wait_timeout = 10');
+                        TenantContext::reset();
+                        TenantContext::setById($this->testTenantId);
+                        Event::fake([TransactionCompleted::class]);
+
+                        $waiting = true;
+                        DB::connection()->beforeExecuting(function ($query) use ($sockets, &$waiting): void {
+                            if ($waiting && str_contains($query, '`users`') && str_contains($query, 'for update')) {
+                                $waiting = false;
+                                fwrite($sockets[1], "ready\n");
+                                if (trim((string) fgets($sockets[1])) !== 'go') {
+                                    throw new \RuntimeException('Opposite-direction barrier timed out');
+                                }
+                            }
+                        });
+
+                        $transaction = app(WalletService::class)->transfer($users[$index], [
+                            'recipient' => $users[1 - $index], 'amount' => 2,
+                            'description' => 'Opposite direction audit',
+                            'idempotency_key' => 'opposite-transfer-' . $index,
+                        ]);
+                        fwrite($sockets[1], json_encode(['id' => $transaction['id']], JSON_THROW_ON_ERROR) . "\n");
+                        fclose($sockets[1]);
+                        exit(0);
+                    } catch (\Throwable $error) {
+                        fwrite($sockets[1], json_encode(['error' => $error->getMessage()]) . "\n");
+                        fclose($sockets[1]);
+                        exit(1);
+                    }
+                }
+                fclose($sockets[1]);
+                stream_set_timeout($sockets[0], 15);
+                $workers[] = ['pid' => $pid, 'socket' => $sockets[0]];
+            }
+
+            foreach ($workers as $worker) {
+                self::assertSame('ready', trim((string) fgets($worker['socket'])));
+            }
+            foreach ($workers as $worker) {
+                fwrite($worker['socket'], "go\n");
+            }
+            $transactionIds = [];
+            foreach ($workers as $worker) {
+                $result = json_decode((string) fgets($worker['socket']), true);
+                self::assertIsArray($result);
+                self::assertArrayNotHasKey('error', $result, json_encode($result));
+                $transactionIds[] = $result['id'];
+            }
+
+            DB::reconnect();
+            self::assertCount(2, array_unique($transactionIds));
+            self::assertEquals(20, DB::table('users')->where('id', $users[0])->value('balance'));
+            self::assertEquals(20, DB::table('users')->where('id', $users[1])->value('balance'));
+            self::assertSame(2, DB::table('transactions')->whereIn('sender_id', $users)->count());
+            self::assertSame(2, DB::table('wallet_transfer_receipts')->whereIn('sender_id', $users)->count());
+        } finally {
+            foreach ($workers as $worker) {
+                if (pcntl_waitpid($worker['pid'], $status, WNOHANG) === 0) {
+                    posix_kill($worker['pid'], 9);
+                    pcntl_waitpid($worker['pid'], $status);
+                }
+                fclose($worker['socket']);
+            }
+            DB::purge();
+            DB::reconnect();
+            DB::table('wallet_transfer_receipts')->whereIn('sender_id', $users)->delete();
+            DB::table('transactions')->whereIn('sender_id', $users)->delete();
+            DB::table('notifications')->whereIn('user_id', $users)->delete();
+            DB::table('users')->whereIn('id', $users)->delete();
+        }
+    }
 }
