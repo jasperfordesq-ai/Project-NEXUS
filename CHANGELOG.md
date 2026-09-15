@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native course authoring now keeps later edits protected after the first draft save and ignores rapid duplicate creation gestures.** Saving a new course no longer permanently disables the unsaved-changes warning, and synchronous in-flight guards prevent repeated presses from creating duplicate course drafts, cohorts, curriculum sections, lessons, quiz scaffolds or questions before the disabled state renders.
+
 - **Completed native courses now repair certificates, notifications and XP after an interrupted backend integration.** Course completion records durable delivery work in the same database transaction as learner progress, attempts it immediately, and retries pending work through the scheduler with bounded backoff. Replays are idempotent, so recovery cannot repeat the completion count, certificate, in-app notice, completion email or XP award.
 
 - **Native course grading now protects instructor work and preserves the first accepted decision.** Edited score, pass/fail and feedback fields warn before navigation, remain protected while saving, reset when the account, community or course changes, and ignore rapid duplicate taps. A lost response retries the exact desired grade once; Laravel serializes grading under a row lock, accepts that exact replay and returns a conflict instead of allowing a stale or simultaneous instructor decision to overwrite the stored result.

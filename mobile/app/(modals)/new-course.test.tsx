@@ -36,13 +36,17 @@ jest.mock('expo-router', () => ({
   is the ANSWER this screen gives it — "is there unsaved work?" — because that is the
   part that was wrong: edit mode always answered no.
 */
-const guardCalls: { isDirty: boolean }[] = [];
+const guardCalls: { isDirty: boolean; hasSaved?: boolean }[] = [];
 jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({
-  useUnsavedChangesGuard: (options: { isDirty: boolean }) => { guardCalls.push(options); },
+  useUnsavedChangesGuard: (options: { isDirty: boolean; hasSaved?: boolean }) => { guardCalls.push(options); },
 }));
 
 /** What the screen last told the guard. */
 const lastIsDirty = () => guardCalls[guardCalls.length - 1]?.isDirty;
+const lastIsProtected = () => {
+  const call = guardCalls[guardCalls.length - 1];
+  return Boolean(call?.isDirty && !call.hasSaved);
+};
 
 // The unsaved-changes guard is inert here; it has its own coverage in the hook's tests.
 jest.mock('@/components/ui/useConfirm', () => ({
@@ -257,6 +261,36 @@ describe('NewCourseRoute', () => {
     }));
     await waitFor(() => expect(getByText('Course builder')).toBeTruthy());
     expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Saved', variant: 'success' }));
+  });
+
+  it('protects edits made after the first successful draft save', async () => {
+    const { getByLabelText, getByText } = render(<NewCourseRoute />);
+
+    await waitFor(() => expect(mockGetCourseCategories).toHaveBeenCalled());
+    fireEvent.changeText(getByLabelText('Title'), 'Repair skills');
+    fireEvent.press(getByText('Save'));
+
+    await waitFor(() => expect(getByText('Course builder')).toBeTruthy());
+    expect(lastIsProtected()).toBe(false);
+
+    fireEvent.changeText(getByLabelText('Short summary'), 'An edit made after saving');
+
+    await waitFor(() => expect(lastIsProtected()).toBe(true));
+  });
+
+  it('submits one draft save however many times Save is pressed before it resolves', async () => {
+    let release: (value: unknown) => void = () => {};
+    mockCreateCourse.mockImplementation(() => new Promise((resolve) => { release = resolve; }));
+    const { getByLabelText, getByTestId } = render(<NewCourseRoute />);
+
+    await waitFor(() => expect(mockGetCourseCategories).toHaveBeenCalled());
+    fireEvent.changeText(getByLabelText('Title'), 'Repair skills');
+    fireEvent.press(getByTestId('footer-submit'));
+    fireEvent.press(getByTestId('footer-submit'));
+    fireEvent.press(getByTestId('footer-submit'));
+
+    expect(mockCreateCourse).toHaveBeenCalledTimes(1);
+    await act(async () => { release({ ...existingCourse, id: 99, sections: [] }); });
   });
 
   it('reads a comma decimal separator as a decimal, not as thousands', async () => {

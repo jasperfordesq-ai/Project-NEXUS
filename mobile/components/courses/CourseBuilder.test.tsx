@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateCourseSection = jest.fn();
 const mockUpdateCourseSection = jest.fn();
@@ -155,6 +155,34 @@ describe('CourseBuilder', () => {
 
     await waitFor(() => expect(getByDisplayValue('New section')).toBeTruthy());
     expect(mockCreateCourseSection).toHaveBeenCalledWith(42, { title: 'New section', position: 0 });
+  });
+
+  it('creates one section when Add section is pressed repeatedly before it resolves', async () => {
+    let release: (value: unknown) => void = () => {};
+    mockCreateCourseSection.mockImplementation(() => new Promise((resolve) => { release = resolve; }));
+    const { getByText } = render(<CourseBuilder courseId={42} initialSections={[]} />);
+
+    fireEvent.press(getByText('Add section'));
+    fireEvent.press(getByText('Add section'));
+    fireEvent.press(getByText('Add section'));
+
+    expect(mockCreateCourseSection).toHaveBeenCalledTimes(1);
+    await act(async () => { release({ id: 5, course_id: 42, title: 'New section', position: 0 }); });
+  });
+
+  it('creates one lesson per section when Add lesson is pressed repeatedly before it resolves', async () => {
+    let release: (value: unknown) => void = () => {};
+    mockCreateCourseLesson.mockImplementation(() => new Promise((resolve) => { release = resolve; }));
+    const { getByText } = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one')]} />);
+
+    fireEvent.press(getByText('Add lesson'));
+    fireEvent.press(getByText('Add lesson'));
+    fireEvent.press(getByText('Add lesson'));
+
+    expect(mockCreateCourseLesson).toHaveBeenCalledTimes(1);
+    await act(async () => { release({
+      id: 90, course_id: 42, section_id: 5, title: 'New lesson', content_type: 'text', position: 0, is_preview: false,
+    }); });
   });
 
   it('renames a section when the field loses focus, and only when it actually changed', async () => {

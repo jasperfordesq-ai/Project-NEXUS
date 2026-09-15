@@ -12,7 +12,7 @@
  * unlocks below the form. `?id=` opens straight into edit mode.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -98,13 +98,17 @@ function NewCourseScreen() {
   const [isLoading, setIsLoading] = useState(hasParamCourse);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [status, setStatus] = useState<CourseStatus>('draft');
   const [moderationStatus, setModerationStatus] = useState<CourseModerationStatus>('pending');
   const [sections, setSections] = useState<CourseSection[]>([]);
   const [cohorts, setCohorts] = useState<CourseCohort[]>([]);
   const [cohortName, setCohortName] = useState('');
   const [isAddingCohort, setIsAddingCohort] = useState(false);
+  // State disables the controls after React renders. These refs close the smaller
+  // same-frame window in which two native press events can still run the old handler.
+  const saveInFlight = useRef(false);
+  const publishInFlight = useRef(false);
+  const cohortInFlight = useRef(false);
 
   // What the server sent, captured once the form is populated. null until then, so a
   // form that has not finished loading can never be judged "changed".
@@ -145,7 +149,6 @@ function NewCourseScreen() {
       ? isDirtyForEdit
       : Boolean(title.trim() || summary.trim() || description.trim()),
     isSaving,
-    hasSaved: hasSubmitted,
     confirm,
     title: t('instructor.unsaved_title'),
     message: t('instructor.unsaved_message'),
@@ -235,11 +238,13 @@ function NewCourseScreen() {
   }
 
   async function saveDetails() {
+    if (saveInFlight.current) return;
     if (!title.trim()) {
       setTitleError(t('instructor.title_required'));
       showToast({ title: t('form.required'), variant: 'warning' });
       return;
     }
+    saveInFlight.current = true;
     setIsSaving(true);
     try {
       const payload = buildPayload();
@@ -250,7 +255,6 @@ function NewCourseScreen() {
       // saving must not be challenged as unsaved work.
       rebaseSnapshot();
       if (!isEditing && saved?.id) {
-        setHasSubmitted(true);
         setCreatedCourseId(saved.id);
         setStatus(saved.status ?? 'draft');
         setModerationStatus(saved.moderation_status ?? 'pending');
@@ -263,12 +267,14 @@ function NewCourseScreen() {
         variant: 'danger',
       });
     } finally {
+      saveInFlight.current = false;
       setIsSaving(false);
     }
   }
 
   async function togglePublish() {
-    if (!isEditing) return;
+    if (publishInFlight.current || !isEditing) return;
+    publishInFlight.current = true;
     setIsPublishing(true);
     try {
       const updated = status === 'published'
@@ -291,6 +297,7 @@ function NewCourseScreen() {
         variant: 'danger',
       });
     } finally {
+      publishInFlight.current = false;
       setIsPublishing(false);
     }
   }
@@ -302,7 +309,8 @@ function NewCourseScreen() {
     delete one. Nothing in the request is idempotent, so the guard has to be here.
   */
   async function addCohort() {
-    if (isAddingCohort || !isEditing || !cohortName.trim()) return;
+    if (cohortInFlight.current || !isEditing || !cohortName.trim()) return;
+    cohortInFlight.current = true;
     setIsAddingCohort(true);
     try {
       await createCourseCohort(courseId, { name: cohortName.trim() });
@@ -313,6 +321,7 @@ function NewCourseScreen() {
     } catch (err) {
       showToast({ title: t('builder.save_error'), description: describeApiError(err, ''), variant: 'danger' });
     } finally {
+      cohortInFlight.current = false;
       setIsAddingCohort(false);
     }
   }

@@ -19,7 +19,7 @@
  * restored and a toast explains it rather than leaving the screen lying about what is saved.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { View } from 'react-native';
 import { Card as HeroCard, Text } from 'heroui-native';
@@ -68,12 +68,16 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   const [sections, setSections] = useState<CourseSection[]>(
     () => (initialSections ?? []).map((section) => ({ ...section, lessons: section.lessons ?? [] })),
   );
+  const addSectionInFlight = useRef(false);
+  const addLessonInFlight = useRef(new Set<number>());
 
   function reportFailure() {
     showToast({ title: t('builder.save_error'), variant: 'danger' });
   }
 
   async function addSection() {
+    if (addSectionInFlight.current) return;
+    addSectionInFlight.current = true;
     try {
       const created = await createCourseSection(courseId, {
         title: t('builder.new_section'),
@@ -82,6 +86,8 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
       setSections((prev) => [...prev, { ...created, lessons: [] }]);
     } catch {
       reportFailure();
+    } finally {
+      addSectionInFlight.current = false;
     }
   }
 
@@ -137,6 +143,8 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   async function addLesson(sectionId: number) {
+    if (addLessonInFlight.current.has(sectionId)) return;
+    addLessonInFlight.current.add(sectionId);
     const section = sections.find((s) => s.id === sectionId);
     try {
       const created = await createCourseLesson(courseId, {
@@ -150,6 +158,8 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
       )));
     } catch {
       reportFailure();
+    } finally {
+      addLessonInFlight.current.delete(sectionId);
     }
   }
 
@@ -345,12 +355,16 @@ function LessonRow({
   const [questionPrompt, setQuestionPrompt] = useState('');
   const [questionOptions, setQuestionOptions] = useState('');
   const [questionCorrect, setQuestionCorrect] = useState('');
+  const saveInFlight = useRef(false);
+  const questionInFlight = useRef(false);
 
   function set(patch: Partial<CourseLesson>) {
     setDraft((current) => ({ ...current, ...patch }));
   }
 
   async function save() {
+    if (saveInFlight.current) return;
+    saveInFlight.current = true;
     setIsSaving(true);
     try {
       const saved = await updateCourseLesson(courseId, lesson.id, {
@@ -388,13 +402,15 @@ function LessonRow({
     } catch (error) {
       showToast({ title: t('builder.save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
+      saveInFlight.current = false;
       setIsSaving(false);
     }
   }
 
   async function addQuestion() {
     const quiz = draft.quiz;
-    if (!quiz?.id || !questionPrompt.trim()) return;
+    if (questionInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
+    questionInFlight.current = true;
     const labels = questionOptions.split(',').map((value) => value.trim()).filter(Boolean);
     const options = labels.map((label, index) => ({ id: String.fromCharCode(97 + index), label }));
     const correct = questionCorrect.trim() || options[0]?.id || 'a';
@@ -419,6 +435,8 @@ function LessonRow({
       showToast({ title: t('builder.question_added'), variant: 'success' });
     } catch (error) {
       showToast({ title: t('builder.save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
+    } finally {
+      questionInFlight.current = false;
     }
   }
 
