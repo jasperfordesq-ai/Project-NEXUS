@@ -152,44 +152,44 @@ final class SendPasswordResetEmail implements ShouldQueue
                 $subject = __('emails.password_reset.subject', ['community' => $tenantName]);
                 return EmailDispatchService::sendRaw($email, $subject, $html, null, null, null, 'password_reset', ['tenant_id' => $userTenantId]);
             });
-            if ($resetEmailSent) {
-                // Rotate reset tokens only after the dispatcher accepts the new
-                // email. If SMTP/Gmail fails, any previous valid link remains
-                // usable instead of being silently invalidated.
-                if ($userTenantId !== null) {
-                    DB::delete(
-                        "DELETE FROM password_resets WHERE email = ? AND tenant_id <=> ?",
-                        [$email, $userTenantId]
-                    );
-                } else {
-                    DB::delete(
-                        "DELETE FROM password_resets WHERE email = ? AND tenant_id IS NULL",
-                        [$email]
-                    );
-                }
-
-                DB::insert(
-                    "INSERT INTO password_resets (email, tenant_id, token, created_at) VALUES (?, ?, ?, NOW())",
-                    [$email, $userTenantId, $hashedToken]
-                );
-
-                Log::info('[PasswordReset] reset email dispatched', [
-                    'email_masked' => $masked,
-                    'user_id' => $user['id'] ?? null,
-                    'tenant_id' => $userTenantId,
-                ]);
-            } else {
-                Log::warning('[PasswordReset] reset email send returned false', [
-                    'email_masked' => $masked,
-                    'user_id' => $user['id'] ?? null,
-                    'tenant_id' => $userTenantId,
-                ]);
+            if (!$resetEmailSent) {
+                // A normal return marks a queued job successful. Throw so
+                // Horizon applies this job's three-attempt policy instead of
+                // silently discarding a transient provider refusal.
+                throw new \RuntimeException('Password reset email dispatch failed.');
             }
+
+            // Rotate reset tokens only after the dispatcher accepts the new
+            // email. If SMTP/Gmail fails, any previous valid link remains
+            // usable instead of being silently invalidated.
+            if ($userTenantId !== null) {
+                DB::delete(
+                    "DELETE FROM password_resets WHERE email = ? AND tenant_id <=> ?",
+                    [$email, $userTenantId]
+                );
+            } else {
+                DB::delete(
+                    "DELETE FROM password_resets WHERE email = ? AND tenant_id IS NULL",
+                    [$email]
+                );
+            }
+
+            DB::insert(
+                "INSERT INTO password_resets (email, tenant_id, token, created_at) VALUES (?, ?, ?, NOW())",
+                [$email, $userTenantId, $hashedToken]
+            );
+
+            Log::info('[PasswordReset] reset email dispatched', [
+                'email_masked' => $masked,
+                'user_id' => $user['id'] ?? null,
+                'tenant_id' => $userTenantId,
+            ]);
         } catch (\Throwable $e) {
             Log::warning('[PasswordReset] Password reset email failed for ' . $masked . ': ' . $e->getMessage(), [
                 'user_id' => $user['id'] ?? null,
                 'tenant_id' => $userTenantId,
             ]);
+            throw $e;
         } finally {
             TenantContext::reset();
         }

@@ -78,9 +78,13 @@ class PasswordResetControllerTest extends TestCase
 
         app()->instance(EmailDispatchService::class, new PasswordResetFailingEmailDispatchService());
 
-        $response = $this->apiPost('/auth/forgot-password', ['email' => $email]);
+        try {
+            (new SendPasswordResetEmail($email, $this->testTenantId))->handle();
+            $this->fail('A refused password reset email dispatch must fail the queued job.');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('Password reset email dispatch failed.', $exception->getMessage());
+        }
 
-        $response->assertStatus(200);
         $this->assertSame(1, DB::table('password_resets')
             ->where('email', $email)
             ->where('tenant_id', $this->testTenantId)
