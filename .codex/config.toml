@@ -1,3 +1,4 @@
+web_search = "live"
 [mcp_servers.heroui-react]
 command = "npx"
 args = [
