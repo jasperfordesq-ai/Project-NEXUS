@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native session renewal now survives encrypted-storage failures without reporting a temporary session as durable.** Rotated refresh credentials are saved before access credentials, both writes are mandatory, and a failed Keychain or Keystore write leaves renewal retryable instead of installing a memory-only token that can strand the next app launch.
+
 - **Native course curriculum edits now recover from a lost creation response without duplicating content.** Cohorts, sections, lessons, quiz scaffolds and questions retain an encrypted community/account/course/content-bound operation until confirmation. Laravel records each accepted child resource atomically, replays the original result for exact sequential or simultaneous retries, and rejects changed or cross-endpoint key reuse.
 
 - **Native course screens now remain readable at enlarged system text.** Course summaries, teaching actions, status badges, instructor controls, curriculum lesson controls, analytics tiles, lesson statistics, grading actions and learner navigation reflow into full-width rows at large text sizes, while long summary and lesson text is no longer clipped.

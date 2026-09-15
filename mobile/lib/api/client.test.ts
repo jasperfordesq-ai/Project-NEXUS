@@ -779,8 +779,8 @@ describe('token refresh on 401', () => {
     expect(retryOptions.headers.Authorization).toBe('Bearer new-token');
 
     // New tokens were saved
-    expect(mockStorage.set).toHaveBeenCalledWith('nexus_auth_token', 'new-token');
-    expect(mockStorage.set).toHaveBeenCalledWith('nexus_refresh_token', 'new-refresh');
+    expect(mockStorage.set).toHaveBeenCalledWith('nexus_auth_token', 'new-token', { required: true });
+    expect(mockStorage.set).toHaveBeenCalledWith('nexus_refresh_token', 'new-refresh', { required: true });
 
     expect(result).toEqual({ data: 'refreshed' });
 
@@ -911,9 +911,72 @@ describe('attemptTokenRefresh', () => {
     // Contract changed from `string | null` to a three-way result so the caller can tell a
     // refused refresh token from an unreachable server. See TokenRefreshResult.
     expect(result).toEqual({ status: 'refreshed', token: 'refreshed-token' });
-    expect(mockStorage.set).toHaveBeenCalledWith('nexus_auth_token', 'refreshed-token');
-    expect(mockStorage.set).toHaveBeenCalledWith('nexus_refresh_token', 'new-refresh');
+    expect(mockStorage.set).toHaveBeenNthCalledWith(1, 'nexus_refresh_token', 'new-refresh', { required: true });
+    expect(mockStorage.set).toHaveBeenNthCalledWith(2, 'nexus_auth_token', 'refreshed-token', { required: true });
 
+    jest.advanceTimersByTime(3000);
+  });
+
+  it('does not install a renewed session when the rotated refresh token cannot persist', async () => {
+    installApiSession('stale-access');
+    fetchMock.mockResolvedValueOnce(
+      mockResponse({ access_token: 'fresh-access', refresh_token: 'fresh-refresh' }),
+    );
+    mockStorage.set.mockRejectedValueOnce(new Error('Keychain unavailable'));
+
+    await expect(attemptTokenRefresh()).resolves.toEqual({ status: 'unreachable' });
+    expect(mockStorage.set).toHaveBeenCalledTimes(1);
+    expect(mockStorage.set).toHaveBeenCalledWith(
+      'nexus_refresh_token', 'fresh-refresh', { required: true },
+    );
+
+    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+    await api.get('/api/v2/me');
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer stale-access');
+    jest.advanceTimersByTime(3000);
+  });
+
+  it('keeps the newly persisted refresh token recoverable when access-token persistence fails', async () => {
+    installApiSession('stale-access');
+    fetchMock.mockResolvedValueOnce(
+      mockResponse({ access_token: 'fresh-access', refresh_token: 'fresh-refresh' }),
+    );
+    mockStorage.set
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('Keychain unavailable'));
+
+    await expect(attemptTokenRefresh()).resolves.toEqual({ status: 'unreachable' });
+    expect(mockStorage.set).toHaveBeenNthCalledWith(
+      1, 'nexus_refresh_token', 'fresh-refresh', { required: true },
+    );
+    expect(mockStorage.set).toHaveBeenNthCalledWith(
+      2, 'nexus_auth_token', 'fresh-access', { required: true },
+    );
+
+    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+    await api.get('/api/v2/me');
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer stale-access');
+    jest.advanceTimersByTime(3000);
+  });
+
+  it('does not overwrite a replacement access token when the session changes during refresh persistence', async () => {
+    installApiSession('account-A');
+    fetchMock.mockResolvedValueOnce(
+      mockResponse({ access_token: 'renewed-A', refresh_token: 'renewed-A-refresh' }),
+    );
+    mockStorage.set.mockImplementationOnce(async () => {
+      installApiSession('account-B');
+    });
+
+    await expect(attemptTokenRefresh()).resolves.toEqual({ status: 'unreachable' });
+    expect(mockStorage.set).toHaveBeenCalledTimes(1);
+    expect(mockStorage.set).toHaveBeenCalledWith(
+      'nexus_refresh_token', 'renewed-A-refresh', { required: true },
+    );
+
+    fetchMock.mockResolvedValueOnce(mockResponse({ ok: true }));
+    await api.get('/api/v2/me');
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer account-B');
     jest.advanceTimersByTime(3000);
   });
 
@@ -952,7 +1015,7 @@ describe('attemptTokenRefresh', () => {
     const result = await attemptTokenRefresh();
 
     expect(result).toEqual({ status: 'refreshed', token: 'fallback-token' });
-    expect(mockStorage.set).toHaveBeenCalledWith('nexus_auth_token', 'fallback-token');
+    expect(mockStorage.set).toHaveBeenCalledWith('nexus_auth_token', 'fallback-token', { required: true });
 
     jest.advanceTimersByTime(3000);
   });

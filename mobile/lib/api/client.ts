@@ -400,9 +400,23 @@ export async function attemptTokenRefresh(): Promise<TokenRefreshResult> {
       // again with whatever session is actually current.
       if (generation !== sessionGeneration) return { status: 'unreachable' };
 
-      const saves: Promise<void>[] = [storage.set(STORAGE_KEYS.AUTH_TOKEN, newToken)];
-      if (data.refresh_token) saves.push(storage.set(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token));
-      await Promise.all(saves);
+      // Credential persistence is part of a successful refresh, not a best-effort side
+      // effect. `storage.set()` deliberately swallows ordinary Keychain/Keystore errors;
+      // without `required`, this function installed a memory-only access token and told
+      // every waiting request that renewal succeeded. A process restart could then expose
+      // an expired access token beside a server-invalidated refresh token.
+      //
+      // Persist a rotated refresh token first. If the access-token write then fails, the
+      // next process still has the new refresh credential and can recover. The reverse
+      // order can strand the member with the old, already-consumed refresh token.
+      if (data.refresh_token) {
+        await storage.set(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token, { required: true });
+        // The awaited write gives logout or another login a chance to replace this
+        // session. Do not enqueue the old account's access token behind the successor's
+        // credential writes.
+        if (generation !== sessionGeneration) return { status: 'unreachable' };
+      }
+      await storage.set(STORAGE_KEYS.AUTH_TOKEN, newToken, { required: true });
 
       if (generation !== sessionGeneration) return { status: 'unreachable' };
       inProcessAccessToken = newToken;
