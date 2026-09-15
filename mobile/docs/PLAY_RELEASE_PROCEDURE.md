@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Releasing to Google Play — the procedure, and everything that bites
 
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-15
 
 Status: **Maintained — written from an end-to-end release of version code 8 on
 2026-09-09, every timing and fingerprint in it measured rather than assumed.**
@@ -43,7 +43,7 @@ emphatically not EAS's remote counter.**
 Check it at **Play Console → Production → Track summary → Latest release**.
 🔴 The Console belongs to the owner's Google account, and its `u/N` slot in the URL
 moves with the browser profile's sign-in order — measured `u/1` on 2026-09-10,
-`u/2` on 2026-09-12, `u/0` on 2026-09-13. **Never memorise the slot; try each and
+`u/2` on 2026-09-12, `u/0` on 2026-09-13 and again on 2026-09-15. **Never memorise the slot; try each and
 read the page title** — "Production | Timebank Global" is the right one. The wrong
 slots are not merely empty: on 2026-09-12 `u/1` opened a *different, closed*
 developer account, and on 2026-09-13 both `u/1` and `u/2` opened a **"New Play
@@ -232,10 +232,30 @@ If the bundle is already uploaded (e.g. it was uploaded to another track), use
 The final button on this track is **"Save and publish"**, and it means it: there
 is no review. The Console says changes "usually appear on Google Play within
 1 hour". Measured 2026-09-09: published at 7:47 PM, available to the 11-member
-internal tester list. Measured again 2026-09-12 (version code 10, 11:48 AM) and
-2026-09-13 (**version code 11, 11:40 AM**, same 11-member list).
+internal tester list. Measured again 2026-09-12 (version code 10, 11:48 AM),
+2026-09-13 (**version code 11, 11:40 AM**, same 11-member list) and 2026-09-15
+(**version code 12 / 1.6.0, 6:41 AM** Console time; device table Phone 12,405 /
+Tablet 6,408 / TV 3 / Chromebook 10 / Android XR 1, 0 lost on every row; 32.6 MB
+new install, +97.1 KB on build 11; 3.96 MB update).
 
-🔴 **No quick-checks bar appeared on this track on 2026-09-13.** The review step
+**The agent cannot upload the bundle, and there is no other route.** The Chrome
+upload bridge refuses any file over 10 MB, and `mobile/google-play-key.json` — the
+service-account key `eas.json` points at — has never been created. What the agent
+*can* do, measured 2026-09-15: open the track, confirm the account slot and the
+live production version, press **Create new release**, fill the release name and
+notes, and **Save as draft** with no bundle attached (the Console accepts that and
+reports "Changes saved"). The owner then drops the file into the open page and the
+agent resumes at Next. Two Chrome-driving traps from that run:
+
+- **Clicking "Create new release" through its accessibility reference did nothing
+  useful** — the page scrolled sideways and the form never opened. A click on the
+  button's screen position opened it first time. If the URL still ends in
+  `/tracks/internal-testing` after the click, it did not work.
+- **A positional click into "Release name" missed silently after the browser window
+  was resized mid-session**; the field stayed at `0 / 50` while the notes went in
+  fine. Read the counter back after typing — do not trust that the click landed.
+
+🔴 **No quick-checks bar appeared on this track on 2026-09-13, nor on 2026-09-15.** The review step
 showed "Ready to release" with no "Running quick checks" progress bar anywhere,
 and "Save and publish" → the confirm dialog published immediately. That bar
 belongs to the **Publishing overview** used by the Production submission flow. The
