@@ -15,7 +15,7 @@
  * Opened as `/(modals)/course-grading?id=<courseId>`.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -36,7 +36,10 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
 import Toggle from '@/components/ui/Toggle';
 import { useAppToast } from '@/components/ui/AppToast';
+import { useConfirm } from '@/components/ui/useConfirm';
+import { useAuthContext } from '@/lib/context/AuthContext';
 import { parseDecimalInput } from '@/lib/utils/decimal';
+import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import {
@@ -46,7 +49,8 @@ import {
   type QuizQuestion,
 } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -73,9 +77,12 @@ function CourseGradingRoute() {
     reach this screen directly. See components/FeatureGate.tsx.
   */
   const { t } = useTranslation('courses');
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuthContext();
+  const { tenant } = useTenant();
   return (
     <FeatureGate feature="courses" title={t('grading.title')} fallbackHref="/(modals)/course-instructor">
-      <ModalErrorBoundary>
+      <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${params.id ?? 'invalid'}`}>
         <CourseGradingScreen />
       </ModalErrorBoundary>
     </FeatureGate>
@@ -87,6 +94,7 @@ function CourseGradingScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const theme = useTheme();
   const primary = usePrimaryColor();
+  const { confirm, confirmDialog } = useConfirm();
 
   const courseId = Number(params.id);
   const hasCourse = Number.isFinite(courseId) && courseId > 0;
@@ -103,6 +111,7 @@ function CourseGradingScreen() {
     round trip they did not ask for.
   */
   const [gradedIds, setGradedIds] = useState<number[]>([]);
+  const [draftStates, setDraftStates] = useState<Record<number, { dirty: boolean; saving: boolean }>>({});
 
   const attempts = (data ?? []).filter((attempt) => !gradedIds.includes(attempt.id));
 
@@ -112,7 +121,40 @@ function CourseGradingScreen() {
 
   const onGraded = useCallback((attemptId: number) => {
     setGradedIds((current) => (current.includes(attemptId) ? current : [...current, attemptId]));
+    setDraftStates((current) => {
+      if (!current[attemptId]) return current;
+      const next = { ...current };
+      delete next[attemptId];
+      return next;
+    });
   }, []);
+
+  const onDraftStateChange = useCallback((attemptId: number, dirty: boolean, saving: boolean) => {
+    setDraftStates((current) => {
+      const previous = current[attemptId];
+      if (!dirty && !saving) {
+        if (!previous) return current;
+        const next = { ...current };
+        delete next[attemptId];
+        return next;
+      }
+      if (previous?.dirty === dirty && previous.saving === saving) return current;
+      return { ...current, [attemptId]: { dirty, saving } };
+    });
+  }, []);
+
+  const hasDirtyDraft = Object.values(draftStates).some((state) => state.dirty);
+  const hasPendingGrade = Object.values(draftStates).some((state) => state.saving);
+
+  useUnsavedChangesGuard({
+    isDirty: hasDirtyDraft || hasPendingGrade,
+    isSaving: hasPendingGrade,
+    confirm,
+    title: t('courses:instructor.unsaved_title'),
+    message: t('courses:instructor.unsaved_message'),
+    discardLabel: t('courses:instructor.discard'),
+    cancelLabel: t('common:buttons.cancel'),
+  });
 
   function body() {
     if (isLoading && !data) {
@@ -154,7 +196,12 @@ function CourseGradingScreen() {
       );
     }
     return attempts.map((attempt) => (
-      <GradeCard key={attempt.id} attempt={attempt} onGraded={onGraded} />
+      <GradeCard
+        key={attempt.id}
+        attempt={attempt}
+        onGraded={onGraded}
+        onDraftStateChange={onDraftStateChange}
+      />
     ));
   }
 
@@ -196,6 +243,7 @@ function CourseGradingScreen() {
           {body()}
         </ScrollView>
       </KeyboardAvoidingView>
+      {confirmDialog}
     </SafeAreaView>
   );
 }
@@ -203,9 +251,11 @@ function CourseGradingScreen() {
 function GradeCard({
   attempt,
   onGraded,
+  onDraftStateChange,
 }: {
   attempt: PendingAttempt;
   onGraded: (attemptId: number) => void;
+  onDraftStateChange: (attemptId: number, dirty: boolean, saving: boolean) => void;
 }) {
   const { t } = useTranslation(['courses', 'common']);
   const theme = useTheme();
@@ -215,12 +265,18 @@ function GradeCard({
   const [passed, setPassed] = useState(true);
   const [feedback, setFeedback] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const savingRef = useRef(false);
+
+  const reportDraft = (nextScore: string, nextPassed: boolean, nextFeedback: string, saving: boolean) => {
+    const dirty = nextScore !== '70' || !nextPassed || nextFeedback !== '';
+    onDraftStateChange(attempt.id, dirty, saving);
+  };
 
   const questions = attempt.quiz?.questions ?? [];
   const rawAnswers = Object.entries(attempt.answers ?? {});
 
   async function submit() {
-    if (isSaving) return;
+    if (savingRef.current) return;
     /*
       🔴 `Number(score) || 0` recorded a mistyped grade as ZERO, silently.
 
@@ -239,24 +295,45 @@ function GradeCard({
       });
       return;
     }
+    savingRef.current = true;
     setIsSaving(true);
+    reportDraft(score, passed, feedback, true);
     try {
-      await gradeCourseAttempt(attempt.id, {
+      const payload = {
         score_percent: parsedScore,
         passed,
         feedback: feedback.trim(),
-      });
+      };
+      try {
+        await gradeCourseAttempt(attempt.id, payload);
+      } catch (err) {
+        // Grading is a desired-state write. The server accepts an exact replay
+        // by the same instructor, so one response-loss retry can recover the
+        // committed result without overwriting another grader's decision.
+        if (!(err instanceof ApiResponseError) || err.status !== 0) throw err;
+        await gradeCourseAttempt(attempt.id, payload);
+      }
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('grading.graded'), variant: 'success' });
+      savingRef.current = false;
+      setIsSaving(false);
+      onDraftStateChange(attempt.id, false, false);
       onGraded(attempt.id);
     } catch (err) {
+      savingRef.current = false;
+      setIsSaving(false);
+      const wasGradedElsewhere = err instanceof ApiResponseError && err.code === 'DECISION_CONFLICT';
+      if (wasGradedElsewhere) {
+        onDraftStateChange(attempt.id, false, false);
+        onGraded(attempt.id);
+      } else {
+        reportDraft(score, passed, feedback, false);
+      }
       showToast({
         title: t('grading.error'),
         description: describeApiError(err, ''),
         variant: 'danger',
       });
-    } finally {
-      setIsSaving(false);
     }
   }
 
@@ -310,7 +387,10 @@ function GradeCard({
         <Input
           label={t('grading.score')}
           value={score}
-          onChangeText={setScore}
+          onChangeText={(next) => {
+            setScore(next);
+            reportDraft(next, passed, feedback, isSaving);
+          }}
           editable={!isSaving}
           keyboardType="number-pad"
           style={{ color: theme.text }}
@@ -318,7 +398,10 @@ function GradeCard({
         />
         <Toggle
           value={passed}
-          onValueChange={setPassed}
+          onValueChange={(next) => {
+            setPassed(next);
+            reportDraft(score, next, feedback, isSaving);
+          }}
           disabled={isSaving}
           label={t('grading.passed')}
           accessibilityLabel={t('grading.passed')}
@@ -326,7 +409,10 @@ function GradeCard({
         <TextArea
           label={t('grading.feedback')}
           value={feedback}
-          onChangeText={setFeedback}
+          onChangeText={(next) => {
+            setFeedback(next);
+            reportDraft(score, passed, next, isSaving);
+          }}
           editable={!isSaving}
           placeholder={t('grading.feedback')}
           placeholderTextColor={theme.textMuted}

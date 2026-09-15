@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native course grading now protects instructor work and preserves the first accepted decision.** Edited score, pass/fail and feedback fields warn before navigation, remain protected while saving, reset when the account, community or course changes, and ignore rapid duplicate taps. A lost response retries the exact desired grade once; Laravel serializes grading under a row lock, accepts that exact replay and returns a conflict instead of allowing a stale or simultaneous instructor decision to overwrite the stored result.
+
 - **Opening the native app while already signed out no longer reports that the session expired.** The protected Home tab now waits for authentication restoration before mounting, preventing its feed request from producing a misleading 401-driven warning on the sign-in screen.
 
 - **Scheduled native-device checks now pass through mandatory administrator MFA instead of stopping before the emulator starts.** The disposable E2E administrator is enrolled with a public test-only TOTP secret, and the live response-contract verifier completes the real challenge without weakening the platform policy or logging credentials.

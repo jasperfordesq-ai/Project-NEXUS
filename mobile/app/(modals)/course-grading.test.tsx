@@ -10,12 +10,13 @@ import { RefreshControl } from 'react-native';
 const mockGetCourseGradingQueue = jest.fn();
 const mockGradeCourseAttempt = jest.fn();
 const mockShowToast = jest.fn();
+let mockCourseId = '42';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({ id: '42' }),
+  useLocalSearchParams: () => ({ id: mockCourseId }),
 }));
 
 // Resolve against the SHIPPED English copy, so a renamed or missing key fails the test
@@ -43,6 +44,9 @@ jest.mock('react-i18next', () => {
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+}));
+jest.mock('@/lib/context/AuthContext', () => ({
+  useAuthContext: () => ({ user: { id: 7 } }),
 }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -80,6 +84,7 @@ jest.mock('@/lib/api/courses', () => ({
 
 import CourseGradingRoute, { formatAnswer } from './course-grading';
 import { ApiResponseError } from '@/lib/api/client';
+import { isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 const essayQuestion = {
   id: 501,
@@ -113,9 +118,93 @@ const attempt = {
 describe('CourseGradingRoute', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCourseId = '42';
     mockShowToast.mockClear();
     mockGetCourseGradingQueue.mockResolvedValue([attempt]);
     mockGradeCourseAttempt.mockResolvedValue({ ...attempt, grading_status: 'graded' });
+  });
+
+  it('protects edited grading feedback from Back and native swipe removal', async () => {
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+
+    expect(isGuardArmed()).toBe(false);
+    fireEvent.changeText(screen.getByLabelText('Feedback (optional)'), 'A detailed assessment');
+    await waitFor(() => expect(isGuardArmed()).toBe(true));
+
+    fireEvent.changeText(screen.getByLabelText('Feedback (optional)'), '');
+    await waitFor(() => expect(isGuardArmed()).toBe(false));
+  });
+
+  it('keeps a submitted default grade protected while its response is pending', async () => {
+    let finish!: (value: unknown) => void;
+    mockGradeCourseAttempt.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+
+    fireEvent.press(screen.getByText('Submit grade'));
+    await waitFor(() => expect(isGuardArmed()).toBe(true));
+
+    await act(async () => { finish({ ...attempt, grading_status: 'graded' }); });
+    await waitFor(() => expect(isGuardArmed()).toBe(false));
+  });
+
+  it('serializes two same-frame grade submissions', async () => {
+    let finish!: (value: unknown) => void;
+    mockGradeCourseAttempt.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+
+    fireEvent.press(screen.getByText('Submit grade'));
+    fireEvent.press(screen.getByText('Submit grade'));
+
+    expect(mockGradeCourseAttempt).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ ...attempt, grading_status: 'graded' }); });
+  });
+
+  it('replays the exact grade once when the first response is lost', async () => {
+    mockGradeCourseAttempt
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Response lost'))
+      .mockResolvedValueOnce({ ...attempt, grading_status: 'graded' });
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+
+    await act(async () => { fireEvent.press(screen.getByText('Submit grade')); });
+
+    expect(mockGradeCourseAttempt).toHaveBeenCalledTimes(2);
+    expect(mockGradeCourseAttempt.mock.calls[1]).toEqual(mockGradeCourseAttempt.mock.calls[0]);
+    expect(screen.queryByText('Maura Byrne')).toBeNull();
+  });
+
+  it('removes a stale card when another instructor already graded it', async () => {
+    mockGradeCourseAttempt.mockRejectedValueOnce(
+      new ApiResponseError(409, 'This attempt has already been graded.', undefined, 'DECISION_CONFLICT'),
+    );
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+
+    await act(async () => { fireEvent.press(screen.getByText('Submit grade')); });
+
+    expect(screen.queryByText('Maura Byrne')).toBeNull();
+    expect(isGuardArmed()).toBe(false);
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'This attempt has already been graded.',
+      variant: 'danger',
+    }));
+  });
+
+  it('does not carry a grading draft into a replacement course route', async () => {
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText('Score (%)'), '85');
+    fireEvent.changeText(screen.getByLabelText('Feedback (optional)'), 'Only for course 42');
+
+    mockCourseId = '43';
+    screen.rerender(<CourseGradingRoute />);
+
+    await waitFor(() => expect(mockGetCourseGradingQueue).toHaveBeenCalledWith(43));
+    expect(screen.getByLabelText('Score (%)').props.value).toBe('70');
+    expect(screen.getByLabelText('Feedback (optional)').props.value).toBe('');
   });
 
   it('reads the queue for the course in the URL, not for every course', async () => {

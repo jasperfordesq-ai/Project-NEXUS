@@ -195,6 +195,7 @@
   },
   "courses.feature_disabled": "Die Kursfunktion ist für diese Community nicht aktiviert.",
   "courses.not_found": "Kurs nicht gefunden.",
+  "courses.grade_conflict": "Dieser Versuch wurde bereits bewertet. Aktualisieren Sie die Bewertungsliste, bevor Sie eine weitere Entscheidung treffen.",
   "courses.title_required": "Ein Kurstitel ist erforderlich.",
   "courses.not_available": "Für diesen Kurs ist derzeit keine Anmeldung möglich.",
   "courses.paid_not_available": "Eine kreditbasierte Einschreibung ist noch nicht möglich.",

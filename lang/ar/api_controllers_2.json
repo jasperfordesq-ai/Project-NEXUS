@@ -195,6 +195,7 @@
   },
   "courses.feature_disabled": "ميزة الدورات التدريبية غير ممكّنة لهذا المجتمع.",
   "courses.not_found": "لم يتم العثور على الدورة.",
+  "courses.grade_conflict": "تم تقييم هذه المحاولة بالفعل. حدّث قائمة التقييم قبل اتخاذ قرار آخر.",
   "courses.title_required": "مطلوب عنوان الدورة.",
   "courses.not_available": "هذه الدورة غير متاحة للتسجيل حاليا.",
   "courses.paid_not_available": "التسجيل على أساس الائتمان غير متاح بعد.",

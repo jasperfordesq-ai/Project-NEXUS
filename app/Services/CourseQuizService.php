@@ -166,19 +166,58 @@ class CourseQuizService
      */
     public static function gradeAttempt(int $attemptId, float $scorePercent, bool $passed, ?string $feedback, int $gradedBy): ?CourseQuizAttempt
     {
-        $attempt = CourseQuizAttempt::find($attemptId);
-        if (!$attempt) {
-            return null;
-        }
+        $result = self::gradeAttemptWithOutcome($attemptId, $scorePercent, $passed, $feedback, $gradedBy);
 
-        $attempt->score_percent = max(0, min(100, $scorePercent));
-        $attempt->passed = $passed;
-        $attempt->feedback = $feedback;
-        $attempt->grading_status = 'graded';
-        $attempt->graded_by = $gradedBy;
-        $attempt->save();
+        return in_array($result['outcome'], ['completed', 'replayed'], true)
+            ? $result['attempt']
+            : null;
+    }
 
-        return $attempt;
+    /**
+     * Grade a pending attempt under one row lock.
+     *
+     * The exact same instructor/request is an idempotent replay, which lets a
+     * mobile client recover a response lost after commit. A stale or competing
+     * different grade is a conflict and cannot overwrite the first decision.
+     *
+     * @return array{outcome: 'completed'|'replayed'|'conflict'|'not_found', attempt: CourseQuizAttempt|null}
+     */
+    public static function gradeAttemptWithOutcome(
+        int $attemptId,
+        float $scorePercent,
+        bool $passed,
+        ?string $feedback,
+        int $gradedBy
+    ): array {
+        return DB::transaction(function () use ($attemptId, $scorePercent, $passed, $feedback, $gradedBy): array {
+            $attempt = CourseQuizAttempt::query()->lockForUpdate()->find($attemptId);
+            if (!$attempt) {
+                return ['outcome' => 'not_found', 'attempt' => null];
+            }
+
+            $score = max(0, min(100, $scorePercent));
+            if ($attempt->grading_status !== 'pending_review') {
+                $isExactReplay = $attempt->grading_status === 'graded'
+                    && (int) $attempt->graded_by === $gradedBy
+                    && abs((float) $attempt->score_percent - $score) < 0.00001
+                    && (bool) $attempt->passed === $passed
+                    && (string) ($attempt->feedback ?? '') === (string) ($feedback ?? '');
+
+                return [
+                    'outcome' => $isExactReplay ? 'replayed' : 'conflict',
+                    'attempt' => $attempt,
+                ];
+            }
+
+            $attempt->score_percent = $score;
+            $attempt->passed = $passed;
+            $attempt->feedback = $feedback;
+            $attempt->grading_status = 'graded';
+            $attempt->graded_by = $gradedBy;
+            $attempt->save();
+
+            return ['outcome' => 'completed', 'attempt' => $attempt];
+        });
     }
 
     /**

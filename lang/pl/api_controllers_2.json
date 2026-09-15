@@ -195,6 +195,7 @@
   },
   "courses.feature_disabled": "Funkcja kursów nie jest włączona dla tej społeczności.",
   "courses.not_found": "Nie znaleziono kursu.",
+  "courses.grade_conflict": "Ta próba została już oceniona. Odśwież listę oceniania przed podjęciem kolejnej decyzji.",
   "courses.title_required": "Wymagany jest tytuł kursu.",
   "courses.not_available": "Na ten kurs nie można się obecnie zapisać.",
   "courses.paid_not_available": "Rejestracja oparta na kredytach nie jest jeszcze dostępna.",

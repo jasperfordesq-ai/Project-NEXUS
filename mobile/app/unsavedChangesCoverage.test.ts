@@ -41,6 +41,7 @@ const MUST_GUARD = [
   'app/(modals)/new-volunteering.tsx',
   'app/(modals)/new-marketplace-listing.tsx',
   'app/(modals)/new-course.tsx',
+  'app/(modals)/course-grading.tsx',
   'app/(modals)/new-challenge.tsx',
   'app/(modals)/new-group-exchange.tsx',
   'app/(modals)/edit-profile.tsx',

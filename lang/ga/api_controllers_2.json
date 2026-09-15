@@ -195,6 +195,7 @@
   },
   "courses.feature_disabled": "Níl gné na gcúrsaí cumasaithe don phobal seo.",
   "courses.not_found": "Cúrsa gan aimsiú.",
+  "courses.grade_conflict": "Tá an iarracht seo grádaithe cheana féin. Athnuaigh an liosta grádaithe sula ndéanann tú cinneadh eile.",
   "courses.title_required": "Teastaíonn teideal cúrsa.",
   "courses.not_available": "Níl an cúrsa seo ar fáil le clárú faoi láthair.",
   "courses.paid_not_available": "Níl clárú bunaithe ar chreidmheas ar fáil go fóill.",

@@ -195,6 +195,7 @@
   },
   "courses.feature_disabled": "La función de cursos no está habilitada para esta comunidad.",
   "courses.not_found": "Curso no encontrado.",
+  "courses.grade_conflict": "Este intento ya ha sido calificado. Actualiza la lista de calificaciones antes de tomar otra decisión.",
   "courses.title_required": "Se requiere un título del curso.",
   "courses.not_available": "Este curso no está disponible actualmente para inscripción.",
   "courses.paid_not_available": "La inscripción basada en créditos aún no está disponible.",

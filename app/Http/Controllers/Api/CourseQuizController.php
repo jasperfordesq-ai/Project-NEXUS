@@ -116,12 +116,20 @@ class CourseQuizController extends BaseApiController
         $passed = $this->inputBool('passed', $score >= 50);
         $feedback = $this->input('feedback');
 
-        $attempt = CourseQuizService::gradeAttempt($attemptId, $score, $passed, $feedback, $userId);
-        if (!$attempt) {
+        $result = CourseQuizService::gradeAttemptWithOutcome($attemptId, $score, $passed, $feedback, $userId);
+        if ($result['outcome'] === 'not_found') {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.courses.not_found'), null, 404);
         }
+        if ($result['outcome'] === 'conflict') {
+            return $this->respondWithError(
+                'DECISION_CONFLICT',
+                __('api_controllers_2.courses.grade_conflict'),
+                null,
+                409
+            );
+        }
 
-        return $this->respondWithData($attempt);
+        return $this->respondWithData($result['attempt']);
     }
 
     // ----- Authoring (instructor/admin) -----

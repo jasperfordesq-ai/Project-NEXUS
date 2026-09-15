@@ -121,6 +121,16 @@ class CourseControllerTest extends TestCase
         $this->assertEquals(82.5, (float) $attempt->fresh()->score_percent);
         $this->assertSame('Clear explanation', $attempt->fresh()->feedback);
         $this->assertSame($author->id, $attempt->fresh()->graded_by);
+        // A response lost after commit can replay the exact desired state, but
+        // a stale or competing decision cannot overwrite the first grade.
+        $this->apiPost('/v2/courses/attempts/' . $attempt->id . '/grade', [
+            'score_percent' => 82.5, 'passed' => true, 'feedback' => 'Clear explanation',
+        ])->assertOk();
+        $this->apiPost('/v2/courses/attempts/' . $attempt->id . '/grade', [
+            'score_percent' => 60, 'passed' => false, 'feedback' => 'Stale replacement',
+        ])->assertStatus(409)->assertJsonPath('errors.0.code', 'DECISION_CONFLICT');
+        $this->assertEquals(82.5, (float) $attempt->fresh()->score_percent);
+        $this->assertSame('Clear explanation', $attempt->fresh()->feedback);
         foreach (['invalid', -1, 101] as $invalidScore) {
             $this->apiPost('/v2/courses/attempts/' . $attempt->id . '/grade', [
                 'score_percent' => $invalidScore, 'passed' => false, 'feedback' => 'Must not replace',

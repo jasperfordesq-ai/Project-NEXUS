@@ -1,6 +1,7 @@
 {
   "courses.feature_disabled": "The courses feature is not enabled for this community.",
   "courses.not_found": "Course not found.",
+  "courses.grade_conflict": "This attempt has already been graded. Refresh the grading list before making another decision.",
   "courses.title_required": "A course title is required.",
   "courses.not_available": "This course is not currently available for enrollment.",
   "courses.paid_not_available": "Credit-based enrollment is not available yet.",

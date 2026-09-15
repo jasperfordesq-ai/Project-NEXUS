@@ -195,6 +195,7 @@
   },
   "courses.feature_disabled": "De cursusfunctie is niet ingeschakeld voor deze community.",
   "courses.not_found": "Cursus niet gevonden.",
+  "courses.grade_conflict": "Deze poging is al beoordeeld. Vernieuw de beoordelingslijst voordat u een andere beslissing neemt.",
   "courses.title_required": "Een cursustitel is vereist.",
   "courses.not_available": "Voor deze cursus kunt u zich momenteel niet inschrijven.",
   "courses.paid_not_available": "Inschrijving op basis van krediet is nog niet beschikbaar.",

@@ -195,6 +195,7 @@
   },
   "courses.feature_disabled": "このコミュニティではコース機能が有効になっていません。",
   "courses.not_found": "コースが見つかりません。",
+  "courses.grade_conflict": "この受講結果はすでに採点されています。別の判断をする前に採点一覧を更新してください。",
   "courses.title_required": "コースタイトルは必須です。",
   "courses.not_available": "このコースは現在登録を受け付けていません。",
   "courses.paid_not_available": "単位ベースの登録はまだ利用できません。",
