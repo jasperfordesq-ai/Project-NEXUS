@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native employers can now schedule real interviews and send complete job offers from the hiring pipeline.** The pipeline exposes the server's interview and offer actions only when the community enables them, shows current action state, supports cancellation and withdrawal, and keeps translated, scrollable forms and responsive actions above the keyboard and system navigation. Unanswered submissions reuse a durable account- and community-scoped receipt identity; Laravel safely replays the same request and now persists the offer message, salary currency and pay type that its API accepted.
+
 - **Job offers and interviews now retain their member notifications after a transient failure.** Each committed offer or interview action writes a payload-free delivery fact in the same transaction; a scheduled worker resumes unfinished bell, push, realtime and interview-email steps with bounded retry and dead-letter state. Exact accepted/declined/cancelled/withdrawn replays retry the pending delivery, while vacancy, application and action locks prevent stale creation or withdrawal from racing a terminal hiring decision.
 
 - **Listing-linked message threads and exchange requests now stay usable on Android.** The compact thread context link stretches across the conversation instead of collapsing into a tall narrow block over the messages, and Request exchange keeps its wrapping Cancel and Send actions in the shared safe-area-aware sheet footer above the system navigation bar.

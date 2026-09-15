@@ -14,14 +14,10 @@
  *    `cursor=undefined` changes what the API returns, and the mistake is
  *    invisible locally because Laravel tends to ignore a blank filter.
  *
- * 2. **The offer and interview calls swallow errors and return a boolean.**
- *    🔴 That is deliberate and it WORKS here, which is the opposite of the
- *    equivalent rule on the web side. `react-frontend`'s `api.ts` never throws,
- *    so a `catch` there is dead code — but `mobile/lib/api/client.ts` throws
- *    `ApiResponseError` on any non-2xx, network failure, timeout, or
- *    unrecoverable 401. So these catches genuinely convert a failure into
- *    `false`, and the tests below assert exactly that. Delete them and a
- *    member who failed to accept a job offer would be told it worked.
+ * 2. **Offer and interview errors must reach the screen.** The native API client
+ *    throws `ApiResponseError` on a non-2xx, network failure, timeout or
+ *    unrecoverable 401. Candidate and employer controls depend on that rejection
+ *    to retain the action and show the server reason instead of implying success.
  */
 
 /**
@@ -70,6 +66,8 @@ import {
   acceptInterview,
   acceptOffer,
   applyToJob,
+  cancelJobInterview,
+  createJobOffer,
   createJob,
   createJobAlert,
   declineInterview,
@@ -90,6 +88,7 @@ import {
   getRecommendedJobs,
   getSavedProfile,
   pauseJobAlert,
+  proposeJobInterview,
   rejectOffer,
   resumeJobAlert,
   saveJob,
@@ -98,6 +97,7 @@ import {
   updateJobApplication,
   updateJobStatus,
   withdrawJobApplication,
+  withdrawJobOffer,
 } from './jobs';
 
 const mockGet = api.get as jest.Mock;
@@ -331,6 +331,38 @@ describe('acting on a vacancy', () => {
     await updateJobApplication(900, { status: 'shortlisted', expected_status: 'screening' });
 
     expect(mockPut).toHaveBeenCalledWith('/api/v2/jobs/applications/900', { status: 'shortlisted', expected_status: 'screening' });
+  });
+
+  it('uses the formal employer action endpoints and stable creation headers', async () => {
+    const interview = {
+      scheduled_at: '2026-10-01T10:00:00.000Z',
+      interview_type: 'video' as const,
+      duration_mins: 60,
+      location_notes: 'Video link follows',
+      idempotency_key: 'mobile-interview-key',
+    };
+    const offer = {
+      salary_offered: 30000,
+      salary_currency: 'EUR',
+      salary_type: 'annual' as const,
+      start_date: '2026-11-01',
+      message: 'We would like you to join us.',
+      idempotency_key: 'mobile-offer-key',
+    };
+
+    await proposeJobInterview(900, interview);
+    await createJobOffer(900, offer);
+    await cancelJobInterview(81);
+    await withdrawJobOffer(91);
+
+    expect(mockPost).toHaveBeenCalledWith('/api/v2/jobs/applications/900/interview', interview, {
+      headers: { 'Idempotency-Key': 'mobile-interview-key' },
+    });
+    expect(mockPost).toHaveBeenCalledWith('/api/v2/jobs/applications/900/offer', offer, {
+      headers: { 'Idempotency-Key': 'mobile-offer-key' },
+    });
+    expect(mockDelete).toHaveBeenCalledWith('/api/v2/jobs/interviews/81');
+    expect(mockDelete).toHaveBeenCalledWith('/api/v2/jobs/offers/91');
   });
 
   it('asks the API to draft a description rather than composing one locally', async () => {

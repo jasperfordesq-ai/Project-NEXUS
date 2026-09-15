@@ -22,9 +22,14 @@ class JobOffer extends Model
         'vacancy_id',
         'application_id',
         'user_id',
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
         'status',
         'details',
+        'message',
         'salary_offered',
+        'salary_currency',
+        'salary_type',
         'start_date',
         'expires_at',
         'responded_at',
@@ -40,6 +45,8 @@ class JobOffer extends Model
         'expires_at'     => 'datetime',
         'responded_at'   => 'datetime',
     ];
+
+    protected $hidden = ['creation_idempotency_key_hash', 'creation_request_hash'];
 
     public function vacancy(): BelongsTo
     {

@@ -27,6 +27,10 @@ module.exports = ({ config }) => {
     plugins.push('expo-font');
   }
 
+  if (!hasPlugin('@react-native-community/datetimepicker')) {
+    plugins.push('@react-native-community/datetimepicker');
+  }
+
   const notificationsPluginIndex = plugins.findIndex((plugin) => {
     return Array.isArray(plugin) ? plugin[0] === 'expo-notifications' : plugin === 'expo-notifications';
   });

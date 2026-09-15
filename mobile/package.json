@@ -76,6 +76,7 @@
     "@expo/vector-icons": "^15.0.2",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@hookform/resolvers": "^5.2.2",
+    "@react-native-community/datetimepicker": "8.6.0",
     "@react-native-community/netinfo": "11.5.2",
     "@sentry/react-native": "~7.11.0",
     "@stripe/stripe-react-native": "0.63.0",

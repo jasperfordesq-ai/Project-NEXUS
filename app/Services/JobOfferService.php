@@ -35,6 +35,14 @@ class JobOfferService
     {
         $tenantId = TenantContext::getId();
 
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+        unset($data['idempotency_key']);
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
+            return false;
+        }
+        $keyHash = $idempotencyKey === '' ? null : hash('sha256', $idempotencyKey);
+        $requestHash = $keyHash === null ? null : self::creationRequestHash($applicationId, $data);
+
         try {
             $application = JobApplication::with(['vacancy'])->find($applicationId);
 
@@ -56,11 +64,17 @@ class JobOfferService
                 return false;
             }
 
-            // Enforce one offer per application (UNIQUE constraint on application_id)
-            $existing = JobOffer::where('application_id', $applicationId)->exists();
-            if ($existing) {
-                return false;
+            if ($keyHash !== null && $requestHash !== null) {
+                $replay = self::creationReplay($tenantId, $applicationId, $keyHash, $requestHash);
+                if ($replay === false) return false;
+                if ($replay instanceof JobOffer) {
+                    app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_received', (int) $replay->id, (int) $application->user_id, true);
+                    return $replay->toArray();
+                }
             }
+
+            // Enforce one offer per application (UNIQUE constraint on application_id).
+            if (JobOffer::where('application_id', $applicationId)->exists()) return false;
 
             // Don't offer to candidates who withdrew or were rejected, or for a vacancy
             // that has already been filled.
@@ -79,7 +93,7 @@ class JobOfferService
             );
 
             $candidateId = (int) $application->user_id;
-            $offer = DB::transaction(function () use ($tenantId, $application, $applicationId, $employerUserId, $candidateId, $data): JobOffer|false {
+            $offer = DB::transaction(function () use ($tenantId, $application, $applicationId, $employerUserId, $candidateId, $data, $keyHash, $requestHash): JobOffer|false {
                 $vacancy = JobVacancy::where('id', (int) $application->vacancy_id)
                     ->where('tenant_id', $tenantId)
                     ->lockForUpdate()
@@ -93,17 +107,27 @@ class JobOfferService
                     || (int) $vacancy->user_id !== $employerUserId
                     || (int) $lockedApplication->user_id !== $candidateId
                     || in_array((string) ($lockedApplication->stage ?? $lockedApplication->status), ['accepted', 'rejected', 'withdrawn'], true)
-                    || (string) $vacancy->status === 'filled'
-                    || JobOffer::where('application_id', $applicationId)->exists()) {
+                    || (string) $vacancy->status === 'filled') {
                     return false;
                 }
+                if ($keyHash !== null && $requestHash !== null) {
+                    $replay = self::creationReplay($tenantId, $applicationId, $keyHash, $requestHash);
+                    if ($replay === false) return false;
+                    if ($replay instanceof JobOffer) return $replay;
+                }
+                if (JobOffer::where('application_id', $applicationId)->exists()) return false;
                 $created = JobOffer::create([
                     'tenant_id'      => $tenantId,
                     'vacancy_id'     => (int) $application->vacancy_id,
                     'application_id' => $applicationId,
                     'user_id'        => $candidateId,
+                    'creation_idempotency_key_hash' => $keyHash,
+                    'creation_request_hash' => $requestHash,
                     'salary_offered' => isset($data['salary_offered']) ? (float) $data['salary_offered'] : null,
+                    'salary_currency' => isset($data['salary_currency']) ? strtoupper(trim((string) $data['salary_currency'])) : null,
+                    'salary_type'    => $data['salary_type'] ?? null,
                     'start_date'     => $data['start_date'] ?? null,
+                    'message'        => isset($data['message']) ? trim((string) $data['message']) : null,
                     'details'        => isset($data['message']) ? trim($data['message']) : (isset($data['details']) ? trim($data['details']) : null),
                     'status'         => 'pending',
                     'expires_at'     => $data['expires_at'] ?? null,
@@ -122,6 +146,30 @@ class JobOfferService
             Log::error('JobOfferService::create failed', ['error' => $e->getMessage()]);
             return false;
         }
+    }
+
+    private static function creationRequestHash(int $applicationId, array $data): string
+    {
+        ksort($data);
+        return hash('sha256', json_encode(
+            ['application_id' => $applicationId, 'data' => $data],
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        ));
+    }
+
+    private static function creationReplay(
+        int $tenantId,
+        int $applicationId,
+        string $keyHash,
+        string $requestHash,
+    ): JobOffer|false|null {
+        $existing = JobOffer::query()
+            ->where('tenant_id', $tenantId)
+            ->where('application_id', $applicationId)
+            ->where('creation_idempotency_key_hash', $keyHash)
+            ->first();
+        if (!$existing) return null;
+        return hash_equals((string) $existing->creation_request_hash, $requestHash) ? $existing : false;
     }
 
     /**

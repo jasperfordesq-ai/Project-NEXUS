@@ -38,6 +38,14 @@ class JobInterviewService
     {
         $tenantId = TenantContext::getId();
 
+        $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
+        unset($data['idempotency_key']);
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
+            return false;
+        }
+        $keyHash = $idempotencyKey === '' ? null : hash('sha256', $idempotencyKey);
+        $requestHash = $keyHash === null ? null : self::creationRequestHash($applicationId, $data);
+
         try {
             $application = JobApplication::with(['vacancy'])->find($applicationId);
 
@@ -59,6 +67,35 @@ class JobInterviewService
                 return false;
             }
 
+            try {
+                $scheduledAt = \Carbon\Carbon::parse((string) $data['scheduled_at']);
+            } catch (\Throwable) {
+                return false;
+            }
+            if ($scheduledAt->lessThanOrEqualTo(now())) {
+                return false;
+            }
+            $data['scheduled_at'] = $scheduledAt->toDateTimeString();
+            $interviewType = (string) ($data['interview_type'] ?? 'video');
+            if (!in_array($interviewType, ['video', 'phone', 'in_person'], true)) {
+                return false;
+            }
+            $duration = (int) ($data['duration_mins'] ?? 60);
+            if ($duration < 5 || $duration > 480) {
+                return false;
+            }
+            $data['interview_type'] = $interviewType;
+            $data['duration_mins'] = $duration;
+
+            if ($keyHash !== null && $requestHash !== null) {
+                $existing = self::creationReplay($tenantId, $proposedByUserId, $keyHash, $requestHash);
+                if ($existing === false) return false;
+                if ($existing instanceof JobInterview) {
+                    app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_proposed', (int) $existing->id, (int) $application->user_id, true);
+                    return $existing->toArray();
+                }
+            }
+
             // Don't propose interviews for applications the candidate has withdrawn or
             // that have already been rejected.
             if (in_array((string) $application->status, ['withdrawn', 'rejected'], true)) {
@@ -73,7 +110,7 @@ class JobInterviewService
             );
 
             $candidateId = (int) $application->user_id;
-            $interview = DB::transaction(function () use ($tenantId, $application, $applicationId, $proposedByUserId, $candidateId, $data): JobInterview|false {
+            $interview = DB::transaction(function () use ($tenantId, $application, $applicationId, $proposedByUserId, $candidateId, $data, $keyHash, $requestHash): JobInterview|false {
                 $vacancy = JobVacancy::where('id', (int) $application->vacancy_id)
                     ->where('tenant_id', $tenantId)
                     ->lockForUpdate()
@@ -90,11 +127,18 @@ class JobInterviewService
                     || (string) $vacancy->status === 'filled') {
                     return false;
                 }
+                if ($keyHash !== null && $requestHash !== null) {
+                    $existing = self::creationReplay($tenantId, $proposedByUserId, $keyHash, $requestHash);
+                    if ($existing === false) return false;
+                    if ($existing instanceof JobInterview) return $existing;
+                }
                 $created = JobInterview::create([
                     'tenant_id'      => $tenantId,
                     'vacancy_id'     => (int) $application->vacancy_id,
                     'application_id' => $applicationId,
                     'proposed_by'    => $proposedByUserId,
+                    'creation_idempotency_key_hash' => $keyHash,
+                    'creation_request_hash' => $requestHash,
                     'interview_type' => $data['interview_type'] ?? 'video',
                     'scheduled_at'   => $data['scheduled_at'],
                     'duration_mins'  => isset($data['duration_mins']) ? (int) $data['duration_mins'] : 60,
@@ -115,6 +159,30 @@ class JobInterviewService
             Log::error('JobInterviewService::propose failed', ['error' => $e->getMessage()]);
             return false;
         }
+    }
+
+    private static function creationRequestHash(int $applicationId, array $data): string
+    {
+        ksort($data);
+        return hash('sha256', json_encode(
+            ['application_id' => $applicationId, 'data' => $data],
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        ));
+    }
+
+    private static function creationReplay(
+        int $tenantId,
+        int $proposedByUserId,
+        string $keyHash,
+        string $requestHash,
+    ): JobInterview|false|null {
+        $existing = JobInterview::query()
+            ->where('tenant_id', $tenantId)
+            ->where('proposed_by', $proposedByUserId)
+            ->where('creation_idempotency_key_hash', $keyHash)
+            ->first();
+        if (!$existing) return null;
+        return hash_equals((string) $existing->creation_request_hash, $requestHash) ? $existing : false;
     }
 
     /**

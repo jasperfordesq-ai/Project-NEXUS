@@ -1240,6 +1240,10 @@ class JobVacanciesController extends BaseApiController
         $this->rateLimit('jobs_interview_propose', 10, 60);
 
         $data = $this->getAllInput();
+        $idempotencyKey = trim((string) request()->header('Idempotency-Key', ''));
+        if ($idempotencyKey !== '') {
+            $data['idempotency_key'] = $idempotencyKey;
+        }
 
         if (empty($data['scheduled_at'])) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.job_scheduled_at_required'), 'scheduled_at', 422);
@@ -1377,6 +1381,10 @@ class JobVacanciesController extends BaseApiController
         $this->rateLimit('jobs_offer_create', 10, 60);
 
         $data = $this->getAllInput();
+        $idempotencyKey = trim((string) request()->header('Idempotency-Key', ''));
+        if ($idempotencyKey !== '') {
+            $data['idempotency_key'] = $idempotencyKey;
+        }
 
         try {
             $offer = JobOfferService::create($applicationId, $userId, $data);

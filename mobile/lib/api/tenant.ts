@@ -13,6 +13,12 @@ export interface TenantBranding {
   og_image_url: string | null;
 }
 
+export interface JobConfig {
+  'jobs.enable_interview_scheduling'?: boolean;
+  'jobs.enable_offers'?: boolean;
+  'jobs.default_currency'?: string;
+}
+
 export interface TenantConfig {
   /**
    * The community's numeric id.
@@ -33,6 +39,7 @@ export interface TenantConfig {
   features: Record<string, boolean>;
   modules: Record<string, boolean>;
   volunteering_config?: Record<string, unknown>;
+  job_config?: JobConfig;
   config: {
     time_unit: string;
     time_unit_plural: string;

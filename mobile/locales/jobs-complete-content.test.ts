@@ -32,6 +32,7 @@ describe('complete mobile Irish Jobs catalogue', () => {
       'create.contactEmailPlaceholder',
       'create.contactPhonePlaceholder',
       'create.salaryCurrencyPlaceholder',
+      'owner.offerCurrencyPlaceholder',
       'create.videoUrlPlaceholder',
       'create.companySize.1-10',
       'create.companySize.11-50',

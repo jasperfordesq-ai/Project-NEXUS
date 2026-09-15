@@ -22,6 +22,8 @@ class JobInterview extends Model
         'vacancy_id',
         'application_id',
         'proposed_by',
+        'creation_idempotency_key_hash',
+        'creation_request_hash',
         'interview_type',
         'scheduled_at',
         'duration_mins',
@@ -45,6 +47,8 @@ class JobInterview extends Model
         'reminder_24h_sent_at' => 'datetime',
         'reminder_1h_sent_at' => 'datetime',
     ];
+
+    protected $hidden = ['creation_idempotency_key_hash', 'creation_request_hash'];
 
     public function vacancy(): BelongsTo
     {

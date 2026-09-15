@@ -71,9 +71,9 @@ export interface JobInterview {
 
 export interface JobOffer {
   id: number;
-  salary_offered: string | null;
-  salary_currency: string;
-  salary_type: string;
+  salary_offered: string | number | null;
+  salary_currency: string | null;
+  salary_type: 'hourly' | 'monthly' | 'annual' | null;
   start_date: string | null;
   message: string | null;
   status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
@@ -136,6 +136,25 @@ export interface JobOwnerApplication {
   cv_filename?: string | null;
   created_at: string;
   updated_at?: string;
+  interview?: JobInterview | null;
+  offer?: JobOffer | null;
+}
+
+export interface ProposeJobInterviewPayload {
+  scheduled_at: string;
+  interview_type: JobInterview['interview_type'];
+  duration_mins: number;
+  location_notes?: string | null;
+  idempotency_key?: string;
+}
+
+export interface CreateJobOfferPayload {
+  salary_offered?: number | null;
+  salary_currency?: string | null;
+  salary_type?: 'hourly' | 'monthly' | 'annual' | null;
+  start_date?: string | null;
+  message?: string | null;
+  idempotency_key?: string;
 }
 
 export interface JobAnalyticsData {
@@ -308,6 +327,34 @@ export function updateJobApplication(
   payload: { status: JobApplicationStatus; expected_status?: JobApplicationStatus; notes?: string | null },
 ): Promise<{ data: { message: string } }> {
   return api.put<{ data: { message: string } }>(`${API_V2}/jobs/applications/${applicationId}`, payload);
+}
+
+export function proposeJobInterview(
+  applicationId: number,
+  payload: ProposeJobInterviewPayload,
+): Promise<{ data: JobInterview }> {
+  const options = payload.idempotency_key
+    ? { headers: { 'Idempotency-Key': payload.idempotency_key } }
+    : undefined;
+  return api.post<{ data: JobInterview }>(`${API_V2}/jobs/applications/${applicationId}/interview`, payload, options);
+}
+
+export function cancelJobInterview(interviewId: number): Promise<void> {
+  return api.delete<void>(`${API_V2}/jobs/interviews/${interviewId}`);
+}
+
+export function createJobOffer(
+  applicationId: number,
+  payload: CreateJobOfferPayload,
+): Promise<{ data: JobOffer }> {
+  const options = payload.idempotency_key
+    ? { headers: { 'Idempotency-Key': payload.idempotency_key } }
+    : undefined;
+  return api.post<{ data: JobOffer }>(`${API_V2}/jobs/applications/${applicationId}/offer`, payload, options);
+}
+
+export function withdrawJobOffer(offerId: number): Promise<void> {
+  return api.delete<void>(`${API_V2}/jobs/offers/${offerId}`);
 }
 
 export function getJobApplicationHistory(applicationId: number): Promise<{ data: JobApplicationHistoryEntry[] }> {

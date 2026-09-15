@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -15,10 +16,17 @@ import { Tabs } from '@/components/ui/NativeTabs';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
-import { getJobApplications, updateJobApplication } from '@/lib/api/jobs';
+import {
+  cancelJobInterview,
+  createJobOffer,
+  getJobApplications,
+  proposeJobInterview,
+  updateJobApplication,
+  withdrawJobOffer,
+} from '@/lib/api/jobs';
 import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
-import type { JobOwnerApplication } from '@/lib/api/jobs';
+import type { CreateJobOfferPayload, JobOwnerApplication, ProposeJobInterviewPayload } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -35,9 +43,19 @@ import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { withRouteGate } from '@/components/withRouteGate';
+import BottomSheet from '@/components/ui/BottomSheet';
+import Input from '@/components/ui/Input';
+import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
+import { parseDecimalInput } from '@/lib/utils/decimal';
+import {
+  completeJobHiringActionOperation,
+  reserveJobHiringActionOperation,
+} from '@/lib/jobHiringActionOperation';
+import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 
 const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected', 'withdrawn'] as const;
 type PipelineStatus = (typeof PIPELINE_COLUMNS)[number];
+type HiringAction = { kind: 'interview' | 'offer'; application: JobOwnerApplication };
 
 function JobPipelineScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -54,6 +72,10 @@ function JobPipelineContent() {
   const jobId = Number(id);
   const safeId = Number.isFinite(jobId) && jobId > 0 ? jobId : 0;
   const [selectedStatus, setSelectedStatus] = useState<PipelineStatus>('pending');
+  const [hiringAction, setHiringAction] = useState<HiringAction | null>(null);
+  const { tenant } = useTenant();
+  const interviewEnabled = tenant?.job_config?.['jobs.enable_interview_scheduling'] !== false;
+  const offersEnabled = tenant?.job_config?.['jobs.enable_offers'] !== false;
 
   const applicationsApi = useApi(
     () => getJobApplications(safeId),
@@ -233,11 +255,24 @@ function JobPipelineContent() {
                   theme={theme}
                   t={t}
                   onUpdated={applicationsApi.refresh}
+                  interviewEnabled={interviewEnabled}
+                  offersEnabled={offersEnabled}
+                  onOpenAction={(kind) => setHiringAction({ kind, application })}
                 />
               ))}
             </View>
           )}
         </ScrollView>
+        <HiringActionSheet
+          key={hiringAction ? `${hiringAction.kind}:${hiringAction.application.id}` : 'closed'}
+          action={hiringAction}
+          defaultCurrency={tenant?.job_config?.['jobs.default_currency'] ?? tenant?.currency ?? 'EUR'}
+          onClose={() => setHiringAction(null)}
+          onSuccess={() => {
+            setHiringAction(null);
+            applicationsApi.refresh();
+          }}
+        />
       </SafeAreaView>
     </ModalErrorBoundary>
   );
@@ -283,12 +318,18 @@ function PipelineApplicationCard({
   theme,
   t,
   onUpdated,
+  interviewEnabled,
+  offersEnabled,
+  onOpenAction,
 }: {
   application: JobOwnerApplication;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, opts?: Record<string, unknown>) => string;
   onUpdated: () => void;
+  interviewEnabled: boolean;
+  offersEnabled: boolean;
+  onOpenAction: (kind: HiringAction['kind']) => void;
 }) {
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -302,6 +343,10 @@ function PipelineApplicationCard({
   const applicantName = application.applicant?.name?.trim() || t('owner.unknownApplicant');
   const currentStatus = normalizeStatus(application.stage ?? application.status);
   const terminal = ['accepted', 'rejected', 'withdrawn'].includes(currentStatus);
+  const activeInterview = application.interview && ['proposed', 'accepted'].includes(application.interview.status)
+    ? application.interview
+    : null;
+  const pendingOffer = application.offer?.status === 'pending' ? application.offer : null;
 
   /**
    * The stage that follows this one, or null at the end of the run.
@@ -363,6 +408,70 @@ function PipelineApplicationCard({
     }
   }
 
+  function cancelInterview() {
+    if (!activeInterview) return;
+    confirm({
+      title: t('owner.cancelInterviewConfirmTitle'),
+      message: t('owner.cancelInterviewConfirmMessage', { name: applicantName }),
+      confirmLabel: t('owner.cancelInterview'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `pipeline-confirm-cancel-interview-${application.id}`,
+      onConfirm: () => void runLifecycleAction(
+        () => cancelJobInterview(activeInterview.id),
+        (latest) => latest.interview?.id === activeInterview.id && latest.interview.status === 'cancelled',
+        t('owner.cancelInterviewError'),
+      ),
+    });
+  }
+
+  function withdrawOffer() {
+    if (!pendingOffer) return;
+    confirm({
+      title: t('owner.withdrawOfferConfirmTitle'),
+      message: t('owner.withdrawOfferConfirmMessage', { name: applicantName }),
+      confirmLabel: t('owner.withdrawOffer'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: `pipeline-confirm-withdraw-offer-${application.id}`,
+      onConfirm: () => void runLifecycleAction(
+        () => withdrawJobOffer(pendingOffer.id),
+        (latest) => latest.offer?.id === pendingOffer.id && latest.offer.status === 'withdrawn',
+        t('owner.withdrawOfferError'),
+      ),
+    });
+  }
+
+  async function runLifecycleAction(
+    mutate: () => Promise<void>,
+    confirms: (latest: JobOwnerApplication) => boolean,
+    fallbackError: string,
+  ) {
+    if (movePending.current || terminal) return;
+    movePending.current = true;
+    setIsUpdating(true);
+    try {
+      try {
+        await mutate();
+      } catch (err) {
+        if (!(err instanceof ApiResponseError) || err.status !== 0) throw err;
+        const readback = await getJobApplications(application.vacancy_id);
+        const latest = readback.data.find((candidate) => candidate.id === application.id);
+        if (!latest || !confirms(latest)) throw err;
+      }
+      if (!mountedRef.current) return;
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (mountedRef.current) onUpdated();
+    } catch (err) {
+      if (!mountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0) onUpdated();
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, fallbackError), variant: 'danger' });
+    } finally {
+      movePending.current = false;
+      if (mountedRef.current) setIsUpdating(false);
+    }
+  }
+
   return (
     <HeroCard className="rounded-panel p-0">
       <HeroCard.Body className="gap-4 p-4">
@@ -383,6 +492,48 @@ function PipelineApplicationCard({
             <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={4}>
               {application.message}
             </Text>
+          </Surface>
+        ) : null}
+        {!terminal && (interviewEnabled || offersEnabled) ? (
+          <Surface variant="secondary" className="gap-3 rounded-panel-inner p-3" testID={`pipeline-hiring-actions-${application.id}`}>
+            <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('owner.hiringActions')}</Text>
+            {activeInterview ? (
+              <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                {t('owner.interviewSummary', {
+                  date: new Date(activeInterview.scheduled_at).toLocaleString(),
+                  status: t(`owner.interviewStatus.${activeInterview.status}`),
+                })}
+              </Text>
+            ) : null}
+            {application.offer ? (
+              <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                {t('owner.offerSummary', { status: t(`owner.offerStatus.${application.offer.status}`) })}
+              </Text>
+            ) : null}
+            <View className="flex-row flex-wrap gap-2">
+              {interviewEnabled && !activeInterview ? (
+                <HeroButton size="sm" variant="secondary" onPress={() => onOpenAction('interview')} testID={`pipeline-schedule-interview-${application.id}`}>
+                  <Ionicons name="calendar-outline" size={15} color={primary} />
+                  <HeroButton.Label>{t('owner.scheduleInterview')}</HeroButton.Label>
+                </HeroButton>
+              ) : null}
+              {interviewEnabled && activeInterview ? (
+                <HeroButton size="sm" variant="danger" isDisabled={isUpdating} onPress={() => void cancelInterview()} testID={`pipeline-cancel-interview-${application.id}`}>
+                  <HeroButton.Label>{t('owner.cancelInterview')}</HeroButton.Label>
+                </HeroButton>
+              ) : null}
+              {offersEnabled && !application.offer ? (
+                <HeroButton size="sm" variant="secondary" onPress={() => onOpenAction('offer')} testID={`pipeline-create-offer-${application.id}`}>
+                  <Ionicons name="document-text-outline" size={15} color={primary} />
+                  <HeroButton.Label>{t('owner.sendOffer')}</HeroButton.Label>
+                </HeroButton>
+              ) : null}
+              {offersEnabled && pendingOffer ? (
+                <HeroButton size="sm" variant="danger" isDisabled={isUpdating} onPress={() => void withdrawOffer()} testID={`pipeline-withdraw-offer-${application.id}`}>
+                  <HeroButton.Label>{t('owner.withdrawOffer')}</HeroButton.Label>
+                </HeroButton>
+              ) : null}
+            </View>
           </Surface>
         ) : null}
         {/*
@@ -419,6 +570,350 @@ function PipelineApplicationCard({
         {confirmDialog}
       </HeroCard.Body>
     </HeroCard>
+  );
+}
+
+const INTERVIEW_TYPES = ['video', 'phone', 'in_person'] as const;
+const INTERVIEW_DURATIONS = ['30', '45', '60', '90'] as const;
+const OFFER_PAY_TYPES = ['hourly', 'monthly', 'annual'] as const;
+
+function HiringActionSheet({
+  action,
+  defaultCurrency,
+  onClose,
+  onSuccess,
+}: {
+  action: HiringAction | null;
+  defaultCurrency: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const { t } = useTranslation(['jobs', 'common']);
+  const theme = useTheme();
+  const primary = usePrimaryColor();
+  const { show: showToast } = useAppToast();
+  const { confirm, confirmDialog } = useConfirm();
+  const mountedRef = useRef(true);
+  const submitPending = useRef(false);
+  const { width, fontScale } = useWindowDimensions();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState(() => new Date(Date.now() + 24 * 60 * 60 * 1000));
+  const [interviewType, setInterviewType] = useState<(typeof INTERVIEW_TYPES)[number]>('video');
+  const [duration, setDuration] = useState('60');
+  const [locationNotes, setLocationNotes] = useState('');
+  const [offerMessage, setOfferMessage] = useState('');
+  const [salary, setSalary] = useState('');
+  const [currency, setCurrency] = useState(defaultCurrency.toUpperCase());
+  const [salaryType, setSalaryType] = useState<(typeof OFFER_PAY_TYPES)[number]>('annual');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  const applicantName = action?.application.applicant?.name?.trim() || t('owner.unknownApplicant');
+
+  function requestClose() {
+    if (isSubmitting) return;
+    if (!dirty) {
+      onClose();
+      return;
+    }
+    confirm({
+      title: t('owner.discardActionTitle'),
+      message: t('owner.discardActionMessage'),
+      confirmLabel: t('owner.discardAction'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      onConfirm: onClose,
+    });
+  }
+
+  function chooseInterviewDate() {
+    if (Platform.OS !== 'android') return;
+    DateTimePickerAndroid.open({
+      value: scheduledAt,
+      mode: 'date',
+      minimumDate: new Date(),
+      onChange: (event, selectedDate) => {
+        if (event.type !== 'set' || !selectedDate) return;
+        const next = new Date(selectedDate);
+        next.setHours(scheduledAt.getHours(), scheduledAt.getMinutes(), 0, 0);
+        DateTimePickerAndroid.open({
+          value: next,
+          mode: 'time',
+          onChange: (timeEvent, selectedTime) => {
+            if (timeEvent.type !== 'set' || !selectedTime) return;
+            next.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+            setScheduledAt(next);
+            setDirty(true);
+          },
+        });
+      },
+    });
+  }
+
+  function chooseStartDate() {
+    if (Platform.OS !== 'android') return;
+    DateTimePickerAndroid.open({
+      value: startDate ?? new Date(),
+      mode: 'date',
+      minimumDate: new Date(),
+      onChange: (event, selectedDate) => {
+        if (event.type !== 'set' || !selectedDate) return;
+        setStartDate(selectedDate);
+        setDirty(true);
+      },
+    });
+  }
+
+  async function submit() {
+    if (!action || submitPending.current) return;
+    const application = action.application;
+    const kind = action.kind;
+    const parsedSalary = salary.trim() === '' ? null : parseDecimalInput(salary);
+    if (kind === 'interview' && scheduledAt.getTime() <= Date.now()) {
+      showToast({ title: t('owner.checkActionTitle'), description: t('owner.interviewFutureError'), variant: 'warning' });
+      return;
+    }
+    if (kind === 'offer' && !offerMessage.trim()) {
+      showToast({ title: t('owner.checkActionTitle'), description: t('owner.offerMessageRequired'), variant: 'warning' });
+      return;
+    }
+    if (kind === 'offer' && salary.trim() !== '' && (parsedSalary === null || parsedSalary <= 0)) {
+      showToast({ title: t('owner.checkActionTitle'), description: t('owner.offerSalaryInvalid'), variant: 'warning' });
+      return;
+    }
+    if (kind === 'offer' && parsedSalary !== null && !/^[A-Z]{3}$/.test(currency.trim().toUpperCase())) {
+      showToast({ title: t('owner.checkActionTitle'), description: t('owner.offerCurrencyInvalid'), variant: 'warning' });
+      return;
+    }
+
+    const payload = kind === 'interview'
+      ? {
+          scheduled_at: scheduledAt.toISOString(),
+          interview_type: interviewType,
+          duration_mins: Number(duration),
+          location_notes: locationNotes.trim() || null,
+        }
+      : {
+          salary_offered: parsedSalary,
+          salary_currency: parsedSalary === null ? null : currency.trim().toUpperCase(),
+          salary_type: parsedSalary === null ? null : salaryType,
+          start_date: startDate ? localDateString(startDate) : null,
+          message: offerMessage.trim(),
+        };
+
+    submitPending.current = true;
+    setIsSubmitting(true);
+    try {
+      const operation = await reserveJobHiringActionOperation(JSON.stringify([kind, application.id, payload]));
+      try {
+        if (kind === 'interview') {
+          await proposeJobInterview(application.id, { ...payload, idempotency_key: operation.key } as ProposeJobInterviewPayload);
+        } else {
+          await createJobOffer(application.id, { ...payload, idempotency_key: operation.key } as CreateJobOfferPayload);
+        }
+      } catch (error) {
+        if (!(error instanceof ApiResponseError) || error.status !== 0) throw error;
+        const readback = await getJobApplications(application.vacancy_id);
+        const latest = readback.data.find((candidate) => candidate.id === application.id);
+        if (!latest || !hiringActionMatches(kind, latest, payload)) throw error;
+      }
+      await completeJobHiringActionOperation(operation);
+      if (!mountedRef.current) return;
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
+      showToast({
+        title: kind === 'interview' ? t('owner.interviewCreated') : t('owner.offerCreated'),
+        variant: 'success',
+      });
+      onSuccess();
+    } catch (error) {
+      if (!mountedRef.current) return;
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(error, kind === 'interview' ? t('owner.interviewCreateError') : t('owner.offerCreateError')),
+        variant: 'danger',
+      });
+    } finally {
+      submitPending.current = false;
+      if (mountedRef.current) setIsSubmitting(false);
+    }
+  }
+
+  const footer = (
+    <View className="flex-row flex-wrap gap-3">
+      <HeroButton style={responsiveActionStyle(width, fontScale)} variant="secondary" isDisabled={isSubmitting} onPress={requestClose} testID="hiring-action-cancel">
+        <HeroButton.Label>{t('common:buttons.cancel')}</HeroButton.Label>
+      </HeroButton>
+      <HeroButton style={responsiveActionStyle(width, fontScale)} variant="primary" isDisabled={isSubmitting} onPress={() => void submit()} testID="hiring-action-submit">
+        <HeroButton.Label>{isSubmitting ? t('owner.sendingAction') : action?.kind === 'interview' ? t('owner.sendInterview') : t('owner.sendOffer')}</HeroButton.Label>
+      </HeroButton>
+    </View>
+  );
+
+  return (
+    <>
+      <BottomSheet
+        visible={action !== null}
+        onClose={requestClose}
+        dismissible={!isSubmitting}
+        title={action?.kind === 'interview' ? t('owner.scheduleInterviewFor', { name: applicantName }) : t('owner.sendOfferTo', { name: applicantName })}
+        snapPoints={['72%', '94%']}
+        scrollable
+        footer={footer}
+        testID="hiring-action-sheet"
+      >
+        <View className="gap-4 pt-4">
+          {action?.kind === 'interview' ? (
+            <>
+              <View className="gap-2">
+                <Text className="text-sm font-semibold" style={{ color: theme.text }}>{t('owner.interviewDateTime')}</Text>
+                {Platform.OS === 'ios' ? (
+                  <DateTimePicker
+                    testID="hiring-interview-datetime-picker"
+                    value={scheduledAt}
+                    mode="datetime"
+                    minimumDate={new Date()}
+                    display="spinner"
+                    accentColor={primary}
+                    themeVariant={theme.bg.toLowerCase() === '#0a0a0f' ? 'dark' : 'light'}
+                    onChange={(_event, value) => {
+                      if (value) { setScheduledAt(value); setDirty(true); }
+                    }}
+                  />
+                ) : (
+                  <HeroButton variant="secondary" onPress={chooseInterviewDate} testID="hiring-interview-datetime">
+                    <Ionicons name="calendar-outline" size={18} color={primary} />
+                    <HeroButton.Label>{scheduledAt.toLocaleString()}</HeroButton.Label>
+                  </HeroButton>
+                )}
+              </View>
+              <ChoiceChips
+                label={t('owner.interviewType')}
+                options={toOptions(INTERVIEW_TYPES, (value) => t(`owner.interviewTypes.${value}`))}
+                selected={interviewType}
+                onSelect={(value) => { if (value) { setInterviewType(value); setDirty(true); } }}
+              />
+              <ChoiceChips
+                label={t('owner.interviewDuration')}
+                options={toOptions(INTERVIEW_DURATIONS, (value) => t('owner.interviewMinutes', { count: Number(value) }))}
+                selected={duration}
+                onSelect={(value) => { if (value) { setDuration(value); setDirty(true); } }}
+              />
+              <Input
+                label={t('owner.interviewLocationNotes')}
+                placeholder={t('owner.interviewLocationPlaceholder')}
+                value={locationNotes}
+                onChangeText={(value) => { setLocationNotes(value); setDirty(true); }}
+                multiline
+                editable={!isSubmitting}
+                style={{ minHeight: 96, textAlignVertical: 'top', color: theme.text }}
+              />
+            </>
+          ) : action?.kind === 'offer' ? (
+            <>
+              <Input
+                label={t('owner.offerMessage')}
+                placeholder={t('owner.offerMessagePlaceholder')}
+                value={offerMessage}
+                onChangeText={(value) => { setOfferMessage(value); setDirty(true); }}
+                multiline
+                editable={!isSubmitting}
+                style={{ minHeight: 112, textAlignVertical: 'top', color: theme.text }}
+              />
+              <Input
+                label={t('owner.offerSalary')}
+                placeholder={t('owner.offerSalaryPlaceholder')}
+                value={salary}
+                onChangeText={(value) => { setSalary(value); setDirty(true); }}
+                keyboardType="decimal-pad"
+                editable={!isSubmitting}
+              />
+              {salary.trim() ? (
+                <>
+                  <Input
+                    label={t('owner.offerCurrency')}
+                    placeholder={t('owner.offerCurrencyPlaceholder')}
+                    value={currency}
+                    onChangeText={(value) => { setCurrency(value.toUpperCase()); setDirty(true); }}
+                    maxLength={3}
+                    autoCapitalize="characters"
+                    editable={!isSubmitting}
+                  />
+                  <ChoiceChips
+                    label={t('owner.offerPayType')}
+                    options={toOptions(OFFER_PAY_TYPES, (value) => t(`create.salaryType.${value}`))}
+                    selected={salaryType}
+                    onSelect={(value) => { if (value) { setSalaryType(value); setDirty(true); } }}
+                  />
+                </>
+              ) : null}
+              <View className="gap-2">
+                <Text className="text-sm font-semibold" style={{ color: theme.text }}>{t('owner.offerStartDate')}</Text>
+                {Platform.OS === 'ios' ? (
+                  <>
+                    <HeroButton variant="secondary" onPress={() => { setStartDate(startDate ? null : new Date()); setDirty(true); }}>
+                      <HeroButton.Label>{startDate ? t('owner.clearStartDate') : t('owner.addStartDate')}</HeroButton.Label>
+                    </HeroButton>
+                    {startDate ? (
+                      <DateTimePicker
+                        testID="hiring-offer-start-date-picker"
+                        value={startDate}
+                        mode="date"
+                        minimumDate={new Date()}
+                        display="compact"
+                        accentColor={primary}
+                        themeVariant={theme.bg.toLowerCase() === '#0a0a0f' ? 'dark' : 'light'}
+                        onChange={(_event, value) => {
+                          if (value) { setStartDate(value); setDirty(true); }
+                        }}
+                      />
+                    ) : null}
+                  </>
+                ) : (
+                  <HeroButton variant="secondary" onPress={chooseStartDate} testID="hiring-offer-start-date">
+                    <Ionicons name="calendar-outline" size={18} color={primary} />
+                    <HeroButton.Label>{startDate ? startDate.toLocaleDateString() : t('owner.addStartDate')}</HeroButton.Label>
+                  </HeroButton>
+                )}
+              </View>
+            </>
+          ) : null}
+        </View>
+      </BottomSheet>
+      {confirmDialog}
+    </>
+  );
+}
+
+function localDateString(value: Date): string {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function hiringActionMatches(
+  kind: HiringAction['kind'],
+  latest: JobOwnerApplication,
+  payload: Record<string, unknown>,
+): boolean {
+  if (kind === 'interview') {
+    return Boolean(
+      latest.interview
+      && Math.abs(new Date(latest.interview.scheduled_at).getTime() - new Date(String(payload.scheduled_at)).getTime()) < 60_000
+      && latest.interview.interview_type === payload.interview_type
+      && latest.interview.duration_mins === payload.duration_mins,
+    );
+  }
+  return Boolean(
+    latest.offer
+    && latest.offer.status === 'pending'
+    && (latest.offer.message ?? '').trim() === String(payload.message ?? '').trim(),
   );
 }
 

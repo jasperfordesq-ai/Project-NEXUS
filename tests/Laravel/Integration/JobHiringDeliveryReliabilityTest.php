@@ -106,6 +106,40 @@ final class JobHiringDeliveryReliabilityTest extends TestCase
         ]);
     }
 
+    public function test_offer_and_interview_creation_replay_one_durable_result(): void
+    {
+        [$tenantId, $owner, $candidate, $vacancy, $application] = $this->fixture();
+        $unavailable = Mockery::mock(JobHiringDeliveryService::class);
+        $unavailable->shouldReceive('dispatchForEvent')->times(4)->andReturnFalse();
+        $this->app->instance(JobHiringDeliveryService::class, $unavailable);
+
+        $offerPayload = ['message' => 'Welcome aboard', 'idempotency_key' => 'mobile-offer-retry-44'];
+        $firstOffer = JobOfferService::create((int) $application->id, (int) $owner->id, $offerPayload);
+        $replayedOffer = JobOfferService::create((int) $application->id, (int) $owner->id, $offerPayload);
+        self::assertIsArray($firstOffer);
+        self::assertSame($firstOffer['id'], $replayedOffer['id']);
+        self::assertSame(1, JobOffer::where('application_id', $application->id)->count());
+        self::assertFalse(JobOfferService::create((int) $application->id, (int) $owner->id, [
+            'message' => 'Different terms',
+            'idempotency_key' => 'mobile-offer-retry-44',
+        ]));
+
+        $interviewPayload = [
+            'scheduled_at' => now()->addDays(2)->startOfMinute()->toIso8601String(),
+            'duration_mins' => 45,
+            'idempotency_key' => 'mobile-interview-retry-44',
+        ];
+        $firstInterview = JobInterviewService::propose((int) $application->id, (int) $owner->id, $interviewPayload);
+        $replayedInterview = JobInterviewService::propose((int) $application->id, (int) $owner->id, $interviewPayload);
+        self::assertIsArray($firstInterview);
+        self::assertSame($firstInterview['id'], $replayedInterview['id']);
+        self::assertSame(1, JobInterview::where('application_id', $application->id)->count());
+        self::assertFalse(JobInterviewService::propose((int) $application->id, (int) $owner->id, [
+            ...$interviewPayload,
+            'duration_mins' => 90,
+        ]));
+    }
+
     public function test_offer_rejection_exact_replay_retries_one_delivery_fact(): void
     {
         [$tenantId, $owner, $candidate, $vacancy, $application] = $this->fixture();

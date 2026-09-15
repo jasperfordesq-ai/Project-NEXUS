@@ -8,6 +8,8 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Models\JobAlert;
 use App\Models\JobApplication;
+use App\Models\JobInterview;
+use App\Models\JobOffer;
 use App\Models\JobVacancy;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -1861,6 +1863,56 @@ class JobVacanciesControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_owner_applications_include_current_interview_and_offer_actions(): void
+    {
+        $owner = $this->authenticatedUser();
+        $candidate = $this->authenticatedUser();
+        $vacancy = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open']);
+        $applicationId = (int) DB::table('job_vacancy_applications')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'user_id' => $candidate->id,
+            'message' => 'Please consider me.',
+            'status' => 'interview',
+            'stage' => 'interview',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $interviewId = (int) DB::table('job_interviews')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'application_id' => $applicationId,
+            'proposed_by' => $owner->id,
+            'interview_type' => 'phone',
+            'scheduled_at' => now()->addDay(),
+            'duration_mins' => 45,
+            'location_notes' => 'Call the office number.',
+            'status' => 'proposed',
+            'interviewer_notes' => 'Do not expose this note.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $offerId = (int) DB::table('job_offers')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'application_id' => $applicationId,
+            'user_id' => $candidate->id,
+            'details' => 'Offer terms',
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($owner, ['*']);
+
+        $this->apiGet("/v2/jobs/{$vacancy->id}/applications")
+            ->assertOk()
+            ->assertJsonPath('data.0.interview.id', $interviewId)
+            ->assertJsonPath('data.0.interview.status', 'proposed')
+            ->assertJsonPath('data.0.offer.id', $offerId)
+            ->assertJsonPath('data.0.offer.message', 'Offer terms')
+            ->assertJsonMissing(['interviewer_notes' => 'Do not expose this note.']);
+    }
+
     public function test_propose_interview_requires_auth(): void
     {
         $response = $this->apiPost('/v2/jobs/applications/1/interview', [
@@ -1876,6 +1928,47 @@ class JobVacanciesControllerTest extends TestCase
         $response = $this->apiPost('/v2/jobs/applications/1/interview', []);
 
         $response->assertStatus(422);
+    }
+
+    public function test_hiring_action_endpoints_replay_the_same_result_after_response_loss(): void
+    {
+        $owner = $this->authenticatedUser();
+        $candidate = $this->authenticatedUser();
+        $vacancy = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open']);
+        $applicationId = (int) DB::table('job_vacancy_applications')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'user_id' => $candidate->id,
+            'message' => 'Ready for the next step.',
+            'status' => 'shortlisted',
+            'stage' => 'shortlisted',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($owner, ['*']);
+
+        $interviewPayload = [
+            'scheduled_at' => now()->addDays(3)->startOfMinute()->toIso8601String(),
+            'interview_type' => 'video',
+            'duration_mins' => 45,
+        ];
+        $interviewHeaders = ['Idempotency-Key' => 'mobile-interview-controller-replay'];
+        $firstInterview = $this->apiPost("/v2/jobs/applications/{$applicationId}/interview", $interviewPayload, $interviewHeaders)
+            ->assertCreated();
+        $replayedInterview = $this->apiPost("/v2/jobs/applications/{$applicationId}/interview", $interviewPayload, $interviewHeaders)
+            ->assertCreated();
+        self::assertSame($firstInterview->json('data.id'), $replayedInterview->json('data.id'));
+
+        $offerPayload = ['message' => 'Please review these terms.'];
+        $offerHeaders = ['Idempotency-Key' => 'mobile-offer-controller-replay'];
+        $firstOffer = $this->apiPost("/v2/jobs/applications/{$applicationId}/offer", $offerPayload, $offerHeaders)
+            ->assertCreated();
+        $replayedOffer = $this->apiPost("/v2/jobs/applications/{$applicationId}/offer", $offerPayload, $offerHeaders)
+            ->assertCreated();
+        self::assertSame($firstOffer->json('data.id'), $replayedOffer->json('data.id'));
+
+        self::assertSame(1, JobInterview::where('application_id', $applicationId)->count());
+        self::assertSame(1, JobOffer::where('application_id', $applicationId)->count());
     }
 
     // =====================================================================

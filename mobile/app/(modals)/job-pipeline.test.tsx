@@ -4,9 +4,20 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
+jest.mock('@/components/ui/BottomSheet', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible, children, footer, testID }: { visible: boolean; children: React.ReactNode; footer?: React.ReactNode; testID?: string }) =>
+      visible ? <View testID={testID}>{children}{footer}</View> : null,
+  };
+});
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
@@ -33,6 +44,35 @@ jest.mock('react-i18next', () => ({
         'owner.reject': 'Reject',
         'owner.rejectConfirmTitle': 'Reject this applicant?',
         'owner.rejectConfirmMessage': 'They will be told.',
+        'owner.hiringActions': 'Interview and offer',
+        'owner.scheduleInterview': 'Schedule interview',
+        'owner.cancelInterview': 'Cancel interview',
+        'owner.sendOffer': 'Send offer',
+        'owner.withdrawOffer': 'Withdraw offer',
+        'owner.scheduleInterviewFor': 'Interview with Ava Candidate',
+        'owner.sendOfferTo': 'Offer for Ava Candidate',
+        'owner.interviewDateTime': 'Date and time',
+        'owner.interviewType': 'Interview type',
+        'owner.interviewDuration': 'Duration',
+        'owner.interviewLocationNotes': 'Joining details',
+        'owner.interviewLocationPlaceholder': 'Meeting details',
+        'owner.sendInterview': 'Send invitation',
+        'owner.offerMessage': 'Offer message',
+        'owner.offerMessagePlaceholder': 'Explain the offer',
+        'owner.offerSalary': 'Salary (optional)',
+        'owner.offerSalaryPlaceholder': 'Amount',
+        'owner.offerStartDate': 'Start date (optional)',
+        'owner.addStartDate': 'Choose start date',
+        'owner.checkActionTitle': 'Check the details',
+        'owner.offerMessageRequired': 'Add a message explaining the offer.',
+        'owner.interviewCreated': 'Interview invitation sent',
+        'owner.offerCreated': 'Offer sent',
+        'owner.interviewCreateError': 'Could not send invitation.',
+        'owner.offerCreateError': 'Could not send offer.',
+        'owner.sendingAction': 'Sending…',
+        'owner.interviewTypes.video': 'Video call',
+        'owner.interviewTypes.phone': 'Phone call',
+        'owner.interviewTypes.in_person': 'In person',
         'owner.notYoursTitle': 'This is not your vacancy',
         'owner.notYoursHint': 'Only the person who posted it can see this.',
         'detail.notFound': 'Job not found.',
@@ -60,8 +100,9 @@ jest.mock('react-i18next', () => ({
 
 let mockTenantSlug = 'hour-timebank';
 let mockCurrentUserId = 2;
+let mockJobConfig: Record<string, unknown> = {};
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: mockTenantSlug }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { slug: mockTenantSlug, currency: 'EUR', job_config: mockJobConfig }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 jest.mock('@/lib/hooks/useAuth', () => ({
@@ -91,6 +132,15 @@ jest.mock('@/lib/hooks/useApi', () => ({
 jest.mock('@/lib/api/jobs', () => ({
   getJobApplications: jest.fn(),
   updateJobApplication: jest.fn().mockResolvedValue({ data: { message: 'Updated' } }),
+  proposeJobInterview: jest.fn().mockResolvedValue({ data: { id: 81 } }),
+  createJobOffer: jest.fn().mockResolvedValue({ data: { id: 91 } }),
+  cancelJobInterview: jest.fn().mockResolvedValue(undefined),
+  withdrawJobOffer: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('@/lib/jobHiringActionOperation', () => ({
+  reserveJobHiringActionOperation: jest.fn().mockResolvedValue({ storageKey: 'job-op', key: 'job-key-123', createdAt: 1 }),
+  completeJobHiringActionOperation: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/lib/haptics', () => ({
@@ -127,7 +177,14 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
 });
 
 import JobPipelineScreen from './job-pipeline';
-import { getJobApplications, updateJobApplication } from '@/lib/api/jobs';
+import {
+  cancelJobInterview,
+  createJobOffer,
+  getJobApplications,
+  proposeJobInterview,
+  updateJobApplication,
+  withdrawJobOffer,
+} from '@/lib/api/jobs';
 import { ApiResponseError } from '@/lib/api/client';
 import * as Haptics from '@/lib/haptics';
 
@@ -153,6 +210,7 @@ const applications = [
 beforeEach(() => {
   mockTenantSlug = 'hour-timebank';
   mockCurrentUserId = 2;
+  mockJobConfig = {};
   jest.clearAllMocks();
   mockUseApi.mockReturnValue({
     data: { data: applications },
@@ -238,6 +296,109 @@ describe('JobPipelineScreen', () => {
     expect(getByTestId('pipeline-advance-45')).toBeTruthy();
     expect(getByTestId('pipeline-move-accepted-45')).toBeTruthy();
     expect(getByTestId('pipeline-reject-45')).toBeTruthy();
+  });
+
+  it('exposes real interview and offer actions separately from pipeline stage labels', () => {
+    const screen = render(<JobPipelineScreen />);
+
+    expect(screen.getByTestId('pipeline-schedule-interview-44')).toBeTruthy();
+    expect(screen.getByTestId('pipeline-create-offer-44')).toBeTruthy();
+  });
+
+  it('hides employer actions disabled by the community configuration', () => {
+    mockJobConfig = {
+      'jobs.enable_interview_scheduling': false,
+      'jobs.enable_offers': false,
+    };
+    const screen = render(<JobPipelineScreen />);
+
+    expect(screen.queryByTestId('pipeline-schedule-interview-44')).toBeNull();
+    expect(screen.queryByTestId('pipeline-create-offer-44')).toBeNull();
+  });
+
+  it('shows current hiring actions and confirms cancellation or withdrawal', async () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({
+      data: {
+        data: [{
+          ...applications[0],
+          interview: {
+            id: 81,
+            scheduled_at: '2026-10-01T10:00:00Z',
+            interview_type: 'video',
+            status: 'proposed',
+            duration_mins: 60,
+            location_notes: null,
+          },
+          offer: {
+            id: 91,
+            salary_offered: null,
+            salary_currency: null,
+            salary_type: null,
+            start_date: null,
+            message: 'Please join us.',
+            status: 'pending',
+          },
+        }],
+      },
+      isLoading: false,
+      error: null,
+      refresh,
+    });
+    const screen = render(<JobPipelineScreen />);
+
+    fireEvent.press(screen.getByTestId('pipeline-cancel-interview-44'));
+    fireEvent.press(screen.getByTestId('pipeline-confirm-cancel-interview-44'));
+    await waitFor(() => expect(cancelJobInterview).toHaveBeenCalledWith(81));
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
+
+    fireEvent.press(screen.getByTestId('pipeline-withdraw-offer-44'));
+    fireEvent.press(screen.getByTestId('pipeline-confirm-withdraw-offer-44'));
+    await waitFor(() => expect(withdrawJobOffer).toHaveBeenCalledWith(91));
+  });
+
+  it('sends an interview through the safe-area action sheet with a durable receipt key', async () => {
+    const screen = render(<JobPipelineScreen />);
+    fireEvent.press(screen.getByTestId('pipeline-schedule-interview-44'));
+    fireEvent.press(await screen.findByTestId('hiring-action-submit'));
+
+    await waitFor(() => expect(proposeJobInterview).toHaveBeenCalledWith(44, expect.objectContaining({
+      interview_type: 'video',
+      duration_mins: 60,
+      idempotency_key: 'job-key-123',
+    })));
+  });
+
+  it('stacks hiring sheet actions at large text so labels remain readable', () => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
+      width: 360,
+      height: 800,
+      scale: 1,
+      fontScale: 2,
+    });
+    try {
+      const screen = render(<JobPipelineScreen />);
+      fireEvent.press(screen.getByTestId('pipeline-schedule-interview-44'));
+
+      expect(screen.getByTestId('hiring-action-cancel')).toHaveStyle({ flexBasis: '100%' });
+      expect(screen.getByTestId('hiring-action-submit')).toHaveStyle({ flexBasis: '100%' });
+    } finally {
+      dimensions.mockRestore();
+    }
+  });
+
+  it('requires terms before sending a formal offer', async () => {
+    const screen = render(<JobPipelineScreen />);
+    fireEvent.press(screen.getByTestId('pipeline-create-offer-44'));
+    fireEvent.press(await screen.findByTestId('hiring-action-submit'));
+    expect(createJobOffer).not.toHaveBeenCalled();
+
+    fireEvent.changeText(screen.getByLabelText('Offer message'), 'We would like you to join us.');
+    fireEvent.press(screen.getByTestId('hiring-action-submit'));
+    await waitFor(() => expect(createJobOffer).toHaveBeenCalledWith(44, expect.objectContaining({
+      message: 'We would like you to join us.',
+      idempotency_key: 'job-key-123',
+    })));
   });
 
   it('🔴 asks before rejecting an applicant', async () => {

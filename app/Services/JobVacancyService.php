@@ -1423,12 +1423,45 @@ class JobVacancyService
             ->orderByDesc('created_at')
             ->get();
 
+        $applicationIds = $applications->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $interviewsByApplication = empty($applicationIds) ? collect() : DB::table('job_interviews')
+            ->where('tenant_id', TenantContext::getId())
+            ->whereIn('application_id', $applicationIds)
+            ->orderByDesc('id')
+            ->get([
+                'id', 'application_id', 'scheduled_at', 'interview_type', 'status',
+                'duration_mins', 'location_notes',
+            ])
+            ->unique('application_id')
+            ->keyBy('application_id');
+        $offersByApplication = empty($applicationIds) ? collect() : DB::table('job_offers')
+            ->where('tenant_id', TenantContext::getId())
+            ->whereIn('application_id', $applicationIds)
+            ->get([
+                'id', 'application_id', 'salary_offered', 'salary_currency',
+                'salary_type', 'start_date', 'message', 'details', 'status',
+                'expires_at', 'responded_at',
+            ])
+            ->keyBy('application_id');
+
         $candidateNumber = 0;
 
         return $applications
-            ->map(function ($app) use ($isBlindHiring, &$candidateNumber) {
+            ->map(function ($app) use ($isBlindHiring, &$candidateNumber, $interviewsByApplication, $offersByApplication) {
                 $data = $app->toArray();
                 $candidateNumber++;
+
+                $interview = $interviewsByApplication->get((int) $app->id);
+                $offer = $offersByApplication->get((int) $app->id);
+                $data['interview'] = $interview ? (array) $interview : null;
+                if ($offer) {
+                    $offerData = (array) $offer;
+                    $offerData['message'] = $offerData['message'] ?: ($offerData['details'] ?? null);
+                    unset($offerData['details']);
+                    $data['offer'] = $offerData;
+                } else {
+                    $data['offer'] = null;
+                }
 
                 if ($isBlindHiring) {
                     unset($data['user_id'], $data['message'], $data['cv_path'], $data['cv_filename'], $data['cv_size']);
