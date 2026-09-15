@@ -58,9 +58,14 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+let mockTenantSlug = 'hour-timebank';
+let mockCurrentUserId = 2;
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { slug: mockTenantSlug }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
+}));
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: mockCurrentUserId } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -123,6 +128,7 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
 
 import JobPipelineScreen from './job-pipeline';
 import { updateJobApplication } from '@/lib/api/jobs';
+import * as Haptics from '@/lib/haptics';
 
 const applications = [
   {
@@ -144,6 +150,8 @@ const applications = [
 ];
 
 beforeEach(() => {
+  mockTenantSlug = 'hour-timebank';
+  mockCurrentUserId = 2;
   jest.clearAllMocks();
   mockUseApi.mockReturnValue({
     data: { data: applications },
@@ -154,6 +162,32 @@ beforeEach(() => {
 });
 
 describe('JobPipelineScreen', () => {
+  it('resets candidate state when the active account is replaced on the same route', () => {
+    const screen = render(<JobPipelineScreen />);
+    fireEvent.press(screen.getByTestId('pipeline-stage-interview'));
+    expect(screen.getByText('Mika Interview')).toBeTruthy();
+    expect(screen.queryByText('Ava Candidate')).toBeNull();
+
+    mockCurrentUserId = 77;
+    screen.rerender(<JobPipelineScreen />);
+
+    expect(screen.getByText('Ava Candidate')).toBeTruthy();
+    expect(screen.queryByText('Mika Interview')).toBeNull();
+  });
+
+  it('does not deliver an old candidate decision after account replacement', async () => {
+    let resolve!: (value: { data: { message: string } }) => void;
+    (updateJobApplication as jest.Mock).mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+    const screen = render(<JobPipelineScreen />);
+    fireEvent.press(screen.getByTestId('pipeline-advance-44'));
+
+    mockCurrentUserId = 77;
+    screen.rerender(<JobPipelineScreen />);
+    await act(async () => { resolve({ data: { message: 'Updated' } }); });
+
+    expect(Haptics.notificationAsync).not.toHaveBeenCalled();
+  });
+
   it('sends only one candidate move for rapid conflicting actions', async () => {
     const screen = render(<JobPipelineScreen />);
     await act(async () => {

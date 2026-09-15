@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -19,8 +19,9 @@ import { getJobApplications, updateJobApplication } from '@/lib/api/jobs';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import type { JobOwnerApplication } from '@/lib/api/jobs';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { withAlpha } from '@/lib/utils/color';
 import * as Haptics from '@/lib/haptics';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -38,6 +39,13 @@ const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'in
 type PipelineStatus = (typeof PIPELINE_COLUMNS)[number];
 
 function JobPipelineScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <JobPipelineContent key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id}`} />;
+}
+
+function JobPipelineContent() {
   const { t } = useTranslation(['jobs', 'common']);
   const { id } = useLocalSearchParams<{ id: string }>();
   const primary = usePrimaryColor();
@@ -285,6 +293,11 @@ function PipelineApplicationCard({
   const { confirm, confirmDialog } = useConfirm();
   const [isUpdating, setIsUpdating] = useState(false);
   const movePending = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const applicantName = application.applicant?.name?.trim() || t('owner.unknownApplicant');
   const currentStatus = normalizeStatus(application.stage ?? application.status);
   const terminal = ['accepted', 'rejected', 'withdrawn'].includes(currentStatus);
@@ -325,13 +338,16 @@ function PipelineApplicationCard({
     setIsUpdating(true);
     try {
       await updateJobApplication(application.id, { status });
+      if (!mountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
       onUpdated();
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('owner.updateError')), variant: 'danger' });
     } finally {
       movePending.current = false;
-      setIsUpdating(false);
+      if (mountedRef.current) setIsUpdating(false);
     }
   }
 

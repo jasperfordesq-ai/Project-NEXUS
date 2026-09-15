@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native hiring pipeline now follows the active account and community.** Replacing a signed-in account while a vacancy pipeline is open clears the previous owner’s selected stage and candidate view, starts the new route lifecycle, and discards late decision feedback or refreshes from the ended account.
+
 - **Native job applications now close on an already-open screen at the server-defined deadline.** The jobs API returns the exact cutoff and the server time used to evaluate it, so Android and iOS can disable an open application sheet at the correct instant without guessing from the phone's timezone. The screen preserves the member's draft while locking submission and editing after closure.
 
 - **Native realtime now recovers after a transient configuration failure at startup.** Returning the app to the foreground retries the full realtime setup when no client could be created, instead of attempting to reconnect a client that never existed and leaving live messages disabled until another sign-in.
