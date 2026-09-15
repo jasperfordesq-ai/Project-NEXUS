@@ -7,7 +7,6 @@
 namespace App\Services;
 
 use App\Core\EmailTemplateBuilder;
-use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
@@ -15,7 +14,6 @@ use App\Models\JobApplication;
 use App\Models\JobInterview;
 use App\Models\JobVacancy;
 use App\Models\Notification;
-use App\Models\Tenant;
 use App\Services\RealtimeService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -74,55 +72,41 @@ class JobInterviewService
                 'job_interview_proposal',
             );
 
-            $interview = JobInterview::create([
-                'tenant_id'      => $tenantId,
-                'vacancy_id'     => (int) $application->vacancy_id,
-                'application_id' => $applicationId,
-                'proposed_by'    => $proposedByUserId,
-                'interview_type' => $data['interview_type'] ?? 'video',
-                'scheduled_at'   => $data['scheduled_at'],
-                'duration_mins'  => isset($data['duration_mins']) ? (int) $data['duration_mins'] : 60,
-                'location_notes' => $data['location_notes'] ?? null,
-                'status'         => 'proposed',
-            ]);
-
-            // Notify the candidate
-            try {
-                $candidateId = (int) $application->user_id;
-                $candidate = DB::table('users')
-                    ->where('id', $candidateId)
+            $candidateId = (int) $application->user_id;
+            $interview = DB::transaction(function () use ($tenantId, $application, $applicationId, $proposedByUserId, $candidateId, $data): JobInterview|false {
+                $vacancy = JobVacancy::where('id', (int) $application->vacancy_id)
                     ->where('tenant_id', $tenantId)
-                    ->select(['id', 'preferred_language'])
+                    ->lockForUpdate()
                     ->first();
+                $lockedApplication = JobApplication::where('id', $applicationId)
+                    ->where('tenant_id', $tenantId)
+                    ->where('vacancy_id', (int) $application->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$vacancy || !$lockedApplication
+                    || (int) $vacancy->user_id !== $proposedByUserId
+                    || (int) $lockedApplication->user_id !== $candidateId
+                    || in_array((string) ($lockedApplication->stage ?? $lockedApplication->status), ['accepted', 'rejected', 'withdrawn'], true)
+                    || (string) $vacancy->status === 'filled') {
+                    return false;
+                }
+                $created = JobInterview::create([
+                    'tenant_id'      => $tenantId,
+                    'vacancy_id'     => (int) $application->vacancy_id,
+                    'application_id' => $applicationId,
+                    'proposed_by'    => $proposedByUserId,
+                    'interview_type' => $data['interview_type'] ?? 'video',
+                    'scheduled_at'   => $data['scheduled_at'],
+                    'duration_mins'  => isset($data['duration_mins']) ? (int) $data['duration_mins'] : 60,
+                    'location_notes' => $data['location_notes'] ?? null,
+                    'status'         => 'proposed',
+                ]);
+                JobHiringDeliveryService::record($tenantId, 'interview_proposed', (int) $created->id, $candidateId);
+                return $created;
+            });
+            if ($interview === false) return false;
 
-                LocaleContext::withLocale($candidate, function () use ($application, $candidateId) {
-                    $jobTitle = $application->vacancy->title ?? __('emails.common.fallback_job');
-                    $interviewMsg = __('emails_misc.jobs.interview_requested', ['title' => $jobTitle]);
-                    Notification::createNotification(
-                        $candidateId,
-                        $interviewMsg,
-                        "/jobs/{$application->vacancy_id}",
-                        'job_application'
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $candidateId, 'job_application', $interviewMsg, "/jobs/{$application->vacancy_id}");
-                    RealtimeService::broadcastOnly($candidateId, $interviewMsg, [
-                        'type'      => 'job_interview_proposed',
-                        'job_id'    => (int) $application->vacancy_id,
-                        'job_title' => $jobTitle,
-                        'message'   => $interviewMsg,
-                        'url'       => "/jobs/{$application->vacancy_id}",
-                    ]);
-                    static::sendInterviewEmail(
-                        $candidateId,
-                        'emails_misc.jobs.interview_email_subject_proposed',
-                        'emails_misc.jobs.interview_requested',
-                        ['title' => $jobTitle],
-                        "/jobs/{$application->vacancy_id}"
-                    );
-                });
-            } catch (\Throwable $e) {
-                Log::warning('JobInterviewService::propose notification failed: ' . $e->getMessage());
-            }
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_proposed', (int) $interview->id, $candidateId, true);
 
             return $interview->toArray();
         } catch (SafeguardingPolicyException $e) {
@@ -158,7 +142,10 @@ class JobInterviewService
             }
 
             if ($interview->status !== 'proposed') {
-                return $interview->status === 'accepted';
+                if ($interview->status !== 'accepted') return false;
+                $posterId = (int) ($interview->application->vacancy->user_id ?? 0);
+                app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_accepted', $interviewId, $posterId, true);
+                return true;
             }
 
             $posterId = (int) ($interview->application->vacancy->user_id ?? 0);
@@ -208,51 +195,14 @@ class JobInterviewService
                     'status' => 'accepted',
                     'candidate_notes' => $notes ? trim($notes) : null,
                 ]);
+                JobHiringDeliveryService::record($tenantId, 'interview_accepted', (int) $lockedInterview->id, (int) $vacancy->user_id);
                 return true;
             }, 3);
             if (!$accepted) {
                 return false;
             }
 
-            // Notify the job poster
-            try {
-                $posterId = $interview->application->vacancy->user_id ?? null;
-                if ($posterId) {
-                    $poster = DB::table('users')
-                        ->where('id', (int) $posterId)
-                        ->where('tenant_id', $tenantId)
-                        ->select(['id', 'preferred_language'])
-                        ->first();
-
-                    LocaleContext::withLocale($poster, function () use ($interview, $posterId) {
-                        $jobTitle = $interview->application->vacancy->title ?? __('emails.common.fallback_job');
-                        $acceptMsg = __('emails_misc.jobs.interview_accepted', ['title' => $jobTitle]);
-                        Notification::createNotification(
-                            (int) $posterId,
-                            $acceptMsg,
-                            "/jobs/{$interview->vacancy_id}#applications",
-                            'job_application_status'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', $acceptMsg, "/jobs/{$interview->vacancy_id}#applications");
-                        RealtimeService::broadcastOnly((int) $posterId, $acceptMsg, [
-                            'type'      => 'job_interview_accepted',
-                            'job_id'    => (int) $interview->vacancy_id,
-                            'job_title' => $jobTitle,
-                            'message'   => $acceptMsg,
-                            'url'       => "/jobs/{$interview->vacancy_id}#applications",
-                        ]);
-                        static::sendInterviewEmail(
-                            (int) $posterId,
-                            'emails_misc.jobs.interview_email_subject_accepted',
-                            'emails_misc.jobs.interview_accepted',
-                            ['title' => $jobTitle],
-                            "/jobs/{$interview->vacancy_id}#applications"
-                        );
-                    });
-                }
-            } catch (\Throwable $e) {
-                Log::warning('JobInterviewService::accept notification failed: ' . $e->getMessage());
-            }
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_accepted', $interviewId, $posterId, true);
 
             return true;
         } catch (SafeguardingPolicyException $e) {
@@ -288,7 +238,10 @@ class JobInterviewService
             }
 
             if ($interview->status !== 'proposed') {
-                return $interview->status === 'declined';
+                if ($interview->status !== 'declined') return false;
+                $posterId = (int) ($interview->application->vacancy->user_id ?? 0);
+                app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_declined', $interviewId, $posterId, true);
+                return true;
             }
 
             $posterId = (int) ($interview->application->vacancy->user_id ?? 0);
@@ -332,51 +285,14 @@ class JobInterviewService
                     'status' => 'declined',
                     'candidate_notes' => $notes ? trim($notes) : null,
                 ]);
+                JobHiringDeliveryService::record($tenantId, 'interview_declined', (int) $lockedInterview->id, (int) $vacancy->user_id);
                 return true;
             }, 3);
             if (!$declined) {
                 return false;
             }
 
-            // Notify the job poster
-            try {
-                $posterId = $interview->application->vacancy->user_id ?? null;
-                if ($posterId) {
-                    $poster = DB::table('users')
-                        ->where('id', (int) $posterId)
-                        ->where('tenant_id', $tenantId)
-                        ->select(['id', 'preferred_language'])
-                        ->first();
-
-                    LocaleContext::withLocale($poster, function () use ($interview, $posterId) {
-                        $jobTitle = $interview->application->vacancy->title ?? __('emails.common.fallback_job');
-                        $declineMsg = __('emails_misc.jobs.interview_declined', ['title' => $jobTitle]);
-                        Notification::createNotification(
-                            (int) $posterId,
-                            $declineMsg,
-                            "/jobs/{$interview->vacancy_id}#applications",
-                            'job_application_status'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', $declineMsg, "/jobs/{$interview->vacancy_id}#applications");
-                        RealtimeService::broadcastOnly((int) $posterId, $declineMsg, [
-                            'type'      => 'job_interview_declined',
-                            'job_id'    => (int) $interview->vacancy_id,
-                            'job_title' => $jobTitle,
-                            'message'   => $declineMsg,
-                            'url'       => "/jobs/{$interview->vacancy_id}#applications",
-                        ]);
-                        static::sendInterviewEmail(
-                            (int) $posterId,
-                            'emails_misc.jobs.interview_email_subject_declined',
-                            'emails_misc.jobs.interview_declined',
-                            ['title' => $jobTitle],
-                            "/jobs/{$interview->vacancy_id}#applications"
-                        );
-                    });
-                }
-            } catch (\Throwable $e) {
-                Log::warning('JobInterviewService::decline notification failed: ' . $e->getMessage());
-            }
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_declined', $interviewId, $posterId, true);
 
             return true;
         } catch (\Throwable $e) {
@@ -457,50 +373,37 @@ class JobInterviewService
             }
 
             if (in_array($interview->status, ['completed', 'cancelled'], true)) {
-                return false;
+                if ($interview->status !== 'cancelled') return false;
+                $candidateId = (int) ($interview->application->user_id ?? 0);
+                app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_cancelled', $interviewId, $candidateId, true);
+                return true;
             }
 
-            $interview->update(['status' => 'cancelled']);
-
-            // Notify the candidate
-            try {
-                $candidateId = $interview->application->user_id ?? null;
-                if ($candidateId) {
-                    $candidate = DB::table('users')
-                        ->where('id', (int) $candidateId)
-                        ->where('tenant_id', $tenantId)
-                        ->select(['id', 'preferred_language'])
-                        ->first();
-
-                    LocaleContext::withLocale($candidate, function () use ($interview, $candidateId) {
-                        $jobTitle = $interview->application->vacancy->title ?? __('emails.common.fallback_job');
-                        $cancelMsg = __('emails_misc.jobs.interview_cancelled', ['title' => $jobTitle]);
-                        Notification::createNotification(
-                            (int) $candidateId,
-                            $cancelMsg,
-                            "/jobs/{$interview->vacancy_id}",
-                            'job_application_status'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $candidateId, 'job_application_status', $cancelMsg, "/jobs/{$interview->vacancy_id}");
-                        RealtimeService::broadcastOnly((int) $candidateId, $cancelMsg, [
-                            'type'      => 'job_interview_cancelled',
-                            'job_id'    => (int) $interview->vacancy_id,
-                            'job_title' => $jobTitle,
-                            'message'   => $cancelMsg,
-                            'url'       => "/jobs/{$interview->vacancy_id}",
-                        ]);
-                        static::sendInterviewEmail(
-                            (int) $candidateId,
-                            'emails_misc.jobs.interview_email_subject_cancelled',
-                            'emails_misc.jobs.interview_cancelled',
-                            ['title' => $jobTitle],
-                            "/jobs/{$interview->vacancy_id}"
-                        );
-                    });
+            $candidateId = (int) ($interview->application->user_id ?? 0);
+            $cancelled = DB::transaction(function () use ($interview, $interviewId, $tenantId, $candidateId): bool {
+                $vacancy = JobVacancy::where('id', (int) $interview->vacancy_id)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                $application = JobApplication::where('id', (int) $interview->application_id)
+                    ->where('tenant_id', $tenantId)
+                    ->where('vacancy_id', (int) $interview->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                $lockedInterview = JobInterview::where('id', $interviewId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$vacancy || !$application || !$lockedInterview
+                    || !in_array((string) $lockedInterview->status, ['proposed', 'accepted'], true)) {
+                    return false;
                 }
-            } catch (\Throwable $e) {
-                Log::warning('JobInterviewService::cancel notification failed: ' . $e->getMessage());
-            }
+                $lockedInterview->update(['status' => 'cancelled']);
+                JobHiringDeliveryService::record($tenantId, 'interview_cancelled', (int) $lockedInterview->id, $candidateId);
+                return true;
+            }, 3);
+            if (!$cancelled) return false;
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'interview_cancelled', $interviewId, $candidateId, true);
 
             return true;
         } catch (\Throwable $e) {

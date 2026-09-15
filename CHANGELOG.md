@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Job offers and interviews now retain their member notifications after a transient failure.** Each committed offer or interview action writes a payload-free delivery fact in the same transaction; a scheduled worker resumes unfinished bell, push, realtime and interview-email steps with bounded retry and dead-letter state. Exact accepted/declined/cancelled/withdrawn replays retry the pending delivery, while vacancy, application and action locks prevent stale creation or withdrawal from racing a terminal hiring decision.
+
 - **Listing-linked message threads and exchange requests now stay usable on Android.** The compact thread context link stretches across the conversation instead of collapsing into a tall narrow block over the messages, and Request exchange keeps its wrapping Cancel and Send actions in the shared safe-area-aware sheet footer above the system navigation bar.
 
 - **Native candidates can now see and safely answer real interview invitations and job offers.** My Applications includes the current candidate action state without exposing private interviewer notes, and unanswered mobile writes use an exact authoritative readback before reporting success. Vacancy, application, offer and interview decisions now share a lock order so simultaneous employer and candidate actions have one outcome; terminal decisions also close stale offers and interviews, while accepted offers record application history.

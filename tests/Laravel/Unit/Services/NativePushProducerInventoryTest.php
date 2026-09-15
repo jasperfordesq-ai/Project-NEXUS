@@ -35,6 +35,7 @@ class NativePushProducerInventoryTest extends TestCase
         $paths = [
             base_path('app/Listeners/NotifyJobAlertSubscribers.php'),
             base_path('app/Services/JobApplicationDecisionDeliveryService.php'),
+            base_path('app/Services/JobHiringDeliveryService.php'),
             base_path('app/Services/JobInterviewService.php'),
             base_path('app/Services/JobOfferService.php'),
             base_path('app/Services/JobVacancyService.php'),
@@ -45,8 +46,8 @@ class NativePushProducerInventoryTest extends TestCase
         ));
 
         self::assertStringNotContainsString('RealtimeService::broadcastAndPush(', $source);
-        self::assertSame(13, substr_count($source, 'RealtimeService::broadcastOnly('));
-        self::assertGreaterThanOrEqual(13, substr_count($source, 'NotificationDispatcher::fanOutPush('));
+        self::assertSame(5, substr_count($source, 'RealtimeService::broadcastOnly('));
+        self::assertGreaterThanOrEqual(5, substr_count($source, 'NotificationDispatcher::fanOutPush('));
     }
 
     public function test_every_dispatcher_helper_that_reaches_native_push_is_a_known_entry_point(): void

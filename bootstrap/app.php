@@ -226,6 +226,14 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('jobs-process-application-decision-outbox');
 
+        // Offer and interview actions commit with a durable member-delivery
+        // fact so partial bell, push, realtime or email failures can resume.
+        $schedule->command('jobs:process-hiring-delivery-outbox --limit=100')
+            ->everyMinute()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->name('jobs-process-hiring-delivery-outbox');
+
         // Retry durable podcast storage deletions. Domain rows never lose the
         // last object pointer before this ledger confirms cleanup succeeded.
         $schedule->command('podcasts:dispatch-media-cleanup --limit=100')

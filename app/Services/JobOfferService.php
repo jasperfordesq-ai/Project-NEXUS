@@ -8,13 +8,10 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
-use App\I18n\LocaleContext;
 use App\Models\JobApplication;
 use App\Models\JobApplicationHistory;
 use App\Models\JobOffer;
 use App\Models\JobVacancy;
-use App\Models\Notification;
-use App\Services\RealtimeService;
 use App\Services\WebhookDispatchService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -81,47 +78,42 @@ class JobOfferService
                 'job_offer',
             );
 
-            $offer = JobOffer::create([
-                'tenant_id'      => $tenantId,
-                'vacancy_id'     => (int) $application->vacancy_id,
-                'application_id' => $applicationId,
-                'user_id'        => (int) $application->user_id,
-                'salary_offered' => isset($data['salary_offered']) ? (float) $data['salary_offered'] : null,
-                'start_date'     => $data['start_date'] ?? null,
-                'details'        => isset($data['message']) ? trim($data['message']) : (isset($data['details']) ? trim($data['details']) : null),
-                'status'         => 'pending',
-                'expires_at'     => $data['expires_at'] ?? null,
-            ]);
-
-            // Notify the candidate
-            try {
-                $candidateId = (int) $application->user_id;
-                $candidate = DB::table('users')
-                    ->where('id', $candidateId)
+            $candidateId = (int) $application->user_id;
+            $offer = DB::transaction(function () use ($tenantId, $application, $applicationId, $employerUserId, $candidateId, $data): JobOffer|false {
+                $vacancy = JobVacancy::where('id', (int) $application->vacancy_id)
                     ->where('tenant_id', $tenantId)
-                    ->select(['id', 'preferred_language'])
+                    ->lockForUpdate()
                     ->first();
+                $lockedApplication = JobApplication::where('id', $applicationId)
+                    ->where('tenant_id', $tenantId)
+                    ->where('vacancy_id', (int) $application->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$vacancy || !$lockedApplication
+                    || (int) $vacancy->user_id !== $employerUserId
+                    || (int) $lockedApplication->user_id !== $candidateId
+                    || in_array((string) ($lockedApplication->stage ?? $lockedApplication->status), ['accepted', 'rejected', 'withdrawn'], true)
+                    || (string) $vacancy->status === 'filled'
+                    || JobOffer::where('application_id', $applicationId)->exists()) {
+                    return false;
+                }
+                $created = JobOffer::create([
+                    'tenant_id'      => $tenantId,
+                    'vacancy_id'     => (int) $application->vacancy_id,
+                    'application_id' => $applicationId,
+                    'user_id'        => $candidateId,
+                    'salary_offered' => isset($data['salary_offered']) ? (float) $data['salary_offered'] : null,
+                    'start_date'     => $data['start_date'] ?? null,
+                    'details'        => isset($data['message']) ? trim($data['message']) : (isset($data['details']) ? trim($data['details']) : null),
+                    'status'         => 'pending',
+                    'expires_at'     => $data['expires_at'] ?? null,
+                ]);
+                JobHiringDeliveryService::record($tenantId, 'offer_received', (int) $created->id, $candidateId);
+                return $created;
+            });
+            if ($offer === false) return false;
 
-                LocaleContext::withLocale($candidate, function () use ($application, $candidateId) {
-                    $jobTitle = $application->vacancy->title ?? __('emails.common.fallback_job');
-                    Notification::createNotification(
-                        $candidateId,
-                        __('svc_notifications.job_offer.received_bell', ['title' => $jobTitle]),
-                        "/jobs/{$application->vacancy_id}",
-                        'job_application_status'
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $candidateId, 'job_application_status', __('svc_notifications.job_offer.received_bell', ['title' => $jobTitle]), "/jobs/{$application->vacancy_id}");
-                    RealtimeService::broadcastOnly($candidateId, __('svc_notifications.job_offer.received_push_title'), [
-                        'type'      => 'job_offer_received',
-                        'job_id'    => (int) $application->vacancy_id,
-                        'job_title' => $jobTitle,
-                        'message'   => __('svc_notifications.job_offer.received_push_message', ['title' => $jobTitle]),
-                        'url'       => "/jobs/{$application->vacancy_id}",
-                    ]);
-                });
-            } catch (\Throwable $e) {
-                Log::warning('JobOfferService::create notification failed: ' . $e->getMessage());
-            }
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_received', (int) $offer->id, $candidateId, true);
 
             return $offer->toArray();
         } catch (SafeguardingPolicyException $e) {
@@ -158,7 +150,13 @@ class JobOfferService
             }
 
             if ($offer->status !== 'pending') {
-                return $offer->status === 'accepted';
+                if ($offer->status !== 'accepted') return false;
+                $posterId = (int) ($offer->application->vacancy->user_id ?? 0);
+                app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_accepted', $offerId, $posterId, true);
+                if ($offer->application->vacancy->type === 'timebank' && (float) $offer->application->vacancy->time_credits > 0) {
+                    app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_credits_earned', $offerId, $candidateUserId, true);
+                }
+                return true;
             }
 
             // Check if the offer has expired
@@ -270,6 +268,8 @@ class JobOfferService
                     ->where('status', 'pending')
                     ->update(['status' => 'withdrawn', 'responded_at' => now()]);
 
+                JobHiringDeliveryService::record($tenantId, 'offer_accepted', (int) $lockedOffer->id, (int) $vacancy->user_id);
+
                 // Auto-credit time credits for timebank jobs. Runs exactly once: the
                 // pending→accepted transition above is serialized by the vacancy lock.
                 if ($vacancy->type === 'timebank' && (float) $vacancy->time_credits > 0) {
@@ -308,6 +308,8 @@ class JobOfferService
                         ->where('tenant_id', $tenantId)
                         ->decrement('balance', $creditAmount);
 
+                    JobHiringDeliveryService::record($tenantId, 'offer_credits_earned', (int) $lockedOffer->id, $candidateId);
+
                     return [
                         'candidate_id'  => $candidateId,
                         'credit_amount' => $creditAmount,
@@ -323,70 +325,10 @@ class JobOfferService
                 return false;
             }
 
-            // Notify the candidate about their earned credits (post-commit).
+            $posterId = (int) ($offer->application->vacancy->user_id ?? 0);
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_accepted', $offerId, $posterId, true);
             if (is_array($creditInfo)) {
-                try {
-                    $candidateId  = (int) $creditInfo['candidate_id'];
-                    $creditAmount = $creditInfo['credit_amount'];
-                    $jobTitle     = $creditInfo['job_title'];
-
-                    $candidate = DB::table('users')
-                        ->where('id', $candidateId)
-                        ->where('tenant_id', $tenantId)
-                        ->select(['id', 'preferred_language'])
-                        ->first();
-
-                    LocaleContext::withLocale($candidate, function () use ($candidateId, $creditAmount, $jobTitle) {
-                        Notification::createNotification(
-                            $candidateId,
-                            __('svc_notifications.job_offer.credits_earned_bell', ['amount' => $creditAmount, 'title' => $jobTitle]),
-                            '/wallet',
-                            'transaction'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $candidateId, 'transaction', __('svc_notifications.job_offer.credits_earned_bell', ['amount' => $creditAmount, 'title' => $jobTitle]), '/wallet');
-                        RealtimeService::broadcastOnly($candidateId, __('svc_notifications.job_offer.credits_earned_push_title'), [
-                            'type'      => 'job_completion_credits',
-                            'amount'    => $creditAmount,
-                            'job_title' => $jobTitle,
-                            'message'   => __('svc_notifications.job_offer.credits_earned_push_message', ['amount' => $creditAmount, 'title' => $jobTitle]),
-                            'url'       => '/wallet',
-                        ]);
-                    });
-                } catch (\Throwable $e) {
-                    Log::warning('JobOfferService::accept auto-credit notification failed', ['error' => $e->getMessage()]);
-                }
-            }
-
-            // Notify the job poster
-            try {
-                $posterId = $offer->application->vacancy->user_id ?? null;
-                if ($posterId) {
-                    $poster = DB::table('users')
-                        ->where('id', (int) $posterId)
-                        ->where('tenant_id', $tenantId)
-                        ->select(['id', 'preferred_language'])
-                        ->first();
-
-                    LocaleContext::withLocale($poster, function () use ($offer, $posterId) {
-                        $jobTitle = $offer->application->vacancy->title ?? __('emails.common.fallback_job');
-                        Notification::createNotification(
-                            (int) $posterId,
-                            __('svc_notifications.job_offer.accepted_bell', ['title' => $jobTitle]),
-                            "/jobs/{$offer->vacancy_id}#applications",
-                            'job_application_status'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', __('svc_notifications.job_offer.accepted_bell', ['title' => $jobTitle]), "/jobs/{$offer->vacancy_id}#applications");
-                        RealtimeService::broadcastOnly((int) $posterId, __('svc_notifications.job_offer.accepted_push_title', ['title' => $jobTitle]), [
-                            'type'      => 'job_offer_accepted',
-                            'job_id'    => (int) $offer->vacancy_id,
-                            'job_title' => $jobTitle,
-                            'message'   => __('svc_notifications.job_offer.accepted_push_message', ['title' => $jobTitle]),
-                            'url'       => "/jobs/{$offer->vacancy_id}#applications",
-                        ]);
-                    });
-                }
-            } catch (\Throwable $e) {
-                Log::warning('JobOfferService::accept notification failed: ' . $e->getMessage());
+                app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_credits_earned', $offerId, (int) $creditInfo['candidate_id'], true);
             }
 
             // Dispatch webhook
@@ -434,61 +376,40 @@ class JobOfferService
                 return false;
             }
 
+            $posterId = (int) ($offer->application->vacancy->user_id ?? 0);
+            if ($posterId <= 0) return false;
+
             if ($offer->status !== 'pending') {
-                return $offer->status === 'rejected';
+                if ($offer->status !== 'rejected') return false;
+                app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_rejected', $offerId, $posterId, true);
+                return true;
             }
 
-            $rejected = DB::transaction(function () use ($offer, $offerId, $tenantId): bool {
+            $rejected = DB::transaction(function () use ($offer, $offerId, $tenantId, $posterId): bool {
                 // Match accept's lock order so an accept/reject race has one winner.
-                JobVacancy::where('id', (int) $offer->vacancy_id)->lockForUpdate()->first();
+                $vacancy = JobVacancy::where('id', (int) $offer->vacancy_id)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
                 $lockedOffer = JobOffer::where('id', $offerId)
                     ->where('tenant_id', $tenantId)
                     ->lockForUpdate()
                     ->first();
-                if (!$lockedOffer || $lockedOffer->status !== 'pending') {
+                if (!$vacancy || !$lockedOffer || $lockedOffer->status !== 'pending') {
                     return false;
                 }
                 $lockedOffer->update([
                     'status'       => 'rejected',
                     'responded_at' => now(),
                 ]);
+                JobHiringDeliveryService::record($tenantId, 'offer_rejected', (int) $lockedOffer->id, $posterId);
                 return true;
             });
             if (!$rejected) {
                 return false;
             }
 
-            // Notify the job poster
-            try {
-                $posterId = $offer->application->vacancy->user_id ?? null;
-                if ($posterId) {
-                    $poster = DB::table('users')
-                        ->where('id', (int) $posterId)
-                        ->where('tenant_id', $tenantId)
-                        ->select(['id', 'preferred_language'])
-                        ->first();
-
-                    LocaleContext::withLocale($poster, function () use ($offer, $posterId) {
-                        $jobTitle = $offer->application->vacancy->title ?? __('emails.common.fallback_job');
-                        Notification::createNotification(
-                            (int) $posterId,
-                            __('svc_notifications.job_offer.rejected_bell', ['title' => $jobTitle]),
-                            "/jobs/{$offer->vacancy_id}#applications",
-                            'job_application_status'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $posterId, 'job_application_status', __('svc_notifications.job_offer.rejected_bell', ['title' => $jobTitle]), "/jobs/{$offer->vacancy_id}#applications");
-                        RealtimeService::broadcastOnly((int) $posterId, __('svc_notifications.job_offer.rejected_push_title', ['title' => $jobTitle]), [
-                            'type'      => 'job_offer_rejected',
-                            'job_id'    => (int) $offer->vacancy_id,
-                            'job_title' => $jobTitle,
-                            'message'   => __('svc_notifications.job_offer.rejected_push_message', ['title' => $jobTitle]),
-                            'url'       => "/jobs/{$offer->vacancy_id}#applications",
-                        ]);
-                    });
-                }
-            } catch (\Throwable $e) {
-                Log::warning('JobOfferService::reject notification failed: ' . $e->getMessage());
-            }
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_rejected', $offerId, $posterId, true);
 
             return true;
         } catch (\Throwable $e) {
@@ -522,42 +443,29 @@ class JobOfferService
             }
 
             if (!in_array($offer->status, ['pending'], true)) {
-                return false;
+                if ($offer->status !== 'withdrawn') return false;
+                $candidateId = (int) ($offer->application->user_id ?? 0);
+                app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_withdrawn', $offerId, $candidateId, true);
+                return true;
             }
 
-            $offer->update(['status' => 'withdrawn']);
-
-            // Notify the candidate
-            try {
-                $candidateId = $offer->application->user_id ?? null;
-                if ($candidateId) {
-                    $candidate = DB::table('users')
-                        ->where('id', (int) $candidateId)
-                        ->where('tenant_id', $tenantId)
-                        ->select(['id', 'preferred_language'])
-                        ->first();
-
-                    LocaleContext::withLocale($candidate, function () use ($offer, $candidateId) {
-                        $jobTitle = $offer->application->vacancy->title ?? __('emails.common.fallback_job');
-                        Notification::createNotification(
-                            (int) $candidateId,
-                            __('svc_notifications.job_offer.withdrawn_bell', ['title' => $jobTitle]),
-                            "/jobs/{$offer->vacancy_id}",
-                            'job_application_status'
-                        );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $candidateId, 'job_application_status', __('svc_notifications.job_offer.withdrawn_bell', ['title' => $jobTitle]), "/jobs/{$offer->vacancy_id}");
-                        RealtimeService::broadcastOnly((int) $candidateId, __('svc_notifications.job_offer.withdrawn_push_title', ['title' => $jobTitle]), [
-                            'type'      => 'job_offer_withdrawn',
-                            'job_id'    => (int) $offer->vacancy_id,
-                            'job_title' => $jobTitle,
-                            'message'   => __('svc_notifications.job_offer.withdrawn_push_message', ['title' => $jobTitle]),
-                            'url'       => "/jobs/{$offer->vacancy_id}",
-                        ]);
-                    });
-                }
-            } catch (\Throwable $e) {
-                Log::warning('JobOfferService::withdraw notification failed: ' . $e->getMessage());
-            }
+            $candidateId = (int) ($offer->application->user_id ?? 0);
+            $withdrawn = DB::transaction(function () use ($offer, $offerId, $tenantId, $candidateId): bool {
+                $vacancy = JobVacancy::where('id', (int) $offer->vacancy_id)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                $lockedOffer = JobOffer::where('id', $offerId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$vacancy || !$lockedOffer || $lockedOffer->status !== 'pending') return false;
+                $lockedOffer->update(['status' => 'withdrawn']);
+                JobHiringDeliveryService::record($tenantId, 'offer_withdrawn', (int) $lockedOffer->id, $candidateId);
+                return true;
+            }, 3);
+            if (!$withdrawn) return false;
+            app(JobHiringDeliveryService::class)->dispatchForEvent($tenantId, 'offer_withdrawn', $offerId, $candidateId, true);
 
             return true;
         } catch (\Throwable $e) {
