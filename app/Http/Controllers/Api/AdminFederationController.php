@@ -148,7 +148,18 @@ class AdminFederationController extends BaseApiController
     /** PUT /api/v2/admin/federation/controls */
     public function updateControls(): JsonResponse
     {
-        $adminId = $this->requireSuperAdmin();
+        // 🔴 SECURITY (E-013 O-032). This writes the INSTALLATION-WIDE
+        // federation_system_control row (the external kill switch,
+        // emergency_lockdown, and the platform-global cross_tenant_* toggles),
+        // so it must require a PLATFORM super-admin. requireSuperAdmin() admits
+        // is_tenant_super_admin, which would let a single tenant's super-admin
+        // flip platform-global federation — the "compromised tenant admin becomes
+        // a platform compromise" case requirePlatformSuperAdmin's own doc warns
+        // against, and the gate its routed sibling
+        // AdminSuperController::federationUpdateSystemControls already uses. No
+        // route currently maps here, but the gate must be correct before one ever
+        // does.
+        $adminId = $this->requirePlatformSuperAdmin();
         $data = $this->getAllInput();
 
         $allowedColumns = [
