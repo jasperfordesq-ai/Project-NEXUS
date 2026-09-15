@@ -22,10 +22,12 @@ jest.mock('@/lib/api/client', () => ({
 
 const mockInitRealtime = jest.fn();
 const mockGetRealtimeClient = jest.fn();
+const mockDisconnectRealtime = jest.fn();
 
 jest.mock('@/lib/realtime', () => ({
   initRealtime: (...args: unknown[]) => mockInitRealtime(...args),
   getRealtimeClient: () => mockGetRealtimeClient(),
+  disconnectRealtime: () => mockDisconnectRealtime(),
 }));
 
 const mockRegisterRefreshCallback = jest.fn();
@@ -41,9 +43,13 @@ jest.mock('@/lib/notifications', () => ({
 }));
 
 let mockIsAuthenticated = true;
+let mockUserId = 1;
 
 jest.mock('@/lib/context/AuthContext', () => ({
-  useAuthContext: () => ({ isAuthenticated: mockIsAuthenticated }),
+  useAuthContext: () => ({
+    isAuthenticated: mockIsAuthenticated,
+    user: mockIsAuthenticated ? { id: mockUserId } : null,
+  }),
 }));
 
 // Mock AppState from react-native
@@ -82,6 +88,7 @@ describe('RealtimeContext', () => {
     mockAppStateHandler = undefined;
     mockGetRealtimeClient.mockReturnValue(null);
     mockIsAuthenticated = true;
+    mockUserId = 1;
     // The message badge must come from /messages/unread-count (the real
     // messages.is_read count). `notifications/counts.messages` counts bell rows
     // and is deliberately seeded with a sentinel here: if any test in this file
@@ -301,6 +308,103 @@ describe('RealtimeContext', () => {
     await waitFor(() =>
       expect(mockUnregisterRefreshCallback).toHaveBeenCalled(),
     );
+  });
+
+  it('disconnects the authenticated realtime client on logout', async () => {
+    const { rerender } = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(mockRegisterRefreshCallback).toHaveBeenCalled());
+
+    mockIsAuthenticated = false;
+    rerender({});
+
+    await waitFor(() => expect(mockDisconnectRealtime).toHaveBeenCalled());
+  });
+
+  it('reconnects for a replacement account even when authentication stays true', async () => {
+    const channel = {
+      bind: jest.fn(), unbind_all: jest.fn(), name: 'private-user',
+    };
+    const client = {
+      subscribe: jest.fn(() => channel),
+      unsubscribe: jest.fn(),
+      connection: { state: 'connected' },
+    };
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) return Promise.resolve({ data: { count: 0 } });
+      if (url.includes('/notifications/counts')) return Promise.resolve({ data: { total: 0 } });
+      if (url.includes('/pusher/config')) {
+        return Promise.resolve({ enabled: true, key: 'key', channels: { user: `private-user.${mockUserId}` } });
+      }
+      return Promise.resolve({});
+    });
+    mockInitRealtime.mockReturnValue(client);
+
+    const { rerender } = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(mockInitRealtime).toHaveBeenCalledTimes(1));
+
+    mockUserId = 2;
+    rerender({});
+
+    await waitFor(() => expect(mockInitRealtime).toHaveBeenCalledTimes(2));
+    expect(mockDisconnectRealtime).toHaveBeenCalled();
+  });
+
+  it('does not let account A unread counts overwrite account B', async () => {
+    let releaseOldMessages!: (value: unknown) => void;
+    let servingAccount = 1;
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) {
+        if (servingAccount === 1) {
+          return new Promise((resolve) => { releaseOldMessages = resolve; });
+        }
+        return Promise.resolve({ data: { count: 2 } });
+      }
+      if (url.includes('/notifications/counts')) return Promise.resolve({ data: { total: servingAccount } });
+      if (url.includes('/pusher/config')) return Promise.resolve({ enabled: false, key: null, channels: {} });
+      return Promise.resolve({});
+    });
+
+    const { result, rerender } = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalledWith(
+      expect.stringContaining('/messages/unread-count'),
+    ));
+
+    servingAccount = 2;
+    mockUserId = 2;
+    rerender({});
+    await waitFor(() => expect(result.current.unreadMessages).toBe(2));
+
+    await act(async () => { releaseOldMessages({ data: { count: 9 } }); });
+    expect(result.current.unreadMessages).toBe(2);
+  });
+
+  it('never mirrors account A notification count to the launcher for account B', async () => {
+    let holdAccountB = false;
+    let releaseAccountBNotifications!: (value: unknown) => void;
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) return Promise.resolve({ data: { count: 0 } });
+      if (url.includes('/notifications/counts')) {
+        if (holdAccountB) {
+          return new Promise((resolve) => { releaseAccountBNotifications = resolve; });
+        }
+        return Promise.resolve({ data: { total: 5 } });
+      }
+      if (url.includes('/pusher/config')) return Promise.resolve({ enabled: false, key: null, channels: {} });
+      return Promise.resolve({});
+    });
+
+    const { result, rerender } = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(result.current.unreadNotifications).toBe(5));
+    mockSyncPushBadge.mockClear();
+
+    holdAccountB = true;
+    mockUserId = 2;
+    rerender({});
+
+    expect(mockSyncPushBadge).not.toHaveBeenCalledWith(5);
+    await waitFor(() => expect(mockSyncPushBadge).toHaveBeenCalledWith(0));
+    await act(async () => { releaseAccountBNotifications({ data: { total: 1 } }); });
+    await waitFor(() => expect(result.current.unreadNotifications).toBe(1));
   });
 
   it('reconciles a rotated push token and reconnects realtime on foreground resume', async () => {

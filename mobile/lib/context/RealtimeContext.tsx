@@ -16,7 +16,7 @@ import type { Channel } from 'pusher-js';
 
 import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
-import { initRealtime, getRealtimeClient, type PusherConfig } from '@/lib/realtime';
+import { disconnectRealtime, initRealtime, getRealtimeClient, type PusherConfig } from '@/lib/realtime';
 import { registerForPushNotifications, registerRefreshCallback, syncPushBadge, unregisterRefreshCallback } from '@/lib/notifications';
 import { useAuthContext } from '@/lib/context/AuthContext';
 import { getUnreadMessageCount, type Message } from '@/lib/api/messages';
@@ -76,9 +76,18 @@ const REFRESH_THROTTLE_MS = 30_000;
 const PUSH_REGISTRATION_REFRESH_MS = 30 * 60_000;
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthContext();
-  const [unreadMessages, setUnreadMessages] = useState(0);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const { isAuthenticated, user } = useAuthContext();
+  const sessionIdentity = isAuthenticated && user ? user.id : null;
+  const activeSessionIdentityRef = useRef(sessionIdentity);
+  activeSessionIdentityRef.current = sessionIdentity;
+  const [messageCount, setMessageCount] = useState({ identity: sessionIdentity, count: 0 });
+  const [notificationCount, setNotificationCount] = useState({ identity: sessionIdentity, count: 0 });
+  // Never expose the preceding account's count during the render in which identity
+  // changes. The reset effect runs after render, which is too late for UI and OS badges.
+  const unreadMessages = messageCount.identity === sessionIdentity ? messageCount.count : 0;
+  const unreadNotifications = notificationCount.identity === sessionIdentity
+    ? notificationCount.count
+    : 0;
   const channelRef = useRef<Channel | null>(null);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   /** conversation_id → set of handlers listening for new messages */
@@ -104,7 +113,8 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   // /messages/unread-count for this reason and pins it with its own test —
   // see react-frontend/src/contexts/NotificationsContext.tsx.
   const refreshCounts = useCallback((force = false) => {
-    if (!isAuthenticated) return;
+    if (sessionIdentity === null) return;
+    const requestedFor = sessionIdentity;
     const now = Date.now();
     if (!force && now - lastRefreshRef.current < REFRESH_THROTTLE_MS) return;
     lastRefreshRef.current = now;
@@ -115,42 +125,51 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       api.get<{ data: NotificationCounts }>(`${API_V2}/notifications/counts`),
       getUnreadMessageCount(),
     ]).then(([countsResult, messagesResult]) => {
+      // A valid response still belongs to the account that requested it. Account
+      // replacement can keep `isAuthenticated` true throughout, so boolean auth state
+      // alone cannot stop account A's late badges from appearing for account B.
+      if (activeSessionIdentityRef.current !== requestedFor) return;
       if (countsResult.status === 'fulfilled') {
         const total = countsResult.value?.data?.total;
-        if (typeof total === 'number') setUnreadNotifications(total);
+        if (typeof total === 'number') setNotificationCount({ identity: requestedFor, count: total });
       }
       if (messagesResult.status === 'fulfilled') {
         const count = messagesResult.value?.data?.count;
-        if (typeof count === 'number') setUnreadMessages(count);
+        if (typeof count === 'number') setMessageCount({ identity: requestedFor, count });
       }
       // On failure each badge deliberately keeps its previous value. Falling
       // back to 0 would tell the member they have read everything because the
       // network dropped, which is the same lie in the other direction.
     });
-  }, [isAuthenticated]);
+  }, [sessionIdentity]);
 
   // Seed counts from REST API on initial auth
   useEffect(() => {
-    if (!isAuthenticated) {
-      setUnreadMessages(0);
-      setUnreadNotifications(0);
+    lastRefreshRef.current = 0;
+    setMessageCount({ identity: sessionIdentity, count: 0 });
+    setNotificationCount({ identity: sessionIdentity, count: 0 });
+    if (sessionIdentity === null) {
       return;
     }
     refreshCounts(true);
-  }, [isAuthenticated, refreshCounts]);
+  }, [refreshCounts, sessionIdentity]);
 
   // The API count is authoritative; mirror it to the launcher badge and clear
   // the badge immediately on logout rather than leaving stale OS chrome behind.
   useEffect(() => {
-    void syncPushBadge(isAuthenticated ? unreadNotifications : 0);
-  }, [isAuthenticated, unreadNotifications]);
+    void syncPushBadge(sessionIdentity !== null ? unreadNotifications : 0);
+  }, [sessionIdentity, unreadNotifications]);
 
   // Connect to Pusher — uses cached config to avoid redundant network calls.
   // Only fetches fresh config on first connect or when cache is empty.
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (sessionIdentity === null) {
+      disconnectRealtime();
+      return;
+    }
 
     let mounted = true;
+    pusherConfigRef.current = null;
 
     async function connectPusher() {
       try {
@@ -161,7 +180,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         // /api/v2/pusher/config does not exist (404) and would silently kill realtime.
         if (!config) {
           config = await api.get<PusherConfig>('/api/pusher/config');
-          if (!mounted) return;
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
           pusherConfigRef.current = config;
         }
 
@@ -178,7 +197,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
         // Bump the unread badge and notify any open thread screens
         ch.bind('new-message', (rawPayload: unknown) => {
-          if (!mounted) return;
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
 
           // 🔴 Set by a handler REPORTING that it showed the member the message, not by
           // one merely existing. Every registered handler is still called - a covered thread
@@ -203,7 +222,10 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
           // Bump the badge unless a thread screen the member can actually see took it.
           if (!acknowledgedByViewer) {
-            setUnreadMessages((prev) => prev + 1);
+            setMessageCount((previous) => ({
+              identity: sessionIdentity,
+              count: previous.identity === sessionIdentity ? previous.count + 1 : 1,
+            }));
           }
         });
       } catch {
@@ -220,20 +242,21 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         getRealtimeClient()?.unsubscribe(channelRef.current.name);
         channelRef.current = null;
       }
+      disconnectRealtime();
     };
-  }, [isAuthenticated]);
+  }, [sessionIdentity]);
 
   // Clear Pusher config cache on logout so next login gets fresh config
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (sessionIdentity === null) {
       pusherConfigRef.current = null;
     }
-  }, [isAuthenticated]);
+  }, [sessionIdentity]);
 
   // Foreground resume: refresh counts + reconnect Pusher.
   // Throttled to prevent rapid fire on quick background/foreground cycling.
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (sessionIdentity === null) {
       if (refreshCallbackRegisteredRef.current) {
         unregisterRefreshCallback();
         refreshCallbackRegisteredRef.current = false;
@@ -281,7 +304,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       unregisterRefreshCallback();
       refreshCallbackRegisteredRef.current = false;
     };
-  }, [isAuthenticated, refreshCounts]);
+  }, [refreshCounts, sessionIdentity]);
 
   const subscribeToMessages = useCallback(
     (conversationId: number, handler: MessageHandler): (() => void) => {
