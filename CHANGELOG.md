@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Android release instructions now match the working Play Console upload path.** The procedure records the successful 96 MB browser upload for build 13 and the Windows native-clean ordering failure, avoiding the obsolete 10 MB limitation and a reproducible failed build attempt.
+
 - **Native hiring dates now follow the language selected inside the app.** Interview summaries, the Android interview picker label and offer start dates use the app's regional locale instead of silently falling back to the phone's default language.
 
 - **Fresh installations now include the complete durable hiring workflow schema.** The canonical database snapshot includes the application-decision and hiring-delivery outboxes, interview and offer creation receipts, and their migration records, so clean environments match upgraded installations and the hiring delivery workers can start safely.

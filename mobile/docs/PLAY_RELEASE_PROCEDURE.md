@@ -85,7 +85,14 @@ bash mobile/scripts/build-aab-play.sh --version-code 8
 Output: `mobile/android/app/build/outputs/bundle/release/app-release.aab`
 (~91 MB minified; the build itself took **1m 45s** unminified, **2m 14s** with R8
 on a warm cache, and **5m 44s** with R8 from a cold clean checkout — 2026-09-13,
-version code 11. No EAS quota spent.)
+version code 11. Version code 13 took **5m 55s** with R8 on 2026-09-15. No EAS
+quota spent.)
+
+Do not add Gradle's optional `--clean` step after Expo prebuild on this Windows
+checkout. On version code 13 it reached `externalNativeBuildCleanDebug` before
+React Native had regenerated dependency codegen folders, then failed because the
+autolinking CMake file referenced folders that did not exist. Running the guarded
+command above without `--clean` generated codegen first and completed normally.
 
 That script exists because five separate failures here are silent, and each
 produces a normal-looking `app-release.aab`. It refuses rather than warns:
@@ -236,16 +243,17 @@ internal tester list. Measured again 2026-09-12 (version code 10, 11:48 AM),
 2026-09-13 (**version code 11, 11:40 AM**, same 11-member list) and 2026-09-15
 (**version code 12 / 1.6.0, 6:41 AM** Console time; device table Phone 12,405 /
 Tablet 6,408 / TV 3 / Chromebook 10 / Android XR 1, 0 lost on every row; 32.6 MB
-new install, +97.1 KB on build 11; 3.96 MB update).
+new install, +97.1 KB on build 11; 3.96 MB update). Version code 13 / 1.7.0 was
+published at **9:21 PM** the same day; the device counts were unchanged with 0
+lost on every row, the new-install size remained 32.6 MB, and the update was
+13.8 MB.
 
-**The agent cannot upload the bundle, and there is no other route.** The Chrome
-upload bridge refuses any file over 10 MB, and `mobile/google-play-key.json` — the
-service-account key `eas.json` points at — has never been created. What the agent
-*can* do, measured 2026-09-15: open the track, confirm the account slot and the
-live production version, press **Create new release**, fill the release name and
-notes, and **Save as draft** with no bundle attached (the Console accepts that and
-reports "Changes saved"). The owner then drops the file into the open page and the
-agent resumes at Next. Two Chrome-driving traps from that run:
+**The browser upload route works for the full bundle.** Measured on version code
+13, the file-chooser bridge uploaded the 96 MB AAB, then Play optimized it before
+showing `13 (1.7.0)` in the artifact table. This replaces the earlier 10 MB bridge
+limit. `mobile/google-play-key.json` — the service-account key `eas.json` points
+at — still has never been created, so browser upload remains the available route.
+Two Chrome-driving traps from the earlier run:
 
 - **Clicking "Create new release" through its accessibility reference did nothing
   useful** — the page scrolled sideways and the form never opened. A click on the
