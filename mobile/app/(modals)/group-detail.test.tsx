@@ -6,6 +6,7 @@
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
@@ -519,6 +520,10 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 const mockGroupDetail = {
   id: 1,
   name: 'Garden Club',
@@ -904,6 +909,9 @@ describe('GroupDetailScreen', () => {
   });
 
   it.each([false, true])('lets members publish a discussion with an initial rejection: %s', async (rejectFirst) => {
+    const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({
+      width: 360, height: 800, scale: 1, fontScale: 1,
+    });
     const refreshDiscussions = jest.fn();
     const groupState = {
       data: { data: { ...mockGroupDetail, is_member: true } },
@@ -925,7 +933,7 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { getByPlaceholderText, getByTestId, getByText, queryByTestId } = render(<GroupDetailScreen />);
+    const { getByPlaceholderText, getByTestId, getByText, queryByTestId, rerender } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Discussions'));
 
@@ -941,6 +949,11 @@ describe('GroupDetailScreen', () => {
 
     fireEvent.changeText(getByPlaceholderText('Discussion title'), 'Compost rota');
     fireEvent.changeText(getByPlaceholderText('Write a message'), 'Who can take the Friday slot?');
+    dimensions.mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+    rerender(<GroupDetailScreen />);
+    expect(getByPlaceholderText('Discussion title').props.value).toBe('Compost rota');
+    expect(getByPlaceholderText('Write a message').props.value).toBe('Who can take the Friday slot?');
+    expect(getByTestId('group-discussion-actions').props.className).not.toContain('flex-row');
     if (rejectFirst) jest.mocked(createGroupDiscussion).mockRejectedValueOnce(new Error('Service unavailable'));
     fireEvent.press(getByText('Publish discussion'));
     expect(getByPlaceholderText('Discussion title').props.editable).toBe(false);

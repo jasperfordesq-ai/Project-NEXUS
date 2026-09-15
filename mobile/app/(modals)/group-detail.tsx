@@ -1484,7 +1484,10 @@ function GroupDetailScreenInner() {
             style={{ color: theme.text }}
             accessibilityLabel={t('detail.discussionContentPlaceholder')}
           />
-          <View className={fontScale > 1.3 ? 'gap-3' : 'flex-row gap-3'}>
+          <View
+            testID="group-discussion-actions"
+            className={fontScale > 1.3 ? 'gap-3' : 'flex-row gap-3'}
+          >
             <HeroButton
               className={fontScale > 1.3 ? 'w-full' : 'flex-1'}
               variant="secondary"
