@@ -12098,6 +12098,34 @@ CREATE TABLE `job_alerts` (
   KEY `idx_job_alerts_active` (`tenant_id`,`is_active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `job_application_decision_delivery_outbox`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `job_application_decision_delivery_outbox` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `history_id` int(10) unsigned NOT NULL,
+  `application_id` int(10) unsigned NOT NULL,
+  `from_status` varchar(30) DEFAULT NULL,
+  `to_status` varchar(30) NOT NULL,
+  `attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `next_attempt_at` timestamp NULL DEFAULT NULL,
+  `claim_until` timestamp NULL DEFAULT NULL,
+  `bell_created_at` timestamp NULL DEFAULT NULL,
+  `push_dispatched_at` timestamp NULL DEFAULT NULL,
+  `realtime_dispatched_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `dead_lettered_at` timestamp NULL DEFAULT NULL,
+  `last_error` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `job_application_decision_delivery_history_unique` (`tenant_id`,`history_id`),
+  KEY `job_application_decision_delivery_pending_index` (`completed_at`,`dead_lettered_at`,`next_attempt_at`,`claim_until`),
+  KEY `job_application_decision_delivery_outbox_history_id_foreign` (`history_id`),
+  CONSTRAINT `job_application_decision_delivery_outbox_history_id_foreign` FOREIGN KEY (`history_id`) REFERENCES `job_application_history` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `job_application_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -12205,6 +12233,32 @@ CREATE TABLE `job_gdpr_consents` (
   KEY `job_gdpr_consents_tenant_id_user_id_index` (`tenant_id`,`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `job_hiring_delivery_outbox`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `job_hiring_delivery_outbox` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `event_type` varchar(40) NOT NULL,
+  `source_id` int(10) unsigned NOT NULL,
+  `recipient_id` int(10) unsigned NOT NULL,
+  `attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `next_attempt_at` timestamp NULL DEFAULT NULL,
+  `claim_until` timestamp NULL DEFAULT NULL,
+  `bell_created_at` timestamp NULL DEFAULT NULL,
+  `push_dispatched_at` timestamp NULL DEFAULT NULL,
+  `realtime_dispatched_at` timestamp NULL DEFAULT NULL,
+  `email_dispatched_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `dead_lettered_at` timestamp NULL DEFAULT NULL,
+  `last_error` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `job_hiring_delivery_event_unique` (`tenant_id`,`event_type`,`source_id`,`recipient_id`),
+  KEY `job_hiring_delivery_pending_index` (`completed_at`,`dead_lettered_at`,`next_attempt_at`,`claim_until`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `job_interview_scheduling`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -12262,6 +12316,8 @@ CREATE TABLE `job_interviews` (
   `vacancy_id` int(10) unsigned NOT NULL,
   `application_id` int(10) unsigned NOT NULL,
   `proposed_by` bigint(20) unsigned NOT NULL,
+  `creation_idempotency_key_hash` char(64) DEFAULT NULL,
+  `creation_request_hash` char(64) DEFAULT NULL,
   `interview_type` varchar(30) NOT NULL DEFAULT 'video',
   `scheduled_at` datetime NOT NULL,
   `duration_mins` smallint(6) NOT NULL DEFAULT 60,
@@ -12275,6 +12331,7 @@ CREATE TABLE `job_interviews` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
+  UNIQUE KEY `job_interview_creation_idempotency_unique` (`tenant_id`,`proposed_by`,`creation_idempotency_key_hash`),
   KEY `idx_ji_tenant_vacancy` (`tenant_id`,`vacancy_id`),
   KEY `idx_ji_application` (`application_id`),
   KEY `fk_job_interviews_vacancy_id` (`vacancy_id`),
@@ -12308,6 +12365,8 @@ CREATE TABLE `job_offers` (
   `vacancy_id` int(10) unsigned NOT NULL,
   `application_id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned DEFAULT NULL,
+  `creation_idempotency_key_hash` char(64) DEFAULT NULL,
+  `creation_request_hash` char(64) DEFAULT NULL,
   `salary_offered` decimal(12,2) DEFAULT NULL,
   `salary_currency` varchar(3) DEFAULT 'EUR',
   `salary_type` varchar(20) DEFAULT NULL,
@@ -12321,6 +12380,7 @@ CREATE TABLE `job_offers` (
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `application_id` (`application_id`),
+  UNIQUE KEY `job_offer_creation_idempotency_unique` (`tenant_id`,`application_id`,`creation_idempotency_key_hash`),
   KEY `idx_jo_tenant_vacancy` (`tenant_id`,`vacancy_id`),
   KEY `idx_jo_application` (`application_id`),
   KEY `fk_job_offers_vacancy_id` (`vacancy_id`),
@@ -21459,7 +21519,10 @@ INSERT INTO `laravel_migrations` VALUES
 (440,'2026_09_14_235000_add_shift_swap_request_idempotency',128),
 (441,'2026_09_15_120000_create_course_completion_delivery_outbox',129),
 (442,'2026_09_15_130000_create_course_creation_receipts',130),
-(443,'2026_09_15_140000_create_course_authoring_creation_receipts',131);
+(443,'2026_09_15_140000_create_course_authoring_creation_receipts',131),
+(444,'2026_09_15_150000_create_job_application_decision_delivery_outbox',131),
+(445,'2026_09_15_160000_create_job_hiring_delivery_outbox',131),
+(446,'2026_09_15_170000_add_creation_idempotency_to_job_hiring_actions',131);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
