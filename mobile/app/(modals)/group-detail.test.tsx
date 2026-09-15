@@ -431,12 +431,13 @@ jest.mock('@/lib/api/groups', () => ({
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
+const mockShowToast = jest.fn();
+
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
   // dependency array don't re-run their effects on every render.
-  const show = jest.fn();
   const hide = jest.fn();
-  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+  return { useAppToast: () => ({ show: mockShowToast, hide, isToastVisible: false }) };
 });
 
 // The bottom-sheet wrapper renders gesture/portal machinery that does not work in
@@ -1432,6 +1433,17 @@ describe('GroupDetailScreen', () => {
       }, expect.any(String));
       expect(refreshQuestions).toHaveBeenCalled();
     });
+    if (failReadback) {
+      await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith({
+        title: 'common:errors.refreshFailedTitle',
+        description: 'common:errors.refreshFailedSubtitle',
+        variant: 'warning',
+      }));
+      expect(getByPlaceholderText('Write an answer...').props.value).toBe('');
+      expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({
+        description: 'Could not post answer.',
+      }));
+    }
   });
 
   it('lets group admins accept answers from the native Q&A tab', async () => {
