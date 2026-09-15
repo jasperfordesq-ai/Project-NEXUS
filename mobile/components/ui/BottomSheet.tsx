@@ -3,8 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, Platform, View, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Keyboard, View, useWindowDimensions } from 'react-native';
 import { BottomSheet as HeroBottomSheet } from 'heroui-native';
 import { BottomSheetFooter, BottomSheetScrollView, type BottomSheetFooterProps } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from 'expo-router';
@@ -17,32 +17,6 @@ import { useDeferredBottomSheetState } from './useDeferredBottomSheetState';
  * The footer is one row of buttons plus padding; measured at ~84dp on a 411dp phone.
  */
 const FOOTER_CLEARANCE_DP = 96;
-
-/**
- * The Android keyboard's height while it is open, else 0.
- *
- * 🔴 Measured on the emulator on 2026-09-09: with the Goals composer's title field focused,
- * the sheet did not move and neither did its footer — Cancel and Create sat behind the
- * keys. Neither of gorhom's two Android modes changed that here: the window does not
- * resize under this app's root (the screen behind the sheet keeps its full height when the
- * keyboard opens), and the sheet's own keyboard animation does not run inside HeroUI
- * Native's portal. So the wrapper measures the keyboard itself and lifts the footer and
- * the scroll padding by that amount. iOS is left to gorhom, whose interactive keyboard
- * handling works there.
- */
-function useAndroidKeyboardHeight(): number {
-  const [height, setHeight] = useState(0);
-  useEffect(() => {
-    if (Platform.OS !== 'android') return undefined;
-    const show = Keyboard.addListener('keyboardDidShow', (event) => setHeight(event.endCoordinates?.height ?? 0));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
-  return height;
-}
 
 interface BottomSheetProps {
   visible: boolean;
@@ -152,9 +126,8 @@ export default function BottomSheet({
   const resolvedSnapPoints = hasSnapPoints
     ? snapPoints!.map((point) => (typeof point === 'number' ? point + bottomInset : point))
     : undefined;
-  const keyboardHeight = useAndroidKeyboardHeight();
   const bottomPadding = Math.max(16, bottomInset + 16);
-  const contentBottomPadding = (footer ? bottomPadding + FOOTER_CLEARANCE_DP : bottomPadding) + keyboardHeight;
+  const contentBottomPadding = footer ? bottomPadding + FOOTER_CLEARANCE_DP : bottomPadding;
 
   if (!sheetMounted) return null;
 
@@ -195,6 +168,8 @@ export default function BottomSheet({
           enablePanDownToClose={dismissible}
           keyboardBehavior="extend"
           keyboardBlurBehavior="restore"
+          android_keyboardInputMode="adjustResize"
+          enableBlurKeyboardOnGesture
           contentContainerClassName={hasSnapPoints ? 'h-full bg-background' : 'bg-background'}
           backgroundClassName="rounded-t-[30px] bg-background"
           handleClassName="rounded-t-[30px] bg-background"
@@ -203,7 +178,7 @@ export default function BottomSheet({
             <BottomSheetFooter {...footerProps} bottomInset={bottomInset}>
               <View
                 className="border-t border-border px-4 pt-3"
-                style={{ backgroundColor: theme.bg, paddingBottom: 12 + keyboardHeight }}
+                style={{ backgroundColor: theme.bg, paddingBottom: 12 }}
                 testID={testID ? `${testID}-footer` : undefined}
               >
                 {footer}

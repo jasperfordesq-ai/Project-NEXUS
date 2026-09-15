@@ -82,6 +82,8 @@ describe('BottomSheet', () => {
     expect(contentProps[0]?.enableOverDrag).toBe(false);
     expect(contentProps[0]?.keyboardBehavior).toBe('extend');
     expect(contentProps[0]?.keyboardBlurBehavior).toBe('restore');
+    expect(contentProps[0]?.android_keyboardInputMode).toBe('adjustResize');
+    expect(contentProps[0]?.enableBlurKeyboardOnGesture).toBe(true);
     expect(contentProps[0]?.snapPoints).toEqual(['72%', 444]);
     expect(contentProps[0]?.backgroundClassName).toEqual(expect.stringContaining('bg-background'));
     expect(contentProps[0]?.contentContainerClassName).toEqual(expect.stringContaining('h-full'));

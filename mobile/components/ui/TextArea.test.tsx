@@ -60,4 +60,19 @@ describe('TextArea', () => {
 
     expect(ref.current).toBeTruthy();
   });
+
+  it('preserves caller focus and blur handlers while wiring sheet keyboard awareness', () => {
+    const onFocus = jest.fn();
+    const onBlur = jest.fn();
+    const { getByPlaceholderText } = render(
+      <TextArea placeholder="Sheet notes" onFocus={onFocus} onBlur={onBlur} />,
+    );
+    const input = getByPlaceholderText('Sheet notes');
+
+    fireEvent(input, 'focus', { nativeEvent: { target: 1 } });
+    fireEvent(input, 'blur', { nativeEvent: { target: 1 } });
+
+    expect(onFocus).toHaveBeenCalledTimes(1);
+    expect(onBlur).toHaveBeenCalledTimes(1);
+  });
 });

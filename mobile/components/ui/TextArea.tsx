@@ -5,7 +5,24 @@
 
 import React, { forwardRef } from 'react';
 import { TextInput, type TextInputProps } from 'react-native';
-import { FieldError, Label, TextArea as HeroTextArea, TextField } from 'heroui-native';
+import {
+  FieldError,
+  Label,
+  TextArea as HeroTextArea,
+  TextField,
+  useBottomSheetAwareHandlers,
+} from 'heroui-native';
+
+const noopBottomSheetHandlers = {
+  onFocus: () => undefined,
+  onBlur: () => undefined,
+};
+
+// Some focused component tests use a minimal HeroUI visual mock. The real app
+// always supplies the hook; the fallback only keeps those isolated mocks valid.
+const useTextAreaBottomSheetHandlers = typeof useBottomSheetAwareHandlers === 'function'
+  ? useBottomSheetAwareHandlers
+  : () => noopBottomSheetHandlers;
 
 interface TextAreaProps extends TextInputProps {
   label?: string;
@@ -23,11 +40,14 @@ const TextArea = forwardRef<TextInput, TextAreaProps>(function TextArea(
     style,
     editable,
     numberOfLines = 4,
+    onFocus,
+    onBlur,
     ...rest
   },
   ref,
 ) {
   const isDisabled = editable === false;
+  const bottomSheetHandlers = useTextAreaBottomSheetHandlers();
 
   return (
     <TextField isInvalid={!!error} isDisabled={isDisabled} className={containerClassName ?? 'mb-3'}>
@@ -42,6 +62,14 @@ const TextArea = forwardRef<TextInput, TextAreaProps>(function TextArea(
         numberOfLines={numberOfLines}
         style={[{ textAlignVertical: 'top' }, style]}
         className={inputClassName ?? 'min-h-28'}
+        onFocus={(event) => {
+          bottomSheetHandlers.onFocus(event);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          bottomSheetHandlers.onBlur(event);
+          onBlur?.(event);
+        }}
         {...rest}
         accessibilityLabel={rest.accessibilityLabel ?? label}
       />

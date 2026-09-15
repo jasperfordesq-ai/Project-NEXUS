@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Text, TextInput } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 import Input from './Input';
 
@@ -50,5 +50,20 @@ describe('Input component', () => {
     render(<Input ref={ref} value="" placeholder="Focusable" />);
 
     expect(ref.current).toBeTruthy();
+  });
+
+  it('preserves caller focus and blur handlers while wiring sheet keyboard awareness', () => {
+    const onFocus = jest.fn();
+    const onBlur = jest.fn();
+    const { getByPlaceholderText } = render(
+      <Input placeholder="Sheet field" onFocus={onFocus} onBlur={onBlur} />,
+    );
+    const input = getByPlaceholderText('Sheet field');
+
+    fireEvent(input, 'focus', { nativeEvent: { target: 1 } });
+    fireEvent(input, 'blur', { nativeEvent: { target: 1 } });
+
+    expect(onFocus).toHaveBeenCalledTimes(1);
+    expect(onBlur).toHaveBeenCalledTimes(1);
   });
 });

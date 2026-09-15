@@ -59,9 +59,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Native app version 1.7.1, Android version code 14: the replacement internal-testing build fixes Android keyboard handling in shared bottom-sheet forms and supersedes build 13. Production remains on the proven 1.6.0 build until this candidate passes a physical-device walkthrough.
+
 - Native app version 1.7.0, Android version code 13: the internal-testing build containing the completed mobile audit, polished federation and listing/message layouts, reliable exchange sheets, employer interview and offer actions, and the native date picker required by those hiring flows. The new runtime prevents this native dependency surface from being sent to the 1.6.0 binary by an over-the-air update.
 
 ### Fixed
+
+- **Native bottom-sheet forms now remain usable when the Android keyboard opens.** Shared inputs notify the sheet when they gain focus, and the sheet follows Android's existing resize behavior instead of adding the keyboard height a second time. The Request exchange title, hours field and note therefore remain reachable above the keyboard while its Cancel and Send actions stay pinned in view.
 
 - **Android release instructions now match the working Play Console upload path.** The procedure records the successful 96 MB browser upload for build 13 and the Windows native-clean ordering failure, avoiding the obsolete 10 MB limitation and a reproducible failed build attempt.
 

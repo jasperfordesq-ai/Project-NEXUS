@@ -5,7 +5,27 @@
 
 import React, { forwardRef } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
-import { Description, FieldError, Input as HeroInput, Label, TextField } from 'heroui-native';
+import {
+  Description,
+  FieldError,
+  Input as HeroInput,
+  Label,
+  TextField,
+  useBottomSheetAwareHandlers,
+} from 'heroui-native';
+
+const noopBottomSheetHandlers = {
+  onFocus: () => undefined,
+  onBlur: () => undefined,
+};
+
+// A few older screen tests intentionally replace HeroUI with a small visual
+// mock. Keep Input renderable in that stripped environment while production
+// continues to use HeroUI's real hook. The function is chosen once at module
+// load, so hook order never changes between renders.
+const useInputBottomSheetHandlers = typeof useBottomSheetAwareHandlers === 'function'
+  ? useBottomSheetAwareHandlers
+  : () => noopBottomSheetHandlers;
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -28,11 +48,20 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
     inputClassName,
     style,
     editable,
+    onFocus,
+    onBlur,
     ...rest
   },
   ref,
 ) {
   const isDisabled = editable === false;
+  // HeroUI Native inputs need to tell Gorhom when they receive focus. Without
+  // these handlers the sheet cannot coordinate its own keyboard animation, so
+  // Android forms were being kept usable with a second, manual keyboard-height
+  // offset in BottomSheet. On adjustResize devices that offset was applied after
+  // Android had already shortened the window, collapsing the form above the
+  // keyboard. This hook is deliberately safe outside a sheet (it becomes a no-op).
+  const bottomSheetHandlers = useInputBottomSheetHandlers();
 
   /**
    * 🔴 `w-full` FIRST, always, then the caller's classes.
@@ -89,6 +118,14 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
             style,
           ]}
           className={inputClassName ?? 'flex-1'}
+          onFocus={(event) => {
+            bottomSheetHandlers.onFocus(event);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            bottomSheetHandlers.onBlur(event);
+            onBlur?.(event);
+          }}
           {...rest}
           accessibilityLabel={rest.accessibilityLabel ?? label}
         />
