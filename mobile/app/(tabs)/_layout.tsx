@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useAuthContext } from '@/lib/context/AuthContext';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import { useOptionalTenantCapabilities } from '@/lib/context/TenantContext';
 import { isRouteAllowed } from '@/lib/navigation/routeRequirements';
@@ -83,6 +84,24 @@ const TABS_CONFIG: TabConfig[] = [
 ];
 
 export default function TabsLayout() {
+  const { isLoading, isAuthenticated } = useAuthContext();
+
+  /*
+    `(tabs)` is the router anchor, so Expo can mount it before RootNavigator's
+    signed-out redirect effect has replaced the route. Mounting Home in that
+    interval starts its protected feed request; the expected 401 then reaches
+    the global unauthorized callback and Login wrongly says the member's
+    session expired. Keep the protected subtree absent until restoration has
+    positively established an authenticated session. RootNavigator remains the
+    single owner of where signed-out members are sent, including tenant choice
+    and account-recovery deep links.
+  */
+  if (isLoading || !isAuthenticated) return null;
+
+  return <AuthenticatedTabs />;
+}
+
+function AuthenticatedTabs() {
   const { t } = useTranslation();
   const primary = usePrimaryColor();
   const theme = useTheme();

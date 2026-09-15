@@ -11,6 +11,7 @@ const mockRouterPush = jest.fn();
 const mockRefreshCounts = jest.fn();
 
 let mockPathname = '/home';
+let mockAuth = { isLoading: false, isAuthenticated: true };
 
 jest.mock('expo-router', () => {
   const React = require('react');
@@ -57,14 +58,36 @@ jest.mock('@/lib/context/RealtimeContext', () => ({
   }),
 }));
 
+jest.mock('@/lib/context/AuthContext', () => ({
+  useAuthContext: () => mockAuth,
+}));
+
 import TabsLayout from './_layout';
 
 describe('TabsLayout', () => {
   beforeEach(() => {
     tabScreens.length = 0;
     mockPathname = '/home';
+    mockAuth = { isLoading: false, isAuthenticated: true };
     mockCapabilities = null;
     jest.clearAllMocks();
+  });
+
+  it.each([
+    ['while session restoration is still running', { isLoading: true, isAuthenticated: false }],
+    ['after session restoration confirms the member is signed out', { isLoading: false, isAuthenticated: false }],
+  ])('does not mount protected tabs %s', (_label, auth) => {
+    // Regression: `(tabs)` is the router anchor, so it mounted Home during a
+    // signed-out cold launch. Home called the protected feed endpoint, the 401
+    // reached the global unauthorized handler, and Login displayed a false
+    // "session expired" notice to somebody who had already signed out.
+    mockAuth = auth;
+
+    const { queryByTestId } = render(<TabsLayout />);
+
+    expect(queryByTestId('tabs')).toBeNull();
+    expect(tabScreens).toHaveLength(0);
+    expect(mockRefreshCounts).not.toHaveBeenCalled();
   });
 
   it('matches the source-of-truth mobile bottom navigation order', () => {

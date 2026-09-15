@@ -6,11 +6,13 @@
 
 namespace Tests\Laravel\Feature\Seeders;
 
+use App\Core\TotpEncryption;
 use App\Services\TenantSettingsService;
 use Database\Seeders\E2ETestDataSeeder;
 use Database\Seeders\TenantSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use OTPHP\TOTP;
 use Tests\Laravel\TestCase;
 
 /**
@@ -66,6 +68,77 @@ class E2ETestDataSeederLoginTest extends TestCase
                 $gateError,
                 "{$email} must pass all login gates, got: " . json_encode($gateError)
             );
+        }
+    }
+
+    public function test_opt_in_admin_fixture_is_enrolled_for_mandatory_mfa(): void
+    {
+        $secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+        $overrides = [
+            'E2E_ADMIN_EMAIL' => 'e2e.admin@project-nexus.local',
+            'E2E_ADMIN_PASSWORD' => 'AdminPassword123!',
+            'E2E_ADMIN_TOTP_SECRET' => $secret,
+        ];
+        $previous = [];
+        foreach ($overrides as $key => $value) {
+            $previous[$key] = getenv($key);
+            putenv("{$key}={$value}");
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
+        }
+
+        try {
+            $this->seed(E2ETestDataSeeder::class);
+
+            $admin = DB::table('users')
+                ->where('tenant_id', TenantSeeder::MASTER_TENANT_ID)
+                ->where('email', 'e2e.admin@project-nexus.local')
+                ->first(['id', 'totp_enabled', 'totp_setup_required']);
+
+            $this->assertNotNull($admin);
+            $this->assertSame(1, (int) $admin->totp_enabled);
+            $this->assertSame(0, (int) $admin->totp_setup_required);
+
+            $settings = DB::table('user_totp_settings')
+                ->where('user_id', $admin->id)
+                ->where('tenant_id', TenantSeeder::MASTER_TENANT_ID)
+                ->first(['totp_secret_encrypted', 'is_enabled', 'is_pending_setup']);
+
+            $this->assertNotNull($settings);
+            $this->assertSame(1, (int) $settings->is_enabled);
+            $this->assertSame(0, (int) $settings->is_pending_setup);
+            $this->assertSame($secret, TotpEncryption::decrypt($settings->totp_secret_encrypted));
+
+            $headers = [
+                'X-Tenant-ID' => (string) TenantSeeder::MASTER_TENANT_ID,
+                'Accept' => 'application/json',
+            ];
+            $challenge = $this->postJson('/api/auth/login', [
+                'email' => 'e2e.admin@project-nexus.local',
+                'password' => 'AdminPassword123!',
+            ], $headers)->assertOk()
+                ->assertJsonPath('requires_2fa', true)
+                ->assertJsonMissingPath('requires_2fa_setup')
+                ->assertJsonMissingPath('access_token');
+
+            $this->postJson('/api/totp/verify', [
+                'two_factor_token' => $challenge->json('two_factor_token'),
+                'code' => TOTP::createFromSecret($secret)->now(),
+                'use_backup_code' => false,
+            ], $headers)->assertOk()
+                ->assertJsonPath('success', true)
+                ->assertJsonStructure(['access_token', 'refresh_token', 'user' => ['id', 'email']]);
+        } finally {
+            foreach ($previous as $key => $value) {
+                if ($value === false) {
+                    putenv($key);
+                    unset($_ENV[$key], $_SERVER[$key]);
+                } else {
+                    putenv("{$key}={$value}");
+                    $_ENV[$key] = $value;
+                    $_SERVER[$key] = $value;
+                }
+            }
         }
     }
 

@@ -6,6 +6,7 @@
 
 namespace Database\Seeders;
 
+use App\Core\TotpEncryption;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -121,6 +122,32 @@ class E2ETestDataSeeder extends Seeder
             $ids[$u['label']] = (int) DB::table('users')
                 ->where('tenant_id', $tenantId)->where('email', $u['email'])->value('id');
             $this->command?->info("  E2E user {$u['label']}: {$u['email']} (id {$ids[$u['label']]}, balance {$u['balance']})");
+        }
+
+        // Mandatory administrator MFA is a production security boundary and the
+        // live-contract suite must exercise it, not disable it. When the caller
+        // opts in with a disposable test-only base32 secret, enrol the seeded
+        // administrator so the verifier can complete the real TOTP challenge.
+        $adminTotpSecret = trim((string) env('E2E_ADMIN_TOTP_SECRET', ''));
+        if ($adminTotpSecret !== '') {
+            $adminId = $ids['Admin'];
+            DB::table('user_totp_settings')->updateOrInsert(
+                ['user_id' => $adminId, 'tenant_id' => $tenantId],
+                [
+                    'totp_secret_encrypted' => TotpEncryption::encrypt($adminTotpSecret),
+                    'is_enabled' => 1,
+                    'is_pending_setup' => 0,
+                    'setup_revocation_version' => 0,
+                    'enabled_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+            DB::table('users')->where('id', $adminId)->where('tenant_id', $tenantId)->update([
+                'totp_enabled' => 1,
+                'totp_setup_required' => 0,
+                'updated_at' => $now,
+            ]);
+            $this->command?->info('  E2E administrator MFA fixture enrolled');
         }
 
         // A published post makes the native blog detail getter resolvable and

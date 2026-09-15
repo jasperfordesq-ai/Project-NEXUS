@@ -6,6 +6,7 @@
 /** Verify high-value client-consumed response fields against the live disposable Laravel fixture. */
 
 import contractHelpers from './member-response-contracts.cjs';
+import totpFixture from './totp-fixture.cjs';
 
 const {
   validateCanonicalEvents,
@@ -19,6 +20,7 @@ const {
   validateOwnedOrganisation,
   validateVolunteeringSearch,
 } = contractHelpers;
+const { createTotpCode } = totpFixture;
 const base = process.env.API_URL ?? 'http://127.0.0.1:8090';
 const tenant = process.env.TENANT_SLUG ?? 'hour-timebank';
 const password = process.env.E2E_TEST_PASSWORD ?? 'TestPassword123!';
@@ -48,12 +50,16 @@ async function request(path, { token, method = 'GET', body, headers = {} } = {})
 async function login(label) {
   const [email, actorPassword] = actors[label];
   let payload = await request('/api/auth/login', { method: 'POST', body: { email, password: actorPassword } });
-  // A caller may supply a current authenticator code for an enrolled disposable
-  // admin fixture. Never weaken MFA policy or log challenge/session credentials.
-  if (label === 'admin' && payload?.requires_2fa && !payload?.requires_2fa_setup && process.env.E2E_ADMIN_2FA_CODE) {
+  // The disposable administrator is enrolled with a known test-only secret by
+  // E2ETestDataSeeder. Complete the real challenge rather than exempting the
+  // account from the mandatory administrator MFA policy. Never log the secret,
+  // generated code, challenge or session credentials.
+  const adminCode = process.env.E2E_ADMIN_2FA_CODE
+    ?? (process.env.E2E_ADMIN_TOTP_SECRET ? createTotpCode(process.env.E2E_ADMIN_TOTP_SECRET) : null);
+  if (label === 'admin' && payload?.requires_2fa && !payload?.requires_2fa_setup && adminCode) {
     payload = await request('/api/totp/verify', { method: 'POST', body: {
       two_factor_token: payload.two_factor_token,
-      code: process.env.E2E_ADMIN_2FA_CODE,
+      code: adminCode,
       use_backup_code: false,
     } });
   }

@@ -59,6 +59,11 @@ describe('Android device screenshot evidence', () => {
     expect(workflow).toContain('actions/setup-node@v5');
     expect(workflow).toContain('actions/setup-java@v5');
   });
+
+  it('enrols and verifies the disposable administrator without weakening MFA policy', () => {
+    expect(workflow).toContain('E2E_ADMIN_TOTP_SECRET:');
+    expect(workflow).toContain('npm run verify:live-member-contracts');
+  });
 });
 
 describe('Android persisted-effect journeys', () => {

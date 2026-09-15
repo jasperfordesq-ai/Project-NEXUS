@@ -6,10 +6,11 @@
 // Run with the debug app's Metro bundle pointed at http://10.0.2.2:8091.
 // Reads setup/recovery values in memory only; no screenshots of credentials.
 import { execFileSync } from 'node:child_process';
-import { createHmac } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import totpFixture from './totp-fixture.cjs';
+const { createTotpCode } = totpFixture;
 const root = path.resolve(import.meta.dirname, '../..');
 const adb = (...args) => execFileSync(process.env.MFA_ADB || 'adb', ['-s', 'emulator-5554', ...args], { encoding: 'utf8' });
 assert.match(adb('shell', 'dumpsys', 'package', 'ie.project.nexus'), /DEBUGGABLE/);
@@ -49,12 +50,7 @@ try {
   await cleanLogin();
   const secret = text(await find(id('mfa-setup-secret'))).replace(/\s/g, '');
   assert.match(secret, /^[A-Z2-7]+$/);
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-  const bits = [...secret].map(c => alphabet.indexOf(c).toString(2).padStart(5, '0')).join('');
-  const key = Buffer.from((bits.match(/.{8}/g) || []).map(b => parseInt(b, 2)));
-  const counter = Buffer.alloc(8); counter.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30000)));
-  const hash = createHmac('sha1', key).update(counter).digest();
-  const code = String((hash.readUInt32BE(hash.at(-1) & 15) & 0x7fffffff) % 1000000).padStart(6, '0');
+  const code = createTotpCode(secret);
   await input('mfa-code', code);
   adb('shell', 'input', 'keyevent', '4');
   tap(await find(label('Verify')));

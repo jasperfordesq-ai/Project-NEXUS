@@ -59,6 +59,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Opening the native app while already signed out no longer reports that the session expired.** The protected Home tab now waits for authentication restoration before mounting, preventing its feed request from producing a misleading 401-driven warning on the sign-in screen.
+
+- **Scheduled native-device checks now pass through mandatory administrator MFA instead of stopping before the emulator starts.** The disposable E2E administrator is enrolled with a public test-only TOTP secret, and the live response-contract verifier completes the real challenge without weakening the platform policy or logging credentials.
+
+- **The iOS launch smoke now uses Xcode 26.2, the minimum toolchain for Expo SDK 55.** The workflow still selected a pre-26 compiler retained for the former SDK 54/Stripe combination, causing Expo Modules Core's Swift 6 actor-isolation code to fail before the simulator build could launch.
+
 - **Native account-recovery links now survive first-run community selection.** A new Android or iOS installation opened from a password-reset or email-verification link resumes that exact recovery screen after the member chooses their community instead of discarding the link and landing on Sign in.
 
 - **Native authentication cards no longer collapse when the keyboard opens at enlarged text sizes.** Sign-in, registration, password-reset and email-verification cards retain their full content height so headings and explanations remain readable and scrollable. The verification resend field scrolls into view with its action and now rejects malformed email addresses before making a request.

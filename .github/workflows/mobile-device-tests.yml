@@ -54,6 +54,9 @@ env:
   # tap this slug on the tenant-selection screen.
   TENANT_SLUG: 'hour-timebank'
   E2E_TENANT_ID: '2'
+  # RFC 6238's public SHA-1 test secret. It belongs only to the disposable
+  # known-password CI administrator and must never be used by a real account.
+  E2E_ADMIN_TOTP_SECRET: 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ'
 
 jobs:
   device-tests:
