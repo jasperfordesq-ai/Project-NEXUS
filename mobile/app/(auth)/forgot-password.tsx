@@ -79,7 +79,11 @@ export default function ForgotPasswordScreen() {
         keyboardDismissMode="on-drag"
       >
         <View className="flex-1 justify-center px-5 py-10">
-          <HeroCard className="overflow-hidden">
+          <HeroCard
+            testID="forgot-password-card"
+            className="overflow-hidden"
+            style={{ flexShrink: 0 }}
+          >
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View
                 className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"

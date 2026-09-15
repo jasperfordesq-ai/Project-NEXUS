@@ -34,7 +34,12 @@ import SessionRestoreGate from '@/components/SessionRestoreGate';
 import UpdateReadyHost from '@/components/ui/UpdateReadyHost';
 import UpdateRequiredGate from '@/components/UpdateRequiredGate';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
-import { decideAuthRedirect } from '@/lib/navigation/authRedirect';
+import {
+  decideAuthRedirect,
+  isSignedOutOnlyLink,
+  isTenantSelectionPath,
+} from '@/lib/navigation/authRedirect';
+import { pendingRecoveryLinkStore } from '@/lib/navigation/pendingRecoveryLinkStore';
 import { createTenantMismatchHandler } from '@/lib/navigation/tenantMismatch';
 import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
@@ -387,12 +392,22 @@ function RootNavigator() {
   const legalScreenOpenRef = useRef(false);
 
   useEffect(() => {
+    const receiveLink = (url: string) => {
+      if (isSignedOutOnlyLink(url)) {
+        pendingRecoveryLinkStore.remember(url);
+      } else {
+        // One incoming destination supersedes the previous one. Without this, a normal
+        // link received while the picker is open could later replay an older recovery link.
+        pendingRecoveryLinkStore.clear();
+      }
+      setPendingDeepLink(url);
+    };
     const unsubscribeFromNotifications = observeNotificationResponses(
-      setPendingDeepLink,
+      receiveLink,
       Linking.getInitialURL(),
     );
     const linkSubscription = Linking.addEventListener('url', ({ url }) => {
-      setPendingDeepLink(url);
+      receiveLink(url);
     });
     return () => {
       unsubscribeFromNotifications();
@@ -457,6 +472,15 @@ function RootNavigator() {
     tenantMismatch.onPathChange(pathname);
   }, [pathname, tenantMismatch]);
 
+  // Once a recovery destination is on screen, its first-run handoff has done its job.
+  // Clearing here also covers an already-configured installation, which never mounts
+  // the community picker that normally consumes the value.
+  useEffect(() => {
+    if (isSignedOutOnlyLink(pathname)) {
+      pendingRecoveryLinkStore.clear();
+    }
+  }, [pathname]);
+
   // Auth redirect — check for a pending deep link BEFORE defaulting to home.
   // This prevents the race condition where router.replace('/(tabs)/home')
   // fires before the deep link effect has a chance to navigate.
@@ -483,6 +507,26 @@ function RootNavigator() {
       pathname,
       pendingDeepLink,
     });
+
+    // Recovery links are deliberately ignored for an authenticated member. Clear the
+    // first-run handoff too, otherwise it could be replayed much later if that member
+    // signs out and opens the community picker.
+    if (isAuthenticated && pendingDeepLink && isSignedOutOnlyLink(pendingDeepLink)) {
+      pendingRecoveryLinkStore.clear();
+      setPendingDeepLink(null);
+      return;
+    }
+
+    // The picker finishes fresh-install setup and then consumes this link itself.
+    // Leaving the root navigator idle here avoids a second navigation racing the
+    // tenant write and clearing the handoff before the picker can use it.
+    if (
+      decision.action === 'deep-link'
+      && isTenantSelectionPath(pathname)
+      && isSignedOutOnlyLink(decision.url)
+    ) {
+      return;
+    }
 
     if (decision.action === 'deep-link') {
       // Cleared before navigating so a re-render cannot follow the same link twice.

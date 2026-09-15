@@ -20,6 +20,15 @@ describe('Input component', () => {
     expect(getByText('Email is required')).toBeTruthy();
   });
 
+  it('keeps long guidance outside the fixed-height editable field', () => {
+    const { getByText, queryByPlaceholderText } = render(
+      <Input label="Password" helper="At least 12 characters" />,
+    );
+
+    expect(getByText('At least 12 characters')).toBeTruthy();
+    expect(queryByPlaceholderText('At least 12 characters')).toBeNull();
+  });
+
   it('keeps helper icons outside the editable value', () => {
     const { getByText, getByPlaceholderText } = render(
       <Input

@@ -105,4 +105,16 @@ describe('VerifyEmailScreen', () => {
 
     expect(mockResendVerification).not.toHaveBeenCalled();
   });
+
+  it('explains an invalid resend address before making a request', async () => {
+    mockVerifyEmail.mockRejectedValue(new Error('expired'));
+
+    const screen = render(<VerifyEmailScreen />);
+    const input = await screen.findByTestId('verify-email-resend-input');
+    fireEvent.changeText(input, 'not-an-email');
+    fireEvent.press(screen.getByTestId('verify-email-resend'));
+
+    expect(await screen.findByText('Please enter a valid email address')).toBeTruthy();
+    expect(mockResendVerification).not.toHaveBeenCalled();
+  });
 });

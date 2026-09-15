@@ -332,7 +332,7 @@ export default function RegisterScreen() {
         className="flex-1 bg-background"
       >
         <View className="px-5 py-10">
-          <HeroCard className="overflow-hidden">
+          <HeroCard className="overflow-hidden" style={{ flexShrink: 0 }}>
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View
                 className="w-[72px] h-[72px] rounded-2xl items-center justify-center mb-4"
@@ -416,7 +416,7 @@ export default function RegisterScreen() {
         keyboardDismissMode="on-drag"
       >
         <View className="px-5 py-10">
-          <HeroCard className="overflow-hidden">
+          <HeroCard className="overflow-hidden" style={{ flexShrink: 0 }}>
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View
                 className="w-[72px] h-[72px] rounded-2xl items-center justify-center mb-4"
@@ -554,7 +554,7 @@ export default function RegisterScreen() {
                       onChangeText={onChange}
                       onBlur={onBlur}
                       error={errors.password?.message}
-                      placeholder={t('register.passwordPlaceholder')}
+                      helper={t('register.passwordPlaceholder')}
                       secureTextEntry={!showPassword}
                       autoComplete="new-password"
                       textContentType="newPassword"

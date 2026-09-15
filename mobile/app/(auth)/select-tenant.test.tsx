@@ -13,6 +13,7 @@ const mockRefresh = jest.fn();
 const mockLogout = jest.fn().mockResolvedValue(undefined);
 const mockGetTenantConfigFor = jest.fn<Promise<unknown>, [string]>();
 const mockShowToast = jest.fn();
+const mockNavigateToLink = jest.fn();
 /** Order matters in one of the cases below, so record the sequence, not just the calls. */
 const callOrder: string[] = [];
 let mockIsAuthenticated = false;
@@ -68,6 +69,10 @@ jest.mock('@/components/ui/AppToast', () => ({
   useAppToast: () => ({ show: mockShowToast, hide: jest.fn(), isToastVisible: false }),
 }));
 
+jest.mock('@/lib/utils/navigateToLink', () => ({
+  navigateToLink: (...args: unknown[]) => mockNavigateToLink(...args),
+}));
+
 /*
   A faithful stand-in for the real dialog rather than an auto-confirming one: the point of
   these cases is that NOTHING happens until the member agrees, so a stub that confirms by
@@ -106,6 +111,7 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
 });
 
 import SelectTenantScreen from './select-tenant';
+import { pendingRecoveryLinkStore } from '@/lib/navigation/pendingRecoveryLinkStore';
 
 describe('SelectTenantScreen', () => {
   beforeEach(() => {
@@ -123,6 +129,7 @@ describe('SelectTenantScreen', () => {
     });
     mockIsAuthenticated = false;
     mockHasSelectedTenant = true;
+    pendingRecoveryLinkStore.clear();
     mockApiState = {
       data: {
         data: [
@@ -171,6 +178,22 @@ describe('SelectTenantScreen', () => {
 
     await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalledWith('west-cork'));
     expect(mockReplace).toHaveBeenCalledWith('/login');
+  });
+
+  it.each([
+    'nexus://forgot-password',
+    'nexus://reset-password?token=fake-reset-token',
+    'nexus://verify-email?token=fake-verification-token',
+  ])('resumes %s after fresh-install community selection', async (recoveryLink) => {
+    mockHasSelectedTenant = false;
+    pendingRecoveryLinkStore.remember(recoveryLink);
+    const { getByLabelText } = render(<SelectTenantScreen />);
+
+    fireEvent.press(getByLabelText('West Cork Timebank'));
+
+    await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalledWith('west-cork'));
+    expect(mockNavigateToLink).toHaveBeenCalledWith(recoveryLink);
+    expect(mockReplace).not.toHaveBeenCalledWith('/login');
   });
 
   it('stays on the picker and explains when a community cannot be selected', async () => {

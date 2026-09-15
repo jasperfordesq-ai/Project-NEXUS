@@ -5,11 +5,12 @@
 
 import React, { forwardRef } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
-import { FieldError, Input as HeroInput, Label, TextField } from 'heroui-native';
+import { Description, FieldError, Input as HeroInput, Label, TextField } from 'heroui-native';
 
 interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
+  helper?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   containerClassName?: string;
@@ -20,6 +21,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
   {
     label,
     error,
+    helper,
     leftIcon,
     rightIcon,
     containerClassName,
@@ -94,6 +96,11 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
           <View className="pr-3 absolute right-0 z-10">{rightIcon}</View>
         ) : null}
       </View>
+      {helper ? (
+        <Description isInvalid={!!error} hideOnInvalid className="mt-1 text-xs">
+          {helper}
+        </Description>
+      ) : null}
       {error ? (
         <FieldError className="mt-1 text-xs">{error}</FieldError>
       ) : null}

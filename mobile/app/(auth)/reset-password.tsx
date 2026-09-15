@@ -117,7 +117,7 @@ export default function ResetPasswordScreen() {
       <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }} className="flex-grow">
           <View className="flex-1 justify-center px-5 py-10">
-            <HeroCard className="overflow-hidden">
+            <HeroCard className="overflow-hidden" style={{ flexShrink: 0 }}>
               <HeroCard.Header className="items-center px-6 pt-8 pb-4">
                 <View
                   className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"
@@ -149,7 +149,7 @@ export default function ResetPasswordScreen() {
         keyboardDismissMode="on-drag"
       >
         <View className="flex-1 justify-center px-5 py-10">
-          <HeroCard className="overflow-hidden">
+          <HeroCard className="overflow-hidden" style={{ flexShrink: 0 }}>
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View
                 className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl"

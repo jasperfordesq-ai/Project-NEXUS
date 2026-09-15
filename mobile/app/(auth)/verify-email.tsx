@@ -4,13 +4,14 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { contrastText } from '@/lib/utils/color';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Card as HeroCard, Spinner } from 'heroui-native';
+import { z } from 'zod';
 
 import { resendVerificationByEmail, verifyEmail } from '@/lib/api/auth';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -29,6 +30,7 @@ export default function VerifyEmailScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
   const [state, setState] = useState<VerifyState>(token ? 'loading' : 'invalid');
   const [message, setMessage] = useState<string | null>(null);
 
@@ -49,11 +51,18 @@ export default function VerifyEmailScreen() {
   const [isResending, setIsResending] = useState(false);
   const [resendNotice, setResendNotice] = useState<string | null>(null);
   const [resendError, setResendError] = useState<string | null>(null);
+  const [resendValidationError, setResendValidationError] = useState<string | null>(null);
 
   async function resend() {
     const address = resendEmail.trim().toLowerCase();
     if (isResending || !address) return;
+    if (!z.string().email().safeParse(address).success) {
+      setResendValidationError(t('errors.validEmail'));
+      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+      return;
+    }
     setIsResending(true);
+    setResendValidationError(null);
     setResendError(null);
     setResendNotice(null);
     try {
@@ -126,10 +135,16 @@ export default function VerifyEmailScreen() {
           : t('verifyEmail.loadingSubtitle');
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }} className="flex-grow">
+    <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
+        className="flex-grow"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <View className="flex-1 justify-center px-5 py-10">
-          <HeroCard className="overflow-hidden">
+          <HeroCard className="overflow-hidden" style={{ flexShrink: 0 }}>
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View className="mb-4 h-[72px] w-[72px] items-center justify-center rounded-2xl" style={{ backgroundColor: tone }}>
                 {state === 'loading' ? (
@@ -155,7 +170,18 @@ export default function VerifyEmailScreen() {
                   </Text>
                   <Input
                     value={resendEmail}
-                    onChangeText={setResendEmail}
+                    onChangeText={(value) => {
+                      setResendEmail(value);
+                      setResendValidationError(null);
+                      setResendError(null);
+                    }}
+                    onFocus={() => {
+                      // At large text the explanatory copy makes the field taller than the
+                      // resized Android viewport. Scroll only after the keyboard has taken
+                      // its space so the focused control, validation and action stay visible.
+                      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+                    }}
+                    error={resendValidationError ?? undefined}
                     placeholder={t('verifyEmail.resendEmailPlaceholder')}
                     accessibilityLabel={t('verifyEmail.resendEmailLabel')}
                     autoCapitalize="none"

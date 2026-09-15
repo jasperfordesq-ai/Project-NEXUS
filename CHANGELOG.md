@@ -59,6 +59,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native account-recovery links now survive first-run community selection.** A new Android or iOS installation opened from a password-reset or email-verification link resumes that exact recovery screen after the member chooses their community instead of discarding the link and landing on Sign in.
+
+- **Native authentication cards no longer collapse when the keyboard opens at enlarged text sizes.** Sign-in, registration, password-reset and email-verification cards retain their full content height so headings and explanations remain readable and scrollable. The verification resend field scrolls into view with its action and now rejects malformed email addresses before making a request.
+
+- **Native form guidance remains readable at enlarged text sizes.** Registration now renders the minimum password length as wrapping guidance below the field instead of squeezing it into the fixed-height password box, where Android could split and clip it at 200% text.
+
 - **Queued verification-email resends now use their declared retry policy.** A temporary mail-provider refusal now fails the background job so Horizon retries it up to three times, while preserving the member's previous valid verification link. Unknown and already-verified addresses remain silent and enumeration-safe.
 
 - **Queued password-reset emails now retry temporary delivery failures.** A mail-provider refusal fails the background job instead of being recorded as successful, allowing Horizon to make the three configured attempts while retaining any previous valid reset link. Unknown addresses remain silent and enumeration-safe.

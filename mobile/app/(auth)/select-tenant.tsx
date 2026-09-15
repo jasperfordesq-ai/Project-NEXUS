@@ -26,6 +26,8 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { pendingRecoveryLinkStore } from '@/lib/navigation/pendingRecoveryLinkStore';
+import { navigateToLink } from '@/lib/utils/navigateToLink';
 
 export default function SelectTenantScreen() {
   const { t } = useTranslation(['auth', 'common']);
@@ -94,6 +96,13 @@ export default function SelectTenantScreen() {
     // explain it instead of navigating to a login with unusable tenant context.
     try {
       await setTenantSlug(tenant.slug);
+      const recoveryLink = !isAuthenticated
+        ? pendingRecoveryLinkStore.consume()
+        : null;
+      if (recoveryLink) {
+        navigateToLink(recoveryLink);
+        return;
+      }
       router.replace(isAuthenticated ? '/home' : '/login');
     } catch (error) {
       showToast({

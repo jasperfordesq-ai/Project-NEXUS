@@ -114,7 +114,7 @@ export default function LoginScreen() {
           className="flex-1 justify-center px-5 py-10"
           style={{ width: '100%', maxWidth: 720, alignSelf: 'center' }}
         >
-          <HeroCard className="overflow-hidden">
+          <HeroCard className="overflow-hidden" style={{ flexShrink: 0 }}>
             <HeroCard.Header className="items-center px-6 pt-8 pb-4">
               <View
                 className="w-[72px] h-[72px] rounded-2xl items-center justify-center mb-4"
