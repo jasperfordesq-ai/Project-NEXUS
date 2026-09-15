@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Fresh installations now include the complete durable hiring workflow schema.** The canonical database snapshot includes the application-decision and hiring-delivery outboxes, interview and offer creation receipts, and their migration records, so clean environments match upgraded installations and the hiring delivery workers can start safely.
+
 - **Native employers can now schedule real interviews and send complete job offers from the hiring pipeline.** The pipeline exposes the server's interview and offer actions only when the community enables them, shows current action state, supports cancellation and withdrawal, and keeps translated, scrollable forms and responsive actions above the keyboard and system navigation. Unanswered submissions reuse a durable account- and community-scoped receipt identity; Laravel safely replays the same request and now persists the offer message, salary currency and pay type that its API accepted.
 
 - **Job offers and interviews now retain their member notifications after a transient failure.** Each committed offer or interview action writes a payload-free delivery fact in the same transaction; a scheduled worker resumes unfinished bell, push, realtime and interview-email steps with bounded retry and dead-letter state. Exact accepted/declined/cancelled/withdrawn replays retry the pending delivery, while vacancy, application and action locks prevent stale creation or withdrawal from racing a terminal hiring decision.
