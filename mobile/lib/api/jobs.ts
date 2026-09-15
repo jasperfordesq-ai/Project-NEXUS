@@ -38,6 +38,8 @@ export interface JobVacancy {
   blind_hiring?: boolean;
   deadline: string | null;
   accepting_applications?: boolean;
+  applications_close_at?: string | null;
+  application_availability_checked_at?: string | null;
   status: 'open' | 'closed' | 'filled' | 'draft';
   views_count: number;
   applications_count: number;

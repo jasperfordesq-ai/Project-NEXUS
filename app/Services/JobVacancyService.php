@@ -2505,10 +2505,28 @@ class JobVacancyService
 
     private function acceptingApplications(array $data): bool
     {
+        $closeAt = $this->applicationsCloseAt($data);
+
         return ($data['status'] ?? null) === 'open'
             && (empty($data['moderation_status']) || $data['moderation_status'] === 'approved')
-            && (empty($data['deadline']) || !\Illuminate\Support\Carbon::parse($data['deadline'])
-                ->setTimezone(config('app.timezone'))->endOfDay()->isPast());
+            && ($closeAt === null || now()->lt($closeAt));
+    }
+
+    /**
+     * Return the exclusive application cutoff for a date-only deadline.
+     *
+     * Applications remain open through the whole deadline day in the server's
+     * configured timezone, so the exact close instant is the following midnight.
+     */
+    private function applicationsCloseAt(array $data): ?\Illuminate\Support\Carbon
+    {
+        if (empty($data['deadline'])) {
+            return null;
+        }
+
+        return \Illuminate\Support\Carbon::parse($data['deadline'], config('app.timezone'))
+            ->startOfDay()
+            ->addDay();
     }
 
     /**
@@ -2519,7 +2537,10 @@ class JobVacancyService
      */
     private function enrichVacancyArray(array $data, ?int $userId = null, ?array $appliedMap = null, ?array $savedSet = null): array
     {
+        $applicationsCloseAt = $this->applicationsCloseAt($data);
         $data['accepting_applications'] = $this->acceptingApplications($data);
+        $data['applications_close_at'] = $applicationsCloseAt?->toIso8601String();
+        $data['application_availability_checked_at'] = now()->toIso8601String();
         // Format creator info
         $data['creator'] = [
             'id' => (int) ($data['user_id'] ?? 0),

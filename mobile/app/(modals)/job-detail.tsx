@@ -7,7 +7,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshControl, ScrollView, Share, Text, View } from 'react-native';
+import { AppState, RefreshControl, ScrollView, Share, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useLocalSearchParams, router, type Href } from 'expo-router';
@@ -82,6 +82,7 @@ function JobDetailContent() {
   const [cvPicking, setCvPicking] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const [applicationWindowElapsed, setApplicationWindowElapsed] = useState(false);
 
   // Saved profile (one-click apply)
   const [savedProfile, setSavedProfile] = useState<{ cv_filename?: string; cover_text?: string } | null>(null);
@@ -102,6 +103,49 @@ function JobDetailContent() {
       setHasApplied(job.has_applied ?? false);
     }
   }, [job]);
+
+  // The API evaluates a date-only deadline in the server timezone. Anchor its exact
+  // cutoff to the accompanying server timestamp so a different phone timezone cannot
+  // leave a screen that was already open inviting an application after closure.
+  useEffect(() => {
+    setApplicationWindowElapsed(false);
+    if (
+      !job?.applications_close_at
+      || !job.application_availability_checked_at
+      || job.accepting_applications === false
+    ) {
+      return;
+    }
+
+    const closeAt = Date.parse(job.applications_close_at);
+    const checkedAt = Date.parse(job.application_availability_checked_at);
+    if (!Number.isFinite(closeAt) || !Number.isFinite(checkedAt)) return;
+
+    const localCloseAt = Date.now() + Math.max(0, closeAt - checkedAt);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const update = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = undefined;
+      }
+      const remaining = localCloseAt - Date.now();
+      if (remaining <= 0) {
+        setApplicationWindowElapsed(true);
+        return;
+      }
+      timer = setTimeout(update, Math.min(remaining, 2_147_000_000));
+    };
+
+    update();
+    const appStateSubscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') update();
+    });
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      appStateSubscription.remove();
+    };
+  }, [job?.id, job?.accepting_applications, job?.applications_close_at, job?.application_availability_checked_at]);
 
   const loadSavedProfile = useCallback(async () => {
     const requestId = ++savedProfileRequest.current;
@@ -247,7 +291,7 @@ function JobDetailContent() {
   }
 
   async function handleSubmitApplication() {
-    if (!job || isOwner || job.status !== 'open' || job.accepting_applications === false || applicationPending.current || cvPickerPending.current || !coverMessage.trim()) return;
+    if (!job || isOwner || isClosed || applicationPending.current || cvPickerPending.current || !coverMessage.trim()) return;
     const submittedJobId = job.id;
     applicationPending.current = true;
     setApplyLoading(true);
@@ -354,7 +398,7 @@ function JobDetailContent() {
     return t('detail.closesIn', { count: deadlineDaysLeft });
   })();
 
-  const isClosed = job.status !== 'open' || job.accepting_applications === false;
+  const isClosed = job.status !== 'open' || job.accepting_applications === false || applicationWindowElapsed;
 
   const matchPct = job.match_percentage ?? null;
   const matchColor =
@@ -615,7 +659,7 @@ function JobDetailContent() {
           <HeroButton
             variant="primary"
             onPress={() => void handleSubmitApplication()}
-            isDisabled={coverMessage.trim().length === 0 || applyLoading || cvPicking}
+            isDisabled={coverMessage.trim().length === 0 || applyLoading || cvPicking || isClosed}
             testID="job-apply-submit"
           >
             {applyLoading ? (
@@ -643,6 +687,11 @@ function JobDetailContent() {
               </View>
             ) : (
               <View style={{ paddingTop: 12 }}>
+                {isClosed ? (
+                  <Text className="mb-3 text-sm font-semibold" style={{ color: theme.error }} accessibilityLiveRegion="assertive">
+                    {t('detail.closedBadge')}
+                  </Text>
+                ) : null}
                 {/* The CV, and what will actually be sent. */}
                 <Text className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
                   {t('apply.cvLabel')}
@@ -651,7 +700,7 @@ function JobDetailContent() {
                   <View className="mb-3 flex-row items-center gap-2" testID="job-apply-cv-attached">
                     <Ionicons name="document-attach-outline" size={16} color={primary} />
                     <Text className="min-w-0 flex-1 text-sm" style={{ color: theme.text }} numberOfLines={1}>{cvFile.name}</Text>
-                    <HeroButton size="sm" variant="ghost" isDisabled={applyLoading} onPress={() => setCvFile(null)}>
+                    <HeroButton size="sm" variant="ghost" isDisabled={applyLoading || isClosed} onPress={() => setCvFile(null)}>
                       <HeroButton.Label>{t('apply.cvRemove')}</HeroButton.Label>
                     </HeroButton>
                   </View>
@@ -679,7 +728,7 @@ function JobDetailContent() {
                   variant="secondary"
                   style={{ alignSelf: 'flex-start', marginBottom: 12 }}
                   testID="job-apply-attach-cv"
-                  isDisabled={applyLoading || cvPicking}
+                  isDisabled={applyLoading || cvPicking || isClosed}
                   onPress={() => void chooseCv()}
                 >
                   <Ionicons name="attach-outline" size={14} color={primary} />
@@ -696,7 +745,7 @@ function JobDetailContent() {
                       marginBottom: 12,
                     }}
                     onPress={() => setCoverMessage(savedProfile.cover_text ?? '')}
-                    isDisabled={applyLoading}
+                    isDisabled={applyLoading || isClosed}
                   >
                     <Ionicons name="flash-outline" size={14} color={primary} />
                     <HeroButton.Label>{t('saved_profile.use')}</HeroButton.Label>
@@ -712,7 +761,7 @@ function JobDetailContent() {
                   placeholder={t('apply.messagePlaceholder')}
                   placeholderTextColor={theme.textMuted}
                   value={coverMessage}
-                  editable={!applyLoading}
+                  editable={!applyLoading && !isClosed}
                   onChangeText={setCoverMessage}
                   multiline
                   numberOfLines={6}

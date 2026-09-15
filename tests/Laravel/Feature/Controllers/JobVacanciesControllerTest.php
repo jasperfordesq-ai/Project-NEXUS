@@ -66,7 +66,12 @@ class JobVacanciesControllerTest extends TestCase
             foreach ([[-1, false], [0, true], [1, true]] as [$days, $expected]) {
                 $job = $this->createVacancy(['user_id' => $owner->id, 'status' => 'open', 'moderation_status' => 'approved', 'deadline' => now()->addDays($days)->toDateString()]);
                 Sanctum::actingAs($owner, ['*']);
-                $this->apiGet('/v2/jobs/' . $job->id)->assertOk()->assertJsonPath('data.accepting_applications', $expected);
+                $expectedCloseAt = now()->addDays($days + 1)->startOfDay()->toIso8601String();
+                $this->apiGet('/v2/jobs/' . $job->id)
+                    ->assertOk()
+                    ->assertJsonPath('data.accepting_applications', $expected)
+                    ->assertJsonPath('data.applications_close_at', $expectedCloseAt)
+                    ->assertJsonPath('data.application_availability_checked_at', now()->toIso8601String());
                 Sanctum::actingAs($applicant, ['*']);
                 $this->apiGet('/v2/jobs/' . $job->id)->assertStatus($expected ? 200 : 404);
                 $this->apiPost('/v2/jobs/' . $job->id . '/apply', ['message' => 'Deadline boundary application'])

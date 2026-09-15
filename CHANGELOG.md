@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native job applications now close on an already-open screen at the server-defined deadline.** The jobs API returns the exact cutoff and the server time used to evaluate it, so Android and iOS can disable an open application sheet at the correct instant without guessing from the phone's timezone. The screen preserves the member's draft while locking submission and editing after closure.
+
 - **Native realtime now recovers after a transient configuration failure at startup.** Returning the app to the foreground retries the full realtime setup when no client could be created, instead of attempting to reconnect a client that never existed and leaving live messages disabled until another sign-in.
 
 - **Native realtime and unread badges now follow the active account through an in-place session replacement.** A replacement account gets a fresh private channel and count refresh, late responses and events from the prior account are discarded, the prior launcher-badge count is never mirrored under the new identity, and logout fully disconnects the socket.

@@ -326,6 +326,41 @@ describe('JobDetailScreen', () => {
     expect(applyToJob).not.toHaveBeenCalled();
   });
 
+  it('closes an application window at the server-authoritative instant while the sheet is open', async () => {
+    jest.useFakeTimers();
+    try {
+      jest.setSystemTime(new Date('2035-04-20T03:00:00-07:00'));
+      mockUseApi.mockReturnValue({
+        data: {
+          data: {
+            ...mockJob,
+            accepting_applications: true,
+            application_availability_checked_at: '2026-09-15T11:59:55+00:00',
+            applications_close_at: '2026-09-15T12:00:00+00:00',
+          },
+        },
+        isLoading: false,
+        error: null,
+        refresh: jest.fn(),
+      });
+
+      const screen = render(<JobDetailScreen />);
+      fireEvent.press(screen.getByText('Apply Now'));
+      fireEvent.changeText(screen.getByLabelText('Cover Message'), 'Please consider my application.');
+
+      await act(async () => {
+        jest.advanceTimersByTime(5_001);
+      });
+
+      expect(screen.getAllByText('Closed').length).toBeGreaterThan(0);
+      fireEvent.press(screen.getByText('Submit Application'));
+      expect(applyToJob).not.toHaveBeenCalled();
+      expect(screen.getByDisplayValue('Please consider my application.')).toBeTruthy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('opens the edit route for the job owner', () => {
     mockCurrentUserId = 2;
     mockUseApi.mockReturnValue({
