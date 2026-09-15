@@ -755,6 +755,52 @@ describe('AuthContext', () => {
     await waitFor(() => expect(communityRepairStore.isRepairing()).toBe(false));
   });
 
+  it('does not let a repair from an ended session navigate back into the app', async () => {
+    let releaseSwitch: () => void = () => {};
+    mockSetTenantSlug.mockImplementation(() => new Promise<void>((resolve) => {
+      releaseSwitch = resolve;
+    }));
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(SUB.id));
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalled());
+
+    await act(async () => { await result.current.logout(); });
+    expect(router.replace).toHaveBeenCalledWith('/(auth)/login');
+
+    await act(async () => { releaseSwitch(); });
+    await waitFor(() => expect(communityRepairStore.isRepairing()).toBe(false));
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(router.replace).not.toHaveBeenCalledWith('/(tabs)/home');
+  });
+
+  it('does not switch communities for an account that replaced the one being repaired', async () => {
+    let releaseList: (value: unknown) => void = () => {};
+    mockListTenants.mockImplementation(() => new Promise((resolve) => {
+      releaseList = resolve;
+    }));
+    mockStorageGet.mockResolvedValue('stored-token');
+    mockStorageGetJson.mockResolvedValue(cachedMemberOf(SUB.id));
+    mockGetMe.mockRejectedValue(Object.assign(new Error('mismatch'), { status: 403 }));
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(mockListTenants).toHaveBeenCalled());
+
+    act(() => result.current.setSession('new-account-token', {
+      ...cachedMemberOf(HUB.id), id: 99, first_name: 'New account',
+    } as never));
+    await act(async () => { releaseList({ data: [HUB, SUB] }); });
+    await waitFor(() => expect(communityRepairStore.isRepairing()).toBe(false));
+
+    expect(result.current.token).toBe('new-account-token');
+    expect(result.current.user?.id).toBe(99);
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalledWith('/(tabs)/home');
+  });
+
   it('lets the picker apologise again once a failed repair is over', async () => {
     mockSetTenantSlug.mockRejectedValue(new Error('Unable to load community'));
     mockStorageGet.mockResolvedValue('stored-token');

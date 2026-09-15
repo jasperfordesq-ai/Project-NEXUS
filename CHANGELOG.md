@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Automatic native community repair no longer outlives the account that started it.** If a member signs out or another account replaces the session while the app is correcting a token/community mismatch, the stale repair stops before switching communities and cannot navigate the ended account back into the app.
+
 - **Native session renewal now survives encrypted-storage failures without reporting a temporary session as durable.** Rotated refresh credentials are saved before access credentials, both writes are mandatory, and a failed Keychain or Keystore write leaves renewal retryable instead of installing a memory-only token that can strand the next app launch.
 
 - **Native course curriculum edits now recover from a lost creation response without duplicating content.** Cohorts, sections, lessons, quiz scaffolds and questions retain an encrypted community/account/course/content-bound operation until confirmation. Laravel records each accepted child resource atomically, replays the original result for exact sequential or simultaneous retries, and rejects changed or cross-endpoint key reuse.

@@ -214,7 +214,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * belongs to one community, so the app already knows the only right answer. The reasoning
    * and every edge lives in lib/tenancy/signInTenant.ts.
    */
-  const adoptSignInCommunity = useCallback(async (signedInUser: AnyUser): Promise<boolean> => {
+  const adoptSignInCommunity = useCallback(async (
+    signedInUser: AnyUser,
+    isCurrent: () => boolean = () => true,
+  ): Promise<boolean> => {
     if (!switchCommunity) return false;
     /*
       Raised for the whole repair, including the decision, so `tenantMismatch.ts` holds its
@@ -230,10 +233,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           currentSlug,
           adminExemption: classifyCrossCommunityAdmin(signedInUser),
         },
-        listTenants,
-        setTenantSlug: switchCommunity,
+        listTenants: async () => {
+          const response = await listTenants();
+          // A logout or replacement account may have landed while the anonymous list
+          // request was in flight. Make the old repair stop before it moves that session.
+          if (!isCurrent()) throw new Error('Session changed during community repair');
+          return response;
+        },
+        setTenantSlug: async (slug) => {
+          if (!isCurrent()) throw new Error('Session changed during community repair');
+          await switchCommunity(slug);
+          // The switch itself includes storage and network work. Its caller must never
+          // treat that completion as belonging to a session that has since ended.
+          if (!isCurrent()) throw new Error('Session changed during community repair');
+        },
       });
-      return outcome.action === 'adopt';
+      return outcome.action === 'adopt' && isCurrent();
     } finally {
       finish();
     }
@@ -265,9 +280,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!tenantContext || tenantContext.isLoading || !tenantContext.tenant) return;
 
     repairAttemptedRef.current = true;
+    const version = sessionVersionRef.current;
+    const isCurrent = () => isMountedRef.current && sessionVersionRef.current === version;
     void (async () => {
-      const moved = await adoptSignInCommunity(user);
-      if (!moved || !isMountedRef.current) return;
+      const moved = await adoptSignInCommunity(user, isCurrent);
+      if (!moved || !isCurrent()) return;
       /*
         Send them somewhere fresh. Every screen already on the stack asked the previous
         community and was refused, and `useApi` does not re-fetch just because the community
@@ -430,7 +447,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // that happened afterwards would arrive to a screen already full of errors.
     // `adoptSignInTenant` never throws: the sign-in has already succeeded by this line
     // and must not be undone by a failure to tidy up which community is showing.
-    await adoptSignInCommunity(response.user);
+    await adoptSignInCommunity(response.user, isCurrent);
     if (!isCurrent()) return;
 
     router.replace(response.user.onboarding_completed === false
