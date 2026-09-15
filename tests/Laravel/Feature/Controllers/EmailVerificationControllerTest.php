@@ -397,6 +397,40 @@ class EmailVerificationControllerTest extends TestCase
             ->count());
     }
 
+    /** A transient dispatch refusal must fail the job so Horizon retries it. */
+    public function test_send_email_verification_resend_job_retries_when_dispatch_fails(): void
+    {
+        $this->ensureEmailVerificationTokenTable();
+        $email = 'verify-retry-' . uniqid('', true) . '@example.test';
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $email,
+            'email_verified_at' => null,
+            'is_verified' => false,
+        ]);
+        $oldTokenId = DB::table('email_verification_tokens')->insertGetId([
+            'user_id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+            'token' => hash('sha256', 'still-valid-after-queue-failure'),
+            'expires_at' => now()->addDay(),
+        ]);
+        app()->instance(EmailDispatchService::class, new FailingEmailDispatchService());
+
+        try {
+            (new \App\Jobs\SendEmailVerificationResend($email, $this->testTenantId))
+                ->handle(app(\App\Services\EmailVerificationSender::class));
+            $this->fail('A refused verification email dispatch must fail the queued job.');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('Verification email dispatch failed.', $exception->getMessage());
+        }
+
+        TenantContext::setById($this->testTenantId);
+        $this->assertTrue(DB::table('email_verification_tokens')->where('id', $oldTokenId)->exists());
+        $this->assertSame(1, DB::table('email_verification_tokens')
+            ->where('user_id', $user->id)
+            ->where('tenant_id', $this->testTenantId)
+            ->count());
+    }
+
     /** The queued job sends nothing for an unknown address or an already-verified account. */
     public function test_send_email_verification_resend_job_is_silent_for_verified_or_missing(): void
     {

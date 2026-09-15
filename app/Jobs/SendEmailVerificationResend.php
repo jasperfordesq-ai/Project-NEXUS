@@ -66,7 +66,14 @@ final class SendEmailVerificationResend implements ShouldQueue
             // this point is identical for every address, so nothing here reaches
             // the request's response time.
             if ($user && empty($user['email_verified_at'])) {
-                $sender->send($user);
+                // EmailVerificationSender deliberately returns false after a
+                // provider refusal so synchronous callers can choose their own
+                // response. In this queued path, false must escape as a job
+                // failure; otherwise Horizon records success and the declared
+                // three-attempt policy never runs.
+                if (!$sender->send($user)) {
+                    throw new \RuntimeException('Verification email dispatch failed.');
+                }
             }
         } finally {
             TenantContext::reset();

@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Queued verification-email resends now use their declared retry policy.** A temporary mail-provider refusal now fails the background job so Horizon retries it up to three times, while preserving the member's previous valid verification link. Unknown and already-verified addresses remain silent and enumeration-safe.
+
 - **The canonical database schema now includes every receipt and outbox table used by the native reliability fixes.** Fresh environments and schema-based CI checks see the same idempotency columns and creation/message-delivery tables that the Laravel migrations install, preventing valid mobile writes from being rejected against a stale bootstrap schema.
 
 - **Native shift-swap requests now survive response loss without creating a second request.** The app reserves an encrypted account/community/content-bound key before transport and reuses it after interruption or restart. Laravel stores the key and request hash on the swap row, returns that original row even after it was accepted, rejected, or cancelled, rejects changed content, serializes simultaneous keyed requests, and does not repeat the recipient notification.
