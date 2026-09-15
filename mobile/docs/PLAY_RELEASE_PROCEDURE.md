@@ -279,6 +279,15 @@ a full re-upload. Verify success by reading the page afterwards, not by reloadin
 
 **Internal testing → Promote release → Production**, then review and submit.
 
+Measured on version code 12 (2026-09-15): "Promote release → Production" was
+enabled (no stale Production draft); the promote flow carried the name `12 (1.6.0)`,
+the bundle and the en-GB notes across unchanged, listed build 11 under "Not
+included" and "No app bundles from your previous release will be included"; the
+review step read "Ready to release", roll-out **100.0 %**, "Available in all
+targeted countries", 5 installs on active devices, and the device table matched
+the internal-testing one exactly (0 lost on every row). **Save** → a dialog
+"Go to Publishing overview? Your change has been saved" → "Go to overview".
+
 Two Console behaviours worth knowing before you click:
 
 - On the production review step the button is **"Save"**, and it does *not*
@@ -316,7 +325,8 @@ Measured, four times:
 | 7 (version code 8), 2026-09-09 | 7:32 PM | 8:05 PM | **33 minutes** |
 | 8 (version code 9), 2026-09-10 | 11:57 AM | 12:24 PM | **27 minutes** |
 | 9 (version code 10), 2026-09-12 | 12:05 PM | 12:36 PM | **31 minutes** |
-| 10 (version code 11), 2026-09-13 | 11:55 AM | _(fill in from Submission activity)_ | |
+| 10 (version code 11), 2026-09-13 | 11:55 AM | 12:26 PM | **31 minutes** |
+| 11 (version code 12), 2026-09-15 | 7:01 AM | _(fill in from the Production track's Releases tab)_ | |
 
 Submission 9's quick checks on Publishing overview ran for about 13 minutes ("up to
 14 minutes remaining" → "Your changes can now be sent for review") before Submit was
@@ -329,6 +339,17 @@ counted down through 12, and cleared **well inside** the quoted time, ending wit
 minutes" and ended with **"Your changes are now in review"**. Neither reported an
 issue. 🔴 Both sentences are the signal to act on — not the bar disappearing from
 view, and never the Submit button becoming clickable, which it is throughout.
+
+Submission 11 (2026-09-15): the pre-submit bar quoted "up to 14 minutes", counted
+down 13 → 12 → 11 → 9 → 8 → 7 → 6 → 5 → 3 → 2 in roughly one-minute steps and
+cleared after **about 12 minutes** with **"Your changes can now be sent for review"**
+and no issues listed. 🔴 **This time there was NO second bar**: "Send changes for
+review" went straight to **"Your changes are now in review"** with the Production
+row already under "Changes in review". So the post-submit pass is not guaranteed
+to be visible — do not wait for a bar that is not there; the sentence is the
+signal either way. The submit dialog carried no warning about a review in flight
+(build 11's had published on 2026-09-13), which is the check that trap 3 from the
+1.3.0 run did not fire.
 
 The confirmation dialog's "typically completed within 7 days" is a worst case; an
 established app making a routine update is reviewed largely automatically. Plan
