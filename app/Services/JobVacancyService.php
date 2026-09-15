@@ -1472,16 +1472,32 @@ class JobVacancyService
         }
 
         $tenantId = TenantContext::getId();
+        $vacancyId = JobApplication::where('tenant_id', $tenantId)
+            ->where('id', $applicationId)
+            ->value('vacancy_id');
+        if ($vacancyId === null) {
+            $this->errors[] = ['code' => 'RESOURCE_NOT_FOUND', 'message' => __('api.job_application_not_found')];
+            return false;
+        }
+
         try {
-            $transition = DB::transaction(function () use ($applicationId, $adminId, $status, $notes, $expectedStatus, $tenantId): ?array {
-                $application = JobApplication::with(['vacancy'])
-                    ->where('tenant_id', $tenantId)
+            $transition = DB::transaction(function () use ($applicationId, $vacancyId, $adminId, $status, $notes, $expectedStatus, $tenantId): ?array {
+                // Job offers serialize on the vacancy before touching an application.
+                // Keep the same order here so an employer decision and a candidate's
+                // offer response cannot both consume the same non-terminal state.
+                $vacancy = JobVacancy::where('tenant_id', $tenantId)
+                    ->where('id', (int) $vacancyId)
+                    ->lockForUpdate()
+                    ->first();
+                $application = JobApplication::where('tenant_id', $tenantId)
+                    ->where('vacancy_id', (int) $vacancyId)
                     ->lockForUpdate()
                     ->find($applicationId);
-                if (!$application || !$application->vacancy || (int) $application->vacancy->tenant_id !== $tenantId) {
+                if (!$vacancy || !$application) {
                     $this->errors[] = ['code' => 'RESOURCE_NOT_FOUND', 'message' => __('api.job_application_not_found')];
                     return null;
                 }
+                $application->setRelation('vacancy', $vacancy);
 
                 $isApplicantWithdraw = $status === 'withdrawn' && (int) $application->user_id === $adminId;
                 if (!$isApplicantWithdraw && !$this->canManageVacancy((int) $application->vacancy_id, (int) $application->vacancy->user_id, $adminId)) {
@@ -1553,6 +1569,22 @@ class JobVacancyService
                     $updates['reviewed_at'] = now();
                 }
                 $application->update($updates);
+
+                // Once the application is rejected or withdrawn, its pending actions
+                // must disappear in the same commit. Otherwise the candidate sees an
+                // offer/interview they can no longer validly accept.
+                if (in_array($status, ['rejected', 'withdrawn'], true)) {
+                    DB::table('job_offers')
+                        ->where('tenant_id', $tenantId)
+                        ->where('application_id', $applicationId)
+                        ->where('status', 'pending')
+                        ->update(['status' => 'withdrawn', 'responded_at' => now(), 'updated_at' => now()]);
+                    DB::table('job_interviews')
+                        ->where('tenant_id', $tenantId)
+                        ->where('application_id', $applicationId)
+                        ->whereIn('status', ['proposed', 'accepted'])
+                        ->update(['status' => 'cancelled', 'updated_at' => now()]);
+                }
                 $historyId = $this->logApplicationHistory($applicationId, $previousStatus, $status, $adminId, $reviewNotes);
                 JobApplicationDecisionDeliveryService::record(
                     $tenantId,
@@ -1760,7 +1792,35 @@ class JobVacancyService
             $applications->pop();
         }
 
-        $items = $applications->map(function ($app) {
+        $applicationIds = $applications->pluck('id')->map(static fn ($id) => (int) $id)->all();
+        $interviewsByApplication = collect();
+        $offersByApplication = collect();
+        if ($applicationIds !== []) {
+            $interviewsByApplication = DB::table('job_interviews')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('application_id', $applicationIds)
+                ->select([
+                    'id', 'application_id', 'scheduled_at', 'interview_type',
+                    'status', 'duration_mins', 'location_notes',
+                ])
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->get()
+                ->unique('application_id')
+                ->keyBy('application_id');
+            $offersByApplication = DB::table('job_offers')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('application_id', $applicationIds)
+                ->select([
+                    'id', 'application_id', 'salary_offered', 'salary_currency',
+                    'salary_type', 'start_date', 'message', 'details', 'status',
+                    'expires_at', 'responded_at',
+                ])
+                ->get()
+                ->keyBy('application_id');
+        }
+
+        $items = $applications->map(function ($app) use ($interviewsByApplication, $offersByApplication) {
             $data = $app->toArray();
             $data['id'] = (int) $data['id'];
             $data['vacancy_id'] = (int) $data['vacancy_id'];
@@ -1775,6 +1835,17 @@ class JobVacancyService
                 'is_remote' => (bool) ($data['vacancy_is_remote'] ?? false),
                 'deadline' => $data['vacancy_deadline'] ?? null,
             ];
+            $interview = $interviewsByApplication->get((int) $data['id']);
+            $offer = $offersByApplication->get((int) $data['id']);
+            $data['interview'] = $interview ? (array) $interview : null;
+            if ($offer) {
+                $offerData = (array) $offer;
+                $offerData['message'] = $offerData['message'] ?? $offerData['details'] ?? null;
+                unset($offerData['details']);
+                $data['offer'] = $offerData;
+            } else {
+                $data['offer'] = null;
+            }
             unset($data['reviewer_notes'], $data['reviewed_by'], $data['reviewed_at'], $data['cv_path']);
             unset($data['vacancy_title'], $data['vacancy_type'], $data['vacancy_commitment'],
                   $data['vacancy_status'], $data['vacancy_location'], $data['vacancy_is_remote'],

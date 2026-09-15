@@ -1038,6 +1038,60 @@ class JobVacanciesControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    public function test_my_applications_includes_candidate_interview_and_offer_actions(): void
+    {
+        $owner = $this->authenticatedUser();
+        $candidate = $this->authenticatedUser();
+        $vacancy = $this->createVacancy([
+            'user_id' => $owner->id,
+            'status' => 'open',
+            'title' => 'Candidate action state',
+        ]);
+        $applicationId = (int) DB::table('job_vacancy_applications')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'user_id' => $candidate->id,
+            'message' => 'Please show my pending actions.',
+            'status' => 'offer',
+            'stage' => 'offer',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $interviewId = (int) DB::table('job_interviews')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'application_id' => $applicationId,
+            'proposed_by' => $owner->id,
+            'interview_type' => 'video',
+            'scheduled_at' => now()->addWeek(),
+            'duration_mins' => 30,
+            'status' => 'proposed',
+            'interviewer_notes' => 'Private hiring-panel notes.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $offerId = (int) DB::table('job_offers')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'vacancy_id' => $vacancy->id,
+            'application_id' => $applicationId,
+            'user_id' => $candidate->id,
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($candidate, ['*']);
+
+        $response = $this->apiGet('/v2/jobs/my-applications');
+
+        $response->assertOk()
+            ->assertJsonPath('data.items.0.id', $applicationId)
+            ->assertJsonPath('data.items.0.interview.id', $interviewId)
+            ->assertJsonPath('data.items.0.interview.status', 'proposed')
+            ->assertJsonPath('data.items.0.offer.id', $offerId)
+            ->assertJsonPath('data.items.0.offer.status', 'pending')
+            ->assertJsonMissing(['interviewer_notes' => 'Private hiring-panel notes.']);
+    }
+
     // =====================================================================
     // USER-SPECIFIC — GET /v2/jobs/my-postings
     // =====================================================================

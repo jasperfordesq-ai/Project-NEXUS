@@ -67,7 +67,7 @@ final class JobApplicationDecisionConcurrencyTest extends TestCase
                         $waiting = true;
                         DB::connection()->beforeExecuting(function (string $query) use (&$waiting, $sockets): void {
                             $sql = strtolower($query);
-                            if ($waiting && str_contains($sql, 'from `job_vacancy_applications`') && str_contains($sql, 'for update')) {
+                            if ($waiting && str_contains($sql, 'from `job_vacancies`') && str_contains($sql, 'for update')) {
                                 $waiting = false;
                                 fwrite($sockets[1], "ready\n");
                                 if (trim((string) fgets($sockets[1])) !== 'go') throw new \RuntimeException('Job-decision barrier timed out');

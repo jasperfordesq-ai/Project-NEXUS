@@ -172,6 +172,8 @@ jest.mock('@/lib/api/jobs', () => ({
   getJobApplicationHistory: jest.fn().mockResolvedValue({
     data: [{ id: 1, application_id: 10, from_status: null, to_status: 'pending', notes: null, changed_by: null, changed_by_name: null, changed_at: '2026-03-10T00:00:00Z' }],
   }),
+  getMyInterviews: jest.fn().mockResolvedValue([]),
+  getMyOffers: jest.fn().mockResolvedValue([]),
   withdrawJobApplication: jest.fn().mockResolvedValue({ data: { message: 'withdrawn' } }),
   acceptInterview: jest.fn().mockResolvedValue(undefined),
   declineInterview: jest.fn().mockResolvedValue(undefined),
@@ -202,14 +204,17 @@ jest.mock('@/components/ui/ConfirmDialog', () => {
 
 import JobsScreen from './jobs';
 import {
+  acceptOffer,
   acceptInterview,
   createJobAlert,
   declineInterview,
   deleteJobAlert,
   getJobApplicationHistory,
+  getMyOffers,
   pauseJobAlert,
   withdrawJobApplication,
 } from '@/lib/api/jobs';
+import { ApiResponseError } from '@/lib/api/client';
 import type { JobVacancy, JobApplication, JobAlert, CreateJobAlertPayload } from '@/lib/api/jobs';
 
 const defaultPaginatedState = {
@@ -236,6 +241,8 @@ beforeEach(() => {
   (createJobAlert as jest.Mock).mockResolvedValue({ data: { id: 99, message: 'ok' } });
   (acceptInterview as jest.Mock).mockResolvedValue(undefined);
   (declineInterview as jest.Mock).mockResolvedValue(undefined);
+  (acceptOffer as jest.Mock).mockResolvedValue(undefined);
+  (getMyOffers as jest.Mock).mockResolvedValue([]);
   mockRouterPush.mockReset();
   mockJobsParams = {};
 });
@@ -520,6 +527,71 @@ describe('JobsScreen', () => {
     await act(async () => rejectAccept(new Error('stale interview')));
     fireEvent.press(view.getByText('Decline interview'));
     await waitFor(() => expect(declineInterview).toHaveBeenCalledWith(44));
+  });
+
+  it('treats a lost offer response as success only after authoritative readback', async () => {
+    const refresh = jest.fn();
+    const application: JobApplication = {
+      ...mockApplication,
+      status: 'offer',
+      offer: {
+        id: 55,
+        salary_offered: '25000.00',
+        salary_currency: 'EUR',
+        salary_type: 'annual',
+        start_date: null,
+        message: null,
+        status: 'pending',
+      },
+    };
+    let callCount = 0;
+    mockUsePaginatedApi.mockImplementation(() => {
+      callCount += 1;
+      if ((callCount - 2) % 3 === 0) return { ...defaultPaginatedState, items: [application], refresh };
+      return defaultPaginatedState;
+    });
+    (acceptOffer as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'Response lost'));
+    (getMyOffers as jest.Mock).mockResolvedValueOnce([{ ...application.offer, status: 'accepted' }]);
+
+    const view = render(<JobsScreen />);
+    fireEvent.press(view.getByText('My Applications'));
+    await act(async () => { fireEvent.press(view.getByText('Accept offer')); });
+
+    expect(getMyOffers).toHaveBeenCalledTimes(1);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(view.queryByText('Response lost')).toBeNull();
+  });
+
+  it('refreshes and keeps the error when offer readback cannot prove completion', async () => {
+    const refresh = jest.fn();
+    const application: JobApplication = {
+      ...mockApplication,
+      status: 'offer',
+      offer: {
+        id: 56,
+        salary_offered: null,
+        salary_currency: 'EUR',
+        salary_type: 'annual',
+        start_date: null,
+        message: null,
+        status: 'pending',
+      },
+    };
+    let callCount = 0;
+    mockUsePaginatedApi.mockImplementation(() => {
+      callCount += 1;
+      if ((callCount - 2) % 3 === 0) return { ...defaultPaginatedState, items: [application], refresh };
+      return defaultPaginatedState;
+    });
+    (acceptOffer as jest.Mock).mockRejectedValueOnce(new ApiResponseError(0, 'Response lost'));
+    (getMyOffers as jest.Mock).mockResolvedValueOnce([{ ...application.offer }]);
+
+    const view = render(<JobsScreen />);
+    fireEvent.press(view.getByText('My Applications'));
+    await act(async () => { fireEvent.press(view.getByText('Accept offer')); });
+
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(view.getByText('Response lost')).toBeTruthy();
   });
 
   it('renders owner postings in My Postings tab', () => {

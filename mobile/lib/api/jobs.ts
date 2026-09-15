@@ -76,7 +76,7 @@ export interface JobOffer {
   salary_type: string;
   start_date: string | null;
   message: string | null;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
 }
 
 export interface JobApplication {

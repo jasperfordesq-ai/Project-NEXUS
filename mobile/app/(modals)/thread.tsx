@@ -1574,11 +1574,12 @@ function ThreadContextCard({
   const typeLabel = t(config.labelKey);
 
   return (
-    <HeroButton
-      variant="ghost"
-      feedbackVariant="scale"
+    <Pressable
+      accessibilityRole="button"
       accessibilityLabel={t('context.open')}
       className="mx-4 mb-2"
+      style={{ alignSelf: 'stretch', minHeight: 48 }}
+      testID="thread-context-card"
       onPress={() => {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         router.push({ pathname: config.pathname, params: { id: String(context.id) } } as never);
@@ -1605,7 +1606,7 @@ function ThreadContextCard({
           <Ionicons name="open-outline" size={18} color={primary} />
         </HeroCard.Body>
       </HeroCard>
-    </HeroButton>
+    </Pressable>
   );
 }
 

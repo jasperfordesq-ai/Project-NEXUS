@@ -13,6 +13,7 @@ use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
 use App\Models\JobApplication;
 use App\Models\JobInterview;
+use App\Models\JobVacancy;
 use App\Models\Notification;
 use App\Models\Tenant;
 use App\Services\RealtimeService;
@@ -179,14 +180,37 @@ class JobInterviewService
                 'job_interview_accept',
             );
 
-            $updated = JobInterview::where('id', $interviewId)
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'proposed')
-                ->update([
-                    'status'          => 'accepted',
+            $accepted = DB::transaction(function () use ($interview, $interviewId, $userId, $notes, $tenantId): bool {
+                $vacancy = JobVacancy::where('tenant_id', $tenantId)
+                    ->where('id', (int) $interview->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                $application = JobApplication::where('tenant_id', $tenantId)
+                    ->where('id', (int) $interview->application_id)
+                    ->where('vacancy_id', (int) $interview->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                $lockedInterview = JobInterview::where('tenant_id', $tenantId)
+                    ->where('id', $interviewId)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$vacancy || !$application || !$lockedInterview || (int) $application->user_id !== $userId) {
+                    return false;
+                }
+                if ($lockedInterview->status !== 'proposed') {
+                    return $lockedInterview->status === 'accepted';
+                }
+                $applicationStatus = (string) ($application->stage ?? $application->status ?? 'applied');
+                if (in_array($applicationStatus, ['accepted', 'rejected', 'withdrawn'], true)) {
+                    return false;
+                }
+                $lockedInterview->update([
+                    'status' => 'accepted',
                     'candidate_notes' => $notes ? trim($notes) : null,
                 ]);
-            if ($updated !== 1) {
+                return true;
+            }, 3);
+            if (!$accepted) {
                 return false;
             }
 
@@ -280,14 +304,37 @@ class JobInterviewService
                 }
             }
 
-            $updated = JobInterview::where('id', $interviewId)
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'proposed')
-                ->update([
-                    'status'          => 'declined',
+            $declined = DB::transaction(function () use ($interview, $interviewId, $userId, $notes, $tenantId): bool {
+                $vacancy = JobVacancy::where('tenant_id', $tenantId)
+                    ->where('id', (int) $interview->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                $application = JobApplication::where('tenant_id', $tenantId)
+                    ->where('id', (int) $interview->application_id)
+                    ->where('vacancy_id', (int) $interview->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                $lockedInterview = JobInterview::where('tenant_id', $tenantId)
+                    ->where('id', $interviewId)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$vacancy || !$application || !$lockedInterview || (int) $application->user_id !== $userId) {
+                    return false;
+                }
+                if ($lockedInterview->status !== 'proposed') {
+                    return $lockedInterview->status === 'declined';
+                }
+                $applicationStatus = (string) ($application->stage ?? $application->status ?? 'applied');
+                if (in_array($applicationStatus, ['accepted', 'rejected', 'withdrawn'], true)) {
+                    return false;
+                }
+                $lockedInterview->update([
+                    'status' => 'declined',
                     'candidate_notes' => $notes ? trim($notes) : null,
                 ]);
-            if ($updated !== 1) {
+                return true;
+            }, 3);
+            if (!$declined) {
                 return false;
             }
 

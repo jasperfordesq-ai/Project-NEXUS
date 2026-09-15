@@ -898,6 +898,34 @@ function ExchangeDetailModalInner() {
         onClose={() => setShowRequestForm(false)}
         snapPoints={['52%', '84%']}
         title={t('detail.requestExchange')}
+        testID="exchange-request-bottom-sheet"
+        footer={(
+          <View className="flex-row flex-wrap gap-3">
+            <HeroButton
+              variant="secondary"
+              isDisabled={isSubmitting}
+              accessibilityLabel={t('detail.cancel')}
+              onPress={() => setShowRequestForm(false)}
+              style={{ flexGrow: 1, flexBasis: 'auto' }}
+            >
+              <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
+            </HeroButton>
+            <HeroButton
+              variant="primary"
+              isDisabled={isSubmitting}
+              accessibilityLabel={t('detail.sendRequest')}
+              onPress={() => void handleRequestExchange()}
+              style={{ flexGrow: 1, flexBasis: 'auto' }}
+            >
+              {isSubmitting ? (
+                <Spinner size="sm" color={onPrimary} />
+              ) : (
+                <Ionicons name="paper-plane-outline" size={16} color={onPrimary} />
+              )}
+              <HeroButton.Label style={{ color: onPrimary }}>{t('detail.sendRequest')}</HeroButton.Label>
+            </HeroButton>
+          </View>
+        )}
       >
         <View testID="exchange-request-sheet" className="gap-4 py-3">
           <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
@@ -925,31 +953,6 @@ function ExchangeDetailModalInner() {
             style={{ color: theme.text, textAlignVertical: 'top' }}
             accessibilityLabel={t('detail.requestMessagePlaceholder')}
           />
-          <View className="flex-row gap-3">
-            <HeroButton
-              variant="secondary"
-              className="min-w-0 flex-1"
-              isDisabled={isSubmitting}
-              accessibilityLabel={t('detail.cancel')}
-              onPress={() => setShowRequestForm(false)}
-            >
-              <HeroButton.Label>{t('detail.cancel')}</HeroButton.Label>
-            </HeroButton>
-            <HeroButton
-              variant="primary"
-              className="min-w-0 flex-1"
-              isDisabled={isSubmitting}
-              accessibilityLabel={t('detail.sendRequest')}
-              onPress={() => void handleRequestExchange()}
-            >
-              {isSubmitting ? (
-                <Spinner size="sm" color={onPrimary} />
-              ) : (
-                <Ionicons name="paper-plane-outline" size={16} color={onPrimary} />
-              )}
-              <HeroButton.Label style={{ color: onPrimary }}>{t('detail.sendRequest')}</HeroButton.Label>
-            </HeroButton>
-          </View>
         </View>
       </BottomSheet>
 

@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
 use App\Models\JobApplication;
+use App\Models\JobApplicationHistory;
 use App\Models\JobOffer;
 use App\Models\JobVacancy;
 use App\Models\Notification;
@@ -193,21 +194,41 @@ class JobOfferService
             // accepts — for the same offer, or for two different offers on the same
             // single-position vacancy — can never both succeed and double-credit the
             // candidate or double-fill the role.
-            $creditInfo = DB::transaction(function () use ($offer, $offerId, $tenantId) {
+            $creditInfo = DB::transaction(function () use ($offer, $offerId, $candidateUserId, $tenantId) {
                 // Serialize all accepts for this vacancy.
                 $vacancy = JobVacancy::where('id', (int) $offer->vacancy_id)
+                    ->where('tenant_id', $tenantId)
                     ->lockForUpdate()
                     ->first();
+                if (!$vacancy) {
+                    return false;
+                }
 
                 // Lock and re-read the offer after the vacancy lock. Reject uses
                 // the same order, so accept/reject cannot both consume pending.
-                $lockedOffer = JobOffer::where('id', $offerId)->lockForUpdate()->first();
+                $lockedOffer = JobOffer::where('id', $offerId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
                 if (!$lockedOffer || $lockedOffer->status !== 'pending') {
                     return false;
                 }
 
+                $application = JobApplication::where('id', (int) $lockedOffer->application_id)
+                    ->where('tenant_id', $tenantId)
+                    ->where('vacancy_id', (int) $lockedOffer->vacancy_id)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$application || (int) $application->user_id !== $candidateUserId) {
+                    return false;
+                }
+                $previousStatus = (string) ($application->stage ?? $application->status ?? 'applied');
+                if (in_array($previousStatus, ['accepted', 'rejected', 'withdrawn'], true)) {
+                    return false;
+                }
+
                 // Another candidate already filled this single-position role.
-                if ($vacancy && $vacancy->status === 'filled') {
+                if ($vacancy->status === 'filled') {
                     Log::info('JobOfferService::accept rejected — vacancy already filled', [
                         'offer_id'   => $offerId,
                         'vacancy_id' => (int) $offer->vacancy_id,
@@ -221,15 +242,25 @@ class JobOfferService
                 ]);
 
                 // Update application status to accepted
-                $offer->application->update([
+                $application->update([
                     'status' => 'accepted',
                     'stage'  => 'accepted',
                 ]);
+                JobApplicationHistory::create([
+                    'application_id' => (int) $application->id,
+                    'from_status' => $previousStatus,
+                    'to_status' => 'accepted',
+                    'changed_by' => $candidateUserId,
+                    'changed_at' => now(),
+                ]);
+                DB::table('job_interviews')
+                    ->where('tenant_id', $tenantId)
+                    ->where('vacancy_id', (int) $lockedOffer->vacancy_id)
+                    ->whereIn('status', ['proposed', 'accepted'])
+                    ->update(['status' => 'cancelled', 'updated_at' => now()]);
 
                 // Update vacancy status to filled
-                if ($vacancy) {
-                    $vacancy->update(['status' => 'filled']);
-                }
+                $vacancy->update(['status' => 'filled']);
 
                 // Withdraw any other pending offers for this single-position vacancy so a
                 // second candidate cannot also accept after the role is filled.
@@ -241,8 +272,8 @@ class JobOfferService
 
                 // Auto-credit time credits for timebank jobs. Runs exactly once: the
                 // pending→accepted transition above is serialized by the vacancy lock.
-                if ($vacancy && $vacancy->type === 'timebank' && (float) $vacancy->time_credits > 0) {
-                    $candidateId  = (int) $offer->application->user_id;
+                if ($vacancy->type === 'timebank' && (float) $vacancy->time_credits > 0) {
+                    $candidateId  = (int) $application->user_id;
                     $creditAmount = (float) $vacancy->time_credits;
                     $jobTitle     = $vacancy->title ?? __('emails.common.fallback_job');
 

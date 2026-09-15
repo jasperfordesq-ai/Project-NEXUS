@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FlatList,
@@ -32,6 +33,8 @@ import {
   pauseJobAlert,
   resumeJobAlert,
   getJobApplicationHistory,
+  getMyInterviews,
+  getMyOffers,
   withdrawJobApplication,
   acceptInterview,
   declineInterview,
@@ -400,6 +403,7 @@ function ApplicationCard({
     action: () => Promise<void>,
     onSuccess: () => void,
     fallbackError = t('applications.actionFailed'),
+    verifyUnknownOutcome?: () => Promise<boolean>,
   ) => {
     if (actionPending.current) return;
     actionPending.current = true;
@@ -411,6 +415,20 @@ function ApplicationCard({
       onSuccess();
     } catch (err) {
       if (!mountedRef.current) return;
+      if (err instanceof ApiResponseError && err.status === 0 && verifyUnknownOutcome) {
+        try {
+          const committed = await verifyUnknownOutcome();
+          if (!mountedRef.current) return;
+          if (committed) {
+            onSuccess();
+            return;
+          }
+        } catch {
+          // Keep the original write error: it is the useful explanation when
+          // the readback is also unavailable.
+        }
+        if (mountedRef.current) onApplicationChanged();
+      }
       setStatusMessage(describeApiError(err, fallbackError));
     } finally {
       actionPending.current = false;
@@ -496,6 +514,8 @@ function ApplicationCard({
               onPress={() => runApplicationAction(
                 () => acceptInterview(interview.id),
                 () => onInterviewAccepted(interview.id),
+                t('applications.actionFailed'),
+                async () => (await getMyInterviews()).some((current) => current.id === interview.id && current.status === 'accepted'),
               )}
               accessibilityLabel={t('applications.accept_interview')}
             >
@@ -509,6 +529,8 @@ function ApplicationCard({
               onPress={() => runApplicationAction(
                 () => declineInterview(interview.id),
                 () => onInterviewDeclined(interview.id),
+                t('applications.actionFailed'),
+                async () => (await getMyInterviews()).some((current) => current.id === interview.id && current.status === 'declined'),
               )}
               accessibilityLabel={t('applications.decline_interview')}
             >
@@ -542,6 +564,8 @@ function ApplicationCard({
               onPress={() => runApplicationAction(
                 () => acceptOffer(offer.id),
                 () => onOfferAccepted(offer.id),
+                t('applications.actionFailed'),
+                async () => (await getMyOffers()).some((current) => current.id === offer.id && current.status === 'accepted'),
               )}
               accessibilityLabel={t('applications.accept_offer')}
             >
@@ -555,6 +579,8 @@ function ApplicationCard({
               onPress={() => runApplicationAction(
                 () => rejectOffer(offer.id),
                 () => onOfferRejected(offer.id),
+                t('applications.actionFailed'),
+                async () => (await getMyOffers()).some((current) => current.id === offer.id && current.status === 'rejected'),
               )}
               accessibilityLabel={t('applications.decline_offer')}
             >

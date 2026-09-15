@@ -120,17 +120,22 @@ jest.mock('@/components/ui/BottomSheet', () => {
   const { Text, View } = require('react-native');
   return function MockBottomSheet({
     children,
+    footer,
+    testID,
     visible,
     title,
   }: {
     children: React.ReactNode;
+    footer?: React.ReactNode;
+    testID?: string;
     visible: boolean;
     title?: string;
   }) {
     return visible ? (
-      <View>
+      <View testID={testID}>
         {title ? <Text>{title}</Text> : null}
         {children}
+        {footer ? <View testID={testID ? `${testID}-footer` : undefined}>{footer}</View> : null}
       </View>
     ) : null;
   };
@@ -361,6 +366,7 @@ describe('ExchangeDetailModal', () => {
 
     await waitFor(() => {
       expect(getByTestId('exchange-request-sheet')).toBeTruthy();
+      expect(getByTestId('exchange-request-bottom-sheet-footer')).toBeTruthy();
       expect(getByLabelText('Proposed hours')).toBeTruthy();
       expect(getByLabelText('Add a note for the member')).toBeTruthy();
       expect(getByLabelText('Send request')).toBeTruthy();

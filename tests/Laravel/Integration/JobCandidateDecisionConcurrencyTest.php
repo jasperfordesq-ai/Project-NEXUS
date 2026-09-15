@@ -11,6 +11,7 @@ namespace Tests\Laravel\Integration;
 use App\Core\TenantContext;
 use App\Services\JobInterviewService;
 use App\Services\JobOfferService;
+use App\Services\JobVacancyService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -37,7 +38,7 @@ final class JobCandidateDecisionConcurrencyTest extends TestCase
         try {
             $results = $this->race(
                 ['accept-interview', 'decline-interview'],
-                'update `job_interviews`',
+                'from `job_interviews`',
                 fn (string $action): bool => $action === 'accept-interview'
                     ? JobInterviewService::accept($interviewId, $fixture['candidate_id'])
                     : JobInterviewService::decline($interviewId, $fixture['candidate_id']),
@@ -96,6 +97,157 @@ final class JobCandidateDecisionConcurrencyTest extends TestCase
                 self::assertTrue(JobOfferService::reject($offerId, $fixture['candidate_id']));
                 self::assertFalse(JobOfferService::accept($offerId, $fixture['candidate_id']));
             }
+        } finally {
+            $this->cleanup($fixture);
+        }
+    }
+
+    public function test_offer_accept_and_employer_rejection_have_one_consistent_winner(): void
+    {
+        $fixture = $this->fixture();
+        $offerId = (int) DB::table('job_offers')->insertGetId([
+            'tenant_id' => $fixture['tenant_id'],
+            'vacancy_id' => $fixture['vacancy_id'],
+            'application_id' => $fixture['application_id'],
+            'user_id' => $fixture['candidate_id'],
+            'status' => 'pending',
+            'expires_at' => now()->addWeek(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        try {
+            $results = $this->race(
+                ['accept-offer', 'reject-application'],
+                'from `job_',
+                function (string $action) use ($offerId, $fixture): bool {
+                    if ($action === 'accept-offer') {
+                        return JobOfferService::accept($offerId, $fixture['candidate_id']);
+                    }
+
+                    return app(JobVacancyService::class)->updateApplicationStatus(
+                        $fixture['application_id'],
+                        $fixture['employer_id'],
+                        'rejected',
+                        null,
+                        'pending',
+                    );
+                },
+                $fixture['tenant_id'],
+            );
+
+            self::assertSame(1, count(array_filter($results)), json_encode($results));
+            $applicationStatus = DB::table('job_vacancy_applications')
+                ->where('id', $fixture['application_id'])
+                ->value('status');
+            $offerStatus = DB::table('job_offers')->where('id', $offerId)->value('status');
+            $vacancyStatus = DB::table('job_vacancies')->where('id', $fixture['vacancy_id'])->value('status');
+
+            if ($applicationStatus === 'accepted') {
+                self::assertSame('accepted', $offerStatus);
+                self::assertSame('filled', $vacancyStatus);
+            } else {
+                self::assertSame('rejected', $applicationStatus);
+                self::assertSame('withdrawn', $offerStatus);
+                self::assertSame('open', $vacancyStatus);
+            }
+        } finally {
+            $this->cleanup($fixture);
+        }
+    }
+
+    public function test_interview_accept_and_employer_rejection_have_one_consistent_winner(): void
+    {
+        $fixture = $this->fixture();
+        $interviewId = (int) DB::table('job_interviews')->insertGetId([
+            'tenant_id' => $fixture['tenant_id'],
+            'vacancy_id' => $fixture['vacancy_id'],
+            'application_id' => $fixture['application_id'],
+            'proposed_by' => $fixture['employer_id'],
+            'interview_type' => 'video',
+            'scheduled_at' => now()->addWeek(),
+            'duration_mins' => 30,
+            'status' => 'proposed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        try {
+            $results = $this->race(
+                ['accept-interview', 'reject-application'],
+                'from `job_',
+                function (string $action) use ($interviewId, $fixture): bool {
+                    if ($action === 'accept-interview') {
+                        return JobInterviewService::accept($interviewId, $fixture['candidate_id']);
+                    }
+
+                    return app(JobVacancyService::class)->updateApplicationStatus(
+                        $fixture['application_id'],
+                        $fixture['employer_id'],
+                        'rejected',
+                        null,
+                        'pending',
+                    );
+                },
+                $fixture['tenant_id'],
+            );
+
+            self::assertSame(1, count(array_filter($results)), json_encode($results));
+            $applicationStatus = DB::table('job_vacancy_applications')
+                ->where('id', $fixture['application_id'])
+                ->value('status');
+            $interviewStatus = DB::table('job_interviews')->where('id', $interviewId)->value('status');
+            if ($applicationStatus === 'rejected') {
+                self::assertSame('cancelled', $interviewStatus);
+            } else {
+                self::assertSame('pending', $applicationStatus);
+                self::assertSame('accepted', $interviewStatus);
+            }
+        } finally {
+            $this->cleanup($fixture);
+        }
+    }
+
+    public function test_terminal_application_decision_closes_pending_candidate_actions(): void
+    {
+        $fixture = $this->fixture();
+        $offerId = (int) DB::table('job_offers')->insertGetId([
+            'tenant_id' => $fixture['tenant_id'],
+            'vacancy_id' => $fixture['vacancy_id'],
+            'application_id' => $fixture['application_id'],
+            'user_id' => $fixture['candidate_id'],
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $interviewId = (int) DB::table('job_interviews')->insertGetId([
+            'tenant_id' => $fixture['tenant_id'],
+            'vacancy_id' => $fixture['vacancy_id'],
+            'application_id' => $fixture['application_id'],
+            'proposed_by' => $fixture['employer_id'],
+            'interview_type' => 'video',
+            'scheduled_at' => now()->addWeek(),
+            'duration_mins' => 30,
+            'status' => 'accepted',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        try {
+            $updated = TenantContext::runForTenant(
+                $fixture['tenant_id'],
+                fn (): bool => app(JobVacancyService::class)->updateApplicationStatus(
+                    $fixture['application_id'],
+                    $fixture['employer_id'],
+                    'rejected',
+                    null,
+                    'pending',
+                ),
+            );
+
+            self::assertTrue($updated);
+            self::assertSame('withdrawn', DB::table('job_offers')->where('id', $offerId)->value('status'));
+            self::assertSame('cancelled', DB::table('job_interviews')->where('id', $interviewId)->value('status'));
         } finally {
             $this->cleanup($fixture);
         }

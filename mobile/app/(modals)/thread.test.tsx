@@ -1337,10 +1337,14 @@ describe('ThreadScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { getByLabelText, getByText } = render(<ThreadScreen />);
+    const { getByLabelText, getByText, getByTestId } = render(<ThreadScreen />);
 
     expect(getByText('Regarding')).toBeTruthy();
     expect(getByText('Job #44')).toBeTruthy();
+    expect(getByTestId('thread-context-card').props.style).toEqual(expect.objectContaining({
+      alignSelf: 'stretch',
+      minHeight: 48,
+    }));
 
     fireEvent.press(getByLabelText('Open context'));
 

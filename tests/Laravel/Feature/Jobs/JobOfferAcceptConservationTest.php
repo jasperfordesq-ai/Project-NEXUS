@@ -68,6 +68,7 @@ class JobOfferAcceptConservationTest extends TestCase
             'vacancy_id' => $vacancyId,
             'user_id'    => $candidate->id,
             'status'     => 'offered',
+            'stage'      => 'offered',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -80,6 +81,18 @@ class JobOfferAcceptConservationTest extends TestCase
             'status'         => 'pending',
             'created_at'     => now(),
             'updated_at'     => now(),
+        ]);
+        $interviewId = (int) DB::table('job_interviews')->insertGetId([
+            'tenant_id' => $tid,
+            'vacancy_id' => $vacancyId,
+            'application_id' => $applicationId,
+            'proposed_by' => $employer->id,
+            'interview_type' => 'video',
+            'scheduled_at' => now()->addWeek(),
+            'duration_mins' => 30,
+            'status' => 'accepted',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $totalBefore = (float) DB::table('users')->whereIn('id', [$employer->id, $candidate->id])->sum('balance');
@@ -104,6 +117,13 @@ class JobOfferAcceptConservationTest extends TestCase
             ->get();
         $this->assertCount(1, $rows, 'exactly one job_completion ledger row from employer to candidate; got: ' . $rows->toJson());
         $this->assertEqualsWithDelta($credits, (float) $rows->first()->amount, 0.0001, 'ledger amount matches the offered credits');
+        $this->assertSame('cancelled', DB::table('job_interviews')->where('id', $interviewId)->value('status'));
+        $this->assertDatabaseHas('job_application_history', [
+            'application_id' => $applicationId,
+            'from_status' => 'offered',
+            'to_status' => 'accepted',
+            'changed_by' => $candidate->id,
+        ]);
         // NB: the ledger row's tenant_id is intentionally not asserted here — under
         // the console test runner TenantContext::getId() drifts (observers reset),
         // so Transaction::create's HasTenantScope hook can stamp the wrong tenant.

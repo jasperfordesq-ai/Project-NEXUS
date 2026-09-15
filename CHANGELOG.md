@@ -59,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Listing-linked message threads and exchange requests now stay usable on Android.** The compact thread context link stretches across the conversation instead of collapsing into a tall narrow block over the messages, and Request exchange keeps its wrapping Cancel and Send actions in the shared safe-area-aware sheet footer above the system navigation bar.
+
+- **Native candidates can now see and safely answer real interview invitations and job offers.** My Applications includes the current candidate action state without exposing private interviewer notes, and unanswered mobile writes use an exact authoritative readback before reporting success. Vacancy, application, offer and interview decisions now share a lock order so simultaneous employer and candidate actions have one outcome; terminal decisions also close stale offers and interviews, while accepted offers record application history.
+
 - **Committed hiring decisions now retain a durable member-delivery record.** The decision, audit history and delivery fact commit together; a scheduled worker retries unfinished bell, push and realtime dispatch with bounded backoff, resumes after each completed channel, and dead-letters repeated failures for investigation. Exact decision replays also retry any still-pending delivery without duplicating the member's bell notification.
 
 - **Native hiring decisions now survive lost responses and simultaneous reviewers without duplicating or overwriting outcomes.** Candidate updates include the exact stage the owner reviewed, Laravel serializes the transition, exact replays return the committed result without repeating history or notifications, and a stale different decision returns a translated conflict. Android and iOS read the applications back after an unanswered request and refresh stale cards after conflicts.
