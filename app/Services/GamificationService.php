@@ -588,15 +588,19 @@ class GamificationService
 
         try {
             DB::transaction(function () use ($userId, $amount, $action, $description, $reference) {
-                // Prevent duplicate one-time XP awards — lock user row to serialize
+                // Prevent duplicate one-time or source-referenced XP awards.
+                // A durable source reference lets retryable domain integrations
+                // recover without paying the same action twice.
                 $oneTimeActions = ['complete_profile'];
-                if (in_array($action, $oneTimeActions)) {
-                    // Lock user row to prevent concurrent duplicate one-time awards
+                $sourceReference = trim((string) ($reference ?? ''));
+                if (in_array($action, $oneTimeActions, true) || $sourceReference !== '') {
                     DB::table('users')->where('id', $userId)->lockForUpdate()->first();
 
-                    $existing = UserXpLog::where('user_id', $userId)
-                        ->where('action', $action)
-                        ->exists();
+                    $existingQuery = UserXpLog::where('user_id', $userId)->where('action', $action);
+                    if ($sourceReference !== '') {
+                        $existingQuery->where('source_reference', $sourceReference);
+                    }
+                    $existing = $existingQuery->exists();
                     if ($existing) {
                         return;
                     }

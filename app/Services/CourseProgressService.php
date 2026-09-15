@@ -11,7 +11,6 @@ use App\Models\CourseEnrollment;
 use App\Models\CourseLesson;
 use App\Models\CourseLessonProgress;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -52,7 +51,7 @@ class CourseProgressService
      */
     public static function recompute(CourseEnrollment $enrollment, int $userId): array
     {
-        [$enrollment, $percent, $justCompleted] = DB::transaction(function () use ($enrollment) {
+        [$enrollment, $percent, $justCompleted] = DB::transaction(function () use ($enrollment, $userId) {
             // Requests can carry independently loaded, stale enrolments. Serialize
             // the transition against the persisted row before firing integrations.
             $enrollment = CourseEnrollment::whereKey($enrollment->id)->lockForUpdate()->firstOrFail();
@@ -80,11 +79,18 @@ class CourseProgressService
             if ($justCompleted) {
                 Course::where('id', $enrollment->course_id)->increment('completion_count');
             }
+            if ($enrollment->status === 'completed') {
+                CourseCompletionDeliveryService::record($enrollment);
+            }
             return [$enrollment, $percent, $justCompleted];
         });
 
-        if ($justCompleted) {
-            self::onCourseCompleted($enrollment, $userId);
+        if ($enrollment->status === 'completed') {
+            app(CourseCompletionDeliveryService::class)->dispatchForEnrollment(
+                (int) $enrollment->tenant_id,
+                (int) $enrollment->id,
+                true,
+            );
         }
 
         return [
@@ -94,46 +100,4 @@ class CourseProgressService
         ];
     }
 
-    /**
-     * Fired exactly once when a learner finishes a course.
-     *
-     * Phase 1: bump the course completion counter + award gamification XP/badge.
-     * Phase 3 extends this with learn/teach-to-earn credits, certificate issuance,
-     * and feed posts. Each integration is wrapped defensively so a failure in one
-     * never blocks course completion.
-     */
-    private static function onCourseCompleted(CourseEnrollment $enrollment, int $userId): void
-    {
-        // Issue a completion certificate (idempotent). Guarded so a certificate
-        // failure never blocks the learner's progress.
-        try {
-            CourseCertificateService::issue($enrollment->course_id, $userId);
-        } catch (\Throwable $e) {
-            Log::warning('[CourseProgress] certificate issue failed', ['error' => $e->getMessage()]);
-        }
-
-        // Completion notification (in-app + email), rendered in the learner's locale.
-        try {
-            CourseNotificationService::completed($enrollment->course_id, $userId);
-        } catch (\Throwable $e) {
-            Log::warning('[CourseProgress] completion notification failed', ['error' => $e->getMessage()]);
-        }
-
-        // Gamification: award XP + a course-completion badge. Guarded so a
-        // gamification outage never blocks the learner's progress.
-        try {
-            if (class_exists(\App\Services\GamificationService::class)) {
-                $courseTitle = (string) (Course::where('id', $enrollment->course_id)->value('title') ?? '');
-                \App\Services\GamificationService::awardXP(
-                    $userId,
-                    50,
-                    'course.completed',
-                    __('svc_notifications_2.course.completed', ['title' => $courseTitle])
-                );
-                \App\Services\GamificationService::awardBadgeByKey($userId, 'course_graduate');
-            }
-        } catch (\Throwable $e) {
-            Log::warning('[CourseProgress] gamification award failed', ['error' => $e->getMessage()]);
-        }
-    }
 }

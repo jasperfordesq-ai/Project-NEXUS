@@ -13,6 +13,7 @@ use App\Models\Course;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * CourseNotificationService — learner notifications for the Courses module.
@@ -48,45 +49,96 @@ class CourseNotificationService
     public static function completed(int $courseId, int $userId): void
     {
         try {
-            $course = Course::find($courseId);
-            $user = self::recipient($userId);
-            if (!$course || !$user) {
-                return;
-            }
-
-            LocaleContext::withLocale($user, function () use ($course, $user, $userId) {
-                $link = self::courseUrl($course->slug);
-
-                // In-app
-                $message = __('svc_notifications_2.course.completed', ['title' => $course->title]);
-                Notification::createNotification($userId, $message, $link, 'course');
-                \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'course', $message, $link);
-
-                // Email (best-effort)
-                if (!empty($user->email)) {
-                    $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
-                    $html = EmailTemplateBuilder::make()
-                        ->title(__('emails_misc.course_completed.title'))
-                        ->greeting($firstName)
-                        ->paragraph(__('emails_misc.course_completed.body', ['title' => $course->title]))
-                        ->button(__('emails_misc.course_completed.cta'), $link)
-                        ->render();
-
-                    EmailDispatchService::sendRaw(
-                        $user->email,
-                        __('emails_misc.course_completed.subject', ['title' => $course->title]),
-                        $html,
-                        null,
-                        null,
-                        null,
-                        'course_completed',
-                        ['tenant_id' => TenantContext::getId()]
-                    );
-                }
-            });
+            self::completedReliably($courseId, $userId);
         } catch (\Throwable $e) {
             Log::warning('[CourseNotification] completed failed', ['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Deliver a course-completion notice with replay-safe bell and email state.
+     * Throws when durable email acceptance is not established so the caller's
+     * completion outbox can retry it.
+     */
+    public static function completedReliably(int $courseId, int $userId, ?string $idempotencyKey = null): void
+    {
+        $course = Course::find($courseId);
+        $user = self::recipient($userId);
+        if (!$course || !$user) {
+            throw new \RuntimeException('course_completion_notification_source_missing');
+        }
+        $idempotencyKey ??= sprintf(
+            'course-completed:%d:%d:%d',
+            TenantContext::getId(),
+            $courseId,
+            $userId,
+        );
+
+        LocaleContext::withLocale($user, function () use ($course, $user, $userId, $idempotencyKey): void {
+            $link = self::courseUrl($course->slug);
+            $message = __('svc_notifications_2.course.completed', ['title' => $course->title]);
+
+            $bellExists = DB::table('notifications')
+                ->where('tenant_id', TenantContext::getId())
+                ->where('user_id', $userId)
+                ->where('idempotency_key', $idempotencyKey)
+                ->exists();
+            if (!$bellExists) {
+                Notification::createNotification(
+                    $userId,
+                    $message,
+                    $link,
+                    'course',
+                    false,
+                    TenantContext::getId(),
+                    $idempotencyKey,
+                );
+                NotificationDispatcher::fanOutPush($userId, 'course', $message, $link);
+            }
+
+            if (empty($user->email) || self::successfulCompletionEmailExists($idempotencyKey)) {
+                return;
+            }
+
+            $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
+            $html = EmailTemplateBuilder::make()
+                ->title(__('emails_misc.course_completed.title'))
+                ->greeting($firstName)
+                ->paragraph(__('emails_misc.course_completed.body', ['title' => $course->title]))
+                ->button(__('emails_misc.course_completed.cta'), $link)
+                ->render();
+
+            $sent = EmailDispatchService::sendRaw(
+                $user->email,
+                __('emails_misc.course_completed.subject', ['title' => $course->title]),
+                $html,
+                null,
+                null,
+                null,
+                'course_completed',
+                [
+                    'tenant_id' => TenantContext::getId(),
+                    'idempotency_key' => $idempotencyKey,
+                    'dispatch_id' => substr(hash('sha256', $idempotencyKey), 0, 64),
+                ]
+            );
+            if (!$sent) {
+                throw new \RuntimeException('course_completion_email_not_accepted');
+            }
+        });
+    }
+
+    private static function successfulCompletionEmailExists(string $idempotencyKey): bool
+    {
+        if (!Schema::hasTable('email_log') || !Schema::hasColumn('email_log', 'idempotency_key')) {
+            return false;
+        }
+
+        return DB::table('email_log')
+            ->where('tenant_id', TenantContext::getId())
+            ->where('idempotency_key', $idempotencyKey)
+            ->whereIn('status', ['sent', 'delivered'])
+            ->exists();
     }
 
     /**

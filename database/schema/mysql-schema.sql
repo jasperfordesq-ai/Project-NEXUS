@@ -2605,6 +2605,30 @@ CREATE TABLE `course_cohorts` (
   KEY `course_cohorts_tenant_id_index` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `course_completion_delivery_outbox`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `course_completion_delivery_outbox` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint(20) unsigned NOT NULL,
+  `enrollment_id` bigint(20) unsigned NOT NULL,
+  `course_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `next_attempt_at` timestamp NULL DEFAULT NULL,
+  `claim_until` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `dead_lettered_at` timestamp NULL DEFAULT NULL,
+  `last_error` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `course_completion_delivery_enrollment_unique` (`tenant_id`,`enrollment_id`),
+  KEY `course_completion_delivery_pending_index` (`completed_at`,`dead_lettered_at`,`next_attempt_at`,`claim_until`),
+  KEY `course_completion_delivery_outbox_enrollment_id_foreign` (`enrollment_id`),
+  CONSTRAINT `course_completion_delivery_outbox_enrollment_id_foreign` FOREIGN KEY (`enrollment_id`) REFERENCES `course_enrollments` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `course_discussions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -12628,7 +12652,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=441 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=442 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15279,11 +15303,13 @@ CREATE TABLE `notifications` (
   `created_at` datetime DEFAULT current_timestamp(),
   `link` varchar(255) DEFAULT NULL,
   `type` varchar(50) DEFAULT 'system',
+  `idempotency_key` varchar(191) DEFAULT NULL,
   `actor_id` int(11) DEFAULT NULL,
   `read_at` timestamp NULL DEFAULT NULL,
   `tenant_id` int(11) NOT NULL,
   `title` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `notifications_recipient_idempotency_unique` (`tenant_id`,`user_id`,`idempotency_key`),
   KEY `user_id` (`user_id`),
   KEY `idx_deleted_at` (`deleted_at`),
   KEY `idx_notifications_tenant_id` (`tenant_id`),
@@ -21392,7 +21418,8 @@ INSERT INTO `laravel_migrations` VALUES
 (437,'2026_09_14_220000_create_poll_creation_receipts',128),
 (438,'2026_09_14_230000_create_message_delivery_outbox',128),
 (439,'2026_09_14_234000_create_volunteer_opportunity_creation_receipts',128),
-(440,'2026_09_14_235000_add_shift_swap_request_idempotency',128);
+(440,'2026_09_14_235000_add_shift_swap_request_idempotency',128),
+(441,'2026_09_15_120000_create_course_completion_delivery_outbox',129);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

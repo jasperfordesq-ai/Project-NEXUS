@@ -1382,9 +1382,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CourseNotificationService.php:40:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/CourseNotificationService.php:41:NotificationDispatcher::fanOutPush",
             "file": "app/Services/CourseNotificationService.php",
-            "line": 40,
+            "line": 41,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1395,12 +1395,12 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CourseNotificationService.php:63:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/CourseNotificationService.php:96:NotificationDispatcher::fanOutPush",
             "file": "app/Services/CourseNotificationService.php",
-            "line": 63,
+            "line": 96,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
-            "recipient_expression": "(int) $userId",
+            "recipient_expression": "$userId",
             "title_expression": null,
             "body_expression": "$message",
             "type_expression": "course",
@@ -1863,9 +1863,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GamificationService.php:680:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GamificationService.php:684:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GamificationService.php",
-            "line": 680,
+            "line": 684,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

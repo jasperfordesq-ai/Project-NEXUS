@@ -209,6 +209,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('messages-process-delivery-outbox');
 
+        // Course completion commits with a durable repair fact. This consumer
+        // retries certificate, member notification and gamification work after
+        // an application, mail or queue failure without repeating the course.
+        $schedule->command('courses:process-completion-outbox --limit=100')
+            ->everyMinute()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->name('courses-process-completion-outbox');
+
         // Retry durable podcast storage deletions. Domain rows never lose the
         // last object pointer before this ledger confirms cleanup succeeded.
         $schedule->command('podcasts:dispatch-media-cleanup --limit=100')

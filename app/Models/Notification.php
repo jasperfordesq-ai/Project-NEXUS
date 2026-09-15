@@ -27,7 +27,7 @@ class Notification extends Model
 
     protected $fillable = [
         'tenant_id', 'user_id', 'type', 'message',
-        'link', 'is_read', 'created_at',
+        'link', 'idempotency_key', 'is_read', 'created_at',
     ];
 
     /**
@@ -134,6 +134,7 @@ class Notification extends Model
      * @param bool     $isImportant Whether this is a high-priority notification
      * @param int|null $tenantId    Explicit tenant ID for cross-tenant notifications (e.g. federation).
      *                              When null, uses the recipient user's tenant.
+     * @param string|null $idempotencyKey Stable per-recipient business-event key.
      */
     public static function createNotification(
         int $userId,
@@ -141,11 +142,12 @@ class Notification extends Model
         ?string $link = null,
         string $type = 'info',
         bool $isImportant = false,
-        ?int $tenantId = null
+        ?int $tenantId = null,
+        ?string $idempotencyKey = null,
     ): int {
         $tenantId = self::resolveTenantIdForRecipient($userId, $tenantId, 'Notification::createNotification');
 
-        $id = DB::table('notifications')->insertGetId([
+        $row = [
             'user_id' => $userId,
             'tenant_id' => $tenantId,
             'message' => $message,
@@ -153,7 +155,19 @@ class Notification extends Model
             'type' => $type,
             'is_read' => 0,
             'created_at' => now(),
-        ]);
+        ];
+        $idempotencyKey = trim((string) ($idempotencyKey ?? ''));
+        if ($idempotencyKey !== '') {
+            $row['idempotency_key'] = mb_substr($idempotencyKey, 0, 191);
+            DB::table('notifications')->insertOrIgnore($row);
+            return (int) DB::table('notifications')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('idempotency_key', $row['idempotency_key'])
+                ->value('id');
+        }
+
+        $id = DB::table('notifications')->insertGetId($row);
 
         return (int) $id;
     }
