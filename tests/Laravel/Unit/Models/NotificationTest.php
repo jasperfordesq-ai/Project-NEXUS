@@ -37,7 +37,7 @@ class NotificationTest extends TestCase
     {
         $expected = [
             'tenant_id', 'user_id', 'type', 'message',
-            'link', 'is_read', 'created_at',
+            'link', 'idempotency_key', 'is_read', 'created_at',
         ];
         $this->assertEquals($expected, $this->model->getFillable());
     }
