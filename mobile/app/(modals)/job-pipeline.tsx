@@ -52,6 +52,7 @@ import {
   reserveJobHiringActionOperation,
 } from '@/lib/jobHiringActionOperation';
 import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 const PIPELINE_COLUMNS = ['pending', 'screening', 'reviewed', 'shortlisted', 'interview', 'offer', 'accepted', 'rejected', 'withdrawn'] as const;
 type PipelineStatus = (typeof PIPELINE_COLUMNS)[number];
@@ -500,7 +501,7 @@ function PipelineApplicationCard({
             {activeInterview ? (
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
                 {t('owner.interviewSummary', {
-                  date: new Date(activeInterview.scheduled_at).toLocaleString(),
+                  date: new Date(activeInterview.scheduled_at).toLocaleString(dateLocale()),
                   status: t(`owner.interviewStatus.${activeInterview.status}`),
                 })}
               </Text>
@@ -788,7 +789,7 @@ function HiringActionSheet({
                 ) : (
                   <HeroButton variant="secondary" onPress={chooseInterviewDate} testID="hiring-interview-datetime">
                     <Ionicons name="calendar-outline" size={18} color={primary} />
-                    <HeroButton.Label>{scheduledAt.toLocaleString()}</HeroButton.Label>
+                    <HeroButton.Label>{scheduledAt.toLocaleString(dateLocale())}</HeroButton.Label>
                   </HeroButton>
                 )}
               </View>
@@ -877,7 +878,7 @@ function HiringActionSheet({
                 ) : (
                   <HeroButton variant="secondary" onPress={chooseStartDate} testID="hiring-offer-start-date">
                     <Ionicons name="calendar-outline" size={18} color={primary} />
-                    <HeroButton.Label>{startDate ? startDate.toLocaleDateString() : t('owner.addStartDate')}</HeroButton.Label>
+                    <HeroButton.Label>{startDate ? startDate.toLocaleDateString(dateLocale()) : t('owner.addStartDate')}</HeroButton.Label>
                   </HeroButton>
                 )}
               </View>
