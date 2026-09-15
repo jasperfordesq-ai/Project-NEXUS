@@ -7,17 +7,15 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
-use App\I18n\LocaleContext;
+use App\Exceptions\SafeguardingPolicyException;
 use App\Models\JobAlert;
 use App\Models\JobApplication;
 use App\Models\JobApplicationHistory;
 use App\Models\JobVacancy;
 use App\Models\SavedJob;
 use App\Models\User;
-use App\Models\Notification;
 use App\Services\JobModerationService;
 use App\Services\JobSpamDetectionService;
-use App\Services\RealtimeService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -1493,7 +1491,18 @@ class JobVacancyService
 
                 $previousStatus = $application->stage ?? $application->status ?? 'applied';
                 if ($previousStatus === $status) {
-                    return ['changed' => false, 'application' => $application, 'previous_status' => $previousStatus];
+                    $historyId = DB::table('job_application_decision_delivery_outbox')
+                        ->where('tenant_id', $tenantId)
+                        ->where('application_id', $applicationId)
+                        ->where('to_status', $status)
+                        ->orderByDesc('history_id')
+                        ->value('history_id');
+                    return [
+                        'changed' => false,
+                        'application' => $application,
+                        'previous_status' => $previousStatus,
+                        'history_id' => $historyId === null ? null : (int) $historyId,
+                    ];
                 }
                 if ($expectedStatus !== null && $previousStatus !== $expectedStatus) {
                     $this->errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.job_application_decision_conflict')];
@@ -1544,13 +1553,31 @@ class JobVacancyService
                     $updates['reviewed_at'] = now();
                 }
                 $application->update($updates);
-                $this->logApplicationHistory($applicationId, $previousStatus, $status, $adminId, $reviewNotes);
+                $historyId = $this->logApplicationHistory($applicationId, $previousStatus, $status, $adminId, $reviewNotes);
+                JobApplicationDecisionDeliveryService::record(
+                    $tenantId,
+                    $historyId,
+                    $applicationId,
+                    $previousStatus,
+                    $status,
+                );
 
-                return ['changed' => true, 'application' => $application, 'previous_status' => $previousStatus];
+                return [
+                    'changed' => true,
+                    'application' => $application,
+                    'previous_status' => $previousStatus,
+                    'history_id' => $historyId,
+                ];
             }, 3);
 
             if ($transition === null) return false;
-            if ($transition['changed'] === false) return true;
+            $historyId = $transition['history_id'];
+            if ($transition['changed'] === false) {
+                if ($historyId !== null) {
+                    app(JobApplicationDecisionDeliveryService::class)->dispatchForHistory($tenantId, $historyId, true);
+                }
+                return true;
+            }
 
             /** @var JobApplication $application */
             $application = $transition['application'];
@@ -1570,49 +1597,11 @@ class JobVacancyService
                 Log::warning('JobVacancyService::updateApplicationStatus webhook dispatch failed: ' . $e->getMessage());
             }
 
-            // Notify the applicant about their status change
-            try {
-                $applicantId = (int) $application->user_id;
-                $applicant = DB::table('users')
-                    ->where('id', $applicantId)
-                    ->where('tenant_id', $tenantId)
-                    ->select(['id', 'preferred_language'])
-                    ->first();
-
-                LocaleContext::withLocale($applicant, function () use ($application, $applicationId, $applicantId, $status, $previousStatus) {
-                    $jobTitle = $application->vacancy->title ?? __('emails.common.fallback_job');
-
-                    $message = match ($status) {
-                        'shortlisted' => __('svc_notifications.job_application.shortlisted', ['title' => $jobTitle]),
-                        'rejected'    => __('svc_notifications.job_application.rejected', ['title' => $jobTitle]),
-                        'hired', 'accepted' => __('svc_notifications.job_application.hired', ['title' => $jobTitle]),
-                        default       => __('svc_notifications.job_application.status_updated', ['title' => $jobTitle, 'status' => $status]),
-                    };
-
-                    Notification::createNotification(
-                        $applicantId,
-                        $message,
-                        "/jobs/{$application->vacancy_id}",
-                        'job_application'
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($applicantId), 'job_application', $message, "/jobs/{$application->vacancy_id}");
-
-                    // Real-time broadcast to candidate
-                    RealtimeService::broadcastOnly($applicantId, $message, [
-                        'type'        => 'job_application_status',
-                        'job_id'      => (int) $application->vacancy_id,
-                        'job_title'   => $jobTitle,
-                        'application_id' => $applicationId,
-                        'from_status' => $previousStatus,
-                        'to_status'   => $status,
-                        'message'     => $message,
-                    ]);
-                });
-            } catch (\Throwable $e) {
-                Log::warning('JobVacancyService::updateApplicationStatus notification failed', [
+            if (!app(JobApplicationDecisionDeliveryService::class)->dispatchForHistory($tenantId, $historyId, true)) {
+                Log::warning('JobVacancyService::updateApplicationStatus delivery remains pending', [
                     'application_id' => $applicationId,
+                    'history_id' => $historyId,
                     'status' => $status,
-                    'error' => $e->getMessage(),
                 ]);
             }
 
@@ -2635,20 +2624,16 @@ class JobVacancyService
     /**
      * Log an application status change to history.
      */
-    private function logApplicationHistory(int $applicationId, ?string $fromStatus, string $toStatus, int $changedBy, ?string $notes = null): void
+    private function logApplicationHistory(int $applicationId, ?string $fromStatus, string $toStatus, int $changedBy, ?string $notes = null): int
     {
-        try {
-            JobApplicationHistory::create([
-                'application_id' => $applicationId,
-                'from_status' => $fromStatus,
-                'to_status' => $toStatus,
-                'changed_by' => $changedBy,
-                'changed_at' => now(),
-                'notes' => $notes ? trim($notes) : null,
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning('JobVacancyService: Failed to log application history: ' . $e->getMessage());
-        }
+        return (int) JobApplicationHistory::create([
+            'application_id' => $applicationId,
+            'from_status' => $fromStatus,
+            'to_status' => $toStatus,
+            'changed_by' => $changedBy,
+            'changed_at' => now(),
+            'notes' => $notes ? trim($notes) : null,
+        ])->getKey();
     }
 
     /**

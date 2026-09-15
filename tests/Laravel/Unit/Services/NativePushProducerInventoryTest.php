@@ -34,6 +34,7 @@ class NativePushProducerInventoryTest extends TestCase
     {
         $paths = [
             base_path('app/Listeners/NotifyJobAlertSubscribers.php'),
+            base_path('app/Services/JobApplicationDecisionDeliveryService.php'),
             base_path('app/Services/JobInterviewService.php'),
             base_path('app/Services/JobOfferService.php'),
             base_path('app/Services/JobVacancyService.php'),

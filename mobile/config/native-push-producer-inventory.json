@@ -2123,6 +2123,19 @@
             "data_expression": null
         },
         {
+            "id": "app/Services/JobApplicationDecisionDeliveryService.php:219:NotificationDispatcher::fanOutPush",
+            "file": "app/Services/JobApplicationDecisionDeliveryService.php",
+            "line": 219,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "$userId",
+            "title_expression": null,
+            "body_expression": "$message",
+            "type_expression": "job_application",
+            "link_expression": "$link",
+            "data_expression": null
+        },
+        {
             "id": "app/Services/JobExpiryNotificationService.php:124:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobExpiryNotificationService.php",
             "line": 124,
@@ -2344,9 +2357,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobVacancyService.php:882:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Services/JobVacancyService.php:880:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Services/JobVacancyService.php",
-            "line": 882,
+            "line": 880,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,
@@ -2354,19 +2367,6 @@
             "body_expression": null,
             "type_expression": "job_flagged_spam",
             "link_expression": "/admin/jobs/moderation",
-            "data_expression": null
-        },
-        {
-            "id": "app/Services/JobVacancyService.php:1598:NotificationDispatcher::fanOutPush",
-            "file": "app/Services/JobVacancyService.php",
-            "line": 1598,
-            "transport": "NotificationDispatcher::fanOutPush",
-            "role": "producer",
-            "recipient_expression": "(int) $applicantId",
-            "title_expression": null,
-            "body_expression": "$message",
-            "type_expression": "job_application",
-            "link_expression": "\"/jobs/{$application->vacancy_id}\"",
             "data_expression": null
         },
         {
