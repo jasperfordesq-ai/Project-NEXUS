@@ -318,7 +318,7 @@ Two Console behaviours worth knowing before you click:
 
 ## 5. How long the review actually takes
 
-Measured, four times:
+Measured, five times:
 
 | Submission | Submitted for review | Published | Review time |
 | --- | --- | --- | --- |
@@ -326,7 +326,7 @@ Measured, four times:
 | 8 (version code 9), 2026-09-10 | 11:57 AM | 12:24 PM | **27 minutes** |
 | 9 (version code 10), 2026-09-12 | 12:05 PM | 12:36 PM | **31 minutes** |
 | 10 (version code 11), 2026-09-13 | 11:55 AM | 12:26 PM | **31 minutes** |
-| 11 (version code 12), 2026-09-15 | 7:01 AM | _(fill in from the Production track's Releases tab)_ | |
+| 11 (version code 12), 2026-09-15 | 7:01 AM | 7:27 AM | **26 minutes** |
 
 Submission 9's quick checks on Publishing overview ran for about 13 minutes ("up to
 14 minutes remaining" → "Your changes can now be sent for review") before Submit was
