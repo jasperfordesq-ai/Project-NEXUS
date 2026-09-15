@@ -35,10 +35,7 @@
 
       {% if not poll.options.length %}
         <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_gamification.ranked.no_options") }}</p></div>
-      {% elif myRankings.length or poll.status != "open" %}
-        {% if myRankings.length and poll.status == "open" %}
-          <div class="govuk-inset-text">{{ t("govuk_alpha_gamification.ranked.already_ranked") }}</div>
-        {% endif %}
+      {% elif resultsVisible or poll.status != "open" %}
         <h2 class="govuk-heading-l">{{ t("govuk_alpha_gamification.ranked.results_heading") }}</h2>
         <p class="govuk-body-s nexus-alpha-meta">
           {{ tc("govuk_alpha_gamification.ranked.total_voters", rankedResults.totalVoters, { count: rankedResults.totalVoters }) }}
@@ -55,6 +52,11 @@
             </div>
           {% endfor %}
         {% endif %}
+      {% elif myRankings.length %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("govuk_alpha_gamification.ranked.already_ranked") }}</p>
+          <p class="govuk-body">{{ t("polls.results_pending_note") }}</p>
+        </div>
       {% else %}
         <div class="govuk-inset-text">{{ t("govuk_alpha_gamification.ranked.how_it_works") }}</div>
         <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}">

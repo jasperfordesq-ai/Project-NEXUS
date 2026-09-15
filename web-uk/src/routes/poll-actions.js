@@ -164,6 +164,7 @@ function rankedResultRows(result, t) {
   });
   return {
     poll: normalizePoll(payload.poll, t),
+    resultsVisible: Boolean(payload.results_visible ?? payload.resultsVisible),
     rankedResults: {
       totalVoters: positiveInteger(rankedResults.total_voters || rankedResults.totalVoters) || 0,
       rows,
@@ -496,6 +497,7 @@ router.get('/:id(\\d+)/rank', asyncRoute(async (req, res) => {
     title: ranked.poll.question || res.locals.t('govuk_alpha_gamification.ranked.title'),
     activeNav: 'explore',
     poll: ranked.poll,
+    resultsVisible: ranked.resultsVisible,
     rankedResults: ranked.rankedResults,
     myRankings: ranked.myRankings,
     statusBanner: pollStatusBanner(req.query && req.query.status, res.locals.t)

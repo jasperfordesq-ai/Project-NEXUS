@@ -15631,13 +15631,8 @@ describe('shared accessible frontend shell', () => {
     api.getPollRankedResults.mockResolvedValue({
       data: {
         poll: rankedPoll,
-        ranked_results: {
-          total_voters: 2,
-          results: [
-            { option_id: 11, text: 'Orchard', votes: 2 },
-            { option_id: 12, text: 'Repair cafe', votes: 1 }
-          ]
-        },
+        ranked_results: null,
+        results_visible: false,
         my_rankings: [{ option_id: 11, rank: 1 }]
       }
     });
@@ -15717,9 +15712,9 @@ describe('shared accessible frontend shell', () => {
     expect(ranked.text).toContain('Ranked');
     expect(ranked.text).toContain('Rank the neighbourhood ideas');
     expect(ranked.text).toContain('Your ranking has been recorded.');
-    expect(ranked.text).toContain('Results');
-    expect(ranked.text).toContain('2 voters');
-    expect(ranked.text).toContain('Orchard');
+    expect(ranked.text).toContain('You have already submitted your ranking for this poll.');
+    expect(ranked.text).toContain('You have voted. The results will be shown when this poll closes.');
+    expect(ranked.text).not.toContain('2 voters');
 
     const create = await request(app)
       .get('/polls/parity/create?status=poll-create-failed')
@@ -15968,6 +15963,7 @@ describe('shared accessible frontend shell', () => {
             { option_id: 3, text: '', votes: 0 }
           ]
         },
+        results_visible: true,
         my_rankings: [{ option_id: 1, rank: 1 }]
       }
     });
@@ -15983,6 +15979,37 @@ describe('shared accessible frontend shell', () => {
     expect(ranked.text).toContain(tc('govuk_alpha_gamification.ranked.first_choice_votes', 2, { count: 2 }));
     expect(ranked.text).toContain(t('govuk_alpha_gamification.common.unknown_member'));
     expect((ranked.text.match(/govuk-tag--green/g) || [])).toHaveLength(2);
+  });
+
+  it('shows open ranked results only when Laravel authorizes this viewer', async () => {
+    const api = require('../src/lib/api');
+    api.getPollRankedResults.mockResolvedValue({
+      data: {
+        poll: {
+          id: 45,
+          question: 'Choose a workshop',
+          status: 'open',
+          poll_type: 'ranked',
+          options: [{ id: 1, text: 'Repair cafe' }]
+        },
+        ranked_results: {
+          total_voters: 2,
+          results: [{ option_id: 1, text: 'Repair cafe', votes: 2 }]
+        },
+        results_visible: true,
+        my_rankings: []
+      }
+    });
+
+    const ranked = await request(app)
+      .get('/polls/45/rank')
+      .set('Cookie', signedCookieHeader());
+
+    expect(ranked.status).toBe(200);
+    expect(ranked.text).toContain('Results');
+    expect(ranked.text).toContain('2 voters');
+    expect(ranked.text).toContain('Repair cafe');
+    expect(ranked.text).not.toContain('name="rank[1]"');
   });
 
   it('renders poll create and manage from their exact Arabic Laravel catalogs', async () => {
