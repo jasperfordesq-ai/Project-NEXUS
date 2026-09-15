@@ -57,6 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NEXUS_DELIVERY_ORIGINS` is set in the per-installation env file (hostnames deliberately are not
   hardcoded in the repo, so a new installation configures its own).
 
+### Changed
+
+- Native app version 1.7.0, Android version code 13: the internal-testing build containing the completed mobile audit, polished federation and listing/message layouts, reliable exchange sheets, employer interview and offer actions, and the native date picker required by those hiring flows. The new runtime prevents this native dependency surface from being sent to the 1.6.0 binary by an over-the-air update.
+
 ### Fixed
 
 - **Native hiring dates now follow the language selected inside the app.** Interview summaries, the Android interview picker label and offer start dates use the app's regional locale instead of silently falling back to the phone's default language.
