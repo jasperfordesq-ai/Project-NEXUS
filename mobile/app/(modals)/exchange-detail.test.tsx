@@ -121,12 +121,14 @@ jest.mock('@/components/ui/BottomSheet', () => {
   return function MockBottomSheet({
     children,
     footer,
+    headerActions,
     testID,
     visible,
     title,
   }: {
     children: React.ReactNode;
     footer?: React.ReactNode;
+    headerActions?: React.ReactNode;
     testID?: string;
     visible: boolean;
     title?: string;
@@ -134,6 +136,7 @@ jest.mock('@/components/ui/BottomSheet', () => {
     return visible ? (
       <View testID={testID}>
         {title ? <Text>{title}</Text> : null}
+        {headerActions ? <View testID={testID ? `${testID}-header-actions` : undefined}>{headerActions}</View> : null}
         {children}
         {footer ? <View testID={testID ? `${testID}-footer` : undefined}>{footer}</View> : null}
       </View>
@@ -366,7 +369,7 @@ describe('ExchangeDetailModal', () => {
 
     await waitFor(() => {
       expect(getByTestId('exchange-request-sheet')).toBeTruthy();
-      expect(getByTestId('exchange-request-bottom-sheet-footer')).toBeTruthy();
+      expect(getByTestId('exchange-request-bottom-sheet-header-actions')).toBeTruthy();
       expect(getByLabelText('Proposed hours')).toBeTruthy();
       expect(getByLabelText('Add a note for the member')).toBeTruthy();
       expect(getByLabelText('Send request')).toBeTruthy();

@@ -49,6 +49,16 @@ jest.mock('heroui-native', () => {
   return { BottomSheet: MockBottomSheet };
 });
 
+jest.mock('@gorhom/bottom-sheet', () => {
+  const { View } = require('react-native');
+  return {
+    BottomSheetFooter: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+    BottomSheetScrollView: ({ children, ...props }: { children: React.ReactNode }) => (
+      <View {...props}>{children}</View>
+    ),
+  };
+});
+
 describe('BottomSheet', () => {
   it('dismisses the form keyboard on close but not when initially hidden', () => {
     const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
@@ -101,6 +111,25 @@ describe('BottomSheet', () => {
     await waitFor(() => expect(getByTestId('bottom-sheet-overlay')).toBeTruthy());
     expect(getByTestId('bottom-sheet-overlay').props.isCloseOnPress).toBe(false);
     expect(contentProps[0]?.enablePanDownToClose).toBe(false);
+  });
+
+  it('keeps priority form actions outside the scrollable body', async () => {
+    const { getByTestId, getByText } = render(
+      <BottomSheet
+        visible
+        scrollable
+        testID="priority-form"
+        title="Short form"
+        headerActions={<Text>Cancel and submit</Text>}
+        onClose={jest.fn()}
+      >
+        <Text>Scrollable fields</Text>
+      </BottomSheet>,
+    );
+
+    await waitFor(() => expect(getByText('Scrollable fields')).toBeTruthy());
+    expect(getByTestId('priority-form-header-actions')).toBeTruthy();
+    expect(getByText('Cancel and submit')).toBeTruthy();
   });
 
   it('does not render content while closed', () => {

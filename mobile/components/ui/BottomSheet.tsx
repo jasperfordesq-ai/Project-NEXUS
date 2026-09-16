@@ -37,6 +37,13 @@ interface BottomSheetProps {
   snapPoints?: (number | string)[];
   children: React.ReactNode;
   title?: string;
+  /**
+   * Primary actions that must remain reachable while the body scrolls or the
+   * keyboard is open. Rendered directly below the title and outside the
+   * scrollable region. Use this for short, high-priority forms whose actions
+   * should never depend on reaching the bottom of the sheet.
+   */
+  headerActions?: React.ReactNode;
   childrenClassName?: string;
   /**
    * 🔴 Set this on EVERY sheet that holds a form or a list.
@@ -55,9 +62,10 @@ interface BottomSheetProps {
    */
   scrollable?: boolean;
   /**
-   * Actions pinned to the bottom of the sheet, above the keyboard and the home
-   * indicator, so they are reachable however far the member has scrolled. Pass a row of
-   * buttons; the frame (border, background, insets) is drawn here.
+   * Actions pinned to the bottom of the sheet and clear of the home indicator. Pass a
+   * row of buttons; the frame (border, background, insets) is drawn here. For short
+   * keyboard-critical forms, prefer `headerActions`: physical Samsung testing showed
+   * that a large keyboard toolbar can still make a bottom footer awkward to reach.
    */
   footer?: React.ReactNode;
   testID?: string;
@@ -69,6 +77,7 @@ export default function BottomSheet({
   snapPoints,
   children,
   title,
+  headerActions,
   childrenClassName,
   scrollable = false,
   footer,
@@ -135,6 +144,7 @@ export default function BottomSheet({
     <BottomSheetScrollView
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      style={hasSnapPoints ? { flex: 1 } : undefined}
       contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: contentBottomPadding }}
       testID={testID ? `${testID}-scroll` : undefined}
     >
@@ -189,6 +199,14 @@ export default function BottomSheet({
           {title ? (
             <View className="items-center border-b border-border px-4 pb-3 pt-2">
               <HeroBottomSheet.Title key={fontScale} className="text-center">{title}</HeroBottomSheet.Title>
+            </View>
+          ) : null}
+          {headerActions ? (
+            <View
+              className="border-b border-border px-4 py-3"
+              testID={testID ? `${testID}-header-actions` : undefined}
+            >
+              {headerActions}
             </View>
           ) : null}
           {body}

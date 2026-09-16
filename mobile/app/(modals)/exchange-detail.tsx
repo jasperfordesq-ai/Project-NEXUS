@@ -11,6 +11,7 @@ import {
   ScrollView,
   RefreshControl,
   Share,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
@@ -47,6 +48,7 @@ import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import Avatar from '@/components/ui/Avatar';
 import BottomSheet from '@/components/ui/BottomSheet';
 import Input from '@/components/ui/Input';
+import TextArea from '@/components/ui/TextArea';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -527,6 +529,7 @@ function ExchangeDetailModalInner() {
     }
     submittingRef.current = true;
     setIsSubmitting(true);
+    Keyboard.dismiss();
     try {
       const response = await createExchangeRequest({
         listing_id: listing.id,
@@ -896,10 +899,10 @@ function ExchangeDetailModalInner() {
         visible={!isOwner && workflowEnabled && showRequestForm}
         scrollable
         onClose={() => setShowRequestForm(false)}
-        snapPoints={['52%', '84%']}
+        snapPoints={['58%', '88%']}
         title={t('detail.requestExchange')}
         testID="exchange-request-bottom-sheet"
-        footer={(
+        headerActions={(
           <View className="flex-row flex-wrap gap-3">
             <HeroButton
               variant="secondary"
@@ -927,11 +930,9 @@ function ExchangeDetailModalInner() {
           </View>
         )}
       >
-        <View testID="exchange-request-sheet" className="gap-4 py-3">
-          <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-            {t('detail.requestMessagePlaceholder')}
-          </Text>
+        <View testID="exchange-request-sheet" className="gap-3 py-3">
           <Input
+            label={t('detail.requestHoursPlaceholder')}
             value={requestHours}
             onChangeText={setRequestHours}
             keyboardType="decimal-pad"
@@ -941,15 +942,15 @@ function ExchangeDetailModalInner() {
             style={{ color: theme.text }}
             accessibilityLabel={t('detail.requestHoursPlaceholder')}
           />
-          <Input
+          <TextArea
+            label={t('detail.requestMessagePlaceholder')}
             value={requestMessage}
             onChangeText={setRequestMessage}
             placeholder={t('detail.requestMessagePlaceholder')}
             placeholderTextColor={theme.textMuted}
-            multiline
-            textAlignVertical="top"
             containerClassName="mb-0"
-            inputClassName="min-h-[132px] flex-1 text-base"
+            inputClassName="min-h-24 text-base"
+            numberOfLines={3}
             style={{ color: theme.text, textAlignVertical: 'top' }}
             accessibilityLabel={t('detail.requestMessagePlaceholder')}
           />
