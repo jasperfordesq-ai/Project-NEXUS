@@ -346,6 +346,17 @@ targeted countries", 5 installs on active devices, and the device table matched
 the internal-testing one exactly (0 lost on every row). **Save** → a dialog
 "Go to Publishing overview? Your change has been saved" → "Go to overview".
 
+On **2026-09-16**, build **17 / 1.7.4** was promoted from Internal testing
+to Production at the owner's request. The review screen confirmed **100.0%**
+rollout, **all targeted countries**, unchanged release notes and **0 devices
+lost** in every category. The pre-submit quick checks cleared with "Your changes
+can now be sent for review" before submission. A second quick-check pass after
+submission also cleared with "Your changes are now in review". Submission
+activity records **submission 12**, submitted **September 16, 2026, 1:22 PM**,
+**Production — In review**. Managed publishing remains off, so approval will
+publish automatically. This records submission, not a confirmed live release;
+`live-store-build.json` remains on build 12 until publication is verified.
+
 Two Console behaviours worth knowing before you click:
 
 - On the production review step the button is **"Save"**, and it does *not*

@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Prepare Android 1.7.4 (build 17) for Internal testing with the native-verified drawer viewport and long-note keyboard scrolling fix.
+- Prepare Android 1.7.4 (build 17) with the native-verified drawer viewport and long-note keyboard scrolling fix. Published to Internal testing and submitted for full Production rollout on 2026-09-16; Google review is pending.
 
 - **Native form drawer keyboard scrolling:** constrain the actual scroll viewport to the visible area above the keyboard, accounting for Android's status-bar coordinate offset. Keep focus while the drawer expands, refresh its bounds after snapping or keyboard dismissal, and provide expandable defaults for scrolling forms. Verified with long notes and normal/200% text on an Android emulator; physical Samsung and iOS verification remain outstanding.
 
