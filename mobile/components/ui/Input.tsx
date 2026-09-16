@@ -5,6 +5,7 @@
 
 import React, { forwardRef } from 'react';
 import { TextInput, View, type TextInputProps } from 'react-native';
+import { useSheetFormFocus } from './sheetFormFocus';
 import {
   Description,
   FieldError,
@@ -55,6 +56,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
   ref,
 ) {
   const isDisabled = editable === false;
+  const sheetFocus = useSheetFormFocus(ref);
   // HeroUI Native inputs need to tell Gorhom when they receive focus. Without
   // these handlers the sheet cannot coordinate its own keyboard animation, so
   // Android forms were being kept usable with a second, manual keyboard-height
@@ -96,7 +98,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
           <View className="pl-3 absolute left-0 z-10">{leftIcon}</View>
         ) : null}
         <HeroInput
-          ref={ref}
+          ref={sheetFocus.inputRef}
           isInvalid={!!error}
           isDisabled={isDisabled}
           style={[
@@ -120,10 +122,12 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
           className={inputClassName ?? 'flex-1'}
           onFocus={(event) => {
             bottomSheetHandlers.onFocus(event);
+            sheetFocus.reveal();
             onFocus?.(event);
           }}
           onBlur={(event) => {
             bottomSheetHandlers.onBlur(event);
+            sheetFocus.blur();
             onBlur?.(event);
           }}
           {...rest}

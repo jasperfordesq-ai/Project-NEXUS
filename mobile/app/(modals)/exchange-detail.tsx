@@ -936,7 +936,6 @@ function ExchangeDetailModalInner() {
             value={requestHours}
             onChangeText={setRequestHours}
             keyboardType="decimal-pad"
-            placeholder={t('detail.requestHoursPlaceholder')}
             placeholderTextColor={theme.textMuted}
             containerClassName="mb-0"
             style={{ color: theme.text }}
@@ -946,7 +945,6 @@ function ExchangeDetailModalInner() {
             label={t('detail.requestMessagePlaceholder')}
             value={requestMessage}
             onChangeText={setRequestMessage}
-            placeholder={t('detail.requestMessagePlaceholder')}
             placeholderTextColor={theme.textMuted}
             containerClassName="mb-0"
             inputClassName="min-h-24 text-base"

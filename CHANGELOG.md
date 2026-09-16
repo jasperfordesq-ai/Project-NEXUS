@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile bottom-sheet forms now use a constrained scrolling viewport and shared input-focus handling to reveal fields above the keyboard. Long notes use a bounded, internally scrolling editor; Request exchange removes duplicated placeholder labels. Physical keyboard verification remains required before promoting this follow-up.
+
 - **Request exchange keeps its essential actions visible while typing on Android.** Cancel and Send request now sit in a fixed action row directly below the sheet title, outside the scrolling form, so the keyboard and a long note cannot push them out of reach. The form removes its repeated prompt, gives both fields persistent labels and uses a shorter three-line note area.
 
 - **Android internal-testing release records now include build 14 / 1.7.1.** The release procedure records its exact source commit, signed artifact size and hash, completed CI, Play publication time and the physical-device gate that keeps production on build 12.

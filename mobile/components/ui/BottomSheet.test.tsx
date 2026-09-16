@@ -96,7 +96,7 @@ describe('BottomSheet', () => {
     expect(contentProps[0]?.enableBlurKeyboardOnGesture).toBe(true);
     expect(contentProps[0]?.snapPoints).toEqual(['72%', 444]);
     expect(contentProps[0]?.backgroundClassName).toEqual(expect.stringContaining('bg-background'));
-    expect(contentProps[0]?.contentContainerClassName).toEqual(expect.stringContaining('h-full'));
+    expect(contentProps[0]?.contentContainerProps).toEqual({ style: { flex: 1, minHeight: 0 } });
     expect(contentProps[0]?.className).toBeUndefined();
     expect(contentProps[0]?.containerClassName).toBeUndefined();
   });
@@ -129,6 +129,7 @@ describe('BottomSheet', () => {
 
     await waitFor(() => expect(getByText('Scrollable fields')).toBeTruthy());
     expect(getByTestId('priority-form-header-actions')).toBeTruthy();
+    expect(contentProps.at(-1)?.enableContentPanningGesture).toBe(false);
     expect(getByText('Cancel and submit')).toBeTruthy();
   });
 

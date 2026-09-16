@@ -43,6 +43,25 @@ Checked against the HeroUI Native docs on 2026-05-31:
 
 ## Migration Discipline
 
+### Bottom-sheet form template
+
+Use the shared `BottomSheet` with `scrollable`, a translated `title`, explicit
+snap points for multi-field forms, and `headerActions` for Cancel and Submit.
+Use the shared `Input` and `TextArea` for fields. This combination provides one
+keyboard owner (Gorhom), a constrained flex viewport, focus scrolling after
+keyboard/layout changes, and a bounded scrolling note editor. Do not add a second
+keyboard-height padding or a percentage-height container around the form.
+
+Keep labels visible and avoid repeating them as placeholders. Preserve drafts on
+failed submission and disable duplicate submission while a request is pending.
+Do not place essential actions at the end of a long form. Keep custom native
+inputs wired to the same focus context when introducing them.
+
+Verify on Android and iOS with a long note, the last field focused, keyboard
+toolbar enabled, large text, and landscape. Check that the caret remains visible,
+the note can scroll to its end, earlier fields remain reachable, and Cancel and
+Submit remain accessible. Component tests alone do not certify these behaviours.
+
 - Migrate by interaction pattern, not by whole page.
 - Add a failing test before moving a screen to a new native primitive.
 - Preserve the existing polished layout unless the test or visual audit proves it is the problem.

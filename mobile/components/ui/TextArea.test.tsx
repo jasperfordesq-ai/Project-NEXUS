@@ -8,6 +8,7 @@ import { TextInput } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import TextArea from './TextArea';
+import { SheetFormFocusContext } from './sheetFormFocus';
 
 jest.mock('heroui-native', () => {
   const React = require('react');
@@ -32,6 +33,22 @@ jest.mock('heroui-native', () => {
 });
 
 describe('TextArea', () => {
+  it('bounds long sheet notes and registers the native editor for focus scrolling', () => {
+    const reveal = jest.fn();
+    const ref = React.createRef<TextInput>();
+    const { getByLabelText } = render(
+      <SheetFormFocusContext.Provider value={reveal}>
+        <TextArea ref={ref} label="Note" value={'Long note\n'.repeat(30)} />
+      </SheetFormFocusContext.Provider>,
+    );
+    const input = getByLabelText('Note');
+    expect(input.props.scrollEnabled).toBe(true);
+    expect(input.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ height: 112, maxHeight: 112 })]));
+    fireEvent(input, 'focus', { nativeEvent: { target: 1 } });
+    expect(reveal).toHaveBeenLastCalledWith(ref.current);
+    fireEvent(input, 'blur', { nativeEvent: { target: 1 } });
+    expect(reveal).toHaveBeenLastCalledWith(null);
+  });
   it('renders a HeroUI Native text area with label, value, and validation state', () => {
     const onChangeText = jest.fn();
     const { getByDisplayValue, getByLabelText, getByText } = render(

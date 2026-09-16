@@ -4,13 +4,14 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Keyboard, View, useWindowDimensions } from 'react-native';
+import { Keyboard, View, useWindowDimensions, type TextInput } from 'react-native';
 import { BottomSheet as HeroBottomSheet } from 'heroui-native';
 import { BottomSheetFooter, BottomSheetScrollView, type BottomSheetFooterProps } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from 'expo-router';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useDeferredBottomSheetState } from './useDeferredBottomSheetState';
+import { SheetFormFocusContext, fieldScrollDelta } from './sheetFormFocus';
 
 /**
  * Room left under scrolling content so the last field clears a sticky footer.
@@ -87,6 +88,45 @@ export default function BottomSheet({
   const { mounted: sheetMounted, open: sheetOpen, shouldHonorClose } = useDeferredBottomSheetState(visible);
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
+  const viewportRef = useRef<View>(null);
+  const scrollRef = useRef<React.ElementRef<typeof BottomSheetScrollView>>(null);
+  const focusedInput = useRef<TextInput | null>(null);
+  const scrollOffset = useRef(0);
+  const revealFrame = useRef<number | null>(null);
+  const revealFocusedInput = useCallback(() => {
+    if (revealFrame.current !== null) cancelAnimationFrame(revealFrame.current);
+    revealFrame.current = requestAnimationFrame(() => {
+      revealFrame.current = null;
+      const input = focusedInput.current;
+      if (!input) return;
+      viewportRef.current?.measureInWindow((_x, top, _width, height) => {
+        const keyboardTop = Keyboard.metrics()?.screenY ?? Infinity;
+        input.measureInWindow((_ix, inputTop, _iw, inputHeight) => {
+          if (focusedInput.current !== input) return;
+          const delta = fieldScrollDelta(inputTop, inputHeight, top, Math.min(top + height, keyboardTop));
+          if (Math.abs(delta) > 1) {
+            scrollRef.current?.scrollTo({ y: Math.max(0, scrollOffset.current + delta), animated: false });
+          }
+        });
+      });
+    });
+  }, []);
+  const focusField = useCallback((input: TextInput | null) => {
+    focusedInput.current = input;
+    if (input) revealFocusedInput();
+  }, [revealFocusedInput]);
+  useEffect(() => {
+    if (!visible) return;
+    const subscription = Keyboard.addListener('keyboardDidShow', revealFocusedInput);
+    const frameSubscription = Keyboard.addListener('keyboardDidChangeFrame', revealFocusedInput);
+    return () => {
+      subscription.remove();
+      frameSubscription.remove();
+      focusedInput.current = null;
+      scrollOffset.current = 0;
+      if (revealFrame.current !== null) cancelAnimationFrame(revealFrame.current);
+    };
+  }, [visible, revealFocusedInput]);
   useEffect(() => {
     if (!visible) return undefined;
     // Closing or unmounting an active form must release its keyboard too.
@@ -141,15 +181,28 @@ export default function BottomSheet({
   if (!sheetMounted) return null;
 
   const body = scrollable ? (
-    <BottomSheetScrollView
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      style={hasSnapPoints ? { flex: 1 } : undefined}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: contentBottomPadding }}
-      testID={testID ? `${testID}-scroll` : undefined}
-    >
-      <View className={childrenClassName}>{children}</View>
-    </BottomSheetScrollView>
+    <SheetFormFocusContext.Provider value={focusField}>
+      <View
+        ref={viewportRef}
+        collapsable={false}
+        style={hasSnapPoints ? { flex: 1, minHeight: 0 } : undefined}
+        onLayout={revealFocusedInput}
+      >
+        <BottomSheetScrollView
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="none"
+          showsVerticalScrollIndicator
+          onScroll={(event) => { scrollOffset.current = event.nativeEvent.contentOffset.y; }}
+          onContentSizeChange={revealFocusedInput}
+          style={hasSnapPoints ? { flex: 1 } : undefined}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: contentBottomPadding }}
+          testID={testID ? `${testID}-scroll` : undefined}
+        >
+          <View className={childrenClassName}>{children}</View>
+        </BottomSheetScrollView>
+      </View>
+    </SheetFormFocusContext.Provider>
   ) : (
     <View
       className={`px-4 ${hasSnapPoints ? 'flex-1 ' : ''}${childrenClassName ?? ''}`}
@@ -176,11 +229,13 @@ export default function BottomSheet({
           enableDynamicSizing={!hasSnapPoints}
           enableOverDrag={false}
           enablePanDownToClose={dismissible}
+          enableContentPanningGesture={!scrollable}
           keyboardBehavior="extend"
           keyboardBlurBehavior="restore"
           android_keyboardInputMode="adjustResize"
           enableBlurKeyboardOnGesture
-          contentContainerClassName={hasSnapPoints ? 'h-full bg-background' : 'bg-background'}
+          contentContainerClassName="bg-background"
+          contentContainerProps={hasSnapPoints ? { style: { flex: 1, minHeight: 0 } } : undefined}
           backgroundClassName="rounded-t-[30px] bg-background"
           handleClassName="rounded-t-[30px] bg-background"
           handleIndicatorClassName="bg-muted-foreground/50"

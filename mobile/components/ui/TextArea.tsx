@@ -5,6 +5,7 @@
 
 import React, { forwardRef } from 'react';
 import { TextInput, type TextInputProps } from 'react-native';
+import { useSheetFormFocus } from './sheetFormFocus';
 import {
   FieldError,
   Label,
@@ -47,6 +48,7 @@ const TextArea = forwardRef<TextInput, TextAreaProps>(function TextArea(
   ref,
 ) {
   const isDisabled = editable === false;
+  const sheetFocus = useSheetFormFocus(ref);
   const bottomSheetHandlers = useTextAreaBottomSheetHandlers();
 
   return (
@@ -55,19 +57,22 @@ const TextArea = forwardRef<TextInput, TextAreaProps>(function TextArea(
         <Label focusable={false} className="mb-1.5 text-sm font-semibold">{label}</Label>
       ) : null}
       <HeroTextArea
-        ref={ref}
+        ref={sheetFocus.inputRef}
         isInvalid={!!error}
         isDisabled={isDisabled}
         multiline
         numberOfLines={numberOfLines}
-        style={[{ textAlignVertical: 'top' }, style]}
+        style={[{ textAlignVertical: 'top' }, style, sheetFocus.inSheet ? { height: 112, minHeight: 0, maxHeight: 112 } : undefined]}
+        scrollEnabled
         className={inputClassName ?? 'min-h-28'}
         onFocus={(event) => {
           bottomSheetHandlers.onFocus(event);
+          sheetFocus.reveal();
           onFocus?.(event);
         }}
         onBlur={(event) => {
           bottomSheetHandlers.onBlur(event);
+          sheetFocus.blur();
           onBlur?.(event);
         }}
         {...rest}

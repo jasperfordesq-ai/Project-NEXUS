@@ -382,7 +382,7 @@ describe('ExchangeDetailModal', () => {
     (createExchangeRequest as jest.Mock).mockClear();
     (createExchangeRequest as jest.Mock).mockResolvedValue({ data: { id: 77, status: 'requested' } });
 
-    const { getByLabelText, getByPlaceholderText, getByTestId, queryByTestId } = render(<ExchangeDetailModal />);
+    const { getByLabelText, getByTestId, queryByTestId } = render(<ExchangeDetailModal />);
 
     await waitFor(() => {
       expect(getByLabelText('Request exchange')).toBeTruthy();
@@ -393,8 +393,8 @@ describe('ExchangeDetailModal', () => {
       expect(getByTestId('exchange-request-sheet')).toBeTruthy();
     });
 
-    fireEvent.changeText(getByPlaceholderText('Proposed hours'), '3');
-    fireEvent.changeText(getByPlaceholderText('Add a note for the member'), 'I would love a lesson.');
+    fireEvent.changeText(getByLabelText('Proposed hours'), '3');
+    fireEvent.changeText(getByLabelText('Add a note for the member'), 'I would love a lesson.');
     fireEvent.press(getByLabelText('Send request'));
 
     await waitFor(() => {
