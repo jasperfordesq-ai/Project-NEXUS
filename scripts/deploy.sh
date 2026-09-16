@@ -241,6 +241,18 @@ while :; do
     sleep 60
 done
 
+# --- error watch FIRST, in the background -----------------------------------
+# postdeploy-watch.mjs timestamps its window from the moment it starts, so it
+# must start at the switch — waiting for the render below would silently drop
+# the first minutes from the window. It runs in the background here, printing
+# its `[watch]` checkpoints live (they interleave with the render wait below,
+# which is fine: every line is prefixed), and its result is collected at the end.
+WATCH_PID=""
+node scripts/postdeploy-watch.mjs &
+WATCH_PID=$!
+trap '[ -n "$WATCH_PID" ] && kill "$WATCH_PID" 2>/dev/null; exit 130' INT TERM
+echo "===> Error watch started in the background (pid $WATCH_PID); its checkpoints print as they land."
+
 # --- SEO delivery check ------------------------------------------------------
 # Asks the one question no other check asked: would a crawler get words?
 #
@@ -250,28 +262,51 @@ done
 # This probe is outside-in and cause-agnostic, so it catches that whole class:
 # missing marker, stuck lock, failed publish, bad nginx rule, CDN misroute.
 #
+# 🔴 It runs AFTER the server's detached post-deploy render has finished. Until
+# 2026-09-16 it fired seconds after the switch and measured the PREVIOUS
+# generation of snapshots: on two consecutive deploys it reported the master
+# tenant BLANK while the render then published it minutes later. A probe that
+# is always too early is a false-alarm generator, and false alarms are how the
+# two-month outage above went unnoticed. scripts/wait-for-prerender-publish.sh
+# polls the server for this commit's render log; it never fails the deploy.
+#
 # Deliberately NON-BLOCKING. SEO delivery is not a reason to fail a deploy that
 # is otherwise healthy for members — but it must be loud, because silence is
 # exactly how this went unnoticed for two months.
 if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
-    echo "===> Checking that crawlers receive real pages (not the empty shell)..."
+    DEPLOY_SHA="$(git rev-parse origin/main 2>/dev/null || true)"
+    PROBE_NOTE=""
+    echo "===> Waiting for the server's post-deploy render to publish before probing crawler delivery..."
+    bash scripts/wait-for-prerender-publish.sh "$DEPLOY_SHA"
+    WAIT_RC=$?
+    case "$WAIT_RC" in
+        0) ;;
+        3) PROBE_NOTE=" (no render was launched for this deploy, so this measures the previous snapshots)" ;;
+        2) PROBE_NOTE=" (the render was STILL RUNNING when probed — re-run: node scripts/check-prerender-delivery.mjs)" ;;
+        *) PROBE_NOTE=" (could not determine the render state — re-run: node scripts/check-prerender-delivery.mjs)" ;;
+    esac
+    echo "===> Checking that crawlers receive real pages (not the empty shell)${PROBE_NOTE}..."
     if node scripts/check-prerender-delivery.mjs; then
-        echo "===> ✓ Crawlers are being served real content."
+        echo "===> ✓ Crawlers are being served real content.${PROBE_NOTE}"
     else
-        echo "===> ⚠⚠⚠ CRAWLERS ARE BEING SERVED BLANK PAGES — see above for the remedy."
+        echo "===> ⚠⚠⚠ CRAWLERS ARE BEING SERVED BLANK PAGES — see above for the remedy.${PROBE_NOTE}"
         echo "===>     The deploy itself is fine; SEO is not. Do not ignore this."
     fi
 else
     echo "===> SEO delivery check skipped (set NEXUS_DELIVERY_ORIGINS to enable)."
 fi
 
-if node scripts/postdeploy-watch.mjs; then
+# --- collect the error watch ------------------------------------------------
+echo "===> Waiting for the 30-minute error watch to finish..."
+wait "$WATCH_PID"
+WATCH_RC=$?
+WATCH_PID=""
+trap - INT TERM
+if [ "$WATCH_RC" = "0" ]; then
     echo "===> ✓ Deploy verified: error levels stayed normal after the switch."
+elif [ "$WATCH_RC" = "1" ]; then
+    echo "===> ⚠⚠⚠ ERROR SPIKE after this deploy — read the output above; the rollback command is printed there."
+    exit 1
 else
-    WATCH_RC=$?
-    if [ "$WATCH_RC" = "1" ]; then
-        echo "===> ⚠⚠⚠ ERROR SPIKE after this deploy — read the output above; the rollback command is printed there."
-        exit 1
-    fi
     echo "===> ⚠ The watch could not run (see above) — the deploy is live but UNVERIFIED."
 fi

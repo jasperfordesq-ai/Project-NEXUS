@@ -28,6 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `scripts/test/test-prerender-lock-takeover.sh` (scenario 6),
   `scripts/test/test-prerender-processor-render-lock.sh`; all three prerender harnesses now run in
   CI's Migration Safety Gate.
+- **The deploy's crawler delivery probe now runs after the post-deploy render has published,
+  instead of seconds after the traffic switch.** It measured the previous generation of snapshots
+  and reported the master tenant's front page blank on two consecutive deploys where the render
+  then succeeded minutes later. `scripts/deploy.sh` now starts the 30-minute error watch in the
+  background at the switch (its window is timestamped from when it starts), waits for the server's
+  detached render log to record its end via the new `scripts/wait-for-prerender-publish.sh`
+  (bounded, never fails the deploy, never signals the server), then probes, then collects the watch
+  result. Regression test: `scripts/test/test-deploy-probe-after-prerender.sh`, run in CI.
 
 ## [2.0.0] - 2026-09-16
 

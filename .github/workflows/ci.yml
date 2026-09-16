@@ -990,6 +990,12 @@ jobs:
       - name: "BLOCKING: Prerender job processor yields to an in-flight render"
         run: bash scripts/test/test-prerender-processor-render-lock.sh
 
+      # The deploy's crawler probe must run AFTER the server's detached render
+      # publishes (it fired seconds after the switch and cried BLANK on two
+      # deploys where the render then succeeded). Stubbed ssh; no network.
+      - name: "BLOCKING: Deploy probes crawler delivery only after the render publishes"
+        run: bash scripts/test/test-deploy-probe-after-prerender.sh
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

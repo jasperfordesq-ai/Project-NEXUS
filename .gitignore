@@ -82,6 +82,7 @@ CLAUDE.md
 # (and so CI/deploy can run it) — it contains no credentials; origins come from
 # NEXUS_DELIVERY_ORIGINS in the per-installation env file.
 !/scripts/check-prerender-delivery.mjs
+!/scripts/wait-for-prerender-publish.sh
 !/scripts/backup-aspnet-db.sh
 !/scripts/check-compose-bootstrap-cache.mjs
 !/scripts/check-host-cron-scripts.mjs
