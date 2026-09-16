@@ -277,7 +277,14 @@ if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
     DEPLOY_SHA="$(git rev-parse origin/main 2>/dev/null || true)"
     PROBE_NOTE=""
     echo "===> Waiting for the server's post-deploy render to publish before probing crawler delivery..."
-    bash scripts/wait-for-prerender-publish.sh "$DEPLOY_SHA"
+    # 🔴 SSH_KEY/SSH_HOST are assigned above as plain shell variables, NOT exported.
+    # The waiter is a child process, so it inherits neither unless they are passed
+    # here. On 2026-09-16 this line lacked the prefix: the waiter refused to start
+    # ("SSH_KEY is required"), deploy.sh caught it as "could not determine the
+    # render state", and probed immediately — the exact bug the waiter exists to
+    # prevent. Seven regression tests missed it because the harness exported the
+    # variables itself, proving both halves and never this seam.
+    SSH_KEY="$SSH_KEY" SSH_HOST="$SSH_HOST"         bash scripts/wait-for-prerender-publish.sh "$DEPLOY_SHA"
     WAIT_RC=$?
     case "$WAIT_RC" in
         0) ;;

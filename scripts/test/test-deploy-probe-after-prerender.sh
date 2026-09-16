@@ -100,6 +100,45 @@ else
     assert "deploy.sh: watch(bg) < wait-for-publish < probe < collect watch" 0
 fi
 
+echo "Scenario 7: deploy.sh passes SSH_KEY/SSH_HOST INTO the waiter (it is a child process)"
+# Regression (2026-09-16, found on the first live run): deploy.sh assigns
+# SSH_HOST/SSH_KEY as plain shell variables and the waiter runs as a child, so
+# the child saw neither, refused to start ("SSH_KEY is required"), and deploy.sh
+# fell through to probing immediately — the very bug the waiter exists to fix.
+# Scenarios 1-6 all passed because THIS test exported the variables itself, so
+# it proved the two halves worked and never the seam between them.
+
+# a) the hazard is real: a set-but-not-exported variable does not reach a child.
+child_saw="$(SSH_UNEXPORTED_PROOF=x bash -c 'v=set-but-not-exported; bash -c "echo \${v:-MISSING}"')"
+assert "a non-exported variable really is invisible to a child process" \
+    "$([ "$child_saw" = "MISSING" ] && echo 1 || echo 0)"
+
+# b) the waiter refuses, rather than silently probing the wrong thing, when they
+#    are missing — the behaviour deploy.sh must not rely on.
+: > "$STUB_LOG"
+rc_missing="$(env -u SSH_KEY -u SSH_HOST bash "$WAITER" 6bcc6ce8b31b0000000000000000000000000000 >/dev/null 2>&1; echo $?)"
+assert "waiter refuses without SSH_KEY/SSH_HOST instead of guessing" \
+    "$([ "$rc_missing" -ne 0 ] && [ ! -s "$STUB_LOG" ] && echo 1 || echo 0)"
+
+# c) THE SEAM: deploy.sh's waiter invocation must carry both variables, either
+#    as an inline env prefix or via an earlier export.
+waiter_call="$(grep -nE 'wait-for-prerender-publish\.sh' "$DEPLOY" | grep -v '^\s*[0-9]*:\s*#' | head -1)"
+waiter_line="${waiter_call%%:*}"
+inline_ok=0
+echo "$waiter_call" | grep -q 'SSH_KEY=.*SSH_HOST=.*wait-for-prerender-publish' && inline_ok=1
+export_line="$(grep -nE '^\s*export .*SSH_KEY|^\s*export .*SSH_HOST' "$DEPLOY" | head -1 | cut -d: -f1)"
+export_ok=0
+if [ -n "$export_line" ] && [ -n "$waiter_line" ] && [ "$export_line" -lt "$waiter_line" ] \
+    && grep -qE '^\s*export .*SSH_KEY' "$DEPLOY" && grep -qE '^\s*export .*SSH_HOST' "$DEPLOY"; then
+    export_ok=1
+fi
+if [ "$inline_ok" = "1" ] || [ "$export_ok" = "1" ]; then
+    assert "deploy.sh gives the waiter SSH_KEY and SSH_HOST" 1
+else
+    echo "    waiter invoked at line ${waiter_line:-?}; no inline env prefix and no earlier export of both"
+    assert "deploy.sh gives the waiter SSH_KEY and SSH_HOST" 0
+fi
+
 echo ""
 echo "Result: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]
