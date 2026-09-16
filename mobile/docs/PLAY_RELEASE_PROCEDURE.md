@@ -284,6 +284,20 @@ issue. The en-GB notes describe keyboard-aware form scrolling, internally
 scrolling long notes and clearer Request exchange labels. This is an internal
 candidate for physical-device verification; production was not promoted.
 
+Version code 17 / 1.7.4 was published at **1:05 PM on 2026-09-16** and Play
+reported **Available to internal testers**. Source commit:
+`21795d156c2eee03079ce9f7e8f59c32ed514985`. The 95,972,614-byte AAB has SHA-256
+`D7FF1F380A4F4EFB91716C601D6EF16EAE8937BB0ABCD7AEA70A2F4EA2E8E02A`.
+The guarded local build took **2m 49s**. All six source-commit workflow groups
+(and the deploy drift watchdog) passed before publication, including the full CI
+Pipeline and its final Docker verification. Play showed **Ready to release**
+without a quick-checks bar, 0 devices lost in every category, a 32.6 MB new
+install and a 13.8 MB update. The en-GB notes describe keyboard-visible long-note
+scrolling and shared drawer improvements. The actual shared controls were
+verified in an isolated Android emulator reproduction at normal and 200% text
+size; physical Samsung and iOS verification remain outstanding. Production
+remains build 12 / 1.6.0; this release was not promoted.
+
 **The browser upload route works for the full bundle.** Measured on version codes
 13 and 14, the file-chooser bridge uploaded the 96 MB AAB, then Play optimized it
 before showing the expected version in the artifact table. This replaces the
