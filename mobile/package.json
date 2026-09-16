@@ -1,6 +1,6 @@
 {
   "name": "nexus-mobile",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "license": "AGPL-3.0-or-later",
   "main": "index.js",
   "scripts": {
