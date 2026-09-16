@@ -255,6 +255,19 @@ candidate supersedes build 13 and fixes the Android keyboard collapse in shared
 bottom-sheet forms; production remains on build 12 / 1.6.0 pending a physical
 Android walkthrough of the Request exchange form.
 
+Version code 15 / 1.7.2 was published at **10:21 AM on 2026-09-16** and Play
+reported it as **Available to internal testers**. It was built from source commit
+`211592587bef36de05207830cdc3f3c5c78dd3d6`; the 95,970,834-byte AAB had
+SHA-256 `339A70FE2299895323FDEA3B45217DE12DB1049D25C5D48ABFF96A3423411418`.
+All six exact-commit GitHub workflow groups completed successfully before the
+bundle was built. Play verified API level 24+, target SDK 36, four screen layouts,
+four ABIs and six required features. Its review table reported 0 devices lost in
+every category (Phone 12,405 / Tablet 6,408 / TV 3 / Chromebook 10 / Android XR
+1), a 32.6 MB new install and a 13.8 MB update. Build 15 supersedes build 14 on
+Internal testing and keeps the Request exchange Cancel and Send request actions
+above the scrollable fields while the keyboard is open. Production remains on
+build 12 / 1.6.0 pending a physical Android walkthrough of this exact artefact.
+
 **The browser upload route works for the full bundle.** Measured on version codes
 13 and 14, the file-chooser bridge uploaded the 96 MB AAB, then Play optimized it
 before showing the expected version in the artifact table. This replaces the
