@@ -2969,7 +2969,6 @@ class PrerenderService
                     ->where('p.is_active', '=', 1);
             })
             ->where('tenants.is_active', 1)
-            ->where('tenants.id', '<>', 1)
             ->select(
                 'tenants.id',
                 'tenants.slug',
@@ -2989,7 +2988,18 @@ class PrerenderService
             $parentDomain = $rawParentDomain === ''
                 ? ''
                 : (self::normalizeHost($rawParentDomain) ?? strtolower($rawParentDomain));
-            if ($domain !== '') {
+            if ((int) $r->id === 1) {
+                // 🔴 The platform master IS a target. This method carried
+                // `->where('tenants.id', '<>', 1)` until 2026-09-16, so every
+                // scheduled path built on it (auto-recache, drift detection, the
+                // job processor) never saw master: app.project-nexus.ie kept no
+                // snapshot and a queued master job was claimed but never ran.
+                // Master is served at the APP HOST root — never at its own
+                // `tenants.domain` (project-nexus.ie), which Apache routes to the
+                // separate sales-site container. Same rule as PrerenderPlanRoutes.
+                $host = $appHost;
+                $prefix = '';
+            } elseif ($domain !== '') {
                 $host = $domain;
                 $prefix = '';
             } elseif ($parentDomain !== '') {

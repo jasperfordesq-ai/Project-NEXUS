@@ -227,6 +227,43 @@ echo "Scenario 5: cleanup cannot remove a replacement lock or foreign worker"
 ) | grep -q PASS_SCENARIO && assert "cleanup is fenced by lock and worker owner tokens" 1 \
     || assert "cleanup is fenced by lock and worker owner tokens" 0
 
+echo "Scenario 6: a targeted run (--tenant/--routes) never supersedes a verified live owner"
+# Regression (2026-09-16): the once-a-minute job processor invokes this script
+# with --tenant/--routes. Lock-or-cancel treated every newcomer as a newer
+# deploy, so a processor job killed the deploy's full render ~50 s in — after
+# it had rendered the master tenant's pages but before it published them. Only
+# an unfiltered (deploy-style) run may take the lock over; a targeted run that
+# finds it held must step back without signalling anything.
+(
+    TMP="$(mktemp -d -t nexus-prerender-test-XXXXXX)"
+    export PRERENDER_CONFIG_DIR="$TMP"
+    export PRERENDER_CODE_DIR="$REPO_ROOT"
+    export NGINX_CONTAINER="test-nginx"
+    export LOCK_TAKEOVER_GRACE_SECONDS=1
+    PRIOR_TOKEN="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    export STUB_DOCKER_OWNER_TOKEN="$PRIOR_TOKEN"
+    : > "$STUB_LOG"
+    READY="$TMP/ready"
+    start_owner "$TMP/.prerender-lock.flock" "$TMP/.prerender-lock" "$PRIOR_TOKEN" "$READY"
+    VICTIM_PID="$OWNER_PID"
+    # shellcheck disable=SC1090
+    source "$SCRIPT" --tenant alpha --routes /,/about --dry-run >/dev/null
+    set +e
+
+    ( acquire_lock >/dev/null 2>&1 )
+    RESULT=$?
+    if [ "$RESULT" -ne 0 ] \
+        && kill -0 "$VICTIM_PID" 2>/dev/null \
+        && ! grep -Eq '^(kill|stop|rm) ' "$STUB_LOG"; then
+        echo PASS_SCENARIO
+    fi
+    kill -TERM "$VICTIM_PID" 2>/dev/null || true
+    wait "$VICTIM_PID" 2>/dev/null || true
+    trap - EXIT INT TERM
+    rm -rf "$TMP"
+) | grep -q PASS_SCENARIO && assert "targeted run steps back and leaves the live owner running" 1 \
+    || assert "targeted run steps back and leaves the live owner running" 0
+
 echo ""
 echo "Result: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

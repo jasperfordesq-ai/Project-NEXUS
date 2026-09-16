@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The platform master's public front page (`app.project-nexus.ie`) is now actually prerendered
+  for crawlers.** The 2026-09-13 planner fix was not enough: `PrerenderService::loadTenantTargets()`
+  and the render script's own `get_tenants()` / static page list still excluded tenant id 1, so
+  every scheduled path (auto-recache, drift detection, the job processor) never planned master and
+  a queued master job was claimed but never ran. Master is now a target everywhere, served at the
+  app host root and never at its own `tenants.domain` (the sales site). Regression tests:
+  `PrerenderServiceTest::test_tenant_targets_include_the_platform_master_at_the_app_host_root`,
+  `scripts/test/test-prerender-tenant-plan.sh`.
+- **A queued prerender job no longer kills a deploy's full render.** `prerender-tenants.sh`
+  treated every new invocation as a "newer deploy" and cancelled the in-flight run, so the
+  once-a-minute `prerender-job-processor.sh` terminated each post-deploy render about 50 seconds
+  in — after the master pages had rendered, before they were published. A targeted run
+  (`--tenant` / `--routes`) that finds the lock held now exits 75 with a `lock_takeover_refused`
+  event instead, and the processor skips its tick while the render lock is held. Regression tests:
+  `scripts/test/test-prerender-lock-takeover.sh` (scenario 6),
+  `scripts/test/test-prerender-processor-render-lock.sh`; all three prerender harnesses now run in
+  CI's Migration Safety Gate.
+
 ## [2.0.0] - 2026-09-16
 
 ### Removed

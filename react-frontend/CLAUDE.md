@@ -488,6 +488,22 @@ If a newer deploy starts before the prior prerender finishes, the new deploy's p
 3. SIGTERM → 10s grace → SIGKILL the prior bash.
 4. Reclaims the lock and starts fresh.
 
+🔴 **Only an unfiltered run may take the lock over (since 2026-09-16).** A targeted run
+(`--tenant` / `--routes`, which is what every queued job from `prerender-job-processor.sh`
+looks like) that finds the lock held exits 75 and emits `lock_takeover_refused`
+(`reason: targeted_run_yields`) instead of cancelling the owner; the processor also skips
+its whole tick while the render flock is held. Until then a processor job killed each
+deploy's full render about 50 seconds in — after the master tenant's pages had rendered,
+before they were published — so `app.project-nexus.ie` never received a snapshot. Pinned
+by `scripts/test/test-prerender-lock-takeover.sh` (scenario 6) and
+`scripts/test/test-prerender-processor-render-lock.sh`.
+
+The platform master (tenant id 1) is rendered at the **app host root**, never at its own
+`tenants.domain` (`project-nexus.ie` is the sales site). All three tenant lists agree on
+this — `PrerenderPlanRoutes`, `PrerenderService::loadTenantTargets()` and the render
+script's `get_tenants()` / `build_manifest_static` — and the latter two excluded master
+outright until 2026-09-16.
+
 ### Skip-on-clean
 
 [scripts/deploy/phases/prerender-tenants.sh](../scripts/deploy/phases/prerender-tenants.sh) compares HEAD against `.last-successful-prerender`. If `git diff --quiet` reports no changes under `react-frontend/` or `public/`, the prerender is skipped entirely — no Playwright container starts, no lock contention. Override with `PRERENDER_SKIP_ON_CLEAN=0` or `--force-prerender`.

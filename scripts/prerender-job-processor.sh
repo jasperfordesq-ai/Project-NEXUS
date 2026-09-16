@@ -88,6 +88,21 @@ if ! flock -n 9; then
     exit 0
 fi
 
+# Yield to an in-flight pre-render. prerender-tenants.sh holds this flock for
+# the whole of a run (a deploy's full render, or an operator's rebuild). Until
+# 2026-09-16 the processor claimed a job regardless, and the targeted run it
+# launched took the render lock over — killing the deploy's render ~50 s in,
+# after the master tenant's pages had rendered but before they were published.
+# Skip the tick instead; the job stays queued and the next minute retries.
+RENDER_LOCK_FILE="${PRERENDER_RENDER_LOCK_FILE:-$DEPLOY_DIR/.prerender-lock.flock}"
+exec 8>>"$RENDER_LOCK_FILE"
+if ! flock -n 8; then
+    log "Render lock held by an in-flight pre-render; skipping this tick so it is not superseded"
+    exit 0
+fi
+flock -u 8
+exec 8>&-
+
 if ! docker ps --format '{{.Names}}' | grep -Fqx -- "$APP_CONTAINER"; then
     log "WARN: app container $APP_CONTAINER not running"
     exit 0

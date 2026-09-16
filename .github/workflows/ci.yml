@@ -974,6 +974,22 @@ jobs:
       - name: "BLOCKING: Prerender authoritative publish transaction test"
         run: bash scripts/test/test-prerender-authoritative-publish.sh
 
+      # Added 2026-09-16. The platform master (tenant id 1) had no crawler
+      # snapshot for three days after the 2026-09-13 planner fix, because (a)
+      # the render script's own tenant query and static page list still
+      # excluded it, and (b) the once-a-minute job processor launched a
+      # targeted render that took the lock over from the deploy's full render
+      # ~50 s in, killing it after master's pages rendered but before they were
+      # published. Three harnesses pin both halves; none needs Docker or a DB.
+      - name: "BLOCKING: Prerender tenant plan (master tenant at the app host root)"
+        run: bash scripts/test/test-prerender-tenant-plan.sh
+
+      - name: "BLOCKING: Prerender lock takeover (targeted runs never supersede a deploy render)"
+        run: bash scripts/test/test-prerender-lock-takeover.sh
+
+      - name: "BLOCKING: Prerender job processor yields to an in-flight render"
+        run: bash scripts/test/test-prerender-processor-render-lock.sh
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

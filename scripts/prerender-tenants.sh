@@ -476,6 +476,18 @@ acquire_lock() {
         exit 1
     fi
 
+    # Only an unfiltered run — a deploy, or an operator's full rebuild — is a
+    # "newer deploy" entitled to cancel the owner. A targeted run (--tenant /
+    # --routes) is a queued job from the once-a-minute processor; until
+    # 2026-09-16 it took the lock over too, and killed the deploy's full render
+    # ~50 s in — after master's pages had rendered, before they were published.
+    # It steps back instead (EX_TEMPFAIL) and the processor retries later.
+    if [ -n "$FILTER_TENANT" ] || [ -n "$FILTER_ROUTES" ]; then
+        log_warn "Pre-render lock is held by an in-flight run (pid $PRIOR_PID); a targeted run does not supersede it"
+        emit_event "lock_takeover_refused" "\"prior_pid\":$PRIOR_PID,\"reason\":\"targeted_run_yields\""
+        exit 75
+    fi
+
     log_warn "Superseding in-flight pre-render (pid $PRIOR_PID)"
     emit_event "supersede" "\"prior_pid\":$PRIOR_PID,\"reason\":\"newer_deploy\""
     remove_worker_if_owned "$PRIOR_TOKEN" kill
@@ -621,11 +633,14 @@ get_tenants() {
     DB_PASS=$(grep "^DB_PASS=" "$PRERENDER_CONFIG_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '"' || true)
     DB_NAME=$(grep "^DB_NAME=" "$PRERENDER_CONFIG_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo "nexus")
 
-    # Tenant 1 is the platform root. project-nexus.ie is served by the private
-    # commercial sales-site repository, not the React tenant frontend.
+    # Tenant 1 is the platform master. It IS rendered — at the app host root
+    # (see build_manifest_static), never at its own domain: project-nexus.ie is
+    # served by the private sales-site container, which reads no snapshots.
+    # This query excluded id 1 until 2026-09-16, so a targeted master render
+    # (`--tenant master`) found no tenant and app.project-nexus.ie stayed blank.
     # parent_domain: parent's domain when this tenant has no own domain but its
     # parent does — used for sub-tenant path routing (timebanking.uk/cardiff).
-    QUERY="SELECT t.id, t.slug, COALESCE(NULLIF(t.domain, ''), '__NEXUS_EMPTY__') as domain, COALESCE(NULLIF(p.domain, ''), '__NEXUS_EMPTY__') as parent_domain FROM tenants t LEFT JOIN tenants p ON p.id = t.parent_id AND p.id <> 1 AND p.is_active = 1 WHERE t.is_active = 1 AND t.id <> 1"
+    QUERY="SELECT t.id, t.slug, COALESCE(NULLIF(t.domain, ''), '__NEXUS_EMPTY__') as domain, COALESCE(NULLIF(p.domain, ''), '__NEXUS_EMPTY__') as parent_domain FROM tenants t LEFT JOIN tenants p ON p.id = t.parent_id AND p.id <> 1 AND p.is_active = 1 WHERE t.is_active = 1"
     if [ -n "$FILTER_TENANT" ]; then
         # Defense-in-depth: re-validate here at the point of use.
         # Top-level validation (line ~159) runs first; this is a safety net
@@ -767,7 +782,11 @@ build_manifest_static() {
             [ "$PARENT_DOMAIN" = "__NEXUS_EMPTY__" ] && PARENT_DOMAIN=""
 
             local HOST PREFIX
-            if [ -n "$DOMAIN" ]; then
+            if [ "$TENANT_ID" = "1" ]; then
+                # Platform master: app host root, never its own (sales-site) domain.
+                HOST="$APP_HOST"
+                PREFIX=""
+            elif [ -n "$DOMAIN" ]; then
                 HOST="$DOMAIN"
                 PREFIX=""
             elif [ -n "$PARENT_DOMAIN" ]; then

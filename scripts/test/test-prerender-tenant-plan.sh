@@ -90,3 +90,52 @@ PRERENDER_ALLOW_PRIVATE_HOSTS=0
 export PRERENDER_ALLOW_PRIVATE_HOSTS
 
 echo "PASS: tenant-aware manifest ingestion preserves tenant routes and rejects unsafe partial plans"
+
+# ---------------------------------------------------------------------------
+# Regression (2026-09-16): the platform master (tenant id 1) must be rendered
+# at the APP HOST root, never at its own `tenants.domain` (project-nexus.ie is
+# the sales site, whose snapshots nothing reads). The static floor used by
+# every processor job (`--tenant X --routes ...`) went through
+# build_manifest_static, which placed master at its own domain — and
+# get_tenants() excluded id 1 outright, so a targeted master render found no
+# tenant at all.
+# ---------------------------------------------------------------------------
+
+MASTER_ROWS="$(printf '1\tmaster\tproject-nexus.ie\t__NEXUS_EMPTY__\n2\talpha\t__NEXUS_EMPTY__\t__NEXUS_EMPTY__\n')"
+PUBLIC_ROUTES=(/ /about)
+build_manifest_static "$MASTER_ROWS" "app.example.test" "$TMP_DIR/static-master.json"
+
+python3 - "$TMP_DIR/static-master.json" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as source:
+    entries = json.load(source)['urls']
+master = [e for e in entries if e['tenantId'] == '1']
+assert len(master) == 2, entries
+assert all(e['host'] == 'app.example.test' for e in master), master
+assert not any(e['host'] == 'project-nexus.ie' for e in entries), entries
+assert any(e['cachePath'] == 'app.example.test/index.html' for e in master), master
+assert any(e['cachePath'] == 'app.example.test/about/index.html' for e in master), master
+assert any(e['cachePath'] == 'app.example.test/alpha/index.html' for e in entries), entries
+PY
+
+# get_tenants() must not exclude the master. Capture the SQL it hands to the
+# database container through a docker stub on PATH.
+STUB_BIN="$TMP_DIR/stub-bin"
+mkdir -p "$STUB_BIN"
+cat > "$STUB_BIN/docker" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$*"
+STUB
+chmod +x "$STUB_BIN/docker"
+QUERY_SENT="$(PATH="$STUB_BIN:$PATH" FILTER_TENANT="" get_tenants)"
+case "$QUERY_SENT" in
+    *"FROM tenants t"*) ;;
+    *) echo "FAIL: get_tenants did not issue its tenant query via docker: $QUERY_SENT" >&2; exit 1 ;;
+esac
+case "$QUERY_SENT" in
+    *"t.id <> 1"*|*"t.id != 1"*)
+        echo "FAIL: get_tenants still excludes the platform master (id 1): $QUERY_SENT" >&2
+        exit 1 ;;
+esac
+
+echo "PASS: master tenant is rendered at the app host root and is not excluded from get_tenants"

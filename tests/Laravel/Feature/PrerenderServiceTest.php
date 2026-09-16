@@ -1914,6 +1914,35 @@ HTML;
         return $slug;
     }
 
+    /**
+     * Regression (2026-09-16): `loadTenantTargets()` carried
+     * `->where('tenants.id', '<>', 1)`, so every scheduled prerender path that
+     * uses it — auto-recache, drift detection, the job processor — never saw the
+     * platform master. Its public front page (`app.project-nexus.ie`) therefore
+     * had no snapshot at all, and a queued master job was claimed but never run.
+     * The route planner was fixed on 2026-09-13 (see PrerenderPlanRoutesTest);
+     * this pins the shared target list to the same rule: master IS a target,
+     * served at the APP HOST root — never at its own `tenants.domain`, which
+     * Apache routes to the separate sales-site container.
+     */
+    public function test_tenant_targets_include_the_platform_master_at_the_app_host_root(): void
+    {
+        DB::table('tenants')->where('id', 1)->update([
+            'domain'    => 'project-nexus.ie',
+            'is_active' => 1,
+        ]);
+
+        $master = collect((new PrerenderService())->loadTenantTargets())->firstWhere('tenant_id', 1);
+
+        $this->assertIsArray($master, 'The platform master (id=1) must be a prerender target');
+        $this->assertSame(
+            $this->frontendHost(),
+            $master['host'],
+            'Master is served at the app host — never at project-nexus.ie, which is the sales site'
+        );
+        $this->assertSame('', $master['prefix'], 'Master lives at the host root with no slug prefix');
+    }
+
     private function seedCmsTenantPair(string $ownerPrefix, string $otherPrefix): array
     {
         $ownerSlug = $ownerPrefix . '-' . uniqid();
