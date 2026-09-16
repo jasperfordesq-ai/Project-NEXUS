@@ -35,7 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   background at the switch (its window is timestamped from when it starts), waits for the server's
   detached render log to record its end via the new `scripts/wait-for-prerender-publish.sh`
   (bounded, never fails the deploy, never signals the server), then probes, then collects the watch
-  result. Regression test: `scripts/test/test-deploy-probe-after-prerender.sh`, run in CI.
+  result. The waiter is a child process and `deploy.sh` holds the SSH host and key as plain shell
+  variables, so the invocation passes both explicitly — without that it refused to start and the
+  probe fired early anyway. Regression test: `scripts/test/test-deploy-probe-after-prerender.sh`,
+  run in CI; it pins the ordering, the waiter's exit codes, and the credential handover itself.
 
 ## [2.0.0] - 2026-09-16
 
