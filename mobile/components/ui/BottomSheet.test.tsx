@@ -130,6 +130,8 @@ describe('BottomSheet', () => {
     await waitFor(() => expect(getByText('Scrollable fields')).toBeTruthy());
     expect(getByTestId('priority-form-header-actions')).toBeTruthy();
     expect(contentProps.at(-1)?.enableContentPanningGesture).toBe(false);
+    expect(contentProps.at(-1)?.snapPoints).toEqual(['60%', '90%']);
+    expect(contentProps.at(-1)?.enableDynamicSizing).toBe(false);
     expect(getByText('Cancel and submit')).toBeTruthy();
   });
 

@@ -8,6 +8,15 @@ import type { TextInput } from 'react-native';
 
 export const SheetFormFocusContext = createContext<((input: TextInput | null) => void) | null>(null);
 
+/** Keyboard coordinates are screen-relative; Android measureInWindow excludes the status bar. */
+export function sheetViewportBounds(top: number, windowHeight: number, keyboardTop: number | undefined, screenOffset: number) {
+  const bottom = Math.min(windowHeight, keyboardTop ?? windowHeight) - screenOffset;
+  const available = bottom - top;
+  // During expansion the keyboard can arrive before the sheet. A zero-height
+  // viewport would blur the native input and lose the pending focus reveal.
+  return { bottom, maxHeight: available > 0 ? available : undefined };
+}
+
 /** Shared by Input and TextArea; harmless outside a scrolling sheet. */
 export function useSheetFormFocus(forwardedRef: ForwardedRef<TextInput>) {
   const inputRef = useRef<TextInput>(null);

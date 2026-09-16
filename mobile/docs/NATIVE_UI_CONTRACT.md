@@ -48,8 +48,13 @@ Checked against the HeroUI Native docs on 2026-05-31:
 Use the shared `BottomSheet` with `scrollable`, a translated `title`, explicit
 snap points for multi-field forms, and `headerActions` for Cancel and Submit.
 Use the shared `Input` and `TextArea` for fields. This combination provides one
-keyboard owner (Gorhom), a constrained flex viewport, focus scrolling after
-keyboard/layout changes, and a bounded scrolling note editor. Do not add a second
+keyboard owner (Gorhom), a viewport bounded by its measured distance to the
+keyboard, focus scrolling after keyboard/layout and snap changes, and a bounded
+scrolling note editor. Android measurements must account for the status-bar
+offset between window and screen coordinates. `flex: 1` alone does not constrain
+HeroUI's absolutely positioned content wrapper. Scrollable sheets without
+explicit snap points receive 60%/90% positions so they can expand for the keyboard;
+non-scrolling sheets retain content-based sizing. Do not add a second
 keyboard-height padding or a percentage-height container around the form.
 
 Keep labels visible and avoid repeating them as placeholders. Preserve drafts on
