@@ -205,6 +205,7 @@ enforce_webuk_live_marker() {
         log_warn "   arm now proxies them to a Laravel app with no accessible routes."
         log_warn "   Affected: accessible.project-nexus.ie, accessible-uk.timebank.global,"
         log_warn "   accessible-minehead-and-coast.timebank.global, accessible-awid.timebank.global,"
+        log_warn "   accessible-ryde.timebank.global,"
         log_warn "   and /{slug}/accessible on every community."
         log_warn "Marker kept at $WEBUK_LIVE_MARKER. Recover by deploying again WITH --with-webuk."
         return 0

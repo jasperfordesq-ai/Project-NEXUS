@@ -133,6 +133,23 @@
         200
       ],
       "expectBodyContains": "nexus-webuk"
+    },
+    {
+      "name": "Accessible frontend (Ryde community domain)",
+      "url": "https://accessible-ryde.timebank.global",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "Ryde accessible domain is web-uk",
+      "url": "https://accessible-ryde.timebank.global/version",
+      "track": "production",
+      "expectStatus": [
+        200
+      ],
+      "expectBodyContains": "nexus-webuk"
     }
   ]
 }

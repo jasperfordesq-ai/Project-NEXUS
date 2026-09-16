@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Ryde Time Bank community hostnames (`ryde.timebank.global`, `accessible-ryde.timebank.global`) joined the platform on 2026-09-16.** Both are now in `scripts/uptime-targets.json` (the accessible host twice: root, and `/version` asserting `nexus-webuk`) and in the two deploy warnings that enumerate the accessible hostnames `--without-webuk` would take offline. The Apache vhosts and the origin-certificate binding live only on the server, as for every other community domain.
+
 - Native app version 1.7.2, Android version code 15: the replacement internal-testing candidate keeps Request exchange actions fixed below the sheet title, shortens and labels the form, and supersedes build 14 after physical Android testing showed its bottom actions were still difficult to reach with the keyboard open. Production remains on build 12 / 1.6.0 pending a successful device walkthrough.
 
 - Native app version 1.7.1, Android version code 14: the replacement internal-testing build fixes Android keyboard handling in shared bottom-sheet forms and supersedes build 13. Production remains on the proven 1.6.0 build until this candidate passes a physical-device walkthrough.
