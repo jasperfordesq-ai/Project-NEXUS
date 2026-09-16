@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Releasing to Google Play — the procedure, and everything that bites
 
-Last reviewed: 2026-09-15
+Last reviewed: 2026-09-16
 
 Status: **Maintained — written from an end-to-end release of version code 8 on
 2026-09-09, every timing and fingerprint in it measured rather than assumed.**
@@ -267,6 +267,22 @@ every category (Phone 12,405 / Tablet 6,408 / TV 3 / Chromebook 10 / Android XR
 Internal testing and keeps the Request exchange Cancel and Send request actions
 above the scrollable fields while the keyboard is open. Production remains on
 build 12 / 1.6.0 pending a physical Android walkthrough of this exact artefact.
+
+Version code 16 / 1.7.3 was published at **11:34 AM on 2026-09-16** and Play
+reported it as **Available to internal testers**. The build checkout was
+`33fc7030ac06c0f90c814ed5e66f504acd9d62cb`; its mobile source is unchanged from
+release commit `9c60fd1a544b044d823b1ed780ac9ab941f3048c`. All six workflow
+groups on that release commit passed before upload. The Android gate needed a
+rerun after one connection readback test timed out; the rerun passed. The signed
+build completed in 2m 36s. The 95,972,059-byte AAB has SHA-256
+`37CE5A3A8A31E0849078AB6B186FA51A8685B7F817C6CBFA22672D5B1F8308EC`.
+Play verified API level 24+, target SDK 36, four screen layouts, four ABIs,
+six required features, and attached mapping/native debug symbols. The review
+reported 0 devices lost in every category, a 32.6 MB new install and a 13.8 MB
+update. It showed **Ready to release**, with no quick-checks bar or blocking
+issue. The en-GB notes describe keyboard-aware form scrolling, internally
+scrolling long notes and clearer Request exchange labels. This is an internal
+candidate for physical-device verification; production was not promoted.
 
 **The browser upload route works for the full bundle.** Measured on version codes
 13 and 14, the file-chooser bridge uploaded the 96 MB AAB, then Play optimized it
