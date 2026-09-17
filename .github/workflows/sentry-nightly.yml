@@ -1,0 +1,214 @@
+# Nightly Sentry triage — the alarm half of the loop scripts/sentry-triage.mjs was
+# written for.
+#
+# WHY THIS EXISTS
+# Sentry has been receiving everything and telling nobody. The only error
+# monitoring on this platform ran for 30 minutes after a deploy, so anything that
+# did not coincide with a deploy was invisible:
+#   * a Redis name-resolution fault ran 2026-09-06 → 2026-09-16 (1237 events) and
+#     ended only because a routine Docker upgrade restarted the daemon;
+#   * a daily safeguarding pager fired 17 times from 2026-08-30, each time naming
+#     three real members who could not be contacted and were dropped from matches.
+# scripts/sentry-triage.mjs describes itself as "the deterministic collection half
+# of the nightly Sentry loop" and had never once run on a schedule — it was last
+# run by hand, days earlier. This is the half that raises the alarm.
+#
+# ALERTING BEHAVIOUR
+# Telegram is the signal, matching uptime-check.yml and deploy-drift-watchdog.yml,
+# because that is the channel the owner already receives. Messages are sent ONLY
+# when the state CHANGES: a new issue needs attention, the set changes, or it all
+# clears. Nagging every morning about the same known issue would teach its owner to
+# ignore it — the lesson uptime-check.yml already records.
+#
+# 🔴 THIS LOG IS PUBLIC. The repository is public, so this run's log is too.
+# check-sentry-nightly.mjs prints COUNTS ONLY; the issue titles go to a file that
+# only the curl step reads, so they reach Telegram and never the log. Do not add a
+# step that cats that file, uploads it as an artifact, or echoes the message.
+#
+# This workflow does not fail merely because issues need attention — the alert is
+# the signal, and a permanently red schedule is the same noise in another form. It
+# DOES fail when the sweep could not run or the alert could not be delivered, so a
+# broken monitor is never mistaken for a quiet platform.
+name: Sentry Nightly
+
+on:
+  schedule:
+    # 09:00 UTC daily. The platform's own daily pagers fire at ~08:05 UTC
+    # (safeguarding policy health, overdue GDPR), so this sweep sees the same
+    # morning's output rather than yesterday's.
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      force_alert:
+        description: 'Send a Telegram message even if the state has not changed (use to test the alert path)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sentry-nightly
+  cancel-in-progress: false
+
+jobs:
+  triage:
+    name: Nightly Sentry triage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The previous run's state, so we alert on transitions only. The cache is the
+      # state store because this is a PUBLIC repository — committing state would
+      # publish an error timeline, and an issue would do the same.
+      - name: Restore previous state
+        uses: actions/cache/restore@v4
+        with:
+          path: .sentry-state
+          key: sentry-state-${{ github.run_id }}
+          restore-keys: |
+            sentry-state-
+
+      - name: Read previous state
+        id: previous
+        run: |
+          mkdir -p .sentry-state
+          if [ -f .sentry-state/state.txt ]; then
+            PREV=$(cat .sentry-state/state.txt)
+          else
+            # First run, or the cache was evicted. 'unknown' so a platform that
+            # already has something outstanding still produces one alert rather
+            # than being silently accepted as the baseline.
+            PREV="unknown"
+          fi
+          echo "Previous state: ${PREV}"
+          echo "state_key=${PREV}" >> "$GITHUB_OUTPUT"
+
+      # Collection. --days 1 keeps this to what happened in the last day, so the
+      # older backlog does not re-alarm; --quiet suppresses the table of issue
+      # titles the script prints by default, which must not reach this log.
+      - name: Sweep Sentry (last 24h)
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_AUTH_TOKEN_MONITOR: ${{ secrets.SENTRY_AUTH_TOKEN_MONITOR }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_API_BASE: ${{ secrets.SENTRY_API_BASE }}
+          SENTRY_PROJECT_PHP: ${{ secrets.SENTRY_PROJECT_PHP }}
+          SENTRY_PROJECT_REACT: ${{ secrets.SENTRY_PROJECT_REACT }}
+          SENTRY_PROJECT_WEBUK: ${{ secrets.SENTRY_PROJECT_WEBUK }}
+          SENTRY_PROJECT_MOBILE: ${{ secrets.SENTRY_PROJECT_MOBILE }}
+        run: |
+          if [ -z "${SENTRY_ORG}" ] || [ -z "${SENTRY_API_BASE}" ] || [ -z "${SENTRY_PROJECT_PHP}" ] \
+             || { [ -z "${SENTRY_AUTH_TOKEN}" ] && [ -z "${SENTRY_AUTH_TOKEN_MONITOR}" ]; }; then
+            echo "::error::Sentry secrets are not configured on this repository — the nightly sweep cannot run."
+            echo "::error::Needed: SENTRY_AUTH_TOKEN (or SENTRY_AUTH_TOKEN_MONITOR), SENTRY_ORG, SENTRY_API_BASE, SENTRY_PROJECT_PHP."
+            exit 1
+          fi
+          node scripts/sentry-triage.mjs --quiet --days 1
+
+      # Counts to this public log; the issue titles to a private file for Telegram.
+      # Exit 1 means "issues need attention" and must NOT fail the run; exit 2 means
+      # the sweep produced nothing, which is a broken monitor and must.
+      - name: Summarise (counts only — this log is public)
+        id: gate
+        run: |
+          set +e
+          node scripts/check-sentry-nightly.mjs --message-file .sentry-state/message.txt
+          CODE=$?
+          set -e
+          echo "code=${CODE}" >> "$GITHUB_OUTPUT"
+          if [ "${CODE}" = "2" ]; then
+            echo "::error::The Sentry sweep produced no usable queue — an unavailable check is never a pass."
+            exit 1
+          fi
+
+      - name: Decide whether to alert
+        id: decide
+        env:
+          PREV: ${{ steps.previous.outputs.state_key }}
+          NOW: ${{ steps.gate.outputs.state_key }}
+          FORCED: ${{ inputs.force_alert }}
+        run: |
+          if [ "${FORCED}" = "true" ]; then
+            echo "Forced alert requested via workflow_dispatch"
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+          elif [ "${PREV}" = "${NOW}" ]; then
+            echo "State unchanged (${NOW}) - no message"
+            echo "alert=false" >> "$GITHUB_OUTPUT"
+          elif [ "${PREV}" = "unknown" ] && [ "${NOW}" = "clear" ]; then
+            # First run with nothing outstanding is not news.
+            echo "First run and nothing needs attention - no message"
+            echo "alert=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "State changed: ${PREV} -> ${NOW}"
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 🔴 The message body is read straight from the file by curl. Never echo it,
+      # cat it, or pass it through a step output: all three reach the public log.
+      - name: Send Telegram alert
+        if: steps.decide.outputs.alert == 'true'
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOW: ${{ steps.gate.outputs.state_key }}
+          QUEUED: ${{ steps.gate.outputs.queued }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "${TG_TOKEN}" ] || [ -z "${TG_CHAT}" ]; then
+            echo "::error::TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID secret is not set"
+            exit 1
+          fi
+
+          if [ "${NOW}" = "clear" ]; then
+            printf 'Sentry nightly — all clear.\n\nNothing has needed attention in the last 24 hours.\n\n%s\n' \
+              "${RUN_URL}" > .sentry-state/message.txt
+          else
+            printf '\n%s\n' "${RUN_URL}" >> .sentry-state/message.txt
+          fi
+
+          RESPONSE=$(curl -sS --max-time 20 --retry 2 \
+            "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT}" \
+            --data-urlencode "text@.sentry-state/message.txt")
+
+          if echo "${RESPONSE}" | jq -e '.ok == true' > /dev/null; then
+            echo "Telegram alert sent (${QUEUED} issue(s) needing attention)"
+          else
+            echo "::error::Telegram API rejected the message"
+            exit 1
+          fi
+
+      # The body is deleted before the state is cached: the cache is not a place
+      # for issue titles to accumulate.
+      - name: Record current state
+        if: always() && steps.gate.outputs.state_key != ''
+        run: |
+          rm -f .sentry-state/message.txt
+          printf '%s' "${{ steps.gate.outputs.state_key }}" > .sentry-state/state.txt
+
+      - name: Save state for the next run
+        if: always() && steps.gate.outputs.state_key != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .sentry-state
+          key: sentry-state-${{ github.run_id }}
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Sentry nightly"
+            echo ""
+            echo "- issues needing attention: ${{ steps.gate.outputs.queued || 'unknown' }}"
+            echo "- sensitive among them: ${{ steps.gate.outputs.sensitive || 'unknown' }}"
+            echo "- alerted: ${{ steps.decide.outputs.alert || 'no' }}"
+            echo ""
+            echo "Detail is deliberately not published here. Read it locally with:"
+            echo '`node scripts/sentry-triage.mjs --days 1`'
+          } >> "$GITHUB_STEP_SUMMARY"

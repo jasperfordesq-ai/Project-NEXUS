@@ -50,7 +50,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const ENV_FILE = path.join(ROOT, '.secrets.local', 'sentry.env');
+const ENV_FILE = process.env.SENTRY_ENV_FILE || path.join(ROOT, '.secrets.local', 'sentry.env');
 const LEDGER_FILE = path.join(ROOT, '.github', 'sentry-triage-ledger.json');
 const OUT_DIR = path.join(ROOT, '.local-docs-archive', 'sentry');
 const HEALTH_URL = 'https://api.project-nexus.ie/api/v2/health';
@@ -86,12 +86,30 @@ function tokenInstructions() {
   bad('  4. Put the token in .secrets.local/sentry.env as SENTRY_AUTH_TOKEN=<token>');
 }
 
-function loadEnv() {
-  if (!existsSync(ENV_FILE)) return null;
+// Config comes from `.secrets.local/sentry.env` on the owner's machine and from
+// the process environment in GitHub Actions, where that file does not exist.
+//
+// 🔴 The FILE WINS on every key it defines. Env only fills what the file omits (or
+// supplies everything when there is no file). Letting a stray exported SENTRY_ORG
+// override the file would silently point a local sweep at another org.
+//
+// Until 2026-09-17 this read the file and ONLY the file, so the nightly loop this
+// script's own header describes could never run anywhere but the owner's machine —
+// and so it never ran once. A 10-day Redis fault (1237 events) and a daily
+// safeguarding pager both went unseen for weeks because nothing swept on a schedule.
+//
+// Returns {} rather than null when neither source has anything: the required-key
+// check in main() gives the actionable message, not a bare 'file not found'.
+export function loadEnv(envFile = ENV_FILE, procEnv = process.env) {
   const env = {};
-  for (const line of readFileSync(ENV_FILE, 'utf8').split('\n')) {
-    const m = line.match(/^([A-Z_]+)=(.*)$/);
-    if (m) env[m[1]] = m[2].trim();
+  for (const [k, v] of Object.entries(procEnv)) {
+    if (/^SENTRY_[A-Z_]+$/.test(k) && typeof v === 'string' && v.trim() !== '') env[k] = v.trim();
+  }
+  if (existsSync(envFile)) {
+    for (const line of readFileSync(envFile, 'utf8').split('\n')) {
+      const m = line.match(/^([A-Z_]+)=(.*)$/);
+      if (m && m[2].trim() !== '') env[m[1]] = m[2].trim();
+    }
   }
   return env;
 }
@@ -134,7 +152,6 @@ function score(issue, isNew) {
 
 async function main() {
   const env = loadEnv();
-  if (!env) { bad(`${ENV_FILE} not found — cannot reach Sentry. Did not run.`); return 2; }
 
   // Issue listing and issue UPDATES need the internal-integration token (issue
   // admin). The monitor token is read-only and is only a fallback for the sweep.
@@ -157,7 +174,7 @@ async function main() {
     mobile: env.SENTRY_PROJECT_MOBILE,
   };
   if (!TOKEN || !ORG || !BASE || !PROJECTS.php) {
-    bad('sentry.env is missing SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_API_BASE or SENTRY_PROJECT_PHP.');
+    bad('Missing SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_API_BASE or SENTRY_PROJECT_PHP — set them in .secrets.local/sentry.env locally, or as environment variables in CI.');
     return 2;
   }
   const projectName = Object.fromEntries(Object.entries(PROJECTS).filter(([, v]) => v).map(([k, v]) => [String(v), k]));
@@ -419,7 +436,15 @@ async function main() {
   return 0;
 }
 
-main().then(
-  (code) => { process.exitCode = code; },
-  (e) => { bad(`internal error: ${e.message}`); process.exitCode = 2; },
-);
+// Run the sweep ONLY when executed directly. Importing this module (the config
+// tests do) must not talk to Sentry or rewrite the committed ledger — it did
+// exactly that while this guard was missing.
+const invokedDirectly = process.argv[1]
+  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (invokedDirectly) {
+  main().then(
+    (code) => { process.exitCode = code; },
+    (e) => { bad(`internal error: ${e.message}`); process.exitCode = 2; },
+  );
+}

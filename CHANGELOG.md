@@ -11,6 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A nightly Sentry sweep now tells a human when errors need attention.** Until now the only
+  error monitoring ran for 30 minutes after a deploy, so anything that did not coincide with a
+  deploy was invisible: a Redis name-resolution fault ran from 2026-09-06 to 2026-09-16 (1237
+  events) and ended only because a routine Docker upgrade restarted the daemon, and a daily
+  safeguarding pager fired 17 times from 2026-08-30 naming three real members who could not be
+  contacted. `scripts/sentry-triage.mjs` had been written as "the collection half of the nightly
+  Sentry loop" and had never once run on a schedule. The new `Sentry Nightly` workflow runs it
+  every morning at 09:00 UTC, just after the platform's own 08:05 pagers, and alerts over Telegram
+  — the channel the owner already receives — only when the state changes, matching
+  `uptime-check.yml` rather than nagging daily about a known issue. Because the repository is
+  public, `scripts/check-sentry-nightly.mjs` prints counts only to the workflow log and writes the
+  issue titles to a file that only the Telegram step reads. The run fails when the sweep or the
+  alert cannot be delivered, never merely because issues exist. `sentry-triage.mjs` also accepts
+  its credentials from the environment now, since `.secrets.local/sentry.env` does not exist in
+  CI, and no longer runs its sweep when imported. Regression tests:
+  `scripts/test/sentry-nightly-gate.test.mjs` (including that no title, culprit, short id or
+  permalink can reach the public log) and `scripts/test/sentry-triage-config.test.mjs`.
 - **The public sales order endpoint now accepts an enquiry with no quote attached.**
   `POST /api/v2/sales/orders` required a complete `quote` object (plan name, capacity label,
   billing cycle, pricing mode and five price labels), so the sales site could only use it from the

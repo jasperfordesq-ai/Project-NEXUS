@@ -83,6 +83,7 @@ CLAUDE.md
 # NEXUS_DELIVERY_ORIGINS in the per-installation env file.
 !/scripts/check-prerender-delivery.mjs
 !/scripts/wait-for-prerender-publish.sh
+!/scripts/check-sentry-nightly.mjs
 !/scripts/backup-aspnet-db.sh
 !/scripts/check-compose-bootstrap-cache.mjs
 !/scripts/check-host-cron-scripts.mjs
