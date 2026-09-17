@@ -90,11 +90,11 @@ public class SalesOrderController : ControllerBase
         MaxString(errors, request.Note, "note", 5000);
         MaxString(errors, request.PageUrl, "page_url", 2048);
 
+        // Optional, mirroring the Laravel controller: the sales site's public pages send a plain
+        // enquiry with no quote builder involved. When a quote IS sent it must be complete, so a
+        // half-filled quote cannot put a half-priced estimate in the enquiry email.
         if (request.Quote == null)
-        {
-            AddError(errors, "quote", "The quote field is required.");
             return errors;
-        }
 
         RequireString(errors, request.Quote.ProductLineLabel, "quote.product_line_label", max: 120);
         RequireString(errors, request.Quote.PlanName, "quote.plan_name", max: 120);
@@ -180,41 +180,63 @@ public class SalesOrderController : ControllerBase
         var name = !string.IsNullOrWhiteSpace(request.Organisation)
             ? request.Organisation!.Trim()
             : request.ContactName.Trim();
-        var plan = request.Quote?.PlanName ?? "Project NEXUS";
-        var subject = $"Project NEXUS order enquiry {reference} - {name} - {plan}";
+        var plan = request.Quote?.PlanName?.Trim() ?? "";
+        // Two subjects, so a priced order enquiry and a general one are told apart in the inbox.
+        var subject = plan.Length > 0
+            ? $"Project NEXUS order enquiry {reference} - {name} - {plan}"
+            : $"Project NEXUS enquiry {reference} - {name}";
         return subject.Length <= 180 ? subject : subject[..180];
     }
 
     private string RenderOrderEmail(SalesOrderRequest request, string reference)
     {
-        var quote = request.Quote!;
-        var rows = new[]
+        var quote = request.Quote;
+        var hasQuote = quote != null;
+
+        var rows = new List<(string, string)>
         {
             ("Reference", reference),
             ("Submitted at", DateTime.UtcNow.ToString("u")),
             ("Contact", request.ContactName),
             ("Organisation", request.Organisation ?? ""),
             ("Email", request.Email),
-            ("Region", request.Region ?? ""),
-            ("Product line", quote.ProductLineLabel),
-            ("Recommended plan", quote.PlanName),
-            ("Capacity", quote.ActiveMemberLabel),
-            ("Billing preference", quote.BillingCycle),
-            ("Pricing mode", quote.PricingMode),
-            ("Monthly recurring", quote.MonthlyRecurringLabel),
-            ("Annual recurring", quote.AnnualRecurringLabel),
-            ("Annual saving", quote.AnnualSavingsLabel),
-            ("One-off total", quote.OneOffLabel),
-            ("First-year estimate", quote.FirstYearLabel),
+            ("Region", request.Region ?? "")
+        };
+
+        // A general enquiry showed these as a column of dashes, which reads like the quote failed
+        // to save rather than never existing.
+        if (quote != null)
+        {
+            rows.AddRange(new[]
+            {
+                ("Product line", quote.ProductLineLabel ?? ""),
+                ("Recommended plan", quote.PlanName ?? ""),
+                ("Capacity", quote.ActiveMemberLabel ?? ""),
+                ("Billing preference", quote.BillingCycle ?? ""),
+                ("Pricing mode", quote.PricingMode ?? ""),
+                ("Monthly recurring", quote.MonthlyRecurringLabel ?? ""),
+                ("Annual recurring", quote.AnnualRecurringLabel ?? ""),
+                ("Annual saving", quote.AnnualSavingsLabel ?? ""),
+                ("One-off total", quote.OneOffLabel ?? ""),
+                ("First-year estimate", quote.FirstYearLabel ?? "")
+            });
+        }
+        else
+        {
+            rows.Add(("Quote", "No quote attached - general enquiry from the sales site."));
+        }
+
+        rows.AddRange(new[]
+        {
             ("Page URL", request.PageUrl ?? ""),
             ("IP", HttpContext.Connection.RemoteIpAddress?.ToString() ?? ""),
             ("User agent", Request.Headers.UserAgent.ToString())
-        };
+        });
 
         var summaryRows = string.Join("", rows.Select(row =>
             $"<tr><th style=\"text-align:left;padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#475569;width:220px;\">{Esc(row.Item1)}</th><td style=\"padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#0f172a;\">{Esc(string.IsNullOrWhiteSpace(row.Item2) ? "-" : row.Item2)}</td></tr>"));
 
-        var lineRows = quote.LineItems.Count == 0
+        var lineRows = quote == null || quote.LineItems.Count == 0
             ? "<tr><td colspan=\"4\" style=\"padding:10px 12px;color:#64748b;\">No paid line items selected.</td></tr>"
             : string.Join("", quote.LineItems.Select(item =>
                 $"<tr><td style=\"padding:10px 12px;border-bottom:1px solid #e5e7eb;\">{Esc(item.Label)}</td><td style=\"padding:10px 12px;border-bottom:1px solid #e5e7eb;\">{Esc(item.Cadence)}</td><td style=\"padding:10px 12px;border-bottom:1px solid #e5e7eb;\">{Math.Max(1, item.Quantity ?? 1)}</td><td style=\"padding:10px 12px;border-bottom:1px solid #e5e7eb;font-weight:700;\">{Esc(item.AmountLabel)}</td></tr>"));
@@ -222,18 +244,20 @@ public class SalesOrderController : ControllerBase
         return "<!doctype html><html><body style=\"margin:0;background:#f8fafc;font-family:Inter,Arial,sans-serif;color:#0f172a;\">"
             + "<div style=\"max-width:760px;margin:0 auto;padding:28px;\">"
             + "<div style=\"background:#0b1220;color:#fff;border-radius:16px;padding:24px 28px;margin-bottom:20px;\">"
-            + "<p style=\"margin:0 0 8px;color:#38bdf8;font-size:12px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;\">Project NEXUS sales order enquiry</p>"
+            + $"<p style=\"margin:0 0 8px;color:#38bdf8;font-size:12px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;\">{(hasQuote ? "Project NEXUS sales order enquiry" : "Project NEXUS sales enquiry")}</p>"
             + $"<h1 style=\"margin:0;font-size:28px;line-height:1.15;\">{Esc(reference)}</h1>"
-            + "<p style=\"margin:12px 0 0;color:#cbd5e1;\">A new pricing/order enquiry was submitted from the sales site.</p>"
+            + $"<p style=\"margin:12px 0 0;color:#cbd5e1;\">{(hasQuote ? "A new pricing/order enquiry was submitted from the sales site." : "A new enquiry was submitted from the sales site. Reply to this email to answer the sender directly.")}</p>"
             + "</div>"
             + "<div style=\"background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;\">"
             + $"<table role=\"presentation\" style=\"width:100%;border-collapse:collapse;\">{summaryRows}</table>"
             + "</div>"
-            + "<div style=\"background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;\">"
-            + "<div style=\"padding:16px 18px;border-bottom:1px solid #e5e7eb;\"><strong>Selected quote line items</strong></div>"
-            + "<table role=\"presentation\" style=\"width:100%;border-collapse:collapse;\">"
-            + "<thead><tr><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Item</th><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Cadence</th><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Qty</th><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Amount</th></tr></thead>"
-            + $"<tbody>{lineRows}</tbody></table></div>"
+            + (hasQuote
+                ? "<div style=\"background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;\">"
+                    + "<div style=\"padding:16px 18px;border-bottom:1px solid #e5e7eb;\"><strong>Selected quote line items</strong></div>"
+                    + "<table role=\"presentation\" style=\"width:100%;border-collapse:collapse;\">"
+                    + "<thead><tr><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Item</th><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Cadence</th><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Qty</th><th style=\"text-align:left;padding:10px 12px;background:#f1f5f9;\">Amount</th></tr></thead>"
+                    + $"<tbody>{lineRows}</tbody></table></div>"
+                : "")
             + "<div style=\"background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;\">"
             + $"<strong>Notes</strong><p style=\"white-space:pre-wrap;line-height:1.6;color:#334155;\">{Esc(string.IsNullOrWhiteSpace(request.Note) ? "No extra notes added." : request.Note)}</p>"
             + "</div></div></body></html>";

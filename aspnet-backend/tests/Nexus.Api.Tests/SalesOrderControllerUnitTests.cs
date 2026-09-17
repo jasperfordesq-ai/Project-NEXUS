@@ -96,6 +96,69 @@ public class SalesOrderControllerUnitTests
     }
 
     [Fact]
+    public async Task Submit_AcceptsGeneralEnquiryWithNoQuote()
+    {
+        // Mirrors the Laravel controller: the sales site's public pages have no quote builder,
+        // so a plain "tell us about your community" enquiry must be accepted without one.
+        var email = new RecordingEmailService(sendResult: true);
+        var controller = CreateController(email);
+        var request = CreateRequest(controller, new
+        {
+            contact_name = "Ava Murphy",
+            organisation = "Civic Network",
+            email = "ava@example.org",
+            region = "Ireland",
+            note = "We run a timebank in Cork."
+        });
+
+        var result = await InvokeSubmitAsync(controller, request);
+
+        var created = result.Should().BeOfType<ObjectResult>().Subject;
+        created.StatusCode.Should().Be(StatusCodes.Status201Created);
+
+        email.Messages.Should().ContainSingle();
+        email.Messages[0].To.Should().Be("jasper.ford.esq@gmail.com");
+        // A different subject, so an enquiry with no price attached is obvious in the inbox.
+        email.Messages[0].Subject.Should().Contain("Project NEXUS enquiry");
+        email.Messages[0].Subject.Should().NotContain("order enquiry");
+        email.Messages[0].HtmlBody.Should().Contain("Ava Murphy");
+        email.Messages[0].HtmlBody.Should().Contain("We run a timebank in Cork.");
+        email.Messages[0].HtmlBody.Should().Contain("No quote attached");
+    }
+
+    [Fact]
+    public async Task Submit_StillRejectsHalfFilledQuote()
+    {
+        // Optional means all of it or none of it: a partial quote would put a half-priced
+        // estimate in the enquiry email.
+        var email = new RecordingEmailService(sendResult: true);
+        var controller = CreateController(email);
+        var request = CreateRequest(controller, new
+        {
+            contact_name = "Ava Murphy",
+            email = "ava@example.org",
+            quote = new
+            {
+                product_line_label = "Full Platform Hosting",
+                billing_cycle = "annual",
+                pricing_mode = "published"
+            }
+        });
+
+        var result = await InvokeSubmitAsync(controller, request);
+
+        var invalid = result.Should().BeOfType<ObjectResult>().Subject;
+        invalid.StatusCode.Should().Be(StatusCodes.Status422UnprocessableEntity);
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(invalid.Value));
+        var fields = document.RootElement.GetProperty("errors").EnumerateArray()
+            .Select(error => error.GetProperty("field").GetString())
+            .ToArray();
+
+        fields.Should().Contain("quote.plan_name");
+        email.Messages.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Submit_HoneypotReturnsReceivedWithoutSendingEmail()
     {
         var email = new RecordingEmailService(sendResult: true);

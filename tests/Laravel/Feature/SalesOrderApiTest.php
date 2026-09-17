@@ -44,6 +44,97 @@ class SalesOrderApiTest extends TestCase
         $this->assertStringStartsWith('NXSO-', (string) $response->json('data.reference'));
     }
 
+    public function test_public_sales_order_accepts_a_general_enquiry_with_no_quote(): void
+    {
+        // The sales site's public pages have no quote builder on them. Before this, a plain
+        // "tell us about your community" enquiry could not use this endpoint at all, because the
+        // whole quote block was required.
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldReceive('send')
+            ->once()
+            ->withArgs(function (string $to, string $subject, string $body, array $options): bool {
+                $this->assertSame('jasper.ford.esq@gmail.com', $to);
+                // A different subject, so an enquiry with no price attached is obvious in the inbox.
+                $this->assertStringContainsString('Project NEXUS enquiry', $subject);
+                $this->assertStringNotContainsString('order enquiry', $subject);
+                $this->assertStringContainsString('Civic Network', $subject);
+
+                $this->assertStringContainsString('Ava Murphy', $body);
+                $this->assertStringContainsString('ava@example.org', $body);
+                $this->assertStringContainsString('We run a timebank in Cork.', $body);
+                $this->assertStringContainsString('No quote attached', $body);
+
+                // Replying must still land on the enquirer, not on the site.
+                $this->assertSame('Ava Murphy <ava@example.org>', $options['replyTo']);
+                $this->assertTrue($options['allow_missing_tenant']);
+
+                return true;
+            })
+            ->andReturn(true);
+
+        $this->app->instance(EmailService::class, $emailService);
+
+        $response = $this->apiPost('/v2/sales/orders', [
+            'contact_name' => 'Ava Murphy',
+            'organisation' => 'Civic Network',
+            'email' => 'ava@example.org',
+            'region' => 'Ireland',
+            'note' => 'We run a timebank in Cork.',
+            'page_url' => 'https://project-nexus.ie/',
+        ]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('data.status', 'received');
+        $this->assertStringStartsWith('NXSO-', (string) $response->json('data.reference'));
+    }
+
+    public function test_public_sales_order_still_rejects_a_half_filled_quote(): void
+    {
+        // Optional means "all of it or none of it". A partial quote is a bug in the caller, and
+        // accepting it would put a half-priced estimate in the enquiry email.
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldNotReceive('send');
+        $this->app->instance(EmailService::class, $emailService);
+
+        $payload = $this->payload();
+        unset($payload['quote']['plan_name'], $payload['quote']['first_year_label']);
+
+        $response = $this->apiPost('/v2/sales/orders', $payload);
+
+        $response->assertStatus(422);
+        $this->assertContains(
+            'quote.plan_name',
+            array_column((array) $response->json('errors'), 'field')
+        );
+    }
+
+    public function test_public_sales_order_still_requires_a_contact_name_without_a_quote(): void
+    {
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldNotReceive('send');
+        $this->app->instance(EmailService::class, $emailService);
+
+        $response = $this->apiPost('/v2/sales/orders', [
+            'organisation' => 'Civic Network',
+            'email' => 'ava@example.org',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.field', 'contact_name');
+    }
+
+    public function test_public_sales_order_honeypot_silently_accepts_without_sending(): void
+    {
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldNotReceive('send');
+        $this->app->instance(EmailService::class, $emailService);
+
+        $response = $this->apiPost('/v2/sales/orders', $this->payload(['website' => 'http://spam.example.com']));
+
+        $response->assertCreated();
+        $response->assertJsonPath('data.status', 'received');
+    }
+
     public function test_public_sales_order_validates_contact_email(): void
     {
         $emailService = Mockery::mock(EmailService::class);

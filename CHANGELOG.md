@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **The public sales order endpoint now accepts an enquiry with no quote attached.**
+  `POST /api/v2/sales/orders` required a complete `quote` object (plan name, capacity label,
+  billing cycle, pricing mode and five price labels), so the sales site could only use it from the
+  quote builder on its hidden `/hosting` page. A plain "tell us about your community" enquiry from
+  a public page had nowhere to go, which left the sales site with `mailto:` links as its only route
+  to the inbox — and those do nothing for a visitor with no mail app configured. `quote` is now
+  optional and all-or-nothing: send it complete, or omit it entirely. A half-filled quote is still
+  rejected, because accepting one would put a half-priced estimate in the enquiry email. Quote-less
+  enquiries get their own subject line ("Project NEXUS enquiry" rather than "Project NEXUS order
+  enquiry") and an email body with the pricing rows and line-item table left out instead of
+  rendered as a column of dashes. Existing callers that send a full quote are unaffected.
+  The development-only `aspnet-backend/` mirror of this controller had the same hard requirement
+  and has been changed in step, so the two do not drift apart before that migration finishes.
+  Regression tests: `SalesOrderApiTest::test_public_sales_order_accepts_a_general_enquiry_with_no_quote`,
+  `::test_public_sales_order_still_rejects_a_half_filled_quote`,
+  `::test_public_sales_order_still_requires_a_contact_name_without_a_quote`,
+  `::test_public_sales_order_honeypot_silently_accepts_without_sending`, and
+  `SalesOrderControllerUnitTests.Submit_AcceptsGeneralEnquiryWithNoQuote` /
+  `.Submit_StillRejectsHalfFilledQuote` on the ASP.NET side.
+
 ### Fixed
 
 - **The platform master's public front page (`app.project-nexus.ie`) is now actually prerendered

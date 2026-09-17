@@ -34,17 +34,20 @@ class SalesOrderController extends BaseApiController
             'region' => ['nullable', 'string', 'max:160'],
             'note' => ['nullable', 'string', 'max:5000'],
             'page_url' => ['nullable', 'string', 'max:2048'],
-            'quote' => ['required', 'array'],
-            'quote.product_line_label' => ['required', 'string', 'max:120'],
-            'quote.plan_name' => ['required', 'string', 'max:120'],
-            'quote.active_member_label' => ['required', 'string', 'max:160'],
-            'quote.billing_cycle' => ['required', 'string', 'in:monthly,annual'],
-            'quote.pricing_mode' => ['required', 'string', 'in:published,custom'],
-            'quote.monthly_recurring_label' => ['required', 'string', 'max:80'],
-            'quote.annual_recurring_label' => ['required', 'string', 'max:80'],
-            'quote.annual_savings_label' => ['required', 'string', 'max:80'],
-            'quote.one_off_label' => ['required', 'string', 'max:80'],
-            'quote.first_year_label' => ['required', 'string', 'max:80'],
+            // Optional, so the sales site's public pages can send a plain "tell us about your
+            // community" enquiry with no quote builder involved. When a quote IS sent it must be
+            // complete: a half-filled quote would put a half-priced estimate in the enquiry email.
+            'quote' => ['nullable', 'array'],
+            'quote.product_line_label' => ['required_with:quote', 'string', 'max:120'],
+            'quote.plan_name' => ['required_with:quote', 'string', 'max:120'],
+            'quote.active_member_label' => ['required_with:quote', 'string', 'max:160'],
+            'quote.billing_cycle' => ['required_with:quote', 'string', 'in:monthly,annual'],
+            'quote.pricing_mode' => ['required_with:quote', 'string', 'in:published,custom'],
+            'quote.monthly_recurring_label' => ['required_with:quote', 'string', 'max:80'],
+            'quote.annual_recurring_label' => ['required_with:quote', 'string', 'max:80'],
+            'quote.annual_savings_label' => ['required_with:quote', 'string', 'max:80'],
+            'quote.one_off_label' => ['required_with:quote', 'string', 'max:80'],
+            'quote.first_year_label' => ['required_with:quote', 'string', 'max:80'],
             'quote.line_items' => ['nullable', 'array', 'max:60'],
             'quote.line_items.*.label' => ['required_with:quote.line_items', 'string', 'max:180'],
             'quote.line_items.*.amount_label' => ['required_with:quote.line_items', 'string', 'max:80'],
@@ -114,9 +117,14 @@ class SalesOrderController extends BaseApiController
         $organisation = trim((string) ($data['organisation'] ?? ''));
         $contact = trim((string) ($data['contact_name'] ?? ''));
         $name = $organisation !== '' ? $organisation : $contact;
-        $plan = (string) data_get($data, 'quote.plan_name', 'Project NEXUS');
+        $plan = trim((string) data_get($data, 'quote.plan_name', ''));
 
-        return Str::limit("Project NEXUS order enquiry {$reference} - {$name} - {$plan}", 180, '');
+        // Two subjects, so a priced order enquiry and a general one are told apart in the inbox.
+        $subject = $plan !== ''
+            ? "Project NEXUS order enquiry {$reference} - {$name} - {$plan}"
+            : "Project NEXUS enquiry {$reference} - {$name}";
+
+        return Str::limit($subject, 180, '');
     }
 
     /**
@@ -125,15 +133,22 @@ class SalesOrderController extends BaseApiController
     private function renderOrderEmail(array $data, string $reference, Request $request): string
     {
         $quote = is_array($data['quote'] ?? null) ? $data['quote'] : [];
+        $hasQuote = $quote !== [];
         $lineItems = is_array($quote['line_items'] ?? null) ? $quote['line_items'] : [];
         $submittedAt = now()->toDateTimeString();
-        $rows = [
+
+        $contactRows = [
             ['Reference', $reference],
             ['Submitted at', $submittedAt],
             ['Contact', (string) $data['contact_name']],
             ['Organisation', (string) ($data['organisation'] ?? '')],
             ['Email', (string) $data['email']],
             ['Region', (string) ($data['region'] ?? '')],
+        ];
+
+        // Only rendered when a quote came with the enquiry. A general enquiry showed these as a
+        // column of dashes, which reads like the quote failed to save rather than never existing.
+        $quoteRows = $hasQuote ? [
             ['Product line', (string) ($quote['product_line_label'] ?? '')],
             ['Recommended plan', (string) ($quote['plan_name'] ?? '')],
             ['Capacity', (string) ($quote['active_member_label'] ?? '')],
@@ -144,6 +159,13 @@ class SalesOrderController extends BaseApiController
             ['Annual saving', (string) ($quote['annual_savings_label'] ?? '')],
             ['One-off total', (string) ($quote['one_off_label'] ?? '')],
             ['First-year estimate', (string) ($quote['first_year_label'] ?? '')],
+        ] : [
+            ['Quote', 'No quote attached - general enquiry from the sales site.'],
+        ];
+
+        $rows = [
+            ...$contactRows,
+            ...$quoteRows,
             ['Page URL', (string) ($data['page_url'] ?? '')],
             ['IP', (string) $request->ip()],
             ['User agent', Str::limit((string) $request->userAgent(), 500, '')],
@@ -166,18 +188,20 @@ class SalesOrderController extends BaseApiController
         return '<!doctype html><html><body style="margin:0;background:#f8fafc;font-family:Inter,Arial,sans-serif;color:#0f172a;">'
             . '<div style="max-width:760px;margin:0 auto;padding:28px;">'
             . '<div style="background:#0b1220;color:#fff;border-radius:16px;padding:24px 28px;margin-bottom:20px;">'
-            . '<p style="margin:0 0 8px;color:#38bdf8;font-size:12px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;">Project NEXUS sales order enquiry</p>'
+            . '<p style="margin:0 0 8px;color:#38bdf8;font-size:12px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;">' . ($hasQuote ? 'Project NEXUS sales order enquiry' : 'Project NEXUS sales enquiry') . '</p>'
             . '<h1 style="margin:0;font-size:28px;line-height:1.15;">' . $this->escape($reference) . '</h1>'
-            . '<p style="margin:12px 0 0;color:#cbd5e1;">A new pricing/order enquiry was submitted from the sales site.</p>'
+            . '<p style="margin:12px 0 0;color:#cbd5e1;">' . ($hasQuote ? 'A new pricing/order enquiry was submitted from the sales site.' : 'A new enquiry was submitted from the sales site. Reply to this email to answer the sender directly.') . '</p>'
             . '</div>'
             . '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;">'
             . '<table role="presentation" style="width:100%;border-collapse:collapse;">' . implode('', $summaryRows) . '</table>'
             . '</div>'
-            . '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;">'
-            . '<div style="padding:16px 18px;border-bottom:1px solid #e5e7eb;"><strong>Selected quote line items</strong></div>'
-            . '<table role="presentation" style="width:100%;border-collapse:collapse;">'
-            . '<thead><tr><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Item</th><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Cadence</th><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Qty</th><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Amount</th></tr></thead>'
-            . '<tbody>' . $lineItemsHtml . '</tbody></table></div>'
+            . ($hasQuote
+                ? '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;">'
+                    . '<div style="padding:16px 18px;border-bottom:1px solid #e5e7eb;"><strong>Selected quote line items</strong></div>'
+                    . '<table role="presentation" style="width:100%;border-collapse:collapse;">'
+                    . '<thead><tr><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Item</th><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Cadence</th><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Qty</th><th style="text-align:left;padding:10px 12px;background:#f1f5f9;">Amount</th></tr></thead>'
+                    . '<tbody>' . $lineItemsHtml . '</tbody></table></div>'
+                : '')
             . '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;">'
             . '<strong>Notes</strong><p style="white-space:pre-wrap;line-height:1.6;color:#334155;">' . $this->escape((string) ($data['note'] ?? 'No extra notes added.')) . '</p>'
             . '</div></div></body></html>';
