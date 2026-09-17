@@ -316,10 +316,17 @@ class CronJobRunner
         $this->releaseStaleNotificationQueueRows($frequency, 30);
 
         // 1. Find users with pending items for this frequency
+        // Deleted/anonymised accounts are excluded at the query level, not just
+        // at the send guard. GDPR erasure rewrites users.email to
+        // deleted_<id>_<hash>@anonymized.local and stamps deleted_at +
+        // anonymized_at; those rows kept surfacing here, so every run believed
+        // an erased person was still a recipient and spent a round trip
+        // discovering they were not.
         $sql = "SELECT q.user_id, q.tenant_id, COUNT(*) as count
                 FROM notification_queue q
                 JOIN users u ON u.id = q.user_id AND u.tenant_id = q.tenant_id
                 WHERE q.frequency = ? AND q.status = 'pending'
+                  AND u.deleted_at IS NULL AND u.anonymized_at IS NULL
                 GROUP BY q.user_id, q.tenant_id";
 
         $users = array_map(fn($r) => (array) $r, DB::select($sql, [$frequency]));
@@ -843,7 +850,10 @@ class CronJobRunner
             $this->releaseStaleNotificationQueueRows('instant', 10);
             $batchId = (string) Str::uuid();
 
-            // Race condition fix: atomically claim up to 50 pending items
+            // Race condition fix: atomically claim up to 50 pending items.
+            // The EXISTS test mirrors the JOIN in the fetch below on purpose: a
+            // row this claims but the fetch drops would be stranded in
+            // 'processing' and burn a retry on every sweep.
             $claimSql = "UPDATE notification_queue
                          SET status = 'processing',
                              processing_batch_id = ?,
@@ -853,6 +863,13 @@ class CronJobRunner
                              last_error = NULL
                          WHERE frequency = 'instant' AND status = 'pending' AND tenant_id IS NOT NULL
                            AND attempts < 3
+                           AND EXISTS (
+                               SELECT 1 FROM users u
+                                WHERE u.id = notification_queue.user_id
+                                  AND u.tenant_id = notification_queue.tenant_id
+                                  AND u.deleted_at IS NULL
+                                  AND u.anonymized_at IS NULL
+                           )
                          ORDER BY created_at ASC
                          LIMIT 50";
             $claimed = DB::update($claimSql, [$batchId]);
@@ -866,6 +883,7 @@ class CronJobRunner
                         FROM notification_queue q
                         JOIN users u ON q.user_id = u.id AND q.tenant_id = u.tenant_id
                         WHERE q.frequency = 'instant' AND q.status = 'processing'
+                          AND u.deleted_at IS NULL AND u.anonymized_at IS NULL
                           AND q.processing_batch_id = ?
                         ORDER BY q.created_at ASC
                         LIMIT 50";
@@ -1896,7 +1914,9 @@ class CronJobRunner
         $this->releaseStaleNotificationQueueRows('instant', 10);
         $batchId = (string) Str::uuid();
 
-        // Race condition fix: atomically claim up to 50 pending items
+        // Race condition fix: atomically claim up to 50 pending items.
+        // The EXISTS test mirrors the JOIN in the fetch below on purpose — see
+        // runInstantQueue().
         $claimSql = "UPDATE notification_queue
                      SET status = 'processing',
                          processing_batch_id = ?,
@@ -1906,6 +1926,13 @@ class CronJobRunner
                          last_error = NULL
                      WHERE frequency = 'instant' AND status = 'pending' AND tenant_id IS NOT NULL
                        AND attempts < 3
+                       AND EXISTS (
+                           SELECT 1 FROM users u
+                            WHERE u.id = notification_queue.user_id
+                              AND u.tenant_id = notification_queue.tenant_id
+                              AND u.deleted_at IS NULL
+                              AND u.anonymized_at IS NULL
+                       )
                      ORDER BY created_at ASC
                      LIMIT 50";
         $claimed = DB::update($claimSql, [$batchId]);
@@ -1923,6 +1950,7 @@ class CronJobRunner
                 FROM notification_queue q
                 JOIN users u ON q.user_id = u.id AND q.tenant_id = u.tenant_id
                 WHERE q.frequency = 'instant' AND q.status = 'processing'
+                  AND u.deleted_at IS NULL AND u.anonymized_at IS NULL
                   AND q.processing_batch_id = ?
                 ORDER BY q.created_at ASC
                 LIMIT 50";
@@ -2416,7 +2444,8 @@ class CronJobRunner
                 $matchSql = "SELECT DISTINCT l.user_id, u.name, u.email
                              FROM listings l
                              JOIN users u ON l.user_id = u.id AND u.tenant_id = ?
-                             WHERE l.category_id = ?
+                             WHERE u.deleted_at IS NULL AND u.anonymized_at IS NULL
+                             AND l.category_id = ?
                              AND l.tenant_id = ?
                              AND l.type = ?
                              AND l.status = 'active'

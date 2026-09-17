@@ -72,6 +72,10 @@ class Mailer
     public const CATEGORY_EVENTS        = 'events';
     public const CATEGORY_SAFEGUARDING  = 'safeguarding';
     public const CATEGORY_BILLING       = 'billing';
+    // Inbound sales enquiries from the public sales site. Deliberately its own
+    // bucket: an enquiry from a prospective customer routed as billing@ reads
+    // as ordinary platform billing mail, and one was missed because of it.
+    public const CATEGORY_ENQUIRIES     = 'enquiries';
 
     /** Optional platform Reply-To (Postmark). */
     private ?string $platformReplyTo = null;
@@ -181,6 +185,26 @@ class Mailer
     }
 
     /**
+     * Override the From display name for this one message.
+     *
+     * The From name otherwise comes from the tenant (loadTenantConfig) or, on
+     * a tenantless platform send, from the platform default — which is a
+     * single shared value and therefore wrong for any send that is not "the
+     * platform talking as itself". Callers that own their own identity (the
+     * sales enquiry route) set it explicitly. No existing caller passes one,
+     * so behaviour elsewhere is unchanged.
+     */
+    public function withFromName(?string $fromName): self
+    {
+        $fromName = trim((string) $fromName);
+        if ($fromName !== '') {
+            $this->fromName = self::sanitizeHeaderValue($fromName);
+        }
+
+        return $this;
+    }
+
+    /**
      * Factory: create a Mailer configured for the current tenant context.
      */
     public static function forCurrentTenant(): self
@@ -200,7 +224,7 @@ class Mailer
      *
      * Maps the fine-grained EmailDispatchService audit categories (e.g.
      * 'newsletter', 'password_reset', 'marketplace_payment') to one of the
-     * eight recognised From-address buckets.
+     * nine recognised From-address buckets.
      */
     private function resolveFromPrefix(?string $category): string
     {
@@ -236,6 +260,12 @@ class Mailer
         // Safeguarding alerts
         if ($category === 'safeguarding') {
             return self::CATEGORY_SAFEGUARDING;
+        }
+
+        // Sales enquiries from the public sales site. Must be tested before the
+        // billing branch below, which is the bucket this used to fall into.
+        if ($category === 'sales_enquiry') {
+            return self::CATEGORY_ENQUIRIES;
         }
 
         // Billing / payments / marketplace

@@ -106,6 +106,94 @@ class MailerTest extends TestCase
     }
 
     // -------------------------------------------------------
+    // Sales enquiry From-address bucket
+    // -------------------------------------------------------
+
+    public function test_sales_enquiry_category_routes_to_its_own_from_bucket(): void
+    {
+        $mailer = new Mailer();
+        $method = new \ReflectionMethod(Mailer::class, 'resolveFromPrefix');
+        $method->setAccessible(true);
+
+        $this->assertSame(
+            Mailer::CATEGORY_ENQUIRIES,
+            $method->invoke($mailer, 'sales_enquiry'),
+            'A sales enquiry must not share a From address with platform billing mail.'
+        );
+        $this->assertSame('enquiries', Mailer::CATEGORY_ENQUIRIES);
+    }
+
+    public function test_sales_enquiry_bucket_does_not_disturb_the_existing_billing_bucket(): void
+    {
+        $mailer = new Mailer();
+        $method = new \ReflectionMethod(Mailer::class, 'resolveFromPrefix');
+        $method->setAccessible(true);
+
+        // The enquiries branch sits directly above the billing branch, so these
+        // pin that it was inserted before it without swallowing any of it.
+        $this->assertSame(Mailer::CATEGORY_BILLING, $method->invoke($mailer, 'billing'));
+        $this->assertSame(Mailer::CATEGORY_BILLING, $method->invoke($mailer, 'donation'));
+        $this->assertSame(Mailer::CATEGORY_BILLING, $method->invoke($mailer, 'marketplace_payment'));
+        $this->assertSame(Mailer::CATEGORY_BILLING, $method->invoke($mailer, 'identity_payment'));
+        $this->assertSame(Mailer::CATEGORY_BILLING, $method->invoke($mailer, 'verein_dues'));
+        $this->assertSame(Mailer::CATEGORY_BILLING, $method->invoke($mailer, 'vol_org_wallet'));
+    }
+
+    public function test_sales_enquiry_stays_on_the_transactional_stream(): void
+    {
+        $mailer = new Mailer();
+        $method = new \ReflectionMethod(Mailer::class, 'resolvePostmarkStream');
+        $method->setAccessible(true);
+
+        // Stream selection keys off the same bucket resolver, so a new bucket
+        // could silently move enquiries onto the bulk/broadcast stream.
+        $this->assertSame(
+            $method->invoke($mailer, 'billing'),
+            $method->invoke($mailer, 'sales_enquiry'),
+            'Sales enquiries are transactional, like the billing mail they used to be sent as.'
+        );
+    }
+
+    // -------------------------------------------------------
+    // withFromName()
+    // -------------------------------------------------------
+
+    public function test_withFromName_overrides_the_default_sender_name(): void
+    {
+        $mailer = new Mailer();
+        $mailer->withFromName('Project NEXUS');
+
+        $fromName = new \ReflectionProperty(Mailer::class, 'fromName');
+        $fromName->setAccessible(true);
+
+        $this->assertSame('Project NEXUS', $fromName->getValue($mailer));
+    }
+
+    public function test_withFromName_ignores_empty_values_and_strips_header_injection(): void
+    {
+        $mailer = new Mailer();
+        $fromName = new \ReflectionProperty(Mailer::class, 'fromName');
+        $fromName->setAccessible(true);
+
+        $mailer->withFromName('Original');
+        $mailer->withFromName('');
+        $mailer->withFromName('   ');
+        $mailer->withFromName(null);
+
+        $this->assertSame('Original', $fromName->getValue($mailer), 'An empty override must not blank the From name.');
+
+        // chr() rather than escape sequences so the CR/LF cannot be lost in
+        // transit between editors — the point of the test is those two bytes.
+        $cr = chr(13);
+        $lf = chr(10);
+        $mailer->withFromName('Evil' . $cr . $lf . 'Bcc: attacker@example.com');
+
+        $result = (string) $fromName->getValue($mailer);
+        $this->assertStringNotContainsString($cr, $result);
+        $this->assertStringNotContainsString($lf, $result);
+    }
+
+    // -------------------------------------------------------
     // testGmailConnection()
     // -------------------------------------------------------
 

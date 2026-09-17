@@ -21,6 +21,9 @@ class SalesOrderController extends BaseApiController
 
     private const RECIPIENT_EMAIL = 'jasper.ford.esq@gmail.com';
 
+    /** From display name for enquiry mail — the platform, never a community. */
+    private const SENDER_NAME = 'Project NEXUS';
+
     public function submit(Request $request, EmailService $emailService): JsonResponse
     {
         if (trim((string) $request->input('website', '')) !== '') {
@@ -74,9 +77,18 @@ class SalesOrderController extends BaseApiController
         $body = $this->renderOrderEmail($validated, $reference, $request);
         $replyTo = $this->formatReplyTo((string) $validated['contact_name'], (string) $validated['email']);
 
+        // A sales enquiry is the platform talking as itself to a prospective
+        // customer — not tenant billing mail. 'billing' put it in the billing@
+        // From bucket, and the platform default From name made it read as a
+        // community's own notification, so a real enquiry was missed.
+        // 'sales_enquiry' routes it to enquiries@ (Mailer::CATEGORY_ENQUIRIES)
+        // and the explicit From name keeps an unrelated community's name off it.
+        // tenant_id => null + allow_missing_tenant is what stops the recipient's
+        // community being inferred as the sender.
         $sent = $emailService->send(self::RECIPIENT_EMAIL, $subject, $body, [
             'replyTo' => $replyTo,
-            'category' => 'billing',
+            'category' => 'sales_enquiry',
+            'fromName' => self::SENDER_NAME,
             'source' => self::class . '::submit',
             'tenant_id' => null,
             'allow_missing_tenant' => true,

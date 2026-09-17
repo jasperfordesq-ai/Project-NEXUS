@@ -89,7 +89,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_no_alert_when_balance_is_above_threshold(): void
     {
-        $userId = $this->insertUser('above_threshold@example.test');
+        $userId = $this->insertUser('above_threshold@example.com');
         $this->clearAlert($userId);
 
         $before = DB::table('email_log')
@@ -111,7 +111,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_no_alert_when_balance_is_exactly_above_threshold(): void
     {
-        $userId = $this->insertUser('exactly_above@example.test');
+        $userId = $this->insertUser('exactly_above@example.com');
         $this->clearAlert($userId);
 
         $before = DB::table('email_log')
@@ -133,7 +133,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_second_call_within_24h_is_suppressed_by_cache(): void
     {
-        $userId = $this->insertUser('dedup@example.test');
+        $userId = $this->insertUser('dedup@example.com');
         $this->clearAlert($userId);
 
         $key = $this->cacheKey(self::TENANT_ID, $userId);
@@ -187,7 +187,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_low_balance_alert_is_sent_when_balance_is_at_threshold(): void
     {
-        $email  = 'low_at_threshold@example.test';
+        $email  = 'low_at_threshold@example.com';
         $userId = $this->insertUser($email);
         $this->clearAlert($userId);
 
@@ -208,7 +208,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_low_balance_alert_is_sent_for_positive_balance_below_threshold(): void
     {
-        $email  = 'low_below@example.test';
+        $email  = 'low_below@example.com';
         $userId = $this->insertUser($email);
         $this->clearAlert($userId);
 
@@ -230,7 +230,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_empty_balance_alert_is_sent_when_balance_is_zero(): void
     {
-        $email  = 'zero_balance@example.test';
+        $email  = 'zero_balance@example.com';
         $userId = $this->insertUser($email);
         $this->clearAlert($userId);
 
@@ -250,7 +250,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_empty_balance_alert_is_sent_when_balance_is_negative(): void
     {
-        $email  = 'negative_balance@example.test';
+        $email  = 'negative_balance@example.com';
         $userId = $this->insertUser($email);
         $this->clearAlert($userId);
 
@@ -291,7 +291,7 @@ class WalletAlertServiceTest extends TestCase
      */
     public function test_second_call_in_same_request_does_not_double_send(): void
     {
-        $email  = 'cache_lock@example.test';
+        $email  = 'cache_lock@example.com';
         $userId = $this->insertUser($email);
         $this->clearAlert($userId);
 
@@ -332,7 +332,7 @@ class WalletAlertServiceTest extends TestCase
     {
         TenantContext::setById(self::TENANT_ID);
 
-        $email  = 'ctx_restore@example.test';
+        $email  = 'ctx_restore@example.com';
         $userId = $this->insertUser($email);
         $this->clearAlert($userId);
 
@@ -351,8 +351,8 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_two_users_receive_independent_alerts(): void
     {
-        $emailA = 'indep_a@example.test';
-        $emailB = 'indep_b@example.test';
+        $emailA = 'indep_a@example.com';
+        $emailB = 'indep_b@example.com';
         $userA  = $this->insertUser($emailA);
         $userB  = $this->insertUser($emailB);
         $this->clearAlert($userA);
@@ -384,7 +384,7 @@ class WalletAlertServiceTest extends TestCase
 
     public function test_no_alert_for_balance_just_above_threshold(): void
     {
-        $userId = $this->insertUser('just_above@example.test');
+        $userId = $this->insertUser('just_above@example.com');
         $this->clearAlert($userId);
 
         $before = DB::table('email_log')

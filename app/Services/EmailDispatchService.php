@@ -24,6 +24,54 @@ use Illuminate\Support\Facades\Log;
  */
 class EmailDispatchService
 {
+    /**
+     * Recipient domain suffixes that can never receive mail, so a send to one
+     * is a guaranteed hard bounce rather than a delivery attempt.
+     *
+     * .test / .invalid / .example / .localhost are reserved by RFC 2606 and
+     * .local by mDNS (RFC 6762): none of them resolve in public DNS, ever.
+     * anonymized.local is listed explicitly because it is what the GDPR
+     * erasure routine writes into users.email (see GdprService), and it is the
+     * suffix that actually produced hard bounces in production.
+     *
+     * Hard bounces are charged against the sending domain's reputation, which
+     * is why this is refused up front rather than left to the provider.
+     */
+    public const UNROUTABLE_RECIPIENT_SUFFIXES = [
+        'test',
+        'local',
+        'invalid',
+        'example',
+        'localhost',
+        'anonymized.local',
+    ];
+
+    /**
+     * True when the recipient's domain is, or sits under, a reserved suffix
+     * that has no public DNS. Case-insensitive; a malformed address (no '@',
+     * empty domain) is also treated as unroutable.
+     */
+    public static function isUnroutableRecipient(string $email): bool
+    {
+        $parts = explode('@', trim($email));
+        if (count($parts) < 2) {
+            return true;
+        }
+
+        $domain = mb_strtolower(trim(rtrim((string) array_pop($parts), '.')));
+        if ($domain === '') {
+            return true;
+        }
+
+        foreach (self::UNROUTABLE_RECIPIENT_SUFFIXES as $suffix) {
+            if ($domain === $suffix || str_ends_with($domain, '.' . $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function sendRaw(
         string $to,
         string $subject,
@@ -69,14 +117,33 @@ class EmailDispatchService
      *   idempotency_key?:string|null,
      *   idempotencyKey?:string|null,
      *   dispatch_id?:string|null,
-     *   dispatchId?:string|null
+     *   dispatchId?:string|null,
+     *   fromName?:string|null,
+     *   from_name?:string|null
      * } $options
      */
     public function send(string $to, string $subject, string $body, array $options = []): bool
     {
         $category = trim((string) ($options['category'] ?? ''));
-        $tenantId = $this->resolveTenantId($options, $to);
         $source = (string) ($options['source'] ?? 'EmailDispatchService');
+
+        // Refuse structurally undeliverable recipients before anything else —
+        // before tenant resolution, before the mailer, before a provider call.
+        // Seeded demo members live on @partner-demo.test and erased users on
+        // @anonymized.local; both were being mailed for real and every one of
+        // those attempts came back as a hard bounce. Logged at info, not
+        // warning: this is expected, self-healing behaviour, not an incident.
+        if (self::isUnroutableRecipient($to)) {
+            Log::info('EmailDispatchService::send refused unroutable recipient domain', [
+                'source' => $source,
+                'category' => $category !== '' ? $category : null,
+                'to' => $this->maskEmail($to),
+            ]);
+
+            return false;
+        }
+
+        $tenantId = $this->resolveTenantId($options, $to);
         $allowMissingTenant = (bool) ($options['allow_missing_tenant'] ?? false);
         $dispatchId = trim((string) ($options['dispatch_id'] ?? $options['dispatchId'] ?? ''));
         if ($dispatchId === '') {
@@ -117,7 +184,17 @@ class EmailDispatchService
         try {
             return (bool) $this->runWithResolvedTenant($tenantId, function () use ($to, $subject, $body, $options, $category, $tenantId, $source, $metadata): bool {
                 $textBody = $options['textBody'] ?? null;
-                $sent = Mailer::forCurrentTenant()->send(
+
+                // Optional per-send From display name. Only callers that own
+                // their own sender identity set it; with none passed the
+                // mailer keeps the tenant / platform default exactly as before.
+                $mailer = Mailer::forCurrentTenant();
+                $fromName = trim((string) ($options['fromName'] ?? $options['from_name'] ?? ''));
+                if ($fromName !== '') {
+                    $mailer->withFromName($fromName);
+                }
+
+                $sent = $mailer->send(
                     $to,
                     $subject,
                     $body,

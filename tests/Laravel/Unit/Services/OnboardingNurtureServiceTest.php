@@ -61,7 +61,11 @@ class OnboardingNurtureServiceTest extends TestCase
     private function insertUserAtDay(int $daysAgo, array $overrides = []): array
     {
         $uid   = uniqid('nurture_', true);
-        $email = 'nurture.' . $uid . '@example.test';
+        // A routable fixture domain is required: EmailDispatchService::send()
+        // refuses reserved suffixes (.test, .local, .invalid, .example,
+        // .localhost) outright, so a fixture under one never reaches the
+        // mailer and no email_log row is written for these assertions.
+        $email = 'nurture.' . $uid . '@example.com';
 
         $id = DB::table('users')->insertGetId(array_merge([
             'tenant_id'           => self::TENANT_ID,

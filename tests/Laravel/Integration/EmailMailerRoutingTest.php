@@ -55,10 +55,27 @@ class EmailMailerRoutingTest extends TestCase
             'EmailDispatchService must preserve and restore explicit tenant context'
         );
 
+        // The chained form was split into `$mailer = Mailer::forCurrentTenant();`
+        // + `$mailer->send(...)` so an optional per-send From name can be
+        // applied in between. These two assertions carry the same meaning: the
+        // mailer comes from the tenant-aware factory, and that instance is the
+        // one sent through.
         $this->assertStringContainsString(
-            'Mailer::forCurrentTenant()->send(',
+            'Mailer::forCurrentTenant()',
             $source,
             'EmailDispatchService must use the tenant-aware Mailer'
+        );
+
+        $this->assertStringContainsString(
+            '$mailer->send(',
+            $source,
+            'EmailDispatchService must send through the mailer it built from tenant context'
+        );
+
+        $this->assertStringNotContainsString(
+            'new Mailer(',
+            $source,
+            'EmailDispatchService must never construct a Mailer directly — that bypasses tenant context'
         );
 
         $this->assertStringContainsString(

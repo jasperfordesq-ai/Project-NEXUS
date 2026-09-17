@@ -151,6 +151,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Gamification Milestone Email Pacing
+    |--------------------------------------------------------------------------
+    |
+    | Minimum gap, in seconds, between two gamification milestone emails to the
+    | same member. Awards cluster — one action can trip two badges and a level
+    | up in the same request — and each used to become its own email, which is
+    | what drives "report spam" clicks. 0 disables the limit.
+    |
+    */
+
+    'gamification_milestone_min_interval_seconds' => (int) env('GAMIFICATION_MILESTONE_MIN_INTERVAL_SECONDS', 3600),
+
+    /*
+    |--------------------------------------------------------------------------
     | Error & Admin Alerts
     |--------------------------------------------------------------------------
     */

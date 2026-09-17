@@ -53,9 +53,18 @@ class EmailDispatchServiceTest extends TestCase
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
+    /**
+     * Fixture domain deliberately NOT under a reserved suffix.
+     *
+     * EmailDispatchService::send() refuses .test / .local / .invalid /
+     * .example / .localhost outright, so a fixture on @example.test would
+     * never reach the mailer and every email_log assertion in this file would
+     * fail. example.com is RFC 2606's documentation domain — fake, but
+     * routable, which is exactly what these tests need.
+     */
     private function uniqueEmail(string $prefix = 'dispatch'): string
     {
-        return $prefix . '.' . uniqid('', true) . '@example.test';
+        return $prefix . '.' . uniqid('', true) . '@example.com';
     }
 
     /**
@@ -412,5 +421,156 @@ class EmailDispatchServiceTest extends TestCase
 
         $this->assertNotNull($logRow);
         $this->assertStringContainsString('EmailDispatchService', (string) $logRow->source);
+    }
+
+    // ── reserved / unroutable recipient guard ────────────────────────────────
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function unroutableRecipientProvider(): array
+    {
+        return [
+            'RFC 2606 .test'              => ['demo.partner@partner-demo.test'],
+            'mDNS .local'                 => ['deleted_651_520098323b49c80f@anonymized.local'],
+            'RFC 2606 .invalid'           => ['someone@nowhere.invalid'],
+            'RFC 2606 .example'           => ['someone@a.example'],
+            'RFC 2606 .localhost'         => ['someone@box.localhost'],
+            'bare localhost'              => ['root@localhost'],
+            'bare test TLD'               => ['someone@test'],
+            'deep subdomain under .test'  => ['a@b.c.d.partner-demo.test'],
+            'uppercase .TEST'             => ['Demo.Partner@PARTNER-DEMO.TEST'],
+            'mixed case .Local'           => ['x@Anonymized.Local'],
+            'trailing dot'                => ['x@partner-demo.test.'],
+            'no at sign'                  => ['not-an-address'],
+            'empty domain'                => ['someone@'],
+        ];
+    }
+
+    /**
+     * @dataProvider unroutableRecipientProvider
+     */
+    public function test_reserved_suffixes_are_recognised_as_unroutable(string $email): void
+    {
+        $this->assertTrue(
+            EmailDispatchService::isUnroutableRecipient($email),
+            "{$email} sits under a reserved suffix and can never receive mail."
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function routableRecipientProvider(): array
+    {
+        return [
+            'gmail'                      => ['someone@gmail.com'],
+            'platform domain'            => ['jasper@project-nexus.ie'],
+            'documentation domain'       => ['someone@example.com'],
+            'uppercase ordinary domain'  => ['Someone@EXAMPLE.COM'],
+            'substring, not a suffix'    => ['someone@testing.com'],
+            'local in the middle'        => ['someone@local.example.org'],
+            'invalid-ish word'           => ['someone@invalid-domain.org'],
+            'co.uk'                      => ['someone@timebank.co.uk'],
+        ];
+    }
+
+    /**
+     * @dataProvider routableRecipientProvider
+     */
+    public function test_ordinary_domains_are_not_treated_as_unroutable(string $email): void
+    {
+        $this->assertFalse(
+            EmailDispatchService::isUnroutableRecipient($email),
+            "{$email} is an ordinary deliverable address and must not be blocked."
+        );
+    }
+
+    /**
+     * The guard is what actually stops the send: nothing reaches the mailer, so
+     * no email_log row is written and Postmark never sees the address.
+     */
+    public function test_send_to_reserved_domain_returns_false_without_reaching_the_mailer(): void
+    {
+        $email = 'demo.partner.' . uniqid('', true) . '@partner-demo.test';
+
+        $result = EmailDispatchService::sendRaw(
+            $email,
+            'Should never be sent',
+            '<p>Body</p>',
+            null, null, null,
+            'unit_test',
+            ['tenant_id' => self::TENANT_ID]
+        );
+
+        $this->assertFalse($result, 'A send to a reserved TLD must report "not sent".');
+
+        $this->assertSame(
+            0,
+            DB::table('email_log')->where('recipient_email', $email)->count(),
+            'The guard must refuse before the mailer, so there is no delivery attempt to log.'
+        );
+    }
+
+    /**
+     * The anonymised-user address the GDPR erasure routine writes is refused,
+     * whatever its random hash.
+     */
+    public function test_send_to_anonymised_user_address_is_refused(): void
+    {
+        $email = 'deleted_651_' . bin2hex(random_bytes(8)) . '@anonymized.local';
+
+        $this->assertFalse(
+            EmailDispatchService::sendRaw(
+                $email,
+                'Should never be sent',
+                '<p>Body</p>',
+                null, null, null,
+                'notification_digest',
+                ['tenant_id' => self::TENANT_ID]
+            )
+        );
+
+        $this->assertSame(0, DB::table('email_log')->where('recipient_email', $email)->count());
+    }
+
+    /**
+     * The guard applies to every entry point, because they all funnel into
+     * send(). If a new public helper stops doing that, this fails.
+     */
+    public function test_guard_covers_every_public_entry_point(): void
+    {
+        $email = 'x.' . uniqid('', true) . '@partner-demo.test';
+
+        $this->assertFalse(
+            EmailDispatchService::sendWithOptions($email, 'S', '<p>B</p>', [
+                'category' => 'unit_test',
+                'tenant_id' => self::TENANT_ID,
+            ]),
+            'sendWithOptions() must be covered by the same guard.'
+        );
+
+        $this->assertFalse(
+            app(EmailDispatchService::class)->send($email, 'S', '<p>B</p>', [
+                'category' => 'unit_test',
+                'tenant_id' => self::TENANT_ID,
+            ]),
+            'send() must be covered by the same guard.'
+        );
+
+        $this->assertSame(0, DB::table('email_log')->where('recipient_email', $email)->count());
+    }
+
+    /**
+     * Guards against someone quietly widening the list to a suffix that real
+     * members use. These five are reserved by RFC 2606 / RFC 6762 and are the
+     * whole intended scope.
+     */
+    public function test_reserved_suffix_list_is_exactly_the_documented_set(): void
+    {
+        $this->assertSame(
+            ['test', 'local', 'invalid', 'example', 'localhost', 'anonymized.local'],
+            EmailDispatchService::UNROUTABLE_RECIPIENT_SUFFIXES
+        );
     }
 }

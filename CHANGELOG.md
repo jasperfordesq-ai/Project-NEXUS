@@ -71,7 +71,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tests/Laravel/Unit/Helpers/CorsHelperTest.php::test_getAllowedOrigins_includes_the_sales_site_origins`
   and the matching test in `tests/Laravel/Unit/Core/CorsHelperTest.php`.
 
+- **Gamification milestone emails are paced to one per member per hour.** Awards arrive in
+  clusters: on 2026-09-17 one member received four emails in three seconds — a listing
+  confirmation, two badges and a level-up. That is the pattern that earns a "report spam" click,
+  and milestone mail earns no engagement to offset it. `GamificationEmailService::sendMilestoneEmail()`
+  now claims a per-member, per-tenant slot with `Cache::add` (atomic, so two awards racing in the
+  same second cannot both win it) before sending, and hands the slot back if the send fails. The
+  award itself is untouched: the in-app notification and push still fire, and the monthly
+  gamification digest still recaps every badge earned, so nothing is lost but the burst. The window
+  is `config('mail.gamification_milestone_min_interval_seconds')`, default 3600; 0 disables it. If
+  the cache is unreachable the email is sent — a cache outage must never silently stop milestone
+  mail platform-wide. This is deliberately the smaller of the two options: folding milestones into
+  the `notification_digest` queue would replace a branded milestone email with a plain digest line
+  and would do nothing for members whose digest frequency is `instant`, so it is a product decision
+  rather than a deliverability fix. Regression tests:
+  `GamificationEmailServiceTest::test_only_the_first_milestone_email_in_the_window_claims_the_slot`,
+  `::test_the_slot_is_per_member_and_per_tenant`, `::test_a_failed_send_hands_the_slot_back`,
+  `::test_the_limit_can_be_switched_off`, `::test_the_default_window_is_one_hour`.
+
 ### Fixed
+
+- **Email is no longer sent to addresses that can never receive it.** Six of the nine hard bounces
+  on the Postmark transactional stream in the 30 days to 2026-09-17 were to structurally
+  undeliverable addresses: four seeded demo members on `@partner-demo.test` and two erased users on
+  `@anonymized.local`. Neither domain resolves — `.test` is reserved by RFC 2606 and `.local` by
+  mDNS — so every one of those sends was a guaranteed hard bounce charged against the sending
+  domain's reputation, and the reputation damage is what puts ordinary member mail in the spam
+  folder. `EmailDispatchService::send()` now refuses a recipient under `.test`, `.local`,
+  `.invalid`, `.example` or `.localhost` before it resolves a tenant or touches the mailer. It
+  returns `false` (the existing "not sent" contract, so no caller is told a send succeeded) and
+  logs at `info`, not `warning`, because this is expected behaviour rather than an incident. The
+  guard sits in `send()`, which `sendRaw()`, `sendWithOptions()` and `EmailService::send()` all
+  funnel into, so one check covers every caller. Seeded demo data is unchanged: `@partner-demo.test`
+  remains correct for a fixture, it is simply no longer mailed. Regression tests:
+  `EmailDispatchServiceTest::test_reserved_suffixes_are_recognised_as_unroutable`,
+  `::test_ordinary_domains_are_not_treated_as_unroutable`,
+  `::test_send_to_reserved_domain_returns_false_without_reaching_the_mailer`,
+  `::test_send_to_anonymised_user_address_is_refused`,
+  `::test_guard_covers_every_public_entry_point`,
+  `::test_reserved_suffix_list_is_exactly_the_documented_set`.
+
+- **Erased accounts are no longer treated as notification recipients.** GDPR erasure keeps the
+  `users` row and rewrites `email` to `deleted_<id>_<hash>@anonymized.local`, stamping `deleted_at`
+  and `anonymized_at` (`GdprService`, `UserService::deleteAccount`). The notification digest and
+  instant-queue recipient queries joined `users` without testing either stamp, so erased people
+  were selected as recipients, had their queued items claimed, and produced a hard bounce every
+  run. `deleted_at IS NULL AND anonymized_at IS NULL` is now part of the digest roll-up query, both
+  instant-queue fetches and the hot-match recipient query — the four recipient lists that had no
+  account-state filter at all. The remaining recipient queries in `CronJobRunner` already filter on
+  `status = 'active'`, which an erased account never is. The send guard above remains the backstop;
+  this is the real fix, because a blocked send still costs a round trip and still means the code
+  believed that person was a recipient. Regression tests:
+  `CronDigestAnonymisedRecipientTest` (all three cases, including a live-member control).
+
+- **A sales enquiry no longer goes out looking like a community's own billing mail.** The sales
+  site's enquiry form posts to `POST /api/v2/sales/orders`, and the resulting email was
+  indistinguishable from ordinary platform notification mail — a real enquiry from a prospective
+  customer was missed because of it. It arrived as `"hOUR TimeBank" <billing@project-nexus.net>`
+  with audit category `billing`. Two causes. The category: `submit()` passed `'billing'`, which
+  `Mailer::resolveFromPrefix()` maps to the billing From-address bucket. There is now a ninth
+  bucket, `Mailer::CATEGORY_ENQUIRIES`, and a new audit category `sales_enquiry` mapped to it —
+  tested before the billing branch so the `marketplace_` / billing test cannot swallow it. The
+  From name: it was never tenant inference (the route already passes `tenant_id => null` with
+  `allow_missing_tenant`, and that correctly resolves to no tenant); it was the platform-wide
+  default From name, which production sets to a single community's name. `send()` now accepts an
+  optional `fromName` in its options array, threaded to the new `Mailer::withFromName()`, and the
+  sales route sets it explicitly. No existing caller passes one, so every other email's From
+  address and name are unchanged, and the new bucket stays on the transactional Postmark stream.
+  Regression tests: `MailerTest::test_sales_enquiry_category_routes_to_its_own_from_bucket`,
+  `::test_sales_enquiry_bucket_does_not_disturb_the_existing_billing_bucket`,
+  `::test_sales_enquiry_stays_on_the_transactional_stream`,
+  `::test_withFromName_overrides_the_default_sender_name`,
+  `::test_withFromName_ignores_empty_values_and_strips_header_injection`,
+  `SalesOrderApiTest::test_public_sales_order_sends_as_a_sales_enquiry_not_tenant_billing_mail`.
+
 
 - **The platform master's public front page (`app.project-nexus.ie`) is now actually prerendered
   for crawlers.** The 2026-09-13 planner fix was not enough: `PrerenderService::loadTenantTargets()`

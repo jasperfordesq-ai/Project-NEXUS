@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\UserBadge;
 use App\Models\UserStreak;
 use App\Models\UserXpLog;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
@@ -27,6 +28,76 @@ class GamificationEmailService
 {
     public function __construct()
     {
+    }
+
+    /**
+     * Minimum gap between two gamification milestone emails to the same member.
+     *
+     * Gamification awards arrive in clusters: creating one listing can trip a
+     * badge, a second badge and a level-up within the same request, and each
+     * used to become its own email. One member received four emails in three
+     * seconds on 2026-09-17. That is the pattern that earns a "report spam"
+     * click, and milestone mail earns no engagement to offset it.
+     *
+     * Overridable via config('mail.gamification_milestone_min_interval_seconds');
+     * 0 disables the limit entirely.
+     */
+    public const MILESTONE_EMAIL_MIN_INTERVAL_SECONDS = 3600;
+
+    private function milestoneEmailSlotKey(int $tenantId, int $userId): string
+    {
+        return "gamification:milestone-email:{$tenantId}:{$userId}";
+    }
+
+    /**
+     * Claim this member's milestone-email slot for the current window.
+     *
+     * Cache::add only writes when the key is absent, so two awards racing in
+     * the same second cannot both win it. Returns false when a milestone email
+     * already went out inside the window.
+     *
+     * Fails OPEN: if the cache is unreachable the email is sent. A cache
+     * outage must never silently stop milestone mail platform-wide.
+     */
+    private function claimMilestoneEmailSlot(int $tenantId, int $userId): bool
+    {
+        $interval = (int) config(
+            'mail.gamification_milestone_min_interval_seconds',
+            self::MILESTONE_EMAIL_MIN_INTERVAL_SECONDS
+        );
+
+        if ($interval <= 0) {
+            return true;
+        }
+
+        try {
+            return (bool) Cache::add($this->milestoneEmailSlotKey($tenantId, $userId), true, $interval);
+        } catch (\Throwable $e) {
+            Log::debug('GamificationEmailService: milestone rate-limit slot unavailable, sending anyway', [
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return true;
+        }
+    }
+
+    /**
+     * Hand the slot back when the send did not actually happen, so a failed
+     * send does not cost the member their next hour of milestone mail.
+     */
+    private function releaseMilestoneEmailSlot(int $tenantId, int $userId): void
+    {
+        try {
+            Cache::forget($this->milestoneEmailSlotKey($tenantId, $userId));
+        } catch (\Throwable $e) {
+            Log::debug('GamificationEmailService: could not release milestone rate-limit slot', [
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -273,11 +344,34 @@ class GamificationEmailService
                     ]);
                 }
 
-            return LocaleContext::withLocale($user, function () use ($user, $type, $data) {
+            $tenantId = (int) $user->tenant_id;
+            $recipientId = (int) $user->id;
+
+            // One milestone email per member per window. The award itself is
+            // unaffected: the in-app notification and push still fire from
+            // GamificationService, and the monthly digest still recaps every
+            // badge earned, so nothing is lost — only the burst.
+            if (!$this->claimMilestoneEmailSlot($tenantId, $recipientId)) {
+                Log::info('GamificationEmailService: milestone email suppressed by per-member rate limit', [
+                    'tenant_id' => $tenantId,
+                    'user_id' => $recipientId,
+                    'type' => $type,
+                ]);
+
+                return false;
+            }
+
+            return LocaleContext::withLocale($user, function () use ($user, $type, $data, $tenantId, $recipientId) {
                 $name = UserDisplayName::resolve($user);
                 [$subject, $body] = $this->buildMilestoneEmail($name, $type, $data);
 
-                return EmailDispatchService::sendRaw($user->email, $subject, $body, null, null, null, 'gamification_milestone', ['tenant_id' => (int) $user->tenant_id]);
+                $sent = EmailDispatchService::sendRaw($user->email, $subject, $body, null, null, null, 'gamification_milestone', ['tenant_id' => $tenantId]);
+
+                if (!$sent) {
+                    $this->releaseMilestoneEmailSlot($tenantId, $recipientId);
+                }
+
+                return $sent;
             });
             });
         } catch (\Throwable $e) {

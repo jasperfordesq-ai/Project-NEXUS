@@ -27,7 +27,7 @@ class SalesOrderApiTest extends TestCase
                 $this->assertStringContainsString('Managed support', $body);
                 $this->assertStringContainsString('We need procurement help.', $body);
                 $this->assertSame('Ava Murphy <ava@example.org>', $options['replyTo']);
-                $this->assertSame('billing', $options['category']);
+                $this->assertSame('sales_enquiry', $options['category']);
                 $this->assertTrue($options['allow_missing_tenant']);
                 $this->assertArrayHasKey('idempotency_key', $options);
 
@@ -200,5 +200,50 @@ class SalesOrderApiTest extends TestCase
                 ],
             ],
         ], $overrides);
+    }
+
+    public function test_public_sales_order_sends_as_a_sales_enquiry_not_tenant_billing_mail(): void
+    {
+        // An enquiry used to go out as "hOUR TimeBank" <billing@project-nexus.net> — the billing
+        // From bucket plus the platform-wide default From name — which made a real enquiry from a
+        // prospective customer read as ordinary platform notification mail, and it was missed.
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldReceive('send')
+            ->once()
+            ->withArgs(function (string $to, string $subject, string $body, array $options): bool {
+                // Routes the From address to enquiries@, not billing@.
+                $this->assertSame('sales_enquiry', $options['category']);
+
+                // Names the platform as the sender, so no community's name is
+                // stamped on an enquiry that has nothing to do with it.
+                $this->assertSame('Project NEXUS', $options['fromName']);
+
+                // No tenant may be inferred from the hardcoded recipient.
+                $this->assertArrayHasKey('tenant_id', $options);
+                $this->assertNull($options['tenant_id']);
+                $this->assertTrue($options['allow_missing_tenant']);
+
+                // Unchanged and important: replies go to the enquirer.
+                $this->assertSame('Ava Murphy <ava@example.org>', $options['replyTo']);
+
+                return true;
+            })
+            ->andReturn(true);
+
+        $this->app->instance(EmailService::class, $emailService);
+
+        $this->apiPost('/v2/sales/orders', $this->payload())->assertCreated();
+    }
+
+    public function test_sales_enquiry_category_resolves_to_the_enquiries_from_address(): void
+    {
+        // The controller and the Mailer bucket have to agree; this is the seam
+        // between them, and a rename on either side breaks delivery identity
+        // silently rather than loudly.
+        $mailer = new \App\Core\Mailer();
+        $method = new \ReflectionMethod(\App\Core\Mailer::class, 'resolveFromPrefix');
+        $method->setAccessible(true);
+
+        $this->assertSame('enquiries', $method->invoke($mailer, 'sales_enquiry'));
     }
 }
