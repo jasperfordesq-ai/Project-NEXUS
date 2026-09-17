@@ -31,6 +31,12 @@ return [
     'allowed_origins' => array_values(array_unique(array_filter(array_merge(
         // Static production origins (always allowed regardless of env)
         [
+            // Marketing/sales site. It moved from project-nexus.ie to
+            // project-nexus.net in 2026-09; the sales enquiry form posts to this API,
+            // so the new origin must be allowed or the form fails preflight. The .ie
+            // pair stays while the old domain still resolves/redirects.
+            'https://project-nexus.net',
+            'https://www.project-nexus.net',
             'https://project-nexus.ie',
             'https://www.project-nexus.ie',
             'https://app.project-nexus.ie',

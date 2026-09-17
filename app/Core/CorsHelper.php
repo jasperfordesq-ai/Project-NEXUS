@@ -29,6 +29,12 @@ class CorsHelper
      * Default allowed origins for CORS requests.
      */
     private static array $defaultOrigins = [
+        // Marketing/sales site. It moved from project-nexus.ie to
+        // project-nexus.net in 2026-09; the sales enquiry form posts to this API,
+        // so the new origin must be allowed or the form fails preflight. The .ie
+        // pair stays while the old domain still resolves/redirects.
+        'https://project-nexus.net',
+        'https://www.project-nexus.net',
         'https://project-nexus.ie',
         'https://www.project-nexus.ie',
         'https://app.project-nexus.ie',

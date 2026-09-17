@@ -266,4 +266,19 @@ class CorsHelperTest extends TestCase
         $this->assertContains('http://localhost:8082', $origins);
         $this->assertContains('http://127.0.0.1:8082', $origins);
     }
+
+    /**
+     * The marketing/sales site moved from project-nexus.ie to project-nexus.net
+     * in 2026-09. Its enquiry form posts to this API cross-origin, so the new
+     * origin has to be allowlisted or every submission fails at preflight. The
+     * .ie pair stays allowed while the old domain still resolves.
+     */
+    public function test_getAllowedOrigins_includes_the_sales_site_origins(): void
+    {
+        $origins = CorsHelper::getAllowedOrigins();
+        $this->assertContains('https://project-nexus.net', $origins);
+        $this->assertContains('https://www.project-nexus.net', $origins);
+        $this->assertContains('https://project-nexus.ie', $origins);
+        $this->assertContains('https://www.project-nexus.ie', $origins);
+    }
 }

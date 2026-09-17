@@ -48,6 +48,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `SalesOrderControllerUnitTests.Submit_AcceptsGeneralEnquiryWithNoQuote` /
   `.Submit_StillRejectsHalfFilledQuote` on the ASP.NET side.
 
+### Changed
+
+- **The footer's "Powered by Project NEXUS" badge links to project-nexus.net.** The marketing
+  site moved from `project-nexus.ie` to `project-nexus.net`; the badge's destination is not a
+  per-tenant setting but a constant in `Footer.tsx`, so one change covers every community that
+  has not set `general.powered_by_url` of its own. Measured against the live bootstrap API on
+  2026-09-17: six of the thirteen public communities plus the platform's own master tenant have
+  no powered-by settings at all, and `stratford` and `partner-demo` have a custom badge image but
+  no custom link — all nine follow the constant. The five communities that point the badge at
+  `timebanking.org` (`awid`, `crewkerne-timebank`, `minehead-and-coast-timebank`, `ryde`,
+  `timebanking-org`) are untouched. No database change and no per-tenant admin work is involved.
+  Regression tests: `Footer.test.tsx` — "links the default powered-by badge at the marketing
+  site", "prefers the community's own powered-by link over the default".
+
+- **`project-nexus.net` is an allowed CORS origin.** The sales site's enquiry form posts to this
+  API cross-origin, so moving the site to `.net` without allowlisting it would have failed every
+  submission at preflight with no server-side error to find afterwards. Added to all three copies
+  of the list — `config/cors.php`, `App\Core\CorsHelper` and `App\Helpers\CorsHelper` (the hot
+  path) — because they have drifted apart before. The `.ie` pair stays allowed while the old
+  domain still resolves. Regression tests:
+  `tests/Laravel/Unit/Helpers/CorsHelperTest.php::test_getAllowedOrigins_includes_the_sales_site_origins`
+  and the matching test in `tests/Laravel/Unit/Core/CorsHelperTest.php`.
+
 ### Fixed
 
 - **The platform master's public front page (`app.project-nexus.ie`) is now actually prerendered

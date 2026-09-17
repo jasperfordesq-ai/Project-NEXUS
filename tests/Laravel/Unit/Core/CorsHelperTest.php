@@ -170,4 +170,18 @@ class CorsHelperTest extends TestCase
         $this->assertContains('http://localhost:8082', $origins);
         $this->assertContains('http://127.0.0.1:8082', $origins);
     }
+
+    /**
+     * Kept in step with the App\Helpers copy deliberately: the two default
+     * lists have drifted before (see that class's docblock), and the sales
+     * site's enquiry form must not depend on which copy answers.
+     */
+    public function test_getAllowedOrigins_includes_the_sales_site_origins(): void
+    {
+        $origins = CorsHelper::getAllowedOrigins();
+        $this->assertContains('https://project-nexus.net', $origins);
+        $this->assertContains('https://www.project-nexus.net', $origins);
+        $this->assertContains('https://project-nexus.ie', $origins);
+        $this->assertContains('https://www.project-nexus.ie', $origins);
+    }
 }

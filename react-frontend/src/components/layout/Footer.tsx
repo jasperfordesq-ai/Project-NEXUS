@@ -48,10 +48,13 @@ export function Footer({ children, copyright }: FooterProps) {
   const year = new Date().getFullYear();
 
   // Powered-by branding: hardcoded NEXUS defaults, overridable per-tenant by God only.
+  // DEFAULT_PB_URL is the marketing site, which moved from .ie to .net in 2026-09.
+  // Communities that set their own general.powered_by_url are unaffected by it;
+  // everyone else — including communities with only a custom badge image — uses this.
   // God-uploaded images take priority; otherwise the built-in assets ship with every fork/clone.
   const DEFAULT_PB_IMAGE_LIGHT = '/images/powered-by-nexus-light.png';
   const DEFAULT_PB_IMAGE_DARK  = '/images/powered-by-nexus-dark.png';
-  const DEFAULT_PB_URL         = 'https://project-nexus.ie';
+  const DEFAULT_PB_URL         = 'https://project-nexus.net';
 
   const pbImageLight = (tenant?.config?.powered_by_image_light as string | undefined) || DEFAULT_PB_IMAGE_LIGHT;
   const pbImageDark  = (tenant?.config?.powered_by_image_dark  as string | undefined) || DEFAULT_PB_IMAGE_DARK;

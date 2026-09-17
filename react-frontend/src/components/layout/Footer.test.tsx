@@ -236,6 +236,44 @@ describe('Footer', () => {
         expect(img.getAttribute('src')).toBe('/images/powered-by-nexus-light.png');
       });
     });
+
+    /*
+     * The marketing site moved from project-nexus.ie to project-nexus.net in
+     * 2026-09. Every community that has not set its own general.powered_by_url
+     * inherits this constant, so it is the single place the badge's destination
+     * is decided for most of the platform — pin it rather than let it drift back.
+     */
+    it('links the default powered-by badge at the marketing site', () => {
+      render(<Footer />);
+
+      const links = screen.getAllByRole('link', { name: 'Powered by' });
+      expect(links.length).toBeGreaterThan(0);
+      links.forEach((link) => {
+        expect(link.getAttribute('href')).toBe('https://project-nexus.net');
+      });
+    });
+
+    it("prefers the community's own powered-by link over the default", () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: {
+            id: 2,
+            name: 'Test',
+            slug: 'test',
+            contact: null,
+            config: { powered_by_url: 'https://timebanking.org/' },
+          },
+        },
+      });
+
+      render(<Footer />);
+
+      const links = screen.getAllByRole('link', { name: 'Powered by' });
+      expect(links.length).toBeGreaterThan(0);
+      links.forEach((link) => {
+        expect(link.getAttribute('href')).toBe('https://timebanking.org/');
+      });
+    });
   });
 
   describe('Legal links', () => {
