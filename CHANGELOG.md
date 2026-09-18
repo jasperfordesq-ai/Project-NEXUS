@@ -38,6 +38,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Shared test animation mock no longer remounts the tree it wraps.** The
+  `framerMotionMock` Proxy built a new component on every property access, so
+  `<motion.div>` changed component type on every render and React destroyed and
+  rebuilt the whole subtree beneath it each time. Queries resolved to nodes that
+  were detached microseconds later, which surfaced as an intermittent "element
+  could not be found in the document" in whichever suite lost the race — most
+  recently `GroupDetailPage`, which blocked a production deploy. Components are
+  now cached per tag, matching the real `@/lib/motion` shim. Test-harness only;
+  no runtime behaviour changes.
+
 - **Native Android/iOS search, refresh and shared-control reliability:** mixed search
   results retain members and listings with the same numeric ID; refreshing during
   pagination no longer strands the loading indicator, and failed refreshes preserve
