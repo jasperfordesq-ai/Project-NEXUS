@@ -1,4 +1,5 @@
 status,method,path,family,laravelRouteName,laravelHandler,laravelView,laravelParamConstraints,auth,tenantScoped,gates,apiNeeds,webUkView,webUkRouteKind,laravelRouteFile,laravelControllerFile,webUkFile,laravelMiddleware
+extra-web-uk,GET,/account-deletion,account-deletion,,,,,,,,,,,,,web-uk/src/routes/legal.js,
 extra-web-uk,GET,/caring,caring,,,,,,,,,caring/hub,,,,web-uk/src/routes/caring.js,
 extra-web-uk,GET,/caring/caregiver,caring,,,,,,,,,caring/caregiver,,,,web-uk/src/routes/caring.js,
 extra-web-uk,GET,/caring/caregiver/link,caring,,,,,,,,,caring/link,,,,web-uk/src/routes/caring.js,
@@ -8,6 +9,9 @@ extra-web-uk,POST,/caring/caregiver/incoming/respond,caring,,,,,,,,,,,,,web-uk/s
 extra-web-uk,POST,/caring/caregiver/link,caring,,,,,,,,,caring/link,,,,web-uk/src/routes/caring.js,
 extra-web-uk,POST,/caring/caregiver/on-behalf/{param},caring,,,,,,,,,caring/on-behalf,,,,web-uk/src/routes/caring.js,
 extra-web-uk,POST,/caring/reviews/{param}/decide,caring,,,,,,,,,caring/reviews,,,,web-uk/src/routes/caring.js,
+extra-web-uk,GET,/changelog,changelog,,,,,,,,,public-info/changelog,,,,web-uk/src/routes/public-info.js,
+extra-web-uk,GET,/changelog/{param},changelog,,,,,,,,,public-info/changelog-release,,,,web-uk/src/routes/public-info.js,
+extra-web-uk,GET,/child-safety,child-safety,,,,,,,,,,,,,web-uk/src/routes/legal.js,
 extra-web-uk,POST,/cookie-consent/hide,cookie-consent,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,GET,/events/my,events,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,POST,/events/{param}/rsvp/remove,events,,,,,,,,,,,,,web-uk/src/server.js,

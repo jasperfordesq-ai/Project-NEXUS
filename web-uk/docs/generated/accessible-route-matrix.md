@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-09-11T20:49:10.553Z
-Laravel commit SHA: `988cb8c4fbab0bd7aa84a0cf2e2381d1976145e3`
-Web UK repository commit SHA: `988cb8c4fbab0bd7aa84a0cf2e2381d1976145e3`
+Generated: 2026-09-18T11:29:48.407Z
+Laravel commit SHA: `7efbf42dc0f4fb2552ffb64b10ba53825e4f25b3`
+Web UK repository commit SHA: `7efbf42dc0f4fb2552ffb64b10ba53825e4f25b3`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 742 |
+| web-uk routes | 746 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 32 |
+| Extra web-uk routes | 36 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -25,12 +25,15 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | about | 1 | 0 | 0 | 0 |
 | accessibility | 1 | 0 | 0 | 0 |
 | account | 1 | 0 | 0 | 0 |
+| account-deletion | 0 | 0 | 1 | 0 |
 | achievements | 10 | 0 | 0 | 0 |
 | activity | 2 | 0 | 0 | 0 |
 | appreciations | 1 | 0 | 0 | 0 |
 | blog | 12 | 0 | 0 | 0 |
 | caring | 0 | 0 | 9 | 0 |
+| changelog | 0 | 0 | 2 | 0 |
 | chat | 2 | 0 | 0 | 0 |
+| child-safety | 0 | 0 | 1 | 0 |
 | clubs | 1 | 0 | 0 | 0 |
 | connections | 5 | 0 | 0 | 0 |
 | contact | 2 | 0 | 0 | 0 |
@@ -110,6 +113,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 
 | Method | Path | Family | Web UK view | Web UK file |
 | --- | --- | --- | --- | --- |
+| GET | `/account-deletion` | account-deletion |  | web-uk/src/routes/legal.js |
 | GET | `/caring` | caring | caring/hub | web-uk/src/routes/caring.js |
 | GET | `/caring/caregiver` | caring | caring/caregiver | web-uk/src/routes/caring.js |
 | GET | `/caring/caregiver/link` | caring | caring/link | web-uk/src/routes/caring.js |
@@ -119,6 +123,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/caring/caregiver/link` | caring | caring/link | web-uk/src/routes/caring.js |
 | POST | `/caring/caregiver/on-behalf/{param}` | caring | caring/on-behalf | web-uk/src/routes/caring.js |
 | POST | `/caring/reviews/{param}/decide` | caring | caring/reviews | web-uk/src/routes/caring.js |
+| GET | `/changelog` | changelog | public-info/changelog | web-uk/src/routes/public-info.js |
+| GET | `/changelog/{param}` | changelog | public-info/changelog-release | web-uk/src/routes/public-info.js |
+| GET | `/child-safety` | child-safety |  | web-uk/src/routes/legal.js |
 | POST | `/cookie-consent/hide` | cookie-consent |  | web-uk/src/server.js |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
