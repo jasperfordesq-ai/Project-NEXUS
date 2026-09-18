@@ -1385,6 +1385,17 @@ class GdprService
                 "DELETE FROM notifications WHERE user_id = ? AND tenant_id = ?",
                 [$userId, $this->tenantId]
             );
+            // The queued copy of the same content must go too. A
+            // notification_queue row carries content_snippet (the notification
+            // text about this person's activity) and email_body (a fully
+            // rendered email addressed to them), so deleting only the bell left
+            // that content behind for up to ~37 days — 7 until the stale-pending
+            // expiry, then 30 until retention. Nothing here was ever sent, so
+            // there is no delivery audit trail to preserve.
+            $this->query(
+                "DELETE FROM notification_queue WHERE user_id = ? AND tenant_id = ?",
+                [$userId, $this->tenantId]
+            );
             $this->query(
                 "DELETE FROM user_consents WHERE user_id = ? AND tenant_id = ?",
                 [$userId, $this->tenantId]

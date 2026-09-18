@@ -1423,6 +1423,14 @@ class CronJobRunner
             $tasks[] = "Stale digest expiry: " . $e->getMessage();
         }
 
+        // 2a-bis. Drop queue rows belonging to erased accounts.
+        try {
+            $erased = $this->clearErasedAccountNotificationQueue();
+            $tasks[] = "Cleared {$erased} notification queue rows for erased accounts";
+        } catch (\Exception $e) {
+            $tasks[] = "Erased-account queue cleanup: " . $e->getMessage();
+        }
+
         // 2b. Clean old notification queue items (older than 30 days, already sent, failed, or suppressed)
         // notification_queue housekeeping — tenant_id column added 2026-03-29; cleans up stale rows.
         try {
@@ -2144,6 +2152,33 @@ class CronJobRunner
      * expiry across ALL tenants — do NOT add tenant filters, and do NOT
      * copy these query shapes into request-path code.
      */
+    /**
+     * Delete notification_queue rows belonging to erased accounts.
+     *
+     * The digest and instant runners deliberately skip users with deleted_at /
+     * anonymized_at set, so their rows are never claimed and never reach a
+     * terminal status of their own. Erasure now deletes them at source
+     * (GdprService, UserService::deleteAccount); this sweep clears rows left by
+     * accounts erased before that change, and is the safety net if a future
+     * erasure path forgets. The predicate is the same one the recipient queries
+     * use, so the two cannot drift apart.
+     *
+     * Deleted rather than marked failed: content_snippet and email_body are the
+     * erased person's own data, and nothing here was ever sent, so there is no
+     * delivery audit trail worth keeping for another 30 days of retention.
+     *
+     * DELIBERATELY CROSS-TENANT, like the rest of this cron maintenance — the
+     * join pins each queue row to a user in its own tenant.
+     */
+    private function clearErasedAccountNotificationQueue(): int
+    {
+        return (int) DB::delete(
+            "DELETE q FROM notification_queue q
+               JOIN users u ON u.id = q.user_id AND u.tenant_id = q.tenant_id
+              WHERE u.deleted_at IS NOT NULL OR u.anonymized_at IS NOT NULL"
+        );
+    }
+
     private function cleanupInternal()
     {
         try {
@@ -2154,6 +2189,10 @@ class CronJobRunner
         }
 
         try {
+            $erasedQueueRows = $this->clearErasedAccountNotificationQueue();
+            echo "   Cleared {$erasedQueueRows} notification queue rows for erased accounts.
+";
+
             DB::delete("DELETE FROM notification_queue WHERE status = 'sent' AND sent_at < DATE_SUB(NOW(), INTERVAL 30 DAY)");
             echo "   Cleaned old notification queue.\n";
         } catch (\Exception $e) {

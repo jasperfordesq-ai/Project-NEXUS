@@ -499,4 +499,39 @@ class MemberSelfServiceTest extends TestCase
         );
     }
 
+
+    /**
+     * A notification_queue row carries content_snippet (text about this
+     * member's activity) and email_body (a rendered email addressed to them).
+     * Erasure deleted the bell notification but left the queued copy, and the
+     * digest runners deliberately skip erased accounts, so that content sat
+     * unsent until retention reaped it — up to about 37 days after the member
+     * asked to be erased.
+     */
+    public function test_delete_account_removes_notifications_still_queued_for_the_member(): void
+    {
+        $user = $this->makeMember('OldPassword123!');
+
+        DB::table('notification_queue')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'activity_type' => 'digest_test',
+            'content_snippet' => 'Something about what this member did',
+            'email_body' => '<p>Hello ' . $user->id . '</p>',
+            'link' => '/notifications',
+            'status' => 'pending',
+            'frequency' => 'daily',
+            'created_at' => now(),
+        ]);
+
+        $response = $this->apiDelete('/v2/users/me', ['password' => 'OldPassword123!']);
+        $this->assertSame(200, $response->getStatusCode());
+
+        $this->assertSame(
+            0,
+            DB::table('notification_queue')->where('user_id', $user->id)->count(),
+            'queued notifications must not survive GDPR erasure'
+        );
+    }
+
 }

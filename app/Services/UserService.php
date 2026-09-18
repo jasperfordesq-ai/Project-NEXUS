@@ -806,6 +806,23 @@ class UserService
             $user->longitude  = null;
             $user->save();
 
+            // Drop anything still queued for them. A notification_queue row
+            // holds content_snippet and a rendered email_body addressed to this
+            // person, and the digest runners deliberately skip erased accounts,
+            // so these would otherwise linger unsent until retention reaped
+            // them. Tenant-scoped, like every other write here.
+            try {
+                DB::table('notification_queue')
+                    ->where('user_id', $userId)
+                    ->where('tenant_id', (int) $user->tenant_id)
+                    ->delete();
+            } catch (\Throwable $e) {
+                Log::warning('Queued notification cleanup failed after account deletion', [
+                    'user_id' => $userId,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
+
             // GDPR Article 17: retract federated profile from all partner networks.
             try {
                 $tenantId = (int) ($user->tenant_id ?? \App\Core\TenantContext::getId());

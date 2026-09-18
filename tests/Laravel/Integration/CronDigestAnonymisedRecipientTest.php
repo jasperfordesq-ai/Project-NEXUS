@@ -137,4 +137,43 @@ class CronDigestAnonymisedRecipientTest extends TestCase
             'A live member must still be selected and have their digest batch claimed.'
         );
     }
+
+    public function test_cleanup_clears_queue_rows_left_by_an_already_erased_account(): void
+    {
+        // Because the runners skip erased accounts, their rows never reach a
+        // terminal status on their own. Erasure now deletes them at source;
+        // this sweep covers accounts erased before that change.
+        $erased = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => 'erased-' . uniqid('', true) . '@example.com',
+            'status' => 'active',
+        ]);
+        $live = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => 'live-' . uniqid('', true) . '@example.com',
+            'status' => 'active',
+        ]);
+
+        $erasedRow = $this->insertPendingDigestItem((int) $erased->id);
+        $liveRow = $this->insertPendingDigestItem((int) $live->id);
+
+        DB::table('users')->where('id', $erased->id)->update([
+            'deleted_at' => now(),
+            'anonymized_at' => now(),
+        ]);
+
+        $runner = new CronJobRunner();
+        $method = new \ReflectionMethod(CronJobRunner::class, 'cleanupInternal');
+        $method->setAccessible(true);
+
+        ob_start();
+        try {
+            $method->invoke($runner);
+        } finally {
+            ob_end_clean();
+        }
+
+        $this->assertDatabaseMissing('notification_queue', ['id' => $erasedRow]);
+
+        // The control: a live member's pending item must survive untouched.
+        $this->assertDatabaseHas('notification_queue', ['id' => $liveRow, 'status' => 'pending']);
+    }
 }

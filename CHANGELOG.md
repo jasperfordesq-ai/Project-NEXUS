@@ -91,6 +91,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Erasing an account now also deletes the notifications still queued for that person.** GDPR
+  erasure deleted the bell notifications (`notifications`) but left the queued copies
+  (`notification_queue`), which carry `content_snippet` — text describing what that member did —
+  and `email_body`, a fully rendered email addressed to them. Because the digest and instant
+  runners deliberately skip erased accounts, nothing ever consumed those rows: they sat for up to
+  seven days as `pending`, were then flipped to `failed` by the stale-row expiry, and were only
+  deleted thirty days after that. So a member's own content could survive roughly 37 days past the
+  erasure they asked for. Both erasure paths (`GdprService` and `UserService::deleteAccount`) now
+  delete the rows outright — nothing there was ever sent, so there is no delivery audit trail to
+  preserve — and the daily cleanup carries a sweep for rows left by accounts erased before this
+  change, using the same predicate the recipient queries use so the two cannot drift apart. The
+  sweep runs in both the scheduled cleanup and the admin-triggered one. Regression tests:
+  `MemberSelfServiceTest::test_delete_account_removes_notifications_still_queued_for_the_member`,
+  `CronDigestAnonymisedRecipientTest::test_cleanup_clears_queue_rows_left_by_an_already_erased_account`.
+
 - **Email is no longer sent to addresses that can never receive it.** Six of the nine hard bounces
   on the Postmark transactional stream in the 30 days to 2026-09-17 were to structurally
   undeliverable addresses: four seeded demo members on `@partner-demo.test` and two erased users on
