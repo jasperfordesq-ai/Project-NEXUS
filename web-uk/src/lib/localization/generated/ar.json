@@ -1158,7 +1158,24 @@
                 "sign_out": "تسجيل الخروج",
                 "licence": "يُطوَّر Project NEXUS بشكل مفتوح. البرنامج مفتوح المصدر بموجب ترخيص AGPL-3.0-or-later.",
                 "attribution": "حقوق الطبع والنشر © 2024–2026 Jasper Ford. انظر NOTICE للإسناد والتقدير.",
-                "source": "عرض الشفرة المصدرية على GitHub"
+                "source": "عرض الشفرة المصدرية على GitHub",
+                "community_partner": "شريك المجتمع",
+                "open_source": "المصدر المفتوح",
+                "powered_by": "مدعوم بواسطة",
+                "powered_by_alt": "مدعوم بواسطة Project NEXUS",
+                "tenant_logo_placeholder": "شعارك هنا",
+                "source_repo": "مستودع GitHub",
+                "source_repo_aria": "افتح مستودع GitHub الخاص بـ Project NEXUS",
+                "agpl_notice": "AGPL-3.0 — حقوق الطبع والنشر © 2024–2026 Jasper Ford",
+                "default_footer_text": ":community — AGPL-3.0 — حقوق الطبع والنشر © 2024–2026 Jasper Ford"
+            },
+            "release_status": {
+                "stage": "متاح للجميع",
+                "summary": "في تطور مستمر.",
+                "features_link": "الميزات",
+                "changelog_link": "سجل التغييرات",
+                "docs_link": "الوثائق",
+                "docs_link_aria": "الوثائق (تُفتح في تبويب جديد)"
             },
             "actions": {
                 "back": "رجوع",

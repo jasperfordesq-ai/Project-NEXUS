@@ -873,6 +873,17 @@ class TenantBootstrapController extends BaseApiController
     {
         $publicConfig = [];
 
+        // Platform software version, for frontends that cannot read the repo's
+        // VERSION file. The accessible frontend (web-uk) is built from its own
+        // directory as the Docker context, so VERSION is not in its image and it
+        // has no other source for the number it prints in its footer.
+        //
+        // 🔴 Read from config('app.version') and nowhere else. That value is
+        // pinned to the root VERSION file by scripts/check-version-consistency.mjs
+        // ("config app.version fallback"), so a release bump carries here for free
+        // and a hardcoded copy anywhere downstream would be free to drift.
+        $publicConfig['platform_version'] = (string) config('app.version', '');
+
         $footerText = '';
         if ($tenantId > 0) {
             try {

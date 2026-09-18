@@ -828,8 +828,14 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('>Platform<');
     expect(response.text).not.toContain('Report a problem with this page');
     expect(response.text).toContain('Supporting information and attribution');
-    expect(response.text).toContain('Project NEXUS is built in the open. The software is open source under AGPL-3.0-or-later.');
-    expect(response.text).toContain('View the source code on GitHub');
+    // 🔴 These two lines asserted the footer's old licence sentence and
+    // 'View the source code on GitHub' link until 2026-09-18, when the bottom of
+    // the footer was rebuilt as a replica of the React footer's (owner decision).
+    // The point of the group is unchanged — the attribution block and the AGPL
+    // source link must render on the tenant chooser, which has no routed tenant —
+    // so it now asserts the compact replacements.
+    expect(response.text).toContain('AGPL-3.0 — Copyright © 2024–2026 Jasper Ford');
+    expect(response.text).toContain('GitHub repo');
     expect(response.text).toContain('https://github.com/jasperfordesq-ai/Project-NEXUS');
     expect(response.text).not.toContain('href="/components"');
     expect(response.text).not.toContain('View components demo');

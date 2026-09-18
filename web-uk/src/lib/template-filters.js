@@ -44,6 +44,24 @@ function registerTemplateFilters(env) {
   // retina image cheap; the CSS still decides the layout box.
   env.addFilter('thumb', (value, width, height, fit) => resolveBackendThumbnailUrl(value, { width, height, fit }));
 
+  // 🔴 A `copyrightYear()` global was added here on 2026-09-18 and removed the same
+  // day. Do not reintroduce it. Two things went wrong, in order:
+  //
+  //  1. The footer's AGPL notice took the year from a render local, and rendered
+  //     "Copyright © 2024–undefined Jasper Ford" on every page whose route or test
+  //     harness did not go through buildShellLocals. It shows as "undefined" rather
+  //     than blank because the interpolator in lib/localization does
+  //     `String(replacements[key])` once the key is present, and an explicitly
+  //     passed `undefined` counts as present.
+  //  2. Moving it to a global here was worse: Nunjucks THROWS on a call to an
+  //     undefined function, so every harness that builds its own environment
+  //     without calling this function failed to render at all — 30+ suites, exactly
+  //     the failure mode this file's docstring describes.
+  //
+  // The year is now literal text inside the translations, the same way the
+  // neighbouring `footer.attribution` key has always carried it. That needs bumping
+  // once a year in eleven files, which is the cost of it never being able to break.
+
   return env;
 }
 

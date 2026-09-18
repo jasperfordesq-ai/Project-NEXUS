@@ -5,6 +5,30 @@
 {#
   Custom Project NEXUS footer using GOV.UK typography and spacing only.
   No crown, no GOV.UK logotype, and no official government identity claim.
+
+  The bottom of this footer is a deliberate replica of the React footer's, in four
+  bands: the community's copyright line with cookie settings opposite it, the release
+  status line, the three brand marks under their own headings, and the licence strip.
+  Owner decision, 2026-09-18 — the previous version stacked four sentences that said
+  "Project NEXUS" three times between them.
+
+  🔴 Nothing here may reuse the link class GOV.UK applies inside its own footer's
+  second meta slot. That class's ::before rule sets a background image of the royal
+  crest, so applying it would render the crest on a service that is forbidden from
+  displaying it. The class name is deliberately not written here, because the branding
+  guard (scripts/brand-check.js) treats naming it as a violation, and it only
+  recognises line comments opened with `//` or an HTML comment — not a Nunjucks
+  comment block like this one. It is named, with this reasoning, in
+  tests/footer-branding.test.js, which pins the rendered markup against it.
+
+  🔴 The badge is the LIGHT artwork, not a choice between the light/dark pair the admin
+  panel offers. `govuk-footer` is light grey and this frontend has no dark mode, so the
+  dark asset — drawn for a dark background — would fail contrast here. The reasoning in
+  full is in accessible-shell.js next to `poweredByImageUrl`.
+
+  Links deliberately do NOT open in a new tab: GOV.UK guidance is to leave the choice to
+  the user unless the change of context is announced, and the existing source-code link
+  below has always behaved this way.
 #}
 <footer class="govuk-footer" role="contentinfo">
   <div class="govuk-width-container">
@@ -30,13 +54,19 @@
       <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
         <h2 class="govuk-visually-hidden">{{ t("footer.meta_label") }}</h2>
 
+        {#
+          🔴 WCAG 2.2 §3.2.6 Consistent Help: a help mechanism must appear in the
+          same relative place on every page, so "report a problem" stays here.
+
+          The cookies link that used to sit beside it has MOVED into band 1 below,
+          opposite the community's copyright line, where the React footer puts it.
+          It is not in both places: two "Cookies" links six lines apart is the
+          duplication this rebuild exists to remove.
+        #}
         {% if tenantSlug %}
         <ul class="govuk-footer__inline-list">
           <li class="govuk-footer__inline-list-item">
             <a class="govuk-footer__link" href="{{ reportProblemUrl or urlFor('/report-a-problem') }}">{{ t("report_problem.footer_link") }}</a>
-          </li>
-          <li class="govuk-footer__inline-list-item">
-            <a class="govuk-footer__link" href="{{ cookieSettingsUrl or urlFor('/cookies') }}">{{ t("cookie_settings.title") }}</a>
           </li>
         </ul>
         {% endif %}
@@ -53,13 +83,126 @@
         {% endif %}
 
         <div class="govuk-footer__meta-custom">
-          <p class="govuk-body govuk-!-margin-bottom-2">{{ t("footer.licence") }}</p>
-          <p class="govuk-body govuk-!-margin-bottom-2">{{ t("footer.attribution") }}</p>
-          <p class="govuk-body govuk-!-margin-bottom-0">
-            <a class="govuk-footer__link" href="{{ sourceCodeUrl or 'https://github.com/jasperfordesq-ai/Project-NEXUS' }}" rel="noopener noreferrer">{{ t("footer.source") }}</a>
-          </p>
+          {#
+            BAND 1 — the community's own copyright line, with the cookie settings
+            link opposite it. Mirrors the React footer's tenant copyright strip.
+          #}
+          <div class="nexus-alpha-footer__band nexus-alpha-footer__band--split">
+            <p class="govuk-body-s govuk-!-margin-bottom-0">
+              {{ tenantFooterText or t("footer.default_footer_text", { community: tenantName }) }}
+            </p>
+            <p class="govuk-body-s govuk-!-margin-bottom-0">
+              <a class="govuk-footer__link" href="{{ cookieSettingsUrl or urlFor('/cookies') }}">{{ t("cookie_settings.title") }}</a>
+            </p>
+          </div>
+
+          {#
+            BAND 2 — release status.
+
+            🔴 The version is appended here from the API-supplied platform version
+            rather than being baked into the translations. The React frontend puts
+            the number inside its `release_stage` string, which is why
+            scripts/check-version-consistency.mjs has to police eleven locale files
+            for it. Composing it makes that impossible to get wrong.
+
+            "Generally Available" describes the PLATFORM, not this accessible
+            service — whose own GOV.UK phase banner says "Beta" at the top of every
+            page, because it covers part of what the React frontend does.
+          #}
+          <div class="nexus-alpha-footer__band nexus-alpha-footer__band--center">
+            <p class="govuk-body-s govuk-!-margin-bottom-0">
+              <strong>{{ t("release_status.stage") }}{% if platformVersion %} (v{{ platformVersion }}){% endif %}</strong>
+              &mdash; {{ t("release_status.summary") }}
+              <span class="nexus-alpha-footer__sep" aria-hidden="true">&middot;</span>
+              <a class="govuk-footer__link" href="{{ urlFor('/features') }}">{{ t("release_status.features_link") }}</a>
+              <span class="nexus-alpha-footer__sep" aria-hidden="true">&middot;</span>
+              {#
+                The documentation site is a separate domain, so this one link does
+                open a new tab and says so to screen readers.
+              #}
+              <a class="govuk-footer__link" href="{{ docsUrl }}" target="_blank" rel="noopener noreferrer" aria-label="{{ t('release_status.docs_link_aria') }}">{{ t("release_status.docs_link") }}</a>
+            </p>
+          </div>
+
+          {#
+            BAND 3 — the three brand marks, each under its own heading, in the same
+            order as the React footer: community partner (start), open source
+            (centre), powered by (end).
+          #}
+          {% set partnerName = partnerLogoLabel or t("footer.community_partner") %}
+          <div class="nexus-alpha-footer__band nexus-alpha-footer__marks">
+
+            <div class="nexus-alpha-footer__mark nexus-alpha-footer__mark--start">
+              <h3 class="nexus-alpha-footer__mark-heading">{{ partnerName }}</h3>
+              {% if partnerLogoUrl %}
+                {% if partnerLogoLinkUrl %}
+                  <a class="govuk-footer__link nexus-alpha-footer__brand-link" href="{{ partnerLogoLinkUrl }}" rel="noopener noreferrer">
+                    <span class="nexus-alpha-footer__brand-plate">
+                      <img class="nexus-alpha-footer__mark-image" src="{{ partnerLogoUrl }}" alt="{{ partnerName }}" loading="lazy" decoding="async">
+                    </span>
+                  </a>
+                {% else %}
+                  <span class="nexus-alpha-footer__brand-plate">
+                    <img class="nexus-alpha-footer__mark-image" src="{{ partnerLogoUrl }}" alt="{{ partnerName }}" loading="lazy" decoding="async">
+                  </span>
+                {% endif %}
+              {% else %}
+                {#
+                  The empty slot, as the React footer draws it, so a community can
+                  see where its logo would go. It is plain text inside the heading's
+                  own block, so a screen reader announces "Community Partner — Your
+                  logo here" rather than a decorative box or a broken image.
+                #}
+                <span class="nexus-alpha-footer__brand-plate nexus-alpha-footer__brand-plate--empty">
+                  {{ t("footer.tenant_logo_placeholder") }}
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="nexus-alpha-footer__mark nexus-alpha-footer__mark--center">
+              <h3 class="nexus-alpha-footer__mark-heading">{{ t("footer.open_source") }}</h3>
+              {#
+                🔴 AGPL-3.0 Section 7(b): the running application must link to its
+                own source. This link is NOT configurable per community, and must not
+                become so — the React frontend keeps the same URL in a single
+                constant for the same reason. Changing it means changing it in
+                react-frontend/src/config/externalLinks.ts too.
+              #}
+              <a class="govuk-footer__link nexus-alpha-footer__brand-link nexus-alpha-footer__repo" href="{{ sourceCodeUrl or 'https://github.com/jasperfordesq-ai/Project-NEXUS' }}" rel="noopener noreferrer" aria-label="{{ t('footer.source_repo_aria') }}">
+                <span class="nexus-alpha-footer__repo-name">{{ platformName }}</span>
+                <span class="nexus-alpha-footer__repo-sub">{{ t("footer.source_repo") }}</span>
+              </a>
+            </div>
+
+            <div class="nexus-alpha-footer__mark nexus-alpha-footer__mark--end">
+              <h3 class="nexus-alpha-footer__mark-heading">{{ poweredByLabel or t("footer.powered_by") }}</h3>
+              {% if poweredByImageUrl %}
+                <a class="govuk-footer__link nexus-alpha-footer__brand-link" href="{{ poweredByUrl }}" rel="noopener noreferrer">
+                  <span class="nexus-alpha-footer__brand-plate">
+                    <img class="nexus-alpha-footer__mark-image nexus-alpha-footer__mark-image--wide" src="{{ poweredByImageUrl }}" alt="{{ poweredByLabel or t('footer.powered_by_alt') }}" loading="lazy" decoding="async">
+                  </span>
+                </a>
+              {% endif %}
+            </div>
+
+          </div>
+
+          {#
+            BAND 4 — the licence strip. 🔴 AGPL Section 7(b) attribution, required on
+            every page. Do not remove it.
+          #}
+          <div class="nexus-alpha-footer__band nexus-alpha-footer__band--center">
+            <p class="govuk-body-s govuk-!-margin-bottom-0">
+              {{ t("footer.agpl_notice") }}
+              <span class="nexus-alpha-footer__sep" aria-hidden="true">&middot;</span>
+              <a class="govuk-footer__link" href="{{ urlFor('/legal/terms') }}">{{ t("footer.columns.legal.terms") }}</a>
+              <span class="nexus-alpha-footer__sep" aria-hidden="true">&middot;</span>
+              <a class="govuk-footer__link" href="{{ urlFor('/legal/privacy') }}">{{ t("footer.columns.legal.privacy") }}</a>
+            </p>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 </footer>

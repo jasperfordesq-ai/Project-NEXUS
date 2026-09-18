@@ -616,6 +616,212 @@
   text-decoration: underline;
 }
 
+// ---------------------------------------------------------------------------
+// Footer brand marks: the community's partner logo, and the powered-by badge.
+//
+// Both are uploaded raster images of unknown proportions, so every rule here
+// exists to stop one distorting the footer.
+// ---------------------------------------------------------------------------
+.nexus-alpha-footer__mark {
+  margin-bottom: govuk-spacing(4);
+}
+
+.nexus-alpha-footer__mark-heading {
+  margin-bottom: govuk-spacing(1);
+  color: $govuk-secondary-text-colour;
+}
+
+.nexus-alpha-footer__brand-link {
+  display: inline-block;
+
+  // The link's content is an image, so an underline would decorate nothing
+  // meaningful. The focus state is untouched: `govuk-footer__link` still paints
+  // the standard yellow focus block around the mark for keyboard users.
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+// 🔴 A white plate behind every footer brand mark, and it is not decoration.
+//
+// The footer sits on a pale blue tint, and the marks that land here are opaque
+// far more often than not:
+//
+//   - The built-in powered-by badge (`powered-by-nexus-light.png`) is RGB with NO
+//     alpha channel at all — a white background is baked into the file. Measured,
+//     not assumed. Without a plate it renders as a stray white rectangle against
+//     the tint. (The DARK variant is the transparent one, and it is unusable here:
+//     see the note in accessible-shell.js.)
+//   - A community's partner logo is whatever their partner supplied, and council
+//     and funder logos arrive as opaque JPEGs as a matter of course.
+//
+// So rather than hope for transparency, the plate makes white deliberate: an
+// opaque mark reads as a logo on a card, and a transparent one gets the white
+// background that unknown artwork is safest on.
+.nexus-alpha-footer__brand-plate {
+  display: inline-block;
+  padding: govuk-spacing(2);
+  border: 1px solid $govuk-border-colour;
+  background: govuk-colour("white");
+}
+
+// Marks cap BOTH axes, the same reasoning as the React footer: a height-only cap
+// lets a wide wordmark scale out past its native resolution and render pixelated.
+// A square mark stays bound by the height, a wide one by the width.
+.nexus-alpha-footer__mark-image {
+  display: block;
+  max-height: 64px;
+  max-width: 176px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+// The powered-by badge is a wide wordmark, so it gets more width to play with.
+.nexus-alpha-footer__mark-image--wide {
+  max-height: 72px;
+  max-width: 240px;
+}
+
+// ---------------------------------------------------------------------------
+// The four bands at the bottom of the footer, replicating the React footer's
+// bottom section. Each is separated by a rule, as GOV.UK separates footer
+// sections, rather than by whitespace alone.
+// ---------------------------------------------------------------------------
+.nexus-alpha-footer__band {
+  padding-top: govuk-spacing(4);
+  margin-top: govuk-spacing(4);
+  border-top: 1px solid $govuk-border-colour;
+
+  &:first-child {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: 0;
+  }
+}
+
+.nexus-alpha-footer__band--split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2) govuk-spacing(4);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.nexus-alpha-footer__band--center {
+  text-align: center;
+}
+
+// The interpuncts between links are decoration, and are already hidden from
+// assistive technology in the markup. Give them breathing room so the links
+// either side stay distinguishable as separate targets.
+.nexus-alpha-footer__sep {
+  padding: 0 govuk-spacing(1);
+  color: $govuk-secondary-text-colour;
+}
+
+.nexus-alpha-footer__marks {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: govuk-spacing(6);
+
+  // One column on a phone, three from tablet up — the same breakpoint behaviour
+  // as the React footer's grid.
+  @include govuk-media-query($from: tablet) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: govuk-spacing(4);
+    align-items: start;
+  }
+}
+
+.nexus-alpha-footer__mark {
+  display: flex;
+  flex-direction: column;
+  gap: govuk-spacing(2);
+  align-items: flex-start;
+  min-width: 0;
+}
+
+// Centre and end alignment only once the marks are side by side. Stacked on a
+// phone they all align to the start, so the headings form a single left edge.
+@include govuk-media-query($from: tablet) {
+  // Stated explicitly rather than left to the base rule, so all three alignments
+  // read together and the partner mark's start alignment is visibly deliberate.
+  .nexus-alpha-footer__mark--start {
+    align-items: flex-start;
+    text-align: start;
+  }
+
+  .nexus-alpha-footer__mark--center {
+    align-items: center;
+    text-align: center;
+  }
+
+  .nexus-alpha-footer__mark--end {
+    align-items: flex-end;
+    text-align: end;
+  }
+}
+
+// The small uppercase heading above each mark. A real heading element, so the
+// footer's brand marks are navigable as a structure rather than being three
+// unlabelled images — but sized down, because visually it is a caption.
+.nexus-alpha-footer__mark-heading {
+  margin: 0;
+  color: $govuk-secondary-text-colour;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.nexus-alpha-footer__brand-plate--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 176px;
+  height: 90px;
+  border-style: dashed;
+  border-width: 2px;
+  color: $govuk-secondary-text-colour;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+// The source-repository card: the GitHub link rendered as a bordered block with
+// the platform name over a quieter sub-label, matching the React footer's.
+.nexus-alpha-footer__repo {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  box-sizing: border-box;
+  padding: govuk-spacing(2) govuk-spacing(3);
+  border: 1px solid $govuk-border-colour;
+  background: govuk-colour("white");
+
+  // Minimum 44px target height, per WCAG 2.2 target size.
+  min-height: 44px;
+  justify-content: center;
+}
+
+.nexus-alpha-footer__repo-name {
+  font-weight: 700;
+}
+
+.nexus-alpha-footer__repo-sub {
+  color: $govuk-secondary-text-colour;
+  font-size: 0.875rem;
+}
+
+// The focus state must recolour the sub-label too, or it keeps its grey against
+// the yellow focus block and drops below the contrast minimum.
+.nexus-alpha-footer__repo:focus .nexus-alpha-footer__repo-sub {
+  color: $govuk-focus-text-colour;
+}
+
 // Fix header border: put it on the full-width header element, not the container
 .govuk-header {
   border-bottom: govuk-spacing(2) solid $govuk-brand-colour;

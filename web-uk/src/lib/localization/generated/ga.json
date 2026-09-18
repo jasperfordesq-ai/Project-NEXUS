@@ -1158,7 +1158,24 @@
                 "sign_out": "Sínigh amach",
                 "licence": "Forbraítear Project NEXUS go hoscailte. Is bogearraí foinse oscailte é atá ceadúnaithe faoi AGPL-3.0-or-later.",
                 "attribution": "Cóipcheart © 2024–2026 Jasper Ford. Féach NOTICE le haghaidh sannadh agus admháil.",
-                "source": "Féach ar an gcód foinse ar GitHub"
+                "source": "Féach ar an gcód foinse ar GitHub",
+                "community_partner": "Comhpháirtí Pobail",
+                "open_source": "Foinse Oscailte",
+                "powered_by": "Á chumhachtú ag",
+                "powered_by_alt": "Á chumhachtú ag Project NEXUS",
+                "tenant_logo_placeholder": "Do lógó anseo",
+                "source_repo": "Stór GitHub",
+                "source_repo_aria": "Oscail stór GitHub Project NEXUS",
+                "agpl_notice": "AGPL-3.0 — Cóipcheart © 2024–2026 Jasper Ford",
+                "default_footer_text": ":community — AGPL-3.0 — Cóipcheart © 2024–2026 Jasper Ford"
+            },
+            "release_status": {
+                "stage": "Ar Fáil go Ginearálta",
+                "summary": "Ag forbairt i gcónaí.",
+                "features_link": "Gnéithe",
+                "changelog_link": "Loga athruithe",
+                "docs_link": "Doiciméadú",
+                "docs_link_aria": "Doiciméadú (osclaítear i gcluaisín nua)"
             },
             "actions": {
                 "back": "Ar ais",

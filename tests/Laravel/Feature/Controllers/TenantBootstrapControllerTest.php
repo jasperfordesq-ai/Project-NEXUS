@@ -68,6 +68,38 @@ class TenantBootstrapControllerTest extends TestCase
         }
     }
 
+    /**
+     * The accessible frontend (web-uk) prints the platform version in its footer and
+     * has no other source for it: its Docker build context is web-uk/, so the repo's
+     * VERSION file is not in its image.
+     *
+     * 🔴 The value must come from config('app.version'), which
+     * scripts/check-version-consistency.mjs pins to the root VERSION file. Satisfying
+     * this test with a literal would reintroduce exactly the drift that pinning
+     * prevents — a footer still advertising last release's number.
+     */
+    public function test_bootstrap_exposes_the_platform_version_for_frontends_without_the_version_file(): void
+    {
+        $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug)
+            ->assertOk()
+            ->assertJsonPath('data.config.platform_version', (string) config('app.version'));
+    }
+
+    public function test_bootstrap_platform_version_tracks_the_repository_version_file(): void
+    {
+        $versionFile = base_path('VERSION');
+        $this->assertFileExists($versionFile, 'The repository VERSION file is the source of truth.');
+
+        $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug)->assertOk();
+
+        $this->assertSame(
+            trim((string) file_get_contents($versionFile)),
+            $response->json('data.config.platform_version'),
+            'The bootstrap platform_version must equal the repository VERSION file. '
+            . 'If this fails, config/app.php has drifted from VERSION — fix that, not this test.'
+        );
+    }
+
     public function test_bootstrap_exposes_typed_authentication_configuration(): void
     {
         DB::table('tenant_settings')->updateOrInsert(

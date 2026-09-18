@@ -151,6 +151,37 @@ return [
         'licence' => 'Project NEXUS is built in the open. The software is open source under AGPL-3.0-or-later.',
         'attribution' => 'Copyright © 2024–2026 Jasper Ford. See NOTICE for attribution and acknowledgements.',
         'source' => 'View the source code on GitHub',
+        'community_partner' => 'Community Partner',
+        'open_source' => 'Open Source',
+        'powered_by' => 'Powered by',
+        // The heading above the badge is just "Powered by", matching the React
+        // footer. The IMAGE needs to name what it is, because "Powered by" alone
+        // is a useless accessible name for a logo.
+        'powered_by_alt' => 'Powered by Project NEXUS',
+        'tenant_logo_placeholder' => 'Your logo here',
+        'source_repo' => 'GitHub repo',
+        'source_repo_aria' => 'Open the Project NEXUS GitHub repository',
+        // 🔴 The year is LITERAL text, not a :year placeholder, and must be
+        // bumped here and in the ten other locales once a year — exactly as the
+        // 'attribution' key above has always worked. A placeholder was tried on
+        // 2026-09-18 and reverted: see the note in web-uk/src/lib/template-filters.js
+        // for the two ways it broke.
+        'agpl_notice' => 'AGPL-3.0 — Copyright © 2024–2026 Jasper Ford',
+        'default_footer_text' => ':community — AGPL-3.0 — Copyright © 2024–2026 Jasper Ford',
+        // The legal strip and the cookie link deliberately REUSE the already
+        // translated labels (footer.columns.legal.*, cookie_settings.title)
+        // rather than adding near-duplicates in eleven languages.
+    ],
+    'release_status' => [
+        // The version is appended by the template from the API-supplied platform
+        // version, so it cannot drift from the repository VERSION file. Do not put
+        // a version number in these strings.
+        'stage' => 'Generally Available',
+        'summary' => 'Always evolving.',
+        'features_link' => 'Features',
+        'changelog_link' => 'Changelog',
+        'docs_link' => 'Documentation',
+        'docs_link_aria' => 'Documentation (opens in a new tab)',
     ],
     'actions' => [
         'back' => 'Back',

@@ -99,9 +99,17 @@ describe('Laravel-first shared partial localization', () => {
     expect(footer).toContain(t('report_problem.footer_link'));
     expect(footer).toContain(t('cookie_settings.title'));
     expect(footer).toContain(t('footer.sign_out'));
-    expect(footer).toContain(t('footer.licence'));
-    expect(footer).toContain(t('footer.attribution'));
-    expect(footer).toContain(t('footer.source'));
+    // 🔴 footer.licence / footer.attribution / footer.source were asserted here
+    // until 2026-09-18. The bottom of the footer was rebuilt as a replica of the
+    // React footer's (owner decision) and those three stacked sentences were the
+    // repetition it removed — between them they said "Project NEXUS" three times.
+    // The licence and the source link are still present, in the compact form:
+    expect(footer).toContain(t('footer.agpl_notice'));
+    expect(footer).toContain(t('footer.community_partner'));
+    expect(footer).toContain(t('footer.open_source'));
+    expect(footer).toContain(t('footer.source_repo'));
+    expect(footer).toContain(t('footer.powered_by'));
+    expect(footer).toContain(t('release_status.summary'));
     expect(footer).toContain('href="/acme/accessible/report-a-problem"');
     expect(footer).toContain('href="/acme/accessible/cookies"');
     expect(footer).toContain('action="/acme/accessible/logout"');
@@ -134,9 +142,17 @@ describe('Laravel-first shared partial localization', () => {
       'report_problem.footer_link',
       'cookie_settings.title',
       'footer.sign_out',
-      'footer.licence',
-      'footer.attribution',
-      'footer.source'
+      'footer.agpl_notice',
+      'footer.default_footer_text',
+      'footer.community_partner',
+      'footer.open_source',
+      'footer.powered_by',
+      'footer.source_repo',
+      'footer.tenant_logo_placeholder',
+      'release_status.stage',
+      'release_status.summary',
+      'release_status.features_link',
+      'release_status.docs_link'
     ]) {
       expect(footerSource).toContain(`t("${key}"`);
     }

@@ -15,6 +15,32 @@ const serviceName = 'Project NEXUS Accessible';
 const phaseText = 'Beta';
 const feedbackUrl = 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback';
 const sourceCodeUrl = 'https://github.com/jasperfordesq-ai/Project-NEXUS';
+
+// Powered-by badge defaults, matching the React footer's built-in pair so that a
+// community which has configured nothing sees the same mark on both frontends.
+//
+// A community overrides either of these in the admin panel
+// (general.powered_by_image_light / general.powered_by_url); these defaults ship with
+// every fork and clone, so the badge is never missing.
+//
+// 🔴 The URL is the MARKETING site, which is moving from project-nexus.ie to
+// project-nexus.net. Keep it equal to DEFAULT_PB_URL in
+// react-frontend/src/components/layout/Footer.tsx — one badge should not point at two
+// different places depending on which frontend a member is using.
+const DEFAULT_POWERED_BY_IMAGE = '/images/powered-by-nexus-light.png';
+const DEFAULT_POWERED_BY_URL = 'https://project-nexus.net';
+
+// The platform's own name, as a code constant rather than a translation key —
+// the same treatment `serviceName` and `sourceCodeUrl` above already get. It is a
+// brand name, so it is identical in all eleven languages; as a translation key it
+// would be eleven byte-identical English values, which is exactly what
+// scripts/check-php-lang-untranslated.mjs counts against the ceiling.
+const platformName = 'Project NEXUS';
+
+// The documentation site. Kept equal to PROJECT_NEXUS_DOCS_URL in
+// react-frontend/src/config/externalLinks.ts, which explains why it lives on its
+// own domain rather than one derived from the repository name.
+const docsUrl = 'https://docs.project-nexus.ie/';
 const { URL } = require('node:url');
 const { getPublicAssetBaseUrl } = require('./backend-contract');
 const { createTranslator, isSupportedLocale } = require('./localization');
@@ -562,6 +588,51 @@ function resolveBackendMediaUrl(value) {
 }
 
 /**
+ * Resolve a FOOTER BRANDING image (partner logo, powered-by badge) for the browser.
+ *
+ * Mirrors `resolveBrandingImageUrl` in the React frontend
+ * (react-frontend/src/lib/helpers.ts) rule for rule, because the two footers read the
+ * same tenant settings and a value that works on one must work on the other.
+ *
+ * 🔴 Why this is NOT `resolveBackendAssetUrl`, which is otherwise the correct helper
+ * for tenant branding: the powered-by badge has a BUILT-IN DEFAULT
+ * (`/images/powered-by-nexus-light.png`) that this frontend serves from its own
+ * `public/` directory. `resolveBackendAssetUrl` resolves every relative path against
+ * the API origin, which would send the browser to the API host for a file that only
+ * exists here, and render a broken image on every page for every community that has
+ * not uploaded its own badge — i.e. all of them today.
+ *
+ * So only the paths the API actually serves are pointed at the API:
+ *
+ *   - `/uploads/` and `/storage/` — where an admin-uploaded logo lands.
+ *   - An absolute or protocol-relative URL — passed to `resolveBackendAssetUrl`, which
+ *     REJECTS off-origin hosts. That rejection is the point: a tenant admin must not be
+ *     able to aim the footer at a third-party host and leak every viewer's IP to it.
+ *     It is also why the CSP in server.js (`img-src 'self' data: <api origin>`) needs no
+ *     widening for this — everything that survives is one of those two origins.
+ *
+ * Anything else stays a local path served by this frontend.
+ *
+ * @param {string} value  A tenant setting value, or a built-in default path.
+ * @returns {string} A browser-usable URL, or '' when there is no usable image.
+ */
+function resolveBrandingImageUrl(value) {
+  const candidate = String(value || '').trim();
+  if (!candidate) return '';
+
+  if (/^[a-z][a-z0-9+.-]*:/i.test(candidate) || candidate.startsWith('//')) {
+    return resolveBackendAssetUrl(candidate);
+  }
+
+  const localPath = candidate.startsWith('/') ? candidate : `/${candidate}`;
+  if (localPath.startsWith('/uploads/') || localPath.startsWith('/storage/')) {
+    return resolveBackendAssetUrl(localPath);
+  }
+
+  return localPath;
+}
+
+/**
  * Ask the API for a member-content image at the size it will actually be shown.
  *
  * Mirrors `resolveThumbnailUrl` in the React frontend (react-frontend/src/lib/helpers.ts),
@@ -673,6 +744,45 @@ function buildShellLocals(req, isAuthenticated) {
     : {};
   const tenantLogoUrl = resolveBackendAssetUrl(branding.logo_dark_url || branding.logo_url);
 
+  // ---------------------------------------------------------------------------
+  // Footer branding: the community's partner logo and the powered-by badge.
+  //
+  // 🔴 The LIGHT badge, deliberately, and not a choice between the two the admin
+  // panel offers. `govuk-footer` is light grey (govuk-colour("light-grey")) and this
+  // frontend has NO dark mode — there is not one `prefers-color-scheme` rule in its
+  // stylesheet, because the GOV.UK Design System is light-only. The dark asset is
+  // artwork FOR a dark background, so serving it here would put a pale logo on pale
+  // grey and fail contrast for everyone.
+  //
+  // That is not the dark variant going unused platform-wide: the React footer picks
+  // between the pair by theme, and this frontend's own header is black and already
+  // uses each community's dark logo (`tenantLogoUrl` above). Each variant is used
+  // where its background matches. If this frontend ever gains dark mode, switch the
+  // line below to choose the pair the way the header does.
+  // ---------------------------------------------------------------------------
+  const tenantConfig = routedTenant.config && typeof routedTenant.config === 'object'
+    ? routedTenant.config
+    : {};
+
+  const poweredByImageUrl = resolveBrandingImageUrl(
+    tenantConfig.powered_by_image_light || DEFAULT_POWERED_BY_IMAGE
+  );
+  const poweredByUrl = String(tenantConfig.powered_by_url || DEFAULT_POWERED_BY_URL).trim();
+  const poweredByLabel = String(tenantConfig.powered_by_label || '').trim();
+
+  // No dashed "logo goes here" placeholder, unlike the React footer. An empty
+  // bordered box is a useful authoring hint on an admin-facing surface and pure
+  // noise here: a screen reader would announce a decorative box with placeholder
+  // text, and a sighted member would read the gap as a broken image.
+  const partnerLogoUrl = resolveBrandingImageUrl(tenantConfig.partner_logo_url);
+  const partnerLogoLabel = String(tenantConfig.partner_logo_label || '').trim();
+  const partnerLogoLinkUrl = String(tenantConfig.partner_logo_link_url || '').trim();
+
+  // The community's own copyright line, matching the React footer: the community's
+  // `general.footer_text` setting when it has one, otherwise the platform default
+  // built from the community name and the AGPL notice.
+  const tenantFooterText = String(tenantConfig.footer_text || '').trim();
+
   return {
     serviceName: t('service_name'),
     phaseText: t('phase'),
@@ -726,6 +836,28 @@ function buildShellLocals(req, isAuthenticated) {
     cookieSettingsUrl: urlFor('/cookies'),
     mainSiteUrl: process.env.MAIN_FRONTEND_URL || 'https://app.project-nexus.ie',
     sourceCodeUrl,
+    poweredByImageUrl,
+    poweredByUrl,
+    poweredByLabel,
+    partnerLogoUrl,
+    partnerLogoLabel,
+    partnerLogoLinkUrl,
+    tenantFooterText,
+    platformName,
+    docsUrl,
+    // 🔴 The copyright year is deliberately NOT here. It was, and the AGPL notice
+    // rendered "Copyright © 2024–undefined Jasper Ford" on every page rendered
+    // without this builder. It is now the `copyrightYear()` template global in
+    // lib/template-filters.js, which every render path has.
+    // Platform software version for the footer line. Supplied by the API
+    // (TenantBootstrapController::buildPublicConfig), which reads config('app.version') —
+    // a value CI pins to the repo's VERSION file. This frontend has no other source:
+    // its Docker build context is web-uk/, so the VERSION file is not in its image.
+    //
+    // Empty when the API is unreachable or predates the field. The footer then omits the
+    // line entirely rather than printing "version" followed by nothing, because a blank
+    // or wrong version number is worse than no version number.
+    platformVersion: String(tenantConfig.platform_version || '').trim(),
     sharedAccessibleStatus: 'candidate_not_certified'
   };
 }
@@ -748,5 +880,6 @@ module.exports = {
   resolveBackendAssetUrl,
   resolveBackendMediaUrl,
   resolveBackendThumbnailUrl,
+  resolveBrandingImageUrl,
   serviceName
 };

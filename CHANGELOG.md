@@ -11,6 +11,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The accessible frontend's footer now carries the community's partner logo, the source
+  repository and the powered-by badge, each under its own heading, in GOV.UK Design System
+  style.** The React footer has shown all three for a long time; the accessible frontend showed
+  none of them, so a community's funder or council partner was invisible to exactly the members
+  most likely to have been referred by one. The bottom of the footer is now a deliberate replica
+  of the React footer's four bands — the community's copyright line with cookie settings opposite
+  it, the release status line, the three brand marks, and the licence strip — which also removes
+  the four stacked sentences it replaced, between them saying "Project NEXUS" three times.
+  Details that are deliberate, each for a reason:
+  - The powered-by badge sits in the second `govuk-footer__meta-item`, the slot GOV.UK's own
+    footer uses for its origin mark, and deliberately does **not** reuse the link class GOV.UK
+    applies there, because that class renders the royal crest through a `::before` background
+    image and this service is forbidden from displaying it. Pinned by
+    `web-uk/tests/footer-branding.test.js`.
+  - The badge uses the **light** artwork, not a choice between the light/dark pair the admin
+    panel offers, because `govuk-footer` is light and this frontend has no dark mode — there is
+    not one `prefers-color-scheme` rule in its stylesheet, the GOV.UK Design System being
+    light-only. Both variants remain in use platform-wide: React picks between them by theme and
+    this frontend's black header already uses each community's dark logo.
+  - Every brand mark sits on an explicit white plate. Measured, not assumed:
+    `powered-by-nexus-light.png` is PNG colour type 2 (RGB, **no alpha channel**) with a white
+    background baked in, against a footer background of `rgb(244, 248, 251)` — so without a plate
+    the badge rendered as a stray white rectangle. Community partner logos have the same problem
+    more often than not, arriving as opaque JPEGs.
+  - The source-repository link is **not** configurable per community and must not become so:
+    AGPL-3.0 Section 7(b) requires the running application to link to its own source, and
+    `react-frontend/src/config/externalLinks.ts` keeps the same URL in a single constant for that
+    reason. The partner logo and the powered-by badge *are* per-community, reading the same
+    `general.*` settings the React footer reads, so configuring them once covers both frontends.
+  - The release line states the platform version and links Features and Documentation. It does
+    **not** link Changelog, because the accessible frontend has no changelog page yet and a
+    footer link to a 404 across eleven live community sites is worse than a missing link. It also
+    makes no maturity claim about the accessible service itself, whose GOV.UK phase banner
+    correctly still reads "Beta".
+  - The copyright year is literal text in the translations, as the neighbouring `attribution`
+    key has always carried it, and needs bumping once a year in eleven files. A `:year`
+    placeholder was tried and reverted the same day; `web-uk/src/lib/template-filters.js` records
+    the two ways it broke, the second of which failed 30+ test suites.
+
+- **`GET /api/v2/tenant/bootstrap` now returns `config.platform_version`.** The accessible
+  frontend prints the platform version in its footer and had no source for it: its Docker build
+  context is `web-uk/`, so the repository's `VERSION` file is not in its image. The value comes
+  from `config('app.version')` and nowhere else, because `scripts/check-version-consistency.mjs`
+  already pins that config value to the root `VERSION` file — so a release bump carries through
+  and no downstream copy can drift. Note that `data.config` is now always present in the
+  response, where previously it was omitted for a community with no footer settings configured;
+  nothing read its absence as a signal, and both frontends already access it optionally.
+  Regression tests:
+  `TenantBootstrapControllerTest::test_bootstrap_exposes_the_platform_version_for_frontends_without_the_version_file`
+  and `::test_bootstrap_platform_version_tracks_the_repository_version_file`.
+
 - **A nightly Sentry sweep now tells a human when errors need attention.** Until now the only
   error monitoring ran for 30 minutes after a deploy, so anything that did not coincide with a
   deploy was invisible: a Redis name-resolution fault ran from 2026-09-06 to 2026-09-16 (1237

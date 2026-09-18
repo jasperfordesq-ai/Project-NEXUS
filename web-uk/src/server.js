@@ -401,6 +401,12 @@ const staticOptions = {
 };
 
 app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css'), staticOptions));
+// Brand imagery this frontend serves itself. Today that is the built-in powered-by
+// badge in the footer, whose default path (/images/powered-by-nexus-light.png) is
+// deliberately NOT resolved against the API origin — see resolveBrandingImageUrl in
+// lib/accessible-shell.js. A community that uploads its own badge is served from the
+// API host instead, so nothing here needs to change for that case.
+app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images'), staticOptions));
 app.use('/assets', express.static(
   path.join(__dirname, '..', 'node_modules', 'govuk-frontend', 'dist', 'govuk', 'assets'),
   staticOptions

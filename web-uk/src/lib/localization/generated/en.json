@@ -1158,7 +1158,24 @@
                 "sign_out": "Sign out",
                 "licence": "Project NEXUS is built in the open. The software is open source under AGPL-3.0-or-later.",
                 "attribution": "Copyright © 2024–2026 Jasper Ford. See NOTICE for attribution and acknowledgements.",
-                "source": "View the source code on GitHub"
+                "source": "View the source code on GitHub",
+                "community_partner": "Community Partner",
+                "open_source": "Open Source",
+                "powered_by": "Powered by",
+                "powered_by_alt": "Powered by Project NEXUS",
+                "tenant_logo_placeholder": "Your logo here",
+                "source_repo": "GitHub repo",
+                "source_repo_aria": "Open the Project NEXUS GitHub repository",
+                "agpl_notice": "AGPL-3.0 — Copyright © 2024–2026 Jasper Ford",
+                "default_footer_text": ":community — AGPL-3.0 — Copyright © 2024–2026 Jasper Ford"
+            },
+            "release_status": {
+                "stage": "Generally Available",
+                "summary": "Always evolving.",
+                "features_link": "Features",
+                "changelog_link": "Changelog",
+                "docs_link": "Documentation",
+                "docs_link_aria": "Documentation (opens in a new tab)"
             },
             "actions": {
                 "back": "Back",
