@@ -7,6 +7,7 @@ const AxeBuilder = require('@axe-core/playwright').default;
 const { test, expect } = require('@playwright/test');
 const { resolveOptions } = require('../../scripts/laravel-runtime-smoke');
 const { translate } = require('../../src/lib/localization');
+const { chromeFor: featuresText } = require('../../src/lib/features-catalogue');
 
 const accessibilitySmoke = resolveOptions({}, process.env);
 const tenantSlug = process.env.ACCESSIBILITY_TENANT_SLUG || accessibilitySmoke.tenant;
@@ -427,7 +428,12 @@ test.describe('Arabic RTL and narrow reflow gate', () => {
         marker: translate('ar', 'guide.title'),
         actionMarker: translate('ar', 'guide.browse_listings')
       },
-      { path: `${mountPath}/features?locale=ar`, marker: translate('ar', 'features.items.find_help') },
+      // 🔴 This was `features.items.find_help`, one of the SIX hand-written bullets
+      // /features used to show. That page now renders the shared 119-feature catalogue,
+      // whose text comes from the React locale files rather than lang/*/govuk_alpha.php.
+      // The marker is the catalogue's own Arabic heading, so this still proves the page
+      // rendered in Arabic.
+      { path: `${mountPath}/features?locale=ar`, marker: featuresText('ar').heading },
       { path: `${mountPath}/faq?locale=ar`, marker: translate('ar', 'faq.q1') }
     ];
     const evidence = [];
