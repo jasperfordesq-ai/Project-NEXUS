@@ -12,11 +12,11 @@ jest.mock('heroui-native', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
 
-  const Dialog = ({ children, isOpen }: { children: React.ReactNode; isOpen: boolean }) =>
-    isOpen ? <View testID="dialog-root">{children}</View> : null;
+  const Dialog = ({ children, isOpen, ...props }: { children: React.ReactNode; isOpen: boolean }) =>
+    isOpen ? <View testID="dialog-root" {...props}>{children}</View> : null;
   Dialog.Portal = ({ children }: { children: React.ReactNode }) => <View testID="dialog-portal">{children}</View>;
   Dialog.Overlay = (props: Record<string, unknown>) => <View testID="dialog-overlay" {...props} />;
-  Dialog.Content = ({ children }: { children: React.ReactNode }) => <View testID="dialog-content">{children}</View>;
+  Dialog.Content = ({ children, ...props }: { children: React.ReactNode }) => <View testID="dialog-content" {...props}>{children}</View>;
   Dialog.Title = ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>;
   Dialog.Description = ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>;
 
@@ -26,14 +26,17 @@ jest.mock('heroui-native', () => {
     accessibilityLabel,
     testID,
     isDisabled,
+    ...props
   }: {
     children: React.ReactNode;
     onPress?: () => void;
     accessibilityLabel?: string;
     testID?: string;
     isDisabled?: boolean;
+    accessibilityState?: object;
   }) => (
     <Pressable
+      {...props}
       testID={testID}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
@@ -53,6 +56,19 @@ jest.mock('heroui-native', () => {
 });
 
 describe('ConfirmDialog', () => {
+  it('keeps the dialog open and announces progress while confirmation is pending', () => {
+    const onClose = jest.fn();
+    const { getByTestId, getByLabelText } = render(
+      <ConfirmDialog visible title="Delete item?" cancelLabel="Cancel" confirmLabel="Delete"
+        onClose={onClose} onConfirm={jest.fn()} isConfirming />,
+    );
+    fireEvent(getByTestId('dialog-root'), 'openChange', false);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(getByTestId('dialog-overlay').props.isCloseOnPress).toBe(false);
+    expect(getByTestId('dialog-content').props.isSwipeable).toBe(false);
+    expect(getByLabelText('Delete').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+  });
+
   it('renders a native dialog with caller-provided copy and actions', () => {
     const onClose = jest.fn();
     const onConfirm = jest.fn();

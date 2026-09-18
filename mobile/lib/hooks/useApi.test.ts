@@ -8,6 +8,44 @@ import { useApi } from './useApi';
 import { ApiResponseError } from '@/lib/api/client';
 
 describe('useApi', () => {
+  it('clears the previous record when the requested identity changes and fails', async () => {
+    const fetchFn = jest.fn().mockResolvedValueOnce({ id: 1 })
+      .mockRejectedValueOnce(new ApiResponseError(404, 'Not found'));
+    let id = 1;
+    const { result, rerender } = renderHook(() => useApi(fetchFn, [id]));
+    await waitFor(() => expect(result.current.data).toEqual({ id: 1 }));
+    id = 2;
+    rerender({});
+    expect(result.current.data).toBeNull();
+    await waitFor(() => expect(result.current.errorStatus).toBe(404));
+    expect(result.current.data).toBeNull();
+  });
+
+  it('preserves the same record when a manual refresh fails', async () => {
+    const fetchFn = jest.fn().mockResolvedValueOnce({ id: 1 })
+      .mockRejectedValueOnce(new ApiResponseError(429, 'Try later'));
+    const { result } = renderHook(() => useApi(fetchFn, [1]));
+    await waitFor(() => expect(result.current.data).toEqual({ id: 1 }));
+    act(() => result.current.refresh());
+    await waitFor(() => expect(result.current.errorStatus).toBe(429));
+    expect(result.current.data).toEqual({ id: 1 });
+  });
+
+  it('clears data and failure details when disabled', async () => {
+    const fetchFn = jest.fn().mockResolvedValueOnce({ id: 1 })
+      .mockRejectedValueOnce(new ApiResponseError(403, 'Refused', undefined, 'FORBIDDEN'));
+    let enabled = true;
+    const { result, rerender } = renderHook(() => useApi(fetchFn, [], { enabled }));
+    await waitFor(() => expect(result.current.data).toEqual({ id: 1 }));
+    act(() => result.current.refresh());
+    await waitFor(() => expect(result.current.errorStatus).toBe(403));
+    enabled = false;
+    rerender({});
+    expect(result.current).toMatchObject({ data: null, error: null, errorStatus: null, errorCode: null, isLoading: false });
+    act(() => result.current.refresh());
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
   afterEach(() => {
     jest.useRealTimers();
   });

@@ -41,6 +41,40 @@ function extractor(r: FakeResponse) {
 // ---------------------------------------------------------------------------
 
 describe('usePaginatedApi', () => {
+  it('can load another page after a refresh supersedes an in-flight next page', async () => {
+    let finishOldPage!: (value: FakeResponse) => void;
+    const fetchFn = jest.fn()
+      .mockResolvedValueOnce(makeResponse(['first'], 'old-cursor', true))
+      .mockImplementationOnce(() => new Promise<FakeResponse>((resolve) => { finishOldPage = resolve; }))
+      .mockResolvedValueOnce(makeResponse(['refreshed'], 'new-cursor', true))
+      .mockResolvedValueOnce(makeResponse(['next'], null, false));
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+    await waitFor(() => expect(result.current.items).toEqual(['first']));
+    act(() => result.current.loadMore());
+    expect(result.current.isLoadingMore).toBe(true);
+    act(() => result.current.refresh());
+    await waitFor(() => expect(result.current.items).toEqual(['refreshed']));
+    await act(async () => { finishOldPage(makeResponse(['stale'], null, false)); });
+    expect(result.current.isLoadingMore).toBe(false);
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.items).toEqual(['refreshed', 'next']));
+    expect(fetchFn).toHaveBeenLastCalledWith('new-cursor');
+  });
+
+  it('keeps the usable cursor when a refresh fails', async () => {
+    const fetchFn = jest.fn()
+      .mockResolvedValueOnce(makeResponse(['first'], 'next-cursor', true))
+      .mockRejectedValueOnce(new ApiResponseError(429, 'Try later'))
+      .mockResolvedValueOnce(makeResponse(['next'], null, false));
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+    await waitFor(() => expect(result.current.items).toEqual(['first']));
+    act(() => result.current.refresh());
+    await waitFor(() => expect(result.current.error).toBe('Try later'));
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.items).toEqual(['first', 'next']));
+    expect(fetchFn).toHaveBeenLastCalledWith('next-cursor');
+  });
+
   afterEach(() => {
     jest.useRealTimers();
   });

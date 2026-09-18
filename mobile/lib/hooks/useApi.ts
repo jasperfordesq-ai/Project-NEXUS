@@ -68,12 +68,13 @@ export function useApi<T>(
 ): UseApiState<T> {
   const enabled = options?.enabled ?? true;
   const [data, setData] = useState<T | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const isMountedRef = useRef(true);
+  const previousDepsRef = useRef<unknown[] | null>(null);
 
   // Always track the latest fetchFn to avoid stale closure issues.
   // Call sites pass inline arrows (e.g. `useApi(() => getFeed(), [])`) whose
@@ -90,8 +91,18 @@ export function useApi<T>(
   }, []);
 
   useEffect(() => {
+    const previousDeps = previousDepsRef.current;
+    const identityChanged = previousDeps === null || previousDeps.length !== deps.length
+      || deps.some((dep, index) => !Object.is(dep, previousDeps[index]));
+    previousDepsRef.current = [...deps];
+    // Refresh may retain the same record, but a new ID/filter must never render
+    // its predecessor when the new request is pending or fails.
+    if (identityChanged || !enabled) setData(null);
     if (!enabled) {
       setIsLoading(false);
+      setError(null);
+      setErrorStatus(null);
+      setErrorCode(null);
       return;
     }
 

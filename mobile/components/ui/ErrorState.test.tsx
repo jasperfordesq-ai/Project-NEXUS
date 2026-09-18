@@ -71,5 +71,6 @@ describe('ErrorState', () => {
     await userEvent.press(screen.getByText('Retry'));
 
     expect(onRetry).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Retry' }).props.accessibilityState).toMatchObject({ busy: true, disabled: true });
   });
 });

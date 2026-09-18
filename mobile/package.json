@@ -107,7 +107,7 @@
     "expo-splash-screen": "~55.0.25",
     "expo-status-bar": "~55.0.6",
     "expo-system-ui": "~55.0.22",
-    "expo-updates": "~55.0.30",
+    "expo-updates": "~55.0.31",
     "expo-video": "~55.0.21",
     "heroui-native": "^1.0.4",
     "i18next": "^25.8.17",

@@ -172,6 +172,32 @@ const mockSearchResult = {
 };
 
 describe('SearchScreen', () => {
+  it('keeps loaded results and offers recovery when a later page fails', () => {
+    const refresh = jest.fn();
+    mockSearchParams = { q: 'garden' };
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [mockSearchResult], error: 'Connection interrupted', hasMore: true, refresh });
+    const { getByText, getByRole } = render(<SearchScreen />);
+    expect(getByText('Jane Doe')).toBeTruthy();
+    expect(getByText('Connection interrupted')).toBeTruthy();
+    fireEvent.press(getByRole('button', { name: 'common:buttons.retry' }));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps people and listings with the same numeric ID in real paginated results', async () => {
+    const realUsePaginatedApi = jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi;
+    mockUsePaginatedApi.mockImplementation(realUsePaginatedApi);
+    const searchApi = jest.requireMock('@/lib/api/search');
+    searchApi.search.mockResolvedValue({
+      data: [mockSearchResult, { ...mockSearchResult, type: 'listing', title: 'Garden help' }],
+      meta: { total: 2, has_more: false, cursor: null },
+    });
+    mockSearchParams = { q: 'garden' };
+    const { findByText, getByText } = render(<SearchScreen />);
+    expect(await findByText('Jane Doe')).toBeTruthy();
+    expect(getByText('Garden help')).toBeTruthy();
+  });
+
   it('renders the screen title', () => {
     const { getAllByText } = render(<SearchScreen />);
     expect(getAllByText('Search').length).toBeGreaterThan(0);

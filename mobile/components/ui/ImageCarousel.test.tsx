@@ -13,6 +13,19 @@ jest.mock('expo-image', () => ({
 }));
 
 describe('ImageCarousel', () => {
+  it('fits the measured card width and shows a placeholder for a failed image', () => {
+    const { getByTestId } = render(<ImageCarousel images={[{ uri: 'https://example.test/one.jpg' }]} />);
+    fireEvent(getByTestId('image-carousel'), 'layout', { nativeEvent: { layout: { width: 280 } } });
+    expect(getByTestId('carousel-image-0').props.style.width).toBe(280);
+    fireEvent(getByTestId('carousel-image-0'), 'error');
+    expect(getByTestId('carousel-image-0-fallback', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('renders nothing when no images are available', () => {
+    const { queryByTestId } = render(<ImageCarousel images={[]} />);
+    expect(queryByTestId('image-carousel')).toBeNull();
+  });
+
   it('uses translated fallback accessibility labels for unnamed images', () => {
     const onImagePress = jest.fn();
     const { getByLabelText } = render(

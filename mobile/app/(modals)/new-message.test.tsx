@@ -106,6 +106,18 @@ beforeEach(() => {
 });
 
 describe('NewMessageRoute', () => {
+  it('keeps members available and exposes a retry after a later-page failure', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [{ id: 10, name: 'Alice Green', first_name: 'Alice', last_name: 'Green', avatar_url: null }],
+      error: 'Connection interrupted', hasMore: true, refresh });
+    const { getByText } = render(<NewMessageRoute />);
+    expect(getByText('Alice Green')).toBeTruthy();
+    expect(getByText('Connection interrupted')).toBeTruthy();
+    fireEvent.press(getByText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   it('renders the native member picker composer', () => {
     mockUsePaginatedApi.mockReturnValue({
       ...defaultPaginatedState,

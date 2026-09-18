@@ -209,6 +209,8 @@ export function usePaginatedApi<TItem, TResponse>(
 
       if (isInitial) {
         setIsLoading(true);
+        // A refresh supersedes any pending next page, including its spinner.
+        setIsLoadingMore(false);
         setError(null);
         setErrorStatus(null);
         setErrorCode(null);
@@ -337,7 +339,8 @@ export function usePaginatedApi<TItem, TResponse>(
   /** Reset to the first page and replace the item list. */
   const refresh = useCallback(() => {
     if (!enabled) return;
-    cursorRef.current = null;
+    // Keep the loaded page's cursor until its replacement succeeds. If refresh
+    // fails, the visible rows must still be able to fetch their actual next page.
     retryCountRef.current = 0; // allow retry again on manual refresh
     // Allow refresh to proceed even if a previous fetch is in-flight
     isFetchingRef.current = false;

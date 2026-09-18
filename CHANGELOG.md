@@ -38,6 +38,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native Android/iOS search, refresh and shared-control reliability:** mixed search
+  results retain members and listings with the same numeric ID; refreshing during
+  pagination no longer strands the loading indicator, and failed refreshes preserve
+  the next-page position. Search and recipient lists expose retryable errors while
+  retaining loaded results. Detail loaders clear the previous record when the requested
+  identity changes. Retry buttons show progress, pending confirmations resist dismissal,
+  and feed galleries fit their card with a missing-image fallback. Updated the Expo
+  updates package to its SDK 55 recommended patch and aligned Apple version metadata.
+  Metro now preserves Expo exclusions and ignores native build scratch folders that
+  could crash its Windows watcher during Android compilation.
+
 - **Every legal page on the accessible frontend showed the wrong name.** `communityName()` in
   `web-uk/src/routes/legal.js` read `res.locals.tenant`, which the shell does not set — it sets
   `tenantName`, `tenantSlug` and `communityName` — so the legal hub, terms, privacy, cookies,

@@ -9,8 +9,14 @@ const { withSentryResolver } = require('@sentry/react-native/metro');
 
 const config = getDefaultConfig(__dirname);
 
-// Exclude test files from the Metro bundle (testing-library cannot be bundled).
+// Preserve Expo's exclusions and keep native build scratch directories out of
+// Metro's Windows watcher: CMake creates/removes them while Gradle is running.
+const defaultBlockList = config.resolver.blockList;
 config.resolver.blockList = [
+  ...(Array.isArray(defaultBlockList) ? defaultBlockList : defaultBlockList ? [defaultBlockList] : []),
+  /[/\\](?:\.cxx|\.gradle)[/\\]/,
+  /[/\\]android[/\\](?:app[/\\])?build[/\\]/,
+  // Test modules depend on testing-library and cannot be bundled.
   /.*[/\\].*\.test\.[jt]sx?$/,
   /.*[/\\].*\.spec\.[jt]sx?$/,
   /.*[/\\]jest-setup\.[jt]s$/,

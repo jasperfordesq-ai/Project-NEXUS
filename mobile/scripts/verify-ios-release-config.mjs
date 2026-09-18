@@ -128,11 +128,11 @@ assert(
 );
 assert(
   buildPropertiesPlugin?.[1]?.ios?.deploymentTarget === '15.1',
-  'Expo SDK 54 iOS deployment target must remain at its supported minimum of 15.1',
+  'Expo SDK 55 iOS deployment target must remain at its supported minimum of 15.1',
 );
 assert(
   buildPropertiesPlugin?.[1]?.ios?.useFrameworks === undefined,
-  'do not enable static frameworks for the React Native 0.81 and Stripe 0.50.3 build',
+  'do not enable static frameworks without verifying the current React Native and Stripe build',
 );
 
 const utf8Bytes = (value) => Buffer.byteLength(value, 'utf8');

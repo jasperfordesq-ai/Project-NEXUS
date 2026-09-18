@@ -88,7 +88,7 @@ The default tenant (`EXPO_PUBLIC_DEFAULT_TENANT`) is `hour-timebank`; change thi
 
 | Concern | Solution |
 |---------|----------|
-| Framework | Expo SDK 54 (managed workflow) |
+| Framework | Expo SDK 55 (managed workflow) |
 | Language | TypeScript strict |
 | Navigation | Expo Router (file-based, like Next.js) |
 | UI | HeroUI Native `^1.0.4` + Uniwind + Tailwind CSS 4 |

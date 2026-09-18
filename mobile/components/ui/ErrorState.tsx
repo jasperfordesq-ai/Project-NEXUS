@@ -73,7 +73,7 @@ export default function ErrorState({
       </Text>
       {onRetry ? (
         <View className="mt-5">
-          <Button onPress={onRetry} disabled={isRetrying}>
+          <Button onPress={onRetry} isLoading={isRetrying}>
             {retryLabel ?? t('common:buttons.retry')}
           </Button>
         </View>

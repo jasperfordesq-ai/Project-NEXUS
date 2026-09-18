@@ -48,13 +48,13 @@ export default function ConfirmDialog({
       animation={Platform.OS === 'android' ? 'disable-all' : undefined}
       isOpen={visible}
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open && !isConfirming) onClose();
       }}
     >
       <Dialog.Portal unstable_accessibilityContainerViewIsModal>
-        <Dialog.Overlay isCloseOnPress className="bg-black/60" />
+        <Dialog.Overlay isCloseOnPress={!isConfirming} className="bg-black/60" />
         <Dialog.Content
-          isSwipeable
+          isSwipeable={!isConfirming}
           className="mx-5 gap-5 rounded-[28px] border border-border bg-background p-5"
         >
           <View className="gap-2">
@@ -85,6 +85,7 @@ export default function ConfirmDialog({
               className="min-w-0 flex-1"
               accessibilityLabel={confirmAccessibilityLabel ?? confirmLabel}
               isDisabled={confirmDisabled || isConfirming}
+              accessibilityState={{ busy: isConfirming, disabled: confirmDisabled || isConfirming }}
               onPress={() => void onConfirm()}
             >
               {isConfirming ? <Spinner size="sm" /> : null}

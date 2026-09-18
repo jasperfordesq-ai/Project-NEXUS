@@ -39,6 +39,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
@@ -152,6 +153,7 @@ function SearchScreen() {
       fetchSearch,
       extractSearchPage,
       [debouncedQuery, activeFilter],
+      { getKey: (item) => `${item.type}-${item.id}` },
     );
   const savedSearchesQuery = useApi(() => getSavedSearches(), []);
   const savedSearches = savedSearchesQuery.data?.data ?? [];
@@ -363,7 +365,9 @@ function SearchScreen() {
           />
         }
         ListFooterComponent={
-          isLoadingMore ? (
+          error && results.length > 0 ? (
+            <ErrorState title={t('errorTitle')} subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+          ) : isLoadingMore ? (
             <View className="py-4 items-center"><Spinner size="sm" /></View>
           ) : !hasMore && results.length > 0 && !isLoading ? (
             <View className="py-4 items-center">

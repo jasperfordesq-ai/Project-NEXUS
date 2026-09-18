@@ -34,7 +34,6 @@ const SEARCH_DIRS = ['app', 'components'];
  */
 const RAW_IMAGE_ALLOWED: Record<string, string> = {
   'components/ui/RemoteImage.tsx': 'The implementation. It is the thing that adds onError.',
-  'components/ui/ImageCarousel.tsx': 'Carries its own per-slide loading and error handling.',
   'components/TenantBanner.tsx': 'The community logo, which the tenant config guarantees.',
   'app/(auth)/select-tenant.tsx': 'Community logos on the picker, each with a lettered fallback beside it.',
   'app/(modals)/image-viewer.tsx': 'The full-screen lightbox: a zoomable single image with its own states.',

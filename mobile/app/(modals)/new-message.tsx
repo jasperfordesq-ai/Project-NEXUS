@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import NativePressable from '@/components/ui/NativePressable';
 import { SkeletonBox } from '@/components/ui/Skeleton';
@@ -159,7 +160,9 @@ function NewMessageRouteInner() {
             )
           }
           ListFooterComponent={
-            isLoadingMore ? (
+            error && items.length > 0 ? (
+              <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+            ) : isLoadingMore ? (
               <View className="items-center py-4"><Spinner size="sm" /></View>
             ) : !hasMore && items.length > 0 && !isLoading ? (
               <View className="items-center py-4">
