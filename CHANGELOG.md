@@ -11,6 +11,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The accessible frontend has a changelog, rendered from `CHANGELOG.md` itself.**
+  `/changelog` lists every release with its date and `/changelog/<version>` shows that
+  release's notes. It is a list-then-detail pair rather than one page because the file holds
+  18 releases and the largest single release is over 2,000 lines; the React page renders the
+  whole ~7,900-line document in the browser, which is a poor trade for the members this
+  frontend exists for. The footer's Changelog link, deliberately withheld while the page did
+  not exist, is now live.
+  - **Markdown is rendered at BUILD time, not per request**, by
+    `web-uk/scripts/build-changelog.js`, and `marked` is a **devDependency** for that reason:
+    the internet-facing app ships no markdown parser and parses nothing per request. The
+    output is passed through the existing `sanitizeCmsHtml` allow-list even though the source
+    is our own file, because `marked` passes raw HTML through by default — a test asserts no
+    release contains a script tag, an iframe or an `on*` handler.
+  - **One generated file per release, plus a small index.** The first version wrote a single
+    2.7 MB JSON; `require` then pulled the entire rendered history into memory at boot to serve
+    a page needing one release, and every new release produced a 2.7 MB diff in a public
+    repository. The index carries metadata only and is loaded at boot; a body is loaded on
+    demand.
+  - The release slug from the URL is matched against the index **before** it is used to build
+    a path, so only a generated file can ever be read. Pinned by a test that feeds it
+    `../index` and `../../package`.
+
+- **The accessible frontend's `/features` page now shows the whole platform catalogue —
+  8 groups, 119 features — with working search and category filtering.** It was a hand-written
+  list of six bullets, which had drifted comprehensively from the React page's 119.
+  - **The catalogue is now shared.** The group order, item order and each feature's maturity
+    moved out of `react-frontend/src/pages/public/FeaturesPage.tsx` into
+    `react-frontend/src/data/featuresCatalogue.json`, which both frontends read, so the two
+    pages cannot drift again. The React page imports it directly; the accessible frontend
+    keeps a generated copy (`npm --prefix web-uk run build:features`, verified by
+    `check:features`) because its Docker build context is `web-uk/`, so neither the catalogue
+    nor the React locale files are in its image.
+  - **Nothing was re-translated.** All 119 features and their descriptions already existed in
+    all eleven languages for the React page, so the generated copy carries that text rather
+    than re-keying ~2,600 strings into `lang/*.php` and creating a second copy to keep in step.
+  - 🔴 **Search and category filtering run on the SERVER**, as a plain `GET` form. The React
+    page does the same job in JavaScript with a search box and filter chips; doing that here
+    would leave the members this frontend exists for with no filtering at all. Search folds
+    case and accents on both sides of the comparison, an unknown category in the query string
+    is ignored rather than matching nothing, groups with no surviving items are dropped
+    instead of rendering empty headings, and because it is a `GET` a filtered view is a
+    shareable URL.
+
 - **The accessible frontend's footer now carries the community's partner logo, the source
   repository and the powered-by badge, each under its own heading, in GOV.UK Design System
   style.** The React footer has shown all three for a long time; the accessible frontend showed

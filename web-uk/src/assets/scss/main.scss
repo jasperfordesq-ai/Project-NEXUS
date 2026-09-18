@@ -631,6 +631,41 @@
   color: $govuk-secondary-text-colour;
 }
 
+// ---------------------------------------------------------------------------
+// Rendered changelog markdown.
+//
+// The generator applies GOV.UK classes to every element markdown produces, so this
+// only has to handle the two things a class cannot: the spacing between a release's
+// sections, and long unbroken strings (commit hashes, file paths, URLs) that would
+// otherwise push the page sideways on a narrow screen.
+// ---------------------------------------------------------------------------
+.nexus-alpha-changelog {
+  h3 {
+    margin-top: govuk-spacing(6);
+  }
+
+  code {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  pre {
+    padding: govuk-spacing(3);
+    overflow-x: auto;
+    border: 1px solid $govuk-border-colour;
+    // The old pale-grey colour name is deprecated in govuk-frontend 6.x; this is
+    // its replacement. (Naming the old one here, even in a comment, trips the
+    // legacy-palette check in tests/template-source.test.js.)
+    background: govuk-colour("black", $variant: "tint-95");
+  }
+
+  // A long path inside a list item is the common case; let it wrap rather than
+  // forcing a horizontal scroll on the whole page.
+  li {
+    overflow-wrap: anywhere;
+  }
+}
+
 .nexus-alpha-footer__brand-link {
   display: inline-block;
 

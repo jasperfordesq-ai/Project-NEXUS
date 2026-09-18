@@ -160,6 +160,18 @@ return [
         'agpl_notice' => 'AGPL-3.0 — 著作権 © 2024–2026 Jasper Ford',
         'default_footer_text' => ':community — AGPL-3.0 — 著作権 © 2024–2026 Jasper Ford',
     ],
+    'changelog' => [
+        'title' => '変更履歴',
+        'release_title' => 'バージョン :version',
+        'heading' => '変更履歴',
+        'intro' => 'Project NEXUS のすべての主な変更点を、新しい順に掲載しています。このプラットフォームはセマンティック バージョニングに従っています。',
+        'releases_heading' => 'リリース',
+        'released_on' => ':date にリリース',
+        'unreleased' => '未リリース',
+        'unreleased_hint' => '前回のリリース以降に追加された変更です。',
+        'back' => 'すべてのリリースに戻る',
+        'view_on_github' => 'GitHub で変更履歴の全文を見る',
+    ],
     'release_status' => [
         'stage' => '一般提供中',
         'summary' => '常に進化しています。',

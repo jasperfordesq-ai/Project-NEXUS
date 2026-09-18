@@ -8,10 +8,21 @@ const { getContributors } = require('../lib/contributors');
 const { ApiError, callNewsletterApi, getPlatformStats, verifyEmail } = require('../lib/api');
 const { flagEnabled } = require('../lib/accessible-shell');
 const { catalogFor, valueInCatalog } = require('../lib/localization');
+const {
+  ALL_CATEGORIES,
+  categoryOptions,
+  chromeFor,
+  filterCatalogue
+} = require('../lib/features-catalogue');
+const { findRelease, listReleases } = require('../lib/changelog');
 
 const router = express.Router();
 
-const FEATURE_KEYS = Object.freeze(['find_help', 'wallet', 'events', 'volunteering', 'groups', 'recognition']);
+// 🔴 FEATURE_KEYS was a hand-written list of six feature names rendered as bullets on
+// /features. It is gone: that page now renders the shared 119-feature catalogue (see
+// lib/features-catalogue.js). The `features.items.*` translations it used are left in
+// lang/*/govuk_alpha.php rather than deleted, because removing keys from eleven locale
+// files to tidy up is a larger change than it looks and buys nothing.
 
 function communityName(res) {
   return res.locals.tenantName || res.locals.serviceName || 'Project NEXUS Accessible';
@@ -115,12 +126,75 @@ router.get('/guide', (req, res) => {
   });
 });
 
+/**
+ * The platform feature catalogue: 8 groups, 119 features, the same list the React
+ * /features page renders, from the same shared source.
+ *
+ * 🔴 This replaced a hand-written list of SIX bullets on 2026-09-18. The two pages are
+ * now generated from one catalogue (see lib/features-catalogue.js), so they cannot
+ * drift — which the six-bullet version had done comprehensively.
+ *
+ * Search and category filtering are applied HERE rather than in the browser, so both
+ * work with JavaScript switched off. `q` and `category` are the query parameters; the
+ * form below submits by GET, so a filtered view is a shareable URL.
+ */
 router.get('/features', (req, res) => {
+  const locale = res.locals.alphaCurrentLocale || 'en';
+  const query = typeof req.query.q === 'string' ? req.query.q : '';
+  const category = typeof req.query.category === 'string' ? req.query.category : ALL_CATEGORIES;
+
+  const result = filterCatalogue({ locale, query, category });
+  const chrome = chromeFor(locale);
+
   res.render('public-info/features', {
-    title: res.locals.t('features.title'),
+    title: chrome.title || res.locals.t('features.title'),
     activeNav: 'features',
     communityName: communityName(res),
-    features: FEATURE_KEYS.map((key) => res.locals.t(`features.items.${key}`))
+    features: chrome,
+    featureGroups: result.groups,
+    featureCategories: categoryOptions(locale),
+    featureQuery: query,
+    featureCategory: result.categoryIsKnown ? category : ALL_CATEGORIES,
+    featureShown: result.shown,
+    featureTotal: result.total,
+    featureIsFiltered: result.isFiltered,
+    featureAllCategories: ALL_CATEGORIES,
+    changelogUrl: res.locals.urlFor('/changelog')
+  });
+});
+
+/**
+ * The release history, as a list of releases you drill into.
+ *
+ * 🔴 NOT one page. The React changelog renders the whole 7,900-line file in the
+ * browser; the largest single release here is over 2,000 lines on its own. A list plus
+ * a page per release is the GOV.UK shape and keeps every page readable on a slow
+ * connection or with a screen reader.
+ */
+router.get('/changelog', (req, res) => {
+  res.render('public-info/changelog', {
+    title: res.locals.t('changelog.title'),
+    titleKey: 'changelog.title',
+    activeNav: 'features',
+    communityName: communityName(res),
+    releases: listReleases(),
+    sourceCodeUrl: res.locals.sourceCodeUrl
+  });
+});
+
+router.get('/changelog/:slug', (req, res, next) => {
+  const release = findRelease(req.params.slug);
+
+  // Fall through to the app's own styled 404 rather than inventing one here.
+  if (!release) return next();
+
+  return res.render('public-info/changelog-release', {
+    title: res.locals.t('changelog.release_title', { version: release.version }),
+    activeNav: 'features',
+    communityName: communityName(res),
+    release,
+    changelogUrl: res.locals.urlFor('/changelog'),
+    sourceCodeUrl: res.locals.sourceCodeUrl
   });
 });
 

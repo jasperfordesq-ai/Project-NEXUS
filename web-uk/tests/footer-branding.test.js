@@ -272,16 +272,18 @@ describe('footer branding markup', () => {
       .toContain('Acme, a registered charity');
   });
 
-  it('🔴 links Features and Documentation but never Changelog', () => {
-    // The accessible site has a Features page; it has no Changelog page yet, and a
-    // footer link to a 404 on eleven live community sites is worse than no link.
+  it('links Features, Changelog and Documentation', () => {
+    // 🔴 Changelog was deliberately ABSENT here until 2026-09-18, because the
+    // accessible site had no changelog page and a footer link to a 404 across eleven
+    // live community sites is worse than a missing link. The page now exists, so the
+    // link is back — and the release line matches the React footer's.
     const html = renderFooter();
 
     expect(html).toContain('Features');
+    expect(html).toContain('Changelog');
+    expect(html).toContain('/changelog');
     expect(html).toContain('Documentation');
     expect(html).toContain('docs.project-nexus.ie');
-    expect(html).not.toContain('Changelog');
-    expect(html).not.toContain('/changelog');
   });
 
   it('🔴 links to cookie settings exactly once', () => {

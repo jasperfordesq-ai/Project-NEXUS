@@ -15,6 +15,7 @@ const path = require('path');
 const request = require('supertest');
 const { createChoiceTranslator, createTranslator } = require('../src/lib/localization');
 const { getApiBaseUrl } = require('../src/lib/backend-contract');
+const { chromeFor: featuresText } = require('../src/lib/features-catalogue');
 const englishForbiddenTitle = createTranslator('en')('error_pages.403_title');
 // 🔴 A refusal because the COMMUNITY has not enabled a module reads differently
 //    from a refusal because the MEMBER lacks authority — since 2026-08-25, when
@@ -1895,11 +1896,14 @@ describe('shared accessible frontend shell', () => {
     expect(guide.text).not.toContain('Guide content will be ported');
 
     expect(features.status).toBe(200);
-    expect(features.text).toContain('What you can do in this community.');
-    expect(features.text).toContain('Find members who can help with what you need');
-    expect(features.text).toContain('Earn and spend time credits');
-    expect(features.text).toContain('Discover and host community events');
-    expect(features.text).toContain('href="/guide"');
+    // 🔴 This asserted three of the SIX hand-written bullets /features used to
+    // show, plus its button through to the guide. The page now renders the shared
+    // 119-feature catalogue that the React /features page renders, with server-side
+    // search and category filtering, so those strings are gone by design.
+    expect(features.text).toContain(featuresText('en').heading);
+    expect(features.text).toContain(featuresText('en').groups.core_platform.title);
+    expect(features.text).toContain('Showing 119 of 119 entries');
+    expect(features.text).toContain('href="/changelog"');
     expect(features.text).not.toContain('Feature guidance will be ported');
   });
 
@@ -2045,8 +2049,14 @@ describe('shared accessible frontend shell', () => {
     expect(about.text).toContain(formatLocaleNumber(1234, 'ar', { maximumFractionDigits: 0 }));
     expect(guide.text).toContain(translate('ar', 'guide.step1_title'));
     expect(guide.text).toContain(translate('ar', 'guide.step1_body'));
-    expect(features.text).toContain(translate('ar', 'features.items.find_help'));
-    expect(features.text).toContain(translate('ar', 'features.items.recognition'));
+    // 🔴 These asserted two of the SIX hand-written bullets /features used to
+    // show. That page now renders the shared 119-feature catalogue, whose text comes
+    // from the React locale files rather than lang/*/govuk_alpha.php. The point of
+    // the assertion is unchanged — the page renders in Arabic — so it now checks the
+    // catalogue's own Arabic heading, a group title and a feature title.
+    expect(features.text).toContain(featuresText('ar').heading);
+    expect(features.text).toContain(featuresText('ar').groups.core_platform.title);
+    expect(features.text).toContain(featuresText('ar').groups.core_platform.items.timebanking_engine.title);
     expect(faq.text).toContain(translate('ar', 'faq.q1'));
     expect(faq.text).toContain(translate('ar', 'faq.a5'));
   });
@@ -2077,7 +2087,10 @@ describe('shared accessible frontend shell', () => {
     expect(about.text).toContain('href="/contact"');
     expect(guide.text).toContain('href="/register"');
     expect(guide.text).toContain('href="/listings"');
-    expect(features.text).toContain('href="/guide"');
+    // The features page no longer links to the guide (see above); its changelog link
+    // serves the same purpose here — proving the page emits slugless URLs on a
+    // resolved custom domain.
+    expect(features.text).toContain('href="/changelog"');
     expect(api.getPlatformStats).toHaveBeenCalledWith({ host });
   });
 

@@ -1169,6 +1169,18 @@
                 "agpl_notice": "AGPL-3.0 — Cóipcheart © 2024–2026 Jasper Ford",
                 "default_footer_text": ":community — AGPL-3.0 — Cóipcheart © 2024–2026 Jasper Ford"
             },
+            "changelog": {
+                "title": "Loga athruithe",
+                "release_title": "Eisiúint :version",
+                "heading": "Loga athruithe",
+                "intro": "Gach athrú suntasach ar Project NEXUS, an ceann is nuaí ar dtús. Leanann an t-ardán leaganú séimeantach.",
+                "releases_heading": "Eisiúintí",
+                "released_on": "Eisithe :date",
+                "unreleased": "Gan eisiúint",
+                "unreleased_hint": "Athruithe atá curtha i bhfeidhm ó eisíodh an leagan deireanach.",
+                "back": "Ar ais chuig gach eisiúint",
+                "view_on_github": "Féach ar an loga athruithe iomlán ar GitHub"
+            },
             "release_status": {
                 "stage": "Ar Fáil go Ginearálta",
                 "summary": "Ag forbairt i gcónaí.",

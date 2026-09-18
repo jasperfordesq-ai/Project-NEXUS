@@ -172,6 +172,18 @@ return [
         // translated labels (footer.columns.legal.*, cookie_settings.title)
         // rather than adding near-duplicates in eleven languages.
     ],
+    'changelog' => [
+        'title' => 'Changelog',
+        'release_title' => 'Release :version',
+        'heading' => 'Changelog',
+        'intro' => 'Every notable change to Project NEXUS, newest first. The platform follows semantic versioning.',
+        'releases_heading' => 'Releases',
+        'released_on' => 'Released :date',
+        'unreleased' => 'Unreleased',
+        'unreleased_hint' => 'Changes that have landed since the last release.',
+        'back' => 'Back to all releases',
+        'view_on_github' => 'View the full changelog on GitHub',
+    ],
     'release_status' => [
         // The version is appended by the template from the API-supplied platform
         // version, so it cannot drift from the repository VERSION file. Do not put

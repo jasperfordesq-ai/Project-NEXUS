@@ -1,23 +1,187 @@
-{# Copyright (c) 2024-2026 Jasper Ford #}
+{# Copyright © 2024–2026 Jasper Ford #}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
+{#
+  The platform feature catalogue — 8 groups, 119 features — matching the React
+  /features page, from the same shared catalogue (see lib/features-catalogue.js).
+
+  🔴 Search and category filtering are a plain GET form, computed on the server. The
+  React page does the same job with a JavaScript search box and filter chips; doing it
+  that way here would leave the members this frontend exists for with no filtering at
+  all. Because it is a GET, a filtered view is also a shareable URL.
+
+  🔴 Every string comes from the React locale files via the generated catalogue, NOT
+  from lang/*/govuk_alpha.php. All 119 features were already translated into eleven
+  languages for the React page; re-keying them into PHP would have created a second
+  copy to keep in step and ~2,600 strings of avoidable work.
+#}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-xl">{{ t("features.caption", { community: communityName }) }}</span>
-      <h1 class="govuk-heading-xl">{{ t("features.title") }}</h1>
-      <p class="govuk-body-l">{{ t("features.intro") }}</p>
+      <span class="govuk-caption-xl">{{ communityName }}</span>
+      <h1 class="govuk-heading-xl">{{ features.heading }}</h1>
+      <p class="govuk-body-l">{{ features.subheading }}</p>
+    </div>
+  </div>
 
-      <ul class="govuk-list govuk-list--bullet govuk-list--spaced">
-        {% for feature in features %}
-          <li>{{ feature }}</li>
-        {% endfor %}
+  {#
+    The availability notice. A community can have any subset of these switched on, so
+    this sits above the list rather than below it — a member who reads the list first
+    and the caveat second has already been misled.
+  #}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-s">{{ features.availability_notice_title }}</h2>
+        <p class="govuk-body">{{ features.availability_notice_body }}</p>
+        <p class="govuk-body">{{ features.availability_notice_body_2 }}</p>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ features.availability_notice_body_3 }}</p>
+      </div>
+    </div>
+  </div>
+
+  {# The maturity key, as a GOV.UK summary list rather than React's chip row. #}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m">{{ features.maturity_key_title }}</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            {{ govukTag({ text: features.chips.ga or "GA", classes: "govuk-tag--green" }) }}
+          </dt>
+          <dd class="govuk-summary-list__value">{{ features.maturity_ga }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            {{ govukTag({ text: features.chips.beta, classes: "govuk-tag--yellow" }) }}
+          </dt>
+          <dd class="govuk-summary-list__value">{{ features.maturity_beta }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            {{ govukTag({ text: features.chips.preview, classes: "govuk-tag--blue" }) }}
+          </dt>
+          <dd class="govuk-summary-list__value">{{ features.maturity_preview }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            {{ govukTag({ text: features.chips.dormant, classes: "govuk-tag--grey" }) }}
+          </dt>
+          <dd class="govuk-summary-list__value">{{ features.maturity_dormant }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  {#
+    The filter form. `method="get"` on purpose: filtering is a read, so it belongs in
+    the URL, and the browser's back button then behaves the way a member expects.
+  #}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m" id="filter-heading">{{ features.filter_heading }}</h2>
+      <form method="get" action="{{ urlFor('/features') }}" class="govuk-!-margin-bottom-6" role="search" aria-labelledby="filter-heading">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="feature-search">{{ features.search_label }}</label>
+          <input class="govuk-input" id="feature-search" name="q" type="search" value="{{ featureQuery }}" autocomplete="off" spellcheck="false">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="feature-category">{{ features.filter_group_label }}</label>
+          <select class="govuk-select" id="feature-category" name="category">
+            {% for option in featureCategories %}
+              <option value="{{ option.value }}"{% if option.value == featureCategory %} selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" class="govuk-button" data-module="govuk-button">{{ features.search_label }}</button>
+        {% if featureIsFiltered %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ urlFor('/features') }}">{{ features.clear_filters }}</a>
+          </p>
+        {% endif %}
+      </form>
+
+      {#
+        The result count is announced politely so a filtered search tells a screen
+        reader user how many entries survived, which is otherwise invisible until
+        they have read the whole page.
+      #}
+      <p class="govuk-body govuk-!-font-weight-bold" role="status">
+        {{ features.results_summary | replace("{{shown}}", featureShown) | replace("{{total}}", featureTotal) }}
+      </p>
+    </div>
+  </div>
+
+  {% if featureGroups.length %}
+    {% for group in featureGroups %}
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <h2 class="govuk-heading-m" id="group-{{ group.key }}">{{ group.title }}</h2>
+          {% if group.intro %}
+            <p class="govuk-body">{{ group.intro }}</p>
+          {% endif %}
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            {% for item in group.items %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  {{ item.title }}
+                  {#
+                    No tag for a generally available feature, matching the React page:
+                    most of the catalogue is GA, so tagging it would be noise on 79 of
+                    119 rows and would drown the 40 that genuinely need a caveat.
+                  #}
+                  {% if item.maturity == "beta" %}
+                    {{ govukTag({ text: features.chips.beta, classes: "govuk-tag--yellow" }) }}
+                  {% elif item.maturity == "preview" %}
+                    {{ govukTag({ text: features.chips.preview, classes: "govuk-tag--blue" }) }}
+                  {% elif item.maturity == "dormant" %}
+                    {{ govukTag({ text: features.chips.dormant, classes: "govuk-tag--grey" }) }}
+                  {% endif %}
+                </dt>
+                <dd class="govuk-summary-list__value">{{ item.description }}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-m">{{ features.no_results_title }}</h2>
+        <p class="govuk-body">{{ features.no_results_body }}</p>
+        <p class="govuk-body">
+          <a class="govuk-link" href="{{ urlFor('/features') }}">{{ features.clear_filters }}</a>
+        </p>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <h2 class="govuk-heading-m">{{ features.open_source_title }}</h2>
+      <p class="govuk-body">{{ features.open_source_body }}</p>
+      <ul class="govuk-list">
+        <li>
+          <a class="govuk-link" href="{{ sourceCodeUrl or 'https://github.com/jasperfordesq-ai/Project-NEXUS' }}" rel="noopener noreferrer">{{ features.link_repo }}</a>
+        </li>
+        <li><a class="govuk-link" href="{{ changelogUrl }}">{{ features.link_changelog }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/report-a-problem') }}">{{ features.link_report_bug }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/about') }}">{{ features.link_about }}</a></li>
       </ul>
 
-      <a class="govuk-button govuk-!-margin-top-4" href="{{ urlFor('/guide') }}" role="button" draggable="false" data-module="govuk-button">{{ t("guide.title") }}</a>
+      <h2 class="govuk-heading-m">{{ features.security_title }}</h2>
+      <p class="govuk-body">
+        {{ features.security_body_before }}<a class="govuk-link" href="mailto:{{ features.security_email }}">{{ features.security_email }}</a>{{ features.security_body_after }}
+      </p>
     </div>
   </div>
 {% endblock %}

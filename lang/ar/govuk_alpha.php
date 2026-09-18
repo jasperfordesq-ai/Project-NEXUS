@@ -160,6 +160,18 @@ return [
         'agpl_notice' => 'AGPL-3.0 — حقوق الطبع والنشر © 2024–2026 Jasper Ford',
         'default_footer_text' => ':community — AGPL-3.0 — حقوق الطبع والنشر © 2024–2026 Jasper Ford',
     ],
+    'changelog' => [
+        'title' => 'سجل التغييرات',
+        'release_title' => 'الإصدار :version',
+        'heading' => 'سجل التغييرات',
+        'intro' => 'كل التغييرات المهمة في Project NEXUS، الأحدث أولاً. تتبع المنصة الإصدار الدلالي.',
+        'releases_heading' => 'الإصدارات',
+        'released_on' => 'صدر في :date',
+        'unreleased' => 'غير صادر',
+        'unreleased_hint' => 'تغييرات أُضيفت منذ الإصدار الأخير.',
+        'back' => 'العودة إلى كل الإصدارات',
+        'view_on_github' => 'اطّلع على سجل التغييرات الكامل على GitHub',
+    ],
     'release_status' => [
         'stage' => 'متاح للجميع',
         'summary' => 'في تطور مستمر.',

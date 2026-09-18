@@ -1,0 +1,442 @@
+{
+  "_README": "The platform feature catalogue: group order, item order, and each item's maturity. SHARED between react-frontend (src/pages/public/FeaturesPage.tsx) and the accessible frontend (web-uk), so the two /features pages cannot drift. Text lives in the locale files, not here: react-frontend/public/locales/<locale>/public.json under features_page.groups.<group>.{title,items.<item>.{title,description}}. An item with no \"maturity\" is generally available. Adding an item means adding its title and description to ALL locale files, and regenerating web-uk's copy with `npm --prefix web-uk run build:features`.",
+  "groups": [
+    {
+      "key": "core_platform",
+      "items": [
+        {
+          "key": "timebanking_engine"
+        },
+        {
+          "key": "multi_tenancy"
+        },
+        {
+          "key": "tenant_hierarchy"
+        },
+        {
+          "key": "smart_matching"
+        },
+        {
+          "key": "real_time_messaging"
+        },
+        {
+          "key": "progressive_web_app"
+        },
+        {
+          "key": "explore_discovery"
+        },
+        {
+          "key": "maps_and_location"
+        },
+        {
+          "key": "native_mobile_app",
+          "maturity": "beta"
+        },
+        {
+          "key": "accessible_frontend",
+          "maturity": "beta"
+        }
+      ]
+    },
+    {
+      "key": "federation",
+      "items": [
+        {
+          "key": "federation_network"
+        },
+        {
+          "key": "federation_neighborhoods",
+          "maturity": "beta"
+        },
+        {
+          "key": "credit_agreements",
+          "maturity": "beta"
+        },
+        {
+          "key": "federation_analytics"
+        },
+        {
+          "key": "partner_network_portal"
+        },
+        {
+          "key": "external_partner_federation",
+          "maturity": "dormant"
+        },
+        {
+          "key": "multi_protocol_adapters",
+          "maturity": "dormant"
+        }
+      ]
+    },
+    {
+      "key": "member_experience",
+      "items": [
+        {
+          "key": "service_listings"
+        },
+        {
+          "key": "marketplace",
+          "maturity": "beta"
+        },
+        {
+          "key": "donations"
+        },
+        {
+          "key": "identity_verification",
+          "maturity": "beta"
+        },
+        {
+          "key": "exchange_workflow"
+        },
+        {
+          "key": "group_exchanges"
+        },
+        {
+          "key": "social_feed"
+        },
+        {
+          "key": "stories",
+          "maturity": "beta"
+        },
+        {
+          "key": "presence_system"
+        },
+        {
+          "key": "events_and_groups"
+        },
+        {
+          "key": "event_operations"
+        },
+        {
+          "key": "connections"
+        },
+        {
+          "key": "members_directory"
+        },
+        {
+          "key": "gamification"
+        },
+        {
+          "key": "goals_and_impact"
+        },
+        {
+          "key": "ideation_challenges"
+        },
+        {
+          "key": "volunteering"
+        },
+        {
+          "key": "job_vacancies"
+        },
+        {
+          "key": "hiring_bias_audit"
+        },
+        {
+          "key": "merchant_coupons",
+          "maturity": "dormant"
+        },
+        {
+          "key": "organisations"
+        },
+        {
+          "key": "sub_accounts_family_accounts"
+        },
+        {
+          "key": "reviews_and_ratings"
+        },
+        {
+          "key": "endorsements"
+        },
+        {
+          "key": "polls"
+        },
+        {
+          "key": "skills_browse"
+        },
+        {
+          "key": "availability_scheduling"
+        },
+        {
+          "key": "courses",
+          "maturity": "preview"
+        },
+        {
+          "key": "podcasts",
+          "maturity": "preview"
+        },
+        {
+          "key": "clubs_and_associations",
+          "maturity": "preview"
+        },
+        {
+          "key": "member_premium",
+          "maturity": "preview"
+        },
+        {
+          "key": "public_events",
+          "maturity": "beta"
+        },
+        {
+          "key": "event_attendance_credits",
+          "maturity": "beta"
+        },
+        {
+          "key": "partner_venues",
+          "maturity": "beta"
+        },
+        {
+          "key": "collections_and_bookmarks"
+        },
+        {
+          "key": "guardian_consent"
+        }
+      ]
+    },
+    {
+      "key": "content_and_communication",
+      "items": [
+        {
+          "key": "blog"
+        },
+        {
+          "key": "resources_and_knowledge_base"
+        },
+        {
+          "key": "help_center"
+        },
+        {
+          "key": "custom_pages"
+        },
+        {
+          "key": "newsletter_system"
+        },
+        {
+          "key": "ai_chat",
+          "maturity": "beta"
+        },
+        {
+          "key": "legal_hub"
+        },
+        {
+          "key": "impact_reports"
+        },
+        {
+          "key": "message_translation"
+        },
+        {
+          "key": "social_prescribing"
+        }
+      ]
+    },
+    {
+      "key": "trust_reputation_and_safety",
+      "items": [
+        {
+          "key": "member_verification_badges"
+        },
+        {
+          "key": "nexusscore"
+        },
+        {
+          "key": "streaks"
+        },
+        {
+          "key": "personal_insights_dashboard"
+        },
+        {
+          "key": "safeguarding_module"
+        },
+        {
+          "key": "broker_application"
+        },
+        {
+          "key": "two_factor_and_passkeys"
+        },
+        {
+          "key": "crm"
+        }
+      ]
+    },
+    {
+      "key": "ai_and_recommendation_engine",
+      "items": [
+        {
+          "key": "semantic_search"
+        },
+        {
+          "key": "collaborative_filtering"
+        },
+        {
+          "key": "semantic_embeddings"
+        },
+        {
+          "key": "edgerank_feed"
+        },
+        {
+          "key": "matchrank_and_communityrank"
+        },
+        {
+          "key": "group_recommendations"
+        },
+        {
+          "key": "match_learning"
+        },
+        {
+          "key": "algorithm_health_dashboard"
+        },
+        {
+          "key": "ai_provider_choice"
+        },
+        {
+          "key": "ai_agents",
+          "maturity": "dormant"
+        }
+      ]
+    },
+    {
+      "key": "caring_community_layer",
+      "items": [
+        {
+          "key": "request_help",
+          "maturity": "preview"
+        },
+        {
+          "key": "care_relationships",
+          "maturity": "preview"
+        },
+        {
+          "key": "hour_gifting_and_transfer",
+          "maturity": "preview"
+        },
+        {
+          "key": "trust_tiers",
+          "maturity": "preview"
+        },
+        {
+          "key": "warmth_pass",
+          "maturity": "preview"
+        },
+        {
+          "key": "care_providers",
+          "maturity": "preview"
+        },
+        {
+          "key": "safeguarding_reporting",
+          "maturity": "preview"
+        },
+        {
+          "key": "surveys_and_projects",
+          "maturity": "preview"
+        },
+        {
+          "key": "community_market",
+          "maturity": "preview"
+        },
+        {
+          "key": "time_credit_redemption",
+          "maturity": "preview"
+        },
+        {
+          "key": "municipality_reporting",
+          "maturity": "preview"
+        },
+        {
+          "key": "civic_digest",
+          "maturity": "preview"
+        },
+        {
+          "key": "success_stories",
+          "maturity": "preview"
+        },
+        {
+          "key": "feedback_inbox",
+          "maturity": "preview"
+        },
+        {
+          "key": "integration_showcase",
+          "maturity": "preview"
+        },
+        {
+          "key": "lead_nurture",
+          "maturity": "preview"
+        },
+        {
+          "key": "copilot",
+          "maturity": "preview"
+        }
+      ]
+    },
+    {
+      "key": "built_for_production",
+      "items": [
+        {
+          "key": "enterprise_security"
+        },
+        {
+          "key": "stripe_payments_layer"
+        },
+        {
+          "key": "gdpr_compliance_suite"
+        },
+        {
+          "key": "fraud_and_abuse_detection"
+        },
+        {
+          "key": "insurance_certificate_tracking"
+        },
+        {
+          "key": "enterprise_rbac"
+        },
+        {
+          "key": "wcag_2_1_aa_accessibility"
+        },
+        {
+          "key": "multi_language_support"
+        },
+        {
+          "key": "self_hosted_prerendering"
+        },
+        {
+          "key": "guided_onboarding"
+        },
+        {
+          "key": "community_onboarding"
+        },
+        {
+          "key": "admin_panel"
+        },
+        {
+          "key": "email_webhook_processing"
+        },
+        {
+          "key": "automated_test_suite"
+        },
+        {
+          "key": "performance_monitoring"
+        },
+        {
+          "key": "openapi_3_0_specification"
+        },
+        {
+          "key": "partner_api_and_developer_portal",
+          "maturity": "dormant"
+        },
+        {
+          "key": "local_advertising",
+          "maturity": "dormant"
+        },
+        {
+          "key": "regional_analytics",
+          "maturity": "dormant"
+        },
+        {
+          "key": "swiss_fadp_mode",
+          "maturity": "dormant"
+        },
+        {
+          "key": "fully_dockerized"
+        }
+      ]
+    }
+  ]
+}

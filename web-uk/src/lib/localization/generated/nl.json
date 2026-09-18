@@ -1169,6 +1169,18 @@
                 "agpl_notice": "AGPL-3.0 — Copyright © 2024–2026 Jasper Ford",
                 "default_footer_text": ":community — AGPL-3.0 — Copyright © 2024–2026 Jasper Ford"
             },
+            "changelog": {
+                "title": "Wijzigingslogboek",
+                "release_title": "Versie :version",
+                "heading": "Wijzigingslogboek",
+                "intro": "Alle noemenswaardige wijzigingen aan Project NEXUS, de nieuwste eerst. Het platform volgt semantische versienummering.",
+                "releases_heading": "Versies",
+                "released_on": "Uitgebracht op :date",
+                "unreleased": "Nog niet uitgebracht",
+                "unreleased_hint": "Wijzigingen die na de laatste versie zijn toegevoegd.",
+                "back": "Terug naar alle versies",
+                "view_on_github": "Bekijk het volledige wijzigingslogboek op GitHub"
+            },
             "release_status": {
                 "stage": "Algemeen beschikbaar",
                 "summary": "Altijd in ontwikkeling.",

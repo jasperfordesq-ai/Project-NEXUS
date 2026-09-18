@@ -1,0 +1,43 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  One release's notes.
+
+  🔴 `release.html` is rendered with `| safe` and that is safe ONLY because of where it
+  comes from: scripts/build-changelog.js renders the repository's own CHANGELOG.md at
+  BUILD time and passes it through sanitizeCmsHtml, the same allow-list the CMS content
+  uses. Nothing member-supplied and nothing from the API reaches this template. Do not
+  point this block at anything else without sanitising it the same way.
+#}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ changelogUrl }}">{{ t("changelog.back") }}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("changelog.heading") }}</span>
+      <h1 class="govuk-heading-xl">
+        {% if release.isUnreleased %}{{ t("changelog.unreleased") }}{% else %}{{ release.version }}{% endif %}
+      </h1>
+      {% if release.isUnreleased %}
+        <p class="govuk-body-l">{{ t("changelog.unreleased_hint") }}</p>
+      {% elif release.date %}
+        <p class="govuk-body-l">{{ t("changelog.released_on", { date: release.date }) }}</p>
+      {% endif %}
+
+      <div class="nexus-alpha-changelog">
+        {{ release.html | safe }}
+      </div>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ changelogUrl }}">{{ t("changelog.back") }}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

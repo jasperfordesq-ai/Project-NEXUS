@@ -1,0 +1,44 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  The release index. Each release links to its own page rather than expanding here:
+  the file holds 18 releases and the largest is over 2,000 lines on its own, so one
+  page would be a very long read on a screen reader or a slow connection.
+#}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ communityName }}</span>
+      <h1 class="govuk-heading-xl">{{ t("changelog.heading") }}</h1>
+      <p class="govuk-body-l">{{ t("changelog.intro") }}</p>
+
+      <h2 class="govuk-heading-m">{{ t("changelog.releases_heading") }}</h2>
+      <dl class="govuk-summary-list">
+        {% for release in releases %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              <a class="govuk-link" href="{{ urlFor('/changelog/' + release.slug) }}">
+                {% if release.isUnreleased %}{{ t("changelog.unreleased") }}{% else %}{{ release.version }}{% endif %}
+              </a>
+            </dt>
+            <dd class="govuk-summary-list__value">
+              {% if release.isUnreleased %}
+                {{ t("changelog.unreleased_hint") }}
+              {% elif release.date %}
+                {{ t("changelog.released_on", { date: release.date }) }}
+              {% endif %}
+            </dd>
+          </div>
+        {% endfor %}
+      </dl>
+
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ sourceCodeUrl or 'https://github.com/jasperfordesq-ai/Project-NEXUS' }}" rel="noopener noreferrer">{{ t("changelog.view_on_github") }}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}
