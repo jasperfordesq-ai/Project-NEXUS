@@ -141,6 +141,8 @@ return [
                 'legal_hub' => 'Legal',
                 'terms' => 'Terms of service',
                 'privacy' => 'Privacy policy',
+                'account_deletion' => 'Account deletion',
+                'child_safety' => 'Child safety standards',
                 'community_guidelines' => 'Community guidelines',
                 'acceptable_use' => 'Acceptable use',
                 'cookies' => 'Cookie policy',

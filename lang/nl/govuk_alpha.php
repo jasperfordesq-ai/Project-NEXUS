@@ -140,6 +140,8 @@ return [
                 'legal_hub' => 'Legaal',
                 'terms' => 'Servicevoorwaarden',
                 'privacy' => 'Privacybeleid',
+                'account_deletion' => 'Account verwijderen',
+                'child_safety' => 'Normen voor kinderveiligheid',
                 'community_guidelines' => 'Communautaire richtlijnen',
                 'acceptable_use' => 'Acceptabel gebruik',
                 'cookies' => 'Cookiebeleid',

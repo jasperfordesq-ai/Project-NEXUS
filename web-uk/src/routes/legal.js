@@ -15,6 +15,7 @@ const {
 const { sanitizeCmsHtml, sanitizeDiffHtml, withHeadingAnchors } = require('../lib/html-sanitizer');
 const { catalogFor, valueInCatalog } = require('../lib/localization');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { legalPageText } = require('../lib/legal-text');
 
 const router = express.Router();
 
@@ -49,9 +50,21 @@ function dataFrom(result) {
   return result && typeof result === 'object' && result.data !== undefined ? result.data : result;
 }
 
+/**
+ * 🔴 `res.locals.tenantName` FIRST. This read only `res.locals.tenant`, which the
+ * shell does not set — it sets `tenantName`, `tenantSlug` and `communityName` — so
+ * every page in this file captioned itself "Project NEXUS Accessible" instead of the
+ * community's name, on a site where all eleven communities share the templates. The
+ * old reads are kept after it so nothing that does pass a `tenant` object regresses.
+ */
 function communityName(res) {
   const tenant = res.locals.tenant || {};
-  return trimmed(tenant.name) || trimmed(tenant.slug) || 'Project NEXUS Accessible';
+  return trimmed(res.locals.tenantName)
+    || trimmed(res.locals.communityName)
+    || trimmed(tenant.name)
+    || trimmed(tenant.slug)
+    || trimmed(res.locals.serviceName)
+    || 'Project NEXUS Accessible';
 }
 
 function catalogCollection(res, key) {
@@ -210,6 +223,36 @@ router.get('/legal/privacy', legalDocument('privacy'));
 router.get('/legal/cookies', legalDocument('cookies'));
 router.get('/legal/community-guidelines', legalDocument('community_guidelines'));
 router.get('/legal/acceptable-use', legalDocument('acceptable_use'));
+
+/**
+ * Account deletion, and child safety standards.
+ *
+ * 🔴 These are NOT under /legal/ and are NOT `legalDocument()` pages, deliberately.
+ * `account_deletion` and `child_safety` are not in `LegalController::VALID_TYPES`, so
+ * there is no per-community version to fetch, no version history, and nothing for the
+ * /legal/:type/versions routes to answer — putting them under /legal/ would imply all
+ * three. They also keep React's own paths, so a link to either page works on whichever
+ * frontend a member is sent to.
+ *
+ * Their text is generated from one source shared with the React pages, because it is
+ * compliance copy: see lib/legal-text.js.
+ */
+function staticLegalPage(page, view) {
+  return (req, res) => {
+    const text = legalPageText(page, res.locals.alphaCurrentLocale || 'en');
+    return res.render(view, {
+      title: text.page_title,
+      activeNav: '',
+      communityName: communityName(res),
+      text,
+      contactUrl: res.locals.urlFor('/contact'),
+      reportUrl: res.locals.urlFor('/report-a-problem')
+    });
+  };
+}
+
+router.get('/account-deletion', staticLegalPage('account_deletion', 'legal/account-deletion'));
+router.get('/child-safety', staticLegalPage('child_safety', 'legal/child-safety'));
 
 // Version history. Laravel's accessible frontend has no equivalent — these are
 // deliberate additions, recorded as extra web-uk routes in the route matrix. They

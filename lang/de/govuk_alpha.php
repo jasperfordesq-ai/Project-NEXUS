@@ -140,6 +140,8 @@ return [
                 'legal_hub' => 'Rechtliches',
                 'terms' => 'Nutzungsbedingungen',
                 'privacy' => 'Datenschutzrichtlinie',
+                'account_deletion' => 'Kontolöschung',
+                'child_safety' => 'Kinderschutzstandards',
                 'community_guidelines' => 'Community-Richtlinien',
                 'acceptable_use' => 'Akzeptable Verwendung',
                 'cookies' => 'Cookie-Richtlinie',

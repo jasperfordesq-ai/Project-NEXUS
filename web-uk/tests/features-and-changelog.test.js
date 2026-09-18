@@ -196,3 +196,81 @@ describe('changelog', () => {
     for (const slug of slugs) expect(slug).toMatch(/^[a-z0-9.-]+$/);
   });
 });
+
+describe('static compliance pages', () => {
+  const { legalPageText, pages } = require('../src/lib/legal-text');
+
+  it('publishes both pages the React footer links', () => {
+    expect(pages).toEqual(['account_deletion', 'child_safety']);
+  });
+
+  it('🔴 has every string in every language', () => {
+    // Compliance copy. A missing key here is a blank line in a statement about
+    // deleting someone's data, or about how a child-safety report is handled.
+    const english = { account_deletion: legalPageText('account_deletion', 'en'), child_safety: legalPageText('child_safety', 'en') };
+
+    for (const locale of ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar']) {
+      for (const page of pages) {
+        const text = legalPageText(page, locale);
+        for (const key of Object.keys(english[page])) {
+          expect(text[key]).toBeDefined();
+          expect(text[key]).not.toBe('');
+        }
+      }
+    }
+  });
+
+  it('turns React’s index-keyed objects back into ordered lists', () => {
+    const deletion = legalPageText('account_deletion', 'en');
+    const safety = legalPageText('child_safety', 'en');
+
+    expect(Array.isArray(deletion.in_app_steps)).toBe(true);
+    expect(Array.isArray(deletion.deleted_items)).toBe(true);
+    expect(Array.isArray(deletion.retained_items)).toBe(true);
+    expect(Array.isArray(safety.prohibited_items)).toBe(true);
+    expect(Array.isArray(safety.reporting_steps)).toBe(true);
+    expect(Array.isArray(safety.response_items)).toBe(true);
+    expect(deletion.in_app_steps.length).toBeGreaterThan(0);
+  });
+
+  it('🔴 keeps the compliance details identical to the React pages', () => {
+    // One source, because a disagreement between the two frontends about the
+    // operator, the Play package or the designated contact is a compliance problem.
+    const reactLegal = require('../../react-frontend/public/locales/en/legal.json');
+    const deletion = legalPageText('account_deletion', 'en');
+    const safety = legalPageText('child_safety', 'en');
+
+    expect(deletion.contact_email).toBe(reactLegal.account_deletion.contact_email);
+    expect(deletion.package_id).toBe(reactLegal.account_deletion.package_id);
+    expect(deletion.operator_body).toBe(reactLegal.account_deletion.operator_body);
+    expect(safety.contact_email).toBe(reactLegal.child_safety.contact_email);
+    expect(safety.effective_date).toBe(reactLegal.child_safety.effective_date);
+  });
+
+  it('falls back to English rather than failing for an unknown language', () => {
+    expect(legalPageText('account_deletion', 'xx').heading)
+      .toBe(legalPageText('account_deletion', 'en').heading);
+  });
+});
+
+describe('footer link parity with the React footer', () => {
+  const { buildFooterColumns } = require('../src/lib/accessible-shell');
+
+  it('🔴 links every legal page the React footer links', () => {
+    // The whole point of this change: the two footers offer the same pages.
+    const legal = buildFooterColumns({ tenant: {} }).find((c) => c.key === 'legal');
+    const hrefs = legal.links.map((l) => l.href);
+
+    expect(hrefs).toEqual([
+      '/legal',
+      '/legal/terms',
+      '/legal/privacy',
+      '/account-deletion',
+      '/child-safety',
+      '/legal/community-guidelines',
+      '/legal/acceptable-use',
+      '/legal/cookies',
+      '/accessibility'
+    ]);
+  });
+});

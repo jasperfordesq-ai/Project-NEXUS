@@ -140,6 +140,8 @@ return [
                 'legal_hub' => 'Dlíthiúil',
                 'terms' => 'Téarmaí seirbhíse',
                 'privacy' => 'Beartas príobháideachta',
+                'account_deletion' => 'Scriosadh cuntais',
+                'child_safety' => 'Caighdeáin um shábháilteacht leanaí',
                 'community_guidelines' => 'Treoirlínte pobail',
                 'acceptable_use' => 'Úsáid inghlactha',
                 'cookies' => 'Beartas fianán',

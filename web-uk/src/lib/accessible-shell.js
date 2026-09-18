@@ -125,6 +125,11 @@ const footerColumns = [
       { key: 'legal_hub', label: 'Legal', href: '/legal' },
       { key: 'terms', label: 'Terms of service', href: '/legal/terms' },
       { key: 'privacy', label: 'Privacy policy', href: '/legal/privacy' },
+      // 🔴 Added 2026-09-18 so this column matches the React footer's exactly. Both
+      // are static compliance pages rather than per-community legal documents, which
+      // is why they sit at the top level and not under /legal/ — see routes/legal.js.
+      { key: 'account_deletion', label: 'Account deletion', href: '/account-deletion' },
+      { key: 'child_safety', label: 'Child safety standards', href: '/child-safety' },
       { key: 'community_guidelines', label: 'Community guidelines', href: '/legal/community-guidelines' },
       { key: 'acceptable_use', label: 'Acceptable use', href: '/legal/acceptable-use' },
       { key: 'cookies', label: 'Cookie policy', href: '/legal/cookies' },

@@ -1,0 +1,77 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  Child safety standards. The React frontend publishes the same page at the same path,
+  from the same source — see lib/legal-text.js.
+
+  🔴 This is the page Google Play is pointed at, and it names a designated contact and
+  an effective date. Do not reword it here: it is generated, and editing it in one
+  frontend only is exactly the failure this page's single source exists to prevent.
+
+  GOV.UK patterns used deliberately:
+    - the zero-tolerance statement in a warning-text component, which is what the
+      Design System provides for "something the reader must not miss";
+    - reporting steps as an ordered list and a start button, so the action is findable
+      without reading the whole page;
+    - the effective date in the caption position, where a reader looks for it.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ communityName }}</span>
+      <h1 class="govuk-heading-xl">{{ text.heading }}</h1>
+      <p class="govuk-body-l">{{ text.subtitle }}</p>
+      <p class="govuk-body-s">{{ text.effective_date }}</p>
+
+      <h2 class="govuk-heading-m">{{ text.zero_tolerance_title }}</h2>
+      {{ govukWarningText({
+        text: text.zero_tolerance_body,
+        iconFallbackText: text.zero_tolerance_title
+      }) }}
+
+      <ul class="govuk-list govuk-list--bullet">
+        {% for item in text.prohibited_items %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+
+      {#
+        Reporting comes BEFORE "how we respond": someone on this page in an emergency
+        needs the route to report, not our process description, first.
+      #}
+      <h2 class="govuk-heading-m">{{ text.reporting_title }}</h2>
+      <p class="govuk-body">{{ text.reporting_body }}</p>
+      <ol class="govuk-list govuk-list--number">
+        {% for step in text.reporting_steps %}
+          <li>{{ step }}</li>
+        {% endfor %}
+      </ol>
+      {{ govukButton({
+        text: text.reporting_button,
+        href: reportUrl,
+        isStartButton: true
+      }) }}
+
+      <h2 class="govuk-heading-m">{{ text.response_title }}</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for item in text.response_items %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+
+      <h2 class="govuk-heading-m">{{ text.contact_title }}</h2>
+      <p class="govuk-body">{{ text.contact_body }}</p>
+      <p class="govuk-body">
+        <a class="govuk-link" href="mailto:{{ text.contact_email }}">{{ text.contact_email }}</a>
+      </p>
+
+      <p class="govuk-body">{{ text.operator_body }}</p>
+    </div>
+  </div>
+{% endblock %}

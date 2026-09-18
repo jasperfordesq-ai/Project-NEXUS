@@ -140,6 +140,8 @@ return [
                 'legal_hub' => 'قانوني',
                 'terms' => 'شروط الخدمة',
                 'privacy' => 'سياسة الخصوصية',
+                'account_deletion' => 'حذف الحساب',
+                'child_safety' => 'معايير حماية الأطفال',
                 'community_guidelines' => 'المبادئ التوجيهية المجتمعية',
                 'acceptable_use' => 'الاستخدام المقبول',
                 'cookies' => 'سياسة ملفات تعريف الارتباط',

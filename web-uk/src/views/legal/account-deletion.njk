@@ -1,0 +1,73 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  How to delete your account. The React frontend publishes the same page at the same
+  path, from the same source — see lib/legal-text.js. It is compliance copy naming a
+  real legal entity, a charity number and a Google Play package, so it must not become
+  two hand-maintained copies that can disagree.
+
+  GOV.UK patterns used deliberately:
+    - numbered steps as an ordered list, because they must be done in order;
+    - what IS and what MAY NOT be deleted as two plainly headed lists, not one mixed
+      one, because that distinction is the point of the page;
+    - the request route as a start button, the Design System's pattern for "begin a
+      transaction".
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ communityName }}</span>
+      <h1 class="govuk-heading-xl">{{ text.heading }}</h1>
+      <p class="govuk-body-l">{{ text.subtitle }}</p>
+
+      <h2 class="govuk-heading-m">{{ text.in_app_title }}</h2>
+      <ol class="govuk-list govuk-list--number">
+        {% for step in text.in_app_steps %}
+          <li>{{ step }}</li>
+        {% endfor %}
+      </ol>
+
+      <h2 class="govuk-heading-m">{{ text.web_request_title }}</h2>
+      <p class="govuk-body">{{ text.web_request_body }}</p>
+      <p class="govuk-body">{{ text.web_request_timing }}</p>
+      {{ govukButton({
+        text: text.web_request_button,
+        href: contactUrl,
+        isStartButton: true
+      }) }}
+
+      <h2 class="govuk-heading-m">{{ text.deleted_title }}</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for item in text.deleted_items %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+
+      <h2 class="govuk-heading-m">{{ text.retained_title }}</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for item in text.retained_items %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+
+      <h2 class="govuk-heading-m">{{ text.contact_title }}</h2>
+      <p class="govuk-body">{{ text.contact_body }}</p>
+      <p class="govuk-body">
+        <a class="govuk-link" href="mailto:{{ text.contact_email }}">{{ text.contact_email }}</a>
+      </p>
+
+      {#
+        Who operates the service, and which app this applies to. Last because it is
+        the small print a reader needs only after the instructions above.
+      #}
+      <h2 class="govuk-heading-m">{{ text.operator_title }}</h2>
+      <p class="govuk-body">{{ text.operator_body }}</p>
+      <p class="govuk-body">{{ text.package_id }}</p>
+    </div>
+  </div>
+{% endblock %}
