@@ -90,8 +90,10 @@ describe('EventAgendaEnterprisePanel', () => {
     jest.mocked(api).mockRejectedValueOnce(new Error('Response lost')).mockResolvedValueOnce({ data: { session: current } } as never);
     const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
     const submit = async () => {
-      fireEvent.press(view.getByText(action === 'register' ? 'Register for session' : 'Withdraw from session'));
-      if (action === 'withdraw') await act(async () => mockConfirm.mock.calls.at(-1)![0].onConfirm());
+      await act(async () => {
+        fireEvent.press(view.getByText(action === 'register' ? 'Register for session' : 'Withdraw from session'));
+        if (action === 'withdraw') await mockConfirm.mock.calls.at(-1)![0].onConfirm();
+      });
     };
     await submit();
     await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
