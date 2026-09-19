@@ -53,7 +53,8 @@ it.each(['unmount', 'permission'] as const)('suppresses completion after %s and 
   let finish!: () => void;
   jest.mocked(executeEventSessionOperation).mockImplementation(() => new Promise(resolve => { finish = () => resolve({} as never); }));
   const accepted = jest.fn();
-  const { result, rerender, unmount } = renderHook(({ allowed }) => useEventSessionOperations(scope, allowed, accepted), { initialProps: { allowed: true } });
+  const { result, rerender, unmount } = renderHook<ReturnType<typeof useEventSessionOperations>, { allowed: boolean }>(
+    ({ allowed }) => useEventSessionOperations(scope, allowed, accepted), { initialProps: { allowed: true } });
   await waitFor(() => expect(result.current.ready).toBe(true));
   let running!: Promise<void>;
   act(() => { running = result.current.submit(intent); });
