@@ -5,10 +5,14 @@
 
 import { Button as HeroButton } from 'heroui-native';
 import { forwardRef, type ComponentProps, type ComponentRef } from 'react';
+import { useWindowDimensions } from 'react-native';
 
 const NativeButtonLabel = forwardRef<ComponentRef<typeof HeroButton.Label>, ComponentProps<typeof HeroButton.Label>>(
   function NativeButtonLabel({ style, ...props }, ref) {
-    return <HeroButton.Label ref={ref} {...props} style={[{ flexShrink: 1, textAlign: 'center' }, style]} />;
+    const { fontScale } = useWindowDimensions();
+    // Android can retain old text measurements after Settings changes font size.
+    // Remount only the label, preserving the button and surrounding form state.
+    return <HeroButton.Label key={fontScale} ref={ref} {...props} style={[{ flexShrink: 1, textAlign: 'center' }, style]} />;
   },
 );
 

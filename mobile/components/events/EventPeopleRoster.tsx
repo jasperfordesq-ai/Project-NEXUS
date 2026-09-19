@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useState } from 'react';
-import { AppState, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { AppState, RefreshControl, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Card } from 'heroui-native';
@@ -49,6 +49,7 @@ export default function EventPeopleRoster({ eventId }: { eventId: number }) {
 }
 
 function PeopleRosterContent({ eventId }: { eventId: number }) {
+  const { fontScale } = useWindowDimensions();
   const { t } = useTranslation(['events', 'common', 'event_communications']);
   const { user } = useAuth();
   const { tenant } = useTenant();
@@ -100,7 +101,7 @@ function PeopleRosterContent({ eventId }: { eventId: number }) {
   return (
     <ScrollView contentContainerClassName="gap-4 p-4 pb-10" keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       refreshControl={<RefreshControl refreshing={roster.isLoading && Boolean(data)} onRefresh={roster.refresh} />}>
-      <Text accessibilityRole="header" className="text-xl font-bold text-foreground">{t(`${p}.title`)}</Text>
+      <Text key={fontScale} accessibilityRole="header" className="text-xl font-bold text-foreground">{t(`${p}.title`)}</Text>
       <SearchInput value={search} onChangeText={value => {
         setSearch(Array.from(value).slice(0, 100).join(''));
         if (!value) setQuery(current => ({ ...current, page: 1, search: undefined }));
