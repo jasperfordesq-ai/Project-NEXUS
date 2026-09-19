@@ -48,6 +48,7 @@ function PeopleRosterContent({ eventId }: { eventId: number }) {
   const [query, setQuery] = useState<EventPeopleQuery>({ page: 1 });
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showInvitations, setShowInvitations] = useState(false);
   const validId = Number.isSafeInteger(eventId) && eventId > 0;
   const roster = useApi(() => getEventPeople(eventId, query), [eventId, query], { enabled: validId, clearOnRefusal: true });
   const data = roster.data;
@@ -117,8 +118,12 @@ function PeopleRosterContent({ eventId }: { eventId: number }) {
       <RefreshFailedNotice error={data ? roster.error : null} onRetry={roster.refresh} isRetrying={roster.isLoading} />
       {data?.meta.capabilities?.export_people ? <EventPeopleExport key={JSON.stringify(query)} eventId={eventId} query={query}
         total={data.meta.total} disabled={roster.isLoading || Boolean(roster.error) || operation.busy || operation.saved?.status === 'pending'} /> : null}
-      {data?.meta.projection === 'full' && data.meta.capabilities.manage_registration ?
-        <EventPeopleInvitations blocked={operation.blocked} onInvite={intent => operation.submit(intent)} /> : null}
+      {data?.meta.projection === 'full' && data.meta.capabilities.manage_registration ? <View className="gap-2">
+        <Button variant="secondary" isDisabled={operation.busy} accessibilityState={{ expanded: showInvitations }} onPress={() => setShowInvitations(value => !value)}>
+          <Button.Label>{t(`${p}.invite_title`)}</Button.Label>
+        </Button>
+        {showInvitations ? <EventPeopleInvitations blocked={operation.blocked} onInvite={intent => operation.submit(intent)} /> : null}
+      </View> : null}
       {data?.meta.projection === 'full' && data.meta.capabilities.manage_registration && (operation.storageFailed || operation.saved?.status === 'pending') ? <Card variant="secondary"><Card.Body className="gap-3 p-4">
         <Text accessibilityRole="header" className="font-semibold text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_title' : 'recovery_title'}`)}</Text>
         <Text className="text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_description' : 'recovery_description'}`)}</Text>

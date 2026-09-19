@@ -55,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native organiser People keeps its invitation form collapsed until requested, making member states and History reachable in the first Android viewport.
+
 - Native event management resets stale data and permissions when the account, community or event changes, ignores previous requests, and rejects malformed event links without a dead retry action.
 
 - Native event-management section links now respect the event permissions used by the management workspace instead of automatically redirecting members to unavailable tools.
