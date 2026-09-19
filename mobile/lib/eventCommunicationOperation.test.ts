@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { storage } from '@/lib/storage';
+import { ApiResponseError } from '@/lib/api/client';
 import * as api from '@/lib/api/eventCommunications';
 import { loadEventCommunicationOperation as load, prepareEventCommunicationOperation as prepare, type EventCommunicationIntent } from './eventCommunicationOperationStore';
 import { executeEventCommunicationOperation as execute, recoverEventCommunicationOperation as recover, EventCommunicationOperationBusy, EventCommunicationOperationDeparted, NoPendingEventCommunicationOperation } from './eventCommunicationOperation';
@@ -123,4 +124,22 @@ it('permits a genuinely new identical operation only after acknowledgement', asy
   expect(second?.status).toBe('acknowledged');
   expect(second?.key).not.toBe(first?.key);
   expect(api.createEventCommunication).toHaveBeenCalledTimes(2);
+});
+
+it('releases a proven rejected schedule so its time can be corrected', async () => {
+  const intent: EventCommunicationIntent = { action: 'schedule', broadcastId: 19, expectedVersion: 1, scheduledAt: '2020-01-01T10:00:00Z' };
+  jest.mocked(api.scheduleEventCommunication).mockRejectedValueOnce(new ApiResponseError(422, 'Past time', undefined, 'EVENT_BROADCAST_SCHEDULE_IN_PAST'));
+  await expect(execute(scope, intent, () => true)).rejects.toThrow('Past time');
+  const rejected = await load(scope);
+  expect(rejected).toMatchObject({ status: 'rejected', rejectionCode: 'EVENT_BROADCAST_SCHEDULE_IN_PAST' });
+  jest.mocked(api.scheduleEventCommunication).mockResolvedValueOnce(broadcast);
+  await execute(scope, { ...intent, scheduledAt: null }, () => true);
+  expect(api.scheduleEventCommunication).toHaveBeenLastCalledWith(19, 1, null, expect.any(String));
+  expect((await load(scope))?.key).not.toBe(rejected?.key);
+});
+
+it.each(['EVENT_BROADCAST_VALIDATION_FAILED', 'EVENTS_CONTRACT_DRIFT', 'EVENT_BROADCAST_CONFLICT'])('retains uncertain %s schedules for recovery', async code => {
+  jest.mocked(api.scheduleEventCommunication).mockRejectedValueOnce(new ApiResponseError(code.endsWith('CONFLICT') ? 409 : 422, 'Uncertain', undefined, code));
+  await expect(execute(scope, { action: 'schedule', broadcastId: 19, expectedVersion: 1, scheduledAt: null }, () => true)).rejects.toThrow('Uncertain');
+  expect(await load(scope)).toMatchObject({ status: 'pending' });
 });

@@ -74,6 +74,14 @@ final class EventBroadcastRuntimeIntegrationTest extends TestCase
                 self::assertSame('event_broadcast_schedule_in_past', $exception->reasonCode);
             }
             self::assertSame(0, DB::table('event_broadcast_deliveries')->where('broadcast_id', $fresh['broadcast']->id)->count());
+            Sanctum::actingAs($organizer, ['*']);
+            $this->apiPost('/v2/event-broadcasts/' . $fresh['broadcast']->id . '/schedule', [
+                'expected_version' => 1,
+                'scheduled_at' => $scheduledAt->toIso8601String(),
+            ], ['Idempotency-Key' => 'schedule-recovery-http-past'])
+                ->assertUnprocessable()
+                ->assertJsonPath('errors.0.code', 'EVENT_BROADCAST_SCHEDULE_IN_PAST')
+                ->assertJsonPath('errors.0.field', 'scheduled_at');
         } finally {
             CarbonImmutable::setTestNow($previousNow);
         }

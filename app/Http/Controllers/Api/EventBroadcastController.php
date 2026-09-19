@@ -254,7 +254,9 @@ final class EventBroadcastController extends BaseApiController
                 ['EVENT_BROADCAST_CONFLICT', __('api.invalid_input'), null, 409],
             'event_broadcast_body_invalid' =>
                 ['EVENT_BROADCAST_VALIDATION_FAILED', __('api.validation_failed'), 'body', 422],
-            'event_broadcast_schedule_in_past',
+            // Emitted only after replay lookup proves this schedule was not accepted.
+            'event_broadcast_schedule_in_past' =>
+                ['EVENT_BROADCAST_SCHEDULE_IN_PAST', __('api.validation_failed'), 'scheduled_at', 422],
             'event_broadcast_post_event_too_early',
             'event_broadcast_event_schedule_invalid' =>
                 ['EVENT_BROADCAST_VALIDATION_FAILED', __('api.validation_failed'), 'scheduled_at', 422],

@@ -7,9 +7,10 @@ import {
   createEventCommunication, reviseEventCommunication, scheduleEventCommunication,
   cancelEventCommunication, retryEventCommunication, type MobileEventBroadcast,
 } from '@/lib/api/eventCommunications';
+import { ApiResponseError } from '@/lib/api/client';
 import {
   acknowledgeEventCommunicationOperation, loadEventCommunicationOperation,
-  prepareEventCommunicationOperation, type EventCommunicationIntent,
+  prepareEventCommunicationOperation, rejectEventCommunicationOperation, type EventCommunicationIntent,
   type EventCommunicationScope, type SavedEventCommunicationOperation,
 } from '@/lib/eventCommunicationOperationStore';
 
@@ -34,12 +35,22 @@ async function run(
     if (!saved || saved.status !== 'pending') throw new NoPendingEventCommunicationOperation();
     const { intent, key } = saved;
     let broadcast: MobileEventBroadcast;
-    switch (intent.action) {
+    try {
+      switch (intent.action) {
       case 'create': broadcast = await createEventCommunication(scope.eventId, intent.input, key); break;
       case 'revise': broadcast = await reviseEventCommunication(intent.broadcastId, intent.expectedVersion, intent.input, key); break;
       case 'schedule': broadcast = await scheduleEventCommunication(intent.broadcastId, intent.expectedVersion, intent.scheduledAt, key); break;
       case 'cancel': broadcast = await cancelEventCommunication(intent.broadcastId, intent.expectedVersion, intent.reason, key); break;
       case 'retry': broadcast = await retryEventCommunication(intent.broadcastId, intent.expectedVersion, key); break;
+      }
+    } catch (error) {
+      // This explicit server code follows history replay lookup. Generic 422/409,
+      // authorization failures and response-schema failures cannot establish outcome.
+      if (intent.action === 'schedule' && error instanceof ApiResponseError
+          && error.status === 422 && error.code === 'EVENT_BROADCAST_SCHEDULE_IN_PAST') {
+        await rejectEventCommunicationOperation(scope, key, error.code);
+      }
+      throw error;
     }
     // Once accepted, record the receipt even if the caller has since departed.
     // Transport, contract, and receipt-storage errors leave the exact request pending.
