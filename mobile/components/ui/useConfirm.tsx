@@ -51,18 +51,25 @@ export function useConfirm() {
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const confirmingRef = useRef(false);
+  const optionsRef = useRef<ConfirmOptions | null>(null);
 
   const confirm = useCallback((opts: ConfirmOptions) => {
+    optionsRef.current = opts;
     setOptions(opts);
+  }, []);
+
+  const dismiss = useCallback(() => {
+    optionsRef.current = null;
+    setOptions(null);
   }, []);
 
   const close = useCallback(() => {
     if (isConfirming) return;
-    setOptions(null);
-  }, [isConfirming]);
+    dismiss();
+  }, [isConfirming, dismiss]);
 
   const handleConfirm = useCallback(async () => {
-    if (!options || confirmingRef.current) return;
+    if (!options || optionsRef.current !== options || confirmingRef.current) return;
     confirmingRef.current = true;
     const action = options.onConfirm;
     setIsConfirming(true);
@@ -71,9 +78,9 @@ export function useConfirm() {
     } finally {
       confirmingRef.current = false;
       setIsConfirming(false);
-      setOptions(null);
+      if (optionsRef.current === options) dismiss();
     }
-  }, [options]);
+  }, [options, dismiss]);
 
   const confirmDialog = (
     <ConfirmDialog
@@ -93,5 +100,5 @@ export function useConfirm() {
     />
   );
 
-  return { confirm, confirmDialog };
+  return { confirm, confirmDialog, dismiss };
 }

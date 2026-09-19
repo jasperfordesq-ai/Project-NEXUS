@@ -18,7 +18,7 @@
  */
 
 import React from 'react';
-import { act, render, screen } from '@testing-library/react-native';
+import { act, render, renderHook, screen } from '@testing-library/react-native';
 
 import { useConfirm, type ConfirmOptions } from './useConfirm';
 
@@ -77,5 +77,31 @@ describe('useConfirm — the warning colour is reserved', () => {
     render(<Harness options={{ ...baseOptions, variant: 'danger' }} />);
 
     expect(screen.getByTestId('confirm-variant').props.children).toBe('danger');
+  });
+});
+
+
+describe('useConfirm invalidation', () => {
+  it('hides a dismissed confirmation and rejects its delayed callback', async () => {
+    const action = jest.fn();
+    const { result } = renderHook(() => useConfirm());
+    act(() => result.current.confirm({ ...baseOptions, onConfirm: action }));
+    const oldConfirm = result.current.confirmDialog.props.onConfirm;
+    act(() => result.current.dismiss());
+    expect(result.current.confirmDialog.props.visible).toBe(false);
+    await act(async () => oldConfirm());
+    expect(action).not.toHaveBeenCalled();
+  });
+
+  it('does not clear a replacement dialog when an older action completes', async () => {
+    let finish!: () => void;
+    const { result } = renderHook(() => useConfirm());
+    act(() => result.current.confirm({ ...baseOptions, onConfirm: () => new Promise<void>(resolve => { finish = resolve; }) }));
+    let pending!: Promise<void>;
+    act(() => { pending = result.current.confirmDialog.props.onConfirm(); });
+    act(() => { result.current.dismiss(); result.current.confirm({ ...baseOptions, title: 'Replacement' }); });
+    await act(async () => { finish(); await pending; });
+    expect(result.current.confirmDialog.props.visible).toBe(true);
+    expect(result.current.confirmDialog.props.title).toBe('Replacement');
   });
 });

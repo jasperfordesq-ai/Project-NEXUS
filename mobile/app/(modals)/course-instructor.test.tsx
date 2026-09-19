@@ -169,10 +169,10 @@ describe('CourseInstructorRoute', () => {
     const screen = render(<CourseInstructorRoute />);
     await screen.findByText('Timebanking basics');
     fireEvent.press(screen.getByText('Unpublish'));
-    const confirm = screen.getByTestId('course-confirm-unpublish-43');
+    const confirm = screen.UNSAFE_getByType(require('@/components/ui/ConfirmDialog').default).props.onConfirm;
     act(() => screen.UNSAFE_getByType(ReactNative.FlatList).props.refreshControl.props.onRefresh());
     await waitFor(() => expect(screen.UNSAFE_getByType(ReactNative.FlatList).props.data).toEqual([]));
-    await act(async () => fireEvent.press(confirm));
+    await act(async () => confirm());
     expect(mockUnpublishCourse).not.toHaveBeenCalled();
   });
 
@@ -273,17 +273,47 @@ describe('CourseInstructorRoute', () => {
   });
 
   it('offers a retry when the authored list fails to load', async () => {
-    // A 403 is deliberately NOT one of `useApi`'s retryable statuses, so the failure
-    // surfaces immediately instead of after its 2s single-retry timer.
-    mockGetAuthoredCourses.mockRejectedValue(new ApiResponseError(403, 'Network down'));
+    mockGetAuthoredCourses.mockRejectedValue(new ApiResponseError(429, 'Please try later.'));
 
     const { getByText } = render(<CourseInstructorRoute />);
 
     await waitFor(() => expect(getByText('Retry')).toBeTruthy());
-    expect(getByText('Network down')).toBeTruthy();
+    expect(getByText('Please try later.')).toBeTruthy();
     mockGetAuthoredCourses.mockResolvedValue([draft]);
     fireEvent.press(getByText('Retry'));
 
     await waitFor(() => expect(getByText('Repair skills')).toBeTruthy());
+  });
+
+  it('retains courses with a visible refresh error and an accurate refresh spinner', async () => {
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Repair skills');
+    let reject!: (error: Error) => void;
+    mockGetAuthoredCourses.mockImplementationOnce(() => new Promise((_, fail) => { reject = fail; }));
+    act(() => screen.UNSAFE_getByType(ReactNative.FlatList).props.refreshControl.props.onRefresh());
+    await waitFor(() => expect(mockGetAuthoredCourses).toHaveBeenCalledTimes(2));
+    expect(screen.UNSAFE_getByType(ReactNative.FlatList).props.refreshControl.props.refreshing).toBe(true);
+    expect(screen.getByText('Repair skills')).toBeTruthy();
+    await act(async () => reject(new ApiResponseError(429, 'Refresh later.')));
+    expect(screen.getByText('Refresh later.')).toBeTruthy();
+    expect(screen.getByText('Repair skills')).toBeTruthy();
+    expect(screen.UNSAFE_getByType(ReactNative.FlatList).props.refreshControl.props.refreshing).toBe(false);
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.queryByText('Refresh later.')).toBeNull());
+  });
+
+  it.each([401, 403, 404])('clears refused courses and obsolete confirmations (%s)', async (status) => {
+    mockGetAuthoredCourses.mockResolvedValue([published]);
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Timebanking basics');
+    fireEvent.press(screen.getByText('Unpublish'));
+    expect(screen.getByTestId('course-confirm-unpublish-43')).toBeTruthy();
+    mockGetAuthoredCourses.mockRejectedValueOnce(new ApiResponseError(status, 'No access.'));
+    act(() => screen.UNSAFE_getByType(ReactNative.FlatList).props.refreshControl.props.onRefresh());
+    await screen.findByText('No access.');
+    expect(screen.UNSAFE_getByType(ReactNative.FlatList).props.data).toEqual([]);
+    expect(screen.queryByTestId('course-confirm-unpublish-43')).toBeNull();
+    expect(screen.queryByText('Retry')).toBeNull();
+    expect(screen.queryByText('Create course')).toBeNull();
   });
 });

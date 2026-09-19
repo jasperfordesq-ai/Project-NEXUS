@@ -30,6 +30,7 @@ import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { getAuthoredCourses, publishCourse, unpublishCourse, type Course } from '@/lib/api/courses';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -59,27 +60,37 @@ function CourseInstructorScreen() {
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
-  const { confirm, confirmDialog } = useConfirm();
-  const { data, isLoading, error, refresh } = useApi(() => getAuthoredCourses(), []);
+  const { confirm, confirmDialog, dismiss } = useConfirm();
+  const { data, isLoading, error, errorStatus, refresh } = useApi(() => getAuthoredCourses(), [], { clearOnRefusal: true });
+  const refused = isRefusalStatus(errorStatus);
+  const pendingCourseRef = useRef<Course | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const togglingRef = useRef(false);
   const mountedRef = useRef(true);
   const coursesRef = useRef(data);
-  coursesRef.current = error ? null : data;
+  coursesRef.current = error || isLoading ? null : data;
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
   const courses = data ?? [];
+  useEffect(() => {
+    const pending = pendingCourseRef.current;
+    if (!pending) return;
+    const current = data?.find(course => course.id === pending.id);
+    if (isLoading || error || !current || current.status !== pending.status || current.title !== pending.title) {
+      pendingCourseRef.current = null;
+      dismiss();
+    }
+  }, [data, dismiss, error, isLoading]);
 
-  const onRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    refresh();
-    // `useApi` owns the request; the spinner is released as soon as the member sees it move.
-    setIsRefreshing(false);
-  }, [refresh]);
+  const errorNotice = error ? <ErrorState
+    title={t('instructor.loadError')}
+    subtitle={error}
+    retryLabel={t('common:buttons.retry')}
+    onRetry={refused ? undefined : refresh}
+    testID="course-instructor-error"
+  /> : null;
 
   /*
     🔴 The list never refetched, so a course an instructor had just built was missing.
@@ -111,6 +122,7 @@ function CourseInstructorScreen() {
       void runTogglePublish(course);
       return;
     }
+    pendingCourseRef.current = course;
     confirm({
       title: t('instructor.unpublishConfirmTitle'),
       message: t('instructor.unpublishConfirmMessage', { title: course.title }),
@@ -172,7 +184,7 @@ function CourseInstructorScreen() {
         keyExtractor={(course) => String(course.id)}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={primary} colors={[primary]} />
+          <RefreshControl refreshing={isLoading && data !== null} onRefresh={refresh} tintColor={primary} colors={[primary]} />
         }
         ListHeaderComponent={
           <View className="mb-4 gap-3">
@@ -187,9 +199,10 @@ function CourseInstructorScreen() {
                 </Text>
               </HeroCard.Body>
             </HeroCard>
-            <HeroButton onPress={() => router.push('/(modals)/new-course')}>
+            {!refused ? <HeroButton onPress={() => router.push('/(modals)/new-course')}>
               <HeroButton.Label>{t('instructor.create_course')}</HeroButton.Label>
-            </HeroButton>
+            </HeroButton> : null}
+            {courses.length > 0 ? errorNotice : null}
           </View>
         }
         renderItem={({ item: course }) => (
@@ -232,7 +245,7 @@ function CourseInstructorScreen() {
                 <HeroButton
                   className={largeText ? 'w-full' : undefined}
                   size={largeText ? 'md' : 'sm'}
-                  isDisabled={togglingId !== null}
+                  isDisabled={togglingId !== null || isLoading || Boolean(error)}
                   onPress={() => togglePublish(course)}
                   testID={`course-toggle-publish-${course.id}`}
                 >
@@ -247,15 +260,7 @@ function CourseInstructorScreen() {
         ListEmptyComponent={
           isLoading ? (
             <View className="py-12"><LoadingSpinner /></View>
-          ) : error ? (
-            <ErrorState
-              title={t('instructor.loadError')}
-              subtitle={error}
-              retryLabel={t('common:buttons.retry')}
-              onRetry={() => refresh()}
-              testID="course-instructor-error"
-            />
-          ) : (
+          ) : error ? errorNotice : (
             <EmptyState
               icon="school-outline"
               title={t('instructor.no_courses')}
