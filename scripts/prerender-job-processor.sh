@@ -146,7 +146,26 @@ while IFS= read -r line; do
         JOB_ROUTES=\'*\')
             value="${line#JOB_ROUTES=\'}"
             value="${value%\'}"
-            printf '%s' "$value" | grep -Eq '^[A-Za-z0-9._~/%:@!$()*+,;=-]*$' || { log "FATAL: unsafe routes in claim output"; exit 1; }
+            # 🔴 An EMPTY routes value is legitimate: it is what a WHOLE-TENANT
+            # job carries (prerender_jobs.routes IS NULL), and Step 2 below
+            # already handles it by omitting --routes. It must be excluded
+            # before the pipeline, because `printf '%s' ""` writes zero bytes,
+            # grep then reads zero lines, and grep that matches nothing exits 1.
+            # The `*` in the pattern says empty is allowed; the pipeline could
+            # never deliver an empty value to it.
+            #
+            # The cost was not a skipped tick. The claim transaction had already
+            # marked the row `running`, so every whole-tenant job was claimed,
+            # rejected here, and left orphaned with no worker behind it — and an
+            # active job excludes its tenant from both freshness sweeps, which is
+            # the same freeze e085e25dc set out to end. Latent until 2026-09-19:
+            # the only rows with NULL routes were the priority-5 jobs that queue
+            # starvation had made unclaimable, so this line was never reached.
+            if [ -n "$value" ] \
+                && ! printf '%s' "$value" | grep -Eq '^[A-Za-z0-9._~/%:@!$()*+,;=-]*$'; then
+                log "FATAL: unsafe routes in claim output"
+                exit 1
+            fi
             ;;
         JOB_FORCE=*)
             [[ "${line#JOB_FORCE=}" =~ ^[01]$ ]] || { log "FATAL: unsafe force flag in claim output"; exit 1; }

@@ -53,6 +53,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Whole-tenant prerender jobs could never be processed, and every attempt orphaned the job.**
+  `scripts/prerender-job-processor.sh` validated the claimed job's routes with
+  `printf '%s' "$value" | grep -Eq '^[...]*$'`. A whole-tenant job carries `routes IS NULL`,
+  exported as `JOB_ROUTES=''`: printf then writes zero bytes, grep reads zero lines, and grep
+  that matches nothing exits 1 — so the `*` permitting an empty value was unreachable. The
+  processor logged `FATAL: unsafe routes in claim output` and exited 1 **after** the claim
+  transaction had already marked the row `running`, leaving it orphaned with no worker behind
+  it; an active job excludes its tenant from both freshness sweeps, reproducing the exact freeze
+  `e085e25dc` had just fixed, by a different route. Latent until 2026-09-19 because the only
+  rows with NULL routes were the priority-5 jobs that queue starvation had made unclaimable, so
+  the branch was never reached — observed on production at 12:46, 12:47 and 12:48 UTC, one
+  orphan per tick, minutes after the starvation fix went live. Empty is now excluded before the
+  pipeline; Step 2 already handled it correctly by omitting `--routes`. Regression test
+  `scripts/test/test-prerender-processor-empty-routes.sh` reproduces the production message
+  against the unfixed script and adds two controls, so the guard cannot pass by having been
+  deleted.
+
 - Native instructor dashboards show recoverable refresh failures without discarding courses, keep the refresh indicator accurate, clear refused content, and dismiss stale publish confirmations. Shared confirmations reject dismissed callbacks and preserve replacement dialogs when an older action finishes.
 
 - Native instructor publishing prevents duplicate submissions, ignores stale confirmations after a course disappears or changes status, and suppresses late publish results after leaving the screen.
