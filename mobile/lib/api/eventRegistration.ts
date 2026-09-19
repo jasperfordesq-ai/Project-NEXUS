@@ -140,12 +140,12 @@ const amendmentEnvelopeSchema = z.object({
 }).passthrough();
 const answersEnvelopeSchema = z.object({
   data: z.object({
-    answers: z.record(z.string(), z.object({
+    answers: z.preprocess(value => Array.isArray(value) && value.length === 0 ? {} : value, z.record(z.string(), z.object({
       question_id: z.number().int().positive(),
       value: z.unknown(),
       purged: z.boolean(),
       classification: classificationSchema,
-    }).strict()),
+    }).strict())),
   }).strict(),
 }).passthrough();
 const guestMutationEnvelopeSchema = z.object({
@@ -306,6 +306,54 @@ export async function mutateOrganizerRegistrationForm(eventId: number, intent: R
     ? await api.put<unknown>(endpoint, payload, requestOptions(key))
     : await api.post<unknown>(endpoint, payload, requestOptions(key));
   return parse(endpoint, organizerFormWriteSchema, response);
+}
+
+// The organiser projection differs from attendee submissions (no created_at/anonymised_at).
+const organizerSubmissionSchema = z.object({
+  id: safeId, registration_id: safeId, form_version_id: safeId, user_id: safeId,
+  member_name: z.string().optional(), revision: safeId,
+  status: z.enum(['draft', 'submitted', 'withdrawn', 'anonymised']), attempt_number: safeId,
+  effective_slot: z.literal(1).nullable(), supersedes_submission_id: safeId.nullable(),
+  lineage_root_submission_id: safeId.nullable(), superseded_at: z.string().nullable(),
+  submitted_at: z.string().nullable(), withdrawn_at: z.string().nullable(), updated_at: z.string(),
+});
+const registrationOverviewPageSchema = z.object({
+  page: safeId, per_page: z.number().int().min(1).max(100), total: revision, last_page: safeId,
+  page_count: z.number().int().min(0).max(100), from: safeId.nullable(), to: safeId.nullable(),
+  has_more: z.boolean(), previous_page: safeId.nullable(), next_page: safeId.nullable(),
+});
+const organizerSubmissionsSchema = z.object({ data: z.object({
+  forms: z.array(organizerRegistrationFormSchema), submissions: z.array(organizerSubmissionSchema),
+  pagination: z.object({ submissions: registrationOverviewPageSchema }),
+  permissions: z.object({ view_roster: z.boolean(), view_sensitive_answers: z.boolean(), export_answers: z.boolean() }),
+}) }).transform(response => ({ data: { ...response.data, submissions: response.data.submissions.map(submission => {
+  if (response.data.permissions.view_roster) return submission;
+  const { member_name: _name, ...anonymous } = submission;
+  return anonymous;
+}) } }));
+export type OrganizerRegistrationSubmissions = z.infer<typeof organizerSubmissionsSchema>['data'];
+export async function getOrganizerRegistrationSubmissions(eventId: number, page = 1, perPage = 25) {
+  safeId.parse(eventId); safeId.parse(page); z.number().int().min(1).max(100).parse(perPage);
+  const endpoint = `${API_V2}/events/${eventId}/registration-product/manage`;
+  return parse(endpoint, organizerSubmissionsSchema.refine(response => response.data.forms.every(form => form.event_id === eventId)), await api.get<unknown>(endpoint,
+    { submissions_page: String(page), submissions_per_page: String(perPage), campaigns_per_page: '1', guests_per_page: '1' }, requestOptions()));
+}
+const answerAccessSchema = z.object({
+  purpose: z.string().trim().min(1).refine(value => Array.from(value).length <= 500),
+  correlation_id: z.string().trim().min(1).refine(value => new TextEncoder().encode(value).length <= 512),
+  include_sensitive: z.boolean(),
+}).strict();
+export type RegistrationAnswerAccess = z.infer<typeof answerAccessSchema>;
+/** Explicit audited read. Never call this from automatic refresh, focus or retry effects. */
+export async function reviewOrganizerRegistrationAnswers(eventId: number, submissionId: number, input: RegistrationAnswerAccess) {
+  safeId.parse(eventId); safeId.parse(submissionId);
+  const evidence = answerAccessSchema.parse(input);
+  const endpoint = `${API_V2}/events/${eventId}/registration-product/submissions/${submissionId}/answers`;
+  const schema = answersEnvelopeSchema.refine(response => evidence.include_sensitive
+    || Object.values(response.data.answers).every(answer => answer.classification !== 'sensitive'));
+  const response = parse(endpoint, schema, await api.post<unknown>(endpoint, evidence, requestOptions()));
+  return { data: { answers: Object.fromEntries(Object.entries(response.data.answers)
+    .map(([key, answer]) => [key, { ...answer, value: answer.purged ? null : answer.value }])) } };
 }
 
 function requestOptions(idempotencyKey?: string): RequestOptions {

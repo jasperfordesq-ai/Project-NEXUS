@@ -31,6 +31,9 @@ import {
   saveOrganizerRegistrationSettings,
   publishOrganizerRegistrationSettings,
   getOrganizerRegistrationForms,
+  getOrganizerRegistrationSubmissions,
+  reviewOrganizerRegistrationAnswers,
+  getOwnRegistrationAnswers,
   mutateOrganizerRegistrationForm,
   type RegistrationFormIntent,
 } from './eventRegistration';
@@ -275,5 +278,76 @@ describe('organiser registration forms', () => {
     await expect(mutateOrganizerRegistrationForm(42, cases[3][0], 'key')).rejects.toMatchObject({
       code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT',
     });
+  });
+});
+
+
+describe('organiser submission review', () => {
+  const submission = { id: 7, registration_id: 4, form_version_id: 10, user_id: 9, member_name: 'Synthetic member',
+    revision: 2, status: 'submitted', attempt_number: 1, effective_slot: 1, supersedes_submission_id: null,
+    lineage_root_submission_id: 7, superseded_at: null, submitted_at: '2030-01-01', withdrawn_at: null, updated_at: '2030-01-01' };
+  const pagination = { page: 2, per_page: 25, total: 26, last_page: 2, page_count: 1,
+    from: 26, to: 26, has_more: false, previous_page: 1, next_page: null };
+  const overview = { data: { forms: [], submissions: [submission], pagination: { submissions: pagination },
+    permissions: { view_roster: true, view_sensitive_answers: false, export_answers: true },
+    guests: [{ email: 'private@example.invalid' }], campaigns: ['private'], settings: {} } };
+  const evidence = { purpose: 'Prepare venue adjustments', correlation_id: 'review-request-1', include_sensitive: false };
+  const answer = { question_id: 11, value: 'Synthetic answer', purged: false, classification: 'internal' };
+  it('uses independent page controls and retains only the submission projection', async () => {
+    jest.mocked(api.get).mockResolvedValue(overview);
+    const result = await getOrganizerRegistrationSubmissions(42, 2, 25);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/events/42/registration-product/manage',
+      { submissions_page: '2', submissions_per_page: '25', campaigns_per_page: '1', guests_per_page: '1' }, options);
+    expect(result.data).toEqual({ forms: [], submissions: [submission], pagination: { submissions: pagination }, permissions: overview.data.permissions });
+    expect(api.post).not.toHaveBeenCalled();
+  });
+  it('removes roster identity when the returned permission refuses it', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { ...overview.data, permissions: { ...overview.data.permissions, view_roster: false } } });
+    expect((await getOrganizerRegistrationSubmissions(42)).data.submissions[0]).not.toHaveProperty('member_name');
+  });
+  it.each([[0, 1, 25], [42, 0, 25], [42, 1, 101], [42, 1.5, 25]])('rejects invalid page arguments %j', async (event, page, perPage) => {
+    await expect(getOrganizerRegistrationSubmissions(event, page, perPage)).rejects.toThrow();
+    expect(api.get).not.toHaveBeenCalled();
+  });
+  it('refuses an overview without explicit permissions or pagination', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { forms: [], submissions: [] } });
+    await expect(getOrganizerRegistrationSubmissions(42)).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
+  });
+  it('sends the exact audit purpose and explicit sensitive choice', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { answers: { activity: answer } } });
+    expect((await reviewOrganizerRegistrationAnswers(42, 7, evidence)).data.answers.activity).toEqual(answer);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/events/42/registration-product/submissions/7/answers', evidence, options);
+  });
+  it.each([{ purpose: ' ' }, { purpose: 'a'.repeat(501) }, { correlation_id: '' }, { correlation_id: 'é'.repeat(257) }])('requires bounded audit evidence %j', async patch => {
+    await expect(reviewOrganizerRegistrationAnswers(42, 7, { ...evidence, ...patch })).rejects.toThrow();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+  it('counts purpose characters like the backend rather than UTF-16 code units', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { answers: [] } });
+    await expect(reviewOrganizerRegistrationAnswers(42, 7, { ...evidence, purpose: '📝'.repeat(500) })).resolves.toEqual({ data: { answers: {} } });
+    await expect(reviewOrganizerRegistrationAnswers(42, 7, { ...evidence, purpose: '📝'.repeat(501) })).rejects.toThrow();
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
+  it('retains purged status without returning a stale answer value', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { answers: { activity: { ...answer, purged: true } } } });
+    expect((await reviewOrganizerRegistrationAnswers(42, 7, evidence)).data.answers.activity).toEqual({ ...answer, value: null, purged: true });
+  });
+  it('accepts PHP empty answer maps for both organiser and own-draft reads', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { answers: [] } });
+    expect((await reviewOrganizerRegistrationAnswers(42, 7, evidence)).data.answers).toEqual({});
+    expect(await getOwnRegistrationAnswers(42, 7, 'own-read')).toEqual({});
+  });
+  it('refuses nonempty arrays and unexpected sensitive answers', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { answers: [answer] } });
+    await expect(reviewOrganizerRegistrationAnswers(42, 7, evidence)).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
+    jest.mocked(api.post).mockResolvedValue({ data: { answers: { support: { ...answer, classification: 'sensitive' } } } });
+    await expect(reviewOrganizerRegistrationAnswers(42, 7, evidence)).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
+    expect(JSON.stringify(jest.mocked(Sentry.captureMessage).mock.calls)).not.toContain(answer.value);
+    expect((await reviewOrganizerRegistrationAnswers(42, 7, { ...evidence, include_sensitive: true })).data.answers.support.classification).toBe('sensitive');
+  });
+  it('propagates permission refusal without retrying or supplying an empty success', async () => {
+    const refused = new Error('refused'); jest.mocked(api.post).mockRejectedValue(refused);
+    await expect(reviewOrganizerRegistrationAnswers(42, 7, evidence)).rejects.toBe(refused);
+    expect(api.post).toHaveBeenCalledTimes(1);
   });
 });
