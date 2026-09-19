@@ -257,8 +257,6 @@ function EventAttendanceScreenInner() {
           </HeroCard.Body>
         </HeroCard>
 
-        <EventOfflineCheckinCard eventId={safeEventId} />
-
         <Surface variant="secondary" className="gap-3 rounded-panel-inner p-4">
           <SearchInput
             value={draftSearch}
@@ -384,6 +382,7 @@ function EventAttendanceScreenInner() {
             </HeroButton>
           </View>
         ) : null}
+        <EventOfflineCheckinCard eventId={safeEventId} />
       </ScrollView>
       {confirmDialog}
     </SafeAreaView>

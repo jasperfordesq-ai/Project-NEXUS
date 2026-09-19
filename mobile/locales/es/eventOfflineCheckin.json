@@ -7,9 +7,9 @@
     "noWallet": "La asistencia nunca modifica saldos ni concede créditos de tiempo.",
     "ready": "Este dispositivo está listo para el registro sin conexión.",
     "notReady": "El registro sin conexión no está listo",
-    "notReadyDescription": "Autoriza este dispositivo mientras tengas conexión. La búsqueda manual por nombre sigue disponible abajo.",
+    "notReadyDescription": "Autoriza este dispositivo mientras tengas conexión. La búsqueda manual por nombre sigue disponible.",
     "loadErrorTitle": "El registro sin conexión no está disponible",
-    "loadErrorDescription": "No se pudo cargar el espacio seguro. Usa la búsqueda manual por nombre de abajo.",
+    "loadErrorDescription": "No se pudo cargar el espacio seguro. Usa la búsqueda manual por nombre.",
     "retry": "Volver a intentar"
   },
   "device": {
@@ -95,7 +95,7 @@
   },
   "manual": {
     "title": "El registro manual siempre está disponible",
-    "description": "Usa la búsqueda en directo por nombre de abajo cuando no estén disponibles el QR, la cámara o el dispositivo autorizado."
+    "description": "Usa la búsqueda en directo por nombre cuando no estén disponibles el QR, la cámara o el dispositivo autorizado."
   },
   "credential": {
     "title": "Tu código de registro del evento",

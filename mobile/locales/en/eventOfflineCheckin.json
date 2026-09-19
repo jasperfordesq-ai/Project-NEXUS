@@ -7,9 +7,9 @@
     "noWallet": "Attendance never changes balances or awards time credits.",
     "ready": "This device is ready for offline check-in.",
     "notReady": "Offline check-in is not ready",
-    "notReadyDescription": "Authorize this device while online. Manual name check-in remains available below.",
+    "notReadyDescription": "Authorize this device while online. Manual name check-in remains available.",
     "loadErrorTitle": "Offline check-in is unavailable",
-    "loadErrorDescription": "The secure workspace could not be loaded. Use manual name check-in below.",
+    "loadErrorDescription": "The secure workspace could not be loaded. Use manual name check-in.",
     "retry": "Try again"
   },
   "device": {
@@ -95,7 +95,7 @@
   },
   "manual": {
     "title": "Manual check-in always remains available",
-    "description": "Use the live name search below whenever a QR code, camera or authorized device is unavailable."
+    "description": "Use the live name search whenever a QR code, camera or authorized device is unavailable."
   },
   "credential": {
     "title": "Your event check-in code",

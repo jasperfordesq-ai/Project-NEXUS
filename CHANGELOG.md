@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event check-in puts attendee search and the live roster before offline device administration, reducing scrolling for routine attendance. Offline guidance no longer assumes where the roster appears.
+
 - Native event attendance retains the server-confirmed check-in state while the roster refreshes, suppresses older actions and totals, and waits for current roster permissions before offering the next action.
 
 - Native event attendance clears the roster and summary after access is refused, preventing old attendance details and actions from reappearing during a later refresh.

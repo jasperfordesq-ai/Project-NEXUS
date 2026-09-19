@@ -7,9 +7,9 @@
     "noWallet": "Ní athraíonn tinreamh iarmhéideanna riamh agus ní bhronntar creidmheasanna ama dá bharr.",
     "ready": "Tá an gléas seo réidh do sheiceáil isteach as líne.",
     "notReady": "Níl seiceáil isteach as líne réidh",
-    "notReadyDescription": "Údaraigh an gléas seo agus tú ar líne. Beidh cuardach láimhe de réir ainm ar fáil thíos i gcónaí.",
+    "notReadyDescription": "Údaraigh an gléas seo agus tú ar líne. Beidh cuardach láimhe de réir ainm ar fáil i gcónaí.",
     "loadErrorTitle": "Níl seiceáil isteach as líne ar fáil",
-    "loadErrorDescription": "Níorbh fhéidir an limistéar slán a lódáil. Úsáid an cuardach láimhe de réir ainm thíos.",
+    "loadErrorDescription": "Níorbh fhéidir an limistéar slán a lódáil. Úsáid an cuardach láimhe de réir ainm.",
     "retry": "Bain triail eile as"
   },
   "device": {
@@ -95,7 +95,7 @@
   },
   "manual": {
     "title": "Bíonn seiceáil isteach láimhe ar fáil i gcónaí",
-    "description": "Úsáid an cuardach beo de réir ainm thíos nuair nach mbíonn an QR, an ceamara nó an gléas údaraithe ar fáil."
+    "description": "Úsáid an cuardach beo de réir ainm nuair nach mbíonn an QR, an ceamara nó an gléas údaraithe ar fáil."
   },
   "credential": {
     "title": "Do chód seiceála isteach don imeacht",

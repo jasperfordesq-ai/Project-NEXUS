@@ -7,9 +7,9 @@
     "noWallet": "Anwesenheit ändert niemals Guthaben und vergibt keine Zeitgutschriften.",
     "ready": "Dieses Gerät ist für den Offline-Check-in bereit.",
     "notReady": "Offline-Check-in ist nicht bereit",
-    "notReadyDescription": "Autorisieren Sie dieses Gerät online. Der manuelle Check-in nach Namen bleibt unten verfügbar.",
+    "notReadyDescription": "Autorisieren Sie dieses Gerät online. Der manuelle Check-in nach Namen bleibt verfügbar.",
     "loadErrorTitle": "Offline-Check-in ist nicht verfügbar",
-    "loadErrorDescription": "Der sichere Arbeitsbereich konnte nicht geladen werden. Nutzen Sie unten den manuellen Check-in nach Namen.",
+    "loadErrorDescription": "Der sichere Arbeitsbereich konnte nicht geladen werden. Nutzen Sie den manuellen Check-in nach Namen.",
     "retry": "Erneut versuchen"
   },
   "device": {
@@ -95,7 +95,7 @@
   },
   "manual": {
     "title": "Manueller Check-in bleibt immer verfügbar",
-    "description": "Nutzen Sie unten die Live-Namenssuche, wenn QR-Code, Kamera oder autorisiertes Gerät nicht verfügbar sind."
+    "description": "Nutzen Sie die Live-Namenssuche, wenn QR-Code, Kamera oder autorisiertes Gerät nicht verfügbar sind."
   },
   "credential": {
     "title": "Ihr Event-Check-in-Code",

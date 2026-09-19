@@ -7,9 +7,9 @@
     "noWallet": "La presenza non modifica mai i saldi e non assegna crediti di tempo.",
     "ready": "Questo dispositivo è pronto per il check-in offline.",
     "notReady": "Il check-in offline non è pronto",
-    "notReadyDescription": "Autorizza il dispositivo quando sei online. La ricerca manuale per nome resta disponibile qui sotto.",
+    "notReadyDescription": "Autorizza il dispositivo quando sei online. La ricerca manuale per nome resta disponibile.",
     "loadErrorTitle": "Il check-in offline non è disponibile",
-    "loadErrorDescription": "Non è stato possibile caricare l’area protetta. Usa la ricerca manuale per nome qui sotto.",
+    "loadErrorDescription": "Non è stato possibile caricare l’area protetta. Usa la ricerca manuale per nome.",
     "retry": "Riprova"
   },
   "device": {
@@ -95,7 +95,7 @@
   },
   "manual": {
     "title": "Il check-in manuale resta sempre disponibile",
-    "description": "Usa la ricerca in tempo reale per nome qui sotto se il QR, la fotocamera o il dispositivo autorizzato non sono disponibili."
+    "description": "Usa la ricerca in tempo reale per nome se il QR, la fotocamera o il dispositivo autorizzato non sono disponibili."
   },
   "credential": {
     "title": "Il tuo codice di check-in per l’evento",
