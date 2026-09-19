@@ -5,7 +5,7 @@
 
 import { storage } from '@/lib/storage';
 
-export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt';
+export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication';
 
 export interface CreationDraftScope {
   kind: CreationDraftKind;
@@ -24,6 +24,9 @@ interface DraftManifest {
 
 const CHUNK_CHARACTERS = 350;
 const MAX_CHUNKS = 32;
+// Event bodies allow 20,000 characters. JSON can expand a character to six
+// characters; leave bounded headroom for the operation identity and receipt.
+const EVENT_COMMUNICATION_MAX_CHUNKS = 384;
 export const CREATION_DRAFT_MAX_CHARACTERS = CHUNK_CHARACTERS * MAX_CHUNKS;
 const operationQueues = new Map<string, Promise<void>>();
 
@@ -49,7 +52,11 @@ function splitUnicode(value: string): string[] {
   return chunks.length > 0 ? chunks : [''];
 }
 
-async function readManifest(base: string, required = false): Promise<DraftManifest | null> {
+function maxChunks(scope: CreationDraftScope): number {
+  return scope.kind === 'event-communication' ? EVENT_COMMUNICATION_MAX_CHUNKS : MAX_CHUNKS;
+}
+
+async function readManifest(base: string, required = false, limit = MAX_CHUNKS): Promise<DraftManifest | null> {
   let manifest: DraftManifest | null;
   if (required) {
     const raw = await storage.get(base, { required: true });
@@ -59,7 +66,7 @@ async function readManifest(base: string, required = false): Promise<DraftManife
     manifest = await storage.getJson<DraftManifest>(base);
   }
   if (!manifest || manifest.version !== 1 || !Number.isInteger(manifest.chunks)
-      || manifest.chunks < 0 || manifest.chunks > MAX_CHUNKS) {
+      || manifest.chunks < 0 || manifest.chunks > limit) {
     if (required) throw new Error('Invalid saved draft manifest');
     return null;
   }
@@ -98,9 +105,9 @@ export async function saveCreationDraft<T>(scope: CreationDraftScope, draft: T):
     let chunks: string[];
     let generation: string;
     try {
-      previous = await readManifest(base);
+      previous = await readManifest(base, false, maxChunks(scope));
       chunks = splitUnicode(JSON.stringify(draft));
-      if (chunks.length > MAX_CHUNKS) return false;
+      if (chunks.length > maxChunks(scope)) return false;
       generation = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
       for (let index = 0; index < chunks.length; index += 1) {
         await storage.set(chunkKey(base, generation, index), chunks[index], { required: true });
@@ -125,7 +132,7 @@ export async function loadCreationDraft<T>(scope: CreationDraftScope, options?: 
   const base = baseKey(scope);
   await operationQueues.get(base);
   try {
-    const manifest = await readManifest(base, options?.required);
+    const manifest = await readManifest(base, options?.required, maxChunks(scope));
     if (!manifest || manifest.cleared || manifest.chunks === 0 || !manifest.generation) return null;
     const chunks: string[] = [];
     for (let index = 0; index < manifest.chunks; index += 1) {
@@ -151,7 +158,7 @@ export async function clearCreationDraft(scope: CreationDraftScope): Promise<boo
   return enqueueDraftOperation(base, async () => {
     let previous: DraftManifest | null;
     try {
-      previous = await readManifest(base);
+      previous = await readManifest(base, false, maxChunks(scope));
       await storage.setJson<DraftManifest>(base, { version: 1, chunks: 0, cleared: true }, { required: true });
     } catch {
       return false;

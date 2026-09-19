@@ -41,6 +41,22 @@ it('round-trips a multi-chunk Unicode draft within its account and community sco
   expect([...values.keys()].filter(key => key.includes('_poll_2_7_')).length).toBeGreaterThan(1);
 });
 
+it('round-trips full-length event wording including JSON escaping without enlarging other draft limits', async () => {
+  const eventScope = { kind: 'event-communication' as const, tenantId: 2, userId: 7, contextId: 42 };
+  const draft = { key: 'pending-event-request', input: { body: '\u0001'.repeat(20000) } };
+  await expect(saveCreationDraft(eventScope, draft)).resolves.toBe(true);
+  await expect(loadCreationDraft(eventScope, { required: true })).resolves.toEqual(draft);
+  await expect(loadCreationDraft({ ...eventScope, contextId: 43 }, { required: true })).resolves.toBeNull();
+  await expect(saveCreationDraft(scope, draft)).resolves.toBe(false);
+});
+
+it('rejects event journal payloads beyond the bounded capacity and preserves the previous draft', async () => {
+  const eventScope = { kind: 'event-communication' as const, tenantId: 2, userId: 7, contextId: 42 };
+  await saveCreationDraft(eventScope, { body: 'Saved wording' });
+  await expect(saveCreationDraft(eventScope, { body: 'x'.repeat(150000) })).resolves.toBe(false);
+  await expect(loadCreationDraft(eventScope, { required: true })).resolves.toEqual({ body: 'Saved wording' });
+});
+
 it('keeps message drafts isolated by conversation as well as account and community', async () => {
   const firstConversation = { kind: 'message' as const, tenantId: 2, userId: 7, contextId: 'conversation_41' };
   const secondConversation = { ...firstConversation, contextId: 'conversation_42' };
