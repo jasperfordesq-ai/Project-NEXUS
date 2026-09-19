@@ -44,6 +44,8 @@
     "your_course": "Das ist Ihr Kurs."
   },
   "player": {
+    "check_quiz_grade": "Bewertungsstatus prüfen",
+    "quiz_pass_required": "Bestehen Sie dieses Quiz und warten Sie auf die Bewertung durch die Lehrkraft, bevor Sie die Lektion abschließen.",
     "mark_complete": "Als abgeschlossen markieren",
     "completed": "Vollendet",
     "next_lesson": "Nächste Lektion",
@@ -92,7 +94,12 @@
     "incomplete_title": "Unvollständiges Quiz abgeben?",
     "incomplete_message": "Sie haben {{answered}} von {{total}} Fragen beantwortet. Wenn Sie jetzt abgeben, wird einer Ihrer Versuche verbraucht.",
     "incomplete_message_attempts": "Sie haben {{answered}} von {{total}} Fragen beantwortet. Wenn Sie jetzt abgeben, wird einer Ihrer {{max}} Versuche verbraucht.",
-    "incomplete_confirm": "Trotzdem abgeben"
+    "incomplete_confirm": "Trotzdem abgeben",
+    "storage_failed": "Dieser Versuch konnte auf Ihrem Gerät nicht gespeichert oder wiederhergestellt werden. Bitte versuchen Sie es erneut.",
+    "answers_too_long": "Ihre Antworten sind zu lang, um sie sicher auf diesem Gerät zu speichern. Kürzen Sie sie und senden Sie sie erneut. Es wurde nichts gesendet.",
+    "pending_attempt": "Diese Antworten sind für einen erneuten Versuch gespeichert. Wiederholen Sie diesen Versuch, bevor Sie sie ändern.",
+    "recover_attempt": "Gespeicherten Versuch wiederholen",
+    "attempts_exhausted": "Für dieses Quiz sind keine Versuche mehr übrig."
   },
   "my_learning": {
     "title": "Mein Lernen",

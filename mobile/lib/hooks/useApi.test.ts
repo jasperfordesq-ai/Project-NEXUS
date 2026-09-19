@@ -8,6 +8,30 @@ import { useApi } from './useApi';
 import { ApiResponseError } from '@/lib/api/client';
 
 describe('useApi', () => {
+  it.each([401, 403, 404])('discards refused data with opt-in policy for status %s until a fresh read succeeds', async (status) => {
+    const fetchFn = jest.fn().mockResolvedValueOnce({ id: 1 })
+      .mockRejectedValueOnce(new ApiResponseError(status, 'Refused'));
+    const { result } = renderHook(() => useApi(fetchFn, [], { clearOnRefusal: true }));
+    await waitFor(() => expect(result.current.data).toEqual({ id: 1 }));
+    await act(async () => result.current.refresh());
+    expect(result.current.errorStatus).toBe(status);
+    expect(result.current.data).toBeNull();
+    let finish!: (value: { id: number }) => void;
+    fetchFn.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    await act(async () => result.current.refresh());
+    expect(result.current.data).toBeNull();
+    await act(async () => finish({ id: 2 }));
+    expect(result.current.data).toEqual({ id: 2 });
+  });
+
+  it('keeps data for a recoverable failure with refusal clearing enabled', async () => {
+    const fetchFn = jest.fn().mockResolvedValueOnce({ id: 1 })
+      .mockRejectedValueOnce(new ApiResponseError(429, 'Try later'));
+    const { result } = renderHook(() => useApi(fetchFn, [], { clearOnRefusal: true }));
+    await waitFor(() => expect(result.current.data).toEqual({ id: 1 }));
+    await act(async () => result.current.refresh());
+    expect(result.current.data).toEqual({ id: 1 });
+  });
   it('clears the previous record when the requested identity changes and fails', async () => {
     const fetchFn = jest.fn().mockResolvedValueOnce({ id: 1 })
       .mockRejectedValueOnce(new ApiResponseError(404, 'Not found'));

@@ -46,6 +46,8 @@
     "your_course": "Ceci est votre cours."
   },
   "player": {
+    "check_quiz_grade": "Vérifier la correction",
+    "quiz_pass_required": "Réussissez ce quiz et attendez toute correction par le formateur avant de terminer la leçon.",
     "mark_complete": "Marquer comme terminé",
     "completed": "Complété",
     "next_lesson": "Leçon suivante",
@@ -94,7 +96,12 @@
     "incomplete_title": "Soumettre un questionnaire incomplet ?",
     "incomplete_message": "Vous avez répondu à {{answered}} question(s) sur {{total}}. Soumettre maintenant consomme une de vos tentatives.",
     "incomplete_message_attempts": "Vous avez répondu à {{answered}} question(s) sur {{total}}. Soumettre maintenant consomme une de vos {{max}} tentatives.",
-    "incomplete_confirm": "Soumettre quand même"
+    "incomplete_confirm": "Soumettre quand même",
+    "storage_failed": "Impossible d’enregistrer ou de restaurer cette tentative sur votre appareil. Veuillez réessayer.",
+    "answers_too_long": "Vos réponses sont trop longues pour être enregistrées de manière sûre sur cet appareil. Raccourcissez-les puis réessayez. Rien n’a été envoyé.",
+    "pending_attempt": "Ces réponses sont enregistrées pour une nouvelle tentative d’envoi. Réessayez avant de les modifier.",
+    "recover_attempt": "Réessayer la tentative enregistrée",
+    "attempts_exhausted": "Il ne reste aucune tentative pour ce quiz."
   },
   "my_learning": {
     "title": "Mon apprentissage",

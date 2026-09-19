@@ -17,13 +17,18 @@
  * here as well as at completion.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
+import { isRefusalStatus } from '@/lib/api/refusal';
+import { acknowledgeQuizAttempt, loadQuizAttempt, prepareQuizAttempt, rejectQuizAttempt, QuizAttemptTooLargeError, type QuizAttemptScope, type SavedQuizAttempt } from '@/lib/quizAttemptStore';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useTenant } from '@/lib/hooks/useTenant';
 import { useConfirm } from '@/components/ui/useConfirm';
 import {
   getCourseQuiz,
@@ -67,21 +72,95 @@ function hasAnswer(answer: string | string[] | undefined): boolean {
   return typeof answer === 'string' && answer.trim().length > 0;
 }
 
-export default function LessonQuiz({ quizId }: { quizId: number }) {
+export default function LessonQuiz({ quizId, onAttemptResolved, gradeRevision = 0 }: { quizId: number; onAttemptResolved?: () => void; gradeRevision?: number }) {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const tenantId = Number(tenant?.id);
+  const userId = Number(user?.id);
+  return <LessonQuizBody key={`${tenantId}:${userId}:${quizId}`} quizId={quizId} tenantId={tenantId} userId={userId} onAttemptResolved={onAttemptResolved} gradeRevision={gradeRevision} />;
+}
+
+function LessonQuizBody({ quizId, tenantId, userId, onAttemptResolved, gradeRevision }: QuizAttemptScope & { onAttemptResolved?: () => void; gradeRevision: number }) {
   const { t } = useTranslation(['courses', 'common']);
   const theme = useTheme();
 
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [result, setResult] = useState<QuizAttemptResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  const scope = useMemo(() => ({ quizId, tenantId, userId }), [quizId, tenantId, userId]);
+  const [restoring, setRestoring] = useState(true);
+  const [restoreFailed, setRestoreFailed] = useState(false);
+  const [restoreRevision, setRestoreRevision] = useState(0);
+  const [restoredEmpty, setRestoredEmpty] = useState(false);
+  const editedAnswersRef = useRef(false);
+  const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
+  const [attemptsExhausted, setAttemptsExhausted] = useState(false);
+  const attemptsExhaustedRef = useRef(false);
+  const [attemptsRemaining, setAttemptsRemaining] = useState<number | null | undefined>(undefined);
+  const attemptsRemainingRef = useRef<number | null | undefined>(undefined);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { confirm, confirmDialog } = useConfirm();
 
-  const quizState = useApi(() => getCourseQuiz(quizId), [quizId], { enabled: quizId > 0 });
+  useEffect(() => {
+    let cancelled = false;
+    setRestoring(true);
+    setRestoreFailed(false);
+    void loadQuizAttempt(scope).then(saved => {
+      if (cancelled) return;
+      setRestoredEmpty(saved === null);
+      if (saved) {
+        setAnswers(saved.answers);
+        setResult(saved.status === 'acknowledged' ? saved.result ?? null : null);
+        pendingRef.current = saved.status === 'pending';
+        setPending(pendingRef.current);
+        const exhausted = saved.status === 'rejected' && saved.rejectionCode === 'MAX_ATTEMPTS_REACHED'
+          && (attemptsRemainingRef.current === undefined || attemptsRemainingRef.current === 0);
+        attemptsExhaustedRef.current = exhausted;
+        setAttemptsExhausted(exhausted);
+      }
+    }).catch(() => { if (!cancelled) setRestoreFailed(true); })
+      .finally(() => { if (!cancelled) setRestoring(false); });
+    return () => { cancelled = true; };
+  }, [scope, restoreRevision]);
+
+  const quizState = useApi(() => getCourseQuiz(quizId), [quizId, gradeRevision], { enabled: quizId > 0 });
   const quiz = quizState.data as CourseQuiz | null;
+  useEffect(() => {
+    if (!quiz) return;
+    attemptsRemainingRef.current = quiz.attempts_remaining;
+    setAttemptsRemaining(quiz.attempts_remaining);
+    if (quiz.attempts_remaining !== undefined && quiz.attempts_remaining !== 0) {
+      if (attemptsExhaustedRef.current) setSubmitError(null);
+      attemptsExhaustedRef.current = false;
+      setAttemptsExhausted(false);
+    }
+  }, [quiz]);
+  const limitReached = attemptsExhausted || (!pending && attemptsRemaining === 0);
   const questions = useMemo(() => quiz?.questions ?? [], [quiz]);
+  useEffect(() => {
+    const latest = quiz?.latest_attempt;
+    if (!restoring && restoredEmpty && !editedAnswersRef.current && !pending && !submitting && latest && result !== latest) {
+      setResult(latest);
+      return;
+    }
+    // A fresh grade may resolve this receipt; another attempt must never replace the draft.
+    if (!pending && !submitting && result?.needs_review && latest
+        && latest.attempt_id === result.attempt_id && !latest.needs_review) {
+      setResult(latest);
+    }
+  }, [pending, quiz?.latest_attempt, restoredEmpty, restoring, result, submitting]);
 
   const toggleChoice = useCallback((question: QuizQuestion, optionId: string) => {
+    if (submittingRef.current || pendingRef.current) return;
+    editedAnswersRef.current = true;
+    setResult(null);
     setAnswers((current) => {
       const key = String(question.id);
       if (question.type !== 'multi') return { ...current, [key]: optionId };
@@ -101,20 +180,52 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
   );
 
   const submit = useCallback(async () => {
-    if (submitting) return;
+    if (!mountedRef.current || submittingRef.current || attemptsExhaustedRef.current
+        || (!pendingRef.current && attemptsRemainingRef.current === 0) || restoring || restoreFailed) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setSubmitError(null);
+    setResult(null);
+    let attempt: SavedQuizAttempt | null = null;
     try {
-      setResult(await submitCourseQuizAttempt(quizId, answers));
+      attempt = await prepareQuizAttempt(scope, answers);
+      if (!mountedRef.current) return;
+      pendingRef.current = true;
+      setPending(true);
+      const nextResult = await submitCourseQuizAttempt(quizId, attempt.answers, attempt.key);
+      if (mountedRef.current && nextResult.attempts_remaining !== undefined) {
+        attemptsRemainingRef.current = nextResult.attempts_remaining;
+        setAttemptsRemaining(nextResult.attempts_remaining);
+      }
+      if (mountedRef.current) setResult(nextResult);
+      await acknowledgeQuizAttempt(scope, attempt.key, nextResult);
+      pendingRef.current = false;
+      if (mountedRef.current) setPending(false);
+      if (mountedRef.current) onAttemptResolved?.();
     } catch (err) {
+      if (attempt && err instanceof ApiResponseError && err.status === 422) {
+        try {
+          await rejectQuizAttempt(scope, attempt.key, err.code ?? 'VALIDATION_FAILED');
+          pendingRef.current = false;
+          if (mountedRef.current) setPending(false);
+        } catch { /* Retain the replay identity until rejection is durable. */ }
+      }
       // 🔴 The server's own words, not a generic retry prompt. MAX_ATTEMPTS_REACHED is
       // authoritative and final — telling a learner to "try again" would be a lie, and
       // hiding the reason leaves them tapping a button that cannot ever work.
-      setSubmitError(describeApiError(err, t('player.action_failed')));
+      if (mountedRef.current) {
+        if (err instanceof ApiResponseError && err.code === 'MAX_ATTEMPTS_REACHED') {
+          attemptsExhaustedRef.current = true;
+          setAttemptsExhausted(true);
+        }
+        setSubmitError(err instanceof ApiResponseError ? describeApiError(err, t('player.action_failed'))
+          : err instanceof QuizAttemptTooLargeError ? t('quiz.answers_too_long') : t('quiz.storage_failed'));
+      }
     } finally {
-      setSubmitting(false);
+      submittingRef.current = false;
+      if (mountedRef.current) setSubmitting(false);
     }
-  }, [answers, quizId, submitting, t]);
+  }, [answers, onAttemptResolved, quizId, restoreFailed, restoring, scope, t]);
 
   /**
    * 🔴 An attempt is a limited resource, and this button used to spend one on
@@ -127,7 +238,9 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
    * the point is to stop accidents, not to add a step to normal use.
    */
   const requestSubmit = useCallback(() => {
-    if (submitting || answeredCount === 0) return;
+    if (submitting || attemptsExhaustedRef.current || (!pendingRef.current && attemptsRemainingRef.current === 0)) return;
+    if (pendingRef.current) { void submit(); return; }
+    if (answeredCount === 0) return;
 
     if (answeredCount < questions.length) {
       confirm({
@@ -151,8 +264,15 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
     void submit();
   }, [answeredCount, confirm, questions.length, quiz?.max_attempts, submit, submitting, t]);
 
-  if (quizState.isLoading) {
+  if (quizState.isLoading || restoring) {
     return <View className="items-center py-8"><LoadingSpinner /></View>;
+  }
+
+  if (restoreFailed) {
+    return <View className="gap-3 py-4">
+      <Text style={{ color: theme.error }}>{t('quiz.storage_failed')}</Text>
+      <HeroButton onPress={() => setRestoreRevision(value => value + 1)}><HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label></HeroButton>
+    </View>;
   }
 
   if (quizState.error || !quiz) {
@@ -161,7 +281,7 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
         <Text style={{ color: theme.textSecondary }}>
           {quizState.error ?? t('quiz.unavailable')}
         </Text>
-        {quizState.error ? (
+        {quizState.error && !isRefusalStatus(quizState.errorStatus) ? (
           <HeroButton variant="secondary" onPress={() => void quizState.refresh()}>
             <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
           </HeroButton>
@@ -220,6 +340,7 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
                       */
                       accessibilityRole={question.type === 'multi' ? 'checkbox' : 'radio'}
                       accessibilityState={{ checked: selected }}
+                      isDisabled={submitting || pending || limitReached}
                       onPress={() => toggleChoice(question, option.id)}
                     >
                       <HeroButton.Label>{option.label}</HeroButton.Label>
@@ -232,7 +353,14 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
                 accessibilityLabel={question.prompt}
                 multiline
                 numberOfLines={question.type === 'essay' ? 6 : 3}
-                onChangeText={(text) => setAnswers((current) => ({ ...current, [key]: text }))}
+                editable={!submitting && !pending && !limitReached}
+                onChangeText={(text) => {
+                  if (!submittingRef.current && !pendingRef.current) {
+                    editedAnswersRef.current = true;
+                    setResult(null);
+                    setAnswers((current) => ({ ...current, [key]: text }));
+                  }
+                }}
                 placeholder={t('quiz.answer_placeholder')}
                 placeholderTextColor={theme.textSecondary}
                 style={{
@@ -282,20 +410,25 @@ export default function LessonQuiz({ quizId }: { quizId: number }) {
         <Text testID="quiz-error" style={{ color: theme.error }}>{submitError}</Text>
       ) : null}
 
-      {questions.length > 0 && answeredCount === 0 ? (
+      {pending ? <Text testID="quiz-pending" style={{ color: theme.textSecondary }}>{t('quiz.pending_attempt')}</Text> : null}
+      {limitReached ? <Text style={{ color: theme.textSecondary }}>{t('quiz.attempts_exhausted')}</Text> : null}
+
+      {!limitReached && !result && questions.length > 0 && answeredCount === 0 ? (
         <Text testID="quiz-nothing-answered" className="text-sm" style={{ color: theme.textSecondary }}>
           {t('quiz.nothing_answered')}
         </Text>
       ) : null}
 
       <HeroButton
-        isDisabled={submitting || questions.length === 0 || answeredCount === 0}
+        isDisabled={submitting || limitReached || (!pending && (questions.length === 0 || answeredCount === 0))}
         testID="quiz-submit"
         onPress={requestSubmit}
       >
         <HeroButton.Label>
           {submitting
             ? t('quiz.submitting')
+            : limitReached ? t('quiz.attempts_exhausted')
+            : pending ? t('quiz.recover_attempt')
             : result
               ? t('quiz.retry')
               : t('quiz.submit')}

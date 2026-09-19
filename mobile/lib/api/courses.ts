@@ -44,6 +44,8 @@ export interface CourseQuiz {
   max_attempts?: number;
   time_limit_minutes?: number | null;
   questions?: QuizQuestion[];
+  latest_attempt?: QuizAttemptResult | null;
+  attempts_remaining?: number | null;
 }
 
 export interface CourseCohort {
@@ -136,6 +138,7 @@ export interface LessonProgress {
 export interface LessonAvailability {
   lesson_id: number;
   available: boolean;
+  completion_allowed?: boolean;
   unlock_at: string | null;
 }
 
@@ -287,6 +290,7 @@ export async function completeCourseLesson(courseId: number, lessonId: number, w
 
 /** The result `CourseQuizController::attempt` returns for a submitted attempt. */
 export interface QuizAttemptResult {
+  attempts_remaining?: number | null;
   score_percent: number;
   passed: boolean;
   /** True when the attempt contains free-text answers a human has still to mark. */
@@ -318,10 +322,11 @@ export async function getCourseQuiz(quizId: number): Promise<CourseQuiz> {
 export async function submitCourseQuizAttempt(
   quizId: number,
   answers: Record<string, string | string[]>,
+  idempotencyKey?: string,
 ): Promise<QuizAttemptResult> {
   return unwrap(await api.post<DataEnvelope<QuizAttemptResult>>(
     `${API_V2}/courses/quizzes/${quizId}/attempt`,
-    { answers },
+    { answers, ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}) },
   ));
 }
 

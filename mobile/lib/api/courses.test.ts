@@ -26,6 +26,7 @@ import {
   getMyCourses,
   gradeCourseAttempt,
   publishCourse,
+  submitCourseQuizAttempt,
   unpublishCourse,
   updateCourse,
   updateCourseLesson,
@@ -43,6 +44,15 @@ jest.mock('@/lib/api/client', () => ({
 
 describe('courses API', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('forwards a stable quiz attempt identity without changing the result', async () => {
+    const receipt = { attempt_id: 12, score_percent: 80, passed: true, needs_review: false };
+    jest.mocked(api.post).mockResolvedValueOnce({ data: receipt });
+    expect(await submitCourseQuizAttempt(44, { '1': 'a' }, 'quiz-stable-key')).toEqual(receipt);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/courses/quizzes/44/attempt', {
+      answers: { '1': 'a' }, idempotency_key: 'quiz-stable-key',
+    });
+  });
 
   it('normalises the paginated Laravel catalogue and sends supported filters', async () => {
     (api.get as jest.Mock).mockResolvedValue({

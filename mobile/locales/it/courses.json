@@ -46,6 +46,8 @@
     "your_course": "Questo è il tuo corso."
   },
   "player": {
+    "check_quiz_grade": "Controlla la valutazione",
+    "quiz_pass_required": "Supera questo quiz e attendi la valutazione del docente prima di completare la lezione.",
     "mark_complete": "Contrassegna come completo",
     "completed": "Completato",
     "next_lesson": "Prossima lezione",
@@ -94,7 +96,12 @@
     "incomplete_title": "Inviare un quiz incompleto?",
     "incomplete_message": "Hai risposto a {{answered}} domande su {{total}}. Inviando ora consumi uno dei tuoi tentativi.",
     "incomplete_message_attempts": "Hai risposto a {{answered}} domande su {{total}}. Inviando ora consumi uno dei tuoi {{max}} tentativi.",
-    "incomplete_confirm": "Invia comunque"
+    "incomplete_confirm": "Invia comunque",
+    "storage_failed": "Impossibile salvare o ripristinare questo tentativo sul dispositivo. Riprova.",
+    "answers_too_long": "Le risposte sono troppo lunghe per essere salvate in sicurezza su questo dispositivo. Accorciale e inviale di nuovo. Non è stato inviato nulla.",
+    "pending_attempt": "Queste risposte sono salvate per riprovare. Riprova questo tentativo prima di modificarle.",
+    "recover_attempt": "Riprova il tentativo salvato",
+    "attempts_exhausted": "Non restano tentativi per questo quiz."
   },
   "my_learning": {
     "title": "Il mio apprendimento",

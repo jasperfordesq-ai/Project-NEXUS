@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiResponseError } from '@/lib/api/client';
+import { isRefusalStatus } from '@/lib/api/refusal';
 
 import i18n from 'i18next';
 /** HTTP status codes worth retrying (transient server/network errors). */
@@ -25,6 +26,8 @@ const RETRYABLE_STATUSES = new Set([0, 500, 502, 503, 504]);
 const RETRY_DELAY_MS = 2000;
 
 interface UseApiOptions {
+  /** Discard retained data when the server withdraws read access. */
+  clearOnRefusal?: boolean;
   /** When false, the fetch is skipped entirely. Defaults to true. */
   enabled?: boolean;
 }
@@ -67,6 +70,8 @@ export function useApi<T>(
   options?: UseApiOptions,
 ): UseApiState<T> {
   const enabled = options?.enabled ?? true;
+  const clearOnRefusalRef = useRef(options?.clearOnRefusal ?? false);
+  clearOnRefusalRef.current = options?.clearOnRefusal ?? false;
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
@@ -146,6 +151,7 @@ export function useApi<T>(
         if (err instanceof ApiResponseError) {
           setError(err.message);
           setErrorStatus(err.status);
+          if (clearOnRefusalRef.current && isRefusalStatus(err.status)) setData(null);
           setErrorCode(err.code ?? null);
         } else {
           setError(i18n.t('common:errors.generic'));

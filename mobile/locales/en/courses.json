@@ -44,6 +44,8 @@
     "your_course": "This is your course."
   },
   "player": {
+    "check_quiz_grade": "Check grading status",
+    "quiz_pass_required": "Pass this quiz and wait for any instructor grading before marking the lesson complete.",
     "mark_complete": "Mark as complete",
     "completed": "Completed",
     "next_lesson": "Next lesson",
@@ -92,7 +94,12 @@
     "incomplete_title": "Submit an unfinished quiz?",
     "incomplete_message": "You have answered {{answered}} of {{total}} questions. Submitting now uses one of your attempts.",
     "incomplete_message_attempts": "You have answered {{answered}} of {{total}} questions. Submitting now uses one of your {{max}} attempts.",
-    "incomplete_confirm": "Submit anyway"
+    "incomplete_confirm": "Submit anyway",
+    "storage_failed": "We could not save or restore this attempt on your device. Please try again.",
+    "answers_too_long": "Your answers are too long to save safely on this device. Shorten them and submit again. Nothing has been sent.",
+    "pending_attempt": "These answers are saved for retry. Retry this attempt before changing them.",
+    "recover_attempt": "Retry saved attempt",
+    "attempts_exhausted": "No attempts remain for this quiz."
   },
   "my_learning": {
     "title": "My learning",

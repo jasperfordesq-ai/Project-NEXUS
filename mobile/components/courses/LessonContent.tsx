@@ -28,7 +28,7 @@
  * instructor, and on a phone a `file:` URL addresses the device's own storage.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Text, View } from 'react-native';
 import NativeVideo, { type VideoProgress } from '@/components/media/NativeVideo';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
@@ -42,6 +42,8 @@ import { courseMediaFileName, normalizeCourseMediaUrl } from '@/lib/utils/course
 
 export interface LessonContentProps {
   lesson: CourseLesson;
+  onQuizAttemptResolved?: () => void;
+  quizGradeRevision?: number;
   /**
    * Reports how much of a video lesson has actually been played, 0-100.
    *
@@ -143,7 +145,12 @@ function ExternalContent({
   );
 }
 
-export default function LessonContent({ lesson, onWatchPercentChange }: LessonContentProps) {
+export default function LessonContent(props: LessonContentProps) {
+  const { lesson } = props;
+  return <LessonContentBody key={`${lesson.id}:${lesson.content_type}:${lesson.video_url ?? ''}`} {...props} />;
+}
+
+function LessonContentBody({ lesson, onWatchPercentChange, onQuizAttemptResolved, quizGradeRevision }: LessonContentProps) {
   const { t } = useTranslation('courses');
   const theme = useTheme();
 
@@ -153,19 +160,22 @@ export default function LessonContent({ lesson, onWatchPercentChange }: LessonCo
    * the scrubbed-to position would quietly undo their progress.
    */
   const [watched, setWatched] = useState(0);
+  const watchedRef = useRef(0);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const onPlaybackStatus = useCallback((status: VideoProgress) => {
-    if (!status.duration) return;
+    if (!mountedRef.current || !status.duration) return;
     const percent = Math.min(100, (status.currentTime / status.duration) * 100);
-    setWatched((current) => {
-      const next = Math.max(current, percent);
-      if (next > current) onWatchPercentChange?.(next);
-      return next;
-    });
     // A video played to its end counts as fully watched even if the last tick lands short.
-    if (status.finished) {
-      setWatched(100);
-      onWatchPercentChange?.(100);
+    const next = status.finished ? 100 : Math.max(watchedRef.current, percent);
+    if (next > watchedRef.current) {
+      watchedRef.current = next;
+      setWatched(next);
+      onWatchPercentChange?.(next);
     }
   }, [onWatchPercentChange]);
 
@@ -233,7 +243,7 @@ export default function LessonContent({ lesson, onWatchPercentChange }: LessonCo
     case 'quiz': {
       // A quiz lesson whose quiz has never been created is an authoring gap, not an error.
       if (!lesson.quiz?.id) return <MissingMedia message={t('quiz.unavailable')} />;
-      return <LessonQuiz quizId={lesson.quiz.id} />;
+      return <LessonQuiz quizId={lesson.quiz.id} onAttemptResolved={onQuizAttemptResolved} gradeRevision={quizGradeRevision} />;
     }
 
     case 'text':

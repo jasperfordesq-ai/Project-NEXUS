@@ -53,6 +53,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native data reads can discard retained content after access is refused, keeping it hidden during recovery while preserving content after temporary failures; the course player uses this policy.
+
+- Native quizzes show the learner’s server-saved grade when no local receipt exists, preserve newly edited answers during refresh, and remove answer prompts and editing controls when attempts are exhausted.
+
+- Native quizzes use the learner’s remaining-attempt count to disable exhausted submissions before another request, while allowing a saved unresolved attempt to recover with its original identity. A fresh server allowance also clears an older saved limit refusal when an instructor grants more attempts.
+
+- Native quiz grade checks refresh the matching submitted result after instructor review without spending another attempt or replacing the learner’s answers.
+
+- Native course players explain the passing-grade requirement, disable completion until eligibility is confirmed, and let learners refresh instructor grading status.
+
+- Native quizzes explain when answers exceed device recovery storage, preserve editable answers without submitting, and reserve space for the result receipt.
+
+- Native quizzes save attempts before sending, restore unresolved answers and retry identities when reopened, and retain confirmed results or definite rejections in encrypted storage scoped to the account and community. Failed recovery reads or saves prevent a new submission.
+
+- Native quizzes retain retry identities until the result is resolved and create a fresh identity for a deliberate new attempt.
+
+- Native quizzes stop resubmission after the attempt limit is reached and clear earlier scores when answers change or another attempt begins.
+
+- Native quizzes keep answers unchanged while submitting, preserve them after failure, and remove misleading retry actions when quiz access is refused.
+
+- Native quizzes prevent simultaneous duplicate submissions, ignore confirmations after departure, and clear answers and results when switching quizzes.
+
+- Native course players retain the selected lesson when a refresh reorders content and recover to a remaining lesson when the selected lesson is removed.
+
+- Native course video progress stays with its lesson, ignores delayed playback events from previous lessons, and resets when the video is replaced.
+
+- Native course players wait for initial lesson availability before showing content and keep lessons hidden until a failed first progress load is successfully retried.
+
+- Native course players remove lessons and completion actions when refreshed course or enrolment access is refused, and suppress delayed save feedback after access is lost.
+
+- Native course players no longer show a delayed progress-save error after the member leaves while the follow-up progress check is pending.
+
 - Quiz recovery storage preserves pending submission identities and confirmed receipts separately for each account, community and quiz; it serializes writes, refuses conflicting unresolved answers, and reserves space for the result receipt.
 
 - Encrypted draft storage supports required reads that distinguish missing drafts from unavailable storage, corrupt manifests, and missing committed chunks, for durable retry recovery.

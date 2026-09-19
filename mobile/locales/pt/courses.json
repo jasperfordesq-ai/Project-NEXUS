@@ -46,6 +46,8 @@
     "your_course": "Este é o seu curso."
   },
   "player": {
+    "check_quiz_grade": "Verificar a avaliação",
+    "quiz_pass_required": "Passe neste questionário e aguarde a avaliação do instrutor antes de concluir a lição.",
     "mark_complete": "Marcar como concluído",
     "completed": "Concluído",
     "next_lesson": "Próxima lição",
@@ -94,7 +96,12 @@
     "incomplete_title": "Enviar um questionário incompleto?",
     "incomplete_message": "Respondeu a {{answered}} de {{total}} perguntas. Se enviar agora, será consumida uma das suas tentativas.",
     "incomplete_message_attempts": "Respondeu a {{answered}} de {{total}} perguntas. Se enviar agora, será consumida uma das suas {{max}} tentativas.",
-    "incomplete_confirm": "Enviar mesmo assim"
+    "incomplete_confirm": "Enviar mesmo assim",
+    "storage_failed": "Não foi possível guardar ou recuperar esta tentativa no seu dispositivo. Tente novamente.",
+    "answers_too_long": "As suas respostas são demasiado longas para guardar em segurança neste dispositivo. Encurte-as e tente enviar novamente. Nada foi enviado.",
+    "pending_attempt": "Estas respostas estão guardadas para tentar novamente. Repita esta tentativa antes de as alterar.",
+    "recover_attempt": "Repetir a tentativa guardada",
+    "attempts_exhausted": "Não restam tentativas para este questionário."
   },
   "my_learning": {
     "title": "Meu aprendizado",

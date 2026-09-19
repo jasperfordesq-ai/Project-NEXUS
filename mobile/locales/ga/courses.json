@@ -50,6 +50,8 @@
     "your_course": "Seo é do chúrsa."
   },
   "player": {
+    "check_quiz_grade": "Seiceáil stádas an mheasúnaithe",
+    "quiz_pass_required": "Éirigh leat sa tráth na gceist seo agus fan ar mheasúnú an teagascóra sula marcálann tú an ceacht críochnaithe.",
     "mark_complete": "Marcáil mar iomlán",
     "completed": "Críochnaithe",
     "next_lesson": "An chéad cheacht eile",
@@ -98,7 +100,12 @@
     "incomplete_title": "Tráth na gCeist neamhchríochnaithe a sheoladh isteach?",
     "incomplete_message": "D’fhreagair tú {{answered}} as {{total}} ceist. Má sheolann tú isteach anois é, úsáidfear ceann de na hiarrachtaí atá agat.",
     "incomplete_message_attempts": "D’fhreagair tú {{answered}} as {{total}} ceist. Má sheolann tú isteach anois é, úsáidfear ceann de na {{max}} iarracht atá agat.",
-    "incomplete_confirm": "Seol isteach mar sin féin"
+    "incomplete_confirm": "Seol isteach mar sin féin",
+    "storage_failed": "Níorbh fhéidir an iarracht seo a shábháil nó a athchóiriú ar do ghléas. Bain triail eile as.",
+    "answers_too_long": "Tá do chuid freagraí rófhada le sábháil go sábháilte ar an ngléas seo. Giorraigh iad agus seol arís iad. Níor seoladh aon rud.",
+    "pending_attempt": "Tá na freagraí seo sábháilte le triail eile a bhaint astu. Bain triail eile as an iarracht seo sula n-athraíonn tú iad.",
+    "recover_attempt": "Bain triail eile as an iarracht shábháilte",
+    "attempts_exhausted": "Níl aon iarracht fágtha don tráth na gceist seo."
   },
   "my_learning": {
     "title": "Mo chuid foghlama",

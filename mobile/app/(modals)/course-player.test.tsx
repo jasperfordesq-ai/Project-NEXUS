@@ -46,6 +46,25 @@ describe('CoursePlayerScreen', () => {
     dimensions.mockRestore();
   });
 
+  it('blocks quiz completion until a grade refresh confirms a passing assessment', async () => {
+    const course = await getCourse(7);
+    course.sections![0].lessons![0].content_type = 'quiz';
+    jest.mocked(getCourse).mockResolvedValue(course);
+    jest.mocked(getCourseProgress)
+      .mockResolvedValueOnce({ enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 0 }, lessons: [], availability: [{ lesson_id: 12, available: true, completion_allowed: false, unlock_at: null }] })
+      .mockResolvedValue({ enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 0 }, lessons: [], availability: [{ lesson_id: 12, available: true, completion_allowed: true, unlock_at: null }] });
+    const screen = render(<CoursePlayerScreen />);
+    await waitFor(() => expect(screen.getByText('player.quiz_pass_required')).toBeTruthy());
+    fireEvent.press(screen.getByText('Mark as complete'));
+    expect(completeCourseLesson).not.toHaveBeenCalled();
+    await act(async () => { fireEvent.press(screen.getByTestId('check-quiz-grade')); });
+    await waitFor(() => expect(getCourseProgress).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByText('player.quiz_pass_required')).toBeNull());
+    fireEvent.press(screen.getByText('Mark as complete'));
+    await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText('Completed')).toBeTruthy());
+  });
+
   it('shows lesson content and saves completion before changing the UI', async () => {
     let finish!: (value: { progress_percent: number; course_completed: boolean }) => void;
     jest.mocked(completeCourseLesson).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
@@ -74,6 +93,23 @@ describe('CoursePlayerScreen', () => {
     })));
     // The lesson must not look complete when the server refused.
     expect(getByText('Mark as complete')).toBeTruthy();
+  });
+
+  it('does not show a late readback error after leaving the player', async () => {
+    let rejectReadback!: (reason: Error) => void;
+    const initialProgress = await jest.mocked(getCourseProgress)(7);
+    jest.mocked(getCourseProgress)
+      .mockResolvedValueOnce(initialProgress)
+      .mockImplementationOnce(() => new Promise((_, reject) => { rejectReadback = reject; }));
+    jest.mocked(getCourseProgress).mockClear();
+    jest.mocked(completeCourseLesson).mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    const screen = render(<CoursePlayerScreen />);
+    await waitFor(() => expect(screen.getByText('Mark as complete')).toBeTruthy());
+    fireEvent.press(screen.getByText('Mark as complete'));
+    await waitFor(() => expect(getCourseProgress).toHaveBeenCalledTimes(2));
+    screen.unmount();
+    await act(async () => { rejectReadback(new ApiResponseError(503, 'Progress unavailable')); });
+    expect(mockShow).not.toHaveBeenCalled();
   });
 
   it('marks the lesson complete when the POST response is lost but progress readback confirms it', async () => {
@@ -185,6 +221,34 @@ describe('CoursePlayerScreen', () => {
     await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 12, 25));
   });
 
+  it.each([false, true])('keeps second-video progress independent (late first-video event: %s)', async (lateEvent) => {
+    const course = courseWithLesson(videoLesson);
+    course.sections[0].lessons.push({ ...videoLesson, id: 13, title: 'Second video', position: 2, video_url: 'https://media.example.org/second.mp4' });
+    jest.mocked(getCourse).mockResolvedValue(course as never);
+    const screen = render(<CoursePlayerScreen />);
+    const first = await screen.findByTestId('lesson-video');
+    const firstCallback = first.props.onProgress;
+    act(() => firstCallback({ currentTime: 80, duration: 100 }));
+    fireEvent.press(screen.getByText('Next lesson'));
+    await screen.findByText('Second video');
+    act(() => screen.getByTestId('lesson-video').props.onProgress({ currentTime: 25, duration: 100 }));
+    if (lateEvent) act(() => firstCallback({ currentTime: 100, duration: 100, finished: true }));
+    fireEvent.press(screen.getByText('Mark as complete'));
+    await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 13, 25));
+  });
+
+  it('resets completion watch progress when a refresh replaces the lesson video', async () => {
+    jest.mocked(getCourse).mockResolvedValue(courseWithLesson(videoLesson) as never);
+    const screen = render(<CoursePlayerScreen />);
+    await screen.findByTestId('lesson-video');
+    act(() => screen.getByTestId('lesson-video').props.onProgress({ currentTime: 80, duration: 100 }));
+    jest.mocked(getCourse).mockResolvedValueOnce(courseWithLesson({ ...videoLesson, video_url: 'https://media.example.org/replacement.mp4' }) as never);
+    act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+    await waitFor(() => expect(screen.getByTestId('lesson-video').props.source.uri).toBe('https://media.example.org/replacement.mp4'));
+    fireEvent.press(screen.getByText('Mark as complete'));
+    await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 12, 0));
+  });
+
   it('shows a locked lesson as locked instead of offering a button the server will refuse', async () => {
     // `availability` has always been in the progress response and the screen threw it away,
     // so a drip-locked lesson offered normal navigation and a completion action that came
@@ -202,15 +266,94 @@ describe('CoursePlayerScreen', () => {
     expect(queryByText('Offer one useful skill.')).toBeNull();
   });
 
+  it.each([401, 403, 404])('removes the player when refreshed course access returns %s', async (status) => {
+    const screen = render(<CoursePlayerScreen />);
+    await screen.findByText('Offer one useful skill.');
+    jest.mocked(getCourse).mockRejectedValueOnce(new ApiResponseError(status, 'Unavailable'));
+    act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+    await screen.findByText('common:errors.notAvailableHint');
+    expect(screen.queryByText('Offer one useful skill.')).toBeNull();
+    expect(screen.queryByText('Mark as complete')).toBeNull();
+    expect(screen.queryByText('Retry')).toBeNull();
+  });
+
+  it.each([401, 403, 404])('removes the player when refreshed enrolment access returns %s', async (status) => {
+    const screen = render(<CoursePlayerScreen />);
+    await screen.findByText('Offer one useful skill.');
+    jest.mocked(getCourseProgress).mockRejectedValueOnce(new ApiResponseError(status, 'Unavailable'));
+    act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+    await screen.findByText('common:errors.notAvailableHint');
+    expect(screen.queryByText('Offer one useful skill.')).toBeNull();
+    expect(screen.queryByText('Mark as complete')).toBeNull();
+    expect(screen.queryByText('Retry')).toBeNull();
+  });
+
+  it('does not report a pending completion after refreshed enrolment is refused', async () => {
+    let finish!: (value: { progress_percent: number; course_completed: boolean }) => void;
+    jest.mocked(completeCourseLesson).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<CoursePlayerScreen />);
+    await screen.findByText('Offer one useful skill.');
+    fireEvent.press(screen.getByText('Mark as complete'));
+    await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledTimes(1));
+    jest.mocked(getCourseProgress).mockRejectedValueOnce(new ApiResponseError(403, 'Unavailable'));
+    act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+    await screen.findByText('common:errors.notAvailableHint');
+    await act(async () => { finish({ progress_percent: 100, course_completed: true }); });
+    expect(mockShow).not.toHaveBeenCalled();
+  });
+
+  it('shows unavailable when initial enrolment access is refused', async () => {
+    jest.mocked(getCourseProgress).mockRejectedValueOnce(new ApiResponseError(404, 'Not enrolled'));
+    const screen = render(<CoursePlayerScreen />);
+    await screen.findByText('common:errors.notAvailableHint');
+    expect(screen.queryByText('Offer one useful skill.')).toBeNull();
+    expect(screen.queryByText('Mark as complete')).toBeNull();
+    expect(screen.queryByText('Retry')).toBeNull();
+  });
+
+  it('waits for lesson availability before rendering the first lesson', async () => {
+    let finish!: (value: Awaited<ReturnType<typeof getCourseProgress>>) => void;
+    jest.mocked(getCourseProgress).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<CoursePlayerScreen />);
+    await act(async () => {});
+    expect(getCourse).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Offer one useful skill.')).toBeNull();
+    expect(screen.queryByLabelText('Course progress')).toBeNull();
+    await act(async () => { finish({ enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 0 }, lessons: [], availability: [{ lesson_id: 12, available: false, unlock_at: null }] }); });
+    expect(screen.getByTestId('lesson-locked')).toBeTruthy();
+    expect(screen.queryByText('Offer one useful skill.')).toBeNull();
+  });
+
+  it('keeps lessons hidden after initial progress failure and recovers through Retry', async () => {
+    jest.mocked(getCourseProgress).mockRejectedValueOnce(new ApiResponseError(429, 'Try later'));
+    const screen = render(<CoursePlayerScreen />);
+    await screen.findByTestId('course-progress-error');
+    expect(screen.queryByText('Offer one useful skill.')).toBeNull();
+    expect(screen.queryByText('Mark as complete')).toBeNull();
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByText('Offer one useful skill.');
+    expect(screen.queryByTestId('course-progress-error')).toBeNull();
+  });
+
+  it('retains accepted lessons with a recoverable progress refresh error', async () => {
+    const screen = render(<CoursePlayerScreen />);
+    await screen.findByText('Offer one useful skill.');
+    jest.mocked(getCourseProgress).mockRejectedValueOnce(new ApiResponseError(429, 'Try later'));
+    act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+    await screen.findByTestId('course-progress-error');
+    expect(screen.getByText('Offer one useful skill.')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.queryByTestId('course-progress-error')).toBeNull());
+    expect(screen.getByText('Mark as complete')).toBeTruthy();
+  });
+
   it('says progress could not be loaded rather than presenting it as zero', async () => {
     // The course loaded and only progress failed, so `lesson` was truthy and the whole
     // error branch was skipped: the screen showed 0% and no ticks as if that were the
     // member's real standing. Unavailable progress is not zero progress.
-    // 404 deliberately, not 500: `useApi` retries 5xx, so a 500 would still be retrying
-    // when the assertion runs. 404 is also the real shape here - the progress endpoint
-    // answers NOT_ENROLLED with 404.
+    // A rate limit is recoverable. Refused enrolment is covered separately above.
     jest.mocked(getCourseProgress).mockRejectedValue(
-      new ApiResponseError(404, 'Progress is unavailable.'),
+      new ApiResponseError(429, 'Progress is unavailable.'),
     );
 
     const { getByTestId, queryByLabelText } = render(<CoursePlayerScreen />);
@@ -316,6 +459,41 @@ describe('CoursePlayerScreen', () => {
 
       expect(await findByText('Lesson two body.')).toBeTruthy();
       expect(getByTestId('course-player-resumed')).toBeTruthy();
+    });
+
+    it('keeps the selected lesson when refresh changes its position', async () => {
+      jest.mocked(getCourse).mockResolvedValue(threeLessons as never);
+      jest.mocked(getCourseProgress).mockResolvedValue(progressWith([]) as never);
+      const screen = render(<CoursePlayerScreen />);
+      await screen.findByText('Lesson one body.');
+      fireEvent.press(screen.getByText('Next lesson'));
+      await screen.findByText('Lesson two body.');
+      const original = threeLessons.sections[0];
+      jest.mocked(getCourse).mockResolvedValueOnce({ ...threeLessons, sections: [{ ...original, lessons: [original.lessons[1], original.lessons[0], original.lessons[2]] }] } as never);
+      act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+      await act(async () => {});
+      expect(screen.getByText('Lesson two body.')).toBeTruthy();
+      fireEvent.press(screen.getByText('Next lesson'));
+      expect(screen.getByText('Lesson one body.')).toBeTruthy();
+    });
+
+    it('recovers to a remaining lesson when refresh removes the selected last lesson', async () => {
+      jest.mocked(getCourse).mockResolvedValue(threeLessons as never);
+      jest.mocked(getCourseProgress).mockResolvedValue(progressWith([]) as never);
+      const screen = render(<CoursePlayerScreen />);
+      await screen.findByText('Lesson one body.');
+      fireEvent.press(screen.getByText('Next lesson'));
+      fireEvent.press(screen.getByText('Next lesson'));
+      expect(screen.getByText('Lesson three body.')).toBeTruthy();
+      const original = threeLessons.sections[0];
+      jest.mocked(getCourse).mockResolvedValueOnce({ ...threeLessons, sections: [{ ...original, lessons: original.lessons.slice(0, 2) }] } as never);
+      act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+      await act(async () => {});
+      expect(screen.getByText('Lesson one body.')).toBeTruthy();
+      fireEvent.press(screen.getByText('Next lesson'));
+      expect(screen.getByText('Lesson two body.')).toBeTruthy();
+      fireEvent.press(screen.getByText('Mark as complete'));
+      await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 12, 100));
     });
 
     it('stays on lesson one for a learner who has finished nothing, and says nothing', async () => {

@@ -79,7 +79,6 @@ function CoursePlayerScreenInner() {
   const isMountedRef = useRef(true);
   const [completedIds, setCompletedIds] = useState<Set<number>>(new Set());
   const [progressPercent, setProgressPercent] = useState(0);
-  const [availability, setAvailability] = useState<Record<number, LessonAvailability>>({});
   /**
    * How much of the current lesson has actually been played. Reset whenever the lesson
    * changes, or lesson two would inherit lesson one's figure and report a video nobody
@@ -92,14 +91,25 @@ function CoursePlayerScreenInner() {
   }, []);
 
   const enabled = Number.isFinite(courseId) && courseId > 0;
-  const courseState = useApi(() => getCourse(courseId), [courseId], { enabled });
-  const progressState = useApi(() => getCourseProgress(courseId), [courseId], { enabled });
+  const courseState = useApi(() => getCourse(courseId), [courseId], { enabled, clearOnRefusal: true });
+  const progressState = useApi(() => getCourseProgress(courseId), [courseId], { enabled, clearOnRefusal: true });
+  const refused = isRefusalStatus(courseState.errorStatus) || isRefusalStatus(progressState.errorStatus);
+  const availability = useMemo<Record<number, LessonAvailability>>(
+    () => Object.fromEntries((progressState.data?.availability ?? []).map((entry) => [entry.lesson_id, entry])),
+    [progressState.data],
+  );
+  const canSaveRef = useRef(false);
+  canSaveRef.current = Boolean(courseState.data && progressState.data && !refused);
   const lessons = useMemo(
     () => courseState.data?.sections?.flatMap((section) => section.lessons ?? []) ?? [],
     [courseState.data],
   );
-  const [lessonIndex, setLessonIndex] = useState(0);
+  const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
+  const lessonIndex = Math.max(0, lessons.findIndex((item) => item.id === selectedLessonId));
   const lesson = lessons[lessonIndex];
+  useEffect(() => {
+    if (lesson && lesson.id !== selectedLessonId) setSelectedLessonId(lesson.id);
+  }, [lesson, selectedLessonId]);
   /*
     🔴 The player always opened at lesson one. A learner eleven lessons into a course
     reopened it and was put back at the beginning every single time, with nothing to say
@@ -132,7 +142,7 @@ function CoursePlayerScreenInner() {
     // last one is where the learner was; if they are locked, lesson one is right.
     const target = next >= 0 ? next : (completed.size >= lessons.length ? lessons.length - 1 : 0);
     if (target > 0) {
-      setLessonIndex(target);
+      setSelectedLessonId(lessons[target].id);
       setDidResume(true);
     }
   }, [lessons, progressState.data]);
@@ -145,12 +155,6 @@ function CoursePlayerScreenInner() {
     setProgressPercent(Number.isFinite(percent) ? percent : 0);
     setCompletedIds(new Set(
       progress.lessons.filter((item) => item.status === 'completed').map((item) => item.lesson_id),
-    ));
-    // 🔴 The drip gate the screen used to throw away. `CourseEnrollmentController::progress`
-    // has always returned this; without reading it the app offered a locked lesson's
-    // completion button and let the server explain the refusal afterwards.
-    setAvailability(Object.fromEntries(
-      (progress.availability ?? []).map((entry) => [entry.lesson_id, entry]),
     ));
   }, [progressState.data]);
 
@@ -167,33 +171,40 @@ function CoursePlayerScreenInner() {
   */
   useEffect(() => {
     setWatchPercent(lesson?.content_type === 'video' ? 0 : 100);
-  }, [lesson?.id, lesson?.content_type]);
+  }, [lesson?.id, lesson?.content_type, lesson?.video_url]);
 
   const lessonAvailability = lesson ? availability[lesson.id] : undefined;
   // Absent availability means the server did not express an opinion — treat as available,
   // never as locked. A learner must not be shut out by a field that failed to arrive.
   const isLocked = lessonAvailability?.available === false;
-  const isCompleted = lesson ? completedIds.has(lesson.id) : false;
+  const quizNeedsPass = lesson?.content_type === 'quiz' && lessonAvailability?.completion_allowed !== true;
+  const isCompleted = lesson ? completedIds.has(lesson.id) && !quizNeedsPass : false;
+  const refreshProgress = progressState.refresh;
+  const [quizGradeRevision, setQuizGradeRevision] = useState(0);
+  const refreshQuizProgress = useCallback(() => {
+    refreshProgress();
+    setQuizGradeRevision(value => value + 1);
+  }, [refreshProgress]);
 
   const markComplete = useCallback(async () => {
-    if (!lesson || savingRef.current || isLocked) return;
+    if (!isMountedRef.current || !canSaveRef.current || !lesson || savingRef.current || isLocked || quizNeedsPass) return;
     savingRef.current = true;
     setSaving(true);
     try {
       // A video lesson sends what was actually played; every other type has no playback of
       // its own and correctly reports 100.
       const result = await completeCourseLesson(courseId, lesson.id, watchPercent);
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current || !canSaveRef.current) return;
       setCompletedIds((current) => new Set(current).add(lesson.id));
       setProgressPercent(result.progress_percent);
       show({ title: t('player.lesson_completed'), variant: 'success' });
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current || !canSaveRef.current) return;
       if (err instanceof ApiResponseError && err.status === 0) {
         try {
           const latest = await getCourseProgress(courseId);
           const completed = latest.lessons.some((item) => item.lesson_id === lesson.id && item.status === 'completed');
-          if (completed && isMountedRef.current) {
+          if (completed && isMountedRef.current && canSaveRef.current) {
             setCompletedIds((current) => new Set(current).add(lesson.id));
             const percent = Number(latest.enrollment.progress_percent);
             setProgressPercent(Number.isFinite(percent) ? percent : progressPercent);
@@ -204,6 +215,7 @@ function CoursePlayerScreenInner() {
           // Keep the original indeterminate error if authoritative progress is unavailable.
         }
       }
+      if (!isMountedRef.current || !canSaveRef.current) return;
       // The server's reason was discarded, so "please try again" was the only thing a member
       // ever saw — including when trying again could not work (audit 2026-09-06).
       show({
@@ -215,7 +227,7 @@ function CoursePlayerScreenInner() {
       savingRef.current = false;
       if (isMountedRef.current) setSaving(false);
     }
-  }, [courseId, isLocked, lesson, progressPercent, show, t, watchPercent]);
+  }, [courseId, isLocked, lesson, progressPercent, quizNeedsPass, show, t, watchPercent]);
 
   const retryAll = useCallback(() => {
     void courseState.refresh();
@@ -231,7 +243,11 @@ function CoursePlayerScreenInner() {
           backLabel={t('common:back')}
           fallbackHref="/(modals)/courses"
         />
-        {isLoading && !courseState.data ? (
+        {refused ? (
+          <View className="flex-1 items-center justify-center px-6">
+            <Text style={{ color: theme.textSecondary }}>{t('common:errors.notAvailableHint')}</Text>
+          </View>
+        ) : isLoading && (!courseState.data || !progressState.data) ? (
           <View className="flex-1 items-center justify-center"><LoadingSpinner /></View>
         ) : !lesson ? (
           <View className="flex-1 items-center justify-center gap-4 px-6">
@@ -292,7 +308,7 @@ function CoursePlayerScreenInner() {
               </>
             )}
 
-            <HeroCard className="rounded-panel">
+            {progressState.data ? <HeroCard className="rounded-panel">
               <HeroCard.Body className="gap-4 p-5">
                 <Text className="text-2xl font-bold" style={{ color: theme.text }}>{lesson.title}</Text>
 
@@ -315,7 +331,15 @@ function CoursePlayerScreenInner() {
                   </View>
                 ) : (
                   <>
-                    <LessonContent lesson={lesson} onWatchPercentChange={setWatchPercent} />
+                    <LessonContent lesson={lesson} onWatchPercentChange={setWatchPercent} onQuizAttemptResolved={refreshQuizProgress} quizGradeRevision={quizGradeRevision} />
+                    {quizNeedsPass ? (
+                      <View className="gap-2">
+                        <Text style={{ color: theme.textSecondary }}>{t('player.quiz_pass_required')}</Text>
+                        <HeroButton testID="check-quiz-grade" variant="secondary" isDisabled={progressState.isLoading} onPress={refreshQuizProgress}>
+                          <HeroButton.Label>{t('player.check_quiz_grade')}</HeroButton.Label>
+                        </HeroButton>
+                      </View>
+                    ) : null}
                     {/*
                       A minimum set by the instructor is stated, not enforced here: the API
                       does not gate completion on it, so blocking the button client-side
@@ -331,7 +355,7 @@ function CoursePlayerScreenInner() {
                         </Text>
                       ) : null}
                     <HeroButton
-                      isDisabled={saving || isCompleted}
+                      isDisabled={saving || isCompleted || quizNeedsPass || !progressState.data}
                       onPress={() => void markComplete()}
                     >
                       <HeroButton.Label>
@@ -344,7 +368,7 @@ function CoursePlayerScreenInner() {
                 {didResume ? (
                   <View className="flex-row flex-wrap items-center gap-2" testID="course-player-resumed">
                     <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('player.resumed')}</Text>
-                    <HeroButton size="sm" variant="ghost" onPress={() => { setLessonIndex(0); setDidResume(false); }}>
+                    <HeroButton size="sm" variant="ghost" onPress={() => { setSelectedLessonId(lessons[0].id); setDidResume(false); }}>
                       <HeroButton.Label>{t('player.start_from_beginning')}</HeroButton.Label>
                     </HeroButton>
                   </View>
@@ -355,7 +379,7 @@ function CoursePlayerScreenInner() {
                     className={largeText ? 'w-full' : undefined}
                     variant="secondary"
                     isDisabled={lessonIndex === 0}
-                    onPress={() => setLessonIndex((value) => Math.max(0, value - 1))}
+                    onPress={() => setSelectedLessonId(lessons[Math.max(0, lessonIndex - 1)].id)}
                   >
                     <HeroButton.Label>{t('player.prev_lesson')}</HeroButton.Label>
                   </HeroButton>
@@ -363,13 +387,13 @@ function CoursePlayerScreenInner() {
                     className={largeText ? 'w-full' : undefined}
                     variant="secondary"
                     isDisabled={lessonIndex >= lessons.length - 1}
-                    onPress={() => setLessonIndex((value) => Math.min(lessons.length - 1, value + 1))}
+                    onPress={() => setSelectedLessonId(lessons[Math.min(lessons.length - 1, lessonIndex + 1)].id)}
                   >
                     <HeroButton.Label>{t('player.next_lesson')}</HeroButton.Label>
                   </HeroButton>
                 </View>
               </HeroCard.Body>
-            </HeroCard>
+            </HeroCard> : null}
           </ScrollView>
         )}
     </SafeAreaView>
