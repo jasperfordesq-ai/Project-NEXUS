@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native skill discovery distinguishes failed requests from empty results and provides inline retries for categories, skills and members.
+
 - Native skill discovery keeps category and member results aligned with the latest selection and ignores errors from superseded searches.
 
 - Native skill cards show their authoritative endorsement totals instead of matching unrelated grouped display identifiers.

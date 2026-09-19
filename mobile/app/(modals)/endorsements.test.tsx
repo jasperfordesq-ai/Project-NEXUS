@@ -206,6 +206,36 @@ const mockSkillCategory = {
 };
 
 describe('EndorsementsScreen', () => {
+  it('shows category load failure with a retry instead of an empty directory', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')
+      ? { ...defaultApiState, error: 'Directory unavailable', refresh } : defaultApiState);
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByText('Discover'));
+    expect(screen.getByText('Directory unavailable')).toBeTruthy();
+    expect(screen.queryByText('No skill categories yet.')).toBeNull();
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['category', 'members'])('shows a failed %s search with a working retry', async (kind) => {
+    mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')
+      ? { ...defaultApiState, data: { data: [mockSkillCategory] } } : defaultApiState);
+    if (kind === 'category') jest.mocked(getSkillCategory).mockRejectedValueOnce(new Error('offline'));
+    else jest.mocked(getMembersWithSkill).mockRejectedValueOnce(new Error('offline'));
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByText('Discover'));
+    fireEvent.press(screen.getByText('View skills'));
+    if (kind === 'members') {
+      await screen.findByText('Gardening');
+      fireEvent.press(screen.getByText('View members'));
+    }
+    await screen.findByText(kind === 'category' ? 'Could not load skills.' : 'Could not load members.');
+    expect(screen.queryByText(kind === 'category' ? 'No skills in this category yet.' : 'No members found.')).toBeNull();
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await screen.findByText(kind === 'category' ? 'Gardening' : 'Alice Gardener');
+  });
+
   it('keeps the latest skill members when an earlier search finishes last', async () => {
     mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')
       ? { ...defaultApiState, data: { data: [mockSkillCategory] } } : defaultApiState);

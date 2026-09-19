@@ -184,6 +184,8 @@ export default function EndorsementsScreen() {
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [skillMembers, setSkillMembers] = useState<SkillMember[]>([]);
   const [loadingSkill, setLoadingSkill] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [membersError, setMembersError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const skillInputRef = useRef<TextInput>(null);
   const categoryRequestRef = useRef<object | null>(null);
@@ -212,6 +214,8 @@ export default function EndorsementsScreen() {
   const {
     data: categoriesData,
     isLoading: categoriesLoading,
+    error: categoriesError,
+    refresh: refreshCategories,
   } = useApi(() => getSkillCategories(), []);
 
   const handleRefresh = useCallback(() => {
@@ -247,6 +251,8 @@ export default function EndorsementsScreen() {
     categoryRequestRef.current = request;
     membersRequestRef.current = null;
     setLoadingSkill(null);
+    setCategoryError(null);
+    setMembersError(null);
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedCategory(category);
     setCategorySkills([]);
@@ -259,7 +265,7 @@ export default function EndorsementsScreen() {
       setCategorySkills(response.data.skills ?? []);
     } catch (err) {
       if (categoryRequestRef.current !== request) return;
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('discover.loadSkillsError')), variant: 'danger' });
+      setCategoryError(describeApiError(err, t('discover.loadSkillsError')));
     } finally {
       if (categoryRequestRef.current === request) {
         categoryRequestRef.current = null;
@@ -271,6 +277,7 @@ export default function EndorsementsScreen() {
   async function handleOpenMembers(skillName: string) {
     const request = {};
     membersRequestRef.current = request;
+    setMembersError(null);
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedSkill(skillName);
     setSkillMembers([]);
@@ -281,7 +288,7 @@ export default function EndorsementsScreen() {
       setSkillMembers(response.data ?? []);
     } catch (err) {
       if (membersRequestRef.current !== request) return;
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('discover.loadMembersError')), variant: 'danger' });
+      setMembersError(describeApiError(err, t('discover.loadMembersError')));
     } finally {
       if (membersRequestRef.current === request) {
         membersRequestRef.current = null;
@@ -442,6 +449,10 @@ export default function EndorsementsScreen() {
               endorsementsCount={endorsements.length}
               categories={categories}
               categoriesLoading={categoriesLoading}
+              categoriesError={categoriesError}
+              refreshCategories={refreshCategories}
+              categoryError={categoryError}
+              membersError={membersError}
               selectedCategory={selectedCategory}
               categorySkills={categorySkills}
               loadingCategoryId={loadingCategoryId}
@@ -457,7 +468,7 @@ export default function EndorsementsScreen() {
             />
           }
           ListEmptyComponent={
-            activeTab === 'discover' && categories.length > 0 ? null :
+            activeTab === 'discover' && (categories.length > 0 || categoriesError) ? null :
             isLoading ? (
               <View className="items-center justify-center py-14">
                 <LoadingSpinner />
@@ -498,6 +509,10 @@ function EndorsementsHeader({
   endorsementsCount,
   categories,
   categoriesLoading,
+  categoriesError,
+  refreshCategories,
+  categoryError,
+  membersError,
   selectedCategory,
   categorySkills,
   loadingCategoryId,
@@ -524,6 +539,10 @@ function EndorsementsHeader({
   endorsementsCount: number;
   categories: SkillCategory[];
   categoriesLoading: boolean;
+  categoriesError: string | null;
+  refreshCategories: () => void;
+  categoryError: string | null;
+  membersError: string | null;
   selectedCategory: SkillCategory | null;
   categorySkills: CategorySkill[];
   loadingCategoryId: number | null;
@@ -657,6 +676,7 @@ function EndorsementsHeader({
       </BottomSheet>
       {activeTab === 'discover' ? (
         <View className="gap-3">
+          {categoriesError ? <ErrorState subtitle={categoriesError} onRetry={refreshCategories} isRetrying={categoriesLoading} /> : null}
           {categoriesLoading ? (
             <Surface variant="secondary" className="min-h-[120px] items-center justify-center rounded-panel-inner p-4">
               <LoadingSpinner />
@@ -720,6 +740,8 @@ function EndorsementsHeader({
                       <View className="items-center justify-center py-4">
                         <LoadingSpinner />
                       </View>
+                    ) : categoryError ? (
+                      <ErrorState subtitle={categoryError} onRetry={() => void onOpenCategory(selectedCategory)} />
                     ) : categorySkills.length === 0 ? (
                       <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('discover.noSkillsInCategory')}</Text>
                     ) : (
@@ -773,6 +795,8 @@ function EndorsementsHeader({
                       <View className="items-center justify-center py-4">
                         <LoadingSpinner />
                       </View>
+                    ) : membersError ? (
+                      <ErrorState subtitle={membersError} onRetry={() => void onOpenMembers(selectedSkill)} />
                     ) : skillMembers.length === 0 ? (
                       <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('discover.noMembers')}</Text>
                     ) : (
