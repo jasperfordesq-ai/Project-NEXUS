@@ -305,6 +305,8 @@ describe('ChatScreen', () => {
     fireEvent.press(screen.getByLabelText('Send note'));
     await waitFor(() => expect(require('@/components/ui/AppToast').useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
     expect(screen.getByPlaceholderText('Tell us what was missing or wrong').props.value).toBe('Keep this note');
+    await waitFor(() => expect(screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.accessibilityLabel === 'Send note')!.props.isDisabled).toBe(false));
     fireEvent.press(screen.getByLabelText('Send note'));
     await waitFor(() => expect(screen.queryByText('What went wrong?')).toBeNull());
     expect(submitChatFeedback).toHaveBeenLastCalledWith(expect.objectContaining({ note: 'Keep this note' }));

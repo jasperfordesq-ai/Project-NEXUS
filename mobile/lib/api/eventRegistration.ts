@@ -8,6 +8,7 @@ import { reportSentryMessage } from '@/lib/observability/report';
 import { z } from 'zod';
 import { api, ApiResponseError, type RequestOptions } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
+import { validRegistrationValidationRules, validRegistrationVisibilityRules } from '@/lib/eventRegistrationFormRules';
 
 export const EVENT_REGISTRATION_PRODUCT_CONTRACT_VERSION = 1 as const;
 export const EVENT_REGISTRATION_PRODUCT_CONTRACT_HEADER = 'X-Event-Registration-Product-Contract' as const;
@@ -229,6 +230,82 @@ export async function publishOrganizerRegistrationSettings(eventId: number, expe
   return parse(endpoint, settingsWriteSchema, await api.post<unknown>(endpoint, {
     expected_revision: expectedRevision, idempotency_key: key,
   }, requestOptions(key)));
+}
+
+// Drafts belong to the organiser contract; attendee reads remain published-only.
+export const organizerRegistrationFormSchema = registrationFormSchema.extend({
+  id: safeId, event_id: safeId, revision: safeId, version_number: safeId,
+  status: z.enum(['draft', 'published']),
+  questions: z.array(registrationQuestionSchema.extend({ id: safeId, position: safeId }).strip()),
+}).strip();
+export const registrationFormDefinitionSchema = z.object({
+  name: z.string().trim().min(1).max(191),
+  description: z.string().max(4000).nullable(),
+  questions: z.array(registrationQuestionSchema.omit({ id: true, position: true }).extend({
+    prompt: z.string().trim().min(1).max(2000), purpose: z.string().trim().min(1).max(500),
+    help_text: z.string().max(4000).nullable().optional(), retention_days: z.number().int().min(1).max(36500),
+  }).strict()).min(1).max(100),
+}).strict().refine(value => new Set(value.questions.map(question => question.stable_key)).size === value.questions.length,
+  { message: 'Duplicate question keys', path: ['questions'] }).superRefine((value, ctx) => {
+  value.questions.forEach((question, index) => {
+    const issue = (field: string) => ctx.addIssue({ code: 'custom', path: ['questions', index, field], message: 'Invalid question configuration' });
+    if (!validRegistrationValidationRules(question.question_type, question.validation_rules)) issue('validation_rules');
+    if (!validRegistrationVisibilityRules(question.visibility_rules, value.questions.slice(0, index).map(earlier => earlier.stable_key))) issue('visibility_rules');
+    if (['dietary', 'accessibility'].includes(question.question_type)
+      && !['confidential', 'sensitive'].includes(question.data_classification)) issue('data_classification');
+    const choices = question.choice_options;
+    if (['single_choice', 'multiple_choice'].includes(question.question_type)) {
+      if (!choices || choices.length < 2 || choices.length > 100 || choices.some(choice => !choice.trim() || choice.trim().length > 191)
+        || new Set(choices.map(choice => choice.trim())).size !== choices.length) issue('choice_options');
+    } else if (choices && choices.length) issue('choice_options');
+    if (['consent', 'waiver'].includes(question.question_type)) {
+      if (!question.displayed_text?.trim() || question.displayed_text.trim().length > 20000) issue('displayed_text');
+      if (!question.displayed_text_version?.trim() || question.displayed_text_version.trim().length > 64) issue('displayed_text_version');
+    } else if (question.displayed_text != null || question.displayed_text_version != null) issue('displayed_text');
+  });
+});
+export const registrationFormIntentSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('create'), definition: registrationFormDefinitionSchema, settingsRevision: safeId }).strict(),
+  z.object({ action: z.literal('update'), formId: safeId, formRevision: safeId,
+    settingsRevision: safeId, definition: registrationFormDefinitionSchema }).strict(),
+  z.object({ action: z.literal('fork'), formId: safeId, settingsRevision: safeId }).strict(),
+  z.object({ action: z.literal('publish'), formId: safeId, formRevision: safeId, settingsRevision: safeId }).strict(),
+]);
+export type OrganizerRegistrationForm = z.infer<typeof organizerRegistrationFormSchema>;
+export type RegistrationFormIntent = z.infer<typeof registrationFormIntentSchema>;
+export type RegistrationFormDefinition = z.infer<typeof registrationFormDefinitionSchema>;
+const organizerFormsReadSchema = z.object({ data: z.object({
+  settings: organizerRegistrationSettingsSchema.nullable(), forms: z.array(organizerRegistrationFormSchema),
+}) });
+const organizerFormWriteSchema = z.object({ data: z.object({
+  form: organizerRegistrationFormSchema, settings_revision: safeId,
+  changed: z.boolean(), idempotent_replay: z.boolean(),
+}) });
+
+/** Keep only policy and form definitions; discard unrelated submissions and guest data. */
+export async function getOrganizerRegistrationForms(eventId: number) {
+  safeId.parse(eventId);
+  const endpoint = `${API_V2}/events/${eventId}/registration-product/manage`;
+  return parse(endpoint, organizerFormsReadSchema, await api.get<unknown>(endpoint, undefined, requestOptions()));
+}
+
+/** The caller must persist the intent and key before invoking this transport. */
+export async function mutateOrganizerRegistrationForm(eventId: number, intent: RegistrationFormIntent, idempotencyKey: string) {
+  safeId.parse(eventId);
+  const input = registrationFormIntentSchema.parse(intent);
+  const key = z.string().min(1).max(191).refine(value => value.trim() === value).parse(idempotencyKey);
+  const suffix = input.action === 'create' ? '' : `/${input.formId}${input.action === 'update' ? '' : `/${input.action}`}`;
+  const endpoint = `${API_V2}/events/${eventId}/registration-product/forms${suffix}`;
+  const payload = {
+    ...('definition' in input ? input.definition : {}),
+    expected_settings_revision: input.settingsRevision,
+    ...('formRevision' in input ? { expected_form_revision: input.formRevision } : {}),
+    idempotency_key: key,
+  };
+  const response = input.action === 'update'
+    ? await api.put<unknown>(endpoint, payload, requestOptions(key))
+    : await api.post<unknown>(endpoint, payload, requestOptions(key));
+  return parse(endpoint, organizerFormWriteSchema, response);
 }
 
 function requestOptions(idempotencyKey?: string): RequestOptions {

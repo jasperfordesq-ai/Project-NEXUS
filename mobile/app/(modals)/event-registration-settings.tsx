@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AppState, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
-import { useLocalSearchParams, type Href } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
@@ -26,7 +26,7 @@ import { isRefusalStatus } from '@/lib/api/refusal';
 import { registrationSettingsDraft } from '@/lib/eventRegistrationSettingsDraft';
 
 function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: number; userId: number }) {
-  const { t } = useTranslation(['events', 'common', 'event_communications']);
+  const { t } = useTranslation(['events', 'common', 'event_communications', 'eventRegistration']);
   const focused = useIsFocused();
   const [appState, setAppState] = useState(AppState.currentState);
   useEffect(() => { const listener = AppState.addEventListener('change', setAppState); return () => listener.remove(); }, []);
@@ -62,6 +62,9 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
       <View className="gap-4">
+        <Button isDisabled={!permitted || operation.busy} onPress={() => router.push({
+          pathname: '/(modals)/event-registration-forms', params: { id: String(eventId) },
+        } as Href)}>{t('eventRegistration:forms.title')}</Button>
         {state.error && <><Text accessibilityRole="alert">{t('manage.load_error_title')}</Text><Button onPress={state.refresh}>{t('common:buttons.retry')}</Button></>}
         {(operation.storageFailed || operation.saved?.status === 'pending') && <View className="gap-3">
           <Text accessibilityRole="header" className="text-lg font-bold text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_title' : 'recovery_title'}`)}</Text>

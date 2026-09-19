@@ -31,6 +31,7 @@ const SCREEN_DIRS = ['(modals)', '(tabs)'];
 
 /** Screen file name → why a pull-to-refresh gesture is wrong on it. */
 const NO_PULL_TO_REFRESH: Record<string, string> = {
+  'event-registration-settings': 'Policy editor retains its revision basis and unsaved values; conflicts have explicit reload-and-review.',
   'edit-exchange': 'A form. Refetching would overwrite half-finished edits with the server copy.',
   'group-invite': 'One card and one button, vertically centred. There is nothing to bring up to date.',
   'match-preferences': 'A form of toggles and sliders; a pull would discard unsaved choices.',

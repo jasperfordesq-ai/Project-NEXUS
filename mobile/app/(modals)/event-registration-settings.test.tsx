@@ -12,7 +12,8 @@ let mockUserId=7;
 let mockState:any;
 let mockOperation:any;
 const mockUseOperation=jest.fn();
-jest.mock('expo-router',()=>({useLocalSearchParams:()=>({id:mockId})}));
+const mockPush=jest.fn();
+jest.mock('expo-router',()=>({useLocalSearchParams:()=>({id:mockId}),router:{push:(...args:unknown[])=>mockPush(...args)}}));
 jest.mock('@react-navigation/native',()=>({useIsFocused:()=>mockFocused}));
 jest.mock('@/lib/hooks/useAuth',()=>({useAuth:()=>({user:{id:mockUserId}})}));
 jest.mock('@/lib/hooks/useTenant',()=>({useTenant:()=>({tenant:{id:2}})}));
@@ -54,4 +55,8 @@ it('requires an explicit press to review a rejected request',()=>{
 it('replaces the policy base when the signed-in account changes',()=>{
  const v=render(<Screen/>);mockUserId=8;mockState={...mockState,data:{...mockState.data,settings:{...settings,revision:8}}};v.rerender(<Screen/>);
  expect(v.UNSAFE_getByType(Editor).props.settings.revision).toBe(8);
+});
+it('opens the organiser forms list for this event',()=>{
+ const v=render(<Screen/>);fireEvent.press(v.getByText('eventRegistration:forms.title'));
+ expect(mockPush).toHaveBeenCalledWith({pathname:'/(modals)/event-registration-forms',params:{id:'42'}});
 });

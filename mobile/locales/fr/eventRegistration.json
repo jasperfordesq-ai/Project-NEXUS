@@ -92,7 +92,40 @@
       "condition_question": "Question précédente",
       "condition_operator": "Opérateur de condition",
       "condition_value": "Valeur attendue",
-      "add_question": "Ajouter une question"
+      "add_question": "Ajouter une question",
+      "choice_number": "Choix de réponse {{number}}",
+      "add_choice": "Ajouter un choix de réponse",
+      "remove_choice": "Supprimer le choix de réponse {{number}}",
+      "invalid": "Vérifiez le nom du formulaire, les questions, les informations de confidentialité et les choix de réponse avant de sauvegarder.",
+      "min_selections": "Nombre minimal de choix",
+      "max_selections": "Nombre maximal de choix",
+      "answer_format": "Format de réponse",
+      "formats": {
+        "url": "Adresse web",
+        "none": "Texte libre",
+        "email": "Adresse e-mail",
+        "phone": "Numéro de téléphone"
+      },
+      "add_condition": "Ajouter une condition",
+      "remove_condition": "Supprimer la condition",
+      "condition_match": "Afficher quand",
+      "match": {
+        "all": "Toutes les conditions sont remplies",
+        "any": "Une condition est remplie"
+      },
+      "value_type": "Type de valeur",
+      "value_types": {
+        "list": "Liste",
+        "boolean": "Oui ou non",
+        "text": "Texte",
+        "number": "Nombre"
+      },
+      "add_value": "Ajouter une valeur",
+      "remove_value": "Supprimer la valeur",
+      "comparison": "Vérifier les modifications du formulaire",
+      "current": "Formulaire actuel",
+      "proposed": "Votre brouillon",
+      "absent": "Absent"
     }
   },
   "question_types": {
@@ -115,7 +148,11 @@
     "equals": "Égal",
     "not_equals": "N'est pas égal",
     "contains": "Contient",
-    "not_contains": "Ne contient pas"
+    "not_contains": "Ne contient pas",
+    "in": "Fait partie de",
+    "not_in": "Ne fait pas partie de",
+    "is_answered": "Avec réponse",
+    "is_not_answered": "Sans réponse"
   },
   "submissions": {
     "title": "Soumissions d'inscription",

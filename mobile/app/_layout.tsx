@@ -667,6 +667,14 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('events:attendance.title') }}
       />
       <Stack.Screen
+        name="(modals)/event-registration-settings"
+        options={{ ...modalOptions, headerShown: false, title: t('events:registrationSettings.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/event-registration-forms"
+        options={{ ...modalOptions, headerShown: false, title: t('eventRegistration:forms.title') }}
+      />
+      <Stack.Screen
         name="(modals)/event-templates"
         options={{ ...modalOptions, headerShown: false, title: t('event_templates:templates.mobile.title') }}
       />

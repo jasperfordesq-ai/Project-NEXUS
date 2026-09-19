@@ -4,8 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { storage } from '@/lib/storage';
+import { Platform } from 'react-native';
+import { loadEncryptedDraftFile, saveEncryptedDraftFile } from './encryptedDraftFile';
 
-export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication' | 'event-people' | 'event-session-registration' | 'event-registration-settings';
+export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication' | 'event-people' | 'event-session-registration' | 'event-registration-settings' | 'event-registration-form';
 
 export interface CreationDraftScope {
   kind: CreationDraftKind;
@@ -56,6 +58,7 @@ function splitUnicode(value: string): string[] {
 function maxChunks(scope: CreationDraftScope): number {
   return scope.kind === 'event-communication' || scope.kind === 'event-people' ? EVENT_COMMUNICATION_MAX_CHUNKS : MAX_CHUNKS;
 }
+const usesDraftFile = (scope: CreationDraftScope) => scope.kind === 'event-registration-form' && Platform.OS !== 'web';
 
 async function readManifest(base: string, required = false, limit = MAX_CHUNKS): Promise<DraftManifest | null> {
   let manifest: DraftManifest | null;
@@ -102,6 +105,9 @@ async function enqueueDraftOperation<T>(base: string, operation: () => Promise<T
 export async function saveCreationDraft<T>(scope: CreationDraftScope, draft: T): Promise<boolean> {
   const base = baseKey(scope);
   return enqueueDraftOperation(base, async () => {
+    if (usesDraftFile(scope)) {
+      try { await saveEncryptedDraftFile(base, draft); return true; } catch { return false; }
+    }
     let previous: DraftManifest | null;
     let chunks: string[];
     let generation: string;
@@ -133,6 +139,12 @@ export async function loadCreationDraft<T>(scope: CreationDraftScope, options?: 
   const base = baseKey(scope);
   await operationQueues.get(base);
   try {
+    if (usesDraftFile(scope)) {
+      const saved = await loadEncryptedDraftFile<T | null>(base);
+      // Only absence permits migration from the old chunk store. A cleared file
+      // generation or damaged file must never resurrect an obsolete request.
+      if (saved !== null) return saved.value;
+    }
     const manifest = await readManifest(base, options?.required, maxChunks(scope));
     if (!manifest || manifest.cleared || manifest.chunks === 0 || !manifest.generation) return null;
     const chunks: string[] = [];
@@ -157,6 +169,9 @@ export async function loadCreationDraft<T>(scope: CreationDraftScope, options?: 
 export async function clearCreationDraft(scope: CreationDraftScope): Promise<boolean> {
   const base = baseKey(scope);
   return enqueueDraftOperation(base, async () => {
+    if (usesDraftFile(scope)) {
+      try { await saveEncryptedDraftFile(base, null); return true; } catch { return false; }
+    }
     let previous: DraftManifest | null;
     try {
       previous = await readManifest(base, false, maxChunks(scope));

@@ -92,7 +92,40 @@
       "condition_question": "Ceist níos luaithe",
       "condition_operator": "Coinníoll",
       "condition_value": "Luach ionchais",
-      "add_question": "Cuir ceist leis"
+      "add_question": "Cuir ceist leis",
+      "choice_number": "Rogha freagartha {{number}}",
+      "add_choice": "Cuir rogha freagartha leis",
+      "remove_choice": "Bain rogha freagartha {{number}}",
+      "invalid": "Seiceáil ainm na foirme, na ceisteanna, na sonraí príobháideachais agus na roghanna freagartha sula sábhálann tú.",
+      "min_selections": "Íoslíon roghanna",
+      "max_selections": "Uaslíon roghanna",
+      "answer_format": "Formáid freagartha",
+      "formats": {
+        "url": "Seoladh gréasáin",
+        "none": "Téacs ar bith",
+        "email": "Seoladh ríomhphoist",
+        "phone": "Uimhir ghutháin"
+      },
+      "add_condition": "Cuir coinníoll leis",
+      "remove_condition": "Bain coinníoll",
+      "condition_match": "Taispeáin nuair",
+      "match": {
+        "all": "Comhlíontar gach coinníoll",
+        "any": "Comhlíontar coinníoll ar bith"
+      },
+      "value_type": "Cineál luacha",
+      "value_types": {
+        "list": "Liosta",
+        "boolean": "Tá nó níl",
+        "text": "Téacs",
+        "number": "Uimhir"
+      },
+      "add_value": "Cuir luach leis",
+      "remove_value": "Bain luach",
+      "comparison": "Athbhreithnigh athruithe na foirme",
+      "current": "An fhoirm reatha",
+      "proposed": "Do dhréacht",
+      "absent": "Níl ann"
     }
   },
   "question_types": {
@@ -115,7 +148,11 @@
     "equals": "Comhionann",
     "not_equals": "Ní ionann",
     "contains": "Tá",
-    "not_contains": "Ní chuimsíonn"
+    "not_contains": "Ní chuimsíonn",
+    "in": "Tá sé ar cheann de",
+    "not_in": "Níl sé ar cheann de",
+    "is_answered": "Tá freagra ann",
+    "is_not_answered": "Níl freagra ann"
   },
   "submissions": {
     "title": "Aighneachtaí clárúcháin",

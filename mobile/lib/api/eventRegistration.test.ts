@@ -30,6 +30,9 @@ import {
   getOrganizerRegistrationSettings,
   saveOrganizerRegistrationSettings,
   publishOrganizerRegistrationSettings,
+  getOrganizerRegistrationForms,
+  mutateOrganizerRegistrationForm,
+  type RegistrationFormIntent,
 } from './eventRegistration';
 
 const state = {
@@ -227,5 +230,50 @@ describe('organiser registration settings', () => {
   it('refuses malformed acknowledgements rather than reporting success', async () => {
     jest.mocked(api.put).mockResolvedValue({ data: { settings } });
     await expect(saveOrganizerRegistrationSettings(42, input, 'key')).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
+  });
+});
+
+describe('organiser registration forms', () => {
+  const question = { stable_key: 'support', question_type: 'accessibility' as const,
+    prompt: 'What support would help?', is_required: false, data_classification: 'sensitive' as const,
+    purpose: 'Prepare adjustments', retention_days: 30 };
+  const definition = { name: 'Registration', description: null, questions: [question] };
+  const form = { ...definition, id: 10, event_id: 42, version_number: 1, revision: 1, status: 'draft',
+    questions: [{ ...question, id: 11, position: 1 }] };
+  const receipt = { data: { form, settings_revision: 3, changed: true, idempotent_replay: false } };
+  const cases: [RegistrationFormIntent, string, 'post' | 'put', object][] = [
+    [{ action: 'create', definition, settingsRevision: 2 }, '', 'post', { ...definition, expected_settings_revision: 2 }],
+    [{ action: 'update', definition, formId: 10, formRevision: 1, settingsRevision: 2 }, '/10', 'put',
+      { ...definition, expected_settings_revision: 2, expected_form_revision: 1 }],
+    [{ action: 'fork', formId: 10, settingsRevision: 2 }, '/10/fork', 'post', { expected_settings_revision: 2 }],
+    [{ action: 'publish', formId: 10, formRevision: 1, settingsRevision: 2 }, '/10/publish', 'post',
+      { expected_settings_revision: 2, expected_form_revision: 1 }],
+  ];
+  it.each(cases)('sends the exact intent and caller key for %j', async (intent, suffix, method, payload) => {
+    jest.mocked(api[method]).mockResolvedValue(receipt);
+    await mutateOrganizerRegistrationForm(42, intent, 'saved-form-key');
+    await mutateOrganizerRegistrationForm(42, intent, 'saved-form-key');
+    expect(jest.mocked(api[method]).mock.calls[0]).toEqual(jest.mocked(api[method]).mock.calls[1]);
+    expect(api[method]).toHaveBeenCalledWith(`/api/v2/events/42/registration-product/forms${suffix}`,
+      { ...payload, idempotency_key: 'saved-form-key' },
+      { headers: { ...options.headers, 'Idempotency-Key': 'saved-form-key' } });
+  });
+  it('reads organiser drafts without widening attendee contracts or retaining submissions', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { settings: null, forms: [form], submissions: ['private'] } });
+    expect((await getOrganizerRegistrationForms(42)).data).toEqual({ settings: null, forms: [form] });
+    expect(attendeeRegistrationProductSchema.safeParse({ ...state, form }).success).toBe(false);
+  });
+  it('rejects duplicate question keys and unsafe revisions before transport', async () => {
+    await expect(mutateOrganizerRegistrationForm(42, { action: 'create', settingsRevision: 2,
+      definition: { ...definition, questions: [question, question] } }, 'key')).rejects.toThrow();
+    await expect(mutateOrganizerRegistrationForm(42, { action: 'publish', formId: 10,
+      formRevision: Number.MAX_SAFE_INTEGER + 1, settingsRevision: 2 }, 'key')).rejects.toThrow();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+  it('refuses incomplete publication acknowledgements', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { form } });
+    await expect(mutateOrganizerRegistrationForm(42, cases[3][0], 'key')).rejects.toMatchObject({
+      code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT',
+    });
   });
 });

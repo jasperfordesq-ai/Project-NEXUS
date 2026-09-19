@@ -92,7 +92,40 @@
       "condition_question": "Frühere Frage",
       "condition_operator": "Zustand",
       "condition_value": "Erwarteter Wert",
-      "add_question": "Frage hinzufügen"
+      "add_question": "Frage hinzufügen",
+      "choice_number": "Antwortoption {{number}}",
+      "add_choice": "Antwortoption hinzufügen",
+      "remove_choice": "Antwortoption {{number}} entfernen",
+      "invalid": "Prüfen Sie vor dem Speichern den Formularnamen, die Fragen, die Datenschutzangaben und die Antwortoptionen.",
+      "min_selections": "Mindestanzahl der Antworten",
+      "max_selections": "Höchstanzahl der Antworten",
+      "answer_format": "Antwortformat",
+      "formats": {
+        "url": "Webadresse",
+        "none": "Beliebiger Text",
+        "email": "E-Mail-Adresse",
+        "phone": "Telefonnummer"
+      },
+      "add_condition": "Bedingung hinzufügen",
+      "remove_condition": "Bedingung entfernen",
+      "condition_match": "Anzeigen, wenn",
+      "match": {
+        "all": "Alle Bedingungen zutreffen",
+        "any": "Eine Bedingung zutrifft"
+      },
+      "value_type": "Werttyp",
+      "value_types": {
+        "list": "Liste",
+        "boolean": "Ja oder Nein",
+        "text": "Text",
+        "number": "Zahl"
+      },
+      "add_value": "Wert hinzufügen",
+      "remove_value": "Wert entfernen",
+      "comparison": "Formularänderungen prüfen",
+      "current": "Aktuelles Formular",
+      "proposed": "Ihr Entwurf",
+      "absent": "Nicht vorhanden"
     }
   },
   "question_types": {
@@ -115,7 +148,11 @@
     "equals": "Gleich",
     "not_equals": "Ist nicht gleich",
     "contains": "Enthält",
-    "not_contains": "Enthält nicht"
+    "not_contains": "Enthält nicht",
+    "in": "Ist einer von",
+    "not_in": "Ist keiner von",
+    "is_answered": "Hat eine Antwort",
+    "is_not_answered": "Hat keine Antwort"
   },
   "submissions": {
     "title": "Registrierungseinreichungen",
