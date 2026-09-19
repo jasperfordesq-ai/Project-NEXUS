@@ -53,6 +53,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The prerender worker reported two very different tenant faults in identical words.**
+  `assertExpectedTenant()` threw `tenant identity mismatch` both when the page resolved *no*
+  tenant and when it resolved a *different* one. Those are not the same event. The first is a
+  transport failure — the tenant bootstrap did not complete during the render, so
+  `TenantContext` never wrote `nexus_tenant_id`/`nexus_tenant_slug`; the snapshot is discarded,
+  the previous one is kept, and the next sweep re-renders it. The second would mean one
+  community's content had been rendered under another community's host. Measured over 30 hours
+  of production renders: **14 of 22,228 pages failed (0.06%), of which 8 were the harmless
+  fault (`got -#-`) and 0 were the dangerous one** — so the only version of this message anyone
+  had ever seen was the one safe to ignore, and a real cross-tenant leak would have arrived
+  wearing it. Now `tenant identity unresolved …` and `tenant identity MISMATCH: …`
+  respectively, each carrying a `tenantIdentityFault` marker (`unresolved` / `mismatch`) for
+  alerting. A partially resolved identity is deliberately reported as a MISMATCH: the page did
+  resolve something, and under-reporting a real leak is worse than one spurious alarm. No
+  behaviour change — both faults still discard the snapshot. Regression tests in
+  `scripts/test/prerender-worker.test.mjs` pin the two apart, including the partial case and
+  the unchanged happy path.
+
 - Corrected native offline check-in guidance: enabled time-credit rewards are processed by the server after attendance synchronization; attendance does not universally exclude rewards.
 
 - Native event check-in puts attendee search and the live roster before offline device administration, reducing scrolling for routine attendance. Offline guidance no longer assumes where the roster appears.

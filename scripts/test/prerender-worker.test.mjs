@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  assertExpectedTenant,
   assertRenderContract,
   isApiPath,
   isCriticalApiPath,
@@ -235,4 +236,78 @@ test('maintenance authentication is sent only to the exact tenant origin', () =>
     null,
   );
   assert.equal(maintenanceAuthHeaders(entry, entry.url, {}, null), null);
+});
+
+// --- tenant identity: "none resolved" must NOT read like "wrong tenant" ------
+//
+// Both cases threw the same `tenant identity mismatch` message until
+// 2026-09-19. On production, 8 of 14 page failures in 30 hours were the
+// harmless kind (the tenant bootstrap did not complete during the render, so
+// the page had no identity at all — `got -#-`), and zero were the serious
+// kind. An operator who sees the harmless message daily stops reading it, and
+// a genuine cross-tenant leak — a snapshot of the WRONG community published
+// under this community's host — would arrive wearing that same ignored
+// wording. These tests pin the two apart.
+
+const TENANT_ENTRY = { tenantId: 14, tenantSlug: 'minehead-and-coast-timebank' };
+
+// `assert.throws()` returns undefined, so it cannot be used to inspect the
+// error it caught. Capture it instead.
+function caught(fn) {
+  try {
+    fn();
+  } catch (error) {
+    return error;
+  }
+  return assert.fail('expected a throw, got none');
+}
+
+test('a page that resolved NO tenant reports an unresolved bootstrap, not a mismatch', () => {
+  for (const identity of [
+    { id: null, slug: null },
+    { id: '', slug: '' },
+    { id: undefined, slug: undefined },
+    {},
+  ]) {
+    const err = caught(() => assertExpectedTenant(TENANT_ENTRY, identity));
+    assert.match(err.message, /tenant identity unresolved/);
+    assert.doesNotMatch(err.message, /mismatch/i);
+    // The expectation still has to be in the text — it names the tenant whose
+    // render was discarded, which is what makes the log line actionable.
+    assert.match(err.message, /minehead-and-coast-timebank#14/);
+    assert.equal(err.tenantIdentityFault, 'unresolved');
+  }
+});
+
+test('a page that resolved a DIFFERENT tenant is reported as a cross-tenant mismatch', () => {
+  const err = caught(() => assertExpectedTenant(TENANT_ENTRY, { id: '2', slug: 'hour-timebank' }));
+  assert.match(err.message, /tenant identity MISMATCH/);
+  assert.match(err.message, /minehead-and-coast-timebank#14/);
+  assert.match(err.message, /hour-timebank#2/);
+  assert.equal(err.tenantIdentityFault, 'mismatch');
+});
+
+test('a partially resolved identity counts as a mismatch, never as unresolved', () => {
+  // Only one of the two keys present means the page DID resolve something.
+  // Erring towards the loud case is deliberate: under-reporting a real leak is
+  // far worse than one spurious alarm.
+  for (const identity of [
+    { id: '14', slug: null },
+    { id: null, slug: 'minehead-and-coast-timebank' },
+    { id: '99', slug: null },
+  ]) {
+    const err = caught(() => assertExpectedTenant(TENANT_ENTRY, identity));
+    assert.equal(err.tenantIdentityFault, 'mismatch', JSON.stringify(identity));
+    assert.match(err.message, /tenant identity MISMATCH/);
+  }
+});
+
+test('the expected tenant passes, including when the id arrives as a number', () => {
+  assert.doesNotThrow(() => assertExpectedTenant(TENANT_ENTRY, { id: '14', slug: 'minehead-and-coast-timebank' }));
+  assert.doesNotThrow(() => assertExpectedTenant(TENANT_ENTRY, { id: 14, slug: 'minehead-and-coast-timebank' }));
+});
+
+test('a manifest entry without tenant identity is still rejected outright', () => {
+  const err = caught(() => assertExpectedTenant({ tenantId: 14 }, { id: '14', slug: 'x' }));
+  assert.match(err.message, /manifest entry is missing tenant identity/);
 });

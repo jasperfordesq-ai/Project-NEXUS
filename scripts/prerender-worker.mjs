@@ -360,17 +360,51 @@ async function renderedTenantIdentity(page) {
   }));
 }
 
+// 🔴 TWO faults, deliberately worded so they can never be confused.
+//
+// Until 2026-09-19 both threw the same `tenant identity mismatch` text, which
+// made the dangerous one invisible. Measured over 30 hours of production
+// renders: 14 pages failed out of 22,228 (0.06%), of which 8 were the harmless
+// fault — the page reported NO tenant at all (`got -#-`) because the tenant
+// bootstrap did not complete during that render — and ZERO were the dangerous
+// one. An operator who dismisses that message daily, correctly, would dismiss
+// a genuine cross-tenant leak arriving in the same words.
+//
+//   unresolved -> the page resolved no tenant. Transport/bootstrap failure.
+//                 Routine, self-healing: the snapshot is discarded, the
+//                 previous one is kept, and the next sweep re-renders it.
+//   mismatch   -> the page resolved a DIFFERENT tenant. One community's
+//                 content was rendered under another's host. Never routine.
+//
+// A partially resolved identity (one key present) is reported as a MISMATCH on
+// purpose: the page did resolve something, and under-reporting a real leak is
+// far worse than one spurious alarm.
 function assertExpectedTenant(entry, identity) {
   const expectedId = String(entry.tenantId ?? '');
   const expectedSlug = String(entry.tenantSlug ?? '');
   if (!expectedId || !expectedSlug) {
     throw new Error('manifest entry is missing tenant identity');
   }
-  if (String(identity.id ?? '') !== expectedId || String(identity.slug ?? '') !== expectedSlug) {
-    throw new Error(
-      `tenant identity mismatch (expected ${expectedSlug}#${expectedId}, got ${identity.slug || '-'}#${identity.id || '-'})`,
+
+  const actualId = String(identity?.id ?? '');
+  const actualSlug = String(identity?.slug ?? '');
+  if (actualId === expectedId && actualSlug === expectedSlug) return;
+
+  if (!actualId && !actualSlug) {
+    const error = new Error(
+      `tenant identity unresolved for ${expectedSlug}#${expectedId} — the page reported no tenant, `
+      + 'so its bootstrap did not complete during this render; snapshot discarded, previous one kept',
     );
+    error.tenantIdentityFault = 'unresolved';
+    throw error;
   }
+
+  const error = new Error(
+    `tenant identity MISMATCH: expected ${expectedSlug}#${expectedId}, page reported `
+    + `${actualSlug || '-'}#${actualId || '-'} — a DIFFERENT tenant was rendered under this host`,
+  );
+  error.tenantIdentityFault = 'mismatch';
+  throw error;
 }
 
 function normalizedDocumentUrl(value) {
@@ -927,6 +961,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 }
 
 export {
+  assertExpectedTenant,
   assertRenderContract,
   isApiPath,
   isNonPublicAddress,
