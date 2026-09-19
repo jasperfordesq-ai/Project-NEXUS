@@ -88,6 +88,7 @@ function EventCommunicationsScreenInner() {
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const auditGeneration = useRef(0);
+  const previewRequest = useRef<object | null>(null);
   const [broadcasts, setBroadcasts] = useState<MobileEventBroadcast[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -144,7 +145,10 @@ function EventCommunicationsScreenInner() {
     void load();
   }, [load]);
 
-  useEffect(() => () => { auditGeneration.current += 1; }, []);
+  useEffect(() => () => {
+    auditGeneration.current += 1;
+    previewRequest.current = null;
+  }, []);
 
   async function loadMore() {
     if (!hasMore || isLoadingMore) return;
@@ -170,8 +174,14 @@ function EventCommunicationsScreenInner() {
   }
 
   function updateInput(next: Partial<MobileEventBroadcastInput>) {
+    invalidatePreview();
     setInput((current) => ({ ...current, ...next }));
+  }
+
+  function invalidatePreview() {
+    previewRequest.current = null;
     setPreview(null);
+    setIsPreviewing(false);
   }
 
   const composerDirty = composerOpen && JSON.stringify(input) !== JSON.stringify(composerBaseline);
@@ -187,6 +197,7 @@ function EventCommunicationsScreenInner() {
   });
 
   function openNewComposer() {
+    invalidatePreview();
     const fresh = initialInput();
     setEditing(null);
     setInput(fresh);
@@ -196,6 +207,7 @@ function EventCommunicationsScreenInner() {
   }
 
   function closeComposer() {
+    invalidatePreview();
     setComposerOpen(false);
     setEditing(null);
     setInput(initialInput());
@@ -219,6 +231,7 @@ function EventCommunicationsScreenInner() {
   }
 
   async function openEditComposer(broadcast: MobileEventBroadcast) {
+    invalidatePreview();
     setOpeningDraftId(broadcast.id);
     try {
       const detail = await getEventCommunicationDetail(broadcast.id, 1, 1);
@@ -335,6 +348,7 @@ function EventCommunicationsScreenInner() {
   }
 
   async function previewAudience() {
+    if (previewRequest.current) return;
     if (!input.body.trim() || input.segments.length === 0 || input.channels.length === 0) {
       showToast({
         title: t('validation_title'),
@@ -343,6 +357,8 @@ function EventCommunicationsScreenInner() {
       });
       return;
     }
+    const request = {};
+    previewRequest.current = request;
     setIsPreviewing(true);
     try {
       const result = await previewEventCommunication(safeEventId, {
@@ -350,15 +366,19 @@ function EventCommunicationsScreenInner() {
         segments: input.segments,
         channels: input.channels,
       });
-      setPreview(result);
+      if (previewRequest.current === request) setPreview(result);
     } catch (err) {
+      if (previewRequest.current !== request) return;
       showToast({
         title: t('preview_failed_title'),
         description: describeApiError(err, t('preview_failed_description')),
         variant: 'danger',
       });
     } finally {
-      setIsPreviewing(false);
+      if (previewRequest.current === request) {
+        previewRequest.current = null;
+        setIsPreviewing(false);
+      }
     }
   }
 

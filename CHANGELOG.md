@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event audience previews discard stale results after composer changes and suppress late failures after the screen closes.
+
 - Endorsement skill grouping preserves database case and accent equivalence when returning structured member records.
 
 - Native endorsements use structured API records to preserve member names, nullable avatars, comments, timestamps and unique endorsement identifiers. Existing grouped response fields remain available.

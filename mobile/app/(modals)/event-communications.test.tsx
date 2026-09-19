@@ -250,6 +250,39 @@ describe('EventCommunicationsScreen', () => {
     ));
   });
 
+  it('does not restore an audience preview after the audience changes', async () => {
+    let finish!: (value: unknown) => void;
+    mockPreview.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Draft notice');
+    fireEvent.press(screen.getByText('Preview audience'));
+    fireEvent.press(screen.getByText('Active waitlist'));
+    await act(async () => finish({ recipient_count: 12, delivery_count: 24 }));
+    expect(screen.queryByText('12 recipients, 24 deliveries')).toBeNull();
+    fireEvent.press(screen.getByText('Save draft'));
+    expect(mockCreate).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByText('Preview audience'));
+    expect(await screen.findByText('12 recipients, 24 deliveries')).toBeTruthy();
+    expect(mockPreview).toHaveBeenLastCalledWith(42, expect.objectContaining({
+      segments: ['registration_confirmed', 'waitlist_active'],
+    }));
+  });
+
+  it('ignores a preview failure after leaving the screen', async () => {
+    let reject!: (error: Error) => void;
+    mockPreview.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Draft notice');
+    fireEvent.press(screen.getByText('Preview audience'));
+    screen.unmount();
+    await act(async () => reject(new Error('offline')));
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('schedules immediately and cancels with optimistic versions', async () => {
     const screen = render(<EventCommunicationsScreen />);
     await screen.findByText('Announcement');
