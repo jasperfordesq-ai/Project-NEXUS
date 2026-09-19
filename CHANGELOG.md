@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Registration policy saves now retain a stable request fingerprint so explicit recovery of new saves survives intervening event schedule or policy changes without applying the change twice. Legacy saved requests retain their existing comparison behavior.
+
 - Native registration policy confirmations and retry actions now use the existing translated Cancel and Retry labels.
 
 - Registration settings revision conflicts now identify the rejected version field while retaining the existing conflict code, allowing clients to distinguish them from uncertain retry-key conflicts without discarding saved changes.

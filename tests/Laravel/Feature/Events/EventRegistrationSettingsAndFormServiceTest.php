@@ -11,6 +11,7 @@ namespace Tests\Laravel\Feature\Events;
 use App\Exceptions\EventRegistrationFoundationException;
 use App\Services\EventRegistrationFormService;
 use App\Services\EventRegistrationSettingsService;
+use App\Support\Events\EventRegistrationFoundationSupport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -137,6 +138,87 @@ final class EventRegistrationSettingsAndFormServiceTest extends TestCase
         $this->assertReason('event_registration_timezone_offset_mismatch', fn () => $service->save(
             $eventId, $owner, ['opens_at' => '2030-07-01T09:00:00Z'], 1, 'local-wrong-offset',
         ));
+    }
+
+    public function test_saved_policy_recovery_survives_an_intervening_event_schedule_change(): void
+    {
+        $owner = $this->eventUser();
+        $start = CarbonImmutable::parse('2030-07-20T09:00:00Z');
+        [$eventId] = $this->registrationEvent((int) $owner->id, $start, $start->addHours(2), 'UTC');
+        $service = new EventRegistrationSettingsService();
+        $payload = [
+            'approval_mode' => 'manual', 'per_member_limit' => 1,
+            'guests_enabled' => false, 'max_guests_per_registration' => 0,
+            'guest_retention_days' => 30,
+            'opens_at_utc' => '2030-07-01T09:00:00.000Z',
+            'closes_at_utc' => '2030-07-20T09:00:00.000Z',
+            'cancellation_cutoff_at_utc' => null,
+        ];
+        $service->save($eventId, $owner, $payload, 0, 'schedule-change-recovery');
+        // The first response is lost; another organiser subsequently moves the event.
+        DB::table('events')->where('id', $eventId)->update([
+            'start_time' => '2030-07-19 09:00:00', 'end_time' => '2030-07-19 11:00:00',
+        ]);
+
+        $replayed = $service->save($eventId, $owner, $payload, 0, 'schedule-change-recovery');
+        self::assertFalse($replayed['changed']);
+        self::assertSame(1, (int) $replayed['settings']->revision);
+        self::assertSame(1, DB::table('event_registration_settings_history')->where('event_id', $eventId)->count());
+    }
+
+    public function test_partial_policy_replay_preserves_a_later_policy_edit(): void
+    {
+        $owner = $this->eventUser();
+        [$eventId] = $this->registrationEvent((int) $owner->id);
+        $service = new EventRegistrationSettingsService();
+        $service->save($eventId, $owner, ['approval_mode' => 'manual'], 0, 'partial-policy-original');
+        $service->save($eventId, $owner, ['guest_retention_days' => 45], 1, 'partial-policy-later');
+
+        $replayed = $service->save($eventId, $owner, ['approval_mode' => 'manual'], 0, 'partial-policy-original');
+        self::assertFalse($replayed['changed']);
+        self::assertSame(2, (int) $replayed['settings']->revision);
+        self::assertSame(45, (int) $replayed['settings']->guest_retention_days);
+        self::assertSame(2, DB::table('event_registration_settings_history')->where('event_id', $eventId)->count());
+        $this->assertReason('event_registration_settings_idempotency_conflict', fn () => $service->save(
+            $eventId, $owner, ['approval_mode' => 'auto'], 0, 'partial-policy-original',
+        ));
+    }
+
+    public function test_legacy_normalized_history_still_replays_and_rejects_changed_input(): void
+    {
+        $owner = $this->eventUser();
+        [$eventId, $start] = $this->registrationEvent((int) $owner->id);
+        $service = new EventRegistrationSettingsService();
+        $created = $service->save($eventId, $owner, [], 0, 'legacy-fixture-create');
+        $support = new EventRegistrationFoundationSupport();
+        // Seed the immutable receipt format written before submitted-intent hashing.
+        $normalized = [
+            'approval_mode' => 'manual', 'event_starts_at_utc_snapshot' => $start,
+            'event_timezone_snapshot' => 'UTC', 'opens_at_utc' => null,
+            'closes_at_utc' => null, 'cancellation_cutoff_at_utc' => null,
+            'per_member_limit' => 1, 'guests_enabled' => false,
+            'max_guests_per_registration' => 0, 'guest_retention_days' => 30,
+        ];
+        DB::table('event_registration_settings')->where('id', $created['settings']->id)
+            ->update(['revision' => 2, 'approval_mode' => 'manual']);
+        DB::table('event_registration_settings_history')->insert([
+            'tenant_id' => 2, 'event_id' => $eventId, 'settings_id' => $created['settings']->id,
+            'revision' => 2, 'action' => 'updated', 'actor_user_id' => $owner->id,
+            'idempotency_hash' => $support->idempotencyHash('legacy-policy-save'),
+            'request_hash' => $support->requestHash([
+                'action' => 'updated', 'event_id' => $eventId, 'actor_id' => (int) $owner->id,
+                'expected_revision' => 1, 'attributes' => $normalized,
+            ]),
+            'changed_fields' => json_encode(array_keys($normalized), JSON_THROW_ON_ERROR),
+            'created_at' => now(),
+        ]);
+        $replayed = $service->save($eventId, $owner, ['approval_mode' => 'manual'], 1, 'legacy-policy-save');
+        self::assertFalse($replayed['changed']);
+        self::assertSame(2, (int) $replayed['settings']->revision);
+        $this->assertReason('event_registration_settings_idempotency_conflict', fn () => $service->save(
+            $eventId, $owner, ['approval_mode' => 'auto'], 1, 'legacy-policy-save',
+        ));
+        self::assertSame(2, DB::table('event_registration_settings_history')->where('event_id', $eventId)->count());
     }
 
     public function test_forms_are_versioned_and_published_definitions_are_database_immutable(): void

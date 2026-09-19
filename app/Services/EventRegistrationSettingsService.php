@@ -71,6 +71,23 @@ final class EventRegistrationSettingsService
             $persistedActor = $this->support->actor($tenantId, $actor, true);
             $this->support->authorizeManager($persistedActor, $event);
             $settings = $this->settingsRow($tenantId, $eventId, true);
+            // Hash the submitted intent, not mutable schedule snapshots or omitted-field defaults.
+            // Authorization still runs on every recovery, even when the original write succeeded.
+            $intentHash = $this->support->requestHash([
+                'schema_version' => 2,
+                'action' => 'save',
+                'event_id' => $eventId,
+                'actor_id' => (int) $persistedActor->id,
+                'expected_revision' => $expectedRevision,
+                'attributes' => $attributes,
+            ]);
+            $previous = DB::table('event_registration_settings_history')
+                ->where('tenant_id', $tenantId)
+                ->where('idempotency_hash', $idempotencyHash)
+                ->first();
+            if ($previous !== null && hash_equals((string) $previous->request_hash, $intentHash)) {
+                return ['settings' => $this->settingsModel($tenantId, $eventId), 'changed' => false];
+            }
             $normalized = $this->normalize($event, $attributes, $settings);
             $cancellationPolicyChanged = $this->publishedCancellationPolicyChanged(
                 $settings,
@@ -79,6 +96,7 @@ final class EventRegistrationSettingsService
             $intentAction = $expectedRevision === null || $expectedRevision === 0
                 ? 'created'
                 : 'updated';
+            // Keep recognizing existing normalized receipts; their original input was not stored.
             $requestHash = $this->support->requestHash([
                 'action' => $intentAction,
                 'event_id' => $eventId,
@@ -147,7 +165,7 @@ final class EventRegistrationSettingsService
                 'action' => $action,
                 'actor_user_id' => (int) $persistedActor->id,
                 'idempotency_hash' => $idempotencyHash,
-                'request_hash' => $requestHash,
+                'request_hash' => $intentHash,
                 'changed_fields' => json_encode(array_keys($normalized), JSON_THROW_ON_ERROR),
                 'created_at' => $now,
             ]);
