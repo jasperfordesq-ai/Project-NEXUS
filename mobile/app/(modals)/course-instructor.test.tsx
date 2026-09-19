@@ -12,10 +12,19 @@ const mockPublishCourse = jest.fn();
 const mockUnpublishCourse = jest.fn();
 const mockPush = jest.fn();
 const mockShowToast = jest.fn();
+let mockFocus: () => void | (() => void);
+let mockBlur: (() => void) | undefined;
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
-  useFocusEffect: jest.fn(),
+  useFocusEffect: (callback: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => {
+      mockFocus = callback;
+      mockBlur = callback() || undefined;
+      return () => mockBlur?.();
+    }, [callback]);
+  },
   router: { push: (...args: unknown[]) => mockPush(...args), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: () => ({}),
 }));
@@ -174,6 +183,51 @@ describe('CourseInstructorRoute', () => {
     await waitFor(() => expect(screen.UNSAFE_getByType(ReactNative.FlatList).props.data).toEqual([]));
     await act(async () => confirm());
     expect(mockUnpublishCourse).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('ignores publish completion after blur and return (failure: %s)', async (failure) => {
+    let finish!: (value: typeof draft) => void;
+    let reject!: (error: Error) => void;
+    mockPublishCourse.mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }));
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Repair skills');
+    fireEvent.press(screen.getByText('Publish'));
+    await waitFor(() => expect(mockPublishCourse).toHaveBeenCalledTimes(1));
+    act(() => { mockBlur?.(); });
+    act(() => { mockBlur = mockFocus() || undefined; });
+    await waitFor(() => expect(mockGetAuthoredCourses).toHaveBeenCalledTimes(2));
+    await act(async () => { if (failure) reject(new ApiResponseError(422, 'Unavailable')); else finish({ ...draft, status: 'published' }); });
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockGetAuthoredCourses).toHaveBeenCalledTimes(3);
+  });
+
+  it('dismisses unpublish confirmation on blur and rejects its late callback', async () => {
+    mockGetAuthoredCourses.mockResolvedValue([published]);
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Timebanking basics');
+    fireEvent.press(screen.getByText('Unpublish'));
+    const confirm = screen.UNSAFE_getByType(require('@/components/ui/ConfirmDialog').default).props.onConfirm;
+    act(() => { mockBlur?.(); });
+    expect(screen.queryByTestId('course-confirm-unpublish-43')).toBeNull();
+    await act(async () => confirm());
+    expect(mockUnpublishCourse).not.toHaveBeenCalled();
+  });
+
+  it('reads the completed write on return without presenting it on another screen', async () => {
+    let finish!: (value: typeof draft) => void;
+    mockPublishCourse.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Repair skills');
+    fireEvent.press(screen.getByText('Publish'));
+    act(() => { mockBlur?.(); });
+    const updated = { ...draft, status: 'published', moderation_status: 'approved' };
+    mockGetAuthoredCourses.mockResolvedValue([updated]);
+    await act(async () => finish(updated));
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockGetAuthoredCourses).toHaveBeenCalledTimes(1);
+    act(() => { mockBlur = mockFocus() || undefined; });
+    await screen.findByText('Published');
+    expect(mockGetAuthoredCourses).toHaveBeenCalledTimes(2);
   });
 
   it('unpublishes a published course', async () => {

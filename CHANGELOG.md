@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native instructor publishing dismisses confirmations when leaving the screen and suppresses delayed messages from an earlier visit. Returning refreshes course status, including writes that finish after the return refresh.
+
 - **Whole-tenant prerender jobs could never be processed, and every attempt orphaned the job.**
   `scripts/prerender-job-processor.sh` validated the claimed job's routes with
   `printf '%s' "$value" | grep -Eq '^[...]*$'`. A whole-tenant job carries `routes IS NULL`,

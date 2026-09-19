@@ -67,6 +67,8 @@ function CourseInstructorScreen() {
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const togglingRef = useRef(false);
   const mountedRef = useRef(true);
+  const focusedRef = useRef(false);
+  const focusGenerationRef = useRef(0);
   const coursesRef = useRef(data);
   coursesRef.current = error || isLoading ? null : data;
   useEffect(() => {
@@ -102,12 +104,16 @@ function CourseInstructorScreen() {
   const hasFocusedOnceRef = useRef(false);
   useFocusEffect(
     useCallback(() => {
-      if (!hasFocusedOnceRef.current) {
-        hasFocusedOnceRef.current = true;
-        return;
-      }
-      refresh();
-    }, [refresh]),
+      focusedRef.current = true;
+      if (hasFocusedOnceRef.current) refresh();
+      else hasFocusedOnceRef.current = true;
+      return () => {
+        focusedRef.current = false;
+        focusGenerationRef.current += 1;
+        pendingCourseRef.current = null;
+        dismiss();
+      };
+    }, [dismiss, refresh]),
   );
 
   /*
@@ -117,7 +123,7 @@ function CourseInstructorScreen() {
     Found by the 2026-09-07 audit (G/F-11).
   */
   function togglePublish(course: Course) {
-    if (!mountedRef.current || togglingRef.current) return;
+    if (!mountedRef.current || !focusedRef.current || togglingRef.current) return;
     if (course.status !== 'published') {
       void runTogglePublish(course);
       return;
@@ -136,14 +142,15 @@ function CourseInstructorScreen() {
 
   async function runTogglePublish(course: Course) {
     const current = coursesRef.current?.find(item => item.id === course.id);
-    if (!mountedRef.current || togglingRef.current || !current || current.status !== course.status) return;
+    if (!mountedRef.current || !focusedRef.current || togglingRef.current || !current || current.status !== course.status) return;
+    const focusGeneration = focusGenerationRef.current;
     togglingRef.current = true;
     setTogglingId(course.id);
     try {
       const updated = course.status === 'published'
         ? await unpublishCourse(course.id)
         : await publishCourse(course.id);
-      if (!mountedRef.current || !coursesRef.current?.some(item => item.id === course.id)) return;
+      if (!mountedRef.current || !focusedRef.current || focusGeneration !== focusGenerationRef.current || !coursesRef.current?.some(item => item.id === course.id)) return;
       showToast({
         title: updated.status === 'published'
           ? updated.moderation_status === 'approved'
@@ -154,7 +161,7 @@ function CourseInstructorScreen() {
       });
       refresh();
     } catch (err) {
-      if (!mountedRef.current || !coursesRef.current?.some(item => item.id === course.id)) return;
+      if (!mountedRef.current || !focusedRef.current || focusGeneration !== focusGenerationRef.current || !coursesRef.current?.some(item => item.id === course.id)) return;
       showToast({
         title: t('instructor.create_error'),
         description: describeApiError(err, ''),
@@ -162,7 +169,12 @@ function CourseInstructorScreen() {
       });
     } finally {
       togglingRef.current = false;
-      if (mountedRef.current) setTogglingId(null);
+      if (mountedRef.current) {
+        setTogglingId(null);
+        // A write can settle after the return-focus read. Reconcile it without
+        // presenting a message from the previous visit to this screen.
+        if (focusedRef.current && focusGeneration !== focusGenerationRef.current) refresh();
+      }
     }
   }
 
