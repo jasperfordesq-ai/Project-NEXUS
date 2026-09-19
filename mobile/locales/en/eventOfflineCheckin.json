@@ -4,7 +4,7 @@
     "description": "Authorize this device and keep recording attendance when connectivity drops.",
     "privacyTitle": "Private by design",
     "privacyDescription": "QR credentials contain no name or contact details. The roster, queue and device secret are authenticated and encrypted at rest.",
-    "noWallet": "Attendance never changes balances or awards time credits.",
+    "noWallet": "Time-credit rewards, when enabled, are processed by the server after offline attendance is synchronized.",
     "ready": "This device is ready for offline check-in.",
     "notReady": "Offline check-in is not ready",
     "notReadyDescription": "Authorize this device while online. Manual name check-in remains available.",

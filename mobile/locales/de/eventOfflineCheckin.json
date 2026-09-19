@@ -4,7 +4,7 @@
     "description": "Autorisieren Sie dieses Gerät und erfassen Sie die Anwesenheit auch bei unterbrochener Verbindung.",
     "privacyTitle": "Datenschutz von Anfang an",
     "privacyDescription": "QR-Nachweise enthalten weder Namen noch Kontaktdaten. Teilnehmerliste, Warteschlange und Geräteschlüssel werden authentifiziert und verschlüsselt gespeichert.",
-    "noWallet": "Anwesenheit ändert niemals Guthaben und vergibt keine Zeitgutschriften.",
+    "noWallet": "Zeitgutschriften werden, sofern aktiviert, vom Server verarbeitet, nachdem die offline erfasste Anwesenheit synchronisiert wurde.",
     "ready": "Dieses Gerät ist für den Offline-Check-in bereit.",
     "notReady": "Offline-Check-in ist nicht bereit",
     "notReadyDescription": "Autorisieren Sie dieses Gerät online. Der manuelle Check-in nach Namen bleibt verfügbar.",

@@ -4,7 +4,7 @@
     "description": "Autorize este dispositivo e continue a registar presenças quando a ligação falhar.",
     "privacyTitle": "Privacidade desde a conceção",
     "privacyDescription": "As credenciais QR não contêm nomes nem contactos. A lista, a fila e o segredo do dispositivo são autenticados e cifrados em repouso.",
-    "noWallet": "A presença nunca altera saldos nem atribui créditos de tempo.",
+    "noWallet": "As recompensas em créditos de tempo, quando ativadas, são processadas pelo servidor após a sincronização das presenças registadas sem ligação.",
     "ready": "Este dispositivo está pronto para o check-in offline.",
     "notReady": "O check-in offline não está pronto",
     "notReadyDescription": "Autorize este dispositivo enquanto estiver online. A pesquisa manual por nome continua disponível.",

@@ -4,7 +4,7 @@
     "description": "Údaraigh an gléas seo agus lean ort ag taifeadadh tinrimh nuair a chailltear an nasc.",
     "privacyTitle": "Príobháideachas mar bhunphrionsabal",
     "privacyDescription": "Níl ainm ná sonraí teagmhála i ndintiúir QR. Déantar an liosta, an scuaine agus rún an ghléis a fhíordheimhniú agus a chriptiú agus iad á stóráil.",
-    "noWallet": "Ní athraíonn tinreamh iarmhéideanna riamh agus ní bhronntar creidmheasanna ama dá bharr.",
+    "noWallet": "Má tá luaíochtaí creidmheasa ama cumasaithe, próiseálann an freastalaí iad tar éis an tinreamh as líne a shioncrónú.",
     "ready": "Tá an gléas seo réidh do sheiceáil isteach as líne.",
     "notReady": "Níl seiceáil isteach as líne réidh",
     "notReadyDescription": "Údaraigh an gléas seo agus tú ar líne. Beidh cuardach láimhe de réir ainm ar fáil i gcónaí.",

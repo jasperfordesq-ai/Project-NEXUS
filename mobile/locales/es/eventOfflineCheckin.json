@@ -4,7 +4,7 @@
     "description": "Autoriza este dispositivo y sigue registrando la asistencia cuando se pierda la conexión.",
     "privacyTitle": "Privacidad desde el diseño",
     "privacyDescription": "Las credenciales QR no contienen nombres ni datos de contacto. La lista, la cola y el secreto del dispositivo se autentican y cifran en reposo.",
-    "noWallet": "La asistencia nunca modifica saldos ni concede créditos de tiempo.",
+    "noWallet": "Las recompensas de créditos de tiempo, cuando están activadas, se procesan en el servidor después de sincronizar la asistencia registrada sin conexión.",
     "ready": "Este dispositivo está listo para el registro sin conexión.",
     "notReady": "El registro sin conexión no está listo",
     "notReadyDescription": "Autoriza este dispositivo mientras tengas conexión. La búsqueda manual por nombre sigue disponible.",

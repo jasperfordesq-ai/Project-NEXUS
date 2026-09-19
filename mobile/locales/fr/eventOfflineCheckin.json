@@ -4,7 +4,7 @@
     "description": "Autorisez cet appareil et continuez à enregistrer les présences en cas de perte de connexion.",
     "privacyTitle": "Confidentiel par conception",
     "privacyDescription": "Les justificatifs QR ne contiennent ni nom ni coordonnées. La liste, la file et le secret de l’appareil sont authentifiés et chiffrés au repos.",
-    "noWallet": "La présence ne modifie jamais les soldes et n’attribue aucun crédit-temps.",
+    "noWallet": "Les récompenses en crédits de temps, lorsqu’elles sont activées, sont traitées par le serveur après la synchronisation des présences enregistrées hors ligne.",
     "ready": "Cet appareil est prêt pour l’enregistrement hors ligne.",
     "notReady": "L’enregistrement hors ligne n’est pas prêt",
     "notReadyDescription": "Autorisez cet appareil lorsque vous êtes en ligne. La recherche manuelle par nom reste disponible.",
