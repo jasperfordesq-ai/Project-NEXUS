@@ -187,6 +187,31 @@ describe('CourseGradingRoute', () => {
     expect(screen.queryByText('Maura Byrne')).toBeNull();
   });
 
+  it('does not retry an old grade after the course route is replaced', async () => {
+    let reject!: (error: unknown) => void;
+    mockGradeCourseAttempt.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+    fireEvent.press(screen.getByText('Submit grade'));
+    mockCourseId = '43';
+    screen.rerender(<CourseGradingRoute />);
+    await waitFor(() => expect(mockGetCourseGradingQueue).toHaveBeenCalledWith(43));
+    await act(async () => { reject(new ApiResponseError(0, 'Response lost')); });
+    expect(mockGradeCourseAttempt).toHaveBeenCalledTimes(1);
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it('does not announce a grade result after leaving the screen', async () => {
+    let finish!: (value: unknown) => void;
+    mockGradeCourseAttempt.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+    fireEvent.press(screen.getByText('Submit grade'));
+    screen.unmount();
+    await act(async () => { finish({ ...attempt, grading_status: 'graded' }); });
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('removes a stale card when another instructor already graded it', async () => {
     mockGradeCourseAttempt.mockRejectedValueOnce(
       new ApiResponseError(409, 'This attempt has already been graded.', undefined, 'DECISION_CONFLICT'),
@@ -238,6 +263,19 @@ describe('CourseGradingRoute', () => {
     await act(async () => { screen.UNSAFE_getByType(RefreshControl).props.onRefresh(); });
     expect(screen.getByTestId('refresh-failed-notice')).toBeTruthy();
     expect(screen.getByLabelText('Feedback (optional)').props.value).toBe('Detailed unsent feedback');
+  });
+
+  it.each(['removed', 'refused'])('releases the unsaved guard when a refreshed grading card is %s', async (outcome) => {
+    const screen = render(<CourseGradingRoute />);
+    await waitFor(() => expect(screen.getByText('Maura Byrne')).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText('Feedback (optional)'), 'Unsent assessment');
+    expect(isGuardArmed()).toBe(true);
+    if (outcome === 'removed') mockGetCourseGradingQueue.mockResolvedValueOnce([]);
+    else mockGetCourseGradingQueue.mockRejectedValueOnce(new ApiResponseError(403, 'No longer an instructor'));
+    await act(async () => { screen.UNSAFE_getByType(RefreshControl).props.onRefresh(); });
+    await waitFor(() => expect(screen.queryByText('Maura Byrne')).toBeNull());
+    expect(isGuardArmed()).toBe(false);
+    expect(mockGradeCourseAttempt).not.toHaveBeenCalled();
   });
 
   it('pauses grade edits while saving and restores the draft after rejection', async () => {

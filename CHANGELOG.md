@@ -51,6 +51,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native grading clears obsolete unsaved-work warnings when a refreshed queue removes an assessment or instructor access is revoked, while preserving editable feedback through temporary refresh failures.
+
+- Native instructor grading stops response-loss retries and late result notices after leaving or replacing the grading screen, while retaining exact retries for the active grading session.
+
 - **Shared test animation mock no longer remounts the tree it wraps.** The
   `framerMotionMock` Proxy built a new component on every property access, so
   `<motion.div>` changed component type on every render and React destroyed and

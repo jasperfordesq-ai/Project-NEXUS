@@ -15,7 +15,7 @@
  * Opened as `/(modals)/course-grading?id=<courseId>`.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -112,6 +112,17 @@ function CourseGradingScreen() {
   */
   const [gradedIds, setGradedIds] = useState<number[]>([]);
   const [draftStates, setDraftStates] = useState<Record<number, { dirty: boolean; saving: boolean }>>({});
+
+  useEffect(() => {
+    // Keep drafts during transient refresh failures, but release guards for cards
+    // the authoritative queue removed or that the instructor can no longer access.
+    if (data === null && !isRefusalStatus(errorStatus)) return;
+    const visibleIds = new Set(isRefusalStatus(errorStatus) ? [] : (data ?? []).map(attempt => attempt.id));
+    setDraftStates(current => {
+      const retained = Object.entries(current).filter(([id]) => visibleIds.has(Number(id)));
+      return retained.length === Object.keys(current).length ? current : Object.fromEntries(retained);
+    });
+  }, [data, errorStatus]);
 
   const attempts = (data ?? []).filter((attempt) => !gradedIds.includes(attempt.id));
 
@@ -268,6 +279,11 @@ function GradeCard({
   const [feedback, setFeedback] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const savingRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const reportDraft = (nextScore: string, nextPassed: boolean, nextFeedback: string, saving: boolean) => {
     const dirty = nextScore !== '70' || !nextPassed || nextFeedback !== '';
@@ -278,7 +294,7 @@ function GradeCard({
   const rawAnswers = Object.entries(attempt.answers ?? {});
 
   async function submit() {
-    if (savingRef.current) return;
+    if (!mountedRef.current || savingRef.current) return;
     /*
       🔴 `Number(score) || 0` recorded a mistyped grade as ZERO, silently.
 
@@ -313,15 +329,19 @@ function GradeCard({
         // by the same instructor, so one response-loss retry can recover the
         // committed result without overwriting another grader's decision.
         if (!(err instanceof ApiResponseError) || err.status !== 0) throw err;
+        if (!mountedRef.current) return;
         await gradeCourseAttempt(attempt.id, payload);
       }
+      if (!mountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
       showToast({ title: t('grading.graded'), variant: 'success' });
       savingRef.current = false;
       setIsSaving(false);
       onDraftStateChange(attempt.id, false, false);
       onGraded(attempt.id);
     } catch (err) {
+      if (!mountedRef.current) return;
       savingRef.current = false;
       setIsSaving(false);
       const wasGradedElsewhere = err instanceof ApiResponseError && err.code === 'DECISION_CONFLICT';
